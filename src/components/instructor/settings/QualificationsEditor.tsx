@@ -408,25 +408,75 @@ export function QualificationsEditor({ instructorId }: Props) {
           </div>
           <Field label="ADI grade">
             <div className="inline-flex p-0.5 bg-[#F3F4F6]" style={{ borderRadius: 999 }}>
-              {(["A", "B"] as const).map((g) => (
-                <button
-                  key={g}
-                  type="button"
-                  onClick={() => set("adi_grade", form.adi_grade === g ? "" : g)}
-                  className="px-4 h-7 text-[12px] transition"
-                  style={{
-                    fontWeight: form.adi_grade === g ? 500 : 400,
-                    background: form.adi_grade === g ? "#FFFFFF" : "transparent",
-                    color: form.adi_grade === g ? "#111827" : "#6B7280",
-                    borderRadius: 999,
-                    boxShadow: form.adi_grade === g ? "0 0 0 0.5px hsl(var(--border))" : "none",
-                  }}
-                >
-                  Grade {g}
-                </button>
-              ))}
+              {(["A", "B", "PDI"] as const).map((g) => {
+                const active = g === "PDI" ? form.adi_grade.startsWith("PDI") : form.adi_grade === g;
+                return (
+                  <button
+                    key={g}
+                    type="button"
+                    onClick={() => {
+                      if (g === "PDI") {
+                        set("adi_grade", active ? "" : "PDI");
+                      } else {
+                        set("adi_grade", form.adi_grade === g ? "" : g);
+                      }
+                    }}
+                    className="px-4 h-7 text-[12px] transition"
+                    style={{
+                      fontWeight: active ? 500 : 400,
+                      background: active ? "#FFFFFF" : "transparent",
+                      color: active ? "#111827" : "#6B7280",
+                      borderRadius: 999,
+                      boxShadow: active ? "0 0 0 0.5px hsl(var(--border))" : "none",
+                    }}
+                  >
+                    {g === "PDI" ? "PDI" : `Grade ${g}`}
+                  </button>
+                );
+              })}
             </div>
           </Field>
+          {form.adi_grade.startsWith("PDI") && (
+            <Field label="Pink licence (trainee) stage" hint="Tick the trainee licence you're currently on">
+              <div className="flex flex-wrap gap-2">
+                {([
+                  { v: "PDI-1", label: "1st pink" },
+                  { v: "PDI-2", label: "2nd pink" },
+                  { v: "PDI-3", label: "3rd pink" },
+                ] as const).map((p) => {
+                  const checked = form.adi_grade === p.v;
+                  return (
+                    <button
+                      key={p.v}
+                      type="button"
+                      onClick={() => set("adi_grade", checked ? "PDI" : p.v)}
+                      className="inline-flex items-center gap-2 px-3 h-8 text-[12px] bg-white transition"
+                      style={{
+                        border: `0.5px solid ${checked ? "#EC4899" : "hsl(var(--border))"}`,
+                        background: checked ? "#FDF2F8" : "#FFFFFF",
+                        color: checked ? "#9D174D" : "#374151",
+                        fontWeight: checked ? 500 : 400,
+                        borderRadius: 999,
+                      }}
+                    >
+                      <span
+                        className="inline-flex items-center justify-center w-4 h-4"
+                        style={{
+                          border: `1px solid ${checked ? "#EC4899" : "#D1D5DB"}`,
+                          background: checked ? "#EC4899" : "#FFFFFF",
+                          borderRadius: 4,
+                          color: "#FFFFFF",
+                        }}
+                      >
+                        {checked && <CheckCircle2 size={10} strokeWidth={3} />}
+                      </span>
+                      {p.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </Field>
+          )}
           <Field label="Badge certificate">
             <FileField
               url={form.adi_certificate_url}
