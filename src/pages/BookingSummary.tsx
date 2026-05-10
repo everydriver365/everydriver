@@ -444,12 +444,7 @@ export default function BookingSummary() {
           courseType: courseName,
           courseHours: hours,
           totalPrice,
-          slots: selectedSlots.map((slot) => ({
-            date: format(slot.date, "yyyy-MM-dd"),
-            startTime: slot.startTime,
-            endTime: slot.endTime,
-            duration: slot.duration,
-          })),
+          slots: selectedSlots.map(buildSlotPayload),
           paymentType,
           amountPaid: amountPaid ?? (paymentType === 'full' ? totalPrice + upsellTotal : depositAmount),
           depositAmount: paymentType === 'deposit' ? depositAmount : 0,
