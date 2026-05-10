@@ -57,6 +57,42 @@ export function QuickSettingsPage({ instructorId }: { instructorId: string }) {
           checked={data.ai_call_divert_enabled}
           onChange={(v) => update("ai_call_divert_enabled", v)}
         />
+        {phone && (
+          <div className="sv2-row" style={{ flexDirection: "column", alignItems: "stretch", gap: 8 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <IconPhoneIncoming size={16} stroke={1.5} />
+              <div className="flex-1 min-w-0">
+                <div className="sv2-row-name">Landline routing</div>
+                <div className="sv2-row-meta" style={{ fontFamily: "monospace" }}>{phone.phone_number}</div>
+              </div>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 6 }}>
+              {(["ai", "mobile", "schedule"] as RoutingMode[]).map((mode) => {
+                const active = phone.routing_mode === mode;
+                return (
+                  <button
+                    key={mode}
+                    type="button"
+                    onClick={() => !active && updatePhone("routing_mode", mode)}
+                    style={{
+                      padding: "8px 10px",
+                      borderRadius: 12,
+                      fontSize: 12,
+                      fontWeight: 600,
+                      border: `1px solid ${active ? "var(--portal-accent, #2B7BC8)" : "var(--color-border, #e5e7eb)"}`,
+                      background: active ? "var(--portal-accent, #2B7BC8)" : "transparent",
+                      color: active ? "#fff" : "var(--color-text-primary)",
+                      cursor: active ? "default" : "pointer",
+                      textTransform: "capitalize",
+                    }}
+                  >
+                    {mode === "schedule" ? "Schedule" : mode === "ai" ? "AI" : "Mobile"}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </section>
 
       <section className="sv2-card">
