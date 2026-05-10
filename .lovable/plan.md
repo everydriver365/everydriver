@@ -1,47 +1,80 @@
-# Harden Login & Security panel
+## Why Ken's tracker isn't visible
 
-Tighten the existing change-email / change-password / sign-out-everywhere panel so it's safer and clearer for instructors.
+Ken D actually has **two** trackers in the database:
 
-## Scope
-Only `src/components/instructor/AccountSecurityPanel.tsx` (the component rendered by the "Login & security" settings item). No backend, RLS, or auth-provider changes.
+| Device | Provider | Active | Last seen | Heartbeat |
+|---|---|---|---|---|
+| Charlotte (`861778063583081`) | Radius | ✅ | 06:59 today (~3h ago) | 07:06 today |
+| Kenneth's Geotab | Geotab | ❌ | 15 Apr | 15 Apr |
 
-## Changes
+The GPS panel on the Profile → GPS tab only renders a single "Connected / Offline" pill with this rule:
 
-1. **Show the current login email**
-   - Read it once on mount via `supabase.auth.getUser()`.
-   - Display as a read-only line above the "new email" input ("Currently signed in as: …").
+```ts
+isConnected = (now - last_seen_at) < 120s
+```
 
-2. **Re-authenticate before sensitive changes**
-   - Add a "Current password" input shared by the change-email and change-password flows.
-   - Before calling `updateUser`, verify the current password by calling `supabase.auth.signInWithPassword({ email: currentEmail, password: currentPassword })`. If it fails, show an inline error and abort — do not call `updateUser`.
-   - Skip the re-auth check for OAuth-only users (no password set) — detect via `user.app_metadata.provider !== 'email'` and hide the password field with a short note ("Signed in with Google — manage your password through your provider").
+Because Charlotte last reported 3 hours ago (vehicle parked overnight) and Geotab is `is_active=false`, **both devices fail that 120s test → the panel just says "Offline" with nothing else**, so it looks like there's no tracker at all.
 
-3. **Pass an explicit redirect on email change**
-   - Call `supabase.auth.updateUser({ email }, { emailRedirectTo: \`${window.location.origin}/instructor/settings/login-security\` })` so confirming the new address lands the user back on this page.
-   - After success, show a persistent inline banner ("Confirmation sent to new@example.com — click the link in that email to finish the change") in addition to the toast, so the user has a record after the toast disappears.
+The smarter `useGPSConnectionStatus` hook already exists and uses a 4-state model (`active` / `recent` / `stationary` / `offline`) that correctly classifies a parked-but-fitted Radius device as **"Stationary"** (heartbeat recent, no movement). The settings panel just isn't using it.
 
-4. **Stronger password rules + visibility toggle**
-   - Bump the minimum from 8 to 10 characters and require at least one number.
-   - Add a show/hide eye toggle on both password inputs.
-   - Validate on the client and surface inline errors; keep the existing toast for the server response.
+## Plan
 
-5. **Confirm the "Sign out everywhere" action**
-   - Wrap the button in an AlertDialog confirming "This will sign you out on every device, including this one."
-   - On confirm, run the existing global sign-out and then `navigate('/instructor/login')`.
+Replace the single Connection Status card on the **Profile → GPS** tab with a **list of every fitted device** for the instructor, each with proper status, so a fitted-but-stationary or temporarily-offline tracker is still clearly visible.
 
-6. **Layout polish (no design system change)**
-   - Group the three actions inside the existing portal section cards (already wrapping this panel) using the same `space-y-6` rhythm.
-   - Keep all colours/tokens — no new palette.
+### 1. Fetch all devices, not just the latest
+
+In `InstructorDetailsEditor.tsx` (the GPS-only view + the GPS tab), replace the single-row `gps_devices` query (`.limit(1).maybeSingle()`) with a list query:
+
+```ts
+.from("gps_devices")
+.select("id, device_name, device_identifier, tracking_provider, is_active, last_seen_at, last_heartbeat_at, vehicle_id")
+.eq("instructor_id", instructorId)
+.order("is_active", { ascending: false })
+.order("last_seen_at", { ascending: false });
+```
+
+### 2. Use the existing 4-state status logic
+
+Extract the `getStatus()` helper from `useGPSConnectionStatus.ts` into a tiny shared util (`src/lib/gpsDeviceStatus.ts`) so both the dashboard hook and the settings panel agree. States:
+
+- **Active** — moved in last 60s (green)
+- **Recent** — moved in last 5 min (green)
+- **Stationary** — heartbeat in last 2 min, no movement (blue) → this is what Ken's parked Charlotte should show when running
+- **Offline** — no heartbeat & no movement (grey)
+
+### 3. Render one card per device
+
+For every row returned, show:
+
+- Device name + provider badge (Radius / Geotab / GPSGate / Quartix / Phone)
+- Status pill (Active / Recent / Stationary / Offline) with matching colour
+- "Last update: 3 hours ago" (existing `formatDistanceToNow`)
+- A small note when `is_active = false`: "Disabled by admin"
+- Linked vehicle name (from `instructor_vehicles` join) when `vehicle_id` is set
+
+If the device is offline but `is_active = true` and last seen within the last 24h, append the helper line: *"Tracker fitted — waiting for the vehicle to wake up."* This is the key UX fix that prevents users thinking the tracker has vanished.
+
+### 4. Empty state
+
+Only show "No trackers fitted yet — contact admin to add one" when the query returns **zero rows**. Today's UI shows that message implicitly any time `last_seen_at` is older than 2 minutes, which is wrong.
+
+### 5. Keep the Phone/Hardware/Off device selector
+
+The selector added in the previous turn stays exactly as-is; it sits **below** the new device list.
+
+### 6. Test Connection button
+
+Keep the existing `radius-poller` button; after it runs, re-fetch the device list (not just the single row) so a freshly-woken Radius tracker pops up immediately.
 
 ## Out of scope
-- Email template branding (separate flow).
-- 2FA / MFA enrolment.
-- Mobile portal layout (per project rule).
-- Anything outside `AccountSecurityPanel.tsx`.
 
-## Acceptance
-- Current email is visible at the top of the section.
-- Changing email or password requires entering the current password (for email/password users) and shows a clear inline error if it's wrong.
-- After a successful email change, a banner remains on screen explaining the next step, and the confirmation link returns to `/instructor/settings/login-security`.
-- "Sign out everywhere" prompts for confirmation before ending all sessions.
-- Google-only accounts see a friendly note instead of a broken password field.
+- No DB changes — `gps_devices` already has every field we need.
+- No admin panel changes — adding/removing devices stays in `AdminTrackersManager`.
+- No mobile layout changes (per project rule).
+- No edits to other consumers of `useGPSConnectionStatus` (FleetLiveMap, AccountHub, etc.); they already work correctly.
+
+## Files touched
+
+- `src/components/instructor/InstructorDetailsEditor.tsx` — replace single-status card with the new device list inside both the `defaultTab === "gps"` block and the `<TabsContent value="gps">` block.
+- `src/lib/gpsDeviceStatus.ts` *(new)* — shared `getDeviceStatus(lastSeen, heartbeat)` returning `"active" | "recent" | "stationary" | "offline"`.
+- `src/hooks/useGPSConnectionStatus.ts` — switch its inline `getStatus` to import from the new util (no behaviour change).

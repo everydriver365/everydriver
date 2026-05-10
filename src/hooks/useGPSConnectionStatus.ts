@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useRealtimeSubscription } from "@/hooks/useRealtimeHub";
+import { getDeviceStatus } from "@/lib/gpsDeviceStatus";
 
 interface GPSConnectionStatus {
   isConnected: boolean;
@@ -21,25 +22,7 @@ export function useGPSConnectionStatus(instructorId: string | null): GPSConnecti
   const [deviceName, setDeviceName] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const getStatus = useCallback((trackTime: string | null, heartbeat: string | null): "active" | "recent" | "stationary" | "offline" => {
-    if (!trackTime) return "offline";
-    
-    const now = new Date();
-    const trackDate = new Date(trackTime);
-    const trackDiffSeconds = (now.getTime() - trackDate.getTime()) / 1000;
-    
-    if (trackDiffSeconds < 60) return "active";
-    if (trackDiffSeconds < 300) return "recent";
-
-    if (heartbeat) {
-      const heartbeatDiffSeconds = (now.getTime() - new Date(heartbeat).getTime()) / 1000;
-      if (heartbeatDiffSeconds < 120 && trackDiffSeconds < 1800) {
-        return "stationary";
-      }
-    }
-    
-    return "offline";
-  }, []);
+  const getStatus = useCallback(getDeviceStatus, []);
 
   const checkConnection = useCallback(async () => {
     if (!instructorId) {
