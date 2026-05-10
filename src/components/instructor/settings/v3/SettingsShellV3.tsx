@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ChevronRight, Search } from "lucide-react";
 import { SettingsDirtyProvider } from "@/components/instructor/settings/SettingsDirtyContext";
