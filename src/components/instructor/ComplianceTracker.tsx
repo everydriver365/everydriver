@@ -224,6 +224,17 @@ export function ComplianceTracker({ instructorId }: ComplianceTrackerProps) {
           <p className="text-xs text-muted-foreground">
             {Math.max(0, (data?.cpd_year_target || 35) - (data?.cpd_hours_logged || 0))}h remaining this year
           </p>
+          {latestCPD && (
+            <div className="mt-2 flex items-center justify-between rounded-lg border bg-muted/30 px-3 py-2 text-xs">
+              <div className="min-w-0 flex-1">
+                <p className="font-medium truncate">{latestCPD.title}</p>
+                <p className="text-muted-foreground">
+                  Last logged · {format(parseISO(latestCPD.date), "d MMM yyyy")}
+                </p>
+              </div>
+              <span className="ml-2 font-semibold text-primary">{latestCPD.hours}h</span>
+            </div>
+          )}
         </CardContent>
       </Card>
 
