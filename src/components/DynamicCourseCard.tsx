@@ -21,6 +21,9 @@ interface DynamicCourseCardProps {
     bio: string | null;
     brand_colour: string | null;
     school_skim_amount?: number | null;
+    weekend_surcharge_amount?: number | null;
+    bank_holiday_surcharge_amount?: number | null;
+    odd_hours_surcharge_amount?: number | null;
   };
   hours: number;
   nextAvailable?: Date | null;
