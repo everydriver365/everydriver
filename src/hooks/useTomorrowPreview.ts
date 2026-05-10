@@ -36,7 +36,7 @@ export function useTomorrowPreview(instructorId: string | undefined) {
 
       const { data: lessons, error } = await supabase
         .from("scheduled_lessons")
-        .select(`id, start_time, duration_minutes, pickup_postcode, pupils!inner (name, phone, postcode)`)
+        .select(`id, start_time, duration_minutes, amount_due, pickup_postcode, pupils!inner (name, phone, postcode, custom_hourly_rate, custom_rate_90min, custom_rate_120min)`)
         .eq("instructor_id", instructorId)
         .eq("lesson_date", tomorrow)
         .neq("status", "cancelled")
@@ -44,12 +44,25 @@ export function useTomorrowPreview(instructorId: string | undefined) {
 
       if (error) throw error;
 
-      const { data: instructor } = await supabase
-        .from("instructors").select("hourly_rate").eq("id", instructorId).maybeSingle();
+      const [{ data: instructor }, postcodeRules] = await Promise.all([
+        supabase.from("instructors").select("hourly_rate").eq("id", instructorId).maybeSingle(),
+        fetchInstructorPostcodeRules(instructorId),
+      ]);
 
       const hourlyRate = instructor?.hourly_rate || 35;
       const totalMinutes = lessons?.reduce((sum, l) => sum + (l.duration_minutes || 0), 0) || 0;
       const totalHours = totalMinutes / 60;
+      const expectedEarnings = (lessons ?? []).reduce((sum, l: any) => sum + computeLessonAmount({
+        durationMinutes: l.duration_minutes || 0,
+        amountDue: l.amount_due,
+        pupilCustomRate: l.pupils?.custom_hourly_rate,
+        pupilCustomRate90: l.pupils?.custom_rate_90min,
+        pupilCustomRate120: l.pupils?.custom_rate_120min,
+        pupilPostcode: l.pupils?.postcode,
+        lessonPostcode: l.pickup_postcode,
+        instructorDefaultRate: hourlyRate,
+        postcodeRules,
+      }), 0);
 
       let hasGaps = false;
       if (lessons && lessons.length > 1) {
