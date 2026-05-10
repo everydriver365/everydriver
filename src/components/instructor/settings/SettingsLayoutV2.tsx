@@ -47,6 +47,7 @@ interface Props { instructorId: string; fallback?: ReactNode; }
 
 export function SettingsLayoutV2({ instructorId, fallback }: Props) {
   const { categoryId } = useParams<{ categoryId?: string }>();
+  const navigate = useNavigate();
   const id = categoryId ?? "account";
   const page = PAGES[id];
 
@@ -54,11 +55,25 @@ export function SettingsLayoutV2({ instructorId, fallback }: Props) {
   // to the previous layout via the fallback (rendered by the hub).
   const isLegacy = !page && SIDEBAR_GROUPS.every(g => g.items.every(i => i.id !== id));
 
+  const handleBack = () => {
+    if (window.history.length > 1) navigate(-1);
+    else navigate("/instructor");
+  };
+
   return (
     <SettingsDirtyProvider>
       <div className="settings-v2 flex" style={{ minHeight: "calc(100vh - 56px)" }}>
         <SettingsSidebar />
         <main className="flex-1 min-w-0" style={{ padding: "24px 28px 80px" }}>
+          <button
+            type="button"
+            onClick={handleBack}
+            className="inline-flex items-center gap-1 text-[13px] text-muted-foreground hover:text-foreground transition-colors"
+            style={{ marginBottom: 14 }}
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Back
+          </button>
           {page ? (
             <>
               <header style={{ marginBottom: 18 }}>
