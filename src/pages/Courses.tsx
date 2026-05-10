@@ -317,6 +317,7 @@ export default function Courses() {
   
   // Mobile load more state
   const [mobileVisibleCount, setMobileVisibleCount] = useState(6);
+  const [postcodeRulesByInstructor, setPostcodeRulesByInstructor] = useState<Record<string, PostcodeRateRule[]>>({});
 
   const handleLoadMore = () => {
     setMobileVisibleCount(prev => Math.min(prev + 6, filteredCourses.length));
