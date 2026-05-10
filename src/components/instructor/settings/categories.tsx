@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 
 import { InstructorDetailsEditor } from "@/components/instructor/InstructorDetailsEditor";
 import { ComplianceTracker } from "@/components/instructor/ComplianceTracker";
+import { QualificationsEditor } from "@/components/instructor/settings/QualificationsEditor";
 import { TestCentresAndExaminersManager } from "@/components/instructor/TestCentresAndExaminersManager";
 import { TermsConditionsEditor } from "@/components/instructor/TermsConditionsEditor";
 import { CancellationPolicyEditor } from "@/components/instructor/CancellationPolicyEditor";
