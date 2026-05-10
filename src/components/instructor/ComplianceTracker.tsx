@@ -60,7 +60,19 @@ export function ComplianceTracker({ instructorId }: ComplianceTrackerProps) {
 
   useEffect(() => {
     fetchComplianceData();
+    fetchLatestCPD();
   }, [instructorId]);
+
+  const fetchLatestCPD = async () => {
+    const { data } = await supabase
+      .from("cpd_log_entries")
+      .select("title, hours, date")
+      .eq("instructor_id", instructorId)
+      .order("date", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (data) setLatestCPD(data as any);
+  };
 
   const fetchComplianceData = async () => {
     setLoading(true);
