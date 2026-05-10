@@ -1,45 +1,29 @@
-## Goal
-Make every control on `/instructor/settings/working-hours` consistent: one sticky "Save all changes" bar, no orphaned inline Save buttons, no missing controls, no runtime hook errors.
+## Plan: Surface "Lesson length, buffer & bank holidays" in the Working hours page
 
-## Scope (this page only)
-1. **Working hours** (`WorkingHoursEditor`)
-2. **Pupil self-service booking** (`PupilBookingSettingsEditor`)
-3. **Google Calendar sync** (`GoogleServiceAccountSetup`) — leave as-is (action-driven, not a form)
-4. **Lesson reminders** (`ReminderSettings`)
-5. **NEW: Lesson length, buffer & bank-holiday** — currently stranded in `AvailabilityPage`, not reachable here
+The section already exists in `categories.tsx` and is pulled into the `working-hours` area in `v3/areas.tsx`, but it currently renders **last** (after Google Calendar sync and Reminders), which buries it. It should sit next to Working hours where it logically belongs.
 
-## Changes
+### Change
 
-### 1. Wire each editor into `SettingsDirtyContext`
-For `WorkingHoursEditor`, `PupilBookingSettingsEditor`, and `ReminderSettings`:
-- Load row → keep `original` + `draft` in state.
-- `dirty = JSON.stringify(draft) !== JSON.stringify(original)` → call `setDirty(key, dirty)`.
-- `register(key, { save, reset })` in an effect; cleanup on unmount.
-- Remove the per-card "Save" button from each component (sticky bar handles it).
-- Keep destructive/instant actions (Disconnect, Sync Now, delete override, day-off quick add) as immediate actions — only field edits flow through the save bar.
+**`src/components/instructor/settings/categories.tsx`** — reorder `schedule.sections` so the new editor appears directly under Working hours:
 
-Keys: `working-hours`, `pupil-booking`, `reminders`.
+1. Working hours
+2. **Lesson length, buffer & bank holidays** ← move up
+3. Pupil self-service booking
+4. Google Calendar sync
+5. Lesson reminders
 
-### 2. Add a 5th section: Lesson length, buffer & bank holidays
-- Extract the "Lesson length & buffer" block from `AvailabilityPage` into a new `LessonLengthBufferEditor` component (same UI, same save logic, wired to `SettingsDirtyContext` with key `lesson-length`).
-- Add it to `categories.tsx > schedule.sections` after `reminders`.
-- `AvailabilityPage` can keep using the same component so the legacy route still works.
+**`src/components/instructor/settings/v3/areas.tsx`** — update the `pulls` array order for `working-hours` to match:
 
-### 3. Fix the "Rendered more hooks than during the previous render" error
-Likely cause: one of the editors early-returns (`if (loading) return …`) before later `useEffect`/`register` calls run. Audit each editor and make sure every hook (including the `register`/`setDirty` effects added in step 1) runs unconditionally before any conditional return.
+```
+[hours, lesson-length, self-service, calendar, reminders]
+```
 
-### 4. Quality fixes while in there
-- `WorkingHoursEditor`: replace the 7-sequential-await weekly save with a single `upsert` array; normalise times to `HH:mm:ss`.
-- `PupilBookingSettingsEditor`: hide the unused `allowed_durations` field (already covered by `instructors.allowed_lesson_lengths`).
-- `ReminderSettings`: extend the reminder-time options to include 06:00, 07:00, 08:00, 09:00 plus existing 10:00–20:00.
+### Verification
 
-## Out of scope
-- Mobile layout changes (per project rule).
-- Google Calendar sync internals.
-- Other settings pages (Credentials, Pricing, etc.).
-- Whether reminder/cron jobs actually fire (separate edge-function audit).
+- Visit `/instructor/settings/working-hours` and confirm the five rows render in the order above.
+- Confirm the editor's fields (default lesson length, buffer minutes, auto-block bank holidays) edit cleanly and trigger the sticky save bar.
 
-## Technical notes
-- Keys must be unique strings; use a stable `register`/cleanup pattern as in `AvailabilityPage` (lines 41–57) to avoid stale closures.
-- `SettingsDirtyContext.saveAll` iterates dirty keys serially — safe for these 4 sections.
-- No DB migration required; all columns already exist.
+### Out of scope
+
+- No changes to `LessonLengthBufferEditor` itself.
+- No changes to other settings pages, mobile layout, or save-bar wiring (already done in the previous step).
