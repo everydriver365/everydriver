@@ -30,6 +30,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useBookingUpsells } from "@/hooks/useBookingUpsells";
 import { resolveHourlyRate, type PostcodeRateRule } from "@/lib/pricing/resolveHourlyRate";
 import { fetchInstructorPostcodeRules } from "@/hooks/useInstructorPostcodeRules";
+import { applyRateModifiers, loadUkBankHolidays, type RateModifiers } from "@/lib/pricing/applyRateModifiers";
 
 
 interface Instructor {
