@@ -37,6 +37,11 @@ function TyreTrackPattern() {
 
 export function Footer() {
   const { logo, logoAlt, logoText, homeLink } = useRouteLogo();
+  const whitelabel = getWhitelabelConfig();
+  const contactPhone = whitelabel?.phone ?? "0800 123 4567";
+  const contactEmail = whitelabel?.email ?? "hello@drivetime.co.uk";
+  const contactArea = whitelabel?.address ?? "Covering all UK postcodes";
+  const copyrightName = whitelabel?.brandName ?? "Drive365";
 
   return (
     <footer className="relative border-t bg-primary text-primary-foreground overflow-hidden">
