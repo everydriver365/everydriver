@@ -36,6 +36,7 @@ import { toast } from "sonner";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
+import { formatUKPostcode } from "@/lib/postcode";
 
 const COURSE_HOURS = [8, 10, 12, 16, 20, 24, 28, 30, 32, 40, 48];
 const LESSON_LENGTHS = [30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330, 360, 390, 420];
