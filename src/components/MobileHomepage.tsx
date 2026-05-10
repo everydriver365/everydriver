@@ -84,7 +84,7 @@ export function MobileHomepage() {
   };
 
   const navItems = [
-    { label: "Home", icon: Home, path: "/drive365" },
+    { label: "Home", icon: Home, path: routeLogo.homeLink },
     { label: "Search", icon: Search, path: "/courses" },
     { label: "Theory", icon: BookOpen, path: "/theory" },
     { label: "FAQs", icon: HelpCircle, path: "/faqs" },
