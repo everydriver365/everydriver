@@ -16,20 +16,7 @@ These cause silent "Failed to save" failures for instructors today.
 
 | Table | UI ops | INSERT | UPDATE | DELETE |
 | --- | --- | --- | --- | --- |
-| `booking_pages` | delete,insert,update | ❌ | ❌ | ❌ |
-| `cover_offer_recipients` | upsert | ❌ | ✅ | ❌ |
-| `gap_offers` | insert,update | ✅ | ❌ | ❌ |
-| `instructor_subscriptions` | insert,update,upsert | ❌ | ❌ | ❌ |
 | `instructor_test_centres` | delete,insert | ❌ | ❌ | ❌ |
-| `mileage_logs` | delete,insert,update | ❌ | ❌ | ❌ |
-| `platform_commissions` | insert | ❌ | ❌ | ❌ |
-| `pupil_reengagement_log` | insert | ❌ | ❌ | ❌ |
-| `school_course_instructors` | delete,insert | ❌ | ❌ | ❌ |
-| `school_franchise_fees` | insert,update | ❌ | ❌ | ❌ |
-| `school_instructors` | delete,insert | ❌ | ❌ | ❌ |
-| `subscription_save_offers` | insert | ❌ | ❌ | ❌ |
-| `tile_health_checks` | insert | ❌ | ❌ | ❌ |
-| `urgent_alerts` | insert,update | ❌ | ✅ | ❌ |
 
 
 ## Intentional — kept restricted on purpose
@@ -38,12 +25,15 @@ Audit logs, system-generated rows, payouts, etc. Instructor reads only.
 
 | Table | UI ops | INSERT | UPDATE | DELETE |
 | --- | --- | --- | --- | --- |
+| `booking_pages` | delete,insert,update | ❌ | ❌ | ❌ |
 | `calendar_sync_queue` | delete,update | ✅ | ✅ | ✅ |
 | `compliance_reminders` | insert | ❌ | ❌ | ❌ |
+| `cover_offer_recipients` | upsert | ❌ | ✅ | ❌ |
 | `data_audit_log` | insert | ✅ | ❌ | ❌ |
 | `driver_timesheets` | — | ❌ | ❌ | ❌ |
 | `followup_log` | insert | ❌ | ❌ | ❌ |
 | `funnel_events` | insert | ✅ | ❌ | ❌ |
+| `gap_offers` | insert,update | ✅ | ❌ | ❌ |
 | `geotab_driver_events` | — | ✅ | ❌ | ❌ |
 | `geotab_fault_codes` | — | ❌ | ❌ | ❌ |
 | `geotab_fuel_usage` | — | ✅ | ❌ | ❌ |
@@ -55,11 +45,13 @@ Audit logs, system-generated rows, payouts, etc. Instructor reads only.
 | `instructor_payouts` | insert | ❌ | ❌ | ❌ |
 | `instructor_premium_placements` | — | ❌ | ✅ | ❌ |
 | `instructor_reports` | insert | ✅ | ✅ | ✅ |
+| `instructor_subscriptions` | insert,update,upsert | ❌ | ❌ | ❌ |
 | `instructor_weekly_reports` | upsert | ✅ | ✅ | ✅ |
 | `lesson_cancellation_stats` | — | ✅ | ✅ | ✅ |
 | `lesson_history` | delete,insert,update | ✅ | ✅ | ✅ |
 | `lesson_reminders_log` | — | ❌ | ❌ | ❌ |
 | `live_pupil_positions` | update | ✅ | ✅ | ✅ |
+| `mileage_logs` | delete,insert,update | ❌ | ❌ | ❌ |
 | `movement_alerts` | update | ❌ | ✅ | ❌ |
 | `mtd_submission_log` | — | ✅ | ✅ | ✅ |
 | `on_my_way_notifications` | insert | ✅ | ✅ | ✅ |
@@ -68,6 +60,14 @@ Audit logs, system-generated rows, payouts, etc. Instructor reads only.
 | `payment_intents` | insert,update | ❌ | ❌ | ❌ |
 | `payment_link_tracking` | update | ✅ | ❌ | ❌ |
 | `payment_reminder_log` | insert | ❌ | ❌ | ❌ |
+| `platform_commissions` | insert | ❌ | ❌ | ❌ |
+| `pupil_reengagement_log` | insert | ❌ | ❌ | ❌ |
+| `school_course_instructors` | delete,insert | ❌ | ❌ | ❌ |
+| `school_franchise_fees` | insert,update | ❌ | ❌ | ❌ |
+| `school_instructors` | delete,insert | ❌ | ❌ | ❌ |
+| `subscription_save_offers` | insert | ❌ | ❌ | ❌ |
+| `tile_health_checks` | insert | ❌ | ❌ | ❌ |
+| `urgent_alerts` | insert,update | ❌ | ✅ | ❌ |
 
 
 ## Read-only by design (no UI writes detected)
@@ -92,4 +92,4 @@ Audit logs, system-generated rows, payouts, etc. Instructor reads only.
 117 tables.
 
 ---
-Critical count: **14**
+Critical count: **1**
