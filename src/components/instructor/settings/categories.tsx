@@ -39,6 +39,7 @@ import { WorkingHoursEditor } from "@/components/admin/WorkingHoursEditor";
 import { GoogleServiceAccountSetup } from "@/components/instructor/GoogleServiceAccountSetup";
 import { ReminderSettings } from "@/components/instructor/ReminderSettings";
 import { PupilBookingSettingsEditor } from "@/components/instructor/PupilBookingSettingsEditor";
+import { LessonLengthBufferEditor } from "@/components/instructor/settings/LessonLengthBufferEditor";
 import { CallAnsweringSettings } from "@/components/instructor/CallAnsweringSettings";
 import NotificationPreferencesPanel from "@/components/instructor/notifications/NotificationPreferencesPanel";
 import { PushNotificationSettings } from "@/components/instructor/PushNotificationSettings";
@@ -287,6 +288,12 @@ export function useSettingsCategories(): SettingsCategory[] {
           title: "Lesson reminders",
           description: "Automatic SMS, email and WhatsApp reminders",
           render: () => <ReminderSettings instructorId={id} />,
+        },
+        {
+          id: "lesson-length",
+          title: "Lesson length, buffer & bank holidays",
+          description: "Default duration, gap between lessons and bank-holiday auto-block",
+          render: () => <LessonLengthBufferEditor instructorId={id} />,
         },
       ],
     },

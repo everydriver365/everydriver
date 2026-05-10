@@ -16,6 +16,7 @@ interface Ctx {
 }
 
 const SettingsDirtyContext = createContext<Ctx | null>(null);
+export const SettingsDirtyContextRaw = SettingsDirtyContext;
 
 export function SettingsDirtyProvider({ children }: { children: ReactNode }) {
   const entries = useRef<Record<string, DirtyEntry>>({});

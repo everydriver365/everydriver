@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Calendar, Clock, X, RefreshCw, ShoppingCart, Save } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { useOptionalSettingsDirty } from "@/components/instructor/settings/useOptionalSettingsDirty";
 
 interface PupilBookingSettingsEditorProps {
   instructorId: string;
@@ -64,34 +65,46 @@ export function PupilBookingSettingsEditor({ instructorId }: PupilBookingSetting
 
   const [localSettings, setLocalSettings] = useState<BookingSettings | null>(null);
   const current = localSettings || settings || DEFAULT_SETTINGS;
+  const { register, setDirty } = useOptionalSettingsDirty();
 
   const updateField = <K extends keyof BookingSettings>(key: K, value: BookingSettings[K]) => {
     setLocalSettings(prev => ({ ...(prev || current), [key]: value }));
   };
 
-  const saveMutation = useMutation({
-    mutationFn: async () => {
-      const toSave = localSettings || current;
-      const { id, ...settingsData } = toSave as BookingSettings & { id?: string };
+  const saveSettings = async () => {
+    const toSave = localSettings || current;
+    const { id, ...settingsData } = toSave as BookingSettings & { id?: string };
 
-      const { error } = await supabase
-        .from('instructor_booking_settings')
-        .upsert({
-          instructor_id: instructorId,
-          ...settingsData,
-        }, { onConflict: 'instructor_id' });
+    const { error } = await supabase
+      .from('instructor_booking_settings')
+      .upsert({
+        instructor_id: instructorId,
+        ...settingsData,
+      }, { onConflict: 'instructor_id' });
 
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['instructor-booking-settings'] });
-      toast({ title: "Settings saved", description: "Pupil booking settings updated" });
-      setLocalSettings(null);
-    },
-    onError: () => {
+    if (error) {
       toast({ title: "Error", description: "Failed to save settings", variant: "destructive" });
-    },
-  });
+      throw error;
+    }
+    queryClient.invalidateQueries({ queryKey: ['instructor-booking-settings'] });
+    setLocalSettings(null);
+  };
+
+  const dirty = localSettings !== null;
+
+  useEffect(() => {
+    setDirty("pupil-booking", dirty);
+    return () => setDirty("pupil-booking", false);
+  }, [dirty, setDirty]);
+
+  useEffect(() => {
+    register("pupil-booking", {
+      save: saveSettings,
+      reset: () => setLocalSettings(null),
+    });
+    return () => register("pupil-booking", null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [localSettings, settings, register]);
 
   if (isLoading) {
     return (
@@ -101,7 +114,7 @@ export function PupilBookingSettingsEditor({ instructorId }: PupilBookingSetting
     );
   }
 
-  const hasChanges = localSettings !== null;
+  
 
   return (
     <div className="space-y-6">
@@ -256,21 +269,7 @@ export function PupilBookingSettingsEditor({ instructorId }: PupilBookingSetting
         />
       </div>
 
-      {/* Save Button */}
-      {hasChanges && (
-        <Button
-          onClick={() => saveMutation.mutate()}
-          disabled={saveMutation.isPending}
-          className="w-full"
-        >
-          {saveMutation.isPending ? (
-            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-          ) : (
-            <Save className="h-4 w-4 mr-2" />
-          )}
-          Save Settings
-        </Button>
-      )}
+      {/* Save handled by the sticky settings save bar */}
     </div>
   );
 }

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useOptionalSettingsDirty } from "@/components/instructor/settings/useOptionalSettingsDirty";
 
 interface ReminderSettingsProps {
   instructorId: string;
@@ -22,6 +23,10 @@ interface ReminderPreferences {
 }
 
 const timeOptions = [
+  { value: "06:00:00", label: "6:00 AM" },
+  { value: "07:00:00", label: "7:00 AM" },
+  { value: "08:00:00", label: "8:00 AM" },
+  { value: "09:00:00", label: "9:00 AM" },
   { value: "10:00:00", label: "10:00 AM" },
   { value: "12:00:00", label: "12:00 PM" },
   { value: "14:00:00", label: "2:00 PM" },
@@ -41,10 +46,13 @@ export function ReminderSettings({ instructorId }: ReminderSettingsProps) {
     morning_briefing: false,
     auto_reengagement: false,
   });
+  const [original, setOriginal] = useState<ReminderPreferences | null>(null);
+  const { register, setDirty } = useOptionalSettingsDirty();
 
   useEffect(() => {
     if (!instructorId) return;
     fetchPreferences();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [instructorId]);
 
   const fetchPreferences = async () => {
@@ -58,16 +66,14 @@ export function ReminderSettings({ instructorId }: ReminderSettingsProps) {
 
       if (error) throw error;
 
-      if (data) {
-        setPreferences({
-          sms_enabled: data.sms_enabled ?? true,
-          email_enabled: data.email_enabled ?? true,
-          push_enabled: data.push_enabled ?? true,
-          reminder_time: data.reminder_time ?? "18:00:00",
-          morning_briefing: false,
-          auto_reengagement: false,
-        });
-      }
+      let next: ReminderPreferences = {
+        sms_enabled: data?.sms_enabled ?? true,
+        email_enabled: data?.email_enabled ?? true,
+        push_enabled: data?.push_enabled ?? true,
+        reminder_time: data?.reminder_time ?? "18:00:00",
+        morning_briefing: false,
+        auto_reengagement: false,
+      };
 
       // Fetch instructor-level settings
       const { data: instrData } = await supabase
@@ -77,12 +83,15 @@ export function ReminderSettings({ instructorId }: ReminderSettingsProps) {
         .single();
 
       if (instrData) {
-        setPreferences(p => ({
-          ...p,
+        next = {
+          ...next,
           morning_briefing: instrData.morning_briefing_enabled ?? false,
           auto_reengagement: instrData.auto_reengagement_enabled ?? false,
-        }));
+        };
       }
+
+      setPreferences(next);
+      setOriginal(next);
     } catch (error) {
       console.error('Error fetching reminder preferences:', error);
     } finally {
@@ -114,14 +123,31 @@ export function ReminderSettings({ instructorId }: ReminderSettingsProps) {
         .eq("id", instructorId);
 
       if (error) throw error;
-      toast.success('Reminder settings saved');
+      setOriginal(preferences);
     } catch (error) {
       console.error('Error saving preferences:', error);
       toast.error('Failed to save settings');
+      throw error;
     } finally {
       setSaving(false);
     }
   };
+
+  const dirty = !!original && JSON.stringify(preferences) !== JSON.stringify(original);
+
+  useEffect(() => {
+    setDirty("reminders", dirty);
+    return () => setDirty("reminders", false);
+  }, [dirty, setDirty]);
+
+  useEffect(() => {
+    register("reminders", {
+      save: handleSave,
+      reset: () => { if (original) setPreferences(original); },
+    });
+    return () => register("reminders", null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [preferences, original, register]);
 
   if (loading) {
     return (
@@ -273,15 +299,7 @@ export function ReminderSettings({ instructorId }: ReminderSettingsProps) {
           </div>
         </div>
 
-        {/* Save button */}
-        <Button onClick={handleSave} disabled={saving} className="w-full">
-          {saving ? (
-            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-          ) : (
-            <Save className="h-4 w-4 mr-2" />
-          )}
-          Save Settings
-        </Button>
+        {/* Save handled by the sticky settings save bar */}
       </CardContent>
     </Card>
   );
