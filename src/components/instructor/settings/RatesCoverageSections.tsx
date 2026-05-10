@@ -152,98 +152,92 @@ export function PostcodeRatesSection({ instructorId }: { instructorId: string })
   const [originalRules, setOriginalRules] = useState<PostcodeRule[]>([]);
   const [draftRules, setDraftRules] = useState<PostcodeRule[]>([]);
   const [loading, setLoading] = useState(true);
-  const { register, setDirty } = useSettingsDirty();
+  const [busyId, setBusyId] = useState<string | null>(null);
+
+  const reload = async () => {
+    const { data } = await supabase
+      .from("instructor_postcode_rates")
+      .select("id, outward_code, hourly_rate")
+      .eq("instructor_id", instructorId)
+      .order("outward_code", { ascending: true });
+    const mapped: PostcodeRule[] = (data ?? []).map((r: any) => ({
+      id: r.id,
+      outward_code: r.outward_code,
+      hourly_rate: r.hourly_rate == null ? null : Number(r.hourly_rate),
+      _persisted: true,
+    }));
+    setOriginalRules(mapped);
+    setDraftRules(mapped);
+  };
 
   useEffect(() => {
-    (async () => {
-      const { data } = await supabase
-        .from("instructor_postcode_rates")
-        .select("id, outward_code, hourly_rate")
-        .eq("instructor_id", instructorId)
-        .order("outward_code", { ascending: true });
-      const mapped: PostcodeRule[] = (data ?? []).map((r: any) => ({
-        id: r.id,
-        outward_code: r.outward_code,
-        hourly_rate: r.hourly_rate == null ? null : Number(r.hourly_rate),
-        _persisted: true,
-      }));
-      setOriginalRules(mapped);
-      setDraftRules(mapped);
-      setLoading(false);
-    })();
+    (async () => { await reload(); setLoading(false); })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [instructorId]);
 
-  const codes = draftRules.map(r => (r.outward_code || "").trim().toUpperCase());
-  const dupes = new Set(codes.filter((c, i) => c && codes.indexOf(c) !== i));
-  const ruleErrors = draftRules.map(r => {
+  const validateRule = (r: PostcodeRule, others: PostcodeRule[]): string | null => {
     const code = (r.outward_code || "").trim().toUpperCase();
     if (!code) return "Postcode required";
     if (!isValidOutwardCode(code)) return "Invalid postcode";
-    if (dupes.has(code)) return "Duplicate";
+    if (others.some(o => o.id !== r.id && (o.outward_code || "").trim().toUpperCase() === code)) return "Duplicate";
     if (r.hourly_rate == null || r.hourly_rate <= 0) return "Rate must be > 0";
     return null;
-  });
-  const valid = ruleErrors.every(e => e === null);
+  };
 
-  const dirty = JSON.stringify(originalRules.map(r => ({ ...r, _persisted: undefined }))) !==
-                JSON.stringify(draftRules.map(r => ({ ...r, _persisted: undefined })));
-  useEffect(() => { setDirty("postcode-rates", dirty); }, [dirty, setDirty]);
+  const updateLocal = (id: string, patch: Partial<PostcodeRule>) =>
+    setDraftRules(prev => prev.map(r => r.id === id ? { ...r, ...patch } : r));
 
-  useEffect(() => {
-    register("postcode-rates", {
-      save: async () => {
-        if (!valid) {
-          toast({ title: "Fix postcode rate errors before saving", variant: "destructive" });
-          throw new Error("invalid postcode rules");
-        }
-        const draftById = new Map(draftRules.map(r => [r.id, r]));
-        const originalById = new Map(originalRules.map(r => [r.id, r]));
-        const toDelete = originalRules.filter(r => !draftById.has(r.id)).map(r => r.id);
-        const toInsert = draftRules.filter(r => !r._persisted).map(r => ({
-          instructor_id: instructorId,
-          outward_code: r.outward_code.trim().toUpperCase(),
-          hourly_rate: r.hourly_rate as number,
-        }));
-        const toUpdate = draftRules.filter(r => {
-          if (!r._persisted) return false;
-          const o = originalById.get(r.id);
-          return o && (o.outward_code !== r.outward_code.trim().toUpperCase() || Number(o.hourly_rate) !== Number(r.hourly_rate));
-        });
+  const isRowDirty = (r: PostcodeRule) => {
+    if (!r._persisted) return true;
+    const o = originalRules.find(x => x.id === r.id);
+    if (!o) return true;
+    return o.outward_code !== (r.outward_code || "").trim().toUpperCase()
+        || Number(o.hourly_rate) !== Number(r.hourly_rate);
+  };
 
-        if (toDelete.length) {
-          const { error } = await supabase.from("instructor_postcode_rates").delete().in("id", toDelete);
-          if (error) { toast({ title: "Couldn't remove", description: error.message, variant: "destructive" }); throw error; }
-        }
-        if (toInsert.length) {
-          const { error } = await supabase.from("instructor_postcode_rates").insert(toInsert);
-          if (error) { toast({ title: "Couldn't add", description: error.message, variant: "destructive" }); throw error; }
-        }
-        for (const r of toUpdate) {
-          const { error } = await supabase.from("instructor_postcode_rates").update({
-            outward_code: r.outward_code.trim().toUpperCase(),
-            hourly_rate: r.hourly_rate as number,
-          }).eq("id", r.id);
-          if (error) { toast({ title: "Couldn't update", description: error.message, variant: "destructive" }); throw error; }
-        }
+  const saveRow = async (rule: PostcodeRule) => {
+    const err = validateRule(rule, draftRules);
+    if (err) { toast({ title: err, variant: "destructive" }); return; }
+    setBusyId(rule.id);
+    try {
+      const payload = {
+        outward_code: rule.outward_code.trim().toUpperCase(),
+        hourly_rate: rule.hourly_rate as number,
+      };
+      if (rule._persisted) {
+        const { error } = await supabase.from("instructor_postcode_rates").update(payload).eq("id", rule.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("instructor_postcode_rates").insert({ instructor_id: instructorId, ...payload });
+        if (error) throw error;
+      }
+      await reload();
+      toast({ title: "Saved" });
+    } catch (e: any) {
+      toast({ title: "Couldn't save", description: e?.message, variant: "destructive" });
+    } finally {
+      setBusyId(null);
+    }
+  };
 
-        const { data } = await supabase
-          .from("instructor_postcode_rates")
-          .select("id, outward_code, hourly_rate")
-          .eq("instructor_id", instructorId)
-          .order("outward_code", { ascending: true });
-        const mapped: PostcodeRule[] = (data ?? []).map((r: any) => ({
-          id: r.id, outward_code: r.outward_code,
-          hourly_rate: r.hourly_rate == null ? null : Number(r.hourly_rate),
-          _persisted: true,
-        }));
-        setOriginalRules(mapped);
-        setDraftRules(mapped);
-        toast({ title: "Saved" });
-      },
-      reset: () => setDraftRules(originalRules),
-    });
-    return () => register("postcode-rates", null);
-  }, [draftRules, originalRules, valid, register, instructorId]);
+  const deleteRow = async (rule: PostcodeRule) => {
+    if (!rule._persisted) {
+      setDraftRules(prev => prev.filter(r => r.id !== rule.id));
+      return;
+    }
+    if (!confirm(`Delete postcode rate for ${rule.outward_code}?`)) return;
+    setBusyId(rule.id);
+    try {
+      const { error } = await supabase.from("instructor_postcode_rates").delete().eq("id", rule.id);
+      if (error) throw error;
+      await reload();
+      toast({ title: "Removed" });
+    } catch (e: any) {
+      toast({ title: "Couldn't remove", description: e?.message, variant: "destructive" });
+    } finally {
+      setBusyId(null);
+    }
+  };
 
   if (loading) return <div className="text-xs text-muted-foreground">Loading…</div>;
 
@@ -261,41 +255,49 @@ export function PostcodeRatesSection({ instructorId }: { instructorId: string })
         </div>
       ) : (
         <div className="flex flex-col gap-2 mb-3">
-          {draftRules.map((rule, idx) => {
-            const err = ruleErrors[idx];
+          {draftRules.map((rule) => {
+            const dirtyRow = isRowDirty(rule);
+            const err = dirtyRow ? validateRule(rule, draftRules) : null;
+            const busy = busyId === rule.id;
             return (
               <div key={rule.id} className="grid items-start gap-2"
-                   style={{ gridTemplateColumns: "minmax(110px, 160px) minmax(120px, 1fr) auto" }}>
+                   style={{ gridTemplateColumns: "minmax(110px, 160px) minmax(120px, 1fr) auto auto" }}>
                 <input
                   value={rule.outward_code}
                   maxLength={4}
                   placeholder="SO22"
-                  onChange={e => {
-                    const v = e.target.value.replace(/\s+/g, "").toUpperCase().slice(0, 4);
-                    setDraftRules(prev => prev.map(r => r.id === rule.id ? { ...r, outward_code: v } : r));
-                  }}
+                  disabled={busy}
+                  onChange={e => updateLocal(rule.id, { outward_code: e.target.value.replace(/\s+/g, "").toUpperCase().slice(0, 4) })}
                   className="rounded-lg border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2"
                   style={{ borderColor: "hsl(var(--border) / 0.6)" }}
                 />
                 <input
                   type="number" inputMode="decimal" step="0.50" min="0"
                   placeholder="£/hour"
+                  disabled={busy}
                   value={rule.hourly_rate ?? ""}
-                  onChange={e => {
-                    const v = e.target.value === "" ? null : Number(e.target.value);
-                    setDraftRules(prev => prev.map(r => r.id === rule.id ? { ...r, hourly_rate: v } : r));
-                  }}
+                  onChange={e => updateLocal(rule.id, { hourly_rate: e.target.value === "" ? null : Number(e.target.value) })}
                   className="rounded-lg border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2"
                   style={{ borderColor: "hsl(var(--border) / 0.6)" }}
                 />
                 <button
                   type="button"
-                  aria-label="Remove postcode rule"
-                  onClick={() => setDraftRules(prev => prev.filter(r => r.id !== rule.id))}
-                  className="rounded-lg border bg-transparent px-3 h-9 text-sm text-muted-foreground hover:bg-muted"
+                  disabled={busy || !dirtyRow || !!err}
+                  onClick={() => saveRow(rule)}
+                  className="rounded-lg px-3 h-9 text-sm font-medium disabled:opacity-40"
+                  style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
+                >
+                  {rule._persisted ? "Save" : "Add"}
+                </button>
+                <button
+                  type="button"
+                  aria-label="Delete postcode rule"
+                  disabled={busy}
+                  onClick={() => deleteRow(rule)}
+                  className="rounded-lg border bg-transparent px-3 h-9 text-sm text-muted-foreground hover:bg-muted disabled:opacity-40"
                   style={{ borderColor: "hsl(var(--border) / 0.6)" }}
                 >
-                  ×
+                  Delete
                 </button>
                 {err && (
                   <div style={{ gridColumn: "1 / -1", color: "hsl(0 72% 50%)" }} className="text-xs">
