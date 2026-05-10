@@ -22,6 +22,7 @@ import weeklyLessonsIcon from "@/assets/weekly-lessons-icon.jpg";
 import earlierTestGuaranteedBadge from "@/assets/free-retest-badge.png";
 import referFriendsImage from "@/assets/refer-friends.png";
 import { useDomainBranding } from "@/hooks/useDomainBranding";
+import { getWhitelabelConfig } from "@/lib/whitelabel";
 
 export function MobileHomepage() {
   const [postcode, setPostcode] = useState("");
@@ -42,6 +43,8 @@ export function MobileHomepage() {
   const location = useLocation();
   const { toast } = useToast();
   const branding = useDomainBranding();
+  const whitelabel = getWhitelabelConfig();
+  const isWinchester = whitelabel?.host === "winchesterdrivingschool.co.uk";
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -150,6 +153,24 @@ export function MobileHomepage() {
           style={{ maxHeight: '55vh' }}
         />
 
+        {/* Winchester: phone + Book Now overlay on hero right */}
+        {isWinchester && (
+          <div className="absolute top-3 right-3 z-20 flex flex-col items-end gap-2">
+            <a
+              href="tel:07767693276"
+              className="flex items-center gap-1.5 rounded-full bg-white/90 backdrop-blur px-3 py-1.5 text-xs font-semibold text-primary shadow-md hover:bg-white"
+            >
+              <Phone className="h-3.5 w-3.5" />
+              07767 693276
+            </a>
+            <Link
+              to="/i/ken-d/courses"
+              className="rounded-full bg-amber-400 px-4 py-2 text-xs font-bold text-primary shadow-md hover:bg-amber-300"
+            >
+              Book Now
+            </Link>
+          </div>
+        )}
         {/* Search Card - Overlapping Hero Bottom */}
         <div className="absolute bottom-0 left-0 right-0 translate-y-1/2 px-4 z-10">
           <div className="relative bg-primary rounded-2xl p-5 pt-4 shadow-xl">
