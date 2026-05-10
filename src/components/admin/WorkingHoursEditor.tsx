@@ -66,6 +66,7 @@ interface WorkingHoursEditorProps {
 
 export function WorkingHoursEditor({ instructorId }: WorkingHoursEditorProps) {
   const [workingHours, setWorkingHours] = useState<WorkingHour[]>([]);
+  const [originalHours, setOriginalHours] = useState<WorkingHour[]>([]);
   const [dateOverrides, setDateOverrides] = useState<DateOverride[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedStartDate, setSelectedStartDate] = useState<Date | undefined>();
@@ -77,9 +78,31 @@ export function WorkingHoursEditor({ instructorId }: WorkingHoursEditorProps) {
     end_time: "17:00",
   });
 
+  const { register, setDirty } = useOptionalSettingsDirty();
+
   useEffect(() => {
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [instructorId]);
+
+  const dirty =
+    originalHours.length > 0 &&
+    JSON.stringify(workingHours) !== JSON.stringify(originalHours);
+
+  // Always-mounted hooks (run regardless of loading state) so hook order is stable.
+  useEffect(() => {
+    setDirty("working-hours", dirty);
+    return () => setDirty("working-hours", false);
+  }, [dirty, setDirty]);
+
+  useEffect(() => {
+    register("working-hours", {
+      save: saveWorkingHours,
+      reset: () => setWorkingHours(originalHours),
+    });
+    return () => register("working-hours", null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [workingHours, originalHours, register]);
 
   const fetchData = async () => {
     setIsLoading(true);
@@ -93,26 +116,26 @@ export function WorkingHoursEditor({ instructorId }: WorkingHoursEditorProps) {
 
       if (hoursError) throw hoursError;
 
+      let mapped: WorkingHour[];
       // Initialize with default hours if none exist
       if (!hours || hours.length === 0) {
-        const defaultHours = DAYS_OF_WEEK.map((day) => ({
+        mapped = DAYS_OF_WEEK.map((day) => ({
           day_of_week: day.value,
           start_time: "09:00",
           end_time: "17:00",
           is_active: day.value >= 1 && day.value <= 5, // Mon-Fri active by default
         }));
-        setWorkingHours(defaultHours);
       } else {
-        setWorkingHours(
-          hours.map((h) => ({
-            id: h.id,
-            day_of_week: h.day_of_week,
-            start_time: h.start_time.slice(0, 5),
-            end_time: h.end_time.slice(0, 5),
-            is_active: h.is_active,
-          }))
-        );
+        mapped = hours.map((h) => ({
+          id: h.id,
+          day_of_week: h.day_of_week,
+          start_time: h.start_time.slice(0, 5),
+          end_time: h.end_time.slice(0, 5),
+          is_active: h.is_active,
+        }));
       }
+      setWorkingHours(mapped);
+      setOriginalHours(mapped);
 
       // Fetch date overrides
       const { data: overrides, error: overridesError } = await supabase
@@ -156,33 +179,25 @@ export function WorkingHoursEditor({ instructorId }: WorkingHoursEditorProps) {
 
   const saveWorkingHours = async () => {
     try {
-      for (const hour of workingHours) {
-        if (hour.id) {
-          // Update existing
-          await supabase
-            .from("instructor_working_hours")
-            .update({
-              start_time: hour.start_time,
-              end_time: hour.end_time,
-              is_active: hour.is_active,
-            })
-            .eq("id", hour.id);
-        } else {
-          // Insert new
-          await supabase.from("instructor_working_hours").insert({
-            instructor_id: instructorId,
-            day_of_week: hour.day_of_week,
-            start_time: hour.start_time,
-            end_time: hour.end_time,
-            is_active: hour.is_active,
-          });
-        }
-      }
-      toast.success("Working hours saved");
-      fetchData();
+      const rows = workingHours.map((h) => ({
+        ...(h.id ? { id: h.id } : {}),
+        instructor_id: instructorId,
+        day_of_week: h.day_of_week,
+        start_time: `${h.start_time}:00`,
+        end_time: `${h.end_time}:00`,
+        is_active: h.is_active,
+      }));
+
+      const { error } = await supabase
+        .from("instructor_working_hours")
+        .upsert(rows, { onConflict: "instructor_id,day_of_week" });
+
+      if (error) throw error;
+      await fetchData();
     } catch (error) {
       console.error("Error saving working hours:", error);
       toast.error("Failed to save working hours");
+      throw error;
     }
   };
 
