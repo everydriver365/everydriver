@@ -26,6 +26,8 @@ export interface ScheduleLesson {
   status: string;
   paymentStatus: string;
   amountDue: number;
+  /** Resolved £ amount honoring postcode overrides + pupil custom rate. */
+  effectiveAmount: number;
   isFirstLesson?: boolean;
   isLastLesson?: boolean;
 }
