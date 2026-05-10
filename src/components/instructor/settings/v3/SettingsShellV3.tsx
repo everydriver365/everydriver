@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ChevronRight, Search } from "lucide-react";
 import { SettingsDirtyProvider } from "@/components/instructor/settings/SettingsDirtyContext";
@@ -32,6 +32,14 @@ export function SettingsShellV3({ instructorId: _ }: Props) {
     }
     return {};
   }, [itemId]);
+
+  // Keep the URL in sync with the resolved V3 id so the breadcrumb (and
+  // sidebar active state) always reflects the real item/group.
+  useEffect(() => {
+    if (categoryId && categoryId !== itemId) {
+      navigate(`/instructor/settings/${itemId}`, { replace: true });
+    }
+  }, [categoryId, itemId, navigate]);
 
   const filteredGroups = useMemo(() => {
     const q = search.trim().toLowerCase();
