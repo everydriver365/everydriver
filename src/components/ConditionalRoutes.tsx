@@ -42,6 +42,10 @@ export function ConditionalReviews() {
     const slug = getInstructorSubdomain();
     return <MiniWebsiteReviews subdomainSlug={slug} />;
   }
+  const whitelabel = getWhitelabelConfig();
+  if (whitelabel) {
+    return <MiniWebsiteReviews subdomainSlug={whitelabel.instructorSlug} />;
+  }
   // Main site doesn't have a /reviews page
   return null;
 }
