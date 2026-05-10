@@ -53,6 +53,13 @@ Key information:
 - Instructor: ${instructor.name}
 - Phone: ${instructor.phone || "Contact via the website"}
 - Hourly rate: ${instructor.hourly_rate ? `£${instructor.hourly_rate}/hour` : "Please enquire for pricing"}
+- Surcharges: ${[
+  Number(instructor.weekend_surcharge_amount) > 0 ? `+£${Number(instructor.weekend_surcharge_amount).toFixed(2)}/hr at weekends` : null,
+  Number(instructor.bank_holiday_surcharge_amount) > 0 ? `+£${Number(instructor.bank_holiday_surcharge_amount).toFixed(2)}/hr on bank holidays` : null,
+  Number(instructor.odd_hours_surcharge_amount) > 0 && instructor.odd_hours_start && instructor.odd_hours_end
+    ? `+£${Number(instructor.odd_hours_surcharge_amount).toFixed(2)}/hr off-peak (${instructor.odd_hours_start}–${instructor.odd_hours_end})`
+    : null,
+].filter(Boolean).join("; ") || "None"}
 - Transmission: ${instructor.car_type || "Manual"}
 - Car: ${instructor.car_make ? `${instructor.car_make} ${instructor.car_model || ""}`.trim() : "Modern dual-control vehicle"}
 - Areas covered: ${areasText}
