@@ -14,7 +14,7 @@ export interface SidebarItem {
   id: string;          // category id used in the URL
   sectionId?: string;  // optional sub-section anchor (currently unused for routing)
   label: string;
-  icon: TablerIcon;
+  icon: AnyIcon;
 }
 export interface SidebarGroup {
   id: string;
