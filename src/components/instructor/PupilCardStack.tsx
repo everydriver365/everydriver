@@ -846,6 +846,25 @@ export function PupilCardStack({
               <span style={{ fontSize: 11, color: "#8E8E93", fontWeight: 500 }}>
                 {hasDebt ? "Owes" : hasCredit ? "Credit" : "Settled"}
               </span>
+              {hasDebt && (
+                <div className="flex items-center" style={{ gap: 8, marginTop: 4 }}>
+                  <button
+                    type="button"
+                    onClick={handleSendReminder}
+                    style={{ fontSize: 11, fontWeight: 600, color: "#C8434F", textDecoration: "underline", background: "transparent", border: "none", padding: 0, cursor: "pointer" }}
+                  >
+                    Remind
+                  </button>
+                  <span style={{ fontSize: 11, color: "#D1D1D6" }}>·</span>
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); setShowPayLinkSheet(true); }}
+                    style={{ fontSize: 11, fontWeight: 600, color: "#2B7BC8", textDecoration: "underline", background: "transparent", border: "none", padding: 0, cursor: "pointer" }}
+                  >
+                    Pay link
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
