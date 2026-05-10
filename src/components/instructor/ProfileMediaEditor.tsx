@@ -99,6 +99,6 @@ export function ProfileMediaEditor({ instructorId }: Props) {
           Save video URL
         </Button>
       </div>
-
+    </div>
   );
 }
