@@ -6,7 +6,7 @@
 // scheduled_lessons (added by the migration).
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-import { shouldSendToInstructor } from "../_shared/notify-gate.ts";
+import { shouldSendToInstructor, enqueueOutbox } from "../_shared/notify-gate.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -74,6 +74,17 @@ Deno.serve(async (req) => {
           metadata: { lesson_id: l.id, pupil_id: l.pupil_id, lead_minutes: lead },
         });
 
+        const pushTitle = "Lesson ending soon";
+        const pushBody = lead === 0
+          ? "Lesson is ending now — tap to mark complete."
+          : `Lesson ends in ${lead} min — tap to mark complete.`;
+        const pushPayload = {
+          title: pushTitle,
+          body: pushBody,
+          tag: `eol-${l.id}`,
+          data: { type: "lesson_eol", lesson_id: l.id, url: `/instructor/lessons/${l.id}` },
+        };
+
         if (gate.allow) {
           await fetch(`${SUPABASE_URL}/functions/v1/send-push-notification`, {
             method: "POST",
@@ -86,16 +97,20 @@ Deno.serve(async (req) => {
               category: "lesson",
               importance: "normal",
               bypassGate: true, // we've already gated above
-              notification: {
-                title: "Lesson ending soon",
-                body: lead === 0
-                  ? "Lesson is ending now — tap to mark complete."
-                  : `Lesson ends in ${lead} min — tap to mark complete.`,
-                tag: `eol-${l.id}`,
-                data: { type: "lesson_eol", lesson_id: l.id, url: `/instructor/lessons/${l.id}` },
-              },
+              notification: pushPayload,
             }),
           }).catch((e) => console.error("[send-eol-reminders] push fetch", e));
+        } else if (gate.reason === "deferred" && gate.defer_until) {
+          // Queue through the same gate's outbox so hourly/daily cadence batches it.
+          await enqueueOutbox(admin, {
+            instructor_id: s.instructor_id,
+            category: "lesson",
+            importance: "normal",
+            title: pushTitle,
+            body: pushBody,
+            payload: { notification: pushPayload, lesson_id: l.id, kind: "lesson_eol" },
+            deliver_at: gate.defer_until,
+          });
         } else {
           console.log(`[send-eol-reminders] gate blocked push for lesson ${l.id}: ${gate.reason}`);
         }
