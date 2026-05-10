@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { ChevronLeft } from "lucide-react";
 import { SettingsSidebar, SIDEBAR_GROUPS } from "./SettingsSidebar";
 import { SettingsDirtyProvider } from "./SettingsDirtyContext";
 import { SettingsSaveBar } from "./SettingsSaveBar";
