@@ -1501,6 +1501,9 @@ export default function PremiumPupilProfile() {
             {DocumentsCard}
             {NotesCard}
           </Section>
+          <Section title="Scheduling">
+            {SchedulingCard}
+          </Section>
           <Section title="Details">
             {DetailsCard}
           </Section>
