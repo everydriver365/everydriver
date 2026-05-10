@@ -929,6 +929,8 @@ export default function PremiumPupilProfile() {
             currentCustomRate={customRate60 ?? null}
             currentCustomRate90={customRate90 ?? null}
             currentCustomRate120={customRate120 ?? null}
+            pupilPostcode={(pupil as any).postcode ?? null}
+            instructorId={instructorId}
             onSaved={() => queryClient.invalidateQueries({ queryKey: ["pupil-profile", pupil.id, instructorId] })}
           />
         </div>
