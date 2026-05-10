@@ -33,6 +33,7 @@ const bookingSchema = z.object({
   courseType: z.string().trim().min(1).max(100),
   courseHours: z.number().min(1).max(200),
   totalPrice: z.number().min(0).max(100000),
+  platformFee: z.number().min(0).max(100).optional(),
   slots: z.array(bookingSlotSchema).max(100).default([]),
   paymentType: z.enum(['full', 'deposit']).optional(),
   amountPaid: z.number().min(0).max(100000).optional(),
@@ -189,7 +190,24 @@ serve(async (req) => {
         .eq("id", pupil.id);
     }
 
-    // 5. Record payment_history for free bookings (amount=0)
+    // 5. Record platform fee (£1 per booking) — separate from school skim & Service Fee
+    const platformFeeAmount = booking.platformFee ?? 0;
+    if (platformFeeAmount > 0) {
+      try {
+        await supabase.from("platform_fees").insert({
+          pupil_id: pupil.id,
+          instructor_id: booking.instructorId,
+          amount: platformFeeAmount,
+          currency: "GBP",
+          source: "booking",
+          notes: `Booking: ${booking.courseType} (${booking.courseHours}h)`,
+        });
+      } catch (feeErr) {
+        console.error("Platform fee record error (non-fatal):", feeErr);
+      }
+    }
+
+    // 6. Record payment_history for free bookings (amount=0)
     if (booking.totalPrice === 0) {
       try {
         await supabase.from("payment_history").insert({
