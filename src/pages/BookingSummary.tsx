@@ -321,9 +321,9 @@ export default function BookingSummary() {
       setBaseHourlyRate(hourlyRate);
       setSchoolSkimAmount(schoolSkim);
       setRateModifiers({
-        weekend_surcharge_pct: (instructor as any).weekend_surcharge_pct ?? 0,
-        bank_holiday_surcharge_pct: (instructor as any).bank_holiday_surcharge_pct ?? 0,
-        odd_hours_surcharge_pct: (instructor as any).odd_hours_surcharge_pct ?? 0,
+        weekend_surcharge_amount: (instructor as any).weekend_surcharge_amount ?? 0,
+        bank_holiday_surcharge_amount: (instructor as any).bank_holiday_surcharge_amount ?? 0,
+        odd_hours_surcharge_amount: (instructor as any).odd_hours_surcharge_amount ?? 0,
         odd_hours_start: (instructor as any).odd_hours_start ?? null,
         odd_hours_end: (instructor as any).odd_hours_end ?? null,
       });
