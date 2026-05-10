@@ -1,5 +1,6 @@
 import { useNavigate, useParams } from "react-router-dom";
 import {
+  IconBolt,
   IconUser, IconShieldLock, IconBell,
   IconCar, IconCertificate, IconPhoto, IconCoin, IconCalendar,
   IconBook, IconCreditCard, IconDownload,
