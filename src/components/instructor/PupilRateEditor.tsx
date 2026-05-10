@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useInstructorPostcodeRules } from "@/hooks/useInstructorPostcodeRules";
+import { resolveHourlyRate, extractOutwardCode } from "@/lib/pricing/resolveHourlyRate";
 
 interface PupilRateEditorProps {
   pupilId: string;
@@ -14,8 +16,13 @@ interface PupilRateEditorProps {
   currentCustomRate?: number | null;
   currentCustomRate90?: number | null;
   currentCustomRate120?: number | null;
+  /** Pupil postcode (used to apply per-postcode override rates) */
+  pupilPostcode?: string | null;
+  /** Instructor id (used to load per-postcode override rules) */
+  instructorId?: string;
   onSaved?: () => void;
 }
+
 
 interface DurationRow {
   key: "60" | "90" | "120";
