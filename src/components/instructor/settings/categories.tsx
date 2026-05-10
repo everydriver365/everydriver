@@ -289,6 +289,12 @@ export function useSettingsCategories(): SettingsCategory[] {
           description: "Automatic SMS, email and WhatsApp reminders",
           render: () => <ReminderSettings instructorId={id} />,
         },
+        {
+          id: "lesson-length",
+          title: "Lesson length, buffer & bank holidays",
+          description: "Default duration, gap between lessons and bank-holiday auto-block",
+          render: () => <LessonLengthBufferEditor instructorId={id} />,
+        },
       ],
     },
     {
