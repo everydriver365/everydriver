@@ -5,9 +5,11 @@ import {
 } from "@tabler/icons-react";
 import { useQuickSettings } from "@/hooks/useQuickSettings";
 import { QuickToggleRow } from "../QuickToggleRow";
+import { useInstructorPhoneNumber, type RoutingMode } from "@/hooks/useInstructorPhoneNumber";
 
 export function QuickSettingsPage({ instructorId }: { instructorId: string }) {
   const { data, loading, update } = useQuickSettings(instructorId);
+  const { data: phone, update: updatePhone } = useInstructorPhoneNumber(instructorId);
 
   if (loading || !data) {
     return <div className="sv2-card" style={{ color: "var(--color-text-tertiary)", fontSize: 13 }}>Loading…</div>;
