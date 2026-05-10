@@ -14024,6 +14024,7 @@ export type Database = {
           total_lessons_for_rewards: number | null
           total_trips: number | null
           transmission_type: string | null
+          travel_time_minutes: number | null
           updated_at: string
           weekly_driving_score: number | null
           what3words: string | null
@@ -14119,6 +14120,7 @@ export type Database = {
           total_lessons_for_rewards?: number | null
           total_trips?: number | null
           transmission_type?: string | null
+          travel_time_minutes?: number | null
           updated_at?: string
           weekly_driving_score?: number | null
           what3words?: string | null
@@ -14214,6 +14216,7 @@ export type Database = {
           total_lessons_for_rewards?: number | null
           total_trips?: number | null
           transmission_type?: string | null
+          travel_time_minutes?: number | null
           updated_at?: string
           weekly_driving_score?: number | null
           what3words?: string | null
