@@ -9,6 +9,10 @@ import { Button } from "@/components/ui/button";
 
 import { InstructorDetailsEditor } from "@/components/instructor/InstructorDetailsEditor";
 import { ProfileBasicsEditor } from "@/components/instructor/ProfileBasicsEditor";
+import { ProfileMediaEditor } from "@/components/instructor/ProfileMediaEditor";
+import { AccountSecurityPanel } from "@/components/instructor/AccountSecurityPanel";
+import { AccountDangerZone } from "@/components/instructor/AccountDangerZone";
+import { CompactStandardsCheck } from "@/components/instructor/CompactStandardsCheck";
 import { ComplianceTracker } from "@/components/instructor/ComplianceTracker";
 import { QualificationsEditor } from "@/components/instructor/settings/QualificationsEditor";
 import { TestCentresAndExaminersManager } from "@/components/instructor/TestCentresAndExaminersManager";
@@ -81,16 +85,40 @@ export function useSettingsCategories(): SettingsCategory[] {
           ),
         },
         {
+          id: "media",
+          title: "Profile media",
+          description: "Banner image, car photo, welcome video and ADI certificate",
+          render: () => <ProfileMediaEditor instructorId={id} />,
+        },
+        {
           id: "qualifications",
           title: "Qualifications & credentials",
           description: "ADI badge, DBS, licence and insurance documents",
           render: () => <QualificationsEditor instructorId={id} />,
         },
         {
+          id: "standards-check",
+          title: "DVSA Standards Check",
+          description: "Date, result, trigger points and driving test link",
+          render: () => <CompactStandardsCheck instructorId={id} />,
+        },
+        {
           id: "compliance",
           title: "Vehicle docs & CPD",
           description: "MOT, road tax and CPD logging",
           render: () => <ComplianceTracker instructorId={id} />,
+        },
+        {
+          id: "security",
+          title: "Login & security",
+          description: "Change email, password and sign out everywhere",
+          render: () => <AccountSecurityPanel />,
+        },
+        {
+          id: "danger",
+          title: "Plan, data & danger zone",
+          description: "Plan & billing, data export, delete account",
+          render: () => <AccountDangerZone instructorId={id} />,
         },
       ],
     },
