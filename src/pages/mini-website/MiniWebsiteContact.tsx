@@ -99,14 +99,9 @@ export default function MiniWebsiteContact({ subdomainSlug }: MiniWebsiteContact
   const headingColor = (instructor.website_heading_color === "#ffffff" || instructor.website_heading_color === "#FFFFFF") ? undefined : instructor.website_heading_color;
   const textColor = (instructor.website_text_color === "#ffffff" || instructor.website_text_color === "#FFFFFF") ? undefined : instructor.website_text_color;
 
-  const CONTACT_OVERRIDES: Record<string, { email?: string; phone?: string; location?: string }> = {
-    "ken-d": { email: "info@drive365.co.uk", phone: "07506 782870", location: "Winchester, Southampton, Portsmouth and all surrounding areas" },
-  };
-  const contactOverride = CONTACT_OVERRIDES[slug] || {};
-
-  const displayPhone = contactOverride.phone || instructor.phone;
-  const displayEmail = contactOverride.email || instructor.email;
-  const displayLocation = contactOverride.location || instructor.home_postcode;
+  const displayPhone = instructor.phone;
+  const displayEmail = instructor.email;
+  const displayLocation = instructor.location_name || instructor.home_postcode;
 
   const socialLinks = [
     { url: instructor.facebook_url, icon: Facebook, label: "Facebook" },
