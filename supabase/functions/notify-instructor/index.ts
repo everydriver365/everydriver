@@ -327,6 +327,9 @@ serve(async (req) => {
         console.error("Error sending SMS:", smsError);
         results.smsError = smsError instanceof Error ? smsError.message : "Unknown error";
       }
+    } else if (!smsGate.allow) {
+      console.log(`[notify-instructor] sms gate blocked: ${smsGate.reason}`);
+      results.smsError = `gate:${smsGate.reason}`;
     } else {
       if (!twilioAccountSid || !twilioAuthToken || !twilioPhoneNumber) {
         console.log("Twilio credentials not configured - skipping SMS");
