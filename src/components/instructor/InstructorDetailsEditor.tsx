@@ -63,6 +63,8 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
     isConnected: boolean;
     lastSeenAt: string | null;
   }>({ isConnected: false, lastSeenAt: null });
+  const [trackingMode, setTrackingMode] = useState<"off" | "phone" | "hardware">("off");
+  const [savingMode, setSavingMode] = useState(false);
 
   useEffect(() => {
     fetchDetails();
