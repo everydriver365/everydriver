@@ -116,7 +116,7 @@ serve(async (req) => {
     }
 
     // SMS via Twilio (always send as backup)
-    if (TWILIO_SID && TWILIO_TOKEN && (TWILIO_FROM || TWILIO_MSG_SID) && instructor.phone) {
+    if (smsGate.allow && TWILIO_SID && TWILIO_TOKEN && (TWILIO_FROM || TWILIO_MSG_SID) && instructor.phone) {
       try {
         const params = new URLSearchParams({
           To: instructor.phone,
