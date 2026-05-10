@@ -506,6 +506,12 @@ export function useSettingsCategories(): SettingsCategory[] {
           description: "Charge a different hourly rate for specific postcode areas",
           render: () => <PostcodeRatesSection instructorId={id} />,
         },
+        {
+          id: "rate-modifiers",
+          title: "Surcharges (weekend, bank holiday, off-peak)",
+          description: "Charge more on weekends, UK bank holidays, or outside normal hours",
+          render: () => <RateModifiersSection instructorId={id} />,
+        },
       ],
     },
   ];
