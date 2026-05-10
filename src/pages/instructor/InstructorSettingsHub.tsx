@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { SettingsLayout } from "@/components/instructor/settings/SettingsLayout";
-import { SettingsLayoutV2 } from "@/components/instructor/settings/SettingsLayoutV2";
+import { SettingsShellV3 } from "@/components/instructor/settings/v3/SettingsShellV3";
 import { useSettingsCategories } from "@/components/instructor/settings/categories";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
@@ -9,12 +9,11 @@ import { useInstructorAuth } from "@/context/InstructorAuthContext";
 /**
  * Unified Settings hub.
  *
- * Desktop: a single sidebar (Account / Teaching / Activity / More) plus
- * legacy categories appended as additional groups, with the right pane
- * swapping content based on the selected section. No more drop-outs to
- * different shells.
+ * Desktop: new V3 shell — single sidebar with 6 grouped areas, hero summary
+ * card per item, and a stack of section cards in the right pane.
  *
- * Mobile: keeps the existing drill-down for now.
+ * Mobile: keeps the existing drill-down for now (per project rule:
+ * mobile layouts are not modified unless explicitly requested).
  */
 export default function InstructorSettingsHub() {
   const [search, setSearch] = useState("");
@@ -25,7 +24,7 @@ export default function InstructorSettingsHub() {
   if (!isMobile && instructor?.id) {
     return (
       <InstructorPortalLayout>
-        <SettingsLayoutV2 instructorId={instructor.id} legacyCategories={categories} />
+        <SettingsShellV3 instructorId={instructor.id} />
       </InstructorPortalLayout>
     );
   }
