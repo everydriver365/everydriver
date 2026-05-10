@@ -693,32 +693,6 @@ export function QualificationsEditor({ instructorId }: Props) {
         </div>
       </div>
 
-      {/* Footer save bar */}
-      {dirty && (
-        <div
-          className="fixed bottom-0 left-0 right-0 z-30 px-6 py-3 flex items-center justify-end gap-2 bg-white/95 backdrop-blur"
-          style={{ borderTop: "0.5px solid hsl(var(--border))" }}
-        >
-          <button
-            type="button"
-            onClick={() => setForm(original)}
-            className="h-9 px-4 text-[13px] bg-white hover:bg-muted/40"
-            style={{ border: "0.5px solid hsl(var(--border))", borderRadius: 10, fontWeight: 500 }}
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            onClick={save}
-            disabled={saving}
-            className="h-9 px-4 text-[13px] inline-flex items-center gap-2 disabled:opacity-60"
-            style={{ background: "#111827", color: "#FFFFFF", borderRadius: 10, fontWeight: 500 }}
-          >
-            {saving && <Loader2 size={13} className="animate-spin" />}
-            Save changes
-          </button>
-        </div>
-      )}
     </div>
   );
 }
