@@ -65,34 +65,46 @@ export function PupilBookingSettingsEditor({ instructorId }: PupilBookingSetting
 
   const [localSettings, setLocalSettings] = useState<BookingSettings | null>(null);
   const current = localSettings || settings || DEFAULT_SETTINGS;
+  const { register, setDirty } = useOptionalSettingsDirty();
 
   const updateField = <K extends keyof BookingSettings>(key: K, value: BookingSettings[K]) => {
     setLocalSettings(prev => ({ ...(prev || current), [key]: value }));
   };
 
-  const saveMutation = useMutation({
-    mutationFn: async () => {
-      const toSave = localSettings || current;
-      const { id, ...settingsData } = toSave as BookingSettings & { id?: string };
+  const saveSettings = async () => {
+    const toSave = localSettings || current;
+    const { id, ...settingsData } = toSave as BookingSettings & { id?: string };
 
-      const { error } = await supabase
-        .from('instructor_booking_settings')
-        .upsert({
-          instructor_id: instructorId,
-          ...settingsData,
-        }, { onConflict: 'instructor_id' });
+    const { error } = await supabase
+      .from('instructor_booking_settings')
+      .upsert({
+        instructor_id: instructorId,
+        ...settingsData,
+      }, { onConflict: 'instructor_id' });
 
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['instructor-booking-settings'] });
-      toast({ title: "Settings saved", description: "Pupil booking settings updated" });
-      setLocalSettings(null);
-    },
-    onError: () => {
+    if (error) {
       toast({ title: "Error", description: "Failed to save settings", variant: "destructive" });
-    },
-  });
+      throw error;
+    }
+    queryClient.invalidateQueries({ queryKey: ['instructor-booking-settings'] });
+    setLocalSettings(null);
+  };
+
+  const dirty = localSettings !== null;
+
+  useEffect(() => {
+    setDirty("pupil-booking", dirty);
+    return () => setDirty("pupil-booking", false);
+  }, [dirty, setDirty]);
+
+  useEffect(() => {
+    register("pupil-booking", {
+      save: saveSettings,
+      reset: () => setLocalSettings(null),
+    });
+    return () => register("pupil-booking", null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [localSettings, settings, register]);
 
   if (isLoading) {
     return (
