@@ -359,7 +359,7 @@ export default function InstructorOnboarding() {
           phone: data.phone,
           bio: data.bio,
           profile_image_url: data.profile_image_url,
-          home_postcode: data.home_postcode,
+          home_postcode: formatUKPostcode(data.home_postcode) || data.home_postcode,
           radius_miles: data.radius_miles,
           car_type: data.car_type,
           car_make: data.car_make,
