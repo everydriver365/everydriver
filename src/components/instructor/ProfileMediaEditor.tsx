@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Loader2, Car as CarIcon, Video, Award, ImagePlus } from "lucide-react";
+import { Loader2, Car as CarIcon, Video, ImagePlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
