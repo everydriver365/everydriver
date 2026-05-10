@@ -60,14 +60,31 @@ const OWNER_PATTERNS = [
   /instructor_id\s*=\s*\(\s*SELECT[^)]*instructors[^)]*auth_user_id\s*=\s*auth\.uid/i,
 ];
 const isOwnerExpr = (s: string) => OWNER_PATTERNS.some((re) => re.test(s));
+const isPermissive = (s: string) => /^\s*true\s*$/i.test(s);
 
 function hasOwnerPolicy(table: string, op: "INSERT" | "UPDATE" | "DELETE"): boolean {
   return policies.some((p) => {
     if (p.table !== table) return false;
     if (p.cmd !== op && p.cmd !== "ALL") return false;
-    // INSERT only checks `with_check`, others also check `qual`.
-    if (op === "INSERT") return isOwnerExpr(p.check);
-    return isOwnerExpr(p.qual) || isOwnerExpr(p.check);
+    // For ALL, with_check defaults to qual when empty.
+    // For UPDATE, with_check also defaults to qual when empty.
+    // For INSERT (single-cmd), only with_check applies.
+    // For DELETE, only qual applies.
+    let effectiveCheck = p.check;
+    let effectiveUsing = p.qual;
+    if (p.cmd === "ALL" || op === "UPDATE") {
+      if (!effectiveCheck) effectiveCheck = p.qual;
+    }
+    if (op === "INSERT") {
+      return isOwnerExpr(effectiveCheck) || isPermissive(effectiveCheck);
+    }
+    if (op === "DELETE") {
+      return isOwnerExpr(effectiveUsing) || isPermissive(effectiveUsing);
+    }
+    // UPDATE
+    const usingOk = isOwnerExpr(effectiveUsing) || isPermissive(effectiveUsing);
+    const checkOk = isOwnerExpr(effectiveCheck) || isPermissive(effectiveCheck) || !effectiveCheck;
+    return usingOk && checkOk;
   });
 }
 
