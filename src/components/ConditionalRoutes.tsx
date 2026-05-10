@@ -1,4 +1,5 @@
 import { isInstructorSubdomain, getInstructorSubdomain } from "@/components/DomainRouter";
+import { getWhitelabelConfig } from "@/lib/whitelabel";
 import About from "@/pages/About";
 import Contact from "@/pages/Contact";
 import MiniWebsiteAbout from "@/pages/mini-website/MiniWebsiteAbout";
@@ -40,6 +41,10 @@ export function ConditionalReviews() {
   if (isInstructorSubdomain()) {
     const slug = getInstructorSubdomain();
     return <MiniWebsiteReviews subdomainSlug={slug} />;
+  }
+  const whitelabel = getWhitelabelConfig();
+  if (whitelabel) {
+    return <MiniWebsiteReviews subdomainSlug={whitelabel.instructorSlug} />;
   }
   // Main site doesn't have a /reviews page
   return null;

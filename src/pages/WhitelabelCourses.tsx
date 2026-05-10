@@ -32,6 +32,7 @@ export default function WhitelabelCourses() {
   const [availableFrom, setAvailableFrom] = useState<string | null>(null);
   const [lookupError, setLookupError] = useState<string | null>(null);
   const [mobileVisibleCount, setMobileVisibleCount] = useState(6);
+  const [didJumpToAvailableFrom, setDidJumpToAvailableFrom] = useState(false);
 
   // Resolve slug → instructor id
   useEffect(() => {
@@ -80,6 +81,22 @@ export default function WhitelabelCourses() {
     "all",
     instructorId === undefined ? null : instructorId,
   );
+
+  // If the instructor has a future available_from, open the calendar on that month.
+  useEffect(() => {
+    if (didJumpToAvailableFrom || !availableFrom) return;
+    const fromDate = new Date(availableFrom);
+    if (isNaN(fromDate.getTime())) return;
+    if (fromDate.getTime() <= Date.now()) {
+      setDidJumpToAvailableFrom(true);
+      return;
+    }
+    const targetMonth = format(fromDate, "yyyy-MM");
+    if (targetMonth !== selectedMonth) {
+      setSelectedMonth(targetMonth);
+    }
+    setDidJumpToAvailableFrom(true);
+  }, [availableFrom, didJumpToAvailableFrom, selectedMonth, setSelectedMonth]);
 
   const handlePickDate = (d: Date) => {
     const targetMonth = format(d, "yyyy-MM");

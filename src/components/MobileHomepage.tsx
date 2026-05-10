@@ -86,14 +86,13 @@ export function MobileHomepage() {
     });
   };
 
-  const slug = whitelabel?.instructorSlug ?? "ken-d";
   const navItems = isWinchester
     ? [
-        { label: "Home", icon: Home, path: `/i/${slug}` },
-        { label: "Courses", icon: Search, path: `/i/${slug}/courses` },
-        { label: "Theory", icon: BookOpen, path: `/i/${slug}/theory` },
-        { label: "Reviews", icon: Star, path: `/i/${slug}/reviews` },
-        { label: "Tests", icon: Calendar, path: `/i/${slug}/tests` },
+        { label: "Home", icon: Home, path: "/" },
+        { label: "Courses", icon: Search, path: "/courses" },
+        { label: "Theory", icon: BookOpen, path: "/theory" },
+        { label: "Reviews", icon: Star, path: "/reviews" },
+        { label: "Contact", icon: Phone, path: "/contact" },
       ]
     : [
         { label: "Home", icon: Home, path: "/drive365" },
@@ -156,7 +155,7 @@ export function MobileHomepage() {
               07767 693276
             </a>
             <Link
-              to="/i/ken-d/courses"
+              to="/courses"
               className="rounded-full bg-amber-400 px-4 py-2 text-xs font-bold text-primary shadow-md hover:bg-amber-300"
             >
               Book Now
