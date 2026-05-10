@@ -16,6 +16,12 @@ export interface CoreSlot {
 
 export interface TaggedConflict extends CoreSlot {
   kind: ConflictKind;
+  /**
+   * Per-conflict buffer override in minutes (e.g. a pupil's travel_time_minutes).
+   * When set, this REPLACES the instructor's default buffer (TRAVEL_FALLBACK_MIN
+   * is still added on top). When undefined, the default `bufferMinutes` is used.
+   */
+  padOverrideMin?: number;
 }
 
 export type RejectReason =
@@ -72,7 +78,7 @@ export function inTimeOfDay(startMin: number, tod: TimeOfDay = "any") {
  */
 export function buildDayConflicts(
   dateStr: string,
-  lessons: { start_time: string; duration_minutes: number }[],
+  lessons: { start_time: string; duration_minutes: number; pupil_travel_min?: number | null }[],
   blocks: { start_datetime: string; end_datetime: string }[],
   events: { start_time: string; end_time: string }[],
 ): TaggedConflict[] {
@@ -80,7 +86,12 @@ export function buildDayConflicts(
 
   for (const l of lessons) {
     const s = toMinutes(l.start_time);
-    out.push({ start: s, end: s + (l.duration_minutes || 60), kind: "lesson" });
+    out.push({
+      start: s,
+      end: s + (l.duration_minutes || 60),
+      kind: "lesson",
+      padOverrideMin: l.pupil_travel_min ?? undefined,
+    });
   }
 
   const clip = (sIso: string, eIso: string) => {
@@ -118,8 +129,11 @@ export function classifyConflict(
   c: TaggedConflict,
   padMin: number,
 ): RejectReason | null {
+  const effectivePad = c.padOverrideMin != null
+    ? c.padOverrideMin + TRAVEL_FALLBACK_MIN
+    : padMin;
   const direct = slotStart < c.end && slotEnd > c.start;
-  const padded = slotStart < c.end + padMin && slotEnd > c.start - padMin;
+  const padded = slotStart < c.end + effectivePad && slotEnd > c.start - effectivePad;
   if (!padded) return null;
   if (direct) {
     if (c.kind === "lesson") return "overlap_lesson";
