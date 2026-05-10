@@ -50,6 +50,7 @@ export function ComplianceTracker({ instructorId }: ComplianceTrackerProps) {
   const [saving, setSaving] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [showCPDLog, setShowCPDLog] = useState(false);
+  const [latestCPD, setLatestCPD] = useState<{ title: string; hours: number; date: string } | null>(null);
   const [formData, setFormData] = useState<ComplianceData>({
     car_mot_expiry: "",
     car_tax_expiry: "",
@@ -59,7 +60,19 @@ export function ComplianceTracker({ instructorId }: ComplianceTrackerProps) {
 
   useEffect(() => {
     fetchComplianceData();
+    fetchLatestCPD();
   }, [instructorId]);
+
+  const fetchLatestCPD = async () => {
+    const { data } = await supabase
+      .from("cpd_log_entries")
+      .select("title, hours, date")
+      .eq("instructor_id", instructorId)
+      .order("date", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (data) setLatestCPD(data as any);
+  };
 
   const fetchComplianceData = async () => {
     setLoading(true);
@@ -211,6 +224,17 @@ export function ComplianceTracker({ instructorId }: ComplianceTrackerProps) {
           <p className="text-xs text-muted-foreground">
             {Math.max(0, (data?.cpd_year_target || 35) - (data?.cpd_hours_logged || 0))}h remaining this year
           </p>
+          {latestCPD && (
+            <div className="mt-2 flex items-center justify-between rounded-lg border bg-muted/30 px-3 py-2 text-xs">
+              <div className="min-w-0 flex-1">
+                <p className="font-medium truncate">{latestCPD.title}</p>
+                <p className="text-muted-foreground">
+                  Last logged · {format(parseISO(latestCPD.date), "d MMM yyyy")}
+                </p>
+              </div>
+              <span className="ml-2 font-semibold text-primary">{latestCPD.hours}h</span>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -313,7 +337,7 @@ export function ComplianceTracker({ instructorId }: ComplianceTrackerProps) {
           </DialogHeader>
           <CPDLogManager 
             instructorId={instructorId} 
-            onUpdate={fetchComplianceData}
+            onUpdate={() => { fetchComplianceData(); fetchLatestCPD(); }}
           />
         </DialogContent>
       </Dialog>
