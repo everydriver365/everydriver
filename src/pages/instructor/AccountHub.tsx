@@ -15,7 +15,7 @@ import { ComplianceTracker } from "@/components/instructor/ComplianceTracker";
 import { InstructorDetailsEditor } from "@/components/instructor/InstructorDetailsEditor";
 import { AccountSettings } from "@/components/instructor/AccountSettings";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
-import { NotificationPreferencesPanel } from "@/components/instructor/notifications/NotificationPreferencesPanel";
+import NotificationPreferencesPanel from "@/components/instructor/notifications/NotificationPreferencesPanel";
 import { PushNotificationSettings } from "@/components/instructor/PushNotificationSettings";
 
 interface InstructorProfileRow {
