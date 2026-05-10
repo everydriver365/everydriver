@@ -102,7 +102,11 @@ export function InstructorCoursesManager({ instructorId }: InstructorCoursesMana
           c.id === `tmp-${template.course_hours}` ? data : c
         ));
       }
-      toast.success(nextActive ? `${template.course_name} enabled` : `${template.course_name} disabled`);
+      toast.success(
+        nextActive
+          ? `${template.course_name} enabled — pupils can now book it`
+          : `${template.course_name} disabled — hidden from pupil search`
+      );
     } catch (error) {
       console.error("Error toggling course:", error);
       toast.error("Failed to update course");
