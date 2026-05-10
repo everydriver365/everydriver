@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ChevronLeft, Search } from "lucide-react";
+import { ChevronRight, Search } from "lucide-react";
 import { SettingsDirtyProvider } from "@/components/instructor/settings/SettingsDirtyContext";
 import { SettingsSaveBar } from "@/components/instructor/settings/SettingsSaveBar";
-import { AREA_GROUPS, useAreaSections, LEGACY_ID_MAP, ALL_ITEM_IDS, type AreaItem } from "./areas";
+import { AREA_GROUPS, useAreaSections, LEGACY_ID_MAP, ALL_ITEM_IDS, type AreaItem, type AreaGroup } from "./areas";
 
 interface Props {
   instructorId: string;
@@ -25,12 +25,12 @@ export function SettingsShellV3({ instructorId: _ }: Props) {
     ? requested
     : (LEGACY_ID_MAP[requested] ?? "profile");
 
-  const activeItem = useMemo<AreaItem | undefined>(() => {
+  const { activeItem, activeGroup } = useMemo<{ activeItem?: AreaItem; activeGroup?: AreaGroup }>(() => {
     for (const g of AREA_GROUPS) {
       const found = g.items.find(i => i.id === itemId);
-      if (found) return found;
+      if (found) return { activeItem: found, activeGroup: g };
     }
-    return undefined;
+    return {};
   }, [itemId]);
 
   const filteredGroups = useMemo(() => {
@@ -140,13 +140,51 @@ export function SettingsShellV3({ instructorId: _ }: Props) {
         {/* Detail pane */}
         <main className="flex-1 min-w-0">
           <div className="max-w-[880px] mx-auto px-6 py-6 pb-24">
-            <button
-              type="button"
-              onClick={() => navigate("/instructor")}
-              className="inline-flex items-center gap-1 text-[13px] text-muted-foreground hover:text-foreground transition-colors mb-3"
-            >
-              <ChevronLeft className="h-4 w-4" /> Back to dashboard
-            </button>
+            <nav aria-label="Breadcrumb" className="mb-3">
+              <ol className="flex items-center flex-wrap gap-1 text-[13px] text-muted-foreground">
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => navigate("/instructor")}
+                    className="hover:text-foreground transition-colors"
+                  >
+                    Dashboard
+                  </button>
+                </li>
+                <li aria-hidden><ChevronRight className="h-3.5 w-3.5" /></li>
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => navigate("/instructor/settings")}
+                    className="hover:text-foreground transition-colors"
+                  >
+                    Settings
+                  </button>
+                </li>
+                {activeGroup && (
+                  <>
+                    <li aria-hidden><ChevronRight className="h-3.5 w-3.5" /></li>
+                    <li>
+                      <button
+                        type="button"
+                        onClick={() => activeGroup.items[0] && navigate(`/instructor/settings/${activeGroup.items[0].id}`)}
+                        className="hover:text-foreground transition-colors"
+                      >
+                        {activeGroup.label}
+                      </button>
+                    </li>
+                  </>
+                )}
+                {activeItem && (
+                  <>
+                    <li aria-hidden><ChevronRight className="h-3.5 w-3.5" /></li>
+                    <li aria-current="page" className="text-foreground font-medium">
+                      {activeItem.label}
+                    </li>
+                  </>
+                )}
+              </ol>
+            </nav>
 
             {activeItem ? (
               <ItemDetail item={activeItem} />
