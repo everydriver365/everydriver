@@ -315,7 +315,7 @@ export function WorkingHoursEditor({ instructorId }: WorkingHoursEditorProps) {
     }
     
     setWorkingHours(newHours);
-    toast.success("Preset applied - remember to save!");
+    toast.success("Preset applied");
   };
 
   const addDayOff = async (actionId: string) => {
