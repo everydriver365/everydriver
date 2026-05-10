@@ -177,7 +177,7 @@ export function useInstructorReportsData(
           .lte("recorded_at", tax.end.toISOString()),
         supabase
           .from("scheduled_lessons")
-          .select("duration_minutes, lesson_type, amount_due")
+          .select("duration_minutes, lesson_type, amount_due, pickup_postcode, pupils!inner (postcode, custom_hourly_rate, custom_rate_90min, custom_rate_120min)")
           .eq("instructor_id", instructorId!)
           .is("deleted_at", null)
           .neq("status", "cancelled")
