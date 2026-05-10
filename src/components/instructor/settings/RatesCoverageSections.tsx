@@ -174,7 +174,12 @@ export function PostcodeRatesSection({ instructorId }: { instructorId: string })
   };
 
   useEffect(() => {
-    (async () => { await reload(); setLoading(false); })();
+    (async () => {
+      await reload();
+      const { data } = await supabase.from("instructors").select("hourly_rate").eq("id", instructorId).single();
+      setDefaultRate(data?.hourly_rate == null ? null : Number(data.hourly_rate));
+      setLoading(false);
+    })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [instructorId]);
 
