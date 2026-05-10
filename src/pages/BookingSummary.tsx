@@ -829,8 +829,18 @@ export default function BookingSummary() {
     );
   }
 
-  const { instructor, courseName, totalPrice, courseImageUrl, courseDescription, features, template } = courseDetails;
+  const { instructor, courseName, courseImageUrl, courseDescription, features, template } = courseDetails;
   const brandColour = instructor.brand_colour || "#1e3a5f";
+
+  // Resolve effective hourly rate honoring per-postcode override entered by the learner.
+  const effectiveHourlyRate = resolveHourlyRate({
+    pupilPostcode: pupilPostcode || null,
+    instructorDefaultRate: baseHourlyRate,
+    postcodeRules,
+  }) ?? baseHourlyRate;
+  const totalPrice = (hours * effectiveHourlyRate) + schoolSkimAmount;
+  const postcodeOverrideActive = effectiveHourlyRate !== baseHourlyRate;
+
 
   // Enquiry-only mode: short-circuit the entire payment/scheduling flow
   if (bookingMode === "enquiry_only") {
