@@ -16,6 +16,12 @@ export interface CoreSlot {
 
 export interface TaggedConflict extends CoreSlot {
   kind: ConflictKind;
+  /**
+   * Per-conflict buffer override in minutes (e.g. a pupil's travel_time_minutes).
+   * When set, this REPLACES the instructor's default buffer (TRAVEL_FALLBACK_MIN
+   * is still added on top). When undefined, the default `bufferMinutes` is used.
+   */
+  padOverrideMin?: number;
 }
 
 export type RejectReason =
