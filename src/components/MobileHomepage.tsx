@@ -86,31 +86,23 @@ export function MobileHomepage() {
     });
   };
 
-  const navItems = [{
-    label: "Home",
-    icon: Home,
-    path: "/drive365"
-  }, {
-    label: "Search",
-    icon: Search,
-    path: "/courses"
-  }, {
-    label: "Theory",
-    icon: BookOpen,
-    path: "/theory"
-  }, {
-    label: "FAQs",
-    icon: HelpCircle,
-    path: "/faqs"
-  }, {
-    label: "Help",
-    icon: MessageCircle,
-    path: "/help"
-  }, {
-    label: "Benefits",
-    icon: Gift,
-    path: "/benefits"
-  }];
+  const slug = whitelabel?.instructorSlug ?? "ken-d";
+  const navItems = isWinchester
+    ? [
+        { label: "Home", icon: Home, path: `/i/${slug}` },
+        { label: "Courses", icon: Search, path: `/i/${slug}/courses` },
+        { label: "Theory", icon: BookOpen, path: `/i/${slug}/theory` },
+        { label: "Reviews", icon: Star, path: `/i/${slug}/reviews` },
+        { label: "Tests", icon: Calendar, path: `/i/${slug}/tests` },
+      ]
+    : [
+        { label: "Home", icon: Home, path: "/drive365" },
+        { label: "Search", icon: Search, path: "/courses" },
+        { label: "Theory", icon: BookOpen, path: "/theory" },
+        { label: "FAQs", icon: HelpCircle, path: "/faqs" },
+        { label: "Help", icon: MessageCircle, path: "/help" },
+        { label: "Benefits", icon: Gift, path: "/benefits" },
+      ];
 
   return (
     <div className="learner-app min-h-screen bg-background">
