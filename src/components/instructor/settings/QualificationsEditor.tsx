@@ -242,7 +242,7 @@ export function QualificationsEditor({ instructorId }: Props) {
   const [form, setForm] = useState<Form>(EMPTY);
   const [original, setOriginal] = useState<Form>(EMPTY);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  
 
   useEffect(() => {
     (async () => {
@@ -522,6 +522,7 @@ export function QualificationsEditor({ instructorId }: Props) {
               onChange={(u) => set("adi_certificate_url", u)}
             />
           </Field>
+          <SectionFooter sectionKey="adi" />
         </CredentialCard>
 
         {/* DBS */}
@@ -558,6 +559,7 @@ export function QualificationsEditor({ instructorId }: Props) {
               onChange={(u) => set("dbs_certificate_url", u)}
             />
           </Field>
+          <SectionFooter sectionKey="dbs" />
         </CredentialCard>
 
         {/* Driving licence */}
@@ -586,6 +588,7 @@ export function QualificationsEditor({ instructorId }: Props) {
               />
             </Field>
           </div>
+          <SectionFooter sectionKey="licence" />
         </CredentialCard>
 
         {/* Insurance */}
@@ -630,6 +633,7 @@ export function QualificationsEditor({ instructorId }: Props) {
               onChange={(u) => set("insurance_certificate_url", u)}
             />
           </Field>
+          <SectionFooter sectionKey="insurance" />
         </CredentialCard>
 
         {/* Experience + extras */}
@@ -681,6 +685,7 @@ export function QualificationsEditor({ instructorId }: Props) {
               })}
             </div>
           </div>
+          <SectionFooter sectionKey="experience" />
         </section>
 
         {/* Disclaimer */}
