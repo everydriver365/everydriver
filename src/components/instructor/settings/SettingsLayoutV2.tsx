@@ -14,6 +14,7 @@ import { CredentialsPage } from "./pages/CredentialsPage";
 import { MediaListingPage } from "./pages/MediaListingPage";
 import { RatesCoveragePage } from "./pages/RatesCoveragePage";
 import { AvailabilityPage } from "./pages/AvailabilityPage";
+import { PhoneNumberPage } from "./pages/PhoneNumberPage";
 import { CpdPage } from "./pages/CpdPage";
 import { PlanBillingPage } from "./pages/PlanBillingPage";
 import { DataExportPage } from "./pages/DataExportPage";
@@ -36,6 +37,7 @@ const PAGES: Record<string, PageDef> = {
   "media-listing": { title: "Media & listing",  subtitle: "Photos, video and how learners see your public profile",                          render: id => <MediaListingPage instructorId={id} /> },
   "rates-coverage":{ title: "Rates & coverage", subtitle: "Hourly rate, block discounts and the postcodes you cover",                        render: id => <RatesCoveragePage instructorId={id} /> },
   availability:    { title: "Availability",     subtitle: "Working hours, holidays, lesson length and buffer between lessons",               render: id => <AvailabilityPage instructorId={id} /> },
+  "phone-number":  { title: "Phone number",     subtitle: "A landline number that routes calls to your AI receptionist or your mobile",       render: id => <PhoneNumberPage instructorId={id} /> },
   cpd:             { title: "CPD & training",   subtitle: "Continuing professional development you've logged this year",                     render: id => <CpdPage instructorId={id} /> },
   "plan-billing":  { title: "Plan & billing",   subtitle: "Current plan, payment method and invoice history",                                render: () => <PlanBillingPage /> },
   "data-export":   { title: "Data export",      subtitle: "Download your data as CSV or a full account backup",                              render: id => <DataExportPage instructorId={id} /> },

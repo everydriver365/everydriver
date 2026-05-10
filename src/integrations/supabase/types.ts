@@ -7312,6 +7312,63 @@ export type Database = {
           },
         ]
       }
+      instructor_phone_numbers: {
+        Row: {
+          created_at: string
+          forward_to_mobile: string | null
+          id: string
+          instructor_id: string
+          monthly_cost_pence: number | null
+          phone_number: string
+          provider: Database["public"]["Enums"]["phone_number_provider"]
+          routing_mode: Database["public"]["Enums"]["phone_number_routing_mode"]
+          status: Database["public"]["Enums"]["phone_number_status"]
+          twilio_sid: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          forward_to_mobile?: string | null
+          id?: string
+          instructor_id: string
+          monthly_cost_pence?: number | null
+          phone_number: string
+          provider: Database["public"]["Enums"]["phone_number_provider"]
+          routing_mode?: Database["public"]["Enums"]["phone_number_routing_mode"]
+          status?: Database["public"]["Enums"]["phone_number_status"]
+          twilio_sid?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          forward_to_mobile?: string | null
+          id?: string
+          instructor_id?: string
+          monthly_cost_pence?: number | null
+          phone_number?: string
+          provider?: Database["public"]["Enums"]["phone_number_provider"]
+          routing_mode?: Database["public"]["Enums"]["phone_number_routing_mode"]
+          status?: Database["public"]["Enums"]["phone_number_status"]
+          twilio_sid?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_phone_numbers_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_phone_numbers_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       instructor_pinned_tiles: {
         Row: {
           created_at: string
@@ -18261,6 +18318,9 @@ export type Database = {
         | "seasonal"
       friendship_status: "pending" | "accepted" | "declined"
       payment_dispute_status: "open" | "resolved" | "dismissed"
+      phone_number_provider: "twilio_provisioned" | "byo_forwarded"
+      phone_number_routing_mode: "ai" | "mobile" | "schedule"
+      phone_number_status: "active" | "releasing" | "released"
       pipeline_stage:
         | "new_lead"
         | "contacted"
@@ -18430,6 +18490,9 @@ export const Constants = {
       ],
       friendship_status: ["pending", "accepted", "declined"],
       payment_dispute_status: ["open", "resolved", "dismissed"],
+      phone_number_provider: ["twilio_provisioned", "byo_forwarded"],
+      phone_number_routing_mode: ["ai", "mobile", "schedule"],
+      phone_number_status: ["active", "releasing", "released"],
       pipeline_stage: [
         "new_lead",
         "contacted",
