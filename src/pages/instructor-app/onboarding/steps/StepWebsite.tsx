@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { OnboardingLayout } from "../components/OnboardingLayout";
 import { StepNavigation } from "../components/StepNavigation";
+import { ImageUploadField } from "../components/ImageUploadField";
 import { VideoUploadField } from "../components/VideoUploadField";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,6 +24,7 @@ interface StepWebsiteProps {
     primary_color: string;
     slug: string;
     name: string;
+    logo_url?: string | null;
     welcome_video_url?: string | null;
     website_choice?: "free" | "custom" | "booknow";
     personal_website_url?: string;
@@ -264,6 +266,20 @@ export function StepWebsite({
                   </button>
                 ))}
               </div>
+            </div>
+
+            {/* Logo Upload — saves straight to storage and updates branding */}
+            <div className="space-y-2">
+              <ImageUploadField
+                label="Your Logo"
+                value={data.logo_url || null}
+                instructorId={instructorId}
+                folder="logo"
+                onChange={(url) => onUpdate({ logo_url: url })}
+                aspectRatio="square"
+                placeholder="Upload your logo"
+                helpText="Shown across your mini-website, emails and booking pages. PNG with a transparent background works best (max 5MB)."
+              />
             </div>
 
             {/* Welcome Video Upload */}
