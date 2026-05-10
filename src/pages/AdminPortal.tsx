@@ -359,6 +359,14 @@ export default function AdminPortal() {
                   </CardContent>
                 </Card>
               </Link>
+              <Link to="/admin/notification-outbox" className="block">
+                <Card className="hover:bg-accent/50 transition-colors cursor-pointer h-full">
+                  <CardContent className="pt-6">
+                    <div className="text-sm font-medium">Notification Outbox</div>
+                    <div className="text-xs text-muted-foreground">Inspect & replay queued/digest/daily summary sends</div>
+                  </CardContent>
+                </Card>
+              </Link>
             </div>
             <BespokeBookingModal open={isBespokeOpen} onOpenChange={setIsBespokeOpen} />
             <SendUrgentAlertDialog open={isUrgentAlertOpen} onOpenChange={setIsUrgentAlertOpen} />
