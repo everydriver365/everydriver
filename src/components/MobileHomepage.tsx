@@ -22,6 +22,7 @@ import weeklyLessonsIcon from "@/assets/weekly-lessons-icon.jpg";
 import earlierTestGuaranteedBadge from "@/assets/free-retest-badge.png";
 import referFriendsImage from "@/assets/refer-friends.png";
 import { useDomainBranding } from "@/hooks/useDomainBranding";
+import { getWhitelabelConfig } from "@/lib/whitelabel";
 
 export function MobileHomepage() {
   const [postcode, setPostcode] = useState("");
