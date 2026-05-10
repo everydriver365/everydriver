@@ -14,6 +14,7 @@ import { SchoolAuthProvider } from "@/context/SchoolAuthContext";
 import { DynamicPWAMeta } from "@/components/pwa/DynamicPWAMeta";
 import { DomainRouter } from "@/components/DomainRouter";
 import { ConditionalHome } from "@/components/ConditionalHome";
+import { BrandProvider } from "@/components/BrandProvider";
 import NotFound from "./pages/NotFound";
 
 // Route modules
