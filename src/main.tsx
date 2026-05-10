@@ -7,6 +7,7 @@ import "./i18n";
 import { ThemeProvider } from "./context/ThemeContext";
 import { InstructorThemeProvider } from "./context/InstructorThemeContext";
 import { AppErrorBoundary } from "@/components/common/AppErrorBoundary";
+import { WhitelabelTheme } from "@/components/WhitelabelTheme";
 import { detectNativeWrapper } from "@/hooks/useIsNativeWrapper";
 import { installQueryBudget } from "@/lib/queryBudget";
 import { enforceRememberMeOnBoot } from "@/lib/sessionPersistence";
@@ -45,6 +46,7 @@ createRoot(document.getElementById("root")!).render(
   <ThemeProvider>
     <InstructorThemeProvider>
       <AppErrorBoundary>
+        <WhitelabelTheme />
         <App />
       </AppErrorBoundary>
     </InstructorThemeProvider>
