@@ -739,23 +739,23 @@ export function RateModifiersSection({ instructorId }: { instructorId: string })
     <div className="flex flex-col gap-4">
       <Row
         label="Weekend surcharge"
-        hint="Applied to lessons on Saturday or Sunday."
-        value={draft.weekend_surcharge_pct}
-        onChange={n => setDraft(p => p && ({ ...p, weekend_surcharge_pct: n }))}
+        hint="Extra £ added per hour for lessons on Saturday or Sunday."
+        value={draft.weekend_surcharge_amount}
+        onChange={n => setDraft(p => p && ({ ...p, weekend_surcharge_amount: n }))}
       />
       <Row
         label="Bank holiday surcharge"
-        hint="Applied on UK bank holidays. Takes priority over weekend surcharge."
-        value={draft.bank_holiday_surcharge_pct}
-        onChange={n => setDraft(p => p && ({ ...p, bank_holiday_surcharge_pct: n }))}
+        hint="Extra £ per hour on UK bank holidays. Takes priority over weekend surcharge."
+        value={draft.bank_holiday_surcharge_amount}
+        onChange={n => setDraft(p => p && ({ ...p, bank_holiday_surcharge_amount: n }))}
       />
 
       <div className="rounded-xl border p-3" style={{ borderColor: "hsl(var(--border))" }}>
         <Row
           label="Off-peak / odd-hours surcharge"
-          hint="Applied when the lesson starts inside the window below."
-          value={draft.odd_hours_surcharge_pct}
-          onChange={n => setDraft(p => p && ({ ...p, odd_hours_surcharge_pct: n }))}
+          hint="Extra £ per hour when the lesson starts inside the window below."
+          value={draft.odd_hours_surcharge_amount}
+          onChange={n => setDraft(p => p && ({ ...p, odd_hours_surcharge_amount: n }))}
         />
         <div className="grid grid-cols-2 gap-3 mt-3">
           <div>
