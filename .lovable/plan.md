@@ -1,49 +1,64 @@
-## Why it's failing
+## What's actually happening
 
-The `instructor_courses` table has only two RLS policies:
-- public read
-- admins can do everything
+I checked the database directly:
 
-There's no policy that lets an **instructor** insert/update/delete their own row, so when Richard (or any instructor) hits "Add", Supabase returns `42501 — new row violates row-level security policy`. That's the "Failed to add course" toast.
+- Richard Chapman now has **4 active rows** in `instructor_courses` — so the toggles ARE saving. The UI just isn't confirming it visibly enough, which is why it feels like "nothing happens".
+- His `home_postcode` is stored as **`SO302td`** (no space, lowercase). The pupil search geocodes that string via the `geocode-postcode` edge function. Malformed postcodes often return no coordinates, so he never enters the "instructors near you" set and never appears in results.
 
-## What to change
+So there are two separate bugs hiding behind one symptom.
 
-### 1. Database (migration)
+## Fix 1 — Toggle UX: make the change obvious
 
-Add three RLS policies on `public.instructor_courses` so instructors can manage only their own rows, using the standard identity helper:
+In `src/components/instructor/InstructorCoursesManager.tsx`:
 
-- **Insert** — `WITH CHECK (instructor_id = public.get_instructor_id_for_user(auth.uid()))`
-- **Update** — `USING / WITH CHECK` same condition
-- **Delete** — `USING` same condition
+- Re-fetch the row from the DB after a successful insert/update so the visible state matches what's actually persisted (currently the optimistic state can drift if RLS silently filters or if the insert returned no row).
+- Show a clearer toast: "Enabled — pupils can now book {course name}" / "Disabled — hidden from pupil search".
+- Add a small "Visible to pupils" / "Hidden from pupils" caption under the row label that updates with the switch, so there's a non-toast confirmation too.
+- Add a banner at the top of the list: "You currently offer N courses. Pupils searching your area will see these." This makes the cause/effect obvious.
 
-Public read and admin-manage policies stay as they are.
+No DB changes for this part — RLS policies are already correct (verified).
 
-### 2. Replace `InstructorCoursesManager.tsx` with a simple toggle list
+## Fix 2 — Auto-format postcode on save
 
-Current UI: a "Add a course…" dropdown + cards with edit/delete/image upload. Too many steps and the failing path.
+Add a tiny helper `formatUKPostcode(input)` in `src/lib/utils.ts` (or a new `src/lib/postcode.ts`):
+- Strip all whitespace, uppercase
+- Insert a single space before the last 3 chars (UK outward/inward split)
+- e.g. `so302td` → `SO30 2TD`, `so30 2td` → `SO30 2TD`, `SO302TD` → `SO30 2TD`
 
-New UI: one row per **course template** from `course_templates` (currently 5: 10h Automatic, 20h, Test in a Week 28h, 30h, 40h). Each row shows:
+Apply it everywhere `home_postcode` is written for instructors. Based on the codebase that's:
+- `src/components/instructor/InstructorProfileEditor.tsx` (or wherever instructors edit their profile — to be confirmed during implementation)
+- `src/components/admin/InstructorForm.tsx` (admin-side create/edit)
+- Any onboarding/signup form that captures `home_postcode`
 
-- Template name + hours badge
-- A single Switch on the right
+Format on submit, not on every keystroke (so users can type freely).
 
-Toggle behaviour:
+### One-off data fix
 
-- **Off → On**: if no `instructor_courses` row exists, insert one (`is_active = true`, copy `course_name` and `default_image_url` from the template). If a row exists but is inactive, update `is_active = true`.
-- **On → Off**: update the existing row to `is_active = false` (keep the row so any custom price/features survive).
+Run a single UPDATE to normalise existing rows so currently-saved instructors show up immediately without needing to re-save:
 
-Optimistic update + revert on error. Toast on success/failure.
+```sql
+UPDATE public.instructors
+SET home_postcode = regexp_replace(
+  upper(regexp_replace(home_postcode, '\s+', '', 'g')),
+  '^(.*)(.{3})$', '\1 \2'
+)
+WHERE home_postcode IS NOT NULL
+  AND home_postcode !~ '^[A-Z0-9]+ [A-Z0-9]{3}$';
+```
 
-Remove from this component: the Add dropdown, the Edit dialog, image upload, custom features editor, delete button. Pricing/customisation can live in a future "advanced" screen — out of scope for this task.
+This fixes Richard (`SO302td` → `SO30 2TD`) and any other instructor with a malformed postcode.
 
-### 3. Verify
+## Verification
 
-- Sign in as Richard Chapman, open Menu → Courses & payments → My Courses, toggle a course on, confirm a row appears in `instructor_courses` and no RLS error.
-- Confirm Richard now appears in the pupil-facing course/postcode search (the original symptom that started this thread).
+1. Sign in as Richard, open Menu → Courses & payments → My Courses, toggle a course off then on. Confirm the new caption + toast + persisted state.
+2. Open the pupil-facing course search, enter `SO30` (or a nearby postcode) and confirm Richard now appears.
+3. Edit Richard's profile, type `po156aa` in the postcode field, save, and confirm it stores as `PO15 6AA`.
 
 ## Files touched
 
-- New migration: 3 RLS policies on `instructor_courses`.
-- `src/components/instructor/InstructorCoursesManager.tsx` — rewritten as a toggle list.
+- `src/components/instructor/InstructorCoursesManager.tsx` — clearer feedback + post-save refetch
+- `src/lib/postcode.ts` — new `formatUKPostcode` helper
+- Instructor profile editor + `src/components/admin/InstructorForm.tsx` — call helper on save
+- One data-fix SQL (via insert tool, not a migration — it's data, not schema)
 
-No changes to the menu entry, routing, or pupil-facing search code.
+No changes to RLS, the search hook, or the geocode edge function.
