@@ -17,6 +17,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { formatUKPostcode } from "@/lib/postcode";
 import { formatDistanceToNow } from "date-fns";
 import {
   Dialog,
