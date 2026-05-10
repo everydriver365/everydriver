@@ -6,7 +6,7 @@ import {
   IconHelpCircle, IconUserOff,
   IconSettings,
 } from "@tabler/icons-react";
-import type { TablerIcon } from "@tabler/icons-react";
+type TablerIcon = typeof IconUser;
 
 export interface SidebarItem {
   id: string;          // category id used in the URL
