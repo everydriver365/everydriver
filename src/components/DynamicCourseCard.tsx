@@ -38,6 +38,10 @@ interface DynamicCourseCardProps {
   isPremium?: boolean;
   placementType?: string;
   areaName?: string | null;
+  /** Effective hourly rate after applying any postcode-rule override for the learner's postcode. */
+  effectiveHourlyRate?: number | null;
+  /** Learner's postcode (for "pricing for SO22…" hint). */
+  learnerPostcode?: string | null;
 }
 
 export function DynamicCourseCard({ 
@@ -55,16 +59,21 @@ export function DynamicCourseCard({
   isPremium = false,
   placementType,
   areaName,
+  effectiveHourlyRate,
+  learnerPostcode,
 }: DynamicCourseCardProps) {
   const [isFlipped, setIsFlipped] = useState(false);
   const navigate = useNavigate();
 
-  const hourlyRate = instructor.hourly_rate || 40;
+  const defaultRate = instructor.hourly_rate || 40;
+  const hourlyRate = (effectiveHourlyRate != null && effectiveHourlyRate > 0) ? effectiveHourlyRate : defaultRate;
   const schoolSkim = instructor.school_skim_amount || 0;
   const basePrice = hours * hourlyRate;
   const totalPrice = basePrice + schoolSkim;
   const finalPrice = discountedPrice || totalPrice;
   const hasDiscount = discountedPrice && discountedPrice < totalPrice;
+  const isPostcodeAdjusted = effectiveHourlyRate != null && effectiveHourlyRate > 0 && effectiveHourlyRate !== defaultRate;
+  const learnerOutward = (learnerPostcode || "").replace(/\s+/g, "").toUpperCase().slice(0, -3) || null;
   const hasSurcharges =
     Number(instructor.weekend_surcharge_amount) > 0 ||
     Number(instructor.bank_holiday_surcharge_amount) > 0 ||
@@ -228,9 +237,14 @@ export function DynamicCourseCard({
                   </span>
                 )}
               </div>
-              {hasSurcharges && !hasDiscount && (
+              {(isPostcodeAdjusted || (hasSurcharges && !hasDiscount)) && (
                 <p className="text-[11px] text-muted-foreground -mt-1">
-                  Weekends, bank holidays & off-peak hours may cost more
+                  {isPostcodeAdjusted && learnerOutward
+                    ? `Pricing for ${learnerOutward}. `
+                    : null}
+                  {hasSurcharges && !hasDiscount
+                    ? "Weekends, bank holidays & off-peak hours may cost more."
+                    : null}
                 </p>
               )}
 

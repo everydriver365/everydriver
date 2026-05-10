@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useSearchParams } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getWhitelabelInstructorSlug } from "@/lib/whitelabel";
+import { resolveHourlyRate, type PostcodeRateRule } from "@/lib/pricing/resolveHourlyRate";
 
 // Standard course hours to display
 const DISPLAY_HOURS = [10, 20, 30, 40, 28]; // 28 = Test in a Week
@@ -316,10 +317,19 @@ export default function Courses() {
   
   // Mobile load more state
   const [mobileVisibleCount, setMobileVisibleCount] = useState(6);
+  const [postcodeRulesByInstructor, setPostcodeRulesByInstructor] = useState<Record<string, PostcodeRateRule[]>>({});
 
   const handleLoadMore = () => {
     setMobileVisibleCount(prev => Math.min(prev + 6, filteredCourses.length));
   };
+
+  const resolvedRateFor = useCallback((instructor: any): number | null => {
+    return resolveHourlyRate({
+      pupilPostcode: searchedPostcode,
+      instructorDefaultRate: instructor?.hourly_rate ?? null,
+      postcodeRules: postcodeRulesByInstructor[instructor?.id] || null,
+    });
+  }, [searchedPostcode, postcodeRulesByInstructor]);
   const [instructors, setInstructors] = useState<Instructor[]>([]);
   const [instructorCourses, setInstructorCourses] = useState<InstructorCourse[]>([]);
   const [courseTemplates, setCourseTemplates] = useState<CourseTemplate[]>([]);
@@ -777,6 +787,20 @@ export default function Courses() {
       // Geocode all instructor postcodes
       const allPostcodes = (instructorsRes.data || []).map((i: any) => (i.home_postcode || "").replace(/\s+/g, "").toUpperCase()).filter(Boolean);
       await geocodePostcodes(allPostcodes);
+
+      // Load postcode rate overrides for all visible instructors (single batched query)
+      const instructorIds = (instructorsRes.data || []).map((i: any) => i.id).filter(Boolean);
+      if (instructorIds.length) {
+        const { data: rateRows } = await supabase
+          .from("instructor_postcode_rates")
+          .select("instructor_id, outward_code, hourly_rate")
+          .in("instructor_id", instructorIds);
+        const map: Record<string, PostcodeRateRule[]> = {};
+        for (const r of (rateRows || []) as any[]) {
+          (map[r.instructor_id] ||= []).push({ outward_code: r.outward_code, hourly_rate: Number(r.hourly_rate) });
+        }
+        setPostcodeRulesByInstructor(map);
+      }
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
@@ -1255,6 +1279,8 @@ export default function Courses() {
                             discountedPrice={course.discountedPrice}
                             customFeatures={course.customFeatures}
                             areaName={areaCache[course.instructor.home_postcode?.replace(/\s+/g, "").toUpperCase()] || null}
+                            effectiveHourlyRate={resolvedRateFor(course.instructor)}
+                            learnerPostcode={searchedPostcode}
                           />
                         </motion.div>
                       ))}
@@ -1300,6 +1326,8 @@ export default function Courses() {
                               discountedPrice={course.discountedPrice}
                               customFeatures={course.customFeatures}
                               areaName={areaCache[course.instructor.home_postcode?.replace(/\s+/g, "").toUpperCase()] || null}
+                              effectiveHourlyRate={resolvedRateFor(course.instructor)}
+                              learnerPostcode={searchedPostcode}
                             />
                           </motion.div>
                         ))}
