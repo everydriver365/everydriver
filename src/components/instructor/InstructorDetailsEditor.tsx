@@ -260,33 +260,13 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
   if (defaultTab === "gps") {
     return (
       <div className="space-y-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label className="text-sm font-medium">Connection Status</Label>
-                <div className="flex items-center gap-2">
-                  {gpsStatus.isConnected ? (
-                    <>
-                      <Wifi className="h-4 w-4 text-primary" />
-                      <span className="text-sm text-primary">Connected</span>
-                    </>
-                  ) : (
-                    <>
-                      <WifiOff className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">Offline</span>
-                    </>
-                  )}
-                </div>
-              </div>
-              {gpsStatus.lastSeenAt && (
-                <p className="text-xs text-muted-foreground">
-                  Last update: {formatDistanceToNow(new Date(gpsStatus.lastSeenAt), { addSuffix: true })}
-                </p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+        <GpsDevicesList
+          instructorId={instructorId}
+          refreshKey={devicesRefreshKey}
+          onAnyConnected={(c) =>
+            setGpsStatus((prev) => (prev.isConnected === c ? prev : { ...prev, isConnected: c }))
+          }
+        />
 
         <Card>
           <CardContent className="p-4 space-y-3">
