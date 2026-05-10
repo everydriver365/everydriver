@@ -1,96 +1,96 @@
-## Goal
-Let an instructor have a dedicated **landline number** (01/02/03 UK number) that intelligently routes incoming calls to either the AI receptionist or their mobile, based on a schedule.
+## Honest answer: is the Notifications panel wired up today?
 
-## How it works (per instructor)
+**Mostly no.** Here's the current state of `instructor_notification_settings` (saved by `NotificationPreferencesPanel`):
 
-A new "Phone number" page under **Teaching** with two parallel flows:
+| Setting | Saved to DB? | Actually respected? |
+|---|---|---|
+| Delivery cadence (real-time / hourly / daily / important only) | Yes | **No** — every sender (`send-push-notification`, `notify-instructor`, `process-lesson-reminders`, `eod-notification`, etc.) fires immediately regardless. |
+| Quiet hours | Yes | **No** — only `famulor-webhook` checks a hard-coded UK quiet window; the per-instructor row is never read. |
+| Category mutes (test_swap / message / job / system) | Yes | **No** — no sender filters by category. |
+| Smart filters (test horizon weeks, test distance miles, min job value, dedupe repeat sender) | Yes | **No** — `useTestSwapNotifications` and job-offer flows never read these rules. |
 
-**Flow A — Provision a number on us (Twilio)**
-- Pick UK area code → see 5 candidate numbers fetched from Twilio → buy with one tap.
-- Backend assigns it, configures Twilio's voice webhook to point at our edge function.
-- Number shown with monthly cost (e.g. "£2.50/mo billed with your subscription") and a "Release number" action.
+A grep across `supabase/functions/**` for `instructor_notification_settings`, `category_mutes`, `delivery_cadence`, `notification_rules` returns **zero hits**. The toggles persist, but nothing on the server consumes them.
 
-**Flow B — Bring your own**
-- Enter an existing landline + the mobile number it currently diverts to.
-- We give them a **Twilio forwarding number to programme into their telco** as the divert target. Calls hit our number, we apply the routing rules, then forward.
-- Display step-by-step instructions per major UK provider (BT/Sky/Virgin) as a collapsible help block.
+## What this plan does
 
-**Routing rules (both flows)**
-Three modes the user picks from, mirroring the existing `ai_call_divert_mode`:
-- `ai` — always to AI receptionist (Famulor)
-- `mobile` — always to their mobile (`instructors.phone`)
-- `schedule` — AI during scheduled lessons + buffer, mobile otherwise (uses existing `ai_call_divert_buffer_before/after_minutes`)
+1. **Make the existing toggles real** by adding a single shared gate that every push/notification sender runs through.
+2. **Add two new options the user asked for**: End-of-Lesson reminder and Daily Summary digest.
 
-When the call comes in:
-1. Edge function `voice-router` receives Twilio webhook.
-2. Looks up `instructor_phone_numbers` row by the dialled number.
-3. Reads `routing_mode`. For `schedule`, queries `scheduled_lessons` for an active/imminent lesson with buffers applied.
-4. Returns TwiML: either `<Dial>` to mobile or `<Redirect>` to Famulor's inbound URL.
+### Step 1 — Shared `_shared/notify-gate.ts` helper
 
-## Database
+New file `supabase/functions/_shared/notify-gate.ts` exposes:
 
-New table `instructor_phone_numbers`:
-- `instructor_id` (FK)
-- `phone_number` (E.164, unique)
-- `provider` enum: `twilio_provisioned` | `byo_forwarded`
-- `twilio_sid` (nullable — only for provisioned)
-- `routing_mode` enum: `ai` | `mobile` | `schedule`
-- `forward_to_mobile` (text — defaults to instructors.phone, overridable)
-- `monthly_cost_pence` (int, nullable)
-- `status` enum: `active` | `releasing` | `released`
-- `created_at` / `updated_at`
+```text
+shouldSendToInstructor(supabase, instructorId, {
+  category: "test_swap" | "message" | "job" | "system" | "lesson",
+  channel:  "push" | "email" | "sms",
+  importance: "normal" | "important",
+  pupilId?: string,    // for dedupe_repeat_sender
+  jobValue?: number,   // for job_min_value
+}) -> { allow: boolean, reason?: string, defer_until?: ISO }
+```
 
-RLS: instructor can read/update their own row via `get_instructor_id_for_user(auth.uid())`. Service-role only for delete/insert from edge functions.
+Logic:
+- Loads `instructor_notification_settings` once (cached per invocation).
+- Returns `false` if `category_mutes[category]` is true.
+- For `delivery_cadence = "important_only"` returns false unless `importance === "important"`.
+- For `hourly` / `daily` returns `defer_until` so the caller can enqueue into a new `notification_outbox` table instead of sending now.
+- Returns `false` (push only) when current UK time is inside `quiet_hours_start..quiet_hours_end` and `quiet_hours_enabled`. Inbox row is still written.
+- Smart filter checks for `job` (min value) and `message` (dedupe repeat sender via 60-min lookup against `instructor_notifications`).
 
-## Edge functions
+### Step 2 — Apply the gate in existing senders
 
-1. `phone-number-search` — POST `{ areaCode }` → returns 5 available Twilio numbers.
-2. `phone-number-provision` — POST `{ phoneNumber }` → buys it, sets voice webhook, inserts row.
-3. `phone-number-release` — POST `{ id }` → releases on Twilio, marks row `released`.
-4. `voice-router` — public Twilio webhook → returns TwiML based on routing rules.
+Wrap the actual delivery call in:
+- `send-push-notification`
+- `notify-instructor`
+- `process-lesson-reminders`
+- `notify-ai-event`, `notify-booking-enquiry`, `notify-upsell-purchase`
+- `famulor-cron-reminders` (replace its bespoke quiet-hours check)
 
-All four use the existing `TWILIO_ACCOUNT_SID` / `TWILIO_AUTH_TOKEN` secrets via the connector gateway pattern. SMS Pumping Protection / Geo Permissions reminder shown to the project owner once.
+The gate decides allow / drop / defer; nothing about the call sites changes otherwise.
 
-## UI
+### Step 3 — Hourly/daily digest worker
 
-**New page** `src/components/instructor/settings/pages/PhoneNumberPage.tsx`
-Sections (sv2-card style, matching the rest of the V2 settings):
-1. **Your number** — shows current number or "Get a number" empty state with two buttons (Provision / Bring your own).
-2. **Routing** — three radio cards: AI / Mobile / Schedule-based. Auto-saves on change with toast.
-3. **Forward to** — editable mobile number, defaults to profile phone. Auto-saves.
-4. **Help** — collapsible "How to set up forwarding" per provider (BYO flow only).
-5. **Danger zone** — "Release this number" (provisioned only).
+New edge function `process-notification-digest` (cron every 15 min) reads `notification_outbox` rows whose `deliver_at <= now()`, groups by instructor, and sends one push + one inbox row summarising them ("5 new updates: 2 messages, 3 job offers"). Enabled by `pg_cron` in a `supabase.insert` call.
 
-**Sidebar wiring** in `SettingsSidebar.tsx`:
-- Add `{ id: "phone-number", label: "Phone number", icon: IconPhone }` under the **Teaching** group.
+### Step 4 — New options the user asked for
 
-**Quick settings shortcut** in `QuickSettingsPage.tsx`:
-- Add a row to the existing "Bookings & calls" card: "Landline routing" → currently shows mode (AI / Mobile / Schedule), tap navigates to the full page. Three-state segmented control inline so they can flip it without opening the page.
+Add to `useInstructorNotificationSettings.ts` `NotificationRules`:
 
-**Provisioning flow** uses an `AlertDialog` with the area-code input and the 5 returned numbers as selectable cards.
+```text
+end_of_lesson_enabled: boolean   // default true
+end_of_lesson_lead_minutes: 0|2|5  // "at end" / "2 min before" / "5 min before"
+daily_summary_enabled: boolean   // default true
+daily_summary_time: "07:00" | "18:00" | custom HH:mm  // default 07:00
+daily_summary_include: { tomorrow_lessons, payments_due, pupil_messages, job_offers, test_swaps }
+```
 
-## Files
+Panel changes (`NotificationPreferencesPanel.tsx`) — add a new **"Reminders"** Section with:
+- End-of-Lesson reminder switch + segmented "At end / 2 min / 5 min before"
+- Daily summary switch + time picker + 5 include checkboxes
 
-**New**
-- `src/components/instructor/settings/pages/PhoneNumberPage.tsx`
-- `src/components/instructor/PhoneNumberProvisionDialog.tsx`
-- `src/components/instructor/PhoneNumberByoDialog.tsx`
-- `src/hooks/useInstructorPhoneNumber.ts`
-- `supabase/functions/phone-number-search/index.ts`
-- `supabase/functions/phone-number-provision/index.ts`
-- `supabase/functions/phone-number-release/index.ts`
-- `supabase/functions/voice-router/index.ts`
+Wiring:
+- **End-of-Lesson**: existing `useLessonEndAlert` hook already fires client-side. Add a server-side fallback: extend `process-lesson-reminders` with a "T-0" pass that sends an EOL push gated by `end_of_lesson_enabled` and offset by `end_of_lesson_lead_minutes`. Push payload deeplinks to "Mark lesson complete".
+- **Daily summary**: new edge function `send-daily-summary` (cron every 15 min) finds instructors whose `daily_summary_time` matches the current quarter-hour and `daily_summary_enabled = true`, builds a digest using the include flags, and sends one push + one `instructor_notifications` row.
 
-**Edited**
-- `src/components/instructor/settings/SettingsSidebar.tsx` — add Phone number entry
-- `src/components/instructor/settings/SettingsLayoutV2.tsx` — register page
-- `src/components/instructor/settings/pages/QuickSettingsPage.tsx` — landline routing row
+### Step 5 — Schema
+
+One migration:
+- Add columns `end_of_lesson_enabled`, `end_of_lesson_lead_minutes`, `daily_summary_enabled`, `daily_summary_time`, `daily_summary_include jsonb` to `instructor_notification_settings` (nullable with sane defaults so we don't have to touch existing rows).
+- New table `notification_outbox` (id, instructor_id, category, payload jsonb, deliver_at, sent_at). RLS: instructors can read their own rows via `get_instructor_id_for_user(auth.uid())`; service role writes/deletes.
+
+Two `supabase.insert` calls schedule the cron jobs for `process-notification-digest` and `send-daily-summary`.
+
+### Step 6 — Verify
+
+- Reload `/instructor/settings/comms#notification-prefs`, toggle each option, confirm the row updates in `instructor_notification_settings`.
+- Manually invoke `send-push-notification` for a muted category → expect `{ allow: false, reason: "category_muted" }` in logs.
+- Invoke `send-daily-summary` with a forced `now` query param → expect one push delivered.
 
 ## Out of scope
-- Billing/charging the £2.50/mo through GoCardless (will need a follow-up task tied into existing subscription invoicing).
-- Voicemail / call recording / call history UI (Famulor already covers AI calls; mobile-routed calls are just forwarded).
-- SMS to the landline number.
-- School-level shared numbers (instructor-only for v1).
 
-## Notes
-Once approved, I'll need to confirm the **per-number monthly markup** you want to charge instructors before billing wiring goes in (default Twilio cost is ~£1/mo, suggested £2.50/mo retail). For v1 we'll just track `monthly_cost_pence` in the DB and surface it in the UI without charging — billing can land in a follow-up.
+- No changes to mobile layouts.
+- No changes to SMS/email channels beyond the shared gate accepting them as a parameter.
+- No new design tokens — uses existing portal styles.
+
+Approve and I'll implement.

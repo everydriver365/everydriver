@@ -7166,7 +7166,12 @@ export type Database = {
         Row: {
           category_mutes: Json
           created_at: string
+          daily_summary_enabled: boolean
+          daily_summary_include: Json
+          daily_summary_time: string
           delivery_cadence: string
+          end_of_lesson_enabled: boolean
+          end_of_lesson_lead_minutes: number
           instructor_id: string
           notification_rules: Json
           quiet_hours_enabled: boolean
@@ -7177,7 +7182,12 @@ export type Database = {
         Insert: {
           category_mutes?: Json
           created_at?: string
+          daily_summary_enabled?: boolean
+          daily_summary_include?: Json
+          daily_summary_time?: string
           delivery_cadence?: string
+          end_of_lesson_enabled?: boolean
+          end_of_lesson_lead_minutes?: number
           instructor_id: string
           notification_rules?: Json
           quiet_hours_enabled?: boolean
@@ -7188,7 +7198,12 @@ export type Database = {
         Update: {
           category_mutes?: Json
           created_at?: string
+          daily_summary_enabled?: boolean
+          daily_summary_include?: Json
+          daily_summary_time?: string
           delivery_cadence?: string
+          end_of_lesson_enabled?: boolean
+          end_of_lesson_lead_minutes?: number
           instructor_id?: string
           notification_rules?: Json
           quiet_hours_enabled?: boolean
@@ -11390,6 +11405,45 @@ export type Database = {
           shared_with_id?: string | null
           title?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      notification_outbox: {
+        Row: {
+          body: string | null
+          category: string
+          created_at: string
+          deliver_at: string
+          id: string
+          importance: string
+          instructor_id: string
+          payload: Json
+          sent_at: string | null
+          title: string | null
+        }
+        Insert: {
+          body?: string | null
+          category: string
+          created_at?: string
+          deliver_at?: string
+          id?: string
+          importance?: string
+          instructor_id: string
+          payload?: Json
+          sent_at?: string | null
+          title?: string | null
+        }
+        Update: {
+          body?: string | null
+          category?: string
+          created_at?: string
+          deliver_at?: string
+          id?: string
+          importance?: string
+          instructor_id?: string
+          payload?: Json
+          sent_at?: string | null
+          title?: string | null
         }
         Relationships: []
       }
