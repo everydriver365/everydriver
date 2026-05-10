@@ -150,21 +150,19 @@ export const instructorPortalRoutes = (
     <Route path="/instructor/events/:eventKey" element={<InstructorEventDetails />} />
     <Route path="/instructor/course-planner" element={<CoursePlannerPage />} />
     <Route path="/instructor/diary" element={<InstructorDiary />} />
-    {/* Legacy hubs → unified Settings hub */}
+    {/* Legacy hubs → unified Settings hub (V3 slugs) */}
     <Route path="/instructor/menu" element={<Navigate to="/instructor/settings" replace />} />
-    <Route path="/instructor/profile" element={<Navigate to="/instructor/settings/account" replace />} />
-    <Route path="/instructor/integrations" element={<Navigate to="/instructor/settings/schedule#calendar" replace />} />
-    <Route path="/instructor/famulor" element={<Navigate to="/instructor/settings/comms#famulor" replace />} />
-    <Route path="/instructor/branding" element={<Navigate to="/instructor/settings/business#branding" replace />} />
-    <Route path="/instructor/settings/terms" element={<Navigate to="/instructor/settings/business#terms" replace />} />
-    <Route path="/instructor/settings/call-answering" element={<Navigate to="/instructor/settings/comms#call-answering" replace />} />
-    <Route path="/instructor/settings/notifications" element={<Navigate to="/instructor/settings/comms#notification-prefs" replace />} />
-    <Route path="/instructor/settings/profile" element={<Navigate to="/instructor/settings/account" replace />} />
-    <Route path="/settings/profile" element={<Navigate to="/instructor/settings/account" replace />} />
+    <Route path="/instructor/profile" element={<Navigate to="/instructor/settings/profile" replace />} />
+    <Route path="/instructor/integrations" element={<Navigate to="/instructor/settings/working-hours" replace />} />
+    <Route path="/instructor/famulor" element={<Navigate to="/instructor/settings/phone-ai" replace />} />
+    <Route path="/instructor/branding" element={<Navigate to="/instructor/settings/branding" replace />} />
+    <Route path="/instructor/settings/terms" element={<Navigate to="/instructor/settings/data-privacy" replace />} />
+    <Route path="/instructor/settings/call-answering" element={<Navigate to="/instructor/settings/phone-ai" replace />} />
+    <Route path="/settings/profile" element={<Navigate to="/instructor/settings/profile" replace />} />
     <Route path="/instructor/settings/whatsapp" element={<InstructorWhatsAppSettings />} />
     <Route path="/instructor/settings/whatsapp/templates" element={<InstructorWhatsAppTemplates />} />
     <Route path="/instructor/settings/accessibility" element={<InstructorAccessibilitySettings />} />
-    {/* Unified Settings hub */}
+    {/* Unified Settings hub — keep last so it doesn't shadow specific routes above */}
     <Route path="/instructor/settings" element={<InstructorSettingsHub />} />
     <Route path="/instructor/settings/:categoryId" element={<InstructorSettingsHub />} />
     <Route path="/instructor/notifications" element={<InstructorNotifications />} />
@@ -172,9 +170,8 @@ export const instructorPortalRoutes = (
     <Route path="/instructor/modules" element={<InstructorModules />} />
     <Route path="/website/my-site" element={<InstructorMySite />} />
     <Route path="/instructor/website/my-site" element={<InstructorMySite />} />
-    <Route path="/settings/plan" element={<InstructorPlanBilling />} />
-    <Route path="/instructor/settings/plan" element={<InstructorPlanBilling />} />
-    <Route path="/instructor/billing" element={<InstructorPlanBilling />} />
+    <Route path="/settings/plan" element={<Navigate to="/instructor/settings/plan-billing" replace />} />
+    <Route path="/instructor/billing" element={<Navigate to="/instructor/settings/plan-billing" replace />} />
     <Route path="/instructor/settings/modules" element={<InstructorModules />} />
 
     {/* Jobs & scheduling */}
