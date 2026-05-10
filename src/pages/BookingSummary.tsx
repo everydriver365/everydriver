@@ -282,7 +282,9 @@ export default function BookingSummary() {
           deposit_enabled, deposit_amount, deposit_deadline_days,
           cancellation_policy_text, booking_mode,
           cash_payments_enabled, klarna_enabled, clearpay_enabled,
-          instant_bank_pay_enabled, school_skim_amount
+          instant_bank_pay_enabled, school_skim_amount,
+          weekend_surcharge_pct, bank_holiday_surcharge_pct,
+          odd_hours_surcharge_pct, odd_hours_start, odd_hours_end
         `).eq("id", instructorId).maybeSingle(),
         supabase.from("course_templates").select("*").eq("course_hours", hours).maybeSingle(),
         supabase.from("instructor_courses").select("course_image_url").eq("instructor_id", instructorId).eq("course_hours", hours).maybeSingle(),
