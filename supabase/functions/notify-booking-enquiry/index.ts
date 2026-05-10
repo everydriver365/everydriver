@@ -90,7 +90,7 @@ serve(async (req) => {
       }
     } catch (_) { /* ignore */ }
 
-    if (WA_TOKEN && WA_PHONE_ID && instructor.phone) {
+    if (waGate.allow && WA_TOKEN && WA_PHONE_ID && instructor.phone) {
       try {
         const waRes = await fetch(
           `https://graph.facebook.com/v20.0/${WA_PHONE_ID}/messages`,
