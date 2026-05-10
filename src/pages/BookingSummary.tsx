@@ -28,6 +28,8 @@ import { usePaymentGatewayHealth } from "@/hooks/usePaymentGatewayHealth";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useBookingUpsells } from "@/hooks/useBookingUpsells";
+import { resolveHourlyRate, type PostcodeRateRule } from "@/lib/pricing/resolveHourlyRate";
+import { fetchInstructorPostcodeRules } from "@/hooks/useInstructorPostcodeRules";
 
 
 interface Instructor {
@@ -118,6 +120,9 @@ export default function BookingSummary() {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [courseDetails, setCourseDetails] = useState<CourseDetails | null>(null);
+  const [postcodeRules, setPostcodeRules] = useState<PostcodeRateRule[]>([]);
+  const [baseHourlyRate, setBaseHourlyRate] = useState<number>(40);
+  const [schoolSkimAmount, setSchoolSkimAmount] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [selectedSlots, setSelectedSlots] = useState<SelectedSlot[]>([]);
   const [reviews, setReviews] = useState<CourseReview[]>([]);
@@ -264,7 +269,7 @@ export default function BookingSummary() {
     const fetchDetails = async () => {
       if (!instructorId) return;
 
-      const [instructorRes, templateRes, instructorCourseRes, reviewsRes] = await Promise.all([
+      const [instructorRes, templateRes, instructorCourseRes, reviewsRes, rulesRes] = await Promise.all([
         supabase.from("instructors").select(`
           id, name, profile_image_url, car_type, car_make, car_model, car_image_url,
           home_postcode, hourly_rate, bio, special_skills, brand_colour,
@@ -279,7 +284,12 @@ export default function BookingSummary() {
         supabase.from("course_templates").select("*").eq("course_hours", hours).maybeSingle(),
         supabase.from("instructor_courses").select("course_image_url").eq("instructor_id", instructorId).eq("course_hours", hours).maybeSingle(),
         supabase.from("course_reviews").select("*").eq("instructor_id", instructorId).eq("course_hours", hours).order("review_date", { ascending: false }).limit(5),
+        fetchInstructorPostcodeRules(instructorId),
       ]);
+
+      setPostcodeRules(rulesRes ?? []);
+
+
 
       if (instructorRes.error || !instructorRes.data) {
         console.error("Error fetching instructor:", instructorRes.error);
@@ -303,6 +313,8 @@ export default function BookingSummary() {
       
       const hourlyRate = instructor.hourly_rate || 40;
       const schoolSkim = instructor.school_skim_amount || 0;
+      setBaseHourlyRate(hourlyRate);
+      setSchoolSkimAmount(schoolSkim);
       const courseName = template?.course_name || (hours === 28 ? "Test in a Week" : `${hours} Hour Course`);
       const courseImageUrl = instructorCourse?.course_image_url || template?.default_image_url || null;
 
@@ -817,8 +829,18 @@ export default function BookingSummary() {
     );
   }
 
-  const { instructor, courseName, totalPrice, courseImageUrl, courseDescription, features, template } = courseDetails;
+  const { instructor, courseName, courseImageUrl, courseDescription, features, template } = courseDetails;
   const brandColour = instructor.brand_colour || "#1e3a5f";
+
+  // Resolve effective hourly rate honoring per-postcode override entered by the learner.
+  const effectiveHourlyRate = resolveHourlyRate({
+    pupilPostcode: pupilPostcode || null,
+    instructorDefaultRate: baseHourlyRate,
+    postcodeRules,
+  }) ?? baseHourlyRate;
+  const totalPrice = (hours * effectiveHourlyRate) + schoolSkimAmount;
+  const postcodeOverrideActive = effectiveHourlyRate !== baseHourlyRate;
+
 
   // Enquiry-only mode: short-circuit the entire payment/scheduling flow
   if (bookingMode === "enquiry_only") {
