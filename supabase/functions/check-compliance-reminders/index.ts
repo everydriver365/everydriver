@@ -324,7 +324,7 @@ serve(async (req) => {
         }
 
         // Send SMS for urgent reminders (7 days or less)
-        if (isUrgent && twilioSid && twilioToken && twilioPhone && instructor.phone) {
+        if (vSmsGate.allow && isUrgent && twilioSid && twilioToken && twilioPhone && instructor.phone) {
           try {
             const formattedPhone = instructor.phone.startsWith("+") 
               ? instructor.phone 
