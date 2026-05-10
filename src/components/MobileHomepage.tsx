@@ -155,7 +155,7 @@ export function MobileHomepage() {
               07767 693276
             </a>
             <Link
-              to="/i/ken-d/courses"
+              to="/courses"
               className="rounded-full bg-amber-400 px-4 py-2 text-xs font-bold text-primary shadow-md hover:bg-amber-300"
             >
               Book Now
