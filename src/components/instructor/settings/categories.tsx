@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 
 import { InstructorDetailsEditor } from "@/components/instructor/InstructorDetailsEditor";
 import { ComplianceTracker } from "@/components/instructor/ComplianceTracker";
+import { QualificationsEditor } from "@/components/instructor/settings/QualificationsEditor";
 import { TestCentresAndExaminersManager } from "@/components/instructor/TestCentresAndExaminersManager";
 import { TermsConditionsEditor } from "@/components/instructor/TermsConditionsEditor";
 import { CancellationPolicyEditor } from "@/components/instructor/CancellationPolicyEditor";
@@ -72,9 +73,15 @@ export function useSettingsCategories(): SettingsCategory[] {
           render: () => <InstructorDetailsEditor instructorId={id} />,
         },
         {
+          id: "qualifications",
+          title: "Qualifications & credentials",
+          description: "ADI badge, DBS, licence and insurance documents",
+          render: () => <QualificationsEditor instructorId={id} />,
+        },
+        {
           id: "compliance",
-          title: "ADI badge, DBS & vehicle docs",
-          description: "Track expiry dates and upload certificates",
+          title: "Vehicle docs & CPD",
+          description: "MOT, road tax and CPD logging",
           render: () => <ComplianceTracker instructorId={id} />,
         },
       ],

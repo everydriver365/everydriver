@@ -8579,10 +8579,12 @@ export type Database = {
           accessibility_bio: string | null
           accessibility_enabled: boolean
           adaptations: string[]
+          additional_certifications: string[] | null
           adi_badge_expiry: string | null
           adi_badge_number: string | null
           adi_certificate_url: string | null
           adi_code_of_practice: boolean | null
+          adi_grade: string | null
           ai_auto_invoices_enabled: boolean
           ai_call_divert_buffer_after_minutes: number
           ai_call_divert_buffer_before_minutes: number
@@ -8647,6 +8649,8 @@ export type Database = {
           dark_mode_enabled: boolean | null
           data_retention_months: number | null
           dbs_certificate_expiry: string | null
+          dbs_certificate_issued: string | null
+          dbs_certificate_url: string | null
           deleted_at: string | null
           demo_mode: boolean | null
           deposit_amount: number | null
@@ -8655,6 +8659,8 @@ export type Database = {
           direct_debit_enabled: boolean
           disability_experience: string[]
           drive_time_alerts_enabled: boolean | null
+          driving_licence_expiry: string | null
+          driving_licence_number: string | null
           electricity_cost_per_kwh: number | null
           email: string | null
           extra_info: string | null
@@ -8681,6 +8687,9 @@ export type Database = {
           instagram_url: string | null
           instant_bank_pay_enabled: boolean
           instructor_grade: string | null
+          insurance_certificate_url: string | null
+          insurance_policy_number: string | null
+          insurance_provider: string | null
           intake_questions_enabled: boolean | null
           is_active: boolean
           is_online: boolean | null
@@ -8749,16 +8758,19 @@ export type Database = {
           whatsapp_enabled: boolean | null
           xero_connected: boolean | null
           xero_tenant_id: string | null
+          years_experience_adi: number | null
         }
         Insert: {
           accepts_cover_lessons?: boolean
           accessibility_bio?: string | null
           accessibility_enabled?: boolean
           adaptations?: string[]
+          additional_certifications?: string[] | null
           adi_badge_expiry?: string | null
           adi_badge_number?: string | null
           adi_certificate_url?: string | null
           adi_code_of_practice?: boolean | null
+          adi_grade?: string | null
           ai_auto_invoices_enabled?: boolean
           ai_call_divert_buffer_after_minutes?: number
           ai_call_divert_buffer_before_minutes?: number
@@ -8823,6 +8835,8 @@ export type Database = {
           dark_mode_enabled?: boolean | null
           data_retention_months?: number | null
           dbs_certificate_expiry?: string | null
+          dbs_certificate_issued?: string | null
+          dbs_certificate_url?: string | null
           deleted_at?: string | null
           demo_mode?: boolean | null
           deposit_amount?: number | null
@@ -8831,6 +8845,8 @@ export type Database = {
           direct_debit_enabled?: boolean
           disability_experience?: string[]
           drive_time_alerts_enabled?: boolean | null
+          driving_licence_expiry?: string | null
+          driving_licence_number?: string | null
           electricity_cost_per_kwh?: number | null
           email?: string | null
           extra_info?: string | null
@@ -8857,6 +8873,9 @@ export type Database = {
           instagram_url?: string | null
           instant_bank_pay_enabled?: boolean
           instructor_grade?: string | null
+          insurance_certificate_url?: string | null
+          insurance_policy_number?: string | null
+          insurance_provider?: string | null
           intake_questions_enabled?: boolean | null
           is_active?: boolean
           is_online?: boolean | null
@@ -8925,16 +8944,19 @@ export type Database = {
           whatsapp_enabled?: boolean | null
           xero_connected?: boolean | null
           xero_tenant_id?: string | null
+          years_experience_adi?: number | null
         }
         Update: {
           accepts_cover_lessons?: boolean
           accessibility_bio?: string | null
           accessibility_enabled?: boolean
           adaptations?: string[]
+          additional_certifications?: string[] | null
           adi_badge_expiry?: string | null
           adi_badge_number?: string | null
           adi_certificate_url?: string | null
           adi_code_of_practice?: boolean | null
+          adi_grade?: string | null
           ai_auto_invoices_enabled?: boolean
           ai_call_divert_buffer_after_minutes?: number
           ai_call_divert_buffer_before_minutes?: number
@@ -8999,6 +9021,8 @@ export type Database = {
           dark_mode_enabled?: boolean | null
           data_retention_months?: number | null
           dbs_certificate_expiry?: string | null
+          dbs_certificate_issued?: string | null
+          dbs_certificate_url?: string | null
           deleted_at?: string | null
           demo_mode?: boolean | null
           deposit_amount?: number | null
@@ -9007,6 +9031,8 @@ export type Database = {
           direct_debit_enabled?: boolean
           disability_experience?: string[]
           drive_time_alerts_enabled?: boolean | null
+          driving_licence_expiry?: string | null
+          driving_licence_number?: string | null
           electricity_cost_per_kwh?: number | null
           email?: string | null
           extra_info?: string | null
@@ -9033,6 +9059,9 @@ export type Database = {
           instagram_url?: string | null
           instant_bank_pay_enabled?: boolean
           instructor_grade?: string | null
+          insurance_certificate_url?: string | null
+          insurance_policy_number?: string | null
+          insurance_provider?: string | null
           intake_questions_enabled?: boolean | null
           is_active?: boolean
           is_online?: boolean | null
@@ -9101,6 +9130,7 @@ export type Database = {
           whatsapp_enabled?: boolean | null
           xero_connected?: boolean | null
           xero_tenant_id?: string | null
+          years_experience_adi?: number | null
         }
         Relationships: [
           {
