@@ -1,55 +1,39 @@
-## Per-postcode rate overrides on Rates & Coverage
+## Surcharge variables — wiring audit
 
-Let instructors set a list of outward-postcode → hourly-rate rules that override their default rate when a pupil's pickup postcode matches.
+The three new fields on `instructors` (`weekend_surcharge_amount`, `bank_holiday_surcharge_amount`, `odd_hours_surcharge_amount`) plus `odd_hours_start` / `odd_hours_end` exist in the DB and Supabase types. Here is where they actually flow today, and where they don't.
 
-### Behaviour
-- Match style: outward code (e.g. `SO22`, `PO15`). Case-insensitive, whitespace-tolerant.
-- Override type: replaces the hourly rate for that pupil/lesson.
-- Resolution order when pricing: **pupil `custom_hourly_rate`** → **matching postcode rule** → **instructor default `hourly_rate`**.
-- Fallback: if no rule matches, default rate applies. Postcodes outside the service radius are still blocked elsewhere.
+### Working end-to-end
 
-### Database
-New table `instructor_postcode_rates`:
-- `id uuid pk`
-- `instructor_id uuid` (fk → instructors)
-- `outward_code text` (stored upper-cased, e.g. `SO22`)
-- `hourly_rate numeric(10,2)` (>= 0)
-- `created_at`, `updated_at`
-- Unique `(instructor_id, outward_code)`
-- Index on `(instructor_id, outward_code)`
-- RLS: instructors can CRUD their own rows via `get_instructor_id_for_user(auth.uid())`. Public/pupil read-only `SELECT` allowed for the rows owned by the pupil's instructor (so checkout pricing works for pupil sessions) — same pattern as existing instructor-owned config tables.
+1. **Settings UI** — `RatesCoverageSections.tsx` → `RateModifiersSection` reads/writes all 5 fields on `instructors`. Saves via the registered settings save handler. ✅
+2. **Pricing engine** — `src/lib/pricing/applyRateModifiers.ts` correctly:
+   - Adds £/hour for weekend, bank holiday (priority over weekend), and odd-hours window (handles midnight wrap).
+   - Loads UK bank holidays from gov.uk, cached in `sessionStorage`. ✅
+3. **Learner checkout total** — `src/pages/BookingSummary.tsx` selects all 5 fields, builds `rateModifiers`, and applies surcharges per scheduled slot. Shows a "Surcharges active" indicator when total exceeds base. ✅
 
-### UI — `RatesCoveragePage.tsx`
-Add a third card "Postcode rates" below the Coverage card:
-- Header: title + sub "Charge a different hourly rate for specific postcode areas. Matched on the outward code (e.g. SO22)."
-- Table/list of rules: Outward code input · Hourly rate input · Remove (×). Empty state shows a hint row.
-- "+ Add postcode" button appends a blank row.
-- Inputs auto-uppercase outward code, strip spaces, max 4 chars; rate is numeric with £ prefix.
-- Wired through `useSettingsDirty` so changes save with the sticky "Save all changes" bar (same register/save/reset pattern as existing fields). Save performs a diff against original: insert new, update changed, delete removed.
-- Inline validation: duplicate outward codes flagged; invalid format (non `[A-Z]{1,2}[0-9]{1,2}[A-Z]?`) flagged; rate must be > 0. Save disabled if any row invalid.
+### Not wired (gaps)
 
-### Pricing integration
-Add helper `src/lib/pricing/resolveHourlyRate.ts`:
-```ts
-resolveHourlyRate({ pupilCustomRate, pupilPostcode, instructorDefaultRate, postcodeRules }): number
-```
-- Extracts outward code from `pupilPostcode` and looks up the rule.
-- Returns first non-null in priority order.
+These places still use the flat `hourly_rate` and never call `applyRateModifiers`, so a learner/instructor sees the base price even when a weekend/BH/off-peak slot is selected:
 
-Wire it where pupil-specific lesson pricing is computed:
-- `src/components/instructor/PupilRateEditor.tsx` — show the resolved rate as the displayed default placeholder.
-- `src/hooks/useScheduleWeek.ts`, `useDailyEarnings.ts`, `useTodayOverview.ts`, `useTomorrowPreview.ts`, `useWeeklyGoals.ts`, `useLastWeekComparison.ts`, `useInstructorPeriodStats.ts`, `useInstructorReportsData.ts` — when computing per-lesson value for an instructor's pupil, fetch postcode rules once for the instructor and apply the helper using `pupil.postcode`.
-- Course discovery / mini-website pages (`useCourseDiscovery`, `MiniWebsiteHome`, `IOSCourseCard`, `DynamicCourseCard`) are NOT in scope — they show the public default rate.
+1. **Course cards / discovery** (`useFeaturedCourses`, `useCourseDiscovery`, `Courses.tsx`, `DemoCourseCards.tsx`, `MiniWebsiteCourseCard.tsx`, mini-website pages) — list price is `hourly_rate × hours`. Surcharges aren't shown. Acceptable because slots aren't picked yet, but a "from £X, may vary at weekends/evenings" hint is missing.
+2. **Instructor-side lesson creation** — `AddLessonSheet.tsx` (instructor manually books a pupil) doesn't compute or store a surcharged price. Pupil ledger / earnings will under-charge weekend lessons booked this way.
+3. **Earnings / reports / goals** — `useDailyEarnings`, `useWeeklyGoals`, `useInstructorPeriodStats`, `useInstructorReportsData`, `useLastWeekComparison`, `useTodayOverview`, `useTomorrowPreview`, `useScheduleWeek`, `useProfitAnalysis`, `MonthEndReview.tsx` — all multiply `lesson hours × hourly_rate`. None apply surcharges, so dashboards will under-state revenue for weekend/BH/odd-hour lessons.
+4. **Pending-jobs / featured / pupil-portal price hints** — same flat `hourly_rate` usage.
+5. **Cover Marketplace** (`CoverMarketplace.tsx`) — uses `lesson_price` already stored on the offer; depends on whoever wrote that price applying surcharges (currently doesn't).
+6. **WhatsApp/AI quotes** (`WhatsAppChatWidget.tsx`) — quotes lessons at `hourly_rate` only.
+7. **`scheduled_lessons` table** — there is no `price_at_booking` / `surcharge_amount` column on the lesson row. Once a lesson is created, the surcharge applied at checkout is not persisted; reports recompute from `hourly_rate`, losing the uplift.
 
-### Out of scope
-- Per-postcode surcharges (separate from rate replacement)
-- Mobile layout changes
-- Bulk import of rules
-- Pupil-portal display of postcode rules
+### Minor
 
-### Verification
-- Add a rule `SO22 → 42`, save, refresh — rule persists.
-- A pupil with postcode `SO22 5DR` and no `custom_hourly_rate` shows £42 as the resolved rate in scheduler/earnings.
-- A pupil with `custom_hourly_rate = 38` still shows £38 (custom wins).
-- A pupil with postcode `RG1 4XX` and no matching rule shows the instructor default.
-- Duplicate / malformed rule entries block saving with an inline error.
+- `applyRateModifiers` is only imported in `BookingSummary.tsx`. Worth adding a tiny `getLessonRate(lesson, instructor)` helper and using it in the hooks above.
+- Settings UI clamps amounts to £500/hr and step 0.50 — fine.
+- No backend/RPC enforcement: an instructor changing surcharges after a lesson is booked would retroactively change reported earnings (see persistence gap above).
+
+### Recommended next steps (pick what you want)
+
+1. **Persist surcharge on each booked lesson** — add `price_per_hour` and `surcharge_amount` (numeric) to `scheduled_lessons`; populate at checkout and in `AddLessonSheet`. Then rewrite the earnings hooks to prefer `price_per_hour` when present, falling back to `hourly_rate`. (Highest impact — fixes reports, profit, goals, month-end.)
+2. **Centralise pricing** in a `getLessonPrice(lesson, instructor, modifiers)` helper and replace the ~12 `hours × hourly_rate` usages.
+3. **Course cards "from £X" hint** — append "weekend/eve from £Y" subtitle when surcharges are configured.
+4. **AddLessonSheet** — compute and show the surcharged price at the moment of manual booking, store it on the row.
+5. **AI quoting (WhatsApp widget)** — pass surcharges into the quote prompt.
+
+Tell me which of (1)–(5) you want and I'll implement. Quickest win is (1) + (2) together.
