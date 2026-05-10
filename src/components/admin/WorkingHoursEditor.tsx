@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useContext } from "react";
 import { Clock, Plus, Trash2, Calendar, Zap, CalendarOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useOptionalSettingsDirty } from "@/components/instructor/settings/useOptionalSettingsDirty";
 
 // Availability presets
 const AVAILABILITY_PRESETS = [
