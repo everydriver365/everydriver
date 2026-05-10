@@ -227,6 +227,7 @@ export function PupilCardStack({
   // Payment modal states
   const [showRecordPaymentModal, setShowRecordPaymentModal] = useState(false);
   const [showQRModal, setShowQRModal] = useState(false);
+  const [showPayLinkSheet, setShowPayLinkSheet] = useState(false);
   const [paymentRefreshTrigger, setPaymentRefreshTrigger] = useState(0);
   
   // Syllabus sheet state
