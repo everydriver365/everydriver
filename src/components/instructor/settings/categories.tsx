@@ -39,6 +39,7 @@ import { WorkingHoursEditor } from "@/components/admin/WorkingHoursEditor";
 import { GoogleServiceAccountSetup } from "@/components/instructor/GoogleServiceAccountSetup";
 import { ReminderSettings } from "@/components/instructor/ReminderSettings";
 import { PupilBookingSettingsEditor } from "@/components/instructor/PupilBookingSettingsEditor";
+import { LessonLengthBufferEditor } from "@/components/instructor/settings/LessonLengthBufferEditor";
 import { CallAnsweringSettings } from "@/components/instructor/CallAnsweringSettings";
 import NotificationPreferencesPanel from "@/components/instructor/notifications/NotificationPreferencesPanel";
 import { PushNotificationSettings } from "@/components/instructor/PushNotificationSettings";
