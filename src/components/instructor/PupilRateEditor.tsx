@@ -149,10 +149,17 @@ export function PupilRateEditor({
         Lesson Rates for {pupilName}
       </div>
 
+      {overrideActive && (
+        <div className="rounded-md border border-primary/20 bg-primary/5 px-3 py-2 text-xs text-muted-foreground">
+          Postcode override <span className="font-semibold text-foreground">{overrideOutward}</span>{" "}
+          applies — defaults below use £{resolvedHourly.toFixed(2)}/hr instead of £{defaultRate.toFixed(2)}/hr.
+        </div>
+      )}
+
       <div className="space-y-2">
         {DURATIONS.map((d) => {
           const [val, set] = stateFor(d.key);
-          const defaultForDuration = defaultRate * d.hours;
+          const defaultForDuration = resolvedHourly * d.hours;
           return (
             <div key={d.key} className="space-y-1">
               <Label className="text-xs">
@@ -187,9 +194,10 @@ export function PupilRateEditor({
         </div>
 
         <p className="text-xs text-muted-foreground">
-          Leave any field empty to use the instructor's default rate for that duration.
+          Leave any field empty to use the instructor's default rate for that duration{overrideActive ? ` (with the ${overrideOutward} postcode override applied)` : ""}.
         </p>
       </div>
+
     </div>
   );
 }
