@@ -28,6 +28,8 @@ import { usePaymentGatewayHealth } from "@/hooks/usePaymentGatewayHealth";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useBookingUpsells } from "@/hooks/useBookingUpsells";
+import { resolveHourlyRate, type PostcodeRateRule } from "@/lib/pricing/resolveHourlyRate";
+import { fetchInstructorPostcodeRules } from "@/hooks/useInstructorPostcodeRules";
 
 
 interface Instructor {
