@@ -320,6 +320,14 @@ export default function BookingSummary() {
       const schoolSkim = instructor.school_skim_amount || 0;
       setBaseHourlyRate(hourlyRate);
       setSchoolSkimAmount(schoolSkim);
+      setRateModifiers({
+        weekend_surcharge_pct: (instructor as any).weekend_surcharge_pct ?? 0,
+        bank_holiday_surcharge_pct: (instructor as any).bank_holiday_surcharge_pct ?? 0,
+        odd_hours_surcharge_pct: (instructor as any).odd_hours_surcharge_pct ?? 0,
+        odd_hours_start: (instructor as any).odd_hours_start ?? null,
+        odd_hours_end: (instructor as any).odd_hours_end ?? null,
+      });
+      loadUkBankHolidays().then(setBankHolidays);
       const courseName = template?.course_name || (hours === 28 ? "Test in a Week" : `${hours} Hour Course`);
       const courseImageUrl = instructorCourse?.course_image_url || template?.default_image_url || null;
 
