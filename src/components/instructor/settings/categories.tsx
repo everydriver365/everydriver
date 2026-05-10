@@ -87,7 +87,7 @@ export function useSettingsCategories(): SettingsCategory[] {
         {
           id: "media",
           title: "Profile media",
-          description: "Banner image, car photo, welcome video and ADI certificate",
+          description: "Banner image, car photo and welcome video",
           render: () => <ProfileMediaEditor instructorId={id} />,
         },
         {

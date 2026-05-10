@@ -28,7 +28,7 @@ export function MediaListingPage({ instructorId }: { instructorId: string }) {
       <section className="sv2-card">
         <div style={{ marginBottom: 12 }}>
           <div className="sv2-section-title">Media</div>
-          <div className="sv2-section-sub">Banner image, car photo, welcome video and ADI certificate.</div>
+          <div className="sv2-section-sub">Banner image, car photo and welcome video.</div>
         </div>
         <ProfileMediaEditor instructorId={instructorId} />
       </section>
