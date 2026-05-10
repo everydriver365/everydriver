@@ -237,9 +237,14 @@ export function DynamicCourseCard({
                   </span>
                 )}
               </div>
-              {hasSurcharges && !hasDiscount && (
+              {(isPostcodeAdjusted || (hasSurcharges && !hasDiscount)) && (
                 <p className="text-[11px] text-muted-foreground -mt-1">
-                  Weekends, bank holidays & off-peak hours may cost more
+                  {isPostcodeAdjusted && learnerOutward
+                    ? `Pricing for ${learnerOutward}. `
+                    : null}
+                  {hasSurcharges && !hasDiscount
+                    ? "Weekends, bank holidays & off-peak hours may cost more."
+                    : null}
                 </p>
               )}
 
