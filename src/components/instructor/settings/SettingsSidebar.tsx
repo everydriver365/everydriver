@@ -1,5 +1,6 @@
 import { useNavigate, useParams } from "react-router-dom";
 import {
+  IconBolt,
   IconUser, IconShieldLock, IconBell,
   IconCar, IconCertificate, IconPhoto, IconCoin, IconCalendar,
   IconBook, IconCreditCard, IconDownload,
@@ -21,6 +22,11 @@ export interface SidebarGroup {
 }
 
 export const SIDEBAR_GROUPS: SidebarGroup[] = [
+  {
+    id: "quick", label: "Quick settings", items: [
+      { id: "quick", label: "Today's controls", icon: IconBolt },
+    ],
+  },
   {
     id: "account", label: "Account", items: [
       { id: "account",         label: "Profile",          icon: IconUser },

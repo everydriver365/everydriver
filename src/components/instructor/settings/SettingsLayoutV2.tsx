@@ -4,6 +4,7 @@ import { SettingsSidebar, SIDEBAR_GROUPS } from "./SettingsSidebar";
 import { SettingsDirtyProvider } from "./SettingsDirtyContext";
 import { SettingsSaveBar } from "./SettingsSaveBar";
 
+import { QuickSettingsPage } from "./pages/QuickSettingsPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { LoginSecurityPage } from "./pages/LoginSecurityPage";
 import { NotificationsPage } from "./pages/NotificationsPage";
@@ -25,6 +26,7 @@ interface PageDef {
 }
 
 const PAGES: Record<string, PageDef> = {
+  quick:           { title: "Quick settings",   subtitle: "Toggles you change often. Changes save automatically.",                            render: id => <QuickSettingsPage instructorId={id} /> },
   account:         { title: "Profile",          subtitle: "Your name, photo, contact details and bio",                                       render: id => <ProfilePage instructorId={id} /> },
   "login-security":{ title: "Login & security", subtitle: "Email, password, two-factor authentication and active sessions",                  render: () => <LoginSecurityPage /> },
   notifications:   { title: "Notifications",    subtitle: "Choose what to be notified about and how",                                        render: id => <NotificationsPage instructorId={id} /> },
