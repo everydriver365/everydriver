@@ -370,7 +370,32 @@ export default function BookingSummary() {
   const scheduledHours = selectedSlots.reduce((acc, slot) => acc + slot.duration / 60, 0);
   const isFullyScheduled = scheduledHours >= hours;
   const isPupilDetailsComplete = !!(pupilName.trim() && pupilEmail.trim() && pupilPhone.trim() && pupilAddress.trim() && pupilPostcode.trim());
-  
+
+  // Build a slot payload with the price snapshot (per-hour rate including
+  // postcode override + surcharge, the £/hr surcharge portion, and the £
+  // amount due for this slot). This is persisted on the lesson row so reports
+  // show what was actually charged even if the instructor later changes rates.
+  const buildSlotPayload = (slot: SelectedSlot) => {
+    const dateStr = format(slot.date, "yyyy-MM-dd");
+    const { finalRate, totalAmount } = applyRateModifiers({
+      baseRate: effectiveHourlyRate,
+      lessonDate: dateStr,
+      lessonStartTime: slot.startTime,
+      modifiers: rateModifiers,
+      bankHolidaySet: bankHolidays,
+    });
+    const hoursDecimal = slot.duration / 60;
+    return {
+      date: dateStr,
+      startTime: slot.startTime,
+      endTime: slot.endTime,
+      duration: slot.duration,
+      pricePerHour: Math.round(finalRate * 100) / 100,
+      surchargeAmount: Math.round(totalAmount * 100) / 100,
+      amountDue: Math.round(hoursDecimal * finalRate * 100) / 100,
+    };
+  };
+
   // Get booking mode - default to pupil_choice
   const bookingMode = courseDetails?.instructor?.booking_mode || 'pupil_choice';
   
