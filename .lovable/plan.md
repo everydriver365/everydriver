@@ -1,64 +1,77 @@
-## What's actually happening
+## Why this keeps happening
 
-I checked the database directly:
+The original symptom (course toggles failing) wasn't a one-off bug. It's the same root cause repeating across the app:
 
-- Richard Chapman now has **4 active rows** in `instructor_courses` — so the toggles ARE saving. The UI just isn't confirming it visibly enough, which is why it feels like "nothing happens".
-- His `home_postcode` is stored as **`SO302td`** (no space, lowercase). The pupil search geocodes that string via the `geocode-postcode` edge function. Malformed postcodes often return no coordinates, so he never enters the "instructors near you" set and never appears in results.
+When a table has an `instructor_id` column, instructors need explicit RLS policies that say "you can insert / update / delete rows where `instructor_id = get_instructor_id_for_user(auth.uid())`". Many tables were created with only:
 
-So there are two separate bugs hiding behind one symptom.
+- a `public read` policy (so pupils can see the data), and
+- an `admin manage` policy (so support can fix things).
 
-## Fix 1 — Toggle UX: make the change obvious
+…but no instructor write policies. Result: the UI fires the mutation, RLS silently rejects it (`42501`), the toast says "Failed to…", and the instructor concludes "settings don't work". Because there's no automated check, every one of these is found by a real instructor hitting it in production.
 
-In `src/components/instructor/InstructorCoursesManager.tsx`:
+I ran a full audit. There are roughly **30+ instructor-owned tables** with at least one missing write policy (insert/update/delete). Some are intentional (audit logs, system-generated reminders, etc.) — but many are user-facing features.
 
-- Re-fetch the row from the DB after a successful insert/update so the visible state matches what's actually persisted (currently the optimistic state can drift if RLS silently filters or if the insert returned no row).
-- Show a clearer toast: "Enabled — pupils can now book {course name}" / "Disabled — hidden from pupil search".
-- Add a small "Visible to pupils" / "Hidden from pupils" caption under the row label that updates with the switch, so there's a non-toast confirmation too.
-- Add a banner at the top of the list: "You currently offer N courses. Pupils searching your area will see these." This makes the cause/effect obvious.
+## What I'll do
 
-No DB changes for this part — RLS policies are already correct (verified).
+### 1. Generate a single, definitive RLS audit
 
-## Fix 2 — Auto-format postcode on save
+Write `scripts/audit-instructor-rls.ts` that:
 
-Add a tiny helper `formatUKPostcode(input)` in `src/lib/utils.ts` (or a new `src/lib/postcode.ts`):
-- Strip all whitespace, uppercase
-- Insert a single space before the last 3 chars (UK outward/inward split)
-- e.g. `so302td` → `SO30 2TD`, `so30 2td` → `SO30 2TD`, `SO302TD` → `SO30 2TD`
+- Lists every `public.*` table with an `instructor_id` column.
+- Cross-references `pg_policies` to flag tables where an instructor cannot insert / update / delete their own rows.
+- Cross-references the codebase: greps `src/` for `.from("<table>").insert/.update/.delete(` calls, so we know which gaps are actually exercised by the UI.
+- Outputs `docs/qa/instructor-rls-gaps.md` with three sections:
+  - **Critical** — UI writes to it, no policy exists. Will silently fail.
+  - **Intentional** — backend-only / service-role tables (annotated, kept gap on purpose).
+  - **Read-only by design** — instructor only reads (e.g. `compliance_reminders`).
 
-Apply it everywhere `home_postcode` is written for instructors. Based on the codebase that's:
-- `src/components/instructor/InstructorProfileEditor.tsx` (or wherever instructors edit their profile — to be confirmed during implementation)
-- `src/components/admin/InstructorForm.tsx` (admin-side create/edit)
-- Any onboarding/signup form that captures `home_postcode`
+Run it once, commit the output. From now on I (and you) can re-run it any time and see the truth in one file.
 
-Format on submit, not on every keystroke (so users can type freely).
+### 2. Fix every "Critical" row in one migration
 
-### One-off data fix
-
-Run a single UPDATE to normalise existing rows so currently-saved instructors show up immediately without needing to re-save:
+For each table flagged Critical, add the standard three policies:
 
 ```sql
-UPDATE public.instructors
-SET home_postcode = regexp_replace(
-  upper(regexp_replace(home_postcode, '\s+', '', 'g')),
-  '^(.*)(.{3})$', '\1 \2'
-)
-WHERE home_postcode IS NOT NULL
-  AND home_postcode !~ '^[A-Z0-9]+ [A-Z0-9]{3}$';
+CREATE POLICY "Instructors can insert own <table>"
+  ON public.<table> FOR INSERT TO authenticated
+  WITH CHECK (instructor_id = public.get_instructor_id_for_user(auth.uid()));
+
+CREATE POLICY "Instructors can update own <table>"
+  ON public.<table> FOR UPDATE TO authenticated
+  USING       (instructor_id = public.get_instructor_id_for_user(auth.uid()))
+  WITH CHECK  (instructor_id = public.get_instructor_id_for_user(auth.uid()));
+
+CREATE POLICY "Instructors can delete own <table>"
+  ON public.<table> FOR DELETE TO authenticated
+  USING       (instructor_id = public.get_instructor_id_for_user(auth.uid()));
 ```
 
-This fixes Richard (`SO302td` → `SO30 2TD`) and any other instructor with a malformed postcode.
+I'll show you the exact list before applying — so you can veto anything that should stay locked down.
+
+### 3. Add a lightweight regression guard
+
+Add `scripts/audit-instructor-rls.ts` to a `bun run audit:rls` script in `package.json`. It exits non-zero if any new `instructor_id` table appears in the codebase without matching policies. So the next person (me or a teammate) who creates `instructor_<thing>` and forgets RLS will get an immediate signal, not a customer ticket.
+
+### 4. Fix the silent-failure UX
+
+Even with policies in place, RLS rejections surface as `42501 / new row violates row-level security policy`. That's gibberish to users. Add a small helper `src/lib/supabaseError.ts` with `isRlsError(err)` + `friendlyDbError(err)`, and use it in the 5–6 most-hit instructor mutations (course toggle, profile editor, working hours, manual blocks, calendar overrides, gap offers). On RLS rejection, show: *"Permission denied — please refresh and try again. If it persists, contact support."* Plus log to console with the table + operation so I can find these instantly next time.
+
+## Out of scope (deliberate)
+
+- I won't blanket-add policies to audit / log / system tables — those should stay restricted.
+- I won't refactor the underlying tables.
+- No mobile layout changes (per project rules).
 
 ## Verification
 
-1. Sign in as Richard, open Menu → Courses & payments → My Courses, toggle a course off then on. Confirm the new caption + toast + persisted state.
-2. Open the pupil-facing course search, enter `SO30` (or a nearby postcode) and confirm Richard now appears.
-3. Edit Richard's profile, type `po156aa` in the postcode field, save, and confirm it stores as `PO15 6AA`.
+1. Re-run the audit — Critical list is empty.
+2. Sign in as Richard and walk through Settings → Profile, Courses, Working Hours, Calendar Overrides, Manual Blocks, Gap Offers. Every save shows a success toast, every row appears in the DB.
+3. Force an RLS error in dev (e.g. swap the helper to return null) — confirm the new friendly toast fires instead of `42501`.
 
-## Files touched
+## Files
 
-- `src/components/instructor/InstructorCoursesManager.tsx` — clearer feedback + post-save refetch
-- `src/lib/postcode.ts` — new `formatUKPostcode` helper
-- Instructor profile editor + `src/components/admin/InstructorForm.tsx` — call helper on save
-- One data-fix SQL (via insert tool, not a migration — it's data, not schema)
-
-No changes to RLS, the search hook, or the geocode edge function.
+- `scripts/audit-instructor-rls.ts` (new)
+- `docs/qa/instructor-rls-gaps.md` (generated, committed)
+- one Supabase migration adding the missing policies (after you approve the table list)
+- `src/lib/supabaseError.ts` (new) + ~6 callsites updated
+- `package.json` — `audit:rls` script
