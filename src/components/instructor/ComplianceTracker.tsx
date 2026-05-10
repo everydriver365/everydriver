@@ -34,14 +34,10 @@ import { CPDLogManager } from "./CPDLogManager";
 import { CompactStandardsCheck } from "./CompactStandardsCheck";
 
 interface ComplianceData {
-  adi_badge_number: string | null;
-  adi_badge_expiry: string | null;
-  car_insurance_expiry: string | null;
   car_mot_expiry: string | null;
   car_tax_expiry: string | null;
   cpd_hours_logged: number | null;
   cpd_year_target: number | null;
-  dbs_certificate_expiry: string | null;
 }
 
 interface ComplianceTrackerProps {
@@ -55,14 +51,10 @@ export function ComplianceTracker({ instructorId }: ComplianceTrackerProps) {
   const [editMode, setEditMode] = useState(false);
   const [showCPDLog, setShowCPDLog] = useState(false);
   const [formData, setFormData] = useState<ComplianceData>({
-    adi_badge_number: "",
-    adi_badge_expiry: "",
-    car_insurance_expiry: "",
     car_mot_expiry: "",
     car_tax_expiry: "",
     cpd_hours_logged: 0,
     cpd_year_target: 35,
-    dbs_certificate_expiry: "",
   });
 
   useEffect(() => {
@@ -74,23 +66,17 @@ export function ComplianceTracker({ instructorId }: ComplianceTrackerProps) {
     try {
       const { data: instructor, error } = await supabase
         .from("instructors")
-        .select(
-          "adi_badge_number, adi_badge_expiry, car_insurance_expiry, car_mot_expiry, car_tax_expiry, cpd_hours_logged, cpd_year_target, dbs_certificate_expiry"
-        )
+        .select("car_mot_expiry, car_tax_expiry, cpd_hours_logged, cpd_year_target")
         .eq("id", instructorId)
         .single();
 
       if (error) throw error;
       setData(instructor);
       setFormData({
-        adi_badge_number: instructor.adi_badge_number || "",
-        adi_badge_expiry: instructor.adi_badge_expiry || "",
-        car_insurance_expiry: instructor.car_insurance_expiry || "",
         car_mot_expiry: instructor.car_mot_expiry || "",
         car_tax_expiry: instructor.car_tax_expiry || "",
         cpd_hours_logged: instructor.cpd_hours_logged || 0,
         cpd_year_target: instructor.cpd_year_target || 35,
-        dbs_certificate_expiry: instructor.dbs_certificate_expiry || "",
       });
     } catch (error) {
       console.error("Error fetching compliance data:", error);
@@ -105,18 +91,14 @@ export function ComplianceTracker({ instructorId }: ComplianceTrackerProps) {
       const { error } = await supabase
         .from("instructors")
         .update({
-          adi_badge_number: formData.adi_badge_number || null,
-          adi_badge_expiry: formData.adi_badge_expiry || null,
-          car_insurance_expiry: formData.car_insurance_expiry || null,
           car_mot_expiry: formData.car_mot_expiry || null,
           car_tax_expiry: formData.car_tax_expiry || null,
           cpd_year_target: formData.cpd_year_target,
-          dbs_certificate_expiry: formData.dbs_certificate_expiry || null,
         })
         .eq("id", instructorId);
 
       if (error) throw error;
-      toast.success("Compliance data saved");
+      toast.success("Vehicle docs saved");
       setEditMode(false);
       fetchComplianceData();
     } catch (error) {
@@ -145,22 +127,6 @@ export function ComplianceTracker({ instructorId }: ComplianceTrackerProps) {
 
   const complianceItems = [
     {
-      id: "adi",
-      icon: BadgeCheck,
-      title: "ADI Badge",
-      subtitle: data?.adi_badge_number || "No badge number",
-      expiry: data?.adi_badge_expiry,
-      field: "adi_badge_expiry",
-    },
-    {
-      id: "insurance",
-      icon: Shield,
-      title: "Car Insurance",
-      subtitle: "Vehicle insurance policy",
-      expiry: data?.car_insurance_expiry,
-      field: "car_insurance_expiry",
-    },
-    {
       id: "mot",
       icon: Car,
       title: "MOT Certificate",
@@ -175,14 +141,6 @@ export function ComplianceTracker({ instructorId }: ComplianceTrackerProps) {
       subtitle: "Vehicle excise duty",
       expiry: data?.car_tax_expiry,
       field: "car_tax_expiry",
-    },
-    {
-      id: "dbs",
-      icon: FileCheck,
-      title: "DBS Certificate",
-      subtitle: "Enhanced DBS check",
-      expiry: data?.dbs_certificate_expiry,
-      field: "dbs_certificate_expiry",
     },
   ];
 
@@ -262,7 +220,7 @@ export function ComplianceTracker({ instructorId }: ComplianceTrackerProps) {
           <div className="flex items-center justify-between">
             <CardTitle className="text-base flex items-center gap-2">
               <FileText className="h-4 w-4 text-primary" />
-              Documents & Expiries
+              Vehicle documents
             </CardTitle>
             <Dialog open={editMode} onOpenChange={setEditMode}>
               <DialogTrigger asChild>
@@ -272,33 +230,9 @@ export function ComplianceTracker({ instructorId }: ComplianceTrackerProps) {
               </DialogTrigger>
               <DialogContent className="max-w-md">
                 <DialogHeader>
-                  <DialogTitle>Update Compliance Dates</DialogTitle>
+                  <DialogTitle>Update Vehicle Dates</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4 pt-4">
-                  <div className="space-y-2">
-                    <Label>ADI Badge Number</Label>
-                    <Input
-                      value={formData.adi_badge_number || ""}
-                      onChange={(e) => setFormData(prev => ({ ...prev, adi_badge_number: e.target.value }))}
-                      placeholder="e.g., 123456"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>ADI Badge Expiry</Label>
-                    <Input
-                      type="date"
-                      value={formData.adi_badge_expiry || ""}
-                      onChange={(e) => setFormData(prev => ({ ...prev, adi_badge_expiry: e.target.value }))}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Car Insurance Expiry</Label>
-                    <Input
-                      type="date"
-                      value={formData.car_insurance_expiry || ""}
-                      onChange={(e) => setFormData(prev => ({ ...prev, car_insurance_expiry: e.target.value }))}
-                    />
-                  </div>
                   <div className="space-y-2">
                     <Label>MOT Expiry</Label>
                     <Input
@@ -313,14 +247,6 @@ export function ComplianceTracker({ instructorId }: ComplianceTrackerProps) {
                       type="date"
                       value={formData.car_tax_expiry || ""}
                       onChange={(e) => setFormData(prev => ({ ...prev, car_tax_expiry: e.target.value }))}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>DBS Certificate Expiry</Label>
-                    <Input
-                      type="date"
-                      value={formData.dbs_certificate_expiry || ""}
-                      onChange={(e) => setFormData(prev => ({ ...prev, dbs_certificate_expiry: e.target.value }))}
                     />
                   </div>
                   <div className="space-y-2">
