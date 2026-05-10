@@ -18070,6 +18070,7 @@ export type Database = {
           allowed_lesson_lengths: number[] | null
           app_slug: string | null
           available_from: string | null
+          bank_holiday_surcharge_amount: number | null
           bio: string | null
           booking_advance_days: number | null
           booking_mode: string | null
@@ -18108,6 +18109,9 @@ export type Database = {
           location_name: string | null
           logo_url: string | null
           name: string | null
+          odd_hours_end: string | null
+          odd_hours_start: string | null
+          odd_hours_surcharge_amount: number | null
           personal_website_url: string | null
           preferred_lesson_length: number | null
           profile_image_url: string | null
@@ -18126,12 +18130,14 @@ export type Database = {
           website_menu_text_color: string | null
           website_text_color: string | null
           website_theme: string | null
+          weekend_surcharge_amount: number | null
           welcome_video_url: string | null
         }
         Insert: {
           allowed_lesson_lengths?: number[] | null
           app_slug?: string | null
           available_from?: string | null
+          bank_holiday_surcharge_amount?: number | null
           bio?: string | null
           booking_advance_days?: number | null
           booking_mode?: string | null
@@ -18170,6 +18176,9 @@ export type Database = {
           location_name?: string | null
           logo_url?: string | null
           name?: string | null
+          odd_hours_end?: string | null
+          odd_hours_start?: string | null
+          odd_hours_surcharge_amount?: number | null
           personal_website_url?: string | null
           preferred_lesson_length?: number | null
           profile_image_url?: string | null
@@ -18188,12 +18197,14 @@ export type Database = {
           website_menu_text_color?: string | null
           website_text_color?: string | null
           website_theme?: string | null
+          weekend_surcharge_amount?: number | null
           welcome_video_url?: string | null
         }
         Update: {
           allowed_lesson_lengths?: number[] | null
           app_slug?: string | null
           available_from?: string | null
+          bank_holiday_surcharge_amount?: number | null
           bio?: string | null
           booking_advance_days?: number | null
           booking_mode?: string | null
@@ -18232,6 +18243,9 @@ export type Database = {
           location_name?: string | null
           logo_url?: string | null
           name?: string | null
+          odd_hours_end?: string | null
+          odd_hours_start?: string | null
+          odd_hours_surcharge_amount?: number | null
           personal_website_url?: string | null
           preferred_lesson_length?: number | null
           profile_image_url?: string | null
@@ -18250,6 +18264,7 @@ export type Database = {
           website_menu_text_color?: string | null
           website_text_color?: string | null
           website_theme?: string | null
+          weekend_surcharge_amount?: number | null
           welcome_video_url?: string | null
         }
         Relationships: []

@@ -23,6 +23,7 @@ import { ExaminerSelector } from './driving-test/ExaminerSelector';
 import { TestCentrePicker } from './driving-test/TestCentrePicker';
 import { SegmentedControl } from '@/components/instructor/ui/SegmentedControl';
 import { pupilAvatarColor, pupilAvatarInitial } from '@/lib/pupilAvatarColor';
+import { applyRateModifiers, loadUkBankHolidays, type RateModifiers } from '@/lib/pricing/applyRateModifiers';
 
 interface AddLessonSheetProps {
   open: boolean;
@@ -245,20 +246,34 @@ export function AddLessonSheet({
   const isDrivingTest = lessonType === 'driving_test';
   const currentTypeColor = LESSON_TYPES.find(t => t.value === lessonType)?.color || '#7FB3E3';
 
+  const [hourlyRate, setHourlyRate] = useState<number>(0);
+  const [rateModifiers, setRateModifiers] = useState<RateModifiers | null>(null);
+  const [bankHolidays, setBankHolidays] = useState<Set<string>>(new Set());
+
   useEffect(() => {
     if (open) {
       fetchPupils();
       if (defaultDate) setLessonDate(defaultDate);
-      // Load instructor buffer + home postcode for conflict/travel checks
+      // Load instructor buffer + home postcode + pricing for conflict/travel/price calc
       (async () => {
         const { data } = await supabase
           .from('instructors')
-          .select('buffer_minutes, home_postcode')
+          .select('buffer_minutes, home_postcode, hourly_rate, weekend_surcharge_amount, bank_holiday_surcharge_amount, odd_hours_surcharge_amount, odd_hours_start, odd_hours_end')
           .eq('id', instructorId)
           .maybeSingle();
-        setBufferMinutes(((data as any)?.buffer_minutes as number | null) ?? 0);
-        setInstructorHomePostcode(((data as any)?.home_postcode as string | null) ?? '');
+        const d = (data ?? {}) as any;
+        setBufferMinutes((d.buffer_minutes as number | null) ?? 0);
+        setInstructorHomePostcode((d.home_postcode as string | null) ?? '');
+        setHourlyRate(Number(d.hourly_rate) || 0);
+        setRateModifiers({
+          weekend_surcharge_amount: d.weekend_surcharge_amount,
+          bank_holiday_surcharge_amount: d.bank_holiday_surcharge_amount,
+          odd_hours_surcharge_amount: d.odd_hours_surcharge_amount,
+          odd_hours_start: d.odd_hours_start,
+          odd_hours_end: d.odd_hours_end,
+        });
       })();
+      loadUkBankHolidays().then(setBankHolidays).catch(() => {});
     }
   }, [open, defaultDate, instructorId]);
 
@@ -621,6 +636,14 @@ export function AddLessonSheet({
         const recurringDate = i === 0 ? lessonDate : addWeeks(lessonDate, i);
         const dateStr = format(recurringDate, 'yyyy-MM-dd');
         dateStrs.push(dateStr);
+        const mod = applyRateModifiers({
+          baseRate: hourlyRate,
+          lessonDate: dateStr,
+          lessonStartTime,
+          modifiers: rateModifiers,
+          bankHolidaySet: bankHolidays,
+        });
+        const hours = durationMinutes / 60;
         lessons.push({
           instructor_id: instructorId, pupil_id: selectedPupil,
           lesson_date: dateStr, start_time: lessonStartTime,
@@ -632,6 +655,9 @@ export function AddLessonSheet({
           planned_competencies: plannedCompetencies.length > 0 ? plannedCompetencies : null,
           notes: testNotes,
           clash_overridden: overrideBuffer && isHardOverlap,
+          price_per_hour: hourlyRate || null,
+          surcharge_amount: Math.round(mod.totalAmount * hours * 100) / 100,
+          amount_due: Math.round(mod.finalRate * hours * 100) / 100,
           ...(isDrivingTest && selectedTestCentre ? { test_centre_id: selectedTestCentre } : {}),
           ...(isDrivingTest && selectedExaminer ? { examiner_id: selectedExaminer } : {}),
         });
@@ -684,9 +710,18 @@ export function AddLessonSheet({
       const lessons = [];
       for (let i = 0; i < weeks; i++) {
         const recurringDate = i === 0 ? lessonDate : addWeeks(lessonDate, i);
+        const dateStr = format(recurringDate, 'yyyy-MM-dd');
+        const mod = applyRateModifiers({
+          baseRate: hourlyRate,
+          lessonDate: dateStr,
+          lessonStartTime,
+          modifiers: rateModifiers,
+          bankHolidaySet: bankHolidays,
+        });
+        const hours = durationMinutes / 60;
         lessons.push({
           instructor_id: instructorId, pupil_id: newPupil.id,
-          lesson_date: format(recurringDate, 'yyyy-MM-dd'), start_time: lessonStartTime,
+          lesson_date: dateStr, start_time: lessonStartTime,
           duration_minutes: durationMinutes, pickup_location: addr || null,
           status: 'scheduled', payment_status: paymentMethod === 'cash' ? 'cash' : 'not_paid',
           payment_method: paymentMethod,
@@ -695,6 +730,9 @@ export function AddLessonSheet({
           planned_competencies: plannedCompetencies.length > 0 ? plannedCompetencies : null,
           notes: testNotes,
           clash_overridden: overrideBuffer && isHardOverlap,
+          price_per_hour: hourlyRate || null,
+          surcharge_amount: Math.round(mod.totalAmount * hours * 100) / 100,
+          amount_due: Math.round(mod.finalRate * hours * 100) / 100,
           ...(isDrivingTest && selectedTestCentre ? { test_centre_id: selectedTestCentre } : {}),
           ...(isDrivingTest && selectedExaminer ? { examiner_id: selectedExaminer } : {}),
         });

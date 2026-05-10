@@ -21,6 +21,9 @@ interface DynamicCourseCardProps {
     bio: string | null;
     brand_colour: string | null;
     school_skim_amount?: number | null;
+    weekend_surcharge_amount?: number | null;
+    bank_holiday_surcharge_amount?: number | null;
+    odd_hours_surcharge_amount?: number | null;
   };
   hours: number;
   nextAvailable?: Date | null;
@@ -62,6 +65,10 @@ export function DynamicCourseCard({
   const totalPrice = basePrice + schoolSkim;
   const finalPrice = discountedPrice || totalPrice;
   const hasDiscount = discountedPrice && discountedPrice < totalPrice;
+  const hasSurcharges =
+    Number(instructor.weekend_surcharge_amount) > 0 ||
+    Number(instructor.bank_holiday_surcharge_amount) > 0 ||
+    Number(instructor.odd_hours_surcharge_amount) > 0;
   const courseName = hours === 28 ? "TEST IN A WEEK" : `${hours} HOUR COURSE`;
   const brandColour = instructor.brand_colour || "#1e3a5f";
 
@@ -216,9 +223,16 @@ export function DynamicCourseCard({
                     <span className="text-sm font-bold text-red-600">£{finalPrice.toFixed(0)}</span>
                   </div>
                 ) : (
-                  <span className="text-sm font-semibold">£{totalPrice.toFixed(2)}</span>
+                  <span className="text-sm font-semibold">
+                    {hasSurcharges ? "From " : ""}£{totalPrice.toFixed(2)}
+                  </span>
                 )}
               </div>
+              {hasSurcharges && !hasDiscount && (
+                <p className="text-[11px] text-muted-foreground -mt-1">
+                  Weekends, bank holidays & off-peak hours may cost more
+                </p>
+              )}
 
               {/* Payment Options - Dynamic instalment amounts */}
               <CompactPaymentBadges amount={finalPrice} className="pt-1" />

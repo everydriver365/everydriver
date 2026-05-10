@@ -1047,7 +1047,7 @@ serve(async (req) => {
         // Fetch instructor profile for context
         const { data: instructor } = await supabase
           .from("instructors")
-          .select("name, phone, hourly_rate, areas_covered, transmission_type, car_make, car_model, adi_number, adi_grade, qualifications, bio, email")
+          .select("name, phone, hourly_rate, areas_covered, transmission_type, car_make, car_model, adi_number, adi_grade, qualifications, bio, email, weekend_surcharge_amount, bank_holiday_surcharge_amount, odd_hours_surcharge_amount, odd_hours_start, odd_hours_end")
           .eq("id", instructor_id)
           .single();
 
@@ -1073,6 +1073,13 @@ Instructor profile:
 - Phone: ${instructor.phone || "Not set"}
 - Email: ${instructor.email || "Not set"}
 - Hourly rate: ${instructor.hourly_rate ? `£${instructor.hourly_rate}` : "Not set"}
+- Surcharges: ${[
+  Number(instructor.weekend_surcharge_amount) > 0 ? `+£${Number(instructor.weekend_surcharge_amount).toFixed(2)}/hr at weekends` : null,
+  Number(instructor.bank_holiday_surcharge_amount) > 0 ? `+£${Number(instructor.bank_holiday_surcharge_amount).toFixed(2)}/hr on bank holidays` : null,
+  Number(instructor.odd_hours_surcharge_amount) > 0 && instructor.odd_hours_start && instructor.odd_hours_end
+    ? `+£${Number(instructor.odd_hours_surcharge_amount).toFixed(2)}/hr off-peak (${instructor.odd_hours_start}–${instructor.odd_hours_end})`
+    : null,
+].filter(Boolean).join("; ") || "None"}
 - Transmission: ${instructor.transmission_type || "Not set"}
 - Car: ${instructor.car_make ? `${instructor.car_make} ${instructor.car_model || ""}`.trim() : "Not set"}
 - Areas covered: ${areasText}

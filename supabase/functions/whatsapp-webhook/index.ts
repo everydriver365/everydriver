@@ -77,7 +77,7 @@ Deno.serve(async (req) => {
         perInstructorToken = acct.access_token;
         const { data: instr } = await supabase
           .from("instructors")
-          .select("id, name, hourly_rate, car_details, postcode, ai_receptionist_enabled, whatsapp_phone, phone")
+          .select("id, name, hourly_rate, car_details, postcode, ai_receptionist_enabled, whatsapp_phone, phone, weekend_surcharge_amount, bank_holiday_surcharge_amount, odd_hours_surcharge_amount, odd_hours_start, odd_hours_end")
           .eq("id", acct.instructor_id)
           .maybeSingle();
         targetInstructor = instr;
@@ -88,7 +88,7 @@ Deno.serve(async (req) => {
     if (!targetInstructor) {
       const { data: instructor } = await supabase
         .from("instructors")
-        .select("id, name, hourly_rate, car_details, postcode, ai_receptionist_enabled, whatsapp_phone, phone")
+        .select("id, name, hourly_rate, car_details, postcode, ai_receptionist_enabled, whatsapp_phone, phone, weekend_surcharge_amount, bank_holiday_surcharge_amount, odd_hours_surcharge_amount, odd_hours_start, odd_hours_end")
         .or(`whatsapp_phone.eq.${senderPhone},phone.eq.${senderPhone}`)
         .maybeSingle();
       targetInstructor = instructor;
@@ -98,7 +98,7 @@ Deno.serve(async (req) => {
     if (!targetInstructor) {
       const { data: fallback } = await supabase
         .from("instructors")
-        .select("id, name, hourly_rate, car_details, postcode, ai_receptionist_enabled, whatsapp_phone, phone")
+        .select("id, name, hourly_rate, car_details, postcode, ai_receptionist_enabled, whatsapp_phone, phone, weekend_surcharge_amount, bank_holiday_surcharge_amount, odd_hours_surcharge_amount, odd_hours_start, odd_hours_end")
         .eq("ai_receptionist_enabled", true)
         .limit(1)
         .maybeSingle();
@@ -313,7 +313,7 @@ async function handleWidgetMessage(body: any) {
     // Widget is on an instructor's page — forward to that instructor's WhatsApp
     const { data: instr } = await supabase
       .from("instructors")
-      .select("id, name, hourly_rate, car_details, postcode, ai_receptionist_enabled, whatsapp_phone, phone")
+      .select("id, name, hourly_rate, car_details, postcode, ai_receptionist_enabled, whatsapp_phone, phone, weekend_surcharge_amount, bank_holiday_surcharge_amount, odd_hours_surcharge_amount, odd_hours_start, odd_hours_end")
       .eq("id", instructor_id)
       .maybeSingle();
 
@@ -621,6 +621,11 @@ async function gatherInstructorContext(supabase: any, instructor: any) {
     courses: courses || [],
     workingHours: workingHours || [],
     bookedLessons: bookedLessons || [],
+    weekendSurcharge: instructor.weekend_surcharge_amount,
+    bankHolidaySurcharge: instructor.bank_holiday_surcharge_amount,
+    oddHoursSurcharge: instructor.odd_hours_surcharge_amount,
+    oddHoursStart: instructor.odd_hours_start,
+    oddHoursEnd: instructor.odd_hours_end,
   };
 }
 
@@ -647,6 +652,13 @@ Your job is to answer enquiries about driving lessons naturally and helpfully. B
 INSTRUCTOR INFO:
 - Name: ${context.name}
 - Hourly rate: £${context.hourlyRate || "TBC"}
+- Surcharges: ${[
+  Number(context.weekendSurcharge) > 0 ? `+£${Number(context.weekendSurcharge).toFixed(2)}/hr at weekends` : null,
+  Number(context.bankHolidaySurcharge) > 0 ? `+£${Number(context.bankHolidaySurcharge).toFixed(2)}/hr on bank holidays` : null,
+  Number(context.oddHoursSurcharge) > 0 && context.oddHoursStart && context.oddHoursEnd
+    ? `+£${Number(context.oddHoursSurcharge).toFixed(2)}/hr off-peak (${context.oddHoursStart}–${context.oddHoursEnd})`
+    : null,
+].filter(Boolean).join("; ") || "None"}
 - Car: ${context.carDetails || "Modern dual-control vehicle"}
 - Area: ${context.postcode || "Local area"}
 
