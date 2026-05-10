@@ -43,8 +43,22 @@ export function PupilRateEditor({
   currentCustomRate,
   currentCustomRate90,
   currentCustomRate120,
+  pupilPostcode,
+  instructorId,
   onSaved,
 }: PupilRateEditorProps) {
+  const { data: postcodeRules } = useInstructorPostcodeRules(instructorId);
+  const resolvedHourly = resolveHourlyRate({
+    pupilPostcode,
+    instructorDefaultRate: defaultRate,
+    postcodeRules,
+  }) ?? defaultRate;
+  const overrideOutward = extractOutwardCode(pupilPostcode || null);
+  const overrideActive =
+    !!overrideOutward &&
+    !!postcodeRules?.find((r) => r.outward_code.toUpperCase() === overrideOutward) &&
+    resolvedHourly !== defaultRate;
+
   const [rate60, setRate60] = useState(currentCustomRate?.toString() ?? "");
   const [rate90, setRate90] = useState(currentCustomRate90?.toString() ?? "");
   const [rate120, setRate120] = useState(currentCustomRate120?.toString() ?? "");
