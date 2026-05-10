@@ -73,28 +73,37 @@ export function Header() {
         <div className="hidden items-center gap-2 md:flex">
           <LanguageToggle />
           <ThemeToggle />
-          {/* Postcode Search */}
-          <form onSubmit={handleSearch} className="flex items-center">
-            <div className="flex items-center rounded-full bg-white pl-3 pr-1 py-1">
-              <MapPin className="h-4 w-4 text-muted-foreground/60 mr-2" />
-              <Input
-                type="text"
-                placeholder="Your postcode"
-                value={postcode}
-                onChange={(e) => setPostcode(e.target.value)}
-                className="h-8 w-28 border-0 bg-transparent p-0 text-sm text-foreground placeholder:text-muted-foreground/60 focus-visible:ring-0 focus-visible:ring-offset-0"
-              />
-              <button
-                type="submit"
-                className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground/60 hover:text-muted-foreground transition-colors"
-              >
-                <Search className="h-4 w-4 rotate-45" />
-              </button>
-              <Button type="submit" size="sm" className="h-8 rounded-full px-4 ml-1">
-                Find Courses
-              </Button>
-            </div>
-          </form>
+          {isWinchester ? (
+            <a
+              href={`tel:${winchesterPhone.replace(/\s/g, "")}`}
+              className="flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-primary hover:bg-white/90 transition-colors"
+            >
+              <Phone className="h-4 w-4" />
+              {winchesterPhone}
+            </a>
+          ) : (
+            <form onSubmit={handleSearch} className="flex items-center">
+              <div className="flex items-center rounded-full bg-white pl-3 pr-1 py-1">
+                <MapPin className="h-4 w-4 text-muted-foreground/60 mr-2" />
+                <Input
+                  type="text"
+                  placeholder="Your postcode"
+                  value={postcode}
+                  onChange={(e) => setPostcode(e.target.value)}
+                  className="h-8 w-28 border-0 bg-transparent p-0 text-sm text-foreground placeholder:text-muted-foreground/60 focus-visible:ring-0 focus-visible:ring-offset-0"
+                />
+                <button
+                  type="submit"
+                  className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground/60 hover:text-muted-foreground transition-colors"
+                >
+                  <Search className="h-4 w-4 rotate-45" />
+                </button>
+                <Button type="submit" size="sm" className="h-8 rounded-full px-4 ml-1">
+                  Find Courses
+                </Button>
+              </div>
+            </form>
+          )}
         </div>
 
         {/* Mobile Controls */}
