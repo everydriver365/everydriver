@@ -23,6 +23,8 @@ import {
 import { setRememberMe, getRememberMe } from "@/lib/sessionPersistence";
 import { isEmailNotConfirmedError, resendSignupConfirmation } from "@/lib/emailConfirmation";
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
+import { SignInEnvironmentHint } from "@/components/auth/SignInEnvironmentHint";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const loginSchema = z.object({
   email: z.string().trim().email("Please enter a valid email address").max(255),
@@ -465,18 +467,31 @@ export default function InstructorLogin() {
             </AnimatePresence>
 
             {!isForgotPassword && (
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="rememberMe"
-                  checked={rememberMe}
-                  onCheckedChange={(checked) => setRememberMeState(checked as boolean)}
-                />
-                <Label 
-                  htmlFor="rememberMe" 
-                  className="text-sm font-normal cursor-pointer text-muted-foreground"
-                >
-                  Remember me (enables {biometryLabel})
-                </Label>
+              <div className="space-y-1.5">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="rememberMe"
+                    checked={rememberMe}
+                    onCheckedChange={(checked) => setRememberMeState(checked as boolean)}
+                  />
+                  <TooltipProvider delayDuration={150}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Label
+                          htmlFor="rememberMe"
+                          className="text-sm font-normal cursor-pointer text-muted-foreground"
+                        >
+                          Remember me (enables {biometryLabel})
+                        </Label>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="max-w-xs text-xs">
+                        Keeps you signed in on this device until you sign out.
+                        Without it, you'll be signed out when the browser closes.
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+                <SignInEnvironmentHint className="pl-6" />
               </div>
             )}
 
