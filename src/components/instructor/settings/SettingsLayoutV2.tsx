@@ -1,9 +1,10 @@
 import { ReactNode } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
-import { SettingsSidebar, SIDEBAR_GROUPS } from "./SettingsSidebar";
+import { SettingsSidebar, SIDEBAR_GROUPS, type SidebarGroup } from "./SettingsSidebar";
 import { SettingsDirtyProvider } from "./SettingsDirtyContext";
 import { SettingsSaveBar } from "./SettingsSaveBar";
+import type { SettingsCategory } from "./SettingsLayout";
 
 import { QuickSettingsPage } from "./pages/QuickSettingsPage";
 import { ProfilePage } from "./pages/ProfilePage";
@@ -45,17 +46,30 @@ const PAGES: Record<string, PageDef> = {
   "close-account": { title: "Close account",    subtitle: "Permanently close your account and erase your data",                              render: () => <CloseAccountPage /> },
 };
 
-interface Props { instructorId: string; fallback?: ReactNode; }
+interface Props {
+  instructorId: string;
+  legacyCategories?: SettingsCategory[];
+}
 
-export function SettingsLayoutV2({ instructorId, fallback }: Props) {
+export function SettingsLayoutV2({ instructorId, legacyCategories = [] }: Props) {
   const { categoryId } = useParams<{ categoryId?: string }>();
   const navigate = useNavigate();
   const id = categoryId ?? "account";
   const page = PAGES[id];
 
-  // Allow legacy categories (business, bookings, schedule, etc.) to pass through
-  // to the previous layout via the fallback (rendered by the hub).
-  const isLegacy = !page && SIDEBAR_GROUPS.every(g => g.items.every(i => i.id !== id));
+  // Build sidebar groups for any legacy categories not already present in the v2 groups.
+  const v2Ids = new Set(SIDEBAR_GROUPS.flatMap(g => g.items.map(i => i.id)));
+  const extraGroups: SidebarGroup[] = legacyCategories.length
+    ? [{
+        id: "more-areas",
+        label: "More",
+        items: legacyCategories
+          .filter(c => !v2Ids.has(c.id))
+          .map(c => ({ id: c.id, label: c.title, icon: c.icon as any })),
+      }]
+    : [];
+
+  const legacy = legacyCategories.find(c => c.id === id);
 
   const handleBack = () => {
     if (window.history.length > 1) navigate(-1);
@@ -65,7 +79,7 @@ export function SettingsLayoutV2({ instructorId, fallback }: Props) {
   return (
     <SettingsDirtyProvider>
       <div className="settings-v2 flex" style={{ minHeight: "calc(100vh - 56px)" }}>
-        <SettingsSidebar />
+        <SettingsSidebar extraGroups={extraGroups} />
         <main className="flex-1 min-w-0" style={{ padding: "24px 28px 80px" }}>
           <button
             type="button"
@@ -84,8 +98,30 @@ export function SettingsLayoutV2({ instructorId, fallback }: Props) {
               </header>
               <div className="space-y-4">{page.render(instructorId)}</div>
             </>
-          ) : isLegacy ? (
-            <>{fallback}</>
+          ) : legacy ? (
+            <>
+              <header style={{ marginBottom: 18 }}>
+                <h1 className="sv2-h1">{legacy.title}</h1>
+                <p className="sv2-sub">{legacy.description}</p>
+              </header>
+              <div className="space-y-4">
+                {legacy.sections.filter(s => s.visible !== false).map(s => (
+                  <section
+                    key={s.id}
+                    id={s.id}
+                    className="rounded-2xl bg-card border border-border/50 p-4 sm:p-5"
+                  >
+                    <header className="mb-3">
+                      <h2 className="text-base font-semibold text-foreground">{s.title}</h2>
+                      {s.description && (
+                        <p className="text-xs text-muted-foreground mt-0.5">{s.description}</p>
+                      )}
+                    </header>
+                    <div>{s.render()}</div>
+                  </section>
+                ))}
+              </div>
+            </>
           ) : (
             <div style={{ color: "var(--color-text-tertiary)", fontSize: 13 }}>
               Settings page not found.
