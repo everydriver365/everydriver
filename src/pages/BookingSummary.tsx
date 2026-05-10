@@ -124,6 +124,8 @@ export default function BookingSummary() {
   const [postcodeRules, setPostcodeRules] = useState<PostcodeRateRule[]>([]);
   const [baseHourlyRate, setBaseHourlyRate] = useState<number>(40);
   const [schoolSkimAmount, setSchoolSkimAmount] = useState<number>(0);
+  const [rateModifiers, setRateModifiers] = useState<RateModifiers | null>(null);
+  const [bankHolidays, setBankHolidays] = useState<Set<string>>(() => new Set());
   const [loading, setLoading] = useState(true);
   const [selectedSlots, setSelectedSlots] = useState<SelectedSlot[]>([]);
   const [reviews, setReviews] = useState<CourseReview[]>([]);
