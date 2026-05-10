@@ -1,6 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
+import { computeLessonAmount } from "@/lib/pricing/resolveHourlyRate";
+import { fetchInstructorPostcodeRules } from "@/hooks/useInstructorPostcodeRules";
+
 
 export type RingsPeriod = "today" | "week" | "month";
 
