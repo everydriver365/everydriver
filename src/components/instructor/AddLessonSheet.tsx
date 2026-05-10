@@ -246,20 +246,34 @@ export function AddLessonSheet({
   const isDrivingTest = lessonType === 'driving_test';
   const currentTypeColor = LESSON_TYPES.find(t => t.value === lessonType)?.color || '#7FB3E3';
 
+  const [hourlyRate, setHourlyRate] = useState<number>(0);
+  const [rateModifiers, setRateModifiers] = useState<RateModifiers | null>(null);
+  const [bankHolidays, setBankHolidays] = useState<Set<string>>(new Set());
+
   useEffect(() => {
     if (open) {
       fetchPupils();
       if (defaultDate) setLessonDate(defaultDate);
-      // Load instructor buffer + home postcode for conflict/travel checks
+      // Load instructor buffer + home postcode + pricing for conflict/travel/price calc
       (async () => {
         const { data } = await supabase
           .from('instructors')
-          .select('buffer_minutes, home_postcode')
+          .select('buffer_minutes, home_postcode, hourly_rate, weekend_surcharge_amount, bank_holiday_surcharge_amount, odd_hours_surcharge_amount, odd_hours_start, odd_hours_end')
           .eq('id', instructorId)
           .maybeSingle();
-        setBufferMinutes(((data as any)?.buffer_minutes as number | null) ?? 0);
-        setInstructorHomePostcode(((data as any)?.home_postcode as string | null) ?? '');
+        const d = (data ?? {}) as any;
+        setBufferMinutes((d.buffer_minutes as number | null) ?? 0);
+        setInstructorHomePostcode((d.home_postcode as string | null) ?? '');
+        setHourlyRate(Number(d.hourly_rate) || 0);
+        setRateModifiers({
+          weekend_surcharge_amount: d.weekend_surcharge_amount,
+          bank_holiday_surcharge_amount: d.bank_holiday_surcharge_amount,
+          odd_hours_surcharge_amount: d.odd_hours_surcharge_amount,
+          odd_hours_start: d.odd_hours_start,
+          odd_hours_end: d.odd_hours_end,
+        });
       })();
+      loadUkBankHolidays().then(setBankHolidays).catch(() => {});
     }
   }, [open, defaultDate, instructorId]);
 
