@@ -31,6 +31,7 @@ import { StepWebsite } from "./steps/StepWebsite";
 import { StepDomainHosting } from "./steps/StepDomainHosting";
 import { StepPayment } from "./steps/StepPayment";
 import { StepComplete } from "./steps/StepComplete";
+import { formatUKPostcode } from "@/lib/postcode";
 
 interface OnboardingData {
   // Personal Details
@@ -261,7 +262,7 @@ export default function InstructorOnboarding() {
           phone: data.phone,
           bio: data.bio,
           profile_image_url: data.profile_image_url,
-          home_postcode: data.home_postcode,
+          home_postcode: formatUKPostcode(data.home_postcode) || data.home_postcode,
           radius_miles: data.radius_miles,
           car_type: data.car_type,
           car_make: data.car_make,
@@ -358,7 +359,7 @@ export default function InstructorOnboarding() {
           phone: data.phone,
           bio: data.bio,
           profile_image_url: data.profile_image_url,
-          home_postcode: data.home_postcode,
+          home_postcode: formatUKPostcode(data.home_postcode) || data.home_postcode,
           radius_miles: data.radius_miles,
           car_type: data.car_type,
           car_make: data.car_make,

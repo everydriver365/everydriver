@@ -17,6 +17,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { formatUKPostcode } from "@/lib/postcode";
 import { formatDistanceToNow } from "date-fns";
 import {
   Dialog,
@@ -166,9 +167,15 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
     setSaving(true);
 
     try {
+      const normalisedPostcode = formatUKPostcode(details.home_postcode);
+      const payload = { ...details, home_postcode: normalisedPostcode || details.home_postcode };
+      if (normalisedPostcode && normalisedPostcode !== details.home_postcode) {
+        setDetails({ ...details, home_postcode: normalisedPostcode });
+      }
+
       const { error } = await supabase
         .from("instructors")
-        .update(details)
+        .update(payload)
         .eq("id", instructorId);
 
       if (error) throw error;

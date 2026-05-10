@@ -102,7 +102,11 @@ export function InstructorCoursesManager({ instructorId }: InstructorCoursesMana
           c.id === `tmp-${template.course_hours}` ? data : c
         ));
       }
-      toast.success(nextActive ? `${template.course_name} enabled` : `${template.course_name} disabled`);
+      toast.success(
+        nextActive
+          ? `${template.course_name} enabled — pupils can now book it`
+          : `${template.course_name} disabled — hidden from pupil search`
+      );
     } catch (error) {
       console.error("Error toggling course:", error);
       toast.error("Failed to update course");
@@ -133,11 +137,18 @@ export function InstructorCoursesManager({ instructorId }: InstructorCoursesMana
     );
   }
 
+  const activeCount = courses.filter(c => c.is_active).length;
+
   return (
     <div className="space-y-3">
-      <p className="text-sm text-muted-foreground">
-        Turn on the courses you offer. Pupils will only see courses you've enabled.
-      </p>
+      <div className="rounded-xl border bg-muted/40 p-3">
+        <p className="text-sm font-medium">
+          You currently offer {activeCount} course{activeCount === 1 ? "" : "s"}
+        </p>
+        <p className="text-xs text-muted-foreground mt-0.5">
+          Pupils searching your area will only see courses you've enabled below.
+        </p>
+      </div>
       <div className="space-y-2">
         {templates.map(template => {
           const existing = courses.find(c => c.course_hours === template.course_hours);
@@ -158,11 +169,9 @@ export function InstructorCoursesManager({ instructorId }: InstructorCoursesMana
                         <Badge variant="outline" className="flex-shrink-0">Intensive</Badge>
                       )}
                     </div>
-                    {template.short_description && (
-                      <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
-                        {template.short_description}
-                      </p>
-                    )}
+                    <p className={`text-xs mt-1 ${isOn ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground"}`}>
+                      {isOn ? "Visible to pupils" : "Hidden from pupils"}
+                    </p>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
                     {isPending && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
