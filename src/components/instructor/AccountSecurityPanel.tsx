@@ -78,9 +78,9 @@ export function AccountSecurityPanel() {
     }
     setSavingEmail(true);
     const auth = await reauth();
-    if (auth.ok === false) {
+    if (auth) {
       setSavingEmail(false);
-      setEmailError(auth.message);
+      setEmailError(auth);
       return;
     }
     const { error } = await supabase.auth.updateUser(
@@ -110,9 +110,9 @@ export function AccountSecurityPanel() {
     }
     setSavingPwd(true);
     const auth = await reauth();
-    if (auth.ok === false) {
+    if (auth) {
       setSavingPwd(false);
-      setPwdError(auth.message);
+      setPwdError(auth);
       return;
     }
     const { error } = await supabase.auth.updateUser({ password });
