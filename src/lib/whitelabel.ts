@@ -18,6 +18,8 @@ export interface WhitelabelConfig {
   /** Optional contact details surfaced in headers/footers */
   phone?: string;
   email?: string;
+  /** Optional address/area shown in footer */
+  address?: string;
 }
 
 const WHITELABEL_CONFIGS: WhitelabelConfig[] = [
@@ -26,6 +28,9 @@ const WHITELABEL_CONFIGS: WhitelabelConfig[] = [
     instructorSlug: "ken-d",
     brandName: "Winchester Driving School",
     logoPath: "/winchester-logo.png",
+    phone: "07767 693276",
+    email: "info@winchesterdrivingschool.co.uk",
+    address: "Winchester & surrounding areas",
   },
 ];
 

@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Facebook, Instagram, Twitter, Mail, Phone, MapPin } from "lucide-react";
 import { useRouteLogo } from "@/hooks/useRouteLogo";
+import { getWhitelabelConfig } from "@/lib/whitelabel";
 
 // Decorative tyre track SVG pattern
 function TyreTrackPattern() {
@@ -36,6 +37,11 @@ function TyreTrackPattern() {
 
 export function Footer() {
   const { logo, logoAlt, logoText, homeLink } = useRouteLogo();
+  const whitelabel = getWhitelabelConfig();
+  const contactPhone = whitelabel?.phone ?? "0800 123 4567";
+  const contactEmail = whitelabel?.email ?? "hello@drivetime.co.uk";
+  const contactArea = whitelabel?.address ?? "Covering all UK postcodes";
+  const copyrightName = whitelabel?.brandName ?? "Drive365";
 
   return (
     <footer className="relative border-t bg-primary text-primary-foreground overflow-hidden">
@@ -98,22 +104,22 @@ export function Footer() {
             <ul className="space-y-3 text-sm text-primary-foreground/70">
               <li className="flex items-center gap-2">
                 <Phone className="h-4 w-4" />
-                <span>0800 123 4567</span>
+                <a href={`tel:${contactPhone.replace(/\s/g, "")}`} className="hover:text-accent">{contactPhone}</a>
               </li>
               <li className="flex items-center gap-2">
                 <Mail className="h-4 w-4" />
-                <span>hello@drivetime.co.uk</span>
+                <a href={`mailto:${contactEmail}`} className="hover:text-accent break-all">{contactEmail}</a>
               </li>
               <li className="flex items-start gap-2">
                 <MapPin className="h-4 w-4 mt-0.5" />
-                <span>Covering all UK postcodes</span>
+                <span>{contactArea}</span>
               </li>
             </ul>
           </div>
         </div>
 
         <div className="mt-8 border-t border-primary-foreground/10 pt-8 text-center text-sm text-primary-foreground/50">
-          <p>© {new Date().getFullYear()} Drive365. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} {copyrightName}. All rights reserved.</p>
           <div className="mt-2 flex justify-center gap-4">
             <a href="/privacy-policy" className="hover:text-accent">Privacy Policy</a>
             <span>|</span>
