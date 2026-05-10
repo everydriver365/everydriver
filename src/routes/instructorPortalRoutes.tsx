@@ -12,7 +12,7 @@ const PremiumPupilProfile = lazy(() => import("@/pages/PremiumPupilProfile"));
 const InstructorSchedule = lazy(() => import("@/pages/instructor-app/InstructorScheduleRouter"));
 const InstructorEventDetails = lazy(() => import("@/pages/InstructorEventDetails"));
 const InstructorDiary = lazy(() => import("@/pages/InstructorDiary"));
-const InstructorMenu = lazy(() => import("@/pages/InstructorMenu"));
+
 const InstructorSettingsHub = lazy(() => import("@/pages/instructor/InstructorSettingsHub"));
 const InstructorNotifications = lazy(() => import("@/pages/InstructorNotifications"));
 const InstallInstructor = lazy(() => import("@/pages/InstallInstructor"));
@@ -22,14 +22,6 @@ const InstructorAccessibilitySettings = lazy(() => import("@/pages/instructor/In
 const InstructorModules = lazy(() => import("@/pages/instructor-app/InstructorModules"));
 const InstructorMySite = lazy(() => import("@/pages/instructor-app/InstructorMySite"));
 const InstructorPlanBilling = lazy(() => import("@/pages/instructor-app/InstructorPlanBilling"));
-const InstructorProfile = lazy(() => import("@/pages/instructor-app/InstructorProfileRouter"));
-const AccountHub = lazy(() => import("@/pages/instructor/AccountHub"));
-const InstructorIntegrationsHub = lazy(() => import("@/pages/instructor/InstructorIntegrationsHub"));
-const InstructorFamulorPage = lazy(() => import("@/pages/instructor/InstructorFamulorPage"));
-const InstructorBrandingPage = lazy(() => import("@/pages/instructor/InstructorBrandingPage"));
-const InstructorTermsSettingsPage = lazy(() => import("@/pages/instructor/InstructorTermsSettingsPage"));
-const InstructorCallAnsweringPage = lazy(() => import("@/pages/instructor/InstructorCallAnsweringPage"));
-const InstructorNotificationSettingsPage = lazy(() => import("@/pages/instructor/InstructorNotificationSettingsPage"));
 const InstructorReports = lazy(() => import("@/pages/instructor-app/InstructorReportsRouter"));
 
 // Jobs & scheduling
