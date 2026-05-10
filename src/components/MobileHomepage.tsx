@@ -86,14 +86,13 @@ export function MobileHomepage() {
     });
   };
 
-  const slug = whitelabel?.instructorSlug ?? "ken-d";
   const navItems = isWinchester
     ? [
-        { label: "Home", icon: Home, path: `/i/${slug}` },
-        { label: "Courses", icon: Search, path: `/i/${slug}/courses` },
-        { label: "Theory", icon: BookOpen, path: `/i/${slug}/theory` },
-        { label: "Reviews", icon: Star, path: `/i/${slug}/reviews` },
-        { label: "Tests", icon: Calendar, path: `/i/${slug}/tests` },
+        { label: "Home", icon: Home, path: "/" },
+        { label: "Courses", icon: Search, path: "/courses" },
+        { label: "Theory", icon: BookOpen, path: "/theory" },
+        { label: "Reviews", icon: Star, path: "/reviews" },
+        { label: "Contact", icon: Phone, path: "/contact" },
       ]
     : [
         { label: "Home", icon: Home, path: "/drive365" },
