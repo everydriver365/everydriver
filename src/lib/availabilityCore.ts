@@ -129,8 +129,11 @@ export function classifyConflict(
   c: TaggedConflict,
   padMin: number,
 ): RejectReason | null {
+  const effectivePad = c.padOverrideMin != null
+    ? c.padOverrideMin + TRAVEL_FALLBACK_MIN
+    : padMin;
   const direct = slotStart < c.end && slotEnd > c.start;
-  const padded = slotStart < c.end + padMin && slotEnd > c.start - padMin;
+  const padded = slotStart < c.end + effectivePad && slotEnd > c.start - effectivePad;
   if (!padded) return null;
   if (direct) {
     if (c.kind === "lesson") return "overlap_lesson";
