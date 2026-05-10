@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast as uiToast } from "@/hooks/use-toast";
+import { AvatarRepositionDialog } from "./AvatarRepositionDialog";
 
 interface Props {
   instructorId: string;
@@ -25,6 +26,7 @@ export function ProfileBasicsEditor({ instructorId }: Props) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
 
   useEffect(() => {
     if (!instructorId) return;
@@ -58,16 +60,20 @@ export function ProfileBasicsEditor({ instructorId }: Props) {
     });
   };
 
-  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    e.target.value = "";
     if (!file) return;
+    setPendingFile(file);
+  };
+
+  const handleCroppedUpload = async (blob: Blob) => {
     setUploading(true);
     try {
-      const ext = file.name.split(".").pop();
-      const fileName = `${instructorId}/profile.${ext}`;
+      const fileName = `${instructorId}/profile.jpg`;
       const { error: upErr } = await supabase.storage
         .from("instructor-images")
-        .upload(fileName, file, { upsert: true });
+        .upload(fileName, blob, { upsert: true, contentType: "image/jpeg" });
       if (upErr) throw upErr;
       const {
         data: { publicUrl },
@@ -79,6 +85,7 @@ export function ProfileBasicsEditor({ instructorId }: Props) {
         .eq("id", instructorId);
       if (updErr) throw updErr;
       setProfile((p) => (p ? { ...p, profile_image_url: cacheBusted } : null));
+      setPendingFile(null);
       uiToast({ title: "Photo updated" });
     } catch {
       uiToast({ title: "Upload failed", variant: "destructive" });
@@ -122,7 +129,7 @@ export function ProfileBasicsEditor({ instructorId }: Props) {
             type="file"
             accept="image/*"
             className="hidden"
-            onChange={handleAvatarUpload}
+            onChange={handleFileSelect}
           />
           <p className="text-xs text-muted-foreground mt-1">
             JPG or PNG, square works best.
@@ -167,6 +174,14 @@ export function ProfileBasicsEditor({ instructorId }: Props) {
         {saving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
         Save changes
       </Button>
+
+      <AvatarRepositionDialog
+        open={!!pendingFile}
+        file={pendingFile}
+        saving={uploading}
+        onCancel={() => setPendingFile(null)}
+        onConfirm={handleCroppedUpload}
+      />
     </div>
   );
 }
