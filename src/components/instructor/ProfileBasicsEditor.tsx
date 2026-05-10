@@ -129,7 +129,7 @@ export function ProfileBasicsEditor({ instructorId }: Props) {
             type="file"
             accept="image/*"
             className="hidden"
-            onChange={handleAvatarUpload}
+            onChange={handleFileSelect}
           />
           <p className="text-xs text-muted-foreground mt-1">
             JPG or PNG, square works best.
