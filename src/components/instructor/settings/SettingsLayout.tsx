@@ -1,9 +1,14 @@
-import { ReactNode, useMemo } from "react";
+import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Search, type LucideIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
+
+const SIDEBAR_WIDTH_KEY = "instructor-settings-sidebar-width";
+const SIDEBAR_MIN = 220;
+const SIDEBAR_MAX = 480;
+const SIDEBAR_DEFAULT = 288;
 
 export interface SettingsCategory {
   id: string;
@@ -99,10 +104,47 @@ export function SettingsLayout({ categories, search, onSearchChange }: SettingsL
     );
   }
 
-  // ── DESKTOP: two-pane ──────────────────────────────────────────────
+  // ── DESKTOP: two-pane (resizable) ──────────────────────────────────
+  const [sidebarWidth, setSidebarWidth] = useState<number>(() => {
+    if (typeof window === "undefined") return SIDEBAR_DEFAULT;
+    const stored = Number(window.localStorage.getItem(SIDEBAR_WIDTH_KEY));
+    return stored >= SIDEBAR_MIN && stored <= SIDEBAR_MAX ? stored : SIDEBAR_DEFAULT;
+  });
+  const draggingRef = useRef(false);
+
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => {
+      if (!draggingRef.current) return;
+      const next = Math.min(SIDEBAR_MAX, Math.max(SIDEBAR_MIN, e.clientX - 16));
+      setSidebarWidth(next);
+    };
+    const onUp = () => {
+      if (!draggingRef.current) return;
+      draggingRef.current = false;
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+      try {
+        window.localStorage.setItem(SIDEBAR_WIDTH_KEY, String(sidebarWidth));
+      } catch {}
+    };
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+    };
+  }, [sidebarWidth]);
+
+  const startDrag = (e: React.MouseEvent) => {
+    e.preventDefault();
+    draggingRef.current = true;
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
+  };
+
   return (
-    <div className="flex gap-6 pb-12">
-      <aside className="w-72 shrink-0">
+    <div className="flex gap-0 pb-12">
+      <aside className="shrink-0" style={{ width: sidebarWidth }}>
         <SearchBar value={search} onChange={onSearchChange} />
         <div className="mt-3">
           <CategoryList
@@ -113,6 +155,17 @@ export function SettingsLayout({ categories, search, onSearchChange }: SettingsL
           />
         </div>
       </aside>
+      <div
+        role="separator"
+        aria-orientation="vertical"
+        onMouseDown={startDrag}
+        onDoubleClick={() => {
+          setSidebarWidth(SIDEBAR_DEFAULT);
+          try { window.localStorage.setItem(SIDEBAR_WIDTH_KEY, String(SIDEBAR_DEFAULT)); } catch {}
+        }}
+        title="Drag to resize · double-click to reset"
+        className="mx-2 w-1.5 cursor-col-resize rounded-full bg-transparent hover:bg-border/80 active:bg-border transition-colors"
+      />
       <main className="flex-1 min-w-0">
         {activeCategory ? (
           <div className="space-y-4">
