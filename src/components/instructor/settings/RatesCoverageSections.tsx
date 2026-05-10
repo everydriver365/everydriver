@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSettingsDirty } from "./SettingsDirtyContext";
 import { toast } from "@/hooks/use-toast";
-import { isValidOutwardCode } from "@/lib/pricing/resolveHourlyRate";
+import { isValidOutwardCode, extractOutwardCode, resolveHourlyRate } from "@/lib/pricing/resolveHourlyRate";
 
 interface InstructorRow {
   hourly_rate: number | null;
