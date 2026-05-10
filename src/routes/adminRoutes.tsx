@@ -69,5 +69,9 @@ export const adminRoutes = (
       path="/admin/phone-tracking-audit"
       element={<ProtectedAdminRoute><PhoneTrackingAudit /></ProtectedAdminRoute>}
     />
+    <Route
+      path="/admin/notification-outbox"
+      element={<ProtectedAdminRoute><NotificationOutbox /></ProtectedAdminRoute>}
+    />
   </>
 );
