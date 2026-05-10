@@ -134,6 +134,11 @@ serve(async (req) => {
         lesson_type: "driving",
         status: "scheduled",
         payment_status: "pending",
+        // Pricing snapshot at booking — preserves the rate paid even if the
+        // instructor later changes their hourly rate or surcharges.
+        ...(slot.pricePerHour != null ? { price_per_hour: slot.pricePerHour } : {}),
+        ...(slot.surchargeAmount != null ? { surcharge_amount: slot.surchargeAmount } : {}),
+        ...(slot.amountDue != null ? { amount_due: slot.amountDue } : {}),
       }));
 
       const { data: lessonData, error: lessonsError } = await supabase
