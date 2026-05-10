@@ -277,8 +277,15 @@ serve(async (req) => {
                            daysUntilExpiry <= 7 ? "URGENT" : "Reminder";
         const vehicleLabel = `${vehicle.registration}${vehicle.make ? ` (${vehicle.make}${vehicle.model ? ` ${vehicle.model}` : ''})` : ''}`;
 
+        const vEmailGate = await shouldSendToInstructor(supabase, instructor.id, {
+          category: "system", channel: "email", importance: "important",
+        });
+        const vSmsGate = await shouldSendToInstructor(supabase, instructor.id, {
+          category: "system", channel: "sms", importance: "important",
+        });
+
         // Send email if Resend is configured
-        if (resendApiKey && instructor.email) {
+        if (vEmailGate.allow && resendApiKey && instructor.email) {
           try {
             const emailHtml = `
               <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
