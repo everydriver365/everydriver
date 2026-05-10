@@ -16,47 +16,20 @@ These cause silent "Failed to save" failures for instructors today.
 
 | Table | UI ops | INSERT | UPDATE | DELETE |
 | --- | --- | --- | --- | --- |
-| `admin_alerts` | insert,update | ❌ | ❌ | ❌ |
-| `booking_drafts` | insert | ❌ | ❌ | ❌ |
-| `booking_enquiries` | insert,update | ❌ | ✅ | ❌ |
-| `booking_intake_questions` | delete,insert,update | ❌ | ✅ | ✅ |
 | `booking_pages` | delete,insert,update | ❌ | ❌ | ❌ |
-| `churn_events` | insert | ❌ | ✅ | ✅ |
-| `course_reviews` | insert,update | ❌ | ✅ | ❌ |
 | `cover_offer_recipients` | upsert | ❌ | ✅ | ❌ |
 | `gap_offers` | insert,update | ✅ | ❌ | ❌ |
-| `geofences` | delete,insert,update | ❌ | ✅ | ✅ |
-| `instructor_discount_codes` | delete,insert,update | ❌ | ✅ | ✅ |
-| `instructor_google_service_calendar` | delete,update,upsert | ❌ | ✅ | ✅ |
-| `instructor_standards_check` | upsert | ❌ | ✅ | ✅ |
 | `instructor_subscriptions` | insert,update,upsert | ❌ | ❌ | ❌ |
 | `instructor_test_centres` | delete,insert | ❌ | ❌ | ❌ |
-| `instructor_vehicles` | delete,insert,update | ❌ | ✅ | ✅ |
-| `lesson_packages` | delete,insert,update | ❌ | ✅ | ✅ |
-| `lesson_ratings` | insert | ❌ | ❌ | ❌ |
-| `lesson_reminders` | insert,update | ❌ | ✅ | ✅ |
-| `lesson_waitlist` | insert,update,upsert | ❌ | ✅ | ✅ |
-| `live_chat_sessions` | insert,update | ❌ | ❌ | ❌ |
 | `mileage_logs` | delete,insert,update | ❌ | ❌ | ❌ |
-| `parent_conversations` | insert | ❌ | ❌ | ❌ |
 | `platform_commissions` | insert | ❌ | ❌ | ❌ |
-| `pricing_rules` | delete,insert,update | ❌ | ✅ | ✅ |
-| `pupil_packages` | insert | ❌ | ✅ | ✅ |
 | `pupil_reengagement_log` | insert | ❌ | ❌ | ❌ |
-| `pupil_subscriptions` | insert,update | ❌ | ✅ | ✅ |
-| `quotes` | insert,update | ❌ | ✅ | ✅ |
-| `reschedule_requests` | insert | ❌ | ✅ | ❌ |
-| `scheduled_reports` | delete,insert,update | ❌ | ✅ | ✅ |
 | `school_course_instructors` | delete,insert | ❌ | ❌ | ❌ |
 | `school_franchise_fees` | insert,update | ❌ | ❌ | ❌ |
 | `school_instructors` | delete,insert | ❌ | ❌ | ❌ |
-| `slot_offers` | insert,update | ❌ | ✅ | ✅ |
-| `subscription_payments` | insert,update | ❌ | ❌ | ❌ |
 | `subscription_save_offers` | insert | ❌ | ❌ | ❌ |
-| `theory_mock_scores` | insert | ❌ | ✅ | ✅ |
 | `tile_health_checks` | insert | ❌ | ❌ | ❌ |
 | `urgent_alerts` | insert,update | ❌ | ✅ | ❌ |
-| `whatsapp_conversations` | insert,update | ❌ | ❌ | ❌ |
 
 
 ## Intentional — kept restricted on purpose
@@ -82,18 +55,18 @@ Audit logs, system-generated rows, payouts, etc. Instructor reads only.
 | `instructor_payouts` | insert | ❌ | ❌ | ❌ |
 | `instructor_premium_placements` | — | ❌ | ✅ | ❌ |
 | `instructor_reports` | insert | ✅ | ✅ | ✅ |
-| `instructor_weekly_reports` | upsert | ❌ | ❌ | ❌ |
+| `instructor_weekly_reports` | upsert | ✅ | ✅ | ✅ |
 | `lesson_cancellation_stats` | — | ✅ | ✅ | ✅ |
-| `lesson_history` | delete,insert,update | ❌ | ✅ | ✅ |
+| `lesson_history` | delete,insert,update | ✅ | ✅ | ✅ |
 | `lesson_reminders_log` | — | ❌ | ❌ | ❌ |
-| `live_pupil_positions` | update | ❌ | ✅ | ✅ |
+| `live_pupil_positions` | update | ✅ | ✅ | ✅ |
 | `movement_alerts` | update | ❌ | ✅ | ❌ |
-| `mtd_submission_log` | — | ❌ | ✅ | ✅ |
+| `mtd_submission_log` | — | ✅ | ✅ | ✅ |
 | `on_my_way_notifications` | insert | ✅ | ✅ | ✅ |
 | `payment_disputes` | insert | ❌ | ✅ | ❌ |
-| `payment_history` | delete,insert,update | ❌ | ✅ | ✅ |
+| `payment_history` | delete,insert,update | ✅ | ✅ | ✅ |
 | `payment_intents` | insert,update | ❌ | ❌ | ❌ |
-| `payment_link_tracking` | update | ❌ | ❌ | ❌ |
+| `payment_link_tracking` | update | ✅ | ❌ | ❌ |
 | `payment_reminder_log` | insert | ❌ | ❌ | ❌ |
 
 
@@ -103,14 +76,9 @@ Audit logs, system-generated rows, payouts, etc. Instructor reads only.
 | --- | --- | --- | --- | --- |
 | `broadcast_templates` | — | ✅ | ❌ | ✅ |
 | `dashcam_media` | — | ❌ | ❌ | ❌ |
-| `followup_templates` | — | ❌ | ✅ | ✅ |
 | `instructor_calendar_tokens` | — | ❌ | ❌ | ❌ |
 | `instructor_notification_settings` | — | ✅ | ✅ | ❌ |
-| `instructor_terms_templates` | — | ❌ | ✅ | ✅ |
 | `learner_test_requests` | — | ✅ | ❌ | ❌ |
-| `mtd_instructor_settings` | — | ❌ | ✅ | ✅ |
-| `mtd_quarterly_periods` | — | ❌ | ✅ | ✅ |
-| `pre_lesson_checklist_templates` | — | ❌ | ✅ | ✅ |
 | `pupil_churn_scores` | — | ❌ | ❌ | ❌ |
 | `pupil_leaderboard` | — | ❌ | ❌ | ❌ |
 | `pupil_milestones` | — | ✅ | ❌ | ❌ |
@@ -121,7 +89,7 @@ Audit logs, system-generated rows, payouts, etc. Instructor reads only.
 
 ## Healthy (full instructor write access)
 
-84 tables.
+117 tables.
 
 ---
-Critical count: **41**
+Critical count: **14**
