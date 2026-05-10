@@ -32,7 +32,7 @@ export function InstructorSaaSLayout({ children }: InstructorSaaSLayoutProps) {
     <div className="flex min-h-screen flex-col">
       {/* Header - Clean white */}
       <header className="sticky top-0 z-50 w-full">
-        <div className="bg-primary">
+        <div style={{ backgroundColor: "#09507f" }}>
         <nav className="px-4 max-w-7xl mx-auto flex h-16 items-center justify-between relative">
           <Link to="/instructor-app" className="hidden md:flex items-center gap-2">
             <img src={logo} alt="DSM" className="h-10" />
