@@ -44,7 +44,8 @@ const tables = readFileSync(TABLES_FILE, "utf8")
 
 type Pol = { table: string; cmd: string; name: string; qual: string; check: string };
 const policies: Pol[] = readFileSync(POLICIES_FILE, "utf8")
-  .split("\n")
+  .split("§§§")
+  .map((s) => s.trim())
   .filter(Boolean)
   .map((line) => {
     const [table, cmd, name, qual, check] = line.split("\t");
