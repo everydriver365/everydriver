@@ -621,7 +621,7 @@ function LessonRow({
               onClick={onEOLClick}
               aria-label={eolDone ? "End of lesson complete — review" : "Complete end of lesson"}
               style={{
-                background: TINT_BLUE,
+                background: "#EEF3FF",
                 border: "none",
                 borderRadius: 8,
                 padding: "1px 6px",
@@ -632,8 +632,8 @@ function LessonRow({
               <span
                 style={{
                   fontSize: 10,
-                  fontWeight: 600,
-                  color: BLUE,
+                  fontWeight: 700,
+                  color: DSM_BLUE,
                   letterSpacing: 0.3,
                   textTransform: "uppercase",
                   textDecoration: eolDone ? "line-through" : "none",
