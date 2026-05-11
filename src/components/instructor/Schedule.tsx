@@ -595,7 +595,7 @@ function LessonRow({
 
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: "flex", gap: 6, alignItems: "center", marginBottom: 2, flexWrap: "wrap" }}>
-          <span style={{ fontSize: 15, fontWeight: 500, color: TEXT_PRIMARY }}>
+          <span style={{ fontSize: 14, fontWeight: 700, color: TEXT_PRIMARY, letterSpacing: -0.1 }}>
             {lesson.pupilFirstName} {lesson.pupilLastInitial}
           </span>
           {pills.map((p) => (
