@@ -251,6 +251,8 @@ export function AddLessonSheet({
   const currentTypeColor = LESSON_TYPES.find(t => t.value === lessonType)?.color || '#7FB3E3';
 
   const [hourlyRate, setHourlyRate] = useState<number>(0);
+  const [instructorName, setInstructorName] = useState<string>('');
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const [rateModifiers, setRateModifiers] = useState<RateModifiers | null>(null);
   const [bankHolidays, setBankHolidays] = useState<Set<string>>(new Set());
 
@@ -264,10 +266,11 @@ export function AddLessonSheet({
       (async () => {
         const { data } = await supabase
           .from('instructors')
-          .select('buffer_minutes, home_postcode, hourly_rate, weekend_surcharge_amount, bank_holiday_surcharge_amount, odd_hours_surcharge_amount, odd_hours_start, odd_hours_end')
+          .select('name, buffer_minutes, home_postcode, hourly_rate, weekend_surcharge_amount, bank_holiday_surcharge_amount, odd_hours_surcharge_amount, odd_hours_start, odd_hours_end')
           .eq('id', instructorId)
           .maybeSingle();
         const d = (data ?? {}) as any;
+        setInstructorName((d.name as string | null) ?? '');
         setBufferMinutes((d.buffer_minutes as number | null) ?? 0);
         setInstructorHomePostcode((d.home_postcode as string | null) ?? '');
         setHourlyRate(Number(d.hourly_rate) || 0);
@@ -778,8 +781,7 @@ export function AddLessonSheet({
           const saveDisabled = loading || (!!conflictWarning && !overrideBuffer);
           const onSavePress = () => {
             if (saveDisabled) return;
-            if (tab === 'existing') handleAddLessonExisting();
-            else handleAddLessonNew();
+            setConfirmOpen(true);
           };
           const titleText = isDrivingTest ? 'Schedule test' : 'New lesson';
           return (
@@ -1553,6 +1555,88 @@ export function AddLessonSheet({
           )}
           <Button variant="ghost" className="w-full" onClick={() => setShowPostPayment(false)}>
             Skip for now
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+
+    {/* Booking confirmation dialog */}
+    <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Confirm booking</DialogTitle>
+          <DialogDescription>Review the details below before booking.</DialogDescription>
+        </DialogHeader>
+        {(() => {
+          const hours = parseFloat(lessonDuration) || 0;
+          const dateLabel = lessonDate ? format(lessonDate, 'EEE d MMM yyyy') : '—';
+          const pupilLabel = tab === 'existing'
+            ? (pupils.find(p => p.id === selectedPupil)?.name || 'No pupil selected')
+            : (newPupilName || 'New pupil');
+          let basePrice = hourlyRate * hours;
+          let surchargeTotal = 0;
+          if (rateModifiers && lessonDate) {
+            const mod = applyRateModifiers({
+              baseRate: hourlyRate,
+              lessonDate,
+              lessonStartTime,
+              modifiers: rateModifiers,
+              bankHolidaySet: bankHolidays,
+            });
+            basePrice = Math.round(hourlyRate * hours * 100) / 100;
+            surchargeTotal = Math.round(mod.totalAmount * hours * 100) / 100;
+          }
+          const total = Math.round((basePrice + surchargeTotal) * 100) / 100;
+          const Row = ({ label, value }: { label: string; value: string }) => (
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', padding: '8px 0', borderBottom: '0.5px solid #E5E5EA' }}>
+              <span style={{ fontSize: 13, color: '#6E6E73' }}>{label}</span>
+              <span style={{ fontSize: 14, fontWeight: 500, color: '#000', textAlign: 'right' }}>{value}</span>
+            </div>
+          );
+          return (
+            <div style={{ marginTop: 4 }}>
+              <Row label="Date" value={dateLabel} />
+              <Row label="Time" value={`${lessonStartTime} · ${hours}h`} />
+              <Row label="Instructor" value={instructorName || '—'} />
+              <Row label="Pupil" value={pupilLabel} />
+              {isDrivingTest ? (
+                <Row label="Type" value="Driving test" />
+              ) : (
+                <>
+                  {surchargeTotal > 0 && (
+                    <>
+                      <Row label="Base price" value={`£${basePrice.toFixed(2)}`} />
+                      <Row label="Surcharges" value={`£${surchargeTotal.toFixed(2)}`} />
+                    </>
+                  )}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', padding: '12px 0 4px' }}>
+                    <span style={{ fontSize: 14, fontWeight: 600, color: '#000' }}>Total</span>
+                    <span style={{ fontSize: 18, fontWeight: 600, color: '#2B7BC8' }}>£{total.toFixed(2)}</span>
+                  </div>
+                </>
+              )}
+            </div>
+          );
+        })()}
+        <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+          <Button
+            variant="outline"
+            className="flex-1"
+            onClick={() => setConfirmOpen(false)}
+            disabled={loading}
+          >
+            Cancel
+          </Button>
+          <Button
+            className="flex-1"
+            onClick={async () => {
+              setConfirmOpen(false);
+              if (tab === 'existing') await handleAddLessonExisting();
+              else await handleAddLessonNew();
+            }}
+            disabled={loading}
+          >
+            {loading ? 'Booking…' : 'Confirm booking'}
           </Button>
         </div>
       </DialogContent>
