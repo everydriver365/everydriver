@@ -471,6 +471,57 @@ export function LessonHistory({
         </Button>
       </div>
 
+      {/* Missing EOL list */}
+      {missingEol.length > 0 && (
+        <div className="space-y-2">
+          {missingEol.map((m) => (
+            <Card
+              key={`missing-${m.id}`}
+              className="border-amber-300 bg-amber-50/50 dark:bg-amber-950/20"
+            >
+              <CardContent className="p-3 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2 min-w-0">
+                  <AlertTriangle className="h-4 w-4 text-amber-600 flex-shrink-0" />
+                  <div className="min-w-0">
+                    <div className="text-sm font-medium truncate">
+                      {format(new Date(m.lesson_date), "EEE, d MMM yyyy")}
+                      {m.start_time && ` • ${m.start_time.slice(0, 5)}`}
+                      <span className="text-muted-foreground font-normal">
+                        {" • "}
+                        {m.duration_minutes / 60}h
+                      </span>
+                    </div>
+                    <div className="text-xs text-amber-700 dark:text-amber-400">
+                      EOL missing — no end-of-lesson record yet
+                    </div>
+                  </div>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="flex-shrink-0"
+                  onClick={() => {
+                    setFormData({
+                      lesson_date: m.lesson_date,
+                      start_time: m.start_time
+                        ? m.start_time.slice(0, 5)
+                        : "10:00",
+                      duration_minutes: m.duration_minutes,
+                      skills_practiced: [],
+                      notes: "",
+                      rating: 0,
+                    });
+                    setIsAddOpen(true);
+                  }}
+                >
+                  Log
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
       {/* Lessons List */}
       {lessons.length === 0 ? (
         <Card>
