@@ -906,7 +906,7 @@ function UpNextMapStrip({
       role={hasDestination ? "button" : undefined}
       tabIndex={hasDestination ? 0 : undefined}
       onClick={hasDestination ? onNavigate : undefined}
-      style={{ position: "relative", height: 72, overflow: "hidden", background: "#E9EEF5", cursor: hasDestination ? "pointer" : "default" }}
+      style={{ position: "relative", height: 102, overflow: "hidden", background: "#E9EEF5", cursor: hasDestination ? "pointer" : "default" }}
     >
       {sdkLoaded && destCoords ? (
         <GoogleMap
