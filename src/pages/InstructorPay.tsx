@@ -338,6 +338,41 @@ export default function InstructorPay() {
           </div>
         </Link>
 
+        {/* ── Platform deductions breakdown ── */}
+        {paymentsStats.platformFeesMonth > 0 && (
+          <div className="rounded-2xl bg-card border border-border px-3.5 py-3">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-[12px] font-semibold text-foreground">Platform deductions · this month</p>
+              <span className="text-[13px] font-semibold tabular-nums text-foreground">
+                £{paymentsStats.platformFeesMonth.toFixed(2)}
+              </span>
+            </div>
+            <div className="space-y-1">
+              {paymentsStats.platformBookingFeesMonth > 0 && (
+                <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                  <span>Booking fee (£1 / booking)</span>
+                  <span className="tabular-nums">£{paymentsStats.platformBookingFeesMonth.toFixed(2)}</span>
+                </div>
+              )}
+              {paymentsStats.platformTransactionFeesMonth > 0 && (
+                <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                  <span>Transaction fee (£1 / payment)</span>
+                  <span className="tabular-nums">£{paymentsStats.platformTransactionFeesMonth.toFixed(2)}</span>
+                </div>
+              )}
+              {paymentsStats.platformUpliftFeesMonth > 0 && (
+                <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                  <span>Klarna / Clearpay uplift (1%)</span>
+                  <span className="tabular-nums">£{paymentsStats.platformUpliftFeesMonth.toFixed(2)}</span>
+                </div>
+              )}
+            </div>
+            <p className="text-[10px] text-muted-foreground/70 mt-2">
+              Separate from the 1.75% card processing fee. Deducted from your payouts.
+            </p>
+          </div>
+        )}
+
         {/* ── Summary Tiles 2×2 ── */}
 
         <div className="grid grid-cols-2 gap-[10px]">
