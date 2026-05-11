@@ -120,6 +120,12 @@ export default function InstructorDiary() {
     localStorage.setItem("dsm.lessonHistory.helpDismissed", "1");
     setHelpDismissed(true);
   };
+  const [activeLesson, setActiveLesson] = useState<LessonRecord | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const openLesson = (l: LessonRecord) => { setActiveLesson(l); setDrawerOpen(true); };
+  const handleLessonSaved = (updated: LessonRecord) => {
+    setLessons((prev) => prev.map((l) => (l.id === updated.id ? { ...l, ...updated } : l)));
+  };
 
   const usingCustomRange = !!(customFrom && customTo);
 
