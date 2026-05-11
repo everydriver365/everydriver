@@ -1,12 +1,19 @@
-import { CheckCircle2, XCircle } from "lucide-react";
-import { useStandardsCheckMetrics, DVSA_THRESHOLDS } from "@/components/instructor/driving-test/useStandardsCheckMetrics";
+import { CheckCircle2, XCircle, Target } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useStandardsCheckMetrics } from "@/components/instructor/driving-test/useStandardsCheckMetrics";
 
 interface Props {
   instructorId: string;
 }
 
+const ROUTE = "/instructor/test-results";
+
 export function DvsaIndicatorsPanel({ instructorId }: Props) {
   const m = useStandardsCheckMetrics(instructorId);
+  const navigate = useNavigate();
+  const goToTests = () => navigate(ROUTE);
 
   const items = [
     {
@@ -34,14 +41,12 @@ export function DvsaIndicatorsPanel({ instructorId }: Props) {
   return (
     <div
       className="d2-card"
-      style={{
-        background: "#FFFFFF",
-        borderRadius: 12,
-        padding: 16,
-      }}
+      style={{ background: "#FFFFFF", borderRadius: 12, padding: 16 }}
     >
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-base font-semibold text-foreground">DVSA Standards Check Indicators</h3>
+        <h3 className="text-base font-semibold text-foreground">
+          DVSA Standards Check Indicators
+        </h3>
         <span
           className="text-xs px-2.5 py-1 rounded-full"
           style={{ background: "#F1F3F5", color: "#52525B" }}
@@ -49,30 +54,72 @@ export function DvsaIndicatorsPanel({ instructorId }: Props) {
           Last 12 Months
         </span>
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {items.map((item) => (
-          <div key={item.label} className="flex items-center gap-3">
-            {item.triggered ? (
-              <XCircle className="h-7 w-7 shrink-0" style={{ color: "#EF4444" }} fill="#EF4444" stroke="#FFFFFF" />
-            ) : (
-              <CheckCircle2 className="h-7 w-7 shrink-0" style={{ color: "#10B981" }} fill="#10B981" stroke="#FFFFFF" />
-            )}
-            <div className="min-w-0">
-              <p className="text-sm font-medium text-foreground truncate">{item.label}</p>
-              <p
-                className="text-xs"
-                style={{ color: item.triggered ? "#EF4444" : "#10B981" }}
-              >
-                {item.value}
-              </p>
+
+      {m.loading ? (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} className="flex items-center gap-3">
+              <Skeleton className="h-7 w-7 rounded-full" />
+              <div className="flex-1 space-y-1.5">
+                <Skeleton className="h-3.5 w-28" />
+                <Skeleton className="h-3 w-20" />
+              </div>
             </div>
+          ))}
+        </div>
+      ) : m.totalTests === 0 ? (
+        <div className="flex flex-col items-center text-center py-6 gap-3">
+          <Target className="h-8 w-8 text-muted-foreground" />
+          <div>
+            <p className="text-sm font-medium text-foreground">
+              No driving test results logged yet
+            </p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Log your pupils' test results to track DVSA Standards Check triggers
+            </p>
           </div>
-        ))}
-      </div>
-      {/* Hidden ref to keep thresholds import alive for future tweaks */}
-      <span className="sr-only" aria-hidden>
-        {DVSA_THRESHOLDS.passRate}
-      </span>
+          <Button size="sm" onClick={goToTests}>
+            Log a test result
+          </Button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+          {items.map((item) => (
+            <button
+              key={item.label}
+              onClick={goToTests}
+              className="flex items-center gap-3 p-2 rounded-xl text-left transition-colors hover:bg-muted/60 cursor-pointer"
+            >
+              {item.triggered ? (
+                <XCircle
+                  className="h-7 w-7 shrink-0"
+                  style={{ color: "#EF4444" }}
+                  fill="#EF4444"
+                  stroke="#FFFFFF"
+                />
+              ) : (
+                <CheckCircle2
+                  className="h-7 w-7 shrink-0"
+                  style={{ color: "#10B981" }}
+                  fill="#10B981"
+                  stroke="#FFFFFF"
+                />
+              )}
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-foreground truncate">
+                  {item.label}
+                </p>
+                <p
+                  className="text-xs"
+                  style={{ color: item.triggered ? "#EF4444" : "#10B981" }}
+                >
+                  {item.value}
+                </p>
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
