@@ -356,89 +356,151 @@ function DaySummaryCard({
   onFillGaps: () => void;
 }) {
   const lessonCount = day.lessons.length;
-  const hoursOpen = Math.max(0, day.hoursAvailable - day.hoursBooked);
-  const potentialEarnings = Math.round(hoursOpen * standardRate);
+  const bookedHours = day.hoursBooked;
+  const freeHours = Math.max(0, day.hoursAvailable - day.hoursBooked);
+  const potentialEarnings = showRevenuePotential ? Math.round(freeHours * standardRate) : 0;
 
   let labelText = `${day.dayOfWeek} ${day.dayOfMonth} ${day.monthShort}`;
-  if (day.isToday) labelText += " · TODAY";
-  else if (isTomorrow(day.date)) labelText += " · TOMORROW";
+  if (day.isToday) labelText += " · Today";
+  else if (isTomorrow(day.date)) labelText += " · Tomorrow";
 
-  let secondary: string;
-  if (!day.isWorkingDay) secondary = "Day off";
-  else if (hoursOpen === 0) secondary = "Fully booked";
-  else if (showRevenuePotential)
-    secondary = `${fmtDuration(hoursOpen * 60)} open · could earn £${potentialEarnings}`;
-  else secondary = `${fmtDuration(hoursOpen * 60)} available`;
+  const fmtH = (h: number) =>
+    Number.isInteger(h) ? `${h}h` : `${h.toFixed(1)}h`;
+
+  const stats: { value: string | number; label: string; color: string }[] = [
+    { value: lessonCount, label: "Lessons", color: DSM_BLUE },
+    { value: fmtH(bookedHours), label: "Booked", color: "#1A7A3C" },
+    { value: fmtH(freeHours), label: "Free", color: "#5B6B8A" },
+  ];
 
   return (
     <div
       style={{
         background: CARD_BG,
-        borderRadius: 12,
-        padding: "14px 16px 12px",
-        marginBottom: 10,
-        boxShadow: SHADOW,
-        border: `0.5px solid ${DIVIDER}`,
+        borderRadius: 16,
+        overflow: "hidden",
+        marginBottom: 8,
+        border: `0.5px solid ${DSM_BLUE_BORDER}`,
       }}
     >
-      <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
-        <CapacityRing
-          hoursBooked={day.hoursBooked}
-          hoursAvailable={day.hoursAvailable}
-          utilizationPercent={day.utilizationPercent}
-        />
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div
+      {/* Header band */}
+      <div
+        style={{
+          background: DSM_BLUE_TINT,
+          padding: "9px 12px",
+          borderBottom: `0.5px solid rgba(26,82,160,0.07)`,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <span
             style={{
-              fontSize: 11,
-              fontWeight: 500,
-              letterSpacing: 1,
-              color: TEXT_SECONDARY,
-              textTransform: "uppercase",
+              width: 6,
+              height: 6,
+              borderRadius: 3,
+              background: DSM_BLUE,
+              display: "inline-block",
+            }}
+          />
+          <span
+            style={{
+              fontSize: 10,
+              fontWeight: 700,
+              color: DSM_BLUE,
+              letterSpacing: 0.4,
             }}
           >
             {labelText}
-          </div>
-          <div
-            style={{
-              fontSize: 16,
-              fontWeight: 500,
-              color: TEXT_PRIMARY,
-              marginTop: 2,
-              lineHeight: 1.2,
-            }}
-          >
-            {lessonCount} lesson{lessonCount === 1 ? "" : "s"} · {fmtDuration(day.hoursBooked * 60)} booked
-          </div>
-          <div style={{ fontSize: 12, color: TEXT_SECONDARY, marginTop: 2 }}>
-            {secondary}
-          </div>
+          </span>
         </div>
+        <span style={{ fontSize: 9, color: "#8E8E93" }}>
+          {lessonCount} lesson{lessonCount !== 1 ? "s" : ""} booked
+        </span>
       </div>
 
-      {day.isWorkingDay && hoursOpen > 0 && (
+      {/* Stats row */}
+      <div style={{ display: "flex", borderBottom: `0.5px solid #F0F3F8` }}>
+        {stats.map((stat, i) => (
+          <div
+            key={stat.label}
+            style={{
+              flex: 1,
+              padding: "10px 12px",
+              borderLeft: i > 0 ? `0.5px solid #F0F3F8` : "none",
+            }}
+          >
+            <div
+              style={{
+                fontSize: 17,
+                fontWeight: 700,
+                color: stat.color,
+                letterSpacing: -0.5,
+                lineHeight: "19px",
+                fontVariantNumeric: "tabular-nums",
+              }}
+            >
+              {stat.value}
+            </div>
+            <div style={{ fontSize: 8.5, color: "#8E8E93", marginTop: 2 }}>
+              {stat.label}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Earnings potential row */}
+      {potentialEarnings > 0 && (
+        <div
+          style={{
+            padding: "8px 12px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            borderBottom: `0.5px solid #F0F3F8`,
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+            <span
+              style={{
+                fontSize: 10,
+                color: "#1A7A3C",
+                fontWeight: 700,
+                lineHeight: 1,
+              }}
+            >
+              £
+            </span>
+            <span style={{ fontSize: 10, color: "#8E8E93" }}>Could earn</span>
+          </div>
+          <span style={{ fontSize: 11, fontWeight: 700, color: "#1A7A3C" }}>
+            £{potentialEarnings} today
+          </span>
+        </div>
+      )}
+
+      {/* Fill open time CTA */}
+      {freeHours > 0 && day.isWorkingDay && (
         <button
           type="button"
           onClick={onFillGaps}
           style={{
             width: "100%",
-            background: TINT_BLUE,
-            color: BLUE,
-            padding: 8,
-            borderRadius: 8,
-            fontSize: 12,
-            fontWeight: 500,
+            padding: "8px 12px",
+            background: "transparent",
             border: "none",
-            marginTop: 12,
             cursor: "pointer",
             display: "inline-flex",
             alignItems: "center",
             justifyContent: "center",
-            gap: 6,
+            gap: 5,
           }}
         >
-          <Plus size={13} strokeWidth={2.4} />
-          Fill open time
+          <Plus size={11} color={DSM_BLUE} strokeWidth={2.2} />
+          <span style={{ fontSize: 11, fontWeight: 600, color: DSM_BLUE }}>
+            Fill open time
+          </span>
         </button>
       )}
     </div>
