@@ -172,6 +172,9 @@ export const instructorPortalRoutes = (
     <Route path="/instructor/modules" element={<InstructorModules />} />
     <Route path="/website/my-site" element={<InstructorMySite />} />
     <Route path="/instructor/website/my-site" element={<InstructorMySite />} />
+    <Route path="/instructor-app/website" element={<InstructorWebsiteEditor />} />
+    <Route path="/instructor/website" element={<InstructorWebsiteEditor />} />
+    <Route path="/instructor/website/editor" element={<InstructorWebsiteEditor />} />
     <Route path="/settings/plan" element={<Navigate to="/instructor/settings/plan-billing" replace />} />
     <Route path="/instructor/billing" element={<Navigate to="/instructor/settings/plan-billing" replace />} />
     <Route path="/instructor/settings/modules" element={<InstructorModules />} />
