@@ -527,7 +527,12 @@ export default function InstructorDiary() {
               {filteredLessons.map((lesson, idx) => (
                 <div key={lesson.id}>
                   {idx > 0 && <div style={{ height: 0.5, backgroundColor: "var(--d2-border)", marginLeft: 14, marginRight: 14 }} />}
-                  <div style={{ padding: "12px 14px" }}>
+                  <button
+                    type="button"
+                    onClick={() => openLesson(lesson)}
+                    className="w-full text-left transition-colors hover:bg-muted/40"
+                    style={{ padding: "12px 14px", background: "transparent", border: "none", cursor: "pointer" }}
+                  >
                     <div className="flex items-center justify-between" style={{ marginBottom: 4 }}>
                       <span style={{ fontWeight: 600, fontSize: 13, color: "var(--d2-text-1)" }}>
                         {lesson.pupils?.name || "Unknown Pupil"}
