@@ -281,7 +281,7 @@ export function AddLessonSheet({
       })();
       loadUkBankHolidays().then(setBankHolidays).catch(() => {});
     }
-  }, [open, defaultDate, instructorId]);
+  }, [open, defaultDate, defaultStartTime, defaultDurationHours, instructorId]);
 
   useEffect(() => {
     if (isDrivingTest && instructorId) fetchTestCentres();
