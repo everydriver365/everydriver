@@ -34,6 +34,21 @@ const IOS = {
   statBg: "#F8FAFB",
 };
 
+/* Schedule-page accent palette — kept in sync with Schedule.tsx so the
+   home appointment tiles match the full Schedule view. */
+const SCHED = {
+  red: "#C8242C",            // live (in-progress)
+  success: "#1D9E75",        // completed
+  warning: "#BA7517",        // test variants accent
+  blue: "#1A52A0",           // default lesson accent
+  tertiary: "#8E8E93",       // cancelled accent
+  tintGrey: "#F1EFE8",
+  tintGreyFg: "#8E8E93",
+  tintAmber: "#FAEEDA",
+  tintAmberFg: "#854F0B",
+  eolPillBg: "#EEF3FF",
+};
+
 const IOS_FONT =
   "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Helvetica Neue', sans-serif";
 
