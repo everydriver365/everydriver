@@ -635,6 +635,12 @@ export default function InstructorDiary() {
         onOpenChange={setDrawerOpen}
         onSaved={handleLessonSaved}
       />
+      <BulkMissingNotesDialog
+        open={bulkNotesOpen}
+        onOpenChange={setBulkNotesOpen}
+        lessons={missingNotesLessons}
+        onSaved={handleBulkNotesSaved}
+      />
     </Shell>
   );
 }
