@@ -1215,14 +1215,14 @@ export default function Schedule({
         onClick={openAddLesson}
         style={{
           width: "100%",
-          padding: 12,
-          borderRadius: 12,
-          background: CARD_BG,
-          color: BLUE,
-          border: `0.5px solid ${DIVIDER}`,
-          boxShadow: SHADOW,
-          fontSize: 14,
-          fontWeight: 500,
+          padding: "12px 0",
+          borderRadius: 14,
+          background: DSM_BLUE,
+          color: "#FFF",
+          border: "none",
+          boxShadow: "0 2px 8px rgba(26,82,160,0.22)",
+          fontSize: 13,
+          fontWeight: 700,
           marginTop: 8,
           cursor: "pointer",
           display: "inline-flex",
@@ -1231,7 +1231,7 @@ export default function Schedule({
           gap: 6,
         }}
       >
-        <Plus size={16} strokeWidth={2.4} />
+        <Plus size={13} color="#FFF" strokeWidth={2.2} />
         Add lesson
       </button>
 
