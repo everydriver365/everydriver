@@ -219,6 +219,17 @@ export default function InstructorDiary() {
 
   const lessonCount = filteredLessons.length;
 
+  const missingNotesLessons = useMemo(
+    () => lessons.filter((l) => !l.notes?.trim()),
+    [lessons],
+  );
+  const missingNotesCount = missingNotesLessons.length;
+
+  const openMissingNotes = () => {
+    setStatusFilter("missing_notes");
+    setBulkNotesOpen(true);
+  };
+
   const handleBack = () => navigate("/instructor/pupils");
   const handleSearchFocus = () => {
     setSearchOpen(true);
