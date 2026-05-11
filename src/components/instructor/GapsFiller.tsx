@@ -807,7 +807,7 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
 
       {/* Discount section (preserved feature, restyled) */}
       {gaps.length > 0 && (
-        <div style={{ marginBottom: 16 }}>
+        <div style={{ marginBottom: 24 }}>
           <SectionLabel>Add a discount</SectionLabel>
           <div
             style={{
