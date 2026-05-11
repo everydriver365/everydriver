@@ -41,13 +41,38 @@ function Row({ left, primary, secondary, right, divider = true }: { left?: React
   );
 }
 
+function MiniMap() {
+  return (
+    <div aria-hidden style={{ position: "relative", width: "100%", height: 140, background: "#EAF1F5", overflow: "hidden" }}>
+      <svg viewBox="0 0 320 140" preserveAspectRatio="xMidYMid slice" width="100%" height="100%" style={{ display: "block" }}>
+        <path d="M 18 12 Q 50 4 86 18 T 138 36 L 130 70 Q 90 80 56 66 T 12 50 Z" fill="#DCE8D2" opacity={0.75} />
+        <path d="M 220 92 Q 260 82 295 96 L 305 138 L 210 136 Z" fill="#DCE8D2" opacity={0.65} />
+        <path d="M -10 92 Q 80 70 160 80 T 330 66" stroke="#FFFFFF" strokeWidth={6} fill="none" />
+        <path d="M -10 92 Q 80 70 160 80 T 330 66" stroke="#D5DCE3" strokeWidth={3} fill="none" />
+        <path d="M 30 -10 Q 50 44 80 76 T 130 144" stroke="#FFFFFF" strokeWidth={5} fill="none" />
+        <path d="M 30 -10 Q 50 44 80 76 T 130 144" stroke="#D5DCE3" strokeWidth={2.5} fill="none" />
+        <path d="M 200 -10 Q 210 44 240 76 T 290 144" stroke="#FFFFFF" strokeWidth={5} fill="none" />
+        <path d="M 200 -10 Q 210 44 240 76 T 290 144" stroke="#D5DCE3" strokeWidth={2.5} fill="none" />
+        <path d="M -10 34 Q 70 44 150 32 T 330 24" stroke="#D5DCE3" strokeWidth={2} fill="none" />
+        {/* Route */}
+        <path d="M 60 90 Q 130 60 200 70 T 258 72" stroke="#3D55A1" strokeWidth={2.5} strokeDasharray="5 4" fill="none" strokeLinecap="round" />
+        {/* Origin */}
+        <circle cx={60} cy={90} r={8} fill="#10B981" stroke="#FFFFFF" strokeWidth={2.5} />
+        {/* Destination pin */}
+        <g transform="translate(258 70)">
+          <path d="M 0 16 L -7 2 A 8 8 0 1 1 7 2 Z" fill="#3D55A1" stroke="#FFFFFF" strokeWidth={2} strokeLinejoin="round" />
+          <circle cx={0} cy={-2} r={2.8} fill="#FFFFFF" />
+        </g>
+      </svg>
+    </div>
+  );
+}
+
 function NextLessonHero({ m }: { m: typeof mockHome }) {
   const nl = m.nextLesson;
-  // Parse "09:30" → end time
   const [h, mm] = nl.timeLabel.split(":").map(Number);
   const endMins = h * 60 + mm + nl.durationMinutes;
   const endLabel = `${String(Math.floor(endMins / 60) % 24).padStart(2, "0")}:${String(endMins % 60).padStart(2, "0")}`;
-  // Date strip from dateLabel "Monday, 11 May"
   const parts = m.dateLabel.split(" ");
   const dayNum = parts[1]?.replace(",", "") ?? "2";
   const monthShort = (parts[2] ?? "MAR").slice(0, 3).toUpperCase();
@@ -60,64 +85,49 @@ function NextLessonHero({ m }: { m: typeof mockHome }) {
         borderRadius: 16,
         background: "#FFFFFF",
         overflow: "hidden",
-        boxShadow: "0 8px 24px -12px rgba(15,23,42,0.18)",
-        border: "1px solid #EEF1F6",
+        boxShadow: "0 1px 0 rgba(15,23,42,0.04), 0 6px 16px -8px rgba(15,23,42,0.18), 0 22px 40px -20px rgba(61,85,161,0.22)",
+        border: "1px solid #E4E8EF",
       }}
     >
-      {/* Hero image */}
-      <div style={{ position: "relative", height: 168, overflow: "hidden" }}>
-        <img
-          src="https://images.unsplash.com/photo-1532974297617-c0f05fe48bff?w=900&h=500&fit=crop"
-          alt="Next lesson"
-          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-        />
-        {/* Status pill overlay */}
-        <span style={{ position: "absolute", top: 12, left: 12, display: "inline-flex", alignItems: "center", gap: 6, fontSize: 10, fontWeight: 700, padding: "5px 10px", borderRadius: 999, background: "rgba(255,255,255,0.95)", color: "#3D55A1", letterSpacing: "0.06em", textTransform: "uppercase", backdropFilter: "blur(6px)" }}>
+      {/* Mini map header */}
+      <div style={{ position: "relative" }}>
+        <MiniMap />
+        <span style={{ position: "absolute", top: 12, left: 12, display: "inline-flex", alignItems: "center", gap: 6, fontSize: 10, fontWeight: 700, padding: "5px 10px", borderRadius: 999, background: "rgba(255,255,255,0.95)", color: "#3D55A1", letterSpacing: "0.06em", textTransform: "uppercase", boxShadow: "0 1px 4px rgba(15,23,42,0.08)" }}>
           <span style={{ width: 6, height: 6, borderRadius: 999, background: "#10B981", boxShadow: "0 0 0 3px rgba(16,185,129,0.25)" }} />
           Up Next · in {nl.startsInMinutes}m
         </span>
         {nl.paymentStatus === "paid" && (
-          <span style={{ position: "absolute", top: 12, right: 12, fontSize: 10, fontWeight: 700, padding: "5px 9px", borderRadius: 999, background: "#10B981", color: "#FFFFFF", letterSpacing: "0.06em" }}>
+          <span style={{ position: "absolute", top: 12, right: 12, fontSize: 10, fontWeight: 700, padding: "5px 9px", borderRadius: 999, background: "#10B981", color: "#FFFFFF", letterSpacing: "0.06em", boxShadow: "0 2px 6px rgba(16,185,129,0.35)" }}>
             PAID
           </span>
         )}
       </div>
 
-      {/* Body row: dark date strip + info */}
-      <div style={{ display: "flex", alignItems: "stretch", minHeight: 156 }}>
-        {/* Date strip */}
-        <div style={{ width: 72, background: "#0F1B3D", color: "#FFFFFF", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2, flexShrink: 0 }}>
-          <span style={{ fontSize: 32, fontWeight: 700, letterSpacing: "-0.02em", lineHeight: 1 }}>{dayNum}</span>
-          <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.12em", opacity: 0.85 }}>{monthShort}</span>
+      {/* Info body */}
+      <div style={{ padding: "16px 18px", position: "relative" }}>
+        <p style={{ fontSize: 17, fontWeight: 700, color: "#3F4754", letterSpacing: "0.01em", textTransform: "uppercase", marginBottom: 10, lineHeight: 1.2 }}>
+          {nl.durationMinutes / 60} Hour Driving Lesson
+        </p>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6, color: "#4B5565" }}>
+          <Clock size={15} color="#9AA3B2" />
+          <span style={{ fontSize: 14 }}>{nl.timeLabel} – {endLabel} <span style={{ color: "#9AA3B2" }}>({dayNum} {monthShort.charAt(0) + monthShort.slice(1).toLowerCase()})</span></span>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+          <MapPin size={15} color="#9AA3B2" />
+          <span style={{ fontSize: 14, color: "#3D55A1", fontWeight: 500 }}>{nl.pickup.split(" · ")[0]}</span>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+          <Users size={15} color="#9AA3B2" />
+          <span style={{ fontSize: 14, color: "#4B5565" }}>With <span style={{ color: "#3D55A1", fontWeight: 500 }}>{nl.pupilName.split(" ")[0]} {nl.pupilName.split(" ")[1]?.charAt(0) ?? ""}</span></span>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{ width: 15, height: 15, borderRadius: 999, border: "1.5px solid #9AA3B2", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 700, color: "#9AA3B2" }}>£</span>
+          <span style={{ fontSize: 14, color: "#4B5565", fontWeight: 500 }}>£{price.toFixed(2)}</span>
         </div>
 
-        {/* Info column */}
-        <div style={{ flex: 1, padding: "16px 18px", position: "relative" }}>
-          <p style={{ fontSize: 17, fontWeight: 700, color: "#3F4754", letterSpacing: "0.01em", textTransform: "uppercase", marginBottom: 10, lineHeight: 1.2 }}>
-            {nl.durationMinutes / 60} Hour Driving Lesson
-          </p>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6, color: "#4B5565" }}>
-            <Clock size={15} color="#9AA3B2" />
-            <span style={{ fontSize: 14 }}>{nl.timeLabel} – {endLabel} <span style={{ color: "#9AA3B2" }}>({dayNum} {monthShort.charAt(0) + monthShort.slice(1).toLowerCase()})</span></span>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-            <MapPin size={15} color="#9AA3B2" />
-            <span style={{ fontSize: 14, color: "#3D55A1", fontWeight: 500 }}>{nl.pickup.split(" · ")[0]}</span>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-            <Users size={15} color="#9AA3B2" />
-            <span style={{ fontSize: 14, color: "#4B5565" }}>With <span style={{ color: "#3D55A1", fontWeight: 500 }}>{nl.pupilName.split(" ")[0]} {nl.pupilName.split(" ")[1]?.charAt(0) ?? ""}</span></span>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ width: 15, height: 15, borderRadius: 999, border: "1.5px solid #9AA3B2", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 700, color: "#9AA3B2" }}>£</span>
-            <span style={{ fontSize: 14, color: "#4B5565", fontWeight: 500 }}>£{price.toFixed(2)}</span>
-          </div>
-
-          {/* Chevron */}
-          <button style={{ position: "absolute", bottom: 12, right: 12, width: 32, height: 32, borderRadius: 999, background: "#EEF1F6", border: "none", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
-            <ChevronRight size={18} color="#7B8493" style={{ transform: "rotate(90deg)" }} />
-          </button>
-        </div>
+        <button style={{ position: "absolute", bottom: 14, right: 14, width: 34, height: 34, borderRadius: 999, background: "#3D55A1", border: "none", display: "inline-flex", alignItems: "center", justifyContent: "center", boxShadow: "0 6px 14px -4px rgba(61,85,161,0.5)" }}>
+          <ChevronRight size={18} color="#FFFFFF" />
+        </button>
       </div>
     </div>
   );
