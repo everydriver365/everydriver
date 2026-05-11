@@ -579,13 +579,19 @@ export default function InstructorDiary() {
                         {lesson.notes}
                       </p>
                     )}
-                  </div>
+                  </button>
                 </div>
               ))}
             </div>
           )}
         </div>
       </div>
+      <LessonDetailDrawer
+        lesson={activeLesson}
+        open={drawerOpen}
+        onOpenChange={setDrawerOpen}
+        onSaved={handleLessonSaved}
+      />
     </Shell>
   );
 }
