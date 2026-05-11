@@ -419,7 +419,7 @@ function MapHero({
       >
         <div
           style={{
-            fontSize: 14,
+            fontSize: 22,
             fontWeight: 700,
             color: "#000",
             letterSpacing: "-0.4px",
@@ -431,11 +431,12 @@ function MapHero({
         </div>
         <div
           style={{
-            fontSize: 14,
+            fontSize: 11,
             fontWeight: 600,
             color: MUTED,
             marginTop: 3,
             letterSpacing: "0.04em",
+            textTransform: "uppercase",
           }}
         >
           {whenLabel}
