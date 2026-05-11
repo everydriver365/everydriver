@@ -24,6 +24,8 @@ interface DynamicCourseCardProps {
     weekend_surcharge_amount?: number | null;
     bank_holiday_surcharge_amount?: number | null;
     odd_hours_surcharge_amount?: number | null;
+    klarna_enabled?: boolean | null;
+    clearpay_enabled?: boolean | null;
   };
   hours: number;
   nextAvailable?: Date | null;
@@ -249,7 +251,12 @@ export function DynamicCourseCard({
               )}
 
               {/* Payment Options - Dynamic instalment amounts */}
-              <CompactPaymentBadges amount={finalPrice} className="pt-1" />
+              <CompactPaymentBadges
+                amount={finalPrice}
+                className="pt-1"
+                klarnaEnabled={instructor.klarna_enabled ?? false}
+                clearpayEnabled={instructor.clearpay_enabled ?? false}
+              />
             </div>
           </div>
         </div>

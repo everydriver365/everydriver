@@ -20,6 +20,8 @@ interface IOSCourseCardProps {
     bio: string | null;
     brand_colour: string | null;
     school_skim_amount?: number | null;
+    klarna_enabled?: boolean | null;
+    clearpay_enabled?: boolean | null;
   };
   hours: number;
   nextAvailable?: Date | null;
@@ -156,7 +158,11 @@ export function IOSCourseCard({
             <p className="text-[10px] text-muted-foreground">from £{Math.round(finalPrice / 4)}/mo</p>
           </div>
         </div>
-        <CompactPaymentBadges amount={finalPrice} />
+        <CompactPaymentBadges
+          amount={finalPrice}
+          klarnaEnabled={instructor.klarna_enabled ?? false}
+          clearpayEnabled={instructor.clearpay_enabled ?? false}
+        />
         <Button className="w-full rounded-xl" onClick={handleBookNow}>
           Book Now <ArrowRight className="h-4 w-4 ml-1" />
         </Button>

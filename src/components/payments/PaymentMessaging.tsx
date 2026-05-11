@@ -69,30 +69,40 @@ export function PaymentMessaging({
  */
 export function CompactPaymentBadges({
   amount,
-  className = ""
+  className = "",
+  klarnaEnabled = true,
+  clearpayEnabled = true,
 }: {
   amount: number;
   className?: string;
+  klarnaEnabled?: boolean;
+  clearpayEnabled?: boolean;
 }) {
+  if (!klarnaEnabled && !clearpayEnabled) return null;
+
   const klarnaInstalment = (amount / 3).toFixed(2);
   const clearpayInstalment = (amount / 4).toFixed(2);
 
   return (
     <div className={`flex flex-wrap items-center gap-1.5 ${className}`}>
-      <span 
-        className="inline-flex items-center gap-1 rounded-md bg-[#ffb3c7] px-2 py-0.5 text-xs font-bold text-black"
-        title={`£${amount} in 3 monthly payments of £${klarnaInstalment}`}
-      >
-        <img src={klarnaRoundLogo} alt="Klarna" className="h-3.5 w-3.5" />
-        £{klarnaInstalment}/mo × 3
-      </span>
-      <span 
-        className="inline-flex items-center gap-1 rounded-md bg-[#b2fce4] px-2 py-0.5 text-xs font-bold text-black"
-        title={`£${amount} in 4 monthly payments of £${clearpayInstalment}`}
-      >
-        <img src={clearpayRoundLogo} alt="Clearpay" className="h-3.5 w-3.5" />
-        £{clearpayInstalment}/mo × 4
-      </span>
+      {klarnaEnabled && (
+        <span
+          className="inline-flex items-center gap-1 rounded-md bg-[#ffb3c7] px-2 py-0.5 text-xs font-bold text-black"
+          title={`£${amount} in 3 monthly payments of £${klarnaInstalment}`}
+        >
+          <img src={klarnaRoundLogo} alt="Klarna" className="h-3.5 w-3.5" />
+          £{klarnaInstalment}/mo × 3
+        </span>
+      )}
+      {clearpayEnabled && (
+        <span
+          className="inline-flex items-center gap-1 rounded-md bg-[#b2fce4] px-2 py-0.5 text-xs font-bold text-black"
+          title={`£${amount} in 4 monthly payments of £${clearpayInstalment}`}
+        >
+          <img src={clearpayRoundLogo} alt="Clearpay" className="h-3.5 w-3.5" />
+          £{clearpayInstalment}/mo × 4
+        </span>
+      )}
     </div>
   );
 }

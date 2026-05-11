@@ -20,6 +20,8 @@ interface MiniWebsiteCourseCardProps {
     bio: string | null;
     brand_colour: string | null;
     school_skim_amount?: number | null;
+    klarna_enabled?: boolean | null;
+    clearpay_enabled?: boolean | null;
   };
   hours: number;
   nextAvailable?: Date | null;
@@ -148,7 +150,11 @@ export function MiniWebsiteCourseCard({
             Book Now
           </Button>
         </div>
-        <CompactPaymentBadges amount={finalPrice} />
+        <CompactPaymentBadges
+          amount={finalPrice}
+          klarnaEnabled={instructor.klarna_enabled ?? false}
+          clearpayEnabled={instructor.clearpay_enabled ?? false}
+        />
       </div>
     </div>
   );

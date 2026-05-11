@@ -23,6 +23,8 @@ interface CourseInstructor {
   hourly_rate: number | null;
   bio: string | null;
   school_skim_amount?: number | null;
+  klarna_enabled?: boolean | null;
+  clearpay_enabled?: boolean | null;
 }
 
 interface Course {
@@ -231,7 +233,12 @@ export function MobileCourseCard({ course, index }: MobileCourseCardProps) {
 
                 {/* Payment options */}
                 <div className="pt-1">
-                  <CompactPaymentBadges amount={price} className="justify-start" />
+                  <CompactPaymentBadges
+                    amount={price}
+                    className="justify-start"
+                    klarnaEnabled={instructor.klarna_enabled ?? false}
+                    clearpayEnabled={instructor.clearpay_enabled ?? false}
+                  />
                 </div>
 
                 {/* CTA */}
