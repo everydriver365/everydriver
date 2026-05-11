@@ -34,6 +34,7 @@ import {
   CheckCircle2,
   X,
   ClipboardCheck,
+  AlertTriangle,
 } from "lucide-react";
 import { PostLessonReview } from "./PostLessonReview";
 import { format } from "date-fns";
