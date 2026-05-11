@@ -1,13 +1,6 @@
-import { useMemo } from "react";
-import { Phone } from "lucide-react";
 import type { AICallDivertState } from "@/hooks/useAICallDivert";
 
 /* Brand tokens */
-const RED = "#DC2626";
-const GREEN = "#10A37F";
-const SOFT_GREEN = "#ECFDF5";
-const SOFT_RED = "#FEF2F2";
-const LIGHT_GRAY = "#E5E5E5";
 const BLUE = "#2563EB";
 const NEAR_BLACK = "#1A1A1A";
 const FONT =
@@ -15,8 +8,8 @@ const FONT =
 const TILE_INSET = "inset 0 0 0 0.5px rgba(26,26,26,0.08)";
 
 interface TopStatsRowProps {
-  ai: AICallDivertState;
-  onOpenAISheet: () => void;
+  ai?: AICallDivertState;
+  onOpenAISheet?: () => void;
   earningsToday: number;
   todayLessons: number;
   earningsDelta?: number | null;
@@ -26,6 +19,7 @@ interface TopStatsRowProps {
   lessonsGoal: number;
   waitingCount?: number;
 }
+
 
 export function TopStatsRow({
   earningsToday,
