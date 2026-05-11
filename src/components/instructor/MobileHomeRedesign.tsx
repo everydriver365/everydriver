@@ -705,43 +705,43 @@ function UpNextTile({
               disabled={!pupilPhone}
               style={{
                 flex: 1.3,
-                height: 44,
-                borderRadius: 12,
+                height: 36,
+                borderRadius: 10,
                 background: pupilPhone ? "#CC2229" : "#E8B5B7",
                 color: "#FFFFFF",
                 border: "none",
-                fontSize: 15,
+                fontSize: 13,
                 fontWeight: 700,
                 display: "inline-flex",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: 6,
+                gap: 5,
                 cursor: pupilPhone ? "pointer" : "not-allowed",
                 boxShadow: pupilPhone ? "0 2px 8px rgba(204,34,41,0.3)" : "none",
               }}
             >
-              <Phone size={15} strokeWidth={2.2} /> Call
+              <Phone size={13} strokeWidth={2.2} /> Call
             </button>
             <button
               type="button"
               onClick={message}
               style={{
                 flex: 1,
-                height: 44,
-                borderRadius: 12,
+                height: 36,
+                borderRadius: 10,
                 background: BLUE_TINT,
                 color: BLUE,
                 border: `0.5px solid ${BORDER}`,
-                fontSize: 15,
+                fontSize: 13,
                 fontWeight: 600,
                 display: "inline-flex",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: 6,
+                gap: 5,
                 cursor: "pointer",
               }}
             >
-              <MessageSquare size={15} strokeWidth={2.2} /> Text
+              <MessageSquare size={13} strokeWidth={2.2} /> Text
             </button>
             <button
               type="button"
@@ -749,22 +749,22 @@ function UpNextTile({
               disabled={!hasDestination}
               style={{
                 flex: 1,
-                height: 44,
-                borderRadius: 12,
+                height: 36,
+                borderRadius: 10,
                 background: BLUE_TINT,
                 color: BLUE,
                 border: `0.5px solid ${BORDER}`,
-                fontSize: 15,
+                fontSize: 13,
                 fontWeight: 600,
                 display: "inline-flex",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: 6,
+                gap: 5,
                 opacity: hasDestination ? 1 : 0.5,
                 cursor: hasDestination ? "pointer" : "not-allowed",
               }}
             >
-              <NavIcon size={15} strokeWidth={2.2} /> Go
+              <NavIcon size={13} strokeWidth={2.2} /> Go
             </button>
           </div>
         </div>
