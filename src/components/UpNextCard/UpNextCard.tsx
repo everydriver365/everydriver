@@ -291,7 +291,7 @@ export function UpNextCard(props: UpNextCardProps) {
             }}>
               <Sparkles style={{ width: 9, height: 9, color: "#6B21A8" }} strokeWidth={1.9} />
               <span style={{ fontSize: 9, fontWeight: 600, color: "#6B21A8" }}>
-                AI divert starts at {aiDivertTime}
+                Call divert starts at {aiDivertTime}
               </span>
             </div>
           )}
