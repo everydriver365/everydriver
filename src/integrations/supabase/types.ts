@@ -11025,6 +11025,66 @@ export type Database = {
           },
         ]
       }
+      mini_site_health: {
+        Row: {
+          checked_at: string
+          dns_ok: boolean | null
+          domain_ok: boolean | null
+          id: string
+          instructor_id: string
+          notes: string | null
+          pages_missing: string[] | null
+          pages_ok: boolean
+          render_ok: boolean | null
+          slug_ok: boolean
+          ssl_ok: boolean | null
+          status: string
+        }
+        Insert: {
+          checked_at?: string
+          dns_ok?: boolean | null
+          domain_ok?: boolean | null
+          id?: string
+          instructor_id: string
+          notes?: string | null
+          pages_missing?: string[] | null
+          pages_ok?: boolean
+          render_ok?: boolean | null
+          slug_ok?: boolean
+          ssl_ok?: boolean | null
+          status?: string
+        }
+        Update: {
+          checked_at?: string
+          dns_ok?: boolean | null
+          domain_ok?: boolean | null
+          id?: string
+          instructor_id?: string
+          notes?: string | null
+          pages_missing?: string[] | null
+          pages_ok?: boolean
+          render_ok?: boolean | null
+          slug_ok?: boolean
+          ssl_ok?: boolean | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mini_site_health_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: true
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mini_site_health_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: true
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mood_entries: {
         Row: {
           created_at: string
