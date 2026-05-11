@@ -122,6 +122,10 @@ export default function InstructorDiary() {
   const [customFrom, setCustomFrom] = useState<Date | undefined>();
   const [customTo, setCustomTo] = useState<Date | undefined>();
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [lessonTypeFilter, setLessonTypeFilter] = useState<string>("all");
+  const [minDuration, setMinDuration] = useState<string>("");
+  const [maxDuration, setMaxDuration] = useState<string>("");
+  const [googleSourceFilter, setGoogleSourceFilter] = useState<GoogleSourceFilter>("any");
   const [searchOpen, setSearchOpen] = useState(false);
   const [helpDismissed, setHelpDismissed] = useState(true);
   useEffect(() => {
