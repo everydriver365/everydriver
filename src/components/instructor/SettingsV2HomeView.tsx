@@ -6,7 +6,7 @@ import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
 import { useTestSwapNotifications } from "@/hooks/useTestSwapNotifications";
 import { useRealGapSlots } from "@/hooks/useRealGapSlots";
 import { useVisitorChatUnreadCount } from "@/hooks/useVisitorChatUnreadCount";
-import { useTodayOverview } from "@/hooks/useTodayOverview";
+
 import { getTimeOfDayGreeting } from "@/lib/composeStatusSubtitle";
 
 import { UpNextCard } from "@/components/UpNextCard";
