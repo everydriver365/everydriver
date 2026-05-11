@@ -290,6 +290,36 @@ export default function InstructorDiary() {
             </button>
           </div>
 
+          {!helpDismissed && (
+            <div
+              style={{
+                display: "flex",
+                gap: 10,
+                alignItems: "flex-start",
+                background: "var(--d2-indigo-bg, #EDF2FE)",
+                border: "0.5px solid var(--d2-border)",
+                borderRadius: 12,
+                padding: "10px 12px",
+                marginBottom: 10,
+              }}
+            >
+              <Info size={14} color="var(--d2-indigo)" style={{ marginTop: 2, flexShrink: 0 }} />
+              <p style={{ flex: 1, fontSize: 12, lineHeight: 1.5, color: "var(--d2-text-1)", margin: 0 }}>
+                Use Lesson History to look back at completed lessons. Filter by pupil, date range or status to find lessons that are missing notes or a rating, review what you covered last time, or pull stats for tax and CPD evidence.
+              </p>
+              <button
+                onClick={dismissHelp}
+                aria-label="Dismiss"
+                style={{
+                  background: "transparent", border: "none", padding: 2, cursor: "pointer",
+                  color: "var(--d2-text-2)", flexShrink: 0,
+                }}
+              >
+                <X size={14} />
+              </button>
+            </div>
+          )}
+
           {/* Search bar */}
           <div
             onClick={handleSearchFocus}
