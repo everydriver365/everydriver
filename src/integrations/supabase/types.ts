@@ -8847,6 +8847,12 @@ export type Database = {
           created_at: string
           custom_branding_enabled: boolean | null
           custom_domain: string | null
+          custom_domain_added_at: string | null
+          custom_domain_dns_status: string
+          custom_domain_last_checked_at: string | null
+          custom_domain_ssl_status: string
+          custom_domain_status_message: string | null
+          custom_domain_verification_token: string | null
           custom_domain_verified: boolean | null
           dark_mode_enabled: boolean | null
           data_retention_months: number | null
@@ -9044,6 +9050,12 @@ export type Database = {
           created_at?: string
           custom_branding_enabled?: boolean | null
           custom_domain?: string | null
+          custom_domain_added_at?: string | null
+          custom_domain_dns_status?: string
+          custom_domain_last_checked_at?: string | null
+          custom_domain_ssl_status?: string
+          custom_domain_status_message?: string | null
+          custom_domain_verification_token?: string | null
           custom_domain_verified?: boolean | null
           dark_mode_enabled?: boolean | null
           data_retention_months?: number | null
@@ -9241,6 +9253,12 @@ export type Database = {
           created_at?: string
           custom_branding_enabled?: boolean | null
           custom_domain?: string | null
+          custom_domain_added_at?: string | null
+          custom_domain_dns_status?: string
+          custom_domain_last_checked_at?: string | null
+          custom_domain_ssl_status?: string
+          custom_domain_status_message?: string | null
+          custom_domain_verification_token?: string | null
           custom_domain_verified?: boolean | null
           dark_mode_enabled?: boolean | null
           data_retention_months?: number | null
@@ -18552,6 +18570,7 @@ export type Database = {
       cleanup_expired_otp_codes: { Args: never; Returns: undefined }
       cleanup_expired_parent_otp_codes: { Args: never; Returns: undefined }
       generate_calendar_share_token: { Args: never; Returns: string }
+      generate_domain_verification_token: { Args: never; Returns: string }
       generate_referral_code: { Args: never; Returns: string }
       generate_unique_instructor_slug: {
         Args: { p_source: string }
