@@ -767,6 +767,7 @@ function UpNextTile({
               <NavIcon size={13} strokeWidth={2.2} /> Go
             </button>
           </div>
+        </div>
 
         {/* Expand handle */}
         <button
