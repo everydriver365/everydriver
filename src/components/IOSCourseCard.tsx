@@ -88,7 +88,7 @@ export function IOSCourseCard({
   };
 
   return (
-    <div className="group rounded-2xl border border-border/60 bg-secondary/40 p-2 shadow-lg shadow-black/5 transition-shadow hover:shadow-xl">
+    <div className="group overflow-hidden rounded-2xl border border-border/60 bg-card shadow-lg shadow-black/5 transition-shadow hover:shadow-xl">
       {/* Hero photo */}
       <div className="relative h-44 overflow-hidden rounded-xl">
         <img
