@@ -28,35 +28,12 @@ interface TopStatsRowProps {
 }
 
 export function TopStatsRow({
-  ai,
-  onOpenAISheet,
   earningsToday,
   todayLessons,
   earningsDelta,
   hoursThisWeek,
   hoursGoal,
 }: TopStatsRowProps) {
-  const aiOn = ai.toggleOn;
-  const ACCENT = aiOn ? GREEN : RED;
-  const ACCENT_SOFT = aiOn ? SOFT_GREEN : SOFT_RED;
-
-  const resumesText = useMemo(() => {
-    const target = ai.windowEnd && ai.insideWindow
-      ? ai.windowEnd
-      : ai.windowStart ?? null;
-    if (!target) return "Calls handled by AI";
-    return `Resumes calls at ${target.toLocaleTimeString("en-GB", {
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-    })}`;
-  }, [ai.windowEnd, ai.windowStart, ai.insideWindow]);
-
-  const toggleAI = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    ai.setMode(aiOn ? "off" : "auto");
-  };
-
   const progressPct = hoursGoal > 0
     ? Math.max(0, Math.min(100, (hoursThisWeek / hoursGoal) * 100))
     : 0;
