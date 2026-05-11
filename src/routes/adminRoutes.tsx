@@ -14,6 +14,7 @@ const EOLAuditLog = lazy(() => import("@/pages/admin/EOLAuditLog"));
 const PhoneTrackingAudit = lazy(() => import("@/pages/admin/PhoneTrackingAudit"));
 const NotificationOutbox = lazy(() => import("@/pages/admin/NotificationOutbox"));
 const PlatformFees = lazy(() => import("@/pages/admin/PlatformFees"));
+const CustomDomainQueue = lazy(() => import("@/pages/admin/CustomDomainQueue"));
 
 export const adminRoutes = (
   <>
