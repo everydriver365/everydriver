@@ -196,6 +196,8 @@ export function AddLessonSheet({
   onOpenChange, 
   instructorId, 
   defaultDate,
+  defaultStartTime,
+  defaultDurationHours,
   onSuccess 
 }: AddLessonSheetProps) {
   const queryClient = useQueryClient();
