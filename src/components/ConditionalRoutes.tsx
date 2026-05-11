@@ -1,5 +1,4 @@
 import { isInstructorSubdomain, getInstructorSubdomain } from "@/components/DomainRouter";
-import { getWhitelabelConfig } from "@/lib/whitelabel";
 import { lazy } from "react";
 import About from "@/pages/About";
 import Contact from "@/pages/Contact";
@@ -9,15 +8,18 @@ import MiniWebsiteServices from "@/pages/mini-website/MiniWebsiteServices";
 import MiniWebsiteReviews from "@/pages/mini-website/MiniWebsiteReviews";
 
 const Reviews = lazy(() => import("@/pages/Reviews"));
+const Courses = lazy(() => import("@/pages/Courses"));
 
 /**
  * Conditional route components that render different content based on the host.
  *
- * - Instructor subdomain (`{slug}.everydriver.co.uk`)  → small `/i/{slug}` mini-site components
- * - Whitelabel custom domain (e.g. winchesterdrivingschool.co.uk) → full Drive365 clone pages,
- *   rebranded via `useRouteLogo`/`getWhitelabelConfig`. Never the mini-site components,
- *   so the bottom nav and visual language stay consistent across the standalone site.
- * - Bare Drive365 → standard learner pages
+ * RULE: Whitelabel custom domains MUST NEVER render `MiniWebsite*` components.
+ * They render the standard Drive365 pages, rebranded via `getWhitelabelConfig()`
+ * / `useRouteLogo`, so the bottom nav and visual language stay consistent.
+ *
+ * - Instructor subdomain (`{slug}.everydriver.co.uk`) → `/i/{slug}` mini-site
+ * - Whitelabel custom domain (e.g. winchesterdrivingschool.co.uk) → standard Drive365 pages
+ * - Bare Drive365 → standard Drive365 pages
  */
 
 export function ConditionalAbout() {
@@ -33,8 +35,6 @@ export function ConditionalContact() {
     const slug = getInstructorSubdomain();
     return <MiniWebsiteContact subdomainSlug={slug} />;
   }
-  // Whitelabel domains render the standard Drive365 Contact page (rebranded
-  // via the brand resolver) so they stay consistent with the rest of the site.
   return <Contact />;
 }
 
@@ -43,8 +43,9 @@ export function ConditionalServices() {
     const slug = getInstructorSubdomain();
     return <MiniWebsiteServices subdomainSlug={slug} />;
   }
-  // Whitelabel + bare Drive365 don't have a /services page yet.
-  return null;
+  // Whitelabel + bare Drive365 → use the Courses page as the canonical
+  // "services" surface, rebranded via getWhitelabelConfig().
+  return <Courses />;
 }
 
 export function ConditionalReviews() {
@@ -52,6 +53,5 @@ export function ConditionalReviews() {
     const slug = getInstructorSubdomain();
     return <MiniWebsiteReviews subdomainSlug={slug} />;
   }
-  // Whitelabel + bare Drive365 → standard rebranded reviews page.
   return <Reviews />;
 }
