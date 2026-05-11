@@ -663,14 +663,15 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
   return (
     <div style={{ fontFamily: FONT_STACK }}>
       {/* Section title */}
-      <div style={{ marginBottom: 16 }}>
+      <div style={{ marginBottom: 20 }}>
         <h2
           style={{
-            fontSize: 17,
-            fontWeight: 500,
+            fontSize: 20,
+            fontWeight: 600,
             color: "#000000",
-            letterSpacing: -0.3,
-            margin: "0 0 4px",
+            letterSpacing: -0.4,
+            margin: "0 0 6px",
+            lineHeight: 1.2,
           }}
         >
           Fill your gaps
@@ -679,7 +680,7 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
           style={{
             fontSize: 13,
             color: "#6E6E73",
-            lineHeight: 1.4,
+            lineHeight: 1.45,
             margin: 0,
           }}
         >
@@ -787,8 +788,8 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
           style={{
             display: "flex",
             flexDirection: "column",
-            gap: 8,
-            marginBottom: 16,
+            gap: 10,
+            marginBottom: 24,
           }}
         >
           {slotRows.map(({ raw, view }) => (
@@ -806,7 +807,7 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
 
       {/* Discount section (preserved feature, restyled) */}
       {gaps.length > 0 && (
-        <div style={{ marginBottom: 16 }}>
+        <div style={{ marginBottom: 24 }}>
           <SectionLabel>Add a discount</SectionLabel>
           <div
             style={{
@@ -944,12 +945,12 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
           width: "100%",
           background: "#2B7BC8",
           border: "none",
-          borderRadius: 10,
-          padding: 14,
+          borderRadius: 12,
+          padding: "16px 14px",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          gap: 8,
+          gap: 10,
           cursor:
             selectedSlots.length === 0 || recipientCount === 0
               ? "not-allowed"
@@ -957,14 +958,16 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
           opacity:
             selectedSlots.length === 0 || recipientCount === 0 ? 0.4 : 1,
           fontFamily: FONT_STACK,
+          marginTop: 4,
         }}
       >
-        <MessageSquare size={16} strokeWidth={2} color="#FFFFFF" />
+        <MessageSquare size={17} strokeWidth={2} color="#FFFFFF" />
         <span
           style={{
-            fontSize: 14,
-            fontWeight: 500,
+            fontSize: 15,
+            fontWeight: 600,
             color: "#FFFFFF",
+            letterSpacing: -0.2,
           }}
         >
           Send to {recipientCount} pupil{recipientCount === 1 ? "" : "s"}

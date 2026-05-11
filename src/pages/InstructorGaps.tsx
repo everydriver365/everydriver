@@ -31,12 +31,12 @@ export default function InstructorGaps() {
       <div
         style={{
           background: "#F2F2F4",
-          padding: 8,
+          padding: 12,
           minHeight: "100%",
           fontFamily: FONT_STACK,
           display: "flex",
           flexDirection: "column",
-          gap: 8,
+          gap: 12,
         }}
       >
         {/* Page header card */}
@@ -44,7 +44,7 @@ export default function InstructorGaps() {
           style={{
             background: "#FFFFFF",
             borderRadius: 12,
-            padding: 16,
+            padding: "14px 16px",
             display: "flex",
             alignItems: "center",
             gap: 12,
@@ -52,8 +52,8 @@ export default function InstructorGaps() {
         >
           <div
             style={{
-              width: 40,
-              height: 40,
+              width: 36,
+              height: 36,
               borderRadius: 10,
               background: "#FBEAEC",
               display: "inline-flex",
@@ -62,7 +62,7 @@ export default function InstructorGaps() {
               flexShrink: 0,
             }}
           >
-            <MapPin size={22} strokeWidth={2} color="#C8434F" />
+            <MapPin size={20} strokeWidth={2} color="#C8434F" />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div
@@ -79,8 +79,8 @@ export default function InstructorGaps() {
             </div>
             <h1
               style={{
-                fontSize: 17,
-                fontWeight: 500,
+                fontSize: 16,
+                fontWeight: 600,
                 color: "#000000",
                 letterSpacing: -0.3,
                 margin: 0,
@@ -96,13 +96,13 @@ export default function InstructorGaps() {
           style={{
             background: "#FFFFFF",
             borderRadius: 12,
-            padding: 16,
+            padding: "16px 14px 20px",
             flex: 1,
             display: "flex",
             flexDirection: "column",
           }}
         >
-          <div style={{ marginBottom: 16 }}>
+          <div style={{ marginBottom: 20 }}>
             <SegmentedControl<GapsTab>
               value={tab}
               onChange={setTab}

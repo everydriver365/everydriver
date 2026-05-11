@@ -36,11 +36,11 @@ export function SlotPickerRow({
         width: "100%",
         background: isSelected ? "#E6F1FB" : "#FFFFFF",
         border: `0.5px solid ${isSelected ? "#2B7BC8" : "#E5E5EA"}`,
-        borderRadius: 10,
-        padding: "12px 12px",
+        borderRadius: 12,
+        padding: "14px 14px",
         display: "flex",
         alignItems: "center",
-        gap: 10,
+        gap: 12,
         fontFamily: FONT_STACK,
         outline: highlighted ? "2px solid #34C759" : "none",
         outlineOffset: highlighted ? 1 : 0,
@@ -107,17 +107,17 @@ export function SlotPickerRow({
               display: "flex",
               alignItems: "center",
               gap: 8,
-              marginTop: 3,
+              marginTop: 4,
               minWidth: 0,
             }}
           >
             <span
               style={{
-                fontSize: 14,
-                fontWeight: 500,
+                fontSize: 16,
+                fontWeight: 600,
                 color: "#000000",
-                letterSpacing: -0.2,
-                lineHeight: 1.15,
+                letterSpacing: -0.3,
+                lineHeight: 1.2,
                 whiteSpace: "nowrap",
               }}
             >
