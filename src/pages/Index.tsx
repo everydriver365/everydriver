@@ -230,7 +230,6 @@ export default function Index() {
                   Plan my course around my test date →
                 </button>
               </div>
-            </div>
           </div>
         </section>
       )}
