@@ -491,6 +491,28 @@ export function FindAppointmentBody({
         </>
         )}
 
+        {/* Duration picker for next-slot mode */}
+        {nextOnly && (
+          <>
+            <SectionLabel label="Lesson duration" />
+            <div className="bg-white rounded-[14px] overflow-hidden mb-3" style={cardStyle}>
+              <div className="px-3 py-2.5">
+                <Select value={duration} onValueChange={setDuration}>
+                  <SelectTrigger className={triggerCls} style={triggerStyle}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="60">1 hour</SelectItem>
+                    <SelectItem value="90">1.5 hours</SelectItem>
+                    <SelectItem value="120">2 hours</SelectItem>
+                    <SelectItem value="180">3 hours</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </>
+        )}
+
         {/* Available appointments */}
         <SectionLabel label={nextOnly ? "Next available slot" : "Available appointments"} />
         <div className="bg-white rounded-[14px] overflow-hidden mb-3" style={cardStyle}>
