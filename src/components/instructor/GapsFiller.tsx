@@ -788,8 +788,8 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
           style={{
             display: "flex",
             flexDirection: "column",
-            gap: 8,
-            marginBottom: 16,
+            gap: 10,
+            marginBottom: 24,
           }}
         >
           {slotRows.map(({ raw, view }) => (
