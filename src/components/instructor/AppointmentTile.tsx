@@ -236,6 +236,7 @@ export function AppointmentTile(props: AppointmentTileProps) {
     showConflictPill,
     showReviewPill,
     showInProgressLine,
+    stackedMeta,
     onClick,
     href,
     onEOLClick,
