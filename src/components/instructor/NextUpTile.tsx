@@ -768,16 +768,16 @@ export function NextUpTile({
                       aria-label="Call pupil"
                       disabled={!pupilPhone}
                       style={{
-                        flex: 1, height: 44, borderRadius: 14,
+                        flex: 1, height: 36, borderRadius: 10,
                         background: "#3D55A1", color: "#FFFFFF", border: "none",
-                        display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
-                        fontSize: a11yPx(14), fontWeight: 600, letterSpacing: 0.1,
+                        display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 5,
+                        fontSize: a11yPx(13), fontWeight: 600, letterSpacing: 0.1,
                         cursor: pupilPhone ? "pointer" : "not-allowed",
                         opacity: pupilPhone ? 1 : 0.5,
                         boxShadow: "0 4px 12px -4px rgba(41,82,179,0.45)",
                       }}
                     >
-                      <Phone style={{ width: 15, height: 15 }} strokeWidth={2.2} /> Call
+                      <Phone style={{ width: 13, height: 13 }} strokeWidth={2.2} /> Call
                     </button>
                     <button
                       type="button"
@@ -785,16 +785,16 @@ export function NextUpTile({
                       aria-label="Text pupil"
                       disabled={!pupilPhone}
                       style={{
-                        flex: 1, height: 44, borderRadius: 14,
+                        flex: 1, height: 36, borderRadius: 10,
                         background: "#EEF2FB", color: "#3D55A1",
                         border: "0.5px solid rgba(41,82,179,0.14)",
-                        display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
-                        fontSize: a11yPx(14), fontWeight: 600, letterSpacing: 0.1,
+                        display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 5,
+                        fontSize: a11yPx(13), fontWeight: 600, letterSpacing: 0.1,
                         cursor: pupilPhone ? "pointer" : "not-allowed",
                         opacity: pupilPhone ? 1 : 0.5,
                       }}
                     >
-                      <MessageSquare style={{ width: 15, height: 15 }} strokeWidth={2.2} /> Text
+                      <MessageSquare style={{ width: 13, height: 13 }} strokeWidth={2.2} /> Text
                     </button>
                     <button
                       type="button"
@@ -802,16 +802,16 @@ export function NextUpTile({
                       aria-label="Navigate to pickup"
                       disabled={!pickupPostcode}
                       style={{
-                        flex: 1, height: 44, borderRadius: 14,
+                        flex: 1, height: 36, borderRadius: 10,
                         background: "#EEF2FB", color: "#3D55A1",
                         border: "0.5px solid rgba(41,82,179,0.14)",
-                        display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
-                        fontSize: a11yPx(14), fontWeight: 600, letterSpacing: 0.1,
+                        display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 5,
+                        fontSize: a11yPx(13), fontWeight: 600, letterSpacing: 0.1,
                         cursor: pickupPostcode ? "pointer" : "not-allowed",
                         opacity: pickupPostcode ? 1 : 0.5,
                       }}
                     >
-                      <Navigation style={{ width: 15, height: 15 }} strokeWidth={2.2} /> Go
+                      <Navigation style={{ width: 13, height: 13 }} strokeWidth={2.2} /> Go
                     </button>
                   </div>
                 </div>
