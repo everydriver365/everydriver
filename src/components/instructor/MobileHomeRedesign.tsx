@@ -975,7 +975,7 @@ function UpNextMapStrip({
           pointerEvents: "none",
         }}>
           <span style={{ width: 5, height: 5, borderRadius: 3, background: etaMin > 0 ? "#1D9E75" : "#C7C7CC" }} />
-          <span style={{ fontSize: 14, fontWeight: 700, color: "#1A1A1A", fontVariantNumeric: "tabular-nums" }}>
+          <span style={{ fontSize: 12, fontWeight: 700, color: "#1A1A1A", fontVariantNumeric: "tabular-nums" }}>
             {etaMin > 0 ? `ETA ${etaMin}m` : "Live ETA…"}
           </span>
         </div>
