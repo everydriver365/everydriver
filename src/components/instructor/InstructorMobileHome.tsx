@@ -398,7 +398,9 @@ export function InstructorMobileHome({
 
 
       {/* App Style layout: iOS launcher (replaces entire page content) */}
-      {effectiveLayoutStyle === "schedule" ? (
+      {effectiveLayoutStyle === "settings-v2" ? (
+        <SettingsV2HomeView instructorId={instructorId} instructor={instructor} />
+      ) : effectiveLayoutStyle === "schedule" ? (
         <AppStyleHomeView
           instructorId={instructorId}
           heroImageUrl={personalHeroUrl || content?.hero_image_url}
