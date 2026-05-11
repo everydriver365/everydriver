@@ -143,7 +143,7 @@ export function TopStatsRow({
       <style>{`
         .ts-row {
           display: grid;
-          grid-template-columns: 3fr 1fr 1fr;
+          grid-template-columns: 1fr 1fr;
           align-items: stretch;
           gap: 8px;
         }
