@@ -67,7 +67,10 @@ export function SEOHead({ title, description, noindex }: SEOHeadProps) {
     setMetaTag("og:locale", "en_GB", "property");
     setMetaTag("og:site_name", baseSiteTitle, "property");
     if (ogImage) setMetaTag("og:image", ogImage, "property");
-    setMetaTag("og:url", `${window.location.origin}${location.pathname}`, "property");
+    // Always advertise the canonical branded URL on whitelabel hosts (even when paused
+    // or visited via www/preview), so social shares + crawlers see the same address.
+    const canonicalOrigin = isWL ? `https://${wl!.host}` : window.location.origin;
+    setMetaTag("og:url", `${canonicalOrigin}${location.pathname}`, "property");
 
     setMetaTag("twitter:card", "summary_large_image", "name");
     setMetaTag("twitter:title", ogTitle, "name");
