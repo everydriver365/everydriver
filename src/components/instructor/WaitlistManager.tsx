@@ -350,16 +350,16 @@ export function WaitlistManager({ instructorId, availableGaps = [] }: WaitlistMa
             {pendingOffers.map((offer) => (
               <div
                 key={offer.id}
-                className={`flex items-center justify-between rounded-2xl bg-background p-3 transition-all ${
+                className={`flex flex-col gap-3 rounded-2xl bg-background p-3 transition-all sm:flex-row sm:items-center sm:justify-between ${
                   highlightedOfferIds.has(offer.id) ? "animate-highlight-pulse ring-2 ring-green-500/50 bg-green-500/10" : ""
                 }`}
               >
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <User className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-medium">{offer.pupil?.name}</span>
+                <div className="space-y-1 min-w-0">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <User className="h-4 w-4 text-muted-foreground shrink-0" />
+                    <span className="font-medium truncate">{offer.pupil?.name}</span>
                   </div>
-                  <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
                     <span className="flex items-center gap-1">
                       <Calendar className="h-3 w-3" />
                       {format(new Date(offer.lesson_date), "EEE, d MMM")}
@@ -370,11 +370,12 @@ export function WaitlistManager({ instructorId, availableGaps = [] }: WaitlistMa
                     </span>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 sm:shrink-0">
                   <Button
                     size="sm"
                     variant="outline"
                     onClick={() => handleDeclineOffer(offer.id)}
+                    className="flex-1 sm:flex-none"
                   >
                     <XCircle className="mr-1 h-4 w-4" />
                     Decline
@@ -383,6 +384,7 @@ export function WaitlistManager({ instructorId, availableGaps = [] }: WaitlistMa
                     size="sm"
                     onClick={() => handleApproveOffer(offer)}
                     disabled={approvingId === offer.id}
+                    className="flex-1 sm:flex-none"
                   >
                     {approvingId === offer.id ? (
                       <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
