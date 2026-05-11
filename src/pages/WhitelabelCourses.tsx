@@ -229,7 +229,7 @@ export default function WhitelabelCourses() {
       const el = document.getElementById(id);
       if (el) el.remove();
     };
-  }, [coursesWithDistance, paused, brand]);
+  }, [coursesWithDistance, paused, brand, config]);
 
 
   return (
