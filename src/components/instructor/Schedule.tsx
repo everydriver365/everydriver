@@ -551,29 +551,6 @@ function DaySummaryCard({
         </div>
       )}
 
-      {/* Fill open time CTA */}
-      {freeHours > 0 && day.isWorkingDay && (
-        <button
-          type="button"
-          onClick={onFillGaps}
-          style={{
-            width: "100%",
-            padding: "8px 12px",
-            background: "transparent",
-            border: "none",
-            cursor: "pointer",
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 5,
-          }}
-        >
-          <Plus size={11} color={DSM_BLUE} strokeWidth={2.2} />
-          <span style={{ fontSize: 14, fontWeight: 600, color: DSM_BLUE }}>
-            Fill open time
-          </span>
-        </button>
-      )}
     </div>
   );
 }
