@@ -637,7 +637,9 @@ function UpNextTile({
 
         {/* ── MAP STRIP (72px) ── */}
         <UpNextMapStrip
-          centerQuery={destQuery || null}
+          pickupPostcode={pickupPostcode}
+          pickupLocation={pickupLocation}
+          instructorId={instructorId}
           hasDestination={hasDestination}
           onNavigate={navTo}
         />
