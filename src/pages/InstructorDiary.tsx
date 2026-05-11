@@ -303,6 +303,27 @@ export default function InstructorDiary() {
     : (dateRangeLabels[dateRange] || "Last 30 days");
   const statusLabel = statusLabels[statusFilter];
 
+  const handleExport = (kind: "csv" | "pdf") => {
+    if (filteredLessons.length === 0) {
+      toast.error("No lessons to export with current filters");
+      return;
+    }
+    const meta = {
+      instructorName: instructor?.name || "Instructor",
+      rangeLabel: dateLabel,
+      pupilLabel: selectedPupilObj?.name || "All pupils",
+      statusLabel,
+    };
+    try {
+      if (kind === "csv") exportLessonsCsv(filteredLessons, meta);
+      else exportLessonsPdf(filteredLessons, meta);
+      toast.success(`${kind.toUpperCase()} downloaded (${filteredLessons.length} lessons)`);
+    } catch (err: any) {
+      console.error("Export failed", err);
+      toast.error(err.message || "Export failed");
+    }
+  };
+
   if (!instructorId) {
     return (
       <Shell>
