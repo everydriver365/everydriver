@@ -7,6 +7,8 @@ import {
   ChevronLeft,
   Search,
   Mic,
+  Info,
+  X,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
