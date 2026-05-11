@@ -266,10 +266,11 @@ export function AddLessonSheet({
       (async () => {
         const { data } = await supabase
           .from('instructors')
-          .select('buffer_minutes, home_postcode, hourly_rate, weekend_surcharge_amount, bank_holiday_surcharge_amount, odd_hours_surcharge_amount, odd_hours_start, odd_hours_end')
+          .select('name, buffer_minutes, home_postcode, hourly_rate, weekend_surcharge_amount, bank_holiday_surcharge_amount, odd_hours_surcharge_amount, odd_hours_start, odd_hours_end')
           .eq('id', instructorId)
           .maybeSingle();
         const d = (data ?? {}) as any;
+        setInstructorName((d.name as string | null) ?? '');
         setBufferMinutes((d.buffer_minutes as number | null) ?? 0);
         setInstructorHomePostcode((d.home_postcode as string | null) ?? '');
         setHourlyRate(Number(d.hourly_rate) || 0);
