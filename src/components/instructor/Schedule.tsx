@@ -1293,9 +1293,10 @@ export default function Schedule({
             flex: 1,
             padding: "12px 0",
             borderRadius: 14,
-            background: "#FFF",
-            color: DSM_BLUE,
-            border: `1px solid ${DSM_BLUE}`,
+            background: DSM_BLUE,
+            color: "#FFF",
+            border: "none",
+            boxShadow: "0 2px 8px rgba(26,82,160,0.22)",
             fontSize: 14,
             fontWeight: 700,
             cursor: "pointer",
@@ -1305,7 +1306,7 @@ export default function Schedule({
             gap: 6,
           }}
         >
-          <Plus size={13} color={DSM_BLUE} strokeWidth={2.2} />
+          <Plus size={13} color="#FFF" strokeWidth={2.2} />
           Fill gaps
         </button>
       </div>
