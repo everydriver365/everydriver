@@ -565,12 +565,14 @@ function LessonRow({
   eolDone,
   onClick,
   onEOLClick,
+  stackedMeta,
 }: {
   lesson: ScheduleLesson;
   now: Date;
   eolDone: boolean;
   onClick: () => void;
   onEOLClick: (e: React.MouseEvent) => void;
+  stackedMeta?: boolean;
 }) {
   return (
     <div style={{ marginBottom: 8 }}>
@@ -589,6 +591,7 @@ function LessonRow({
         eolDone={eolDone}
         onClick={onClick}
         onEOLClick={onEOLClick}
+        stackedMeta={stackedMeta}
       />
     </div>
   );
