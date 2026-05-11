@@ -48,6 +48,13 @@ const statusLabels: Record<StatusFilter, string> = {
 };
 
 
+type GoogleSourceFilter = "any" | "from_google" | "not_from_google";
+const googleSourceLabels: Record<GoogleSourceFilter, string> = {
+  any: "Any source",
+  from_google: "From Google diary",
+  not_from_google: "Not from Google",
+};
+
 interface LessonRecord {
   id: string;
   lesson_date: string;
@@ -57,6 +64,7 @@ interface LessonRecord {
   rating: number | null;
   skills_practiced: string[] | null;
   pupils: { id: string; name: string } | null;
+  scheduled_lessons: { lesson_type: string | null; google_event_id: string | null } | null;
 }
 
 interface Pupil {
