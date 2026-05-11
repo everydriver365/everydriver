@@ -1115,6 +1115,7 @@ export default function Schedule({
             onSlotBook={handleGapClick}
             onAddLesson={openAddLesson}
             onBlockDay={handleBlockDay}
+            stackedMeta={stackedMeta}
           />
         </>
       )}
