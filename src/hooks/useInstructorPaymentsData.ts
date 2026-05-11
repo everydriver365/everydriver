@@ -41,6 +41,11 @@ export interface PaymentsStats {
   effectiveFeeRate: number;
   feesYearToDate: number;
   feesYearLabel: string;
+  platformFeesMonth: number;
+  platformBookingFeesMonth: number;
+  platformTransactionFeesMonth: number;
+  platformUpliftFeesMonth: number;
+  platformFeesYearToDate: number;
 }
 
 export interface PaymentsData {
@@ -151,6 +156,9 @@ export function useInstructorPaymentsData(instructorId: string | undefined): Pay
       nextPayout: 0, nextPayoutDate: "—",
       feesMonth: 0, effectiveFeeRate: FEE_RATE * 100,
       feesYearToDate: 0, feesYearLabel: "",
+      platformFeesMonth: 0, platformBookingFeesMonth: 0,
+      platformTransactionFeesMonth: 0, platformUpliftFeesMonth: 0,
+      platformFeesYearToDate: 0,
     },
     cashFlow: [],
     outstanding: [],
@@ -222,8 +230,18 @@ export function useInstructorPaymentsData(instructorId: string | undefined): Pay
         );
         const receivedMonth = monthTx.reduce((s, t) => s + t.amount, 0);
         const cardMonth = monthTx.filter(t => t.method === "card").reduce((s, t) => s + t.amount, 0);
-        const platformFeesMonthTotal = (platformFeesMonthRes.data || [])
+        const platformFeesRows = (platformFeesMonthRes.data || []) as any[];
+        const platformFeesMonthTotal = platformFeesRows
           .reduce((s: number, r: any) => s + Number(r.amount || 0), 0);
+        const platformBookingFeesMonth = platformFeesRows
+          .filter((r) => (r.kind || "") === "booking_fee")
+          .reduce((s, r) => s + Number(r.amount || 0), 0);
+        const platformTransactionFeesMonth = platformFeesRows
+          .filter((r) => (r.kind || "") === "transaction_fee")
+          .reduce((s, r) => s + Number(r.amount || 0), 0);
+        const platformUpliftFeesMonth = platformFeesRows
+          .filter((r) => /uplift/i.test(r.kind || ""))
+          .reduce((s, r) => s + Number(r.amount || 0), 0);
         const feesMonth = +((Math.max(0, cardMonth) * FEE_RATE) + platformFeesMonthTotal).toFixed(2);
         const effectiveFeeRate = receivedMonth > 0 ? +((feesMonth / receivedMonth) * 100).toFixed(2) : 0;
 
@@ -293,14 +311,14 @@ export function useInstructorPaymentsData(instructorId: string | undefined): Pay
             .gte("created_at", taxYearStart.toISOString()),
         ]);
 
+        const platformYtd = (ytdPlatformFeesRes.data || [])
+          .reduce((s: number, r: any) => s + Number(r.amount || 0), 0);
         let feesYearToDate = 0;
         if (!ytdRes.error && ytdRes.data) {
           const cardYtd = ytdRes.data
             .filter((p: any) => normalizeMethod(p.payment_method) === "card"
               && normalizeStatus(Number(p.amount), p.notes, p.payout_status) === "paid")
             .reduce((s: number, p: any) => s + Number(p.amount || 0), 0);
-          const platformYtd = (ytdPlatformFeesRes.data || [])
-            .reduce((s: number, r: any) => s + Number(r.amount || 0), 0);
           feesYearToDate = +((cardYtd * FEE_RATE) + platformYtd).toFixed(2);
         }
 
@@ -319,6 +337,11 @@ export function useInstructorPaymentsData(instructorId: string | undefined): Pay
             effectiveFeeRate,
             feesYearToDate,
             feesYearLabel,
+            platformFeesMonth: +platformFeesMonthTotal.toFixed(2),
+            platformBookingFeesMonth: +platformBookingFeesMonth.toFixed(2),
+            platformTransactionFeesMonth: +platformTransactionFeesMonth.toFixed(2),
+            platformUpliftFeesMonth: +platformUpliftFeesMonth.toFixed(2),
+            platformFeesYearToDate: +platformYtd.toFixed(2),
           },
           cashFlow,
           outstanding,
