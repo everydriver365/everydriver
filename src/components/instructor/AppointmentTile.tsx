@@ -200,6 +200,13 @@ export interface AppointmentTileProps {
   showReviewPill?: boolean;
   /** Show a small "In progress · X min remaining" line under the subtitle when live. */
   showInProgressLine?: boolean;
+  /**
+   * When true, secondary chips (test type, EOL, payment, cancelled) move to
+   * their own row beneath the location so the name line stays uncluttered.
+   * The name row keeps only top-level state pills (Live, Conflict, Review).
+   * Used by the Home page Today schedule on mobile to avoid squashed text.
+   */
+  stackedMeta?: boolean;
 
   /** Activation handlers. Provide either onClick (button) or href (Link). */
   onClick?: () => void;
