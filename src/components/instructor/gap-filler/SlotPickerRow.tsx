@@ -58,7 +58,7 @@ export function SlotPickerRow({
           minWidth: 0,
           display: "flex",
           alignItems: "center",
-          gap: 12,
+          gap: 10,
           background: "transparent",
           border: "none",
           padding: 0,
@@ -87,8 +87,8 @@ export function SlotPickerRow({
           )}
         </span>
 
-        {/* Date block */}
-        <div style={{ flexShrink: 0, minWidth: 56 }}>
+        {/* Date + time stacked */}
+        <div style={{ flex: 1, minWidth: 0 }}>
           <div
             style={{
               fontSize: 11,
@@ -97,52 +97,47 @@ export function SlotPickerRow({
               letterSpacing: 0.2,
               textTransform: "uppercase",
               lineHeight: 1.1,
+              whiteSpace: "nowrap",
             }}
           >
-            {slot.dayLabel}
+            {slot.dayLabel} · {slot.dateLabel}
           </div>
           <div
             style={{
-              fontSize: 15,
-              fontWeight: 500,
-              color: "#000000",
-              letterSpacing: -0.2,
-              lineHeight: 1.15,
-              marginTop: 2,
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              marginTop: 3,
+              minWidth: 0,
             }}
           >
-            {slot.dateLabel}
+            <span
+              style={{
+                fontSize: 14,
+                fontWeight: 500,
+                color: "#000000",
+                letterSpacing: -0.2,
+                lineHeight: 1.15,
+                whiteSpace: "nowrap",
+              }}
+            >
+              {slot.startTime}–{slot.endTime}
+            </span>
+            <span
+              style={{
+                fontSize: 11,
+                fontWeight: 500,
+                color: "#8A5BC9",
+                background: "#F1ECFA",
+                padding: "2px 7px",
+                borderRadius: 999,
+                flexShrink: 0,
+              }}
+            >
+              {slot.durationPill}
+            </span>
           </div>
         </div>
-
-        {/* Time block */}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div
-            style={{
-              fontSize: 13,
-              fontWeight: 500,
-              color: "#000000",
-              lineHeight: 1.2,
-            }}
-          >
-            {slot.startTime} – {slot.endTime}
-          </div>
-        </div>
-
-        {/* Duration pill */}
-        <span
-          style={{
-            fontSize: 11,
-            fontWeight: 500,
-            color: "#8A5BC9",
-            background: "#F1ECFA",
-            padding: "3px 8px",
-            borderRadius: 999,
-            flexShrink: 0,
-          }}
-        >
-          {slot.durationPill}
-        </span>
       </button>
 
       {onBook && (
