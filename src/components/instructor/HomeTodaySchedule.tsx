@@ -34,6 +34,21 @@ const IOS = {
   statBg: "#F8FAFB",
 };
 
+/* Schedule-page accent palette — kept in sync with Schedule.tsx so the
+   home appointment tiles match the full Schedule view. */
+const SCHED = {
+  red: "#C8242C",            // live (in-progress)
+  success: "#1D9E75",        // completed
+  warning: "#BA7517",        // test variants accent
+  blue: "#1A52A0",           // default lesson accent
+  tertiary: "#8E8E93",       // cancelled accent
+  tintGrey: "#F1EFE8",
+  tintGreyFg: "#8E8E93",
+  tintAmber: "#FAEEDA",
+  tintAmberFg: "#854F0B",
+  eolPillBg: "#EEF3FF",
+};
+
 const IOS_FONT =
   "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Helvetica Neue', sans-serif";
 
@@ -706,8 +721,12 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {lessons.map((lesson) => {
               const state = getLessonState(lesson, nowSec, isTomorrow);
-              const isDrivingTest = (lesson.lessonType || "").toLowerCase().includes("driving test")
-                || (lesson.lessonType || "").toLowerCase().includes("driving_test");
+              const isCancelled = lesson.status === "cancelled";
+              const tType = (lesson.lessonType || "").toLowerCase();
+              const isDrivingTest = tType.includes("driving test") || tType.includes("driving_test");
+              const isMockTest = tType === "mock_test" || tType.includes("mock");
+              const isTestPrep = tType === "test_prep" || tType.includes("test prep");
+              const isTestVariant = isDrivingTest || isMockTest || isTestPrep || tType.includes("test");
               const lessonLabel = isDrivingTest ? "Driving test" : `${lesson.lessonType || "Standard"} lesson`;
               const location = lesson.pickupLocation || lesson.pickupPostcode || null;
               const subtitleText = [lessonLabel, location].filter(Boolean).join(" · ");
@@ -718,16 +737,20 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
               const showReview = needsNameReview(lesson.pupilName);
               const isConflict = conflictIdSet.has(lesson.id);
               const showBannerAbove = lesson.id === firstConflictRowId;
-              const showEOL = state === "completed" && lesson.status !== "cancelled";
-              const eolDone = showEOL && isEOLComplete(lesson, eolDoneKeys);
+              const isPast = state === "completed" && !isCancelled;
+              const showEOLPill = isPast || lesson.status === "completed";
+              const eolDone = showEOLPill && isEOLComplete(lesson, eolDoneKeys);
+              const showPayPill = !isCancelled;
               const lessonHref = `/instructor/pupils/${lesson.pupilId}`;
               const isPaid = lesson.paymentStatus === "paid" || lesson.paymentStatus === "cash";
-              const dimmed = state === "completed";
+
+              // Accent matches Schedule.tsx lessonAccentColor()
               const accentColor =
-                state === "live" ? IOS.systemRed
-                : state === "completed" ? IOS.doneBar
-                : isDrivingTest ? IOS.systemAmber
-                : IOS.systemBlue;
+                isCancelled ? SCHED.tertiary
+                : state === "completed" ? SCHED.success
+                : state === "live" ? SCHED.red
+                : isTestVariant ? SCHED.warning
+                : SCHED.blue;
 
               const card = (
                 <Link
@@ -746,7 +769,6 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
                     textDecoration: "none",
                     color: "inherit",
                     WebkitTapHighlightColor: "transparent",
-                    opacity: dimmed ? 0.75 : 1,
                   }}
                 >
                   <span
@@ -769,13 +791,12 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
                         color: accentColor,
                         lineHeight: 1,
                         fontVariantNumeric: "tabular-nums",
-                        textDecoration: dimmed ? "line-through" : "none",
                       }}
                     >
                       {time}
                     </div>
                     {lesson.durationMinutes ? (
-                      <div style={{ fontSize: 12, color: IOS.secondaryLabel, marginTop: 3 }}>
+                      <div style={{ fontSize: 14, color: IOS.secondaryLabel, marginTop: 3 }}>
                         {durationLabel(lesson.durationMinutes)}
                       </div>
                     ) : null}
@@ -789,22 +810,84 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
                           fontWeight: 700,
                           color: IOS.label,
                           letterSpacing: -0.1,
-                          textDecoration: dimmed ? "line-through" : "none",
                         }}
                       >
                         {sentenceName(lesson.pupilName)}
                       </span>
-                      {showReview && <StatusPill kind="review" dimmed={dimmed} />}
-                      {state === "live" && <StatusPill kind="live" />}
-                      {state === "completed" && <StatusPill kind="done" />}
+                      {isCancelled && (
+                        <span
+                          aria-label="Cancelled"
+                          style={{
+                            background: SCHED.tintGrey,
+                            color: SCHED.tintGreyFg,
+                            fontSize: 14,
+                            fontWeight: 500,
+                            padding: "1px 6px",
+                            borderRadius: 8,
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          Cancelled
+                        </span>
+                      )}
+                      {isMockTest && (
+                        <span style={{ background: SCHED.tintAmber, color: SCHED.tintAmberFg, fontSize: 14, fontWeight: 500, padding: "1px 6px", borderRadius: 8, whiteSpace: "nowrap" }}>
+                          Mock test
+                        </span>
+                      )}
+                      {!isMockTest && isTestPrep && (
+                        <span style={{ background: SCHED.tintAmber, color: SCHED.tintAmberFg, fontSize: 14, fontWeight: 500, padding: "1px 6px", borderRadius: 8, whiteSpace: "nowrap" }}>
+                          test prep
+                        </span>
+                      )}
+                      {!isMockTest && !isTestPrep && isTestVariant && (
+                        <span style={{ background: SCHED.tintAmber, color: SCHED.tintAmberFg, fontSize: 14, fontWeight: 500, padding: "1px 6px", borderRadius: 8, whiteSpace: "nowrap" }}>
+                          test day
+                        </span>
+                      )}
+                      {showReview && <StatusPill kind="review" />}
+                      {state === "live" && !isCancelled && <StatusPill kind="live" />}
                       {isConflict && state === "upcoming" && <StatusPill kind="conflict" />}
-                      {lesson.status !== "cancelled" && state !== "completed" && (
+                      {showEOLPill && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            openEOLWizard(lesson);
+                          }}
+                          aria-label={eolDone ? "End of lesson complete — review" : "Complete end of lesson"}
+                          style={{
+                            background: SCHED.eolPillBg,
+                            border: "none",
+                            borderRadius: 8,
+                            padding: "1px 6px",
+                            cursor: "pointer",
+                            lineHeight: 1.2,
+                          }}
+                        >
+                          <span
+                            style={{
+                              fontSize: 14,
+                              fontWeight: 700,
+                              color: SCHED.blue,
+                              letterSpacing: 0.3,
+                              textTransform: "uppercase",
+                              textDecoration: eolDone ? "line-through" : "none",
+                              opacity: eolDone ? 0.6 : 1,
+                            }}
+                          >
+                            EOL
+                          </span>
+                        </button>
+                      )}
+                      {showPayPill && (
                         <span
                           aria-label={isPaid ? "Paid" : "Not paid"}
                           style={{
                             background: isPaid ? "#E8F8ED" : "#FFECEC",
                             color: isPaid ? "#1A7A3C" : "#D33B3B",
-                            fontSize: 11,
+                            fontSize: 14,
                             fontWeight: 600,
                             padding: "1px 6px",
                             borderRadius: 8,
@@ -830,7 +913,7 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
                     {subtitleText && (
                       <div
                         style={{
-                          fontSize: 12,
+                          fontSize: 14,
                           color: IOS.secondaryLabel,
                           display: "flex",
                           alignItems: "center",
@@ -844,12 +927,11 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
                         <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{subtitleText}</span>
                       </div>
                     )}
-                    {state === "live" && (
-                      <div style={{ fontSize: 11, color: IOS.systemBlue, fontWeight: 500, margin: "6px 0 0" }}>
+                    {state === "live" && !isCancelled && (
+                      <div style={{ fontSize: 11, color: SCHED.red, fontWeight: 500, margin: "6px 0 0" }}>
                         In progress · {minutesRemaining} min remaining
                       </div>
                     )}
-                    {showEOL && <EOLPrompt onTap={() => openEOLWizard(lesson)} done={eolDone} />}
                   </div>
 
                   <ChevronRight color={IOS.tertiaryLabel} size={16} />
