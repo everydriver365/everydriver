@@ -14,6 +14,9 @@ import { supabase } from "@/integrations/supabase/client";
 /* ---------- DSM tokens (match MobileHomeRedesign) ---------- */
 const RED = "#C8242C";
 const BLUE = "#1E6FB8";
+const DSM_BLUE = "#1A52A0";
+const DSM_BLUE_TINT = "#F0F5FF";
+const DSM_BLUE_BORDER = "rgba(26,82,160,0.08)";
 const TEXT_PRIMARY = "#1A1A1A";
 const TEXT_SECONDARY = "#5B6B8A";
 const TEXT_TERTIARY = "#8E8E93";
@@ -72,14 +75,15 @@ function SectionHeader({ onWeekClick }: { onWeekClick: () => void }) {
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
-        padding: "0 4px 12px",
+        padding: "0 4px",
+        marginBottom: 8,
       }}
     >
       <span
         style={{
-          fontSize: 11,
-          fontWeight: 500,
-          color: TEXT_SECONDARY,
+          fontSize: 10,
+          fontWeight: 700,
+          color: "#8E8E93",
           letterSpacing: "1.2px",
           textTransform: "uppercase",
         }}
@@ -90,9 +94,9 @@ function SectionHeader({ onWeekClick }: { onWeekClick: () => void }) {
         type="button"
         onClick={onWeekClick}
         style={{
-          fontSize: 12,
-          fontWeight: 500,
-          color: BLUE,
+          fontSize: 11,
+          fontWeight: 600,
+          color: DSM_BLUE,
           background: "transparent",
           border: "none",
           padding: 0,
@@ -117,21 +121,16 @@ const DayCard = memo(function DayCard({
   isSelected: boolean;
   onSelect: () => void;
 }) {
-  const labelColor = isSelected
-    ? "rgba(255,255,255,0.85)"
-    : day.isWorkingDay
-    ? TEXT_SECONDARY
-    : TEXT_TERTIARY;
-  const numberColor = isSelected
-    ? "#FFFFFF"
-    : day.isWorkingDay
-    ? TEXT_PRIMARY
-    : TEXT_TERTIARY;
+  // Activity dot color: lessons → DSM blue, working day with no lessons → none
+  const hasLessons = day.lessons.length > 0;
+  const dotColor = hasLessons ? DSM_BLUE : undefined;
 
-  let fillColor = "transparent";
-  if (isSelected) fillColor = "#FFFFFF";
-  else if (day.utilizationPercent >= 100) fillColor = RED;
-  else if (day.utilizationPercent > 0) fillColor = BLUE;
+  const labelColor = isSelected
+    ? "rgba(255,255,255,0.7)"
+    : day.isWorkingDay
+    ? "#8E8E93"
+    : TEXT_TERTIARY;
+  const numberColor = isSelected ? "#FFFFFF" : day.isWorkingDay ? TEXT_PRIMARY : TEXT_TERTIARY;
 
   return (
     <button
@@ -142,16 +141,16 @@ const DayCard = memo(function DayCard({
       title={`${day.hoursBooked}h / ${day.hoursAvailable}h booked`}
       style={{
         flex: "1 0 0",
-        minWidth: 40,
+        minWidth: 44,
         scrollSnapAlign: "start",
-        background: isSelected ? RED : CARD_BG,
+        background: isSelected ? DSM_BLUE : CARD_BG,
         opacity: !isSelected && !day.isWorkingDay ? 0.6 : 1,
-        border: isSelected ? "none" : `0.5px solid ${DIVIDER}`,
-        borderRadius: 10,
-        padding: "8px 0 6px",
+        border: isSelected ? "none" : `0.5px solid rgba(26,82,160,0.09)`,
+        borderRadius: 12,
+        padding: "7px 0",
         textAlign: "center",
         cursor: "pointer",
-        boxShadow: isSelected ? "none" : SHADOW,
+        boxShadow: isSelected ? "0 2px 6px rgba(26,82,160,0.25)" : "none",
         transition: "transform 120ms ease, background 160ms ease",
         WebkitTapHighlightColor: "transparent",
       }}
@@ -161,50 +160,57 @@ const DayCard = memo(function DayCard({
     >
       <div
         style={{
-          fontSize: 9,
-          fontWeight: 500,
-          letterSpacing: "1px",
+          fontSize: 8,
+          fontWeight: 700,
+          letterSpacing: 0.5,
           textTransform: "uppercase",
           color: labelColor,
-          lineHeight: 1,
+          marginBottom: 2,
         }}
       >
         {day.dayOfWeek}
       </div>
       <div
         style={{
-          fontSize: 16,
-          fontWeight: 500,
+          fontSize: isSelected ? 17 : 15,
+          fontWeight: 700,
           color: numberColor,
-          lineHeight: 1,
-          margin: "1px 0 4px",
+          lineHeight: "18px",
+          letterSpacing: -0.4,
           fontVariantNumeric: "tabular-nums",
         }}
       >
         {day.dayOfMonth}
       </div>
-      {day.isWorkingDay ? (
-        <div
-          style={{
-            height: 3,
-            borderRadius: 2,
-            margin: "0 8px",
-            background: isSelected ? "rgba(255,255,255,0.25)" : TINT_GREY,
-            overflow: "hidden",
-          }}
-        >
+      <div
+        style={{
+          height: 5,
+          marginTop: 4,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        {isSelected ? (
           <div
             style={{
-              width: `${day.utilizationPercent}%`,
-              height: "100%",
-              background: fillColor,
-              transition: "width 400ms ease-out",
+              width: 14,
+              height: 2.5,
+              borderRadius: 2,
+              background: "rgba(255,255,255,0.4)",
             }}
           />
-        </div>
-      ) : (
-        <div style={{ height: 3, margin: "0 8px" }} />
-      )}
+        ) : dotColor ? (
+          <div
+            style={{
+              width: 5,
+              height: 5,
+              borderRadius: 3,
+              background: dotColor,
+            }}
+          />
+        ) : null}
+      </div>
     </button>
   );
 });
@@ -224,8 +230,9 @@ function DayStrip({
       aria-label="Day strip"
       style={{
         display: "flex",
-        gap: 4,
-        marginBottom: 12,
+        gap: 5,
+        marginBottom: 10,
+        paddingRight: 2,
         overflowX: "auto",
         scrollSnapType: "x mandatory",
         WebkitOverflowScrolling: "touch",
@@ -349,89 +356,151 @@ function DaySummaryCard({
   onFillGaps: () => void;
 }) {
   const lessonCount = day.lessons.length;
-  const hoursOpen = Math.max(0, day.hoursAvailable - day.hoursBooked);
-  const potentialEarnings = Math.round(hoursOpen * standardRate);
+  const bookedHours = day.hoursBooked;
+  const freeHours = Math.max(0, day.hoursAvailable - day.hoursBooked);
+  const potentialEarnings = showRevenuePotential ? Math.round(freeHours * standardRate) : 0;
 
   let labelText = `${day.dayOfWeek} ${day.dayOfMonth} ${day.monthShort}`;
-  if (day.isToday) labelText += " · TODAY";
-  else if (isTomorrow(day.date)) labelText += " · TOMORROW";
+  if (day.isToday) labelText += " · Today";
+  else if (isTomorrow(day.date)) labelText += " · Tomorrow";
 
-  let secondary: string;
-  if (!day.isWorkingDay) secondary = "Day off";
-  else if (hoursOpen === 0) secondary = "Fully booked";
-  else if (showRevenuePotential)
-    secondary = `${fmtDuration(hoursOpen * 60)} open · could earn £${potentialEarnings}`;
-  else secondary = `${fmtDuration(hoursOpen * 60)} available`;
+  const fmtH = (h: number) =>
+    Number.isInteger(h) ? `${h}h` : `${h.toFixed(1)}h`;
+
+  const stats: { value: string | number; label: string; color: string }[] = [
+    { value: lessonCount, label: "Lessons", color: DSM_BLUE },
+    { value: fmtH(bookedHours), label: "Booked", color: "#1A7A3C" },
+    { value: fmtH(freeHours), label: "Free", color: "#5B6B8A" },
+  ];
 
   return (
     <div
       style={{
         background: CARD_BG,
-        borderRadius: 12,
-        padding: "14px 16px 12px",
-        marginBottom: 10,
-        boxShadow: SHADOW,
-        border: `0.5px solid ${DIVIDER}`,
+        borderRadius: 16,
+        overflow: "hidden",
+        marginBottom: 8,
+        border: `0.5px solid ${DSM_BLUE_BORDER}`,
       }}
     >
-      <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
-        <CapacityRing
-          hoursBooked={day.hoursBooked}
-          hoursAvailable={day.hoursAvailable}
-          utilizationPercent={day.utilizationPercent}
-        />
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div
+      {/* Header band */}
+      <div
+        style={{
+          background: DSM_BLUE_TINT,
+          padding: "9px 12px",
+          borderBottom: `0.5px solid rgba(26,82,160,0.07)`,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <span
             style={{
-              fontSize: 11,
-              fontWeight: 500,
-              letterSpacing: 1,
-              color: TEXT_SECONDARY,
-              textTransform: "uppercase",
+              width: 6,
+              height: 6,
+              borderRadius: 3,
+              background: DSM_BLUE,
+              display: "inline-block",
+            }}
+          />
+          <span
+            style={{
+              fontSize: 10,
+              fontWeight: 700,
+              color: DSM_BLUE,
+              letterSpacing: 0.4,
             }}
           >
             {labelText}
-          </div>
-          <div
-            style={{
-              fontSize: 16,
-              fontWeight: 500,
-              color: TEXT_PRIMARY,
-              marginTop: 2,
-              lineHeight: 1.2,
-            }}
-          >
-            {lessonCount} lesson{lessonCount === 1 ? "" : "s"} · {fmtDuration(day.hoursBooked * 60)} booked
-          </div>
-          <div style={{ fontSize: 12, color: TEXT_SECONDARY, marginTop: 2 }}>
-            {secondary}
-          </div>
+          </span>
         </div>
+        <span style={{ fontSize: 9, color: "#8E8E93" }}>
+          {lessonCount} lesson{lessonCount !== 1 ? "s" : ""} booked
+        </span>
       </div>
 
-      {day.isWorkingDay && hoursOpen > 0 && (
+      {/* Stats row */}
+      <div style={{ display: "flex", borderBottom: `0.5px solid #F0F3F8` }}>
+        {stats.map((stat, i) => (
+          <div
+            key={stat.label}
+            style={{
+              flex: 1,
+              padding: "10px 12px",
+              borderLeft: i > 0 ? `0.5px solid #F0F3F8` : "none",
+            }}
+          >
+            <div
+              style={{
+                fontSize: 17,
+                fontWeight: 700,
+                color: stat.color,
+                letterSpacing: -0.5,
+                lineHeight: "19px",
+                fontVariantNumeric: "tabular-nums",
+              }}
+            >
+              {stat.value}
+            </div>
+            <div style={{ fontSize: 8.5, color: "#8E8E93", marginTop: 2 }}>
+              {stat.label}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Earnings potential row */}
+      {potentialEarnings > 0 && (
+        <div
+          style={{
+            padding: "8px 12px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            borderBottom: `0.5px solid #F0F3F8`,
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+            <span
+              style={{
+                fontSize: 10,
+                color: "#1A7A3C",
+                fontWeight: 700,
+                lineHeight: 1,
+              }}
+            >
+              £
+            </span>
+            <span style={{ fontSize: 10, color: "#8E8E93" }}>Could earn</span>
+          </div>
+          <span style={{ fontSize: 11, fontWeight: 700, color: "#1A7A3C" }}>
+            £{potentialEarnings} today
+          </span>
+        </div>
+      )}
+
+      {/* Fill open time CTA */}
+      {freeHours > 0 && day.isWorkingDay && (
         <button
           type="button"
           onClick={onFillGaps}
           style={{
             width: "100%",
-            background: TINT_BLUE,
-            color: BLUE,
-            padding: 8,
-            borderRadius: 8,
-            fontSize: 12,
-            fontWeight: 500,
+            padding: "8px 12px",
+            background: "transparent",
             border: "none",
-            marginTop: 12,
             cursor: "pointer",
             display: "inline-flex",
             alignItems: "center",
             justifyContent: "center",
-            gap: 6,
+            gap: 5,
           }}
         >
-          <Plus size={13} strokeWidth={2.4} />
-          Fill open time
+          <Plus size={11} color={DSM_BLUE} strokeWidth={2.2} />
+          <span style={{ fontSize: 11, fontWeight: 600, color: DSM_BLUE }}>
+            Fill open time
+          </span>
         </button>
       )}
     </div>
@@ -1146,14 +1215,14 @@ export default function Schedule({
         onClick={openAddLesson}
         style={{
           width: "100%",
-          padding: 12,
-          borderRadius: 12,
-          background: CARD_BG,
-          color: BLUE,
-          border: `0.5px solid ${DIVIDER}`,
-          boxShadow: SHADOW,
-          fontSize: 14,
-          fontWeight: 500,
+          padding: "12px 0",
+          borderRadius: 14,
+          background: DSM_BLUE,
+          color: "#FFF",
+          border: "none",
+          boxShadow: "0 2px 8px rgba(26,82,160,0.22)",
+          fontSize: 13,
+          fontWeight: 700,
           marginTop: 8,
           cursor: "pointer",
           display: "inline-flex",
@@ -1162,7 +1231,7 @@ export default function Schedule({
           gap: 6,
         }}
       >
-        <Plus size={16} strokeWidth={2.4} />
+        <Plus size={13} color="#FFF" strokeWidth={2.2} />
         Add lesson
       </button>
 
