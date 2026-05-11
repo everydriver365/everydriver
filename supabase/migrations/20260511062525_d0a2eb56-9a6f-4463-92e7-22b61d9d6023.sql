@@ -1,0 +1,1 @@
+UPDATE public.instructors SET logo_url = 'https://qyqeibovdhyohkfagujv.supabase.co/storage/v1/object/public/instructor-images/logos/winchester-driving-school-wds-logo.png' WHERE id = 'c9843b58-6edb-4b97-8238-65d725e30aea';
