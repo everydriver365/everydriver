@@ -184,7 +184,7 @@ export default function Index() {
       <SEOHead />
       {/* Hero Section - Left/Right Split Layout */}
       {wlConfig && (
-        <section className="hidden lg:block bg-background border-b border-border">
+        <section className="hidden md:block bg-background border-b border-border">
           <div className="container max-w-7xl py-8">
             <div className="relative overflow-hidden rounded-3xl shadow-2xl">
               <img
@@ -237,7 +237,7 @@ export default function Index() {
       )}
 
       {/* Original Hero — hidden on desktop for whitelabel sites */}
-      <section className={`bg-background py-16 lg:py-24 border-b border-border ${wlConfig ? "lg:hidden" : ""}`}>
+      <section className={`bg-background py-16 lg:py-24 border-b border-border ${wlConfig ? "md:hidden" : ""}`}>
         <div className="container max-w-6xl">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             {/* Left: Text & Search */}
