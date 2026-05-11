@@ -930,17 +930,15 @@ function QuickAccessSection({ instructorId }: { instructorId: string }) {
                       onClick={() => navigate(tile.route)}
                       style={{
                         position: "relative",
-                        background: isPrimary ? BLUE : "#FFF",
+                        background: isPrimary ? BLUE_TINT : "#FFF",
                         borderRadius: 16,
                         padding: "14px 13px",
                         display: "flex",
                         flexDirection: "column",
                         alignItems: "flex-start",
                         textAlign: "left",
-                        border: isPrimary ? "none" : `0.5px solid ${BORDER}`,
-                        boxShadow: isPrimary
-                          ? `0 2px 8px ${BLUE}40`
-                          : "0 1px 4px rgba(0,0,0,0.04)",
+                        border: `0.5px solid ${BORDER}`,
+                        boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
                         cursor: "pointer",
                       }}
                     >
@@ -951,7 +949,7 @@ function QuickAccessSection({ instructorId }: { instructorId: string }) {
                           height: 32,
                           borderRadius: 9,
                           marginBottom: 10,
-                          background: isPrimary ? "rgba(255,255,255,0.18)" : tonePair.bg,
+                          background: isPrimary ? "#FFF" : tonePair.bg,
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
@@ -959,7 +957,7 @@ function QuickAccessSection({ instructorId }: { instructorId: string }) {
                       >
                         <Icon
                           size={14}
-                          color={isPrimary ? "#FFF" : tonePair.fg}
+                          color={isPrimary ? BLUE : tonePair.fg}
                           strokeWidth={1.7}
                         />
                       </div>
@@ -968,7 +966,7 @@ function QuickAccessSection({ instructorId }: { instructorId: string }) {
                           fontSize: 12,
                           fontWeight: 700,
                           lineHeight: "15px",
-                          color: isPrimary ? "#FFF" : TEXT,
+                          color: isPrimary ? BLUE : TEXT,
                         }}
                       >
                         {tile.title}
@@ -978,7 +976,8 @@ function QuickAccessSection({ instructorId }: { instructorId: string }) {
                           style={{
                             fontSize: 9,
                             marginTop: 2,
-                            color: isPrimary ? "rgba(255,255,255,0.6)" : MUTED,
+                            color: isPrimary ? BLUE : MUTED,
+                            opacity: isPrimary ? 0.7 : 1,
                           }}
                         >
                           {subtitle}
