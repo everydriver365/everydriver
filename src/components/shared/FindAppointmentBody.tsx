@@ -634,17 +634,16 @@ export function FindAppointmentBody({
           </button>
         )}
 
-        <button
-          type="button"
-          onClick={handleBook}
-          disabled={!selectedSlot && !(nextOnlyProp && !expandedFromNext)}
-          className="flex-[2] rounded-[12px] py-2.5 text-center disabled:opacity-50"
-          style={{ backgroundColor: "var(--d2-indigo)" }}
-        >
-          <span className="text-[13px] font-bold text-white">
-            {nextOnlyProp && !expandedFromNext ? "Show more slots" : "Book appointment"}
-          </span>
-        </button>
+        {nextOnlyProp && !expandedFromNext && (
+          <button
+            type="button"
+            onClick={handleBook}
+            className="flex-[2] rounded-[12px] py-2.5 text-center"
+            style={{ backgroundColor: "var(--d2-indigo)" }}
+          >
+            <span className="text-[13px] font-bold text-white">Show more slots</span>
+          </button>
+        )}
       </div>
     </div>
   );
