@@ -5,6 +5,7 @@ import { useTodayOverview } from "@/hooks/useTodayOverview";
 import { useDayLessons } from "@/hooks/useDayLessons";
 import { useDayLessonHistory, eolKey } from "@/hooks/useDayLessonHistory";
 import { AddLessonSheet } from "@/components/instructor/AddLessonSheet";
+import { AppointmentTile } from "@/components/instructor/AppointmentTile";
 import { EndLessonWizard } from "@/components/instructor/EndLessonWizard";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
