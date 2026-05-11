@@ -1576,14 +1576,12 @@ export function AddLessonSheet({
           let basePrice = hourlyRate * hours;
           let surchargeTotal = 0;
           if (rateModifiers && lessonDate) {
-            const dateStr = format(lessonDate, 'yyyy-MM-dd');
             const mod = applyRateModifiers({
-              date: dateStr,
-              startTime: lessonStartTime,
-              durationHours: hours,
               baseRate: hourlyRate,
+              lessonDate,
+              lessonStartTime,
               modifiers: rateModifiers,
-              bankHolidays,
+              bankHolidaySet: bankHolidays,
             });
             basePrice = Math.round(hourlyRate * hours * 100) / 100;
             surchargeTotal = Math.round(mod.totalAmount * hours * 100) / 100;
