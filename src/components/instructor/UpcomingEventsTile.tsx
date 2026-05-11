@@ -695,15 +695,14 @@ function ErrorState({ onRetry }: { onRetry: () => void }) {
 
 /* -------------------------------------------------------------------------- */
 
-const circleBtn: React.CSSProperties = {
-  width: 30,
-  height: 30,
-  borderRadius: 15,
-  background: BLUE_TINT,
+const navBtn: React.CSSProperties = {
+  width: 26,
+  height: 26,
+  borderRadius: 13,
+  background: "#F2F4F8",
   border: "none",
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
   cursor: "pointer",
-  boxShadow: "0 1px 2px rgba(16,24,40,0.04)",
 };
