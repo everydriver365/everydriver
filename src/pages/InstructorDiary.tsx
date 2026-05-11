@@ -36,6 +36,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { format, subDays, subMonths } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { LessonDetailDrawer } from "@/components/instructor/diary/LessonDetailDrawer";
+import { BulkMissingNotesDialog } from "@/components/instructor/diary/BulkMissingNotesDialog";
 
 type StatusFilter = "all" | "rated" | "unrated" | "has_notes" | "missing_notes";
 const statusLabels: Record<StatusFilter, string> = {
