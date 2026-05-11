@@ -58,7 +58,7 @@ function lessonAccentColor(l: ScheduleLesson, now: Date): string {
   if (now >= l.startDate && now <= l.endDate) return RED;
   const t = (l.lessonType || "").toLowerCase();
   if (t.includes("test")) return WARNING;
-  return BLUE;
+  return DSM_BLUE;
 }
 function prefersReducedMotion() {
   if (typeof window === "undefined") return false;
