@@ -128,6 +128,20 @@ export default function Index() {
     setSelectedFeature(feature as FeatureData);
     setFeatureModalOpen(true);
   };
+
+  // ---- Whitelabel SEO copy (desktop hero) ----
+  const wlConfig = getWhitelabelConfig();
+  const wlCity = (() => {
+    if (!wlConfig?.address) return "";
+    const noPc = wlConfig.address.replace(/\b([A-Z]{1,2}\d[A-Z\d]?)\s*\d[A-Z]{2}\b/i, "").trim().replace(/,\s*$/, "");
+    const parts = noPc.split(",").map((s) => s.trim()).filter(Boolean);
+    return parts[parts.length - 1] || "";
+  })();
+  // Static UK area lists per known whitelabel city — extends the local SEO footprint.
+  const WL_AREAS_BY_CITY: Record<string, string[]> = {
+    Winchester: ["Winchester", "Eastleigh", "Alresford", "Romsey", "Twyford", "Kings Worthy", "Chandler's Ford", "Bishop's Waltham"],
+  };
+  const wlAreas = wlCity ? WL_AREAS_BY_CITY[wlCity] || [wlCity] : [];
   // Dynamic images from CMS with fallbacks - Hero testimonials
   const testimonialSarah = getImage("testimonial_sarah", testimonialSarahFallback);
   const testimonialJames = getImage("testimonial_james", testimonialJamesFallback);
@@ -176,9 +190,20 @@ export default function Index() {
             <div className="space-y-8">
               <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }} className="space-y-4">
                 <h1 className="text-5xl lg:text-7xl font-black text-foreground tracking-tight leading-[0.95]">
-                  PASS YOUR<br /><span className="text-primary">DRIVING TEST</span>
+                  {wlConfig ? (
+                    <>
+                      DRIVING LESSONS<br />
+                      <span className="text-primary">{wlCity ? `IN ${wlCity.toUpperCase()}` : wlConfig.brandName.toUpperCase()}</span>
+                    </>
+                  ) : (
+                    <>PASS YOUR<br /><span className="text-primary">DRIVING TEST</span></>
+                  )}
                 </h1>
-                <p className="text-lg text-muted-foreground max-w-md">Intensive courses from 5 days. Free re-test guarantee. DVSA approved instructors.</p>
+                <p className="text-lg text-muted-foreground max-w-md">
+                  {wlConfig
+                    ? `Intensive courses, semi-intensive and weekly lessons with ${wlConfig.brandName}${wlCity ? ` — covering ${wlCity} and surrounding areas` : ""}. DVSA-qualified instructor.`
+                    : "Intensive courses from 5 days. Free re-test guarantee. DVSA approved instructors."}
+                </p>
               </motion.div>
               
               <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15, duration: 0.5 }} className="max-w-md">
@@ -282,6 +307,30 @@ export default function Index() {
           </div>
         </div>
       </section>
+
+      {/* Whitelabel only: Areas we cover (local SEO signal) */}
+      {wlConfig && wlAreas.length > 0 && (
+        <section className="border-b border-border bg-muted/30 py-10">
+          <div className="container max-w-6xl">
+            <h2 className="text-2xl font-bold text-foreground">
+              Areas we cover{wlCity ? ` around ${wlCity}` : ""}
+            </h2>
+            <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+              {wlConfig.brandName} provides driving lessons and intensive courses across these towns and villages:
+            </p>
+            <ul className="mt-4 flex flex-wrap gap-2">
+              {wlAreas.map((area) => (
+                <li
+                  key={area}
+                  className="rounded-full border border-border bg-background px-3 py-1 text-sm text-foreground"
+                >
+                  {area}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      )}
 
       {/* Free Re-Test Promotion Banner — Feature Grid */}
       <section className="py-4">
