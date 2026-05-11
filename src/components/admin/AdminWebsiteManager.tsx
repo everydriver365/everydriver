@@ -102,9 +102,9 @@ export function AdminWebsiteManager({ instructorId, instructorSlug, instructorNa
   };
 
   useEffect(() => {
-    // Preload data so opening is instant.
     fetchWebsite();
     fetchDomains();
+    fetchPageHealth();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [instructorId]);
 
