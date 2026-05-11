@@ -887,6 +887,7 @@ function LessonList({
   onSlotBook,
   onAddLesson,
   onBlockDay,
+  stackedMeta,
 }: {
   day: ScheduleDay;
   eolSet: Set<string> | undefined;
@@ -898,6 +899,7 @@ function LessonList({
   onSlotBook: (start: string, end: string) => void;
   onAddLesson: () => void;
   onBlockDay: () => void;
+  stackedMeta?: boolean;
 }) {
   const now = new Date();
 
