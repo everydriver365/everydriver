@@ -32,6 +32,7 @@ import { resolveHourlyRate, type PostcodeRateRule } from "@/lib/pricing/resolveH
 import { fetchInstructorPostcodeRules } from "@/hooks/useInstructorPostcodeRules";
 import { applyRateModifiers, loadUkBankHolidays, type RateModifiers } from "@/lib/pricing/applyRateModifiers";
 import { PLATFORM_FEE_GBP } from "@/lib/pricing/platformFee";
+import { getWhitelabelConfig } from "@/lib/whitelabel";
 
 
 interface Instructor {
@@ -128,6 +129,7 @@ export default function BookingSummary() {
   const [rateModifiers, setRateModifiers] = useState<RateModifiers | null>(null);
   const [bankHolidays, setBankHolidays] = useState<Set<string>>(() => new Set());
   const [loading, setLoading] = useState(true);
+  const [pausedInstructorName, setPausedInstructorName] = useState<string | null>(null);
   const [selectedSlots, setSelectedSlots] = useState<SelectedSlot[]>([]);
   const [reviews, setReviews] = useState<CourseReview[]>([]);
   const [locationName, setLocationName] = useState<string>("");
@@ -298,6 +300,17 @@ export default function BookingSummary() {
 
 
       if (instructorRes.error || !instructorRes.data) {
+        // Could be RLS-hidden because the instructor toggled their visibility off.
+        // On a whitelabel host, surface a friendly "Bookings paused" screen.
+        const wl = getWhitelabelConfig();
+        if (wl?.instructorSlug) {
+          const { data: status } = await supabase
+            .rpc("get_whitelabel_instructor_status", { p_slug: wl.instructorSlug })
+            .maybeSingle();
+          if (status && !status.is_active) {
+            setPausedInstructorName(status.name ?? wl.brandName ?? null);
+          }
+        }
         console.error("Error fetching instructor:", instructorRes.error);
         setLoading(false);
         return;
@@ -847,6 +860,21 @@ export default function BookingSummary() {
   }
 
   if (!courseDetails) {
+    if (pausedInstructorName) {
+      return (
+        <MainLayout>
+          <div className="container py-16 text-center max-w-xl mx-auto">
+            <div className="mx-auto mb-4 inline-flex h-12 w-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
+              <Calendar className="h-6 w-6" />
+            </div>
+            <h1 className="text-2xl font-bold">Bookings paused</h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              {pausedInstructorName} is not currently accepting new bookings. Please check back soon.
+            </p>
+          </div>
+        </MainLayout>
+      );
+    }
     return (
       <MainLayout>
         <div className="container py-16 text-center">
