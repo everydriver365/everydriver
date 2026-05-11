@@ -112,14 +112,14 @@ export function IOSCourseCard({
         </div>
 
         {distance !== undefined && (
-          <div className="absolute right-3 top-3 flex items-center gap-1.5 bg-white/95 backdrop-blur-sm text-primary px-2.5 py-1.5 rounded-lg shadow-lg">
+          <div className="absolute right-2 top-2 flex items-center gap-1.5 bg-white/95 backdrop-blur-sm text-primary px-2.5 py-1.5 rounded-lg shadow-lg">
             <MapPin className="h-3.5 w-3.5" />
             <span className="text-sm font-bold">{distance.toFixed(1)} mi</span>
           </div>
         )}
 
         {hasDiscount && (
-          <div className="absolute left-3 bottom-3 bg-red-500 text-white px-2.5 py-1 rounded-md shadow-lg">
+          <div className="absolute left-2 bottom-2 bg-red-500 text-white px-2.5 py-1 rounded-md shadow-lg">
             <span className="text-sm font-bold">
               Save £{(totalPrice - discountedPrice!).toFixed(0)}
             </span>
@@ -139,7 +139,7 @@ export function IOSCourseCard({
           </span>
         </div>
 
-        <div className="flex-1 p-4 space-y-2">
+        <div className="flex-1 px-4 py-4 space-y-2">
           <h3 className="text-base sm:text-lg font-bold text-foreground uppercase tracking-wide leading-snug">
             {courseName}
           </h3>
