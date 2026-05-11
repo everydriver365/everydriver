@@ -140,6 +140,44 @@ export async function loadBrandConfig(
       return null;
     }
 
+    // Hot path: edge-cached host resolver. Falls back to direct DB query
+    // if the function is unreachable (cold start during deploy, etc).
+    try {
+      const fnUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/resolve-host?host=${encodeURIComponent(resolveHost)}`;
+      const ctrl = new AbortController();
+      const timeout = setTimeout(() => ctrl.abort(), 2500);
+      const res = await fetch(fnUrl, {
+        headers: {
+          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+        },
+        signal: ctrl.signal,
+      });
+      clearTimeout(timeout);
+      if (res.ok) {
+        const json = await res.json();
+        if (json?.branding?.instructorSlug) {
+          cachedConfig = {
+            host: resolveHost,
+            instructorSlug: json.branding.instructorSlug,
+            brandName: json.branding.brandName || "Driving School",
+            logoPath: json.branding.logoUrl || "/winchester-logo.png",
+            phone: json.branding.phone || undefined,
+            email: json.branding.email || undefined,
+            address: json.branding.address || undefined,
+            brandColour: json.branding.brandColour || undefined,
+          };
+          return cachedConfig;
+        }
+        if (json?.branding === null) {
+          cachedConfig = null;
+          return null;
+        }
+      }
+    } catch (err) {
+      console.warn("[whitelabel] resolve-host edge fn failed, falling back to DB:", err);
+    }
+
+    // Fallback: direct DB query
     let query = supabase
       .from("public_instructors")
       .select("app_slug, business_name, name, logo_url, phone, email, location_name, home_postcode, brand_colour");
