@@ -97,6 +97,11 @@ export function SEOHead({ title, description, noindex }: SEOHeadProps) {
       upsertLink("alternate", canonicalHref, "en-GB");
       upsertLink("alternate", canonicalHref, "x-default");
 
+      // Per-whitelabel sitemap (covers /courses + booking URLs per service area).
+      upsertSitemapLink(
+        `https://qyqeibovdhyohkfagujv.supabase.co/functions/v1/whitelabel-sitemap?host=${encodeURIComponent(wl!.host)}`,
+      );
+
       // LocalBusiness / DrivingSchool JSON-LD
       const ld: Record<string, unknown> = {
         "@context": "https://schema.org",
@@ -159,6 +164,17 @@ function upsertLink(rel: string, href: string, hreflang?: string) {
 function removeLink(rel: string, hreflang: string) {
   const link = document.head.querySelector(`link[rel="${rel}"][hreflang="${hreflang}"]`);
   if (link) link.remove();
+}
+
+function upsertSitemapLink(href: string) {
+  let link = document.head.querySelector<HTMLLinkElement>('link[rel="sitemap"]');
+  if (!link) {
+    link = document.createElement("link");
+    link.rel = "sitemap";
+    link.type = "application/xml";
+    document.head.appendChild(link);
+  }
+  link.href = href;
 }
 
 function injectJsonLd(id: string, data: Record<string, unknown>) {
