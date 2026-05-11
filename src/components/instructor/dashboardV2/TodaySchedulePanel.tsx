@@ -1,6 +1,11 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Plus } from "lucide-react";
 import { MultiDayScheduleView } from "@/components/instructor/MultiDayScheduleView";
+import { TomorrowScheduleView } from "@/components/instructor/TomorrowScheduleView";
+import { GapsFiller } from "@/components/instructor/GapsFiller";
+
+type Tab = "today" | "tomorrow" | "gaps";
 
 interface Props {
   instructorId: string;
@@ -9,6 +14,14 @@ interface Props {
 }
 
 export function TodaySchedulePanel({ instructorId, onAddLesson }: Props) {
+  const [tab, setTab] = useState<Tab>("today");
+
+  const TABS: { id: Tab; label: string }[] = [
+    { id: "today", label: "Today" },
+    { id: "tomorrow", label: "Tomorrow" },
+    { id: "gaps", label: "Fill Gaps" },
+  ];
+
   return (
     <div className="d2-card" style={{ padding: 16, height: "100%", display: "flex", flexDirection: "column", minHeight: 0 }}>
       <div className="flex items-center justify-between" style={{ marginBottom: 12 }}>
@@ -38,6 +51,36 @@ export function TodaySchedulePanel({ instructorId, onAddLesson }: Props) {
         </div>
       </div>
 
+      {/* Segmented tabs */}
+      <div
+        className="flex gap-1"
+        style={{
+          padding: 3,
+          background: "var(--d2-surface-soft)",
+          border: "0.5px solid var(--d2-border)",
+          borderRadius: 8,
+          marginBottom: 12,
+        }}
+      >
+        {TABS.map((t) => (
+          <button
+            key={t.id}
+            onClick={() => setTab(t.id)}
+            className="flex-1 transition-colors"
+            style={{
+              padding: "5px 10px",
+              fontSize: 12, fontWeight: 500,
+              borderRadius: 6,
+              background: tab === t.id ? "var(--d2-surface)" : "transparent",
+              color: tab === t.id ? "var(--d2-text-1)" : "var(--d2-text-2)",
+              border: tab === t.id ? "0.5px solid var(--d2-border)" : "0.5px solid transparent",
+            }}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
       <div
         style={{
           flex: 1,
@@ -48,7 +91,9 @@ export function TodaySchedulePanel({ instructorId, onAddLesson }: Props) {
           padding: "0 8px",
         }}
       >
-        <MultiDayScheduleView instructorId={instructorId} />
+        {tab === "today" && <MultiDayScheduleView instructorId={instructorId} />}
+        {tab === "tomorrow" && <TomorrowScheduleView instructorId={instructorId} />}
+        {tab === "gaps" && <GapsFiller instructorId={instructorId} />}
       </div>
     </div>
   );
