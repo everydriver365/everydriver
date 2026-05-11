@@ -148,7 +148,7 @@ export function DynamicCourseCard({
           )}
 
           {/* Hero Image (rounded top corners only, sits inside the wash) */}
-          <div className="relative h-44 overflow-hidden rounded-xl">
+          <div className="relative h-44 overflow-hidden">
             <img
               src={courseImageUrl || `https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800&h=400&fit=crop`}
               alt={courseName}
