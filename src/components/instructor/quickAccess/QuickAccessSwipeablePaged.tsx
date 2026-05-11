@@ -184,7 +184,7 @@ export function QuickAccessSwipeablePaged({ instructorId }: Props) {
 
   const renderTile = (tile: QuickAccessTile, index: number, pageIdx: number) => {
     const m = richMeta(tile.id);
-    const isPrimary = pageIdx === 0 && index === 0;
+    const isPrimary = false;
     return (
       <QuickTile
         key={tile.id}
