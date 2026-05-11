@@ -449,6 +449,14 @@ export function LessonHistory({
           </h3>
           <p className="text-sm text-muted-foreground">
             {lessons.length} lessons • {totalHours.toFixed(1)} hours total
+            {missingEol.length > 0 && (
+              <>
+                {" • "}
+                <span className="text-amber-600 font-medium">
+                  {missingEol.length} EOL missing
+                </span>
+              </>
+            )}
           </p>
         </div>
         <Button
