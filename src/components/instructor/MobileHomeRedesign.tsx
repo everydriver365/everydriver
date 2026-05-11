@@ -786,7 +786,7 @@ function UpNextTile({
             cursor: "pointer",
           }}
         >
-          <span style={{ fontSize: 14, fontWeight: 600, color: "#8E8E93" }}>
+          <span style={{ fontSize: 12, fontWeight: 600, color: "#8E8E93" }}>
             {expanded ? "Hide details" : "Details"}
           </span>
           <ChevronDown
