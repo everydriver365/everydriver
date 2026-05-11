@@ -48,6 +48,7 @@ import { AIReceptionistCard } from "@/components/instructor/AIReceptionistCard";
 import { AICallDivertSheet } from "@/components/instructor/AICallDivertSheet";
 import { TopStatsRow } from "@/components/instructor/TopStatsRow";
 import { useWeeklyGoals } from "@/hooks/useWeeklyGoals";
+import { useTestSwapNotifications } from "@/hooks/useTestSwapNotifications";
 
 /* ---------- Brand tokens ---------- */
 const RED = "#B23A3F";
