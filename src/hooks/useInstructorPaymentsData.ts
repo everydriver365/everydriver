@@ -185,6 +185,11 @@ export function useInstructorPaymentsData(instructorId: string | undefined): Pay
             .lt("account_balance", 0)
             .order("account_balance", { ascending: true })
             .limit(50),
+          supabase
+            .from("platform_fees")
+            .select("amount, kind, payment_method, created_at")
+            .eq("instructor_id", instructorId)
+            .gte("created_at", monthStartIso),
         ]);
 
         if (paymentsRes.error) throw paymentsRes.error;
