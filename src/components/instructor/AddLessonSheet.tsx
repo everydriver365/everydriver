@@ -251,6 +251,8 @@ export function AddLessonSheet({
   const currentTypeColor = LESSON_TYPES.find(t => t.value === lessonType)?.color || '#7FB3E3';
 
   const [hourlyRate, setHourlyRate] = useState<number>(0);
+  const [instructorName, setInstructorName] = useState<string>('');
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const [rateModifiers, setRateModifiers] = useState<RateModifiers | null>(null);
   const [bankHolidays, setBankHolidays] = useState<Set<string>>(new Set());
 
