@@ -549,6 +549,93 @@ export default function InstructorDiary() {
                 </button>
               )}
 
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button type="button" style={chipStyle(advancedActiveCount > 0)}>
+                    {advancedActiveCount > 0 ? `Advanced · ${advancedActiveCount}` : "Advanced"}
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-72 p-3 space-y-3" align="start">
+                  <div>
+                    <div className="text-[10px] uppercase tracking-wide font-semibold text-muted-foreground mb-1">
+                      Lesson type
+                    </div>
+                    <Select value={lessonTypeFilter} onValueChange={setLessonTypeFilter}>
+                      <SelectTrigger className="h-8 text-xs">
+                        <SelectValue placeholder="All types" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All types</SelectItem>
+                        {lessonTypes.map((t) => (
+                          <SelectItem key={t} value={t}>{t}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <div className="text-[10px] uppercase tracking-wide font-semibold text-muted-foreground mb-1">
+                      Duration (minutes)
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="number"
+                        inputMode="numeric"
+                        min={0}
+                        placeholder="Min"
+                        value={minDuration}
+                        onChange={(e) => setMinDuration(e.target.value)}
+                        className="h-8 text-xs"
+                      />
+                      <span className="text-xs text-muted-foreground">to</span>
+                      <Input
+                        type="number"
+                        inputMode="numeric"
+                        min={0}
+                        placeholder="Max"
+                        value={maxDuration}
+                        onChange={(e) => setMaxDuration(e.target.value)}
+                        className="h-8 text-xs"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="text-[10px] uppercase tracking-wide font-semibold text-muted-foreground mb-1">
+                      Source
+                    </div>
+                    <Select value={googleSourceFilter} onValueChange={(v) => setGoogleSourceFilter(v as GoogleSourceFilter)}>
+                      <SelectTrigger className="h-8 text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {(Object.entries(googleSourceLabels) as [GoogleSourceFilter, string][]).map(([k, label]) => (
+                          <SelectItem key={k} value={k}>{label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-[10px] text-muted-foreground mt-1">
+                      Lessons synced from your Google diary include a Google event reference.
+                    </p>
+                  </div>
+
+                  {advancedActiveCount > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setLessonTypeFilter("all");
+                        setMinDuration("");
+                        setMaxDuration("");
+                        setGoogleSourceFilter("any");
+                      }}
+                      className="text-xs text-primary hover:underline"
+                    >
+                      Reset advanced filters
+                    </button>
+                  )}
+                </PopoverContent>
+              </Popover>
+
               <button
                 type="button"
                 style={chipStyle(false)}
