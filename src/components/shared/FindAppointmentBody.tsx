@@ -55,6 +55,7 @@ export function FindAppointmentBody({
   onSelectSlot,
   onCancel,
   variant = "page",
+  nextOnly = false,
 }: FindAppointmentBodyProps) {
   const today = format(new Date(), "yyyy-MM-dd");
   const [fromDate, setFromDate] = useState(today);
