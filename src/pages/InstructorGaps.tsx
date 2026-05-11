@@ -37,6 +37,8 @@ export default function InstructorGaps() {
           display: "flex",
           flexDirection: "column",
           gap: 12,
+          overflowX: "hidden",
+          maxWidth: "100%",
         }}
       >
         {/* Page header card */}
