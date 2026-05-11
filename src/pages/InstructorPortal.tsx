@@ -380,6 +380,11 @@ function DesktopDashboardV2(props: DesktopDashboardV2Props) {
             />
           </div>
 
+          <PerformanceMetricsRow
+            instructorId={instructorId}
+            activePupilCount={isDemoMode ? demoStats.activePupils : pupils.length}
+          />
+
           {/* Schedule + Money */}
           <div className="grid gap-3" style={{ gridTemplateColumns: "1.6fr 1fr" }}>
             <TodaySchedulePanel
