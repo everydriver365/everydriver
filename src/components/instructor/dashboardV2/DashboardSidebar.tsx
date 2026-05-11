@@ -101,6 +101,40 @@ export function DashboardSidebar({ collapsed, onToggle, userInitials, userName, 
     items: s.items.filter(i => !i.moduleId || isModuleActive(i.moduleId)),
   })).filter(s => s.items.length > 0);
 
+  // Sections collapsed by default — primary groups stay open.
+  const DEFAULT_OPEN = new Set(["Overview", "Teaching", "Business"]);
+  const STORAGE_KEY = "dsm.dashboard.sidebar.openGroups";
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
+    const initial: Record<string, boolean> = {};
+    SECTIONS.forEach((s) => (initial[s.label] = DEFAULT_OPEN.has(s.label)));
+    return initial;
+  });
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) setOpenGroups((prev) => ({ ...prev, ...JSON.parse(saved) }));
+    } catch {}
+  }, []);
+  // Auto-open the section that contains the active route.
+  useEffect(() => {
+    const activeSection = visibleSections.find((s) =>
+      s.items.some((i) =>
+        i.to === "/instructor" ? pathname === "/instructor" : pathname === i.to || pathname.startsWith(i.to + "/")
+      )
+    );
+    if (activeSection && !openGroups[activeSection.label]) {
+      setOpenGroups((prev) => ({ ...prev, [activeSection.label]: true }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
+  const toggleGroup = (label: string) => {
+    setOpenGroups((prev) => {
+      const next = { ...prev, [label]: !prev[label] };
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch {}
+      return next;
+    });
+  };
+
   // Convert brand colour to a soft tint for active background.
   const brandTint = brandColour ? `${brandColour}1A` : null; // ~10% alpha
 
