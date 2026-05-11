@@ -4,6 +4,7 @@ import { Loader2, Calendar as CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 
 import { MainLayout } from "@/components/layout/MainLayout";
+import { SEOHead } from "@/components/SEOHead";
 import { SidebarCalendar } from "@/components/courses/SidebarCalendar";
 import { DynamicCourseCard } from "@/components/DynamicCourseCard";
 import { Button } from "@/components/ui/button";
@@ -116,6 +117,15 @@ export default function WhitelabelCourses() {
 
   return (
     <MainLayout>
+      <SEOHead
+        title={paused ? "Bookings paused" : "Driving Lessons & Intensive Courses"}
+        description={
+          paused
+            ? `${instructorName || brand} is not currently accepting new bookings.`
+            : `Browse available driving lessons and intensive courses with ${brand}. Pick a date to see what's bookable.`
+        }
+        noindex={paused}
+      />
       <section className="container py-8">
         {paused ? (
           <div className="rounded-xl border bg-card p-8 text-center max-w-xl mx-auto">

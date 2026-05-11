@@ -6,6 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { format, parseISO, startOfDay, addDays, getDay, isAfter } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { MainLayout } from "@/components/layout/MainLayout";
+import { SEOHead } from "@/components/SEOHead";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -863,6 +864,11 @@ export default function BookingSummary() {
     if (pausedInstructorName) {
       return (
         <MainLayout>
+          <SEOHead
+            title="Bookings paused"
+            description={`${pausedInstructorName} is not currently accepting new bookings.`}
+            noindex
+          />
           <div className="container py-16 text-center max-w-xl mx-auto">
             <div className="mx-auto mb-4 inline-flex h-12 w-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
               <Calendar className="h-6 w-6" />
