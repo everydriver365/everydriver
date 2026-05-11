@@ -75,14 +75,15 @@ function SectionHeader({ onWeekClick }: { onWeekClick: () => void }) {
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
-        padding: "0 4px 12px",
+        padding: "0 4px",
+        marginBottom: 8,
       }}
     >
       <span
         style={{
-          fontSize: 11,
-          fontWeight: 500,
-          color: TEXT_SECONDARY,
+          fontSize: 10,
+          fontWeight: 700,
+          color: "#8E8E93",
           letterSpacing: "1.2px",
           textTransform: "uppercase",
         }}
@@ -93,9 +94,9 @@ function SectionHeader({ onWeekClick }: { onWeekClick: () => void }) {
         type="button"
         onClick={onWeekClick}
         style={{
-          fontSize: 12,
-          fontWeight: 500,
-          color: BLUE,
+          fontSize: 11,
+          fontWeight: 600,
+          color: DSM_BLUE,
           background: "transparent",
           border: "none",
           padding: 0,
