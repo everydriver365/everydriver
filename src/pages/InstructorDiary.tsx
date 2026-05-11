@@ -9,6 +9,7 @@ import {
   Mic,
   Info,
   X,
+  FileWarning,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -35,6 +36,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { format, subDays, subMonths } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { LessonDetailDrawer } from "@/components/instructor/diary/LessonDetailDrawer";
+import { BulkMissingNotesDialog } from "@/components/instructor/diary/BulkMissingNotesDialog";
 
 type StatusFilter = "all" | "rated" | "unrated" | "has_notes" | "missing_notes";
 const statusLabels: Record<StatusFilter, string> = {
@@ -123,9 +125,13 @@ export default function InstructorDiary() {
   };
   const [activeLesson, setActiveLesson] = useState<LessonRecord | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [bulkNotesOpen, setBulkNotesOpen] = useState(false);
   const openLesson = (l: LessonRecord) => { setActiveLesson(l); setDrawerOpen(true); };
   const handleLessonSaved = (updated: LessonRecord) => {
     setLessons((prev) => prev.map((l) => (l.id === updated.id ? { ...l, ...updated } : l)));
+  };
+  const handleBulkNotesSaved = (updatedIds: string[], notes: string) => {
+    setLessons((prev) => prev.map((l) => updatedIds.includes(l.id) ? { ...l, notes } : l));
   };
 
   const usingCustomRange = !!(customFrom && customTo);
@@ -212,6 +218,17 @@ export default function InstructorDiary() {
   }), [lessons, searchQuery, statusFilter]);
 
   const lessonCount = filteredLessons.length;
+
+  const missingNotesLessons = useMemo(
+    () => lessons.filter((l) => !l.notes?.trim()),
+    [lessons],
+  );
+  const missingNotesCount = missingNotesLessons.length;
+
+  const openMissingNotes = () => {
+    setStatusFilter("missing_notes");
+    setBulkNotesOpen(true);
+  };
 
   const handleBack = () => navigate("/instructor/pupils");
   const handleSearchFocus = () => {
@@ -459,6 +476,31 @@ export default function InstructorDiary() {
                 </PopoverContent>
               </Popover>
 
+              {missingNotesCount > 0 && (
+                <button
+                  type="button"
+                  onClick={openMissingNotes}
+                  style={{
+                    borderRadius: 20,
+                    padding: "5px 10px 5px 8px",
+                    backgroundColor: "var(--d2-amber-bg, #FEF3C7)",
+                    border: "0.5px solid var(--d2-border)",
+                    color: "var(--d2-amber-fg, #92400E)",
+                    fontSize: 10,
+                    fontWeight: 600,
+                    whiteSpace: "nowrap",
+                    cursor: "pointer",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 5,
+                  }}
+                  title="Bulk add notes to lessons missing notes"
+                >
+                  <FileWarning size={11} strokeWidth={2} />
+                  Missing notes ({missingNotesCount})
+                </button>
+              )}
+
               <button
                 type="button"
                 style={chipStyle(false)}
@@ -592,6 +634,12 @@ export default function InstructorDiary() {
         open={drawerOpen}
         onOpenChange={setDrawerOpen}
         onSaved={handleLessonSaved}
+      />
+      <BulkMissingNotesDialog
+        open={bulkNotesOpen}
+        onOpenChange={setBulkNotesOpen}
+        lessons={missingNotesLessons}
+        onSaved={handleBulkNotesSaved}
       />
     </Shell>
   );
