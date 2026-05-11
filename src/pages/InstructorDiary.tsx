@@ -112,6 +112,14 @@ export default function InstructorDiary() {
   const [customTo, setCustomTo] = useState<Date | undefined>();
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [searchOpen, setSearchOpen] = useState(false);
+  const [helpDismissed, setHelpDismissed] = useState(true);
+  useEffect(() => {
+    setHelpDismissed(localStorage.getItem("dsm.lessonHistory.helpDismissed") === "1");
+  }, []);
+  const dismissHelp = () => {
+    localStorage.setItem("dsm.lessonHistory.helpDismissed", "1");
+    setHelpDismissed(true);
+  };
 
   const usingCustomRange = !!(customFrom && customTo);
 
