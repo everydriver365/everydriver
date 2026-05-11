@@ -959,7 +959,7 @@ function UpNextMapStrip({
           </OverlayViewF>
         </GoogleMap>
       ) : (
-        <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, color: MUTED }}>
+        <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, color: MUTED }}>
           {hasDestination ? "Loading live map…" : "No pick-up set"}
         </div>
       )}
