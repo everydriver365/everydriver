@@ -557,13 +557,10 @@ export function FindAppointmentBody({
           {!isFetching && slots.map((slot, idx) => {
             const isSelected = slot.id === selectedSlotId;
             return (
-              <button
+              <div
                 key={slot.id}
-                type="button"
-                onClick={() => setSelectedSlotId(slot.id)}
-                onDoubleClick={() => { setSelectedSlotId(slot.id); onSelectSlot(slot); }}
                 className={cn(
-                  "w-full flex items-center gap-3 px-3 py-2 text-left transition-colors",
+                  "w-full flex items-center gap-3 px-3 py-2 transition-colors",
                   idx > 0 && "border-t",
                 )}
                 style={{
@@ -571,19 +568,33 @@ export function FindAppointmentBody({
                   backgroundColor: isSelected ? "var(--d2-indigo-bg)" : "transparent",
                 }}
               >
-                <div className="text-xs font-semibold w-24 shrink-0" style={{ color: "var(--d2-text-1)" }}>
-                  {format(parseISO(slot.date), "EEE d MMM")}
-                </div>
-                <div className="text-xs font-bold w-12 shrink-0" style={{ color: "var(--d2-indigo)" }}>
-                  {slot.startTime}
-                </div>
-                <div className="text-[11px]" style={{ color: "var(--d2-text-3)" }}>
-                  {slot.durationMinutes} mins
-                </div>
-                <div className="text-[11px] truncate flex-1 text-right" style={{ color: "var(--d2-text-2)" }}>
-                  {slot.instructorName}
-                </div>
-              </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedSlotId(slot.id)}
+                  className="flex items-center gap-3 flex-1 text-left min-w-0"
+                >
+                  <div className="text-xs font-semibold w-24 shrink-0" style={{ color: "var(--d2-text-1)" }}>
+                    {format(parseISO(slot.date), "EEE d MMM")}
+                  </div>
+                  <div className="text-xs font-bold w-12 shrink-0" style={{ color: "var(--d2-indigo)" }}>
+                    {slot.startTime}
+                  </div>
+                  <div className="text-[11px]" style={{ color: "var(--d2-text-3)" }}>
+                    {slot.durationMinutes} mins
+                  </div>
+                  <div className="text-[11px] truncate flex-1 text-right" style={{ color: "var(--d2-text-2)" }}>
+                    {slot.instructorName}
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); setSelectedSlotId(slot.id); onSelectSlot(slot); }}
+                  className="shrink-0 rounded-[10px] px-3 py-1.5"
+                  style={{ backgroundColor: "var(--d2-indigo)" }}
+                >
+                  <span className="text-[11px] font-bold text-white">Book</span>
+                </button>
+              </div>
             );
           })}
         </div>
