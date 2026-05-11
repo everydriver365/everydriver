@@ -78,7 +78,7 @@ function NextLessonHero({ m }: { m: typeof mockHome }) {
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <p style={{ fontSize: 18, fontWeight: 700, letterSpacing: "-0.01em", lineHeight: 1.15 }}>{nl.pupilName}</p>
-          <p style={{ fontSize: 12, opacity: 0.85, marginTop: 2 }}>{nl.timeLabel} · {nl.duration ?? 60}m lesson</p>
+          <p style={{ fontSize: 12, opacity: 0.85, marginTop: 2 }}>{nl.timeLabel} · {nl.durationMinutes}m lesson</p>
         </div>
       </div>
 
