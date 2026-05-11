@@ -261,8 +261,8 @@ export default function InstructorDiary() {
                 <h1 style={{ fontSize: 20, fontWeight: 700, color: "var(--d2-text-1)", letterSpacing: -0.4, margin: 0 }}>
                   Lesson History
                 </h1>
-                <p style={{ fontSize: 10, color: "var(--d2-text-2)", marginTop: 1 }}>
-                  All lessons across all pupils
+                <p style={{ fontSize: 11, color: "var(--d2-text-2)", marginTop: 2 }}>
+                  A searchable record of every past lesson — review notes, ratings and pupil progress.
                 </p>
               </div>
             </div>
