@@ -39,7 +39,7 @@ import Schedule from "@/components/instructor/Schedule";
 import { FloatingSessionBar } from "@/components/instructor/FloatingSessionBar";
 import { UpcomingEventsTile } from "@/components/instructor/UpcomingEventsTile";
 import { useDormantPupilsCount } from "@/hooks/useDormantPupilsCount";
-import { Wrench, Users as UsersIcon, Crown, ShieldPlus, Inbox, Check, Star, Heart } from "lucide-react";
+import { Wrench, Users as UsersIcon, Crown, ShieldPlus, Inbox, Check, Star, Heart, Repeat2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { differenceInDays, isPast } from "date-fns";
@@ -48,6 +48,7 @@ import { AIReceptionistCard } from "@/components/instructor/AIReceptionistCard";
 import { AICallDivertSheet } from "@/components/instructor/AICallDivertSheet";
 import { TopStatsRow } from "@/components/instructor/TopStatsRow";
 import { useWeeklyGoals } from "@/hooks/useWeeklyGoals";
+import { useTestSwapNotifications } from "@/hooks/useTestSwapNotifications";
 
 /* ---------- Brand tokens ---------- */
 const RED = "#B23A3F";
@@ -1406,6 +1407,7 @@ export function MobileHomeRedesign({
   const { data: nextLesson } = useNextLessonDetails(instructorId);
   const { hoursThisWeek, lessonsThisWeek } = useInstructorLiveStats(instructorId);
   const pendingJobs = usePendingJobsCount();
+  const { data: swapCount = 0 } = useTestSwapNotifications(instructorId);
   const { data: unread = 0 } = useUnreadMessagesCount(instructorId);
   const { data: paymentsSummary } = useInstructorPupilsPaymentSummary(instructorId);
   const { data: gapData } = useRealGapSlots(instructorId);
@@ -1488,6 +1490,19 @@ export function MobileHomeRedesign({
     badge: pendingJobs > 0 ? { label: String(pendingJobs), bg: "#CC2229" } : undefined,
     isClear: pendingJobs === 0,
     onClick: () => navigate("/instructor/jobs"),
+  });
+
+  attentionRows.push({
+    key: "test-swaps",
+    group: "urgent",
+    Icon: Repeat2,
+    iconBg: "#FFF0F0",
+    iconColor: RED,
+    title: "Test swaps",
+    subtitle: swapCount > 0 ? "New swap matches available" : "No swap matches",
+    badge: swapCount > 0 ? { label: String(swapCount), bg: "#CC2229" } : undefined,
+    isClear: swapCount === 0,
+    onClick: () => navigate("/instructor/test-requests"),
   });
 
   // Calls (counter to be wired later)
@@ -1596,6 +1611,7 @@ export function MobileHomeRedesign({
     missedCallsCount +
     enquiriesCount +
     pendingJobs +
+    swapCount +
     openSlots +
     dormantCount +
     unread +
