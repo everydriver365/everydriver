@@ -7,6 +7,7 @@ import { format, addDays, parseISO, startOfDay } from "date-fns";
 import { useRealtimeSubscription } from "@/hooks/useRealtimeHub";
 import { SectionLabel } from "@/components/instructor/ui/SectionLabel";
 import { SlotPickerRow } from "./gap-filler/SlotPickerRow";
+import { AddLessonSheet } from "@/components/instructor/AddLessonSheet";
 import { RecipientSummaryCard } from "./gap-filler/RecipientSummaryCard";
 import {
   RecipientPickerSheet,
@@ -412,6 +413,26 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
     setGaps((prev) => prev.map((g) => ({ ...g, selected: false })));
   const selectedSlots = gaps.filter((g) => g.selected);
 
+  // Direct-book sheet state
+  const [bookSheetOpen, setBookSheetOpen] = useState(false);
+  const [bookDate, setBookDate] = useState<Date | undefined>(undefined);
+  const [bookStartTime, setBookStartTime] = useState<string | undefined>(undefined);
+  const [bookDurationHours, setBookDurationHours] = useState<string | undefined>(undefined);
+
+  const handleBookSlot = (g: GapSlot) => {
+    try {
+      setBookDate(parseISO(g.date));
+    } catch {
+      setBookDate(undefined);
+    }
+    setBookStartTime(g.startTime);
+    const [sh, sm] = g.startTime.split(":").map(Number);
+    const [eh, em] = g.endTime.split(":").map(Number);
+    const mins = eh * 60 + em - (sh * 60 + sm);
+    setBookDurationHours(String(mins / 60));
+    setBookSheetOpen(true);
+  };
+
   const eligiblePupils = useMemo(
     () => pupils.filter((p) => !!p.phone),
     [pupils]
@@ -775,6 +796,7 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
               isSelected={raw.selected}
               onToggle={() => toggleSlot(raw.id)}
               highlighted={highlightedIds.has(raw.id)}
+              onBook={() => handleBookSlot(raw)}
             />
           ))}
         </div>
@@ -989,6 +1011,19 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
               } total`
             : undefined
         }
+      />
+
+      <AddLessonSheet
+        open={bookSheetOpen}
+        onOpenChange={setBookSheetOpen}
+        instructorId={instructorId}
+        defaultDate={bookDate}
+        defaultStartTime={bookStartTime}
+        defaultDurationHours={bookDurationHours}
+        onSuccess={() => {
+          setBookSheetOpen(false);
+          fetchAvailableGaps();
+        }}
       />
     </div>
   );
