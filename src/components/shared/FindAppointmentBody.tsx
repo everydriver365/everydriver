@@ -488,7 +488,7 @@ export function FindAppointmentBody({
         )}
 
         {/* Available appointments */}
-        <SectionLabel label="Available appointments" />
+        <SectionLabel label={nextOnly ? "Next available slot" : "Available appointments"} />
         <div className="bg-white rounded-[14px] overflow-hidden mb-3" style={cardStyle}>
           {isFetching && (
             <div className="px-3 py-8 text-center text-xs" style={{ color: "var(--d2-text-2)" }}>
