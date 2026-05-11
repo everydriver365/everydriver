@@ -137,16 +137,16 @@ export function UpcomingEventsTile({ instructorId }: Props) {
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          marginBottom: 10,
+          marginBottom: 8,
           padding: "0 4px",
         }}
       >
         <span
           style={{
-            fontSize: 11,
-            fontWeight: 600,
-            color: TEXT_MUTED,
-            letterSpacing: 0.6,
+            fontSize: 10,
+            fontWeight: 700,
+            color: TEXT_SUBTLE,
+            letterSpacing: 1.2,
             textTransform: "uppercase",
           }}
         >
@@ -158,16 +158,13 @@ export function UpcomingEventsTile({ instructorId }: Props) {
             background: "none",
             border: "none",
             padding: 0,
-            fontSize: 12,
+            fontSize: 11,
             fontWeight: 600,
             color: BLUE,
             cursor: "pointer",
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 2,
           }}
         >
-          View all <ChevronRight size={12} color={BLUE} strokeWidth={2} />
+          View all ›
         </button>
       </div>
 
@@ -175,10 +172,9 @@ export function UpcomingEventsTile({ instructorId }: Props) {
       <div
         style={{
           backgroundColor: "#FFFFFF",
-          borderRadius: 16,
+          borderRadius: 18,
           overflow: "hidden",
           border: `0.5px solid ${CARD_BORDER}`,
-          boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 4px 16px rgba(16,24,40,0.04)",
           marginBottom: 24,
         }}
       >
@@ -190,61 +186,79 @@ export function UpcomingEventsTile({ instructorId }: Props) {
           <EmptyState onAdd={() => setAddOpen(true)} />
         ) : (
           <>
-            {/* PART 1: Mini calendar header */}
-            <div style={{ padding: "14px 14px 10px" }}>
+            {/* Calendar header */}
+            <div style={{ padding: "12px 14px 10px" }}>
+              {/* Month nav row */}
               <div
                 style={{
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "space-between",
-                  marginBottom: 12,
+                  marginBottom: 10,
                 }}
               >
                 <button
                   onClick={handlePrevMonth}
-                  style={circleBtn}
+                  style={navBtn}
                   aria-label="Previous month"
                 >
-                  <ChevronLeft size={14} color={BLUE} strokeWidth={2.2} />
+                  <ChevronLeft size={10} color="#5B6B8A" strokeWidth={2.2} />
                 </button>
-                <span
-                  style={{
-                    fontSize: 14,
-                    fontWeight: 600,
-                    color: TEXT,
-                    letterSpacing: -0.1,
-                  }}
-                >
-                  {monthLabel}
-                </span>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                  <span
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 700,
+                      color: TEXT,
+                      letterSpacing: -0.2,
+                    }}
+                  >
+                    {monthLabel}
+                  </span>
+                  <span style={{ fontSize: 9, color: TEXT_SUBTLE, marginTop: 1 }}>
+                    {events.length} upcoming event{events.length === 1 ? "" : "s"}
+                  </span>
+                </div>
                 <button
                   onClick={handleNextMonth}
-                  style={circleBtn}
+                  style={navBtn}
                   aria-label="Next month"
                 >
-                  <ChevronRight size={14} color={BLUE} strokeWidth={2.2} />
+                  <ChevronRight size={10} color="#5B6B8A" strokeWidth={2.2} />
                 </button>
               </div>
 
-              {/* Date strip */}
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
+              {/* Day label row */}
+              <div style={{ display: "flex", marginBottom: 3 }}>
                 {visibleDays.map((day) => {
-                  const isSelected = isSameDay(day, selectedDate);
-                  const isOutside = !isSameMonth(day, viewMonth);
-                  const isPast = day < today && !isSameDay(day, today);
+                  const dToday = isSameDay(day, today);
+                  const isPast = day < today && !dToday;
+                  return (
+                    <div key={`lbl-${day.toISOString()}`} style={{ flex: 1, textAlign: "center" }}>
+                      <span
+                        style={{
+                          fontSize: 8,
+                          fontWeight: dToday ? 700 : 500,
+                          color: dToday ? BLUE : isPast ? TEXT_DISABLED : TEXT_SUBTLE,
+                          letterSpacing: 0.2,
+                          textTransform: "uppercase",
+                        }}
+                      >
+                        {format(day, "EEE")}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Date row */}
+              <div style={{ display: "flex" }}>
+                {visibleDays.map((day) => {
+                  const dToday = isSameDay(day, today);
+                  const isPast = day < today && !dToday;
                   const dots = dotsByDay.get(format(day, "yyyy-MM-dd")) || [];
-
-                  const weekdayColor = isSelected
-                    ? BLUE
-                    : isOutside || isPast
-                      ? TEXT_DISABLED
-                      : TEXT_SUBTLE;
-                  const dateColor = isSelected
-                    ? "#FFFFFF"
-                    : isOutside || isPast
-                      ? TEXT_DISABLED
-                      : TEXT;
-
+                  const hasEvent = dots.length > 0;
+                  const eventColor = dots[0] ?? BLUE;
                   return (
                     <button
                       key={day.toISOString()}
@@ -256,63 +270,57 @@ export function UpcomingEventsTile({ instructorId }: Props) {
                         flex: 1,
                         background: "transparent",
                         border: "none",
-                        padding: "2px 0",
+                        padding: "3px 0",
                         display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        gap: 4,
+                        justifyContent: "center",
                         cursor: "pointer",
                       }}
                       aria-label={format(day, "EEEE d MMMM")}
                     >
                       <span
                         style={{
-                          fontSize: 10,
-                          fontWeight: 600,
-                          color: weekdayColor,
-                          letterSpacing: 0.2,
-                        }}
-                      >
-                        {format(day, "EEEEE")}
-                      </span>
-                      <div
-                        style={{
-                          width: 28,
-                          height: 28,
-                          borderRadius: 14,
-                          background: isSelected ? BLUE : "transparent",
-                          display: "flex",
+                          position: "relative",
+                          width: 26,
+                          height: 26,
+                          borderRadius: 13,
+                          background: dToday
+                            ? BLUE
+                            : hasEvent
+                              ? eventColor + "20"
+                              : "transparent",
+                          display: "inline-flex",
                           alignItems: "center",
                           justifyContent: "center",
-                          boxShadow: isSelected
-                            ? "0 2px 6px rgba(61,85,161,0.30)"
-                            : "none",
                         }}
                       >
                         <span
                           style={{
-                            fontSize: 13,
-                            fontWeight: isSelected ? 700 : 500,
-                            color: dateColor,
+                            fontSize: 12,
+                            fontWeight: dToday ? 700 : hasEvent ? 600 : 500,
+                            color: dToday
+                              ? "#FFFFFF"
+                              : isPast
+                                ? TEXT_DISABLED
+                                : TEXT,
                           }}
                         >
                           {format(day, "d")}
                         </span>
-                      </div>
-                      <div style={{ display: "flex", gap: 2, height: 4 }}>
-                        {dots.slice(0, 3).map((c, i) => (
-                          <div
-                            key={i}
+                        {hasEvent && !dToday && (
+                          <span
                             style={{
+                              position: "absolute",
+                              bottom: 1,
+                              left: "50%",
+                              marginLeft: -2,
                               width: 4,
                               height: 4,
                               borderRadius: 2,
-                              background: isSelected ? "#FFFFFF" : c,
-                              opacity: isSelected ? 0.95 : 1,
+                              background: eventColor,
                             }}
                           />
-                        ))}
-                      </div>
+                        )}
+                      </span>
                     </button>
                   );
                 })}
@@ -321,7 +329,7 @@ export function UpcomingEventsTile({ instructorId }: Props) {
 
             <div style={{ height: 0.5, background: HAIRLINE }} />
 
-            {/* PART 2: Event list */}
+            {/* Event list — max 3 */}
             <div>
               {showFallback && !isToday && (
                 <div
@@ -335,11 +343,11 @@ export function UpcomingEventsTile({ instructorId }: Props) {
                   No events on {format(selectedDate, "EEE d MMM")} · showing next up
                 </div>
               )}
-              {visibleEvents.map((e, idx) => (
+              {visibleEvents.slice(0, 3).map((e, idx, arr) => (
                 <EventRow
                   key={e.id}
                   event={e}
-                  isLast={idx === visibleEvents.length - 1}
+                  isLast={idx === arr.length - 1}
                   onClick={() =>
                     navigate(`/instructor/events/${encodeURIComponent(e.id)}`)
                   }
@@ -347,29 +355,25 @@ export function UpcomingEventsTile({ instructorId }: Props) {
               ))}
             </div>
 
-            {/* PART 3: Footer */}
+            {/* Footer */}
             <button
               onClick={goSeeAll}
               style={{
                 width: "100%",
                 borderTop: `0.5px solid ${HAIRLINE}`,
-                padding: "12px 0",
+                padding: "9px 14px",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 gap: 4,
-                background: "transparent",
-                border: "none",
-                borderTopWidth: 0.5,
-                borderTopStyle: "solid",
-                borderTopColor: HAIRLINE,
+                background: "#FAFBFD",
                 cursor: "pointer",
               }}
             >
-              <span style={{ fontSize: 13, fontWeight: 600, color: BLUE }}>
+              <span style={{ fontSize: 11, fontWeight: 600, color: BLUE }}>
                 See all events
               </span>
-              <ChevronRight size={14} color={BLUE} strokeWidth={2} />
+              <ChevronRight size={9} color={BLUE} strokeWidth={2.2} />
             </button>
           </>
         )}
