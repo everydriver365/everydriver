@@ -1359,14 +1359,16 @@ function UpgradeCard({ rows }: { rows: UpgradeRowSpec[] }) {
                     color: r.tierColor,
                     borderRadius: 4,
                     padding: "1px 5px",
-                    fontSize: 14,
+                    fontSize: 10,
                     fontWeight: 700,
+                    letterSpacing: "0.04em",
+                    textTransform: "uppercase",
                   }}
                 >
                   {r.tierLabel}
                 </span>
               </div>
-              <div style={{ fontSize: 14, color: "#8E8E93" }}>{r.subtitle}</div>
+              <div style={{ fontSize: 12, color: "#8E8E93" }}>{r.subtitle}</div>
             </div>
             <span
               style={{
@@ -1374,7 +1376,7 @@ function UpgradeCard({ rows }: { rows: UpgradeRowSpec[] }) {
                 color: "#FFF",
                 borderRadius: 20,
                 padding: "4px 10px",
-                fontSize: 14,
+                fontSize: 12,
                 fontWeight: 700,
                 flexShrink: 0,
               }}
