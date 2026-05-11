@@ -23,6 +23,7 @@ const NewsArticle = lazy(() => import("@/pages/NewsArticle"));
 const InstallPupil = lazy(() => import("@/pages/InstallPupil"));
 const ResetPassword = lazy(() => import("@/pages/ResetPassword"));
 const RoleRedirectPage = lazy(() => import("@/components/auth/RoleRedirect").then(m => ({ default: m.RoleRedirect })));
+const WhitelabelPreviewRedirect = lazy(() => import("@/pages/WhitelabelPreviewRedirect"));
 
 // Legal pages
 const PrivacyPolicy = lazy(() => import("@/pages/PrivacyPolicy"));
@@ -82,6 +83,9 @@ export const publicRoutes = (
   <>
     {/* Drive365 learner homepage preview */}
     <Route path="/drive365" element={<Index />} />
+
+    {/* Whitelabel preview shortcuts (e.g. /winchester) */}
+    <Route path="/winchester" element={<WhitelabelPreviewRedirect />} />
 
     {/* Drive365 Accessible hub */}
     <Route path="/accessible" element={<AccessibleHome />} />
