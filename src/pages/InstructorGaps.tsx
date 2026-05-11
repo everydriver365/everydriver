@@ -31,12 +31,12 @@ export default function InstructorGaps() {
       <div
         style={{
           background: "#F2F2F4",
-          padding: 12,
+          padding: 6,
           minHeight: "100%",
           fontFamily: FONT_STACK,
           display: "flex",
           flexDirection: "column",
-          gap: 12,
+          gap: 8,
           overflowX: "hidden",
           maxWidth: "100%",
         }}
