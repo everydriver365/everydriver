@@ -1611,6 +1611,7 @@ export function MobileHomeRedesign({
     missedCallsCount +
     enquiriesCount +
     pendingJobs +
+    swapCount +
     openSlots +
     dormantCount +
     unread +
