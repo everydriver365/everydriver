@@ -409,7 +409,6 @@ function EventRow({
 }) {
   const cfg = typeStyle[event.type];
   const Icon = cfg.icon;
-  const pill = countdownStyle(event.daysUntil);
 
   return (
     <div>
@@ -419,92 +418,80 @@ function EventRow({
           width: "100%",
           display: "flex",
           alignItems: "center",
-          gap: 12,
-          padding: "12px 14px",
+          gap: 9,
+          padding: "10px 12px",
           background: "transparent",
           border: "none",
           cursor: "pointer",
           textAlign: "left",
         }}
       >
-        {/* Icon tile */}
-        <div
+        <span
           style={{
-            width: 40,
-            height: 40,
-            borderRadius: 10,
+            width: 3,
+            height: 34,
+            borderRadius: 2,
+            background: cfg.iconColor,
+            flexShrink: 0,
+          }}
+        />
+        <span
+          style={{
+            width: 30,
+            height: 30,
+            borderRadius: 9,
             background: cfg.iconBg,
-            display: "flex",
+            display: "inline-flex",
             alignItems: "center",
             justifyContent: "center",
             flexShrink: 0,
           }}
         >
-          <Icon size={18} color={cfg.iconColor} strokeWidth={2} />
-        </div>
-
-        {/* Title + meta */}
+          <Icon size={13} color={cfg.iconColor} strokeWidth={1.7} />
+        </span>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div
             style={{
-              fontSize: 14,
-              fontWeight: 600,
+              fontSize: 12,
+              fontWeight: 700,
               color: TEXT,
               whiteSpace: "nowrap",
               overflow: "hidden",
               textOverflow: "ellipsis",
-              letterSpacing: -0.1,
             }}
           >
             {event.title}
           </div>
           <div
             style={{
-              fontSize: 11,
-              fontWeight: 500,
+              fontSize: 9,
               color: TEXT_SUBTLE,
-              marginTop: 2,
+              marginTop: 1,
               whiteSpace: "nowrap",
               overflow: "hidden",
               textOverflow: "ellipsis",
             }}
           >
-            {event.dateLabel} · {event.timeLabel} · {event.locationLabel}
+            {event.dateLabel} · {event.timeLabel}
           </div>
         </div>
-
-        {/* Countdown pill */}
-        <div
+        <span
           style={{
-            background: pill.bg,
-            borderRadius: 999,
-            padding: "3px 9px",
+            background: cfg.iconBg,
+            borderRadius: 20,
+            padding: "3px 8px",
             flexShrink: 0,
+            fontSize: 9,
+            fontWeight: 700,
+            color: cfg.iconColor,
           }}
         >
-          <span
-            style={{
-              fontSize: 11,
-              fontWeight: 700,
-              color: pill.text,
-              letterSpacing: 0.1,
-            }}
-          >
-            {countdownLabel(event.daysUntil)}
-          </span>
-        </div>
-
-        <ChevronRight size={14} color={TEXT_DISABLED} strokeWidth={2} />
+          {countdownLabel(event.daysUntil)}
+        </span>
+        <ChevronRight size={12} color={TEXT_DISABLED} strokeWidth={1.8} />
       </button>
-
       {!isLast && (
-        <div
-          style={{
-            height: 0.5,
-            background: HAIRLINE,
-            marginLeft: 66,
-          }}
-        />
+        <div style={{ height: 0.5, background: HAIRLINE, margin: "0 14px" }} />
       )}
     </div>
   );
