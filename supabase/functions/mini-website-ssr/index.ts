@@ -89,16 +89,16 @@ Deno.serve(async (req) => {
   const ogImage = pageMeta?.og_image_url || siteSettings?.default_og_image_url || instructor.logo_url || instructor.profile_image_url || "";
   const robotsIndexable = siteSettings?.robots_indexable !== false;
 
-  // Canonical: use subdomain if custom_domain set, else path-based
+  // Canonical: page override > custom domain > slug subdomain
   const domain = instructor.custom_domain || `${slug}.drive365.co.uk`;
   const pagePath = page === "home" ? "" : `/${page}`;
-  const canonicalUrl = `https://${domain}${pagePath}`;
+  const canonicalUrl = pageMeta?.canonical_url || `https://${domain}${pagePath}`;
 
   // Redirect URL to the actual SPA
   const spaUrl = `https://everydriver.lovable.app/i/${slug}${pagePath}`;
 
-  // JSON-LD
-  const jsonLd = {
+  // JSON-LD: prefer per-page override, else default LocalBusiness
+  const jsonLd = pageMeta?.schema_jsonld || {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
     name: businessName,
@@ -117,12 +117,20 @@ Deno.serve(async (req) => {
     additionalType: "https://schema.org/DrivingSchool",
   };
 
+  const gaSnippet = siteSettings?.google_analytics_id
+    ? `<script async src="https://www.googletagmanager.com/gtag/js?id=${escapeHtml(siteSettings.google_analytics_id)}"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${escapeHtml(siteSettings.google_analytics_id)}');</script>`
+    : "";
+
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <title>${escapeHtml(title)}</title>
   <meta name="description" content="${escapeHtml(description)}">
+  ${keywords ? `<meta name="keywords" content="${escapeHtml(keywords)}">` : ""}
+  <meta name="robots" content="${robotsIndexable ? "index, follow" : "noindex, nofollow"}">
+  ${siteSettings?.google_site_verification ? `<meta name="google-site-verification" content="${escapeHtml(siteSettings.google_site_verification)}">` : ""}
   <link rel="canonical" href="${escapeHtml(canonicalUrl)}">
 
   <meta property="og:title" content="${escapeHtml(title)}">
@@ -137,6 +145,8 @@ Deno.serve(async (req) => {
   ${ogImage ? `<meta name="twitter:image" content="${escapeHtml(ogImage)}">` : ""}
 
   <script type="application/ld+json">${JSON.stringify(jsonLd)}</script>
+  ${gaSnippet}
+  ${siteSettings?.custom_head_html || ""}
 
   <!-- Redirect human visitors to the SPA -->
   <meta http-equiv="refresh" content="0;url=${escapeHtml(spaUrl)}">
