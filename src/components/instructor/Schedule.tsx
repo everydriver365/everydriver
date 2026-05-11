@@ -752,10 +752,7 @@ const OpenSlotCard = memo(function OpenSlotCard({
   const accentBar = isPrime
     ? `repeating-linear-gradient(to bottom, ${PRIME_TINT} 0, ${PRIME_TINT} 4px, transparent 4px, transparent 8px)`
     : `repeating-linear-gradient(to bottom, ${OPEN_TINT} 0, ${OPEN_TINT} 4px, transparent 4px, transparent 8px)`;
-
-  const timeColor = isPrime ? PRIME_FG : BLUE;
-  const titleColor = isPrime ? PRIME_FG : BLUE;
-  const iconColor = isPrime ? PRIME_FG : BLUE;
+  void accentBar;
 
   let title: string;
   let subtitle: string;
