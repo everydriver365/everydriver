@@ -21,6 +21,7 @@ import { PlanBillingPage } from "./pages/PlanBillingPage";
 import { DataExportPage } from "./pages/DataExportPage";
 import { HelpSupportPage } from "./pages/HelpSupportPage";
 import { CloseAccountPage } from "./pages/CloseAccountPage";
+import { LabFeaturesPage } from "./pages/LabFeaturesPage";
 
 interface PageDef {
   title: string;
@@ -44,6 +45,7 @@ const PAGES: Record<string, PageDef> = {
   "data-export":   { title: "Data export",      subtitle: "Download your data as CSV or a full account backup",                              render: id => <DataExportPage instructorId={id} /> },
   "help-support":  { title: "Help & support",   subtitle: "Get help, talk to support or read the docs",                                      render: () => <HelpSupportPage /> },
   "close-account": { title: "Close account",    subtitle: "Permanently close your account and erase your data",                              render: () => <CloseAccountPage /> },
+  "lab-features":  { title: "Lab features",     subtitle: "New experiments you can switch on or off at any time",                            render: id => <LabFeaturesPage instructorId={id} /> },
 };
 
 interface Props {
