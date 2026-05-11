@@ -88,7 +88,7 @@ function NextLessonHero({ m }: { m: typeof mockHome }) {
           <MapPin size={11} /> {nl.pickup}
         </span>
         <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, padding: "5px 9px", borderRadius: 999, background: "rgba(255,255,255,0.14)" }}>
-          <Car size={11} /> {nl.distanceMiles ?? 2.4} mi · {nl.driveMinutes ?? 7} min
+          <Car size={11} /> {nl.distanceMiles} mi · {nl.etaMinutes} min
         </span>
       </div>
 
