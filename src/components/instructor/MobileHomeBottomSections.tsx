@@ -947,7 +947,7 @@ function QuickAccessSection({ instructorId }: { instructorId: string }) {
                   const tonePair = TONE_PALETTE[tile.tone] ?? TONE_PALETTE.blue;
                   const badge = badgeFor(tile.id);
                   const subtitle = subtitleFor(tile.id);
-                  const isPrimary = pageIdx === 0 && tileIdx === 0;
+                  const isPrimary = false;
                   return (
                     <button
                       key={tile.id}
