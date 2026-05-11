@@ -1,24 +1,12 @@
-## Goal
-On whitelabel sites (e.g. Winchester), kill the large "Areas we cover" section that looks spammy on the homepage, and surface the same area links as a small, subdued strip in the footer instead — preserving internal linking to `/areas/<slug>` for local SEO.
+The tile has changed in the code, and the preview confirms it is rendering, but it does not match the requested redesign because the currently visible branch is `NextLessonPreviewCard` for lessons more than 4 hours away. That branch was only partially restyled and still shows the old ordering: map first, then date chip, name row, lesson/location rows.
 
-## Changes
-
-**1. `src/pages/Index.tsx` (lines 310–334)**
-Remove the full-width `<section className="border-b border-border bg-muted/30 py-10">` block that renders the heading, intro paragraph, and chip list of areas. Leave the `getAreasForHost` import and `wlAreas` variable in place so we can pass them to the footer.
-
-**2. Footer component (whitelabel-aware)**
-Locate the site footer used on the public homepage (likely `src/components/Footer.tsx` or similar — confirm during build) and add a compact, low-visual-weight area strip rendered only when `wlConfig && wlAreas.length > 0`:
-
-- Single line label: "Serving:" in `text-xs text-muted-foreground`
-- Inline list of area names as plain text links separated by `·` (middle dot), e.g. `Winchester · Eastleigh · Alresford · …`
-- Each link goes to `/areas/${areaToSlug(area)}`
-- `text-xs text-muted-foreground hover:text-foreground`
-- Wraps naturally; no chips, no border, no background block
-- Sits above the existing copyright line
-
-If the footer doesn't currently know about `wlConfig`, read it via the same hook/util used in `Index.tsx` so the strip appears site-wide on whitelabel domains (and stays hidden on Drive365/DSM).
-
-## Out of scope
-- `/areas/<slug>` landing pages remain unchanged
-- Sitemap entries unchanged
-- No mobile layout changes beyond the natural reflow of the removed section and the new tiny footer line
+Plan:
+1. Update only the mobile collapsed `NextLessonPreviewCard` presentation so the visible tile uses the requested structure:
+   - white rounded tile container
+   - `#F0F5FF` header band at the top
+   - avatar/name/date on the left and large start time/countdown on the right
+   - 72px map strip below the header
+   - details rows, AI divert pill, action buttons, then details toggle
+2. Keep the expanded state unchanged so existing stats/payment/notes detail behaviour remains intact.
+3. Keep all current handlers and data wiring exactly as-is: call, text, navigate, profile open, map/ETA, AI divert rendering, and expansion state.
+4. Verify on `/instructor` at mobile viewport that the visible tile no longer starts with the large map and now shows the header band first.

@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Sparkles } from "lucide-react";
+import { pupilAvatarColor } from "@/lib/pupilAvatarColor";
 import { UpNextExpanded } from "@/components/instructor/UpNextExpanded";
 import { useNavigate } from "react-router-dom";
 import { format, parse, parseISO, isToday, isTomorrow, differenceInMinutes } from "date-fns";
@@ -529,6 +530,32 @@ function UpNextTile({
     </span>
   );
 
+  const fullName = toSentence(pupilName);
+  const initialsText = initials(pupilName);
+  const avatarColor = pupilAvatarColor(pupilId || pupilName) || "#CC2229";
+  const dayText = (() => {
+    try { return format(date, "EEE d MMM"); } catch { return ""; }
+  })();
+  const relativeDay = isToday(date)
+    ? "Today"
+    : isTomorrow(date)
+      ? "Tomorrow"
+      : (() => {
+          const days = Math.max(1, Math.round(minutesUntil / (60 * 24)));
+          return `In ${days} days`;
+        })();
+  const countdownLine = (() => {
+    if (minutesUntil <= 0) return "Now";
+    if (minutesUntil < 60) return `In ${Math.max(1, Math.round(minutesUntil))} min`;
+    if (isToday(date)) {
+      const h = Math.round(minutesUntil / 60);
+      return h === 1 ? "In 1 hour" : `In ${h} hours`;
+    }
+    return relativeDay;
+  })();
+  const hasDestination = !!(pickupPostcode || pickupLocation);
+  const destQuery = pickupLocation || pickupPostcode || "";
+
   return (
     <div style={{ padding: "0 14px 14px" }}>
       <div
@@ -540,153 +567,149 @@ function UpNextTile({
           overflow: "hidden",
           border: `0.5px solid ${BORDER}`,
           cursor: "pointer",
+          boxShadow: "0 2px 18px rgba(26,82,160,0.13)",
         }}
       >
-        <MapHeroLive
-          lessonId={lessonId}
-          pickupPostcode={pickupPostcode}
-          pickupLocation={pickupLocation}
-          countdown={countdown}
-          minutesUntil={minutesUntil}
-          startTime={start}
-          whenLabel={whenLabel}
-          expanded={expanded}
-          onToggleExpanded={onToggleExpanded}
-          pupilName={pupilName}
-          pupilPhone={pupilPhone}
-          pupilProfileImage={pupilProfileImage}
-          instructorId={instructorId}
-        />
-
-        <div style={{ padding: "12px 14px 14px", display: "flex", flexDirection: "column", gap: 10 }}>
-          {/* Date · time chip */}
-          <div
+        {/* ── HEADER BAND ── */}
+        <div
+          style={{
+            backgroundColor: "#F0F5FF",
+            padding: "12px 14px",
+            borderBottom: "0.5px solid rgba(26,82,160,0.07)",
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+          }}
+        >
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); navigate(`/instructor/pupils/${pupilId}`); }}
+            aria-label={`View ${fullName}'s profile`}
             style={{
-              alignSelf: "flex-start",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 6,
-              padding: "5px 10px",
-              borderRadius: 999,
-              background: BLUE_TINT,
-              border: `0.5px solid ${BORDER}`,
+              width: 40, height: 40, borderRadius: 20,
+              backgroundColor: avatarColor,
+              display: "inline-flex", alignItems: "center", justifyContent: "center",
+              flexShrink: 0,
+              boxShadow: `0 2px 6px ${avatarColor}38`,
+              border: "2px solid rgba(255,255,255,0.6)",
+              padding: 0, cursor: "pointer", overflow: "hidden",
             }}
           >
-            <Calendar size={12} strokeWidth={2.4} style={{ color: BLUE }} />
-            <span
-              style={{
-                fontSize: 11,
-                fontWeight: 600,
-                color: CHARCOAL,
-                letterSpacing: 0.4,
-                textTransform: "uppercase",
-                fontVariantNumeric: "tabular-nums",
-              }}
-            >
-              {`${whenLabel} ${dayNum} ${monthName}`} · {start}
-            </span>
-          </div>
+            {pupilProfileImage ? (
+              <img
+                src={pupilProfileImage}
+                alt=""
+                style={{ width: 40, height: 40, borderRadius: 20, objectFit: "cover" }}
+              />
+            ) : (
+              <span style={{ fontSize: 13, fontWeight: 700, color: "#FFF" }}>{initialsText}</span>
+            )}
+          </button>
 
-          {/* Pupil name + chevron */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
             <div
               style={{
-                fontSize: 19,
-                fontWeight: 700,
-                color: CHARCOAL,
-                letterSpacing: "-0.4px",
-                lineHeight: 1.15,
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-                minWidth: 0,
+                fontSize: 15, fontWeight: 700, color: "#1A1A1A", letterSpacing: -0.3,
+                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
               }}
             >
-              {toSentence(pupilName)}
+              {fullName}
             </div>
-            <ChevronDown
-              size={18}
-              strokeWidth={2}
-              style={{
-                color: MUTED,
-                flexShrink: 0,
-                transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
-                transition: "transform 200ms ease",
-              }}
-            />
-          </div>
-
-          {/* Info rows */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <IconTile>
-                <Clock size={13} strokeWidth={2.2} />
-              </IconTile>
-              <div style={{ fontSize: 16, color: CHARCOAL, fontWeight: 500 }}>
-                Standard lesson · <span style={{ color: MUTED, fontWeight: 400 }}>{hoursLong(durationMinutes)}</span>
-              </div>
-            </div>
-
-            <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-              <IconTile>
-                <MapPin size={13} strokeWidth={2.2} />
-              </IconTile>
-              <div
-                style={{
-                  fontSize: 16,
-                  color: CHARCOAL,
-                  fontWeight: 500,
-                  minWidth: 0,
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {pickupPostcode || "Pick-up TBC"}
-                {pickupLocation && (
-                  <span style={{ color: MUTED, fontWeight: 400 }}> · {pickupLocation}</span>
-                )}
-              </div>
+            <div style={{ fontSize: 10, color: "#8E8E93", marginTop: 2, fontWeight: 500 }}>
+              {dayText}{dayText && relativeDay ? " · " : ""}{relativeDay}
             </div>
           </div>
+
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", flexShrink: 0 }}>
+            <div style={{ fontSize: 22, fontWeight: 700, color: "#1A52A0", letterSpacing: -0.6, lineHeight: "24px" }}>
+              {start}
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 3 }}>
+              <span style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: "#CC2229" }} />
+              <span style={{ fontSize: 10, color: "#8E8E93", fontWeight: 500 }}>{countdownLine}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* ── MAP STRIP (72px) ── */}
+        <UpNextMapStrip
+          centerQuery={destQuery || null}
+          hasDestination={hasDestination}
+          onNavigate={navTo}
+        />
+
+        {/* ── DETAILS ── */}
+        <div style={{ padding: "12px 14px 12px", display: "flex", flexDirection: "column", gap: 8 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <IconTile><Clock size={13} strokeWidth={2.2} /></IconTile>
+            <div style={{ fontSize: 14, color: CHARCOAL, fontWeight: 600 }}>
+              Standard lesson · <span style={{ color: MUTED, fontWeight: 500 }}>{hoursLong(durationMinutes)}</span>
+            </div>
+          </div>
+
+          {hasDestination && (
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 10, minWidth: 0 }}>
+              <IconTile><MapPin size={13} strokeWidth={2.2} /></IconTile>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div
+                  style={{
+                    fontSize: 14,
+                    color: CHARCOAL,
+                    fontWeight: 600,
+                    minWidth: 0,
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {pickupPostcode || ""}
+                  {pickupPostcode && pickupLocation ? " · " : ""}
+                  {pickupLocation || ""}
+                </div>
+                <div style={{ fontSize: 10, color: "#1A52A0", marginTop: 1, fontWeight: 600 }}>Pick-up</div>
+              </div>
+            </div>
+          )}
 
           {aiStatusLine && (
             <div
               style={{
-                fontSize: 11,
-                color: MUTED,
-                fontWeight: 500,
-                paddingLeft: 2,
-                marginTop: -2,
+                display: "inline-flex",
+                alignSelf: "flex-start",
+                alignItems: "center",
+                gap: 5,
+                background: "#F0EEFF",
+                borderRadius: 8,
+                padding: "4px 9px",
+                marginTop: 2,
               }}
             >
-              {aiStatusLine}
+              <Sparkles size={10} strokeWidth={2} style={{ color: "#6B21A8" }} />
+              <span style={{ fontSize: 10, fontWeight: 600, color: "#6B21A8" }}>{aiStatusLine}</span>
             </div>
           )}
 
-          {/* Action row — Call / Text / Navigate */}
-          <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
+          {/* Action row — Call / Text / Go */}
+          <div style={{ display: "flex", gap: 8, marginTop: 6 }}>
             <button
               type="button"
               onClick={call}
               disabled={!pupilPhone}
               style={{
-                flex: 1,
+                flex: 1.3,
                 height: 44,
-                borderRadius: 14,
-                background: BLUE,
+                borderRadius: 12,
+                background: pupilPhone ? "#CC2229" : "#E8B5B7",
                 color: "#FFFFFF",
                 border: "none",
-                fontSize: 16,
-                fontWeight: 600,
-                letterSpacing: 0.1,
+                fontSize: 15,
+                fontWeight: 700,
                 display: "inline-flex",
                 alignItems: "center",
                 justifyContent: "center",
                 gap: 6,
-                opacity: pupilPhone ? 1 : 0.5,
                 cursor: pupilPhone ? "pointer" : "not-allowed",
-                boxShadow: "0 4px 12px -4px rgba(41,82,179,0.45)",
+                boxShadow: pupilPhone ? "0 2px 8px rgba(204,34,41,0.3)" : "none",
               }}
             >
               <Phone size={15} strokeWidth={2.2} /> Call
@@ -697,13 +720,12 @@ function UpNextTile({
               style={{
                 flex: 1,
                 height: 44,
-                borderRadius: 14,
+                borderRadius: 12,
                 background: BLUE_TINT,
                 color: BLUE,
                 border: `0.5px solid ${BORDER}`,
-                fontSize: 16,
+                fontSize: 15,
                 fontWeight: 600,
-                letterSpacing: 0.1,
                 display: "inline-flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -716,30 +738,140 @@ function UpNextTile({
             <button
               type="button"
               onClick={navTo}
-              disabled={!(pickupPostcode || pickupLocation)}
+              disabled={!hasDestination}
               style={{
                 flex: 1,
                 height: 44,
-                borderRadius: 14,
+                borderRadius: 12,
                 background: BLUE_TINT,
                 color: BLUE,
                 border: `0.5px solid ${BORDER}`,
-                fontSize: 16,
+                fontSize: 15,
                 fontWeight: 600,
-                letterSpacing: 0.1,
                 display: "inline-flex",
                 alignItems: "center",
                 justifyContent: "center",
                 gap: 6,
-                opacity: (pickupPostcode || pickupLocation) ? 1 : 0.5,
-                cursor: (pickupPostcode || pickupLocation) ? "pointer" : "not-allowed",
+                opacity: hasDestination ? 1 : 0.5,
+                cursor: hasDestination ? "pointer" : "not-allowed",
               }}
             >
               <NavIcon size={15} strokeWidth={2.2} /> Go
             </button>
           </div>
         </div>
+
+        {/* Expand handle */}
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); onToggleExpanded(); }}
+          aria-expanded={expanded}
+          style={{
+            width: "100%",
+            border: "none",
+            borderTop: "0.5px solid rgba(0,0,0,0.05)",
+            padding: "8px 0",
+            backgroundColor: "#FAFBFD",
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 4,
+            cursor: "pointer",
+          }}
+        >
+          <span style={{ fontSize: 11, fontWeight: 600, color: "#8E8E93" }}>
+            {expanded ? "Hide details" : "Details"}
+          </span>
+          <ChevronDown
+            size={11}
+            strokeWidth={2.5}
+            style={{
+              color: "#C7C7CC",
+              transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
+              transition: "transform 200ms ease",
+            }}
+          />
+        </button>
       </div>
+    </div>
+  );
+}
+
+/* ---------- Up next map strip (72px) ---------- */
+function UpNextMapStrip({
+  centerQuery,
+  hasDestination,
+  onNavigate,
+}: {
+  centerQuery: string | null;
+  hasDestination: boolean;
+  onNavigate: (e: React.MouseEvent) => void;
+}) {
+  const [src, setSrc] = useState<string | null>(null);
+
+  useMemo(() => {
+    let cancelled = false;
+    if (!centerQuery) { setSrc(null); return; }
+    import("@/lib/googleMapsLoader").then(({ fetchGoogleMapsKey }) => {
+      fetchGoogleMapsKey().then((key) => {
+        if (cancelled || !key) return;
+        const dpr = Math.min(2, Math.max(1, Math.round(window.devicePixelRatio || 1)));
+        const center = encodeURIComponent(centerQuery);
+        const style = [
+          "feature:poi|visibility:off",
+          "feature:transit|visibility:off",
+          "feature:road|element:labels|visibility:off",
+          "feature:administrative|element:labels|visibility:off",
+          "feature:landscape|color:0xeef1f6",
+          "feature:water|color:0xdfe7f0",
+          "feature:road|color:0xffffff",
+          "feature:road.arterial|color:0xf2f4f8",
+          "feature:road.highway|color:0xe6ecf5",
+        ].map((s) => `&style=${encodeURIComponent(s)}`).join("");
+        const marker = `color:0xCC2229|${center}`;
+        const url =
+          `https://maps.googleapis.com/maps/api/staticmap` +
+          `?center=${center}&zoom=14&size=600x72&scale=${dpr}` +
+          `&markers=${encodeURIComponent(marker)}` + style +
+          `&key=${encodeURIComponent(key)}`;
+        setSrc(url);
+      });
+    });
+    return () => { cancelled = true; };
+  }, [centerQuery]);
+
+  return (
+    <div
+      role={hasDestination ? "button" : undefined}
+      tabIndex={hasDestination ? 0 : undefined}
+      onClick={hasDestination ? onNavigate : undefined}
+      style={{ position: "relative", height: 72, overflow: "hidden", background: "#E9EEF5", cursor: hasDestination ? "pointer" : "default" }}
+    >
+      {src ? (
+        <img src={src} alt="" loading="lazy"
+          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+      ) : (
+        <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, color: MUTED }}>
+          {hasDestination ? "Loading map…" : "No pick-up set"}
+        </div>
+      )}
+
+      {/* Navigate button — bottom right */}
+      <button
+        type="button"
+        onClick={onNavigate}
+        disabled={!hasDestination}
+        style={{
+          position: "absolute", bottom: 8, right: 10,
+          backgroundColor: "rgba(26,82,160,0.92)",
+          borderRadius: 12, padding: "5px 10px",
+          border: "none", cursor: hasDestination ? "pointer" : "default",
+          display: "inline-flex", alignItems: "center", gap: 4,
+        }}
+      >
+        <NavIcon size={11} strokeWidth={2.4} style={{ color: "#FFF" }} />
+        <span style={{ fontSize: 10.5, fontWeight: 700, color: "#FFF" }}>Navigate</span>
+      </button>
     </div>
   );
 }
