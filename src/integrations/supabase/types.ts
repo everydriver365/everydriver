@@ -12824,7 +12824,9 @@ export type Database = {
           currency: string
           id: string
           instructor_id: string | null
+          kind: string
           notes: string | null
+          payment_method: string | null
           pupil_id: string | null
           source: string
         }
@@ -12835,7 +12837,9 @@ export type Database = {
           currency?: string
           id?: string
           instructor_id?: string | null
+          kind?: string
           notes?: string | null
+          payment_method?: string | null
           pupil_id?: string | null
           source?: string
         }
@@ -12846,7 +12850,9 @@ export type Database = {
           currency?: string
           id?: string
           instructor_id?: string | null
+          kind?: string
           notes?: string | null
+          payment_method?: string | null
           pupil_id?: string | null
           source?: string
         }
