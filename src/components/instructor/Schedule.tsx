@@ -1018,6 +1018,17 @@ export default function Schedule({
 
   const { data: days, isLoading, settings } = useScheduleWeek(instructorId, weekStart, 7);
   const { data: eolSet } = useDayLessonHistory(instructorId, selectedDate);
+  const { data: gapDataForChip } = useRealGapSlots(instructorId);
+  const openSlotsThisWeek = useMemo(() => {
+    if (!gapDataForChip) return 0;
+    const today = format(new Date(), "yyyy-MM-dd");
+    const end = new Date();
+    end.setDate(end.getDate() + (7 - end.getDay()));
+    const endStr = format(end, "yyyy-MM-dd");
+    return gapDataForChip
+      .filter((g: any) => g.date >= today && g.date <= endStr)
+      .reduce((sum: number, g: any) => sum + (g.slots?.length ?? 0), 0);
+  }, [gapDataForChip]);
 
   const selectedDay: ScheduleDay | undefined = useMemo(() => {
     if (!days) return undefined;
