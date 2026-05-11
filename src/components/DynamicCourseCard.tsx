@@ -133,7 +133,7 @@ export function DynamicCourseCard({
       >
         {/* Front of Card — pale wash + photo on top + navy date rail + icon list */}
         <div
-          className={`relative overflow-hidden rounded-2xl border bg-secondary/40 p-2 shadow-lg [backface-visibility:hidden] transition-shadow duration-300 group-hover:shadow-xl ${
+          className={`relative overflow-hidden rounded-2xl border bg-card shadow-lg [backface-visibility:hidden] transition-shadow duration-300 group-hover:shadow-xl ${
             isPremium
               ? "border-2 border-amber-400/60 shadow-amber-400/20 group-hover:shadow-amber-400/30 ring-1 ring-amber-400/30"
               : "border-border/60 shadow-black/10 group-hover:shadow-black/15"
@@ -148,7 +148,7 @@ export function DynamicCourseCard({
           )}
 
           {/* Hero Image (rounded top corners only, sits inside the wash) */}
-          <div className="relative h-44 overflow-hidden rounded-xl">
+          <div className="relative h-44 overflow-hidden">
             <img
               src={courseImageUrl || `https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800&h=400&fit=crop`}
               alt={courseName}
@@ -191,7 +191,7 @@ export function DynamicCourseCard({
           </div>
 
           {/* Lower body: navy date rail + white content */}
-          <div className="mt-2 flex overflow-hidden rounded-xl bg-card">
+          <div className="flex">
             {/* Date rail */}
             <div
               className="flex flex-col items-center justify-center px-4 py-5 min-w-[68px]"

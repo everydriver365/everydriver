@@ -88,9 +88,9 @@ export function IOSCourseCard({
   };
 
   return (
-    <div className="group rounded-2xl border border-border/60 bg-secondary/40 p-2 shadow-lg shadow-black/5 transition-shadow hover:shadow-xl">
+    <div className="group overflow-hidden rounded-2xl border border-border/60 bg-card shadow-lg shadow-black/5 transition-shadow hover:shadow-xl">
       {/* Hero photo */}
-      <div className="relative h-44 overflow-hidden rounded-xl">
+      <div className="relative h-44 overflow-hidden">
         <img
           src={courseImageUrl || `https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800&h=400&fit=crop`}
           alt={courseName}
@@ -128,7 +128,7 @@ export function IOSCourseCard({
       </div>
 
       {/* Body: navy date rail + content */}
-      <div className="mt-2 flex overflow-hidden rounded-xl bg-card">
+      <div className="flex">
         <div
           className="flex flex-col items-center justify-center px-4 py-5 min-w-[68px]"
           style={{ backgroundColor: brandColour }}
