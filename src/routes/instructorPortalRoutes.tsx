@@ -21,6 +21,7 @@ const QuickActionsRedesignDemo = lazy(() => import("@/pages/instructor/QuickActi
 const InstructorAccessibilitySettings = lazy(() => import("@/pages/instructor/InstructorAccessibilitySettings"));
 const InstructorModules = lazy(() => import("@/pages/instructor-app/InstructorModules"));
 const InstructorMySite = lazy(() => import("@/pages/instructor-app/InstructorMySite"));
+const InstructorWebsiteEditor = lazy(() => import("@/pages/instructor-app/InstructorWebsiteEditor"));
 const InstructorPlanBilling = lazy(() => import("@/pages/instructor-app/InstructorPlanBilling"));
 const InstructorReports = lazy(() => import("@/pages/instructor-app/InstructorReportsRouter"));
 
