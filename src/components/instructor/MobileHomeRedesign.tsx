@@ -1634,7 +1634,8 @@ export function MobileHomeRedesign({
       tierBg: "#FFF6E6",
       tierColor: "#B45309",
       subtitle: "Unlock more features · lower fees",
-      upgradeBg: "#B45309",
+      upgradeBg: BLUE_TINT,
+      upgradeFg: BLUE,
       onClick: () => navigate("/instructor/subscription"),
     },
     {
@@ -1647,7 +1648,8 @@ export function MobileHomeRedesign({
       tierBg: "#EEF3FF",
       tierColor: "#1A52A0",
       subtitle: "Full income protection available",
-      upgradeBg: "#1A52A0",
+      upgradeBg: BLUE_TINT,
+      upgradeFg: BLUE,
       onClick: () => navigate("/instructor/health"),
     },
   ];
