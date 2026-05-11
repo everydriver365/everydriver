@@ -311,12 +311,6 @@ export function useInstructorPaymentsData(instructorId: string | undefined): Pay
             .gte("created_at", taxYearStart.toISOString()),
         ]);
 
-        let feesYearToDate = 0;
-        if (!ytdRes.error && ytdRes.data) {
-          const cardYtd = ytdRes.data
-            .filter((p: any) => normalizeMethod(p.payment_method) === "card"
-              && normalizeStatus(Number(p.amount), p.notes, p.payout_status) === "paid")
-            .reduce((s: number, p: any) => s + Number(p.amount || 0), 0);
         const platformYtd = (ytdPlatformFeesRes.data || [])
           .reduce((s: number, r: any) => s + Number(r.amount || 0), 0);
         let feesYearToDate = 0;
