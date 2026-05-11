@@ -699,6 +699,7 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
+          gap: 8,
           marginBottom: 10,
         }}
       >
@@ -709,22 +710,23 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
             color: "#6E6E73",
             letterSpacing: 0.3,
             textTransform: "uppercase",
+            whiteSpace: "nowrap",
           }}
         >
-          Select slots · {selectedSlots.length} chosen
+          {selectedSlots.length} chosen
         </span>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 14, flexShrink: 0 }}>
           <button
             type="button"
             onClick={selectAll}
-            style={linkStyle("#2B7BC8")}
+            style={{ ...linkStyle("#2B7BC8"), whiteSpace: "nowrap" }}
           >
             Select all
           </button>
           <button
             type="button"
             onClick={clearAll}
-            style={linkStyle("#6E6E73")}
+            style={{ ...linkStyle("#6E6E73"), whiteSpace: "nowrap" }}
           >
             Clear
           </button>
