@@ -317,8 +317,14 @@ export function useInstructorPaymentsData(instructorId: string | undefined): Pay
             .filter((p: any) => normalizeMethod(p.payment_method) === "card"
               && normalizeStatus(Number(p.amount), p.notes, p.payout_status) === "paid")
             .reduce((s: number, p: any) => s + Number(p.amount || 0), 0);
-          const platformYtd = (ytdPlatformFeesRes.data || [])
-            .reduce((s: number, r: any) => s + Number(r.amount || 0), 0);
+        const platformYtd = (ytdPlatformFeesRes.data || [])
+          .reduce((s: number, r: any) => s + Number(r.amount || 0), 0);
+        let feesYearToDate = 0;
+        if (!ytdRes.error && ytdRes.data) {
+          const cardYtd = ytdRes.data
+            .filter((p: any) => normalizeMethod(p.payment_method) === "card"
+              && normalizeStatus(Number(p.amount), p.notes, p.payout_status) === "paid")
+            .reduce((s: number, p: any) => s + Number(p.amount || 0), 0);
           feesYearToDate = +((cardYtd * FEE_RATE) + platformYtd).toFixed(2);
         }
 
@@ -337,6 +343,11 @@ export function useInstructorPaymentsData(instructorId: string | undefined): Pay
             effectiveFeeRate,
             feesYearToDate,
             feesYearLabel,
+            platformFeesMonth: +platformFeesMonthTotal.toFixed(2),
+            platformBookingFeesMonth: +platformBookingFeesMonth.toFixed(2),
+            platformTransactionFeesMonth: +platformTransactionFeesMonth.toFixed(2),
+            platformUpliftFeesMonth: +platformUpliftFeesMonth.toFixed(2),
+            platformFeesYearToDate: +platformYtd.toFixed(2),
           },
           cashFlow,
           outstanding,
