@@ -179,12 +179,13 @@ export function IOSCourseCard({
             klarnaEnabled={instructor.klarna_enabled ?? false}
             clearpayEnabled={instructor.clearpay_enabled ?? false}
           />
-
-          <Button className="mt-2 w-full rounded-xl" onClick={handleBookNow}>
-            Book Now <ArrowRight className="h-4 w-4 ml-1" />
-          </Button>
         </div>
       </div>
+
+      {/* Full-width Book Now footer flush with card edges */}
+      <Button className="w-full rounded-none h-12" onClick={handleBookNow}>
+        Book Now <ArrowRight className="h-4 w-4 ml-1" />
+      </Button>
     </div>
   );
 }
