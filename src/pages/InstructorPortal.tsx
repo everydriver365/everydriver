@@ -394,6 +394,7 @@ function DesktopDashboardV2(props: DesktopDashboardV2Props) {
             />
           </div>
 
+          <DvsaIndicatorsPanel instructorId={instructorId} />
           <RetentionAlertsPanel instructorId={instructorId} />
         </div>
 
