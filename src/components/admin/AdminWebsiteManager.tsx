@@ -53,6 +53,16 @@ export function AdminWebsiteManager({ instructorId, instructorSlug, instructorNa
   const [website, setWebsite] = useState<MiniWebsite | null>(null);
   const [domains, setDomains] = useState<DomainOrder[]>([]);
   const [loading, setLoading] = useState(false);
+  const [pageTypes, setPageTypes] = useState<string[]>([]);
+
+  const fetchPageHealth = async () => {
+    const { data } = await supabase
+      .from("instructor_website_pages")
+      .select("page_type, is_published")
+      .eq("instructor_id", instructorId);
+    setPageTypes(((data || []) as { page_type: string; is_published: boolean }[]).filter(p => p.is_published).map(p => p.page_type));
+  };
+
 
   const baseUrl = useMemo(() => window.location.origin, []);
 
