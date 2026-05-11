@@ -34,6 +34,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { format, subDays, subMonths } from "date-fns";
 import { useNavigate } from "react-router-dom";
+import { LessonDetailDrawer } from "@/components/instructor/diary/LessonDetailDrawer";
 
 type StatusFilter = "all" | "rated" | "unrated" | "has_notes" | "missing_notes";
 const statusLabels: Record<StatusFilter, string> = {
