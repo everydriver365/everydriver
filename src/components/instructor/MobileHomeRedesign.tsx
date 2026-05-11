@@ -1375,7 +1375,7 @@ function UpgradeCard({ rows }: { rows: UpgradeRowSpec[] }) {
             <span
               style={{
                 background: r.upgradeBg,
-                color: "#FFF",
+                color: r.upgradeFg ?? "#FFF",
                 borderRadius: 20,
                 padding: "4px 10px",
                 fontSize: 12,
