@@ -184,7 +184,7 @@ export default function InstructorDiary() {
 
       let query = supabase
         .from("lesson_history")
-        .select("id, lesson_date, start_time, duration_minutes, notes, rating, skills_practiced, pupils(id, name)")
+        .select("id, lesson_date, start_time, duration_minutes, notes, rating, skills_practiced, pupils(id, name), scheduled_lessons(lesson_type, google_event_id)")
         .eq("instructor_id", instructorId)
         .gte("lesson_date", startDate)
         .order("lesson_date", { ascending: false });
