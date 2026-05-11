@@ -55,8 +55,10 @@ export function FindAppointmentBody({
   onSelectSlot,
   onCancel,
   variant = "page",
-  nextOnly = false,
+  nextOnly: nextOnlyProp = false,
 }: FindAppointmentBodyProps) {
+  const [expandedFromNext, setExpandedFromNext] = useState(false);
+  const nextOnly = nextOnlyProp && !expandedFromNext;
   const today = format(new Date(), "yyyy-MM-dd");
   const [fromDate, setFromDate] = useState(today);
   const [duration, setDuration] = useState("60");
