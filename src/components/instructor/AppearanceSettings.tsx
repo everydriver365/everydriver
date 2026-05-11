@@ -51,9 +51,36 @@ function PhonePreview({
   return (
     <div
       className="w-full aspect-[9/16] rounded-2xl border border-border/60 overflow-hidden shadow-inner"
-      style={{ backgroundColor: variant === "lockscreen" ? "#1a1a2e" : variant === "clean" ? "#f8f9fa" : variant === "ios-native" || variant === "bestmate" ? "#F2F2F7" : variant === "compact" ? "hsl(var(--background))" : bg }}
+      style={{ backgroundColor: variant === "lockscreen" ? "#1a1a2e" : variant === "clean" ? "#f8f9fa" : variant === "ios-native" || variant === "bestmate" ? "#F2F2F7" : variant === "compact" ? "hsl(var(--background))" : variant === "settings-v2" ? "#F2F2F7" : bg }}
     >
-      {variant === "lockscreen" ? (
+      {variant === "settings-v2" ? (
+        <div className="p-1.5 space-y-1">
+          <div className="h-2 w-10 rounded bg-foreground/30" />
+          <div className="h-1 w-8 rounded bg-foreground/15 mb-1" />
+          <div className="rounded-xl bg-white border border-border/60 overflow-hidden shadow-sm">
+            <div className="h-5 w-full" style={{ background: "linear-gradient(135deg,#EAF1F5,#DCE8D2)" }} />
+            <div className="p-1 space-y-0.5">
+              <div className="h-1.5 w-12 rounded bg-foreground/30" />
+              <div className="h-1 w-10 rounded bg-foreground/15" />
+              <div className="h-1 w-8 rounded bg-foreground/15" />
+            </div>
+          </div>
+          <div className="rounded-xl bg-white border border-border/60 shadow-sm p-1 space-y-0.5">
+            <div className="h-1 w-6 rounded bg-rose-400/60" />
+            <div className="grid grid-cols-4 gap-0.5 mt-0.5">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="aspect-square rounded bg-card border border-border/40" />
+              ))}
+            </div>
+          </div>
+          <div className="rounded-xl bg-white border border-border/60 shadow-sm p-1 space-y-0.5">
+            <div className="h-1 w-6 rounded bg-amber-400/60" />
+            {Array.from({ length: 2 }).map((_, i) => (
+              <div key={i} className="h-2 w-full rounded bg-muted/60" />
+            ))}
+          </div>
+        </div>
+      ) : variant === "lockscreen" ? (
         <>
           <div className="h-[15%]" />
           <div className="px-2 text-center">
