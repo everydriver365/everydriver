@@ -58,7 +58,7 @@ function lessonAccentColor(l: ScheduleLesson, now: Date): string {
   if (now >= l.startDate && now <= l.endDate) return RED;
   const t = (l.lessonType || "").toLowerCase();
   if (t.includes("test")) return WARNING;
-  return BLUE;
+  return DSM_BLUE;
 }
 function prefersReducedMotion() {
   if (typeof window === "undefined") return false;
@@ -550,13 +550,12 @@ function LessonRow({
         position: "relative",
         overflow: "hidden",
         background: CARD_BG,
-        borderRadius: 12,
-        padding: 14,
+        borderRadius: 16,
+        padding: "12px 14px",
         marginBottom: 8,
         width: "100%",
         textAlign: "left",
-        border: `0.5px solid ${DIVIDER}`,
-        boxShadow: SHADOW,
+        border: `0.5px solid ${DSM_BLUE_BORDER}`,
         display: "flex",
         gap: 12,
         alignItems: "center",
@@ -570,8 +569,8 @@ function LessonRow({
         style={{
           position: "absolute",
           left: 0,
-          top: 12,
-          bottom: 12,
+          top: 10,
+          bottom: 10,
           width: 3,
           borderRadius: "0 2px 2px 0",
           background: accent,
@@ -596,7 +595,7 @@ function LessonRow({
 
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: "flex", gap: 6, alignItems: "center", marginBottom: 2, flexWrap: "wrap" }}>
-          <span style={{ fontSize: 15, fontWeight: 500, color: TEXT_PRIMARY }}>
+          <span style={{ fontSize: 14, fontWeight: 700, color: TEXT_PRIMARY, letterSpacing: -0.1 }}>
             {lesson.pupilFirstName} {lesson.pupilLastInitial}
           </span>
           {pills.map((p) => (
@@ -622,7 +621,7 @@ function LessonRow({
               onClick={onEOLClick}
               aria-label={eolDone ? "End of lesson complete — review" : "Complete end of lesson"}
               style={{
-                background: TINT_BLUE,
+                background: "#EEF3FF",
                 border: "none",
                 borderRadius: 8,
                 padding: "1px 6px",
@@ -633,8 +632,8 @@ function LessonRow({
               <span
                 style={{
                   fontSize: 10,
-                  fontWeight: 600,
-                  color: BLUE,
+                  fontWeight: 700,
+                  color: DSM_BLUE,
                   letterSpacing: 0.3,
                   textTransform: "uppercase",
                   textDecoration: eolDone ? "line-through" : "none",
@@ -753,10 +752,7 @@ const OpenSlotCard = memo(function OpenSlotCard({
   const accentBar = isPrime
     ? `repeating-linear-gradient(to bottom, ${PRIME_TINT} 0, ${PRIME_TINT} 4px, transparent 4px, transparent 8px)`
     : `repeating-linear-gradient(to bottom, ${OPEN_TINT} 0, ${OPEN_TINT} 4px, transparent 4px, transparent 8px)`;
-
-  const timeColor = isPrime ? PRIME_FG : BLUE;
-  const titleColor = isPrime ? PRIME_FG : BLUE;
-  const iconColor = isPrime ? PRIME_FG : BLUE;
+  void accentBar;
 
   let title: string;
   let subtitle: string;
@@ -778,6 +774,10 @@ const OpenSlotCard = memo(function OpenSlotCard({
     ? `Prime time open slot, ${fmtDuration(durationMinutes)} from ${startTime} to ${endTime}, high-value booking window, tap to book`
     : `Open slot, ${fmtDuration(durationMinutes)} from ${startTime} to ${endTime}, potential earnings £${earnings}, tap to book a lesson`;
 
+  const dashColor = isPrime ? PRIME_TINT : "#E0E5EE";
+  const titleColor = isPrime ? PRIME_FG : "#8E8E93";
+  const timeColor = isPrime ? PRIME_FG : "#8E8E93";
+
   return (
     <button
       type="button"
@@ -788,15 +788,14 @@ const OpenSlotCard = memo(function OpenSlotCard({
         position: "relative",
         overflow: "hidden",
         background: CARD_BG,
-        borderRadius: 12,
-        padding: 14,
+        borderRadius: 16,
+        padding: "10px 12px",
         marginBottom: 8,
         width: "100%",
         textAlign: "left",
-        border: `0.5px solid ${DIVIDER}`,
-        boxShadow: SHADOW,
+        border: `0.5px solid ${DSM_BLUE_BORDER}`,
         display: "flex",
-        gap: 12,
+        gap: 8,
         alignItems: "center",
         cursor: isPast ? "not-allowed" : "pointer",
         opacity: isPast ? 0.4 : 1,
@@ -809,23 +808,37 @@ const OpenSlotCard = memo(function OpenSlotCard({
       onPointerUp={(e) => (e.currentTarget.style.transform = "scale(1)")}
       onPointerLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
     >
-      <span
+      {/* Dashed left band */}
+      <div
         aria-hidden
         style={{
-          position: "absolute",
-          left: 0,
-          top: 12,
-          bottom: 12,
           width: 3,
-          borderRadius: "0 2px 2px 0",
-          background: accentBar,
+          height: 36,
+          flexShrink: 0,
+          display: "flex",
+          flexDirection: "column",
+          gap: 2,
         }}
-      />
-      <div style={{ paddingLeft: 6, flexShrink: 0 }}>
+      >
+        {[0, 1, 2, 3].map((i) => (
+          <span
+            key={i}
+            style={{
+              width: 3,
+              height: 4,
+              borderRadius: 1.5,
+              background: dashColor,
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Time + duration */}
+      <div style={{ flexShrink: 0, minWidth: 38 }}>
         <div
           style={{
-            fontSize: 16,
-            fontWeight: 500,
+            fontSize: 12,
+            fontWeight: 700,
             color: timeColor,
             lineHeight: 1,
             fontVariantNumeric: "tabular-nums",
@@ -833,19 +846,30 @@ const OpenSlotCard = memo(function OpenSlotCard({
         >
           {startTime}
         </div>
-        <div style={{ fontSize: 11, color: TEXT_SECONDARY, marginTop: 3 }}>
-          {fmtDuration(durationMinutes)}
+        <div style={{ fontSize: 9, color: "#C7C7CC", marginTop: 2 }}>
+          {fmtDuration(durationMinutes)} open
         </div>
       </div>
 
+      {/* Label */}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 14, fontWeight: 500, color: titleColor, marginBottom: 2 }}>
+        <div
+          style={{
+            fontSize: 12,
+            fontWeight: 600,
+            color: titleColor,
+            overflow: "hidden",
+            whiteSpace: "nowrap",
+            textOverflow: "ellipsis",
+          }}
+        >
           {title}
         </div>
         <div
           style={{
-            fontSize: 11,
-            color: TEXT_SECONDARY,
+            fontSize: 9,
+            color: "#C7C7CC",
+            marginTop: 1,
             overflow: "hidden",
             whiteSpace: "nowrap",
             textOverflow: "ellipsis",
@@ -855,7 +879,21 @@ const OpenSlotCard = memo(function OpenSlotCard({
         </div>
       </div>
 
-      <Plus size={18} color={iconColor} strokeWidth={2.2} style={{ flexShrink: 0 }} />
+      {/* Add button */}
+      <div
+        style={{
+          width: 26,
+          height: 26,
+          borderRadius: 13,
+          background: "#EEF3FF",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+        }}
+      >
+        <Plus size={11} color={DSM_BLUE} strokeWidth={2.2} />
+      </div>
     </button>
   );
 });
