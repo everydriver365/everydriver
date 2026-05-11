@@ -1256,7 +1256,7 @@ function AttentionCard({ rows }: { rows: AttentionRow[] }) {
         }}
       >
         <div style={{ fontSize: 14, fontWeight: 600, color: "#1A1A1A", marginBottom: 3 }}>All clear</div>
-        <div style={{ fontSize: 14, color: MUTED }}>Nothing needs your attention right now</div>
+        <div style={{ fontSize: 13, color: MUTED }}>Nothing needs your attention right now</div>
       </div>
     );
   }
