@@ -266,6 +266,7 @@ import { TodaySchedulePanel } from "@/components/instructor/dashboardV2/TodaySch
 import { MoneyStack } from "@/components/instructor/dashboardV2/MoneyStack";
 import { RetentionAlertsPanel } from "@/components/instructor/dashboardV2/RetentionAlertsPanel";
 import { DvsaIndicatorsPanel } from "@/components/instructor/dashboardV2/DvsaIndicatorsPanel";
+import { PerformanceMetricsRow } from "@/components/instructor/dashboardV2/PerformanceMetricsRow";
 import { RightRail } from "@/components/instructor/dashboardV2/RightRail";
 import { AddLessonSheet } from "@/components/instructor/AddLessonSheet";
 import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
@@ -379,6 +380,11 @@ function DesktopDashboardV2(props: DesktopDashboardV2Props) {
               onClick={() => navigate("/instructor/schedule")}
             />
           </div>
+
+          <PerformanceMetricsRow
+            instructorId={instructorId}
+            activePupilCount={isDemoMode ? demoStats.activePupils : pupils.length}
+          />
 
           {/* Schedule + Money */}
           <div className="grid gap-3" style={{ gridTemplateColumns: "1.6fr 1fr" }}>
