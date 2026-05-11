@@ -39,7 +39,7 @@ import Schedule from "@/components/instructor/Schedule";
 import { FloatingSessionBar } from "@/components/instructor/FloatingSessionBar";
 import { UpcomingEventsTile } from "@/components/instructor/UpcomingEventsTile";
 import { useDormantPupilsCount } from "@/hooks/useDormantPupilsCount";
-import { Wrench, Users as UsersIcon, Crown, ShieldPlus, Inbox } from "lucide-react";
+import { Wrench, Users as UsersIcon, Crown, ShieldPlus, Inbox, Check, Star, Heart } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { differenceInDays, isPast } from "date-fns";
@@ -1029,150 +1029,213 @@ interface UpgradeRowSpec {
   onClick: () => void;
 }
 
-function AttentionGroupCard({
-  rows,
-  groupLabel,
-  groupColor,
-  groupBorder,
-  cardBorder,
-  marginBottom,
+function GroupCard({
+  borderColor,
+  children,
+  marginBottom = 10,
 }: {
-  rows: AttentionRow[];
-  groupLabel: string;
-  groupColor: string;
-  groupBorder: string;
-  cardBorder: string;
-  marginBottom: number;
+  borderColor: string;
+  children: React.ReactNode;
+  marginBottom?: number;
 }) {
-  if (rows.length === 0) return null;
   return (
-    <>
-      <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 4 }}>
-        <span style={{ fontSize: 9, fontWeight: 700, color: groupColor, letterSpacing: "0.1em", textTransform: "uppercase" }}>
-          {groupLabel}
-        </span>
-        <span style={{ flex: 1, height: 0.5, background: groupBorder }} />
-      </div>
-      <div style={{ marginBottom }}>
-        <div
+    <div
+      style={{
+        background: "#FFF",
+        borderRadius: 16,
+        overflow: "hidden",
+        marginBottom,
+        border: `0.5px solid ${borderColor}`,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+function GroupHeader({
+  label,
+  countLabel,
+  dotColor,
+  bg,
+  borderColor,
+  Icon,
+  iconColor,
+}: {
+  label: string;
+  countLabel?: string;
+  dotColor: string;
+  bg: string;
+  borderColor: string;
+  Icon?: LucideIcon;
+  iconColor?: string;
+}) {
+  return (
+    <div
+      style={{
+        background: bg,
+        padding: "7px 12px",
+        display: "flex",
+        alignItems: "center",
+        gap: 6,
+        borderBottom: `0.5px solid ${borderColor}`,
+      }}
+    >
+      {Icon ? (
+        <Icon size={9} color={iconColor ?? "#8E8E93"} strokeWidth={1.8} />
+      ) : (
+        <span
           style={{
-            background: "#FFFFFF",
-            borderRadius: 14,
-            overflow: "hidden",
-            border: `0.5px solid ${cardBorder}`,
+            width: 5,
+            height: 5,
+            borderRadius: 3,
+            background: dotColor,
+            display: "inline-block",
+          }}
+        />
+      )}
+      <span
+        style={{
+          fontSize: 9,
+          fontWeight: 700,
+          color: dotColor,
+          letterSpacing: "0.08em",
+          textTransform: "uppercase",
+        }}
+      >
+        {label}
+      </span>
+      <span style={{ flex: 1 }} />
+      {countLabel && (
+        <span style={{ fontSize: 9, color: "#8E8E93" }}>{countLabel}</span>
+      )}
+    </div>
+  );
+}
+
+function RowDivider() {
+  return <div style={{ height: 0.5, background: "#F0F3F8", margin: "0 14px" }} />;
+}
+
+function AttentionRowItem({
+  row,
+}: {
+  row: AttentionRow;
+}) {
+  const count = row.badge ? Number(row.badge.label) || 0 : 0;
+  const isClear = !!row.isClear;
+  const isActive = !isClear && count > 0;
+  const badgeBg = row.badge?.bg ?? "#CC2229";
+  const badgeFg = row.badge?.fg ?? "#FFFFFF";
+
+  return (
+    <button
+      type="button"
+      onClick={row.onClick}
+      style={{
+        width: "100%",
+        display: "flex",
+        alignItems: "center",
+        gap: 9,
+        padding: "9px 12px",
+        background: isActive && row.group === "urgent" ? "#FFFBFB" : "transparent",
+        border: "none",
+        cursor: "pointer",
+        textAlign: "left",
+        opacity: isClear ? 0.4 : 1,
+      }}
+    >
+      <span style={{ position: "relative", flexShrink: 0 }}>
+        <span
+          style={{
+            width: 28,
+            height: 28,
+            borderRadius: 8,
+            background: isClear ? "#F2F4F8" : row.iconBg,
+            color: isClear ? "#8E8E93" : row.iconColor,
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
           }}
         >
-          {rows.map((r, i) => (
-            <div key={r.key}>
-              {i > 0 && (
-                <div style={{ height: 0.5, background: "#F0F3F8", marginLeft: 14, marginRight: 14 }} />
-              )}
-              <button
-                type="button"
-                onClick={r.onClick}
-                style={{
-                  width: "100%",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 12,
-                  padding: "12px 14px",
-                  background: "transparent",
-                  border: "none",
-                  cursor: "pointer",
-                  textAlign: "left",
-                  opacity: r.isClear ? 0.45 : 1,
-                }}
-              >
-                <span
-                  style={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: 10,
-                    background: r.isClear ? "#F2F4F8" : r.iconBg,
-                    color: r.isClear ? "#5B6B8A" : r.iconColor,
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexShrink: 0,
-                  }}
-                >
-                  <r.Icon size={18} strokeWidth={2} />
-                </span>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 16, fontWeight: 600, color: "#1A1A1A", letterSpacing: -0.1 }}>{r.title}</div>
-                  <div
-                    style={{
-                      fontSize: 11,
-                      fontWeight: 500,
-                      color: MUTED,
-                      marginTop: 2,
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {r.subtitle}
-                  </div>
-                </div>
-                {r.isClear ? (
-                  <span
-                    style={{
-                      background: "#E8F8ED",
-                      color: "#1A7A3C",
-                      borderRadius: 999,
-                      padding: "3px 9px",
-                      fontSize: 11,
-                      fontWeight: 700,
-                      flexShrink: 0,
-                    }}
-                  >
-                    Clear
-                  </span>
-                ) : r.badge ? (
-                  r.badge.variant === "pill" ? (
-                    <span
-                      style={{
-                        background: r.badge.bg,
-                        color: r.badge.fg ?? "#FFFFFF",
-                        borderRadius: 999,
-                        padding: "3px 9px",
-                        fontSize: 11,
-                        fontWeight: 700,
-                        flexShrink: 0,
-                        fontVariantNumeric: "tabular-nums",
-                      }}
-                    >
-                      {r.badge.label}
-                    </span>
-                  ) : (
-                    <span
-                      style={{
-                        minWidth: 22,
-                        height: 22,
-                        padding: "0 7px",
-                        borderRadius: 999,
-                        background: r.badge.bg,
-                        color: r.badge.fg ?? "#FFFFFF",
-                        fontSize: 11,
-                        fontWeight: 700,
-                        display: "inline-flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontVariantNumeric: "tabular-nums",
-                        flexShrink: 0,
-                      }}
-                    >
-                      {r.badge.label}
-                    </span>
-                  )
-                ) : null}
-                <ChevronRight size={16} color="#C7C7CC" strokeWidth={2} />
-              </button>
-            </div>
-          ))}
+          <row.Icon size={12} strokeWidth={1.6} />
+        </span>
+        {isActive && count > 0 && (
+          <span
+            style={{
+              position: "absolute",
+              top: -3,
+              right: -3,
+              width: 10,
+              height: 10,
+              borderRadius: 5,
+              background: "#CC2229",
+              border: "1.5px solid #FFF",
+            }}
+          />
+        )}
+      </span>
+
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div
+          style={{
+            fontSize: 11,
+            fontWeight: isActive && row.group === "urgent" ? 700 : 600,
+            color: isActive && row.group === "urgent" ? "#CC2229" : "#1A1A1A",
+          }}
+        >
+          {row.title}
+        </div>
+        <div style={{ fontSize: 9, color: "#8E8E93", marginTop: 1 }}>
+          {row.subtitle}
         </div>
       </div>
-    </>
+
+      {isClear ? (
+        <span
+          style={{
+            background: "#E8F8ED",
+            borderRadius: 20,
+            padding: "2px 7px",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 3,
+            flexShrink: 0,
+          }}
+        >
+          <Check size={8} color="#1A7A3C" strokeWidth={2.5} />
+          <span style={{ fontSize: 8.5, fontWeight: 600, color: "#1A7A3C" }}>
+            Clear
+          </span>
+        </span>
+      ) : count > 0 ? (
+        <span
+          style={{
+            background: badgeBg,
+            color: badgeFg,
+            borderRadius: 20,
+            minWidth: 18,
+            height: 18,
+            padding: "0 5px",
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: 9,
+            fontWeight: 700,
+            fontVariantNumeric: "tabular-nums",
+            flexShrink: 0,
+          }}
+        >
+          {count}
+        </span>
+      ) : null}
+
+      <ChevronRight
+        size={12}
+        color={isActive && row.group === "urgent" ? "#CC2229" : "#C7C7CC"}
+        strokeWidth={isActive && row.group === "urgent" ? 2 : 1.8}
+      />
+    </button>
   );
 }
 
@@ -1182,41 +1245,61 @@ function AttentionCard({ rows }: { rows: AttentionRow[] }) {
 
   if (rows.length === 0) {
     return (
-      <div>
-        <div
-          style={{
-            background: "#FFF",
-            borderRadius: 13,
-            padding: 16,
-            textAlign: "center",
-            border: `0.5px solid ${BORDER}`,
-          }}
-        >
-          <div style={{ fontSize: 12, fontWeight: 600, color: "#1A1A1A", marginBottom: 3 }}>All clear</div>
-          <div style={{ fontSize: 10, color: MUTED }}>Nothing needs your attention right now</div>
-        </div>
+      <div
+        style={{
+          background: "#FFF",
+          borderRadius: 13,
+          padding: 16,
+          textAlign: "center",
+          border: `0.5px solid ${BORDER}`,
+        }}
+      >
+        <div style={{ fontSize: 12, fontWeight: 600, color: "#1A1A1A", marginBottom: 3 }}>All clear</div>
+        <div style={{ fontSize: 10, color: MUTED }}>Nothing needs your attention right now</div>
       </div>
     );
   }
 
+  const urgentActive = urgent.filter((r) => !r.isClear).length;
+  const todoActive = todo.filter((r) => !r.isClear).length;
+
   return (
     <div>
-      <AttentionGroupCard
-        rows={urgent}
-        groupLabel="Urgent"
-        groupColor="#CC2229"
-        groupBorder="#F0CCCC"
-        cardBorder="rgba(204,34,41,0.12)"
-        marginBottom={8}
-      />
-      <AttentionGroupCard
-        rows={todo}
-        groupLabel="To do"
-        groupColor="#B45309"
-        groupBorder="#E8D5B0"
-        cardBorder="rgba(26,82,160,0.08)"
-        marginBottom={12}
-      />
+      {urgent.length > 0 && (
+        <GroupCard borderColor="rgba(204,34,41,0.12)">
+          <GroupHeader
+            label="Urgent"
+            dotColor="#CC2229"
+            bg="rgba(204,34,41,0.05)"
+            borderColor="rgba(204,34,41,0.08)"
+            countLabel={`${urgentActive} need${urgentActive === 1 ? "s" : ""} action`}
+          />
+          {urgent.map((r, i) => (
+            <div key={r.key}>
+              {i > 0 && <RowDivider />}
+              <AttentionRowItem row={r} />
+            </div>
+          ))}
+        </GroupCard>
+      )}
+
+      {todo.length > 0 && (
+        <GroupCard borderColor="rgba(180,83,9,0.10)">
+          <GroupHeader
+            label="To do"
+            dotColor="#B45309"
+            bg="rgba(180,83,9,0.04)"
+            borderColor="rgba(180,83,9,0.08)"
+            countLabel={`${todoActive} need attention`}
+          />
+          {todo.map((r, i) => (
+            <div key={r.key}>
+              {i > 0 && <RowDivider />}
+              <AttentionRowItem row={r} />
+            </div>
+          ))}
+        </GroupCard>
+      )}
     </div>
   );
 }
@@ -1224,19 +1307,18 @@ function AttentionCard({ rows }: { rows: AttentionRow[] }) {
 function UpgradeCard({ rows }: { rows: UpgradeRowSpec[] }) {
   if (rows.length === 0) return null;
   return (
-    <div
-      style={{
-        background: "#FFFFFF",
-        borderRadius: 14,
-        overflow: "hidden",
-        border: "0.5px solid rgba(26,82,160,0.08)",
-      }}
-    >
+    <GroupCard borderColor="rgba(26,82,160,0.08)" marginBottom={0}>
+      <GroupHeader
+        label="Upgrade"
+        Icon={Star}
+        iconColor="#8E8E93"
+        dotColor="#8E8E93"
+        bg="#F8F9FF"
+        borderColor="rgba(26,82,160,0.06)"
+      />
       {rows.map((r, i) => (
         <div key={r.key}>
-          {i > 0 && (
-            <div style={{ height: 0.5, background: "#F0F3F8", marginLeft: 14, marginRight: 14 }} />
-          )}
+          {i > 0 && <RowDivider />}
           <button
             type="button"
             onClick={r.onClick}
@@ -1244,8 +1326,8 @@ function UpgradeCard({ rows }: { rows: UpgradeRowSpec[] }) {
               width: "100%",
               display: "flex",
               alignItems: "center",
-              gap: 12,
-              padding: "12px 14px",
+              gap: 9,
+              padding: "9px 12px",
               background: "transparent",
               border: "none",
               cursor: "pointer",
@@ -1254,9 +1336,9 @@ function UpgradeCard({ rows }: { rows: UpgradeRowSpec[] }) {
           >
             <span
               style={{
-                width: 40,
-                height: 40,
-                borderRadius: 10,
+                width: 28,
+                height: 28,
+                borderRadius: 8,
                 background: r.iconBg,
                 color: r.iconColor,
                 display: "inline-flex",
@@ -1265,46 +1347,44 @@ function UpgradeCard({ rows }: { rows: UpgradeRowSpec[] }) {
                 flexShrink: 0,
               }}
             >
-              <r.Icon size={18} strokeWidth={2} />
+              <r.Icon size={12} strokeWidth={1.6} />
             </span>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
-                <span style={{ fontSize: 16, fontWeight: 600, color: "#1A1A1A", letterSpacing: -0.1 }}>{r.label}</span>
+              <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 1 }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: "#1A1A1A" }}>{r.label}</span>
                 <span
                   style={{
                     background: r.tierBg,
                     color: r.tierColor,
-                    borderRadius: 999,
-                    padding: "1px 7px",
-                    fontSize: 9,
+                    borderRadius: 4,
+                    padding: "1px 5px",
+                    fontSize: 8,
                     fontWeight: 700,
                   }}
                 >
                   {r.tierLabel}
                 </span>
               </div>
-              <div style={{ fontSize: 11, fontWeight: 500, color: MUTED, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                {r.subtitle}
-              </div>
+              <div style={{ fontSize: 9, color: "#8E8E93" }}>{r.subtitle}</div>
             </div>
             <span
               style={{
                 background: r.upgradeBg,
-                color: "#FFFFFF",
-                borderRadius: 999,
-                padding: "4px 11px",
-                fontSize: 11,
+                color: "#FFF",
+                borderRadius: 20,
+                padding: "4px 10px",
+                fontSize: 9,
                 fontWeight: 700,
                 flexShrink: 0,
               }}
             >
               Upgrade
             </span>
-            <ChevronRight size={16} color="#C7C7CC" strokeWidth={2} />
+            <ChevronRight size={12} color="#C7C7CC" strokeWidth={1.8} />
           </button>
         </div>
       ))}
-    </div>
+    </GroupCard>
   );
 }
 interface MobileHomeRedesignProps {
@@ -1526,7 +1606,7 @@ export function MobileHomeRedesign({
   const upgradeRows: UpgradeRowSpec[] = [
     {
       key: "membership",
-      Icon: Crown,
+      Icon: Star,
       iconBg: "#FFF6E6",
       iconColor: "#B45309",
       label: "Membership",
@@ -1539,7 +1619,7 @@ export function MobileHomeRedesign({
     },
     {
       key: "health-cover",
-      Icon: ShieldPlus,
+      Icon: Heart,
       iconBg: "#EEF3FF",
       iconColor: "#1A52A0",
       label: "Health cover",
@@ -1626,7 +1706,7 @@ export function MobileHomeRedesign({
 
       {/* Needs attention + Upgrade */}
       <div style={{ padding: "14px 16px 24px" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
           <span
             style={{
               fontSize: 10,
@@ -1644,32 +1724,17 @@ export function MobileHomeRedesign({
                 background: "#CC2229",
                 color: "#FFFFFF",
                 borderRadius: 10,
-                padding: "1px 7px",
+                padding: "2px 8px",
                 fontSize: 9,
                 fontWeight: 700,
                 fontVariantNumeric: "tabular-nums",
               }}
             >
-              {totalAttentionCount}
+              {totalAttentionCount} item{totalAttentionCount === 1 ? "" : "s"}
             </span>
           )}
         </div>
         <AttentionCard rows={attentionRows} />
-
-        <div
-          style={{
-            fontSize: 10,
-            fontWeight: 700,
-            color: "#8E8E93",
-            letterSpacing: 1.2,
-            textTransform: "uppercase",
-            marginTop: 4,
-            marginBottom: 8,
-            paddingLeft: 2,
-          }}
-        >
-          Upgrade
-        </div>
         <UpgradeCard rows={upgradeRows} />
       </div>
 
