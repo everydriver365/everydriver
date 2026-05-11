@@ -187,6 +187,14 @@ export function FindAppointmentBody({
   };
 
   const handleBook = () => {
+    // In "Next slot" mode, the first Book click expands the view to the
+    // full available-slots list so the user can pick a different one.
+    // The next click (after a slot is selected) actually books.
+    if (nextOnlyProp && !expandedFromNext) {
+      setExpandedFromNext(true);
+      setSelectedSlotId(null);
+      return;
+    }
     if (selectedSlot) onSelectSlot(selectedSlot);
   };
 
