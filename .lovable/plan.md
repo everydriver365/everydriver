@@ -1,42 +1,51 @@
-# Conditional BNPL badges on course cards
+# Show "Unavailable" on Winchester site when Kenneth's visibility is off
 
-Today every course card unconditionally shows both the Klarna and Clearpay instalment badges via `CompactPaymentBadges`. We'll make each badge respect the instructor's (and where relevant, the school's) BNPL toggles — `klarna_enabled` / `clearpay_enabled` — that already exist in the database and Settings UI.
+## Current behaviour
 
-## Behaviour
+The Winchester whitelabel `/courses` page resolves Kenneth's instructor via the `public_instructors` view, which is defined as `WHERE is_active = true`. Kenneth's visibility toggle in **Instructor → Mini-website → Visibility** writes to `instructors.is_active`.
 
-- Klarna badge renders only when that owner has `klarna_enabled = true`.
-- Clearpay badge renders only when that owner has `clearpay_enabled = true`.
-- Both off → badges row is hidden entirely (no empty gap).
-- Both on → unchanged from today.
+Result: when he toggles visibility OFF, his row drops out of the view entirely, so the page falls into the generic `"Instructor not found."` error instead of a friendly "currently unavailable" state. The branded home page (`/`) also keeps rendering normally with no "we're closed" indication.
 
-## Changes (frontend only)
+## Goal
 
-1. **`src/components/payments/PaymentMessaging.tsx` — `CompactPaymentBadges`**
-   - Add optional props `klarnaEnabled?: boolean` and `clearpayEnabled?: boolean` (default `true` for backwards compatibility).
-   - Conditionally render each badge; return `null` when both are off.
+When Kenneth toggles his profile visibility off:
+- The Winchester `/courses` page shows a clear "Currently not accepting bookings" empty state (branded, no error wording).
+- The Winchester home (`/`) shows a small, branded "Bookings paused" notice in place of the courses CTA.
+- Direct booking link `/book/<id>` shows the same friendly unavailable state instead of letting someone book.
 
-2. **`src/components/IOSCourseCard.tsx`**
-   - Accept `klarna_enabled` / `clearpay_enabled` on the `instructor` prop type.
-   - Pass them through to `CompactPaymentBadges`.
+## Changes (frontend only — no schema changes)
 
-3. **`src/components/DynamicCourseCard.tsx`, `src/components/courses/MobileCourseCard.tsx`, `src/components/mini-website/MiniWebsiteCourseCard.tsx`**
-   - Same: read flags from the instructor (and/or school for the mini-website variant) and forward them to `CompactPaymentBadges`.
-   - For mini-website cards owned by a school: prefer the school's flags if present, otherwise fall back to the instructor's.
+1. **`src/pages/WhitelabelCourses.tsx`**
+   - Replace the `public_instructors` lookup with a query against the new `instructor_public_status` RPC (see below) OR query `instructors` directly via a small read-only RPC so we can read `is_active` even when false.
+   - Distinguish three states: `not_found`, `hidden` (active=false), `available`.
+   - For `hidden`, render a branded card: heading "Bookings paused", subtext "Kenneth is not currently accepting new bookings. Please check back soon." with a "Notify me" mailto link to the school's contact email.
 
-4. **Data fetching**
-   - Audit the queries that feed each card (e.g. `useFeaturedCourses`, instructor list queries on `Index.tsx`, mini-website course query) and add `klarna_enabled, clearpay_enabled` to the selected columns where missing. No schema changes required — these columns already exist on `instructors` and `schools`.
+2. **New tiny edge-safe RPC `get_whitelabel_instructor_status(slug text)`** (migration)
+   - Returns `id, is_active, available_from, name, email`.
+   - `SECURITY DEFINER`, locked-down `search_path`, returns only those columns — no PII beyond what the public view already exposes.
+   - Reason: keeps the public view's `is_active = true` invariant intact for the rest of the app.
 
-5. **`src/pages/DemoMiniWebsiteCourseCards.tsx`**
-   - Wire the demo's mock instructor to the same props so the demo reflects the real behaviour.
+3. **`src/pages/WhitelabelHome.tsx` (or whichever component renders the branded `/`)**
+   - Read the same status. When `hidden`, replace the "Browse courses / Book now" CTA with a muted "Bookings paused" pill and disable the courses link.
+
+4. **`src/pages/Book.tsx` (or the booking entry component used by `/book/:id`)**
+   - When the requested instructor is whitelabel-scoped AND `is_active = false`, show the same "Bookings paused" screen instead of the booking flow.
+   - Non-whitelabel routes are unaffected (their existing handling stays).
+
+5. **Copy & branding**
+   - Use the whitelabel `brandName` and `brandColour` for the unavailable card.
+   - No new translations needed beyond the two new strings.
 
 ## Out of scope
 
-- No DB migrations, no edge-function changes.
-- No changes to the larger `PaymentBadges` (full size) component used in checkout — that one already gates on health/availability.
-- No changes to the BNPL toggle UI itself; we only consume the existing flags.
+- No change to the `is_active` toggle UI itself.
+- No change to admin/school portal behaviour.
+- No "vacation mode" or scheduled return date — just on/off, mirroring the existing toggle.
 
 ## Verification
 
-- Toggle Klarna off in Instructor → Settings → Payment Options and confirm both Klarna and Clearpay badges update on home, search, and mini-website course cards.
-- Toggle both off → badges row disappears, layout still spaces correctly.
-- Toggle both back on → both badges return.
+- In Instructor → Mini-website → Visibility, toggle Kenneth's visibility off.
+- Visit `winchesterdrivingschool.co.uk` → home shows "Bookings paused".
+- Visit `/courses` → branded "Bookings paused" card, no instructor list.
+- Visit `/book/<kenneth-id>` → same friendly screen, booking form not rendered.
+- Toggle back on → all three pages return to normal within a refresh.

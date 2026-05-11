@@ -31,10 +31,12 @@ export default function WhitelabelCourses() {
   );
   const [availableFrom, setAvailableFrom] = useState<string | null>(null);
   const [lookupError, setLookupError] = useState<string | null>(null);
+  const [paused, setPaused] = useState(false);
+  const [instructorName, setInstructorName] = useState<string>("");
   const [mobileVisibleCount, setMobileVisibleCount] = useState(6);
   const [didJumpToAvailableFrom, setDidJumpToAvailableFrom] = useState(false);
 
-  // Resolve slug → instructor id
+  // Resolve slug → instructor id (via RPC so we can detect "hidden" too)
   useEffect(() => {
     if (!slug) {
       setInstructorId(null);
@@ -44,9 +46,7 @@ export default function WhitelabelCourses() {
     let cancelled = false;
     (async () => {
       const { data, error } = await supabase
-        .from("public_instructors")
-        .select("id, is_active, available_from")
-        .eq("app_slug", slug)
+        .rpc("get_whitelabel_instructor_status", { p_slug: slug })
         .maybeSingle();
       if (cancelled) return;
       if (error || !data) {
@@ -54,8 +54,10 @@ export default function WhitelabelCourses() {
         setInstructorId(null);
         return;
       }
+      setInstructorName(data.name ?? "");
       if (!data.is_active) {
-        setLookupError("This instructor is currently unavailable.");
+        // Hidden by the instructor — show a friendly "bookings paused" state.
+        setPaused(true);
         setInstructorId(null);
         return;
       }
@@ -115,7 +117,20 @@ export default function WhitelabelCourses() {
   return (
     <MainLayout>
       <section className="container py-8">
-        {lookupError ? (
+        {paused ? (
+          <div className="rounded-xl border bg-card p-8 text-center max-w-xl mx-auto">
+            <div
+              className="mx-auto mb-4 inline-flex h-12 w-12 items-center justify-center rounded-full"
+              style={{ backgroundColor: `${config?.brandColour || "#1e3a5f"}1a`, color: config?.brandColour || "#1e3a5f" }}
+            >
+              <CalendarIcon className="h-6 w-6" />
+            </div>
+            <h2 className="text-xl font-semibold">Bookings paused</h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              {instructorName || brand} is not currently accepting new bookings. Please check back soon.
+            </p>
+          </div>
+        ) : lookupError ? (
           <div className="rounded-xl border bg-card p-8 text-center">
             <h2 className="text-lg font-semibold">{lookupError}</h2>
             <p className="mt-2 text-sm text-muted-foreground">
