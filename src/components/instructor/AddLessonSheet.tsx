@@ -253,6 +253,7 @@ export function AddLessonSheet({
   const [hourlyRate, setHourlyRate] = useState<number>(0);
   const [instructorName, setInstructorName] = useState<string>('');
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [bookingError, setBookingError] = useState<string | null>(null);
   const [rateModifiers, setRateModifiers] = useState<RateModifiers | null>(null);
   const [bankHolidays, setBankHolidays] = useState<Set<string>>(new Set());
 
@@ -629,11 +630,11 @@ export function AddLessonSheet({
     return true;
   };
 
-  const handleAddLessonExisting = async () => {
-    if (!selectedPupil || !lessonDate) { toast.error('Please select a pupil and date'); return; }
+  const handleAddLessonExisting = async (): Promise<{ ok: boolean; error?: string }> => {
+    if (!selectedPupil || !lessonDate) { return { ok: false, error: 'Please select a pupil and date' }; }
     if (pendingCheckRef.current) { try { await pendingCheckRef.current; } catch { /* ignore */ } }
-    if (conflictWarning && !overrideBuffer) { toast.error(conflictWarning); return; }
-    if (!(await validateExaminerCentreMatch())) return;
+    if (conflictWarning && !overrideBuffer) { return { ok: false, error: conflictWarning }; }
+    if (!(await validateExaminerCentreMatch())) return { ok: false, error: 'Selected examiner does not work at this test centre' };
     setLoading(true);
     try {
       const durationMinutes = parseFloat(lessonDuration) * 60;
@@ -671,40 +672,41 @@ export function AddLessonSheet({
           ...(isDrivingTest && selectedExaminer ? { examiner_id: selectedExaminer } : {}),
         });
       }
-      // For recurring lessons, re-check every week (not just the first) so we
-      // never silently insert a clash on weeks 2..N — unless the user has
-      // explicitly chosen to override the clash.
       if (weeks > 1 && !(overrideBuffer && isHardOverlap)) {
         for (const dateStr of dateStrs) {
           const c = await checkLessonClash({
             instructorId, date: dateStr, startTime: lessonStartTime, durationMinutes,
           });
           if (c.hardOverlap) {
-            toast.error(`Week of ${dateStr}: ${c.message ?? 'slot already booked'} — no lessons scheduled`);
             setLoading(false);
-            return;
+            return { ok: false, error: `Week of ${dateStr}: ${c.message ?? 'slot already booked'} — no lessons scheduled` };
           }
         }
       }
       const { error } = await supabase.from('scheduled_lessons').insert(lessons);
       if (error) {
         const friendly = describeLessonClashError(error);
-        if (friendly) { toast.error(friendly); setLoading(false); return; }
-        throw error;
+        setLoading(false);
+        if (friendly) return { ok: false, error: friendly };
+        return { ok: false, error: 'Failed to schedule lesson' };
       }
       toast.success(isDrivingTest ? 'Test scheduled!' : isRecurring ? `${weeks} lessons scheduled` : 'Lesson scheduled');
       handlePostSavePayment(selectedPupil);
       invalidateLessonQueries(queryClient);
       resetForm(); onOpenChange(false); onSuccess();
-    } catch (error) { console.error(error); toast.error('Failed to schedule lesson'); }
+      return { ok: true };
+    } catch (error) {
+      console.error(error);
+      return { ok: false, error: 'Failed to schedule lesson' };
+    }
     finally { setLoading(false); }
   };
 
-  const handleAddLessonNew = async () => {
-    if (!newPupilName.trim() || !lessonDate) { toast.error('Please enter a name and date'); return; }
+  const handleAddLessonNew = async (): Promise<{ ok: boolean; error?: string }> => {
+    if (!newPupilName.trim() || !lessonDate) { return { ok: false, error: 'Please enter a name and date' }; }
     if (pendingCheckRef.current) { try { await pendingCheckRef.current; } catch { /* ignore */ } }
-    if (conflictWarning && !overrideBuffer) { toast.error(conflictWarning); return; }
-    if (!(await validateExaminerCentreMatch())) return;
+    if (conflictWarning && !overrideBuffer) { return { ok: false, error: conflictWarning }; }
+    if (!(await validateExaminerCentreMatch())) return { ok: false, error: 'Selected examiner does not work at this test centre' };
     setLoading(true);
     try {
       const { data: newPupil, error: pupilError } = await supabase
@@ -749,14 +751,19 @@ export function AddLessonSheet({
       const { error: lessonError } = await supabase.from('scheduled_lessons').insert(lessons);
       if (lessonError) {
         const friendly = describeLessonClashError(lessonError);
-        if (friendly) { toast.error(friendly); setLoading(false); return; }
-        throw lessonError;
+        setLoading(false);
+        if (friendly) return { ok: false, error: friendly };
+        return { ok: false, error: 'Failed to schedule lesson' };
       }
       toast.success(isDrivingTest ? 'Pupil created & test scheduled!' : isRecurring ? `Pupil created & ${weeks} lessons scheduled` : 'Pupil created & lesson scheduled');
       handlePostSavePayment(newPupil.id);
       invalidateLessonQueries(queryClient);
       resetForm(); onOpenChange(false); onSuccess();
-    } catch (error) { console.error(error); toast.error('Failed to schedule lesson'); }
+      return { ok: true };
+    } catch (error) {
+      console.error(error);
+      return { ok: false, error: 'Failed to schedule lesson' };
+    }
     finally { setLoading(false); }
   };
 
@@ -781,6 +788,7 @@ export function AddLessonSheet({
           const saveDisabled = loading || (!!conflictWarning && !overrideBuffer);
           const onSavePress = () => {
             if (saveDisabled) return;
+            setBookingError(null);
             setConfirmOpen(true);
           };
           const titleText = isDrivingTest ? 'Schedule test' : 'New lesson';
@@ -1618,25 +1626,63 @@ export function AddLessonSheet({
             </div>
           );
         })()}
+
+        {/* Loading state */}
+        {loading && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 12, padding: 12, background: '#F2F7FC', border: '0.5px solid #D6E4F2', borderRadius: 10 }}>
+            <Loader2 size={16} className="animate-spin" color="#2B7BC8" />
+            <span style={{ fontSize: 13, color: '#2B7BC8', fontWeight: 500 }}>Booking lesson…</span>
+          </div>
+        )}
+
+        {/* Error state */}
+        {!loading && bookingError && (
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginTop: 12, padding: 12, background: '#FEF2F2', border: '0.5px solid #FCA5A5', borderRadius: 10 }}>
+            <AlertTriangle size={16} color="#DC2626" style={{ flexShrink: 0, marginTop: 1 }} />
+            <span style={{ fontSize: 13, color: '#991B1B', lineHeight: 1.4 }}>{bookingError}</span>
+          </div>
+        )}
+
         <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
           <Button
             variant="outline"
             className="flex-1"
-            onClick={() => setConfirmOpen(false)}
+            onClick={() => { setConfirmOpen(false); setBookingError(null); }}
             disabled={loading}
           >
-            Cancel
+            {bookingError ? 'Close' : 'Cancel'}
           </Button>
           <Button
             className="flex-1"
             onClick={async () => {
-              setConfirmOpen(false);
-              if (tab === 'existing') await handleAddLessonExisting();
-              else await handleAddLessonNew();
+              setBookingError(null);
+              // Fresh slot availability check before attempting insert
+              if (lessonDate && !isDrivingTest) {
+                try {
+                  const dateStr = format(lessonDate, 'yyyy-MM-dd');
+                  const durationMinutes = parseFloat(lessonDuration) * 60;
+                  const c = await checkLessonClash({ instructorId, date: dateStr, startTime: lessonStartTime, durationMinutes });
+                  if (c.hardOverlap && !(overrideBuffer && isHardOverlap)) {
+                    setBookingError(c.message ?? 'This slot is no longer available — please pick another.');
+                    return;
+                  }
+                } catch { /* fall through to insert; DB constraint will catch */ }
+              }
+              const result = tab === 'existing'
+                ? await handleAddLessonExisting()
+                : await handleAddLessonNew();
+              if (!result.ok) {
+                setBookingError(result.error ?? 'Booking failed. Please try again.');
+              }
             }}
             disabled={loading}
           >
-            {loading ? 'Booking…' : 'Confirm booking'}
+            {loading ? (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                <Loader2 size={14} className="animate-spin" />
+                Booking…
+              </span>
+            ) : (bookingError ? 'Try again' : 'Confirm booking')}
           </Button>
         </div>
       </DialogContent>
