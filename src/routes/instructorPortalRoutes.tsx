@@ -129,6 +129,13 @@ const InstructorHomeDesignLab = lazy(() => import("@/pages/InstructorHomeDesignL
 const InstructorWhatsAppSettings = lazy(() => import("@/pages/instructor/InstructorWhatsAppSettings"));
 const InstructorWhatsAppTemplates = lazy(() => import("@/pages/instructor/InstructorWhatsAppTemplates"));
 
+// Lab features (beta stubs)
+const InstructorDayBriefing = lazy(() => import("@/pages/instructor/InstructorDayBriefing"));
+const InstructorTestDay = lazy(() => import("@/pages/instructor/InstructorTestDay"));
+const InstructorFuelCost = lazy(() => import("@/pages/instructor/InstructorFuelCost"));
+const InstructorHarshHeatmap = lazy(() => import("@/pages/instructor/InstructorHarshHeatmap"));
+const InstructorBadges = lazy(() => import("@/pages/instructor/InstructorBadges"));
+
 
 // Helper to wrap a component with FeatureGate
 function Gated({ feature, label, children }: { feature: string; label: string; children: React.ReactNode }) {
@@ -293,6 +300,13 @@ export const instructorPortalRoutes = (
     <Route path="/instructor/home-designs" element={<InstructorHomeDesigns />} />
     <Route path="/instructor/next-up-redesigns" element={<NextUpTileRedesigns />} />
     <Route path="/instructor/home-lab" element={<InstructorHomeDesignLab />} />
+
+    {/* Lab features (beta) */}
+    <Route path="/instructor/day-briefing" element={<InstructorDayBriefing />} />
+    <Route path="/instructor/test-day" element={<InstructorTestDay />} />
+    <Route path="/instructor/fuel-cost" element={<InstructorFuelCost />} />
+    <Route path="/instructor/heatmap" element={<InstructorHarshHeatmap />} />
+    <Route path="/instructor/badges" element={<InstructorBadges />} />
 
   </>
 );

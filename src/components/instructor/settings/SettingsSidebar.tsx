@@ -4,7 +4,7 @@ import {
   IconUser, IconShieldLock, IconBell,
   IconCar, IconCertificate, IconPhoto, IconCoin, IconCalendar, IconPhone,
   IconBook, IconCreditCard, IconDownload,
-  IconHelpCircle, IconUserOff,
+  IconHelpCircle, IconUserOff, IconSparkles,
 } from "@tabler/icons-react";
 import type { ComponentType, SVGProps } from "react";
 type TablerIcon = typeof IconUser;
@@ -54,6 +54,7 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
   },
   {
     id: "more", label: "More", items: [
+      { id: "lab-features",   label: "Lab features",   icon: IconSparkles },
       { id: "help-support",   label: "Help & support", icon: IconHelpCircle },
       { id: "close-account",  label: "Close account",  icon: IconUserOff },
     ],
