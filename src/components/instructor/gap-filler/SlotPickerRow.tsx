@@ -107,17 +107,17 @@ export function SlotPickerRow({
               display: "flex",
               alignItems: "center",
               gap: 8,
-              marginTop: 3,
+              marginTop: 4,
               minWidth: 0,
             }}
           >
             <span
               style={{
-                fontSize: 14,
-                fontWeight: 500,
+                fontSize: 16,
+                fontWeight: 600,
                 color: "#000000",
-                letterSpacing: -0.2,
-                lineHeight: 1.15,
+                letterSpacing: -0.3,
+                lineHeight: 1.2,
                 whiteSpace: "nowrap",
               }}
             >
