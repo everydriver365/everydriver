@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { useScheduleWeek, type ScheduleDay, type ScheduleLesson } from "@/hooks/useScheduleWeek";
+import { AppointmentTile } from "@/components/instructor/AppointmentTile";
 import { useDayLessonHistory, eolKey } from "@/hooks/useDayLessonHistory";
 import { AddLessonSheet } from "@/components/instructor/AddLessonSheet";
 import { EndLessonWizard } from "@/components/instructor/EndLessonWizard";
