@@ -468,6 +468,7 @@ export function FindAppointmentBody({
             </button>
           </div>
         </div>
+        )}
 
         {showAdvanced && (
           <div className="bg-white rounded-[14px] overflow-hidden mb-3" style={cardStyle}>
