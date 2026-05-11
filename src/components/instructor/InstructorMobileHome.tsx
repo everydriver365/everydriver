@@ -115,6 +115,7 @@ import { MissionControlHomeView } from "@/components/instructor/MissionControlHo
 import { WidgetsHomeView } from "@/components/instructor/WidgetsHomeView";
 import { PremiumIOSHomeView } from "@/components/instructor/PremiumIOSHomeView";
 import { PremiumHome } from "@/components/instructor/PremiumHome";
+import { SettingsV2HomeView } from "@/components/instructor/SettingsV2HomeView";
 
 import { TodayMiniTimeline } from "@/components/instructor/TodayMiniTimeline";
 import { HomeTodaySchedule } from "@/components/instructor/HomeTodaySchedule";
