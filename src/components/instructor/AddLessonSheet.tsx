@@ -781,8 +781,7 @@ export function AddLessonSheet({
           const saveDisabled = loading || (!!conflictWarning && !overrideBuffer);
           const onSavePress = () => {
             if (saveDisabled) return;
-            if (tab === 'existing') handleAddLessonExisting();
-            else handleAddLessonNew();
+            setConfirmOpen(true);
           };
           const titleText = isDrivingTest ? 'Schedule test' : 'New lesson';
           return (
