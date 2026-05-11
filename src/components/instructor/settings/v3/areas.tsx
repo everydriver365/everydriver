@@ -191,6 +191,13 @@ export const AREA_GROUPS: AreaGroup[] = [
         icon: HelpCircle, iconBg: "#FEE2E2", iconColor: "#B91C1C",
         pulls: [G("account", "danger")],
       },
+      {
+        id: "lab-features", label: "Lab features",
+        title: "Lab features", description: "New experiments you can switch on or off at any time.",
+        icon: Sparkles, iconBg: "#FEF3C7", iconColor: "#92400E",
+        pulls: [],
+        hero: () => <LabHero />,
+      },
     ],
   },
 ];
