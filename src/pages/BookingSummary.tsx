@@ -281,7 +281,7 @@ export default function BookingSummary() {
           allowed_lesson_lengths, buffer_minutes, cpd_certified, adi_code_of_practice,
           instructor_grade, welcome_video_url,
           deposit_enabled, deposit_amount, deposit_deadline_days,
-          cancellation_policy_text, booking_mode,
+          cancellation_policy_text, booking_mode, is_active,
           cash_payments_enabled, klarna_enabled, clearpay_enabled,
           instant_bank_pay_enabled, school_skim_amount,
           weekend_surcharge_amount, bank_holiday_surcharge_amount,
