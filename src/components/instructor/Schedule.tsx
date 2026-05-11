@@ -110,9 +110,19 @@ function SectionHeader({ onWeekClick }: { onWeekClick: () => void }) {
 }
 
 /* ============================================================ */
-/* Day card + strip                                             */
+/* Day chip + week strip card                                   */
 /* ============================================================ */
-const DayCard = memo(function DayCard({
+function isoWeekNumber(d: Date): number {
+  const target = new Date(d);
+  target.setHours(0, 0, 0, 0);
+  // Thursday in current week decides the year
+  target.setDate(target.getDate() + 3 - ((target.getDay() + 6) % 7));
+  const firstThursday = new Date(target.getFullYear(), 0, 4);
+  const diff = target.getTime() - firstThursday.getTime();
+  return 1 + Math.round(diff / (7 * 24 * 3600 * 1000));
+}
+
+const DayChip = memo(function DayChip({
   day,
   isSelected,
   onSelect,
@@ -121,124 +131,156 @@ const DayCard = memo(function DayCard({
   isSelected: boolean;
   onSelect: () => void;
 }) {
-  // Activity dot color: lessons → DSM blue, working day with no lessons → none
   const hasLessons = day.lessons.length > 0;
-  const dotColor = hasLessons ? DSM_BLUE : undefined;
+  // No "events" data on ScheduleDay yet — reserved for later wiring.
+  const hasEvent = false;
+  const eventColor = "#B45309";
+  const eventBg = "#FFF6E6";
 
-  const labelColor = isSelected
-    ? "rgba(255,255,255,0.7)"
-    : day.isWorkingDay
-    ? "#8E8E93"
-    : TEXT_TERTIARY;
-  const numberColor = isSelected ? "#FFFFFF" : day.isWorkingDay ? TEXT_PRIMARY : TEXT_TERTIARY;
+  const dayIndex = day.date.getDay(); // 0 = Sun .. 6 = Sat
+  const isWeekend = dayIndex === 0 || dayIndex === 6;
+  const shortLetter = (day.dayOfWeek || "").charAt(0).toUpperCase();
+
+  const showDot = !isSelected && (hasLessons || hasEvent);
+  const dotColor = hasLessons ? DSM_BLUE : eventColor;
+
+  let circleBg = "transparent";
+  let circleShadow = "none";
+  if (isSelected) {
+    circleBg = DSM_BLUE;
+    circleShadow = "0 2px 6px rgba(26,82,160,0.30)";
+  } else if (hasEvent && !hasLessons) {
+    circleBg = eventBg;
+  }
+
+  let numberColor = "#1A1A1A";
+  if (isSelected) numberColor = "#FFFFFF";
+  else if (hasEvent && !hasLessons) numberColor = eventColor;
+  else if (isWeekend && !hasLessons && !hasEvent) numberColor = "#C7C7CC";
+
+  const letterColor = isSelected ? DSM_BLUE : "#8E8E93";
+  const numberWeight = isSelected ? 700 : hasLessons || hasEvent ? 600 : 500;
+  const letterWeight = isSelected ? 700 : 500;
 
   return (
     <button
       type="button"
       onClick={onSelect}
       aria-pressed={isSelected}
-      aria-label={`${day.dayOfWeek} ${day.dayOfMonth}, ${day.hoursBooked} hours booked of ${day.hoursAvailable}`}
-      title={`${day.hoursBooked}h / ${day.hoursAvailable}h booked`}
+      aria-label={`${day.dayOfWeek} ${day.dayOfMonth}`}
       style={{
-        flex: "1 0 0",
-        minWidth: 44,
-        scrollSnapAlign: "start",
-        background: isSelected ? DSM_BLUE : CARD_BG,
-        opacity: !isSelected && !day.isWorkingDay ? 0.6 : 1,
-        border: isSelected ? "none" : `0.5px solid rgba(26,82,160,0.09)`,
-        borderRadius: 12,
-        padding: "7px 0",
-        textAlign: "center",
+        flex: "1 1 0",
+        minWidth: 0,
+        background: "transparent",
+        border: "none",
+        padding: 0,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: 2,
         cursor: "pointer",
-        boxShadow: isSelected ? "0 2px 6px rgba(26,82,160,0.25)" : "none",
-        transition: "transform 120ms ease, background 160ms ease",
         WebkitTapHighlightColor: "transparent",
       }}
-      onPointerDown={(e) => (e.currentTarget.style.transform = "scale(0.97)")}
-      onPointerUp={(e) => (e.currentTarget.style.transform = "scale(1)")}
-      onPointerLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
     >
-      <div
+      <span
         style={{
           fontSize: 8,
-          fontWeight: 700,
-          letterSpacing: 0.5,
-          textTransform: "uppercase",
-          color: labelColor,
-          marginBottom: 2,
+          fontWeight: letterWeight,
+          color: letterColor,
+          letterSpacing: 0.04,
         }}
       >
-        {day.dayOfWeek}
-      </div>
-      <div
+        {shortLetter}
+      </span>
+      <span
         style={{
-          fontSize: isSelected ? 17 : 15,
-          fontWeight: 700,
-          color: numberColor,
-          lineHeight: "18px",
-          letterSpacing: -0.4,
-          fontVariantNumeric: "tabular-nums",
+          width: 30,
+          height: 30,
+          borderRadius: 15,
+          background: circleBg,
+          boxShadow: circleShadow,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          transition: "background 160ms ease",
         }}
       >
-        {day.dayOfMonth}
-      </div>
-      <div
+        <span
+          style={{
+            fontSize: 13,
+            fontWeight: numberWeight,
+            color: numberColor,
+            letterSpacing: -0.3,
+            fontVariantNumeric: "tabular-nums",
+          }}
+        >
+          {day.dayOfMonth}
+        </span>
+      </span>
+      <span
         style={{
-          height: 5,
-          marginTop: 4,
+          height: 4,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
         }}
       >
-        {isSelected ? (
-          <div
+        {showDot ? (
+          <span
             style={{
-              width: 14,
-              height: 2.5,
+              width: 4,
+              height: 4,
               borderRadius: 2,
-              background: "rgba(255,255,255,0.4)",
-            }}
-          />
-        ) : dotColor ? (
-          <div
-            style={{
-              width: 5,
-              height: 5,
-              borderRadius: 3,
               background: dotColor,
+              display: "block",
             }}
           />
         ) : null}
-      </div>
+      </span>
     </button>
   );
 });
 
-function DayStrip({
+function DayStripCard({
   days,
   selectedDate,
   onSelect,
+  onPrevWeek,
+  onNextWeek,
 }: {
   days: ScheduleDay[];
   selectedDate: Date;
   onSelect: (d: Date) => void;
+  onPrevWeek: () => void;
+  onNextWeek: () => void;
 }) {
+  const reference = days[0]?.date ?? selectedDate;
+  const monthLabel = format(reference, "MMM yyyy");
+  const weekNumber = isoWeekNumber(reference);
+
+  const navBtn: React.CSSProperties = {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    background: "#F2F4F8",
+    border: "none",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    cursor: "pointer",
+    padding: 0,
+    WebkitTapHighlightColor: "transparent",
+  };
+
   return (
     <div
-      role="tablist"
-      aria-label="Day strip"
       style={{
-        display: "flex",
-        gap: 5,
+        background: CARD_BG,
+        borderRadius: 14,
+        padding: "8px 10px",
         marginBottom: 10,
-        paddingRight: 2,
-        overflowX: "auto",
-        scrollSnapType: "x mandatory",
-        WebkitOverflowScrolling: "touch",
-        scrollbarWidth: "none",
+        border: `0.5px solid ${DSM_BLUE_BORDER}`,
       }}
-      className="scrollbar-hide"
       onKeyDown={(e) => {
         const idx = days.findIndex((d) => isSameDay(d.date, selectedDate));
         if (e.key === "ArrowLeft" && idx > 0) onSelect(days[idx - 1].date);
@@ -246,14 +288,43 @@ function DayStrip({
           onSelect(days[idx + 1].date);
       }}
     >
-      {days.map((d) => (
-        <DayCard
-          key={d.dateStr}
-          day={d}
-          isSelected={isSameDay(d.date, selectedDate)}
-          onSelect={() => onSelect(d.date)}
-        />
-      ))}
+      {/* Week header */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: 7,
+          padding: "0 2px",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: "#1A1A1A", letterSpacing: -0.2 }}>
+            {monthLabel}
+          </span>
+          <span style={{ fontSize: 9, color: "#8E8E93" }}>· W{weekNumber}</span>
+        </div>
+        <div style={{ display: "flex", gap: 4 }}>
+          <button type="button" onClick={onPrevWeek} aria-label="Previous week" style={navBtn}>
+            <ChevronLeft size={8} color="#5B6B8A" strokeWidth={2.5} />
+          </button>
+          <button type="button" onClick={onNextWeek} aria-label="Next week" style={navBtn}>
+            <ChevronRight size={8} color="#5B6B8A" strokeWidth={2.5} />
+          </button>
+        </div>
+      </div>
+
+      {/* Day row */}
+      <div style={{ display: "flex", gap: 3 }} role="tablist" aria-label="Day strip">
+        {days.map((d) => (
+          <DayChip
+            key={d.dateStr}
+            day={d}
+            isSelected={isSameDay(d.date, selectedDate)}
+            onSelect={() => onSelect(d.date)}
+          />
+        ))}
+      </div>
     </div>
   );
 }
