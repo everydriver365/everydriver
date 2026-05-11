@@ -90,8 +90,10 @@ export function SEOHead({ title, description, noindex }: SEOHeadProps) {
         setMetaTag("geo.region", "GB", "name");
       }
 
-      // hreflang alternate (single en-GB + x-default → canonical URL)
+      // Canonical + hreflang alternates → always the branded apex host over https,
+      // regardless of paused state, www variant, or preview origin.
       const canonicalHref = `https://${wl!.host}${location.pathname}`;
+      upsertLink("canonical", canonicalHref);
       upsertLink("alternate", canonicalHref, "en-GB");
       upsertLink("alternate", canonicalHref, "x-default");
 
