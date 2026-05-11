@@ -1,6 +1,6 @@
 import { memo, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { addDays, format, isSameDay, isTomorrow, startOfDay } from "date-fns";
+import { addDays, endOfWeek, format, isSameDay, isTomorrow, startOfDay } from "date-fns";
 import { ChevronRight, ChevronLeft, Plus, MapPin, ChevronsLeftRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { useQueryClient } from "@tanstack/react-query";
@@ -1022,9 +1022,7 @@ export default function Schedule({
   const openSlotsThisWeek = useMemo(() => {
     if (!gapDataForChip) return 0;
     const today = format(new Date(), "yyyy-MM-dd");
-    const end = new Date();
-    end.setDate(end.getDate() + (7 - end.getDay()));
-    const endStr = format(end, "yyyy-MM-dd");
+    const endStr = format(endOfWeek(new Date(), { weekStartsOn: 1 }), "yyyy-MM-dd");
     return gapDataForChip
       .filter((g: any) => g.date >= today && g.date <= endStr)
       .reduce((sum: number, g: any) => sum + (g.slots?.length ?? 0), 0);
