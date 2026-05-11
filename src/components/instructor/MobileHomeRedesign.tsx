@@ -692,7 +692,7 @@ function UpNextTile({
               }}
             >
               <Sparkles size={10} strokeWidth={2} style={{ color: "#6B21A8" }} />
-              <span style={{ fontSize: 14, fontWeight: 600, color: "#6B21A8" }}>{aiStatusLine}</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: "#6B21A8", letterSpacing: "0.04em", textTransform: "uppercase" }}>{aiStatusLine}</span>
             </div>
           )}
 
