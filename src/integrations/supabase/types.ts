@@ -2668,6 +2668,57 @@ export type Database = {
         }
         Relationships: []
       }
+      custom_domain_admin_queue: {
+        Row: {
+          admin_notes: string | null
+          created_at: string
+          dns_verified_at: string
+          domain: string
+          id: string
+          instructor_id: string
+          ssl_added_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string
+          dns_verified_at?: string
+          domain: string
+          id?: string
+          instructor_id: string
+          ssl_added_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string
+          dns_verified_at?: string
+          domain?: string
+          id?: string
+          instructor_id?: string
+          ssl_added_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "custom_domain_admin_queue_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "custom_domain_admin_queue_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       dashcam_media: {
         Row: {
           camera_angle: string | null
