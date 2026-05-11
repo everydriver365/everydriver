@@ -1,46 +1,74 @@
+# Mini-Website Reliability Audit & Stabilisation
 
-## What's actually broken on Winchester
+You're right — the mini-website surface has too many failure modes. I traced the actual code paths for whitelabel domains (e.g. winchesterdrivingschool.co.uk → Ken D / `ken-d`) and `/i/{slug}` subdomain sites, and the unreliability falls into four root causes. Plan below fixes each one without redesigning the product.
 
-Winchester is a **standalone whitelabel site** — the full Drive365 learner site rebranded for Winchester. Every page is supposed to use `MainLayout`, which already swaps in `WhitelabelBottomNav` (Home / Courses / Theory / Reviews / Contact, neutral primary).
+## What's actually broken
 
-The break is on **Reviews** and **Contact**. In `src/components/ConditionalRoutes.tsx`, when the host is whitelabel, those two routes render the **`/i/{slug}` mini-site components** (`MiniWebsiteReviews`, `MiniWebsiteContact`). Those carry their own layout, their own bottom nav (different icons, different colours), and links pointing into the `/i/{slug}/...` mini-site path tree.
+### 1. Whitelabel domains still leak into the mini-site product
+`ConditionalRoutes.tsx` was partly fixed (Contact, Reviews) but two routes still misbehave on whitelabel:
+- **`/services`** → returns `null` → blank page / 404-feel
+- **`/about`** → only checks subdomain; on whitelabel falls through to `<About />`. Need to confirm `<About />` (and `<Contact />`, `<Index />`, `<Reviews />`) actually re-scopes to the whitelabel instructor instead of showing platform-wide content (e.g. all instructors in directory, generic Drive365 contact details).
 
-That's the symptom you're seeing: tap Reviews on Winchester → land on the small instructor mini-site Reviews page with the wrong nav and the wrong colours, and from there it bounces around the `/i/...` tree, away from the Winchester clone.
+### 2. /i/{slug} pages 404 because seeded pages are missing
+`useWebsitePage` filters on `is_published=true` AND uses `.single()` (not `.maybeSingle()`) — any missing row throws and the page flips to `notFound`. Pages are only seeded by the `create_instructor_website_pages` trigger on instructor INSERT. Any instructor who pre-dates the trigger, or whose seed row was unpublished/deleted, gets a hard 404 across About/Services/Reviews/Contact. Today Ken D happens to have all 5 — but most older instructors will not.
 
-`ConditionalServices` has the same shape (returns `null` for whitelabel today). Not in the bottom nav, but latent.
+### 3. Wrong instructor shown on whitelabel
+On a whitelabel domain, the standard Drive365 pages (`Index`, `About`, `Contact`, the new `Reviews`) need to read `getWhitelabelConfig()` and scope every list/query to that one instructor. If they don't, Winchester visitors see the entire Drive365 directory or generic content. Needs a sweep.
 
-## Fix — keep Winchester self-contained
+### 4. Mini-site pages crash on missing data
+`useWebsitePage` uses `.single()` and the components throw if `instructor.business_name` etc. are null. Causes the "totally unreliable" feel — works for one instructor, blank/error for the next.
 
-Stop borrowing the `/i/{slug}` mini-site components inside whitelabel routes. Treat whitelabel hosts as plain Drive365 pages, just rebranded.
+## Plan
 
-### 1. `src/components/ConditionalRoutes.tsx`
-- `ConditionalContact` → on whitelabel, render the standard Drive365 `<Contact />` (it already picks up branding via `useRouteLogo` / `getWhitelabelConfig`). Only instructor **subdomains** keep using `MiniWebsiteContact`.
-- `ConditionalReviews` → same: render a standard Drive365 reviews page on whitelabel, not `MiniWebsiteReviews`.
+### A. Make `ConditionalRoutes` fully whitelabel-safe
+- `ConditionalServices` on whitelabel → render the rebranded Drive365 services/courses page (or redirect to `/courses` if that's the canonical), never `null`.
+- `ConditionalAbout` on whitelabel → render `<About />`, but verify `About.tsx` reads `getWhitelabelConfig()` for instructor scope.
+- Document the rule at the top of the file: **whitelabel never renders `MiniWebsite*` components**.
 
-### 2. New `src/pages/Reviews.tsx`
-There's no Drive365 `Reviews.tsx` today (only the mini-site version). Add a small one that:
-- uses `MainLayout` (so it gets `WhitelabelBottomNav` automatically)
-- pulls reviews scoped to the whitelabel instructor when present (mirrors how `Courses.tsx` already scopes itself by host)
-- falls back to platform-wide reviews on bare Drive365
+### B. Audit the four standard pages for whitelabel scoping
+Sweep `Index.tsx`, `About.tsx`, `Contact.tsx`, `Reviews.tsx`, and `Courses.tsx`. For each:
+- Read `getWhitelabelConfig()` early.
+- If present, scope every Supabase query (`public_instructors`, `course_listings`, `course_reviews`, etc.) to `instructorSlug`.
+- Replace any "all instructors" UI (directory grids, instructor pickers) with the single branded instructor.
+- Use whitelabel `phone`/`email`/`address`/`brandName` in headers, contact CTAs, and footers.
 
-No new design system, no new data model — just the missing page.
+Deliverable: short checklist in `docs/qa/whitelabel-page-scoping.md`.
 
-### 3. Sanity sweep
-Quick read of any other `Conditional*` to make sure no other route silently ships a `/i/{slug}` component into whitelabel. Anything that does gets the same treatment.
+### C. Self-heal seeded website pages
+Two-part fix so /i/{slug} stops 404-ing for older instructors:
+1. **Migration** — run `create_instructor_website_pages` logic for every existing instructor that's missing one or more of the five `page_type` rows, with `ON CONFLICT DO NOTHING`. One-time backfill.
+2. **Defensive read** — change `useWebsitePage` to:
+   - `.maybeSingle()` instead of `.single()`
+   - Drop the `.eq("is_published", true)` filter, or fall back to a synthesised default page when the row is missing/unpublished, so a missing/unpublished page shows the seeded content instead of 404.
 
-### 4. Bottom nav stays as-is
-`WhitelabelBottomNav` items, icons, and neutral `bg-primary` are correct per your answer. No colour change.
+### D. Harden mini-site components
+- All `instructor.business_name || instructor.name || "Driving School"` style fallbacks centralised in one helper.
+- Loading skeletons everywhere `loading` is true (no blank flashes).
+- A single `<MiniWebsiteNotFound />` component for the genuinely-missing case (instructor row truly absent), with a link back to Drive365 so users aren't stranded.
 
-## What I'm explicitly **not** touching
+### E. Admin diagnostics
+Add a "Mini-website health" badge to `AdminWebsiteManager` showing, for the selected instructor:
+- `app_slug` set ✓/✗
+- All 5 `instructor_website_pages` rows present and published ✓/✗
+- `custom_domain` set + `custom_domain_verified` ✓/✗
+- Logo + brand colour set ✓/✗
+- Direct test links: `/i/{slug}`, `{slug}.everydriver.co.uk`, custom domain
 
-- `/i/{slug}` instructor-generated mini-sites — separate product, leave alone.
-- DB triggers, `app_slug`, page seeding — already correct.
-- Instructor portal, pupil portal, admin, mobile layouts elsewhere.
-- Drive365 / EveryDriver routing on their own domains.
+So you can see at a glance which instructors are mis-configured before they complain.
 
-## Files I'll edit
+### Out of scope
+- No redesign of the mini-site visual product
+- No changes to `mini-website-ssr` edge function
+- No mobile layout changes
+- No DB schema changes beyond the one-time backfill insert
 
-- `src/components/ConditionalRoutes.tsx` — stop returning mini-site components on whitelabel.
-- `src/pages/Reviews.tsx` — new lightweight Drive365 reviews page using `MainLayout`.
+## Files affected (estimate)
+- `src/components/ConditionalRoutes.tsx`
+- `src/pages/Index.tsx`, `About.tsx`, `Contact.tsx`, `Reviews.tsx`, `Courses.tsx` (scoping audit; minimal targeted edits)
+- `src/hooks/useInstructorWebsitePages.ts` (defensive read)
+- `src/pages/mini-website/MiniWebsite*.tsx` (skeletons + fallbacks, light touch)
+- `src/components/admin/AdminWebsiteManager.tsx` (health badge)
+- New: `docs/qa/whitelabel-page-scoping.md`
+- One Supabase migration (backfill missing `instructor_website_pages` rows)
 
-Two files. No DB migration. No changes to the mini-site product.
+Approve and I'll execute A–E in that order, pausing after the migration for you to verify.
