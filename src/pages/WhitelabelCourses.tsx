@@ -115,6 +115,54 @@ export default function WhitelabelCourses() {
 
   const isInitialising = instructorId === undefined;
 
+  // Inject Course/ItemList JSON-LD for the visible course set (whitelabel SEO).
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const id = "wl-courses-jsonld";
+    const existing = document.getElementById(id);
+    if (paused || coursesWithDistance.length === 0) {
+      if (existing) existing.remove();
+      return;
+    }
+    const items = coursesWithDistance.slice(0, 20).map((c, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      item: {
+        "@type": "Course",
+        name: `${c.hours}-hour driving course with ${brand}`,
+        description: `${c.hours} hours of driving tuition with ${brand}${c.isIntensive ? " — intensive course" : ""}.`,
+        provider: {
+          "@type": "DrivingSchool",
+          name: brand,
+          url: typeof window !== "undefined" ? `${window.location.origin}/` : undefined,
+        },
+        hasCourseInstance: {
+          "@type": "CourseInstance",
+          courseMode: "onsite",
+          startDate: c.bookableDate?.toISOString?.() ?? undefined,
+        },
+      },
+    }));
+    const payload = {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      itemListElement: items,
+    };
+    let script = existing as HTMLScriptElement | null;
+    if (!script) {
+      script = document.createElement("script");
+      script.type = "application/ld+json";
+      script.id = id;
+      document.head.appendChild(script);
+    }
+    script.textContent = JSON.stringify(JSON.parse(JSON.stringify(payload)));
+    return () => {
+      const el = document.getElementById(id);
+      if (el) el.remove();
+    };
+  }, [coursesWithDistance, paused, brand]);
+
+
   return (
     <MainLayout>
       <SEOHead
