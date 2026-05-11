@@ -757,6 +757,7 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
                     showConflictPill={isConflict}
                     showReviewPill={showReview}
                     showInProgressLine
+                    stackedMeta
                     href={lessonHref}
                     onEOLClick={(e) => {
                       e.preventDefault();

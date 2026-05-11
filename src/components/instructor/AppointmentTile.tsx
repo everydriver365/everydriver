@@ -200,6 +200,13 @@ export interface AppointmentTileProps {
   showReviewPill?: boolean;
   /** Show a small "In progress · X min remaining" line under the subtitle when live. */
   showInProgressLine?: boolean;
+  /**
+   * When true, secondary chips (test type, EOL, payment, cancelled) move to
+   * their own row beneath the location so the name line stays uncluttered.
+   * The name row keeps only top-level state pills (Live, Conflict, Review).
+   * Used by the Home page Today schedule on mobile to avoid squashed text.
+   */
+  stackedMeta?: boolean;
 
   /** Activation handlers. Provide either onClick (button) or href (Link). */
   onClick?: () => void;
@@ -229,6 +236,7 @@ export function AppointmentTile(props: AppointmentTileProps) {
     showConflictPill,
     showReviewPill,
     showInProgressLine,
+    stackedMeta,
     onClick,
     href,
     onEOLClick,
@@ -318,19 +326,7 @@ export function AppointmentTile(props: AppointmentTileProps) {
             {pupilDisplayName}
           </span>
 
-          {isCancelled && (
-            <Pill label="Cancelled" bg={APPT.tintGrey} color={APPT.tintGreyFg} />
-          )}
-          {isMockTest && (
-            <Pill label="Mock test" bg={APPT.tintAmber} color={APPT.tintAmberFg} />
-          )}
-          {isTestPrep && (
-            <Pill label="test prep" bg={APPT.tintAmber} color={APPT.tintAmberFg} ariaLabel="Test preparation" />
-          )}
-          {isTestDay && (
-            <Pill label="test day" bg={APPT.tintAmber} color={APPT.tintAmberFg} ariaLabel="Test day" />
-          )}
-
+          {/* Top-level state pills — always live next to the name. */}
           {showReviewPill && (
             <Pill label="Review" bg={APPT.tintAmberSoft} color={APPT.warning} />
           )}
@@ -340,9 +336,27 @@ export function AppointmentTile(props: AppointmentTileProps) {
           {showConflictPill && isUpcoming && (
             <Pill label="Conflict" bg={APPT.tintAmberSoft} color={APPT.warning} />
           )}
+          {/* Cancelled stays on name row when not stacked, otherwise drops to meta row. */}
+          {isCancelled && !stackedMeta && (
+            <Pill label="Cancelled" bg={APPT.tintGrey} color={APPT.tintGreyFg} />
+          )}
 
-          {showEOLPill && <EOLPill done={eolDone} onClick={onEOLClick} />}
-          {showPayPill && <PaymentPill isPaid={isPaid} />}
+          {/* Inline (non-stacked) layout shows all secondary chips on the name row. */}
+          {!stackedMeta && (
+            <>
+              {isMockTest && (
+                <Pill label="Mock test" bg={APPT.tintAmber} color={APPT.tintAmberFg} />
+              )}
+              {isTestPrep && (
+                <Pill label="test prep" bg={APPT.tintAmber} color={APPT.tintAmberFg} ariaLabel="Test preparation" />
+              )}
+              {isTestDay && (
+                <Pill label="test day" bg={APPT.tintAmber} color={APPT.tintAmberFg} ariaLabel="Test day" />
+              )}
+              {showEOLPill && <EOLPill done={eolDone} onClick={onEOLClick} />}
+              {showPayPill && <PaymentPill isPaid={isPaid} />}
+            </>
+          )}
         </div>
 
         <div
@@ -360,6 +374,34 @@ export function AppointmentTile(props: AppointmentTileProps) {
           <MapPin size={12} strokeWidth={2} />
           <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{subtitle}</span>
         </div>
+
+        {/* Stacked meta row — secondary chips on their own line so the name + location stay readable. */}
+        {stackedMeta && (
+          <div
+            style={{
+              display: "flex",
+              gap: 6,
+              alignItems: "center",
+              flexWrap: "wrap",
+              marginTop: 8,
+            }}
+          >
+            {isCancelled && (
+              <Pill label="Cancelled" bg={APPT.tintGrey} color={APPT.tintGreyFg} />
+            )}
+            {isMockTest && (
+              <Pill label="Mock test" bg={APPT.tintAmber} color={APPT.tintAmberFg} />
+            )}
+            {isTestPrep && (
+              <Pill label="test prep" bg={APPT.tintAmber} color={APPT.tintAmberFg} ariaLabel="Test preparation" />
+            )}
+            {isTestDay && (
+              <Pill label="test day" bg={APPT.tintAmber} color={APPT.tintAmberFg} ariaLabel="Test day" />
+            )}
+            {showEOLPill && <EOLPill done={eolDone} onClick={onEOLClick} />}
+            {showPayPill && <PaymentPill isPaid={isPaid} />}
+          </div>
+        )}
 
         {showInProgressLine && isLive && (
           <div
