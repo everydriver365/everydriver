@@ -34,6 +34,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { format, subDays, subMonths } from "date-fns";
 import { useNavigate } from "react-router-dom";
+import { LessonDetailDrawer } from "@/components/instructor/diary/LessonDetailDrawer";
 
 type StatusFilter = "all" | "rated" | "unrated" | "has_notes" | "missing_notes";
 const statusLabels: Record<StatusFilter, string> = {
@@ -119,6 +120,12 @@ export default function InstructorDiary() {
   const dismissHelp = () => {
     localStorage.setItem("dsm.lessonHistory.helpDismissed", "1");
     setHelpDismissed(true);
+  };
+  const [activeLesson, setActiveLesson] = useState<LessonRecord | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const openLesson = (l: LessonRecord) => { setActiveLesson(l); setDrawerOpen(true); };
+  const handleLessonSaved = (updated: LessonRecord) => {
+    setLessons((prev) => prev.map((l) => (l.id === updated.id ? { ...l, ...updated } : l)));
   };
 
   const usingCustomRange = !!(customFrom && customTo);
@@ -521,7 +528,12 @@ export default function InstructorDiary() {
               {filteredLessons.map((lesson, idx) => (
                 <div key={lesson.id}>
                   {idx > 0 && <div style={{ height: 0.5, backgroundColor: "var(--d2-border)", marginLeft: 14, marginRight: 14 }} />}
-                  <div style={{ padding: "12px 14px" }}>
+                  <button
+                    type="button"
+                    onClick={() => openLesson(lesson)}
+                    className="w-full text-left transition-colors hover:bg-muted/40"
+                    style={{ padding: "12px 14px", background: "transparent", border: "none", cursor: "pointer" }}
+                  >
                     <div className="flex items-center justify-between" style={{ marginBottom: 4 }}>
                       <span style={{ fontWeight: 600, fontSize: 13, color: "var(--d2-text-1)" }}>
                         {lesson.pupils?.name || "Unknown Pupil"}
@@ -568,13 +580,19 @@ export default function InstructorDiary() {
                         {lesson.notes}
                       </p>
                     )}
-                  </div>
+                  </button>
                 </div>
               ))}
             </div>
           )}
         </div>
       </div>
+      <LessonDetailDrawer
+        lesson={activeLesson}
+        open={drawerOpen}
+        onOpenChange={setDrawerOpen}
+        onSaved={handleLessonSaved}
+      />
     </Shell>
   );
 }
