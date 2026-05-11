@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Copy, ExternalLink, Check, X } from "lucide-react";
 import { toast } from "sonner";
+import { CustomDomainAuditLog } from "@/components/admin/CustomDomainAuditLog";
 
 type QueueRow = {
   id: string;
@@ -132,6 +133,8 @@ export default function CustomDomainQueue() {
           </Card>
         ))}
       </div>
+
+      <CustomDomainAuditLog />
     </div>
   );
 }

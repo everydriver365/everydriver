@@ -2719,6 +2719,57 @@ export type Database = {
           },
         ]
       }
+      custom_domain_audit_log: {
+        Row: {
+          actor_role: string
+          actor_user_id: string | null
+          created_at: string
+          domain: string
+          event: string
+          id: string
+          instructor_id: string | null
+          metadata: Json
+          notes: string | null
+        }
+        Insert: {
+          actor_role?: string
+          actor_user_id?: string | null
+          created_at?: string
+          domain: string
+          event: string
+          id?: string
+          instructor_id?: string | null
+          metadata?: Json
+          notes?: string | null
+        }
+        Update: {
+          actor_role?: string
+          actor_user_id?: string | null
+          created_at?: string
+          domain?: string
+          event?: string
+          id?: string
+          instructor_id?: string | null
+          metadata?: Json
+          notes?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "custom_domain_audit_log_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "custom_domain_audit_log_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       dashcam_media: {
         Row: {
           camera_angle: string | null
@@ -18658,6 +18709,16 @@ export type Database = {
         Returns: undefined
       }
       is_school_owner: { Args: { p_school_id: string }; Returns: boolean }
+      log_custom_domain_event: {
+        Args: {
+          p_domain: string
+          p_event: string
+          p_instructor_id: string
+          p_metadata?: Json
+          p_notes?: string
+        }
+        Returns: undefined
+      }
       record_phone_gps_point: {
         Args: {
           p_accuracy?: number
