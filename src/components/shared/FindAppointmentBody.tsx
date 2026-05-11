@@ -152,8 +152,17 @@ export function FindAppointmentBody({
     enabled: true,
   });
 
-  const slots = searchResult?.slots ?? [];
+  const allSlots = searchResult?.slots ?? [];
+  const slots = nextOnly ? allSlots.slice(0, 1) : allSlots;
   const rejection = searchResult?.rejection;
+
+  // Auto-select the single next slot when in "Next slot" mode.
+  useEffect(() => {
+    if (nextOnly && slots.length > 0 && selectedSlotId !== slots[0].id) {
+      setSelectedSlotId(slots[0].id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nextOnly, slots[0]?.id]);
 
   const selectedSlot = useMemo(
     () => slots.find((s) => s.id === selectedSlotId) || null,
