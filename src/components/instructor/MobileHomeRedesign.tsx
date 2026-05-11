@@ -39,7 +39,7 @@ import Schedule from "@/components/instructor/Schedule";
 import { FloatingSessionBar } from "@/components/instructor/FloatingSessionBar";
 import { UpcomingEventsTile } from "@/components/instructor/UpcomingEventsTile";
 import { useDormantPupilsCount } from "@/hooks/useDormantPupilsCount";
-import { Wrench, Users as UsersIcon, Crown, ShieldPlus, Inbox } from "lucide-react";
+import { Wrench, Users as UsersIcon, Crown, ShieldPlus, Inbox, Check, Star, Heart } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { differenceInDays, isPast } from "date-fns";
