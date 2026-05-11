@@ -308,6 +308,30 @@ export default function Index() {
         </div>
       </section>
 
+      {/* Whitelabel only: Areas we cover (local SEO signal) */}
+      {wlConfig && wlAreas.length > 0 && (
+        <section className="border-b border-border bg-muted/30 py-10">
+          <div className="container max-w-6xl">
+            <h2 className="text-2xl font-bold text-foreground">
+              Areas we cover{wlCity ? ` around ${wlCity}` : ""}
+            </h2>
+            <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+              {wlConfig.brandName} provides driving lessons and intensive courses across these towns and villages:
+            </p>
+            <ul className="mt-4 flex flex-wrap gap-2">
+              {wlAreas.map((area) => (
+                <li
+                  key={area}
+                  className="rounded-full border border-border bg-background px-3 py-1 text-sm text-foreground"
+                >
+                  {area}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      )}
+
       {/* Free Re-Test Promotion Banner — Feature Grid */}
       <section className="py-4">
           <Link to="/earlier-test-guarantee">
