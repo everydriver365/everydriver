@@ -37,6 +37,8 @@ import { format, subDays, subMonths } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { LessonDetailDrawer } from "@/components/instructor/diary/LessonDetailDrawer";
 import { BulkMissingNotesDialog } from "@/components/instructor/diary/BulkMissingNotesDialog";
+import { exportLessonsCsv, exportLessonsPdf } from "@/components/instructor/diary/exportLessons";
+import { toast } from "sonner";
 
 type StatusFilter = "all" | "rated" | "unrated" | "has_notes" | "missing_notes";
 const statusLabels: Record<StatusFilter, string> = {
@@ -300,6 +302,27 @@ export default function InstructorDiary() {
     ? `${format(customFrom!, "MMM d")} – ${format(customTo!, "MMM d")}`
     : (dateRangeLabels[dateRange] || "Last 30 days");
   const statusLabel = statusLabels[statusFilter];
+
+  const handleExport = (kind: "csv" | "pdf") => {
+    if (filteredLessons.length === 0) {
+      toast.error("No lessons to export with current filters");
+      return;
+    }
+    const meta = {
+      instructorName: instructor?.name || "Instructor",
+      rangeLabel: dateLabel,
+      pupilLabel: selectedPupilObj?.name || "All pupils",
+      statusLabel,
+    };
+    try {
+      if (kind === "csv") exportLessonsCsv(filteredLessons, meta);
+      else exportLessonsPdf(filteredLessons, meta);
+      toast.success(`${kind.toUpperCase()} downloaded (${filteredLessons.length} lessons)`);
+    } catch (err: any) {
+      console.error("Export failed", err);
+      toast.error(err.message || "Export failed");
+    }
+  };
 
   if (!instructorId) {
     return (
@@ -636,13 +659,36 @@ export default function InstructorDiary() {
                 </PopoverContent>
               </Popover>
 
-              <button
-                type="button"
-                style={chipStyle(false)}
-                onClick={() => navigate("/instructor/data-export")}
-              >
-                Export
-              </button>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button type="button" style={chipStyle(false)} title="Download filtered lessons">
+                    Export
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="p-1 w-44" align="end">
+                  <button
+                    className="w-full text-left text-xs px-2 py-1.5 rounded hover:bg-muted disabled:opacity-50"
+                    disabled={filteredLessons.length === 0}
+                    onClick={() => handleExport("csv")}
+                  >
+                    Download CSV ({filteredLessons.length})
+                  </button>
+                  <button
+                    className="w-full text-left text-xs px-2 py-1.5 rounded hover:bg-muted disabled:opacity-50"
+                    disabled={filteredLessons.length === 0}
+                    onClick={() => handleExport("pdf")}
+                  >
+                    Download PDF ({filteredLessons.length})
+                  </button>
+                  <div className="border-t my-1" />
+                  <button
+                    className="w-full text-left text-xs px-2 py-1.5 rounded hover:bg-muted text-muted-foreground"
+                    onClick={() => navigate("/instructor/data-export")}
+                  >
+                    Full data export…
+                  </button>
+                </PopoverContent>
+              </Popover>
             </div>
           </div>
 
