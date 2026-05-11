@@ -13,7 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 /* ---------- DSM tokens (match MobileHomeRedesign) ---------- */
 const RED = "#C8242C";
-const BLUE = "#6B93C0";
+const BLUE = "#1E6FB8";
 const DSM_BLUE = "#1A52A0";
 const DSM_BLUE_TINT = "#F0F5FF";
 const DSM_BLUE_BORDER = "rgba(26,82,160,0.08)";
