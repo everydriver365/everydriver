@@ -37,7 +37,18 @@ export function CustomDomainCanonical() {
       canonicalHost.endsWith(".lovable.app") ||
       canonicalHost.endsWith(".lovableproject.com") ||
       canonicalHost === "localhost";
-    if (isOurSubdomain) {
+
+    // Never bounce the Lovable preview/sandbox out to the live custom domain.
+    // The preview iframe runs the latest build; the live custom domain runs
+    // the last-published build, so a hard-redirect makes click-through tests
+    // silently hit stale code (404s on routes that exist only in preview).
+    const isPreviewHost =
+      currentHost.endsWith(".lovableproject.com") ||
+      currentHost.endsWith(".lovable.app") ||
+      currentHost === "localhost" ||
+      currentHost === "127.0.0.1";
+
+    if (isOurSubdomain || isPreviewHost) {
       // still set canonical link below
     } else {
       // 1. www → apex redirect (or any non-canonical host)
