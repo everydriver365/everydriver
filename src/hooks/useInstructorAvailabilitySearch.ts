@@ -175,7 +175,24 @@ export function useInstructorAvailabilitySearch(params: SearchParams) {
       const overrides = overridesRes.data || [];
       const lessons = lessonsRes.data || [];
       const blocks = blocksRes.data || [];
-      const events = eventsRes.data || [];
+      // Filter out all-day / multi-day calendar events. These are typically
+      // synced informational items (e.g. "Summer term", "College AM") that
+      // span entire days and would otherwise wipe out every working slot.
+      // We only treat timed events (< 24h, not aligned to midnight) as conflicts.
+      const events = (eventsRes.data || []).filter((ev) => {
+        try {
+          const s = new Date(ev.start_time);
+          const e = new Date(ev.end_time);
+          const durMs = e.getTime() - s.getTime();
+          const startsAtMidnight = s.getUTCHours() === 0 && s.getUTCMinutes() === 0;
+          const isAllDayLike = durMs >= 23 * 60 * 60 * 1000;
+          if (isAllDayLike) return false;
+          if (startsAtMidnight && durMs >= 12 * 60 * 60 * 1000) return false;
+          return true;
+        } catch {
+          return true;
+        }
+      });
 
       const results: AvailableSlot[] = [];
       const byReason: Partial<Record<RejectReason, number>> = {};
