@@ -140,6 +140,15 @@ function TriangleAlertIcon({ size = 16, color = IOS.systemRed }: { size?: number
   );
 }
 
+function MapPinIcon({ size = 12, color = IOS.secondaryLabel }: { size?: number; color?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+      <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z" />
+      <circle cx="12" cy="10" r="3" />
+    </svg>
+  );
+}
+
 function ChevronRight({ color = IOS.secondaryLabel, size = 12 }: { color?: string; size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
