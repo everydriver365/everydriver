@@ -315,15 +315,17 @@ export default function Index() {
               Areas we cover{wlCity ? ` around ${wlCity}` : ""}
             </h2>
             <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-              {wlConfig.brandName} provides driving lessons and intensive courses across these towns and villages:
+              {wlConfig.brandName} provides driving lessons and intensive courses across these towns and villages — tap an area for local availability and pricing:
             </p>
             <ul className="mt-4 flex flex-wrap gap-2">
               {wlAreas.map((area) => (
-                <li
-                  key={area}
-                  className="rounded-full border border-border bg-background px-3 py-1 text-sm text-foreground"
-                >
-                  {area}
+                <li key={area}>
+                  <Link
+                    to={`/areas/${areaToSlug(area)}`}
+                    className="inline-block rounded-full border border-border bg-background px-3 py-1 text-sm text-foreground transition-colors hover:border-primary hover:text-primary"
+                  >
+                    {area}
+                  </Link>
                 </li>
               ))}
             </ul>
