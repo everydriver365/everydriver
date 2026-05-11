@@ -152,7 +152,7 @@ export function DynamicCourseCard({
             <img
               src={courseImageUrl || `https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800&h=400&fit=crop`}
               alt={courseName}
-              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+              className="block h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
             />
 
             {/* Top-left badges */}
