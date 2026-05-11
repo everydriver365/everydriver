@@ -52,7 +52,7 @@ const SECTIONS: NavSection[] = [
     { label: "Pending", to: "/instructor/pending-scheduling", icon: Clock },
     { label: "Expenses", to: "/instructor/expenses", icon: Coins },
     { label: "Tax", to: "/instructor/tax", icon: Receipt },
-    { label: "Reports", to: "/instructor/income", icon: BarChart3, moduleId: "reports" },
+    { label: "Reports", to: "/instructor/reports", icon: BarChart3, moduleId: "reports" },
     { label: "Reviews", to: "/instructor/reviews", icon: Star },
     { label: "Referrals", to: "/instructor/referrals", icon: Share2 },
     { label: "Automations", to: "/instructor/automations", icon: Zap },
