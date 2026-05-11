@@ -230,8 +230,18 @@ export function useInstructorPaymentsData(instructorId: string | undefined): Pay
         );
         const receivedMonth = monthTx.reduce((s, t) => s + t.amount, 0);
         const cardMonth = monthTx.filter(t => t.method === "card").reduce((s, t) => s + t.amount, 0);
-        const platformFeesMonthTotal = (platformFeesMonthRes.data || [])
+        const platformFeesRows = (platformFeesMonthRes.data || []) as any[];
+        const platformFeesMonthTotal = platformFeesRows
           .reduce((s: number, r: any) => s + Number(r.amount || 0), 0);
+        const platformBookingFeesMonth = platformFeesRows
+          .filter((r) => (r.kind || "") === "booking_fee")
+          .reduce((s, r) => s + Number(r.amount || 0), 0);
+        const platformTransactionFeesMonth = platformFeesRows
+          .filter((r) => (r.kind || "") === "transaction_fee")
+          .reduce((s, r) => s + Number(r.amount || 0), 0);
+        const platformUpliftFeesMonth = platformFeesRows
+          .filter((r) => /uplift/i.test(r.kind || ""))
+          .reduce((s, r) => s + Number(r.amount || 0), 0);
         const feesMonth = +((Math.max(0, cardMonth) * FEE_RATE) + platformFeesMonthTotal).toFixed(2);
         const effectiveFeeRate = receivedMonth > 0 ? +((feesMonth / receivedMonth) * 100).toFixed(2) : 0;
 
