@@ -30,6 +30,8 @@ interface AddLessonSheetProps {
   onOpenChange: (open: boolean) => void;
   instructorId: string;
   defaultDate?: Date;
+  defaultStartTime?: string;
+  defaultDurationHours?: string;
   onSuccess: () => void;
 }
 
