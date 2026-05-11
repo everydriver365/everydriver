@@ -216,6 +216,18 @@ export default function InstructorDiary() {
     }
   };
 
+  const lessonTypes = useMemo(() => {
+    const set = new Set<string>();
+    lessons.forEach((l) => {
+      const t = l.scheduled_lessons?.lesson_type?.trim();
+      if (t) set.add(t);
+    });
+    return Array.from(set).sort();
+  }, [lessons]);
+
+  const minDurationNum = minDuration ? parseInt(minDuration, 10) : null;
+  const maxDurationNum = maxDuration ? parseInt(maxDuration, 10) : null;
+
   const filteredLessons = useMemo(() => lessons.filter(lesson => {
     // Status filter
     if (statusFilter === "rated" && !lesson.rating) return false;
@@ -223,11 +235,31 @@ export default function InstructorDiary() {
     if (statusFilter === "has_notes" && !lesson.notes?.trim()) return false;
     if (statusFilter === "missing_notes" && lesson.notes?.trim()) return false;
 
+    // Lesson type
+    if (lessonTypeFilter !== "all") {
+      const t = lesson.scheduled_lessons?.lesson_type || "";
+      if (t !== lessonTypeFilter) return false;
+    }
+
+    // Duration range
+    if (minDurationNum !== null && lesson.duration_minutes < minDurationNum) return false;
+    if (maxDurationNum !== null && lesson.duration_minutes > maxDurationNum) return false;
+
+    // Google source
+    const hasGoogle = !!lesson.scheduled_lessons?.google_event_id;
+    if (googleSourceFilter === "from_google" && !hasGoogle) return false;
+    if (googleSourceFilter === "not_from_google" && hasGoogle) return false;
+
     if (!searchQuery) return true;
     const pupilName = lesson.pupils?.name?.toLowerCase() || "";
     const notes = lesson.notes?.toLowerCase() || "";
     return pupilName.includes(searchQuery.toLowerCase()) || notes.includes(searchQuery.toLowerCase());
-  }), [lessons, searchQuery, statusFilter]);
+  }), [lessons, searchQuery, statusFilter, lessonTypeFilter, minDurationNum, maxDurationNum, googleSourceFilter]);
+
+  const advancedActiveCount =
+    (lessonTypeFilter !== "all" ? 1 : 0) +
+    (minDurationNum !== null || maxDurationNum !== null ? 1 : 0) +
+    (googleSourceFilter !== "any" ? 1 : 0);
 
   const lessonCount = filteredLessons.length;
 
