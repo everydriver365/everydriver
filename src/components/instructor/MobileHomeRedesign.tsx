@@ -1712,7 +1712,7 @@ export function MobileHomeRedesign({
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
           <span
             style={{
-              fontSize: 14,
+              fontSize: 11,
               fontWeight: 700,
               color: "#8E8E93",
               letterSpacing: 1.2,
@@ -1728,7 +1728,7 @@ export function MobileHomeRedesign({
                 color: "#FFFFFF",
                 borderRadius: 10,
                 padding: "2px 8px",
-                fontSize: 14,
+                fontSize: 12,
                 fontWeight: 700,
                 fontVariantNumeric: "tabular-nums",
               }}
