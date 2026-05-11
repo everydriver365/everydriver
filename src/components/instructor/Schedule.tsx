@@ -1,13 +1,14 @@
 import { memo, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { addDays, format, isSameDay, isTomorrow, startOfDay } from "date-fns";
-import { ChevronRight, ChevronLeft, Plus, MapPin } from "lucide-react";
+import { ChevronRight, ChevronLeft, Plus, MapPin, ChevronsLeftRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { useScheduleWeek, type ScheduleDay, type ScheduleLesson } from "@/hooks/useScheduleWeek";
 import { AppointmentTile } from "@/components/instructor/AppointmentTile";
 import { useDayLessonHistory, eolKey } from "@/hooks/useDayLessonHistory";
+import { useRealGapSlots } from "@/hooks/useRealGapSlots";
 import { AddLessonSheet } from "@/components/instructor/AddLessonSheet";
 import { EndLessonWizard } from "@/components/instructor/EndLessonWizard";
 import { supabase } from "@/integrations/supabase/client";
