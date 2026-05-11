@@ -190,6 +190,17 @@ function ScheduleSection({ instructorId }: { instructorId: string }) {
 
   const { data: lessons = [], isLoading } = useDayLessons(instructorId, dayDate);
   const { data: eolSet } = useDayLessonHistory(instructorId, dayDate);
+  const { data: gapDataForChip } = useRealGapSlots(instructorId);
+  const openSlotsThisWeek = useMemo(() => {
+    if (!gapDataForChip) return 0;
+    const today = format(new Date(), "yyyy-MM-dd");
+    const end = new Date();
+    end.setDate(end.getDate() + (7 - end.getDay()));
+    const endStr = format(end, "yyyy-MM-dd");
+    return gapDataForChip
+      .filter((g: any) => g.date >= today && g.date <= endStr)
+      .reduce((sum: number, g: any) => sum + (g.slots?.length ?? 0), 0);
+  }, [gapDataForChip]);
 
   // Tick every 30s so the NOW line and minutesUntil refresh.
   const [tick, setTick] = useState(0);
@@ -648,27 +659,71 @@ function ScheduleSection({ instructorId }: { instructorId: string }) {
           })
         )}
 
-        {/* Add lesson row */}
-        <button
-          type="button"
-          onClick={() => setShowAdd(true)}
+        {/* V6 Command-style chip pair: Add lesson + Fill gaps */}
+        <div
           style={{
-            width: "100%",
-            padding: "9px 0",
             display: "flex",
-            alignItems: "center",
+            gap: 8,
+            padding: "10px 12px 6px",
             justifyContent: "center",
-            gap: 5,
-            background: "transparent",
-            border: "none",
-            cursor: "pointer",
           }}
         >
-          <Plus size={12} color="#5B6B8A" strokeWidth={2.2} />
-          <span style={{ fontSize: 11, fontWeight: 600, color: "#5B6B8A" }}>
+          <button
+            type="button"
+            onClick={() => setShowAdd(true)}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              background: "#FFFFFF",
+              border: `0.5px solid ${BORDER}`,
+              padding: "7px 12px",
+              borderRadius: 999,
+              fontSize: 12,
+              fontWeight: 600,
+              color: TEXT,
+              cursor: "pointer",
+            }}
+          >
+            <Plus size={13} color={BLUE} strokeWidth={2.2} />
             Add lesson
-          </span>
-        </button>
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate("/instructor/gaps")}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              background: "#FFFFFF",
+              border: `0.5px solid ${BORDER}`,
+              padding: "7px 12px",
+              borderRadius: 999,
+              fontSize: 12,
+              fontWeight: 600,
+              color: TEXT,
+              cursor: "pointer",
+            }}
+          >
+            <ChevronsLeftRight size={13} color={BLUE} strokeWidth={2.2} />
+            Fill gaps
+            {openSlotsThisWeek > 0 && (
+              <span
+                style={{
+                  background: BLUE_TINT,
+                  color: BLUE,
+                  fontSize: 10,
+                  fontWeight: 700,
+                  padding: "1px 6px",
+                  borderRadius: 999,
+                  marginLeft: 2,
+                }}
+              >
+                {openSlotsThisWeek}
+              </span>
+            )}
+          </button>
+        </div>
       </div>
 
       <AddLessonSheet
