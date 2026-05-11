@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Facebook, Instagram, Twitter, Mail, Phone, MapPin } from "lucide-react";
 import { useRouteLogo } from "@/hooks/useRouteLogo";
 import { getWhitelabelConfig } from "@/lib/whitelabel";
+import { getAreasForHost, areaToSlug } from "@/lib/whitelabelAreas";
 
 // Decorative tyre track SVG pattern
 function TyreTrackPattern() {
@@ -42,6 +43,7 @@ export function Footer() {
   const contactEmail = whitelabel?.email ?? "hello@drivetime.co.uk";
   const contactArea = whitelabel?.address ?? "Covering all UK postcodes";
   const copyrightName = whitelabel?.brandName ?? "Drive365";
+  const wlAreas = whitelabel ? getAreasForHost(whitelabel.host) : [];
 
   return (
     <footer className="relative border-t bg-primary text-primary-foreground overflow-hidden">
@@ -117,6 +119,23 @@ export function Footer() {
             </ul>
           </div>
         </div>
+
+        {whitelabel && wlAreas.length > 0 && (
+          <div className="mt-8 border-t border-primary-foreground/10 pt-6 text-xs text-primary-foreground/50 leading-relaxed">
+            <span className="text-primary-foreground/70">Serving: </span>
+            {wlAreas.map((area, i) => (
+              <span key={area}>
+                <Link
+                  to={`/areas/${areaToSlug(area)}`}
+                  className="hover:text-accent"
+                >
+                  {area}
+                </Link>
+                {i < wlAreas.length - 1 && <span className="mx-1.5">·</span>}
+              </span>
+            ))}
+          </div>
+        )}
 
         <div className="mt-8 border-t border-primary-foreground/10 pt-8 text-center text-sm text-primary-foreground/50">
           <p>© {new Date().getFullYear()} {copyrightName}. All rights reserved.</p>
