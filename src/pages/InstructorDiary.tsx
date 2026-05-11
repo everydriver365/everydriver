@@ -48,6 +48,13 @@ const statusLabels: Record<StatusFilter, string> = {
 };
 
 
+type GoogleSourceFilter = "any" | "from_google" | "not_from_google";
+const googleSourceLabels: Record<GoogleSourceFilter, string> = {
+  any: "Any source",
+  from_google: "From Google diary",
+  not_from_google: "Not from Google",
+};
+
 interface LessonRecord {
   id: string;
   lesson_date: string;
@@ -57,6 +64,7 @@ interface LessonRecord {
   rating: number | null;
   skills_practiced: string[] | null;
   pupils: { id: string; name: string } | null;
+  scheduled_lessons: { lesson_type: string | null; google_event_id: string | null } | null;
 }
 
 interface Pupil {
@@ -114,6 +122,10 @@ export default function InstructorDiary() {
   const [customFrom, setCustomFrom] = useState<Date | undefined>();
   const [customTo, setCustomTo] = useState<Date | undefined>();
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [lessonTypeFilter, setLessonTypeFilter] = useState<string>("all");
+  const [minDuration, setMinDuration] = useState<string>("");
+  const [maxDuration, setMaxDuration] = useState<string>("");
+  const [googleSourceFilter, setGoogleSourceFilter] = useState<GoogleSourceFilter>("any");
   const [searchOpen, setSearchOpen] = useState(false);
   const [helpDismissed, setHelpDismissed] = useState(true);
   useEffect(() => {
@@ -176,7 +188,7 @@ export default function InstructorDiary() {
 
       let query = supabase
         .from("lesson_history")
-        .select("id, lesson_date, start_time, duration_minutes, notes, rating, skills_practiced, pupils(id, name)")
+        .select("id, lesson_date, start_time, duration_minutes, notes, rating, skills_practiced, pupils(id, name), scheduled_lessons(lesson_type, google_event_id)")
         .eq("instructor_id", instructorId)
         .gte("lesson_date", startDate)
         .order("lesson_date", { ascending: false });
@@ -204,6 +216,18 @@ export default function InstructorDiary() {
     }
   };
 
+  const lessonTypes = useMemo(() => {
+    const set = new Set<string>();
+    lessons.forEach((l) => {
+      const t = l.scheduled_lessons?.lesson_type?.trim();
+      if (t) set.add(t);
+    });
+    return Array.from(set).sort();
+  }, [lessons]);
+
+  const minDurationNum = minDuration ? parseInt(minDuration, 10) : null;
+  const maxDurationNum = maxDuration ? parseInt(maxDuration, 10) : null;
+
   const filteredLessons = useMemo(() => lessons.filter(lesson => {
     // Status filter
     if (statusFilter === "rated" && !lesson.rating) return false;
@@ -211,11 +235,31 @@ export default function InstructorDiary() {
     if (statusFilter === "has_notes" && !lesson.notes?.trim()) return false;
     if (statusFilter === "missing_notes" && lesson.notes?.trim()) return false;
 
+    // Lesson type
+    if (lessonTypeFilter !== "all") {
+      const t = lesson.scheduled_lessons?.lesson_type || "";
+      if (t !== lessonTypeFilter) return false;
+    }
+
+    // Duration range
+    if (minDurationNum !== null && lesson.duration_minutes < minDurationNum) return false;
+    if (maxDurationNum !== null && lesson.duration_minutes > maxDurationNum) return false;
+
+    // Google source
+    const hasGoogle = !!lesson.scheduled_lessons?.google_event_id;
+    if (googleSourceFilter === "from_google" && !hasGoogle) return false;
+    if (googleSourceFilter === "not_from_google" && hasGoogle) return false;
+
     if (!searchQuery) return true;
     const pupilName = lesson.pupils?.name?.toLowerCase() || "";
     const notes = lesson.notes?.toLowerCase() || "";
     return pupilName.includes(searchQuery.toLowerCase()) || notes.includes(searchQuery.toLowerCase());
-  }), [lessons, searchQuery, statusFilter]);
+  }), [lessons, searchQuery, statusFilter, lessonTypeFilter, minDurationNum, maxDurationNum, googleSourceFilter]);
+
+  const advancedActiveCount =
+    (lessonTypeFilter !== "all" ? 1 : 0) +
+    (minDurationNum !== null || maxDurationNum !== null ? 1 : 0) +
+    (googleSourceFilter !== "any" ? 1 : 0);
 
   const lessonCount = filteredLessons.length;
 
@@ -245,6 +289,10 @@ export default function InstructorDiary() {
     setCustomFrom(undefined);
     setCustomTo(undefined);
     setStatusFilter("all");
+    setLessonTypeFilter("all");
+    setMinDuration("");
+    setMaxDuration("");
+    setGoogleSourceFilter("any");
   };
 
   const selectedPupilObj = allPupils.find(p => p.id === selectedPupil) || null;
@@ -500,6 +548,93 @@ export default function InstructorDiary() {
                   Missing notes ({missingNotesCount})
                 </button>
               )}
+
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button type="button" style={chipStyle(advancedActiveCount > 0)}>
+                    {advancedActiveCount > 0 ? `Advanced · ${advancedActiveCount}` : "Advanced"}
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-72 p-3 space-y-3" align="start">
+                  <div>
+                    <div className="text-[10px] uppercase tracking-wide font-semibold text-muted-foreground mb-1">
+                      Lesson type
+                    </div>
+                    <Select value={lessonTypeFilter} onValueChange={setLessonTypeFilter}>
+                      <SelectTrigger className="h-8 text-xs">
+                        <SelectValue placeholder="All types" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All types</SelectItem>
+                        {lessonTypes.map((t) => (
+                          <SelectItem key={t} value={t}>{t}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <div className="text-[10px] uppercase tracking-wide font-semibold text-muted-foreground mb-1">
+                      Duration (minutes)
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="number"
+                        inputMode="numeric"
+                        min={0}
+                        placeholder="Min"
+                        value={minDuration}
+                        onChange={(e) => setMinDuration(e.target.value)}
+                        className="h-8 text-xs"
+                      />
+                      <span className="text-xs text-muted-foreground">to</span>
+                      <Input
+                        type="number"
+                        inputMode="numeric"
+                        min={0}
+                        placeholder="Max"
+                        value={maxDuration}
+                        onChange={(e) => setMaxDuration(e.target.value)}
+                        className="h-8 text-xs"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="text-[10px] uppercase tracking-wide font-semibold text-muted-foreground mb-1">
+                      Source
+                    </div>
+                    <Select value={googleSourceFilter} onValueChange={(v) => setGoogleSourceFilter(v as GoogleSourceFilter)}>
+                      <SelectTrigger className="h-8 text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {(Object.entries(googleSourceLabels) as [GoogleSourceFilter, string][]).map(([k, label]) => (
+                          <SelectItem key={k} value={k}>{label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-[10px] text-muted-foreground mt-1">
+                      Lessons synced from your Google diary include a Google event reference.
+                    </p>
+                  </div>
+
+                  {advancedActiveCount > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setLessonTypeFilter("all");
+                        setMinDuration("");
+                        setMaxDuration("");
+                        setGoogleSourceFilter("any");
+                      }}
+                      className="text-xs text-primary hover:underline"
+                    >
+                      Reset advanced filters
+                    </button>
+                  )}
+                </PopoverContent>
+              </Popover>
 
               <button
                 type="button"
