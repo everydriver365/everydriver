@@ -7,6 +7,8 @@ import {
   ChevronLeft,
   Search,
   Mic,
+  Info,
+  X,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -110,6 +112,14 @@ export default function InstructorDiary() {
   const [customTo, setCustomTo] = useState<Date | undefined>();
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [searchOpen, setSearchOpen] = useState(false);
+  const [helpDismissed, setHelpDismissed] = useState(true);
+  useEffect(() => {
+    setHelpDismissed(localStorage.getItem("dsm.lessonHistory.helpDismissed") === "1");
+  }, []);
+  const dismissHelp = () => {
+    localStorage.setItem("dsm.lessonHistory.helpDismissed", "1");
+    setHelpDismissed(true);
+  };
 
   const usingCustomRange = !!(customFrom && customTo);
 
@@ -259,8 +269,8 @@ export default function InstructorDiary() {
                 <h1 style={{ fontSize: 20, fontWeight: 700, color: "var(--d2-text-1)", letterSpacing: -0.4, margin: 0 }}>
                   Lesson History
                 </h1>
-                <p style={{ fontSize: 10, color: "var(--d2-text-2)", marginTop: 1 }}>
-                  All lessons across all pupils
+                <p style={{ fontSize: 11, color: "var(--d2-text-2)", marginTop: 2 }}>
+                  A searchable record of every past lesson — review notes, ratings and pupil progress.
                 </p>
               </div>
             </div>
@@ -279,6 +289,36 @@ export default function InstructorDiary() {
               <Search size={13} color="var(--d2-text-3)" strokeWidth={1.8} />
             </button>
           </div>
+
+          {!helpDismissed && (
+            <div
+              style={{
+                display: "flex",
+                gap: 10,
+                alignItems: "flex-start",
+                background: "var(--d2-indigo-bg, #EDF2FE)",
+                border: "0.5px solid var(--d2-border)",
+                borderRadius: 12,
+                padding: "10px 12px",
+                marginBottom: 10,
+              }}
+            >
+              <Info size={14} color="var(--d2-indigo)" style={{ marginTop: 2, flexShrink: 0 }} />
+              <p style={{ flex: 1, fontSize: 12, lineHeight: 1.5, color: "var(--d2-text-1)", margin: 0 }}>
+                Use Lesson History to look back at completed lessons. Filter by pupil, date range or status to find lessons that are missing notes or a rating, review what you covered last time, or pull stats for tax and CPD evidence.
+              </p>
+              <button
+                onClick={dismissHelp}
+                aria-label="Dismiss"
+                style={{
+                  background: "transparent", border: "none", padding: 2, cursor: "pointer",
+                  color: "var(--d2-text-2)", flexShrink: 0,
+                }}
+              >
+                <X size={14} />
+              </button>
+            </div>
+          )}
 
           {/* Search bar */}
           <div
