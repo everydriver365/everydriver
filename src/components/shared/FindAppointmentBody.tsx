@@ -224,6 +224,7 @@ export function FindAppointmentBody({
       <div className="flex-1 min-h-0 overflow-y-auto px-[15px] pb-3">
         {/* Search criteria */}
         {!nextOnly && <SectionLabel label="Search criteria" />}
+        {!nextOnly && (
         <div className="bg-white rounded-[14px] overflow-hidden mb-3" style={cardStyle}>
           {/* Search from */}
           <div className="px-3 py-2.5">
