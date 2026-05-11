@@ -629,11 +629,11 @@ export function AddLessonSheet({
     return true;
   };
 
-  const handleAddLessonExisting = async () => {
-    if (!selectedPupil || !lessonDate) { toast.error('Please select a pupil and date'); return; }
+  const handleAddLessonExisting = async (): Promise<{ ok: boolean; error?: string }> => {
+    if (!selectedPupil || !lessonDate) { return { ok: false, error: 'Please select a pupil and date' }; }
     if (pendingCheckRef.current) { try { await pendingCheckRef.current; } catch { /* ignore */ } }
-    if (conflictWarning && !overrideBuffer) { toast.error(conflictWarning); return; }
-    if (!(await validateExaminerCentreMatch())) return;
+    if (conflictWarning && !overrideBuffer) { return { ok: false, error: conflictWarning }; }
+    if (!(await validateExaminerCentreMatch())) return { ok: false, error: 'Selected examiner does not work at this test centre' };
     setLoading(true);
     try {
       const durationMinutes = parseFloat(lessonDuration) * 60;
@@ -671,32 +671,33 @@ export function AddLessonSheet({
           ...(isDrivingTest && selectedExaminer ? { examiner_id: selectedExaminer } : {}),
         });
       }
-      // For recurring lessons, re-check every week (not just the first) so we
-      // never silently insert a clash on weeks 2..N — unless the user has
-      // explicitly chosen to override the clash.
       if (weeks > 1 && !(overrideBuffer && isHardOverlap)) {
         for (const dateStr of dateStrs) {
           const c = await checkLessonClash({
             instructorId, date: dateStr, startTime: lessonStartTime, durationMinutes,
           });
           if (c.hardOverlap) {
-            toast.error(`Week of ${dateStr}: ${c.message ?? 'slot already booked'} — no lessons scheduled`);
             setLoading(false);
-            return;
+            return { ok: false, error: `Week of ${dateStr}: ${c.message ?? 'slot already booked'} — no lessons scheduled` };
           }
         }
       }
       const { error } = await supabase.from('scheduled_lessons').insert(lessons);
       if (error) {
         const friendly = describeLessonClashError(error);
-        if (friendly) { toast.error(friendly); setLoading(false); return; }
-        throw error;
+        setLoading(false);
+        if (friendly) return { ok: false, error: friendly };
+        return { ok: false, error: 'Failed to schedule lesson' };
       }
       toast.success(isDrivingTest ? 'Test scheduled!' : isRecurring ? `${weeks} lessons scheduled` : 'Lesson scheduled');
       handlePostSavePayment(selectedPupil);
       invalidateLessonQueries(queryClient);
       resetForm(); onOpenChange(false); onSuccess();
-    } catch (error) { console.error(error); toast.error('Failed to schedule lesson'); }
+      return { ok: true };
+    } catch (error) {
+      console.error(error);
+      return { ok: false, error: 'Failed to schedule lesson' };
+    }
     finally { setLoading(false); }
   };
 
