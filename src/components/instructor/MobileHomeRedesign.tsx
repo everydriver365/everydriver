@@ -7,7 +7,7 @@ import { useInstructorLastPosition } from "@/hooks/useInstructorLastPosition";
 import { useTrafficETA } from "@/hooks/useTrafficETA";
 import { UpNextExpanded } from "@/components/instructor/UpNextExpanded";
 import { useNavigate } from "react-router-dom";
-import { format, parse, parseISO, isToday, isTomorrow, differenceInMinutes } from "date-fns";
+import { format, parse, parseISO, isToday, isTomorrow, differenceInMinutes, endOfWeek } from "date-fns";
 import {
   Phone,
   MessageSquare,
@@ -1549,7 +1549,12 @@ export function MobileHomeRedesign({
     });
   }
 
-  const openSlots = (gapData ?? []).reduce((sum, g) => sum + (g.slots?.length ?? 0), 0);
+  // Live count of bookable open slots between today and end of this week (Sun).
+  const weekEndStr = format(endOfWeek(new Date(), { weekStartsOn: 1 }), "yyyy-MM-dd");
+  const todayStr = format(new Date(), "yyyy-MM-dd");
+  const openSlots = (gapData ?? [])
+    .filter((g) => g.date >= todayStr && g.date <= weekEndStr)
+    .reduce((sum, g) => sum + (g.slots?.length ?? 0), 0);
   attentionRows.push({
     key: "gaps",
     group: "todo",
