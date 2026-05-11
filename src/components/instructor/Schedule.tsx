@@ -81,7 +81,7 @@ function SectionHeader({ onWeekClick }: { onWeekClick: () => void }) {
     >
       <span
         style={{
-          fontSize: 10,
+          fontSize: 14,
           fontWeight: 700,
           color: "#8E8E93",
           letterSpacing: "1.2px",
@@ -94,7 +94,7 @@ function SectionHeader({ onWeekClick }: { onWeekClick: () => void }) {
         type="button"
         onClick={onWeekClick}
         style={{
-          fontSize: 11,
+          fontSize: 14,
           fontWeight: 600,
           color: DSM_BLUE,
           background: "transparent",
@@ -184,7 +184,7 @@ const DayChip = memo(function DayChip({
     >
       <span
         style={{
-          fontSize: 8,
+          fontSize: 14,
           fontWeight: letterWeight,
           color: letterColor,
           letterSpacing: 0.04,
@@ -207,7 +207,7 @@ const DayChip = memo(function DayChip({
       >
         <span
           style={{
-            fontSize: 13,
+            fontSize: 14,
             fontWeight: numberWeight,
             color: numberColor,
             letterSpacing: -0.3,
@@ -299,10 +299,10 @@ function DayStripCard({
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-          <span style={{ fontSize: 11, fontWeight: 700, color: "#1A1A1A", letterSpacing: -0.2 }}>
+          <span style={{ fontSize: 14, fontWeight: 700, color: "#1A1A1A", letterSpacing: -0.2 }}>
             {monthLabel}
           </span>
-          <span style={{ fontSize: 9, color: "#8E8E93" }}>· W{weekNumber}</span>
+          <span style={{ fontSize: 14, color: "#8E8E93" }}>· W{weekNumber}</span>
         </div>
         <div style={{ display: "flex", gap: 4 }}>
           <button type="button" onClick={onPrevWeek} aria-label="Previous week" style={navBtn}>
@@ -388,7 +388,7 @@ const CapacityRing = memo(function CapacityRing({
       >
         <span
           style={{
-            fontSize: 13,
+            fontSize: 14,
             fontWeight: 500,
             color: TEXT_PRIMARY,
             lineHeight: 1,
@@ -399,7 +399,7 @@ const CapacityRing = memo(function CapacityRing({
         </span>
         <span
           style={{
-            fontSize: 8,
+            fontSize: 14,
             color: TEXT_TERTIARY,
             letterSpacing: 0.5,
             marginTop: 1,
@@ -477,7 +477,7 @@ function DaySummaryCard({
           />
           <span
             style={{
-              fontSize: 10,
+              fontSize: 14,
               fontWeight: 700,
               color: DSM_BLUE,
               letterSpacing: 0.4,
@@ -486,7 +486,7 @@ function DaySummaryCard({
             {labelText}
           </span>
         </div>
-        <span style={{ fontSize: 9, color: "#8E8E93" }}>
+        <span style={{ fontSize: 14, color: "#8E8E93" }}>
           {lessonCount} lesson{lessonCount !== 1 ? "s" : ""} booked
         </span>
       </div>
@@ -504,7 +504,7 @@ function DaySummaryCard({
           >
             <div
               style={{
-                fontSize: 17,
+                fontSize: 14,
                 fontWeight: 700,
                 color: stat.color,
                 letterSpacing: -0.5,
@@ -514,7 +514,7 @@ function DaySummaryCard({
             >
               {stat.value}
             </div>
-            <div style={{ fontSize: 8.5, color: "#8E8E93", marginTop: 2 }}>
+            <div style={{ fontSize: 14, color: "#8E8E93", marginTop: 2 }}>
               {stat.label}
             </div>
           </div>
@@ -535,7 +535,7 @@ function DaySummaryCard({
           <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
             <span
               style={{
-                fontSize: 10,
+                fontSize: 14,
                 color: "#1A7A3C",
                 fontWeight: 700,
                 lineHeight: 1,
@@ -543,9 +543,9 @@ function DaySummaryCard({
             >
               £
             </span>
-            <span style={{ fontSize: 10, color: "#8E8E93" }}>Could earn</span>
+            <span style={{ fontSize: 14, color: "#8E8E93" }}>Could earn</span>
           </div>
-          <span style={{ fontSize: 11, fontWeight: 700, color: "#1A7A3C" }}>
+          <span style={{ fontSize: 14, fontWeight: 700, color: "#1A7A3C" }}>
             £{potentialEarnings} today
           </span>
         </div>
@@ -569,7 +569,7 @@ function DaySummaryCard({
           }}
         >
           <Plus size={11} color={DSM_BLUE} strokeWidth={2.2} />
-          <span style={{ fontSize: 11, fontWeight: 600, color: DSM_BLUE }}>
+          <span style={{ fontSize: 14, fontWeight: 600, color: DSM_BLUE }}>
             Fill open time
           </span>
         </button>
@@ -650,7 +650,7 @@ function LessonRow({
       <div style={{ paddingLeft: 6, flexShrink: 0 }}>
         <div
           style={{
-            fontSize: 17,
+            fontSize: 14,
             fontWeight: 500,
             color: accent,
             lineHeight: 1,
@@ -659,7 +659,7 @@ function LessonRow({
         >
           {lesson.startTime}
         </div>
-        <div style={{ fontSize: 11, color: TEXT_SECONDARY, marginTop: 3 }}>
+        <div style={{ fontSize: 14, color: TEXT_SECONDARY, marginTop: 3 }}>
           {fmtDuration(lesson.durationMinutes)}
         </div>
       </div>
@@ -676,7 +676,7 @@ function LessonRow({
               style={{
                 background: p.bg,
                 color: p.color,
-                fontSize: 10,
+                fontSize: 14,
                 fontWeight: 500,
                 padding: "1px 6px",
                 borderRadius: 8,
@@ -702,7 +702,7 @@ function LessonRow({
             >
               <span
                 style={{
-                  fontSize: 10,
+                  fontSize: 14,
                   fontWeight: 700,
                   color: DSM_BLUE,
                   letterSpacing: 0.3,
@@ -721,7 +721,7 @@ function LessonRow({
               style={{
                 background: isPaid ? "#E8F8ED" : "#FFECEC",
                 color: isPaid ? "#1A7A3C" : "#D33B3B",
-                fontSize: 10,
+                fontSize: 14,
                 fontWeight: 600,
                 padding: "1px 6px",
                 borderRadius: 8,
@@ -746,7 +746,7 @@ function LessonRow({
         </div>
         <div
           style={{
-            fontSize: 12,
+            fontSize: 14,
             color: TEXT_SECONDARY,
             display: "flex",
             alignItems: "center",
@@ -908,7 +908,7 @@ const OpenSlotCard = memo(function OpenSlotCard({
       <div style={{ flexShrink: 0, minWidth: 38 }}>
         <div
           style={{
-            fontSize: 12,
+            fontSize: 14,
             fontWeight: 700,
             color: timeColor,
             lineHeight: 1,
@@ -917,7 +917,7 @@ const OpenSlotCard = memo(function OpenSlotCard({
         >
           {startTime}
         </div>
-        <div style={{ fontSize: 9, color: "#C7C7CC", marginTop: 2 }}>
+        <div style={{ fontSize: 14, color: "#C7C7CC", marginTop: 2 }}>
           {fmtDuration(durationMinutes)} open
         </div>
       </div>
@@ -926,7 +926,7 @@ const OpenSlotCard = memo(function OpenSlotCard({
       <div style={{ flex: 1, minWidth: 0 }}>
         <div
           style={{
-            fontSize: 12,
+            fontSize: 14,
             fontWeight: 600,
             color: titleColor,
             overflow: "hidden",
@@ -938,7 +938,7 @@ const OpenSlotCard = memo(function OpenSlotCard({
         </div>
         <div
           style={{
-            fontSize: 9,
+            fontSize: 14,
             color: "#C7C7CC",
             marginTop: 1,
             overflow: "hidden",
@@ -992,7 +992,7 @@ function EmptyDayState({
       <div style={{ fontSize: 14, fontWeight: 500, color: TEXT_SECONDARY }}>
         Free day
       </div>
-      <div style={{ fontSize: 12, color: TEXT_TERTIARY, marginTop: 4 }}>
+      <div style={{ fontSize: 14, color: TEXT_TERTIARY, marginTop: 4 }}>
         {isWorkingDay
           ? "Add a lesson or block off the day"
           : "You have this day off"}
@@ -1008,7 +1008,7 @@ function EmptyDayState({
               border: "none",
               padding: "8px 14px",
               borderRadius: 8,
-              fontSize: 12,
+              fontSize: 14,
               fontWeight: 500,
               cursor: "pointer",
             }}
@@ -1024,7 +1024,7 @@ function EmptyDayState({
               border: "none",
               padding: "8px 14px",
               borderRadius: 8,
-              fontSize: 12,
+              fontSize: 14,
               fontWeight: 500,
               cursor: "pointer",
             }}
@@ -1296,7 +1296,7 @@ export default function Schedule({
           color: "#FFF",
           border: "none",
           boxShadow: "0 2px 8px rgba(26,82,160,0.22)",
-          fontSize: 13,
+          fontSize: 14,
           fontWeight: 700,
           marginTop: 8,
           cursor: "pointer",

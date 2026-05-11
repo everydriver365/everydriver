@@ -116,7 +116,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
     <div
       style={{
-        fontSize: 10,
+        fontSize: 14,
         fontWeight: 700,
         color: MUTED,
         letterSpacing: "0.08em",
@@ -166,7 +166,7 @@ function GreetingBlock({
         <div style={{ flex: 1, minWidth: 0 }}>
           <div
             style={{
-              fontSize: 11,
+              fontSize: 14,
               fontWeight: 600,
               color: MUTED,
               letterSpacing: "0.08em",
@@ -177,7 +177,7 @@ function GreetingBlock({
           </div>
           <h1
             style={{
-              fontSize: 26,
+              fontSize: 14,
               fontWeight: 700,
               color: "#1A1A1A",
               letterSpacing: "-0.4px",
@@ -252,7 +252,7 @@ function SummaryStatCard({
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 6 }}>
         <div
           style={{
-            fontSize: 9,
+            fontSize: 14,
             fontWeight: 700,
             color: MUTED,
             letterSpacing: "0.08em",
@@ -282,7 +282,7 @@ function SummaryStatCard({
       <div>
         <div
           style={{
-            fontSize: 19,
+            fontSize: 14,
             fontWeight: 700,
             color: "#1A1A1A",
             letterSpacing: "-0.4px",
@@ -292,7 +292,7 @@ function SummaryStatCard({
         >
           {value}
         </div>
-        <div style={{ fontSize: 10.5, color: MUTED, marginTop: 3 }}>{sub}</div>
+        <div style={{ fontSize: 14, color: MUTED, marginTop: 3 }}>{sub}</div>
       </div>
     </div>
   );
@@ -382,7 +382,7 @@ function MapHero({
           WebkitBackdropFilter: "blur(8px)",
           padding: "5px 10px",
           borderRadius: 999,
-          fontSize: 12,
+          fontSize: 14,
           fontWeight: 700,
           color: "#000000",
           border: `0.5px solid ${BORDER}`,
@@ -419,7 +419,7 @@ function MapHero({
       >
         <div
           style={{
-            fontSize: 18,
+            fontSize: 14,
             fontWeight: 700,
             color: "#000",
             letterSpacing: "-0.4px",
@@ -431,7 +431,7 @@ function MapHero({
         </div>
         <div
           style={{
-            fontSize: 10,
+            fontSize: 14,
             fontWeight: 600,
             color: MUTED,
             marginTop: 3,
@@ -606,31 +606,31 @@ function UpNextTile({
                 style={{ width: 40, height: 40, borderRadius: 20, objectFit: "cover" }}
               />
             ) : (
-              <span style={{ fontSize: 13, fontWeight: 700, color: "#FFF" }}>{initialsText}</span>
+              <span style={{ fontSize: 14, fontWeight: 700, color: "#FFF" }}>{initialsText}</span>
             )}
           </button>
 
           <div style={{ flex: 1, minWidth: 0 }}>
             <div
               style={{
-                fontSize: 15, fontWeight: 700, color: "#1A1A1A", letterSpacing: -0.3,
+                fontSize: 14, fontWeight: 700, color: "#1A1A1A", letterSpacing: -0.3,
                 overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
               }}
             >
               {fullName}
             </div>
-            <div style={{ fontSize: 10, color: "#8E8E93", marginTop: 2, fontWeight: 500 }}>
+            <div style={{ fontSize: 14, color: "#8E8E93", marginTop: 2, fontWeight: 500 }}>
               {dayText}{dayText && relativeDay ? " · " : ""}{relativeDay}
             </div>
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", flexShrink: 0 }}>
-            <div style={{ fontSize: 22, fontWeight: 700, color: "#1A52A0", letterSpacing: -0.6, lineHeight: "24px" }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "#1A52A0", letterSpacing: -0.6, lineHeight: "24px" }}>
               {start}
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 3 }}>
               <span style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: "#CC2229" }} />
-              <span style={{ fontSize: 10, color: "#8E8E93", fontWeight: 500 }}>{countdownLine}</span>
+              <span style={{ fontSize: 14, color: "#8E8E93", fontWeight: 500 }}>{countdownLine}</span>
             </div>
           </div>
         </div>
@@ -672,7 +672,7 @@ function UpNextTile({
                   {pickupPostcode && pickupLocation ? " · " : ""}
                   {pickupLocation || ""}
                 </div>
-                <div style={{ fontSize: 10, color: "#1A52A0", marginTop: 1, fontWeight: 600 }}>Pick-up</div>
+                <div style={{ fontSize: 14, color: "#1A52A0", marginTop: 1, fontWeight: 600 }}>Pick-up</div>
               </div>
             </div>
           )}
@@ -691,7 +691,7 @@ function UpNextTile({
               }}
             >
               <Sparkles size={10} strokeWidth={2} style={{ color: "#6B21A8" }} />
-              <span style={{ fontSize: 10, fontWeight: 600, color: "#6B21A8" }}>{aiStatusLine}</span>
+              <span style={{ fontSize: 14, fontWeight: 600, color: "#6B21A8" }}>{aiStatusLine}</span>
             </div>
           )}
 
@@ -708,7 +708,7 @@ function UpNextTile({
                 background: pupilPhone ? "#CC2229" : "#E8B5B7",
                 color: "#FFFFFF",
                 border: "none",
-                fontSize: 15,
+                fontSize: 14,
                 fontWeight: 700,
                 display: "inline-flex",
                 alignItems: "center",
@@ -730,7 +730,7 @@ function UpNextTile({
                 background: BLUE_TINT,
                 color: BLUE,
                 border: `0.5px solid ${BORDER}`,
-                fontSize: 15,
+                fontSize: 14,
                 fontWeight: 600,
                 display: "inline-flex",
                 alignItems: "center",
@@ -752,7 +752,7 @@ function UpNextTile({
                 background: BLUE_TINT,
                 color: BLUE,
                 border: `0.5px solid ${BORDER}`,
-                fontSize: 15,
+                fontSize: 14,
                 fontWeight: 600,
                 display: "inline-flex",
                 alignItems: "center",
@@ -785,7 +785,7 @@ function UpNextTile({
             cursor: "pointer",
           }}
         >
-          <span style={{ fontSize: 11, fontWeight: 600, color: "#8E8E93" }}>
+          <span style={{ fontSize: 14, fontWeight: 600, color: "#8E8E93" }}>
             {expanded ? "Hide details" : "Details"}
           </span>
           <ChevronDown
@@ -958,7 +958,7 @@ function UpNextMapStrip({
           </OverlayViewF>
         </GoogleMap>
       ) : (
-        <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, color: MUTED }}>
+        <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, color: MUTED }}>
           {hasDestination ? "Loading live map…" : "No pick-up set"}
         </div>
       )}
@@ -974,7 +974,7 @@ function UpNextMapStrip({
           pointerEvents: "none",
         }}>
           <span style={{ width: 5, height: 5, borderRadius: 3, background: etaMin > 0 ? "#1D9E75" : "#C7C7CC" }} />
-          <span style={{ fontSize: 10.5, fontWeight: 700, color: "#1A1A1A", fontVariantNumeric: "tabular-nums" }}>
+          <span style={{ fontSize: 14, fontWeight: 700, color: "#1A1A1A", fontVariantNumeric: "tabular-nums" }}>
             {etaMin > 0 ? `ETA ${etaMin}m` : "Live ETA…"}
           </span>
         </div>
@@ -994,7 +994,7 @@ function UpNextMapStrip({
         }}
       >
         <NavIcon size={11} strokeWidth={2.4} style={{ color: "#FFF" }} />
-        <span style={{ fontSize: 10.5, fontWeight: 700, color: "#FFF" }}>Navigate</span>
+        <span style={{ fontSize: 14, fontWeight: 700, color: "#FFF" }}>Navigate</span>
       </button>
     </div>
   );
@@ -1096,7 +1096,7 @@ function GroupHeader({
       )}
       <span
         style={{
-          fontSize: 9,
+          fontSize: 14,
           fontWeight: 700,
           color: dotColor,
           letterSpacing: "0.08em",
@@ -1107,7 +1107,7 @@ function GroupHeader({
       </span>
       <span style={{ flex: 1 }} />
       {countLabel && (
-        <span style={{ fontSize: 9, color: "#8E8E93" }}>{countLabel}</span>
+        <span style={{ fontSize: 14, color: "#8E8E93" }}>{countLabel}</span>
       )}
     </div>
   );
@@ -1179,14 +1179,14 @@ function AttentionRowItem({
       <div style={{ flex: 1, minWidth: 0 }}>
         <div
           style={{
-            fontSize: 11,
+            fontSize: 14,
             fontWeight: isActive && row.group === "urgent" ? 700 : 600,
             color: isActive && row.group === "urgent" ? "#CC2229" : "#1A1A1A",
           }}
         >
           {row.title}
         </div>
-        <div style={{ fontSize: 9, color: "#8E8E93", marginTop: 1 }}>
+        <div style={{ fontSize: 14, color: "#8E8E93", marginTop: 1 }}>
           {row.subtitle}
         </div>
       </div>
@@ -1204,7 +1204,7 @@ function AttentionRowItem({
           }}
         >
           <Check size={8} color="#1A7A3C" strokeWidth={2.5} />
-          <span style={{ fontSize: 8.5, fontWeight: 600, color: "#1A7A3C" }}>
+          <span style={{ fontSize: 14, fontWeight: 600, color: "#1A7A3C" }}>
             Clear
           </span>
         </span>
@@ -1220,7 +1220,7 @@ function AttentionRowItem({
             display: "inline-flex",
             alignItems: "center",
             justifyContent: "center",
-            fontSize: 9,
+            fontSize: 14,
             fontWeight: 700,
             fontVariantNumeric: "tabular-nums",
             flexShrink: 0,
@@ -1254,8 +1254,8 @@ function AttentionCard({ rows }: { rows: AttentionRow[] }) {
           border: `0.5px solid ${BORDER}`,
         }}
       >
-        <div style={{ fontSize: 12, fontWeight: 600, color: "#1A1A1A", marginBottom: 3 }}>All clear</div>
-        <div style={{ fontSize: 10, color: MUTED }}>Nothing needs your attention right now</div>
+        <div style={{ fontSize: 14, fontWeight: 600, color: "#1A1A1A", marginBottom: 3 }}>All clear</div>
+        <div style={{ fontSize: 14, color: MUTED }}>Nothing needs your attention right now</div>
       </div>
     );
   }
@@ -1351,21 +1351,21 @@ function UpgradeCard({ rows }: { rows: UpgradeRowSpec[] }) {
             </span>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 1 }}>
-                <span style={{ fontSize: 11, fontWeight: 700, color: "#1A1A1A" }}>{r.label}</span>
+                <span style={{ fontSize: 14, fontWeight: 700, color: "#1A1A1A" }}>{r.label}</span>
                 <span
                   style={{
                     background: r.tierBg,
                     color: r.tierColor,
                     borderRadius: 4,
                     padding: "1px 5px",
-                    fontSize: 8,
+                    fontSize: 14,
                     fontWeight: 700,
                   }}
                 >
                   {r.tierLabel}
                 </span>
               </div>
-              <div style={{ fontSize: 9, color: "#8E8E93" }}>{r.subtitle}</div>
+              <div style={{ fontSize: 14, color: "#8E8E93" }}>{r.subtitle}</div>
             </div>
             <span
               style={{
@@ -1373,7 +1373,7 @@ function UpgradeCard({ rows }: { rows: UpgradeRowSpec[] }) {
                 color: "#FFF",
                 borderRadius: 20,
                 padding: "4px 10px",
-                fontSize: 9,
+                fontSize: 14,
                 fontWeight: 700,
                 flexShrink: 0,
               }}
@@ -1709,7 +1709,7 @@ export function MobileHomeRedesign({
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
           <span
             style={{
-              fontSize: 10,
+              fontSize: 14,
               fontWeight: 700,
               color: "#8E8E93",
               letterSpacing: 1.2,
@@ -1725,7 +1725,7 @@ export function MobileHomeRedesign({
                 color: "#FFFFFF",
                 borderRadius: 10,
                 padding: "2px 8px",
-                fontSize: 9,
+                fontSize: 14,
                 fontWeight: 700,
                 fontVariantNumeric: "tabular-nums",
               }}
