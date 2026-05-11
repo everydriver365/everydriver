@@ -18409,6 +18409,7 @@ export type Database = {
           car_make: string | null
           car_model: string | null
           car_type: string | null
+          clearpay_enabled: boolean | null
           cpd_certified: boolean | null
           created_at: string | null
           custom_branding_enabled: boolean | null
@@ -18430,6 +18431,7 @@ export type Database = {
           instagram_url: string | null
           instructor_grade: string | null
           is_active: boolean | null
+          klarna_enabled: boolean | null
           lat: number | null
           linkedin_url: string | null
           lng: number | null
@@ -18479,6 +18481,7 @@ export type Database = {
           car_make?: string | null
           car_model?: string | null
           car_type?: string | null
+          clearpay_enabled?: boolean | null
           cpd_certified?: boolean | null
           created_at?: string | null
           custom_branding_enabled?: boolean | null
@@ -18500,6 +18503,7 @@ export type Database = {
           instagram_url?: string | null
           instructor_grade?: string | null
           is_active?: boolean | null
+          klarna_enabled?: boolean | null
           lat?: number | null
           linkedin_url?: string | null
           lng?: number | null
@@ -18549,6 +18553,7 @@ export type Database = {
           car_make?: string | null
           car_model?: string | null
           car_type?: string | null
+          clearpay_enabled?: boolean | null
           cpd_certified?: boolean | null
           created_at?: string | null
           custom_branding_enabled?: boolean | null
@@ -18570,6 +18575,7 @@ export type Database = {
           instagram_url?: string | null
           instructor_grade?: string | null
           is_active?: boolean | null
+          klarna_enabled?: boolean | null
           lat?: number | null
           linkedin_url?: string | null
           lng?: number | null
