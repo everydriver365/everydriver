@@ -663,14 +663,15 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
   return (
     <div style={{ fontFamily: FONT_STACK }}>
       {/* Section title */}
-      <div style={{ marginBottom: 16 }}>
+      <div style={{ marginBottom: 20 }}>
         <h2
           style={{
-            fontSize: 17,
-            fontWeight: 500,
+            fontSize: 20,
+            fontWeight: 600,
             color: "#000000",
-            letterSpacing: -0.3,
-            margin: "0 0 4px",
+            letterSpacing: -0.4,
+            margin: "0 0 6px",
+            lineHeight: 1.2,
           }}
         >
           Fill your gaps
@@ -679,7 +680,7 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
           style={{
             fontSize: 13,
             color: "#6E6E73",
-            lineHeight: 1.4,
+            lineHeight: 1.45,
             margin: 0,
           }}
         >
