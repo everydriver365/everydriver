@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { useScheduleWeek, type ScheduleDay, type ScheduleLesson } from "@/hooks/useScheduleWeek";
+import { AppointmentTile } from "@/components/instructor/AppointmentTile";
 import { useDayLessonHistory, eolKey } from "@/hooks/useDayLessonHistory";
 import { AddLessonSheet } from "@/components/instructor/AddLessonSheet";
 import { EndLessonWizard } from "@/components/instructor/EndLessonWizard";
@@ -571,177 +572,25 @@ function LessonRow({
   onClick: () => void;
   onEOLClick: (e: React.MouseEvent) => void;
 }) {
-  const accent = lessonAccentColor(lesson, now);
-  const t = (lesson.lessonType || "").toLowerCase();
-  const isPast = lesson.endDate <= now && lesson.status !== "cancelled";
-  const isPaid = lesson.paymentStatus === "paid" || lesson.paymentStatus === "cash";
-  const showPayPill = lesson.status !== "cancelled";
-  const showEOLPill = isPast || lesson.status === "completed" || eolDone;
-
-  const pills: { label: string; bg: string; color: string; aria: string }[] = [];
-  if (lesson.status === "cancelled") {
-    pills.push({ label: "Cancelled", bg: TINT_GREY, color: TEXT_TERTIARY, aria: "Cancelled" });
-  }
-  if (t === "mock_test" || t.includes("mock")) {
-    pills.push({ label: "Mock test", bg: TINT_AMBER, color: TINT_AMBER_FG, aria: "Mock test" });
-  } else if (t === "test_prep" || t.includes("test prep")) {
-    pills.push({ label: "test prep", bg: TINT_AMBER, color: TINT_AMBER_FG, aria: "Test preparation" });
-  } else if (t.includes("test")) {
-    pills.push({ label: "test day", bg: TINT_AMBER, color: TINT_AMBER_FG, aria: "Test day" });
-  }
-
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      style={{
-        position: "relative",
-        overflow: "hidden",
-        background: CARD_BG,
-        borderRadius: 16,
-        padding: "12px 14px",
-        marginBottom: 8,
-        width: "100%",
-        textAlign: "left",
-        border: `0.5px solid ${DSM_BLUE_BORDER}`,
-        display: "flex",
-        gap: 12,
-        alignItems: "center",
-        cursor: "pointer",
-        WebkitTapHighlightColor: "transparent",
-      }}
-      aria-label={`Lesson with ${lesson.pupilName}, ${lesson.startTime} for ${fmtDuration(lesson.durationMinutes)}, at ${shortLine(lesson.pickupLocation, lesson.pickupPostcode)}`}
-    >
-      <span
-        aria-hidden
-        style={{
-          position: "absolute",
-          left: 0,
-          top: 10,
-          bottom: 10,
-          width: 3,
-          borderRadius: "0 2px 2px 0",
-          background: accent,
-        }}
+    <div style={{ marginBottom: 8 }}>
+      <AppointmentTile
+        pupilDisplayName={`${lesson.pupilFirstName} ${lesson.pupilLastInitial}`}
+        startTimeLabel={lesson.startTime}
+        durationMinutes={lesson.durationMinutes}
+        pickupLocation={lesson.pickupLocation}
+        pickupPostcode={lesson.pickupPostcode}
+        lessonType={lesson.lessonType}
+        status={lesson.status}
+        paymentStatus={lesson.paymentStatus}
+        startDate={lesson.startDate}
+        endDate={lesson.endDate}
+        now={now}
+        eolDone={eolDone}
+        onClick={onClick}
+        onEOLClick={onEOLClick}
       />
-      <div style={{ paddingLeft: 6, flexShrink: 0 }}>
-        <div
-          style={{
-            fontSize: 14,
-            fontWeight: 500,
-            color: accent,
-            lineHeight: 1,
-            fontVariantNumeric: "tabular-nums",
-          }}
-        >
-          {lesson.startTime}
-        </div>
-        <div style={{ fontSize: 14, color: TEXT_SECONDARY, marginTop: 3 }}>
-          {fmtDuration(lesson.durationMinutes)}
-        </div>
-      </div>
-
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: "flex", gap: 6, alignItems: "center", marginBottom: 2, flexWrap: "wrap" }}>
-          <span style={{ fontSize: 14, fontWeight: 700, color: TEXT_PRIMARY, letterSpacing: -0.1 }}>
-            {lesson.pupilFirstName} {lesson.pupilLastInitial}
-          </span>
-          {pills.map((p) => (
-            <span
-              key={p.label}
-              aria-label={p.aria}
-              style={{
-                background: p.bg,
-                color: p.color,
-                fontSize: 14,
-                fontWeight: 500,
-                padding: "1px 6px",
-                borderRadius: 8,
-                whiteSpace: "nowrap",
-              }}
-            >
-              {p.label}
-            </span>
-          ))}
-          {showEOLPill && (
-            <button
-              type="button"
-              onClick={onEOLClick}
-              aria-label={eolDone ? "End of lesson complete — review" : "Complete end of lesson"}
-              style={{
-                background: "#EEF3FF",
-                border: "none",
-                borderRadius: 8,
-                padding: "1px 6px",
-                cursor: "pointer",
-                lineHeight: 1.2,
-              }}
-            >
-              <span
-                style={{
-                  fontSize: 14,
-                  fontWeight: 700,
-                  color: DSM_BLUE,
-                  letterSpacing: 0.3,
-                  textTransform: "uppercase",
-                  textDecoration: eolDone ? "line-through" : "none",
-                  opacity: eolDone ? 0.6 : 1,
-                }}
-              >
-                EOL
-              </span>
-            </button>
-          )}
-          {showPayPill && (
-            <span
-              aria-label={isPaid ? "Paid" : "Not paid"}
-              style={{
-                background: isPaid ? "#E8F8ED" : "#FFECEC",
-                color: isPaid ? "#1A7A3C" : "#D33B3B",
-                fontSize: 14,
-                fontWeight: 600,
-                padding: "1px 6px",
-                borderRadius: 8,
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 4,
-                whiteSpace: "nowrap",
-              }}
-            >
-              <span
-                style={{
-                  width: 5,
-                  height: 5,
-                  borderRadius: 3,
-                  background: isPaid ? "#1A7A3C" : "#D33B3B",
-                  display: "inline-block",
-                }}
-              />
-              {isPaid ? "Paid" : "Not paid"}
-            </span>
-          )}
-        </div>
-        <div
-          style={{
-            fontSize: 14,
-            color: TEXT_SECONDARY,
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
-            overflow: "hidden",
-            whiteSpace: "nowrap",
-            textOverflow: "ellipsis",
-          }}
-        >
-          <MapPin size={12} strokeWidth={2} />
-          <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>
-            {shortLine(lesson.pickupLocation, lesson.pickupPostcode)}
-          </span>
-        </div>
-      </div>
-
-      <ChevronRight size={16} color={TEXT_TERTIARY} />
-    </button>
+    </div>
   );
 }
 

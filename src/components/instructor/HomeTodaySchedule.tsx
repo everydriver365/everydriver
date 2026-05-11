@@ -5,6 +5,7 @@ import { useTodayOverview } from "@/hooks/useTodayOverview";
 import { useDayLessons } from "@/hooks/useDayLessons";
 import { useDayLessonHistory, eolKey } from "@/hooks/useDayLessonHistory";
 import { AddLessonSheet } from "@/components/instructor/AddLessonSheet";
+import { AppointmentTile } from "@/components/instructor/AppointmentTile";
 import { EndLessonWizard } from "@/components/instructor/EndLessonWizard";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
@@ -721,227 +722,48 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {lessons.map((lesson) => {
               const state = getLessonState(lesson, nowSec, isTomorrow);
-              const isCancelled = lesson.status === "cancelled";
-              const tType = (lesson.lessonType || "").toLowerCase();
-              const isDrivingTest = tType.includes("driving test") || tType.includes("driving_test");
-              const isMockTest = tType === "mock_test" || tType.includes("mock");
-              const isTestPrep = tType === "test_prep" || tType.includes("test prep");
-              const isTestVariant = isDrivingTest || isMockTest || isTestPrep || tType.includes("test");
-              const lessonLabel = isDrivingTest ? "Driving test" : `${lesson.lessonType || "Standard"} lesson`;
-              const location = lesson.pickupLocation || lesson.pickupPostcode || null;
-              const subtitleText = [lessonLabel, location].filter(Boolean).join(" · ");
-              const time = fmtTime(lesson.startTime);
-              const startSec = startSeconds(lesson.startTime);
-              const endSec = startSec + (lesson.durationMinutes || 0) * 60;
-              const minutesRemaining = Math.max(0, Math.ceil((endSec - nowSec) / 60));
+              const isPast = state === "completed" && lesson.status !== "cancelled";
+              const showEOLPill = isPast || lesson.status === "completed";
+              const eolDone = showEOLPill && isEOLComplete(lesson, eolDoneKeys);
               const showReview = needsNameReview(lesson.pupilName);
               const isConflict = conflictIdSet.has(lesson.id);
               const showBannerAbove = lesson.id === firstConflictRowId;
-              const isPast = state === "completed" && !isCancelled;
-              const showEOLPill = isPast || lesson.status === "completed";
-              const eolDone = showEOLPill && isEOLComplete(lesson, eolDoneKeys);
-              const showPayPill = !isCancelled;
               const lessonHref = `/instructor/pupils/${lesson.pupilId}`;
-              const isPaid = lesson.paymentStatus === "paid" || lesson.paymentStatus === "cash";
 
-              // Accent matches Schedule.tsx lessonAccentColor()
-              const accentColor =
-                isCancelled ? SCHED.tertiary
-                : state === "completed" ? SCHED.success
-                : state === "live" ? SCHED.red
-                : isTestVariant ? SCHED.warning
-                : SCHED.blue;
-
-              const card = (
-                <Link
-                  to={lessonHref}
-                  className="hts-row"
-                  style={{
-                    position: "relative",
-                    overflow: "hidden",
-                    background: IOS.card,
-                    borderRadius: 16,
-                    padding: "12px 14px",
-                    border: "0.5px solid rgba(26,82,160,0.08)",
-                    display: "flex",
-                    gap: 12,
-                    alignItems: "center",
-                    textDecoration: "none",
-                    color: "inherit",
-                    WebkitTapHighlightColor: "transparent",
-                  }}
-                >
-                  <span
-                    aria-hidden
-                    style={{
-                      position: "absolute",
-                      left: 0,
-                      top: 10,
-                      bottom: 10,
-                      width: 3,
-                      borderRadius: "0 2px 2px 0",
-                      background: accentColor,
-                    }}
-                  />
-                  <div style={{ paddingLeft: 6, flexShrink: 0, minWidth: 50 }}>
-                    <div
-                      style={{
-                        fontSize: 14,
-                        fontWeight: 500,
-                        color: accentColor,
-                        lineHeight: 1,
-                        fontVariantNumeric: "tabular-nums",
-                      }}
-                    >
-                      {time}
-                    </div>
-                    {lesson.durationMinutes ? (
-                      <div style={{ fontSize: 14, color: IOS.secondaryLabel, marginTop: 3 }}>
-                        {durationLabel(lesson.durationMinutes)}
-                      </div>
-                    ) : null}
-                  </div>
-
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: "flex", gap: 6, alignItems: "center", marginBottom: 2, flexWrap: "wrap" }}>
-                      <span
-                        style={{
-                          fontSize: 14,
-                          fontWeight: 700,
-                          color: IOS.label,
-                          letterSpacing: -0.1,
-                        }}
-                      >
-                        {sentenceName(lesson.pupilName)}
-                      </span>
-                      {isCancelled && (
-                        <span
-                          aria-label="Cancelled"
-                          style={{
-                            background: SCHED.tintGrey,
-                            color: SCHED.tintGreyFg,
-                            fontSize: 14,
-                            fontWeight: 500,
-                            padding: "1px 6px",
-                            borderRadius: 8,
-                            whiteSpace: "nowrap",
-                          }}
-                        >
-                          Cancelled
-                        </span>
-                      )}
-                      {isMockTest && (
-                        <span style={{ background: SCHED.tintAmber, color: SCHED.tintAmberFg, fontSize: 14, fontWeight: 500, padding: "1px 6px", borderRadius: 8, whiteSpace: "nowrap" }}>
-                          Mock test
-                        </span>
-                      )}
-                      {!isMockTest && isTestPrep && (
-                        <span style={{ background: SCHED.tintAmber, color: SCHED.tintAmberFg, fontSize: 14, fontWeight: 500, padding: "1px 6px", borderRadius: 8, whiteSpace: "nowrap" }}>
-                          test prep
-                        </span>
-                      )}
-                      {!isMockTest && !isTestPrep && isTestVariant && (
-                        <span style={{ background: SCHED.tintAmber, color: SCHED.tintAmberFg, fontSize: 14, fontWeight: 500, padding: "1px 6px", borderRadius: 8, whiteSpace: "nowrap" }}>
-                          test day
-                        </span>
-                      )}
-                      {showReview && <StatusPill kind="review" />}
-                      {state === "live" && !isCancelled && <StatusPill kind="live" />}
-                      {isConflict && state === "upcoming" && <StatusPill kind="conflict" />}
-                      {showEOLPill && (
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            openEOLWizard(lesson);
-                          }}
-                          aria-label={eolDone ? "End of lesson complete — review" : "Complete end of lesson"}
-                          style={{
-                            background: SCHED.eolPillBg,
-                            border: "none",
-                            borderRadius: 8,
-                            padding: "1px 6px",
-                            cursor: "pointer",
-                            lineHeight: 1.2,
-                          }}
-                        >
-                          <span
-                            style={{
-                              fontSize: 14,
-                              fontWeight: 700,
-                              color: SCHED.blue,
-                              letterSpacing: 0.3,
-                              textTransform: "uppercase",
-                              textDecoration: eolDone ? "line-through" : "none",
-                              opacity: eolDone ? 0.6 : 1,
-                            }}
-                          >
-                            EOL
-                          </span>
-                        </button>
-                      )}
-                      {showPayPill && (
-                        <span
-                          aria-label={isPaid ? "Paid" : "Not paid"}
-                          style={{
-                            background: isPaid ? "#E8F8ED" : "#FFECEC",
-                            color: isPaid ? "#1A7A3C" : "#D33B3B",
-                            fontSize: 14,
-                            fontWeight: 600,
-                            padding: "1px 6px",
-                            borderRadius: 8,
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: 4,
-                            whiteSpace: "nowrap",
-                          }}
-                        >
-                          <span
-                            style={{
-                              width: 5,
-                              height: 5,
-                              borderRadius: 3,
-                              background: isPaid ? "#1A7A3C" : "#D33B3B",
-                              display: "inline-block",
-                            }}
-                          />
-                          {isPaid ? "Paid" : "Not paid"}
-                        </span>
-                      )}
-                    </div>
-                    {subtitleText && (
-                      <div
-                        style={{
-                          fontSize: 14,
-                          color: IOS.secondaryLabel,
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 4,
-                          overflow: "hidden",
-                          whiteSpace: "nowrap",
-                          textOverflow: "ellipsis",
-                        }}
-                      >
-                        <MapPinIcon size={12} color={IOS.secondaryLabel} />
-                        <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{subtitleText}</span>
-                      </div>
-                    )}
-                    {state === "live" && !isCancelled && (
-                      <div style={{ fontSize: 11, color: SCHED.red, fontWeight: 500, margin: "6px 0 0" }}>
-                        In progress · {minutesRemaining} min remaining
-                      </div>
-                    )}
-                  </div>
-
-                  <ChevronRight color={IOS.tertiaryLabel} size={16} />
-                </Link>
-              );
+              // Build absolute Date objects for live-window detection inside the tile.
+              const startSec = startSeconds(lesson.startTime);
+              const endSec = startSec + (lesson.durationMinutes || 0) * 60;
+              const baseDay = new Date(targetDate);
+              baseDay.setHours(0, 0, 0, 0);
+              const startDate = new Date(baseDay.getTime() + startSec * 1000);
+              const endDate = new Date(baseDay.getTime() + endSec * 1000);
 
               return (
                 <div key={lesson.id}>
                   {showBannerAbove && firstConflictTime && <ConflictBanner time={firstConflictTime} />}
-                  {card}
+                  <AppointmentTile
+                    pupilDisplayName={sentenceName(lesson.pupilName)}
+                    startTimeLabel={fmtTime(lesson.startTime)}
+                    durationMinutes={lesson.durationMinutes || 0}
+                    pickupLocation={lesson.pickupLocation}
+                    pickupPostcode={lesson.pickupPostcode}
+                    lessonType={lesson.lessonType}
+                    status={lesson.status}
+                    paymentStatus={lesson.paymentStatus}
+                    startDate={startDate}
+                    endDate={endDate}
+                    now={tickNow}
+                    eolDone={eolDone}
+                    showConflictPill={isConflict}
+                    showReviewPill={showReview}
+                    showInProgressLine
+                    href={lessonHref}
+                    onEOLClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      openEOLWizard(lesson);
+                    }}
+                  />
                 </div>
               );
             })}
