@@ -117,11 +117,13 @@ export function SettingsV2HomeView({ instructorId, instructor }: Props) {
   const { data: nextLesson } = useNextLessonDetails(instructorId);
   const { alerts, dismissAlert, location: alertsLocation } = useDrivingAlerts(instructorId);
   const pendingJobsCount = usePendingJobsCount();
-  const pupilMsgCount = useUnreadMessagesCount(instructorId);
-  const { unreadCount: testSwapCount } = useTestSwapNotifications();
+  const pupilMsgQuery = useUnreadMessagesCount(instructorId);
+  const pupilMsgCount = pupilMsgQuery.data ?? 0;
+  const testSwapQuery = useTestSwapNotifications(instructorId);
+  const testSwapCount = testSwapQuery.data ?? 0;
   const { data: gapSuggestions } = useRealGapSlots(instructorId);
-  const visitorChatCount = useVisitorChatUnreadCount(instructorId);
-  const { data: todayOverview } = useTodayOverview(instructorId);
+  const visitorChatQuery = useVisitorChatUnreadCount(instructorId);
+  const visitorChatCount = visitorChatQuery.data ?? 0;
 
   const firstName = instructor?.name?.split(" ")[0] ?? "there";
   const greeting = getTimeOfDayGreeting(new Date(), firstName);
