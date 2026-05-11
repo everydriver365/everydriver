@@ -278,13 +278,20 @@ export function useInstructorPaymentsData(instructorId: string | undefined): Pay
         const taxYearStart = new Date(taxYearStartYear, 3, 6, 0, 0, 0, 0);
         const feesYearLabel = `${taxYearStartYear}/${String((taxYearStartYear + 1) % 100).padStart(2, "0")}`;
 
-        const ytdRes = await supabase
-          .from("payment_history")
-          .select("amount, payment_method, notes, payout_status, recorded_at")
-          .eq("instructor_id", instructorId)
-          .is("deleted_at", null)
-          .gte("recorded_at", taxYearStart.toISOString())
-          .gt("amount", 0);
+        const [ytdRes, ytdPlatformFeesRes] = await Promise.all([
+          supabase
+            .from("payment_history")
+            .select("amount, payment_method, notes, payout_status, recorded_at")
+            .eq("instructor_id", instructorId)
+            .is("deleted_at", null)
+            .gte("recorded_at", taxYearStart.toISOString())
+            .gt("amount", 0),
+          supabase
+            .from("platform_fees")
+            .select("amount")
+            .eq("instructor_id", instructorId)
+            .gte("created_at", taxYearStart.toISOString()),
+        ]);
 
         let feesYearToDate = 0;
         if (!ytdRes.error && ytdRes.data) {
@@ -292,7 +299,9 @@ export function useInstructorPaymentsData(instructorId: string | undefined): Pay
             .filter((p: any) => normalizeMethod(p.payment_method) === "card"
               && normalizeStatus(Number(p.amount), p.notes, p.payout_status) === "paid")
             .reduce((s: number, p: any) => s + Number(p.amount || 0), 0);
-          feesYearToDate = +(cardYtd * FEE_RATE).toFixed(2);
+          const platformYtd = (ytdPlatformFeesRes.data || [])
+            .reduce((s: number, r: any) => s + Number(r.amount || 0), 0);
+          feesYearToDate = +((cardYtd * FEE_RATE) + platformYtd).toFixed(2);
         }
 
         if (cancelled) return;
