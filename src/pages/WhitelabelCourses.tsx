@@ -124,14 +124,54 @@ export default function WhitelabelCourses() {
       if (existing) existing.remove();
       return;
     }
-    const origin = typeof window !== "undefined" ? window.location.origin : "";
+    // Provider URL must be the canonical branded host (not www / preview origin)
+    // so Google attributes the schema to the right business.
+    const canonicalOrigin = config?.host
+      ? `https://${config.host}`
+      : (typeof window !== "undefined" ? window.location.origin : "");
+    const coursesUrl = `${canonicalOrigin}/courses`;
+
+    // Build a PostalAddress from the whitelabel config when available.
+    const UK_POSTCODE_RE = /\b([A-Z]{1,2}\d[A-Z\d]?)\s*\d[A-Z]{2}\b/i;
+    const rawAddress = config?.address?.trim() || "";
+    const postcodeMatch = rawAddress.match(UK_POSTCODE_RE);
+    const postalCode = postcodeMatch ? postcodeMatch[0].toUpperCase() : undefined;
+    const addressNoPc = rawAddress.replace(UK_POSTCODE_RE, "").trim().replace(/,\s*$/, "");
+    const addressParts = addressNoPc.split(",").map((s) => s.trim()).filter(Boolean);
+    const addressLocality = addressParts.length > 0 ? addressParts[addressParts.length - 1] : undefined;
+    const streetAddress = addressParts.length > 1 ? addressParts.slice(0, -1).join(", ") : undefined;
+    const postalAddress = (postalCode || addressLocality || streetAddress)
+      ? {
+          "@type": "PostalAddress",
+          addressCountry: "GB",
+          ...(streetAddress && { streetAddress }),
+          ...(addressLocality && { addressLocality }),
+          ...(postalCode && { postalCode }),
+        }
+      : undefined;
+
+    const provider = {
+      "@type": "DrivingSchool",
+      "@id": `${canonicalOrigin}/#drivingschool`,
+      name: brand,
+      url: `${canonicalOrigin}/`,
+      ...(config?.logoPath && {
+        logo: /^https?:\/\//i.test(config.logoPath)
+          ? config.logoPath
+          : `${canonicalOrigin}${config.logoPath.startsWith("/") ? "" : "/"}${config.logoPath}`,
+      }),
+      ...(config?.phone && { telephone: config.phone }),
+      ...(config?.email && { email: config.email }),
+      ...(postalAddress && { address: postalAddress }),
+      ...(addressLocality && { areaServed: { "@type": "City", name: addressLocality } }),
+    };
+
     const items = coursesWithDistance.slice(0, 20).map((c, i) => {
       const skim = (c.instructor as { school_skim_amount?: number }).school_skim_amount || 0;
       const hourly = (c.instructor as { hourly_rate?: number }).hourly_rate || 0;
       const basePrice = hourly * c.hours;
       const price = c.discountedPrice || (basePrice ? basePrice + skim : 0);
       const startIso = c.bookableDate?.toISOString?.() ?? undefined;
-      const courseUrl = `${origin}/courses`;
       return {
         "@type": "ListItem",
         position: i + 1,
@@ -139,18 +179,15 @@ export default function WhitelabelCourses() {
           "@type": "Course",
           name: `${c.hours}-hour ${c.isIntensive ? "intensive " : ""}driving course with ${brand}`,
           description: `${c.hours} hours of in-car driving tuition with ${brand}${c.isIntensive ? " delivered as an intensive course" : ""}.`,
-          url: courseUrl,
-          provider: {
-            "@type": "DrivingSchool",
-            name: brand,
-            url: `${origin}/`,
-          },
+          url: coursesUrl,
+          provider,
           timeRequired: `PT${c.hours}H`,
           educationalCredentialAwarded: "DVSA driving test preparation",
           hasCourseInstance: {
             "@type": "CourseInstance",
             courseMode: "onsite",
             courseWorkload: `PT${c.hours}H`,
+            ...(postalAddress && { location: postalAddress }),
             startDate: startIso,
             ...(price > 0 && {
               offers: {
@@ -158,7 +195,7 @@ export default function WhitelabelCourses() {
                 price: price.toFixed(2),
                 priceCurrency: "GBP",
                 availability: "https://schema.org/InStock",
-                url: courseUrl,
+                url: coursesUrl,
                 ...(startIso && { validFrom: startIso }),
               },
             }),
@@ -169,7 +206,7 @@ export default function WhitelabelCourses() {
               price: price.toFixed(2),
               priceCurrency: "GBP",
               availability: "https://schema.org/InStock",
-              url: courseUrl,
+              url: coursesUrl,
             },
           }),
         },
