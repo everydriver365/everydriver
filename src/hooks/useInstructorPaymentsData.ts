@@ -167,7 +167,8 @@ export function useInstructorPaymentsData(instructorId: string | undefined): Pay
         const since = new Date();
         since.setDate(since.getDate() - 14 * 7);
 
-        const [paymentsRes, pupilsRes] = await Promise.all([
+        const monthStartIso = (() => { const d = new Date(); d.setDate(1); d.setHours(0,0,0,0); return d.toISOString(); })();
+        const [paymentsRes, pupilsRes, platformFeesMonthRes] = await Promise.all([
           supabase
             .from("payment_history")
             .select("id, amount, payment_method, notes, recorded_at, pupil_id, payout_status, transferred_at, pupils(name)")
