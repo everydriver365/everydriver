@@ -382,7 +382,7 @@ function MapHero({
           WebkitBackdropFilter: "blur(8px)",
           padding: "5px 10px",
           borderRadius: 999,
-          fontSize: 14,
+          fontSize: 12,
           fontWeight: 700,
           color: "#000000",
           border: `0.5px solid ${BORDER}`,
