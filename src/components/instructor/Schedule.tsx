@@ -121,21 +121,16 @@ const DayCard = memo(function DayCard({
   isSelected: boolean;
   onSelect: () => void;
 }) {
-  const labelColor = isSelected
-    ? "rgba(255,255,255,0.85)"
-    : day.isWorkingDay
-    ? TEXT_SECONDARY
-    : TEXT_TERTIARY;
-  const numberColor = isSelected
-    ? "#FFFFFF"
-    : day.isWorkingDay
-    ? TEXT_PRIMARY
-    : TEXT_TERTIARY;
+  // Activity dot color: lessons → DSM blue, working day with no lessons → none
+  const hasLessons = day.lessons.length > 0;
+  const dotColor = hasLessons ? DSM_BLUE : undefined;
 
-  let fillColor = "transparent";
-  if (isSelected) fillColor = "#FFFFFF";
-  else if (day.utilizationPercent >= 100) fillColor = RED;
-  else if (day.utilizationPercent > 0) fillColor = BLUE;
+  const labelColor = isSelected
+    ? "rgba(255,255,255,0.7)"
+    : day.isWorkingDay
+    ? "#8E8E93"
+    : TEXT_TERTIARY;
+  const numberColor = isSelected ? "#FFFFFF" : day.isWorkingDay ? TEXT_PRIMARY : TEXT_TERTIARY;
 
   return (
     <button
@@ -146,16 +141,16 @@ const DayCard = memo(function DayCard({
       title={`${day.hoursBooked}h / ${day.hoursAvailable}h booked`}
       style={{
         flex: "1 0 0",
-        minWidth: 40,
+        minWidth: 44,
         scrollSnapAlign: "start",
-        background: isSelected ? RED : CARD_BG,
+        background: isSelected ? DSM_BLUE : CARD_BG,
         opacity: !isSelected && !day.isWorkingDay ? 0.6 : 1,
-        border: isSelected ? "none" : `0.5px solid ${DIVIDER}`,
-        borderRadius: 10,
-        padding: "8px 0 6px",
+        border: isSelected ? "none" : `0.5px solid rgba(26,82,160,0.09)`,
+        borderRadius: 12,
+        padding: "7px 0",
         textAlign: "center",
         cursor: "pointer",
-        boxShadow: isSelected ? "none" : SHADOW,
+        boxShadow: isSelected ? "0 2px 6px rgba(26,82,160,0.25)" : "none",
         transition: "transform 120ms ease, background 160ms ease",
         WebkitTapHighlightColor: "transparent",
       }}
@@ -165,50 +160,57 @@ const DayCard = memo(function DayCard({
     >
       <div
         style={{
-          fontSize: 9,
-          fontWeight: 500,
-          letterSpacing: "1px",
+          fontSize: 8,
+          fontWeight: 700,
+          letterSpacing: 0.5,
           textTransform: "uppercase",
           color: labelColor,
-          lineHeight: 1,
+          marginBottom: 2,
         }}
       >
         {day.dayOfWeek}
       </div>
       <div
         style={{
-          fontSize: 16,
-          fontWeight: 500,
+          fontSize: isSelected ? 17 : 15,
+          fontWeight: 700,
           color: numberColor,
-          lineHeight: 1,
-          margin: "1px 0 4px",
+          lineHeight: "18px",
+          letterSpacing: -0.4,
           fontVariantNumeric: "tabular-nums",
         }}
       >
         {day.dayOfMonth}
       </div>
-      {day.isWorkingDay ? (
-        <div
-          style={{
-            height: 3,
-            borderRadius: 2,
-            margin: "0 8px",
-            background: isSelected ? "rgba(255,255,255,0.25)" : TINT_GREY,
-            overflow: "hidden",
-          }}
-        >
+      <div
+        style={{
+          height: 5,
+          marginTop: 4,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        {isSelected ? (
           <div
             style={{
-              width: `${day.utilizationPercent}%`,
-              height: "100%",
-              background: fillColor,
-              transition: "width 400ms ease-out",
+              width: 14,
+              height: 2.5,
+              borderRadius: 2,
+              background: "rgba(255,255,255,0.4)",
             }}
           />
-        </div>
-      ) : (
-        <div style={{ height: 3, margin: "0 8px" }} />
-      )}
+        ) : dotColor ? (
+          <div
+            style={{
+              width: 5,
+              height: 5,
+              borderRadius: 3,
+              background: dotColor,
+            }}
+          />
+        ) : null}
+      </div>
     </button>
   );
 });
@@ -228,8 +230,9 @@ function DayStrip({
       aria-label="Day strip"
       style={{
         display: "flex",
-        gap: 4,
-        marginBottom: 12,
+        gap: 5,
+        marginBottom: 10,
+        paddingRight: 2,
         overflowX: "auto",
         scrollSnapType: "x mandatory",
         WebkitOverflowScrolling: "touch",
