@@ -119,6 +119,7 @@ export function useLessonTravelTimes(lessons: Lesson[]) {
       return;
     }
 
+    let cancelled = false;
     const fetchTravelTimes = async () => {
       setIsLoading(true);
       const newTravelTimes = new Map<string, TravelTime>();
@@ -140,85 +141,38 @@ export function useLessonTravelTimes(lessons: Lesson[]) {
       }
       setTravelTimes(new Map(newTravelTimes));
 
-      // Fetch travel times in parallel (limited concurrency)
-      const results = await Promise.allSettled(
-        lessonPairs.map(async (pair) => {
-          try {
-            const { data, error } = await supabase.functions.invoke(
-              "calculate-route-distance",
-              {
-                body: {
-                  from_postcode: pair.fromPostcode,
-                  to_postcode: pair.toPostcode,
-                },
-              }
-            );
+      // Process pairs serially to avoid rate-limiting; cache dedupes repeated postcodes
+      for (const pair of lessonPairs) {
+        if (cancelled) return;
+        const durationMinutes = await fetchDuration(pair.fromPostcode, pair.toPostcode);
+        const durationText = durationMinutes !== null ? `~${durationMinutes} min` : null;
 
-            if (error) throw error;
-            
-            const durationMinutes = data?.duration_minutes || null;
-            const durationText = durationMinutes ? `~${durationMinutes} min` : null;
-            
-            // Determine status based on gap vs travel time
-            let status: TravelTime["status"] = "unknown";
-            if (durationMinutes !== null) {
-              const buffer = pair.gapMinutes - durationMinutes;
-              if (buffer >= 15) {
-                status = "plenty"; // 15+ min buffer
-              } else if (buffer >= 5) {
-                status = "tight"; // 5-15 min buffer
-              } else {
-                status = "late"; // Less than 5 min buffer or negative
-              }
-            }
-
-            return {
-              key: `${pair.from.id}-${pair.to.id}`,
-              data: {
-                fromLessonId: pair.from.id,
-                toLessonId: pair.to.id,
-                fromPostcode: pair.fromPostcode,
-                toPostcode: pair.toPostcode,
-                durationMinutes,
-                durationText,
-                gapMinutes: pair.gapMinutes,
-                status,
-                isLoading: false,
-              } as TravelTime,
-            };
-          } catch (err) {
-            console.error("Error fetching travel time:", err);
-            return {
-              key: `${pair.from.id}-${pair.to.id}`,
-              data: {
-                fromLessonId: pair.from.id,
-                toLessonId: pair.to.id,
-                fromPostcode: pair.fromPostcode,
-                toPostcode: pair.toPostcode,
-                durationMinutes: null,
-                durationText: null,
-                gapMinutes: pair.gapMinutes,
-                status: "unknown" as const,
-                isLoading: false,
-              } as TravelTime,
-            };
-          }
-        })
-      );
-
-      // Update with results
-      const finalTravelTimes = new Map<string, TravelTime>();
-      for (const result of results) {
-        if (result.status === "fulfilled") {
-          finalTravelTimes.set(result.value.key, result.value.data);
+        let status: TravelTime["status"] = "unknown";
+        if (durationMinutes !== null) {
+          const buffer = pair.gapMinutes - durationMinutes;
+          status = buffer >= 15 ? "plenty" : buffer >= 5 ? "tight" : "late";
         }
+
+        const key = `${pair.from.id}-${pair.to.id}`;
+        newTravelTimes.set(key, {
+          fromLessonId: pair.from.id,
+          toLessonId: pair.to.id,
+          fromPostcode: pair.fromPostcode,
+          toPostcode: pair.toPostcode,
+          durationMinutes,
+          durationText,
+          gapMinutes: pair.gapMinutes,
+          status,
+          isLoading: false,
+        });
+        if (!cancelled) setTravelTimes(new Map(newTravelTimes));
       }
-      
-      setTravelTimes(finalTravelTimes);
-      setIsLoading(false);
+
+      if (!cancelled) setIsLoading(false);
     };
 
     fetchTravelTimes();
+    return () => { cancelled = true; };
   }, [lessonPairs]);
 
   return {
