@@ -731,7 +731,7 @@ function UpNextTile({
                 background: BLUE_TINT,
                 color: BLUE,
                 border: `0.5px solid ${BORDER}`,
-                fontSize: 14,
+                fontSize: 15,
                 fontWeight: 600,
                 display: "inline-flex",
                 alignItems: "center",
