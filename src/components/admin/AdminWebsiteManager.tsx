@@ -144,12 +144,19 @@ export function AdminWebsiteManager({ instructorId, instructorSlug, instructorNa
     );
   }
 
+  const statusColor = health?.status === "green" ? "bg-green-500" : health?.status === "amber" ? "bg-amber-500" : health?.status === "red" ? "bg-destructive" : "bg-muted";
+  const statusLabel = health?.status ? health.status.toUpperCase() : "NOT YET CHECKED";
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="font-semibold flex items-center gap-2">
           <Globe className="h-4 w-4" />
           Mini Website - {instructorName}
+          <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold text-white ${statusColor}`} title={health?.checked_at ? `Last checked: ${new Date(health.checked_at).toLocaleString()}` : "No daily health check has run yet"}>
+            <span className="h-1.5 w-1.5 rounded-full bg-white/80" />
+            {statusLabel}
+          </span>
         </h3>
         <a
           href={`${baseUrl}/i/${instructorSlug}`}
