@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ExternalLink, Globe, Loader2, PencilRuler } from "lucide-react";
+import { CheckCircle2, ExternalLink, Globe, Loader2, PencilRuler, XCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { MiniWebsiteFullEditor } from "./MiniWebsiteFullEditor";
@@ -53,6 +53,16 @@ export function AdminWebsiteManager({ instructorId, instructorSlug, instructorNa
   const [website, setWebsite] = useState<MiniWebsite | null>(null);
   const [domains, setDomains] = useState<DomainOrder[]>([]);
   const [loading, setLoading] = useState(false);
+  const [pageTypes, setPageTypes] = useState<string[]>([]);
+
+  const fetchPageHealth = async () => {
+    const { data } = await supabase
+      .from("instructor_website_pages")
+      .select("page_type, is_published")
+      .eq("instructor_id", instructorId);
+    setPageTypes(((data || []) as { page_type: string; is_published: boolean }[]).filter(p => p.is_published).map(p => p.page_type));
+  };
+
 
   const baseUrl = useMemo(() => window.location.origin, []);
 
@@ -92,9 +102,9 @@ export function AdminWebsiteManager({ instructorId, instructorSlug, instructorNa
   };
 
   useEffect(() => {
-    // Preload data so opening is instant.
     fetchWebsite();
     fetchDomains();
+    fetchPageHealth();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [instructorId]);
 
@@ -138,6 +148,34 @@ export function AdminWebsiteManager({ instructorId, instructorSlug, instructorNa
           View Site <ExternalLink className="h-3 w-3" />
         </a>
       </div>
+
+      {website && (() => {
+        const required = ["home", "about", "services", "reviews", "contact"];
+        const checks = [
+          { label: "App slug set", ok: !!website.app_slug },
+          { label: "Logo uploaded", ok: !!website.logo_url },
+          { label: "Brand colour set", ok: !!website.brand_colour },
+          { label: `All 5 pages published (${pageTypes.length}/5)`, ok: required.every(t => pageTypes.includes(t)) },
+          { label: "Custom domain", ok: !website.custom_domain || !!website.custom_domain_verified, optional: !website.custom_domain },
+        ];
+        return (
+          <div className="rounded-md border bg-muted/30 p-3 space-y-1.5 text-sm">
+            <div className="font-medium text-xs uppercase tracking-wide text-muted-foreground mb-1">Health</div>
+            {checks.map((c, i) => (
+              <div key={i} className="flex items-center gap-2">
+                {c.ok ? <CheckCircle2 className="h-3.5 w-3.5 text-green-600" /> : <XCircle className="h-3.5 w-3.5 text-destructive" />}
+                <span className={c.ok ? "" : "text-destructive"}>{c.label}{c.optional ? " (none configured)" : ""}</span>
+              </div>
+            ))}
+            <div className="pt-2 flex flex-wrap gap-3 text-xs">
+              <a href={`${baseUrl}/i/${instructorSlug}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">/i/{instructorSlug}</a>
+              {website.custom_domain && (
+                <a href={`https://${website.custom_domain}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{website.custom_domain}</a>
+              )}
+            </div>
+          </div>
+        );
+      })()}
 
       <div className="flex items-center gap-2">
         <Button type="button" onClick={handleOpenEditor} disabled={loading}>

@@ -115,26 +115,40 @@ export function useWebsitePage(slug: string | undefined, pageType: string) {
 
         setInstructor(instructorData);
 
-        // Then get the specific page
-        const { data: pageData, error: pageError } = await supabase
+        // Then get the specific page. Don't 404 just because the row is
+        // missing or unpublished — fall back to a synthesised default so the
+        // mini-site keeps working while the instructor sets things up.
+        const { data: pageData } = await supabase
           .from("instructor_website_pages")
           .select("*")
           .eq("instructor_id", instructorData.id)
           .eq("page_type", pageType)
-          .eq("is_published", true)
-          .single();
+          .maybeSingle();
 
-        if (pageError || !pageData) {
-          setNotFound(true);
-          setLoading(false);
-          return;
+        if (pageData) {
+          setPage({
+            ...pageData,
+            page_type: pageData.page_type as WebsitePage["page_type"],
+            content_blocks: (pageData.content_blocks as unknown as ContentBlock[]) || [],
+          });
+        } else {
+          // Synthesised fallback — title-cased page type with empty content.
+          const title = pageType.charAt(0).toUpperCase() + pageType.slice(1);
+          setPage({
+            id: `fallback-${pageType}`,
+            instructor_id: instructorData.id,
+            page_type: pageType as WebsitePage["page_type"],
+            page_title: title,
+            hero_heading: title,
+            hero_subheading: null,
+            hero_image_url: null,
+            content_blocks: [],
+            meta_title: null,
+            meta_description: null,
+            is_published: true,
+            display_order: 0,
+          });
         }
-
-        setPage({
-          ...pageData,
-          page_type: pageData.page_type as WebsitePage["page_type"],
-          content_blocks: (pageData.content_blocks as unknown as ContentBlock[]) || [],
-        });
       } catch (error) {
         console.error("Error fetching page:", error);
         setNotFound(true);
