@@ -441,14 +441,16 @@ export function WaitlistManager({ instructorId, availableGaps = [] }: WaitlistMa
                 .map(({ entry, bestScore }) => (
                 <div
                   key={entry.id}
-                  className={`flex items-start justify-between rounded-2xl border p-3 transition-all ${
+                  className={`flex items-start justify-between gap-2 rounded-2xl border p-3 transition-all ${
                     highlightedWaitlistIds.has(entry.id) ? "animate-highlight-pulse ring-2 ring-green-500/50 bg-green-500/10" : ""
                   }`}
                 >
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <User className="h-4 w-4 text-muted-foreground" />
-                      <span className="font-medium">{entry.pupil?.name}</span>
+                  <div className="space-y-2 min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <User className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <span className="font-medium truncate">{entry.pupil?.name}</span>
+                      </div>
                       {bestScore !== null && (
                         <Badge
                           variant={bestScore >= 80 ? "default" : bestScore >= 50 ? "secondary" : "outline"}
@@ -492,7 +494,7 @@ export function WaitlistManager({ instructorId, availableGaps = [] }: WaitlistMa
                       {entry.min_duration_mins}-{entry.max_duration_mins} mins preferred
                     </p>
                     {entry.notes && (
-                      <p className="text-xs text-muted-foreground italic">
+                      <p className="text-xs text-muted-foreground italic break-words">
                         "{entry.notes}"
                       </p>
                     )}
@@ -500,7 +502,7 @@ export function WaitlistManager({ instructorId, availableGaps = [] }: WaitlistMa
                   <Button
                     size="icon"
                     variant="ghost"
-                    className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                    className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive"
                     onClick={() => setDeleteId(entry.id)}
                   >
                     <Trash2 className="h-4 w-4" />
