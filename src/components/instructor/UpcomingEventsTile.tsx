@@ -38,39 +38,31 @@ import { useQueryClient } from "@tanstack/react-query";
 const FONT =
   '-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", sans-serif';
 
-const BLUE = "#3D55A1";
+const BLUE = "#1A52A0";
 const BLUE_TINT = "#EDF2FE";
 const TEXT = "#1A1A1A";
 const TEXT_MUTED = "#6E6E73";
 const TEXT_SUBTLE = "#8E8E93";
 const TEXT_DISABLED = "#C7C7CC";
-const HAIRLINE = "rgba(60,60,67,0.10)";
-const CARD_BORDER = "rgba(60,60,67,0.08)";
+const HAIRLINE = "#F0F3F8";
+const CARD_BORDER = "rgba(26,82,160,0.08)";
 const CHIP_BG = "#F2F4F8";
 
-/* Per-type icon styling */
+/* Per-type icon styling — accent + soft tint */
 const typeStyle: Record<
   UpcomingEventType,
   { icon: LucideIcon; iconBg: string; iconColor: string }
 > = {
-  drivingTest:      { icon: Car,            iconBg: "#FFE9EA", iconColor: "#B23A3F" },
-  theoryTest:       { icon: BookOpen,       iconBg: "#EAF1FF", iconColor: "#3D55A1" },
-  mot:              { icon: Wrench,         iconBg: "#E6F6EC", iconColor: "#1A7A3C" },
-  insuranceRenewal: { icon: ShieldCheck,    iconBg: "#E6F6EC", iconColor: "#1A7A3C" },
-  task:             { icon: ListTodo,       iconBg: "#FFF4E0", iconColor: "#B45309" },
-  training:         { icon: GraduationCap,  iconBg: "#F0EBFF", iconColor: "#6B21A8" },
+  drivingTest:      { icon: Car,            iconBg: "#FFF0F0", iconColor: "#CC2229" },
+  theoryTest:       { icon: BookOpen,       iconBg: "#EEF3FF", iconColor: "#1A52A0" },
+  mot:              { icon: Wrench,         iconBg: "#E8F8ED", iconColor: "#1A7A3C" },
+  insuranceRenewal: { icon: ShieldCheck,    iconBg: "#E8F8ED", iconColor: "#1A7A3C" },
+  task:             { icon: ListTodo,       iconBg: "#EEF3FF", iconColor: "#1A52A0" },
+  training:         { icon: GraduationCap,  iconBg: "#FFF6E6", iconColor: "#B45309" },
 };
-
-/* Soft countdown pill colour by urgency */
-function countdownStyle(daysUntil: number): { bg: string; text: string } {
-  if (daysUntil <= 3) return { bg: "#FFE9EA", text: "#B23A3F" };
-  if (daysUntil <= 14) return { bg: "#FFF1DD", text: "#B45309" };
-  return { bg: "#E6F1EC", text: "#1A7A3C" };
-}
 
 function countdownLabel(d: number): string {
   if (d === 0) return "Today";
-  if (d === 1) return "1d";
   return `${d}d`;
 }
 
