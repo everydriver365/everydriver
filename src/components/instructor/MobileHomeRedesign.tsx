@@ -1474,6 +1474,19 @@ export function MobileHomeRedesign({
 
   const attentionRows: AttentionRow[] = [];
 
+  attentionRows.push({
+    key: "jobs",
+    group: "urgent",
+    Icon: Briefcase,
+    iconBg: "#FFF0F0",
+    iconColor: RED,
+    title: "Job offers waiting",
+    subtitle: "Review new course enquiries",
+    badge: pendingJobs > 0 ? { label: String(pendingJobs), bg: "#CC2229" } : undefined,
+    isClear: pendingJobs === 0,
+    onClick: () => navigate("/instructor/jobs"),
+  });
+
   // Calls (counter to be wired later)
   const missedCallsCount: number = 0;
   attentionRows.push({
@@ -1502,19 +1515,6 @@ export function MobileHomeRedesign({
     badge: enquiriesCount > 0 ? { label: String(enquiriesCount), bg: "#CC2229" } : undefined,
     isClear: enquiriesCount === 0,
     onClick: () => navigate("/instructor/enquiries"),
-  });
-
-  attentionRows.push({
-    key: "jobs",
-    group: "urgent",
-    Icon: Briefcase,
-    iconBg: "#FFF0F0",
-    iconColor: RED,
-    title: "Job offers waiting",
-    subtitle: "Review new course enquiries",
-    badge: pendingJobs > 0 ? { label: String(pendingJobs), bg: "#CC2229" } : undefined,
-    isClear: pendingJobs === 0,
-    onClick: () => navigate("/instructor/jobs"),
   });
 
   if (vehicleFault) {
