@@ -23,6 +23,52 @@ interface TravelTime {
   isLoading: boolean;
 }
 
+// Module-level caches shared across all hook instances.
+// - resultCache: postcode-pair -> duration in minutes (or null = known unavailable)
+// - inflight: postcode-pair -> in-flight promise so duplicate pairs share one call
+const resultCache = new Map<string, number | null>();
+const inflight = new Map<string, Promise<number | null>>();
+
+const cacheKey = (from: string, to: string) =>
+  `${from.toUpperCase().replace(/\s+/g, "")}|${to.toUpperCase().replace(/\s+/g, "")}`;
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+async function fetchDuration(from: string, to: string): Promise<number | null> {
+  const key = cacheKey(from, to);
+  if (resultCache.has(key)) return resultCache.get(key)!;
+  const existing = inflight.get(key);
+  if (existing) return existing;
+
+  const promise = (async () => {
+    // Up to 3 attempts with backoff on rate-limit / transient errors
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        const { data, error } = await supabase.functions.invoke("calculate-route-distance", {
+          body: { from_postcode: from, to_postcode: to },
+        });
+        if (error) throw error;
+        const minutes = (data?.duration_minutes as number | undefined) ?? null;
+        resultCache.set(key, minutes);
+        return minutes;
+      } catch (err: any) {
+        const msg = String(err?.message ?? err);
+        const isRateLimit = msg.includes("429") || msg.includes("RATE_LIMIT");
+        if (attempt < 2) {
+          await sleep(isRateLimit ? 1500 * (attempt + 1) : 500);
+          continue;
+        }
+        // Give up — don't cache so it can be retried later
+        return null;
+      }
+    }
+    return null;
+  })();
+
+  inflight.set(key, promise);
+  try { return await promise; } finally { inflight.delete(key); }
+}
+
 export function useLessonTravelTimes(lessons: Lesson[]) {
   const [travelTimes, setTravelTimes] = useState<Map<string, TravelTime>>(new Map());
   const [isLoading, setIsLoading] = useState(false);
