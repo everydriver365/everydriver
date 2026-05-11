@@ -65,8 +65,9 @@ export function CustomDomainCanonical() {
       }
     }
 
-    // 3. Maintain a single rel=canonical link tag
-    const canonicalUrl = `${window.location.protocol}//${canonicalHost}${location.pathname}`;
+    // 3. Maintain a single rel=canonical link tag — always https + canonical host
+    // (independent of current host or paused state).
+    const canonicalUrl = `https://${canonicalHost}${location.pathname}`;
     let link = document.head.querySelector<HTMLLinkElement>("link[rel='canonical']");
     if (!link) {
       link = document.createElement("link");
