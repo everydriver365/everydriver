@@ -193,13 +193,13 @@ export default function Index() {
               loading="eager"
             />
               {/* Postcode search overlay */}
-              <div className="absolute left-8 xl:left-12 bottom-[6%] xl:bottom-[8%] w-[42%] max-w-md">
+              <div className="absolute left-[4%] bottom-[5%] w-[44%] max-w-[460px] min-w-[260px]">
                 <form
                   onSubmit={handleSearch}
-                  className="flex items-center gap-2 rounded-full bg-background/95 backdrop-blur-sm p-2 shadow-2xl ring-1 ring-border"
+                  className="flex items-center gap-1.5 rounded-full bg-background/95 backdrop-blur-sm p-1.5 shadow-2xl ring-1 ring-border"
                 >
-                  <div className="flex flex-1 items-center px-3">
-                    <MapPin className="h-5 w-5 text-muted-foreground mr-2 shrink-0" />
+                  <div className="flex flex-1 items-center px-2 min-w-0">
+                    <MapPin className="h-4 w-4 lg:h-5 lg:w-5 text-muted-foreground mr-1.5 shrink-0" />
                     <PostcodeAutocomplete
                       value={postcode}
                       onChange={setPostcode}
@@ -207,27 +207,27 @@ export default function Index() {
                         setPostcode(pc);
                         navigate(`/courses?postcode=${encodeURIComponent(pc)}`);
                       }}
-                      placeholder="Enter your postcode..."
-                      className="flex-1"
-                      inputClassName="h-9 border-0 bg-transparent p-0 text-base focus-visible:ring-0 focus-visible:ring-offset-0"
+                      placeholder="Enter postcode..."
+                      className="flex-1 min-w-0"
+                      inputClassName="h-8 lg:h-9 border-0 bg-transparent p-0 text-sm lg:text-base focus-visible:ring-0 focus-visible:ring-offset-0"
                       showGeolocation={true}
                     />
                   </div>
                   <Button
                     type="submit"
-                    size="lg"
-                    className="rounded-full h-11 px-6 bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg"
+                    className="rounded-full h-9 lg:h-10 px-3 lg:px-5 text-sm bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shrink-0"
                   >
-                    <Search className="h-4 w-4 mr-2" /> Find
+                    <Search className="h-4 w-4 lg:mr-1.5" />
+                    <span className="hidden lg:inline">Find</span>
                   </Button>
                 </form>
                 <button
                   type="button"
                   onClick={() => setPlannerOpen(true)}
-                  className="mt-3 ml-2 inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline drop-shadow"
+                  className="mt-2 ml-2 inline-flex items-center gap-1.5 text-xs lg:text-sm font-medium text-primary hover:underline drop-shadow"
                 >
-                  <CalendarCheck className="h-4 w-4" />
-                  Plan my course around my test date →
+                  <CalendarCheck className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
+                  <span className="truncate">Plan my course around my test date →</span>
                 </button>
               </div>
           </div>
