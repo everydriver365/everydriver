@@ -43,66 +43,81 @@ function Row({ left, primary, secondary, right, divider = true }: { left?: React
 
 function NextLessonHero({ m }: { m: typeof mockHome }) {
   const nl = m.nextLesson;
+  // Parse "09:30" → end time
+  const [h, mm] = nl.timeLabel.split(":").map(Number);
+  const endMins = h * 60 + mm + nl.durationMinutes;
+  const endLabel = `${String(Math.floor(endMins / 60) % 24).padStart(2, "0")}:${String(endMins % 60).padStart(2, "0")}`;
+  // Date strip from dateLabel "Monday, 11 May"
+  const parts = m.dateLabel.split(" ");
+  const dayNum = parts[1]?.replace(",", "") ?? "2";
+  const monthShort = (parts[2] ?? "MAR").slice(0, 3).toUpperCase();
+  const price = Math.round((nl.durationMinutes / 60) * 45);
+
   return (
     <div
       style={{
         margin: "0 16px 14px",
         borderRadius: 16,
-        padding: 16,
-        background: "linear-gradient(135deg, #3D55A1 0%, #5B73C4 60%, #7B9AE8 100%)",
-        color: "#FFFFFF",
-        position: "relative",
+        background: "#FFFFFF",
         overflow: "hidden",
-        boxShadow: "0 8px 24px -10px rgba(61,85,161,0.45)",
+        boxShadow: "0 8px 24px -12px rgba(15,23,42,0.18)",
+        border: "1px solid #EEF1F6",
       }}
     >
-      {/* Decorative blob */}
-      <div style={{ position: "absolute", top: -40, right: -30, width: 140, height: 140, borderRadius: 999, background: "rgba(255,255,255,0.08)" }} />
-      <div style={{ position: "absolute", bottom: -50, left: -20, width: 120, height: 120, borderRadius: 999, background: "rgba(255,255,255,0.06)" }} />
-
-      {/* Top row: status pill + ETA */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14, position: "relative" }}>
-        <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 600, padding: "4px 10px", borderRadius: 999, background: "rgba(255,255,255,0.18)", letterSpacing: "0.04em", textTransform: "uppercase" }}>
-          <span style={{ width: 6, height: 6, borderRadius: 999, background: "#34D399", boxShadow: "0 0 0 3px rgba(52,211,153,0.25)" }} />
-          Up Next
+      {/* Hero image */}
+      <div style={{ position: "relative", height: 168, overflow: "hidden" }}>
+        <img
+          src="https://images.unsplash.com/photo-1532974297617-c0f05fe48bff?w=900&h=500&fit=crop"
+          alt="Next lesson"
+          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+        />
+        {/* Status pill overlay */}
+        <span style={{ position: "absolute", top: 12, left: 12, display: "inline-flex", alignItems: "center", gap: 6, fontSize: 10, fontWeight: 700, padding: "5px 10px", borderRadius: 999, background: "rgba(255,255,255,0.95)", color: "#3D55A1", letterSpacing: "0.06em", textTransform: "uppercase", backdropFilter: "blur(6px)" }}>
+          <span style={{ width: 6, height: 6, borderRadius: 999, background: "#10B981", boxShadow: "0 0 0 3px rgba(16,185,129,0.25)" }} />
+          Up Next · in {nl.startsInMinutes}m
         </span>
-        <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, fontWeight: 600, padding: "4px 10px", borderRadius: 999, background: "rgba(255,255,255,0.18)" }}>
-          <Clock size={11} /> in {nl.startsInMinutes}m
-        </span>
+        {nl.paymentStatus === "paid" && (
+          <span style={{ position: "absolute", top: 12, right: 12, fontSize: 10, fontWeight: 700, padding: "5px 9px", borderRadius: 999, background: "#10B981", color: "#FFFFFF", letterSpacing: "0.06em" }}>
+            PAID
+          </span>
+        )}
       </div>
 
-      {/* Pupil row */}
-      <div style={{ display: "flex", alignItems: "center", gap: 12, position: "relative" }}>
-        <div style={{ width: 48, height: 48, borderRadius: 14, background: "#FFFFFF", color: "#3D55A1", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, fontWeight: 700, boxShadow: "0 4px 12px -4px rgba(0,0,0,0.25)" }}>
-          {nl.initials}
+      {/* Body row: dark date strip + info */}
+      <div style={{ display: "flex", alignItems: "stretch", minHeight: 156 }}>
+        {/* Date strip */}
+        <div style={{ width: 72, background: "#0F1B3D", color: "#FFFFFF", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2, flexShrink: 0 }}>
+          <span style={{ fontSize: 32, fontWeight: 700, letterSpacing: "-0.02em", lineHeight: 1 }}>{dayNum}</span>
+          <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.12em", opacity: 0.85 }}>{monthShort}</span>
         </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <p style={{ fontSize: 18, fontWeight: 700, letterSpacing: "-0.01em", lineHeight: 1.15 }}>{nl.pupilName}</p>
-          <p style={{ fontSize: 12, opacity: 0.85, marginTop: 2 }}>{nl.timeLabel} · {nl.durationMinutes}m lesson</p>
+
+        {/* Info column */}
+        <div style={{ flex: 1, padding: "16px 18px", position: "relative" }}>
+          <p style={{ fontSize: 17, fontWeight: 700, color: "#3F4754", letterSpacing: "0.01em", textTransform: "uppercase", marginBottom: 10, lineHeight: 1.2 }}>
+            {nl.durationMinutes / 60} Hour Driving Lesson
+          </p>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6, color: "#4B5565" }}>
+            <Clock size={15} color="#9AA3B2" />
+            <span style={{ fontSize: 14 }}>{nl.timeLabel} – {endLabel} <span style={{ color: "#9AA3B2" }}>({dayNum} {monthShort.charAt(0) + monthShort.slice(1).toLowerCase()})</span></span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+            <MapPin size={15} color="#9AA3B2" />
+            <span style={{ fontSize: 14, color: "#3D55A1", fontWeight: 500 }}>{nl.pickup.split(" · ")[0]}</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+            <Users size={15} color="#9AA3B2" />
+            <span style={{ fontSize: 14, color: "#4B5565" }}>With <span style={{ color: "#3D55A1", fontWeight: 500 }}>{nl.pupilName.split(" ")[0]} {nl.pupilName.split(" ")[1]?.charAt(0) ?? ""}</span></span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ width: 15, height: 15, borderRadius: 999, border: "1.5px solid #9AA3B2", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 700, color: "#9AA3B2" }}>£</span>
+            <span style={{ fontSize: 14, color: "#4B5565", fontWeight: 500 }}>£{price.toFixed(2)}</span>
+          </div>
+
+          {/* Chevron */}
+          <button style={{ position: "absolute", bottom: 12, right: 12, width: 32, height: 32, borderRadius: 999, background: "#EEF1F6", border: "none", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+            <ChevronRight size={18} color="#7B8493" style={{ transform: "rotate(90deg)" }} />
+          </button>
         </div>
-      </div>
-
-      {/* Meta chips */}
-      <div style={{ display: "flex", gap: 8, marginTop: 14, position: "relative", flexWrap: "wrap" }}>
-        <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, padding: "5px 9px", borderRadius: 999, background: "rgba(255,255,255,0.14)" }}>
-          <MapPin size={11} /> {nl.pickup}
-        </span>
-        <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, padding: "5px 9px", borderRadius: 999, background: "rgba(255,255,255,0.14)" }}>
-          <Car size={11} /> {nl.distanceMiles} mi · {nl.etaMinutes} min
-        </span>
-      </div>
-
-      {/* CTA row */}
-      <div style={{ display: "flex", gap: 8, marginTop: 14, position: "relative" }}>
-        <button style={{ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, fontSize: 13, fontWeight: 600, padding: "10px 12px", borderRadius: 12, background: "#FFFFFF", color: "#3D55A1", border: "none" }}>
-          <Navigation2 size={14} /> Navigate
-        </button>
-        <button style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, fontSize: 13, fontWeight: 600, padding: "10px 14px", borderRadius: 12, background: "rgba(255,255,255,0.16)", color: "#FFFFFF", border: "none" }}>
-          <MessageSquare size={14} />
-        </button>
-        <button style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, fontSize: 13, fontWeight: 600, padding: "10px 14px", borderRadius: 12, background: "rgba(255,255,255,0.16)", color: "#FFFFFF", border: "none" }}>
-          Details
-        </button>
       </div>
     </div>
   );
