@@ -1036,55 +1036,7 @@ function LessonList({
     });
   });
 
-  // Open slots only on working days
-  if (day.isWorkingDay) {
-    const sorted = [...day.lessons].sort(
-      (a, b) => a.startDate.getTime() - b.startDate.getTime(),
-    );
-    const workStart = combineDateAndTime(day.date, day.workingStart);
-    const workEnd = combineDateAndTime(day.date, day.workingEnd);
-
-    const pushSlot = (
-      sd: Date,
-      ed: Date,
-      sLabel: string,
-      eLabel: string,
-      isAllDay: boolean,
-    ) => {
-      const mins = Math.round((ed.getTime() - sd.getTime()) / 60000);
-      if (mins < 30) return;
-      items.push({
-        kind: "slot",
-        startDate: sd,
-        endDate: ed,
-        startTime: sLabel,
-        endTime: eLabel,
-        durationMinutes: mins,
-        isAllDay,
-        sortKey: sd.getTime(),
-      });
-    };
-
-    if (sorted.length === 0) {
-      pushSlot(workStart, workEnd, day.workingStart, day.workingEnd, true);
-    } else {
-      // Pre gap
-      pushSlot(workStart, sorted[0].startDate, day.workingStart, sorted[0].startTime, false);
-      // Between
-      for (let i = 0; i < sorted.length - 1; i++) {
-        pushSlot(
-          sorted[i].endDate,
-          sorted[i + 1].startDate,
-          sorted[i].endTime,
-          sorted[i + 1].startTime,
-          false,
-        );
-      }
-      // Trailing
-      const last = sorted[sorted.length - 1];
-      pushSlot(last.endDate, workEnd, last.endTime, day.workingEnd, false);
-    }
-  }
+  // Open slot tiles removed — duplicated by the day summary card
 
   items.sort((a, b) => a.sortKey - b.sortKey);
 
