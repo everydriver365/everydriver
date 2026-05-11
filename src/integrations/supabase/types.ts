@@ -18695,6 +18695,15 @@ export type Database = {
           name: string
         }[]
       }
+      get_whitelabel_instructor_status: {
+        Args: { p_slug: string }
+        Returns: {
+          available_from: string
+          id: string
+          is_active: boolean
+          name: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
