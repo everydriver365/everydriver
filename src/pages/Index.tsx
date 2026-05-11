@@ -184,15 +184,14 @@ export default function Index() {
       <SEOHead />
       {/* Hero Section - Left/Right Split Layout */}
       {wlConfig && (
-        <section className="hidden md:block bg-background border-b border-border">
-          <div className="container max-w-7xl py-8">
-            <div className="relative overflow-hidden rounded-3xl shadow-2xl">
-              <img
-                src={winchesterHeroDesktop}
-                alt={`${wlConfig.brandName} — find earlier driving test dates, instant alerts, swap fast and pass sooner`}
-                className="w-full h-auto block"
-                loading="eager"
-              />
+        <section className="hidden md:block">
+          <div className="relative w-full">
+            <img
+              src={winchesterHeroDesktop}
+              alt={`${wlConfig.brandName} — find earlier driving test dates, instant alerts, swap fast and pass sooner`}
+              className="w-full h-auto block"
+              loading="eager"
+            />
               {/* Postcode search overlay */}
               <div className="absolute left-8 xl:left-12 bottom-[28%] xl:bottom-[30%] w-[42%] max-w-md">
                 <form
@@ -231,7 +230,6 @@ export default function Index() {
                   Plan my course around my test date →
                 </button>
               </div>
-            </div>
           </div>
         </section>
       )}
