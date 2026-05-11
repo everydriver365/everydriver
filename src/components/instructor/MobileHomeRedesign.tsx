@@ -1205,7 +1205,7 @@ function AttentionRowItem({
           }}
         >
           <Check size={8} color="#1A7A3C" strokeWidth={2.5} />
-          <span style={{ fontSize: 14, fontWeight: 600, color: "#1A7A3C" }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: "#1A7A3C", letterSpacing: "0.04em", textTransform: "uppercase" }}>
             Clear
           </span>
         </span>
