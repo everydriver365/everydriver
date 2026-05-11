@@ -709,7 +709,7 @@ function UpNextTile({
                 background: pupilPhone ? "#CC2229" : "#E8B5B7",
                 color: "#FFFFFF",
                 border: "none",
-                fontSize: 14,
+                fontSize: 15,
                 fontWeight: 700,
                 display: "inline-flex",
                 alignItems: "center",
