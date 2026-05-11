@@ -209,8 +209,8 @@ export function AddLessonSheet({
   const [lessonType, setLessonType] = useState('standard');
   const [selectedPupil, setSelectedPupil] = useState('');
   const [lessonDate, setLessonDate] = useState<Date | undefined>(defaultDate || new Date());
-  const [lessonStartTime, setLessonStartTime] = useState('09:00');
-  const [lessonDuration, setLessonDuration] = useState('1');
+  const [lessonStartTime, setLessonStartTime] = useState(defaultStartTime || '09:00');
+  const [lessonDuration, setLessonDuration] = useState(defaultDurationHours || '1');
   const [pickupAddress, setPickupAddress] = useState('');
   const [pickupPostcode, setPickupPostcode] = useState('');
   const [isRecurring, setIsRecurring] = useState(false);
