@@ -1,9 +1,15 @@
 import { useMemo, useRef, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { LucideIcon, Search as SearchIcon } from "lucide-react";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
-import { QUICK_ACCESS_TILES, QUICK_ACCESS_TILES_BY_ID, QuickAccessTile, TileTone } from "./tileRegistry";
-import { CompactTile, PersistentSearchBar } from "./QuickAccessTiles";
+import {
+  QUICK_ACCESS_TILES,
+  QUICK_ACCESS_TILES_BY_ID,
+  QuickAccessTile,
+  TILE_TONE,
+  TileTone,
+} from "./tileRegistry";
 import { CustomizeTilesSheet } from "./CustomizeTilesSheet";
 import { useInstructorPinnedTiles } from "@/hooks/useInstructorPinnedTiles";
 import { useTodayRemainingLessons } from "@/hooks/useTodayRemainingLessons";
@@ -13,7 +19,8 @@ import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
 import { useVehicleHealth } from "@/hooks/useVehicleHealth";
 import { useInstructorPeriodStats } from "@/hooks/useInstructorPeriodStats";
 
-const TILES_PER_PAGE = 6;
+const TILES_PER_PAGE = 4;
+const PRIMARY = "#1A52A0";
 
 interface Props {
   instructorId?: string;
@@ -43,9 +50,6 @@ export function QuickAccessSwipeablePaged({ instructorId }: Props) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const lastPageRef = useRef(0);
 
-  // Saved per-instructor order (also used by hybrid). When the row is
-  // empty/missing, the hook returns the 6 defaults — we ignore that and
-  // fall back to the full alphabetical list of all 33 tiles.
   const { data: pinnedRows, isCustomised, setPins, isSaving } =
     useInstructorPinnedTiles(instructorId);
 
@@ -57,9 +61,6 @@ export function QuickAccessSwipeablePaged({ instructorId }: Props) {
     [],
   );
 
-  // Effective ordered visible tiles. We always include EVERY tile so the
-  // grid surfaces every app feature. If the user customised order, pinned
-  // tiles come first, then the rest in alphabetical order.
   const orderedTiles = useMemo(() => {
     const customIds =
       isCustomised && pinnedRows && pinnedRows.length > 0
@@ -82,14 +83,14 @@ export function QuickAccessSwipeablePaged({ instructorId }: Props) {
       case "pupils": {
         const n = activePupils ?? 0;
         return {
-          subtitle: "Manage learners",
+          subtitle: n > 0 ? `${n} active` : "Manage learners",
           badge: n > 0 ? { label: String(n), tone: "green" } : undefined,
         };
       }
       case "tests": {
         const n = swapCount ?? 0;
         return {
-          subtitle: n > 0 ? `${n} swap request${n === 1 ? "" : "s"}` : "No swap requests",
+          subtitle: n > 0 ? `${n} swap request${n === 1 ? "" : "s"}` : undefined,
           badge: n > 0 ? { label: String(n), tone: "blue" } : undefined,
         };
       }
@@ -100,7 +101,7 @@ export function QuickAccessSwipeablePaged({ instructorId }: Props) {
       case "messages": {
         const n = unreadMessages ?? 0;
         return {
-          subtitle: n > 0 ? `${n} unread` : "Chat",
+          subtitle: n > 0 ? `${n} unread` : undefined,
           badge: n > 0 ? { label: String(n), tone: "red" } : undefined,
         };
       }
@@ -131,13 +132,11 @@ export function QuickAccessSwipeablePaged({ instructorId }: Props) {
     navigate(tile.route);
   };
 
-  // Search filtering
   const trimmed = query.trim().toLowerCase();
   const filtered = trimmed
     ? orderedTiles.filter((t) => t.title.toLowerCase().includes(trimmed))
     : null;
 
-  // Pages
   const pages = useMemo(() => {
     const out: QuickAccessTile[][] = [];
     for (let i = 0; i < orderedTiles.length; i += TILES_PER_PAGE) {
@@ -146,7 +145,6 @@ export function QuickAccessSwipeablePaged({ instructorId }: Props) {
     return out;
   }, [orderedTiles]);
 
-  // Track scroll position to update active dot
   useEffect(() => {
     const el = scrollerRef.current;
     if (!el || filtered) return;
@@ -160,7 +158,6 @@ export function QuickAccessSwipeablePaged({ instructorId }: Props) {
     return () => el.removeEventListener("scroll", onScroll);
   }, [filtered, page]);
 
-  // Remember page when entering search; restore when clearing
   useEffect(() => {
     if (filtered) {
       lastPageRef.current = page;
@@ -183,16 +180,19 @@ export function QuickAccessSwipeablePaged({ instructorId }: Props) {
     setPage(i);
   };
 
-  const renderTile = (tile: QuickAccessTile) => {
+  const totalPages = pages.length;
+
+  const renderTile = (tile: QuickAccessTile, index: number, pageIdx: number) => {
     const m = richMeta(tile.id);
-    const alertCount = m.badge ? Number(m.badge.label) || undefined : undefined;
+    const isPrimary = pageIdx === 0 && index === 0;
     return (
-      <CompactTile
+      <QuickTile
         key={tile.id}
         icon={tile.icon}
         tone={tile.tone}
         label={tile.title}
-        alertCount={alertCount}
+        subtitle={m.subtitle}
+        isPrimary={isPrimary}
         locked={isLocked(tile)}
         onPress={() => onTilePress(tile)}
       />
@@ -201,32 +201,100 @@ export function QuickAccessSwipeablePaged({ instructorId }: Props) {
 
   return (
     <div style={{ padding: "0 16px" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <PersistentSearchBar
-            value={query}
-            onChange={setQuery}
-            totalToolCount={orderedTiles.length}
-          />
-        </div>
-        <button
-          type="button"
-          onClick={() => setEditing(true)}
-          aria-label="Customize tiles"
+      {/* Section header */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: 8,
+        }}
+      >
+        <span
           style={{
-            background: "transparent",
-            border: 0,
-            padding: "0 4px",
-            marginBottom: 16,
-            fontSize: 12,
-            fontWeight: 500,
-            color: "#3D55A1",
-            cursor: "pointer",
-            flexShrink: 0,
+            fontSize: 10,
+            fontWeight: 700,
+            color: "#8E8E93",
+            letterSpacing: 1.2,
+            textTransform: "uppercase",
           }}
         >
-          Customize
-        </button>
+          Quick access
+        </span>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <button
+            type="button"
+            onClick={() => setEditing(true)}
+            style={{
+              background: "transparent",
+              border: 0,
+              padding: 0,
+              fontSize: 12,
+              fontWeight: 600,
+              color: PRIMARY,
+              cursor: "pointer",
+            }}
+          >
+            Edit
+          </button>
+          {totalPages > 1 && !filtered && (
+            <PageDots currentPage={page} totalPages={totalPages} compact />
+          )}
+        </div>
+      </div>
+
+      {/* Search bar */}
+      <div
+        style={{
+          background: "#FFF",
+          borderRadius: 12,
+          padding: "9px 12px",
+          display: "flex",
+          alignItems: "center",
+          gap: 7,
+          marginBottom: 12,
+          border: "0.5px solid rgba(26,82,160,0.1)",
+        }}
+      >
+        <SearchIcon size={13} color="#8E8E93" strokeWidth={1.8} style={{ flexShrink: 0 }} />
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search tools, pupils, lessons..."
+          aria-label="Search tools, pupils, lessons"
+          style={{
+            flex: 1,
+            minWidth: 0,
+            border: 0,
+            outline: "none",
+            background: "transparent",
+            fontSize: 11.5,
+            color: "#1A1A1A",
+            padding: 0,
+            fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif',
+          }}
+        />
+        {query && (
+          <button
+            type="button"
+            onClick={() => setQuery("")}
+            aria-label="Clear search"
+            style={{
+              background: "transparent",
+              border: 0,
+              padding: 0,
+              color: "#C7C7CC",
+              cursor: "pointer",
+              display: "flex",
+            }}
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="m15 9-6 6M9 9l6 6"></path>
+            </svg>
+          </button>
+        )}
       </div>
 
       {filtered ? (
@@ -247,7 +315,7 @@ export function QuickAccessSwipeablePaged({ instructorId }: Props) {
                 marginTop: 8,
                 background: "transparent",
                 border: 0,
-                color: "#3D55A1",
+                color: PRIMARY,
                 fontSize: 13,
                 cursor: "pointer",
                 padding: 0,
@@ -261,10 +329,10 @@ export function QuickAccessSwipeablePaged({ instructorId }: Props) {
             style={{
               display: "grid",
               gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-              gap: 12,
+              gap: 9,
             }}
           >
-            {filtered.map(renderTile)}
+            {filtered.map((t, i) => renderTile(t, i, -1))}
           </div>
         )
       ) : (
@@ -281,9 +349,9 @@ export function QuickAccessSwipeablePaged({ instructorId }: Props) {
             }}
             className="hide-scrollbar"
           >
-            {pages.map((pageTiles, idx) => (
+            {pages.map((pageTiles, pageIdx) => (
               <div
-                key={idx}
+                key={pageIdx}
                 style={{
                   flex: "0 0 100%",
                   width: "100%",
@@ -291,23 +359,22 @@ export function QuickAccessSwipeablePaged({ instructorId }: Props) {
                   display: "grid",
                   gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
                   gridAutoRows: "min-content",
-                  rowGap: 14,
-                  columnGap: 8,
+                  gap: 9,
                 }}
               >
-                {pageTiles.map(renderTile)}
+                {pageTiles.map((tile, i) => renderTile(tile, i, pageIdx))}
               </div>
             ))}
           </div>
 
-          {pages.length > 1 && (
+          {totalPages > 1 && (
             <div
               style={{
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 gap: 5,
-                marginTop: 12,
+                marginTop: 10,
               }}
             >
               {pages.map((_, i) => {
@@ -319,10 +386,10 @@ export function QuickAccessSwipeablePaged({ instructorId }: Props) {
                     aria-label={`Go to page ${i + 1}`}
                     onClick={() => jumpToPage(i)}
                     style={{
-                      width: active ? 16 : 4,
+                      width: active ? 18 : 4,
                       height: 4,
-                      background: active ? "#3D55A1" : "#C7C7CC",
-                      borderRadius: active ? 2 : 999,
+                      background: active ? PRIMARY : "#D0D5DD",
+                      borderRadius: 2,
                       border: 0,
                       padding: 0,
                       cursor: "pointer",
@@ -345,5 +412,115 @@ export function QuickAccessSwipeablePaged({ instructorId }: Props) {
         saving={isSaving}
       />
     </div>
+  );
+}
+
+function PageDots({
+  currentPage,
+  totalPages,
+  compact,
+}: {
+  currentPage: number;
+  totalPages: number;
+  compact?: boolean;
+}) {
+  const activeW = compact ? 16 : 18;
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+      {Array.from({ length: totalPages }).map((_, i) => (
+        <span
+          key={i}
+          style={{
+            width: i === currentPage ? activeW : 4,
+            height: 4,
+            borderRadius: 2,
+            background: i === currentPage ? PRIMARY : "#D0D5DD",
+            transition: "width 180ms ease, background 180ms ease",
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+interface QuickTileProps {
+  icon: LucideIcon;
+  tone: TileTone;
+  label: string;
+  subtitle?: string;
+  isPrimary?: boolean;
+  locked?: boolean;
+  onPress: () => void;
+}
+
+function QuickTile({
+  icon: Icon,
+  tone,
+  label,
+  subtitle,
+  isPrimary,
+  locked,
+  onPress,
+}: QuickTileProps) {
+  const palette = TILE_TONE[tone];
+  return (
+    <button
+      type="button"
+      onClick={onPress}
+      aria-label={label}
+      style={{
+        width: "100%",
+        background: isPrimary ? PRIMARY : "#FFF",
+        borderRadius: 16,
+        padding: "14px 13px",
+        border: isPrimary ? "0" : "0.5px solid rgba(26,82,160,0.08)",
+        boxShadow: isPrimary
+          ? "0 2px 8px rgba(26,82,160,0.25)"
+          : "0 1px 4px rgba(0,0,0,0.04)",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "flex-start",
+        textAlign: "left",
+        cursor: "pointer",
+        opacity: locked ? 0.55 : 1,
+        position: "relative",
+      }}
+    >
+      <div
+        style={{
+          width: 32,
+          height: 32,
+          borderRadius: 9,
+          marginBottom: 10,
+          background: isPrimary ? "rgba(255,255,255,0.18)" : palette.bg,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Icon size={14} strokeWidth={1.7} color={isPrimary ? "#FFF" : palette.fg} />
+      </div>
+      <span
+        style={{
+          fontSize: 12,
+          fontWeight: 700,
+          lineHeight: "15px",
+          color: isPrimary ? "#FFF" : "#1A1A1A",
+        }}
+      >
+        {label}
+      </span>
+      {subtitle && (
+        <span
+          style={{
+            fontSize: 9,
+            marginTop: 2,
+            color: isPrimary ? "rgba(255,255,255,0.6)" : "#8E8E93",
+          }}
+        >
+          {subtitle}
+        </span>
+      )}
+    </button>
   );
 }
