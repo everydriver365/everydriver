@@ -191,7 +191,7 @@ export function DynamicCourseCard({
           </div>
 
           {/* Lower body: navy date rail + white content */}
-          <div className="mt-2 flex overflow-hidden rounded-xl bg-card">
+          <div className="flex">
             {/* Date rail */}
             <div
               className="flex flex-col items-center justify-center px-4 py-5 min-w-[68px]"
