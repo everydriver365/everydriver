@@ -1,13 +1,14 @@
 import { memo, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { addDays, format, isSameDay, isTomorrow, startOfDay } from "date-fns";
-import { ChevronRight, ChevronLeft, Plus, MapPin } from "lucide-react";
+import { ChevronRight, ChevronLeft, Plus, MapPin, ChevronsLeftRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { useScheduleWeek, type ScheduleDay, type ScheduleLesson } from "@/hooks/useScheduleWeek";
 import { AppointmentTile } from "@/components/instructor/AppointmentTile";
 import { useDayLessonHistory, eolKey } from "@/hooks/useDayLessonHistory";
+import { useRealGapSlots } from "@/hooks/useRealGapSlots";
 import { AddLessonSheet } from "@/components/instructor/AddLessonSheet";
 import { EndLessonWizard } from "@/components/instructor/EndLessonWizard";
 import { supabase } from "@/integrations/supabase/client";
@@ -1017,6 +1018,17 @@ export default function Schedule({
 
   const { data: days, isLoading, settings } = useScheduleWeek(instructorId, weekStart, 7);
   const { data: eolSet } = useDayLessonHistory(instructorId, selectedDate);
+  const { data: gapDataForChip } = useRealGapSlots(instructorId);
+  const openSlotsThisWeek = useMemo(() => {
+    if (!gapDataForChip) return 0;
+    const today = format(new Date(), "yyyy-MM-dd");
+    const end = new Date();
+    end.setDate(end.getDate() + (7 - end.getDay()));
+    const endStr = format(end, "yyyy-MM-dd");
+    return gapDataForChip
+      .filter((g: any) => g.date >= today && g.date <= endStr)
+      .reduce((sum: number, g: any) => sum + (g.slots?.length ?? 0), 0);
+  }, [gapDataForChip]);
 
   const selectedDay: ScheduleDay | undefined = useMemo(() => {
     if (!days) return undefined;
@@ -1120,50 +1132,71 @@ export default function Schedule({
         </>
       )}
 
-      <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+      {/* V6 Command-style chip pair: Add lesson + Fill gaps */}
+      <div
+        style={{
+          display: "flex",
+          gap: 8,
+          marginTop: 10,
+          justifyContent: "center",
+        }}
+      >
         <button
           type="button"
           onClick={openAddLesson}
           style={{
-            flex: 1,
-            padding: "12px 0",
-            borderRadius: 14,
-            background: "#6B93C0",
-            color: "#FFF",
-            border: "none",
-            fontSize: 14,
-            fontWeight: 700,
-            cursor: "pointer",
             display: "inline-flex",
             alignItems: "center",
-            justifyContent: "center",
             gap: 6,
+            background: "#FFFFFF",
+            border: `0.5px solid ${DIVIDER}`,
+            padding: "8px 14px",
+            borderRadius: 999,
+            fontSize: 13,
+            fontWeight: 600,
+            color: TEXT_PRIMARY,
+            cursor: "pointer",
+            boxShadow: SHADOW,
           }}
         >
-          <Plus size={13} color="#FFF" strokeWidth={2.2} />
+          <Plus size={14} color={DSM_BLUE} strokeWidth={2.4} />
           Add lesson
         </button>
         <button
           type="button"
           onClick={() => openGapFiller()}
           style={{
-            flex: 1,
-            padding: "12px 0",
-            borderRadius: 14,
-            background: "#6B93C0",
-            color: "#FFF",
-            border: "none",
-            fontSize: 14,
-            fontWeight: 700,
-            cursor: "pointer",
             display: "inline-flex",
             alignItems: "center",
-            justifyContent: "center",
             gap: 6,
+            background: "#FFFFFF",
+            border: `0.5px solid ${DIVIDER}`,
+            padding: "8px 14px",
+            borderRadius: 999,
+            fontSize: 13,
+            fontWeight: 600,
+            color: TEXT_PRIMARY,
+            cursor: "pointer",
+            boxShadow: SHADOW,
           }}
         >
-          <Plus size={13} color="#FFF" strokeWidth={2.2} />
+          <ChevronsLeftRight size={14} color={DSM_BLUE} strokeWidth={2.4} />
           Fill gaps
+          {openSlotsThisWeek > 0 && (
+            <span
+              style={{
+                background: DSM_BLUE_TINT,
+                color: DSM_BLUE,
+                fontSize: 11,
+                fontWeight: 700,
+                padding: "1px 7px",
+                borderRadius: 999,
+                marginLeft: 2,
+              }}
+            >
+              {openSlotsThisWeek}
+            </span>
+          )}
         </button>
       </div>
 
