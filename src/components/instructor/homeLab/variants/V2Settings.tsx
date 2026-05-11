@@ -23,7 +23,7 @@ function Section({ title, children, accentKey }: { title: string; children: Reac
         {accent && <span style={{ width: 6, height: 6, borderRadius: 999, background: accent.dot }} />}
         <p style={{ fontSize: 12, color: accent?.fg ?? "#6B7280", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 600 }}>{title}</p>
       </div>
-      <div style={{ background: "#FFFFFF", borderRadius: 12, margin: "0 16px", overflow: "hidden" }}>{children}</div>
+      <div style={{ background: "#FFFFFF", borderRadius: 14, margin: "0 16px", overflow: "hidden", border: "1px solid #E4E8EF", boxShadow: "0 1px 0 rgba(15,23,42,0.04), 0 4px 12px -6px rgba(15,23,42,0.12), 0 14px 28px -18px rgba(15,23,42,0.18)" }}>{children}</div>
     </div>
   );
 }
