@@ -304,16 +304,16 @@ export function UpNextCard(props: UpNextCardProps) {
               aria-label={pupilPhone ? `Call ${fullName}` : "Call disabled, no phone on file"}
               disabled={!pupilPhone}
               style={{
-                flex: 1.3, padding: "8px 0", borderRadius: 10,
+                flex: 1.3, height: 36, borderRadius: 10,
                 backgroundColor: pupilPhone ? "#CC2229" : "#E8B5B7",
                 color: "#FFF", border: "none",
-                display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 4,
-                fontSize: 10.5, fontWeight: 700,
+                display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 5,
+                fontSize: 13, fontWeight: 700,
                 boxShadow: pupilPhone ? "0 2px 6px rgba(204,34,41,0.28)" : "none",
                 cursor: pupilPhone ? "pointer" : "not-allowed",
               }}
             >
-              <Phone style={{ width: 11, height: 11 }} strokeWidth={1.8} /> Call
+              <Phone style={{ width: 13, height: 13 }} strokeWidth={2} /> Call
             </button>
             <button
               type="button"
@@ -321,15 +321,15 @@ export function UpNextCard(props: UpNextCardProps) {
               aria-label={`Send text to ${fullName}`}
               disabled={!pupilPhone}
               style={{
-                flex: 1, padding: "8px 0", borderRadius: 10,
+                flex: 1, height: 36, borderRadius: 10,
                 backgroundColor: "#EEF3FF", color: "#1A52A0", border: "none",
-                display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 3,
-                fontSize: 10.5, fontWeight: 600,
+                display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 5,
+                fontSize: 13, fontWeight: 600,
                 cursor: pupilPhone ? "pointer" : "not-allowed",
                 opacity: pupilPhone ? 1 : 0.5,
               }}
             >
-              <MessageSquare style={{ width: 11, height: 11 }} strokeWidth={1.7} /> Text
+              <MessageSquare style={{ width: 13, height: 13 }} strokeWidth={2} /> Text
             </button>
             <button
               type="button"
@@ -337,15 +337,15 @@ export function UpNextCard(props: UpNextCardProps) {
               aria-label={`Navigate to ${pickupLocation || pickupPostcode || "pickup"}`}
               disabled={!pickupPostcode}
               style={{
-                flex: 1, padding: "8px 0", borderRadius: 10,
+                flex: 1, height: 36, borderRadius: 10,
                 backgroundColor: "#EEF3FF", color: "#1A52A0", border: "none",
-                display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 3,
-                fontSize: 10.5, fontWeight: 600,
+                display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 5,
+                fontSize: 13, fontWeight: 600,
                 cursor: pickupPostcode ? "pointer" : "not-allowed",
                 opacity: pickupPostcode ? 1 : 0.5,
               }}
             >
-              <Navigation style={{ width: 11, height: 11 }} strokeWidth={1.7} /> Go
+              <Navigation style={{ width: 13, height: 13 }} strokeWidth={2} /> Go
             </button>
           </div>
         </div>
