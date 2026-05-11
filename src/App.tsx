@@ -13,6 +13,7 @@ import { AdminAuthProvider } from "@/context/AdminAuthContext";
 import { SchoolAuthProvider } from "@/context/SchoolAuthContext";
 import { DynamicPWAMeta } from "@/components/pwa/DynamicPWAMeta";
 import { DomainRouter } from "@/components/DomainRouter";
+import { CustomDomainCanonical } from "@/components/CustomDomainCanonical";
 import { ConditionalHome } from "@/components/ConditionalHome";
 import { BrandProvider } from "@/components/BrandProvider";
 import NotFound from "./pages/NotFound";
@@ -45,6 +46,7 @@ const App = () => (
                 <ModulesProvider>
                 <>
                   <DomainRouter />
+                  <CustomDomainCanonical />
                   <DynamicPWAMeta />
                   <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>}>
                     <Routes>
