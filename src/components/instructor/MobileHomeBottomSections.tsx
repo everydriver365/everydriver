@@ -930,7 +930,7 @@ function QuickAccessSection({ instructorId }: { instructorId: string }) {
                       onClick={() => navigate(tile.route)}
                       style={{
                         position: "relative",
-                        background: isPrimary ? "#1E6FB8" : "#FFF",
+                        background: isPrimary ? "#6B93C0" : "#FFF",
                         borderRadius: 16,
                         padding: "14px 13px",
                         display: "flex",
