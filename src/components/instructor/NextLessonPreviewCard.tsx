@@ -5,13 +5,16 @@ import { format, parse, parseISO, isToday, isTomorrow, differenceInCalendarDays 
 import {
   Calendar,
   ChevronDown,
+  ChevronUp,
   Clock,
   MapPin,
   Phone,
   MessageSquare,
   Navigation,
   Bot,
+  Sparkles,
 } from "lucide-react";
+import { pupilAvatarColor } from "@/lib/pupilAvatarColor";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchGoogleMapsKey, loadGoogleMaps } from "@/lib/googleMapsLoader";
 import { useInstructorLastPosition } from "@/hooks/useInstructorLastPosition";
