@@ -125,9 +125,13 @@ export default function InstructorDiary() {
   };
   const [activeLesson, setActiveLesson] = useState<LessonRecord | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [bulkNotesOpen, setBulkNotesOpen] = useState(false);
   const openLesson = (l: LessonRecord) => { setActiveLesson(l); setDrawerOpen(true); };
   const handleLessonSaved = (updated: LessonRecord) => {
     setLessons((prev) => prev.map((l) => (l.id === updated.id ? { ...l, ...updated } : l)));
+  };
+  const handleBulkNotesSaved = (updatedIds: string[], notes: string) => {
+    setLessons((prev) => prev.map((l) => updatedIds.includes(l.id) ? { ...l, notes } : l));
   };
 
   const usingCustomRange = !!(customFrom && customTo);
