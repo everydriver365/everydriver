@@ -1,6 +1,6 @@
 import { memo, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { addDays, format, isSameDay, isTomorrow, startOfDay } from "date-fns";
+import { addDays, endOfWeek, format, isSameDay, isTomorrow, startOfDay } from "date-fns";
 import { ChevronRight, ChevronLeft, Plus, MapPin, ChevronsLeftRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { useQueryClient } from "@tanstack/react-query";
