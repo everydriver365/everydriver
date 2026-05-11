@@ -1549,7 +1549,12 @@ export function MobileHomeRedesign({
     });
   }
 
-  const openSlots = (gapData ?? []).reduce((sum, g) => sum + (g.slots?.length ?? 0), 0);
+  // Live count of bookable open slots between today and end of this week (Sun).
+  const weekEndStr = format(endOfWeek(new Date(), { weekStartsOn: 1 }), "yyyy-MM-dd");
+  const todayStr = format(new Date(), "yyyy-MM-dd");
+  const openSlots = (gapData ?? [])
+    .filter((g) => g.date >= todayStr && g.date <= weekEndStr)
+    .reduce((sum, g) => sum + (g.slots?.length ?? 0), 0);
   attentionRows.push({
     key: "gaps",
     group: "todo",
