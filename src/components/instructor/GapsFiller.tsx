@@ -796,6 +796,7 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
               isSelected={raw.selected}
               onToggle={() => toggleSlot(raw.id)}
               highlighted={highlightedIds.has(raw.id)}
+              onBook={() => handleBookSlot(raw)}
             />
           ))}
         </div>
