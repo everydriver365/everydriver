@@ -1285,30 +1285,53 @@ export default function Schedule({
         </>
       )}
 
-      <button
-        type="button"
-        onClick={openAddLesson}
-        style={{
-          width: "100%",
-          padding: "12px 0",
-          borderRadius: 14,
-          background: DSM_BLUE,
-          color: "#FFF",
-          border: "none",
-          boxShadow: "0 2px 8px rgba(26,82,160,0.22)",
-          fontSize: 14,
-          fontWeight: 700,
-          marginTop: 8,
-          cursor: "pointer",
-          display: "inline-flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 6,
-        }}
-      >
-        <Plus size={13} color="#FFF" strokeWidth={2.2} />
-        Add lesson
-      </button>
+      <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+        <button
+          type="button"
+          onClick={openAddLesson}
+          style={{
+            flex: 1,
+            padding: "12px 0",
+            borderRadius: 14,
+            background: DSM_BLUE,
+            color: "#FFF",
+            border: "none",
+            boxShadow: "0 2px 8px rgba(26,82,160,0.22)",
+            fontSize: 14,
+            fontWeight: 700,
+            cursor: "pointer",
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 6,
+          }}
+        >
+          <Plus size={13} color="#FFF" strokeWidth={2.2} />
+          Add lesson
+        </button>
+        <button
+          type="button"
+          onClick={() => openGapFiller()}
+          style={{
+            flex: 1,
+            padding: "12px 0",
+            borderRadius: 14,
+            background: "#FFF",
+            color: DSM_BLUE,
+            border: `1px solid ${DSM_BLUE}`,
+            fontSize: 14,
+            fontWeight: 700,
+            cursor: "pointer",
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 6,
+          }}
+        >
+          <Plus size={13} color={DSM_BLUE} strokeWidth={2.2} />
+          Fill gaps
+        </button>
+      </div>
 
       <AddLessonSheet
         open={addOpen}
