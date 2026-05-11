@@ -3,7 +3,7 @@ import { ChevronLeft, Sparkles, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useInstructorFeatureToggles, type FeatureToggles } from "@/hooks/useInstructorFeatureToggles";
-import { useInstructorAuth } from "@/hooks/useInstructorAuth";
+import { useInstructorAuth } from "@/context/InstructorAuthContext";
 
 interface Props {
   toggleKey: keyof FeatureToggles;
