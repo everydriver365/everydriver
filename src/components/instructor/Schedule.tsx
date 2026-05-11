@@ -959,6 +959,7 @@ function LessonList({
                 e.stopPropagation();
                 onLessonEOL(l);
               }}
+              stackedMeta={stackedMeta}
             />
           );
         }
