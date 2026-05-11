@@ -742,7 +742,7 @@ function QuickAccessSection({ instructorId }: { instructorId: string }) {
     return [...pinned, ...rest];
   }, [pinnedIds]);
 
-  const PER_PAGE = 6;
+  const PER_PAGE = 4;
   const pages: typeof tiles[] = useMemo(() => {
     if (tiles.length === 0) return [];
     const out: typeof tiles[] = [];
@@ -759,6 +759,36 @@ function QuickAccessSection({ instructorId }: { instructorId: string }) {
     if (!el) return;
     const page = Math.round(el.scrollLeft / el.clientWidth);
     if (page !== currentPage) setCurrentPage(page);
+  };
+
+  const subtitleFor = (tileId: string): string | undefined => {
+    switch (tileId) {
+      case "messages": return unread > 0 ? `${unread} unread` : undefined;
+      case "tests": return pendingJobs > 0 ? `${pendingJobs} pending` : undefined;
+      case "fill-gaps": return openGapCount > 0 ? `${openGapCount} open slot${openGapCount === 1 ? "" : "s"}` : undefined;
+      case "take-payment": return debtors > 0 ? `${debtors} owing` : undefined;
+      default: return undefined;
+    }
+  };
+
+  const renderDots = (size: "header" | "bottom") => {
+    const activeW = size === "header" ? 16 : 18;
+    return (
+      <div style={{ display: "flex", alignItems: "center", gap: size === "header" ? 4 : 5 }}>
+        {pages.map((_, i) => (
+          <div
+            key={i}
+            style={{
+              width: i === currentPage ? activeW : 4,
+              height: 4,
+              borderRadius: 2,
+              background: i === currentPage ? BLUE : "#D0D5DD",
+              transition: "width 0.2s ease",
+            }}
+          />
+        ))}
+      </div>
+    );
   };
 
   return (
@@ -787,7 +817,7 @@ function QuickAccessSection({ instructorId }: { instructorId: string }) {
             type="button"
             onClick={() => setEditOpen(true)}
             style={{
-              fontSize: 11,
+              fontSize: 12,
               fontWeight: 600,
               color: BLUE,
               background: "transparent",
@@ -798,22 +828,7 @@ function QuickAccessSection({ instructorId }: { instructorId: string }) {
           >
             Edit
           </button>
-          {pages.length > 1 && (
-            <div style={{ display: "flex", gap: 3 }}>
-              {pages.map((_, i) => (
-                <div
-                  key={i}
-                  style={{
-                    height: 3,
-                    borderRadius: 2,
-                    width: i === currentPage ? 12 : 5,
-                    background: i === currentPage ? BLUE : "#D0D5DD",
-                    transition: "width 0.2s ease",
-                  }}
-                />
-              ))}
-            </div>
-          )}
+          {pages.length > 1 && renderDots("header")}
         </div>
       </div>
 
@@ -825,31 +840,18 @@ function QuickAccessSection({ instructorId }: { instructorId: string }) {
           width: "100%",
           background: "#FFF",
           borderRadius: 12,
-          padding: "8px 12px",
+          padding: "9px 12px",
           display: "flex",
           alignItems: "center",
           gap: 7,
-          marginBottom: 10,
+          marginBottom: 12,
           border: `0.5px solid ${BORDER_STRONG}`,
           cursor: "pointer",
         }}
       >
-        <Search size={12} color={MUTED} />
-        <span style={{ fontSize: 11, color: "#C7C7CC", flex: 1, textAlign: "left" }}>
-          Search tools, pupils, lessons
-        </span>
-        <span
-          style={{
-            background: "#F2F4F8",
-            borderRadius: 5,
-            padding: "2px 6px",
-            border: "0.5px solid #E0E5EE",
-            fontSize: 9,
-            fontWeight: 600,
-            color: MUTED,
-          }}
-        >
-          ⌘K
+        <Search size={13} color={MUTED} strokeWidth={1.8} />
+        <span style={{ fontSize: 11.5, color: "#C7C7CC", flex: 1, textAlign: "left" }}>
+          Search tools, pupils, lessons...
         </span>
       </button>
 
@@ -871,7 +873,7 @@ function QuickAccessSection({ instructorId }: { instructorId: string }) {
       />
 
 
-      {/* Swipeable paged grid */}
+      {/* Swipeable paged grid (2x2) */}
       {pages.length === 0 ? (
         <div
           style={{
@@ -912,14 +914,15 @@ function QuickAccessSection({ instructorId }: { instructorId: string }) {
                 style={{
                   display: "grid",
                   gridTemplateColumns: "repeat(2, 1fr)",
-                  gridAutoRows: "1fr",
-                  gap: 7,
+                  gap: 9,
                 }}
               >
-                {pageTiles.map((tile) => {
+                {pageTiles.map((tile, tileIdx) => {
                   const Icon = tile.icon;
                   const tonePair = TONE_PALETTE[tile.tone] ?? TONE_PALETTE.blue;
                   const badge = badgeFor(tile.id);
+                  const subtitle = subtitleFor(tile.id);
+                  const isPrimary = pageIdx === 0 && tileIdx === 0;
                   return (
                     <button
                       key={tile.id}
@@ -927,57 +930,60 @@ function QuickAccessSection({ instructorId }: { instructorId: string }) {
                       onClick={() => navigate(tile.route)}
                       style={{
                         position: "relative",
-                        background: "#FFF",
-                        borderRadius: 13,
-                        padding: "14px 10px",
+                        background: isPrimary ? BLUE : "#FFF",
+                        borderRadius: 16,
+                        padding: "14px 13px",
                         display: "flex",
-                        flexDirection: "row",
-                        alignItems: "center",
-                        gap: 10,
-                        border: `0.5px solid ${BORDER}`,
+                        flexDirection: "column",
+                        alignItems: "flex-start",
+                        textAlign: "left",
+                        border: isPrimary ? "none" : `0.5px solid ${BORDER}`,
+                        boxShadow: isPrimary
+                          ? `0 2px 8px ${BLUE}40`
+                          : "0 1px 4px rgba(0,0,0,0.04)",
                         cursor: "pointer",
-                        minHeight: 60,
                       }}
                     >
                       {badge > 0 && <BadgeDot count={badge} />}
                       <div
                         style={{
-                          width: 38,
-                          height: 38,
-                          borderRadius: 10,
-                          background: tonePair.bg,
+                          width: 32,
+                          height: 32,
+                          borderRadius: 9,
+                          marginBottom: 10,
+                          background: isPrimary ? "rgba(255,255,255,0.18)" : tonePair.bg,
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
-                          flexShrink: 0,
                         }}
                       >
                         <Icon
-                          size={19}
-                          color={tonePair.fg}
+                          size={14}
+                          color={isPrimary ? "#FFF" : tonePair.fg}
                           strokeWidth={1.7}
                         />
                       </div>
                       <span
                         style={{
-                          fontSize: 16,
-                          fontWeight: 600,
-                          textAlign: "left",
-                          color: TEXT,
-                          lineHeight: 1.2,
-                          letterSpacing: "-0.1px",
-                          flex: 1,
-                          minWidth: 0,
-                          display: "-webkit-box",
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: "vertical",
-                          overflow: "hidden",
-                          wordBreak: "break-word",
-                          hyphens: "auto",
+                          fontSize: 12,
+                          fontWeight: 700,
+                          lineHeight: "15px",
+                          color: isPrimary ? "#FFF" : TEXT,
                         }}
                       >
                         {tile.title}
                       </span>
+                      {subtitle && (
+                        <span
+                          style={{
+                            fontSize: 9,
+                            marginTop: 2,
+                            color: isPrimary ? "rgba(255,255,255,0.6)" : MUTED,
+                          }}
+                        >
+                          {subtitle}
+                        </span>
+                      )}
                     </button>
                   );
                 })}
@@ -993,14 +999,10 @@ function QuickAccessSection({ instructorId }: { instructorId: string }) {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            gap: 4,
-            marginTop: 4,
+            marginTop: 10,
           }}
         >
-          <ChevronsLeftRight size={9} color="#C7C7CC" />
-          <span style={{ fontSize: 9, color: "#C7C7CC", fontWeight: 500 }}>
-            Swipe for more
-          </span>
+          {renderDots("bottom")}
         </div>
       )}
 
