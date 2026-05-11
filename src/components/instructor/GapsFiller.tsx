@@ -1012,6 +1012,19 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
             : undefined
         }
       />
+
+      <AddLessonSheet
+        open={bookSheetOpen}
+        onOpenChange={setBookSheetOpen}
+        instructorId={instructorId}
+        defaultDate={bookDate}
+        defaultStartTime={bookStartTime}
+        defaultDurationHours={bookDurationHours}
+        onSuccess={() => {
+          setBookSheetOpen(false);
+          fetchGaps();
+        }}
+      />
     </div>
   );
 }
