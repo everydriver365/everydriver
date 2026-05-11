@@ -1247,7 +1247,21 @@ export default function Schedule({
   return (
     <div style={{ padding: "0 16px", marginBottom: 14, fontFamily: FONT, color: TEXT_PRIMARY }}>
       <SectionHeader onWeekClick={() => navigate("/instructor/diary")} />
-      <DayStrip days={days} selectedDate={selectedDate} onSelect={setSelectedDate} />
+      <DayStripCard
+        days={days}
+        selectedDate={selectedDate}
+        onSelect={setSelectedDate}
+        onPrevWeek={() => {
+          const newStart = addDays(weekStart, -7);
+          setWeekStart(newStart);
+          setSelectedDate(newStart);
+        }}
+        onNextWeek={() => {
+          const newStart = addDays(weekStart, 7);
+          setWeekStart(newStart);
+          setSelectedDate(newStart);
+        }}
+      />
       {selectedDay && (
         <>
           <DaySummaryCard
