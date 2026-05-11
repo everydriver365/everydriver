@@ -424,7 +424,7 @@ function ScheduleSection({ instructorId }: { instructorId: string }) {
                     </div>
                   </div>
 
-                  {/* Pupil name + detail */}
+                  {/* Pupil name + detail (address + meta chips beneath) */}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div
                       style={{
@@ -439,87 +439,112 @@ function ScheduleSection({ instructorId }: { instructorId: string }) {
                     >
                       {e.lesson.pupilName}
                     </div>
-                    <div
-                      style={{
-                        fontSize: 10,
-                        color: MUTED,
-                        whiteSpace: "nowrap",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                      }}
-                    >
-                      {e.lesson.lessonType}
-                      {e.lesson.pickupLocation ? ` · ${e.lesson.pickupLocation}` : ""}
-                    </div>
-                  </div>
-
-                  {/* EOL pill — strikethrough only when complete */}
-                  <button
-                    type="button"
-                    onClick={(ev) => {
-                      ev.stopPropagation();
-                      openEOLWizard(e.lesson);
-                    }}
-                    style={{
-                      background: BLUE_TINT,
-                      borderRadius: 20,
-                      padding: "2px 7px",
-                      flexShrink: 0,
-                      border: "none",
-                      cursor: "pointer",
-                    }}
-                    aria-label={eolDone ? "End of lesson complete — review" : "Complete end of lesson"}
-                  >
-                    <span
-                      style={{
-                        fontSize: 9,
-                        fontWeight: 700,
-                        color: BLUE,
-                        letterSpacing: 0.2,
-                        textTransform: "uppercase",
-                        textDecoration: eolDone ? "line-through" : "none",
-                        opacity: eolDone ? 0.6 : 1,
-                      }}
-                    >
-                      EOL
-                    </span>
-                  </button>
-
-                  {/* Payment pill */}
-                  {showPayPill && (
-                    <div
-                      style={{
-                        background: isPaid ? "#E8F8ED" : "#FFECEC",
-                        borderRadius: 20,
-                        padding: "2px 7px",
-                        flexShrink: 0,
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: 3,
-                      }}
-                      aria-label={isPaid ? "Paid" : "Not paid"}
-                    >
+                    {/* Address line */}
+                    {e.lesson.pickupLocation && (
                       <div
                         style={{
-                          width: 5,
-                          height: 5,
-                          borderRadius: 3,
-                          background: isPaid ? "#1A7A3C" : "#D33B3B",
-                        }}
-                      />
-                      <span
-                        style={{
-                          fontSize: 9,
-                          fontWeight: 700,
-                          color: isPaid ? "#1A7A3C" : "#D33B3B",
-                          letterSpacing: 0.2,
-                          textTransform: "uppercase",
+                          fontSize: 10,
+                          color: MUTED,
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          marginTop: 1,
                         }}
                       >
-                        {isPaid ? "Paid" : "Not paid"}
-                      </span>
+                        {e.lesson.pickupLocation}
+                      </div>
+                    )}
+                    {/* Meta row: lesson type · EOL · Payment */}
+                    <div
+                      style={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        alignItems: "center",
+                        gap: 4,
+                        marginTop: 4,
+                      }}
+                    >
+                      {e.lesson.lessonType && (
+                        <span
+                          style={{
+                            background: "#F1EFE8",
+                            color: "#5B6B8A",
+                            fontSize: 9,
+                            fontWeight: 600,
+                            padding: "2px 7px",
+                            borderRadius: 20,
+                            textTransform: "capitalize",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          {String(e.lesson.lessonType).replace(/_/g, " ")}
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={(ev) => {
+                          ev.stopPropagation();
+                          openEOLWizard(e.lesson);
+                        }}
+                        style={{
+                          background: BLUE_TINT,
+                          borderRadius: 20,
+                          padding: "2px 7px",
+                          border: "none",
+                          cursor: "pointer",
+                          lineHeight: 1.2,
+                        }}
+                        aria-label={eolDone ? "End of lesson complete — review" : "Complete end of lesson"}
+                      >
+                        <span
+                          style={{
+                            fontSize: 9,
+                            fontWeight: 700,
+                            color: BLUE,
+                            letterSpacing: 0.2,
+                            textTransform: "uppercase",
+                            textDecoration: eolDone ? "line-through" : "none",
+                            opacity: eolDone ? 0.6 : 1,
+                          }}
+                        >
+                          EOL
+                        </span>
+                      </button>
+                      {showPayPill && (
+                        <div
+                          style={{
+                            background: isPaid ? "#E8F8ED" : "#FFECEC",
+                            borderRadius: 20,
+                            padding: "2px 7px",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 3,
+                          }}
+                          aria-label={isPaid ? "Paid" : "Not paid"}
+                        >
+                          <div
+                            style={{
+                              width: 5,
+                              height: 5,
+                              borderRadius: 3,
+                              background: isPaid ? "#1A7A3C" : "#D33B3B",
+                            }}
+                          />
+                          <span
+                            style={{
+                              fontSize: 9,
+                              fontWeight: 700,
+                              color: isPaid ? "#1A7A3C" : "#D33B3B",
+                              letterSpacing: 0.2,
+                              textTransform: "uppercase",
+                            }}
+                          >
+                            {isPaid ? "Paid" : "Not paid"}
+                          </span>
+                        </div>
+                      )}
                     </div>
-                  )}
+                  </div>
 
                   {/* Right status / fee area */}
                   {e.status === "inProgress" && (
