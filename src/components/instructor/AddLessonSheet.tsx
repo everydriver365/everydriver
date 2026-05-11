@@ -258,6 +258,8 @@ export function AddLessonSheet({
     if (open) {
       fetchPupils();
       if (defaultDate) setLessonDate(defaultDate);
+      if (defaultStartTime) setLessonStartTime(defaultStartTime);
+      if (defaultDurationHours) setLessonDuration(defaultDurationHours);
       // Load instructor buffer + home postcode + pricing for conflict/travel/price calc
       (async () => {
         const { data } = await supabase
