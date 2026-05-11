@@ -577,7 +577,7 @@ function LessonRow({
   return (
     <div style={{ marginBottom: 8 }}>
       <AppointmentTile
-        pupilDisplayName={`${lesson.pupilFirstName} ${lesson.pupilLastInitial}`}
+        pupilDisplayName={stackedMeta ? lesson.pupilName : `${lesson.pupilFirstName} ${lesson.pupilLastInitial}`}
         startTimeLabel={lesson.startTime}
         durationMinutes={lesson.durationMinutes}
         pickupLocation={lesson.pickupLocation}
