@@ -1221,7 +1221,7 @@ function AttentionRowItem({
             display: "inline-flex",
             alignItems: "center",
             justifyContent: "center",
-            fontSize: 14,
+            fontSize: 12,
             fontWeight: 700,
             fontVariantNumeric: "tabular-nums",
             flexShrink: 0,
