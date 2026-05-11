@@ -1718,7 +1718,7 @@ export function MobileHomeRedesign({
 
       {/* New DSM Schedule section (day strip + capacity ring + lesson list) */}
       <div style={{ marginTop: 18 }}>
-        <Schedule instructorId={instructorId} />
+        <Schedule instructorId={instructorId} stackedMeta />
       </div>
 
       {/* Schedule + Quick Access */}

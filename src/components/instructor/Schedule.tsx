@@ -565,12 +565,14 @@ function LessonRow({
   eolDone,
   onClick,
   onEOLClick,
+  stackedMeta,
 }: {
   lesson: ScheduleLesson;
   now: Date;
   eolDone: boolean;
   onClick: () => void;
   onEOLClick: (e: React.MouseEvent) => void;
+  stackedMeta?: boolean;
 }) {
   return (
     <div style={{ marginBottom: 8 }}>
@@ -589,6 +591,7 @@ function LessonRow({
         eolDone={eolDone}
         onClick={onClick}
         onEOLClick={onEOLClick}
+        stackedMeta={stackedMeta}
       />
     </div>
   );
@@ -884,6 +887,7 @@ function LessonList({
   onSlotBook,
   onAddLesson,
   onBlockDay,
+  stackedMeta,
 }: {
   day: ScheduleDay;
   eolSet: Set<string> | undefined;
@@ -895,6 +899,7 @@ function LessonList({
   onSlotBook: (start: string, end: string) => void;
   onAddLesson: () => void;
   onBlockDay: () => void;
+  stackedMeta?: boolean;
 }) {
   const now = new Date();
 
@@ -954,6 +959,7 @@ function LessonList({
                 e.stopPropagation();
                 onLessonEOL(l);
               }}
+              stackedMeta={stackedMeta}
             />
           );
         }
@@ -985,9 +991,11 @@ function LessonList({
 export default function Schedule({
   instructorId,
   showRevenuePotential = true,
+  stackedMeta = false,
 }: {
   instructorId: string;
   showRevenuePotential?: boolean;
+  stackedMeta?: boolean;
 }) {
   const navigate = useNavigate();
   const [selectedDate, setSelectedDate] = useState<Date>(() => startOfDay(new Date()));
@@ -1107,6 +1115,7 @@ export default function Schedule({
             onSlotBook={handleGapClick}
             onAddLesson={openAddLesson}
             onBlockDay={handleBlockDay}
+            stackedMeta={stackedMeta}
           />
         </>
       )}
