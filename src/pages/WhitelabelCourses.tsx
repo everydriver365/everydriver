@@ -31,10 +31,12 @@ export default function WhitelabelCourses() {
   );
   const [availableFrom, setAvailableFrom] = useState<string | null>(null);
   const [lookupError, setLookupError] = useState<string | null>(null);
+  const [paused, setPaused] = useState(false);
+  const [instructorName, setInstructorName] = useState<string>("");
   const [mobileVisibleCount, setMobileVisibleCount] = useState(6);
   const [didJumpToAvailableFrom, setDidJumpToAvailableFrom] = useState(false);
 
-  // Resolve slug → instructor id
+  // Resolve slug → instructor id (via RPC so we can detect "hidden" too)
   useEffect(() => {
     if (!slug) {
       setInstructorId(null);
@@ -44,9 +46,7 @@ export default function WhitelabelCourses() {
     let cancelled = false;
     (async () => {
       const { data, error } = await supabase
-        .from("public_instructors")
-        .select("id, is_active, available_from")
-        .eq("app_slug", slug)
+        .rpc("get_whitelabel_instructor_status", { p_slug: slug })
         .maybeSingle();
       if (cancelled) return;
       if (error || !data) {
@@ -54,8 +54,10 @@ export default function WhitelabelCourses() {
         setInstructorId(null);
         return;
       }
+      setInstructorName(data.name ?? "");
       if (!data.is_active) {
-        setLookupError("This instructor is currently unavailable.");
+        // Hidden by the instructor — show a friendly "bookings paused" state.
+        setPaused(true);
         setInstructorId(null);
         return;
       }
