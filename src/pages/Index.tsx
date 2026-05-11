@@ -193,7 +193,7 @@ export default function Index() {
               loading="eager"
             />
               {/* Postcode search overlay */}
-              <div className="absolute left-8 xl:left-12 bottom-[28%] xl:bottom-[30%] w-[42%] max-w-md">
+              <div className="absolute left-8 xl:left-12 bottom-[6%] xl:bottom-[8%] w-[42%] max-w-md">
                 <form
                   onSubmit={handleSearch}
                   className="flex items-center gap-2 rounded-full bg-background/95 backdrop-blur-sm p-2 shadow-2xl ring-1 ring-border"
