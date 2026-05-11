@@ -106,6 +106,7 @@ export function LessonHistory({
   onLessonAdded,
 }: LessonHistoryProps) {
   const [lessons, setLessons] = useState<LessonRecord[]>([]);
+  const [missingEol, setMissingEol] = useState<MissingEolLesson[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -129,14 +130,49 @@ export function LessonHistory({
 
   const fetchLessons = async () => {
     try {
-      const { data, error } = await supabase
-        .from("lesson_history")
-        .select("*")
-        .eq("pupil_id", pupilId)
-        .order("lesson_date", { ascending: false });
+      const today = format(new Date(), "yyyy-MM-dd");
+      const [historyRes, scheduledRes] = await Promise.all([
+        supabase
+          .from("lesson_history")
+          .select("*")
+          .eq("pupil_id", pupilId)
+          .order("lesson_date", { ascending: false }),
+        supabase
+          .from("scheduled_lessons")
+          .select("id, lesson_date, start_time, duration_minutes, status, deleted_at")
+          .eq("pupil_id", pupilId)
+          .lte("lesson_date", today)
+          .neq("status", "cancelled")
+          .is("deleted_at", null)
+          .order("lesson_date", { ascending: false }),
+      ]);
 
-      if (error) throw error;
-      setLessons(data || []);
+      if (historyRes.error) throw historyRes.error;
+      if (scheduledRes.error) throw scheduledRes.error;
+
+      const history = historyRes.data || [];
+      setLessons(history);
+
+      const norm = (t: string | null) =>
+        !t ? "" : t.length === 5 ? `${t}:00` : t;
+      const eolKeys = new Set(
+        history
+          .filter((r: any) => r.start_time)
+          .map((r: any) => `${r.lesson_date}|${norm(r.start_time)}`),
+      );
+
+      const missing: MissingEolLesson[] = (scheduledRes.data || [])
+        .filter((s: any) => {
+          if (!s.start_time) return false;
+          return !eolKeys.has(`${s.lesson_date}|${norm(s.start_time)}`);
+        })
+        .map((s: any) => ({
+          id: s.id,
+          lesson_date: s.lesson_date,
+          start_time: s.start_time,
+          duration_minutes: s.duration_minutes,
+        }));
+      setMissingEol(missing);
     } catch (error) {
       console.error("Error fetching lessons:", error);
     } finally {
