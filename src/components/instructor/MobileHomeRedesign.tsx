@@ -1606,7 +1606,7 @@ export function MobileHomeRedesign({
   const upgradeRows: UpgradeRowSpec[] = [
     {
       key: "membership",
-      Icon: Crown,
+      Icon: Star,
       iconBg: "#FFF6E6",
       iconColor: "#B45309",
       label: "Membership",
