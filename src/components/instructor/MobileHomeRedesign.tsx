@@ -1706,7 +1706,7 @@ export function MobileHomeRedesign({
 
       {/* Needs attention + Upgrade */}
       <div style={{ padding: "14px 16px 24px" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
           <span
             style={{
               fontSize: 10,
@@ -1724,32 +1724,17 @@ export function MobileHomeRedesign({
                 background: "#CC2229",
                 color: "#FFFFFF",
                 borderRadius: 10,
-                padding: "1px 7px",
+                padding: "2px 8px",
                 fontSize: 9,
                 fontWeight: 700,
                 fontVariantNumeric: "tabular-nums",
               }}
             >
-              {totalAttentionCount}
+              {totalAttentionCount} item{totalAttentionCount === 1 ? "" : "s"}
             </span>
           )}
         </div>
         <AttentionCard rows={attentionRows} />
-
-        <div
-          style={{
-            fontSize: 10,
-            fontWeight: 700,
-            color: "#8E8E93",
-            letterSpacing: 1.2,
-            textTransform: "uppercase",
-            marginTop: 4,
-            marginBottom: 8,
-            paddingLeft: 2,
-          }}
-        >
-          Upgrade
-        </div>
         <UpgradeCard rows={upgradeRows} />
       </div>
 
