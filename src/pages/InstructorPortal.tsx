@@ -265,6 +265,7 @@ import { StatCardV2 } from "@/components/instructor/dashboardV2/StatCardV2";
 import { TodaySchedulePanel } from "@/components/instructor/dashboardV2/TodaySchedulePanel";
 import { MoneyStack } from "@/components/instructor/dashboardV2/MoneyStack";
 import { RetentionAlertsPanel } from "@/components/instructor/dashboardV2/RetentionAlertsPanel";
+import { DvsaIndicatorsPanel } from "@/components/instructor/dashboardV2/DvsaIndicatorsPanel";
 import { RightRail } from "@/components/instructor/dashboardV2/RightRail";
 import { AddLessonSheet } from "@/components/instructor/AddLessonSheet";
 import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
