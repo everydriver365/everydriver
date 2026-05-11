@@ -16,6 +16,8 @@ export interface FindAppointmentBodyProps {
   onSelectSlot: (slot: AvailableSlot) => void;
   onCancel?: () => void;
   variant?: "modal" | "page";
+  /** When true, only the very next available slot is shown and pre-selected. */
+  nextOnly?: boolean;
 }
 
 type Urgency = "include" | "exclude" | "only";
