@@ -607,31 +607,31 @@ function UpNextTile({
                 style={{ width: 40, height: 40, borderRadius: 20, objectFit: "cover" }}
               />
             ) : (
-              <span style={{ fontSize: 14, fontWeight: 700, color: "#FFF" }}>{initialsText}</span>
+              <span style={{ fontSize: 16, fontWeight: 700, color: "#FFF" }}>{initialsText}</span>
             )}
           </button>
 
           <div style={{ flex: 1, minWidth: 0 }}>
             <div
               style={{
-                fontSize: 14, fontWeight: 700, color: "#1A1A1A", letterSpacing: -0.3,
+                fontSize: 17, fontWeight: 700, color: "#1A1A1A", letterSpacing: -0.3,
                 overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
               }}
             >
               {fullName}
             </div>
-            <div style={{ fontSize: 14, color: "#8E8E93", marginTop: 2, fontWeight: 500 }}>
+            <div style={{ fontSize: 13, color: "#8E8E93", marginTop: 2, fontWeight: 500 }}>
               {dayText}{dayText && relativeDay ? " · " : ""}{relativeDay}
             </div>
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", flexShrink: 0 }}>
-            <div style={{ fontSize: 14, fontWeight: 700, color: "#1A52A0", letterSpacing: -0.6, lineHeight: "24px" }}>
+            <div style={{ fontSize: 28, fontWeight: 700, color: "#1A52A0", letterSpacing: -0.6, lineHeight: "30px" }}>
               {start}
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 3 }}>
               <span style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: "#CC2229" }} />
-              <span style={{ fontSize: 14, color: "#8E8E93", fontWeight: 500 }}>{countdownLine}</span>
+              <span style={{ fontSize: 13, color: "#8E8E93", fontWeight: 500 }}>{countdownLine}</span>
             </div>
           </div>
         </div>
