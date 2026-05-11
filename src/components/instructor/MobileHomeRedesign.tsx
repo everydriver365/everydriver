@@ -1097,7 +1097,7 @@ function GroupHeader({
       )}
       <span
         style={{
-          fontSize: 14,
+          fontSize: 11,
           fontWeight: 700,
           color: dotColor,
           letterSpacing: "0.08em",
@@ -1108,7 +1108,7 @@ function GroupHeader({
       </span>
       <span style={{ flex: 1 }} />
       {countLabel && (
-        <span style={{ fontSize: 14, color: "#8E8E93" }}>{countLabel}</span>
+        <span style={{ fontSize: 11, color: "#8E8E93" }}>{countLabel}</span>
       )}
     </div>
   );
