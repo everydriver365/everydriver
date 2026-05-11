@@ -476,6 +476,31 @@ export default function InstructorDiary() {
                 </PopoverContent>
               </Popover>
 
+              {missingNotesCount > 0 && (
+                <button
+                  type="button"
+                  onClick={openMissingNotes}
+                  style={{
+                    borderRadius: 20,
+                    padding: "5px 10px 5px 8px",
+                    backgroundColor: "var(--d2-amber-bg, #FEF3C7)",
+                    border: "0.5px solid var(--d2-border)",
+                    color: "var(--d2-amber-fg, #92400E)",
+                    fontSize: 10,
+                    fontWeight: 600,
+                    whiteSpace: "nowrap",
+                    cursor: "pointer",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 5,
+                  }}
+                  title="Bulk add notes to lessons missing notes"
+                >
+                  <FileWarning size={11} strokeWidth={2} />
+                  Missing notes ({missingNotesCount})
+                </button>
+              )}
+
               <button
                 type="button"
                 style={chipStyle(false)}
