@@ -1619,7 +1619,7 @@ export function MobileHomeRedesign({
     },
     {
       key: "health-cover",
-      Icon: ShieldPlus,
+      Icon: Heart,
       iconBg: "#EEF3FF",
       iconColor: "#1A52A0",
       label: "Health cover",
