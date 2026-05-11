@@ -636,13 +636,36 @@ export default function InstructorDiary() {
                 </PopoverContent>
               </Popover>
 
-              <button
-                type="button"
-                style={chipStyle(false)}
-                onClick={() => navigate("/instructor/data-export")}
-              >
-                Export
-              </button>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button type="button" style={chipStyle(false)} title="Download filtered lessons">
+                    Export
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="p-1 w-44" align="end">
+                  <button
+                    className="w-full text-left text-xs px-2 py-1.5 rounded hover:bg-muted disabled:opacity-50"
+                    disabled={filteredLessons.length === 0}
+                    onClick={() => handleExport("csv")}
+                  >
+                    Download CSV ({filteredLessons.length})
+                  </button>
+                  <button
+                    className="w-full text-left text-xs px-2 py-1.5 rounded hover:bg-muted disabled:opacity-50"
+                    disabled={filteredLessons.length === 0}
+                    onClick={() => handleExport("pdf")}
+                  >
+                    Download PDF ({filteredLessons.length})
+                  </button>
+                  <div className="border-t my-1" />
+                  <button
+                    className="w-full text-left text-xs px-2 py-1.5 rounded hover:bg-muted text-muted-foreground"
+                    onClick={() => navigate("/instructor/data-export")}
+                  >
+                    Full data export…
+                  </button>
+                </PopoverContent>
+              </Popover>
             </div>
           </div>
 
