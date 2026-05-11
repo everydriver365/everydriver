@@ -991,9 +991,11 @@ function LessonList({
 export default function Schedule({
   instructorId,
   showRevenuePotential = true,
+  stackedMeta = false,
 }: {
   instructorId: string;
   showRevenuePotential?: boolean;
+  stackedMeta?: boolean;
 }) {
   const navigate = useNavigate();
   const [selectedDate, setSelectedDate] = useState<Date>(() => startOfDay(new Date()));
