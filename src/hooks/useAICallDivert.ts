@@ -153,7 +153,7 @@ export function useAICallDivert(
     if (settings.mode === "off") return "AI divert off";
     if (settings.mode === "on_now") return "AI divert active";
     if (active) return "AI divert active";
-    if (windowStart) return `AI divert starts at ${fmt(windowStart)}`;
+    if (windowStart) return `Call divert starts at ${fmt(windowStart)}`;
     return "AI divert off";
   })();
 
