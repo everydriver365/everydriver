@@ -55,8 +55,10 @@ export function FindAppointmentBody({
   onSelectSlot,
   onCancel,
   variant = "page",
-  nextOnly = false,
+  nextOnly: nextOnlyProp = false,
 }: FindAppointmentBodyProps) {
+  const [expandedFromNext, setExpandedFromNext] = useState(false);
+  const nextOnly = nextOnlyProp && !expandedFromNext;
   const today = format(new Date(), "yyyy-MM-dd");
   const [fromDate, setFromDate] = useState(today);
   const [duration, setDuration] = useState("60");
@@ -185,6 +187,14 @@ export function FindAppointmentBody({
   };
 
   const handleBook = () => {
+    // In "Next slot" mode, the first Book click expands the view to the
+    // full available-slots list so the user can pick a different one.
+    // The next click (after a slot is selected) actually books.
+    if (nextOnlyProp && !expandedFromNext) {
+      setExpandedFromNext(true);
+      setSelectedSlotId(null);
+      return;
+    }
     if (selectedSlot) onSelectSlot(selectedSlot);
   };
 
@@ -616,11 +626,13 @@ export function FindAppointmentBody({
         <button
           type="button"
           onClick={handleBook}
-          disabled={!selectedSlot}
+          disabled={!selectedSlot && !(nextOnlyProp && !expandedFromNext)}
           className="flex-[2] rounded-[12px] py-2.5 text-center disabled:opacity-50"
           style={{ backgroundColor: "var(--d2-indigo)" }}
         >
-          <span className="text-[13px] font-bold text-white">Book appointment</span>
+          <span className="text-[13px] font-bold text-white">
+            {nextOnlyProp && !expandedFromNext ? "Show more slots" : "Book appointment"}
+          </span>
         </button>
       </div>
     </div>

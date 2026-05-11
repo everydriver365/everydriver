@@ -1,11 +1,13 @@
+import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { parseISO } from "date-fns";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { DashboardShell } from "@/components/instructor/dashboardV2/DashboardShell";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { FindAppointmentBody } from "@/components/shared/FindAppointmentBody";
-import { toast } from "sonner";
+import { AddLessonSheet } from "@/components/instructor/AddLessonSheet";
 
 export default function InstructorFindAppointmentPage() {
   const { instructor, signOut } = useInstructorAuth();
@@ -15,9 +17,22 @@ export default function InstructorFindAppointmentPage() {
   const nextOnly = searchParams.get("next") === "1";
   const { total: notificationCount } = useCombinedNotificationCount(instructor?.id);
 
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [defaultDate, setDefaultDate] = useState<Date | undefined>(undefined);
+  const [defaultStartTime, setDefaultStartTime] = useState<string | undefined>(undefined);
+  const [defaultDurationHours, setDefaultDurationHours] = useState<string | undefined>(undefined);
+
   const onSelect = (slot: any) => {
-    toast.success(`Selected ${slot.startTime} on ${slot.date}`);
-    navigate(`/instructor/schedule?date=${slot.date}&time=${slot.startTime}`);
+    try {
+      setDefaultDate(parseISO(slot.date));
+    } catch {
+      setDefaultDate(undefined);
+    }
+    setDefaultStartTime(slot.startTime);
+    if (slot.durationMinutes) {
+      setDefaultDurationHours(String(slot.durationMinutes / 60));
+    }
+    setSheetOpen(true);
   };
 
   const body = (
@@ -31,6 +46,20 @@ export default function InstructorFindAppointmentPage() {
     />
   );
 
+  const sheet = instructor?.id ? (
+    <AddLessonSheet
+      open={sheetOpen}
+      onOpenChange={setSheetOpen}
+      instructorId={instructor.id}
+      defaultDate={defaultDate}
+      defaultStartTime={defaultStartTime}
+      defaultDurationHours={defaultDurationHours}
+      onSuccess={() => {
+        setSheetOpen(false);
+      }}
+    />
+  ) : null;
+
   if (isMobile) {
     return (
       <InstructorPortalLayout>
@@ -39,6 +68,7 @@ export default function InstructorFindAppointmentPage() {
             {body}
           </div>
         </div>
+        {sheet}
       </InstructorPortalLayout>
     );
   }
@@ -66,6 +96,7 @@ export default function InstructorFindAppointmentPage() {
       onBell={() => navigate("/instructor/notifications")}
     >
       <div className="max-w-3xl mx-auto">{body}</div>
+      {sheet}
     </DashboardShell>
   );
 }

@@ -30,6 +30,8 @@ interface AddLessonSheetProps {
   onOpenChange: (open: boolean) => void;
   instructorId: string;
   defaultDate?: Date;
+  defaultStartTime?: string;
+  defaultDurationHours?: string;
   onSuccess: () => void;
 }
 
@@ -194,6 +196,8 @@ export function AddLessonSheet({
   onOpenChange, 
   instructorId, 
   defaultDate,
+  defaultStartTime,
+  defaultDurationHours,
   onSuccess 
 }: AddLessonSheetProps) {
   const queryClient = useQueryClient();
@@ -205,8 +209,8 @@ export function AddLessonSheet({
   const [lessonType, setLessonType] = useState('standard');
   const [selectedPupil, setSelectedPupil] = useState('');
   const [lessonDate, setLessonDate] = useState<Date | undefined>(defaultDate || new Date());
-  const [lessonStartTime, setLessonStartTime] = useState('09:00');
-  const [lessonDuration, setLessonDuration] = useState('1');
+  const [lessonStartTime, setLessonStartTime] = useState(defaultStartTime || '09:00');
+  const [lessonDuration, setLessonDuration] = useState(defaultDurationHours || '1');
   const [pickupAddress, setPickupAddress] = useState('');
   const [pickupPostcode, setPickupPostcode] = useState('');
   const [isRecurring, setIsRecurring] = useState(false);
@@ -254,6 +258,8 @@ export function AddLessonSheet({
     if (open) {
       fetchPupils();
       if (defaultDate) setLessonDate(defaultDate);
+      if (defaultStartTime) setLessonStartTime(defaultStartTime);
+      if (defaultDurationHours) setLessonDuration(defaultDurationHours);
       // Load instructor buffer + home postcode + pricing for conflict/travel/price calc
       (async () => {
         const { data } = await supabase
@@ -275,7 +281,7 @@ export function AddLessonSheet({
       })();
       loadUkBankHolidays().then(setBankHolidays).catch(() => {});
     }
-  }, [open, defaultDate, instructorId]);
+  }, [open, defaultDate, defaultStartTime, defaultDurationHours, instructorId]);
 
   useEffect(() => {
     if (isDrivingTest && instructorId) fetchTestCentres();
