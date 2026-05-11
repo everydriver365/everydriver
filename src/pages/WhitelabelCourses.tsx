@@ -117,7 +117,20 @@ export default function WhitelabelCourses() {
   return (
     <MainLayout>
       <section className="container py-8">
-        {lookupError ? (
+        {paused ? (
+          <div className="rounded-xl border bg-card p-8 text-center max-w-xl mx-auto">
+            <div
+              className="mx-auto mb-4 inline-flex h-12 w-12 items-center justify-center rounded-full"
+              style={{ backgroundColor: `${config?.brandColour || "#1e3a5f"}1a`, color: config?.brandColour || "#1e3a5f" }}
+            >
+              <CalendarIcon className="h-6 w-6" />
+            </div>
+            <h2 className="text-xl font-semibold">Bookings paused</h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              {instructorName || brand} is not currently accepting new bookings. Please check back soon.
+            </p>
+          </div>
+        ) : lookupError ? (
           <div className="rounded-xl border bg-card p-8 text-center">
             <h2 className="text-lg font-semibold">{lookupError}</h2>
             <p className="mt-2 text-sm text-muted-foreground">
