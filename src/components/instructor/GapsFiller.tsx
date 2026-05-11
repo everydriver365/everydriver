@@ -1022,7 +1022,7 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
         defaultDurationHours={bookDurationHours}
         onSuccess={() => {
           setBookSheetOpen(false);
-          fetchGaps();
+          fetchAvailableGaps();
         }}
       />
     </div>
