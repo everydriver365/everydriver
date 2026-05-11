@@ -1,51 +1,70 @@
-# Show "Unavailable" on Winchester site when Kenneth's visibility is off
+# Improve SEO on winchesterdrivingschool.co.uk
 
-## Current behaviour
+## Why this matters
 
-The Winchester whitelabel `/courses` page resolves Kenneth's instructor via the `public_instructors` view, which is defined as `WHERE is_active = true`. Kenneth's visibility toggle in **Instructor → Mini-website → Visibility** writes to `instructors.is_active`.
+Today every whitelabel domain inherits the generic `EveryDriver | Find Driving Instructors…` title and description from `index.html`, has no `LocalBusiness` schema, no per-page meta, no whitelabel sitemap, and no geo targeting. Search engines see Winchester as a near-duplicate of Drive365 with no local signal — terrible for ranking on "driving lessons Winchester", "driving instructor Winchester", etc.
 
-Result: when he toggles visibility OFF, his row drops out of the view entirely, so the page falls into the generic `"Instructor not found."` error instead of a friendly "currently unavailable" state. The branded home page (`/`) also keeps rendering normally with no "we're closed" indication.
+## What we'll change (frontend + a small edge function)
 
-## Goal
+### 1. Dynamic, branded `<head>` per whitelabel host
+Extend `SEOHead` (and call it on every public whitelabel page) so when `getWhitelabelConfig()` returns a config it overrides:
+- `<title>` — e.g. *"Winchester Driving School — Driving Lessons & Intensive Courses in Winchester"*
+- `<meta name="description">` — local, keyword-rich, instructor-name-aware (≤160 chars)
+- `<meta name="keywords">` (light, area-based)
+- `<meta name="geo.region">` `GB-HAM`, `<meta name="geo.placename">` Winchester, `<meta name="geo.position">` lat;lng (from instructor's `home_postcode` lookup we already have)
+- Open Graph + Twitter card with the school's logo (`logoPath`) and brand name
+- `<html lang="en-GB">`
 
-When Kenneth toggles his profile visibility off:
-- The Winchester `/courses` page shows a clear "Currently not accepting bookings" empty state (branded, no error wording).
-- The Winchester home (`/`) shows a small, branded "Bookings paused" notice in place of the courses CTA.
-- Direct booking link `/book/<id>` shows the same friendly unavailable state instead of letting someone book.
+Per-route titles already wired into pages get a `| {brandName}` suffix when whitelabelled (Courses, Book, Reviews, Contact, About).
 
-## Changes (frontend only — no schema changes)
+### 2. JSON-LD structured data
+Inject a `LocalBusiness` (subtype `DrivingSchool`) script tag from `SEOHead` on whitelabel hosts:
+- name, url (canonical), logo, image, telephone, email, address (postcode + Winchester), `areaServed`, `priceRange`, `sameAs` (social links if present), `aggregateRating` (only if we have ≥1 review).
+Add `BreadcrumbList` JSON-LD on `/courses`, `/book/...`, `/reviews`.
+Add `Course`/`Offer` JSON-LD per visible course on `WhitelabelCourses` (name, provider, price, courseMode=onsite, location).
+Add `FAQPage` JSON-LD if the home page renders FAQs.
 
-1. **`src/pages/WhitelabelCourses.tsx`**
-   - Replace the `public_instructors` lookup with a query against the new `instructor_public_status` RPC (see below) OR query `instructors` directly via a small read-only RPC so we can read `is_active` even when false.
-   - Distinguish three states: `not_found`, `hidden` (active=false), `available`.
-   - For `hidden`, render a branded card: heading "Bookings paused", subtext "Kenneth is not currently accepting new bookings. Please check back soon." with a "Notify me" mailto link to the school's contact email.
+### 3. Canonical + hreflang + robots
+- `CustomDomainCanonical` already sets `rel=canonical`. Also add `<link rel="alternate" hreflang="en-GB">` and `x-default` to the same canonical.
+- Update `public/robots.txt` to additionally list a whitelabel sitemap endpoint (see #4). Robots stays Allow-all.
 
-2. **New tiny edge-safe RPC `get_whitelabel_instructor_status(slug text)`** (migration)
-   - Returns `id, is_active, available_from, name, email`.
-   - `SECURITY DEFINER`, locked-down `search_path`, returns only those columns — no PII beyond what the public view already exposes.
-   - Reason: keeps the public view's `is_active = true` invariant intact for the rest of the app.
+### 4. Per-whitelabel sitemap
+New edge function `whitelabel-sitemap` (`/functions/v1/whitelabel-sitemap?host=winchesterdrivingschool.co.uk`) that returns an XML sitemap of:
+- `/`, `/courses`, `/reviews`, `/contact`, `/about`
+- one URL per active course/lesson type for that instructor
+- `lastmod` from the latest `courses.updated_at`
+Also add a tiny static `/sitemap.xml` route (handled in `publicRoutes` via a redirect to the edge function with the current host) so `https://winchesterdrivingschool.co.uk/sitemap.xml` works directly. Reference it from `robots.txt` via the apex URL.
 
-3. **`src/pages/WhitelabelHome.tsx` (or whichever component renders the branded `/`)**
-   - Read the same status. When `hidden`, replace the "Browse courses / Book now" CTA with a muted "Bookings paused" pill and disable the courses link.
+### 5. Content & on-page signals (Winchester home + courses)
+On `Index` when whitelabelled, surface text Google can rank:
+- H1 swaps to *"Driving Lessons in Winchester"* (currently generic).
+- Add a short "Areas we cover" block (Winchester, Eastleigh, Alresford, Romsey, Twyford, Kings Worthy) — pulled from `instructor.location_name` or a new `service_areas` array we already store under `instructor_postcode_rules`/area cache.
+- Add review snippets above the fold so the `aggregateRating` JSON-LD has visible support.
+- Ensure all `<img>` have descriptive alt text including "Winchester driving instructor".
 
-4. **`src/pages/Book.tsx` (or the booking entry component used by `/book/:id`)**
-   - When the requested instructor is whitelabel-scoped AND `is_active = false`, show the same "Bookings paused" screen instead of the booking flow.
-   - Non-whitelabel routes are unaffected (their existing handling stays).
+### 6. Performance & Core Web Vitals (cheap wins)
+- Preload the brand logo and hero image with `<link rel="preload" as="image">` on whitelabel hosts.
+- Add `loading="lazy"` + `decoding="async"` to below-the-fold images (audit `Index`, `WhitelabelCourses`).
+- Add `width`/`height` to the hero `<img>` to stop CLS.
 
-5. **Copy & branding**
-   - Use the whitelabel `brandName` and `brandColour` for the unavailable card.
-   - No new translations needed beyond the two new strings.
+### 7. Social/share polish
+- `og:image` defaults to the brand logo on a 1200×630 backdrop generated at build (one PNG per active whitelabel — start with Winchester only).
+- `og:locale` `en_GB`.
 
 ## Out of scope
+- No backend role changes, no payment changes.
+- No new RLS or schema beyond reading existing fields.
+- Mobile-only layouts untouched (per project rule).
 
-- No change to the `is_active` toggle UI itself.
-- No change to admin/school portal behaviour.
-- No "vacation mode" or scheduled return date — just on/off, mirroring the existing toggle.
+## Technical notes
+- `SEOHead` becomes async-aware of `getWhitelabelConfig()` and re-runs on route change.
+- Geo coords resolved once via existing postcode → lat/lng helper (`src/lib/postcode.ts` or area cache); cached in `whitelabel.ts`.
+- New edge function lives in `supabase/functions/whitelabel-sitemap/index.ts` with `verify_jwt = false` (public).
+- All structured data injected as `<script type="application/ld+json">` and torn down on unmount to avoid duplicates across navigations.
 
 ## Verification
-
-- In Instructor → Mini-website → Visibility, toggle Kenneth's visibility off.
-- Visit `winchesterdrivingschool.co.uk` → home shows "Bookings paused".
-- Visit `/courses` → branded "Bookings paused" card, no instructor list.
-- Visit `/book/<kenneth-id>` → same friendly screen, booking form not rendered.
-- Toggle back on → all three pages return to normal within a refresh.
+1. View source on `https://winchesterdrivingschool.co.uk/` → title, description, OG, JSON-LD all reference Winchester.
+2. `curl https://winchesterdrivingschool.co.uk/sitemap.xml` returns Winchester URLs.
+3. Google Rich Results Test passes for `LocalBusiness` and `Course`.
+4. Lighthouse SEO ≥ 95 on home and `/courses`.
+5. Toggling Kenneth's visibility off keeps the "Bookings paused" page indexed but with `noindex` meta added (so paused pages don't outrank live ones).
