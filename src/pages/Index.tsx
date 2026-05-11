@@ -137,11 +137,9 @@ export default function Index() {
     const parts = noPc.split(",").map((s) => s.trim()).filter(Boolean);
     return parts[parts.length - 1] || "";
   })();
-  // Static UK area lists per known whitelabel city — extends the local SEO footprint.
-  const WL_AREAS_BY_CITY: Record<string, string[]> = {
-    Winchester: ["Winchester", "Eastleigh", "Alresford", "Romsey", "Twyford", "Kings Worthy", "Chandler's Ford", "Bishop's Waltham"],
-  };
-  const wlAreas = wlCity ? WL_AREAS_BY_CITY[wlCity] || [wlCity] : [];
+  // Static UK area lists per known whitelabel host — extends the local SEO footprint
+  // and powers dedicated /areas/<slug> location landing pages.
+  const wlAreas = wlConfig ? getAreasForHost(wlConfig.host) : [];
   // Dynamic images from CMS with fallbacks - Hero testimonials
   const testimonialSarah = getImage("testimonial_sarah", testimonialSarahFallback);
   const testimonialJames = getImage("testimonial_james", testimonialJamesFallback);
