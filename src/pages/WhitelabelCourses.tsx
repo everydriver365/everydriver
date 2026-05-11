@@ -124,25 +124,57 @@ export default function WhitelabelCourses() {
       if (existing) existing.remove();
       return;
     }
-    const items = coursesWithDistance.slice(0, 20).map((c, i) => ({
-      "@type": "ListItem",
-      position: i + 1,
-      item: {
-        "@type": "Course",
-        name: `${c.hours}-hour driving course with ${brand}`,
-        description: `${c.hours} hours of driving tuition with ${brand}${c.isIntensive ? " — intensive course" : ""}.`,
-        provider: {
-          "@type": "DrivingSchool",
-          name: brand,
-          url: typeof window !== "undefined" ? `${window.location.origin}/` : undefined,
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
+    const items = coursesWithDistance.slice(0, 20).map((c, i) => {
+      const skim = (c.instructor as { school_skim_amount?: number }).school_skim_amount || 0;
+      const hourly = (c.instructor as { hourly_rate?: number }).hourly_rate || 0;
+      const basePrice = hourly * c.hours;
+      const price = c.discountedPrice || (basePrice ? basePrice + skim : 0);
+      const startIso = c.bookableDate?.toISOString?.() ?? undefined;
+      const courseUrl = `${origin}/courses`;
+      return {
+        "@type": "ListItem",
+        position: i + 1,
+        item: {
+          "@type": "Course",
+          name: `${c.hours}-hour ${c.isIntensive ? "intensive " : ""}driving course with ${brand}`,
+          description: `${c.hours} hours of in-car driving tuition with ${brand}${c.isIntensive ? " delivered as an intensive course" : ""}.`,
+          url: courseUrl,
+          provider: {
+            "@type": "DrivingSchool",
+            name: brand,
+            url: `${origin}/`,
+          },
+          timeRequired: `PT${c.hours}H`,
+          educationalCredentialAwarded: "DVSA driving test preparation",
+          hasCourseInstance: {
+            "@type": "CourseInstance",
+            courseMode: "onsite",
+            courseWorkload: `PT${c.hours}H`,
+            startDate: startIso,
+            ...(price > 0 && {
+              offers: {
+                "@type": "Offer",
+                price: price.toFixed(2),
+                priceCurrency: "GBP",
+                availability: "https://schema.org/InStock",
+                url: courseUrl,
+                ...(startIso && { validFrom: startIso }),
+              },
+            }),
+          },
+          ...(price > 0 && {
+            offers: {
+              "@type": "Offer",
+              price: price.toFixed(2),
+              priceCurrency: "GBP",
+              availability: "https://schema.org/InStock",
+              url: courseUrl,
+            },
+          }),
         },
-        hasCourseInstance: {
-          "@type": "CourseInstance",
-          courseMode: "onsite",
-          startDate: c.bookableDate?.toISOString?.() ?? undefined,
-        },
-      },
-    }));
+      };
+    });
     const payload = {
       "@context": "https://schema.org",
       "@type": "ItemList",
