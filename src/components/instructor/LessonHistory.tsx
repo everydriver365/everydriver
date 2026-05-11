@@ -53,6 +53,13 @@ interface LessonRecord {
   created_at: string;
 }
 
+interface MissingEolLesson {
+  id: string;
+  lesson_date: string;
+  start_time: string;
+  duration_minutes: number;
+}
+
 interface LessonHistoryProps {
   pupilId: string;
   pupilName: string;
