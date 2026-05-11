@@ -166,8 +166,8 @@ function GreetingBlock({
         <div style={{ flex: 1, minWidth: 0 }}>
           <div
             style={{
-              fontSize: 14,
-              fontWeight: 600,
+              fontSize: 11,
+              fontWeight: 700,
               color: MUTED,
               letterSpacing: "0.08em",
               marginBottom: 6,
@@ -177,7 +177,7 @@ function GreetingBlock({
           </div>
           <h1
             style={{
-              fontSize: 14,
+              fontSize: 22,
               fontWeight: 700,
               color: "#1A1A1A",
               letterSpacing: "-0.4px",
