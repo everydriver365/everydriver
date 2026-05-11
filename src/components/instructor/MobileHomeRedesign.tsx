@@ -1028,6 +1028,7 @@ interface UpgradeRowSpec {
   tierColor: string;
   subtitle: string;
   upgradeBg: string;
+  upgradeFg?: string;
   onClick: () => void;
 }
 
