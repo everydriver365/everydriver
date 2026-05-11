@@ -54,6 +54,7 @@ export function AdminWebsiteManager({ instructorId, instructorSlug, instructorNa
   const [domains, setDomains] = useState<DomainOrder[]>([]);
   const [loading, setLoading] = useState(false);
   const [pageTypes, setPageTypes] = useState<string[]>([]);
+  const [health, setHealth] = useState<{ status: string; checked_at: string; dns_ok: boolean | null; ssl_ok: boolean | null; render_ok: boolean | null } | null>(null);
 
   const fetchPageHealth = async () => {
     const { data } = await supabase
@@ -61,6 +62,13 @@ export function AdminWebsiteManager({ instructorId, instructorSlug, instructorNa
       .select("page_type, is_published")
       .eq("instructor_id", instructorId);
     setPageTypes(((data || []) as { page_type: string; is_published: boolean }[]).filter(p => p.is_published).map(p => p.page_type));
+
+    const { data: h } = await supabase
+      .from("mini_site_health")
+      .select("status, checked_at, dns_ok, ssl_ok, render_ok")
+      .eq("instructor_id", instructorId)
+      .maybeSingle();
+    setHealth(h as typeof health);
   };
 
 
@@ -75,9 +83,13 @@ export function AdminWebsiteManager({ instructorId, instructorSlug, instructorNa
           "id, name, email, phone, app_slug, website_theme, website_font, website_header_style, website_header_bg, custom_domain, custom_domain_verified, is_active, created_at, brand_colour, secondary_colour, website_button_color, website_footer_bg, website_text_color, website_heading_color, website_menu_text_color, hero_overlay_color, hero_overlay_opacity, hero_show_logo, logo_url, hero_image_url, bio, mini_website_domain_id"
         )
         .eq("id", instructorId)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
+      if (!data) {
+        setWebsite(null);
+        return;
+      }
       setWebsite(data as MiniWebsite);
     } catch (e) {
       console.error("Failed to load instructor website:", e);
@@ -132,12 +144,19 @@ export function AdminWebsiteManager({ instructorId, instructorSlug, instructorNa
     );
   }
 
+  const statusColor = health?.status === "green" ? "bg-green-500" : health?.status === "amber" ? "bg-amber-500" : health?.status === "red" ? "bg-destructive" : "bg-muted";
+  const statusLabel = health?.status ? health.status.toUpperCase() : "NOT YET CHECKED";
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="font-semibold flex items-center gap-2">
           <Globe className="h-4 w-4" />
           Mini Website - {instructorName}
+          <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold text-white ${statusColor}`} title={health?.checked_at ? `Last checked: ${new Date(health.checked_at).toLocaleString()}` : "No daily health check has run yet"}>
+            <span className="h-1.5 w-1.5 rounded-full bg-white/80" />
+            {statusLabel}
+          </span>
         </h3>
         <a
           href={`${baseUrl}/i/${instructorSlug}`}
