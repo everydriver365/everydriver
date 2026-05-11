@@ -41,6 +41,11 @@ export interface PaymentsStats {
   effectiveFeeRate: number;
   feesYearToDate: number;
   feesYearLabel: string;
+  platformFeesMonth: number;
+  platformBookingFeesMonth: number;
+  platformTransactionFeesMonth: number;
+  platformUpliftFeesMonth: number;
+  platformFeesYearToDate: number;
 }
 
 export interface PaymentsData {
