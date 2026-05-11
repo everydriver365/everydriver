@@ -133,7 +133,7 @@ export function DynamicCourseCard({
       >
         {/* Front of Card — pale wash + photo on top + navy date rail + icon list */}
         <div
-          className={`relative overflow-hidden rounded-2xl border bg-secondary/40 p-2 shadow-lg [backface-visibility:hidden] transition-shadow duration-300 group-hover:shadow-xl ${
+          className={`relative overflow-hidden rounded-2xl border bg-card shadow-lg [backface-visibility:hidden] transition-shadow duration-300 group-hover:shadow-xl ${
             isPremium
               ? "border-2 border-amber-400/60 shadow-amber-400/20 group-hover:shadow-amber-400/30 ring-1 ring-amber-400/30"
               : "border-border/60 shadow-black/10 group-hover:shadow-black/15"
