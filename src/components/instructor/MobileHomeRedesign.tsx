@@ -1492,6 +1492,19 @@ export function MobileHomeRedesign({
     onClick: () => navigate("/instructor/jobs"),
   });
 
+  attentionRows.push({
+    key: "test-swaps",
+    group: "urgent",
+    Icon: Repeat2,
+    iconBg: "#FFF0F0",
+    iconColor: RED,
+    title: "Test swaps",
+    subtitle: swapCount > 0 ? "New swap matches available" : "No swap matches",
+    badge: swapCount > 0 ? { label: String(swapCount), bg: "#CC2229" } : undefined,
+    isClear: swapCount === 0,
+    onClick: () => navigate("/instructor/test-requests"),
+  });
+
   // Calls (counter to be wired later)
   const missedCallsCount: number = 0;
   attentionRows.push({
