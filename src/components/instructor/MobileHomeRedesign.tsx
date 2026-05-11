@@ -7,7 +7,7 @@ import { useInstructorLastPosition } from "@/hooks/useInstructorLastPosition";
 import { useTrafficETA } from "@/hooks/useTrafficETA";
 import { UpNextExpanded } from "@/components/instructor/UpNextExpanded";
 import { useNavigate } from "react-router-dom";
-import { format, parse, parseISO, isToday, isTomorrow, differenceInMinutes } from "date-fns";
+import { format, parse, parseISO, isToday, isTomorrow, differenceInMinutes, endOfWeek } from "date-fns";
 import {
   Phone,
   MessageSquare,
