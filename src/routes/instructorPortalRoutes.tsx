@@ -21,6 +21,7 @@ const QuickActionsRedesignDemo = lazy(() => import("@/pages/instructor/QuickActi
 const InstructorAccessibilitySettings = lazy(() => import("@/pages/instructor/InstructorAccessibilitySettings"));
 const InstructorModules = lazy(() => import("@/pages/instructor-app/InstructorModules"));
 const InstructorMySite = lazy(() => import("@/pages/instructor-app/InstructorMySite"));
+const InstructorWebsiteEditor = lazy(() => import("@/pages/instructor-app/InstructorWebsiteEditor"));
 const InstructorPlanBilling = lazy(() => import("@/pages/instructor-app/InstructorPlanBilling"));
 const InstructorReports = lazy(() => import("@/pages/instructor-app/InstructorReportsRouter"));
 
@@ -171,6 +172,9 @@ export const instructorPortalRoutes = (
     <Route path="/instructor/modules" element={<InstructorModules />} />
     <Route path="/website/my-site" element={<InstructorMySite />} />
     <Route path="/instructor/website/my-site" element={<InstructorMySite />} />
+    <Route path="/instructor-app/website" element={<InstructorWebsiteEditor />} />
+    <Route path="/instructor/website" element={<InstructorWebsiteEditor />} />
+    <Route path="/instructor/website/editor" element={<InstructorWebsiteEditor />} />
     <Route path="/settings/plan" element={<Navigate to="/instructor/settings/plan-billing" replace />} />
     <Route path="/instructor/billing" element={<Navigate to="/instructor/settings/plan-billing" replace />} />
     <Route path="/instructor/settings/modules" element={<InstructorModules />} />

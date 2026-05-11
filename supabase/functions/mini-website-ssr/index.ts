@@ -42,18 +42,32 @@ Deno.serve(async (req) => {
     return new Response("Instructor not found", { status: 404, headers: corsHeaders });
   }
 
-  // Fetch page-level meta overrides
-  let pageMeta: { meta_title: string | null; meta_description: string | null; hero_heading: string | null } | null = null;
-  if (page !== "home") {
-    const { data } = await supabase
-      .from("instructor_website_pages")
-      .select("meta_title, meta_description, hero_heading")
-      .eq("instructor_id", instructor.id)
-      .eq("page_type", page)
-      .eq("is_published", true)
-      .maybeSingle();
-    pageMeta = data;
-  }
+  // Fetch page-level meta + SEO overrides (for ALL pages, including home)
+  const { data: pageData } = await supabase
+    .from("instructor_website_pages")
+    .select("meta_title, meta_description, hero_heading, og_image_url, canonical_url, keywords, schema_jsonld")
+    .eq("instructor_id", instructor.id)
+    .eq("page_type", page)
+    .eq("is_published", true)
+    .maybeSingle();
+  const pageMeta = pageData as
+    | {
+        meta_title: string | null;
+        meta_description: string | null;
+        hero_heading: string | null;
+        og_image_url: string | null;
+        canonical_url: string | null;
+        keywords: string | null;
+        schema_jsonld: any;
+      }
+    | null;
+
+  // Site-wide defaults
+  const { data: siteSettings } = await supabase
+    .from("instructor_website_settings")
+    .select("default_meta_description, default_keywords, default_og_image_url, robots_indexable, google_site_verification, google_analytics_id, custom_head_html, site_tagline")
+    .eq("instructor_id", instructor.id)
+    .maybeSingle();
 
   const businessName = instructor.business_name || instructor.name;
   const pageTitle = page === "home" ? "Home" : (pageMeta?.hero_heading || page.charAt(0).toUpperCase() + page.slice(1));
@@ -66,22 +80,25 @@ Deno.serve(async (req) => {
 
   // Description
   const rawDesc = pageMeta?.meta_description
+    || siteSettings?.default_meta_description
     || instructor.bio
     || `${businessName} - Professional driving lessons${instructor.home_postcode ? ` in ${instructor.home_postcode}` : ""}. Book your driving course today with Drive365.`;
   const description = rawDesc.length > 160 ? rawDesc.slice(0, 157) + "..." : rawDesc;
 
-  const ogImage = instructor.logo_url || instructor.profile_image_url || "";
+  const keywords = pageMeta?.keywords || siteSettings?.default_keywords || "";
+  const ogImage = pageMeta?.og_image_url || siteSettings?.default_og_image_url || instructor.logo_url || instructor.profile_image_url || "";
+  const robotsIndexable = siteSettings?.robots_indexable !== false;
 
-  // Canonical: use subdomain if custom_domain set, else path-based
+  // Canonical: page override > custom domain > slug subdomain
   const domain = instructor.custom_domain || `${slug}.drive365.co.uk`;
   const pagePath = page === "home" ? "" : `/${page}`;
-  const canonicalUrl = `https://${domain}${pagePath}`;
+  const canonicalUrl = pageMeta?.canonical_url || `https://${domain}${pagePath}`;
 
   // Redirect URL to the actual SPA
   const spaUrl = `https://everydriver.lovable.app/i/${slug}${pagePath}`;
 
-  // JSON-LD
-  const jsonLd = {
+  // JSON-LD: prefer per-page override, else default LocalBusiness
+  const jsonLd = pageMeta?.schema_jsonld || {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
     name: businessName,
@@ -100,12 +117,20 @@ Deno.serve(async (req) => {
     additionalType: "https://schema.org/DrivingSchool",
   };
 
+  const gaSnippet = siteSettings?.google_analytics_id
+    ? `<script async src="https://www.googletagmanager.com/gtag/js?id=${escapeHtml(siteSettings.google_analytics_id)}"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${escapeHtml(siteSettings.google_analytics_id)}');</script>`
+    : "";
+
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <title>${escapeHtml(title)}</title>
   <meta name="description" content="${escapeHtml(description)}">
+  ${keywords ? `<meta name="keywords" content="${escapeHtml(keywords)}">` : ""}
+  <meta name="robots" content="${robotsIndexable ? "index, follow" : "noindex, nofollow"}">
+  ${siteSettings?.google_site_verification ? `<meta name="google-site-verification" content="${escapeHtml(siteSettings.google_site_verification)}">` : ""}
   <link rel="canonical" href="${escapeHtml(canonicalUrl)}">
 
   <meta property="og:title" content="${escapeHtml(title)}">
@@ -120,6 +145,8 @@ Deno.serve(async (req) => {
   ${ogImage ? `<meta name="twitter:image" content="${escapeHtml(ogImage)}">` : ""}
 
   <script type="application/ld+json">${JSON.stringify(jsonLd)}</script>
+  ${gaSnippet}
+  ${siteSettings?.custom_head_html || ""}
 
   <!-- Redirect human visitors to the SPA -->
   <meta http-equiv="refresh" content="0;url=${escapeHtml(spaUrl)}">
