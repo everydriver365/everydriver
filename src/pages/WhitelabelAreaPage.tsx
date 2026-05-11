@@ -58,7 +58,16 @@ export default function WhitelabelAreaPage() {
 
   // Non-whitelabel host or unknown area slug → bounce home.
   if (!config) return <Navigate to="/" replace />;
-  if (!area) return <Navigate to="/" replace />;
+  if (!area) {
+    // Surface unknown slugs in the console so typos in links are debuggable
+    // rather than silently bouncing visitors away.
+    if (typeof console !== "undefined") {
+      console.warn(
+        `[WhitelabelAreaPage] Unknown area slug "${slug}" for host "${config.host}" — redirecting to /.`,
+      );
+    }
+    return <Navigate to="/" replace />;
+  }
 
   const otherAreas = getAreasForHost(config.host).filter((a) => a !== area).slice(0, 24);
 
