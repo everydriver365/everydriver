@@ -140,6 +140,15 @@ function TriangleAlertIcon({ size = 16, color = IOS.systemRed }: { size?: number
   );
 }
 
+function MapPinIcon({ size = 12, color = IOS.secondaryLabel }: { size?: number; color?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+      <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z" />
+      <circle cx="12" cy="10" r="3" />
+    </svg>
+  );
+}
+
 function ChevronRight({ color = IOS.secondaryLabel, size = 12 }: { color?: string; size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
@@ -694,17 +703,8 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
             </div>
           </div>
         ) : (
-          <div
-            style={{
-              backgroundColor: IOS.card,
-              borderRadius: 12,
-              border: `0.5px solid ${IOS.opaqueSeparator}`,
-              padding: "0 8px",
-              display: "flex",
-              flexDirection: "column",
-            }}
-          >
-            {lessons.map((lesson, idx) => {
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {lessons.map((lesson) => {
               const state = getLessonState(lesson, nowSec, isTomorrow);
               const isDrivingTest = (lesson.lessonType || "").toLowerCase().includes("driving test")
                 || (lesson.lessonType || "").toLowerCase().includes("driving_test");
@@ -720,198 +720,146 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
               const showBannerAbove = lesson.id === firstConflictRowId;
               const showEOL = state === "completed" && lesson.status !== "cancelled";
               const eolDone = showEOL && isEOLComplete(lesson, eolDoneKeys);
-              // Right-side completion micro-indicators (shown on every row).
-              const paymentDoneRow = lesson.paymentStatus === "paid";
-              const eolDoneAny = isEOLComplete(lesson, eolDoneKeys) || lesson.status === "completed";
-              const isPastRow = !isTomorrow && nowSec >= endSec;
-              const rowNeedsAttention =
-                isPastRow && lesson.status !== "cancelled" && (!eolDoneAny || !paymentDoneRow);
               const lessonHref = `/instructor/pupils/${lesson.pupilId}`;
-              const accentColor = isDrivingTest ? IOS.systemRed : IOS.systemBlue;
+              const isPaid = lesson.paymentStatus === "paid" || lesson.paymentStatus === "cash";
+              const dimmed = state === "completed";
+              const accentColor =
+                state === "live" ? IOS.systemRed
+                : state === "completed" ? IOS.doneBar
+                : isDrivingTest ? IOS.systemAmber
+                : IOS.systemBlue;
 
-              // Hairline divider between adjacent non-live rows.
-              const prevState = idx > 0 ? getLessonState(lessons[idx - 1], nowSec, isTomorrow) : null;
-              const showDivider = idx > 0 && state !== "live" && prevState !== "live";
-
-              const rowEl =
-                state === "live" ? (
-                  <Link
-                    key={lesson.id}
-                    to={lessonHref}
-                    className="hts-row"
+              const card = (
+                <Link
+                  to={lessonHref}
+                  className="hts-row"
+                  style={{
+                    position: "relative",
+                    overflow: "hidden",
+                    background: IOS.card,
+                    borderRadius: 16,
+                    padding: "12px 14px",
+                    border: "0.5px solid rgba(26,82,160,0.08)",
+                    display: "flex",
+                    gap: 12,
+                    alignItems: "center",
+                    textDecoration: "none",
+                    color: "inherit",
+                    WebkitTapHighlightColor: "transparent",
+                    opacity: dimmed ? 0.75 : 1,
+                  }}
+                >
+                  <span
+                    aria-hidden
                     style={{
-                      display: "flex",
-                      alignItems: "stretch",
-                      gap: 12,
-                      background: IOS.blueTint,
-                      borderRadius: 10,
-                      padding: 12,
-                      margin: "8px 0",
-                      textDecoration: "none",
-                      color: "inherit",
-                      cursor: "pointer",
+                      position: "absolute",
+                      left: 0,
+                      top: 10,
+                      bottom: 10,
+                      width: 3,
+                      borderRadius: "0 2px 2px 0",
+                      background: accentColor,
                     }}
-                  >
+                  />
+                  <div style={{ paddingLeft: 6, flexShrink: 0, minWidth: 50 }}>
                     <div
                       style={{
-                        flexShrink: 0,
-                        minWidth: 50,
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "flex-end",
-                        paddingTop: 1,
+                        fontSize: 14,
+                        fontWeight: 500,
+                        color: accentColor,
+                        lineHeight: 1,
+                        fontVariantNumeric: "tabular-nums",
+                        textDecoration: dimmed ? "line-through" : "none",
                       }}
                     >
-                      <span style={{ fontSize: 13, fontWeight: 500, color: IOS.label, letterSpacing: -0.1 }}>{time}</span>
-                      {lesson.durationMinutes ? (
-                        <span style={{ fontSize: 11, color: IOS.secondaryLabel, marginTop: 1 }}>{durationLabel(lesson.durationMinutes)}</span>
-                      ) : null}
+                      {time}
                     </div>
-                    <span style={{ flexShrink: 0, width: 3, background: IOS.systemBlue, borderRadius: 2 }} />
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 1 }}>
-                        <span style={{ fontSize: 13, fontWeight: 500, color: IOS.label, letterSpacing: -0.1 }}>
-                          {sentenceName(lesson.pupilName)}
-                        </span>
-                        {showReview && <StatusPill kind="review" />}
-                        <StatusPill kind="live" />
+                    {lesson.durationMinutes ? (
+                      <div style={{ fontSize: 12, color: IOS.secondaryLabel, marginTop: 3 }}>
+                        {durationLabel(lesson.durationMinutes)}
                       </div>
-                      {subtitleText && (
-                        <div style={{ fontSize: 11, color: IOS.secondaryLabel, margin: 0 }}>{subtitleText}</div>
+                    ) : null}
+                  </div>
+
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: "flex", gap: 6, alignItems: "center", marginBottom: 2, flexWrap: "wrap" }}>
+                      <span
+                        style={{
+                          fontSize: 14,
+                          fontWeight: 700,
+                          color: IOS.label,
+                          letterSpacing: -0.1,
+                          textDecoration: dimmed ? "line-through" : "none",
+                        }}
+                      >
+                        {sentenceName(lesson.pupilName)}
+                      </span>
+                      {showReview && <StatusPill kind="review" dimmed={dimmed} />}
+                      {state === "live" && <StatusPill kind="live" />}
+                      {state === "completed" && <StatusPill kind="done" />}
+                      {isConflict && state === "upcoming" && <StatusPill kind="conflict" />}
+                      {lesson.status !== "cancelled" && state !== "completed" && (
+                        <span
+                          aria-label={isPaid ? "Paid" : "Not paid"}
+                          style={{
+                            background: isPaid ? "#E8F8ED" : "#FFECEC",
+                            color: isPaid ? "#1A7A3C" : "#D33B3B",
+                            fontSize: 11,
+                            fontWeight: 600,
+                            padding: "1px 6px",
+                            borderRadius: 8,
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 4,
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          <span
+                            style={{
+                              width: 5,
+                              height: 5,
+                              borderRadius: 3,
+                              background: isPaid ? "#1A7A3C" : "#D33B3B",
+                              display: "inline-block",
+                            }}
+                          />
+                          {isPaid ? "Paid" : "Not paid"}
+                        </span>
                       )}
+                    </div>
+                    {subtitleText && (
+                      <div
+                        style={{
+                          fontSize: 12,
+                          color: IOS.secondaryLabel,
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 4,
+                          overflow: "hidden",
+                          whiteSpace: "nowrap",
+                          textOverflow: "ellipsis",
+                        }}
+                      >
+                        <MapPinIcon size={12} color={IOS.secondaryLabel} />
+                        <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{subtitleText}</span>
+                      </div>
+                    )}
+                    {state === "live" && (
                       <div style={{ fontSize: 11, color: IOS.systemBlue, fontWeight: 500, margin: "6px 0 0" }}>
                         In progress · {minutesRemaining} min remaining
                       </div>
-                    </div>
-                    <ChevronRight color={IOS.systemBlue} size={12} />
-                  </Link>
-                ) : state === "completed" ? (
-                  <Link
-                    key={lesson.id}
-                    to={lessonHref}
-                    className="hts-row"
-                    style={{
-                      display: "flex",
-                      alignItems: "stretch",
-                      gap: 12,
-                      padding: "10px 0",
-                      textDecoration: "none",
-                      color: "inherit",
-                      cursor: "pointer",
-                    }}
-                  >
-                    <div
-                      style={{
-                        flexShrink: 0,
-                        minWidth: 50,
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "flex-end",
-                        paddingTop: 1,
-                        opacity: 0.55,
-                      }}
-                    >
-                      <span style={{ fontSize: 13, fontWeight: 500, color: IOS.label, letterSpacing: -0.1, textDecoration: "line-through" }}>{time}</span>
-                      {lesson.durationMinutes ? (
-                        <span style={{ fontSize: 11, color: IOS.secondaryLabel, marginTop: 1 }}>{durationLabel(lesson.durationMinutes)}</span>
-                      ) : null}
-                    </div>
-                    <span style={{ flexShrink: 0, width: 3, background: IOS.doneBar, borderRadius: 2 }} />
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 1 }}>
-                        <span
-                          style={{
-                            fontSize: 13,
-                            fontWeight: 500,
-                            color: IOS.label,
-                            letterSpacing: -0.1,
-                            textDecoration: "line-through",
-                            opacity: 0.55,
-                          }}
-                        >
-                          {sentenceName(lesson.pupilName)}
-                        </span>
-                        {showReview && <StatusPill kind="review" dimmed />}
-                        <StatusPill kind="done" />
-                      </div>
-                      {subtitleText && (
-                        <div
-                          style={{
-                            fontSize: 11,
-                            color: IOS.secondaryLabel,
-                            margin: 0,
-                            textDecoration: "line-through",
-                            opacity: 0.55,
-                          }}
-                        >
-                          {subtitleText}
-                        </div>
-                      )}
-                      {showEOL && <EOLPrompt onTap={() => openEOLWizard(lesson)} done={eolDone} />}
-                    </div>
-                    <RowStatusIcons
-                      eolDone={eolDoneAny}
-                      paymentDone={paymentDoneRow}
-                      needsAttention={rowNeedsAttention}
-                    />
-                  </Link>
-                ) : (
-                  <Link
-                    key={lesson.id}
-                    to={lessonHref}
-                    className="hts-row"
-                    style={{
-                      display: "flex",
-                      alignItems: "stretch",
-                      gap: 12,
-                      padding: "10px 0",
-                      textDecoration: "none",
-                      color: "inherit",
-                      cursor: "pointer",
-                    }}
-                  >
-                    <div
-                      style={{
-                        flexShrink: 0,
-                        minWidth: 50,
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "flex-end",
-                        paddingTop: 1,
-                      }}
-                    >
-                      <span style={{ fontSize: 13, fontWeight: 500, color: IOS.label, letterSpacing: -0.1 }}>{time}</span>
-                      {lesson.durationMinutes ? (
-                        <span style={{ fontSize: 11, color: IOS.secondaryLabel, marginTop: 1 }}>{durationLabel(lesson.durationMinutes)}</span>
-                      ) : null}
-                    </div>
-                    <span style={{ flexShrink: 0, width: 3, background: accentColor, borderRadius: 2 }} />
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 1 }}>
-                        <span style={{ fontSize: 13, fontWeight: 500, color: IOS.label, letterSpacing: -0.1 }}>
-                          {sentenceName(lesson.pupilName)}
-                        </span>
-                        {showReview && <StatusPill kind="review" />}
-                        {isConflict && <StatusPill kind="conflict" />}
-                      </div>
-                      {subtitleText && (
-                        <div style={{ fontSize: 11, color: IOS.secondaryLabel, margin: 0 }}>{subtitleText}</div>
-                      )}
-                    </div>
-                    <RowStatusIcons
-                      eolDone={eolDoneAny}
-                      paymentDone={paymentDoneRow}
-                      needsAttention={rowNeedsAttention}
-                    />
-                    <ChevronRight color={IOS.secondaryLabel} size={12} />
-                  </Link>
-                );
+                    )}
+                    {showEOL && <EOLPrompt onTap={() => openEOLWizard(lesson)} done={eolDone} />}
+                  </div>
+
+                  <ChevronRight color={IOS.tertiaryLabel} size={16} />
+                </Link>
+              );
 
               return (
                 <div key={lesson.id}>
-                  {showDivider && <div style={{ height: 0.5, background: IOS.opaqueSeparator }} />}
                   {showBannerAbove && firstConflictTime && <ConflictBanner time={firstConflictTime} />}
-                  {rowEl}
+                  {card}
                 </div>
               );
             })}
