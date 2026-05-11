@@ -289,6 +289,10 @@ export default function InstructorDiary() {
     setCustomFrom(undefined);
     setCustomTo(undefined);
     setStatusFilter("all");
+    setLessonTypeFilter("all");
+    setMinDuration("");
+    setMaxDuration("");
+    setGoogleSourceFilter("any");
   };
 
   const selectedPupilObj = allPupils.find(p => p.id === selectedPupil) || null;
