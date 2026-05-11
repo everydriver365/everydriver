@@ -6750,6 +6750,54 @@ export type Database = {
         }
         Relationships: []
       }
+      instructor_feature_toggles: {
+        Row: {
+          ai_day_briefing_enabled: boolean
+          auto_rebook_nudges_enabled: boolean
+          badges_enabled: boolean
+          created_at: string
+          fuel_cost_tracker_enabled: boolean
+          harsh_event_heatmap_enabled: boolean
+          id: string
+          instructor_id: string
+          tax_pot_suggest_enabled: boolean
+          test_day_mode_enabled: boolean
+          updated_at: string
+          waitlist_auto_offer_enabled: boolean
+          weekly_pnl_widget_enabled: boolean
+        }
+        Insert: {
+          ai_day_briefing_enabled?: boolean
+          auto_rebook_nudges_enabled?: boolean
+          badges_enabled?: boolean
+          created_at?: string
+          fuel_cost_tracker_enabled?: boolean
+          harsh_event_heatmap_enabled?: boolean
+          id?: string
+          instructor_id: string
+          tax_pot_suggest_enabled?: boolean
+          test_day_mode_enabled?: boolean
+          updated_at?: string
+          waitlist_auto_offer_enabled?: boolean
+          weekly_pnl_widget_enabled?: boolean
+        }
+        Update: {
+          ai_day_briefing_enabled?: boolean
+          auto_rebook_nudges_enabled?: boolean
+          badges_enabled?: boolean
+          created_at?: string
+          fuel_cost_tracker_enabled?: boolean
+          harsh_event_heatmap_enabled?: boolean
+          id?: string
+          instructor_id?: string
+          tax_pot_suggest_enabled?: boolean
+          test_day_mode_enabled?: boolean
+          updated_at?: string
+          waitlist_auto_offer_enabled?: boolean
+          weekly_pnl_widget_enabled?: boolean
+        }
+        Relationships: []
+      }
       instructor_forum_alerts: {
         Row: {
           alert_type: string
