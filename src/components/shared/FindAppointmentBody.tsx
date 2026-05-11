@@ -488,6 +488,8 @@ export function FindAppointmentBody({
             </div>
           </div>
         )}
+        </>
+        )}
 
         {/* Available appointments */}
         <SectionLabel label={nextOnly ? "Next available slot" : "Available appointments"} />
