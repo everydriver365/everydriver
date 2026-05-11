@@ -103,6 +103,7 @@ export const publicRoutes = (
 
     {/* Learner-facing routes */}
     <Route path="/courses" element={isWhitelabelDomain() ? <WhitelabelCourses /> : <Courses />} />
+    <Route path="/areas/:slug" element={<WhitelabelAreaPage />} />
     <Route path="/book/:instructorId" element={<BookingSummary />} />
     <Route path="/booking-confirmation" element={<BookingConfirmation />} />
     <Route path="/pupil" element={<PupilPortal />} />
