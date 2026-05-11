@@ -3,10 +3,19 @@ import {
   User, ShieldCheck, GraduationCap, Calendar, MapPin,
   ShoppingBag, CreditCard, Tag, Bell, Phone, MessageCircle,
   Globe, Palette, LayoutDashboard, Wallet, Database, HelpCircle,
+  Sparkles,
   type LucideIcon,
 } from "lucide-react";
 import { useSettingsCategories } from "@/components/instructor/settings/categories";
 import type { SettingsSectionDef } from "@/components/instructor/settings/SettingsLayout";
+import { LabFeaturesPage } from "@/components/instructor/settings/pages/LabFeaturesPage";
+import { useInstructorAuth } from "@/context/InstructorAuthContext";
+
+function LabHero() {
+  const { instructor } = useInstructorAuth();
+  if (!instructor?.id) return null;
+  return <LabFeaturesPage instructorId={instructor.id} />;
+}
 
 export interface AreaItem {
   id: string;            // URL slug
