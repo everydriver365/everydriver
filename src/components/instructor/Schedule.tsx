@@ -1240,7 +1240,14 @@ export default function Schedule({
         onOpenChange={setAddOpen}
         instructorId={instructorId}
         defaultDate={selectedDate}
-        onSuccess={() => setAddOpen(false)}
+        onSuccess={() => {
+          setAddOpen(false);
+          queryClient.invalidateQueries({ queryKey: ["schedule-week"] });
+          queryClient.invalidateQueries({ queryKey: ["day-lessons"] });
+          queryClient.invalidateQueries({ queryKey: ["today-overview"] });
+          queryClient.invalidateQueries({ queryKey: ["today-remaining-lessons"] });
+          queryClient.invalidateQueries({ queryKey: ["day-lesson-history"] });
+        }}
       />
 
       {wizardLesson && (
