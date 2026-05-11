@@ -1406,6 +1406,7 @@ export function MobileHomeRedesign({
   const { data: nextLesson } = useNextLessonDetails(instructorId);
   const { hoursThisWeek, lessonsThisWeek } = useInstructorLiveStats(instructorId);
   const pendingJobs = usePendingJobsCount();
+  const { data: swapCount = 0 } = useTestSwapNotifications(instructorId);
   const { data: unread = 0 } = useUnreadMessagesCount(instructorId);
   const { data: paymentsSummary } = useInstructorPupilsPaymentSummary(instructorId);
   const { data: gapData } = useRealGapSlots(instructorId);
