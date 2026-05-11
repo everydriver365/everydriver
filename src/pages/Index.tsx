@@ -24,6 +24,7 @@ import {
 import { useSiteImages } from "@/hooks/useSiteImages";
 import { useFeaturedCourses } from "@/hooks/useFeaturedCourses";
 import { getWhitelabelConfig } from "@/lib/whitelabel";
+import { getAreasForHost, areaToSlug } from "@/lib/whitelabelAreas";
 import { supabase } from "@/integrations/supabase/client";
 import { useDVSANews } from "@/hooks/useDVSANews";
 import { useHomepageFeatures } from "@/hooks/useHomepageFeatures";
@@ -137,11 +138,9 @@ export default function Index() {
     const parts = noPc.split(",").map((s) => s.trim()).filter(Boolean);
     return parts[parts.length - 1] || "";
   })();
-  // Static UK area lists per known whitelabel city — extends the local SEO footprint.
-  const WL_AREAS_BY_CITY: Record<string, string[]> = {
-    Winchester: ["Winchester", "Eastleigh", "Alresford", "Romsey", "Twyford", "Kings Worthy", "Chandler's Ford", "Bishop's Waltham"],
-  };
-  const wlAreas = wlCity ? WL_AREAS_BY_CITY[wlCity] || [wlCity] : [];
+  // Static UK area lists per known whitelabel host — extends the local SEO footprint
+  // and powers dedicated /areas/<slug> location landing pages.
+  const wlAreas = wlConfig ? getAreasForHost(wlConfig.host) : [];
   // Dynamic images from CMS with fallbacks - Hero testimonials
   const testimonialSarah = getImage("testimonial_sarah", testimonialSarahFallback);
   const testimonialJames = getImage("testimonial_james", testimonialJamesFallback);
@@ -316,15 +315,17 @@ export default function Index() {
               Areas we cover{wlCity ? ` around ${wlCity}` : ""}
             </h2>
             <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-              {wlConfig.brandName} provides driving lessons and intensive courses across these towns and villages:
+              {wlConfig.brandName} provides driving lessons and intensive courses across these towns and villages — tap an area for local availability and pricing:
             </p>
             <ul className="mt-4 flex flex-wrap gap-2">
               {wlAreas.map((area) => (
-                <li
-                  key={area}
-                  className="rounded-full border border-border bg-background px-3 py-1 text-sm text-foreground"
-                >
-                  {area}
+                <li key={area}>
+                  <Link
+                    to={`/areas/${areaToSlug(area)}`}
+                    className="inline-block rounded-full border border-border bg-background px-3 py-1 text-sm text-foreground transition-colors hover:border-primary hover:text-primary"
+                  >
+                    {area}
+                  </Link>
                 </li>
               ))}
             </ul>

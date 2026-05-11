@@ -138,10 +138,16 @@ Deno.serve(async (req) => {
     urls.push(urlEntry(base + c.slug, c.lastmod, "0.6"));
   }
 
-  // Per-area localised URLs: /courses?area=<Area> and /book/<instructorId>?area=<Area>
+  // Per-area localised URLs:
+  //   /areas/<slug>            → dedicated location landing page
+  //   /courses?area=<Area>     → bookable courses filtered by area
+  //   /book/<id>?area=<Area>   → booking flow seeded with area context
   const areas = AREAS_BY_HOST[host] || [];
+  const slugify = (s: string) =>
+    s.toLowerCase().replace(/['’]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
   for (const area of areas) {
     const a = encodeURIComponent(area);
+    urls.push(urlEntry(`${base}/areas/${slugify(area)}`, lastUpdated, "0.8"));
     urls.push(urlEntry(`${base}/courses?area=${a}`, lastUpdated, "0.7"));
     if (instructorId) {
       urls.push(urlEntry(`${base}/book/${instructorId}?area=${a}`, lastUpdated, "0.5"));
