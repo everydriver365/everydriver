@@ -96,13 +96,13 @@ export default function InstructorGaps() {
           style={{
             background: "#FFFFFF",
             borderRadius: 12,
-            padding: 16,
+            padding: "16px 14px 20px",
             flex: 1,
             display: "flex",
             flexDirection: "column",
           }}
         >
-          <div style={{ marginBottom: 16 }}>
+          <div style={{ marginBottom: 20 }}>
             <SegmentedControl<GapsTab>
               value={tab}
               onChange={setTab}
