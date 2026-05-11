@@ -253,6 +253,7 @@ export function AddLessonSheet({
   const [hourlyRate, setHourlyRate] = useState<number>(0);
   const [instructorName, setInstructorName] = useState<string>('');
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [bookingError, setBookingError] = useState<string | null>(null);
   const [rateModifiers, setRateModifiers] = useState<RateModifiers | null>(null);
   const [bankHolidays, setBankHolidays] = useState<Set<string>>(new Set());
 
