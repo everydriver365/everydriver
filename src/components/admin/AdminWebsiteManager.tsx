@@ -149,6 +149,34 @@ export function AdminWebsiteManager({ instructorId, instructorSlug, instructorNa
         </a>
       </div>
 
+      {website && (() => {
+        const required = ["home", "about", "services", "reviews", "contact"];
+        const checks = [
+          { label: "App slug set", ok: !!website.app_slug },
+          { label: "Logo uploaded", ok: !!website.logo_url },
+          { label: "Brand colour set", ok: !!website.brand_colour },
+          { label: `All 5 pages published (${pageTypes.length}/5)`, ok: required.every(t => pageTypes.includes(t)) },
+          { label: "Custom domain", ok: !website.custom_domain || !!website.custom_domain_verified, optional: !website.custom_domain },
+        ];
+        return (
+          <div className="rounded-md border bg-muted/30 p-3 space-y-1.5 text-sm">
+            <div className="font-medium text-xs uppercase tracking-wide text-muted-foreground mb-1">Health</div>
+            {checks.map((c, i) => (
+              <div key={i} className="flex items-center gap-2">
+                {c.ok ? <CheckCircle2 className="h-3.5 w-3.5 text-green-600" /> : <XCircle className="h-3.5 w-3.5 text-destructive" />}
+                <span className={c.ok ? "" : "text-destructive"}>{c.label}{c.optional ? " (none configured)" : ""}</span>
+              </div>
+            ))}
+            <div className="pt-2 flex flex-wrap gap-3 text-xs">
+              <a href={`${baseUrl}/i/${instructorSlug}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">/i/{instructorSlug}</a>
+              {website.custom_domain && (
+                <a href={`https://${website.custom_domain}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{website.custom_domain}</a>
+              )}
+            </div>
+          </div>
+        );
+      })()}
+
       <div className="flex items-center gap-2">
         <Button type="button" onClick={handleOpenEditor} disabled={loading}>
           {loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <PencilRuler className="h-4 w-4 mr-2" />}
