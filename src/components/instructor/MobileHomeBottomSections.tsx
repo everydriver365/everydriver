@@ -664,8 +664,8 @@ function ScheduleSection({ instructorId }: { instructorId: string }) {
             cursor: "pointer",
           }}
         >
-          <Plus size={12} color={BLUE} strokeWidth={2.2} />
-          <span style={{ fontSize: 11, fontWeight: 600, color: BLUE }}>
+          <Plus size={12} color="#5B6B8A" strokeWidth={2.2} />
+          <span style={{ fontSize: 11, fontWeight: 600, color: "#5B6B8A" }}>
             Add lesson
           </span>
         </button>

@@ -1563,7 +1563,7 @@ export function MobileHomeRedesign({
     iconColor: "#5B6B8A",
     title: "Open slots this week",
     subtitle: "Fill gaps in your schedule",
-    badge: openSlots > 0 ? { label: String(openSlots), bg: "#EEF3FF", fg: "#1A52A0", variant: "pill" } : undefined,
+    badge: openSlots > 0 ? { label: String(openSlots), bg: "#F2F4F8", fg: "#5B6B8A", variant: "pill" } : undefined,
     isClear: openSlots === 0,
     onClick: () => navigate("/instructor/schedule"),
   });
