@@ -701,11 +701,11 @@ export function AddLessonSheet({
     finally { setLoading(false); }
   };
 
-  const handleAddLessonNew = async () => {
-    if (!newPupilName.trim() || !lessonDate) { toast.error('Please enter a name and date'); return; }
+  const handleAddLessonNew = async (): Promise<{ ok: boolean; error?: string }> => {
+    if (!newPupilName.trim() || !lessonDate) { return { ok: false, error: 'Please enter a name and date' }; }
     if (pendingCheckRef.current) { try { await pendingCheckRef.current; } catch { /* ignore */ } }
-    if (conflictWarning && !overrideBuffer) { toast.error(conflictWarning); return; }
-    if (!(await validateExaminerCentreMatch())) return;
+    if (conflictWarning && !overrideBuffer) { return { ok: false, error: conflictWarning }; }
+    if (!(await validateExaminerCentreMatch())) return { ok: false, error: 'Selected examiner does not work at this test centre' };
     setLoading(true);
     try {
       const { data: newPupil, error: pupilError } = await supabase
@@ -750,14 +750,19 @@ export function AddLessonSheet({
       const { error: lessonError } = await supabase.from('scheduled_lessons').insert(lessons);
       if (lessonError) {
         const friendly = describeLessonClashError(lessonError);
-        if (friendly) { toast.error(friendly); setLoading(false); return; }
-        throw lessonError;
+        setLoading(false);
+        if (friendly) return { ok: false, error: friendly };
+        return { ok: false, error: 'Failed to schedule lesson' };
       }
       toast.success(isDrivingTest ? 'Pupil created & test scheduled!' : isRecurring ? `Pupil created & ${weeks} lessons scheduled` : 'Pupil created & lesson scheduled');
       handlePostSavePayment(newPupil.id);
       invalidateLessonQueries(queryClient);
       resetForm(); onOpenChange(false); onSuccess();
-    } catch (error) { console.error(error); toast.error('Failed to schedule lesson'); }
+      return { ok: true };
+    } catch (error) {
+      console.error(error);
+      return { ok: false, error: 'Failed to schedule lesson' };
+    }
     finally { setLoading(false); }
   };
 
