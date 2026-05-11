@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ExternalLink, Globe, Loader2, PencilRuler } from "lucide-react";
+import { CheckCircle2, ExternalLink, Globe, Loader2, PencilRuler, XCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { MiniWebsiteFullEditor } from "./MiniWebsiteFullEditor";
