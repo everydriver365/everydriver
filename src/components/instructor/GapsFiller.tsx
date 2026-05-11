@@ -413,6 +413,26 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
     setGaps((prev) => prev.map((g) => ({ ...g, selected: false })));
   const selectedSlots = gaps.filter((g) => g.selected);
 
+  // Direct-book sheet state
+  const [bookSheetOpen, setBookSheetOpen] = useState(false);
+  const [bookDate, setBookDate] = useState<Date | undefined>(undefined);
+  const [bookStartTime, setBookStartTime] = useState<string | undefined>(undefined);
+  const [bookDurationHours, setBookDurationHours] = useState<string | undefined>(undefined);
+
+  const handleBookSlot = (g: GapSlot) => {
+    try {
+      setBookDate(parseISO(g.date));
+    } catch {
+      setBookDate(undefined);
+    }
+    setBookStartTime(g.startTime);
+    const [sh, sm] = g.startTime.split(":").map(Number);
+    const [eh, em] = g.endTime.split(":").map(Number);
+    const mins = eh * 60 + em - (sh * 60 + sm);
+    setBookDurationHours(String(mins / 60));
+    setBookSheetOpen(true);
+  };
+
   const eligiblePupils = useMemo(
     () => pupils.filter((p) => !!p.phone),
     [pupils]
