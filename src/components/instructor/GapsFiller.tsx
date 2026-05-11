@@ -7,6 +7,7 @@ import { format, addDays, parseISO, startOfDay } from "date-fns";
 import { useRealtimeSubscription } from "@/hooks/useRealtimeHub";
 import { SectionLabel } from "@/components/instructor/ui/SectionLabel";
 import { SlotPickerRow } from "./gap-filler/SlotPickerRow";
+import { AddLessonSheet } from "@/components/instructor/AddLessonSheet";
 import { RecipientSummaryCard } from "./gap-filler/RecipientSummaryCard";
 import {
   RecipientPickerSheet,
