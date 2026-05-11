@@ -1,9 +1,8 @@
 import { useNavigate } from "react-router-dom";
-import { MapPin, Clock, Star, Car, Zap, TrendingUp, ArrowRight, Calendar } from "lucide-react";
+import { MapPin, Clock, User, PoundSterling, Car, Zap, TrendingUp, ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CompactPaymentBadges } from "@/components/payments/PaymentMessaging";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format, isFuture, parseISO } from "date-fns";
 
 interface IOSCourseCardProps {
@@ -44,10 +43,8 @@ export function IOSCourseCard({
   isPopular = false,
   availableFrom,
   distance,
-  features,
   isIntensive,
   discountedPrice,
-  customFeatures,
   areaName,
 }: IOSCourseCardProps) {
   const navigate = useNavigate();
@@ -58,7 +55,8 @@ export function IOSCourseCard({
   const totalPrice = basePrice + schoolSkim;
   const finalPrice = discountedPrice || totalPrice;
   const hasDiscount = discountedPrice && discountedPrice < totalPrice;
-  const courseName = hours === 28 ? "Test in a Week" : `${hours} Hour Course`;
+  const courseName = hours === 28 ? "TEST IN A WEEK" : `${hours} HOUR DRIVING LESSONS`;
+  const brandColour = instructor.brand_colour || "#1e3a5f";
 
   const carType = instructor.car_type.toLowerCase();
   const isAutomatic = carType.includes("automatic") || carType === "auto";
@@ -71,7 +69,14 @@ export function IOSCourseCard({
 
   const hasDelayedAvailability = availableFrom && isFuture(parseISO(availableFrom));
   const availableFromDate = availableFrom ? parseISO(availableFrom) : null;
-  const displayDate = nextAvailable ? new Date(nextAvailable) : (hasDelayedAvailability ? availableFromDate : null);
+  const displayDate = nextAvailable
+    ? new Date(nextAvailable)
+    : hasDelayedAvailability
+    ? availableFromDate
+    : null;
+
+  const dayNumber = displayDate ? format(displayDate, "d") : "TBC";
+  const monthName = displayDate ? format(displayDate, "MMM").toUpperCase() : "";
   const fullDateDisplay = displayDate ? format(displayDate, "d MMM") : "TBC";
 
   const locationDisplay = areaName || instructor.home_postcode;
@@ -82,90 +87,103 @@ export function IOSCourseCard({
     navigate(`/book/${instructor.id}?hours=${hours}${dateParam}`);
   };
 
-  const initials = instructor.name.split(" ").map((n) => n[0]).join("");
-
   return (
-    <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden hover:shadow-lg transition-shadow">
-      {/* Instructor Header */}
-      <div className="p-4 flex items-center gap-3 border-b border-border">
-        <Avatar className="h-11 w-11 border-2 border-primary/20">
-          <AvatarImage src={instructor.profile_image_url || undefined} />
-          <AvatarFallback className="bg-primary text-primary-foreground font-bold text-sm">
-            {initials}
-          </AvatarFallback>
-        </Avatar>
-        <div className="flex-1 min-w-0">
-          <h3 className="font-bold text-sm truncate">{instructor.name}</h3>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-            <span>4.9</span>
-            <span>·</span>
-            <span className="truncate">{locationDisplay}</span>
-          </div>
-        </div>
-        {isPopular && (
-          <Badge className="bg-emerald-500 text-white border-0 shrink-0">Popular</Badge>
-        )}
-      </div>
-
-      {/* Course Image */}
-      <div className="relative h-52 overflow-hidden">
+    <div className="group rounded-2xl border border-border/60 bg-secondary/40 p-2 shadow-lg shadow-black/5 transition-shadow hover:shadow-xl">
+      {/* Hero photo */}
+      <div className="relative h-44 overflow-hidden rounded-xl">
         <img
           src={courseImageUrl || `https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800&h=400&fit=crop`}
           alt={courseName}
-          className="h-full w-full object-cover"
+          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
         />
-        <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/60 to-transparent p-3">
-          <div className="flex items-center justify-between">
-            <div className="flex gap-1.5">
-              {showIntensiveBadge && (
-                <Badge className="bg-white/20 backdrop-blur-sm text-white border-0 text-xs">
-                  {isIntensive ? <Zap className="h-3 w-3 mr-1" /> : <TrendingUp className="h-3 w-3 mr-1" />}
-                  {intensiveLabel}
-                </Badge>
-              )}
-              <Badge className="bg-white/20 backdrop-blur-sm text-white border-0 text-xs">
-                <Car className="h-3 w-3 mr-1" />{transmissionLabel}
-              </Badge>
-            </div>
-            {distance !== undefined && (
-              <span className="text-white text-xs font-medium">{distance.toFixed(1)} mi away</span>
-            )}
-          </div>
+
+        <div className="absolute top-3 left-3 z-20 flex flex-wrap gap-1.5">
+          {isPopular && <Badge className="border-0 bg-emerald-500 text-white">Popular</Badge>}
+          {showIntensiveBadge && (
+            <Badge className={`border-0 text-white ${isIntensive ? "bg-primary" : "bg-amber-500"}`}>
+              {isIntensive ? <Zap className="h-3 w-3 mr-1" /> : <TrendingUp className="h-3 w-3 mr-1" />}
+              {intensiveLabel}
+            </Badge>
+          )}
+          <Badge variant="secondary" className="bg-white/90 text-foreground">
+            <Car className="h-3 w-3 mr-1" />
+            {transmissionLabel}
+          </Badge>
         </div>
+
+        {distance !== undefined && (
+          <div className="absolute right-3 top-3 flex items-center gap-1.5 bg-white/95 backdrop-blur-sm text-primary px-2.5 py-1.5 rounded-lg shadow-lg">
+            <MapPin className="h-3.5 w-3.5" />
+            <span className="text-sm font-bold">{distance.toFixed(1)} mi</span>
+          </div>
+        )}
+
         {hasDiscount && (
-          <div className="absolute top-3 right-3 bg-red-500 text-white px-2 py-0.5 rounded-md text-xs font-bold shadow-lg">
-            Save £{(totalPrice - discountedPrice!).toFixed(0)}
+          <div className="absolute left-3 bottom-3 bg-red-500 text-white px-2.5 py-1 rounded-md shadow-lg">
+            <span className="text-sm font-bold">
+              Save £{(totalPrice - discountedPrice!).toFixed(0)}
+            </span>
           </div>
         )}
       </div>
 
-      {/* Course Info & CTA */}
-      <div className="p-4 space-y-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-lg font-bold">{courseName}</h3>
-            <p className="text-xs text-muted-foreground flex items-center gap-1">
-              <Calendar className="h-3 w-3" />
-              Starting {fullDateDisplay}
-            </p>
-          </div>
-          <div className="text-right">
-            {hasDiscount && (
-              <p className="text-xs line-through text-muted-foreground">£{totalPrice.toFixed(0)}</p>
-            )}
-            <p className="text-2xl font-bold">£{finalPrice.toFixed(0)}</p>
-            <p className="text-[10px] text-muted-foreground">from £{Math.round(finalPrice / 4)}/mo</p>
-          </div>
+      {/* Body: navy date rail + content */}
+      <div className="mt-2 flex overflow-hidden rounded-xl bg-card">
+        <div
+          className="flex flex-col items-center justify-center px-4 py-5 min-w-[68px]"
+          style={{ backgroundColor: brandColour }}
+        >
+          <span className="text-3xl font-bold leading-none text-white">{dayNumber}</span>
+          <span className="mt-1 text-[11px] font-semibold tracking-wider text-white/80 uppercase">
+            {monthName}
+          </span>
         </div>
-        <CompactPaymentBadges
-          amount={finalPrice}
-          klarnaEnabled={instructor.klarna_enabled ?? false}
-          clearpayEnabled={instructor.clearpay_enabled ?? false}
-        />
-        <Button className="w-full rounded-xl" onClick={handleBookNow}>
-          Book Now <ArrowRight className="h-4 w-4 ml-1" />
-        </Button>
+
+        <div className="flex-1 p-4 space-y-2">
+          <h3 className="text-base sm:text-lg font-bold text-foreground uppercase tracking-wide leading-snug">
+            {courseName}
+          </h3>
+
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Clock className="h-4 w-4 flex-shrink-0" />
+            <span className="text-sm">{hours} hours ({fullDateDisplay})</span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <MapPin className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+            <span className="text-sm font-medium text-primary truncate">{locationDisplay}</span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <User className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">
+              With <span className="font-medium text-primary">{instructor.name}</span>
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2 text-foreground">
+            <PoundSterling className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+            {hasDiscount ? (
+              <div className="flex items-center gap-2">
+                <span className="text-sm line-through text-muted-foreground">£{totalPrice.toFixed(2)}</span>
+                <span className="text-sm font-bold text-red-600">£{finalPrice.toFixed(2)}</span>
+              </div>
+            ) : (
+              <span className="text-sm font-semibold">£{totalPrice.toFixed(2)}</span>
+            )}
+          </div>
+
+          <CompactPaymentBadges
+            amount={finalPrice}
+            className="pt-1"
+            klarnaEnabled={instructor.klarna_enabled ?? false}
+            clearpayEnabled={instructor.clearpay_enabled ?? false}
+          />
+
+          <Button className="mt-2 w-full rounded-xl" onClick={handleBookNow}>
+            Book Now <ArrowRight className="h-4 w-4 ml-1" />
+          </Button>
+        </div>
       </div>
     </div>
   );

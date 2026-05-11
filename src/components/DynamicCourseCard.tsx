@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { MapPin, Clock, User, PoundSterling, Star, CheckCircle, Car, Zap, TrendingUp } from "lucide-react";
+import { MapPin, Clock, User, PoundSterling, Star, CheckCircle, Car, Zap, TrendingUp, ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -131,55 +131,56 @@ export function DynamicCourseCard({
           isFlipped ? "[transform:rotateY(180deg)]" : ""
         }`}
       >
-        {/* Front of Card */}
-        <div className={`overflow-hidden border shadow-lg [backface-visibility:hidden] transition-shadow duration-300 group-hover:shadow-xl ${
-          isPremium 
-            ? "border-2 border-amber-400/60 shadow-amber-400/20 group-hover:shadow-amber-400/30 ring-1 ring-amber-400/30" 
-            : "border-border/50 bg-white shadow-black/10 group-hover:shadow-black/15"
-        }`}>
+        {/* Front of Card — pale wash + photo on top + navy date rail + icon list */}
+        <div
+          className={`relative overflow-hidden rounded-2xl border bg-secondary/40 p-2 shadow-lg [backface-visibility:hidden] transition-shadow duration-300 group-hover:shadow-xl ${
+            isPremium
+              ? "border-2 border-amber-400/60 shadow-amber-400/20 group-hover:shadow-amber-400/30 ring-1 ring-amber-400/30"
+              : "border-border/60 shadow-black/10 group-hover:shadow-black/15"
+          }`}
+        >
           {/* Premium Featured Badge */}
           {isPremium && (
-            <div className="absolute top-3 right-3 z-30 flex items-center gap-1 bg-gradient-to-r from-amber-500 to-amber-400 text-white px-2.5 py-1 rounded-md shadow-lg shadow-amber-500/30">
+            <div className="absolute top-4 right-4 z-30 flex items-center gap-1 bg-gradient-to-r from-amber-500 to-amber-400 text-white px-2.5 py-1 rounded-md shadow-lg shadow-amber-500/30">
               <Star className="h-3 w-3 fill-current" />
               <span className="text-xs font-bold tracking-wide">Featured</span>
             </div>
           )}
-          {/* Badges Row */}
-          <div className="absolute top-3 left-3 z-20 flex flex-wrap gap-1.5">
-            {isPopular && (
-              <Badge className="border-0 bg-emerald-500 text-white">
-                Popular
-              </Badge>
-            )}
-            {showIntensiveBadge && (
-              <Badge className={`border-0 text-white ${isIntensive ? "bg-primary" : "bg-amber-500"}`}>
-                {isIntensive ? <Zap className="h-3 w-3 mr-1" /> : <TrendingUp className="h-3 w-3 mr-1" />}
-                {intensiveLabel}
-              </Badge>
-            )}
-            <Badge variant="secondary" className="bg-white/90 text-foreground">
-              <Car className="h-3 w-3 mr-1" />
-              {transmissionLabel}
-            </Badge>
-          </div>
-          
-          {/* Hero Image Section */}
-          <div className="relative h-48 overflow-hidden">
+
+          {/* Hero Image (rounded top corners only, sits inside the wash) */}
+          <div className="relative h-44 overflow-hidden rounded-xl">
             <img
               src={courseImageUrl || `https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800&h=400&fit=crop`}
               alt={courseName}
               className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
             />
-            
-            {/* Distance badge */}
+
+            {/* Top-left badges */}
+            <div className="absolute top-3 left-3 z-20 flex flex-wrap gap-1.5">
+              {isPopular && (
+                <Badge className="border-0 bg-emerald-500 text-white">Popular</Badge>
+              )}
+              {showIntensiveBadge && (
+                <Badge className={`border-0 text-white ${isIntensive ? "bg-primary" : "bg-amber-500"}`}>
+                  {isIntensive ? <Zap className="h-3 w-3 mr-1" /> : <TrendingUp className="h-3 w-3 mr-1" />}
+                  {intensiveLabel}
+                </Badge>
+              )}
+              <Badge variant="secondary" className="bg-white/90 text-foreground">
+                <Car className="h-3 w-3 mr-1" />
+                {transmissionLabel}
+              </Badge>
+            </div>
+
+            {/* Distance chip */}
             {distance !== undefined && (
               <div className="absolute right-3 top-3 flex items-center gap-1.5 bg-white/95 backdrop-blur-sm text-primary px-2.5 py-1.5 rounded-lg shadow-lg">
                 <MapPin className="h-3.5 w-3.5" />
                 <span className="text-sm font-bold">{distance.toFixed(1)} mi</span>
               </div>
             )}
-            
-            {/* Discount badge */}
+
+            {/* Discount pill */}
             {hasDiscount && (
               <div className="absolute left-3 bottom-3 bg-red-500 text-white px-2.5 py-1 rounded-md shadow-lg">
                 <span className="text-sm font-bold">
@@ -189,49 +190,52 @@ export function DynamicCourseCard({
             )}
           </div>
 
-          {/* Content Section with Date Box */}
-          <div className="flex">
-            {/* Date Box - Instructor brand color */}
-            <div 
-              className="flex flex-col items-center justify-center px-5 py-4 min-w-[80px]"
+          {/* Lower body: navy date rail + white content */}
+          <div className="mt-2 flex overflow-hidden rounded-xl bg-card">
+            {/* Date rail */}
+            <div
+              className="flex flex-col items-center justify-center px-4 py-5 min-w-[68px]"
               style={{ backgroundColor: brandColour }}
             >
-              <span className="text-3xl font-bold text-white">{dayNumber}</span>
-              <span className="text-sm font-semibold text-white/80 uppercase">{monthName}</span>
+              <span className="text-3xl font-bold leading-none text-white">{dayNumber}</span>
+              <span className="mt-1 text-[11px] font-semibold tracking-wider text-white/80 uppercase">
+                {monthName}
+              </span>
             </div>
 
-            {/* Details - Right column */}
-            <div className="flex-1 p-4 space-y-2.5">
-              {/* Course Title */}
-              <h3 className="text-lg font-bold text-foreground uppercase tracking-wide">
+            {/* Content */}
+            <div className="flex-1 p-4 space-y-2">
+              <h3 className="text-base sm:text-lg font-bold text-foreground uppercase tracking-wide leading-snug">
                 {courseName}
               </h3>
-              
-              {/* Duration with icon */}
+
+              {/* Time / date row */}
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Clock className="h-4 w-4 flex-shrink-0" />
                 <span className="text-sm">{hours} hours ({fullDateDisplay})</span>
               </div>
 
-              {/* Location with icon */}
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <MapPin className="h-4 w-4 flex-shrink-0" />
-                <span className="text-sm truncate">{locationDisplay}</span>
+              {/* Location (blue accent) */}
+              <div className="flex items-center gap-2">
+                <MapPin className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+                <span className="text-sm font-medium text-primary truncate">{locationDisplay}</span>
               </div>
 
-              {/* Instructor with icon */}
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <User className="h-4 w-4 flex-shrink-0" />
-                <span className="text-sm">With {instructor.name}</span>
+              {/* Instructor (name in blue) */}
+              <div className="flex items-center gap-2">
+                <User className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">
+                  With <span className="font-medium text-primary">{instructor.name}</span>
+                </span>
               </div>
 
-              {/* Price with icon - show discount if available */}
+              {/* Price */}
               <div className="flex items-center gap-2 text-foreground">
-                <PoundSterling className="h-4 w-4 flex-shrink-0" />
+                <PoundSterling className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
                 {hasDiscount ? (
                   <div className="flex items-center gap-2">
-                    <span className="text-sm line-through text-muted-foreground">£{totalPrice.toFixed(0)}</span>
-                    <span className="text-sm font-bold text-red-600">£{finalPrice.toFixed(0)}</span>
+                    <span className="text-sm line-through text-muted-foreground">£{totalPrice.toFixed(2)}</span>
+                    <span className="text-sm font-bold text-red-600">£{finalPrice.toFixed(2)}</span>
                   </div>
                 ) : (
                   <span className="text-sm font-semibold">
@@ -239,24 +243,31 @@ export function DynamicCourseCard({
                   </span>
                 )}
               </div>
+
               {(isPostcodeAdjusted || (hasSurcharges && !hasDiscount)) && (
                 <p className="text-[11px] text-muted-foreground -mt-1">
-                  {isPostcodeAdjusted && learnerOutward
-                    ? `Pricing for ${learnerOutward}. `
-                    : null}
+                  {isPostcodeAdjusted && learnerOutward ? `Pricing for ${learnerOutward}. ` : null}
                   {hasSurcharges && !hasDiscount
                     ? "Weekends, bank holidays & off-peak hours may cost more."
                     : null}
                 </p>
               )}
 
-              {/* Payment Options - Dynamic instalment amounts */}
+              {/* Klarna / Clearpay — unchanged behaviour */}
               <CompactPaymentBadges
                 amount={finalPrice}
                 className="pt-1"
                 klarnaEnabled={instructor.klarna_enabled ?? false}
                 clearpayEnabled={instructor.clearpay_enabled ?? false}
               />
+
+              {/* Book Now */}
+              <Button
+                className="mt-2 w-full rounded-xl"
+                onClick={handleBookNow}
+              >
+                Book Now <ArrowRight className="h-4 w-4 ml-1" />
+              </Button>
             </div>
           </div>
         </div>
