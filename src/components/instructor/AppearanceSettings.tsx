@@ -488,6 +488,30 @@ export function AppearanceSettings({ instructorId }: AppearanceSettingsProps) {
               </div>
             )}
           </button>
+
+          {/* Settings V2 option */}
+          <button
+            onClick={() => handleLayoutChange("settings-v2")}
+            className={cn(
+              "relative flex flex-col items-center gap-1.5 p-3 rounded-2xl border-2 transition-all",
+              layoutStyle === "settings-v2"
+                ? "border-primary bg-primary/5 ring-1 ring-primary/20"
+                : "border-border hover:border-primary/40"
+            )}
+          >
+            <div className="w-full max-w-[80px]">
+              <PhonePreview bg={currentBg} heroSrc={currentHero} variant="settings-v2" />
+            </div>
+            <span className="text-xs font-medium mt-1">Settings V2</span>
+            <span className="text-[10px] text-muted-foreground text-center leading-tight">
+              Mini-map hero, grouped sections
+            </span>
+            {layoutStyle === "settings-v2" && (
+              <div className="absolute top-2 right-2">
+                <Check className="h-4 w-4 text-primary" />
+              </div>
+            )}
+          </button>
         </div>
       </div>
 
