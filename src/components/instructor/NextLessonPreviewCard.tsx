@@ -370,6 +370,306 @@ export function NextLessonPreviewCard(props: NextLessonPreviewCardProps) {
     return { label: "Overdue", bg: C.redTint, fg: C.red };
   })();
 
+  const fullName = toSentenceName(pupilName);
+  const initialsText = initials(pupilName);
+  const avatarColor = pupilAvatarColor(pupilId || pupilName) || "#CC2229";
+  const dayText = (() => { try { return format(parseISO(lessonDate), "EEE d MMM"); } catch { return ""; } })();
+  const relativeDay = relativeWhen(lessonDate);
+  const startLabel = fmtTime(startTime);
+  const countdownText = (() => {
+    if (minutesUntil <= 0) return "Now";
+    if (minutesUntil < 60) return `In ${Math.max(1, Math.round(minutesUntil))} min`;
+    if (minutesUntil < 60 * 12 && relativeDay === "Today") {
+      const h = Math.round(minutesUntil / 60);
+      return h === 1 ? "In 1 hour" : `In ${h} hours`;
+    }
+    return relativeDay;
+  })();
+
+  /* ─── Collapsed: new redesigned layout ─── */
+  if (!expanded) {
+    return (
+      <div style={{ padding: "0 16px", fontFamily: FONT, WebkitFontSmoothing: "antialiased" }}>
+        <div style={{
+          fontSize: 10, fontWeight: 700, color: "#8E8E93",
+          letterSpacing: 1.2, textTransform: "uppercase",
+          marginBottom: 8, paddingLeft: 2,
+        }}>
+          Up next
+        </div>
+
+        <div style={{
+          backgroundColor: "#FFFFFF",
+          borderRadius: 20,
+          overflow: "hidden",
+          width: "100%",
+          boxShadow: "0 2px 18px rgba(26,82,160,0.13)",
+          border: "0.5px solid rgba(26,82,160,0.1)",
+        }}>
+          {/* Header band */}
+          <div style={{
+            backgroundColor: "#F0F5FF",
+            padding: "12px 13px",
+            borderBottom: "0.5px solid rgba(26,82,160,0.07)",
+            display: "flex", alignItems: "center", gap: 9,
+          }}>
+            <button
+              type="button"
+              onClick={openProfile}
+              aria-label={`View ${fullName}'s profile`}
+              style={{
+                width: 38, height: 38, borderRadius: 19,
+                backgroundColor: avatarColor,
+                display: "inline-flex", alignItems: "center", justifyContent: "center",
+                flexShrink: 0,
+                boxShadow: `0 2px 6px ${avatarColor}38`,
+                border: "2px solid rgba(255,255,255,0.6)",
+                padding: 0, cursor: "pointer", overflow: "hidden",
+              }}
+            >
+              {pupilProfileImage ? (
+                <img src={pupilProfileImage} alt="" style={{ width: 38, height: 38, borderRadius: 19, objectFit: "cover" }} />
+              ) : (
+                <span style={{ fontSize: 12, fontWeight: 700, color: "#FFF" }}>{initialsText}</span>
+              )}
+            </button>
+
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{
+                fontSize: 14, fontWeight: 700, color: "#1A1A1A", letterSpacing: -0.3,
+                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+              }}>
+                {fullName}
+              </div>
+              <div style={{ fontSize: 9, color: "#8E8E93", marginTop: 2, fontWeight: 500 }}>
+                {dayText}{dayText && relativeDay ? " · " : ""}{relativeDay}
+              </div>
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", flexShrink: 0 }}>
+              <div style={{ fontSize: 20, fontWeight: 700, color: "#1A52A0", letterSpacing: -0.6, lineHeight: "22px" }}>
+                {startLabel}
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 3, marginTop: 3 }}>
+                <span style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: "#CC2229" }} />
+                <span style={{ fontSize: 9, color: "#8E8E93", fontWeight: 500 }}>{countdownText}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Map strip — 72px */}
+          <div style={{ position: "relative", height: 72, overflow: "hidden", background: "#F5F4F1" }}>
+            {sdkLoaded && destCoords ? (
+              <GoogleMap
+                mapContainerStyle={{ width: "100%", height: "100%" }}
+                center={destCoords}
+                zoom={13}
+                onLoad={(m) => { mapRef.current = m; }}
+                options={{
+                  styles: MAP_STYLES,
+                  disableDefaultUI: true,
+                  gestureHandling: "none",
+                  clickableIcons: false,
+                  zoomControl: false, mapTypeControl: false,
+                  streetViewControl: false, fullscreenControl: false,
+                  draggable: false, scrollwheel: false,
+                }}
+              >
+                {routePath && routePath.length > 1 ? (
+                  <PolylineF
+                    path={routePath}
+                    options={{
+                      strokeColor: C.red, strokeOpacity: 0, strokeWeight: 3,
+                      icons: [{
+                        icon: { path: "M 0,-1 0,1", strokeOpacity: 1, strokeColor: C.red, strokeWeight: 3, scale: 3 },
+                        offset: "0", repeat: "12px",
+                      }],
+                    }}
+                  />
+                ) : null}
+                {origin ? (
+                  <OverlayViewF position={origin} mapPaneName={OVERLAY_MOUSE_TARGET}
+                    getPixelPositionOffset={(w, h) => ({ x: -(w / 2), y: -(h / 2) })}>
+                    <div style={{ width: 12, height: 12, borderRadius: "50%", background: C.green, border: "2px solid #FFFFFF" }} />
+                  </OverlayViewF>
+                ) : null}
+                <OverlayViewF position={destCoords} mapPaneName={OVERLAY_MOUSE_TARGET}
+                  getPixelPositionOffset={(w, h) => ({ x: -(w / 2), y: -h })}>
+                  <svg width={20} height={26} viewBox="0 0 26 34">
+                    <path d="M13 0C5.82 0 0 5.82 0 13c0 9.75 13 21 13 21s13-11.25 13-21C26 5.82 20.18 0 13 0z" fill={C.red} />
+                    <circle cx="13" cy="13" r="5" fill="#FFFFFF" />
+                  </svg>
+                </OverlayViewF>
+              </GoogleMap>
+            ) : (
+              <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, color: C.text3 }}>
+                {destCoords === null ? "Map unavailable" : "Loading map…"}
+              </div>
+            )}
+
+            {/* ETA pill — top left */}
+            <button
+              type="button"
+              onClick={onGo}
+              disabled={!destCoords}
+              style={{
+                position: "absolute", top: 8, left: 10,
+                backgroundColor: "rgba(255,255,255,0.96)",
+                borderRadius: 16, padding: "4px 10px",
+                display: "inline-flex", alignItems: "center", gap: 5,
+                boxShadow: "0 1px 5px rgba(0,0,0,0.1)",
+                border: "none", cursor: destCoords ? "pointer" : "default",
+              }}
+            >
+              <MapPin style={{ width: 9, height: 9, color: "#1A52A0" }} strokeWidth={2} />
+              <span style={{ fontSize: 9.5, fontWeight: 700, color: "#1A1A1A" }}>
+                {driveMin != null && driveMin > 0 ? `ETA ${driveMin}m` : "Tap for ETA"}
+              </span>
+            </button>
+
+            {/* Navigate button — bottom right */}
+            <button
+              type="button"
+              onClick={onGo}
+              disabled={!destCoords}
+              style={{
+                position: "absolute", bottom: 7, right: 10,
+                backgroundColor: "rgba(26,82,160,0.9)",
+                borderRadius: 12, padding: "3px 8px",
+                border: "none", cursor: destCoords ? "pointer" : "default",
+              }}
+            >
+              <span style={{ fontSize: 8.5, fontWeight: 600, color: "#FFF" }}>Navigate →</span>
+            </button>
+          </div>
+
+          {/* Details */}
+          <div style={{ padding: "10px 12px 9px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 5 }}>
+              <div style={{
+                width: 23, height: 23, borderRadius: 6, backgroundColor: "#EEF3FF",
+                display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+              }}>
+                <Clock style={{ width: 11, height: 11, color: "#1A52A0" }} strokeWidth={1.8} />
+              </div>
+              <div style={{ fontSize: 11.5, fontWeight: 700, color: "#1A1A1A" }}>
+                Standard lesson · {fmtHours(durationMinutes)}
+              </div>
+            </div>
+
+            {(pickupPostcode || pickupLocation) ? (
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 7, marginBottom: 7 }}>
+                <div style={{
+                  width: 23, height: 23, borderRadius: 6, backgroundColor: "#EEF3FF",
+                  display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1,
+                }}>
+                  <MapPin style={{ width: 11, height: 11, color: "#1A52A0" }} strokeWidth={1.8} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{
+                    fontSize: 11.5, fontWeight: 700, color: "#1A1A1A",
+                    overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                  }}>
+                    {pickupPostcode}
+                    {pickupPostcode && pickupLocation ? " · " : ""}
+                    {pickupLocation || (!pickupPostcode ? "Location TBC" : "")}
+                  </div>
+                  <div style={{ fontSize: 9, color: "#1A52A0", marginTop: 1, fontWeight: 500 }}>Pick-up</div>
+                </div>
+              </div>
+            ) : null}
+
+            {aiDivertTime && minutesUntil <= 24 * 60 ? (
+              <div style={{
+                display: "inline-flex", alignItems: "center", gap: 4,
+                backgroundColor: "#F0EEFF", borderRadius: 7,
+                padding: "3px 8px", marginBottom: 7,
+              }}>
+                <Sparkles style={{ width: 9, height: 9, color: "#6B21A8" }} strokeWidth={1.9} />
+                <span style={{ fontSize: 9, fontWeight: 600, color: "#6B21A8" }}>
+                  AI divert starts at {aiDivertTime}
+                </span>
+              </div>
+            ) : null}
+
+            <div style={{ display: "flex", gap: 5 }}>
+              <button
+                type="button"
+                onClick={onCall}
+                disabled={!pupilPhone}
+                aria-label={pupilPhone ? `Call ${fullName}` : "Call disabled"}
+                style={{
+                  flex: 1.3, padding: "8px 0", borderRadius: 10,
+                  backgroundColor: pupilPhone ? "#CC2229" : "#E8B5B7",
+                  color: "#FFF", border: "none",
+                  display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 4,
+                  fontSize: 10.5, fontWeight: 700,
+                  boxShadow: pupilPhone ? "0 2px 6px rgba(204,34,41,0.28)" : "none",
+                  cursor: pupilPhone ? "pointer" : "not-allowed",
+                  fontFamily: FONT,
+                }}
+              >
+                <Phone style={{ width: 11, height: 11 }} strokeWidth={1.8} /> Call
+              </button>
+              <button
+                type="button"
+                onClick={onText}
+                disabled={!pupilPhone}
+                aria-label={`Text ${fullName}`}
+                style={{
+                  flex: 1, padding: "8px 0", borderRadius: 10,
+                  backgroundColor: "#EEF3FF", color: "#1A52A0", border: "none",
+                  display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 3,
+                  fontSize: 10.5, fontWeight: 600,
+                  cursor: pupilPhone ? "pointer" : "not-allowed",
+                  opacity: pupilPhone ? 1 : 0.5,
+                  fontFamily: FONT,
+                }}
+              >
+                <MessageSquare style={{ width: 11, height: 11 }} strokeWidth={1.7} /> Text
+              </button>
+              <button
+                type="button"
+                onClick={onGo}
+                disabled={!destCoords}
+                aria-label="Navigate"
+                style={{
+                  flex: 1, padding: "8px 0", borderRadius: 10,
+                  backgroundColor: "#EEF3FF", color: "#1A52A0", border: "none",
+                  display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 3,
+                  fontSize: 10.5, fontWeight: 600,
+                  cursor: destCoords ? "pointer" : "not-allowed",
+                  opacity: destCoords ? 1 : 0.5,
+                  fontFamily: FONT,
+                }}
+              >
+                <Navigation style={{ width: 11, height: 11 }} strokeWidth={1.7} /> Go
+              </button>
+            </div>
+          </div>
+
+          {/* Expand handle */}
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); setExpanded(true); }}
+            aria-expanded={false}
+            style={{
+              width: "100%", border: "none",
+              borderTop: "0.5px solid rgba(0,0,0,0.05)",
+              padding: "7px 0", backgroundColor: "#FAFBFD",
+              display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 3,
+              cursor: "pointer", fontFamily: FONT,
+            }}
+          >
+            <span style={{ fontSize: 9.5, fontWeight: 600, color: "#8E8E93" }}>Details</span>
+            <ChevronDown style={{ width: 9, height: 9, color: "#C7C7CC" }} strokeWidth={2.5} />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  /* ─── Expanded: original layout ─── */
   return (
     <div style={{ padding: "0 16px", fontFamily: FONT, WebkitFontSmoothing: "antialiased" }}>
       {/* Section label */}
