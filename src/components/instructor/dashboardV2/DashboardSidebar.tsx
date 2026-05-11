@@ -1,9 +1,10 @@
 import { Link, useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
 import {
   LayoutDashboard, Calendar, Inbox, Users, ClipboardCheck,
   Award, Repeat2, Search, CreditCard, Receipt, Clock,
   BarChart3, Globe, Palette, Link2, TrendingUp, User, Wallet, Boxes,
-  Plug, LogOut, PanelLeftClose, PanelLeft,
+  Plug, LogOut, PanelLeftClose, PanelLeft, ChevronRight,
   NotebookPen, BookOpenCheck, GraduationCap, ListChecks, UserPlus2,
   MapPin, Map, Gauge, Navigation, Video, Route, Fuel, Car,
   Mic, Banknote, Coins, Star, Share2, Zap, MoreHorizontal, CalendarSearch,
@@ -99,6 +100,40 @@ export function DashboardSidebar({ collapsed, onToggle, userInitials, userName, 
     ...s,
     items: s.items.filter(i => !i.moduleId || isModuleActive(i.moduleId)),
   })).filter(s => s.items.length > 0);
+
+  // Sections collapsed by default — primary groups stay open.
+  const DEFAULT_OPEN = new Set(["Overview", "Teaching", "Business"]);
+  const STORAGE_KEY = "dsm.dashboard.sidebar.openGroups";
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
+    const initial: Record<string, boolean> = {};
+    SECTIONS.forEach((s) => (initial[s.label] = DEFAULT_OPEN.has(s.label)));
+    return initial;
+  });
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) setOpenGroups((prev) => ({ ...prev, ...JSON.parse(saved) }));
+    } catch {}
+  }, []);
+  // Auto-open the section that contains the active route.
+  useEffect(() => {
+    const activeSection = visibleSections.find((s) =>
+      s.items.some((i) =>
+        i.to === "/instructor" ? pathname === "/instructor" : pathname === i.to || pathname.startsWith(i.to + "/")
+      )
+    );
+    if (activeSection && !openGroups[activeSection.label]) {
+      setOpenGroups((prev) => ({ ...prev, [activeSection.label]: true }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
+  const toggleGroup = (label: string) => {
+    setOpenGroups((prev) => {
+      const next = { ...prev, [label]: !prev[label] };
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch {}
+      return next;
+    });
+  };
 
   // Convert brand colour to a soft tint for active background.
   const brandTint = brandColour ? `${brandColour}1A` : null; // ~10% alpha
@@ -197,77 +232,100 @@ export function DashboardSidebar({ collapsed, onToggle, userInitials, userName, 
 
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto" style={{ padding: "0 8px 12px" }}>
-        {visibleSections.map((section) => (
-          <div key={section.label} style={{ marginBottom: 12 }}>
-            {!collapsed && (
-              <div
-                style={{
-                  fontSize: 10, fontWeight: 600, letterSpacing: "0.6px",
-                  color: "var(--d2-text-3)", textTransform: "uppercase",
-                  padding: "8px 8px 4px",
-                }}
-              >
-                {section.label}
-              </div>
-            )}
-            <ul className="space-y-0.5">
-              {section.items.map((item) => {
-                const Icon = item.icon;
-                const active = item.to === "/instructor"
-                  ? pathname === "/instructor"
-                  : pathname === item.to || pathname.startsWith(item.to + "/");
-                return (
-                  <li key={item.label}>
-                    <Link
-                      to={item.to}
-                      title={collapsed ? item.label : undefined}
-                      aria-current={active ? "page" : undefined}
-                      className={cn("relative flex items-center gap-2 rounded-md transition-colors group")}
-                      style={{
-                        height: 32,
-                        padding: collapsed ? "0" : "0 8px 0 10px",
-                        justifyContent: collapsed ? "center" : "flex-start",
-                        background: active ? "var(--d2-indigo)" : "transparent",
-                        color: active ? "#FFFFFF" : "var(--d2-text-2)",
-                        fontSize: 12,
-                        fontWeight: 500,
-                        boxShadow: active ? "0 1px 2px rgba(15,23,42,0.08), 0 1px 3px rgba(15,23,42,0.06)" : "none",
-                        transition: "background 150ms ease-out, color 150ms ease-out, box-shadow 150ms ease-out",
-                      }}
-                      onMouseEnter={(e) => {
-                        if (!active) {
-                          e.currentTarget.style.background = "var(--d2-hover)";
-                          e.currentTarget.style.color = "var(--d2-text-1)";
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (!active) {
-                          e.currentTarget.style.background = "transparent";
-                          e.currentTarget.style.color = "var(--d2-text-2)";
-                        }
-                      }}
-                    >
-                      <Icon size={14} strokeWidth={active ? 2.25 : 1.75} style={{ color: active ? "#FFFFFF" : undefined }} />
-                      {!collapsed && <span className="truncate flex-1">{item.label}</span>}
-                      {!collapsed && item.badge && (
-                        <span
+        {visibleSections.map((section) => {
+          const isOpen = collapsed ? true : (openGroups[section.label] ?? false);
+          return (
+            <div key={section.label} style={{ marginBottom: 8 }}>
+              {!collapsed && (
+                <button
+                  type="button"
+                  onClick={() => toggleGroup(section.label)}
+                  className="flex items-center w-full rounded-md transition-colors"
+                  style={{
+                    fontSize: 10, fontWeight: 600, letterSpacing: "0.6px",
+                    color: "var(--d2-text-3)", textTransform: "uppercase",
+                    padding: "6px 8px",
+                    background: "transparent",
+                    border: "none",
+                    cursor: "pointer",
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = "var(--d2-hover)")}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                  aria-expanded={isOpen}
+                >
+                  <ChevronRight
+                    size={10}
+                    strokeWidth={2.5}
+                    style={{
+                      marginRight: 4,
+                      transition: "transform 150ms ease-out",
+                      transform: isOpen ? "rotate(90deg)" : "rotate(0deg)",
+                    }}
+                  />
+                  <span className="flex-1 text-left">{section.label}</span>
+                </button>
+              )}
+              {isOpen && (
+                <ul className="space-y-0.5">
+                  {section.items.map((item) => {
+                    const Icon = item.icon;
+                    const active = item.to === "/instructor"
+                      ? pathname === "/instructor"
+                      : pathname === item.to || pathname.startsWith(item.to + "/");
+                    return (
+                      <li key={item.label}>
+                        <Link
+                          to={item.to}
+                          title={collapsed ? item.label : undefined}
+                          aria-current={active ? "page" : undefined}
+                          className={cn("relative flex items-center gap-2 rounded-md transition-colors group")}
                           style={{
-                            background: active ? "rgba(255,255,255,0.22)" : "#FEE2E2",
-                            color: active ? "#FFFFFF" : "#B91C1C",
-                            fontSize: 10, fontWeight: 600,
-                            padding: "1px 6px", borderRadius: 999,
+                            height: 32,
+                            padding: collapsed ? "0" : "0 8px 0 10px",
+                            justifyContent: collapsed ? "center" : "flex-start",
+                            background: active ? "var(--d2-indigo)" : "transparent",
+                            color: active ? "#FFFFFF" : "var(--d2-text-2)",
+                            fontSize: 12,
+                            fontWeight: 500,
+                            boxShadow: active ? "0 1px 2px rgba(15,23,42,0.08), 0 1px 3px rgba(15,23,42,0.06)" : "none",
+                            transition: "background 150ms ease-out, color 150ms ease-out, box-shadow 150ms ease-out",
+                          }}
+                          onMouseEnter={(e) => {
+                            if (!active) {
+                              e.currentTarget.style.background = "var(--d2-hover)";
+                              e.currentTarget.style.color = "var(--d2-text-1)";
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!active) {
+                              e.currentTarget.style.background = "transparent";
+                              e.currentTarget.style.color = "var(--d2-text-2)";
+                            }
                           }}
                         >
-                          {item.badge}
-                        </span>
-                      )}
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        ))}
+                          <Icon size={14} strokeWidth={active ? 2.25 : 1.75} style={{ color: active ? "#FFFFFF" : undefined }} />
+                          {!collapsed && <span className="truncate flex-1">{item.label}</span>}
+                          {!collapsed && item.badge && (
+                            <span
+                              style={{
+                                background: active ? "rgba(255,255,255,0.22)" : "#FEE2E2",
+                                color: active ? "#FFFFFF" : "#B91C1C",
+                                fontSize: 10, fontWeight: 600,
+                                padding: "1px 6px", borderRadius: 999,
+                              }}
+                            >
+                              {item.badge}
+                            </span>
+                          )}
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
+          );
+        })}
       </nav>
 
       {/* Sign out */}
