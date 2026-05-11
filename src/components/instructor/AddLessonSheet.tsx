@@ -1626,25 +1626,63 @@ export function AddLessonSheet({
             </div>
           );
         })()}
+
+        {/* Loading state */}
+        {loading && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 12, padding: 12, background: '#F2F7FC', border: '0.5px solid #D6E4F2', borderRadius: 10 }}>
+            <Loader2 size={16} className="animate-spin" color="#2B7BC8" />
+            <span style={{ fontSize: 13, color: '#2B7BC8', fontWeight: 500 }}>Booking lesson…</span>
+          </div>
+        )}
+
+        {/* Error state */}
+        {!loading && bookingError && (
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginTop: 12, padding: 12, background: '#FEF2F2', border: '0.5px solid #FCA5A5', borderRadius: 10 }}>
+            <AlertTriangle size={16} color="#DC2626" style={{ flexShrink: 0, marginTop: 1 }} />
+            <span style={{ fontSize: 13, color: '#991B1B', lineHeight: 1.4 }}>{bookingError}</span>
+          </div>
+        )}
+
         <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
           <Button
             variant="outline"
             className="flex-1"
-            onClick={() => setConfirmOpen(false)}
+            onClick={() => { setConfirmOpen(false); setBookingError(null); }}
             disabled={loading}
           >
-            Cancel
+            {bookingError ? 'Close' : 'Cancel'}
           </Button>
           <Button
             className="flex-1"
             onClick={async () => {
-              setConfirmOpen(false);
-              if (tab === 'existing') await handleAddLessonExisting();
-              else await handleAddLessonNew();
+              setBookingError(null);
+              // Fresh slot availability check before attempting insert
+              if (lessonDate && !isDrivingTest) {
+                try {
+                  const dateStr = format(lessonDate, 'yyyy-MM-dd');
+                  const durationMinutes = parseFloat(lessonDuration) * 60;
+                  const c = await checkLessonClash({ instructorId, date: dateStr, startTime: lessonStartTime, durationMinutes });
+                  if (c.hardOverlap && !(overrideBuffer && isHardOverlap)) {
+                    setBookingError(c.message ?? 'This slot is no longer available — please pick another.');
+                    return;
+                  }
+                } catch { /* fall through to insert; DB constraint will catch */ }
+              }
+              const result = tab === 'existing'
+                ? await handleAddLessonExisting()
+                : await handleAddLessonNew();
+              if (!result.ok) {
+                setBookingError(result.error ?? 'Booking failed. Please try again.');
+              }
             }}
             disabled={loading}
           >
-            {loading ? 'Booking…' : 'Confirm booking'}
+            {loading ? (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                <Loader2 size={14} className="animate-spin" />
+                Booking…
+              </span>
+            ) : (bookingError ? 'Try again' : 'Confirm booking')}
           </Button>
         </div>
       </DialogContent>
