@@ -146,7 +146,7 @@ export function FindAppointmentBody({
     selectedInstructorId: nextOnly ? "all" : selectedInstructorId,
     fromDate: nextOnly ? today : fromDate,
     days: nextOnly ? 60 : days,
-    durationMinutes: nextOnly ? 60 : parseInt(duration, 10),
+    durationMinutes: parseInt(duration, 10),
     timeOfDay: nextOnly ? "any" : timeOfDay,
     postcodePrefix: nextOnly ? "" : computedPrefix,
     enabled: true,
