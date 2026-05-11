@@ -673,7 +673,7 @@ function UpNextTile({
                   {pickupPostcode && pickupLocation ? " · " : ""}
                   {pickupLocation || ""}
                 </div>
-                <div style={{ fontSize: 14, color: "#1A52A0", marginTop: 1, fontWeight: 600 }}>Pick-up</div>
+                <div style={{ fontSize: 11, color: "#1A52A0", marginTop: 1, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" }}>Pick-up</div>
               </div>
             </div>
           )}
