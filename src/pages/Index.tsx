@@ -69,6 +69,7 @@ import earlyTestBadge from "@/assets/free-retest-badge.png";
 import heroInstructorNew from "@/assets/hero-instructor-new.png";
 import heroLearner from "@/assets/hero-learner.jpg";
 import referFriends from "@/assets/refer-friends.png";
+import winchesterHeroDesktop from "@/assets/winchester-hero-desktop.png";
 // Features, stats, testimonials, and hero content are now loaded dynamically via hooks
 
 export default function Index() {
@@ -182,7 +183,61 @@ export default function Index() {
     <MainLayout>
       <SEOHead />
       {/* Hero Section - Left/Right Split Layout */}
-      <section className="bg-background py-16 lg:py-24 border-b border-border">
+      {wlConfig && (
+        <section className="hidden lg:block bg-background border-b border-border">
+          <div className="container max-w-7xl py-8">
+            <div className="relative overflow-hidden rounded-3xl shadow-2xl">
+              <img
+                src={winchesterHeroDesktop}
+                alt={`${wlConfig.brandName} — find earlier driving test dates, instant alerts, swap fast and pass sooner`}
+                className="w-full h-auto block"
+                loading="eager"
+              />
+              {/* Postcode search overlay */}
+              <div className="absolute left-8 xl:left-12 bottom-[28%] xl:bottom-[30%] w-[42%] max-w-md">
+                <form
+                  onSubmit={handleSearch}
+                  className="flex items-center gap-2 rounded-full bg-background/95 backdrop-blur-sm p-2 shadow-2xl ring-1 ring-border"
+                >
+                  <div className="flex flex-1 items-center px-3">
+                    <MapPin className="h-5 w-5 text-muted-foreground mr-2 shrink-0" />
+                    <PostcodeAutocomplete
+                      value={postcode}
+                      onChange={setPostcode}
+                      onSelect={(pc) => {
+                        setPostcode(pc);
+                        navigate(`/courses?postcode=${encodeURIComponent(pc)}`);
+                      }}
+                      placeholder="Enter your postcode..."
+                      className="flex-1"
+                      inputClassName="h-9 border-0 bg-transparent p-0 text-base focus-visible:ring-0 focus-visible:ring-offset-0"
+                      showGeolocation={true}
+                    />
+                  </div>
+                  <Button
+                    type="submit"
+                    size="lg"
+                    className="rounded-full h-11 px-6 bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg"
+                  >
+                    <Search className="h-4 w-4 mr-2" /> Find
+                  </Button>
+                </form>
+                <button
+                  type="button"
+                  onClick={() => setPlannerOpen(true)}
+                  className="mt-3 ml-2 inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline drop-shadow"
+                >
+                  <CalendarCheck className="h-4 w-4" />
+                  Plan my course around my test date →
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Original Hero — hidden on desktop for whitelabel sites */}
+      <section className={`bg-background py-16 lg:py-24 border-b border-border ${wlConfig ? "lg:hidden" : ""}`}>
         <div className="container max-w-6xl">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             {/* Left: Text & Search */}
