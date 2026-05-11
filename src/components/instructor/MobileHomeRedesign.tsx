@@ -1187,7 +1187,7 @@ function AttentionRowItem({
         >
           {row.title}
         </div>
-        <div style={{ fontSize: 14, color: "#8E8E93", marginTop: 1 }}>
+        <div style={{ fontSize: 12, color: "#8E8E93", marginTop: 1 }}>
           {row.subtitle}
         </div>
       </div>
