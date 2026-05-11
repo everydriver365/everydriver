@@ -34,6 +34,7 @@ import {
   CheckCircle2,
   X,
   ClipboardCheck,
+  AlertTriangle,
 } from "lucide-react";
 import { PostLessonReview } from "./PostLessonReview";
 import { format } from "date-fns";
@@ -50,6 +51,13 @@ interface LessonRecord {
   notes: string | null;
   rating: number | null;
   created_at: string;
+}
+
+interface MissingEolLesson {
+  id: string;
+  lesson_date: string;
+  start_time: string;
+  duration_minutes: number;
 }
 
 interface LessonHistoryProps {
@@ -98,6 +106,7 @@ export function LessonHistory({
   onLessonAdded,
 }: LessonHistoryProps) {
   const [lessons, setLessons] = useState<LessonRecord[]>([]);
+  const [missingEol, setMissingEol] = useState<MissingEolLesson[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -121,14 +130,49 @@ export function LessonHistory({
 
   const fetchLessons = async () => {
     try {
-      const { data, error } = await supabase
-        .from("lesson_history")
-        .select("*")
-        .eq("pupil_id", pupilId)
-        .order("lesson_date", { ascending: false });
+      const today = format(new Date(), "yyyy-MM-dd");
+      const [historyRes, scheduledRes] = await Promise.all([
+        supabase
+          .from("lesson_history")
+          .select("*")
+          .eq("pupil_id", pupilId)
+          .order("lesson_date", { ascending: false }),
+        supabase
+          .from("scheduled_lessons")
+          .select("id, lesson_date, start_time, duration_minutes, status, deleted_at")
+          .eq("pupil_id", pupilId)
+          .lte("lesson_date", today)
+          .neq("status", "cancelled")
+          .is("deleted_at", null)
+          .order("lesson_date", { ascending: false }),
+      ]);
 
-      if (error) throw error;
-      setLessons(data || []);
+      if (historyRes.error) throw historyRes.error;
+      if (scheduledRes.error) throw scheduledRes.error;
+
+      const history = historyRes.data || [];
+      setLessons(history);
+
+      const norm = (t: string | null) =>
+        !t ? "" : t.length === 5 ? `${t}:00` : t;
+      const eolKeys = new Set(
+        history
+          .filter((r: any) => r.start_time)
+          .map((r: any) => `${r.lesson_date}|${norm(r.start_time)}`),
+      );
+
+      const missing: MissingEolLesson[] = (scheduledRes.data || [])
+        .filter((s: any) => {
+          if (!s.start_time) return false;
+          return !eolKeys.has(`${s.lesson_date}|${norm(s.start_time)}`);
+        })
+        .map((s: any) => ({
+          id: s.id,
+          lesson_date: s.lesson_date,
+          start_time: s.start_time,
+          duration_minutes: s.duration_minutes,
+        }));
+      setMissingEol(missing);
     } catch (error) {
       console.error("Error fetching lessons:", error);
     } finally {
@@ -405,6 +449,14 @@ export function LessonHistory({
           </h3>
           <p className="text-sm text-muted-foreground">
             {lessons.length} lessons • {totalHours.toFixed(1)} hours total
+            {missingEol.length > 0 && (
+              <>
+                {" • "}
+                <span className="text-amber-600 font-medium">
+                  {missingEol.length} EOL missing
+                </span>
+              </>
+            )}
           </p>
         </div>
         <Button
@@ -418,6 +470,57 @@ export function LessonHistory({
           Log Lesson
         </Button>
       </div>
+
+      {/* Missing EOL list */}
+      {missingEol.length > 0 && (
+        <div className="space-y-2">
+          {missingEol.map((m) => (
+            <Card
+              key={`missing-${m.id}`}
+              className="border-amber-300 bg-amber-50/50 dark:bg-amber-950/20"
+            >
+              <CardContent className="p-3 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2 min-w-0">
+                  <AlertTriangle className="h-4 w-4 text-amber-600 flex-shrink-0" />
+                  <div className="min-w-0">
+                    <div className="text-sm font-medium truncate">
+                      {format(new Date(m.lesson_date), "EEE, d MMM yyyy")}
+                      {m.start_time && ` • ${m.start_time.slice(0, 5)}`}
+                      <span className="text-muted-foreground font-normal">
+                        {" • "}
+                        {m.duration_minutes / 60}h
+                      </span>
+                    </div>
+                    <div className="text-xs text-amber-700 dark:text-amber-400">
+                      EOL missing — no end-of-lesson record yet
+                    </div>
+                  </div>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="flex-shrink-0"
+                  onClick={() => {
+                    setFormData({
+                      lesson_date: m.lesson_date,
+                      start_time: m.start_time
+                        ? m.start_time.slice(0, 5)
+                        : "10:00",
+                      duration_minutes: m.duration_minutes,
+                      skills_practiced: [],
+                      notes: "",
+                      rating: 0,
+                    });
+                    setIsAddOpen(true);
+                  }}
+                >
+                  Log
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
 
       {/* Lessons List */}
       {lessons.length === 0 ? (
