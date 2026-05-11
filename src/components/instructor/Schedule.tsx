@@ -1132,50 +1132,71 @@ export default function Schedule({
         </>
       )}
 
-      <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+      {/* V6 Command-style chip pair: Add lesson + Fill gaps */}
+      <div
+        style={{
+          display: "flex",
+          gap: 8,
+          marginTop: 10,
+          justifyContent: "center",
+        }}
+      >
         <button
           type="button"
           onClick={openAddLesson}
           style={{
-            flex: 1,
-            padding: "12px 0",
-            borderRadius: 14,
-            background: "#6B93C0",
-            color: "#FFF",
-            border: "none",
-            fontSize: 14,
-            fontWeight: 700,
-            cursor: "pointer",
             display: "inline-flex",
             alignItems: "center",
-            justifyContent: "center",
             gap: 6,
+            background: "#FFFFFF",
+            border: `0.5px solid ${DIVIDER}`,
+            padding: "8px 14px",
+            borderRadius: 999,
+            fontSize: 13,
+            fontWeight: 600,
+            color: TEXT_PRIMARY,
+            cursor: "pointer",
+            boxShadow: SHADOW,
           }}
         >
-          <Plus size={13} color="#FFF" strokeWidth={2.2} />
+          <Plus size={14} color={DSM_BLUE} strokeWidth={2.4} />
           Add lesson
         </button>
         <button
           type="button"
           onClick={() => openGapFiller()}
           style={{
-            flex: 1,
-            padding: "12px 0",
-            borderRadius: 14,
-            background: "#6B93C0",
-            color: "#FFF",
-            border: "none",
-            fontSize: 14,
-            fontWeight: 700,
-            cursor: "pointer",
             display: "inline-flex",
             alignItems: "center",
-            justifyContent: "center",
             gap: 6,
+            background: "#FFFFFF",
+            border: `0.5px solid ${DIVIDER}`,
+            padding: "8px 14px",
+            borderRadius: 999,
+            fontSize: 13,
+            fontWeight: 600,
+            color: TEXT_PRIMARY,
+            cursor: "pointer",
+            boxShadow: SHADOW,
           }}
         >
-          <Plus size={13} color="#FFF" strokeWidth={2.2} />
+          <ChevronsLeftRight size={14} color={DSM_BLUE} strokeWidth={2.4} />
           Fill gaps
+          {openSlotsThisWeek > 0 && (
+            <span
+              style={{
+                background: DSM_BLUE_TINT,
+                color: DSM_BLUE,
+                fontSize: 11,
+                fontWeight: 700,
+                padding: "1px 7px",
+                borderRadius: 999,
+                marginLeft: 2,
+              }}
+            >
+              {openSlotsThisWeek}
+            </span>
+          )}
         </button>
       </div>
 
