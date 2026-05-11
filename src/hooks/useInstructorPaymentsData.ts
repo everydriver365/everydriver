@@ -222,7 +222,9 @@ export function useInstructorPaymentsData(instructorId: string | undefined): Pay
         );
         const receivedMonth = monthTx.reduce((s, t) => s + t.amount, 0);
         const cardMonth = monthTx.filter(t => t.method === "card").reduce((s, t) => s + t.amount, 0);
-        const feesMonth = +(Math.max(0, cardMonth) * FEE_RATE).toFixed(2);
+        const platformFeesMonthTotal = (platformFeesMonthRes.data || [])
+          .reduce((s: number, r: any) => s + Number(r.amount || 0), 0);
+        const feesMonth = +((Math.max(0, cardMonth) * FEE_RATE) + platformFeesMonthTotal).toFixed(2);
         const effectiveFeeRate = receivedMonth > 0 ? +((feesMonth / receivedMonth) * 100).toFixed(2) : 0;
 
         // Pending payout = card payments captured but NOT yet transferred (excl. refunded)
