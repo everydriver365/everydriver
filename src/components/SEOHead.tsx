@@ -166,6 +166,17 @@ function removeLink(rel: string, hreflang: string) {
   if (link) link.remove();
 }
 
+function upsertSitemapLink(href: string) {
+  let link = document.head.querySelector<HTMLLinkElement>('link[rel="sitemap"]');
+  if (!link) {
+    link = document.createElement("link");
+    link.rel = "sitemap";
+    link.type = "application/xml";
+    document.head.appendChild(link);
+  }
+  link.href = href;
+}
+
 function injectJsonLd(id: string, data: Record<string, unknown>) {
   // Strip undefined values for a clean payload
   const cleaned = JSON.parse(JSON.stringify(data));
