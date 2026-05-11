@@ -252,7 +252,7 @@ function SummaryStatCard({
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 6 }}>
         <div
           style={{
-            fontSize: 14,
+            fontSize: 10,
             fontWeight: 700,
             color: MUTED,
             letterSpacing: "0.08em",
@@ -282,7 +282,7 @@ function SummaryStatCard({
       <div>
         <div
           style={{
-            fontSize: 14,
+            fontSize: 22,
             fontWeight: 700,
             color: "#1A1A1A",
             letterSpacing: "-0.4px",
@@ -292,7 +292,7 @@ function SummaryStatCard({
         >
           {value}
         </div>
-        <div style={{ fontSize: 14, color: MUTED, marginTop: 3 }}>{sub}</div>
+        <div style={{ fontSize: 12, color: MUTED, marginTop: 3 }}>{sub}</div>
       </div>
     </div>
   );
