@@ -995,7 +995,7 @@ function UpNextMapStrip({
         }}
       >
         <NavIcon size={11} strokeWidth={2.4} style={{ color: "#FFF" }} />
-        <span style={{ fontSize: 14, fontWeight: 700, color: "#FFF" }}>Navigate</span>
+        <span style={{ fontSize: 13, fontWeight: 700, color: "#FFF" }}>Navigate</span>
       </button>
     </div>
   );
