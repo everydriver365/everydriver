@@ -128,7 +128,7 @@ export function IOSCourseCard({
       </div>
 
       {/* Body: navy date rail + content */}
-      <div className="mt-2 flex overflow-hidden rounded-xl bg-card">
+      <div className="flex">
         <div
           className="flex flex-col items-center justify-center px-4 py-5 min-w-[68px]"
           style={{ backgroundColor: brandColour }}
