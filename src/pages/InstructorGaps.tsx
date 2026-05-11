@@ -98,7 +98,7 @@ export default function InstructorGaps() {
           style={{
             background: "#FFFFFF",
             borderRadius: 12,
-            padding: "16px 14px 20px",
+            padding: "16px 8px 20px",
             flex: 1,
             display: "flex",
             flexDirection: "column",
