@@ -8452,51 +8452,75 @@ export type Database = {
       }
       instructor_website_pages: {
         Row: {
+          canonical_url: string | null
           content_blocks: Json | null
           created_at: string
           display_order: number
+          draft_content_blocks: Json | null
+          has_unpublished_changes: boolean
           hero_heading: string | null
           hero_image_url: string | null
           hero_subheading: string | null
           id: string
           instructor_id: string
           is_published: boolean
+          keywords: string | null
+          last_edited_at: string | null
+          last_edited_by: string | null
           meta_description: string | null
           meta_title: string | null
+          og_image_url: string | null
           page_title: string
           page_type: string
+          schema_jsonld: Json | null
           updated_at: string
         }
         Insert: {
+          canonical_url?: string | null
           content_blocks?: Json | null
           created_at?: string
           display_order?: number
+          draft_content_blocks?: Json | null
+          has_unpublished_changes?: boolean
           hero_heading?: string | null
           hero_image_url?: string | null
           hero_subheading?: string | null
           id?: string
           instructor_id: string
           is_published?: boolean
+          keywords?: string | null
+          last_edited_at?: string | null
+          last_edited_by?: string | null
           meta_description?: string | null
           meta_title?: string | null
+          og_image_url?: string | null
           page_title: string
           page_type: string
+          schema_jsonld?: Json | null
           updated_at?: string
         }
         Update: {
+          canonical_url?: string | null
           content_blocks?: Json | null
           created_at?: string
           display_order?: number
+          draft_content_blocks?: Json | null
+          has_unpublished_changes?: boolean
           hero_heading?: string | null
           hero_image_url?: string | null
           hero_subheading?: string | null
           id?: string
           instructor_id?: string
           is_published?: boolean
+          keywords?: string | null
+          last_edited_at?: string | null
+          last_edited_by?: string | null
           meta_description?: string | null
           meta_title?: string | null
+          og_image_url?: string | null
           page_title?: string
           page_type?: string
+          schema_jsonld?: Json | null
           updated_at?: string
         }
         Relationships: [
@@ -8511,6 +8535,69 @@ export type Database = {
             foreignKeyName: "instructor_website_pages_instructor_id_fkey"
             columns: ["instructor_id"]
             isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      instructor_website_settings: {
+        Row: {
+          created_at: string
+          custom_head_html: string | null
+          default_keywords: string | null
+          default_meta_description: string | null
+          default_og_image_url: string | null
+          google_analytics_id: string | null
+          google_site_verification: string | null
+          id: string
+          instructor_id: string
+          robots_indexable: boolean
+          site_tagline: string | null
+          social_links: Json | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          custom_head_html?: string | null
+          default_keywords?: string | null
+          default_meta_description?: string | null
+          default_og_image_url?: string | null
+          google_analytics_id?: string | null
+          google_site_verification?: string | null
+          id?: string
+          instructor_id: string
+          robots_indexable?: boolean
+          site_tagline?: string | null
+          social_links?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          custom_head_html?: string | null
+          default_keywords?: string | null
+          default_meta_description?: string | null
+          default_og_image_url?: string | null
+          google_analytics_id?: string | null
+          google_site_verification?: string | null
+          id?: string
+          instructor_id?: string
+          robots_indexable?: boolean
+          site_tagline?: string | null
+          social_links?: Json | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_website_settings_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: true
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_website_settings_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: true
             referencedRelation: "public_instructors"
             referencedColumns: ["id"]
           },
