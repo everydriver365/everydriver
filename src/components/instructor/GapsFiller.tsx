@@ -945,12 +945,12 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
           width: "100%",
           background: "#2B7BC8",
           border: "none",
-          borderRadius: 10,
-          padding: 14,
+          borderRadius: 12,
+          padding: "16px 14px",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          gap: 8,
+          gap: 10,
           cursor:
             selectedSlots.length === 0 || recipientCount === 0
               ? "not-allowed"
@@ -958,14 +958,16 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
           opacity:
             selectedSlots.length === 0 || recipientCount === 0 ? 0.4 : 1,
           fontFamily: FONT_STACK,
+          marginTop: 4,
         }}
       >
-        <MessageSquare size={16} strokeWidth={2} color="#FFFFFF" />
+        <MessageSquare size={17} strokeWidth={2} color="#FFFFFF" />
         <span
           style={{
-            fontSize: 14,
-            fontWeight: 500,
+            fontSize: 15,
+            fontWeight: 600,
             color: "#FFFFFF",
+            letterSpacing: -0.2,
           }}
         >
           Send to {recipientCount} pupil{recipientCount === 1 ? "" : "s"}
