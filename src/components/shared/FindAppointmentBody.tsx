@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format, parseISO } from "date-fns";
@@ -16,6 +16,8 @@ export interface FindAppointmentBodyProps {
   onSelectSlot: (slot: AvailableSlot) => void;
   onCancel?: () => void;
   variant?: "modal" | "page";
+  /** When true, only the very next available slot is shown and pre-selected. */
+  nextOnly?: boolean;
 }
 
 type Urgency = "include" | "exclude" | "only";
@@ -53,6 +55,7 @@ export function FindAppointmentBody({
   onSelectSlot,
   onCancel,
   variant = "page",
+  nextOnly = false,
 }: FindAppointmentBodyProps) {
   const today = format(new Date(), "yyyy-MM-dd");
   const [fromDate, setFromDate] = useState(today);
@@ -149,8 +152,17 @@ export function FindAppointmentBody({
     enabled: true,
   });
 
-  const slots = searchResult?.slots ?? [];
+  const allSlots = searchResult?.slots ?? [];
+  const slots = nextOnly ? allSlots.slice(0, 1) : allSlots;
   const rejection = searchResult?.rejection;
+
+  // Auto-select the single next slot when in "Next slot" mode.
+  useEffect(() => {
+    if (nextOnly && slots.length > 0 && selectedSlotId !== slots[0].id) {
+      setSelectedSlotId(slots[0].id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nextOnly, slots[0]?.id]);
 
   const selectedSlot = useMemo(
     () => slots.find((s) => s.id === selectedSlotId) || null,
@@ -476,7 +488,7 @@ export function FindAppointmentBody({
         )}
 
         {/* Available appointments */}
-        <SectionLabel label="Available appointments" />
+        <SectionLabel label={nextOnly ? "Next available slot" : "Available appointments"} />
         <div className="bg-white rounded-[14px] overflow-hidden mb-3" style={cardStyle}>
           {isFetching && (
             <div className="px-3 py-8 text-center text-xs" style={{ color: "var(--d2-text-2)" }}>

@@ -22,6 +22,7 @@ const SECTIONS: NavSection[] = [
     { label: "Schedule", to: "/instructor/schedule", icon: Calendar, moduleId: "schedule" },
     { label: "Lesson History", to: "/instructor/diary", icon: NotebookPen },
     { label: "Find slot", to: "/instructor/find-appointment", icon: Search },
+    { label: "Next slot", to: "/instructor/find-appointment?next=1", icon: CalendarSearch },
   ]},
   { label: "Teaching", items: [
     { label: "Pupils", to: "/instructor/pupils", icon: Users, moduleId: "pupils" },

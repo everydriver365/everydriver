@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { DashboardShell } from "@/components/instructor/dashboardV2/DashboardShell";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
@@ -11,6 +11,8 @@ export default function InstructorFindAppointmentPage() {
   const { instructor, signOut } = useInstructorAuth();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const [searchParams] = useSearchParams();
+  const nextOnly = searchParams.get("next") === "1";
   const { total: notificationCount } = useCombinedNotificationCount(instructor?.id);
 
   const onSelect = (slot: any) => {
@@ -23,6 +25,7 @@ export default function InstructorFindAppointmentPage() {
       instructorIds={instructor?.id ? [instructor.id] : []}
       mode="instructor"
       variant="page"
+      nextOnly={nextOnly}
       onSelectSlot={onSelect}
       onCancel={() => navigate(-1)}
     />
