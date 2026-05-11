@@ -97,6 +97,11 @@ export function SEOHead({ title, description, noindex }: SEOHeadProps) {
       upsertLink("alternate", canonicalHref, "en-GB");
       upsertLink("alternate", canonicalHref, "x-default");
 
+      // Per-whitelabel sitemap (covers /courses + booking URLs per service area).
+      upsertSitemapLink(
+        `https://qyqeibovdhyohkfagujv.supabase.co/functions/v1/whitelabel-sitemap?host=${encodeURIComponent(wl!.host)}`,
+      );
+
       // LocalBusiness / DrivingSchool JSON-LD
       const ld: Record<string, unknown> = {
         "@context": "https://schema.org",
