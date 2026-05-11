@@ -116,7 +116,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
     <div
       style={{
-        fontSize: 14,
+        fontSize: 11,
         fontWeight: 700,
         color: MUTED,
         letterSpacing: "0.08em",
