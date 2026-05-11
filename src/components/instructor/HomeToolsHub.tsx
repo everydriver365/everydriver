@@ -78,7 +78,7 @@ CATEGORIES.forEach((c) => c.tileIds.forEach((id) => { CATEGORY_BY_TILE[id] = c; 
 
 // Tiles that should always render with the primary blue accent regardless of
 // their browse-category (keeps the pinned grid visually consistent).
-const BLUE_ACCENT_TILE_IDS = new Set<string>(["settings"]);
+const BLUE_ACCENT_TILE_IDS = new Set<string>();
 const BLUE_ACCENT_CATEGORY: Category = {
   id: "admin",
   label: "Admin",
