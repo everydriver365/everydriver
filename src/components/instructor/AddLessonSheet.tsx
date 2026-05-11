@@ -788,6 +788,7 @@ export function AddLessonSheet({
           const saveDisabled = loading || (!!conflictWarning && !overrideBuffer);
           const onSavePress = () => {
             if (saveDisabled) return;
+            setBookingError(null);
             setConfirmOpen(true);
           };
           const titleText = isDrivingTest ? 'Schedule test' : 'New lesson';
