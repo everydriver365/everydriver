@@ -6,6 +6,7 @@ import { V3Dashboard } from "@/components/instructor/homeLab/variants/V3Dashboar
 import { V4Timeline } from "@/components/instructor/homeLab/variants/V4Timeline";
 import { V5Editorial } from "@/components/instructor/homeLab/variants/V5Editorial";
 import { V6Command } from "@/components/instructor/homeLab/variants/V6Command";
+import { V7Cockpit } from "@/components/instructor/homeLab/variants/V7Cockpit";
 
 const VARIANTS = [
   { id: "v1", name: "Briefing", desc: "Hero brief + condensed timeline", Component: V1Briefing },
@@ -14,6 +15,7 @@ const VARIANTS = [
   { id: "v4", name: "Timeline", desc: "Vertical day with fillable gaps", Component: V4Timeline },
   { id: "v5", name: "Editorial", desc: "Magazine layout, serif headlines", Component: V5Editorial },
   { id: "v6", name: "Command", desc: "Search-first, dense info cards", Component: V6Command },
+  { id: "v7", name: "Cockpit", desc: "Up Next hero + 2×2 KPI mosaic", Component: V7Cockpit },
 ];
 
 export default function InstructorHomeDesignLab() {
