@@ -68,6 +68,12 @@ interface Subscription {
   features?: string[];
 }
 
+interface SubscriptionPlanData {
+  name?: string | null;
+  slug?: string | null;
+  features?: string[] | null;
+}
+
 interface InstructorAuthContextType {
   user: User | null;
   session: Session | null;
@@ -83,6 +89,30 @@ interface InstructorAuthContextType {
 }
 
 const InstructorAuthContext = createContext<InstructorAuthContextType | undefined>(undefined);
+
+const transientAuthMessages = [
+  'timeout',
+  'timed out',
+  'context deadline exceeded',
+  'upstream request timeout',
+  'database error querying schema',
+];
+
+function isTransientAuthError(error: Error | null): boolean {
+  if (!error) return false;
+  const authError = error as Error & { status?: number; code?: string };
+  const message = error.message.toLowerCase();
+
+  return (
+    authError.status === 500 ||
+    authError.status === 504 ||
+    authError.code === 'request_timeout' ||
+    authError.code === 'unexpected_failure' ||
+    transientAuthMessages.some((text) => message.includes(text))
+  );
+}
+
+const retryDelay = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms));
 
 export function InstructorAuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -160,7 +190,7 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
           .maybeSingle();
 
         if (subData) {
-          const planData = subData.subscription_plans as any;
+          const planData = subData.subscription_plans as SubscriptionPlanData | null;
           setSubscription({
             id: subData.id,
             plan_id: subData.plan_id,
@@ -258,11 +288,26 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
   };
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    return { error: error as Error | null };
+    let lastError: Error | null = null;
+
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (!error) return { error: null };
+
+      lastError = error as Error;
+      if (!isTransientAuthError(lastError) || attempt === 1) break;
+      await retryDelay(800);
+    }
+
+    if (lastError && isTransientAuthError(lastError)) {
+      return { error: new Error('Login service timed out. Please try again in a moment.') };
+    }
+
+    return { error: lastError };
   };
 
   const signOut = async () => {
