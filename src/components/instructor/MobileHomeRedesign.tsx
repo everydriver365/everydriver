@@ -1627,6 +1627,7 @@ export function MobileHomeRedesign({
   // Upgrade section (placeholders — to be wired later)
   const membershipLevel = "Starter" as "Free" | "Starter" | "Pro" | "Premium";
   const healthCover = "Basic" as "None" | "Basic" | "Full";
+  const incomeProtection = "None" as "None" | "Basic" | "Full";
 
   const upgradeRows: UpgradeRowSpec[] = [
     {
@@ -1638,9 +1639,10 @@ export function MobileHomeRedesign({
       tierLabel: membershipLevel,
       tierBg: "#FFF6E6",
       tierColor: "#B45309",
-      subtitle: "Unlock more features · lower fees",
-      upgradeBg: BLUE_TINT,
-      upgradeFg: BLUE,
+      subtitle: "Unlock features · lower fees",
+      upgradeBg: "#B45309",
+      upgradeFg: "#FFFFFF",
+      ctaLabel: "Upgrade",
       onClick: () => navigate("/instructor/subscription"),
     },
     {
@@ -1652,10 +1654,26 @@ export function MobileHomeRedesign({
       tierLabel: healthCover,
       tierBg: "#EEF3FF",
       tierColor: "#1A52A0",
-      subtitle: "Full income protection available",
-      upgradeBg: BLUE_TINT,
-      upgradeFg: BLUE,
+      subtitle: "Medical & accident cover",
+      upgradeBg: "#1A52A0",
+      upgradeFg: "#FFFFFF",
+      ctaLabel: "Upgrade",
       onClick: () => navigate("/instructor/health"),
+    },
+    {
+      key: "income-protection",
+      Icon: Shield,
+      iconBg: "#E8F5EE",
+      iconColor: "#1F7A45",
+      label: "Income protection",
+      tierLabel: incomeProtection,
+      tierBg: "#E8F5EE",
+      tierColor: "#1F7A45",
+      subtitle: "Cover if you can't teach",
+      upgradeBg: "#1F7A45",
+      upgradeFg: "#FFFFFF",
+      ctaLabel: "Add",
+      onClick: () => navigate("/instructor/income-protection"),
     },
   ];
 
