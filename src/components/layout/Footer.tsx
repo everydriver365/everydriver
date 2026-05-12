@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Facebook, Instagram, Twitter, Mail, Phone, MapPin } from "lucide-react";
+import { Facebook, Instagram, Twitter, Phone, MapPin } from "lucide-react";
 import { useRouteLogo } from "@/hooks/useRouteLogo";
 import { getWhitelabelConfig } from "@/lib/whitelabel";
 import { getAreasForHost, areaToSlug } from "@/lib/whitelabelAreas";
