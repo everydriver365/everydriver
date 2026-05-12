@@ -239,13 +239,15 @@ export default function InstructorSchedule() {
                   gap: 2,
                 }}
               >
-                {(["Calendar", "Schedule"] as const).map((view) => {
-                  const target: ViewMode = view === "Calendar" ? "month" : "list";
+                {([
+                  { label: "List", target: "list" as ViewMode, Icon: List },
+                  { label: "Week", target: "week" as ViewMode, Icon: Columns3 },
+                  { label: "Month", target: "month" as ViewMode, Icon: CalendarRange },
+                ]).map(({ label, target, Icon }) => {
                   const active = viewMode === target;
-                  const Icon = view === "Calendar" ? CalendarRange : List;
                   return (
                     <button
-                      key={view}
+                      key={label}
                       onClick={() => setViewMode(target)}
                       style={{
                         flex: 1,
@@ -260,7 +262,7 @@ export default function InstructorSchedule() {
                       }}
                     >
                       <Icon style={{ width: 12, height: 12, strokeWidth: 1.7 }} />
-                      {view}
+                      {label}
                     </button>
                   );
                 })}
