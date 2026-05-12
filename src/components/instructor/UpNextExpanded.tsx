@@ -517,7 +517,6 @@ export function UpNextExpanded({
   return (
     <div
       style={{
-        padding: "0 14px 14px",
         fontFamily: FONT,
         animation: "upnext-fade 200ms ease-out",
       }}
