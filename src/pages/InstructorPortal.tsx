@@ -87,6 +87,7 @@ export default function InstructorPortal() {
   
   const isMobile = useIsMobile();
   const { hoursThisWeek, monthEarnings, loading: statsLoading } = useInstructorLiveStats(instructorId);
+  const { layoutStyle } = useInstructorAppearance(instructorId);
 
   const handleVisibilityToggle = async (isVisible: boolean) => {
     if (!instructorId) return;
