@@ -1,42 +1,40 @@
-## What is actually happening
+## Goal
 
-The password login requests are reaching the backend, but recent auth logs show repeated `500/504` timeouts while the auth service tries to query the database. That means the user is not simply entering the wrong password, and the form itself is not the only problem.
+Redesign the visual presentation of the "Up Next" lesson tile on the instructor mobile home (`src/components/UpNextCard/UpNextCard.tsx`) to match the supplied spec. Logic, data, handlers, expand/collapse, AI divert, map component and navigation remain untouched.
 
-There is also a separate TestFlight issue where the Face ID path can leave the UI spinning or retrying in a way that makes manual login feel blocked.
+## Scope
 
-## Fix plan
+- **Only file edited**: `src/components/UpNextCard/UpNextCard.tsx`.
+- No changes to `NextLessonPreviewCard` (used when the next lesson is >4h away), `StaticMapPreview`, `FullscreenMapModal`, `NextUpTile`, hooks, or `InstructorMobileHome` wiring.
 
-1. Stabilise the background workload that is likely contributing to auth timeouts
-   - Reduce the `radius-poller` scheduled job from every 5 seconds to a safer interval, or temporarily disable it while login is restored.
-   - Keep the live tracking feature callable from the app, but stop the always-on backend job from hammering the project.
-   - Check recent cron activity after the change so auth has breathing room again.
+## Visual changes
 
-2. Make login resilient when the backend is slow
-   - Keep the existing retry for transient auth failures, but improve the message so it clearly says the login service is busy and asks the user to retry, instead of implying bad credentials.
-   - Avoid repeated automatic retries from Face ID when the backend is returning timeout errors.
+1. **Container** — keep current rounded card; tighten shadow/border tokens to match spec (`borderRadius 20`, shadow `rgba(26,82,160,0.11)` 16-blur, `border 0.5px rgba(26,82,160,0.09)`).
+2. **Section label** — keep existing "Up next" label (already matches).
+3. **Header band** — rebuild as **time-hero**:
+   - Background `#F0F5FF`, padding `14px 13px 12px`.
+   - Top row: large `38px / -2 letter-spacing / #1A52A0` start time on the left with red-dot + `countdown · dayLabel` line beneath; **avatar (40×40) on the right**, `justifyContent: space-between`.
+   - Pupil name (`15px / 700 / #1A1A1A`) **below** the time block, not beside it.
+   - Avatar keeps profile-image fallback to initials, keeps tap-to-open-profile handler.
+4. **Map strip** — reduce height from 72px → **60px**; keep `StaticMapPreview` (hasDestination, height=60), keep open-fullscreen tap. Restyle ETA pill (`top:7,left:8`, green dot, `ETA {n}m via {route}` — route only when available from `useTrafficETA`, otherwise just `ETA {n}m`; "Tap for ETA" fallback unchanged). Restyle Navigate pill (`bottom:5,right:8`, `rgba(26,82,160,0.88)`).
+5. **Details section** — padding `9px 12px 8px`. Lesson-type row shows `Standard lesson · {duration} · £{fee}` only **if a fee value is available**; otherwise fall back to current `Standard lesson · {duration}` (no new data fetching). Pickup row gains a small "Pick-up" sub-label (already present, restyled). AI divert pill styling per spec, render only when `aiDivertTime` truthy (unchanged behaviour).
+6. **Action buttons** — same three buttons (Call / Text / Go), restyled to spec sizes (`flex 1.3 / 1 / 1`, height ~32, `gap 5`, Call red `#CC2229` with shadow, Text/Go `#EEF3FF` on `#1A52A0`). Handlers untouched.
+7. **Expand handle** — restyle to slimmer `6px` vertical, `#FAFBFD` bg, `9px / #8E8E93` label, smaller chevron. State + `NextUpTile` expansion preserved.
 
-3. Fix the TestFlight Face ID behaviour
-   - Ensure Face ID never starts automatically on page load.
-   - Keep a hard timeout so the spinner cannot stay forever.
-   - If Face ID times out/fails, immediately return control to email/password login.
-   - Do not save or use Face ID credentials until email/password has successfully signed in once.
+## Hard constraints (locked)
 
-4. Verify the actual route the user is on
-   - Apply the login behaviour fix to `/instructor-app/login`, which is the current route.
-   - Check `/instructor/login` as a legacy route only if it is still used by TestFlight.
+- Do not touch `handleCall`, `handleText`, `handleNavigate`, `openProfile`, `openMap`, `setExpanded`, `useTrafficETA`, `StaticMapPreview`, `FullscreenMapModal`, `NextUpTile`, or `AnimatePresence` block.
+- Do not modify props interface or any caller (`InstructorMobileHome`, `SettingsV2HomeView`).
+- ETA pill and Navigate button and Go button all call the same existing `handleNavigate`.
+- `pupilAvatarColor` fallback to `#CC2229` already in place — keep.
+- No new packages, no new icons beyond those already imported.
 
-5. Validate
-   - Confirm direct database reads respond quickly after reducing the scheduled workload.
-   - Re-check auth logs for fresh `/token` timeout errors.
-   - Confirm the login screen no longer leaves a stuck Face ID spinner and manual sign-in is not blocked.
+## Out of scope
 
-## Technical details
+- The ">4h away" `NextLessonPreviewCard` variant is not redesigned (different component, different state).
+- Desktop instructor home, Settings V2 home view, school/admin views.
+- Adding a fee field if not already in props (will only render `· £{fee}` when present; otherwise omit).
 
-- Relevant frontend files:
-  - `src/pages/instructor-app/InstructorLogin.tsx`
-  - `src/pages/InstructorPortalLogin.tsx`
-  - `src/lib/biometricAuth.ts`
-  - `src/context/InstructorAuthContext.tsx`
-- Relevant backend job:
-  - Cron job `invoke-radius-poller-5s`, currently scheduled every `5 seconds`
-- The backend currently reports healthy overall, but auth logs still show database connection/timeouts during login attempts, so the fix should address both the noisy scheduled job and the stuck Face ID UI.
+## Files
+
+- `src/components/UpNextCard/UpNextCard.tsx` — restyle JSX from line ~117 onward (header band, map strip, details, expand handle). No prop or handler changes.
