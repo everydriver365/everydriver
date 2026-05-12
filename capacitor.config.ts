@@ -10,15 +10,15 @@ const config: CapacitorConfig = {
   },
   ios: {
     contentInset: 'always',
-    backgroundColor: '#EEF1F5',
+    backgroundColor: '#F4F7F6',
   },
   android: {
-    backgroundColor: '#EEF1F5',
+    backgroundColor: '#F4F7F6',
   },
   plugins: {
     StatusBar: {
       style: 'LIGHT',
-      backgroundColor: '#EEF1F5',
+      backgroundColor: '#F4F7F6',
       overlaysWebView: false,
     },
     NativeBiometric: {
