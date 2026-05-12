@@ -1027,8 +1027,9 @@ interface UpgradeRowSpec {
   tierBg: string;
   tierColor: string;
   subtitle: string;
-  upgradeBg: string;
-  upgradeFg?: string;
+  ctaLabel: string;
+  ctaBg: string;
+  ctaFg?: string;
   onClick: () => void;
 }
 
