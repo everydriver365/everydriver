@@ -533,83 +533,183 @@ export function UpNextExpanded({
           overflow: "hidden",
         }}
       >
-        {/* SECTION — Action pills (match Call/Text/Go style) — placed at very top, directly under Call/Text/Go */}
-        <div style={{ paddingTop: 12 }}>
-          <SectionLabel>Actions</SectionLabel>
-        </div>
+        {/* SECTION — Actions (compact redesign) */}
         {(() => {
-          const PILL_BG = "#EDF2FE";
-          const PILL_FG = "#3D55A1";
-          const ACTIVE_BG = BLUE;
-          const ACTIVE_FG = "#FFFFFF";
-          const pillBase = (opts: { active?: boolean; disabled?: boolean }) => ({
-            flex: 1,
-            minWidth: 0,
-            height: 38,
-            borderRadius: 12,
-            backgroundColor: opts.active ? ACTIVE_BG : PILL_BG,
-            color: opts.active ? ACTIVE_FG : PILL_FG,
+          const onMyWayActive = norm === "on_the_way" || norm === "en_route";
+          const lateActive = norm === "running_late" || norm === "late";
+          const arrivedActive = norm === "arrived";
+          const rowBtn = {
             border: "none",
             display: "inline-flex" as const,
             alignItems: "center" as const,
             justifyContent: "center" as const,
-            gap: 6,
-            fontSize: 12,
-            fontWeight: 600 as const,
-            cursor: opts.disabled ? "not-allowed" as const : "pointer" as const,
-            opacity: opts.disabled ? 0.5 : 1,
-            padding: "0 10px",
-          });
-          const onMyWayActive = norm === "on_the_way" || norm === "en_route";
-          const lateActive = norm === "running_late" || norm === "late";
-          const arrivedActive = norm === "arrived";
+            cursor: "pointer" as const,
+          };
           return (
-            <div style={{ display: "flex", flexDirection: "column", gap: 8, padding: "0 16px 8px" }}>
-              <div style={{ display: "flex", gap: 8 }}>
-                <button type="button" onClick={navigateMap} style={pillBase({})}>
-                  <NavIcon style={{ width: 13, height: 13 }} strokeWidth={1.9} /> Navigate
-                </button>
-                <button type="button" onClick={callPupil} disabled={!pupilPhone} style={pillBase({ disabled: !pupilPhone })}>
-                  <Phone style={{ width: 13, height: 13 }} strokeWidth={1.9} /> Call
-                </button>
-                <button type="button" onClick={messagePupil} style={pillBase({})}>
-                  <MessageSquare style={{ width: 13, height: 13 }} strokeWidth={1.9} /> Text
-                </button>
-              </div>
-              <div style={{ display: "flex", gap: 8 }}>
-                <button type="button" onClick={openPrep} style={pillBase({})}>
-                  <ClipboardList style={{ width: 13, height: 13 }} strokeWidth={1.9} /> Prep
-                </button>
-                <button
-                  type="button"
-                  onClick={onMyWay}
-                  disabled={busyAction === "on_the_way"}
-                  style={pillBase({ active: onMyWayActive, disabled: busyAction === "on_the_way" })}
-                >
-                  <Send style={{ width: 13, height: 13 }} strokeWidth={1.9} /> On My Way
-                </button>
-                <button
-                  type="button"
-                  onClick={runningLate}
-                  disabled={busyAction === "running_late"}
-                  style={pillBase({ active: lateActive, disabled: busyAction === "running_late" })}
-                >
-                  <Clock style={{ width: 13, height: 13 }} strokeWidth={1.9} /> Running Later
-                </button>
-              </div>
-              <button
-                type="button"
-                onClick={arrived}
-                disabled={busyAction === "arrived"}
+            <div style={{ margin: "12px 16px 0" }}>
+              <div
                 style={{
-                  ...pillBase({ active: true, disabled: busyAction === "arrived" }),
-                  width: "100%",
-                  fontWeight: 700,
+                  backgroundColor: "#FFF",
+                  borderRadius: 18,
+                  padding: 12,
+                  border: "0.5px solid rgba(26,82,160,0.08)",
                 }}
               >
-                <CheckCheck style={{ width: 14, height: 14 }} strokeWidth={2.2} />
-                {arrivedActive ? "Arrived ✓" : "Arrived"}
-              </button>
+                <div
+                  style={{
+                    fontSize: 10,
+                    fontWeight: 700,
+                    color: "#8E8E93",
+                    letterSpacing: 1.2,
+                    textTransform: "uppercase",
+                    marginBottom: 8,
+                  }}
+                >
+                  Actions
+                </div>
+
+                {/* Row 1 — Comms */}
+                <div style={{ display: "flex", gap: 6, marginBottom: 6 }}>
+                  <button
+                    type="button"
+                    onClick={callPupil}
+                    disabled={!pupilPhone}
+                    style={{
+                      ...rowBtn,
+                      flex: 1.4,
+                      backgroundColor: "#CC2229",
+                      borderRadius: 11,
+                      padding: "8px 6px",
+                      gap: 5,
+                      color: "#FFF",
+                      boxShadow: "0 2px 5px rgba(204,34,41,0.22)",
+                      opacity: !pupilPhone ? 0.5 : 1,
+                      cursor: !pupilPhone ? "not-allowed" : "pointer",
+                    }}
+                  >
+                    <Phone style={{ width: 11, height: 11 }} strokeWidth={1.8} />
+                    <span style={{ fontSize: 11, fontWeight: 700 }}>Call</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={messagePupil}
+                    style={{
+                      ...rowBtn,
+                      flex: 1,
+                      backgroundColor: "#EEF3FF",
+                      borderRadius: 11,
+                      padding: "8px 6px",
+                      gap: 4,
+                      color: "#1A52A0",
+                    }}
+                  >
+                    <MessageSquare style={{ width: 11, height: 11 }} strokeWidth={1.7} />
+                    <span style={{ fontSize: 11, fontWeight: 600 }}>Text</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={navigateMap}
+                    style={{
+                      ...rowBtn,
+                      flex: 1,
+                      backgroundColor: "#EEF3FF",
+                      borderRadius: 11,
+                      padding: "8px 6px",
+                      gap: 4,
+                      color: "#1A52A0",
+                    }}
+                  >
+                    <NavIcon style={{ width: 11, height: 11 }} strokeWidth={1.7} />
+                    <span style={{ fontSize: 11, fontWeight: 600 }}>Navigate</span>
+                  </button>
+                </div>
+
+                {/* Row 2 — Status */}
+                <div style={{ display: "flex", gap: 6, marginBottom: 8 }}>
+                  <button
+                    type="button"
+                    onClick={onMyWay}
+                    disabled={busyAction === "on_the_way"}
+                    style={{
+                      ...rowBtn,
+                      flex: 1.2,
+                      backgroundColor: "#E8F8ED",
+                      borderRadius: 11,
+                      padding: "7px 6px",
+                      gap: 4,
+                      color: "#1A7A3C",
+                      border: "0.5px solid rgba(26,122,60,0.15)",
+                      opacity: busyAction === "on_the_way" ? 0.5 : 1,
+                      cursor: busyAction === "on_the_way" ? "not-allowed" : "pointer",
+                      outline: onMyWayActive ? "1.5px solid #1A7A3C" : "none",
+                    }}
+                  >
+                    <Send style={{ width: 10, height: 10 }} strokeWidth={1.9} />
+                    <span style={{ fontSize: 10, fontWeight: 700 }}>On My Way</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={runningLate}
+                    disabled={busyAction === "running_late"}
+                    style={{
+                      ...rowBtn,
+                      flex: 1.2,
+                      backgroundColor: "#FFF6E6",
+                      borderRadius: 11,
+                      padding: "7px 6px",
+                      gap: 4,
+                      color: "#B45309",
+                      border: "0.5px solid rgba(180,83,9,0.15)",
+                      opacity: busyAction === "running_late" ? 0.5 : 1,
+                      cursor: busyAction === "running_late" ? "not-allowed" : "pointer",
+                      outline: lateActive ? "1.5px solid #B45309" : "none",
+                    }}
+                  >
+                    <Clock style={{ width: 10, height: 10 }} strokeWidth={1.9} />
+                    <span style={{ fontSize: 10, fontWeight: 700 }}>Running Late</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={openPrep}
+                    style={{
+                      ...rowBtn,
+                      flex: 1,
+                      backgroundColor: "#F2F4F8",
+                      borderRadius: 11,
+                      padding: "7px 6px",
+                      gap: 4,
+                      color: "#5B6B8A",
+                    }}
+                  >
+                    <ClipboardList style={{ width: 10, height: 10 }} strokeWidth={1.7} />
+                    <span style={{ fontSize: 10, fontWeight: 600 }}>Prep</span>
+                  </button>
+                </div>
+
+                {/* Arrived */}
+                <button
+                  type="button"
+                  onClick={arrived}
+                  disabled={busyAction === "arrived"}
+                  style={{
+                    ...rowBtn,
+                    width: "100%",
+                    backgroundColor: "#1A52A0",
+                    borderRadius: 11,
+                    padding: "10px 0",
+                    gap: 6,
+                    color: "#FFF",
+                    boxShadow: "0 2px 7px rgba(26,82,160,0.20)",
+                    opacity: busyAction === "arrived" ? 0.5 : 1,
+                    cursor: busyAction === "arrived" ? "not-allowed" : "pointer",
+                  }}
+                >
+                  <CheckCheck style={{ width: 12, height: 12 }} strokeWidth={2.2} />
+                  <span style={{ fontSize: 12, fontWeight: 700 }}>
+                    {arrivedActive ? "Arrived ✓" : "Arrived"}
+                  </span>
+                </button>
+              </div>
             </div>
           );
         })()}
