@@ -151,18 +151,17 @@ export function InstructorBottomNav({ voiceState = "idle", onVoiceTap }: Instruc
   return (
     <nav
       role="navigation"
-      className="fixed left-0 right-0 z-50 md:hidden"
+      className="fixed bottom-0 left-0 right-0 z-50 md:hidden"
       style={{
-        bottom: `calc(16px + env(safe-area-inset-bottom, 0px))`,
-        marginLeft: 16,
-        marginRight: 16,
+        paddingBottom: `env(safe-area-inset-bottom, 0px)`,
+        background: "#FFFFFF",
+        borderTop: "1px solid rgba(0,0,0,0.06)",
       }}
     >
       <div
         style={{
           background: "#FFFFFF",
-          borderRadius: 28,
-          padding: "8px 12px",
+          padding: "6px 12px 8px",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-around",
