@@ -565,7 +565,7 @@ function UpNextTile({
   const destQuery = pickupLocation || pickupPostcode || "";
 
   return (
-    <div style={{ padding: "0 14px 14px" }}>
+    <div>
       <div
         role="button"
         onClick={open}
