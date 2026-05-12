@@ -1,6 +1,6 @@
 import {
   AlertCircle, AlertTriangle, Calendar, CreditCard, MessageCircle, Bell,
-  ChevronRight, Clock, CheckCircle2, Inbox, Flame, Sparkles,
+  ChevronRight, Clock, CheckCircle2, Inbox, Flame, Sparkles, Zap, ArrowRight,
 } from "lucide-react";
 
 const MUTED = "#6B7280";
@@ -317,3 +317,263 @@ const seeAll: React.CSSProperties = {
   marginTop: 8, background: "transparent", border: "none",
   padding: 0, fontSize: 12.5, fontWeight: 600, color: "#1A52A0", cursor: "pointer",
 };
+
+/* ───────────────────────────── A8 — Swipe Carousel ───────────────────────────── */
+export function A8Carousel() {
+  return (
+    <div>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8, padding: "0 4px" }}>
+        <span style={{ fontSize: 11, fontWeight: 700, color: MUTED, textTransform: "uppercase", letterSpacing: "0.08em" }}>
+          Needs attention
+        </span>
+        <span style={{ fontSize: 11, color: MUTED, fontWeight: 600 }}>1 / {SAMPLE.length}</span>
+      </div>
+      <div style={{ display: "flex", gap: 10, overflowX: "auto", paddingBottom: 4, scrollSnapType: "x mandatory" }}>
+        {SAMPLE.map((r) => {
+          const Icon = r.icon;
+          const isUrg = r.group === "urgent";
+          return (
+            <div key={r.key} style={{
+              ...bento, padding: 14, minWidth: 240, flexShrink: 0, scrollSnapAlign: "start",
+              borderTop: `3px solid ${r.tint}`, borderTopLeftRadius: 16, borderTopRightRadius: 16,
+            }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+                <div style={{
+                  width: 32, height: 32, borderRadius: 9,
+                  background: isUrg ? "rgba(204,34,41,0.08)" : "rgba(180,83,9,0.08)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                }}>
+                  <Icon size={16} color={r.tint} />
+                </div>
+                <span style={{
+                  fontSize: 10.5, fontWeight: 700, color: r.tint,
+                  background: isUrg ? "rgba(204,34,41,0.08)" : "rgba(180,83,9,0.08)",
+                  padding: "3px 7px", borderRadius: 999, textTransform: "uppercase", letterSpacing: "0.06em",
+                }}>{isUrg ? "Urgent" : "To do"}</span>
+              </div>
+              <div style={{ fontSize: 14.5, fontWeight: 700, color: "#1A1A1A", marginBottom: 2 }}>{r.title}</div>
+              <div style={{ fontSize: 12, color: MUTED, marginBottom: 12 }}>{r.subtitle}</div>
+              <button style={{
+                width: "100%", background: r.tint, color: "#FFF", border: "none",
+                borderRadius: 10, padding: "8px 12px", fontSize: 12.5, fontWeight: 600,
+                display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 4,
+              }}>Resolve <ArrowRight size={13} /></button>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ───────────────────────────── A9 — Score Ring + List ───────────────────────────── */
+export function A9ScoreRing() {
+  const total = SAMPLE.reduce((n, r) => n + r.count, 0);
+  const urgent = SAMPLE.filter((r) => r.group === "urgent").reduce((n, r) => n + r.count, 0);
+  const ratio = urgent / total;
+  const r = 28, c = 2 * Math.PI * r;
+  return (
+    <div style={{ ...bento, padding: 14 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 12 }}>
+        <div style={{ position: "relative", width: 72, height: 72, flexShrink: 0 }}>
+          <svg width={72} height={72} viewBox="0 0 72 72">
+            <circle cx={36} cy={36} r={r} stroke="#F1F5F9" strokeWidth={6} fill="none" />
+            <circle cx={36} cy={36} r={r} stroke="#CC2229" strokeWidth={6} fill="none"
+              strokeDasharray={c} strokeDashoffset={c * (1 - ratio)} strokeLinecap="round"
+              transform="rotate(-90 36 36)" />
+          </svg>
+          <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+            <div style={{ fontSize: 20, fontWeight: 700, color: "#0F172A", lineHeight: 1 }}>{total}</div>
+            <div style={{ fontSize: 9, color: MUTED, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em" }}>open</div>
+          </div>
+        </div>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 13.5, fontWeight: 700, color: "#1A1A1A" }}>Needs attention</div>
+          <div style={{ fontSize: 12, color: MUTED, marginTop: 2 }}>
+            <span style={{ color: "#CC2229", fontWeight: 600 }}>{urgent} urgent</span> · {total - urgent} to do
+          </div>
+          <button style={{
+            marginTop: 8, fontSize: 12, fontWeight: 600, color: "#1A52A0",
+            background: "transparent", border: "none", padding: 0, cursor: "pointer",
+            display: "inline-flex", alignItems: "center", gap: 3,
+          }}>Open queue <ChevronRight size={12} /></button>
+        </div>
+      </div>
+      <div style={{ borderTop: `0.5px solid ${BORDER}`, paddingTop: 8 }}>
+        {SAMPLE.slice(0, 3).map((row, i) => <Row key={row.key} row={row} divider={i > 0} compact />)}
+      </div>
+    </div>
+  );
+}
+
+/* ───────────────────────────── A10 — AI Concierge Brief ───────────────────────────── */
+export function A10AIBrief() {
+  return (
+    <div style={{ ...bento, padding: 0, overflow: "hidden" }}>
+      <div style={{
+        background: "linear-gradient(135deg, #1E293B 0%, #0F172A 100%)",
+        padding: "12px 14px", color: "#FFF",
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
+          <Sparkles size={13} color="#FCD34D" />
+          <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", opacity: 0.8 }}>AI brief</span>
+        </div>
+        <div style={{ fontSize: 13.5, lineHeight: 1.4 }}>
+          You have <span style={{ color: "#FCA5A5", fontWeight: 700 }}>2 urgent</span> items
+          and <span style={{ color: "#FCD34D", fontWeight: 700 }}>9 to-dos</span>. Start with overdue payments —
+          £312 owed by 3 pupils.
+        </div>
+      </div>
+      <div style={{ padding: 10, display: "flex", flexDirection: "column", gap: 6 }}>
+        {[
+          { label: "Chase £312 in payments", icon: CreditCard, tint: "#CC2229" },
+          { label: "Reply to 6 unread messages", icon: MessageCircle, tint: "#B45309" },
+          { label: "Confirm 2 booking requests", icon: Calendar, tint: "#B45309" },
+        ].map((s) => {
+          const Icon = s.icon;
+          return (
+            <button key={s.label} style={{
+              display: "flex", alignItems: "center", gap: 9, width: "100%", textAlign: "left",
+              background: "#F8FAFC", border: `0.5px solid ${BORDER}`, borderRadius: 10,
+              padding: "9px 10px", cursor: "pointer",
+            }}>
+              <Icon size={14} color={s.tint} />
+              <span style={{ flex: 1, fontSize: 12.5, fontWeight: 600, color: "#1A1A1A" }}>{s.label}</span>
+              <ChevronRight size={13} color="#94A3B8" />
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ───────────────────────────── A11 — Tabbed (Urgent / To-do) ───────────────────────────── */
+export function A11Tabbed() {
+  const urgent = SAMPLE.filter((r) => r.group === "urgent");
+  return (
+    <div style={{ ...bento, padding: 0, overflow: "hidden" }}>
+      <div style={{ display: "flex", padding: "10px 14px 0", gap: 14, borderBottom: `0.5px solid ${BORDER}` }}>
+        <TabPill active label="Urgent" count={urgent.reduce((n,r)=>n+r.count,0)} tint="#CC2229" />
+        <TabPill label="To do" count={SAMPLE.filter(r=>r.group==="todo").reduce((n,r)=>n+r.count,0)} tint="#B45309" />
+        <TabPill label="Done" count={12} tint="#16A34A" />
+      </div>
+      <div style={{ padding: "6px 14px 10px" }}>
+        {urgent.map((row, i) => <Row key={row.key} row={row} divider={i > 0} />)}
+        <button style={{
+          marginTop: 6, width: "100%", background: "#CC2229", color: "#FFF", border: "none",
+          borderRadius: 10, padding: "9px 12px", fontSize: 13, fontWeight: 600,
+        }}>Resolve all urgent</button>
+      </div>
+    </div>
+  );
+}
+
+function TabPill({ active, label, count, tint }: { active?: boolean; label: string; count: number; tint: string }) {
+  return (
+    <button style={{
+      background: "transparent", border: "none", padding: "6px 0 10px",
+      borderBottom: active ? `2px solid ${tint}` : "2px solid transparent",
+      display: "inline-flex", alignItems: "center", gap: 6, cursor: "pointer",
+    }}>
+      <span style={{ fontSize: 13, fontWeight: 700, color: active ? "#1A1A1A" : MUTED }}>{label}</span>
+      <span style={{
+        background: active ? tint : "#F1F5F9", color: active ? "#FFF" : MUTED,
+        fontSize: 10.5, fontWeight: 700, padding: "1px 6px", borderRadius: 999, minWidth: 16, textAlign: "center",
+      }}>{count}</span>
+    </button>
+  );
+}
+
+/* ───────────────────────────── A12 — Single Focus + Snooze ───────────────────────────── */
+export function A12FocusSnooze() {
+  const top = SAMPLE[0];
+  const Icon = top.icon;
+  return (
+    <div style={{ ...bento, padding: 14 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+          <span style={{ width: 6, height: 6, borderRadius: 999, background: "#CC2229" }} />
+          <span style={{ fontSize: 11, fontWeight: 700, color: MUTED, textTransform: "uppercase", letterSpacing: "0.08em" }}>
+            Focus on this first
+          </span>
+        </span>
+        <span style={{ fontSize: 11, color: MUTED, fontWeight: 600 }}>+{SAMPLE.length - 1} more</span>
+      </div>
+      <div style={{
+        display: "flex", alignItems: "center", gap: 12,
+        padding: "12px", background: "rgba(204,34,41,0.04)",
+        borderRadius: 12, border: "0.5px solid rgba(204,34,41,0.14)",
+      }}>
+        <div style={{
+          width: 40, height: 40, borderRadius: 10, background: "#CC2229",
+          display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+        }}>
+          <Icon size={18} color="#FFF" />
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 14, fontWeight: 700, color: "#1A1A1A" }}>{top.title}</div>
+          <div style={{ fontSize: 12, color: MUTED }}>{top.subtitle}</div>
+        </div>
+      </div>
+      <div style={{ display: "flex", gap: 6, marginTop: 10 }}>
+        <button style={{
+          flex: 1, background: "#0F172A", color: "#FFF", border: "none",
+          borderRadius: 10, padding: "9px 12px", fontSize: 13, fontWeight: 600,
+        }}>Resolve</button>
+        <button style={{
+          background: "#FFF", color: "#1A1A1A", border: `0.5px solid ${BORDER}`,
+          borderRadius: 10, padding: "9px 12px", fontSize: 13, fontWeight: 600,
+          display: "inline-flex", alignItems: "center", gap: 4,
+        }}><Clock size={13} />Snooze</button>
+      </div>
+    </div>
+  );
+}
+
+/* ───────────────────────────── A13 — Status Bar Ticker ───────────────────────────── */
+export function A13Ticker() {
+  const urgent = SAMPLE.filter(r=>r.group==="urgent").reduce((n,r)=>n+r.count,0);
+  const todo = SAMPLE.filter(r=>r.group==="todo").reduce((n,r)=>n+r.count,0);
+  return (
+    <div>
+      <div style={{
+        ...bento, padding: "10px 12px",
+        display: "flex", alignItems: "center", gap: 10,
+        background: "linear-gradient(180deg, #FFF 0%, #FAFBFC 100%)",
+      }}>
+        <div style={{
+          width: 32, height: 32, borderRadius: 999,
+          background: "rgba(204,34,41,0.08)",
+          display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+        }}>
+          <Zap size={15} color="#CC2229" />
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 13.5, fontWeight: 700, color: "#1A1A1A" }}>
+            {urgent + todo} need attention
+          </div>
+          <div style={{ display: "flex", gap: 8, marginTop: 2, fontSize: 11.5, color: MUTED, fontWeight: 600 }}>
+            <span><span style={{ color: "#CC2229" }}>●</span> {urgent} urgent</span>
+            <span><span style={{ color: "#B45309" }}>●</span> {todo} to do</span>
+          </div>
+        </div>
+        <button style={{
+          background: "#0F172A", color: "#FFF", border: "none",
+          borderRadius: 999, padding: "6px 12px", fontSize: 12, fontWeight: 600,
+          display: "inline-flex", alignItems: "center", gap: 3, flexShrink: 0,
+        }}>Open <ChevronRight size={12} /></button>
+      </div>
+      <div style={{ display: "flex", gap: 4, marginTop: 8, padding: "0 4px", overflowX: "auto" }}>
+        {SAMPLE.map((r) => (
+          <span key={r.key} style={{
+            fontSize: 11, fontWeight: 600, color: r.tint, flexShrink: 0,
+            background: r.group === "urgent" ? "rgba(204,34,41,0.06)" : "rgba(180,83,9,0.06)",
+            padding: "4px 8px", borderRadius: 999,
+            border: `0.5px solid ${r.group === "urgent" ? "rgba(204,34,41,0.14)" : "rgba(180,83,9,0.12)"}`,
+          }}>{r.title} · {r.count}</span>
+        ))}
+      </div>
+    </div>
+  );
+}
