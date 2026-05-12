@@ -116,6 +116,54 @@ export function NotificationsPage({ instructorId }: { instructorId: string }) {
           })}
         </div>
       </section>
+
+      <section className="sv2-card">
+        <div style={{ marginBottom: 12 }}>
+          <div className="sv2-section-title">Sound</div>
+          <div className="sv2-section-sub">A subtle chime when a new message arrives.</div>
+        </div>
+        <div className="sv2-row">
+          <span className="flex-1 min-w-0">
+            <span className="sv2-row-name block">Play sound for new messages</span>
+            <span className="sv2-row-meta block">Respects quiet hours and category mutes.</span>
+          </span>
+          <span style={{ fontSize: 12, color: "var(--color-text-tertiary)" }}>
+            {draft.message_sound_enabled ? "On" : "Off"}
+          </span>
+          <span
+            className={`sv2-toggle ${draft.message_sound_enabled ? "on" : ""}`}
+            role="switch"
+            aria-checked={draft.message_sound_enabled}
+            onClick={() => setDraft(p => ({ ...p, message_sound_enabled: !p.message_sound_enabled }))}
+          />
+        </div>
+        <div className="sv2-grid-2" style={{ marginTop: 8 }}>
+          <div>
+            <label className="sv2-label">Sound</label>
+            <select
+              className="sv2-select"
+              value={draft.message_sound_choice}
+              disabled={!draft.message_sound_enabled}
+              onChange={e => setDraft(p => ({ ...p, message_sound_choice: e.target.value as MessageSoundChoice }))}
+            >
+              <option value="chime">Chime</option>
+              <option value="ding">Ding</option>
+              <option value="pop">Pop</option>
+              <option value="none">None</option>
+            </select>
+          </div>
+          <div style={{ display: "flex", alignItems: "flex-end" }}>
+            <button
+              type="button"
+              className="sv2-btn"
+              disabled={!draft.message_sound_enabled || draft.message_sound_choice === "none"}
+              onClick={() => playNotificationSound(draft.message_sound_choice)}
+            >
+              Preview
+            </button>
+          </div>
+        </div>
+      </section>
     </>
   );
 }
