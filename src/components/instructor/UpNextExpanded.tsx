@@ -564,60 +564,81 @@ export function UpNextExpanded({
 
         <Divider />
 
-        {/* SECTION — Action grid (moved to top) */}
-        <SectionLabel>Actions</SectionLabel>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr 1fr",
-            gap: 8,
-            padding: "0 16px 8px",
-          }}
-        >
-          <ActionTile Icon={NavIcon} label="Navigate" onClick={navigateMap} />
-          <ActionTile Icon={Phone} label="Call" onClick={callPupil} disabled={!pupilPhone} />
-          <ActionTile Icon={MessageSquare} label="Text" onClick={messagePupil} />
-          <ActionTile Icon={ClipboardList} label="Prep" onClick={openPrep} />
-          <ActionTile
-            Icon={Send}
-            label="On My Way"
-            onClick={onMyWay}
-            active={norm === "on_the_way" || norm === "en_route"}
-            disabled={busyAction === "on_the_way"}
-          />
-          <ActionTile
-            Icon={Clock}
-            label="Running Later"
-            onClick={runningLate}
-            active={norm === "running_late" || norm === "late"}
-            disabled={busyAction === "running_late"}
-          />
-        </div>
-        <button
-          type="button"
-          onClick={arrived}
-          disabled={busyAction === "arrived"}
-          style={{
-            width: "calc(100% - 32px)",
-            margin: "0 16px 4px",
-            height: 44,
-            background: BLUE,
-            color: "#FFFFFF",
-            border: "none",
-            borderRadius: 12,
-            fontWeight: 700,
-            fontSize: 14,
+        {/* SECTION — Action buttons (pill style matching Call/Text/Go) */}
+        {(() => {
+          const pill = (extra?: React.CSSProperties): React.CSSProperties => ({
+            flex: 1,
+            height: 36,
+            borderRadius: 10,
+            background: BLUE_TINT,
+            color: BLUE,
+            border: `0.5px solid ${BORDER}`,
+            fontSize: 13,
+            fontWeight: 600,
             display: "inline-flex",
             alignItems: "center",
             justifyContent: "center",
-            gap: 8,
+            gap: 5,
             cursor: "pointer",
-            opacity: busyAction === "arrived" ? 0.6 : 1,
-          }}
-        >
-          <CheckCheck size={16} strokeWidth={2.4} />
-          {norm === "arrived" ? "Arrived ✓" : "Arrived"}
-        </button>
+            ...extra,
+          });
+          const activeStyle: React.CSSProperties = { background: BLUE, color: "#FFFFFF", border: "none" };
+          return (
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, padding: "0 16px 8px" }}>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button type="button" onClick={openPrep} style={pill()}>
+                  <ClipboardList size={13} strokeWidth={2.2} /> Prep
+                </button>
+                <button
+                  type="button"
+                  onClick={onMyWay}
+                  disabled={busyAction === "on_the_way"}
+                  style={pill({
+                    ...(norm === "on_the_way" || norm === "en_route" ? activeStyle : {}),
+                    opacity: busyAction === "on_the_way" ? 0.6 : 1,
+                  })}
+                >
+                  <Send size={13} strokeWidth={2.2} /> On My Way
+                </button>
+                <button
+                  type="button"
+                  onClick={runningLate}
+                  disabled={busyAction === "running_late"}
+                  style={pill({
+                    ...(norm === "running_late" || norm === "late" ? activeStyle : {}),
+                    opacity: busyAction === "running_late" ? 0.6 : 1,
+                  })}
+                >
+                  <Clock size={13} strokeWidth={2.2} /> Later
+                </button>
+              </div>
+              <button
+                type="button"
+                onClick={arrived}
+                disabled={busyAction === "arrived"}
+                style={{
+                  width: "100%",
+                  height: 36,
+                  background: BLUE,
+                  color: "#FFFFFF",
+                  border: "none",
+                  borderRadius: 10,
+                  fontWeight: 700,
+                  fontSize: 13,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 6,
+                  cursor: "pointer",
+                  opacity: busyAction === "arrived" ? 0.6 : 1,
+                }}
+              >
+                <CheckCheck size={14} strokeWidth={2.4} />
+                {norm === "arrived" ? "Arrived ✓" : "Arrived"}
+              </button>
+            </div>
+          );
+        })()}
 
         <Divider />
 
