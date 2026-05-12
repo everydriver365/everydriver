@@ -2223,7 +2223,7 @@ export function MobileHomeRedesign({
             <BentoMini count={unread} label="Msgs" fg={BLUE} onClick={() => navigate("/instructor/messages")} />
             <BentoMini count={swapCount} label="Swaps" fg="#166534" onClick={() => navigate("/instructor/test-requests")} />
             <BentoMini count={missedCallsCount} label="Calls" fg="#CC2229" onClick={() => navigate("/instructor/calls")} />
-            <BentoMini count={enquiriesCount} label="Enq's" fg="#CC2229" onClick={() => navigate("/instructor/enquiries")} />
+            <BentoMini count={enquiriesCount} label="Enquiries" fg="#CC2229" onClick={() => navigate("/instructor/enquiries")} />
           </div>
         </div>
         <div
