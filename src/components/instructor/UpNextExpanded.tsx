@@ -572,24 +572,27 @@ export function UpNextExpanded({
                 <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
                   <button
                     type="button"
-                    onClick={callPupil}
+                    onClick={() => {
+                      sendSMS(`Hi ${firstName}, I'm outside whenever you're ready 👋`);
+                      if (pupilPhone) toast.success("Text sent — pupil notified you're here");
+                    }}
                     disabled={!pupilPhone}
                     style={{
                       ...rowBtn,
                       flex: 1.4,
                       height: 38,
-                      backgroundColor: "#CC2229",
+                      backgroundColor: "#E8F8ED",
                       borderRadius: 12,
                       padding: "0 6px", minWidth: 0,
                       gap: 4,
-                      color: "#FFF",
-                      boxShadow: "0 2px 5px rgba(204,34,41,0.22)",
+                      color: "#1A7A3C",
+                      border: "0.5px solid rgba(26,122,60,0.15)",
                       opacity: !pupilPhone ? 0.5 : 1,
                       cursor: !pupilPhone ? "not-allowed" : "pointer",
                     }}
                   >
-                    <Phone style={{ width: 13, height: 13 }} strokeWidth={2} />
-                    <span style={{ fontSize: 12, fontWeight: 700 }}>Call</span>
+                    <MapPin style={{ width: 13, height: 13 }} strokeWidth={2} />
+                    <span style={{ fontSize: 12, fontWeight: 700 }}>Here</span>
                   </button>
                   <button
                     type="button"
