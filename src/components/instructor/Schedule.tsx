@@ -1332,12 +1332,6 @@ export default function Schedule({
       />
       {selectedDay && (
         <>
-          <DaySummaryCard
-            day={selectedDay}
-            standardRate={settings.standardRate}
-            showRevenuePotential={showRevenuePotential}
-            onFillGaps={() => openGapFiller()}
-          />
           <LessonList
             day={selectedDay}
             eolSet={eolSet}
