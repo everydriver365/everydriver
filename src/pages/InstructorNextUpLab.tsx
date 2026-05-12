@@ -1364,6 +1364,12 @@ const VARIANTS = [
   { id: "v22", name: "Live Mint", desc: "Fresh mint→sky gradient, calm and modern.", Component: V22LiveMint },
   { id: "v23", name: "Live + Map", desc: "Live Card with a slim static map strip on top.", Component: V23LivePlusMap },
   { id: "v24", name: "Live Twilight", desc: "Deep blue→violet ambient with a countdown rail.", Component: V24LiveTwilight },
+  { id: "v25", name: "Live Slate", desc: "Neutral slate-blue ambient — premium and quiet.", Component: V25LiveSlate },
+  { id: "v26", name: "Live Brand", desc: "Instructor primary blue as the ambient wash.", Component: V26LiveBrand },
+  { id: "v27", name: "Live Rose", desc: "Soft rose/peach ambient, warm without being loud.", Component: V27LiveRose },
+  { id: "v28", name: "Live Vertical", desc: "Live Card with stacked metric rows instead of a grid.", Component: V28LiveVertical },
+  { id: "v29", name: "Live Forecast", desc: "Weather woven into the gradient and header.", Component: V29LiveForecast },
+  { id: "v30", name: "Live Pro", desc: "Avatar hero, address strip with ETA pill, dual CTAs.", Component: V30LivePro },
 ];
 
 export default function InstructorNextUpLab() {
