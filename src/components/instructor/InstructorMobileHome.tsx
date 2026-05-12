@@ -675,7 +675,10 @@ export function InstructorMobileHome({
           <div className="px-4">
             <EyebrowLabel>Insights</EyebrowLabel>
           </div>
-          <InsightTilesGrid instructorId={instructorId} gapCount={gapSuggestions?.length || 0} />
+          <InsightTilesGrid
+            instructorId={instructorId}
+            gapCount={(gapSuggestions || []).reduce((sum, day) => sum + (day.slots?.length || 0), 0)}
+          />
         </div>
 
 
