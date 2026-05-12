@@ -20,6 +20,8 @@ import { GapsFiller } from "@/components/instructor/GapsFiller";
 import { UpcomingTestsView } from "@/components/instructor/UpcomingTestsView";
 import { InstructorMobileHome } from "@/components/instructor/InstructorMobileHome";
 import { MobileHomeRedesign } from "@/components/instructor/MobileHomeRedesign";
+import { SettingsV2HomeView } from "@/components/instructor/SettingsV2HomeView";
+import { useInstructorAppearance } from "@/hooks/useInstructorAppearance";
 
 import { MileageTaxSavingsCard } from "@/components/instructor/dashboard/MileageTaxSavingsCard";
 import { MessagesWidget } from "@/components/instructor/dashboard/MessagesWidget";
