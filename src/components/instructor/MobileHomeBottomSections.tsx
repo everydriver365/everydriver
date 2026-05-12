@@ -797,7 +797,7 @@ function QuickAccessSection({ instructorId }: { instructorId: string }) {
     return [...pinned, ...rest];
   }, [pinnedIds]);
 
-  const PER_PAGE = 4;
+  const PER_PAGE = 8;
   const pages: typeof tiles[] = useMemo(() => {
     if (tiles.length === 0) return [];
     const out: typeof tiles[] = [];
@@ -967,80 +967,76 @@ function QuickAccessSection({ instructorId }: { instructorId: string }) {
             >
               <div
                 style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(2, 1fr)",
-                  gap: 9,
+                  background: "#FFF",
+                  borderRadius: 16,
+                  border: `0.5px solid ${BORDER}`,
+                  boxShadow: "0 1px 2px rgba(15,23,42,0.04)",
+                  padding: "14px 12px",
                 }}
               >
-                {pageTiles.map((tile, tileIdx) => {
-                  const Icon = tile.icon;
-                  const tonePair = TONE_PALETTE[tile.tone] ?? TONE_PALETTE.blue;
-                  const badge = badgeFor(tile.id);
-                  const subtitle = subtitleFor(tile.id);
-                  const isPrimary = false;
-                  return (
-                    <button
-                      key={tile.id}
-                      type="button"
-                      onClick={() => navigate(tile.route)}
-                      style={{
-                        position: "relative",
-                        background: isPrimary ? "#6B93C0" : "#FFF",
-                        borderRadius: 16,
-                        padding: "14px 13px",
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "flex-start",
-                        textAlign: "left",
-                        border: isPrimary ? "none" : `0.5px solid ${BORDER}`,
-                        boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
-                        cursor: "pointer",
-                      }}
-                    >
-                      {badge > 0 && <BadgeDot count={badge} />}
-                      <div
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(4, 1fr)",
+                    rowGap: 14,
+                    columnGap: 6,
+                  }}
+                >
+                  {pageTiles.map((tile) => {
+                    const Icon = tile.icon;
+                    const tonePair = TONE_PALETTE[tile.tone] ?? TONE_PALETTE.blue;
+                    const badge = badgeFor(tile.id);
+                    return (
+                      <button
+                        key={tile.id}
+                        type="button"
+                        onClick={() => navigate(tile.route)}
                         style={{
-                          width: 32,
-                          height: 32,
-                          borderRadius: 9,
-                          marginBottom: 10,
-                          background: isPrimary ? "rgba(255,255,255,0.18)" : tonePair.bg,
+                          position: "relative",
+                          background: "transparent",
+                          border: 0,
+                          padding: 0,
                           display: "flex",
+                          flexDirection: "column",
                           alignItems: "center",
-                          justifyContent: "center",
+                          gap: 6,
+                          cursor: "pointer",
                         }}
                       >
-                        <Icon
-                          size={14}
-                          color={isPrimary ? "#FFF" : tonePair.fg}
-                          strokeWidth={1.7}
-                        />
-                      </div>
-                      <span
-                        style={{
-                          fontSize: 12,
-                          fontWeight: 700,
-                          lineHeight: "15px",
-                          color: isPrimary ? "#FFF" : TEXT,
-                        }}
-                      >
-                        {tile.title}
-                      </span>
-                      {subtitle && (
-                        <span
+                        <div
                           style={{
-                            fontSize: 9,
-                            marginTop: 2,
-                            color: isPrimary ? "#FFF" : MUTED,
-                            opacity: isPrimary ? 0.8 : 1,
+                            position: "relative",
+                            width: 44,
+                            height: 44,
+                            borderRadius: 12,
+                            background: tonePair.bg,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
                           }}
                         >
-                          {subtitle}
+                          <Icon size={20} color={tonePair.fg} strokeWidth={1.9} />
+                          {badge > 0 && <BadgeDot count={badge} />}
+                        </div>
+                        <span
+                          style={{
+                            fontSize: 10.5,
+                            fontWeight: 600,
+                            lineHeight: 1.2,
+                            color: TEXT,
+                            textAlign: "center",
+                            maxWidth: 68,
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          {tile.title}
                         </span>
-                      )}
-                    </button>
-                  );
-                })}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           ))}
