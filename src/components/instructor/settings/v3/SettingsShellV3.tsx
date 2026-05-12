@@ -147,7 +147,7 @@ export function SettingsShellV3({ instructorId: _ }: Props) {
 
         {/* Detail pane */}
         <main className="flex-1 min-w-0">
-          <div className="max-w-[880px] mx-auto px-6 py-6 pb-24">
+          <div className="max-w-[880px] mx-auto px-0 sm:px-6 py-6 pb-24">
             <nav aria-label="Breadcrumb" className="mb-3">
               <ol className="flex items-center flex-wrap gap-1 text-[13px] text-muted-foreground">
                 <li>

@@ -125,7 +125,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
         color: MUTED,
         letterSpacing: "0.08em",
         textTransform: "uppercase",
-        padding: "0 18px 8px",
+        padding: "0 16px 8px",
       }}
     >
       {children}
@@ -158,7 +158,7 @@ function GreetingBlock({
   const divertBg = divertActive ? "#E8F8ED" : "#FFE9EA";
 
   return (
-    <div style={{ padding: "20px 18px 12px" }}>
+    <div style={{ padding: "20px 16px 12px" }}>
       <div
         style={{
           display: "flex",
@@ -2053,7 +2053,7 @@ export function MobileHomeRedesign({
         fontFamily: FONT,
         WebkitFontSmoothing: "antialiased",
         color: CHARCOAL,
-        padding: "10px 14px 100px",
+        padding: "10px 16px 100px",
       }}
     >
       {/* Header row */}
