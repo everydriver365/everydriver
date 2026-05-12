@@ -1325,7 +1325,7 @@ export function UpNextExpanded({
                   color: "#CC2229",
                 }}
               >
-                <XCircle size={11} strokeWidth={1.8} />
+                
                 <span style={{ fontSize: 11, fontWeight: 600 }}>Cancel lesson</span>
               </button>
             </div>
