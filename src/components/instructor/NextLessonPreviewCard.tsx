@@ -345,6 +345,14 @@ export function NextLessonPreviewCard(props: NextLessonPreviewCardProps) {
     navigate(`/instructor/pupils/${pupilId}?lesson=${lessonId}`);
   };
 
+  const distanceMi = useMemo(() => {
+    if (!origin || !destCoords) return null;
+    const meters = haversine(origin, destCoords);
+    const mi = meters * 0.000621371;
+    if (mi < 0.1) return null;
+    return mi < 10 ? mi.toFixed(1) : Math.round(mi).toString();
+  }, [origin, destCoords]);
+
   const lessonsCount = history.data?.filter((h) => h.status === "completed").length ?? null;
   const lastLessonDate = history.data?.find((h) => h.status === "completed")?.lesson_date ?? null;
   const lastLessonNote = history.data?.find((h) => h.notes && h.status === "completed")?.notes ?? null;
@@ -391,67 +399,8 @@ export function NextLessonPreviewCard(props: NextLessonPreviewCardProps) {
           boxShadow: "0 2px 16px rgba(26,82,160,0.11)",
           border: "0.5px solid rgba(26,82,160,0.09)",
         }}>
-          {/* Header band — TIME HERO */}
-          <div style={{
-            backgroundColor: "#F0F5FF",
-            padding: "14px 13px 12px",
-            borderBottom: "0.5px solid rgba(26,82,160,0.07)",
-          }}>
-            <div style={{
-              display: "flex", alignItems: "flex-start", justifyContent: "space-between",
-              marginBottom: 8, gap: 8,
-            }}>
-              {/* Time block — left */}
-              <div style={{ minWidth: 0 }}>
-                <div style={{
-                  fontSize: 38, fontWeight: 700, color: "#1A52A0",
-                  letterSpacing: -2, lineHeight: "38px",
-                  fontVariantNumeric: "tabular-nums",
-                }}>
-                  {startLabel}
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 3 }}>
-                  <span style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: "#CC2229" }} />
-                  <span style={{ fontSize: 10, color: "#8E8E93", fontWeight: 500 }}>
-                    {countdownText}{dayText ? ` · ${dayText}` : ""}
-                  </span>
-                </div>
-              </div>
-
-              {/* Avatar — right */}
-              <button
-                type="button"
-                onClick={openProfile}
-                aria-label={`View ${fullName}'s profile`}
-                style={{
-                  width: 40, height: 40, borderRadius: 20,
-                  backgroundColor: avatarColor,
-                  display: "inline-flex", alignItems: "center", justifyContent: "center",
-                  flexShrink: 0, overflow: "hidden",
-                  border: "2px solid rgba(255,255,255,0.5)",
-                  boxShadow: `0 2px 6px ${avatarColor}38`,
-                  padding: 0, cursor: "pointer",
-                }}
-              >
-                {pupilProfileImage ? (
-                  <img src={pupilProfileImage} alt="" style={{ width: 40, height: 40, objectFit: "cover" }} />
-                ) : (
-                  <span style={{ fontSize: 12, fontWeight: 700, color: "#FFF" }}>{initialsText}</span>
-                )}
-              </button>
-            </div>
-
-            {/* Pupil name below time */}
-            <div style={{
-              fontSize: 15, fontWeight: 700, color: "#1A1A1A", letterSpacing: -0.2,
-              overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-            }}>
-              {fullName}
-            </div>
-          </div>
-
-          {/* Map strip — 60px */}
-          <div style={{ position: "relative", height: 60, overflow: "hidden", background: "#F5F4F1" }}>
+          {/* ── Map strip — 110px, V39 layout ─────────────────────────── */}
+          <div style={{ position: "relative", height: 110, overflow: "hidden", background: "#F5F4F1" }}>
             {sdkLoaded && destCoords ? (
               <GoogleMap
                 mapContainerStyle={{ width: "100%", height: "100%" }}
@@ -500,109 +449,135 @@ export function NextLessonPreviewCard(props: NextLessonPreviewCardProps) {
               </div>
             )}
 
-            {/* ETA pill — top left */}
-            <button
-              type="button"
-              onClick={onGo}
-              disabled={!destCoords}
-              style={{
-                position: "absolute", top: 7, left: 8,
-                backgroundColor: "rgba(255,255,255,0.96)",
-                borderRadius: 13, padding: "3px 8px",
-                display: "inline-flex", alignItems: "center", gap: 4,
-                boxShadow: "0 1px 4px rgba(0,0,0,0.1)",
-                border: "none", cursor: destCoords ? "pointer" : "default",
-              }}
-            >
-              <span style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: "#1A7A3C" }} />
-              <span style={{ fontSize: 8.5, fontWeight: 700, color: "#1A1A1A" }}>
-                {driveMin != null && driveMin > 0 ? `ETA ${driveMin}m` : "Tap for ETA"}
+            {/* LIVE · countdown chip — top-left */}
+            <div style={{
+              position: "absolute", top: 10, left: 10,
+              background: "rgba(255,255,255,0.94)",
+              padding: "4px 9px", borderRadius: 999,
+              display: "inline-flex", alignItems: "center", gap: 5,
+              boxShadow: "0 1px 3px rgba(15,23,42,0.10)",
+              backdropFilter: "blur(6px)",
+            }}>
+              <span style={{
+                width: 5, height: 5, borderRadius: 999,
+                background: minutesUntil <= 15 ? "#CC2229" : "#3D55A1",
+                boxShadow: `0 0 0 3px ${minutesUntil <= 15 ? "rgba(204,34,41,0.22)" : "rgba(61,85,161,0.25)"}`,
+              }} />
+              <span style={{
+                fontSize: 10, fontWeight: 700, color: "#3D55A1",
+                textTransform: "uppercase", letterSpacing: 0.6,
+              }}>
+                Live · {countdownText}
               </span>
-            </button>
+            </div>
 
-            {/* Navigate button — bottom right */}
+            {/* ETA · distance chip — top-right (tappable → onGo) */}
             <button
               type="button"
               onClick={onGo}
               disabled={!destCoords}
               style={{
-                position: "absolute", bottom: 5, right: 8,
-                backgroundColor: "rgba(26,82,160,0.88)",
-                borderRadius: 10, padding: "3px 8px",
+                position: "absolute", top: 10, right: 10,
+                background: "rgba(255,255,255,0.94)",
+                padding: "4px 9px", borderRadius: 999,
+                display: "inline-flex", alignItems: "center", gap: 5,
+                boxShadow: "0 1px 3px rgba(15,23,42,0.10)",
+                backdropFilter: "blur(6px)",
                 border: "none", cursor: destCoords ? "pointer" : "default",
+                fontFamily: FONT, fontVariantNumeric: "tabular-nums",
               }}
             >
-              <span style={{ fontSize: 8.5, fontWeight: 700, color: "#FFF" }}>Navigate →</span>
+              <Navigation style={{ width: 11, height: 11, color: "#3D55A1" }} strokeWidth={2.4} />
+              <span style={{ fontSize: 11, fontWeight: 700, color: "#3D55A1" }}>
+                {driveMin != null && driveMin > 0
+                  ? `${driveMin}m${distanceMi ? ` · ${distanceMi}mi` : ""}`
+                  : "Tap for ETA"}
+              </span>
             </button>
           </div>
 
-          {/* Details */}
-          <div style={{ padding: "9px 12px 8px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 5 }}>
-              <div style={{
-                width: 22, height: 22, borderRadius: 6, backgroundColor: "#EEF3FF",
-                display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-              }}>
-                <Clock style={{ width: 10, height: 10, color: "#1A52A0" }} strokeWidth={1.8} />
+          {/* ── Info area — time hero + pupil + meta + avatar ─────────── */}
+          <div style={{ padding: "14px 14px 10px" }}>
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10 }}>
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <div style={{
+                  fontSize: 28, fontWeight: 700, color: "#0F172A",
+                  letterSpacing: -0.8, lineHeight: 1,
+                  fontVariantNumeric: "tabular-nums",
+                }}>
+                  {startLabel}
+                </div>
+                <div style={{
+                  fontSize: 13, fontWeight: 700, color: "#0F172A",
+                  marginTop: 6, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                }}>
+                  {fullName}
+                </div>
+                <div style={{
+                  fontSize: 11, color: "#64748B", marginTop: 2,
+                  overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                }}>
+                  Standard lesson · {fmtHours(durationMinutes)}
+                  {pickupPostcode ? ` · ${pickupPostcode}` : pickupLocation ? ` · ${pickupLocation}` : ""}
+                </div>
               </div>
-              <div style={{ fontSize: 11, fontWeight: 700, color: "#1A1A1A" }}>
-                Standard lesson · {fmtHours(durationMinutes)}
-              </div>
+
+              {/* Avatar — opens profile */}
+              <button
+                type="button"
+                onClick={openProfile}
+                aria-label={`View ${fullName}'s profile`}
+                style={{
+                  width: 44, height: 44, borderRadius: 22,
+                  backgroundColor: avatarColor,
+                  display: "inline-flex", alignItems: "center", justifyContent: "center",
+                  flexShrink: 0, overflow: "hidden",
+                  border: "2px solid rgba(255,255,255,0.6)",
+                  boxShadow: `0 2px 6px ${avatarColor}38`,
+                  padding: 0, cursor: "pointer",
+                }}
+              >
+                {pupilProfileImage ? (
+                  <img src={pupilProfileImage} alt="" style={{ width: 44, height: 44, objectFit: "cover" }} />
+                ) : (
+                  <span style={{ fontSize: 13, fontWeight: 700, color: "#FFF" }}>{initialsText}</span>
+                )}
+              </button>
             </div>
 
-            {(pickupPostcode || pickupLocation) ? (
-              <div style={{ display: "flex", alignItems: "flex-start", gap: 7, marginBottom: 7 }}>
-                <div style={{
-                  width: 22, height: 22, borderRadius: 6, backgroundColor: "#EEF3FF",
-                  display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1,
-                }}>
-                  <MapPin style={{ width: 10, height: 10, color: "#1A52A0" }} strokeWidth={1.8} />
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{
-                    fontSize: 11, fontWeight: 700, color: "#1A1A1A",
-                    overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-                  }}>
-                    {pickupPostcode}
-                    {pickupPostcode && pickupLocation ? " · " : ""}
-                    {pickupLocation || (!pickupPostcode ? "Location TBC" : "")}
-                  </div>
-                  <div style={{ fontSize: 9, fontWeight: 600, color: "#1A52A0", marginTop: 1 }}>Pick-up</div>
-                </div>
-              </div>
-            ) : null}
-
+            {/* AI divert pill (kept) */}
             {aiDivertTime && minutesUntil <= 24 * 60 ? (
               <div style={{
                 display: "inline-flex", alignItems: "center", gap: 4,
-                backgroundColor: "#F0EEFF", borderRadius: 7,
-                padding: "3px 7px", marginBottom: 8,
+                backgroundColor: "#F0EEFF", borderRadius: 999,
+                padding: "3px 8px", marginTop: 10,
               }}>
-                <Sparkles style={{ width: 8, height: 8, color: "#6B21A8" }} strokeWidth={1.9} />
-                <span style={{ fontSize: 8.5, fontWeight: 600, color: "#6B21A8" }}>
+                <Sparkles style={{ width: 9, height: 9, color: "#6B21A8" }} strokeWidth={2} />
+                <span style={{ fontSize: 9.5, fontWeight: 600, color: "#6B21A8" }}>
                   AI divert at {aiDivertTime}
                 </span>
               </div>
             ) : null}
 
-            <div style={{ display: "flex", gap: 5 }}>
+            {/* Action row — Call (primary red) · Text · Go */}
+            <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
               <button
                 type="button"
                 onClick={onCall}
                 disabled={!pupilPhone}
                 aria-label={pupilPhone ? `Call ${fullName}` : "Call disabled"}
                 style={{
-                  flex: 1.3, padding: "8px 0", borderRadius: 9,
+                  flex: 1.3, height: 38, borderRadius: 12,
                   backgroundColor: pupilPhone ? "#CC2229" : "#E8B5B7",
                   color: "#FFF", border: "none",
-                  display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 3,
-                  fontSize: 10, fontWeight: 700,
+                  display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
+                  fontSize: 12, fontWeight: 700,
                   boxShadow: pupilPhone ? "0 2px 6px rgba(204,34,41,0.28)" : "none",
                   cursor: pupilPhone ? "pointer" : "not-allowed",
                   fontFamily: FONT,
                 }}
               >
-                <Phone style={{ width: 10, height: 10 }} strokeWidth={1.8} /> Call
+                <Phone style={{ width: 13, height: 13 }} strokeWidth={2} /> Call
               </button>
               <button
                 type="button"
@@ -610,16 +585,16 @@ export function NextLessonPreviewCard(props: NextLessonPreviewCardProps) {
                 disabled={!pupilPhone}
                 aria-label={`Text ${fullName}`}
                 style={{
-                  flex: 1, padding: "8px 0", borderRadius: 9,
-                  backgroundColor: "#EEF3FF", color: "#1A52A0", border: "none",
-                  display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 3,
-                  fontSize: 10, fontWeight: 600,
+                  flex: 1, height: 38, borderRadius: 12,
+                  backgroundColor: "#EDF2FE", color: "#3D55A1", border: "none",
+                  display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
+                  fontSize: 12, fontWeight: 600,
                   cursor: pupilPhone ? "pointer" : "not-allowed",
                   opacity: pupilPhone ? 1 : 0.5,
                   fontFamily: FONT,
                 }}
               >
-                <MessageSquare style={{ width: 10, height: 10 }} strokeWidth={1.7} /> Text
+                <MessageSquare style={{ width: 13, height: 13 }} strokeWidth={1.9} /> Text
               </button>
               <button
                 type="button"
@@ -627,16 +602,16 @@ export function NextLessonPreviewCard(props: NextLessonPreviewCardProps) {
                 disabled={!destCoords}
                 aria-label="Navigate"
                 style={{
-                  flex: 1, padding: "8px 0", borderRadius: 9,
-                  backgroundColor: "#EEF3FF", color: "#1A52A0", border: "none",
-                  display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 3,
-                  fontSize: 10, fontWeight: 600,
+                  flex: 1, height: 38, borderRadius: 12,
+                  backgroundColor: "#EDF2FE", color: "#3D55A1", border: "none",
+                  display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
+                  fontSize: 12, fontWeight: 600,
                   cursor: destCoords ? "pointer" : "not-allowed",
                   opacity: destCoords ? 1 : 0.5,
                   fontFamily: FONT,
                 }}
               >
-                <Navigation style={{ width: 10, height: 10 }} strokeWidth={1.7} /> Go
+                <Navigation style={{ width: 13, height: 13 }} strokeWidth={1.9} /> Go
               </button>
             </div>
           </div>
