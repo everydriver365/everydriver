@@ -399,16 +399,6 @@ export function NextLessonPreviewCard(props: NextLessonPreviewCardProps) {
           boxShadow: "0 2px 16px rgba(26,82,160,0.11)",
           border: "0.5px solid rgba(26,82,160,0.09)",
         }}>
-          {/* Header band — TIME HERO */}
-          <div style={{
-            backgroundColor: "#F0F5FF",
-            padding: "14px 13px 12px",
-            borderBottom: "0.5px solid rgba(26,82,160,0.07)",
-          }}>
-            <div style={{
-              display: "flex", alignItems: "flex-start", justifyContent: "space-between",
-              marginBottom: 8, gap: 8,
-            }}>
           {/* ── Map strip — 110px, V39 layout ─────────────────────────── */}
           <div style={{ position: "relative", height: 110, overflow: "hidden", background: "#F5F4F1" }}>
             {sdkLoaded && destCoords ? (
