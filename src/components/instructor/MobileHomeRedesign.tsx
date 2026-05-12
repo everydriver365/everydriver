@@ -578,78 +578,63 @@ function UpNextTile({
           boxShadow: "0 2px 18px rgba(26,82,160,0.13)",
         }}
       >
-        {/* ── HEADER BAND ── */}
-        <div
-          style={{
-            backgroundColor: "#F0F5FF",
-            padding: "12px 14px",
-            borderBottom: "0.5px solid rgba(26,82,160,0.07)",
-            display: "flex",
-            alignItems: "center",
-            gap: 10,
-          }}
-        >
-          <button
-            type="button"
-            onClick={(e) => { e.stopPropagation(); navigate(`/instructor/pupils/${pupilId}`); }}
-            aria-label={`View ${fullName}'s profile`}
-            style={{
-              width: 40, height: 40, borderRadius: 20,
-              backgroundColor: avatarColor,
-              display: "inline-flex", alignItems: "center", justifyContent: "center",
-              flexShrink: 0,
-              boxShadow: `0 2px 6px ${avatarColor}38`,
-              border: "2px solid rgba(255,255,255,0.6)",
-              padding: 0, cursor: "pointer", overflow: "hidden",
-            }}
-          >
-            {pupilProfileImage ? (
-              <img
-                src={pupilProfileImage}
-                alt=""
-                style={{ width: 40, height: 40, borderRadius: 20, objectFit: "cover" }}
-              />
-            ) : (
-              <span style={{ fontSize: 16, fontWeight: 700, color: "#FFF" }}>{initialsText}</span>
-            )}
-          </button>
-
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div
-              style={{
-                fontSize: 17, fontWeight: 700, color: "#1A1A1A", letterSpacing: -0.3,
-                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-              }}
-            >
-              {fullName}
-            </div>
-            <div style={{ fontSize: 13, color: "#8E8E93", marginTop: 2, fontWeight: 500 }}>
-              {dayText}{dayText && relativeDay ? " · " : ""}{relativeDay}
-            </div>
-          </div>
-
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", flexShrink: 0 }}>
-            <div style={{ fontSize: 28, fontWeight: 700, color: "#1A52A0", letterSpacing: -0.6, lineHeight: "30px" }}>
-              {start}
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 3 }}>
-              <span style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: "#CC2229" }} />
-              <span style={{ fontSize: 13, color: "#8E8E93", fontWeight: 500 }}>{countdownLine}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* ── MAP STRIP (72px) ── */}
+        {/* ── V39 LIVE MAP STRIP ── */}
         <UpNextMapStrip
           pickupPostcode={pickupPostcode}
           pickupLocation={pickupLocation}
           instructorId={instructorId}
           hasDestination={hasDestination}
           onNavigate={navTo}
+          countdownLine={countdownLine}
         />
 
-        {/* ── DETAILS ── */}
-        <div style={{ padding: "12px 14px 12px", display: "flex", flexDirection: "column", gap: 8 }}>
+        {/* ── V39 DETAILS ── */}
+        <div style={{ padding: "14px 16px 12px", display: "flex", flexDirection: "column", gap: 10 }}>
+          <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 12 }}>
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <div style={{ fontSize: 30, fontWeight: 800, color: "#0F172A", letterSpacing: -0.8, lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>
+                {start}
+              </div>
+              <div style={{ fontSize: 16, fontWeight: 700, color: "#0F172A", marginTop: 6, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {fullName}
+              </div>
+              <div style={{ fontSize: 12, color: MUTED, marginTop: 2, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                Standard lesson · {pickupPostcode || pickupLocation || dayText}
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); navigate(`/instructor/pupils/${pupilId}`); }}
+              aria-label={`View ${fullName}'s profile`}
+              style={{
+                width: 46, height: 46, borderRadius: 999,
+                backgroundColor: avatarColor,
+                color: "#FFFFFF",
+                display: "inline-flex", alignItems: "center", justifyContent: "center",
+                flexShrink: 0,
+                boxShadow: `0 4px 12px ${avatarColor}36`,
+                border: "2px solid rgba(255,255,255,0.95)",
+                padding: 0, cursor: "pointer", overflow: "hidden",
+                fontSize: 15, fontWeight: 800,
+              }}
+            >
+              {pupilProfileImage ? (
+                <img src={pupilProfileImage} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              ) : initialsText}
+            </button>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, background: BLUE_TINT, border: `0.5px solid ${BORDER}`, borderRadius: 12, padding: "8px 10px", minWidth: 0 }}>
+              <Calendar size={13} strokeWidth={2.2} style={{ color: BLUE, flexShrink: 0 }} />
+              <span style={{ fontSize: 12, color: CHARCOAL, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{dayText}</span>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, background: BLUE_TINT, border: `0.5px solid ${BORDER}`, borderRadius: 12, padding: "8px 10px", minWidth: 0 }}>
+              <Clock size={13} strokeWidth={2.2} style={{ color: BLUE, flexShrink: 0 }} />
+              <span style={{ fontSize: 12, color: CHARCOAL, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{hoursLong(durationMinutes)}</span>
+            </div>
+          </div>
+
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <IconTile><Clock size={13} strokeWidth={2.2} /></IconTile>
             <div style={{ fontSize: 14, color: CHARCOAL, fontWeight: 600 }}>
@@ -814,12 +799,14 @@ function UpNextMapStrip({
   instructorId,
   hasDestination,
   onNavigate,
+  countdownLine,
 }: {
   pickupPostcode: string | null;
   pickupLocation: string | null;
   instructorId: string;
   hasDestination: boolean;
   onNavigate: (e: React.MouseEvent) => void;
+  countdownLine: string;
 }) {
   const [sdkLoaded, setSdkLoaded] = useState(false);
   const [destCoords, setDestCoords] = useState<{ lat: number; lng: number } | null | undefined>(undefined);
@@ -910,7 +897,7 @@ function UpNextMapStrip({
       role={hasDestination ? "button" : undefined}
       tabIndex={hasDestination ? 0 : undefined}
       onClick={hasDestination ? onNavigate : undefined}
-      style={{ position: "relative", height: 102, overflow: "hidden", background: "#E9EEF5", cursor: hasDestination ? "pointer" : "default" }}
+      style={{ position: "relative", height: 110, overflow: "hidden", background: "#E9EEF5", cursor: hasDestination ? "pointer" : "default" }}
     >
       {sdkLoaded && destCoords ? (
         <GoogleMap
@@ -967,10 +954,25 @@ function UpNextMapStrip({
         </div>
       )}
 
-      {/* ETA pill — top left */}
+      {/* Live countdown pill — V39 top left */}
+      <div style={{
+        position: "absolute", top: 10, left: 10,
+        backgroundColor: "rgba(255,255,255,0.94)",
+        borderRadius: 999, padding: "4px 9px",
+        display: "inline-flex", alignItems: "center", gap: 5,
+        boxShadow: "0 1px 5px rgba(0,0,0,0.12)",
+        pointerEvents: "none",
+      }}>
+        <span style={{ width: 5, height: 5, borderRadius: 999, background: BLUE, boxShadow: "0 0 0 3px rgba(61,85,161,0.25)" }} />
+        <span style={{ fontSize: 11, fontWeight: 800, color: BLUE, letterSpacing: 0.5, textTransform: "uppercase" }}>
+          Live · {countdownLine}
+        </span>
+      </div>
+
+      {/* ETA pill — V39 top right */}
       {hasDestination && (
         <div style={{
-          position: "absolute", top: 8, left: 10,
+          position: "absolute", top: 10, right: 10,
           backgroundColor: "rgba(255,255,255,0.96)",
           borderRadius: 999, padding: "4px 9px",
           display: "inline-flex", alignItems: "center", gap: 5,
@@ -983,23 +985,6 @@ function UpNextMapStrip({
           </span>
         </div>
       )}
-
-      {/* Navigate button — bottom right */}
-      <button
-        type="button"
-        onClick={onNavigate}
-        disabled={!hasDestination}
-        style={{
-          position: "absolute", bottom: 8, right: 10,
-          backgroundColor: "rgba(26,82,160,0.92)",
-          borderRadius: 12, padding: "5px 10px",
-          border: "none", cursor: hasDestination ? "pointer" : "default",
-          display: "inline-flex", alignItems: "center", gap: 4,
-        }}
-      >
-        <NavIcon size={11} strokeWidth={2.4} style={{ color: "#FFF" }} />
-        <span style={{ fontSize: 13, fontWeight: 700, color: "#FFF" }}>Navigate</span>
-      </button>
     </div>
   );
 }
