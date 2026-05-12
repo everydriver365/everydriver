@@ -30,17 +30,17 @@ export default function InstructorHomeRedesignLab2026() {
         <div style={{ marginBottom: 24 }}>
           <p style={{ fontSize: 11, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.12em", fontWeight: 600 }}>Demo · sample data</p>
           <h1 style={{ fontSize: 28, fontWeight: 700, color: "#0F172A", letterSpacing: "-0.02em", marginTop: 4 }}>
-            Instructor Mobile Home — 5 Redesigns
+            Instructor Mobile Home — 10 Redesigns
           </h1>
           <p style={{ fontSize: 14, color: "#64748B", marginTop: 6, maxWidth: 680 }}>
-            Five fresh directions for the mobile home. All preserve current functionality
+            Ten fresh directions for the mobile home. All preserve current functionality
             (next lesson with live map & ETA, alerts, today's schedule, week stats, quick tools).
             Pick a direction and we'll port it into the live screen.
           </p>
         </div>
 
         <div style={{ display: "flex", gap: 6, marginBottom: 24, flexWrap: "wrap" }}>
-          <button onClick={() => setActive("all")} style={tabStyle(active === "all")}>All 5</button>
+          <button onClick={() => setActive("all")} style={tabStyle(active === "all")}>All 10</button>
           {VARIANTS.map((v, i) => (
             <button key={v.id} onClick={() => setActive(v.id)} style={tabStyle(active === v.id)}>
               V{i + 1} · {v.name}
