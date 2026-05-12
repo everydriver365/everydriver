@@ -2215,7 +2215,7 @@ export function MobileHomeRedesign({
       </div>
 
       {/* Bento alerts strip */}
-      <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 8, marginBottom: 8 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "3.2fr 1fr", gap: 8, marginBottom: 8 }}>
         <div style={bentoPad}>
           <div style={kpiLabel}>NEEDS YOU</div>
           <div style={{ display: "flex", gap: 14, marginTop: 8, justifyContent: "space-between" }}>
@@ -2223,22 +2223,27 @@ export function MobileHomeRedesign({
             <BentoMini count={unread} label="Msgs" fg={BLUE} onClick={() => navigate("/instructor/messages")} />
             <BentoMini count={swapCount} label="Swaps" fg="#166534" onClick={() => navigate("/instructor/test-requests")} />
             <BentoMini count={missedCallsCount} label="Calls" fg="#CC2229" onClick={() => navigate("/instructor/calls")} />
-            <BentoMini count={enquiriesCount} label="Enq's" fg="#CC2229" onClick={() => navigate("/instructor/enquiries")} />
+            <BentoMini count={enquiriesCount} label="Enquiries" fg="#CC2229" onClick={() => navigate("/instructor/enquiries")} />
           </div>
         </div>
         <div
           style={{
             ...bentoPad,
+            padding: 8,
             background: "linear-gradient(135deg,#EDF2FE,#DCE6FA)",
             cursor: "pointer",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
           }}
           onClick={() => navigate("/instructor/schedule")}
         >
-          <Clock size={16} color={BLUE} />
-          <div style={{ fontSize: 22, fontWeight: 800, color: BLUE, marginTop: 2, letterSpacing: "-0.02em" }}>
-            {hoursDone}
+          <Clock size={12} color={BLUE} />
+          <div style={{ fontSize: 16, fontWeight: 800, color: BLUE, marginTop: 1, letterSpacing: "-0.02em", lineHeight: 1 }}>
+            {hoursDone}h
           </div>
-          <div style={{ fontSize: 9, color: BLUE, fontWeight: 800, letterSpacing: "0.1em" }}>HRS THIS WEEK</div>
+          <div style={{ fontSize: 8, color: BLUE, fontWeight: 800, letterSpacing: "0.08em", marginTop: 2 }}>WEEK</div>
         </div>
       </div>
 
