@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { Calendar, List, CalendarDays, ChevronDown, Check, Plus, RefreshCw, CalendarRange } from "lucide-react";
+import { Calendar, List, CalendarDays, ChevronDown, Check, Plus, RefreshCw, CalendarRange, Columns3 } from "lucide-react";
+import { WeekTimelineView } from "@/components/instructor/WeekTimelineView";
 import { ScheduleSkeleton } from "@/components/ui/skeletons/ScheduleSkeleton";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { MultiDayScheduleView } from "@/components/instructor/MultiDayScheduleView";
