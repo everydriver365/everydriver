@@ -2032,6 +2032,29 @@ export function MobileHomeRedesign({
     },
   ];
 
+  /* ---- V7 Bento layout ---- */
+  const bento: React.CSSProperties = {
+    background: "#FFFFFF",
+    borderRadius: 16,
+    boxShadow:
+      "0 1px 2px rgba(15,23,42,0.04), 0 4px 12px rgba(15,23,42,0.04)",
+    overflow: "hidden",
+  };
+  const bentoPad: React.CSSProperties = { ...bento, padding: 14 };
+  const kpiLabel: React.CSSProperties = {
+    fontSize: 10,
+    color: MUTED,
+    fontWeight: 700,
+    letterSpacing: "0.08em",
+  };
+
+  const lessonsGoal = weekly?.hoursGoal ?? 30;
+  const hoursDone = Math.round((weekly?.hoursThisWeek ?? hoursThisWeek ?? 0) * 10) / 10;
+  const earningsWeek = Math.round(weekly?.earningsThisWeek ?? 0);
+  const lessonsCount = weekly?.lessonsThisWeek ?? lessonsThisWeek ?? 0;
+  const lessonsGoalCount = Math.max(lessonsGoal, lessonsCount);
+  const lessonsPct = lessonsGoalCount > 0 ? Math.min(100, (lessonsCount / lessonsGoalCount) * 100) : 0;
+
   return (
     <div
       style={{
@@ -2040,20 +2063,72 @@ export function MobileHomeRedesign({
         fontFamily: FONT,
         WebkitFontSmoothing: "antialiased",
         color: CHARCOAL,
-        paddingBottom: 96,
+        padding: "10px 14px 100px",
       }}
     >
-      <GreetingBlock
-        firstName={firstName}
-        lessonsToday={lessonsToday}
-        earningsToday={earningsToday}
-        pendingJobs={pendingJobs}
-      />
+      {/* Header row */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          padding: "6px 4px 14px",
+        }}
+      >
+        <div>
+          <div style={{ fontSize: 11, color: MUTED, fontWeight: 700, letterSpacing: "0.08em" }}>
+            {format(new Date(), "EEE · d MMM").toUpperCase()}
+          </div>
+          <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: "-0.02em", color: "#0F172A", marginTop: 2 }}>
+            Hi, {firstName}
+          </div>
+        </div>
+        <button
+          onClick={() => navigate("/instructor/notifications")}
+          aria-label="Notifications"
+          style={{
+            position: "relative",
+            width: 38,
+            height: 38,
+            borderRadius: 999,
+            background: "#FFFFFF",
+            border: "none",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            boxShadow: "0 1px 2px rgba(15,23,42,0.06)",
+            cursor: "pointer",
+          }}
+        >
+          <Inbox size={17} color={CHARCOAL} />
+          {totalAttentionCount > 0 && (
+            <span
+              style={{
+                position: "absolute",
+                top: 4,
+                right: 4,
+                minWidth: 16,
+                height: 16,
+                padding: "0 4px",
+                borderRadius: 999,
+                background: "#CC2229",
+                color: "#FFFFFF",
+                fontSize: 9,
+                fontWeight: 800,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              {totalAttentionCount}
+            </span>
+          )}
+        </button>
+      </div>
 
-
+      {/* Bento: Up next hero */}
       {nextLesson && (
-        <>
-          <SectionLabel>Up next</SectionLabel>
+        <div style={{ ...bento, padding: 0, marginBottom: 8 }}>
           <UpNextTile
             pupilId={nextLesson.pupilId}
             instructorId={instructorId}
@@ -2091,28 +2166,86 @@ export function MobileHomeRedesign({
               instructorId={instructorId}
             />
           )}
-        </>
+        </div>
       )}
 
-      {/* New DSM Schedule section (day strip + capacity ring + lesson list) */}
-      <div style={{ marginTop: 18 }}>
+      {/* Bento KPI row */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
+        <div style={bentoPad} onClick={() => navigate("/instructor/earnings")}>
+          <div style={kpiLabel}>EARNINGS · WEEK</div>
+          <div style={{ fontSize: 22, fontWeight: 800, marginTop: 4, color: BLUE, letterSpacing: "-0.02em" }}>
+            £{earningsWeek}
+          </div>
+          <div style={{ fontSize: 10.5, color: MUTED, marginTop: 2 }}>
+            £{Math.round(earningsToday)} today
+          </div>
+        </div>
+        <div style={bentoPad} onClick={() => navigate("/instructor/schedule")}>
+          <div style={kpiLabel}>LESSONS · WEEK</div>
+          <div style={{ fontSize: 22, fontWeight: 800, marginTop: 4, letterSpacing: "-0.02em" }}>
+            {lessonsCount}
+            <span style={{ fontSize: 12, color: MUTED, fontWeight: 600 }}>
+              {" "}/{lessonsGoalCount}
+            </span>
+          </div>
+          <div style={{ height: 4, background: "#F1F5F9", borderRadius: 999, marginTop: 8 }}>
+            <div
+              style={{
+                width: `${lessonsPct}%`,
+                height: "100%",
+                background: "#10B981",
+                borderRadius: 999,
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Bento alerts strip */}
+      <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 8, marginBottom: 8 }}>
+        <div style={bentoPad}>
+          <div style={kpiLabel}>NEEDS YOU</div>
+          <div style={{ display: "flex", gap: 18, marginTop: 8 }}>
+            <BentoMini count={pendingJobs} label="Jobs" fg="#92400E" onClick={() => navigate("/instructor/jobs")} />
+            <BentoMini count={unread} label="Msgs" fg={BLUE} onClick={() => navigate("/instructor/messages")} />
+            <BentoMini count={swapCount} label="Swaps" fg="#166534" onClick={() => navigate("/instructor/test-requests")} />
+          </div>
+        </div>
+        <div
+          style={{
+            ...bentoPad,
+            background: "linear-gradient(135deg,#EDF2FE,#DCE6FA)",
+            cursor: "pointer",
+          }}
+          onClick={() => navigate("/instructor/schedule")}
+        >
+          <Clock size={16} color={BLUE} />
+          <div style={{ fontSize: 22, fontWeight: 800, color: BLUE, marginTop: 2, letterSpacing: "-0.02em" }}>
+            {hoursDone}
+          </div>
+          <div style={{ fontSize: 9, color: BLUE, fontWeight: 800, letterSpacing: "0.1em" }}>HRS THIS WEEK</div>
+        </div>
+      </div>
+
+      {/* Bento today schedule */}
+      <div style={{ ...bento, padding: "4px 0", marginBottom: 8 }}>
         <Schedule instructorId={instructorId} stackedMeta />
       </div>
 
-      {/* Schedule + Quick Access */}
-      <div style={{ marginTop: 14 }}>
+      {/* Bento quick tools / bottom sections */}
+      <div style={{ ...bento, padding: "4px 0", marginBottom: 8 }}>
         <MobileHomeBottomSections instructorId={instructorId} />
       </div>
 
       {/* Needs attention + Upgrade */}
-      <div style={{ padding: "14px 16px 24px" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+      <div style={{ marginBottom: 8 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 4px 8px" }}>
           <span
             style={{
               fontSize: 11,
               fontWeight: 700,
-              color: "#8E8E93",
-              letterSpacing: 1.2,
+              color: MUTED,
+              letterSpacing: "0.1em",
               textTransform: "uppercase",
             }}
           >
@@ -2125,7 +2258,7 @@ export function MobileHomeRedesign({
                 color: "#FFFFFF",
                 borderRadius: 10,
                 padding: "2px 8px",
-                fontSize: 12,
+                fontSize: 11,
                 fontWeight: 700,
                 fontVariantNumeric: "tabular-nums",
               }}
@@ -2134,24 +2267,28 @@ export function MobileHomeRedesign({
             </span>
           )}
         </div>
-        <AttentionCard rows={attentionRows} />
-        <UpgradeCard
-          rows={upgradeRows}
-          franchise={{
-            feeStatus: franchiseStatus?.feeStatus ?? "none",
-            amountOwing: franchiseStatus?.amountOwing ?? 0,
-            bonusDue: franchiseStatus?.bonusDue ?? 0,
-            onFeeClick: () => navigate("/instructor/payments?tab=franchise"),
-            onBonusClick: () => navigate("/instructor/payments?tab=bonus"),
-          }}
-        />
+        <div style={{ ...bento, padding: 0 }}>
+          <AttentionCard rows={attentionRows} />
+        </div>
+        <div style={{ ...bento, padding: 0, marginTop: 8 }}>
+          <UpgradeCard
+            rows={upgradeRows}
+            franchise={{
+              feeStatus: franchiseStatus?.feeStatus ?? "none",
+              amountOwing: franchiseStatus?.amountOwing ?? 0,
+              bonusDue: franchiseStatus?.bonusDue ?? 0,
+              onFeeClick: () => navigate("/instructor/payments?tab=franchise"),
+              onBonusClick: () => navigate("/instructor/payments?tab=bonus"),
+            }}
+          />
+        </div>
       </div>
 
       {/* Upcoming events */}
-      <UpcomingEventsTile instructorId={instructorId} />
+      <div style={{ ...bento, padding: 0 }}>
+        <UpcomingEventsTile instructorId={instructorId} />
+      </div>
 
-
-      {/* Floating session bar */}
       <FloatingSessionBar instructorId={instructorId} />
 
       <AICallDivertSheet
@@ -2159,6 +2296,28 @@ export function MobileHomeRedesign({
         onOpenChange={setDivertSheetOpen}
         state={aiDivert}
       />
+    </div>
+  );
+}
+
+function BentoMini({
+  count,
+  label,
+  fg,
+  onClick,
+}: {
+  count: number;
+  label: string;
+  fg: string;
+  onClick?: () => void;
+}) {
+  return (
+    <div
+      onClick={onClick}
+      style={{ cursor: onClick ? "pointer" : "default" }}
+    >
+      <div style={{ fontSize: 18, fontWeight: 800, color: fg, letterSpacing: "-0.02em" }}>{count}</div>
+      <div style={{ fontSize: 10, color: "#64748B", fontWeight: 700, letterSpacing: "0.06em" }}>{label}</div>
     </div>
   );
 }
