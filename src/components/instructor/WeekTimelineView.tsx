@@ -128,7 +128,8 @@ export function WeekTimelineView({
     positionToCurrent();
   }, [positionToCurrent]);
 
-  // On scroll-end, if the visible left day differs from currentDate's week start, update
+  // After scrolling settles, if the user has moved to a different week, re-anchor
+  // the visible week label without forcing a snap-back during the gesture.
   const scrollEndTimer = useRef<number | null>(null);
   const handleHScroll = () => {
     if (ignoreScrollRef.current || dayWidth <= 0) return;
@@ -136,17 +137,15 @@ export function WeekTimelineView({
     scrollEndTimer.current = window.setTimeout(() => {
       if (!hScrollRef.current) return;
       const sl = hScrollRef.current.scrollLeft;
-      const leftIdx = Math.round(sl / dayWidth);
-      const newDate = days[Math.max(0, Math.min(TOTAL_DAYS - 1, leftIdx))];
+      // Use the day at the centre of the visible 7-day window
+      const centreIdx = Math.round(sl / dayWidth + (VISIBLE_DAYS - 1) / 2);
+      const newDate = days[Math.max(0, Math.min(TOTAL_DAYS - 1, centreIdx))];
       if (!newDate) return;
       const newWeekStart = startOfWeek(newDate, { weekStartsOn: 1 });
       if (!isSameDay(newWeekStart, weekStart)) {
         onGoToDate(newWeekStart);
-      } else {
-        // Snap back to aligned position
-        positionToCurrent();
       }
-    }, 120);
+    }, 180);
   };
 
   const goPrev = () => onGoToDate(addDays(weekStart, -7));
