@@ -1671,7 +1671,7 @@ export function MobileHomeRedesign({
   const totalAttentionCount =
     pendingJobs +
     swapCount +
-    openSlotDays +
+    openSlotsThisWeek +
     dormantCount +
     unread +
     (debt > 0 ? 1 : 0) +
