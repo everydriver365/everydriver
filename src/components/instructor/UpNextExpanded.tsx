@@ -550,10 +550,8 @@ export function UpNextExpanded({
             <div style={{ margin: "12px 16px 0" }}>
               <div
                 style={{
-                  backgroundColor: "#FFF",
-                  borderRadius: 18,
-                  padding: 12,
-                  border: "0.5px solid rgba(26,82,160,0.08)",
+                  backgroundColor: "transparent",
+                  padding: 0,
                 }}
               >
                 <div
