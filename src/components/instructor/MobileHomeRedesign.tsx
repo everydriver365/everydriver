@@ -799,12 +799,14 @@ function UpNextMapStrip({
   instructorId,
   hasDestination,
   onNavigate,
+  countdownLine,
 }: {
   pickupPostcode: string | null;
   pickupLocation: string | null;
   instructorId: string;
   hasDestination: boolean;
   onNavigate: (e: React.MouseEvent) => void;
+  countdownLine: string;
 }) {
   const [sdkLoaded, setSdkLoaded] = useState(false);
   const [destCoords, setDestCoords] = useState<{ lat: number; lng: number } | null | undefined>(undefined);
@@ -895,7 +897,7 @@ function UpNextMapStrip({
       role={hasDestination ? "button" : undefined}
       tabIndex={hasDestination ? 0 : undefined}
       onClick={hasDestination ? onNavigate : undefined}
-      style={{ position: "relative", height: 102, overflow: "hidden", background: "#E9EEF5", cursor: hasDestination ? "pointer" : "default" }}
+      style={{ position: "relative", height: 110, overflow: "hidden", background: "#E9EEF5", cursor: hasDestination ? "pointer" : "default" }}
     >
       {sdkLoaded && destCoords ? (
         <GoogleMap
@@ -952,10 +954,25 @@ function UpNextMapStrip({
         </div>
       )}
 
-      {/* ETA pill — top left */}
+      {/* Live countdown pill — V39 top left */}
+      <div style={{
+        position: "absolute", top: 10, left: 10,
+        backgroundColor: "rgba(255,255,255,0.94)",
+        borderRadius: 999, padding: "4px 9px",
+        display: "inline-flex", alignItems: "center", gap: 5,
+        boxShadow: "0 1px 5px rgba(0,0,0,0.12)",
+        pointerEvents: "none",
+      }}>
+        <span style={{ width: 5, height: 5, borderRadius: 999, background: BLUE, boxShadow: "0 0 0 3px rgba(61,85,161,0.25)" }} />
+        <span style={{ fontSize: 11, fontWeight: 800, color: BLUE, letterSpacing: 0.5, textTransform: "uppercase" }}>
+          Live · {countdownLine}
+        </span>
+      </div>
+
+      {/* ETA pill — V39 top right */}
       {hasDestination && (
         <div style={{
-          position: "absolute", top: 8, left: 10,
+          position: "absolute", top: 10, right: 10,
           backgroundColor: "rgba(255,255,255,0.96)",
           borderRadius: 999, padding: "4px 9px",
           display: "inline-flex", alignItems: "center", gap: 5,
@@ -968,23 +985,6 @@ function UpNextMapStrip({
           </span>
         </div>
       )}
-
-      {/* Navigate button — bottom right */}
-      <button
-        type="button"
-        onClick={onNavigate}
-        disabled={!hasDestination}
-        style={{
-          position: "absolute", bottom: 8, right: 10,
-          backgroundColor: "rgba(26,82,160,0.92)",
-          borderRadius: 12, padding: "5px 10px",
-          border: "none", cursor: hasDestination ? "pointer" : "default",
-          display: "inline-flex", alignItems: "center", gap: 4,
-        }}
-      >
-        <NavIcon size={11} strokeWidth={2.4} style={{ color: "#FFF" }} />
-        <span style={{ fontSize: 13, fontWeight: 700, color: "#FFF" }}>Navigate</span>
-      </button>
     </div>
   );
 }
