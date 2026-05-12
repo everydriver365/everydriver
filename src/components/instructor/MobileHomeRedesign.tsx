@@ -2358,23 +2358,107 @@ export function MobileHomeRedesign({
   );
 }
 
+type NeedsYouKey = "jobs" | "msgs" | "swaps" | "calls" | "enquiries";
+
+function useNeedsYouAlerts(
+  instructorId: string | undefined,
+  counts: Record<NeedsYouKey, number>,
+) {
+  const storageKey = instructorId ? `needsYou.lastSeen.${instructorId}` : null;
+  const [lastSeen, setLastSeen] = useState<Record<NeedsYouKey, number>>(() => {
+    if (typeof window === "undefined" || !storageKey) {
+      return { jobs: 0, msgs: 0, swaps: 0, calls: 0, enquiries: 0 };
+    }
+    try {
+      const raw = window.localStorage.getItem(storageKey);
+      if (raw) return { jobs: 0, msgs: 0, swaps: 0, calls: 0, enquiries: 0, ...JSON.parse(raw) };
+    } catch {}
+    return { jobs: 0, msgs: 0, swaps: 0, calls: 0, enquiries: 0 };
+  });
+
+  const alerting: Record<NeedsYouKey, boolean> = {
+    jobs: counts.jobs > (lastSeen.jobs ?? 0),
+    msgs: counts.msgs > (lastSeen.msgs ?? 0),
+    swaps: counts.swaps > (lastSeen.swaps ?? 0),
+    calls: counts.calls > (lastSeen.calls ?? 0),
+    enquiries: counts.enquiries > (lastSeen.enquiries ?? 0),
+  };
+
+  const acknowledge = (key: NeedsYouKey) => {
+    setLastSeen((prev) => {
+      const next = { ...prev, [key]: counts[key] };
+      if (storageKey && typeof window !== "undefined") {
+        try { window.localStorage.setItem(storageKey, JSON.stringify(next)); } catch {}
+      }
+      return next;
+    });
+  };
+
+  return { alerting, acknowledge };
+}
+
 function BentoMini({
   count,
   label,
   fg,
   onClick,
+  alerting = false,
 }: {
   count: number;
   label: string;
   fg: string;
   onClick?: () => void;
+  alerting?: boolean;
 }) {
   return (
     <div
       onClick={onClick}
-      style={{ cursor: onClick ? "pointer" : "default" }}
+      style={{ cursor: onClick ? "pointer" : "default", position: "relative" }}
     >
-      <div style={{ fontSize: 18, fontWeight: 800, color: fg, letterSpacing: "-0.02em" }}>{count}</div>
+      <style>{`
+        @keyframes needsYouPulse {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.12); }
+        }
+        @keyframes needsYouHalo {
+          0%, 100% { opacity: 0.0; transform: scale(0.85); }
+          50% { opacity: 0.35; transform: scale(1.25); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .needs-you-pulse { animation: none !important; }
+          .needs-you-halo { animation: none !important; opacity: 0 !important; }
+        }
+      `}</style>
+      <div style={{ position: "relative", display: "inline-block" }}>
+        {alerting && (
+          <span
+            className="needs-you-halo"
+            aria-hidden="true"
+            style={{
+              position: "absolute",
+              inset: -4,
+              borderRadius: 999,
+              background: fg,
+              animation: "needsYouHalo 1.6s ease-in-out infinite",
+              pointerEvents: "none",
+            }}
+          />
+        )}
+        <div
+          className={alerting ? "needs-you-pulse" : undefined}
+          style={{
+            position: "relative",
+            fontSize: 18,
+            fontWeight: 800,
+            color: fg,
+            letterSpacing: "-0.02em",
+            transformOrigin: "center",
+            animation: alerting ? "needsYouPulse 1.6s ease-in-out infinite" : undefined,
+          }}
+        >
+          {count}
+        </div>
+      </div>
       <div style={{ fontSize: 10, color: "#64748B", fontWeight: 700, letterSpacing: "0.06em" }}>{label}</div>
     </div>
   );
