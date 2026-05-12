@@ -42,7 +42,7 @@ export default function InstructorAttentionLab2026() {
         </div>
 
         <div style={{ display: "flex", gap: 6, marginBottom: 24, flexWrap: "wrap" }}>
-          <button onClick={() => setActive("all")} style={tab(active === "all")}>All 7</button>
+          <button onClick={() => setActive("all")} style={tab(active === "all")}>All 13</button>
           {VARIANTS.map((v, i) => (
             <button key={v.id} onClick={() => setActive(v.id)} style={tab(active === v.id)}>
               A{i + 1} · {v.name}
