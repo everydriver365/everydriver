@@ -154,15 +154,6 @@ function relativeWhen(dateStr: string) {
   }
 }
 
-function dateChip(dateStr: string, time: string) {
-  try {
-    const d = parseISO(dateStr);
-    return `${format(d, "EEE d MMM").toUpperCase()} · ${fmtTime(time)}`;
-  } catch {
-    return `${dateStr} · ${fmtTime(time)}`;
-  }
-}
-
 function haversine(a: google.maps.LatLngLiteral, b: google.maps.LatLngLiteral) {
   const R = 6371000;
   const r = (d: number) => (d * Math.PI) / 180;
