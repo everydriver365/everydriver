@@ -192,6 +192,23 @@ export async function saveBiometricCredentials(
   }
 }
 
+/** Reject after `ms` so a hung native bridge call cannot freeze the UI. */
+function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(`${label} timed out`)), ms);
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (err) => {
+        clearTimeout(timer);
+        reject(err);
+      },
+    );
+  });
+}
+
 /** Prompt biometrics / fetch saved credentials. */
 export async function getBiometricCredentials(
   scope: BiometricScope,
@@ -200,18 +217,26 @@ export async function getBiometricCredentials(
   try {
     if (isNativePlatform()) {
       try {
-        await NativeBiometric.verifyIdentity({
-          reason: promptReason,
-          title: "Unlock EveryDriver",
-          subtitle: promptReason,
-          description: "Use biometrics to sign in",
-        });
-        const creds = await NativeBiometric.getCredentials({ server: serverFor(scope) });
+        await withTimeout(
+          NativeBiometric.verifyIdentity({
+            reason: promptReason,
+            title: "Unlock EveryDriver",
+            subtitle: promptReason,
+            description: "Use biometrics to sign in",
+          }),
+          15000,
+          "Face ID",
+        );
+        const creds = await withTimeout(
+          NativeBiometric.getCredentials({ server: serverFor(scope) }),
+          5000,
+          "Keychain lookup",
+        );
         if (creds?.username && creds?.password) {
           return { email: creds.username, password: creds.password };
         }
       } catch (err) {
-        // OS biometrics unavailable / cancelled — fall through to wrapped store.
+        // OS biometrics unavailable / cancelled / timed out — fall through.
         console.warn("[biometricAuth] native verifyIdentity failed", err);
       }
       return readWrappedStore(scope);

@@ -106,21 +106,6 @@ export default function InstructorLogin() {
         setBiometricAvailable(available);
         if (available) {
           setBiometryLabel(await getBiometryLabel());
-          // Auto-prompt on native AND in wrapped apps (Despia / PWA / WebView)
-          // so reopening the app feels like Face ID unlock.
-          if (isNativePlatform() || isWrappedApp()) {
-            const creds = await getBiometricCredentials("instructor", "Sign in to EveryDriver");
-            if (creds) {
-              setBiometricLoading(true);
-              const { error: signInError } = await signIn(creds.email, creds.password);
-              if (!signInError) {
-                toast.success("Welcome back!");
-                navigate("/instructor");
-                return;
-              }
-              setBiometricLoading(false);
-            }
-          }
         }
       } catch (err) {
         console.log('Biometric not available:', err);
@@ -163,6 +148,11 @@ export default function InstructorLogin() {
   const handleBiometricLogin = async () => {
     setBiometricLoading(true);
     setError("");
+    // Hard cap so the spinner cannot get stuck forever in TestFlight.
+    const safety = setTimeout(() => {
+      setBiometricLoading(false);
+      setError("Face ID timed out. Please use email and password.");
+    }, 20000);
     try {
       const creds = await getBiometricCredentials("instructor", "Sign in to EveryDriver");
       if (!creds) {
@@ -180,6 +170,7 @@ export default function InstructorLogin() {
       console.error("Biometric login error:", err);
       setError("Biometric login not available. Please use email and password.");
     } finally {
+      clearTimeout(safety);
       setBiometricLoading(false);
     }
   };
