@@ -232,7 +232,6 @@ export function WeekTimelineView({
                     flexShrink: 0,
                     display: "flex", flexDirection: "column", alignItems: "center", gap: 2,
                     padding: "4px 0", border: "none", background: "transparent", cursor: "pointer",
-                    scrollSnapAlign: "start",
                   }}
                 >
                   <span style={{ fontSize: 10, color: "#8E8E93", fontWeight: 500 }}>{dayLabel}</span>
