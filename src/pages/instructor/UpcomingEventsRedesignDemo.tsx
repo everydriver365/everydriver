@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { format, isToday, isTomorrow, isSameDay } from "date-fns";
-import { useInstructorAuth } from "@/hooks/useInstructorAuth";
+import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import {
   useUpcomingEvents,
   UpcomingEvent,
