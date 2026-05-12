@@ -567,6 +567,7 @@ function LessonRow({
   onClick,
   onEOLClick,
   stackedMeta,
+  isFirst,
 }: {
   lesson: ScheduleLesson;
   now: Date;
@@ -574,27 +575,219 @@ function LessonRow({
   onClick: () => void;
   onEOLClick: (e: React.MouseEvent) => void;
   stackedMeta?: boolean;
+  isFirst?: boolean;
 }) {
+  void stackedMeta;
+  const accent = lessonAccentColor(lesson, now);
+  const isCancelled = lesson.status === "cancelled";
+  const isCompleted = lesson.status === "completed";
+  const isLive = !isCancelled && now >= lesson.startDate && now <= lesson.endDate;
+  const isPast = !isCancelled && lesson.endDate <= now;
+  const isUpcoming = !isCancelled && !isCompleted && !isLive && !isPast;
+  const minutesUntil = isUpcoming
+    ? Math.max(0, Math.round((lesson.startDate.getTime() - now.getTime()) / 60_000))
+    : 0;
+  const isPaid = lesson.paymentStatus === "paid" || lesson.paymentStatus === "cash";
+  const fee = lesson.amountDue ?? 0;
+  const showPayPill = !isCancelled && fee > 0;
+  const showEOLPill = isPast || isCompleted || eolDone;
+  const subtitleParts: string[] = [];
+  if (lesson.lessonType) subtitleParts.push(String(lesson.lessonType).replace(/_/g, " "));
+  const loc = shortLine(lesson.pickupLocation, lesson.pickupPostcode);
+  if (loc) subtitleParts.push(loc);
+  const subtitle = subtitleParts.join(" · ");
+  const rowBg = isLive ? "#FBEAEC" : isUpcoming ? "transparent" : "transparent";
   return (
-    <div style={{ marginBottom: 8 }}>
-      <AppointmentTile
-        pupilDisplayName={stackedMeta ? lesson.pupilName : `${lesson.pupilFirstName} ${lesson.pupilLastInitial}`}
-        startTimeLabel={lesson.startTime}
-        durationMinutes={lesson.durationMinutes}
-        pickupLocation={lesson.pickupLocation}
-        pickupPostcode={lesson.pickupPostcode}
-        lessonType={lesson.lessonType}
-        status={lesson.status}
-        paymentStatus={lesson.paymentStatus}
-        startDate={lesson.startDate}
-        endDate={lesson.endDate}
-        now={now}
-        eolDone={eolDone}
-        onClick={onClick}
-        onEOLClick={onEOLClick}
-        stackedMeta={stackedMeta}
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        width: "100%",
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+        padding: "10px 14px",
+        background: rowBg,
+        border: "none",
+        borderTop: isFirst ? "none" : `0.5px solid #F0F3F8`,
+        textAlign: "left",
+        cursor: "pointer",
+        opacity: isCompleted || isPast ? 0.55 : 1,
+        fontFamily: FONT,
+        WebkitTapHighlightColor: "transparent",
+      }}
+    >
+      <div
+        style={{
+          width: 44,
+          textAlign: "center",
+          fontSize: 12,
+          fontWeight: 700,
+          color: TEXT_PRIMARY,
+          flexShrink: 0,
+          fontVariantNumeric: "tabular-nums",
+        }}
+      >
+        {lesson.startTime}
+      </div>
+      <span
+        style={{
+          width: 3,
+          alignSelf: "stretch",
+          borderRadius: 2,
+          background: accent,
+          flexShrink: 0,
+        }}
       />
-    </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div
+          style={{
+            fontSize: 12,
+            fontWeight: 700,
+            color: TEXT_PRIMARY,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {lesson.pupilName}
+        </div>
+        {subtitle && (
+          <div
+            style={{
+              fontSize: 10,
+              color: TEXT_TERTIARY,
+              marginTop: 1,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              textTransform: "capitalize",
+            }}
+          >
+            {subtitle}
+          </div>
+        )}
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            alignItems: "center",
+            gap: 4,
+            marginTop: 4,
+          }}
+        >
+          {showEOLPill && (
+            <button
+              type="button"
+              onClick={(ev) => {
+                ev.stopPropagation();
+                onEOLClick(ev);
+              }}
+              style={{
+                background: "#EEF3FF",
+                borderRadius: 20,
+                padding: "2px 7px",
+                border: "none",
+                cursor: "pointer",
+                lineHeight: 1.2,
+              }}
+              aria-label={eolDone ? "End of lesson complete" : "Complete end of lesson"}
+            >
+              <span
+                style={{
+                  fontSize: 9,
+                  fontWeight: 700,
+                  color: DSM_BLUE,
+                  letterSpacing: 0.2,
+                  textTransform: "uppercase",
+                  textDecoration: eolDone ? "line-through" : "none",
+                  opacity: eolDone ? 0.6 : 1,
+                }}
+              >
+                EOL
+              </span>
+            </button>
+          )}
+          {showPayPill && (
+            <div
+              style={{
+                background: isPaid ? "#E8F8ED" : "#FFECEC",
+                borderRadius: 20,
+                padding: "2px 7px",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 3,
+              }}
+            >
+              <div
+                style={{
+                  width: 5,
+                  height: 5,
+                  borderRadius: 3,
+                  background: isPaid ? "#1A7A3C" : "#D33B3B",
+                }}
+              />
+              <span
+                style={{
+                  fontSize: 9,
+                  fontWeight: 700,
+                  color: isPaid ? "#1A7A3C" : "#D33B3B",
+                  letterSpacing: 0.2,
+                  textTransform: "uppercase",
+                }}
+              >
+                {isPaid ? "Paid" : "Not paid"}
+              </span>
+            </div>
+          )}
+          {isCancelled && (
+            <span
+              style={{
+                background: "#FFF0F0",
+                borderRadius: 20,
+                padding: "2px 7px",
+                fontSize: 9,
+                fontWeight: 700,
+                color: "#B23A3F",
+                letterSpacing: 0.2,
+                textTransform: "uppercase",
+              }}
+            >
+              Cancelled
+            </span>
+          )}
+        </div>
+      </div>
+      {isLive ? (
+        <span
+          style={{
+            background: "#FBEAEC",
+            color: RED,
+            fontSize: 9,
+            fontWeight: 700,
+            borderRadius: 20,
+            padding: "2px 7px",
+            flexShrink: 0,
+          }}
+        >
+          Live
+        </span>
+      ) : isUpcoming ? (
+        <span
+          style={{
+            fontSize: 9,
+            fontWeight: 700,
+            color: DSM_BLUE,
+            flexShrink: 0,
+          }}
+        >
+          {minutesUntil < 60
+            ? `${minutesUntil}m`
+            : `${Math.round(minutesUntil / 60)}h`}
+        </span>
+      ) : null}
+      <ChevronRight size={12} color="#C7C7CC" strokeWidth={1.8} style={{ flexShrink: 0, marginLeft: 2 }} />
+    </button>
   );
 }
 
@@ -943,27 +1136,58 @@ function LessonList({
 
   items.sort((a, b) => a.sortKey - b.sortKey);
 
+  // Group consecutive lessons into a single agenda card; open slots stay separate.
+  const groups: Array<
+    | { kind: "lessons"; lessons: ScheduleLesson[] }
+    | { kind: "slot"; item: Extract<Item, { kind: "slot" }> }
+  > = [];
+  for (const it of items) {
+    if (it.kind === "lesson") {
+      const last = groups[groups.length - 1];
+      if (last && last.kind === "lessons") last.lessons.push(it.lesson);
+      else groups.push({ kind: "lessons", lessons: [it.lesson] });
+    } else {
+      groups.push({ kind: "slot", item: it });
+    }
+  }
+
   return (
     <div>
-      {items.map((item) => {
-        if (item.kind === "lesson") {
-          const l = item.lesson;
-          const eolDone = eolSet?.has(eolKey(l.pupilId, l.startTimeFull)) ?? false;
+      {groups.map((g, gi) => {
+        if (g.kind === "lessons") {
           return (
-            <LessonRow
-              key={l.id}
-              lesson={l}
-              now={now}
-              eolDone={eolDone}
-              onClick={() => onLessonClick(l.id)}
-              onEOLClick={(e) => {
-                e.stopPropagation();
-                onLessonEOL(l);
+            <div
+              key={`lessons-${gi}`}
+              style={{
+                background: CARD_BG,
+                borderRadius: 16,
+                border: `0.5px solid ${DSM_BLUE_BORDER}`,
+                overflow: "hidden",
+                marginBottom: 8,
               }}
-              stackedMeta={stackedMeta}
-            />
+            >
+              {g.lessons.map((l, li) => {
+                const eolDone = eolSet?.has(eolKey(l.pupilId, l.startTimeFull)) ?? false;
+                return (
+                  <LessonRow
+                    key={l.id}
+                    lesson={l}
+                    now={now}
+                    eolDone={eolDone}
+                    isFirst={li === 0}
+                    onClick={() => onLessonClick(l.id)}
+                    onEOLClick={(e) => {
+                      e.stopPropagation();
+                      onLessonEOL(l);
+                    }}
+                    stackedMeta={stackedMeta}
+                  />
+                );
+              })}
+            </div>
           );
         }
+        const item = g.item;
         const isPast = item.endDate.getTime() <= now.getTime();
         return (
           <OpenSlotCard
