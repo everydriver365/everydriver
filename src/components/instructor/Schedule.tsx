@@ -682,19 +682,33 @@ function LessonRow({
         }}
       />
       <div style={{ flex: 1, minWidth: 0 }}>
-        {/* Row 1: name */}
-        <div
+        {/* Row 1: name (clickable -> profile) */}
+        <button
+          type="button"
+          onClick={(ev) => {
+            ev.stopPropagation();
+            onClick();
+          }}
           style={{
+            background: "transparent",
+            border: "none",
+            padding: 0,
+            margin: 0,
+            cursor: "pointer",
             fontSize: 12,
             fontWeight: 700,
             color: TEXT_PRIMARY,
             overflow: "hidden",
             textOverflow: "ellipsis",
             whiteSpace: "nowrap",
+            display: "block",
+            maxWidth: "100%",
+            textAlign: "left",
+            fontFamily: "inherit",
           }}
         >
           {lesson.pupilName}
-        </div>
+        </button>
         {/* Row 2: address */}
         {address && (
           <div
@@ -710,7 +724,7 @@ function LessonRow({
             {address}
           </div>
         )}
-        {/* Row 3: payment, lesson type, EOL link, Profile link */}
+        {/* Row 3: payment, cancelled */}
         <div
           style={{
             display: "flex",
@@ -720,28 +734,6 @@ function LessonRow({
             marginTop: 6,
           }}
         >
-          <button
-            type="button"
-            onClick={(ev) => {
-              ev.stopPropagation();
-              onClick();
-            }}
-            style={{
-              background: "transparent",
-              border: "none",
-              padding: "2px 4px",
-              cursor: "pointer",
-              fontSize: 10,
-              fontWeight: 700,
-              color: DSM_BLUE,
-              letterSpacing: 0.2,
-              textTransform: "uppercase",
-              textDecoration: "underline",
-              textUnderlineOffset: 2,
-            }}
-          >
-            Profile
-          </button>
           {showPayPill && (
             <div
               style={{
