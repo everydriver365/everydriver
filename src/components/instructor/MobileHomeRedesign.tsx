@@ -1027,8 +1027,9 @@ interface UpgradeRowSpec {
   tierBg: string;
   tierColor: string;
   subtitle: string;
-  upgradeBg: string;
-  upgradeFg?: string;
+  ctaLabel: string;
+  ctaBg: string;
+  ctaFg?: string;
   onClick: () => void;
 }
 
@@ -1379,7 +1380,7 @@ function UpgradeCard({ rows }: { rows: UpgradeRowSpec[] }) {
               display: "flex",
               alignItems: "center",
               gap: 9,
-              padding: "9px 12px",
+              padding: "7px 12px",
               background: "transparent",
               border: "none",
               cursor: "pointer",
@@ -1399,40 +1400,38 @@ function UpgradeCard({ rows }: { rows: UpgradeRowSpec[] }) {
                 flexShrink: 0,
               }}
             >
-              <r.Icon size={12} strokeWidth={1.6} />
+              <r.Icon size={14} strokeWidth={1.8} />
             </span>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 1 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 0 }}>
                 <span style={{ fontSize: 14, fontWeight: 700, color: "#1A1A1A" }}>{r.label}</span>
                 <span
                   style={{
                     background: r.tierBg,
                     color: r.tierColor,
-                    borderRadius: 4,
-                    padding: "1px 5px",
+                    borderRadius: 999,
+                    padding: "1px 7px",
                     fontSize: 10,
                     fontWeight: 700,
-                    letterSpacing: "0.04em",
-                    textTransform: "uppercase",
                   }}
                 >
                   {r.tierLabel}
                 </span>
               </div>
-              <div style={{ fontSize: 12, color: "#8E8E93" }}>{r.subtitle}</div>
+              <div style={{ fontSize: 11, color: "#8E8E93" }}>{r.subtitle}</div>
             </div>
             <span
               style={{
-                background: r.upgradeBg,
-                color: r.upgradeFg ?? "#FFF",
-                borderRadius: 20,
-                padding: "4px 10px",
+                background: r.ctaBg,
+                color: r.ctaFg ?? "#FFF",
+                borderRadius: 999,
+                padding: "5px 12px",
                 fontSize: 12,
                 fontWeight: 700,
                 flexShrink: 0,
               }}
             >
-              Upgrade
+              {r.ctaLabel}
             </span>
             <ChevronRight size={12} color="#C7C7CC" strokeWidth={1.8} />
           </button>
@@ -1653,20 +1652,21 @@ export function MobileHomeRedesign({
   // Upgrade section (placeholders — to be wired later)
   const membershipLevel = "Starter" as "Free" | "Starter" | "Pro" | "Premium";
   const healthCover = "Basic" as "None" | "Basic" | "Full";
+  const incomeProtection = "None" as "None" | "Basic" | "Full";
 
   const upgradeRows: UpgradeRowSpec[] = [
     {
       key: "membership",
       Icon: Star,
-      iconBg: "#FFF6E6",
+      iconBg: "#FFF1DD",
       iconColor: "#B45309",
       label: "Membership",
       tierLabel: membershipLevel,
-      tierBg: "#FFF6E6",
+      tierBg: "#FFF1DD",
       tierColor: "#B45309",
-      subtitle: "Unlock more features · lower fees",
-      upgradeBg: BLUE_TINT,
-      upgradeFg: BLUE,
+      subtitle: "Unlock features · lower fees",
+      ctaLabel: "Upgrade",
+      ctaBg: "#C2570B",
       onClick: () => navigate("/instructor/subscription"),
     },
     {
@@ -1678,9 +1678,23 @@ export function MobileHomeRedesign({
       tierLabel: healthCover,
       tierBg: "#EEF3FF",
       tierColor: "#1A52A0",
-      subtitle: "Full income protection available",
-      upgradeBg: BLUE_TINT,
-      upgradeFg: BLUE,
+      subtitle: "Medical & accident cover",
+      ctaLabel: "Upgrade",
+      ctaBg: "#1A52A0",
+      onClick: () => navigate("/instructor/health"),
+    },
+    {
+      key: "income-protection",
+      Icon: PoundSterling,
+      iconBg: "#E6F4EA",
+      iconColor: "#0F8A4F",
+      label: "Income protection",
+      tierLabel: incomeProtection,
+      tierBg: "#E6F4EA",
+      tierColor: "#0F8A4F",
+      subtitle: "Cover if you can't teach",
+      ctaLabel: "Add",
+      ctaBg: "#0F8A4F",
       onClick: () => navigate("/instructor/health"),
     },
   ];
