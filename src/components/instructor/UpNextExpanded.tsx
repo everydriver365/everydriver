@@ -580,7 +580,7 @@ export function UpNextExpanded({
                       backgroundColor: "#CC2229",
                       borderRadius: 12,
                       padding: "0 6px", minWidth: 0,
-                      gap: 6,
+                      gap: 4,
                       color: "#FFF",
                       boxShadow: "0 2px 5px rgba(204,34,41,0.22)",
                       opacity: !pupilPhone ? 0.5 : 1,
@@ -600,7 +600,7 @@ export function UpNextExpanded({
                       backgroundColor: "#EEF3FF",
                       borderRadius: 12,
                       padding: "0 6px", minWidth: 0,
-                      gap: 6,
+                      gap: 4,
                       color: "#1A52A0",
                     }}
                   >
@@ -617,7 +617,7 @@ export function UpNextExpanded({
                       backgroundColor: "#EEF3FF",
                       borderRadius: 12,
                       padding: "0 6px", minWidth: 0,
-                      gap: 6,
+                      gap: 4,
                       color: "#1A52A0",
                     }}
                   >
@@ -639,7 +639,7 @@ export function UpNextExpanded({
                       backgroundColor: "#E8F8ED",
                       borderRadius: 12,
                       padding: "0 6px", minWidth: 0,
-                      gap: 6,
+                      gap: 4,
                       color: "#1A7A3C",
                       border: "0.5px solid rgba(26,122,60,0.15)",
                       opacity: busyAction === "on_the_way" ? 0.5 : 1,
@@ -661,7 +661,7 @@ export function UpNextExpanded({
                       backgroundColor: "#FFF6E6",
                       borderRadius: 12,
                       padding: "0 6px", minWidth: 0,
-                      gap: 6,
+                      gap: 4,
                       color: "#B45309",
                       border: "0.5px solid rgba(180,83,9,0.15)",
                       opacity: busyAction === "running_late" ? 0.5 : 1,
@@ -682,7 +682,7 @@ export function UpNextExpanded({
                       backgroundColor: "#F2F4F8",
                       borderRadius: 12,
                       padding: "0 6px", minWidth: 0,
-                      gap: 6,
+                      gap: 4,
                       color: "#5B6B8A",
                     }}
                   >
@@ -703,7 +703,7 @@ export function UpNextExpanded({
                     backgroundColor: "#1A52A0",
                     borderRadius: 12,
                     padding: "0 6px", minWidth: 0,
-                    gap: 6,
+                    gap: 4,
                     color: "#FFF",
                     boxShadow: "0 2px 7px rgba(26,82,160,0.20)",
                     opacity: busyAction === "arrived" ? 0.5 : 1,
