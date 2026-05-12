@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { Calendar, List, CalendarDays, ChevronDown, Check, Plus, RefreshCw, CalendarRange } from "lucide-react";
+import { Calendar, List, CalendarDays, ChevronDown, Check, Plus, RefreshCw, CalendarRange, Columns3 } from "lucide-react";
+import { WeekTimelineView } from "@/components/instructor/WeekTimelineView";
 import { ScheduleSkeleton } from "@/components/ui/skeletons/ScheduleSkeleton";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { MultiDayScheduleView } from "@/components/instructor/MultiDayScheduleView";
@@ -30,7 +31,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { InstructorPageHeader } from "@/components/instructor/InstructorPageHeader";
 
-type ViewMode = 'list' | 'month' | 'calendar' | 'schedule';
+type ViewMode = 'list' | 'week' | 'month' | 'calendar' | 'schedule';
 
 export default function InstructorSchedule() {
   const { instructor } = useInstructorAuth();
@@ -41,7 +42,7 @@ export default function InstructorSchedule() {
   
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     const saved = localStorage.getItem('instructor-schedule-view');
-    if (saved && ['list', 'month', 'calendar', 'schedule'].includes(saved)) return saved as ViewMode;
+    if (saved && ['list', 'week', 'month', 'calendar', 'schedule'].includes(saved)) return saved as ViewMode;
     return isMobile ? 'list' : 'calendar';
   });
 
@@ -238,13 +239,15 @@ export default function InstructorSchedule() {
                   gap: 2,
                 }}
               >
-                {(["Calendar", "Schedule"] as const).map((view) => {
-                  const target: ViewMode = view === "Calendar" ? "month" : "list";
+                {([
+                  { label: "List", target: "list" as ViewMode, Icon: List },
+                  { label: "Week", target: "week" as ViewMode, Icon: Columns3 },
+                  { label: "Month", target: "month" as ViewMode, Icon: CalendarRange },
+                ]).map(({ label, target, Icon }) => {
                   const active = viewMode === target;
-                  const Icon = view === "Calendar" ? CalendarRange : List;
                   return (
                     <button
-                      key={view}
+                      key={label}
                       onClick={() => setViewMode(target)}
                       style={{
                         flex: 1,
@@ -259,7 +262,7 @@ export default function InstructorSchedule() {
                       }}
                     >
                       <Icon style={{ width: 12, height: 12, strokeWidth: 1.7 }} />
-                      {view}
+                      {label}
                     </button>
                   );
                 })}
@@ -298,6 +301,10 @@ export default function InstructorSchedule() {
                       <List className="h-4 w-4" /> List
                       {viewMode === 'list' && <Check className="ml-auto h-4 w-4" />}
                     </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setViewMode('week')} className="cursor-pointer gap-2">
+                      <Columns3 className="h-4 w-4" /> Week
+                      {viewMode === 'week' && <Check className="ml-auto h-4 w-4" />}
+                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setViewMode('schedule')} className="cursor-pointer gap-2">
                       <CalendarDays className="h-4 w-4" /> Schedule
                       {viewMode === 'schedule' && <Check className="ml-auto h-4 w-4" />}
@@ -318,6 +325,17 @@ export default function InstructorSchedule() {
         <div className="flex-1 overflow-auto pb-4">
           {viewMode === 'list' ? (
             <MultiDayScheduleView key={mobileListRefreshKey} instructorId={instructorId} />
+          ) : viewMode === 'week' ? (
+            <div className="h-[calc(100vh-12rem)] overflow-hidden">
+              <WeekTimelineView
+                events={calendar.events}
+                currentDate={calendar.currentDate}
+                onGoToDate={calendar.goToDate}
+                onEventClick={(event) => setSelectedEvent(event)}
+                onAddEvent={handleAddEvent}
+                loading={calendar.loading}
+              />
+            </div>
           ) : viewMode === 'month' ? (
             <MobileMonthCalendarView instructorId={instructorId} />
           ) : viewMode === 'schedule' ? (
