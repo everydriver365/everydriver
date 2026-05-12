@@ -1566,6 +1566,303 @@ function V34LiveBriefPro() {
 }
 
 // ---------------------------------------------------------------------------
+// V35 · Live Brief Pro · No Map — refined hero + brief, no map strip.
+// ---------------------------------------------------------------------------
+function V35LiveBriefProNoMap() {
+  const items = [
+    { icon: <PoundSterling size={13} color="#16A34A" />, label: "Payment", value: lesson.paid ? "Paid · £" + lesson.price : "Outstanding" },
+    { icon: <Car size={13} color="#3D55A1" />,           label: "Vehicle", value: "Ready" },
+    { icon: <Route size={13} color="#3D55A1" />,         label: "Travel",  value: `${lesson.etaMinutes}m · ${lesson.distanceMiles}mi` },
+    { icon: <MapPin size={13} color="#3D55A1" />,        label: "Pickup",  value: lesson.postcode },
+  ];
+  return (
+    <div style={{
+      borderRadius: 18, fontFamily: iosFont, overflow: "hidden",
+      border: "0.5px solid #E5E5EA", background: "#FFFFFF",
+      boxShadow: "0 1px 2px rgba(15,23,42,0.04)",
+    }}>
+      <div style={{
+        position: "relative", padding: 16,
+        background:
+          "radial-gradient(120% 70% at 100% 0%, #DBEAFE 0%, transparent 55%), " +
+          "radial-gradient(120% 70% at 0% 100%, #EDE9FE 0%, transparent 55%), #F8FAFC",
+      }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 600, color: "#3D55A1", textTransform: "uppercase", letterSpacing: 0.6, display: "inline-flex", alignItems: "center", gap: 6 }}>
+              <span style={{ width: 6, height: 6, borderRadius: 999, background: "#3D55A1", boxShadow: "0 0 0 4px rgba(61,85,161,0.18)" }} />
+              Live · in {lesson.minutesUntil}m
+            </div>
+            <div style={{ fontSize: 30, fontWeight: 700, color: "#0F172A", letterSpacing: -0.8, fontVariantNumeric: "tabular-nums", lineHeight: 1, marginTop: 6 }}>{lesson.startTime}</div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: "#0F172A", marginTop: 6 }}>{lesson.pupilName}</div>
+            <div style={{ fontSize: 11, color: "#64748B", marginTop: 1 }}>{lesson.lessonType}</div>
+          </div>
+          <div style={{
+            width: 52, height: 52, borderRadius: 999, background: "linear-gradient(135deg,#3D55A1,#7C8DD6)",
+            color: "#FFF", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 17,
+          }}>{lesson.initials}</div>
+        </div>
+      </div>
+      <div style={{ padding: "4px 14px" }}>
+        {items.map((it, i) => (
+          <div key={i} style={{
+            display: "flex", justifyContent: "space-between", alignItems: "center",
+            padding: "10px 0", borderBottom: i < items.length - 1 ? "1px solid #F1F5F9" : "none",
+          }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 12, color: "#475569", fontWeight: 500 }}>
+              {it.icon}{it.label}
+            </span>
+            <span style={{ fontSize: 12, fontWeight: 600, color: "#0F172A", fontVariantNumeric: "tabular-nums" }}>{it.value}</span>
+          </div>
+        ))}
+      </div>
+      <div style={{ display: "flex", gap: 8, padding: 12, borderTop: "1px solid #F1F5F9" }}>
+        <button style={btnSecondary}><Phone size={14} /> Call</button>
+        <button style={btnPrimary}><Navigation size={14} /> Navigate</button>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// V36 · Live Brief Pro · With Map — adds a static map strip above the hero.
+// ---------------------------------------------------------------------------
+function V36LiveBriefProMap() {
+  const items = [
+    { icon: <PoundSterling size={13} color="#16A34A" />, label: "Payment", value: lesson.paid ? "Paid · £" + lesson.price : "Outstanding" },
+    { icon: <Car size={13} color="#3D55A1" />,           label: "Vehicle", value: "Ready" },
+    { icon: <Route size={13} color="#3D55A1" />,         label: "Travel",  value: `${lesson.etaMinutes}m · ${lesson.distanceMiles}mi` },
+    { icon: <MapPin size={13} color="#3D55A1" />,        label: "Pickup",  value: lesson.postcode },
+  ];
+  return (
+    <div style={{
+      borderRadius: 18, fontFamily: iosFont, overflow: "hidden",
+      border: "0.5px solid #E5E5EA", background: "#FFFFFF",
+      boxShadow: "0 1px 2px rgba(15,23,42,0.04)",
+    }}>
+      <div style={{
+        position: "relative", height: 96,
+        background:
+          "linear-gradient(180deg, #DBEAFE 0%, #EDE9FE 100%), " +
+          "repeating-linear-gradient(45deg, rgba(255,255,255,0.5) 0 1px, transparent 1px 14px)",
+        borderBottom: "1px solid #E5E5EA",
+      }}>
+        <div style={{
+          position: "absolute", inset: 0,
+          backgroundImage: "repeating-linear-gradient(0deg, rgba(15,23,42,0.06) 0 1px, transparent 1px 22px), repeating-linear-gradient(90deg, rgba(15,23,42,0.06) 0 1px, transparent 1px 22px)",
+        }} />
+        <div style={{
+          position: "absolute", left: "30%", top: "55%", width: 28, height: 28, borderRadius: 999,
+          background: "#3D55A1", border: "3px solid #FFF",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          boxShadow: "0 4px 10px rgba(61,85,161,0.35)",
+        }}>
+          <Car size={13} color="#FFF" />
+        </div>
+        <div style={{
+          position: "absolute", right: "20%", top: "30%", width: 24, height: 24, borderRadius: 999,
+          background: "#FFF", border: "2px solid #3D55A1",
+          display: "flex", alignItems: "center", justifyContent: "center",
+        }}>
+          <MapPin size={12} color="#3D55A1" />
+        </div>
+        <span style={{
+          position: "absolute", top: 10, right: 10,
+          fontSize: 11, fontWeight: 700, color: "#3D55A1", background: "rgba(255,255,255,0.9)",
+          padding: "4px 9px", borderRadius: 999, border: "0.5px solid #BFDBFE",
+        }}>{lesson.etaMinutes}m · {lesson.distanceMiles}mi</span>
+      </div>
+      <div style={{ padding: 16 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 600, color: "#3D55A1", textTransform: "uppercase", letterSpacing: 0.6, display: "inline-flex", alignItems: "center", gap: 6 }}>
+              <span style={{ width: 6, height: 6, borderRadius: 999, background: "#3D55A1", boxShadow: "0 0 0 4px rgba(61,85,161,0.18)" }} />
+              Live · in {lesson.minutesUntil}m
+            </div>
+            <div style={{ fontSize: 28, fontWeight: 700, color: "#0F172A", letterSpacing: -0.8, fontVariantNumeric: "tabular-nums", lineHeight: 1, marginTop: 6 }}>{lesson.startTime}</div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: "#0F172A", marginTop: 6 }}>{lesson.pupilName}</div>
+            <div style={{ fontSize: 11, color: "#64748B", marginTop: 1 }}>{lesson.lessonType}</div>
+          </div>
+          <div style={{
+            width: 48, height: 48, borderRadius: 999, background: "linear-gradient(135deg,#3D55A1,#7C8DD6)",
+            color: "#FFF", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 16,
+          }}>{lesson.initials}</div>
+        </div>
+      </div>
+      <div style={{ padding: "0 14px" }}>
+        {items.map((it, i) => (
+          <div key={i} style={{
+            display: "flex", justifyContent: "space-between", alignItems: "center",
+            padding: "10px 0", borderBottom: i < items.length - 1 ? "1px solid #F1F5F9" : "none",
+          }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 12, color: "#475569", fontWeight: 500 }}>
+              {it.icon}{it.label}
+            </span>
+            <span style={{ fontSize: 12, fontWeight: 600, color: "#0F172A", fontVariantNumeric: "tabular-nums" }}>{it.value}</span>
+          </div>
+        ))}
+      </div>
+      <div style={{ display: "flex", gap: 8, padding: 12, borderTop: "1px solid #F1F5F9", marginTop: 4 }}>
+        <button style={btnSecondary}><Phone size={14} /> Call</button>
+        <button style={btnPrimary}><Navigation size={14} /> Navigate</button>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// V37 · Live Brief Pro · Dark Hero — dark gradient hero pops on light blue bg.
+// ---------------------------------------------------------------------------
+function V37LiveBriefProDark() {
+  const items = [
+    { icon: <PoundSterling size={13} color="#16A34A" />, label: "Payment", value: lesson.paid ? "Paid · £" + lesson.price : "Outstanding" },
+    { icon: <Car size={13} color="#3D55A1" />,           label: "Vehicle", value: "Ready" },
+    { icon: <Route size={13} color="#3D55A1" />,         label: "Travel",  value: `${lesson.etaMinutes}m · ${lesson.distanceMiles}mi` },
+    { icon: <MapPin size={13} color="#3D55A1" />,        label: "Pickup",  value: lesson.postcode },
+  ];
+  return (
+    <div style={{
+      borderRadius: 18, fontFamily: iosFont, overflow: "hidden",
+      border: "0.5px solid rgba(15,23,42,0.08)", background: "#FFFFFF",
+      boxShadow: "0 10px 28px -14px rgba(15,23,42,0.35), 0 2px 6px rgba(15,23,42,0.06)",
+    }}>
+      <div style={{
+        position: "relative", padding: 18, color: "#FFF",
+        background:
+          "radial-gradient(120% 80% at 100% 0%, rgba(124,141,214,0.45) 0%, transparent 55%), " +
+          "radial-gradient(120% 80% at 0% 100%, rgba(61,85,161,0.55) 0%, transparent 60%), " +
+          "linear-gradient(135deg, #0F172A 0%, #1E293B 100%)",
+      }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 600, color: "#A5B4FC", textTransform: "uppercase", letterSpacing: 0.6, display: "inline-flex", alignItems: "center", gap: 6 }}>
+              <span style={{ width: 6, height: 6, borderRadius: 999, background: "#34D399", boxShadow: "0 0 0 4px rgba(52,211,153,0.22)" }} />
+              Live · in {lesson.minutesUntil}m
+            </div>
+            <div style={{ fontSize: 32, fontWeight: 700, letterSpacing: -1, fontVariantNumeric: "tabular-nums", lineHeight: 1, marginTop: 6 }}>{lesson.startTime}</div>
+            <div style={{ fontSize: 13, fontWeight: 600, marginTop: 6 }}>{lesson.pupilName}</div>
+            <div style={{ fontSize: 11, opacity: 0.7, marginTop: 1 }}>{lesson.lessonType}</div>
+          </div>
+          <div style={{
+            width: 52, height: 52, borderRadius: 999, background: "rgba(255,255,255,0.14)",
+            border: "1px solid rgba(255,255,255,0.18)",
+            color: "#FFF", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 17,
+          }}>{lesson.initials}</div>
+        </div>
+      </div>
+      <div style={{ padding: "4px 14px" }}>
+        {items.map((it, i) => (
+          <div key={i} style={{
+            display: "flex", justifyContent: "space-between", alignItems: "center",
+            padding: "10px 0", borderBottom: i < items.length - 1 ? "1px solid #F1F5F9" : "none",
+          }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 12, color: "#475569", fontWeight: 500 }}>
+              {it.icon}{it.label}
+            </span>
+            <span style={{ fontSize: 12, fontWeight: 600, color: "#0F172A", fontVariantNumeric: "tabular-nums" }}>{it.value}</span>
+          </div>
+        ))}
+      </div>
+      <div style={{ display: "flex", gap: 8, padding: 12, borderTop: "1px solid #F1F5F9" }}>
+        <button style={btnSecondary}><Phone size={14} /> Call</button>
+        <button style={btnPrimary}><Navigation size={14} /> Navigate</button>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// V38 · Live Brief Pro · Dark + Map — dark hero with map strip; max contrast.
+// ---------------------------------------------------------------------------
+function V38LiveBriefProDarkMap() {
+  const items = [
+    { icon: <PoundSterling size={13} color="#16A34A" />, label: "Payment", value: lesson.paid ? "Paid · £" + lesson.price : "Outstanding" },
+    { icon: <Car size={13} color="#3D55A1" />,           label: "Vehicle", value: "Ready" },
+    { icon: <Route size={13} color="#3D55A1" />,         label: "Travel",  value: `${lesson.etaMinutes}m · ${lesson.distanceMiles}mi` },
+    { icon: <MapPin size={13} color="#3D55A1" />,        label: "Pickup",  value: lesson.postcode },
+  ];
+  return (
+    <div style={{
+      borderRadius: 18, fontFamily: iosFont, overflow: "hidden",
+      border: "0.5px solid rgba(15,23,42,0.08)", background: "#FFFFFF",
+      boxShadow: "0 10px 28px -14px rgba(15,23,42,0.35), 0 2px 6px rgba(15,23,42,0.06)",
+    }}>
+      <div style={{
+        position: "relative", height: 90,
+        background: "linear-gradient(135deg, #1E293B 0%, #0F172A 100%)",
+        borderBottom: "1px solid rgba(255,255,255,0.06)",
+      }}>
+        <div style={{
+          position: "absolute", inset: 0,
+          backgroundImage: "repeating-linear-gradient(0deg, rgba(255,255,255,0.06) 0 1px, transparent 1px 22px), repeating-linear-gradient(90deg, rgba(255,255,255,0.06) 0 1px, transparent 1px 22px)",
+        }} />
+        <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}>
+          <path d="M 20 70 Q 120 30 220 50 T 380 30" stroke="#7C8DD6" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeDasharray="4 4" />
+        </svg>
+        <div style={{
+          position: "absolute", left: "10%", top: "60%", width: 24, height: 24, borderRadius: 999,
+          background: "#34D399", border: "2px solid #0F172A",
+          boxShadow: "0 0 0 4px rgba(52,211,153,0.25)",
+        }} />
+        <div style={{
+          position: "absolute", right: "10%", top: "20%", width: 26, height: 26, borderRadius: 999,
+          background: "#FFF", border: "2px solid #3D55A1",
+          display: "flex", alignItems: "center", justifyContent: "center",
+        }}>
+          <MapPin size={13} color="#3D55A1" />
+        </div>
+        <span style={{
+          position: "absolute", top: 10, left: 10,
+          fontSize: 10, fontWeight: 700, color: "#A5B4FC", background: "rgba(255,255,255,0.08)",
+          padding: "4px 9px", borderRadius: 999, border: "0.5px solid rgba(255,255,255,0.12)",
+          textTransform: "uppercase", letterSpacing: 0.6,
+        }}>Route preview</span>
+      </div>
+      <div style={{
+        padding: 16, color: "#FFF",
+        background:
+          "radial-gradient(120% 80% at 0% 100%, rgba(61,85,161,0.55) 0%, transparent 60%), " +
+          "linear-gradient(135deg, #0F172A 0%, #1E293B 100%)",
+      }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 600, color: "#A5B4FC", textTransform: "uppercase", letterSpacing: 0.6, display: "inline-flex", alignItems: "center", gap: 6 }}>
+              <span style={{ width: 6, height: 6, borderRadius: 999, background: "#34D399", boxShadow: "0 0 0 4px rgba(52,211,153,0.22)" }} />
+              Live · in {lesson.minutesUntil}m
+            </div>
+            <div style={{ fontSize: 30, fontWeight: 700, letterSpacing: -0.8, fontVariantNumeric: "tabular-nums", lineHeight: 1, marginTop: 6 }}>{lesson.startTime}</div>
+            <div style={{ fontSize: 13, fontWeight: 600, marginTop: 6 }}>{lesson.pupilName}</div>
+            <div style={{ fontSize: 11, opacity: 0.7, marginTop: 1 }}>{lesson.lessonType}</div>
+          </div>
+          <div style={{
+            width: 48, height: 48, borderRadius: 999, background: "rgba(255,255,255,0.14)",
+            border: "1px solid rgba(255,255,255,0.18)",
+            color: "#FFF", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 16,
+          }}>{lesson.initials}</div>
+        </div>
+      </div>
+      <div style={{ padding: "4px 14px" }}>
+        {items.map((it, i) => (
+          <div key={i} style={{
+            display: "flex", justifyContent: "space-between", alignItems: "center",
+            padding: "10px 0", borderBottom: i < items.length - 1 ? "1px solid #F1F5F9" : "none",
+          }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 12, color: "#475569", fontWeight: 500 }}>
+              {it.icon}{it.label}
+            </span>
+            <span style={{ fontSize: 12, fontWeight: 600, color: "#0F172A", fontVariantNumeric: "tabular-nums" }}>{it.value}</span>
+          </div>
+        ))}
+      </div>
+      <div style={{ display: "flex", gap: 8, padding: 12, borderTop: "1px solid #F1F5F9" }}>
+        <button style={btnSecondary}><Phone size={14} /> Call</button>
+        <button style={btnPrimary}><Navigation size={14} /> Navigate</button>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Page
 // ---------------------------------------------------------------------------
 const VARIANTS = [
@@ -1603,11 +1900,22 @@ const VARIANTS = [
   { id: "v32", name: "Live Brief Dark", desc: "Glassy dark surface with a 2×2 brief grid.", Component: V32LiveBriefDark },
   { id: "v33", name: "Live Brief Compact", desc: "Single ambient card with inline check chips.", Component: V33LiveBriefCompact },
   { id: "v34", name: "Live Brief Pro", desc: "Ambient hero on top, full brief checklist beneath.", Component: V34LiveBriefPro },
+  { id: "v35", name: "Brief Pro · No Map", desc: "Refined Live Brief Pro hero, no map strip.", Component: V35LiveBriefProNoMap },
+  { id: "v36", name: "Brief Pro · Map", desc: "Live Brief Pro with a static map strip on top.", Component: V36LiveBriefProMap },
+  { id: "v37", name: "Brief Pro · Dark", desc: "Dark gradient hero — pops on light blue backgrounds.", Component: V37LiveBriefProDark },
+  { id: "v38", name: "Brief Pro · Dark + Map", desc: "Dark hero + map strip for maximum contrast on blue.", Component: V38LiveBriefProDarkMap },
 ];
 
 export default function InstructorNextUpLab() {
   const [active, setActive] = useState<string>("all");
+  const [bg, setBg] = useState<string>("#F4F7F6");
   const visible = active === "all" ? VARIANTS : VARIANTS.filter(v => v.id === active);
+  const bgOptions = [
+    { id: "neutral",   label: "Neutral",   color: "#F4F7F6" },
+    { id: "lightblue", label: "Light blue", color: "#EDF2FE" },
+    { id: "blue",      label: "Brand tint", color: "#DCEAFE" },
+    { id: "white",     label: "White",     color: "#FFFFFF" },
+  ];
 
   return (
     <div style={{ minHeight: "100vh", background: "#F4F7F6", padding: "32px 16px 96px" }}>
@@ -1636,6 +1944,21 @@ export default function InstructorNextUpLab() {
           ))}
         </div>
 
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 20, flexWrap: "wrap" }}>
+          <span style={{ fontSize: 11, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 600, marginRight: 4 }}>Preview bg</span>
+          {bgOptions.map(o => (
+            <button key={o.id} onClick={() => setBg(o.color)} style={{
+              padding: "6px 12px", borderRadius: 999, fontSize: 12, fontWeight: 500,
+              background: bg === o.color ? "#0F172A" : "#FFFFFF",
+              color: bg === o.color ? "#FFFFFF" : "#0F172A",
+              border: "1px solid #E2E8F0", display: "inline-flex", alignItems: "center", gap: 6,
+            }}>
+              <span style={{ width: 10, height: 10, borderRadius: 999, background: o.color, border: "1px solid #CBD5E1" }} />
+              {o.label}
+            </button>
+          ))}
+        </div>
+
         <div style={{
           display: "grid",
           gridTemplateColumns: visible.length === 1 ? "minmax(0,420px)" : "repeat(auto-fit, minmax(340px, 1fr))",
@@ -1653,7 +1976,7 @@ export default function InstructorNextUpLab() {
                     <div style={{ fontSize: 16, fontWeight: 600, color: "#0F172A", marginTop: 2 }}>{v.name}</div>
                   </div>
                 </div>
-                <div style={{ background: "#F4F7F6", padding: 16, borderRadius: 14 }}>
+                <div style={{ background: bg, padding: 16, borderRadius: 14, transition: "background 200ms" }}>
                   <C />
                 </div>
                 <p style={{ fontSize: 12, color: "#64748B", marginTop: 12 }}>{v.desc}</p>
