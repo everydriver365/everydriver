@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronDown, Sparkles } from "lucide-react";
 import { pupilAvatarColor } from "@/lib/pupilAvatarColor";
 import { GoogleMap, OverlayViewF, OVERLAY_MOUSE_TARGET, PolylineF } from "@react-google-maps/api";
@@ -1027,9 +1027,8 @@ interface UpgradeRowSpec {
   tierBg: string;
   tierColor: string;
   subtitle: string;
-  ctaLabel: string;
-  ctaBg: string;
-  ctaFg?: string;
+  upgradeBg: string;
+  upgradeFg?: string;
   onClick: () => void;
 }
 
@@ -1123,201 +1122,136 @@ function RowDivider() {
 
 function AttentionRowItem({
   row,
-  showNewBadge,
-  isLast,
 }: {
   row: AttentionRow;
-  showNewBadge: boolean;
-  isLast: boolean;
 }) {
   const count = row.badge ? Number(row.badge.label) || 0 : 0;
   const isClear = !!row.isClear;
   const isActive = !isClear && count > 0;
-  const accent = row.iconColor;
+  const badgeBg = row.badge?.bg ?? "#CC2229";
+  const badgeFg = row.badge?.fg ?? "#FFFFFF";
 
   return (
-    <>
-      <button
-        type="button"
-        onClick={row.onClick}
-        style={{
-          width: "100%",
-          display: "flex",
-          alignItems: "center",
-          gap: 10,
-          padding: "10px 14px",
-          background: isActive ? "#FFFBFB" : "transparent",
-          border: "none",
-          cursor: "pointer",
-          textAlign: "left",
-          opacity: isClear ? 0.38 : 1,
-        }}
-      >
-        {/* Left accent band */}
+    <button
+      type="button"
+      onClick={row.onClick}
+      style={{
+        width: "100%",
+        display: "flex",
+        alignItems: "center",
+        gap: 9,
+        padding: "9px 12px",
+        background: isActive && row.group === "urgent" ? "#FFFBFB" : "transparent",
+        border: "none",
+        cursor: "pointer",
+        textAlign: "left",
+        opacity: isClear ? 0.4 : 1,
+      }}
+    >
+      <span style={{ position: "relative", flexShrink: 0 }}>
         <span
           style={{
-            width: 4,
-            height: 34,
-            borderRadius: 2,
-            flexShrink: 0,
-            background: isActive ? accent : "#E0E5EE",
+            width: 28,
+            height: 28,
+            borderRadius: 8,
+            background: isClear ? "#F2F4F8" : row.iconBg,
+            color: isClear ? "#8E8E93" : row.iconColor,
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
           }}
-        />
-
-        {/* Icon tile */}
-        <span style={{ position: "relative", flexShrink: 0 }}>
-          <span
-            style={{
-              width: 30,
-              height: 30,
-              borderRadius: 9,
-              background: isActive ? row.iconBg : "#F2F4F8",
-              color: isActive ? row.iconColor : "#8E8E93",
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <row.Icon size={14} strokeWidth={1.7} />
-          </span>
-          {showNewBadge && (
-            <span
-              style={{
-                position: "absolute",
-                top: -3,
-                right: -3,
-                width: 9,
-                height: 9,
-                borderRadius: 5,
-                background: "#CC2229",
-                border: "1.5px solid #FFF",
-              }}
-            />
-          )}
+        >
+          <row.Icon size={12} strokeWidth={1.6} />
         </span>
+        {isActive && count > 0 && (
+          <span
+            style={{
+              position: "absolute",
+              top: -3,
+              right: -3,
+              width: 10,
+              height: 10,
+              borderRadius: 5,
+              background: "#CC2229",
+              border: "1.5px solid #FFF",
+            }}
+          />
+        )}
+      </span>
 
-        {/* Text */}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div
-            style={{
-              fontSize: 13,
-              fontWeight: isActive ? 700 : 600,
-              color: isActive ? accent : "#8E8E93",
-              lineHeight: 1.2,
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-            }}
-          >
-            {row.title}
-          </div>
-          <div
-            style={{
-              fontSize: 11,
-              color: "#8E8E93",
-              marginTop: 2,
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-            }}
-          >
-            {row.subtitle}
-          </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div
+          style={{
+            fontSize: 14,
+            fontWeight: isActive && row.group === "urgent" ? 700 : 600,
+            color: isActive && row.group === "urgent" ? "#CC2229" : "#1A1A1A",
+          }}
+        >
+          {row.title}
         </div>
+        <div style={{ fontSize: 12, color: "#8E8E93", marginTop: 1 }}>
+          {row.subtitle}
+        </div>
+      </div>
 
-        {/* Right element */}
-        {isClear ? (
-          <span
-            style={{
-              background: "#E8F8ED",
-              borderRadius: 20,
-              padding: "2px 7px",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 3,
-              flexShrink: 0,
-            }}
-          >
-            <Check size={9} color="#1A7A3C" strokeWidth={2.5} />
-            <span style={{ fontSize: 10, fontWeight: 700, color: "#1A7A3C" }}>Clear</span>
+      {isClear ? (
+        <span
+          style={{
+            background: "#E8F8ED",
+            borderRadius: 20,
+            padding: "2px 7px",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 3,
+            flexShrink: 0,
+          }}
+        >
+          <Check size={8} color="#1A7A3C" strokeWidth={2.5} />
+          <span style={{ fontSize: 11, fontWeight: 700, color: "#1A7A3C", letterSpacing: "0.04em", textTransform: "uppercase" }}>
+            Clear
           </span>
-        ) : count > 0 ? (
-          <span
-            style={{
-              background: accent,
-              color: "#FFFFFF",
-              borderRadius: 20,
-              minWidth: 20,
-              height: 20,
-              padding: "0 6px",
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 11,
-              fontWeight: 700,
-              fontVariantNumeric: "tabular-nums",
-              flexShrink: 0,
-            }}
-          >
-            {count}
-          </span>
-        ) : null}
+        </span>
+      ) : count > 0 ? (
+        <span
+          style={{
+            background: badgeBg,
+            color: badgeFg,
+            borderRadius: 20,
+            minWidth: 18,
+            height: 18,
+            padding: "0 5px",
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: 12,
+            fontWeight: 700,
+            fontVariantNumeric: "tabular-nums",
+            flexShrink: 0,
+          }}
+        >
+          {count}
+        </span>
+      ) : null}
 
-        <ChevronRight
-          size={12}
-          color={isActive ? accent : "#D0D5DD"}
-          strokeWidth={isActive ? 2 : 1.8}
-          style={{ flexShrink: 0, marginLeft: 2 }}
-        />
-      </button>
-
-      {!isLast && (
-        <div style={{ height: 0.5, background: "#F0F3F8" }} />
-      )}
-    </>
+      <ChevronRight
+        size={12}
+        color={isActive && row.group === "urgent" ? "#CC2229" : "#C7C7CC"}
+        strokeWidth={isActive && row.group === "urgent" ? 2 : 1.8}
+      />
+    </button>
   );
 }
 
 function AttentionCard({ rows }: { rows: AttentionRow[] }) {
-  // Priority order based on declaration order in attentionRows.
-  const withPriority = useMemo(
-    () => rows.map((r, i) => ({ row: r, priority: i, count: r.badge ? Number(r.badge.label) || 0 : 0 })),
-    [rows]
-  );
-
-  // Session-only "just arrived" tracking.
-  const prevCounts = useRef<Record<string, number>>({});
-  const [newlyActivated, setNewlyActivated] = useState<Set<string>>(new Set());
-
-  useEffect(() => {
-    const justActivated: string[] = [];
-    withPriority.forEach(({ row, count }) => {
-      const prev = prevCounts.current[row.key] ?? count;
-      if (prev === 0 && count > 0) justActivated.push(row.key);
-      prevCounts.current[row.key] = count;
-    });
-    if (justActivated.length === 0) return;
-    setNewlyActivated((p) => {
-      const next = new Set(p);
-      justActivated.forEach((k) => next.add(k));
-      return next;
-    });
-    const t = setTimeout(() => {
-      setNewlyActivated((p) => {
-        const next = new Set(p);
-        justActivated.forEach((k) => next.delete(k));
-        return next;
-      });
-    }, 30000);
-    return () => clearTimeout(t);
-  }, [withPriority]);
+  const urgent = rows.filter((r) => r.group === "urgent");
+  const todo = rows.filter((r) => r.group === "todo");
 
   if (rows.length === 0) {
     return (
       <div
         style={{
           background: "#FFF",
-          borderRadius: 18,
+          borderRadius: 13,
           padding: 16,
           textAlign: "center",
           border: `0.5px solid ${BORDER}`,
@@ -1329,30 +1263,46 @@ function AttentionCard({ rows }: { rows: AttentionRow[] }) {
     );
   }
 
-  const sorted = [...withPriority].sort((a, b) => {
-    const aActive = !a.row.isClear && a.count > 0 ? 0 : 1;
-    const bActive = !b.row.isClear && b.count > 0 ? 0 : 1;
-    if (aActive !== bActive) return aActive - bActive;
-    return a.priority - b.priority;
-  });
+  const urgentActive = urgent.filter((r) => !r.isClear).length;
+  const todoActive = todo.filter((r) => !r.isClear).length;
 
   return (
-    <div
-      style={{
-        background: "#FFF",
-        borderRadius: 18,
-        overflow: "hidden",
-        border: "0.5px solid rgba(26,82,160,0.08)",
-      }}
-    >
-      {sorted.map(({ row }, i) => (
-        <AttentionRowItem
-          key={row.key}
-          row={row}
-          showNewBadge={newlyActivated.has(row.key)}
-          isLast={i === sorted.length - 1}
-        />
-      ))}
+    <div>
+      {urgent.length > 0 && (
+        <GroupCard borderColor="rgba(204,34,41,0.12)">
+          <GroupHeader
+            label="Urgent"
+            dotColor="#CC2229"
+            bg="rgba(204,34,41,0.05)"
+            borderColor="rgba(204,34,41,0.08)"
+            countLabel={`${urgentActive} need${urgentActive === 1 ? "s" : ""} action`}
+          />
+          {urgent.map((r, i) => (
+            <div key={r.key}>
+              {i > 0 && <RowDivider />}
+              <AttentionRowItem row={r} />
+            </div>
+          ))}
+        </GroupCard>
+      )}
+
+      {todo.length > 0 && (
+        <GroupCard borderColor="rgba(180,83,9,0.10)">
+          <GroupHeader
+            label="To do"
+            dotColor="#B45309"
+            bg="rgba(180,83,9,0.04)"
+            borderColor="rgba(180,83,9,0.08)"
+            countLabel={`${todoActive} need attention`}
+          />
+          {todo.map((r, i) => (
+            <div key={r.key}>
+              {i > 0 && <RowDivider />}
+              <AttentionRowItem row={r} />
+            </div>
+          ))}
+        </GroupCard>
+      )}
     </div>
   );
 }
@@ -1380,7 +1330,7 @@ function UpgradeCard({ rows }: { rows: UpgradeRowSpec[] }) {
               display: "flex",
               alignItems: "center",
               gap: 9,
-              padding: "7px 12px",
+              padding: "9px 12px",
               background: "transparent",
               border: "none",
               cursor: "pointer",
@@ -1400,38 +1350,40 @@ function UpgradeCard({ rows }: { rows: UpgradeRowSpec[] }) {
                 flexShrink: 0,
               }}
             >
-              <r.Icon size={14} strokeWidth={1.8} />
+              <r.Icon size={12} strokeWidth={1.6} />
             </span>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 1 }}>
                 <span style={{ fontSize: 14, fontWeight: 700, color: "#1A1A1A" }}>{r.label}</span>
                 <span
                   style={{
                     background: r.tierBg,
                     color: r.tierColor,
-                    borderRadius: 999,
-                    padding: "1px 7px",
+                    borderRadius: 4,
+                    padding: "1px 5px",
                     fontSize: 10,
                     fontWeight: 700,
+                    letterSpacing: "0.04em",
+                    textTransform: "uppercase",
                   }}
                 >
                   {r.tierLabel}
                 </span>
               </div>
-              <div style={{ fontSize: 11, color: "#8E8E93" }}>{r.subtitle}</div>
+              <div style={{ fontSize: 12, color: "#8E8E93" }}>{r.subtitle}</div>
             </div>
             <span
               style={{
-                background: r.ctaBg,
-                color: r.ctaFg ?? "#FFF",
-                borderRadius: 999,
-                padding: "5px 12px",
+                background: r.upgradeBg,
+                color: r.upgradeFg ?? "#FFF",
+                borderRadius: 20,
+                padding: "4px 10px",
                 fontSize: 12,
                 fontWeight: 700,
                 flexShrink: 0,
               }}
             >
-              {r.ctaLabel}
+              Upgrade
             </span>
             <ChevronRight size={12} color="#C7C7CC" strokeWidth={1.8} />
           </button>
@@ -1554,6 +1506,36 @@ export function MobileHomeRedesign({
     onClick: () => navigate("/instructor/test-requests"),
   });
 
+  // Calls (counter to be wired later)
+  const missedCallsCount: number = 0;
+  attentionRows.push({
+    key: "calls",
+    group: "urgent",
+    Icon: Phone,
+    iconBg: "#FFF0F0",
+    iconColor: RED,
+    title: "Calls",
+    subtitle: missedCallsCount > 0 ? `${missedCallsCount} missed call${missedCallsCount !== 1 ? "s" : ""}` : "No missed calls",
+    badge: missedCallsCount > 0 ? { label: String(missedCallsCount), bg: "#CC2229" } : undefined,
+    isClear: missedCallsCount === 0,
+    onClick: () => navigate("/instructor/calls"),
+  });
+
+  // Enquiries (counter to be wired later)
+  const enquiriesCount: number = 0;
+  attentionRows.push({
+    key: "enquiries",
+    group: "urgent",
+    Icon: Inbox,
+    iconBg: "#FFF0F0",
+    iconColor: RED,
+    title: "Enquiries",
+    subtitle: enquiriesCount > 0 ? `${enquiriesCount} new enquir${enquiriesCount !== 1 ? "ies" : "y"}` : "No new enquiries",
+    badge: enquiriesCount > 0 ? { label: String(enquiriesCount), bg: "#CC2229" } : undefined,
+    isClear: enquiriesCount === 0,
+    onClick: () => navigate("/instructor/enquiries"),
+  });
+
   if (vehicleFault) {
     attentionRows.push({
       key: "vehicle",
@@ -1567,16 +1549,12 @@ export function MobileHomeRedesign({
     });
   }
 
-  // Live count of bookable 1-hour slots this week (Mon–Sun) drawn from the
-  // real availability engine.
+  // Live count of bookable open slots between today and end of this week (Sun).
   const weekEndStr = format(endOfWeek(new Date(), { weekStartsOn: 1 }), "yyyy-MM-dd");
   const todayStr = format(new Date(), "yyyy-MM-dd");
-  const openSlotsThisWeek = (gapData ?? [])
+  const openSlots = (gapData ?? [])
     .filter((g) => g.date >= todayStr && g.date <= weekEndStr)
     .reduce((sum, g) => sum + (g.slots?.length ?? 0), 0);
-  const openSlotDays = (gapData ?? []).filter(
-    (g) => g.date >= todayStr && g.date <= weekEndStr && (g.slots?.length ?? 0) > 0
-  ).length;
   attentionRows.push({
     key: "gaps",
     group: "todo",
@@ -1584,15 +1562,9 @@ export function MobileHomeRedesign({
     iconBg: "#F2F4F8",
     iconColor: "#5B6B8A",
     title: "Open slots this week",
-    subtitle:
-      openSlotsThisWeek > 0
-        ? `${openSlotsThisWeek} bookable hour${openSlotsThisWeek === 1 ? "" : "s"} across ${openSlotDays} day${openSlotDays === 1 ? "" : "s"}`
-        : "No open gaps this week",
-    badge:
-      openSlotsThisWeek > 0
-        ? { label: String(openSlotsThisWeek), bg: "#F2F4F8", fg: "#5B6B8A", variant: "pill" }
-        : undefined,
-    isClear: openSlotsThisWeek === 0,
+    subtitle: "Fill gaps in your schedule",
+    badge: openSlots > 0 ? { label: String(openSlots), bg: "#F2F4F8", fg: "#5B6B8A", variant: "pill" } : undefined,
+    isClear: openSlots === 0,
     onClick: () => navigate("/instructor/schedule"),
   });
 
@@ -1640,10 +1612,13 @@ export function MobileHomeRedesign({
   }
 
   // Total active attention count (for the section header pill).
+  // Sums real counts plus a +1 for boolean rows that don't carry a number.
   const totalAttentionCount =
+    missedCallsCount +
+    enquiriesCount +
     pendingJobs +
     swapCount +
-    openSlotsThisWeek +
+    openSlots +
     dormantCount +
     unread +
     (debt > 0 ? 1 : 0) +
@@ -1652,21 +1627,20 @@ export function MobileHomeRedesign({
   // Upgrade section (placeholders — to be wired later)
   const membershipLevel = "Starter" as "Free" | "Starter" | "Pro" | "Premium";
   const healthCover = "Basic" as "None" | "Basic" | "Full";
-  const incomeProtection = "None" as "None" | "Basic" | "Full";
 
   const upgradeRows: UpgradeRowSpec[] = [
     {
       key: "membership",
       Icon: Star,
-      iconBg: "#FFF1DD",
+      iconBg: "#FFF6E6",
       iconColor: "#B45309",
       label: "Membership",
       tierLabel: membershipLevel,
-      tierBg: "#FFF1DD",
+      tierBg: "#FFF6E6",
       tierColor: "#B45309",
-      subtitle: "Unlock features · lower fees",
-      ctaLabel: "Upgrade",
-      ctaBg: "#C2570B",
+      subtitle: "Unlock more features · lower fees",
+      upgradeBg: BLUE_TINT,
+      upgradeFg: BLUE,
       onClick: () => navigate("/instructor/subscription"),
     },
     {
@@ -1678,23 +1652,9 @@ export function MobileHomeRedesign({
       tierLabel: healthCover,
       tierBg: "#EEF3FF",
       tierColor: "#1A52A0",
-      subtitle: "Medical & accident cover",
-      ctaLabel: "Upgrade",
-      ctaBg: "#1A52A0",
-      onClick: () => navigate("/instructor/health"),
-    },
-    {
-      key: "income-protection",
-      Icon: PoundSterling,
-      iconBg: "#E6F4EA",
-      iconColor: "#0F8A4F",
-      label: "Income protection",
-      tierLabel: incomeProtection,
-      tierBg: "#E6F4EA",
-      tierColor: "#0F8A4F",
-      subtitle: "Cover if you can't teach",
-      ctaLabel: "Add",
-      ctaBg: "#0F8A4F",
+      subtitle: "Full income protection available",
+      upgradeBg: BLUE_TINT,
+      upgradeFg: BLUE,
       onClick: () => navigate("/instructor/health"),
     },
   ];
