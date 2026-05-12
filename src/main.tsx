@@ -36,8 +36,9 @@ if (typeof window !== "undefined" && detectNativeWrapper()) {
   import("@capacitor/status-bar")
     .then(({ StatusBar, Style }) => {
       StatusBar.setOverlaysWebView({ overlay: false }).catch(() => {});
-      StatusBar.setBackgroundColor({ color: "#EEF1F5" }).catch(() => {});
-      StatusBar.setStyle({ style: Style.Light }).catch(() => {});
+      StatusBar.setBackgroundColor({ color: "#F4F7F6" }).catch(() => {});
+      // Light background → dark content (Style.Dark = dark text/icons)
+      StatusBar.setStyle({ style: Style.Dark }).catch(() => {});
     })
     .catch(() => {});
 }
