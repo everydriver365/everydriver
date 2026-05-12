@@ -554,18 +554,6 @@ export function UpNextExpanded({
                   padding: 0,
                 }}
               >
-                <div
-                  style={{
-                    fontSize: 10,
-                    fontWeight: 700,
-                    color: "#8E8E93",
-                    letterSpacing: 1.2,
-                    textTransform: "uppercase",
-                    marginBottom: 8,
-                  }}
-                >
-                  Actions
-                </div>
 
                 {/* Row 1 — Comms */}
                 <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
