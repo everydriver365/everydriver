@@ -533,39 +533,10 @@ export function UpNextExpanded({
           overflow: "hidden",
         }}
       >
-        {/* Live mini map at top of expanded section */}
-        <UpNextLiveMapStrip
-          pickupPostcode={pickupPostcode}
-          pickupLocation={pickupLocation}
-          instructorId={instructorId}
-          hasDestination={!!fullAddress}
-          onNavigate={(e) => { e.stopPropagation(); navigateMap(); }}
-          height={130}
-        />
-
-        {/* SECTION 1 — Status banners */}
-        <div style={{ paddingTop: 14 }}>
-          {checkInStatus === "confirmed" && (
-            <Banner bg="#E8F8ED" color="#1A7A3C" Icon={CheckCircle2}>
-              Lesson confirmed
-            </Banner>
-          )}
-          {(checkInStatus === "pending" || !checkInStatus) && (
-            <Banner bg="#FFF6E6" color="#B45309" Icon={AlertCircle}>
-              Awaiting confirmation
-            </Banner>
-          )}
-          {debt > 0 && (
-            <Banner bg="#FFF0F0" color={RED} Icon={AlertCircle}>
-              Payment not received · £{debt.toFixed(0)}
-            </Banner>
-          )}
+        {/* SECTION — Action pills (match Call/Text/Go style) — placed at very top, directly under Call/Text/Go */}
+        <div style={{ paddingTop: 12 }}>
+          <SectionLabel>Actions</SectionLabel>
         </div>
-
-        <Divider />
-
-        {/* SECTION — Action pills (match Call/Text/Go style) */}
-        <SectionLabel>Actions</SectionLabel>
         {(() => {
           const PILL_BG = "#EDF2FE";
           const PILL_FG = "#3D55A1";
@@ -642,6 +613,37 @@ export function UpNextExpanded({
             </div>
           );
         })()}
+
+        <Divider />
+
+        {/* Live mini map */}
+        <UpNextLiveMapStrip
+          pickupPostcode={pickupPostcode}
+          pickupLocation={pickupLocation}
+          instructorId={instructorId}
+          hasDestination={!!fullAddress}
+          onNavigate={(e) => { e.stopPropagation(); navigateMap(); }}
+          height={130}
+        />
+
+        {/* SECTION 1 — Status banners */}
+        <div style={{ paddingTop: 14 }}>
+          {checkInStatus === "confirmed" && (
+            <Banner bg="#E8F8ED" color="#1A7A3C" Icon={CheckCircle2}>
+              Lesson confirmed
+            </Banner>
+          )}
+          {(checkInStatus === "pending" || !checkInStatus) && (
+            <Banner bg="#FFF6E6" color="#B45309" Icon={AlertCircle}>
+              Awaiting confirmation
+            </Banner>
+          )}
+          {debt > 0 && (
+            <Banner bg="#FFF0F0" color={RED} Icon={AlertCircle}>
+              Payment not received · £{debt.toFixed(0)}
+            </Banner>
+          )}
+        </div>
 
         <Divider />
 
