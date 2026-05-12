@@ -613,16 +613,39 @@ function LessonRow({
       <div
         style={{
           width: 44,
-          textAlign: "center",
-          fontSize: 12,
-          fontWeight: 700,
-          color: TEXT_PRIMARY,
           flexShrink: 0,
-          fontVariantNumeric: "tabular-nums",
           paddingTop: 1,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 2,
         }}
       >
-        {lesson.startTime}
+        <div
+          style={{
+            fontSize: 12,
+            fontWeight: 700,
+            color: TEXT_PRIMARY,
+            fontVariantNumeric: "tabular-nums",
+          }}
+        >
+          {lesson.startTime}
+        </div>
+        {lessonTypeLabel && (
+          <div
+            style={{
+              fontSize: 8,
+              fontWeight: 600,
+              color: TEXT_TERTIARY,
+              textTransform: "capitalize",
+              lineHeight: 1.1,
+              textAlign: "center",
+              wordBreak: "break-word",
+            }}
+          >
+            {lessonTypeLabel}
+          </div>
+        )}
       </div>
       <span
         style={{
