@@ -206,17 +206,19 @@ export function WeekTimelineView({
         </button>
       </div>
 
-      {/* Horizontally scrollable area (glides day-by-day) */}
+      {/* Single scroller — both axes (avoids iOS WKWebView nested-scroll bug) */}
       <div
-        ref={hScrollRef}
+        ref={(el) => {
+          hScrollRef.current = el;
+          vScrollRef.current = el;
+        }}
         onScroll={handleHScroll}
         style={{
           flex: 1,
           minHeight: 0,
-          overflowX: "auto",
-          overflowY: "hidden",
+          overflow: "auto",
           scrollSnapType: "none",
-          overscrollBehaviorX: "contain",
+          overscrollBehavior: "contain",
           WebkitOverflowScrolling: "touch",
           touchAction: "pan-x pan-y",
         }}
@@ -224,14 +226,13 @@ export function WeekTimelineView({
         <div
           style={{
             width: dayWidth > 0 ? GUTTER + dayWidth * TOTAL_DAYS : "100%",
-            height: "100%",
             display: "flex",
             flexDirection: "column",
             position: "relative",
           }}
         >
-          {/* Day header row */}
-          <div style={{ display: "flex", height: DAY_HEADER_H, borderBottom: "0.5px solid #F0F3F8", background: "#FFFFFF" }}>
+          {/* Day header row (sticky top) */}
+          <div style={{ display: "flex", height: DAY_HEADER_H, borderBottom: "0.5px solid #F0F3F8", background: "#FFFFFF", position: "sticky", top: 0, zIndex: 6 }}>
             <div style={{ width: GUTTER, position: "sticky", left: 0, zIndex: 4, background: "#FFFFFF" }} />
             {days.map((d, i) => {
               const today = isSameDay(d, now);
@@ -266,7 +267,7 @@ export function WeekTimelineView({
 
           {/* All-day strip */}
           {maxAllDay > 0 && (
-            <div style={{ display: "flex", borderBottom: "0.5px solid #F0F3F8", background: "#FAFBFC", minHeight: allDayStripH }}>
+            <div style={{ display: "flex", borderBottom: "0.5px solid #F0F3F8", background: "#FAFBFC", minHeight: allDayStripH, position: "sticky", top: DAY_HEADER_H, zIndex: 5 }}>
               <div style={{ width: GUTTER, position: "sticky", left: 0, zIndex: 4, background: "#FAFBFC", fontSize: 9, color: "#8E8E93", fontWeight: 600, textAlign: "right", padding: "4px 4px 0 0" }}>
                 all-day
               </div>
@@ -307,9 +308,8 @@ export function WeekTimelineView({
             </div>
           )}
 
-          {/* Vertically scrollable timetable */}
-          <div ref={vScrollRef} style={{ flex: 1, overflowY: "auto", overflowX: "hidden", minHeight: 0 }}>
-            <div style={{ display: "flex", height: totalHeight, position: "relative" }}>
+          {/* Timetable (vertical scroll handled by parent) */}
+          <div style={{ display: "flex", height: totalHeight, position: "relative" }}>
               {/* Hour gutter */}
               <div style={{ width: GUTTER, position: "sticky", left: 0, zIndex: 3, background: "#FFFFFF" }}>
                 {hours.map((h, i) => (
@@ -447,7 +447,7 @@ export function WeekTimelineView({
             </div>
           </div>
         </div>
-      </div>
+
     </div>
   );
 }
