@@ -1422,8 +1422,10 @@ function UpgradeCard({ rows }: { rows: UpgradeRowSpec[] }) {
                 <r.Icon size={12} strokeWidth={1.8} />
               </span>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 1 }}>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: "#1A1A1A" }}>{r.label}</span>
+                <div style={{ fontSize: 13, fontWeight: 700, color: "#1A1A1A", marginBottom: 2 }}>
+                  {r.label}
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
                   <span
                     style={{
                       background: r.tierBg,
@@ -1434,12 +1436,13 @@ function UpgradeCard({ rows }: { rows: UpgradeRowSpec[] }) {
                       fontWeight: 700,
                       letterSpacing: "0.04em",
                       textTransform: "uppercase",
+                      whiteSpace: "nowrap",
                     }}
                   >
                     {r.tierLabel}
                   </span>
+                  <span style={{ fontSize: 11, color: "#8E8E93" }}>{r.subtitle}</span>
                 </div>
-                <div style={{ fontSize: 11, color: "#8E8E93" }}>{r.subtitle}</div>
               </div>
               <span
                 style={{
