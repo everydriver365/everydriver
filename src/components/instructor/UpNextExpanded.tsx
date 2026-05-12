@@ -1291,26 +1291,6 @@ export function UpNextExpanded({
                 <span style={{ fontSize: 11, fontWeight: 600 }}>Cancel lesson</span>
               </button>
             </div>
-            <div style={{ height: 0.5, backgroundColor: "#F0F3F8", marginBottom: 8 }} />
-            <button
-              type="button"
-              onClick={() => navigate("/instructor/schedule")}
-              style={{
-                width: "100%",
-                background: "transparent",
-                border: "none",
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 4,
-                cursor: "pointer",
-                padding: 0,
-                color: "#1A52A0",
-              }}
-            >
-              <span style={{ fontSize: 11, fontWeight: 600 }}>View all lessons</span>
-              <ChevronRight size={9} strokeWidth={2.2} />
-            </button>
           </div>
         </div>
       </div>
