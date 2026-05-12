@@ -1944,6 +1944,21 @@ export default function InstructorNextUpLab() {
           ))}
         </div>
 
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 20, flexWrap: "wrap" }}>
+          <span style={{ fontSize: 11, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 600, marginRight: 4 }}>Preview bg</span>
+          {bgOptions.map(o => (
+            <button key={o.id} onClick={() => setBg(o.color)} style={{
+              padding: "6px 12px", borderRadius: 999, fontSize: 12, fontWeight: 500,
+              background: bg === o.color ? "#0F172A" : "#FFFFFF",
+              color: bg === o.color ? "#FFFFFF" : "#0F172A",
+              border: "1px solid #E2E8F0", display: "inline-flex", alignItems: "center", gap: 6,
+            }}>
+              <span style={{ width: 10, height: 10, borderRadius: 999, background: o.color, border: "1px solid #CBD5E1" }} />
+              {o.label}
+            </button>
+          ))}
+        </div>
+
         <div style={{
           display: "grid",
           gridTemplateColumns: visible.length === 1 ? "minmax(0,420px)" : "repeat(auto-fit, minmax(340px, 1fr))",
@@ -1961,7 +1976,7 @@ export default function InstructorNextUpLab() {
                     <div style={{ fontSize: 16, fontWeight: 600, color: "#0F172A", marginTop: 2 }}>{v.name}</div>
                   </div>
                 </div>
-                <div style={{ background: "#F4F7F6", padding: 16, borderRadius: 14 }}>
+                <div style={{ background: bg, padding: 16, borderRadius: 14, transition: "background 200ms" }}>
                   <C />
                 </div>
                 <p style={{ fontSize: 12, color: "#64748B", marginTop: 12 }}>{v.desc}</p>
