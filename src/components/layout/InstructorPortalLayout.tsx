@@ -356,11 +356,47 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
         })));
       }
 
-      // Search pages
-      const pages = sidebarLinks.filter(p => p.label.toLowerCase().includes(lowerQ));
-      items.push(...pages.map(p => ({
+      // Search pages / functions — match label, href slug, and a few synonyms
+      const synonyms: Record<string, string[]> = {
+        money: ["pay", "income", "expenses", "tax", "accounts", "in-out", "mileage"],
+        finance: ["pay", "income", "expenses", "tax", "accounts"],
+        earnings: ["pay", "income"],
+        invoice: ["income", "pay"],
+        invoices: ["income", "pay"],
+        diary: ["schedule", "availability"],
+        calendar: ["schedule", "availability"],
+        students: ["pupils"],
+        learners: ["pupils"],
+        learner: ["pupils"],
+        pupil: ["pupils"],
+        gaps: ["fill-gaps", "gaps"],
+        chat: ["messages", "admin-chat", "visitor-chats"],
+        whatsapp: ["messages"],
+        booking: ["schedule", "pending-scheduling"],
+        bookings: ["schedule"],
+        gps: ["tracking", "gps-tracking", "saved-routes"],
+        route: ["saved-routes", "tracking"],
+        routes: ["saved-routes"],
+        site: ["website", "mini-website", "domains"],
+        web: ["website", "domains"],
+        domain: ["domains", "website"],
+        ai: ["voice", "famulor"],
+        voice: ["famulor", "voice"],
+        receipts: ["expenses"],
+        cars: ["fleet-dashboard", "tracking"],
+        vehicle: ["fleet-dashboard", "tracking"],
+        vehicles: ["fleet-dashboard", "tracking"],
+      };
+      const expansions = synonyms[lowerQ] || [];
+      const matchesPage = (p: { label: string; href: string }) => {
+        const hay = `${p.label.toLowerCase()} ${p.href.toLowerCase().replace(/[/-]/g, " ")}`;
+        if (hay.includes(lowerQ)) return true;
+        return expansions.some((e) => hay.includes(e));
+      };
+      const pages = sidebarLinks.filter(matchesPage);
+      items.push(...pages.slice(0, 12).map(p => ({
         id: p.href,
-        name: p.label,
+        name: friendlyLabel(p.label),
         subtitle: "Page",
         href: p.href,
       })));
