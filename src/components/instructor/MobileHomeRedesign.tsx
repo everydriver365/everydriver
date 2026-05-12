@@ -1595,11 +1595,13 @@ export function MobileHomeRedesign({
     });
   }
 
-  // Live count of days this week (Mon–Sun) that have at least one bookable
-  // gap. Counting raw 60-min anchors massively overstates availability
-  // (`computeFreeSlots` emits one anchor per hour), so we count gap days.
+  // Live count of bookable 1-hour slots this week (Mon–Sun) drawn from the
+  // real availability engine.
   const weekEndStr = format(endOfWeek(new Date(), { weekStartsOn: 1 }), "yyyy-MM-dd");
   const todayStr = format(new Date(), "yyyy-MM-dd");
+  const openSlotsThisWeek = (gapData ?? [])
+    .filter((g) => g.date >= todayStr && g.date <= weekEndStr)
+    .reduce((sum, g) => sum + (g.slots?.length ?? 0), 0);
   const openSlotDays = (gapData ?? []).filter(
     (g) => g.date >= todayStr && g.date <= weekEndStr && (g.slots?.length ?? 0) > 0
   ).length;
@@ -1611,14 +1613,14 @@ export function MobileHomeRedesign({
     iconColor: "#5B6B8A",
     title: "Open slots this week",
     subtitle:
-      openSlotDays > 0
-        ? `${openSlotDays} day${openSlotDays === 1 ? "" : "s"} with availability`
+      openSlotsThisWeek > 0
+        ? `${openSlotsThisWeek} bookable hour${openSlotsThisWeek === 1 ? "" : "s"} across ${openSlotDays} day${openSlotDays === 1 ? "" : "s"}`
         : "No open gaps this week",
     badge:
-      openSlotDays > 0
-        ? { label: String(openSlotDays), bg: "#F2F4F8", fg: "#5B6B8A", variant: "pill" }
+      openSlotsThisWeek > 0
+        ? { label: String(openSlotsThisWeek), bg: "#F2F4F8", fg: "#5B6B8A", variant: "pill" }
         : undefined,
-    isClear: openSlotDays === 0,
+    isClear: openSlotsThisWeek === 0,
     onClick: () => navigate("/instructor/schedule"),
   });
 
