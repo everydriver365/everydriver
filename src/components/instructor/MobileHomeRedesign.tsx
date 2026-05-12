@@ -158,7 +158,7 @@ function GreetingBlock({
   const divertBg = divertActive ? "#E8F8ED" : "#FFE9EA";
 
   return (
-    <div style={{ padding: "20px 18px 12px" }}>
+    <div style={{ padding: "20px 16px 12px" }}>
       <div
         style={{
           display: "flex",
