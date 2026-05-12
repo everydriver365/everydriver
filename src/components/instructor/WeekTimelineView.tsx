@@ -308,9 +308,8 @@ export function WeekTimelineView({
             </div>
           )}
 
-          {/* Vertically scrollable timetable */}
-          <div ref={vScrollRef} style={{ flex: 1, overflowY: "auto", overflowX: "hidden", minHeight: 0 }}>
-            <div style={{ display: "flex", height: totalHeight, position: "relative" }}>
+          {/* Timetable (vertical scroll handled by parent) */}
+          <div style={{ display: "flex", height: totalHeight, position: "relative" }}>
               {/* Hour gutter */}
               <div style={{ width: GUTTER, position: "sticky", left: 0, zIndex: 3, background: "#FFFFFF" }}>
                 {hours.map((h, i) => (
