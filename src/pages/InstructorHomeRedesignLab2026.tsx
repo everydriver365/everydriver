@@ -3,13 +3,21 @@ import { PhoneFrame } from "@/components/instructor/homeLab/PhoneFrame";
 import {
   V1CalmStack, V2TimelineSpine, V3Mosaic, V4Magazine, V5Command,
 } from "@/components/instructor/homeLab/redesign2026/variants";
+import {
+  V6Focus, V7Bento, V8Story, V9Rings, V10Concierge,
+} from "@/components/instructor/homeLab/redesign2026/variantsB";
 
 const VARIANTS = [
   { id: "v1", name: "Calm Stack", desc: "Premium iOS card stack — generous whitespace, hero up next with map.", Component: V1CalmStack },
   { id: "v2", name: "Timeline Spine", desc: "Vertical day spine with bold indigo hero card. Glanceable.", Component: V2TimelineSpine },
   { id: "v3", name: "Dashboard Mosaic", desc: "KPI-first mosaic — earnings & lessons up top, hero below.", Component: V3Mosaic },
   { id: "v4", name: "Magazine", desc: "Editorial layout, soft serif headlines, calm warm background.", Component: V4Magazine },
-  { id: "v5", name: "Command Bridge", desc: "Pro pilot dark mode-style cockpit — info-dense, telemetry feel.", Component: V5Command },
+  { id: "v5", name: "Command Bridge", desc: "Pro pilot dark-themed cockpit — info-dense, telemetry feel.", Component: V5Command },
+  { id: "v6", name: "Focus Mode", desc: "Single-task hero countdown. Big, calm, one thing at a time.", Component: V6Focus },
+  { id: "v7", name: "Bento Grid", desc: "Apple-style adaptive blocks — mixed sizes, glanceable mosaic.", Component: V7Bento },
+  { id: "v8", name: "Story Cards", desc: "Instagram-style avatar rail + image-led hero card.", Component: V8Story },
+  { id: "v9", name: "Activity Rings", desc: "Apple Watch triple-ring weekly progress hero.", Component: V9Rings },
+  { id: "v10", name: "AI Concierge", desc: "Conversational header with AI brief and quick suggestion chips.", Component: V10Concierge },
 ];
 
 export default function InstructorHomeRedesignLab2026() {
