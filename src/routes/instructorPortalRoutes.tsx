@@ -303,6 +303,7 @@ export const instructorPortalRoutes = (
     <Route path="/instructor/home-designs" element={<InstructorHomeDesigns />} />
     <Route path="/instructor/next-up-redesigns" element={<NextUpTileRedesigns />} />
     <Route path="/instructor/home-lab" element={<InstructorHomeDesignLab />} />
+    <Route path="/instructor/next-up-lab" element={<InstructorNextUpLab />} />
 
     {/* Lab features (beta) */}
     <Route path="/instructor/day-briefing" element={<InstructorDayBriefing />} />
