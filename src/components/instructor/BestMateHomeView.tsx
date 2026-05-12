@@ -263,7 +263,9 @@ export function BestMateHomeView({ instructorId, instructor }: BestMateHomeViewP
             ) : (
               <>
                 {nextLesson && (
-                  <NextUpTile
+                  <>
+                    <SectionHeader title="Next Lesson" category="schedule" />
+                    <NextUpTile
                     lessonId={nextLesson.lessonId}
                     pupilId={nextLesson.pupilId}
                     pupilName={nextLesson.pupilName}
@@ -282,6 +284,7 @@ export function BestMateHomeView({ instructorId, instructor }: BestMateHomeViewP
               lessonStatus={(nextLesson as any).lessonStatus}
                     lastLessonPlan={nextLesson.lastLessonPlan}
                   />
+                </>
                 )}
 
                 {todayLessons && todayLessons.length > 0 && (
