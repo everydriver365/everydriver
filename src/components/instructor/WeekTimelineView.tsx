@@ -17,8 +17,9 @@ const DAY_LABELS_FULL = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const GUTTER = 44;
 const DAY_HEADER_H = 44;
 const VISIBLE_DAYS = 7;
-const WINDOW_WEEKS = 3; // previous + current + next
+const WINDOW_WEEKS = 5; // 2 before + current + 2 after — more room to glide
 const TOTAL_DAYS = 7 * WINDOW_WEEKS;
+const ANCHOR_OFFSET_WEEKS = 2;
 
 function isWholeDayEvent(ev: CalendarEvent) {
   const durMs = ev.end.getTime() - ev.start.getTime();
