@@ -7323,6 +7323,8 @@ export type Database = {
           end_of_lesson_enabled: boolean
           end_of_lesson_lead_minutes: number
           instructor_id: string
+          message_sound_choice: string
+          message_sound_enabled: boolean
           notification_rules: Json
           quiet_hours_enabled: boolean
           quiet_hours_end: string | null
@@ -7339,6 +7341,8 @@ export type Database = {
           end_of_lesson_enabled?: boolean
           end_of_lesson_lead_minutes?: number
           instructor_id: string
+          message_sound_choice?: string
+          message_sound_enabled?: boolean
           notification_rules?: Json
           quiet_hours_enabled?: boolean
           quiet_hours_end?: string | null
@@ -7355,6 +7359,8 @@ export type Database = {
           end_of_lesson_enabled?: boolean
           end_of_lesson_lead_minutes?: number
           instructor_id?: string
+          message_sound_choice?: string
+          message_sound_enabled?: boolean
           notification_rules?: Json
           quiet_hours_enabled?: boolean
           quiet_hours_end?: string | null
