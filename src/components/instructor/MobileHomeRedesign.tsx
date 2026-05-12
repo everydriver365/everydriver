@@ -1306,16 +1306,16 @@ function AttentionRowItem({
 
 function AttentionCard({ rows }: { rows: AttentionRow[] }) {
   // Priority order based on declaration order in attentionRows.
-  const withPriority = React.useMemo(
+  const withPriority = useMemo(
     () => rows.map((r, i) => ({ row: r, priority: i, count: r.badge ? Number(r.badge.label) || 0 : 0 })),
     [rows]
   );
 
   // Session-only "just arrived" tracking.
-  const prevCounts = React.useRef<Record<string, number>>({});
-  const [newlyActivated, setNewlyActivated] = React.useState<Set<string>>(new Set());
+  const prevCounts = useRef<Record<string, number>>({});
+  const [newlyActivated, setNewlyActivated] = useState<Set<string>>(new Set());
 
-  React.useEffect(() => {
+  useEffect(() => {
     const justActivated: string[] = [];
     withPriority.forEach(({ row, count }) => {
       const prev = prevCounts.current[row.key] ?? count;
