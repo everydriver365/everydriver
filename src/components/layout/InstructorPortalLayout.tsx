@@ -401,6 +401,62 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
         href: p.href,
       })));
 
+      // Settings sub-pages — searchable shortcuts into /instructor/settings/<category>
+      const settingsPages: Array<{ label: string; href: string; keywords?: string }> = [
+        { label: "Appearance & wallpaper", href: "/instructor/settings/advanced", keywords: "appearance theme wallpaper colour color dark light layout look" },
+        { label: "Dashboard layout", href: "/instructor/settings/advanced", keywords: "layout tiles home dashboard" },
+        { label: "Optional features", href: "/instructor/settings/advanced", keywords: "feature toggles modules enable" },
+        { label: "Plan & billing", href: "/instructor/settings/plan-billing", keywords: "plan billing subscription invoice upgrade" },
+        { label: "Profile & contact details", href: "/instructor/settings/account", keywords: "profile contact name email phone" },
+        { label: "Login & security", href: "/instructor/settings/account", keywords: "password login security 2fa face id biometric" },
+        { label: "Qualifications & credentials", href: "/instructor/settings/account", keywords: "adi badge qualifications credentials" },
+        { label: "Working hours", href: "/instructor/settings/schedule", keywords: "working hours availability open shifts" },
+        { label: "Lesson length & buffer", href: "/instructor/settings/schedule", keywords: "lesson length buffer bank holiday duration" },
+        { label: "Google Calendar sync", href: "/instructor/settings/schedule", keywords: "google calendar sync gcal" },
+        { label: "Lesson reminders", href: "/instructor/settings/schedule", keywords: "reminders sms email notifications" },
+        { label: "Hourly rate", href: "/instructor/settings/rates", keywords: "rate price hourly cost" },
+        { label: "Coverage area", href: "/instructor/settings/rates", keywords: "coverage area postcode radius travel" },
+        { label: "Postcode rates", href: "/instructor/settings/rates", keywords: "postcode rates pricing" },
+        { label: "Surcharges", href: "/instructor/settings/rates", keywords: "surcharge weekend bank holiday off peak service fee" },
+        { label: "Booking mode", href: "/instructor/settings/bookings", keywords: "booking mode auto manual approval" },
+        { label: "Deposit payments", href: "/instructor/settings/bookings", keywords: "deposit prepay" },
+        { label: "Card service fee & QR codes", href: "/instructor/settings/bookings", keywords: "card service fee qr commission" },
+        { label: "Square account", href: "/instructor/settings/bookings", keywords: "square card terminal payment" },
+        { label: "Buy now pay later", href: "/instructor/settings/bookings", keywords: "klarna clearpay bnpl finance" },
+        { label: "Discount codes", href: "/instructor/settings/bookings", keywords: "discount voucher promo coupon" },
+        { label: "Lesson packages", href: "/instructor/settings/bookings", keywords: "packages bundle hours" },
+        { label: "Referral programme", href: "/instructor/settings/bookings", keywords: "referral refer friend reward" },
+        { label: "Pupil app branding", href: "/instructor/settings/business", keywords: "branding logo colour color pupil app" },
+        { label: "Terms & Conditions", href: "/instructor/settings/business", keywords: "terms conditions policy legal" },
+        { label: "Cancellation policy", href: "/instructor/settings/business", keywords: "cancellation policy" },
+        { label: "No-show policy", href: "/instructor/settings/business", keywords: "no show policy" },
+        { label: "GDPR data retention", href: "/instructor/settings/business", keywords: "gdpr privacy data retention" },
+        { label: "GPS tracking setup", href: "/instructor/settings/vehicle", keywords: "gps tracking obd telematics geotab" },
+        { label: "Saved routes", href: "/instructor/settings/vehicle", keywords: "saved routes" },
+        { label: "Fuel & MPG", href: "/instructor/settings/vehicle", keywords: "fuel mpg economy" },
+        { label: "Mileage log", href: "/instructor/settings/vehicle", keywords: "mileage log hmrc tax" },
+        { label: "Notification preferences", href: "/instructor/settings/comms", keywords: "notifications preferences email sms push" },
+        { label: "Push notifications", href: "/instructor/settings/comms", keywords: "push notifications mobile" },
+        { label: "AI phone assistant", href: "/instructor/settings/phone-ai", keywords: "ai phone famulor voice agent call answering" },
+        { label: "WhatsApp Business", href: "/instructor/settings/whatsapp", keywords: "whatsapp business meta" },
+        { label: "Accessibility", href: "/instructor/settings/accessibility", keywords: "accessibility a11y font size contrast" },
+        { label: "Data export & backup", href: "/instructor/settings/advanced", keywords: "export backup csv download" },
+        { label: "Reset statistics", href: "/instructor/settings/advanced", keywords: "reset clear stats history" },
+      ];
+      const matchedSettings = settingsPages.filter((p) => {
+        const hay = `${p.label.toLowerCase()} ${(p.keywords || "")} ${p.href.toLowerCase().replace(/[/-]/g, " ")}`;
+        if (hay.includes(lowerQ)) return true;
+        return expansions.some((e) => hay.includes(e));
+      });
+      // Dedupe by href+label
+      const seen = new Set<string>();
+      for (const s of matchedSettings.slice(0, 10)) {
+        const key = `${s.href}|${s.label}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        items.push({ id: key, name: s.label, subtitle: "Settings", href: s.href });
+      }
+
       setMobileSearchResults(items);
     }, 300);
     return () => clearTimeout(timeout);
