@@ -1616,12 +1616,25 @@ export function MobileHomeRedesign({
     });
   }
 
-  // Live count of bookable open slots between today and end of this week (Sun).
+  // Live count of bookable gap windows between today and end of this week (Sun).
+  // Collapse adjacent 60-min anchor slots into single contiguous windows so the
+  // counter reflects "fillable gaps" rather than candidate start times.
   const weekEndStr = format(endOfWeek(new Date(), { weekStartsOn: 1 }), "yyyy-MM-dd");
   const todayStr = format(new Date(), "yyyy-MM-dd");
   const openSlots = (gapData ?? [])
     .filter((g) => g.date >= todayStr && g.date <= weekEndStr)
-    .reduce((sum, g) => sum + (g.slots?.length ?? 0), 0);
+    .reduce((sum, g) => {
+      const slots = [...(g.slots ?? [])].sort((a, b) =>
+        a.startTime.localeCompare(b.startTime),
+      );
+      let windows = 0;
+      let prevEnd: string | null = null;
+      for (const s of slots) {
+        if (prevEnd === null || s.startTime > prevEnd) windows += 1;
+        prevEnd = s.endTime > (prevEnd ?? "") ? s.endTime : prevEnd;
+      }
+      return sum + windows;
+    }, 0);
   attentionRows.push({
     key: "gaps",
     group: "todo",
