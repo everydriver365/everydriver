@@ -2218,10 +2218,12 @@ export function MobileHomeRedesign({
       <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 8, marginBottom: 8 }}>
         <div style={bentoPad}>
           <div style={kpiLabel}>NEEDS YOU</div>
-          <div style={{ display: "flex", gap: 18, marginTop: 8 }}>
+          <div style={{ display: "flex", gap: 14, marginTop: 8, justifyContent: "space-between" }}>
             <BentoMini count={pendingJobs} label="Jobs" fg="#92400E" onClick={() => navigate("/instructor/jobs")} />
             <BentoMini count={unread} label="Msgs" fg={BLUE} onClick={() => navigate("/instructor/messages")} />
             <BentoMini count={swapCount} label="Swaps" fg="#166534" onClick={() => navigate("/instructor/test-requests")} />
+            <BentoMini count={missedCallsCount} label="Calls" fg="#CC2229" onClick={() => navigate("/instructor/calls")} />
+            <BentoMini count={enquiriesCount} label="Enq's" fg="#CC2229" onClick={() => navigate("/instructor/enquiries")} />
           </div>
         </div>
         <div
