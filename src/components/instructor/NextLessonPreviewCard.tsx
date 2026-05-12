@@ -618,7 +618,7 @@ export function NextLessonPreviewCard(props: NextLessonPreviewCardProps) {
             </div>
           </div>
 
-          {/* Expanded extras — bento style */}
+          {/* Expanded extras — inline within same card */}
           <AnimatePresence initial={false}>
             {expanded ? (
               <motion.div
@@ -629,145 +629,79 @@ export function NextLessonPreviewCard(props: NextLessonPreviewCardProps) {
                 transition={{ duration: 0.25, ease: "easeOut" }}
                 style={{ overflow: "hidden" }}
               >
-                {(() => {
-                  const isPaid = !pay.data || (pay.data.balance ?? 0) >= 0;
-                  const debt = pay.data && pay.data.balance < 0 ? Math.abs(pay.data.balance) : 0;
-                  const lessonFee = (durationMinutes / 60) * 40;
-                  const durationLabel =
-                    durationMinutes >= 60 && durationMinutes % 60 === 0
-                      ? `${durationMinutes / 60}h`
-                      : `${durationMinutes}m`;
-                  const ICON_TILE = (bg: string, color: string, child: React.ReactNode, alignTop = false): React.ReactNode => (
-                    <span
+                <div style={{ padding: "10px 12px 12px", borderTop: `0.5px solid ${C.divider}` }}>
+                  <SectionLabel>Pupil</SectionLabel>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+                    <div
                       style={{
-                        width: 23, height: 23, borderRadius: 6, background: bg, color,
-                        display: "inline-flex", alignItems: "center", justifyContent: "center",
-                        flexShrink: 0, marginTop: alignTop ? 1 : 0,
+                        width: 40, height: 40, borderRadius: "50%",
+                        background: avatarColor, color: "#FFFFFF",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        fontSize: 14, fontWeight: 600, overflow: "hidden", flexShrink: 0,
                       }}
                     >
-                      {child}
-                    </span>
-                  );
-                  const DIV = <div style={{ height: 0.5, background: "#F0F3F8", marginBottom: 8 }} />;
-                  return (
-                    <div style={{ padding: "11px 14px 0", borderTop: `0.5px solid ${C.divider}` }}>
-                      {/* ROW 1 — Lesson type + fee */}
-                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                        {ICON_TILE("#EEF3FF", "#1A52A0", <Clock style={{ width: 11, height: 11 }} strokeWidth={1.8} />)}
-                        <div style={{ fontSize: 11.5, flex: 1, lineHeight: 1.3 }}>
-                          <span style={{ fontWeight: 700, color: "#1A1A1A" }}>Standard lesson</span>
-                          <span style={{ fontWeight: 500, color: "#8E8E93" }}>
-                            {" · "}{durationLabel}{" · £"}{lessonFee.toFixed(0)}
-                          </span>
-                        </div>
-                      </div>
-                      {DIV}
+                      {pupilProfileImage ? (
+                        <img src={pupilProfileImage} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      ) : (
+                        initialsText
+                      )}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 14, fontWeight: 500, color: C.text }}>{fullName}</div>
+                      <div style={{ fontSize: 11, color: C.text2 }}>Provisional</div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={openProfile}
+                      style={{
+                        background: "transparent", border: "none", color: C.blue,
+                        fontSize: 12, fontWeight: 500, cursor: "pointer", padding: 0,
+                      }}
+                    >
+                      View profile →
+                    </button>
+                  </div>
 
-                      {/* ROW 2 — Address + ETA + Nav */}
-                      <div style={{ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 8 }}>
-                        {ICON_TILE("#EEF3FF", "#1A52A0", <MapPin style={{ width: 11, height: 11 }} strokeWidth={1.8} />, true)}
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{
-                            fontSize: 11.5, fontWeight: 700, color: "#1A1A1A",
-                            overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-                          }}>
-                            {[pickupPostcode, pickupLocation].filter(Boolean).join(" · ") || "Pick-up not set"}
-                          </div>
-                          <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
-                            <span style={{ fontSize: 9, fontWeight: 600, color: "#1A52A0", letterSpacing: 0.2 }}>Pick-up</span>
-                            <span style={{ width: 3, height: 3, borderRadius: 2, background: "#D0D5DD" }} />
-                            <span style={{ display: "inline-flex", alignItems: "center", gap: 3 }}>
-                              <span style={{ width: 5, height: 5, borderRadius: 3, background: "#1A7A3C" }} />
-                              <span style={{ fontSize: 9, color: "#8E8E93" }}>
-                                {driveMin != null ? `ETA ${driveMin}m` : "ETA unavailable"}
-                              </span>
-                            </span>
-                          </div>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={onGo}
-                          disabled={!destCoords}
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 14 }}>
+                    <Stat label="Lessons" value={lessonsCount != null ? String(lessonsCount) : "—"} />
+                    <Stat label="Last lesson" value={lastLessonDate ? format(parseISO(lastLessonDate), "d MMM") : "—"} />
+                    <Stat label="Test booked" value="Not yet" />
+                  </div>
+
+                  {paymentPill ? (
+                    <>
+                      <SectionLabel>Payment</SectionLabel>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+                        <span
                           style={{
-                            background: "#EEF3FF", border: "none", borderRadius: 9,
-                            padding: "5px 9px", display: "inline-flex", alignItems: "center",
-                            gap: 3, flexShrink: 0, cursor: destCoords ? "pointer" : "not-allowed",
-                            opacity: destCoords ? 1 : 0.5,
+                            background: paymentPill.bg, color: paymentPill.fg,
+                            fontSize: 11, fontWeight: 600, padding: "4px 10px", borderRadius: 12,
                           }}
                         >
-                          <Navigation style={{ width: 10, height: 10 }} color="#1A52A0" strokeWidth={1.8} />
-                          <span style={{ fontSize: 9.5, fontWeight: 600, color: "#1A52A0" }}>Nav</span>
-                        </button>
-                      </div>
-                      {DIV}
-
-                      {/* ROW 3 — Payment + Remind */}
-                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                        {ICON_TILE(
-                          isPaid ? "#E8F8ED" : "#FFF0F0",
-                          isPaid ? "#1A7A3C" : "#CC2229",
-                          <CreditCard style={{ width: 11, height: 11 }} strokeWidth={1.8} />,
-                        )}
-                        <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 6 }}>
-                          <span style={{ fontSize: 11.5, fontWeight: 600, color: "#1A1A1A" }}>Payment</span>
-                          <span style={{
-                            display: "inline-flex", alignItems: "center", gap: 3,
-                            background: isPaid ? "#E8F8ED" : "#FFF0F0",
-                            borderRadius: 20, padding: "2px 7px",
-                          }}>
-                            <span style={{
-                              width: 5, height: 5, borderRadius: 3,
-                              background: isPaid ? "#1A7A3C" : "#CC2229",
-                            }} />
-                            <span style={{
-                              fontSize: 9, fontWeight: 600,
-                              color: isPaid ? "#1A7A3C" : "#CC2229",
-                            }}>
-                              {isPaid ? "Paid" : `£${debt.toFixed(0)} not paid`}
-                            </span>
-                          </span>
+                          {paymentPill.label}
+                        </span>
+                        <div style={{ fontSize: 12, color: C.text }}>
+                          <span style={{ fontWeight: 500 }}>£{Math.abs(pay.data?.balance ?? 0).toFixed(2)}</span>{" "}
+                          <span style={{ color: C.text2 }}>balance</span>
                         </div>
-                        {!isPaid && (
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              navigate(`/instructor/pupils/${pupilId}?tab=payments`);
-                            }}
-                            style={{
-                              background: "transparent", border: "none", padding: 0,
-                              fontSize: 9, fontWeight: 600, color: "#1A52A0", cursor: "pointer",
-                            }}
-                          >
-                            Remind →
-                          </button>
-                        )}
                       </div>
+                    </>
+                  ) : null}
 
-                      {/* ROW 4 — Pupil notes */}
-                      {lastLessonNote ? (
-                        <>
-                          {DIV}
-                          <div style={{ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 10 }}>
-                            {ICON_TILE("#EEF3FF", "#1A52A0", <FileText style={{ width: 11, height: 11 }} strokeWidth={1.8} />, true)}
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              <div style={{ fontSize: 11, fontWeight: 700, color: "#1A1A1A", marginBottom: 2 }}>
-                                Pupil notes
-                              </div>
-                              <div style={{
-                                fontSize: 10, color: "#8E8E93", lineHeight: 1.4,
-                                display: "-webkit-box", WebkitLineClamp: 3,
-                                WebkitBoxOrient: "vertical", overflow: "hidden",
-                              }}>
-                                {lastLessonNote}
-                              </div>
-                            </div>
-                          </div>
-                        </>
-                      ) : null}
-                    </div>
-                  );
-                })()}
+                  {lastLessonNote ? (
+                    <>
+                      <SectionLabel>Notes from last lesson</SectionLabel>
+                      <p
+                        style={{
+                          fontSize: 12, color: C.text, lineHeight: 1.4, margin: 0,
+                          display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden",
+                        }}
+                      >
+                        {lastLessonNote}
+                      </p>
+                    </>
+                  ) : null}
+                </div>
               </motion.div>
             ) : null}
           </AnimatePresence>
