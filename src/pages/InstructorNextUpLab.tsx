@@ -1068,6 +1068,12 @@ const VARIANTS = [
   { id: "v16", name: "Driver Brief", desc: "Pre-lesson checklist with paid / travel / weather.", Component: V16DriverBrief },
   { id: "v17", name: "Pill Header", desc: "All-pill bar with avatar dot and round CTA.", Component: V17PillHeader },
   { id: "v18", name: "Bento Grid", desc: "Equal-weight bento cells: pupil, ETA, payment.", Component: V18Bento },
+  { id: "v19", name: "Live Aurora", desc: "Live Card with multi-stop pastel aurora gradient.", Component: V19LiveAurora },
+  { id: "v20", name: "Live Sunrise", desc: "Warm dawn gradient — great for early lessons.", Component: V20LiveSunrise },
+  { id: "v21", name: "Live Mesh Dark", desc: "Dark mesh gradient with glassy translucent tiles.", Component: V21LiveMeshDark },
+  { id: "v22", name: "Live Mint", desc: "Fresh mint→sky gradient, calm and modern.", Component: V22LiveMint },
+  { id: "v23", name: "Live + Map", desc: "Live Card with a slim static map strip on top.", Component: V23LivePlusMap },
+  { id: "v24", name: "Live Twilight", desc: "Deep blue→violet ambient with a countdown rail.", Component: V24LiveTwilight },
 ];
 
 export default function InstructorNextUpLab() {
