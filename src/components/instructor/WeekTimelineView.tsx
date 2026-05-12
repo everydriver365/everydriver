@@ -116,8 +116,31 @@ export function WeekTimelineView({
   const ALL_DAY_ROW_H = 18;
   const allDayStripH = maxAllDay > 0 ? maxAllDay * (ALL_DAY_ROW_H + 2) + 4 : 0;
 
+  // Horizontal swipe to change week
+  const touchRef = useRef<{ x: number; y: number; t: number } | null>(null);
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const t = e.touches[0];
+    touchRef.current = { x: t.clientX, y: t.clientY, t: Date.now() };
+  };
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const start = touchRef.current;
+    touchRef.current = null;
+    if (!start) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - start.x;
+    const dy = t.clientY - start.y;
+    const dt = Date.now() - start.t;
+    if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5 || dt > 600) return;
+    if (dx < 0) goNext();
+    else goPrev();
+  };
+
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100%", backgroundColor: "#FFFFFF" }}>
+    <div
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      style={{ display: "flex", flexDirection: "column", height: "100%", backgroundColor: "#FFFFFF", touchAction: "pan-y" }}
+    >
       {/* Week nav header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 12px", borderBottom: "0.5px solid #F0F3F8" }}>
         <button onClick={goPrev} aria-label="Previous week" style={{ width: 32, height: 32, borderRadius: 16, border: "none", background: "#F2F4F8", display: "flex", alignItems: "center", justifyContent: "center" }}>
