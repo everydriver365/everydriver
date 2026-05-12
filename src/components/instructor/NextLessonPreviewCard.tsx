@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { GoogleMap, OverlayViewF, OVERLAY_MOUSE_TARGET, PolylineF } from "@react-google-maps/api";
 import { format, parse, parseISO, isToday, isTomorrow, differenceInCalendarDays } from "date-fns";
 import {
-  Calendar,
   ChevronDown,
   ChevronUp,
   Clock,
@@ -11,9 +10,9 @@ import {
   Phone,
   MessageSquare,
   Navigation,
-  Bot,
   Sparkles,
 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { pupilAvatarColor } from "@/lib/pupilAvatarColor";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchGoogleMapsKey, loadGoogleMaps } from "@/lib/googleMapsLoader";
