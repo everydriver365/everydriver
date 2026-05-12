@@ -1347,7 +1347,7 @@ export function UpNextExpanded({
               }}
             >
               <span style={{ fontSize: 11, fontWeight: 600 }}>View all lessons</span>
-              <ChevronRight size={9} strokeWidth={2.2} />
+              
             </button>
           </div>
         </div>
