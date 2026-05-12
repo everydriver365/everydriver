@@ -16,6 +16,7 @@ import {
   Navigation as NavIcon,
   Phone,
   MessageSquare,
+  BellRing,
   ClipboardList,
   Send,
   Clock,
@@ -592,7 +593,8 @@ export function UpNextExpanded({
                   </button>
                   <button
                     type="button"
-                    onClick={messagePupil}
+                    onClick={() => sendSMS(`Hi ${firstName}, I've arrived for your driving lesson — see you in a moment.`)}
+                    disabled={!pupilPhone}
                     style={{
                       ...rowBtn,
                       flex: 1,
@@ -602,10 +604,12 @@ export function UpNextExpanded({
                       padding: "0 6px", minWidth: 0,
                       gap: 4,
                       color: "#1A52A0",
+                      opacity: !pupilPhone ? 0.5 : 1,
+                      cursor: !pupilPhone ? "not-allowed" : "pointer",
                     }}
                   >
-                    <MessageSquare style={{ width: 13, height: 13 }} strokeWidth={1.9} />
-                    <span style={{ fontSize: 12, fontWeight: 600 }}>Text</span>
+                    <BellRing style={{ width: 13, height: 13 }} strokeWidth={1.9} />
+                    <span style={{ fontSize: 12, fontWeight: 600 }}>Here</span>
                   </button>
                   <button
                     type="button"
