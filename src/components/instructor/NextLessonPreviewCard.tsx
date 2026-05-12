@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { GoogleMap, OverlayViewF, OVERLAY_MOUSE_TARGET, PolylineF } from "@react-google-maps/api";
 import { format, parse, parseISO, isToday, isTomorrow, differenceInCalendarDays } from "date-fns";
 import {
-  Calendar,
   ChevronDown,
   ChevronUp,
   Clock,
@@ -11,9 +10,9 @@ import {
   Phone,
   MessageSquare,
   Navigation,
-  Bot,
   Sparkles,
 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { pupilAvatarColor } from "@/lib/pupilAvatarColor";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchGoogleMapsKey, loadGoogleMaps } from "@/lib/googleMapsLoader";
@@ -45,8 +44,6 @@ const C = {
 const FONT =
   '-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Inter", sans-serif';
 
-const COLLAPSED_MAP_H = 170;
-const EXPANDED_MAP_H = 280;
 
 /* -------------------------------------------------------------------------- */
 /*  Caches & SDK                                                               */
@@ -154,15 +151,6 @@ function relativeWhen(dateStr: string) {
     return format(d, "EEE d MMM");
   } catch {
     return dateStr;
-  }
-}
-
-function dateChip(dateStr: string, time: string) {
-  try {
-    const d = parseISO(dateStr);
-    return `${format(d, "EEE d MMM").toUpperCase()} · ${fmtTime(time)}`;
-  } catch {
-    return `${dateStr} · ${fmtTime(time)}`;
   }
 }
 
@@ -357,7 +345,6 @@ export function NextLessonPreviewCard(props: NextLessonPreviewCardProps) {
     navigate(`/instructor/pupils/${pupilId}?lesson=${lessonId}`);
   };
 
-  const mapH = expanded ? EXPANDED_MAP_H : COLLAPSED_MAP_H;
   const lessonsCount = history.data?.filter((h) => h.status === "completed").length ?? null;
   const lastLessonDate = history.data?.find((h) => h.status === "completed")?.lesson_date ?? null;
   const lastLessonNote = history.data?.find((h) => h.notes && h.status === "completed")?.notes ?? null;
@@ -386,9 +373,7 @@ export function NextLessonPreviewCard(props: NextLessonPreviewCardProps) {
     return relativeDay;
   })();
 
-  /* ─── Collapsed: new redesigned layout ─── */
-  if (!expanded) {
-    return (
+  return (
       <div style={{ padding: "0 16px", fontFamily: FONT, WebkitFontSmoothing: "antialiased" }}>
         <div style={{
           fontSize: 10, fontWeight: 700, color: "#8E8E93",
@@ -656,11 +641,99 @@ export function NextLessonPreviewCard(props: NextLessonPreviewCardProps) {
             </div>
           </div>
 
+          {/* Expanded extras — inline within same card */}
+          <AnimatePresence initial={false}>
+            {expanded ? (
+              <motion.div
+                key="extras"
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
+                style={{ overflow: "hidden" }}
+              >
+                <div style={{ padding: "10px 12px 12px", borderTop: `0.5px solid ${C.divider}` }}>
+                  <SectionLabel>Pupil</SectionLabel>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+                    <div
+                      style={{
+                        width: 40, height: 40, borderRadius: "50%",
+                        background: avatarColor, color: "#FFFFFF",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        fontSize: 14, fontWeight: 600, overflow: "hidden", flexShrink: 0,
+                      }}
+                    >
+                      {pupilProfileImage ? (
+                        <img src={pupilProfileImage} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      ) : (
+                        initialsText
+                      )}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 14, fontWeight: 500, color: C.text }}>{fullName}</div>
+                      <div style={{ fontSize: 11, color: C.text2 }}>Provisional</div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={openProfile}
+                      style={{
+                        background: "transparent", border: "none", color: C.blue,
+                        fontSize: 12, fontWeight: 500, cursor: "pointer", padding: 0,
+                      }}
+                    >
+                      View profile →
+                    </button>
+                  </div>
+
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 14 }}>
+                    <Stat label="Lessons" value={lessonsCount != null ? String(lessonsCount) : "—"} />
+                    <Stat label="Last lesson" value={lastLessonDate ? format(parseISO(lastLessonDate), "d MMM") : "—"} />
+                    <Stat label="Test booked" value="Not yet" />
+                  </div>
+
+                  {paymentPill ? (
+                    <>
+                      <SectionLabel>Payment</SectionLabel>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+                        <span
+                          style={{
+                            background: paymentPill.bg, color: paymentPill.fg,
+                            fontSize: 11, fontWeight: 600, padding: "4px 10px", borderRadius: 12,
+                          }}
+                        >
+                          {paymentPill.label}
+                        </span>
+                        <div style={{ fontSize: 12, color: C.text }}>
+                          <span style={{ fontWeight: 500 }}>£{Math.abs(pay.data?.balance ?? 0).toFixed(2)}</span>{" "}
+                          <span style={{ color: C.text2 }}>balance</span>
+                        </div>
+                      </div>
+                    </>
+                  ) : null}
+
+                  {lastLessonNote ? (
+                    <>
+                      <SectionLabel>Notes from last lesson</SectionLabel>
+                      <p
+                        style={{
+                          fontSize: 12, color: C.text, lineHeight: 1.4, margin: 0,
+                          display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden",
+                        }}
+                      >
+                        {lastLessonNote}
+                      </p>
+                    </>
+                  ) : null}
+                </div>
+              </motion.div>
+            ) : null}
+          </AnimatePresence>
+
           {/* Expand handle */}
           <button
             type="button"
-            onClick={(e) => { e.stopPropagation(); setExpanded(true); }}
-            aria-expanded={false}
+            onClick={(e) => { e.stopPropagation(); setExpanded((v) => !v); }}
+            aria-expanded={expanded}
             style={{
               width: "100%", border: "none",
               borderTop: "0.5px solid rgba(0,0,0,0.05)",
@@ -669,590 +742,21 @@ export function NextLessonPreviewCard(props: NextLessonPreviewCardProps) {
               cursor: "pointer", fontFamily: FONT,
             }}
           >
-            <span style={{ fontSize: 9, fontWeight: 600, color: "#8E8E93" }}>Details</span>
-            <ChevronDown style={{ width: 8, height: 8, color: "#C7C7CC" }} strokeWidth={2.5} />
+            <span style={{ fontSize: 9, fontWeight: 600, color: "#8E8E93" }}>
+              {expanded ? "Hide details" : "Details"}
+            </span>
+            {expanded
+              ? <ChevronUp style={{ width: 8, height: 8, color: "#C7C7CC" }} strokeWidth={2.5} />
+              : <ChevronDown style={{ width: 8, height: 8, color: "#C7C7CC" }} strokeWidth={2.5} />}
           </button>
         </div>
       </div>
     );
   }
 
-  /* ─── Expanded: original layout ─── */
-  return (
-    <div style={{ padding: "0 16px", fontFamily: FONT, WebkitFontSmoothing: "antialiased" }}>
-      {/* Section label */}
-      <div
-        style={{
-          fontSize: 11,
-          fontWeight: 500,
-          letterSpacing: 1.2,
-          textTransform: "uppercase",
-          color: C.text2,
-          marginBottom: 8,
-          paddingLeft: 4,
-        }}
-      >
-        Up next
-      </div>
-
-      <div
-        style={{
-          background: C.card,
-          borderRadius: 12,
-          overflow: "hidden",
-          maxWidth: 440,
-          margin: "0 auto",
-          transition: "all 250ms ease-out",
-        }}
-      >
-        {/* ─────────── MAP ─────────── */}
-        <div
-          style={{
-            position: "relative",
-            height: mapH,
-            background: "#F5F4F1",
-            transition: "height 250ms ease-out",
-          }}
-        >
-          {sdkLoaded && destCoords ? (
-            <GoogleMap
-              mapContainerStyle={{ width: "100%", height: "100%" }}
-              center={destCoords}
-              zoom={14}
-              onLoad={(m) => {
-                mapRef.current = m;
-              }}
-              options={{
-                styles: MAP_STYLES,
-                disableDefaultUI: true,
-                gestureHandling: expanded ? "cooperative" : "none",
-                clickableIcons: false,
-                zoomControl: false,
-                mapTypeControl: false,
-                streetViewControl: false,
-                fullscreenControl: false,
-              }}
-            >
-              {routePath && routePath.length > 1 ? (
-                <PolylineF
-                  path={routePath}
-                  options={{
-                    strokeColor: C.red,
-                    strokeOpacity: 0,
-                    strokeWeight: 3,
-                    icons: [
-                      {
-                        icon: {
-                          path: "M 0,-1 0,1",
-                          strokeOpacity: 1,
-                          strokeColor: C.red,
-                          strokeWeight: 3,
-                          scale: 3,
-                        },
-                        offset: "0",
-                        repeat: "12px",
-                      },
-                    ],
-                  }}
-                />
-              ) : null}
-
-              {origin ? (
-                <OverlayViewF
-                  position={origin}
-                  mapPaneName={OVERLAY_MOUSE_TARGET}
-                  getPixelPositionOffset={(w, h) => ({ x: -(w / 2), y: -(h / 2) })}
-                >
-                  <div
-                    style={{
-                      width: 14,
-                      height: 14,
-                      borderRadius: "50%",
-                      background: C.green,
-                      border: "2px solid #FFFFFF",
-                      boxShadow: `0 0 0 2px rgba(29,158,117,0.3)`,
-                    }}
-                  />
-                </OverlayViewF>
-              ) : null}
-
-              <OverlayViewF
-                position={destCoords}
-                mapPaneName={OVERLAY_MOUSE_TARGET}
-                getPixelPositionOffset={(w, h) => ({ x: -(w / 2), y: -h })}
-              >
-                <svg width={26} height={34} viewBox="0 0 26 34" xmlns="http://www.w3.org/2000/svg">
-                  <path
-                    d="M13 0C5.82 0 0 5.82 0 13c0 9.75 13 21 13 21s13-11.25 13-21C26 5.82 20.18 0 13 0z"
-                    fill={C.red}
-                  />
-                  <circle cx="13" cy="13" r="5" fill="#FFFFFF" />
-                </svg>
-              </OverlayViewF>
-            </GoogleMap>
-          ) : (
-            <div
-              style={{
-                height: "100%",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: 12,
-                color: C.text3,
-              }}
-            >
-              {destCoords === null ? "Map unavailable" : "Loading map…"}
-            </div>
-          )}
-
-          {/* Top-left pill: relative time */}
-          <div
-            style={{
-              position: "absolute",
-              top: 10,
-              left: 10,
-              background: "#FFFFFF",
-              borderRadius: 12,
-              padding: "5px 10px",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 6,
-              fontSize: 11,
-              fontWeight: 500,
-              color: C.text,
-              boxShadow: "0 1px 2px rgba(0,0,0,0.06)",
-            }}
-          >
-            <span
-              style={{
-                width: 6,
-                height: 6,
-                borderRadius: 3,
-                background: C.red,
-                display: "inline-block",
-              }}
-            />
-            {relativeWhen(lessonDate)}
-          </div>
-
-          {/* Top-right pill: drive time */}
-          {driveMin != null && driveMin > 0 ? (
-            <div
-              style={{
-                position: "absolute",
-                top: 10,
-                right: 10,
-                background: "#FFFFFF",
-                borderRadius: 12,
-                padding: "5px 10px",
-                fontSize: 11,
-                fontWeight: 500,
-                color: C.text,
-                boxShadow: "0 1px 2px rgba(0,0,0,0.06)",
-              }}
-            >
-              {driveMin}m drive
-            </div>
-          ) : null}
-
-          {/* Bottom-left: details pill */}
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              setExpanded((v) => !v);
-            }}
-            style={{
-              position: "absolute",
-              bottom: 10,
-              left: 10,
-              background: "#FFFFFF",
-              border: "none",
-              borderRadius: 8,
-              padding: "5px 10px",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 4,
-              fontSize: 11,
-              fontWeight: 500,
-              color: C.text,
-              cursor: "pointer",
-              boxShadow: "0 1px 2px rgba(0,0,0,0.06)",
-            }}
-            aria-label={expanded ? "Collapse details" : "Expand details"}
-          >
-            Details
-            <ChevronDown
-              size={12}
-              style={{
-                transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
-                transition: "transform 200ms ease",
-              }}
-            />
-          </button>
-
-          {/* Bottom-right: avatar */}
-          <button
-            type="button"
-            onClick={openProfile}
-            style={{
-              position: "absolute",
-              bottom: 10,
-              right: 10,
-              width: 40,
-              height: 40,
-              borderRadius: "50%",
-              background: C.blue,
-              color: "#FFFFFF",
-              border: "2px solid #FFFFFF",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 13,
-              fontWeight: 600,
-              boxShadow: "0 2px 4px rgba(0,0,0,0.15)",
-              cursor: "pointer",
-              overflow: "hidden",
-              padding: 0,
-            }}
-            aria-label={`Open ${pupilName}'s profile`}
-          >
-            {pupilProfileImage ? (
-              <img src={pupilProfileImage} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-            ) : (
-              initials(pupilName)
-            )}
-          </button>
-        </div>
-
-        {/* ─────────── BODY ─────────── */}
-        <div style={{ padding: 14 }}>
-          {/* 1. Date chip */}
-          <div
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 6,
-              background: C.blueTint,
-              color: C.blue,
-              padding: "6px 12px",
-              borderRadius: 14,
-              fontSize: 11,
-              fontWeight: 500,
-              letterSpacing: 0.5,
-              textTransform: "uppercase",
-              marginBottom: 12,
-            }}
-          >
-            <Calendar size={13} strokeWidth={2} />
-            {dateChip(lessonDate, startTime)}
-          </div>
-
-          {/* 2. Pupil name row */}
-          <button
-            type="button"
-            onClick={() => setExpanded((v) => !v)}
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              width: "100%",
-              background: "transparent",
-              border: "none",
-              padding: 0,
-              marginBottom: 14,
-              cursor: "pointer",
-              textAlign: "left",
-            }}
-            aria-expanded={expanded}
-          >
-            <span style={{ fontSize: 20, fontWeight: 500, color: C.text, letterSpacing: -0.2 }}>
-              {toSentenceName(pupilName)}
-            </span>
-            <ChevronDown
-              size={22}
-              color={C.text3}
-              style={{
-                transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
-                transition: "transform 200ms ease",
-              }}
-            />
-          </button>
-
-          {/* 3. Lesson type row */}
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
-            <div
-              style={{
-                width: 32,
-                height: 32,
-                borderRadius: 8,
-                background: C.blueTint,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                flexShrink: 0,
-              }}
-            >
-              <Clock size={16} color={C.blue} strokeWidth={2} />
-            </div>
-            <div style={{ fontSize: 14, color: C.text }}>
-              Standard lesson ·{" "}
-              <span style={{ color: C.blue, fontWeight: 500 }}>{fmtHours(durationMinutes)}</span>
-            </div>
-          </div>
-
-          {/* 4. Address row */}
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-            <div
-              style={{
-                width: 32,
-                height: 32,
-                borderRadius: 8,
-                background: C.blueTint,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                flexShrink: 0,
-              }}
-            >
-              <MapPin size={16} color={C.blue} strokeWidth={2} />
-            </div>
-            <div
-              style={{
-                fontSize: 14,
-                color: C.text,
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                minWidth: 0,
-                flex: 1,
-              }}
-            >
-              {pickupPostcode ? <span style={{ fontWeight: 500 }}>{pickupPostcode}</span> : null}
-              {pickupPostcode && pickupLocation ? " · " : null}
-              {pickupLocation ?? (!pickupPostcode ? "No pickup set" : null)}
-            </div>
-          </div>
-
-          {/* 5. AI divert notice */}
-          {aiDivertTime && minutesUntil <= 24 * 60 ? (
-            <div
-              style={{
-                fontSize: 12,
-                color: C.text2,
-                marginBottom: 14,
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 6,
-              }}
-            >
-              <Bot size={14} color={C.text3} strokeWidth={2} />
-              AI divert starts at {aiDivertTime}
-            </div>
-          ) : null}
-
-          {/* 6. Action buttons */}
-          <div style={{ display: "flex", gap: 6 }}>
-            <ActionBtn
-              label="Call"
-              icon={<Phone size={14} strokeWidth={2.2} />}
-              variant="primary"
-              onClick={onCall}
-              disabled={!pupilPhone}
-            />
-            <ActionBtn
-              label="Text"
-              icon={<MessageSquare size={14} strokeWidth={2.2} />}
-              variant="secondary"
-              onClick={onText}
-              disabled={!pupilPhone}
-            />
-            <ActionBtn
-              label="Go"
-              icon={<Navigation size={14} strokeWidth={2.2} />}
-              variant="secondary"
-              onClick={onGo}
-              disabled={!destCoords}
-            />
-          </div>
-
-          {/* ─────── EXPANDED EXTRAS ─────── */}
-          {expanded ? (
-            <div style={{ marginTop: 14, paddingTop: 14, borderTop: `0.5px solid ${C.divider}` }}>
-              <SectionLabel>Pupil</SectionLabel>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-                <div
-                  style={{
-                    width: 48,
-                    height: 48,
-                    borderRadius: "50%",
-                    background: C.blue,
-                    color: "#FFFFFF",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: 16,
-                    fontWeight: 600,
-                    overflow: "hidden",
-                    flexShrink: 0,
-                  }}
-                >
-                  {pupilProfileImage ? (
-                    <img src={pupilProfileImage} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                  ) : (
-                    initials(pupilName)
-                  )}
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 15, fontWeight: 500, color: C.text }}>
-                    {toSentenceName(pupilName)}
-                  </div>
-                  <div style={{ fontSize: 12, color: C.text2 }}>Provisional</div>
-                </div>
-                <button
-                  type="button"
-                  onClick={openProfile}
-                  style={{
-                    background: "transparent",
-                    border: "none",
-                    color: C.blue,
-                    fontSize: 13,
-                    fontWeight: 500,
-                    cursor: "pointer",
-                    padding: 0,
-                  }}
-                >
-                  View profile →
-                </button>
-              </div>
-
-              {/* Stats grid */}
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr 1fr",
-                  gap: 8,
-                  marginBottom: 14,
-                }}
-              >
-                <Stat label="Lessons" value={lessonsCount != null ? String(lessonsCount) : "—"} />
-                <Stat
-                  label="Last lesson"
-                  value={lastLessonDate ? format(parseISO(lastLessonDate), "d MMM") : "—"}
-                />
-                <Stat label="Test booked" value="Not yet" />
-              </div>
-
-              {/* Payment */}
-              {paymentPill ? (
-                <>
-                  <SectionLabel>Payment</SectionLabel>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 10,
-                      marginBottom: 14,
-                    }}
-                  >
-                    <span
-                      style={{
-                        background: paymentPill.bg,
-                        color: paymentPill.fg,
-                        fontSize: 11,
-                        fontWeight: 600,
-                        padding: "4px 10px",
-                        borderRadius: 12,
-                      }}
-                    >
-                      {paymentPill.label}
-                    </span>
-                    <div style={{ fontSize: 13, color: C.text }}>
-                      <span style={{ fontWeight: 500 }}>
-                        £{Math.abs(pay.data?.balance ?? 0).toFixed(2)}
-                      </span>{" "}
-                      <span style={{ color: C.text2 }}>balance</span>
-                    </div>
-                  </div>
-                </>
-              ) : null}
-
-              {/* Notes */}
-              {lastLessonNote ? (
-                <>
-                  <SectionLabel>Notes from last lesson</SectionLabel>
-                  <p
-                    style={{
-                      fontSize: 13,
-                      color: C.text,
-                      lineHeight: 1.4,
-                      margin: 0,
-                      display: "-webkit-box",
-                      WebkitLineClamp: 3,
-                      WebkitBoxOrient: "vertical",
-                      overflow: "hidden",
-                    }}
-                  >
-                    {lastLessonNote}
-                  </p>
-                </>
-              ) : null}
-            </div>
-          ) : null}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 /* -------------------------------------------------------------------------- */
 /*  Sub-components                                                             */
 /* -------------------------------------------------------------------------- */
-
-function ActionBtn({
-  label,
-  icon,
-  variant,
-  onClick,
-  disabled,
-}: {
-  label: string;
-  icon: React.ReactNode;
-  variant: "primary" | "secondary";
-  onClick: (e: React.MouseEvent) => void;
-  disabled?: boolean;
-}) {
-  const primary = variant === "primary";
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      style={{
-        flex: 1,
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 6,
-        padding: 11,
-        borderRadius: 22,
-        border: "none",
-        background: primary ? C.blue : C.blueTint,
-        color: primary ? "#FFFFFF" : C.blue,
-        fontSize: 13,
-        fontWeight: 500,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.5 : 1,
-        WebkitTapHighlightColor: "transparent",
-        fontFamily: FONT,
-      }}
-      aria-label={label}
-    >
-      {icon}
-      {label}
-    </button>
-  );
-}
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
