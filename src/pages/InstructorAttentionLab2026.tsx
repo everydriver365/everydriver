@@ -32,7 +32,7 @@ export default function InstructorAttentionLab2026() {
         <div style={{ marginBottom: 24 }}>
           <p style={{ fontSize: 11, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.12em", fontWeight: 600 }}>Demo · sample data</p>
           <h1 style={{ fontSize: 28, fontWeight: 700, color: "#0F172A", letterSpacing: "-0.02em", marginTop: 4 }}>
-            Needs Attention — 7 Redesigns
+            Needs Attention — 13 Redesigns
           </h1>
           <p style={{ fontSize: 14, color: "#64748B", marginTop: 6, maxWidth: 680 }}>
             Seven directions for the Needs Attention tile. All keep the same data
