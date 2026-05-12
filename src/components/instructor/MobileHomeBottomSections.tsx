@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { format, parse } from "date-fns";
-import { Plus, Search, ChevronsLeftRight } from "lucide-react";
+import { Plus, Search, ChevronsLeftRight, ChevronRight } from "lucide-react";
 
 import { useDayLessons } from "@/hooks/useDayLessons";
 import { useDayLessonHistory, eolKey } from "@/hooks/useDayLessonHistory";
@@ -356,22 +356,20 @@ function ScheduleSection({ instructorId }: { instructorId: string }) {
           </div>
         ) : (
           enriched.map((e, i) => {
-            const rowBg =
-              e.status === "inProgress"
-                ? "#F2FBF5"
-                : e.status === "upcoming"
-                  ? BLUE_TINT
-                  : "#FFF";
-            const bandColor =
+            const accentColor =
               e.status === "inProgress"
                 ? "#1A7A3C"
                 : e.status === "upcoming"
                   ? BLUE
                   : e.status === "cancelled"
                     ? "#B23A3F"
-                    : "#E0E5EE";
-            const timeColor =
-              e.status === "upcoming" ? BLUE : "#1A1A1A";
+                    : "#C7C7CC";
+            const rowBg =
+              e.status === "inProgress"
+                ? "#F2FBF5"
+                : e.status === "upcoming" && isToday
+                  ? BLUE_TINT
+                  : "transparent";
             const minutesUntil =
               e.status === "upcoming" && e.start
                 ? Math.max(0, Math.round((e.start.getTime() - now.getTime()) / 60_000))
@@ -382,183 +380,167 @@ function ScheduleSection({ instructorId }: { instructorId: string }) {
               : false;
             const isPaid = e.lesson.paymentStatus === "paid";
             const showPayPill = fee > 0;
+            const subtitleParts: string[] = [];
+            if (e.lesson.lessonType) {
+              subtitleParts.push(String(e.lesson.lessonType).replace(/_/g, " "));
+            }
+            if (e.lesson.pickupLocation) {
+              subtitleParts.push(e.lesson.pickupLocation);
+            }
+            const subtitle = subtitleParts.join(" · ");
 
             return (
               <div key={e.lesson.id}>
-                {/* Lesson row */}
-                <div
-                  role="button"
-                  tabIndex={0}
+                <button
+                  type="button"
                   onClick={() => e.lesson.pupilId && navigate(`/instructor/pupils/${e.lesson.pupilId}`)}
-                  onKeyDown={(ev) => {
-                    if ((ev.key === "Enter" || ev.key === " ") && e.lesson.pupilId) {
-                      ev.preventDefault();
-                      navigate(`/instructor/pupils/${e.lesson.pupilId}`);
-                    }
-                  }}
                   style={{
+                    width: "100%",
                     display: "flex",
                     alignItems: "center",
-                    padding: "10px 12px",
-                    gap: 8,
+                    gap: 10,
+                    padding: "10px 14px",
                     background: rowBg,
-                    opacity: e.status === "done" ? 0.55 : 1,
+                    border: "none",
+                    borderTop: i === 0 ? "none" : `0.5px solid ${ROW_DIVIDER}`,
+                    textAlign: "left",
                     cursor: e.lesson.pupilId ? "pointer" : "default",
+                    opacity: e.status === "done" ? 0.55 : 1,
                   }}
                 >
-                  {/* Left colour band */}
+                  {/* Time label */}
                   <div
                     style={{
+                      width: 44,
+                      textAlign: "center",
+                      fontSize: 12,
+                      fontWeight: 700,
+                      color: TEXT,
+                      flexShrink: 0,
+                    }}
+                  >
+                    {fmtTime(e.lesson.startTime)}
+                  </div>
+
+                  {/* Accent bar */}
+                  <span
+                    style={{
                       width: 3,
-                      height: 32,
+                      alignSelf: "stretch",
                       borderRadius: 2,
-                      background: bandColor,
+                      background: accentColor,
                       flexShrink: 0,
                     }}
                   />
 
-                  {/* Time + duration */}
-                  <div style={{ minWidth: 36 }}>
-                    <div
-                      style={{
-                        fontSize: 16,
-                        fontWeight: 700,
-                        letterSpacing: -0.3,
-                        lineHeight: "20px",
-                        color: timeColor,
-                      }}
-                    >
-                      {fmtTime(e.lesson.startTime)}
-                    </div>
-                    <div style={{ fontSize: 9, color: MUTED, marginTop: 1 }}>
-                      {durationHours(e.lesson.durationMinutes || 60)}h
-                    </div>
-                  </div>
-
-                  {/* Pupil name + detail (address + meta chips beneath) */}
+                  {/* Title + subtitle + chips */}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div
                       style={{
-                        fontSize: 16,
+                        fontSize: 12,
                         fontWeight: 700,
                         color: TEXT,
-                        lineHeight: "20px",
-                        whiteSpace: "nowrap",
                         overflow: "hidden",
                         textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
                       }}
                     >
                       {e.lesson.pupilName}
                     </div>
-                    {/* Address line */}
-                    {e.lesson.pickupLocation && (
+                    {subtitle && (
                       <div
                         style={{
                           fontSize: 10,
                           color: MUTED,
-                          whiteSpace: "nowrap",
+                          marginTop: 1,
                           overflow: "hidden",
                           textOverflow: "ellipsis",
-                          marginTop: 1,
+                          whiteSpace: "nowrap",
+                          textTransform: "capitalize",
                         }}
                       >
-                        {e.lesson.pickupLocation}
+                        {subtitle}
                       </div>
                     )}
-                    {/* Meta row: lesson type · EOL · Payment */}
-                    <div
-                      style={{
-                        display: "flex",
-                        flexWrap: "wrap",
-                        alignItems: "center",
-                        gap: 4,
-                        marginTop: 4,
-                      }}
-                    >
-                      {e.lesson.lessonType && (
-                        <span
-                          style={{
-                            background: "#F1EFE8",
-                            color: "#5B6B8A",
-                            fontSize: 9,
-                            fontWeight: 600,
-                            padding: "2px 7px",
-                            borderRadius: 20,
-                            textTransform: "capitalize",
-                            whiteSpace: "nowrap",
-                          }}
-                        >
-                          {String(e.lesson.lessonType).replace(/_/g, " ")}
-                        </span>
-                      )}
-                      <button
-                        type="button"
-                        onClick={(ev) => {
-                          ev.stopPropagation();
-                          openEOLWizard(e.lesson);
-                        }}
+                    {(showPayPill || e.lesson.pupilId) && (
+                      <div
                         style={{
-                          background: BLUE_TINT,
-                          borderRadius: 20,
-                          padding: "2px 7px",
-                          border: "none",
-                          cursor: "pointer",
-                          lineHeight: 1.2,
+                          display: "flex",
+                          flexWrap: "wrap",
+                          alignItems: "center",
+                          gap: 4,
+                          marginTop: 4,
                         }}
-                        aria-label={eolDone ? "End of lesson complete — review" : "Complete end of lesson"}
                       >
-                        <span
-                          style={{
-                            fontSize: 9,
-                            fontWeight: 700,
-                            color: BLUE,
-                            letterSpacing: 0.2,
-                            textTransform: "uppercase",
-                            textDecoration: eolDone ? "line-through" : "none",
-                            opacity: eolDone ? 0.6 : 1,
+                        <button
+                          type="button"
+                          onClick={(ev) => {
+                            ev.stopPropagation();
+                            openEOLWizard(e.lesson);
                           }}
-                        >
-                          EOL
-                        </span>
-                      </button>
-                      {showPayPill && (
-                        <div
                           style={{
-                            background: isPaid ? "#E8F8ED" : "#FFECEC",
+                            background: BLUE_TINT,
                             borderRadius: 20,
                             padding: "2px 7px",
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: 3,
+                            border: "none",
+                            cursor: "pointer",
+                            lineHeight: 1.2,
                           }}
-                          aria-label={isPaid ? "Paid" : "Not paid"}
+                          aria-label={eolDone ? "End of lesson complete — review" : "Complete end of lesson"}
                         >
-                          <div
-                            style={{
-                              width: 5,
-                              height: 5,
-                              borderRadius: 3,
-                              background: isPaid ? "#1A7A3C" : "#D33B3B",
-                            }}
-                          />
                           <span
                             style={{
                               fontSize: 9,
                               fontWeight: 700,
-                              color: isPaid ? "#1A7A3C" : "#D33B3B",
+                              color: BLUE,
                               letterSpacing: 0.2,
                               textTransform: "uppercase",
+                              textDecoration: eolDone ? "line-through" : "none",
+                              opacity: eolDone ? 0.6 : 1,
                             }}
                           >
-                            {isPaid ? "Paid" : "Not paid"}
+                            EOL
                           </span>
-                        </div>
-                      )}
-                    </div>
+                        </button>
+                        {showPayPill && (
+                          <div
+                            style={{
+                              background: isPaid ? "#E8F8ED" : "#FFECEC",
+                              borderRadius: 20,
+                              padding: "2px 7px",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: 3,
+                            }}
+                            aria-label={isPaid ? "Paid" : "Not paid"}
+                          >
+                            <div
+                              style={{
+                                width: 5,
+                                height: 5,
+                                borderRadius: 3,
+                                background: isPaid ? "#1A7A3C" : "#D33B3B",
+                              }}
+                            />
+                            <span
+                              style={{
+                                fontSize: 9,
+                                fontWeight: 700,
+                                color: isPaid ? "#1A7A3C" : "#D33B3B",
+                                letterSpacing: 0.2,
+                                textTransform: "uppercase",
+                              }}
+                            >
+                              {isPaid ? "Paid" : "Not paid"}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
 
-                  {/* Right status / fee area */}
-                  {e.status === "inProgress" && (
+                  {/* Right status / fee */}
+                  {e.status === "inProgress" ? (
                     <div
                       style={{
                         background: "#E8F8ED",
@@ -573,8 +555,7 @@ function ScheduleSection({ instructorId }: { instructorId: string }) {
                       <div style={{ width: 5, height: 5, borderRadius: 3, background: "#1A7A3C" }} />
                       <span style={{ fontSize: 9, fontWeight: 700, color: "#1A7A3C" }}>Now</span>
                     </div>
-                  )}
-                  {e.status === "upcoming" && (
+                  ) : e.status === "upcoming" && isToday ? (
                     <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", flexShrink: 0 }}>
                       <span style={{ fontSize: 9, fontWeight: 700, color: BLUE }}>
                         {minutesUntil}m
@@ -585,8 +566,7 @@ function ScheduleSection({ instructorId }: { instructorId: string }) {
                         </span>
                       )}
                     </div>
-                  )}
-                  {e.status === "done" && (
+                  ) : e.status === "done" ? (
                     <div
                       style={{
                         background: "#F2F4F8",
@@ -597,8 +577,7 @@ function ScheduleSection({ instructorId }: { instructorId: string }) {
                     >
                       <span style={{ fontSize: 9, fontWeight: 600, color: "#8E8E93" }}>Done</span>
                     </div>
-                  )}
-                  {e.status === "cancelled" && (
+                  ) : e.status === "cancelled" ? (
                     <div
                       style={{
                         background: "#FFF0F0",
@@ -609,8 +588,9 @@ function ScheduleSection({ instructorId }: { instructorId: string }) {
                     >
                       <span style={{ fontSize: 9, fontWeight: 700, color: "#B23A3F" }}>Cancelled</span>
                     </div>
-                  )}
-                </div>
+                  ) : null}
+                  <ChevronRight size={12} color="#C7C7CC" strokeWidth={1.8} style={{ flexShrink: 0, marginLeft: 2 }} />
+                </button>
 
                 {/* NOW line between past and future */}
                 {nowLineIndex === i && (
@@ -648,11 +628,6 @@ function ScheduleSection({ instructorId }: { instructorId: string }) {
                       {currentTimeString}
                     </div>
                   </div>
-                )}
-
-                {/* Separator (not after last) */}
-                {i < enriched.length - 1 && (
-                  <div style={{ height: 0.5, background: ROW_DIVIDER }} />
                 )}
               </div>
             );
