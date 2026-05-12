@@ -100,6 +100,8 @@ export function useInstructorNotificationSettings(instructorId: string | undefin
         daily_summary_enabled: row.daily_summary_enabled === undefined ? DEFAULTS.daily_summary_enabled : Boolean(row.daily_summary_enabled),
         daily_summary_time: ((row.daily_summary_time as string) ?? DEFAULTS.daily_summary_time).slice(0, 5),
         daily_summary_include: { ...DEFAULT_INCLUDE, ...((row.daily_summary_include as Partial<DailySummaryInclude>) ?? {}) },
+        message_sound_enabled: row.message_sound_enabled === undefined ? DEFAULTS.message_sound_enabled : Boolean(row.message_sound_enabled),
+        message_sound_choice: ((row.message_sound_choice as MessageSoundChoice) ?? DEFAULTS.message_sound_choice),
       });
     }
     setLoading(false);
