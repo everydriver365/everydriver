@@ -1582,36 +1582,6 @@ export function MobileHomeRedesign({
     onClick: () => navigate("/instructor/test-requests"),
   });
 
-  // Calls (counter to be wired later)
-  const missedCallsCount: number = 0;
-  attentionRows.push({
-    key: "calls",
-    group: "urgent",
-    Icon: Phone,
-    iconBg: "#FFF0F0",
-    iconColor: RED,
-    title: "Calls",
-    subtitle: missedCallsCount > 0 ? `${missedCallsCount} missed call${missedCallsCount !== 1 ? "s" : ""}` : "No missed calls",
-    badge: missedCallsCount > 0 ? { label: String(missedCallsCount), bg: "#CC2229" } : undefined,
-    isClear: missedCallsCount === 0,
-    onClick: () => navigate("/instructor/calls"),
-  });
-
-  // Enquiries (counter to be wired later)
-  const enquiriesCount: number = 0;
-  attentionRows.push({
-    key: "enquiries",
-    group: "urgent",
-    Icon: Inbox,
-    iconBg: "#FFF0F0",
-    iconColor: RED,
-    title: "Enquiries",
-    subtitle: enquiriesCount > 0 ? `${enquiriesCount} new enquir${enquiriesCount !== 1 ? "ies" : "y"}` : "No new enquiries",
-    badge: enquiriesCount > 0 ? { label: String(enquiriesCount), bg: "#CC2229" } : undefined,
-    isClear: enquiriesCount === 0,
-    onClick: () => navigate("/instructor/enquiries"),
-  });
-
   if (vehicleFault) {
     attentionRows.push({
       key: "vehicle",
@@ -1625,12 +1595,14 @@ export function MobileHomeRedesign({
     });
   }
 
-  // Live count of bookable open slots between today and end of this week (Sun).
+  // Live count of days this week (Mon–Sun) that have at least one bookable
+  // gap. Counting raw 60-min anchors massively overstates availability
+  // (`computeFreeSlots` emits one anchor per hour), so we count gap days.
   const weekEndStr = format(endOfWeek(new Date(), { weekStartsOn: 1 }), "yyyy-MM-dd");
   const todayStr = format(new Date(), "yyyy-MM-dd");
-  const openSlots = (gapData ?? [])
-    .filter((g) => g.date >= todayStr && g.date <= weekEndStr)
-    .reduce((sum, g) => sum + (g.slots?.length ?? 0), 0);
+  const openSlotDays = (gapData ?? []).filter(
+    (g) => g.date >= todayStr && g.date <= weekEndStr && (g.slots?.length ?? 0) > 0
+  ).length;
   attentionRows.push({
     key: "gaps",
     group: "todo",
@@ -1638,9 +1610,15 @@ export function MobileHomeRedesign({
     iconBg: "#F2F4F8",
     iconColor: "#5B6B8A",
     title: "Open slots this week",
-    subtitle: "Fill gaps in your schedule",
-    badge: openSlots > 0 ? { label: String(openSlots), bg: "#F2F4F8", fg: "#5B6B8A", variant: "pill" } : undefined,
-    isClear: openSlots === 0,
+    subtitle:
+      openSlotDays > 0
+        ? `${openSlotDays} day${openSlotDays === 1 ? "" : "s"} with availability`
+        : "No open gaps this week",
+    badge:
+      openSlotDays > 0
+        ? { label: String(openSlotDays), bg: "#F2F4F8", fg: "#5B6B8A", variant: "pill" }
+        : undefined,
+    isClear: openSlotDays === 0,
     onClick: () => navigate("/instructor/schedule"),
   });
 
@@ -1688,13 +1666,10 @@ export function MobileHomeRedesign({
   }
 
   // Total active attention count (for the section header pill).
-  // Sums real counts plus a +1 for boolean rows that don't carry a number.
   const totalAttentionCount =
-    missedCallsCount +
-    enquiriesCount +
     pendingJobs +
     swapCount +
-    openSlots +
+    openSlotDays +
     dormantCount +
     unread +
     (debt > 0 ? 1 : 0) +
