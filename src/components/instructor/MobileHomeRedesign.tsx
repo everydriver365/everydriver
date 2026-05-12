@@ -632,14 +632,14 @@ function UpNextTile({
                     color: CHARCOAL,
                     fontWeight: 600,
                     minWidth: 0,
+                    display: "-webkit-box",
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: "vertical",
                     overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
+                    wordBreak: "break-word",
                   }}
                 >
-                  {pickupPostcode || ""}
-                  {pickupPostcode && pickupLocation ? " · " : ""}
-                  {pickupLocation || ""}
+                  {[pickupLocation, pickupPostcode].filter(Boolean).join(", ")}
                 </div>
                 <div style={{ fontSize: 11, color: "#1A52A0", marginTop: 1, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" }}>Pick-up</div>
               </div>
