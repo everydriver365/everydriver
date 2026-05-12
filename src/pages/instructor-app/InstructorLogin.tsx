@@ -148,6 +148,11 @@ export default function InstructorLogin() {
   const handleBiometricLogin = async () => {
     setBiometricLoading(true);
     setError("");
+    // Hard cap so the spinner cannot get stuck forever in TestFlight.
+    const safety = setTimeout(() => {
+      setBiometricLoading(false);
+      setError("Face ID timed out. Please use email and password.");
+    }, 20000);
     try {
       const creds = await getBiometricCredentials("instructor", "Sign in to EveryDriver");
       if (!creds) {
@@ -165,6 +170,7 @@ export default function InstructorLogin() {
       console.error("Biometric login error:", err);
       setError("Biometric login not available. Please use email and password.");
     } finally {
+      clearTimeout(safety);
       setBiometricLoading(false);
     }
   };
