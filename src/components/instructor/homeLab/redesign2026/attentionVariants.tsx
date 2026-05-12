@@ -1,6 +1,6 @@
 import {
   AlertCircle, AlertTriangle, Calendar, CreditCard, MessageCircle, Bell,
-  ChevronRight, Clock, CheckCircle2, Inbox, Flame, Sparkles,
+  ChevronRight, Clock, CheckCircle2, Inbox, Flame, Sparkles, Zap, ArrowRight,
 } from "lucide-react";
 
 const MUTED = "#6B7280";
