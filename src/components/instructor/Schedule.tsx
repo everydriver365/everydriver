@@ -591,30 +591,23 @@ function LessonRow({
   const fee = lesson.amountDue ?? 0;
   const showPayPill = !isCancelled && fee > 0;
   const showEOLPill = isPast || isCompleted || eolDone;
-  const subtitleParts: string[] = [];
-  if (lesson.lessonType) subtitleParts.push(String(lesson.lessonType).replace(/_/g, " "));
-  const loc = shortLine(lesson.pickupLocation, lesson.pickupPostcode);
-  if (loc) subtitleParts.push(loc);
-  const subtitle = subtitleParts.join(" · ");
-  const rowBg = isLive ? "#FBEAEC" : isUpcoming ? "transparent" : "transparent";
+  const address = shortLine(lesson.pickupLocation, lesson.pickupPostcode);
+  const lessonTypeLabel = lesson.lessonType
+    ? String(lesson.lessonType).replace(/_/g, " ")
+    : "";
+  const rowBg = isLive ? "#FBEAEC" : "transparent";
   return (
-    <button
-      type="button"
-      onClick={onClick}
+    <div
       style={{
         width: "100%",
         display: "flex",
-        alignItems: "center",
+        alignItems: "flex-start",
         gap: 10,
         padding: "10px 14px",
         background: rowBg,
-        border: "none",
         borderTop: isFirst ? "none" : `0.5px solid #F0F3F8`,
-        textAlign: "left",
-        cursor: "pointer",
-        opacity: isCompleted || isPast ? 0.55 : 1,
+        opacity: isCompleted || isPast ? 0.7 : 1,
         fontFamily: FONT,
-        WebkitTapHighlightColor: "transparent",
       }}
     >
       <div
@@ -626,6 +619,7 @@ function LessonRow({
           color: TEXT_PRIMARY,
           flexShrink: 0,
           fontVariantNumeric: "tabular-nums",
+          paddingTop: 1,
         }}
       >
         {lesson.startTime}
@@ -640,6 +634,7 @@ function LessonRow({
         }}
       />
       <div style={{ flex: 1, minWidth: 0 }}>
+        {/* Row 1: name */}
         <div
           style={{
             fontSize: 12,
@@ -652,7 +647,8 @@ function LessonRow({
         >
           {lesson.pupilName}
         </div>
-        {subtitle && (
+        {/* Row 2: address */}
+        {address && (
           <div
             style={{
               fontSize: 10,
@@ -661,53 +657,21 @@ function LessonRow({
               overflow: "hidden",
               textOverflow: "ellipsis",
               whiteSpace: "nowrap",
-              textTransform: "capitalize",
             }}
           >
-            {subtitle}
+            {address}
           </div>
         )}
+        {/* Row 3: payment, lesson type, EOL link, Profile link */}
         <div
           style={{
             display: "flex",
             flexWrap: "wrap",
             alignItems: "center",
-            gap: 4,
-            marginTop: 4,
+            gap: 6,
+            marginTop: 6,
           }}
         >
-          {showEOLPill && (
-            <button
-              type="button"
-              onClick={(ev) => {
-                ev.stopPropagation();
-                onEOLClick(ev);
-              }}
-              style={{
-                background: "#EEF3FF",
-                borderRadius: 20,
-                padding: "2px 7px",
-                border: "none",
-                cursor: "pointer",
-                lineHeight: 1.2,
-              }}
-              aria-label={eolDone ? "End of lesson complete" : "Complete end of lesson"}
-            >
-              <span
-                style={{
-                  fontSize: 9,
-                  fontWeight: 700,
-                  color: DSM_BLUE,
-                  letterSpacing: 0.2,
-                  textTransform: "uppercase",
-                  textDecoration: eolDone ? "line-through" : "none",
-                  opacity: eolDone ? 0.6 : 1,
-                }}
-              >
-                EOL
-              </span>
-            </button>
-          )}
           {showPayPill && (
             <div
               style={{
@@ -740,6 +704,22 @@ function LessonRow({
               </span>
             </div>
           )}
+          {lessonTypeLabel && (
+            <span
+              style={{
+                background: "#F1EFE8",
+                color: "#5B6B8A",
+                fontSize: 9,
+                fontWeight: 600,
+                padding: "2px 7px",
+                borderRadius: 20,
+                textTransform: "capitalize",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {lessonTypeLabel}
+            </span>
+          )}
           {isCancelled && (
             <span
               style={{
@@ -756,6 +736,52 @@ function LessonRow({
               Cancelled
             </span>
           )}
+          <button
+            type="button"
+            onClick={(ev) => {
+              ev.stopPropagation();
+              onEOLClick(ev);
+            }}
+            style={{
+              background: "transparent",
+              border: "none",
+              padding: "2px 4px",
+              cursor: "pointer",
+              fontSize: 10,
+              fontWeight: 700,
+              color: DSM_BLUE,
+              letterSpacing: 0.2,
+              textTransform: "uppercase",
+              textDecoration: "underline",
+              textUnderlineOffset: 2,
+              opacity: eolDone ? 0.55 : 1,
+            }}
+            aria-label={eolDone ? "End of lesson complete" : "Complete end of lesson"}
+          >
+            {eolDone ? "EOL ✓" : "EOL"}
+          </button>
+          <button
+            type="button"
+            onClick={(ev) => {
+              ev.stopPropagation();
+              onClick();
+            }}
+            style={{
+              background: "transparent",
+              border: "none",
+              padding: "2px 4px",
+              cursor: "pointer",
+              fontSize: 10,
+              fontWeight: 700,
+              color: DSM_BLUE,
+              letterSpacing: 0.2,
+              textTransform: "uppercase",
+              textDecoration: "underline",
+              textUnderlineOffset: 2,
+            }}
+          >
+            Profile
+          </button>
         </div>
       </div>
       {isLive ? (
@@ -786,8 +812,7 @@ function LessonRow({
             : `${Math.round(minutesUntil / 60)}h`}
         </span>
       ) : null}
-      <ChevronRight size={12} color="#C7C7CC" strokeWidth={1.8} style={{ flexShrink: 0, marginLeft: 2 }} />
-    </button>
+    </div>
   );
 }
 
