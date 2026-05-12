@@ -28,6 +28,7 @@ import { useNextLessonDetails } from "@/hooks/useNextLessonDetails";
 import { useInstructorLiveStats } from "@/hooks/useInstructorLiveStats";
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
 import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
+import { useMessageSound } from "@/hooks/useMessageSound";
 import { useInstructorPupilsPaymentSummary } from "@/hooks/usePupilPaymentStatus";
 import { useRealGapSlots } from "@/hooks/useRealGapSlots";
 import { useFranchiseStatus } from "@/hooks/useFranchiseStatus";
