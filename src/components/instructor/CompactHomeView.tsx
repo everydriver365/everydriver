@@ -187,9 +187,7 @@ export function CompactHomeView({ instructorId, instructor }: CompactHomeViewPro
 
       {/* Hero: NextUp tile when imminent */}
       {isNextLessonImminent && nextLesson && (
-        <>
-          <SectionHeader title="Next Lesson" category="schedule" className="px-4 mb-2" />
-          <div className="px-4 mb-3">
+        <div className="px-4 mb-3">
           <NextUpTile
             lessonId={nextLesson.lessonId}
             pupilId={nextLesson.pupilId}
@@ -210,7 +208,6 @@ export function CompactHomeView({ instructorId, instructor }: CompactHomeViewPro
             lastLessonPlan={nextLesson.lastLessonPlan}
           />
         </div>
-        </>
       )}
 
       {/* Stats Grid — collapsible when NextUp is hero */}
