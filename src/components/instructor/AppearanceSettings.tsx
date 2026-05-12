@@ -202,12 +202,17 @@ export function AppearanceSettings({ instructorId }: AppearanceSettingsProps) {
 
   const [uploading, setUploading] = useState(false);
   const [customColor, setCustomColor] = useState("");
+  const navigate = useNavigate();
 
   const currentBg = wallpaperColor || "#F4F7F6";
   const currentHero = heroImageUrl || instructorHeroImg;
 
-  const handleLayoutChange = (style: LayoutStyle) => {
-    updateAppearance({ layoutStyle: style });
+  const handleLayoutChange = async (style: LayoutStyle) => {
+    const ok = await updateAppearance({ layoutStyle: style });
+    if (ok) {
+      toast.success("Home layout updated — opening your home screen…");
+      setTimeout(() => navigate("/instructor"), 400);
+    }
   };
 
   const handleHeroUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
