@@ -2150,13 +2150,15 @@ export function MobileHomeRedesign({
           )}
         </div>
         <AttentionCard rows={attentionRows} />
-        <UpgradeCard rows={upgradeRows} />
-        <FranchiseCard
-          feeStatus={franchiseStatus?.feeStatus ?? "none"}
-          amountOwing={franchiseStatus?.amountOwing ?? 0}
-          bonusDue={franchiseStatus?.bonusDue ?? 0}
-          onFeeClick={() => navigate("/instructor/payments?tab=franchise")}
-          onBonusClick={() => navigate("/instructor/payments?tab=bonus")}
+        <UpgradeCard
+          rows={upgradeRows}
+          franchise={{
+            feeStatus: franchiseStatus?.feeStatus ?? "none",
+            amountOwing: franchiseStatus?.amountOwing ?? 0,
+            bonusDue: franchiseStatus?.bonusDue ?? 0,
+            onFeeClick: () => navigate("/instructor/payments?tab=franchise"),
+            onBonusClick: () => navigate("/instructor/payments?tab=bonus"),
+          }}
         />
       </div>
 
