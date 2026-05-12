@@ -345,6 +345,14 @@ export function NextLessonPreviewCard(props: NextLessonPreviewCardProps) {
     navigate(`/instructor/pupils/${pupilId}?lesson=${lessonId}`);
   };
 
+  const distanceMi = useMemo(() => {
+    if (!origin || !destCoords) return null;
+    const meters = haversine(origin, destCoords);
+    const mi = meters * 0.000621371;
+    if (mi < 0.1) return null;
+    return mi < 10 ? mi.toFixed(1) : Math.round(mi).toString();
+  }, [origin, destCoords]);
+
   const lessonsCount = history.data?.filter((h) => h.status === "completed").length ?? null;
   const lastLessonDate = history.data?.find((h) => h.status === "completed")?.lesson_date ?? null;
   const lastLessonNote = history.data?.find((h) => h.notes && h.status === "completed")?.notes ?? null;
