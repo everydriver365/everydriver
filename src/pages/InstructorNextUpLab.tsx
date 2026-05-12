@@ -1599,6 +1599,10 @@ const VARIANTS = [
   { id: "v28", name: "Live Vertical", desc: "Live Card with stacked metric rows instead of a grid.", Component: V28LiveVertical },
   { id: "v29", name: "Live Forecast", desc: "Weather woven into the gradient and header.", Component: V29LiveForecast },
   { id: "v30", name: "Live Pro", desc: "Avatar hero, address strip with ETA pill, dual CTAs.", Component: V30LivePro },
+  { id: "v31", name: "Live Brief", desc: "Live Card ambient + paid/travel/weather checklist.", Component: V31LiveBrief },
+  { id: "v32", name: "Live Brief Dark", desc: "Glassy dark surface with a 2×2 brief grid.", Component: V32LiveBriefDark },
+  { id: "v33", name: "Live Brief Compact", desc: "Single ambient card with inline check chips.", Component: V33LiveBriefCompact },
+  { id: "v34", name: "Live Brief Pro", desc: "Ambient hero on top, full brief checklist beneath.", Component: V34LiveBriefPro },
 ];
 
 export default function InstructorNextUpLab() {
