@@ -39,7 +39,7 @@ import Schedule from "@/components/instructor/Schedule";
 import { FloatingSessionBar } from "@/components/instructor/FloatingSessionBar";
 import { UpcomingEventsTile } from "@/components/instructor/UpcomingEventsTile";
 import { useDormantPupilsCount } from "@/hooks/useDormantPupilsCount";
-import { Wrench, Users as UsersIcon, Crown, ShieldPlus, Inbox, Check, Star, Heart, Repeat2 } from "lucide-react";
+import { Wrench, Users as UsersIcon, Crown, ShieldPlus, Inbox, Check, Star, Heart, Repeat2, Shield } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { differenceInDays, isPast } from "date-fns";
@@ -1029,6 +1029,7 @@ interface UpgradeRowSpec {
   subtitle: string;
   upgradeBg: string;
   upgradeFg?: string;
+  ctaLabel?: string;
   onClick: () => void;
 }
 
@@ -1308,87 +1309,153 @@ function AttentionCard({ rows }: { rows: AttentionRow[] }) {
 }
 
 function UpgradeCard({ rows }: { rows: UpgradeRowSpec[] }) {
+  const [open, setOpen] = useState(false);
   if (rows.length === 0) return null;
+
+  // Summary: count of rows that aren't on the top tier yet
+  const upgradeable = rows.filter((r) => r.tierLabel !== "Premium" && r.tierLabel !== "Full").length;
+
   return (
     <GroupCard borderColor="rgba(26,82,160,0.08)" marginBottom={0}>
-      <GroupHeader
-        label="Upgrade"
-        Icon={Star}
-        iconColor="#8E8E93"
-        dotColor="#8E8E93"
-        bg="#F8F9FF"
-        borderColor="rgba(26,82,160,0.06)"
-      />
-      {rows.map((r, i) => (
-        <div key={r.key}>
-          {i > 0 && <RowDivider />}
-          <button
-            type="button"
-            onClick={r.onClick}
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        style={{
+          width: "100%",
+          background: "#F8F9FF",
+          padding: "10px 12px",
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          border: "none",
+          borderBottom: open ? "0.5px solid rgba(26,82,160,0.06)" : "none",
+          cursor: "pointer",
+          textAlign: "left",
+        }}
+      >
+        <span
+          style={{
+            width: 22,
+            height: 22,
+            borderRadius: 6,
+            background: "#FFF6E6",
+            color: "#B45309",
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+          }}
+        >
+          <Star size={11} strokeWidth={2} />
+        </span>
+        <span
+          style={{
+            fontSize: 11,
+            fontWeight: 700,
+            color: "#1A1A1A",
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+          }}
+        >
+          Membership
+        </span>
+        <span style={{ flex: 1 }} />
+        {!open && upgradeable > 0 && (
+          <span
             style={{
-              width: "100%",
-              display: "flex",
-              alignItems: "center",
-              gap: 9,
-              padding: "9px 12px",
-              background: "transparent",
-              border: "none",
-              cursor: "pointer",
-              textAlign: "left",
+              fontSize: 11,
+              fontWeight: 600,
+              color: "#1A52A0",
+              background: "#EEF3FF",
+              padding: "2px 8px",
+              borderRadius: 10,
             }}
           >
-            <span
+            {upgradeable} upgrade{upgradeable === 1 ? "" : "s"}
+          </span>
+        )}
+        <ChevronDown
+          size={14}
+          color="#8E8E93"
+          strokeWidth={2}
+          style={{
+            transform: open ? "rotate(180deg)" : "rotate(0deg)",
+            transition: "transform 180ms ease",
+          }}
+        />
+      </button>
+      {open &&
+        rows.map((r, i) => (
+          <div key={r.key}>
+            {i > 0 && <RowDivider />}
+            <button
+              type="button"
+              onClick={r.onClick}
               style={{
-                width: 28,
-                height: 28,
-                borderRadius: 8,
-                background: r.iconBg,
-                color: r.iconColor,
-                display: "inline-flex",
+                width: "100%",
+                display: "flex",
                 alignItems: "center",
-                justifyContent: "center",
-                flexShrink: 0,
+                gap: 9,
+                padding: "8px 12px",
+                background: "transparent",
+                border: "none",
+                cursor: "pointer",
+                textAlign: "left",
               }}
             >
-              <r.Icon size={12} strokeWidth={1.6} />
-            </span>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 1 }}>
-                <span style={{ fontSize: 14, fontWeight: 700, color: "#1A1A1A" }}>{r.label}</span>
-                <span
-                  style={{
-                    background: r.tierBg,
-                    color: r.tierColor,
-                    borderRadius: 4,
-                    padding: "1px 5px",
-                    fontSize: 10,
-                    fontWeight: 700,
-                    letterSpacing: "0.04em",
-                    textTransform: "uppercase",
-                  }}
-                >
-                  {r.tierLabel}
-                </span>
+              <span
+                style={{
+                  width: 26,
+                  height: 26,
+                  borderRadius: 7,
+                  background: r.iconBg,
+                  color: r.iconColor,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                }}
+              >
+                <r.Icon size={12} strokeWidth={1.8} />
+              </span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 1 }}>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: "#1A1A1A" }}>{r.label}</span>
+                  <span
+                    style={{
+                      background: r.tierBg,
+                      color: r.tierColor,
+                      borderRadius: 4,
+                      padding: "1px 5px",
+                      fontSize: 9,
+                      fontWeight: 700,
+                      letterSpacing: "0.04em",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    {r.tierLabel}
+                  </span>
+                </div>
+                <div style={{ fontSize: 11, color: "#8E8E93" }}>{r.subtitle}</div>
               </div>
-              <div style={{ fontSize: 12, color: "#8E8E93" }}>{r.subtitle}</div>
-            </div>
-            <span
-              style={{
-                background: r.upgradeBg,
-                color: r.upgradeFg ?? "#FFF",
-                borderRadius: 20,
-                padding: "4px 10px",
-                fontSize: 12,
-                fontWeight: 700,
-                flexShrink: 0,
-              }}
-            >
-              Upgrade
-            </span>
-            <ChevronRight size={12} color="#C7C7CC" strokeWidth={1.8} />
-          </button>
-        </div>
-      ))}
+              <span
+                style={{
+                  background: r.upgradeBg,
+                  color: r.upgradeFg ?? "#FFF",
+                  borderRadius: 16,
+                  padding: "4px 10px",
+                  fontSize: 11,
+                  fontWeight: 700,
+                  flexShrink: 0,
+                }}
+              >
+                {r.ctaLabel ?? "Upgrade"}
+              </span>
+              <ChevronRight size={12} color="#C7C7CC" strokeWidth={1.8} />
+            </button>
+          </div>
+        ))}
     </GroupCard>
   );
 }
@@ -1627,6 +1694,7 @@ export function MobileHomeRedesign({
   // Upgrade section (placeholders — to be wired later)
   const membershipLevel = "Starter" as "Free" | "Starter" | "Pro" | "Premium";
   const healthCover = "Basic" as "None" | "Basic" | "Full";
+  const incomeProtection = "None" as "None" | "Basic" | "Full";
 
   const upgradeRows: UpgradeRowSpec[] = [
     {
@@ -1638,9 +1706,10 @@ export function MobileHomeRedesign({
       tierLabel: membershipLevel,
       tierBg: "#FFF6E6",
       tierColor: "#B45309",
-      subtitle: "Unlock more features · lower fees",
-      upgradeBg: BLUE_TINT,
-      upgradeFg: BLUE,
+      subtitle: "Unlock features · lower fees",
+      upgradeBg: "#B45309",
+      upgradeFg: "#FFFFFF",
+      ctaLabel: "Upgrade",
       onClick: () => navigate("/instructor/subscription"),
     },
     {
@@ -1652,10 +1721,26 @@ export function MobileHomeRedesign({
       tierLabel: healthCover,
       tierBg: "#EEF3FF",
       tierColor: "#1A52A0",
-      subtitle: "Full income protection available",
-      upgradeBg: BLUE_TINT,
-      upgradeFg: BLUE,
+      subtitle: "Medical & accident cover",
+      upgradeBg: "#1A52A0",
+      upgradeFg: "#FFFFFF",
+      ctaLabel: "Upgrade",
       onClick: () => navigate("/instructor/health"),
+    },
+    {
+      key: "income-protection",
+      Icon: Shield,
+      iconBg: "#E8F5EE",
+      iconColor: "#1F7A45",
+      label: "Income protection",
+      tierLabel: incomeProtection,
+      tierBg: "#E8F5EE",
+      tierColor: "#1F7A45",
+      subtitle: "Cover if you can't teach",
+      upgradeBg: "#1F7A45",
+      upgradeFg: "#FFFFFF",
+      ctaLabel: "Add",
+      onClick: () => navigate("/instructor/income-protection"),
     },
   ];
 
