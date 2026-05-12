@@ -15,6 +15,11 @@ interface Props {
 const HOUR_HEIGHT = 56; // px per hour
 const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
+function isWholeDayEvent(ev: CalendarEvent) {
+  const durMs = ev.end.getTime() - ev.start.getTime();
+  return durMs >= 23 * 60 * 60 * 1000;
+}
+
 function eventColor(e: CalendarEvent): { bg: string; text: string } {
   if (e.type === "block") return { bg: "#B23A3F", text: "#FFFFFF" };
   if (e.type === "external") return { bg: "#6E7C99", text: "#FFFFFF" };
@@ -55,6 +60,7 @@ export function WeekTimelineView({
     let min = 8;
     let max = 19;
     events.forEach((ev) => {
+      if (isWholeDayEvent(ev)) return;
       if (days.some((d) => isSameDay(d, ev.start))) {
         min = Math.min(min, ev.start.getHours());
         max = Math.max(max, ev.end.getHours() + (ev.end.getMinutes() > 0 ? 1 : 0));
@@ -89,15 +95,6 @@ export function WeekTimelineView({
   const totalHeight = (endHour - startHour) * HOUR_HEIGHT;
   const GUTTER = 44;
 
-  const isAllDay = (ev: CalendarEvent) => {
-    const durMs = ev.end.getTime() - ev.start.getTime();
-    return (
-      ev.start.getHours() === 0 &&
-      ev.start.getMinutes() === 0 &&
-      durMs >= 23 * 60 * 60 * 1000
-    );
-  };
-
   const { eventsByDay, allDayByDay } = useMemo(() => {
     const map: Record<string, CalendarEvent[]> = {};
     const allDay: Record<string, CalendarEvent[]> = {};
@@ -109,7 +106,7 @@ export function WeekTimelineView({
     events.forEach((ev) => {
       const k = format(ev.start, "yyyy-MM-dd");
       if (!(k in map)) return;
-      if (isAllDay(ev)) allDay[k].push(ev);
+      if (isWholeDayEvent(ev)) allDay[k].push(ev);
       else map[k].push(ev);
     });
     return { eventsByDay: map, allDayByDay: allDay };
