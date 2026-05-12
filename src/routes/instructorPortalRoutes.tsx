@@ -129,6 +129,7 @@ const NextUpTileRedesigns = lazy(() => import("@/pages/demo/DemoNextUpRedesigns"
 const InstructorHomeDesignLab = lazy(() => import("@/pages/InstructorHomeDesignLab"));
 const InstructorNextUpLab = lazy(() => import("@/pages/InstructorNextUpLab"));
 const InstructorHomeRedesignLab2026 = lazy(() => import("@/pages/InstructorHomeRedesignLab2026"));
+const InstructorHomeLowerLab2026 = lazy(() => import("@/pages/InstructorHomeLowerLab2026"));
 const InstructorWhatsAppSettings = lazy(() => import("@/pages/instructor/InstructorWhatsAppSettings"));
 const InstructorWhatsAppTemplates = lazy(() => import("@/pages/instructor/InstructorWhatsAppTemplates"));
 
