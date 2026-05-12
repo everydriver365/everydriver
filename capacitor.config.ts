@@ -21,6 +21,14 @@ const config: CapacitorConfig = {
       backgroundColor: '#F4F7F6',
       overlaysWebView: false,
     },
+    SplashScreen: {
+      backgroundColor: '#F4F7F6',
+      androidSplashResourceName: 'splash',
+      androidScaleType: 'CENTER_CROP',
+      showSpinner: false,
+      splashFullScreen: true,
+      splashImmersive: true,
+    },
     NativeBiometric: {
       // iOS Info.plist additions handled by plugin; ensure NSFaceIDUsageDescription is set in Xcode
     },
