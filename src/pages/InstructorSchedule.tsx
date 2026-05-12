@@ -301,6 +301,10 @@ export default function InstructorSchedule() {
                       <List className="h-4 w-4" /> List
                       {viewMode === 'list' && <Check className="ml-auto h-4 w-4" />}
                     </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setViewMode('week')} className="cursor-pointer gap-2">
+                      <Columns3 className="h-4 w-4" /> Week
+                      {viewMode === 'week' && <Check className="ml-auto h-4 w-4" />}
+                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setViewMode('schedule')} className="cursor-pointer gap-2">
                       <CalendarDays className="h-4 w-4" /> Schedule
                       {viewMode === 'schedule' && <Check className="ml-auto h-4 w-4" />}
