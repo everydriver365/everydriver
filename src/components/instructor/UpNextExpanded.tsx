@@ -6,7 +6,7 @@ import { AlertTriangle } from "lucide-react";
 import { enrichFaultCode } from "@/lib/obdCodeLookup";
 import { usePupilLessonHistory, type PupilLessonHistoryEntry } from "@/hooks/usePupilLessonHistory";
 import { PreviousLessonModal } from "./PreviousLessonModal";
-import { StaticMapPreview } from "@/components/UpNextCard/StaticMapPreview";
+import { UpNextLiveMapStrip } from "./UpNextLiveMapStrip";
 import { parse as parseDateFn } from "date-fns";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -533,22 +533,15 @@ export function UpNextExpanded({
           overflow: "hidden",
         }}
       >
-        {/* Mini map at top of expanded section */}
-        <button
-          type="button"
-          onClick={navigateMap}
-          aria-label="Open in maps"
-          style={{
-            display: "block",
-            width: "100%",
-            padding: 0,
-            border: "none",
-            background: "transparent",
-            cursor: fullAddress ? "pointer" : "default",
-          }}
-        >
-          <StaticMapPreview hasDestination={!!fullAddress} height={120} />
-        </button>
+        {/* Live mini map at top of expanded section */}
+        <UpNextLiveMapStrip
+          pickupPostcode={pickupPostcode}
+          pickupLocation={pickupLocation}
+          instructorId={instructorId}
+          hasDestination={!!fullAddress}
+          onNavigate={(e) => { e.stopPropagation(); navigateMap(); }}
+          height={130}
+        />
 
         {/* SECTION 1 — Status banners */}
         <div style={{ paddingTop: 14 }}>
