@@ -1,5 +1,6 @@
 import { useEffect } from "react";
-import { useInstructorNotificationSettings, type CategoryKey, type DeliveryCadence } from "@/hooks/useInstructorNotificationSettings";
+import { useInstructorNotificationSettings, type CategoryKey, type DeliveryCadence, type MessageSoundChoice } from "@/hooks/useInstructorNotificationSettings";
+import { playNotificationSound } from "@/hooks/useMessageSound";
 import { useSettingsDirty } from "../SettingsDirtyContext";
 import { useState } from "react";
 
