@@ -31,6 +31,7 @@ import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
 import { useInstructorPupilsPaymentSummary } from "@/hooks/usePupilPaymentStatus";
 import { useRealGapSlots } from "@/hooks/useRealGapSlots";
 import { useFranchiseStatus } from "@/hooks/useFranchiseStatus";
+import { useInstructorMembership } from "@/hooks/useInstructorMembership";
 import { MapHeroStatic } from "@/components/instructor/MapHeroStatic";
 import { MapHeroLive } from "@/components/instructor/upNext/MapHeroLive";
 
@@ -1313,8 +1314,8 @@ function UpgradeCard({ rows }: { rows: UpgradeRowSpec[] }) {
   const [open, setOpen] = useState(false);
   if (rows.length === 0) return null;
 
-  // Summary: count of rows that aren't on the top tier yet
-  const upgradeable = rows.filter((r) => r.tierLabel !== "Premium" && r.tierLabel !== "Full").length;
+  // Summary: count of rows whose CTA is an upgrade/add (not "Manage")
+  const upgradeable = rows.filter((r) => (r.ctaLabel ?? "Upgrade") !== "Manage").length;
 
   return (
     <GroupCard borderColor="rgba(26,82,160,0.08)" marginBottom={0}>
@@ -1482,6 +1483,7 @@ export function MobileHomeRedesign({
   const { data: gapData } = useRealGapSlots(instructorId);
   const { data: weekly } = useWeeklyGoals(instructorId);
   const { data: franchiseStatus } = useFranchiseStatus(instructorId);
+  const { data: membership } = useInstructorMembership(instructorId);
   const [expanded, setExpanded] = useState(false);
   const [divertSheetOpen, setDivertSheetOpen] = useState(false);
 
@@ -1706,10 +1708,29 @@ export function MobileHomeRedesign({
     (debt > 0 ? 1 : 0) +
     (vehicleFault ? 1 : 0);
 
-  // Upgrade section (placeholders — to be wired later)
-  const membershipLevel = "Starter" as "Free" | "Starter" | "Pro" | "Premium";
-  const healthCover = "Basic" as "None" | "Basic" | "Full";
-  const incomeProtection = "None" as "None" | "Basic" | "Full";
+  // Membership tile — live plan + presentational add-on tiers
+  const membershipLevel = (membership?.planName ?? "Free") as string;
+  const membershipOrder = ["Free", "Starter", "Pro", "Premium"];
+  const membershipIdx = membershipOrder.indexOf(membershipLevel);
+  const nextMembership =
+    membershipIdx >= 0 && membershipIdx < membershipOrder.length - 1
+      ? membershipOrder[membershipIdx + 1]
+      : null;
+
+  // Health cover & income protection are not yet wired to live data.
+  const healthCover = "None" as "None" | "Basic" | "Premium";
+  const incomeProtection = "None" as "None" | "Covered";
+
+  const healthLabelMap: Record<string, string> = {
+    None: "Not covered",
+    Basic: "Bennenden Health",
+    Premium: "Vitality",
+  };
+  const nextHealth =
+    healthCover === "None" ? "Basic" : healthCover === "Basic" ? "Premium" : null;
+
+  const incomeLabel = incomeProtection === "Covered" ? "Covered" : "Not covered";
+  const nextIncome = incomeProtection === "Covered" ? null : "Add cover";
 
   const upgradeRows: UpgradeRowSpec[] = [
     {
@@ -1723,20 +1744,20 @@ export function MobileHomeRedesign({
       tierColor: "#B45309",
       subtitle: (() => {
         const fs = franchiseStatus;
-        if (!fs) return "Unlock features · lower fees";
+        const upgradeBit = nextMembership ? `Upgrade to ${nextMembership}` : "Top tier";
+        if (!fs) return upgradeBit;
         const feeBit =
           fs.feeStatus === "owing"
-            ? `£${fs.amountOwing.toFixed(0)} franchise fee owing`
+            ? `£${fs.amountOwing.toFixed(0)} owing`
             : fs.feeStatus === "paid"
-              ? "Franchise fee up to date"
-              : "No franchise fee";
-        const bonusBit =
-          fs.bonusDue > 0 ? ` · £${fs.bonusDue.toFixed(0)} bonus due` : "";
-        return feeBit + bonusBit;
+              ? "Fee up to date"
+              : null;
+        const bonusBit = fs.bonusDue > 0 ? `£${fs.bonusDue.toFixed(0)} bonus due` : null;
+        return [upgradeBit, feeBit, bonusBit].filter(Boolean).join(" · ");
       })(),
       upgradeBg: "#B45309",
       upgradeFg: "#FFFFFF",
-      ctaLabel: "Upgrade",
+      ctaLabel: nextMembership ? "Upgrade" : "Manage",
       onClick: () => navigate("/instructor/subscription"),
     },
     {
@@ -1745,13 +1766,15 @@ export function MobileHomeRedesign({
       iconBg: "#EEF3FF",
       iconColor: "#1A52A0",
       label: "Health cover",
-      tierLabel: healthCover,
+      tierLabel: healthLabelMap[healthCover],
       tierBg: "#EEF3FF",
       tierColor: "#1A52A0",
-      subtitle: "Medical & accident cover",
+      subtitle: nextHealth
+        ? `Upgrade to ${healthLabelMap[nextHealth]}`
+        : "Top tier cover",
       upgradeBg: "#1A52A0",
       upgradeFg: "#FFFFFF",
-      ctaLabel: "Upgrade",
+      ctaLabel: healthCover === "None" ? "Add" : nextHealth ? "Upgrade" : "Manage",
       onClick: () => navigate("/instructor/health"),
     },
     {
@@ -1760,13 +1783,13 @@ export function MobileHomeRedesign({
       iconBg: "#E8F5EE",
       iconColor: "#1F7A45",
       label: "Income protection",
-      tierLabel: incomeProtection,
+      tierLabel: incomeLabel,
       tierBg: "#E8F5EE",
       tierColor: "#1F7A45",
-      subtitle: "Cover if you can't teach",
+      subtitle: nextIncome ?? "Cover if you can't teach",
       upgradeBg: "#1F7A45",
       upgradeFg: "#FFFFFF",
-      ctaLabel: "Add",
+      ctaLabel: incomeProtection === "Covered" ? "Manage" : "Add",
       onClick: () => navigate("/instructor/income-protection"),
     },
   ];
