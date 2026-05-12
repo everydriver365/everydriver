@@ -68,6 +68,12 @@ interface Subscription {
   features?: string[];
 }
 
+interface SubscriptionPlanData {
+  name?: string | null;
+  slug?: string | null;
+  features?: string[] | null;
+}
+
 interface InstructorAuthContextType {
   user: User | null;
   session: Session | null;
@@ -184,7 +190,7 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
           .maybeSingle();
 
         if (subData) {
-          const planData = subData.subscription_plans as any;
+          const planData = subData.subscription_plans as SubscriptionPlanData | null;
           setSubscription({
             id: subData.id,
             plan_id: subData.plan_id,
