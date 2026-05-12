@@ -1,43 +1,42 @@
-Do I know what the issue is? Yes.
+## What is actually happening
 
-Why it broke:
-- There are two instructor login screens in the app.
-- The previous fix was applied to `/instructor-app/login`, but the mobile/native instructor portal also uses `/instructor/login` via `InstructorPortalLogin.tsx`.
-- That `/instructor/login` screen still auto-starts Face ID as soon as the page loads, and it has no timeout/safety fallback. In TestFlight, that leaves the spinner running and blocks normal email/password sign-in.
-- I also found a native dependency mismatch: the project is on Capacitor 8, but `capacitor-native-biometric@4.2.2` is for older Capacitor versions. That can make Face ID unreliable in TestFlight.
-- The earlier backend auth logs showed real 500/504 database/auth timeouts, but the hosted backend is healthy now and there are no fresh auth timeout logs. So the current failure is in the app login/biometric path, not the backend being down.
+The password login requests are reaching the backend, but recent auth logs show repeated `500/504` timeouts while the auth service tries to query the database. That means the user is not simply entering the wrong password, and the form itself is not the only problem.
 
-Plan to fix:
-1. Patch the actual mobile login screen: `src/pages/InstructorPortalLogin.tsx`
-   - Remove the automatic Face ID attempt on page load.
-   - Only run Face ID when the user taps the button.
-   - Add the same hard timeout/safety fallback used on the other login page.
-   - Re-enable the email/password form immediately if Face ID fails, times out, or has no saved credentials.
+There is also a separate TestFlight issue where the Face ID path can leave the UI spinning or retrying in a way that makes manual login feel blocked.
 
-2. Patch shared biometric handling: `src/lib/biometricAuth.ts`
-   - Make native Face ID calls fail fast and return `null` instead of leaving the UI waiting.
-   - Prefer saved credentials only after a successful biometric check.
-   - Keep the manual email/password login path unaffected.
+## Fix plan
 
-3. Update the native biometric package to the Capacitor 8-compatible maintained package
-   - Replace the old `capacitor-native-biometric` package with the current Capacitor 8-compatible package.
-   - Update imports/API calls only where needed.
-   - Keep the existing saved credential behaviour and button text.
+1. Stabilise the background workload that is likely contributing to auth timeouts
+   - Reduce the `radius-poller` scheduled job from every 5 seconds to a safer interval, or temporarily disable it while login is restored.
+   - Keep the live tracking feature callable from the app, but stop the always-on backend job from hammering the project.
+   - Check recent cron activity after the change so auth has breathing room again.
 
-4. Reduce auth startup pressure
-   - Stop unnecessary global auth role/profile checks from firing on public login pages where possible.
-   - This avoids extra token/session work during sign-in and reduces the chance of refresh conflicts.
+2. Make login resilient when the backend is slow
+   - Keep the existing retry for transient auth failures, but improve the message so it clearly says the login service is busy and asks the user to retry, instead of implying bad credentials.
+   - Avoid repeated automatic retries from Face ID when the backend is returning timeout errors.
+
+3. Fix the TestFlight Face ID behaviour
+   - Ensure Face ID never starts automatically on page load.
+   - Keep a hard timeout so the spinner cannot stay forever.
+   - If Face ID times out/fails, immediately return control to email/password login.
+   - Do not save or use Face ID credentials until email/password has successfully signed in once.
+
+4. Verify the actual route the user is on
+   - Apply the login behaviour fix to `/instructor-app/login`, which is the current route.
+   - Check `/instructor/login` as a legacy route only if it is still used by TestFlight.
 
 5. Validate
-   - Confirm `/instructor/login` no longer auto-starts Face ID.
-   - Confirm email/password submit is not blocked by biometric loading.
-   - Confirm failed/timed-out Face ID shows a useful message and restores the form.
-   - Check fresh auth/backend logs after the change.
+   - Confirm direct database reads respond quickly after reducing the scheduled workload.
+   - Re-check auth logs for fresh `/token` timeout errors.
+   - Confirm the login screen no longer leaves a stuck Face ID spinner and manual sign-in is not blocked.
 
-<lov-actions>
-  <lov-open-history>View History</lov-open-history>
-</lov-actions>
+## Technical details
 
-<lov-actions>
-<lov-link url="https://docs.lovable.dev/tips-tricks/troubleshooting">Troubleshooting docs</lov-link>
-</lov-actions>
+- Relevant frontend files:
+  - `src/pages/instructor-app/InstructorLogin.tsx`
+  - `src/pages/InstructorPortalLogin.tsx`
+  - `src/lib/biometricAuth.ts`
+  - `src/context/InstructorAuthContext.tsx`
+- Relevant backend job:
+  - Cron job `invoke-radius-poller-5s`, currently scheduled every `5 seconds`
+- The backend currently reports healthy overall, but auth logs still show database connection/timeouts during login attempts, so the fix should address both the noisy scheduled job and the stuck Face ID UI.
