@@ -30,6 +30,7 @@ import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
 import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
 import { useInstructorPupilsPaymentSummary } from "@/hooks/usePupilPaymentStatus";
 import { useRealGapSlots } from "@/hooks/useRealGapSlots";
+import { useFranchiseStatus } from "@/hooks/useFranchiseStatus";
 import { MapHeroStatic } from "@/components/instructor/MapHeroStatic";
 import { MapHeroLive } from "@/components/instructor/upNext/MapHeroLive";
 
@@ -1480,6 +1481,7 @@ export function MobileHomeRedesign({
   const { data: paymentsSummary } = useInstructorPupilsPaymentSummary(instructorId);
   const { data: gapData } = useRealGapSlots(instructorId);
   const { data: weekly } = useWeeklyGoals(instructorId);
+  const { data: franchiseStatus } = useFranchiseStatus(instructorId);
   const [expanded, setExpanded] = useState(false);
   const [divertSheetOpen, setDivertSheetOpen] = useState(false);
 
@@ -1719,7 +1721,19 @@ export function MobileHomeRedesign({
       tierLabel: membershipLevel,
       tierBg: "#FFF6E6",
       tierColor: "#B45309",
-      subtitle: "Unlock features · lower fees",
+      subtitle: (() => {
+        const fs = franchiseStatus;
+        if (!fs) return "Unlock features · lower fees";
+        const feeBit =
+          fs.feeStatus === "owing"
+            ? `£${fs.amountOwing.toFixed(0)} franchise fee owing`
+            : fs.feeStatus === "paid"
+              ? "Franchise fee up to date"
+              : "No franchise fee";
+        const bonusBit =
+          fs.bonusDue > 0 ? ` · £${fs.bonusDue.toFixed(0)} bonus due` : "";
+        return feeBit + bonusBit;
+      })(),
       upgradeBg: "#B45309",
       upgradeFg: "#FFFFFF",
       ctaLabel: "Upgrade",
