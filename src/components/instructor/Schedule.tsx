@@ -773,22 +773,6 @@ function LessonRow({
               </span>
             </div>
           )}
-          {lessonTypeLabel && (
-            <span
-              style={{
-                background: "#F1EFE8",
-                color: "#5B6B8A",
-                fontSize: 9,
-                fontWeight: 600,
-                padding: "2px 7px",
-                borderRadius: 20,
-                textTransform: "capitalize",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {lessonTypeLabel}
-            </span>
-          )}
           {isCancelled && (
             <span
               style={{
