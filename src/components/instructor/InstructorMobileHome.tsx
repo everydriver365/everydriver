@@ -555,12 +555,13 @@ export function InstructorMobileHome({
         />
       </div>
 
-      {/* 2. Activity Tiles Grid */}
+      {/* 2. Needs Attention — priority inbox feed */}
       <ActivityTilesGrid
         pendingJobsCount={pendingJobsCount}
         unreadMessagesCount={pupilMsgCount + visitorChatCount}
         testRequestsCount={testSwapCount}
         gapSlotsCount={gapSuggestions?.length || 0}
+        instructorId={instructorId}
       />
 
       <div className="px-4">
