@@ -6,6 +6,7 @@ import { AlertTriangle } from "lucide-react";
 import { enrichFaultCode } from "@/lib/obdCodeLookup";
 import { usePupilLessonHistory, type PupilLessonHistoryEntry } from "@/hooks/usePupilLessonHistory";
 import { PreviousLessonModal } from "./PreviousLessonModal";
+import { StaticMapPreview } from "@/components/UpNextCard/StaticMapPreview";
 import { parse as parseDateFn } from "date-fns";
 import { useQueryClient } from "@tanstack/react-query";
 import {
