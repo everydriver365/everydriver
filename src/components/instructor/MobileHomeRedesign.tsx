@@ -2073,47 +2073,6 @@ export function MobileHomeRedesign({
             Hi, {firstName}
           </div>
         </div>
-        <button
-          onClick={() => navigate("/instructor/notifications")}
-          aria-label="Notifications"
-          style={{
-            position: "relative",
-            width: 38,
-            height: 38,
-            borderRadius: 999,
-            background: "#FFFFFF",
-            border: "none",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            boxShadow: "0 1px 2px rgba(15,23,42,0.06)",
-            cursor: "pointer",
-          }}
-        >
-          <Inbox size={17} color={CHARCOAL} />
-          {totalAttentionCount > 0 && (
-            <span
-              style={{
-                position: "absolute",
-                top: 4,
-                right: 4,
-                minWidth: 16,
-                height: 16,
-                padding: "0 4px",
-                borderRadius: 999,
-                background: "#CC2229",
-                color: "#FFFFFF",
-                fontSize: 9,
-                fontWeight: 800,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              {totalAttentionCount}
-            </span>
-          )}
-        </button>
       </div>
 
       {/* Bento: Up next hero */}
