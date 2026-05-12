@@ -129,21 +129,33 @@ export function WeekTimelineView({
     positionToCurrent();
   }, [positionToCurrent]);
 
-  // After scrolling settles, if the user has moved to a different week, re-anchor
-  // the visible week label without forcing a snap-back during the gesture.
+  // Update the visible week label live while gliding, and commit to currentDate
+  // only after the gesture settles (so we don't disrupt the in-flight scroll).
   const scrollEndTimer = useRef<number | null>(null);
+  const rafRef = useRef<number | null>(null);
   const handleHScroll = () => {
     if (ignoreScrollRef.current || dayWidth <= 0) return;
+    if (rafRef.current == null) {
+      rafRef.current = requestAnimationFrame(() => {
+        rafRef.current = null;
+        if (!hScrollRef.current) return;
+        const sl = hScrollRef.current.scrollLeft;
+        const centreIdx = Math.round(sl / dayWidth + (VISIBLE_DAYS - 1) / 2);
+        const centreDate = days[Math.max(0, Math.min(TOTAL_DAYS - 1, centreIdx))];
+        if (!centreDate) return;
+        const ws = startOfWeek(centreDate, { weekStartsOn: 1 });
+        setDisplayWeekStart((prev) => (isSameDay(prev, ws) ? prev : ws));
+      });
+    }
     if (scrollEndTimer.current) window.clearTimeout(scrollEndTimer.current);
     scrollEndTimer.current = window.setTimeout(() => {
       if (!hScrollRef.current) return;
       const sl = hScrollRef.current.scrollLeft;
-      // Use the day at the centre of the visible 7-day window
       const centreIdx = Math.round(sl / dayWidth + (VISIBLE_DAYS - 1) / 2);
       const newDate = days[Math.max(0, Math.min(TOTAL_DAYS - 1, centreIdx))];
       if (!newDate) return;
       const newWeekStart = startOfWeek(newDate, { weekStartsOn: 1 });
-      if (!isSameDay(newWeekStart, weekStart)) {
+      if (!isSameDay(newWeekStart, startOfWeek(currentDate, { weekStartsOn: 1 }))) {
         onGoToDate(newWeekStart);
       }
     }, 180);
