@@ -555,7 +555,7 @@ export function UpNextExpanded({
                 }}
               >
 
-                {/* Row 1 — Comms */}
+                {/* Row 1 — Here · On My Way · Running Late */}
                 <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
                   <button
                     type="button"
@@ -566,7 +566,7 @@ export function UpNextExpanded({
                     disabled={!pupilPhone}
                     style={{
                       ...rowBtn,
-                      flex: 1.4,
+                      flex: 1,
                       height: 38,
                       backgroundColor: "#E8F8ED",
                       borderRadius: 12,
@@ -583,49 +583,11 @@ export function UpNextExpanded({
                   </button>
                   <button
                     type="button"
-                    onClick={messagePupil}
-                    style={{
-                      ...rowBtn,
-                      flex: 1,
-                      height: 38,
-                      backgroundColor: "#EEF3FF",
-                      borderRadius: 12,
-                      padding: "0 6px", minWidth: 0,
-                      gap: 4,
-                      color: "#1A52A0",
-                    }}
-                  >
-                    <MessageSquare style={{ width: 13, height: 13 }} strokeWidth={1.9} />
-                    <span style={{ fontSize: 12, fontWeight: 600 }}>Text</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={navigateMap}
-                    style={{
-                      ...rowBtn,
-                      flex: 1,
-                      height: 38,
-                      backgroundColor: "#EEF3FF",
-                      borderRadius: 12,
-                      padding: "0 6px", minWidth: 0,
-                      gap: 4,
-                      color: "#1A52A0",
-                    }}
-                  >
-                    <NavIcon style={{ width: 13, height: 13 }} strokeWidth={1.9} />
-                    <span style={{ fontSize: 12, fontWeight: 600 }}>Navigate</span>
-                  </button>
-                </div>
-
-                {/* Row 2 — Status */}
-                <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-                  <button
-                    type="button"
                     onClick={onMyWay}
                     disabled={busyAction === "on_the_way"}
                     style={{
                       ...rowBtn,
-                      flex: 1.2,
+                      flex: 1,
                       height: 38,
                       backgroundColor: "#E8F8ED",
                       borderRadius: 12,
@@ -647,7 +609,7 @@ export function UpNextExpanded({
                     disabled={busyAction === "running_late"}
                     style={{
                       ...rowBtn,
-                      flex: 1.2,
+                      flex: 1,
                       height: 38,
                       backgroundColor: "#FFF6E6",
                       borderRadius: 12,
@@ -661,8 +623,12 @@ export function UpNextExpanded({
                     }}
                   >
                     <Clock style={{ width: 13, height: 13 }} strokeWidth={1.9} />
-                    <span style={{ fontSize: 12, fontWeight: 700 }}>Running Late</span>
+                    <span style={{ fontSize: 12, fontWeight: 700 }}>Late</span>
                   </button>
+                </div>
+
+                {/* Row 2 — Prep · Arrived */}
+                <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
                   <button
                     type="button"
                     onClick={openPrep}
@@ -680,32 +646,30 @@ export function UpNextExpanded({
                     <ClipboardList style={{ width: 13, height: 13 }} strokeWidth={1.7} />
                     <span style={{ fontSize: 12, fontWeight: 600 }}>Prep</span>
                   </button>
+                  <button
+                    type="button"
+                    onClick={arrived}
+                    disabled={busyAction === "arrived"}
+                    style={{
+                      ...rowBtn,
+                      flex: 2,
+                      height: 38,
+                      backgroundColor: "#1A52A0",
+                      borderRadius: 12,
+                      padding: "0 6px", minWidth: 0,
+                      gap: 4,
+                      color: "#FFF",
+                      boxShadow: "0 2px 7px rgba(26,82,160,0.20)",
+                      opacity: busyAction === "arrived" ? 0.5 : 1,
+                      cursor: busyAction === "arrived" ? "not-allowed" : "pointer",
+                    }}
+                  >
+                    <CheckCheck style={{ width: 13, height: 13 }} strokeWidth={2.2} />
+                    <span style={{ fontSize: 12, fontWeight: 700 }}>
+                      {arrivedActive ? "Arrived ✓" : "Arrived"}
+                    </span>
+                  </button>
                 </div>
-
-                {/* Arrived */}
-                <button
-                  type="button"
-                  onClick={arrived}
-                  disabled={busyAction === "arrived"}
-                  style={{
-                    ...rowBtn,
-                    width: "100%",
-                    height: 38,
-                    backgroundColor: "#1A52A0",
-                    borderRadius: 12,
-                    padding: "0 6px", minWidth: 0,
-                    gap: 4,
-                    color: "#FFF",
-                    boxShadow: "0 2px 7px rgba(26,82,160,0.20)",
-                    opacity: busyAction === "arrived" ? 0.5 : 1,
-                    cursor: busyAction === "arrived" ? "not-allowed" : "pointer",
-                  }}
-                >
-                  <CheckCheck style={{ width: 13, height: 13 }} strokeWidth={2.2} />
-                  <span style={{ fontSize: 12, fontWeight: 700 }}>
-                    {arrivedActive ? "Arrived ✓" : "Arrived"}
-                  </span>
-                </button>
               </div>
             </div>
           );
