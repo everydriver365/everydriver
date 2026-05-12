@@ -719,9 +719,8 @@ function LessonRow({
               fontSize: 10,
               color: TEXT_TERTIARY,
               marginTop: 1,
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
+              wordBreak: "break-word",
+              lineHeight: 1.3,
             }}
           >
             {address}
