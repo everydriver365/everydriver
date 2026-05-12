@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useInstructorAppearance, LayoutStyle } from "@/hooks/useInstructorAppearance";
 import { useTheme } from "@/context/ThemeContext";
+import { useInstructorTheme } from "@/context/InstructorThemeContext";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -233,6 +234,17 @@ export function AppearanceSettings({ instructorId }: AppearanceSettingsProps) {
   };
 
   const { theme, setTheme } = useTheme();
+  const { setMode: setInstructorMode } = useInstructorTheme();
+  const applyTheme = (t: "system" | "light" | "dark") => {
+    setTheme(t);
+    // Instructor portal tokens are scoped to .instructor-portal.dsm-dark,
+    // so we must also drive the instructor theme for the toggle to take effect.
+    const resolved =
+      t === "system"
+        ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
+        : t;
+    setInstructorMode(resolved);
+  };
 
   return (
     <div className="space-y-6">
@@ -247,7 +259,7 @@ export function AppearanceSettings({ instructorId }: AppearanceSettingsProps) {
           ]).map(opt => (
             <button
               key={opt.value}
-              onClick={() => setTheme(opt.value)}
+              onClick={() => applyTheme(opt.value)}
               className={cn(
                 "flex items-center justify-center gap-1.5 py-2 rounded-2xl text-xs font-medium transition-all",
                 theme === opt.value
