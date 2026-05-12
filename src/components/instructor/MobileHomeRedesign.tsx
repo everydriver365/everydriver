@@ -1721,7 +1721,19 @@ export function MobileHomeRedesign({
       tierLabel: membershipLevel,
       tierBg: "#FFF6E6",
       tierColor: "#B45309",
-      subtitle: "Unlock features · lower fees",
+      subtitle: (() => {
+        const fs = franchiseStatus;
+        if (!fs) return "Unlock features · lower fees";
+        const feeBit =
+          fs.feeStatus === "owing"
+            ? `£${fs.amountOwing.toFixed(0)} franchise fee owing`
+            : fs.feeStatus === "paid"
+              ? "Franchise fee up to date"
+              : "No franchise fee";
+        const bonusBit =
+          fs.bonusDue > 0 ? ` · £${fs.bonusDue.toFixed(0)} bonus due` : "";
+        return feeBit + bonusBit;
+      })(),
       upgradeBg: "#B45309",
       upgradeFg: "#FFFFFF",
       ctaLabel: "Upgrade",
