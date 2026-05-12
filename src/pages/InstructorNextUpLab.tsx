@@ -767,6 +767,286 @@ function BentoCell({ children, bg, rowSpan }: { children: React.ReactNode; bg: s
 }
 
 // ---------------------------------------------------------------------------
+// V19 · Live Aurora — Live Card vibe with multi-stop aurora gradient.
+// ---------------------------------------------------------------------------
+function V19LiveAurora() {
+  return (
+    <div style={{
+      position: "relative", borderRadius: 18, padding: 18, fontFamily: iosFont, overflow: "hidden",
+      background:
+        "radial-gradient(120% 80% at 0% 0%, #DBEAFE 0%, transparent 55%), " +
+        "radial-gradient(100% 70% at 100% 0%, #FCE7F3 0%, transparent 60%), " +
+        "radial-gradient(140% 100% at 50% 120%, #DCFCE7 0%, transparent 55%), #FFFFFF",
+      border: "0.5px solid #E5E5EA",
+    }}>
+      <div style={{ position: "absolute", top: 14, right: 14, display: "flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 600, color: "#0F172A" }}>
+        <span style={{ width: 6, height: 6, borderRadius: 999, background: "#EC4899", boxShadow: "0 0 0 4px rgba(236,72,153,0.18)" }} />
+        Live · {lesson.minutesUntil}m
+      </div>
+      <div style={{ fontSize: 11, fontWeight: 600, color: "#0F172A", textTransform: "uppercase", letterSpacing: 0.6, opacity: 0.7 }}>Next lesson</div>
+      <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginTop: 8 }}>
+        <span style={{ fontSize: 32, fontWeight: 700, color: "#0F172A", letterSpacing: -1, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>{lesson.startTime}</span>
+        <span style={{ fontSize: 13, color: "#64748B" }}>→ {lesson.endTime}</span>
+      </div>
+      <div style={{ marginTop: 14, display: "flex", alignItems: "center", gap: 10 }}>
+        <div style={{ width: 36, height: 36, borderRadius: 999, background: "linear-gradient(135deg,#EC4899,#3D55A1)", color: "#FFF", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 13 }}>{lesson.initials}</div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 14, fontWeight: 600, color: "#000" }}>{lesson.pupilName}</div>
+          <div style={{ fontSize: 11, color: "#64748B" }}>{lesson.lessonType}</div>
+        </div>
+      </div>
+      <div style={{ marginTop: 14, display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
+        <Mini icon={<MapPin size={12} />} top={lesson.postcode} bottom="Pickup" />
+        <Mini icon={<Route size={12} />} top={`${lesson.distanceMiles}mi`} bottom="Distance" />
+        <Mini icon={<Clock size={12} />} top={`${lesson.etaMinutes}m`} bottom="ETA" />
+      </div>
+      <button style={{ ...btnPrimary, width: "100%", marginTop: 14 }}>
+        <Navigation size={14} /> Navigate
+      </button>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// V20 · Live Sunrise — warm dawn gradient, perfect for early lessons.
+// ---------------------------------------------------------------------------
+function V20LiveSunrise() {
+  return (
+    <div style={{
+      position: "relative", borderRadius: 18, padding: 18, fontFamily: iosFont, overflow: "hidden",
+      background: "linear-gradient(135deg, #FFE4C4 0%, #FFF1E0 40%, #FFFFFF 100%)",
+      border: "0.5px solid #F4D5B0",
+    }}>
+      <div style={{ position: "absolute", top: 14, right: 14, display: "flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 600, color: "#9A3412" }}>
+        <span style={{ width: 6, height: 6, borderRadius: 999, background: "#F97316", boxShadow: "0 0 0 4px rgba(249,115,22,0.2)" }} />
+        Live · {lesson.minutesUntil}m
+      </div>
+      <div style={{ fontSize: 11, fontWeight: 600, color: "#9A3412", textTransform: "uppercase", letterSpacing: 0.6 }}>Next lesson</div>
+      <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginTop: 8 }}>
+        <span style={{ fontSize: 32, fontWeight: 700, color: "#0F172A", letterSpacing: -1, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>{lesson.startTime}</span>
+        <span style={{ fontSize: 13, color: "#9A3412" }}>→ {lesson.endTime}</span>
+      </div>
+      <div style={{ marginTop: 14, display: "flex", alignItems: "center", gap: 10 }}>
+        <div style={{ width: 36, height: 36, borderRadius: 999, background: "linear-gradient(135deg,#F97316,#EA580C)", color: "#FFF", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 13 }}>{lesson.initials}</div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 14, fontWeight: 600, color: "#0F172A" }}>{lesson.pupilName}</div>
+          <div style={{ fontSize: 11, color: "#9A3412" }}>{lesson.lessonType}</div>
+        </div>
+      </div>
+      <div style={{ marginTop: 14, display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
+        <MiniWarm icon={<MapPin size={12} />} top={lesson.postcode} bottom="Pickup" />
+        <MiniWarm icon={<Route size={12} />} top={`${lesson.distanceMiles}mi`} bottom="Distance" />
+        <MiniWarm icon={<Clock size={12} />} top={`${lesson.etaMinutes}m`} bottom="ETA" />
+      </div>
+      <button style={{ ...btnPrimary, width: "100%", marginTop: 14, background: "#EA580C" }}>
+        <Navigation size={14} /> Navigate
+      </button>
+    </div>
+  );
+}
+function MiniWarm({ icon, top, bottom }: { icon: React.ReactNode; top: string; bottom: string }) {
+  return (
+    <div style={{ background: "rgba(255,255,255,0.75)", border: "0.5px solid #F4D5B0", borderRadius: 10, padding: "8px 6px", textAlign: "center" }}>
+      <div style={{ display: "flex", justifyContent: "center", color: "#EA580C" }}>{icon}</div>
+      <div style={{ fontSize: 12, fontWeight: 700, color: "#0F172A", marginTop: 2, fontVariantNumeric: "tabular-nums" }}>{top}</div>
+      <div style={{ fontSize: 9, color: "#9A3412", textTransform: "uppercase", letterSpacing: 0.6 }}>{bottom}</div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// V21 · Live Mesh Dark — dark mesh gradient with glassy mini tiles.
+// ---------------------------------------------------------------------------
+function V21LiveMeshDark() {
+  return (
+    <div style={{
+      position: "relative", borderRadius: 18, padding: 18, fontFamily: iosFont, overflow: "hidden", color: "#FFF",
+      background:
+        "radial-gradient(80% 60% at 0% 0%, rgba(61,85,161,0.55) 0%, transparent 60%), " +
+        "radial-gradient(70% 60% at 100% 100%, rgba(124,58,237,0.45) 0%, transparent 60%), " +
+        "linear-gradient(180deg, #0B1220 0%, #0F172A 100%)",
+      boxShadow: "0 16px 40px -16px rgba(11,18,32,0.6)",
+    }}>
+      <div style={{ position: "absolute", top: 14, right: 14, display: "flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 600 }}>
+        <span style={{ width: 6, height: 6, borderRadius: 999, background: "#34D399", boxShadow: "0 0 0 4px rgba(52,211,153,0.25)" }} />
+        Live · {lesson.minutesUntil}m
+      </div>
+      <div style={{ fontSize: 11, fontWeight: 600, opacity: 0.75, textTransform: "uppercase", letterSpacing: 0.6 }}>Next lesson</div>
+      <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginTop: 8 }}>
+        <span style={{ fontSize: 32, fontWeight: 700, letterSpacing: -1, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>{lesson.startTime}</span>
+        <span style={{ fontSize: 13, opacity: 0.75 }}>→ {lesson.endTime}</span>
+      </div>
+      <div style={{ marginTop: 14, display: "flex", alignItems: "center", gap: 10 }}>
+        <div style={{ width: 36, height: 36, borderRadius: 999, background: "rgba(255,255,255,0.12)", border: "0.5px solid rgba(255,255,255,0.18)", color: "#FFF", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 13, backdropFilter: "blur(8px)" }}>{lesson.initials}</div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 14, fontWeight: 600 }}>{lesson.pupilName}</div>
+          <div style={{ fontSize: 11, opacity: 0.7 }}>{lesson.lessonType}</div>
+        </div>
+      </div>
+      <div style={{ marginTop: 14, display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
+        <MiniGlass icon={<MapPin size={12} />} top={lesson.postcode} bottom="Pickup" />
+        <MiniGlass icon={<Route size={12} />} top={`${lesson.distanceMiles}mi`} bottom="Distance" />
+        <MiniGlass icon={<Clock size={12} />} top={`${lesson.etaMinutes}m`} bottom="ETA" />
+      </div>
+      <button style={{ ...btnPrimary, width: "100%", marginTop: 14, background: "#FFF", color: "#0F172A" }}>
+        <Navigation size={14} /> Navigate
+      </button>
+    </div>
+  );
+}
+function MiniGlass({ icon, top, bottom }: { icon: React.ReactNode; top: string; bottom: string }) {
+  return (
+    <div style={{ background: "rgba(255,255,255,0.08)", border: "0.5px solid rgba(255,255,255,0.16)", borderRadius: 10, padding: "8px 6px", textAlign: "center", backdropFilter: "blur(8px)" }}>
+      <div style={{ display: "flex", justifyContent: "center", color: "#A5B4FC" }}>{icon}</div>
+      <div style={{ fontSize: 12, fontWeight: 700, color: "#FFF", marginTop: 2, fontVariantNumeric: "tabular-nums" }}>{top}</div>
+      <div style={{ fontSize: 9, color: "rgba(255,255,255,0.65)", textTransform: "uppercase", letterSpacing: 0.6 }}>{bottom}</div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// V22 · Live Mint — fresh mint/sky gradient with tinted tiles.
+// ---------------------------------------------------------------------------
+function V22LiveMint() {
+  return (
+    <div style={{
+      position: "relative", borderRadius: 18, padding: 18, fontFamily: iosFont, overflow: "hidden",
+      background:
+        "radial-gradient(120% 80% at 100% 0%, #CFFAFE 0%, transparent 55%), " +
+        "linear-gradient(180deg, #ECFDF5 0%, #FFFFFF 100%)",
+      border: "0.5px solid #BAE6FD",
+    }}>
+      <div style={{ position: "absolute", top: 14, right: 14, display: "flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 600, color: "#0F766E" }}>
+        <span style={{ width: 6, height: 6, borderRadius: 999, background: "#10B981", boxShadow: "0 0 0 4px rgba(16,185,129,0.18)" }} />
+        Live · {lesson.minutesUntil}m
+      </div>
+      <div style={{ fontSize: 11, fontWeight: 600, color: "#0F766E", textTransform: "uppercase", letterSpacing: 0.6 }}>Next lesson</div>
+      <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginTop: 8 }}>
+        <span style={{ fontSize: 32, fontWeight: 700, color: "#0F172A", letterSpacing: -1, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>{lesson.startTime}</span>
+        <span style={{ fontSize: 13, color: "#0F766E" }}>→ {lesson.endTime}</span>
+      </div>
+      <div style={{ marginTop: 14, display: "flex", alignItems: "center", gap: 10 }}>
+        <div style={{ width: 36, height: 36, borderRadius: 999, background: "linear-gradient(135deg,#10B981,#0EA5E9)", color: "#FFF", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 13 }}>{lesson.initials}</div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 14, fontWeight: 600, color: "#0F172A" }}>{lesson.pupilName}</div>
+          <div style={{ fontSize: 11, color: "#0F766E" }}>{lesson.lessonType}</div>
+        </div>
+      </div>
+      <div style={{ marginTop: 14, display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
+        <MiniMint icon={<MapPin size={12} />} top={lesson.postcode} bottom="Pickup" />
+        <MiniMint icon={<Route size={12} />} top={`${lesson.distanceMiles}mi`} bottom="Distance" />
+        <MiniMint icon={<Clock size={12} />} top={`${lesson.etaMinutes}m`} bottom="ETA" />
+      </div>
+      <button style={{ ...btnPrimary, width: "100%", marginTop: 14, background: "#0EA5E9" }}>
+        <Navigation size={14} /> Navigate
+      </button>
+    </div>
+  );
+}
+function MiniMint({ icon, top, bottom }: { icon: React.ReactNode; top: string; bottom: string }) {
+  return (
+    <div style={{ background: "rgba(255,255,255,0.78)", border: "0.5px solid #BAE6FD", borderRadius: 10, padding: "8px 6px", textAlign: "center" }}>
+      <div style={{ display: "flex", justifyContent: "center", color: "#0EA5E9" }}>{icon}</div>
+      <div style={{ fontSize: 12, fontWeight: 700, color: "#0F172A", marginTop: 2, fontVariantNumeric: "tabular-nums" }}>{top}</div>
+      <div style={{ fontSize: 9, color: "#0F766E", textTransform: "uppercase", letterSpacing: 0.6 }}>{bottom}</div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// V23 · Live + Map — Live Card with a slim static map strip on top.
+// ---------------------------------------------------------------------------
+function V23LivePlusMap() {
+  return (
+    <div style={{
+      borderRadius: 18, fontFamily: iosFont, overflow: "hidden",
+      background: "radial-gradient(120% 80% at 0% 0%, #DCEAFE 0%, #FFFFFF 55%)",
+      border: "0.5px solid #E5E5EA",
+    }}>
+      <div style={{
+        height: 70, position: "relative",
+        background: "linear-gradient(135deg, #C7D7F5 0%, #B5C7EE 60%, #A0B4E2 100%)",
+      }}>
+        <div style={{ position: "absolute", inset: 0, background: "repeating-linear-gradient(135deg, rgba(255,255,255,0.18) 0 1px, transparent 1px 18px)" }} />
+        <div style={{ position: "absolute", left: 14, top: 12, fontSize: 10, fontWeight: 700, color: "#1F2A4A", textTransform: "uppercase", letterSpacing: 0.6, background: "rgba(255,255,255,0.85)", padding: "3px 7px", borderRadius: 999 }}>
+          Live · in {lesson.minutesUntil}m
+        </div>
+        <div style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", display: "flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 600, color: "#1F2A4A", background: "rgba(255,255,255,0.85)", padding: "4px 8px", borderRadius: 999 }}>
+          <Navigation size={11} /> {lesson.etaMinutes}m
+        </div>
+        <MapPin size={20} color="#B23A3F" strokeWidth={2.4} fill="#fff" style={{ position: "absolute", left: "50%", top: "55%", transform: "translate(-50%,-50%)" }} />
+      </div>
+      <div style={{ padding: 16 }}>
+        <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+          <span style={{ fontSize: 28, fontWeight: 700, color: "#0F172A", letterSpacing: -1, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>{lesson.startTime}</span>
+          <span style={{ fontSize: 12, color: "#64748B" }}>→ {lesson.endTime}</span>
+        </div>
+        <div style={{ marginTop: 12, display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ width: 34, height: 34, borderRadius: 999, background: "#3D55A1", color: "#FFF", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 12 }}>{lesson.initials}</div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 14, fontWeight: 600, color: "#0F172A" }}>{lesson.pupilName}</div>
+            <div style={{ fontSize: 11, color: "#64748B" }}>{lesson.lessonType} · {lesson.postcode}</div>
+          </div>
+        </div>
+        <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+          <button style={btnSecondary}><Phone size={14} /></button>
+          <button style={btnSecondary}><MessageSquare size={14} /></button>
+          <button style={btnPrimary}><Navigation size={14} /> Navigate</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// V24 · Live Twilight — deep blue→violet ambient with progress sparkline.
+// ---------------------------------------------------------------------------
+function V24LiveTwilight() {
+  return (
+    <div style={{
+      position: "relative", borderRadius: 18, padding: 18, fontFamily: iosFont, overflow: "hidden", color: "#FFF",
+      background:
+        "radial-gradient(110% 70% at 0% 100%, rgba(236,72,153,0.35) 0%, transparent 60%), " +
+        "radial-gradient(120% 80% at 100% 0%, rgba(56,189,248,0.35) 0%, transparent 60%), " +
+        "linear-gradient(135deg, #1E1B4B 0%, #312E81 50%, #4C1D95 100%)",
+    }}>
+      <div style={{ position: "absolute", top: 14, right: 14, display: "flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 600 }}>
+        <span style={{ width: 6, height: 6, borderRadius: 999, background: "#FBBF24", boxShadow: "0 0 0 4px rgba(251,191,36,0.25)" }} />
+        Live · {lesson.minutesUntil}m
+      </div>
+      <div style={{ fontSize: 11, fontWeight: 600, opacity: 0.8, textTransform: "uppercase", letterSpacing: 0.6 }}>Next lesson</div>
+      <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginTop: 8 }}>
+        <span style={{ fontSize: 34, fontWeight: 700, letterSpacing: -1, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>{lesson.startTime}</span>
+        <span style={{ fontSize: 13, opacity: 0.7 }}>→ {lesson.endTime}</span>
+      </div>
+      <div style={{ fontSize: 15, fontWeight: 600, marginTop: 12 }}>{lesson.pupilName}</div>
+      <div style={{ fontSize: 11, opacity: 0.75, marginTop: 1 }}>{lesson.lessonType} · £{lesson.price} · {lesson.postcode}</div>
+      {/* progress sparkline / countdown rail */}
+      <div style={{ marginTop: 14 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, opacity: 0.7, marginBottom: 4 }}>
+          <span>now</span>
+          <span style={{ fontVariantNumeric: "tabular-nums" }}>{lesson.startTime}</span>
+        </div>
+        <div style={{ height: 6, borderRadius: 999, background: "rgba(255,255,255,0.12)", overflow: "hidden" }}>
+          <div style={{
+            width: `${Math.max(6, 100 - (lesson.minutesUntil / 60) * 100)}%`,
+            height: "100%",
+            background: "linear-gradient(90deg, #38BDF8, #FBBF24, #EC4899)",
+          }} />
+        </div>
+      </div>
+      <div style={{ display: "flex", gap: 8, marginTop: 14 }}>
+        <button style={glassBtn}><Phone size={14} /></button>
+        <button style={glassBtn}><MessageSquare size={14} /></button>
+        <button style={{ ...glassBtn, flex: 1, background: "#FFF", color: "#1E1B4B", fontWeight: 700 }}>
+          <Navigation size={14} /> Navigate
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Page
 // ---------------------------------------------------------------------------
 const VARIANTS = [
@@ -788,6 +1068,12 @@ const VARIANTS = [
   { id: "v16", name: "Driver Brief", desc: "Pre-lesson checklist with paid / travel / weather.", Component: V16DriverBrief },
   { id: "v17", name: "Pill Header", desc: "All-pill bar with avatar dot and round CTA.", Component: V17PillHeader },
   { id: "v18", name: "Bento Grid", desc: "Equal-weight bento cells: pupil, ETA, payment.", Component: V18Bento },
+  { id: "v19", name: "Live Aurora", desc: "Live Card with multi-stop pastel aurora gradient.", Component: V19LiveAurora },
+  { id: "v20", name: "Live Sunrise", desc: "Warm dawn gradient — great for early lessons.", Component: V20LiveSunrise },
+  { id: "v21", name: "Live Mesh Dark", desc: "Dark mesh gradient with glassy translucent tiles.", Component: V21LiveMeshDark },
+  { id: "v22", name: "Live Mint", desc: "Fresh mint→sky gradient, calm and modern.", Component: V22LiveMint },
+  { id: "v23", name: "Live + Map", desc: "Live Card with a slim static map strip on top.", Component: V23LivePlusMap },
+  { id: "v24", name: "Live Twilight", desc: "Deep blue→violet ambient with a countdown rail.", Component: V24LiveTwilight },
 ];
 
 export default function InstructorNextUpLab() {
