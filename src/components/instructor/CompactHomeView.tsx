@@ -210,6 +210,7 @@ export function CompactHomeView({ instructorId, instructor }: CompactHomeViewPro
             lastLessonPlan={nextLesson.lastLessonPlan}
           />
         </div>
+        </>
       )}
 
       {/* Stats Grid — collapsible when NextUp is hero */}
