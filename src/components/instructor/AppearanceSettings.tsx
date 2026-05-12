@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useInstructorAppearance, LayoutStyle } from "@/hooks/useInstructorAppearance";
 import { useTheme } from "@/context/ThemeContext";
 import { useInstructorTheme } from "@/context/InstructorThemeContext";
