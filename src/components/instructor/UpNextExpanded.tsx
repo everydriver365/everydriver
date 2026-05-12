@@ -670,6 +670,10 @@ export function UpNextExpanded({
                     </span>
                   </button>
                 </div>
+              </div>
+            </div>
+          );
+        })()}
 
         <Divider />
 
