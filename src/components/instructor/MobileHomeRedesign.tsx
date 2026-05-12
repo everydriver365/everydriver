@@ -125,7 +125,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
         color: MUTED,
         letterSpacing: "0.08em",
         textTransform: "uppercase",
-        padding: "0 18px 8px",
+        padding: "0 16px 8px",
       }}
     >
       {children}
