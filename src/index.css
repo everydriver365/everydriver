@@ -632,9 +632,6 @@
     background-color: #F4F7F6;
     font-feature-settings: "kern" 1, "rlig" 1, "calt" 1;
     letter-spacing: -0.011em;
-    /* Paint behind iOS safe-area (notch / home indicator) */
-    padding-top: env(safe-area-inset-top);
-    padding-bottom: env(safe-area-inset-bottom);
   }
 
   h1, h2, h3, h4, h5, h6 {
