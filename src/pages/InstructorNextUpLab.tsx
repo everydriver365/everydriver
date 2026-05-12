@@ -301,6 +301,265 @@ function Chip({ icon, label }: { icon: React.ReactNode; label: string }) {
 }
 
 // ---------------------------------------------------------------------------
+// V7 · Boarding Pass — ticket-style with notch + dashed divider.
+// ---------------------------------------------------------------------------
+function V7BoardingPass() {
+  return (
+    <div style={{ fontFamily: iosFont, position: "relative", filter: "drop-shadow(0 8px 24px rgba(15,23,42,0.08))" }}>
+      <div style={{ background: "#FFF", borderRadius: 16, padding: 16, position: "relative" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span style={{ fontSize: 10, fontWeight: 700, color: "#3D55A1", letterSpacing: 1.4 }}>UP NEXT · LESSON #{lesson.completedLessons + 1}</span>
+          <span style={{ fontSize: 10, fontWeight: 700, color: "#16A34A", letterSpacing: 1.4 }}>PAID</span>
+        </div>
+        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginTop: 14 }}>
+          <div>
+            <div style={{ fontSize: 10, color: "#94A3B8", textTransform: "uppercase", letterSpacing: 1 }}>From</div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: "#0F172A", marginTop: 2 }}>You</div>
+          </div>
+          <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 6, padding: "0 14px" }}>
+            <div style={{ flex: 1, height: 1, borderTop: "1px dashed #CBD5E1" }} />
+            <Car size={14} color="#3D55A1" />
+            <div style={{ flex: 1, height: 1, borderTop: "1px dashed #CBD5E1" }} />
+          </div>
+          <div style={{ textAlign: "right" }}>
+            <div style={{ fontSize: 10, color: "#94A3B8", textTransform: "uppercase", letterSpacing: 1 }}>To</div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: "#0F172A", marginTop: 2 }}>{lesson.postcode.split(" ")[0]}</div>
+          </div>
+        </div>
+        <div style={{ fontSize: 11, color: "#64748B", textAlign: "center", marginTop: 6 }}>
+          {lesson.distanceMiles} mi · {lesson.etaMinutes} min drive
+        </div>
+      </div>
+      {/* notch */}
+      <div style={{ position: "relative", height: 0 }}>
+        <div style={{ position: "absolute", left: -8, top: -10, width: 16, height: 16, borderRadius: 999, background: "#F4F7F6" }} />
+        <div style={{ position: "absolute", right: -8, top: -10, width: 16, height: 16, borderRadius: 999, background: "#F4F7F6" }} />
+      </div>
+      <div style={{ background: "#FFF", borderRadius: 16, padding: 16, marginTop: 6, borderTop: "1px dashed #E2E8F0" }}>
+        <div style={{ display: "flex", justifyContent: "space-between" }}>
+          <Field label="Passenger" value={lesson.pupilName} />
+          <Field label="Boarding" value={lesson.startTime} align="right" />
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 10 }}>
+          <Field label="Type" value={lesson.lessonType} />
+          <Field label="Duration" value={`${lesson.durationMins}m`} align="right" />
+        </div>
+        <button style={{ ...btnPrimary, width: "100%", marginTop: 14 }}>
+          <Navigation size={14} /> Start journey
+        </button>
+      </div>
+    </div>
+  );
+}
+function Field({ label, value, align = "left" }: { label: string; value: string; align?: "left" | "right" }) {
+  return (
+    <div style={{ textAlign: align }}>
+      <div style={{ fontSize: 10, color: "#94A3B8", textTransform: "uppercase", letterSpacing: 1 }}>{label}</div>
+      <div style={{ fontSize: 13, fontWeight: 600, color: "#0F172A", marginTop: 2 }}>{value}</div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// V8 · Countdown Ring — circular SVG progress around minutes-until.
+// ---------------------------------------------------------------------------
+function V8CountdownRing() {
+  const total = 60;
+  const remaining = Math.min(lesson.minutesUntil, total);
+  const pct = remaining / total;
+  const r = 32, c = 2 * Math.PI * r;
+  return (
+    <div style={{ background: "#FFF", border: "0.5px solid #E5E5EA", borderRadius: 16, padding: 16, fontFamily: iosFont, display: "flex", gap: 14, alignItems: "center" }}>
+      <div style={{ position: "relative", width: 76, height: 76, flexShrink: 0 }}>
+        <svg width={76} height={76}>
+          <circle cx={38} cy={38} r={r} stroke="#F2F2F7" strokeWidth={6} fill="none" />
+          <circle
+            cx={38} cy={38} r={r} stroke="#3D55A1" strokeWidth={6} fill="none"
+            strokeDasharray={c} strokeDashoffset={c * (1 - pct)}
+            strokeLinecap="round" transform="rotate(-90 38 38)"
+          />
+        </svg>
+        <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ fontSize: 18, fontWeight: 700, color: "#0F172A", lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>{lesson.minutesUntil}</div>
+          <div style={{ fontSize: 9, color: "#6E6E73", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.8 }}>min</div>
+        </div>
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 10, fontWeight: 700, color: "#3D55A1", textTransform: "uppercase", letterSpacing: 1 }}>Up next · {lesson.startTime}</div>
+        <div style={{ fontSize: 16, fontWeight: 600, color: "#000", marginTop: 4 }}>{lesson.pupilName}</div>
+        <div style={{ fontSize: 12, color: "#6E6E73", marginTop: 2 }}>{lesson.lessonType}</div>
+        <div style={{ fontSize: 12, color: "#6E6E73", marginTop: 4, display: "flex", alignItems: "center", gap: 4 }}>
+          <MapPin size={11} /> {lesson.postcode} · {lesson.etaMinutes}m drive
+        </div>
+      </div>
+      <button style={{ ...iconBtn, background: "#3D55A1", color: "#FFF" }}>
+        <Navigation size={16} />
+      </button>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// V9 · Split Action — left info, right tall CTA column.
+// ---------------------------------------------------------------------------
+function V9SplitAction() {
+  return (
+    <div style={{ background: "#FFF", border: "0.5px solid #E5E5EA", borderRadius: 16, fontFamily: iosFont, display: "flex", overflow: "hidden" }}>
+      <div style={{ flex: 1, padding: 16, minWidth: 0 }}>
+        <div style={{ fontSize: 11, fontWeight: 600, color: "#6E6E73", textTransform: "uppercase", letterSpacing: 0.4 }}>
+          Up next · in {lesson.minutesUntil}m
+        </div>
+        <div style={{ fontSize: 22, fontWeight: 700, color: "#0F172A", marginTop: 6, fontVariantNumeric: "tabular-nums", letterSpacing: -0.4 }}>{lesson.startTime}</div>
+        <div style={{ fontSize: 15, fontWeight: 600, color: "#000", marginTop: 8 }}>{lesson.pupilName}</div>
+        <div style={{ fontSize: 12, color: "#6E6E73", marginTop: 2 }}>{lesson.lessonType} · {lesson.durationMins}m</div>
+        <div style={{ fontSize: 12, color: "#6E6E73", marginTop: 8, display: "flex", alignItems: "center", gap: 4 }}>
+          <MapPin size={11} /> {lesson.postcode}
+        </div>
+      </div>
+      <button style={{
+        width: 96, background: "#3D55A1", color: "#FFF",
+        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6,
+        fontWeight: 600, fontSize: 12,
+      }}>
+        <Navigation size={20} />
+        Navigate
+        <span style={{ fontSize: 10, opacity: 0.85, fontWeight: 500 }}>{lesson.etaMinutes} min</span>
+      </button>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// V10 · Status Banner — colored top bar communicates state at a glance.
+// ---------------------------------------------------------------------------
+function V10StatusBanner() {
+  return (
+    <div style={{ background: "#FFF", border: "0.5px solid #E5E5EA", borderRadius: 16, fontFamily: iosFont, overflow: "hidden" }}>
+      <div style={{ background: "#3D55A1", color: "#FFF", padding: "8px 14px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 600 }}>
+          <Clock size={12} /> Starts in {lesson.minutesUntil} minutes
+        </span>
+        <span style={{ fontSize: 11, fontWeight: 600, opacity: 0.9, fontVariantNumeric: "tabular-nums" }}>{lesson.startTime} – {lesson.endTime}</span>
+      </div>
+      <div style={{ padding: 14 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{
+            width: 44, height: 44, borderRadius: 12, background: "#EDF2FE", color: "#3D55A1",
+            display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 14,
+          }}>{lesson.initials}</div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 15, fontWeight: 600, color: "#000" }}>{lesson.pupilName}</div>
+            <div style={{ fontSize: 12, color: "#6E6E73", marginTop: 1 }}>{lesson.lessonType} · £{lesson.price}</div>
+          </div>
+        </div>
+        <div style={{ marginTop: 12, padding: "10px 12px", background: "#F8F9FB", borderRadius: 10, display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "#0F172A" }}>
+          <MapPin size={13} color="#3D55A1" />
+          <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{lesson.pickup}</span>
+          <span style={{ fontWeight: 600, color: "#3D55A1", flexShrink: 0 }}>{lesson.etaMinutes}m</span>
+        </div>
+        <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+          <button style={btnSecondary}><Phone size={14} /></button>
+          <button style={btnSecondary}><MessageSquare size={14} /></button>
+          <button style={btnPrimary}><Navigation size={14} /> Navigate</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// V11 · Editorial Card — large serif name, magazine pacing.
+// ---------------------------------------------------------------------------
+function V11Editorial() {
+  return (
+    <div style={{ background: "#FFF", border: "0.5px solid #E5E5EA", borderRadius: 16, padding: 20, fontFamily: iosFont }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ width: 28, height: 1, background: "#0F172A" }} />
+        <span style={{ fontSize: 10, fontWeight: 700, color: "#0F172A", textTransform: "uppercase", letterSpacing: 2 }}>Up Next</span>
+        <div style={{ width: 28, height: 1, background: "#0F172A" }} />
+      </div>
+      <div style={{ textAlign: "center", marginTop: 14 }}>
+        <div style={{ fontSize: 11, fontWeight: 600, color: "#3D55A1", textTransform: "uppercase", letterSpacing: 1 }}>
+          In {lesson.minutesUntil} minutes
+        </div>
+        <div style={{ fontFamily: 'Georgia, "Times New Roman", serif', fontSize: 26, fontWeight: 600, color: "#0F172A", marginTop: 6, letterSpacing: -0.6, lineHeight: 1.1 }}>
+          {lesson.pupilName}
+        </div>
+        <div style={{ fontSize: 12, color: "#6E6E73", marginTop: 6, fontStyle: "italic" }}>
+          {lesson.lessonType}
+        </div>
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-around", marginTop: 18, paddingTop: 14, borderTop: "1px solid #F2F2F7" }}>
+        <Stat label="Time" value={lesson.startTime} />
+        <Stat label="Duration" value={`${lesson.durationMins}m`} />
+        <Stat label="ETA" value={`${lesson.etaMinutes}m`} />
+      </div>
+      <div style={{ fontSize: 12, color: "#6E6E73", textAlign: "center", marginTop: 14, display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>
+        <MapPin size={12} /> {lesson.pickup}
+      </div>
+      <button style={{ ...btnPrimary, width: "100%", marginTop: 14 }}>
+        <Navigation size={14} /> Navigate
+      </button>
+    </div>
+  );
+}
+function Stat({ label, value }: { label: string; value: string }) {
+  return (
+    <div style={{ textAlign: "center" }}>
+      <div style={{ fontSize: 16, fontWeight: 700, color: "#0F172A", fontVariantNumeric: "tabular-nums" }}>{value}</div>
+      <div style={{ fontSize: 10, color: "#94A3B8", textTransform: "uppercase", letterSpacing: 0.8, marginTop: 2 }}>{label}</div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// V12 · Live Card — ambient background gradient with imminent emphasis.
+// ---------------------------------------------------------------------------
+function V12LiveCard() {
+  return (
+    <div style={{
+      position: "relative", borderRadius: 18, padding: 18, fontFamily: iosFont, overflow: "hidden",
+      background: "radial-gradient(120% 80% at 0% 0%, #DCEAFE 0%, #FFFFFF 55%)",
+      border: "0.5px solid #E5E5EA",
+    }}>
+      <div style={{ position: "absolute", top: 14, right: 14, display: "flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 600, color: "#3D55A1" }}>
+        <span style={{ width: 6, height: 6, borderRadius: 999, background: "#3D55A1", boxShadow: "0 0 0 4px rgba(61,85,161,0.18)" }} />
+        Live · {lesson.minutesUntil}m
+      </div>
+      <div style={{ fontSize: 11, fontWeight: 600, color: "#0F172A", textTransform: "uppercase", letterSpacing: 0.6, opacity: 0.7 }}>Next lesson</div>
+      <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginTop: 8 }}>
+        <span style={{ fontSize: 32, fontWeight: 700, color: "#0F172A", letterSpacing: -1, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>{lesson.startTime}</span>
+        <span style={{ fontSize: 13, color: "#6E6E73" }}>→ {lesson.endTime}</span>
+      </div>
+      <div style={{ marginTop: 14, display: "flex", alignItems: "center", gap: 10 }}>
+        <div style={{ width: 36, height: 36, borderRadius: 999, background: "#3D55A1", color: "#FFF", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 13 }}>{lesson.initials}</div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 14, fontWeight: 600, color: "#000" }}>{lesson.pupilName}</div>
+          <div style={{ fontSize: 11, color: "#6E6E73" }}>{lesson.lessonType}</div>
+        </div>
+      </div>
+      <div style={{ marginTop: 14, display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
+        <Mini icon={<MapPin size={12} />} top={lesson.postcode} bottom="Pickup" />
+        <Mini icon={<Route size={12} />} top={`${lesson.distanceMiles}mi`} bottom="Distance" />
+        <Mini icon={<Clock size={12} />} top={`${lesson.etaMinutes}m`} bottom="ETA" />
+      </div>
+      <button style={{ ...btnPrimary, width: "100%", marginTop: 14 }}>
+        <Navigation size={14} /> Navigate
+      </button>
+    </div>
+  );
+}
+function Mini({ icon, top, bottom }: { icon: React.ReactNode; top: string; bottom: string }) {
+  return (
+    <div style={{ background: "rgba(255,255,255,0.7)", border: "0.5px solid #E5E5EA", borderRadius: 10, padding: "8px 6px", textAlign: "center" }}>
+      <div style={{ display: "flex", justifyContent: "center", color: "#3D55A1" }}>{icon}</div>
+      <div style={{ fontSize: 12, fontWeight: 700, color: "#0F172A", marginTop: 2, fontVariantNumeric: "tabular-nums" }}>{top}</div>
+      <div style={{ fontSize: 9, color: "#6E6E73", textTransform: "uppercase", letterSpacing: 0.6 }}>{bottom}</div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Page
 // ---------------------------------------------------------------------------
 const VARIANTS = [
