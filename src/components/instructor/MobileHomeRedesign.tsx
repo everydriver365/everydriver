@@ -1314,8 +1314,8 @@ function UpgradeCard({ rows }: { rows: UpgradeRowSpec[] }) {
   const [open, setOpen] = useState(false);
   if (rows.length === 0) return null;
 
-  // Summary: count of rows that aren't on the top tier yet
-  const upgradeable = rows.filter((r) => r.tierLabel !== "Premium" && r.tierLabel !== "Full").length;
+  // Summary: count of rows whose CTA is an upgrade/add (not "Manage")
+  const upgradeable = rows.filter((r) => (r.ctaLabel ?? "Upgrade") !== "Manage").length;
 
   return (
     <GroupCard borderColor="rgba(26,82,160,0.08)" marginBottom={0}>
