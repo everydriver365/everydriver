@@ -133,191 +133,148 @@ export function UpNextCard(props: UpNextCardProps) {
           width: "100%",
           boxShadow: "0 2px 16px rgba(26,82,160,0.11)",
           border: "0.5px solid rgba(26,82,160,0.09)",
+          fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Inter", sans-serif',
         }}
       >
-        {/* ── HEADER BAND — TIME HERO ── */}
-        <div style={{
-          backgroundColor: "#F0F5FF",
-          padding: "14px 13px 12px",
-          borderBottom: "0.5px solid rgba(26,82,160,0.07)",
-        }}>
-          <div style={{
-            display: "flex", alignItems: "flex-start", justifyContent: "space-between",
-            marginBottom: 8, gap: 8,
-          }}>
-            {/* Time block — left */}
-            <div style={{ minWidth: 0 }}>
-              <div style={{
-                fontSize: 38, fontWeight: 700, color: "#1A52A0",
-                letterSpacing: -2, lineHeight: "38px",
-                fontVariantNumeric: "tabular-nums",
-              }}>
-                {startLabel}
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 3 }}>
-                <span style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: "#CC2229" }} />
-                <span style={{ fontSize: 10, color: "#8E8E93", fontWeight: 500 }}>
-                  {countdown}{dayText ? ` · ${dayText}` : ""}
-                </span>
-              </div>
-            </div>
-
-            {/* Avatar — right */}
-            <button
-              type="button"
-              onClick={(e) => { stop(e); openProfile(); }}
-              aria-label={`View ${fullName}'s profile`}
-              style={{
-                width: 40, height: 40, borderRadius: 20,
-                backgroundColor: avatarColor,
-                display: "inline-flex", alignItems: "center", justifyContent: "center",
-                flexShrink: 0, overflow: "hidden",
-                border: "2px solid rgba(255,255,255,0.5)",
-                boxShadow: `0 2px 6px ${avatarColor}38`,
-                padding: 0, cursor: "pointer",
-              }}
-            >
-              {pupilProfileImage ? (
-                <img
-                  src={pupilProfileImage}
-                  alt=""
-                  style={{ width: 40, height: 40, objectFit: "cover" }}
-                />
-              ) : (
-                <span style={{ fontSize: 12, fontWeight: 700, color: "#FFF" }}>{initials}</span>
-              )}
-            </button>
-          </div>
-
-          {/* Pupil name below time */}
-          <div style={{
-            fontSize: 15, fontWeight: 700, color: "#1A1A1A", letterSpacing: -0.2,
-            overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-          }}>
-            {fullName}
-          </div>
-        </div>
-
-        {/* ── MAP STRIP (60px) ── */}
+        {/* ── MAP STRIP (110px) — V39 ── */}
         <div
           role="button"
           tabIndex={0}
           aria-label={`Open full map for lesson at ${pickupLocation || pickupPostcode || "pickup"}`}
           onClick={openMap}
           onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openMap(); } }}
-          style={{ position: "relative", height: 60, overflow: "hidden", cursor: "pointer" }}
+          style={{ position: "relative", height: 110, overflow: "hidden", cursor: "pointer", background: "#F5F4F1" }}
         >
           <div style={{ position: "absolute", inset: 0 }}>
-            <StaticMapPreview hasDestination={hasDestination} height={60} />
+            <StaticMapPreview hasDestination={hasDestination} height={110} />
           </div>
 
-          {/* ETA pill — top left */}
-          <button
-            type="button"
-            onClick={(e) => { stop(e); handleNavigate(); }}
-            disabled={!pickupPostcode}
-            style={{
-              position: "absolute", top: 7, left: 8,
-              backgroundColor: "rgba(255,255,255,0.96)",
-              borderRadius: 13, padding: "3px 8px",
-              display: "inline-flex", alignItems: "center", gap: 4,
-              boxShadow: "0 1px 4px rgba(0,0,0,0.1)",
-              border: "none", cursor: pickupPostcode ? "pointer" : "default",
-            }}
-          >
-            <span style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: "#1A7A3C" }} />
-            <span style={{ fontSize: 8.5, fontWeight: 700, color: "#1A1A1A" }}>
-              {etaMinutes > 0 ? `ETA ${etaMinutes}m` : "Tap for ETA"}
+          {/* LIVE · countdown chip — top-left */}
+          <div style={{
+            position: "absolute", top: 10, left: 10,
+            background: "rgba(255,255,255,0.94)",
+            padding: "4px 9px", borderRadius: 999,
+            display: "inline-flex", alignItems: "center", gap: 5,
+            boxShadow: "0 1px 3px rgba(15,23,42,0.10)",
+            backdropFilter: "blur(6px)",
+          }}>
+            <span style={{
+              width: 5, height: 5, borderRadius: 999,
+              background: minutesUntil <= 15 ? "#CC2229" : "#3D55A1",
+              boxShadow: `0 0 0 3px ${minutesUntil <= 15 ? "rgba(204,34,41,0.22)" : "rgba(61,85,161,0.25)"}`,
+            }} />
+            <span style={{
+              fontSize: 10, fontWeight: 700, color: "#3D55A1",
+              textTransform: "uppercase", letterSpacing: 0.6,
+            }}>
+              Live · {countdown}
             </span>
-          </button>
+          </div>
 
-          {/* Navigate button — bottom right */}
+          {/* ETA · navigate chip — top-right */}
           <button
             type="button"
             onClick={(e) => { stop(e); handleNavigate(); }}
             disabled={!pickupPostcode}
             style={{
-              position: "absolute", bottom: 5, right: 8,
-              backgroundColor: "rgba(26,82,160,0.88)",
-              borderRadius: 10, padding: "3px 8px",
+              position: "absolute", top: 10, right: 10,
+              background: "rgba(255,255,255,0.94)",
+              padding: "4px 9px", borderRadius: 999,
+              display: "inline-flex", alignItems: "center", gap: 5,
+              boxShadow: "0 1px 3px rgba(15,23,42,0.10)",
+              backdropFilter: "blur(6px)",
               border: "none", cursor: pickupPostcode ? "pointer" : "default",
+              fontVariantNumeric: "tabular-nums",
             }}
           >
-            <span style={{ fontSize: 8.5, fontWeight: 700, color: "#FFF" }}>Navigate →</span>
+            <Navigation style={{ width: 11, height: 11, color: "#3D55A1" }} strokeWidth={2.4} />
+            <span style={{ fontSize: 11, fontWeight: 700, color: "#3D55A1" }}>
+              {etaMinutes > 0 ? `${etaMinutes}m` : "Tap for ETA"}
+            </span>
           </button>
         </div>
 
-        {/* ── DETAILS ── */}
-        <div style={{ padding: "9px 12px 8px" }}>
-          {/* Lesson type row */}
-          <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 5 }}>
-            <div style={{
-              width: 22, height: 22, borderRadius: 6, backgroundColor: "#EEF3FF",
-              display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-            }}>
-              <Clock style={{ width: 10, height: 10, color: "#1A52A0" }} strokeWidth={1.8} />
-            </div>
-            <div style={{ fontSize: 11, fontWeight: 700, color: "#1A1A1A" }}>
-              Standard lesson · {formatHoursLong(durationMinutes)}
-            </div>
-          </div>
-
-          {/* Pick-up address row */}
-          {(pickupPostcode || pickupLocation) && (
-            <div style={{ display: "flex", alignItems: "flex-start", gap: 7, marginBottom: 7 }}>
+        {/* ── INFO AREA — time hero + name + meta + avatar ── */}
+        <div style={{ padding: "14px 14px 10px" }}>
+          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10 }}>
+            <div style={{ minWidth: 0, flex: 1 }}>
               <div style={{
-                width: 22, height: 22, borderRadius: 6, backgroundColor: "#EEF3FF",
-                display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1,
+                fontSize: 28, fontWeight: 700, color: "#0F172A",
+                letterSpacing: -0.8, lineHeight: 1,
+                fontVariantNumeric: "tabular-nums",
               }}>
-                <MapPin style={{ width: 10, height: 10, color: "#1A52A0" }} strokeWidth={1.8} />
+                {startLabel}
               </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{
-                  fontSize: 11, fontWeight: 700, color: "#1A1A1A",
-                  overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-                }}>
-                  {pickupPostcode}
-                  {pickupPostcode && pickupLocation ? " · " : ""}
-                  {pickupLocation || (!pickupPostcode ? "Location TBC" : "")}
-                </div>
-                <div style={{ fontSize: 9, fontWeight: 600, color: "#1A52A0", marginTop: 1 }}>Pick-up</div>
+              <div style={{
+                fontSize: 13, fontWeight: 700, color: "#0F172A",
+                marginTop: 6, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+              }}>
+                {fullName}
+              </div>
+              <div style={{
+                fontSize: 11, color: "#64748B", marginTop: 2,
+                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+              }}>
+                Standard lesson · {formatHoursLong(durationMinutes)}
+                {pickupPostcode ? ` · ${pickupPostcode}` : pickupLocation ? ` · ${pickupLocation}` : ""}
               </div>
             </div>
-          )}
+
+            {/* Avatar — opens profile */}
+            <button
+              type="button"
+              onClick={(e) => { stop(e); openProfile(); }}
+              aria-label={`View ${fullName}'s profile`}
+              style={{
+                width: 44, height: 44, borderRadius: 22,
+                backgroundColor: avatarColor,
+                display: "inline-flex", alignItems: "center", justifyContent: "center",
+                flexShrink: 0, overflow: "hidden",
+                border: "2px solid rgba(255,255,255,0.6)",
+                boxShadow: `0 2px 6px ${avatarColor}38`,
+                padding: 0, cursor: "pointer",
+              }}
+            >
+              {pupilProfileImage ? (
+                <img src={pupilProfileImage} alt="" style={{ width: 44, height: 44, objectFit: "cover" }} />
+              ) : (
+                <span style={{ fontSize: 13, fontWeight: 700, color: "#FFF" }}>{initials}</span>
+              )}
+            </button>
+          </div>
 
           {/* AI divert pill */}
           {aiDivertTime && (
             <div style={{
-              alignSelf: "flex-start", display: "inline-flex", alignItems: "center", gap: 4,
-              backgroundColor: "#F0EEFF", borderRadius: 7,
-              padding: "3px 7px", marginBottom: 8,
+              display: "inline-flex", alignItems: "center", gap: 4,
+              backgroundColor: "#F0EEFF", borderRadius: 999,
+              padding: "3px 8px", marginTop: 10,
             }}>
-              <Sparkles style={{ width: 8, height: 8, color: "#6B21A8" }} strokeWidth={1.9} />
-              <span style={{ fontSize: 8.5, fontWeight: 600, color: "#6B21A8" }}>
+              <Sparkles style={{ width: 9, height: 9, color: "#6B21A8" }} strokeWidth={2} />
+              <span style={{ fontSize: 9.5, fontWeight: 600, color: "#6B21A8" }}>
                 AI divert at {aiDivertTime}
               </span>
             </div>
           )}
 
-          {/* Action buttons */}
-          <div style={{ display: "flex", gap: 5 }}>
+          {/* Action row — Call (primary red) · Text · Go */}
+          <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
             <button
               type="button"
               onClick={(e) => { stop(e); handleCall(); }}
               aria-label={pupilPhone ? `Call ${fullName}` : "Call disabled, no phone on file"}
               disabled={!pupilPhone}
               style={{
-                flex: 1.3, borderRadius: 9,
-                padding: "8px 0",
+                flex: 1.3, height: 38, borderRadius: 12,
                 backgroundColor: pupilPhone ? "#CC2229" : "#E8B5B7",
                 color: "#FFF", border: "none",
-                display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 3,
-                fontSize: 10, fontWeight: 700,
+                display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
+                fontSize: 12, fontWeight: 700,
                 boxShadow: pupilPhone ? "0 2px 6px rgba(204,34,41,0.28)" : "none",
                 cursor: pupilPhone ? "pointer" : "not-allowed",
               }}
             >
-              <Phone style={{ width: 10, height: 10 }} strokeWidth={1.8} /> Call
+              <Phone style={{ width: 13, height: 13 }} strokeWidth={2} /> Call
             </button>
             <button
               type="button"
@@ -325,16 +282,15 @@ export function UpNextCard(props: UpNextCardProps) {
               aria-label={`Send text to ${fullName}`}
               disabled={!pupilPhone}
               style={{
-                flex: 1, borderRadius: 9,
-                padding: "8px 0",
-                backgroundColor: "#EEF3FF", color: "#1A52A0", border: "none",
-                display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 3,
-                fontSize: 10, fontWeight: 600,
+                flex: 1, height: 38, borderRadius: 12,
+                backgroundColor: "#EDF2FE", color: "#3D55A1", border: "none",
+                display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
+                fontSize: 12, fontWeight: 600,
                 cursor: pupilPhone ? "pointer" : "not-allowed",
                 opacity: pupilPhone ? 1 : 0.5,
               }}
             >
-              <MessageSquare style={{ width: 10, height: 10 }} strokeWidth={1.7} /> Text
+              <MessageSquare style={{ width: 13, height: 13 }} strokeWidth={1.9} /> Text
             </button>
             <button
               type="button"
@@ -342,16 +298,15 @@ export function UpNextCard(props: UpNextCardProps) {
               aria-label={`Navigate to ${pickupLocation || pickupPostcode || "pickup"}`}
               disabled={!pickupPostcode}
               style={{
-                flex: 1, borderRadius: 9,
-                padding: "8px 0",
-                backgroundColor: "#EEF3FF", color: "#1A52A0", border: "none",
-                display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 3,
-                fontSize: 10, fontWeight: 600,
+                flex: 1, height: 38, borderRadius: 12,
+                backgroundColor: "#EDF2FE", color: "#3D55A1", border: "none",
+                display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
+                fontSize: 12, fontWeight: 600,
                 cursor: pickupPostcode ? "pointer" : "not-allowed",
                 opacity: pickupPostcode ? 1 : 0.5,
               }}
             >
-              <Navigation style={{ width: 10, height: 10 }} strokeWidth={1.7} /> Go
+              <Navigation style={{ width: 13, height: 13 }} strokeWidth={1.9} /> Go
             </button>
           </div>
         </div>
