@@ -131,6 +131,8 @@ export function useInstructorNotificationSettings(instructorId: string | undefin
             daily_summary_enabled: next.daily_summary_enabled,
             daily_summary_time: next.daily_summary_time,
             daily_summary_include: next.daily_summary_include,
+            message_sound_enabled: next.message_sound_enabled,
+            message_sound_choice: next.message_sound_choice,
           } as never,
           { onConflict: "instructor_id" },
         );
