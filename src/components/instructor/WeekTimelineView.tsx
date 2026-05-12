@@ -17,8 +17,9 @@ const DAY_LABELS_FULL = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const GUTTER = 44;
 const DAY_HEADER_H = 44;
 const VISIBLE_DAYS = 7;
-const WINDOW_WEEKS = 3; // previous + current + next
+const WINDOW_WEEKS = 5; // 2 before + current + 2 after — more room to glide
 const TOTAL_DAYS = 7 * WINDOW_WEEKS;
+const ANCHOR_OFFSET_WEEKS = 2;
 
 function isWholeDayEvent(ev: CalendarEvent) {
   const durMs = ev.end.getTime() - ev.start.getTime();
@@ -49,9 +50,9 @@ export function WeekTimelineView({
   onEventClick,
   onAddEvent,
 }: Props) {
-  // Window anchored 1 week before the week containing currentDate
+  // Window anchored N weeks before the week containing currentDate
   const anchorDate = useMemo(
-    () => addDays(startOfWeek(currentDate, { weekStartsOn: 1 }), -7),
+    () => addDays(startOfWeek(currentDate, { weekStartsOn: 1 }), -7 * ANCHOR_OFFSET_WEEKS),
     [currentDate]
   );
   const days = useMemo(
@@ -127,7 +128,8 @@ export function WeekTimelineView({
     positionToCurrent();
   }, [positionToCurrent]);
 
-  // On scroll-end, if the visible left day differs from currentDate's week start, update
+  // After scrolling settles, if the user has moved to a different week, re-anchor
+  // the visible week label without forcing a snap-back during the gesture.
   const scrollEndTimer = useRef<number | null>(null);
   const handleHScroll = () => {
     if (ignoreScrollRef.current || dayWidth <= 0) return;
@@ -135,17 +137,15 @@ export function WeekTimelineView({
     scrollEndTimer.current = window.setTimeout(() => {
       if (!hScrollRef.current) return;
       const sl = hScrollRef.current.scrollLeft;
-      const leftIdx = Math.round(sl / dayWidth);
-      const newDate = days[Math.max(0, Math.min(TOTAL_DAYS - 1, leftIdx))];
+      // Use the day at the centre of the visible 7-day window
+      const centreIdx = Math.round(sl / dayWidth + (VISIBLE_DAYS - 1) / 2);
+      const newDate = days[Math.max(0, Math.min(TOTAL_DAYS - 1, centreIdx))];
       if (!newDate) return;
       const newWeekStart = startOfWeek(newDate, { weekStartsOn: 1 });
       if (!isSameDay(newWeekStart, weekStart)) {
         onGoToDate(newWeekStart);
-      } else {
-        // Snap back to aligned position
-        positionToCurrent();
       }
-    }, 120);
+    }, 180);
   };
 
   const goPrev = () => onGoToDate(addDays(weekStart, -7));
@@ -202,7 +202,8 @@ export function WeekTimelineView({
           minHeight: 0,
           overflowX: "auto",
           overflowY: "hidden",
-          scrollSnapType: "x mandatory",
+          scrollSnapType: "none",
+          overscrollBehaviorX: "contain",
           WebkitOverflowScrolling: "touch",
           touchAction: "pan-x pan-y",
         }}
@@ -231,7 +232,6 @@ export function WeekTimelineView({
                     flexShrink: 0,
                     display: "flex", flexDirection: "column", alignItems: "center", gap: 2,
                     padding: "4px 0", border: "none", background: "transparent", cursor: "pointer",
-                    scrollSnapAlign: "start",
                   }}
                 >
                   <span style={{ fontSize: 10, color: "#8E8E93", fontWeight: 500 }}>{dayLabel}</span>
@@ -332,7 +332,6 @@ export function WeekTimelineView({
                       position: "relative",
                       borderLeft: "0.5px solid #F0F3F8",
                       background: isWeekend ? "#FAFBFC" : "#FFFFFF",
-                      scrollSnapAlign: "start",
                     }}
                   >
                     {hours.map((_, i) => (
