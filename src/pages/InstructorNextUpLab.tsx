@@ -1863,6 +1863,251 @@ function V38LiveBriefProDarkMap() {
 }
 
 // ---------------------------------------------------------------------------
+// Mini map helper — small static-style map tile used by V39–V42.
+// ---------------------------------------------------------------------------
+function MiniMap({ height = 90, dark = false, showRoute = true, accent = "#3D55A1" }: { height?: number; dark?: boolean; showRoute?: boolean; accent?: string }) {
+  const bg = dark
+    ? "linear-gradient(135deg, #1E293B 0%, #0F172A 100%)"
+    : "linear-gradient(135deg, #DBEAFE 0%, #EDE9FE 100%)";
+  const grid = dark ? "rgba(255,255,255,0.06)" : "rgba(15,23,42,0.06)";
+  return (
+    <div style={{ position: "relative", width: "100%", height, overflow: "hidden", background: bg }}>
+      <div style={{
+        position: "absolute", inset: 0,
+        backgroundImage: `repeating-linear-gradient(0deg, ${grid} 0 1px, transparent 1px 22px), repeating-linear-gradient(90deg, ${grid} 0 1px, transparent 1px 22px)`,
+      }} />
+      {showRoute && (
+        <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}>
+          <path d="M 14 70% Q 35% 30%, 60% 55% T 95% 25%" stroke={accent} strokeWidth="2.5" fill="none" strokeLinecap="round" strokeDasharray="5 4" />
+        </svg>
+      )}
+      <div style={{
+        position: "absolute", left: "12%", top: "62%", width: 22, height: 22, borderRadius: 999,
+        background: accent, border: "2px solid #FFF", boxShadow: `0 0 0 4px ${accent}33`,
+      }} />
+      <div style={{
+        position: "absolute", right: "10%", top: "20%", width: 24, height: 24, borderRadius: 999,
+        background: "#FFF", border: `2px solid ${accent}`,
+        display: "flex", alignItems: "center", justifyContent: "center",
+      }}>
+        <MapPin size={12} color={accent} />
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// V39 · Live Card · Mini Map Strip — full-width map header above metric tiles.
+// ---------------------------------------------------------------------------
+function V39LiveMapStrip() {
+  return (
+    <div style={{
+      borderRadius: 18, fontFamily: iosFont, overflow: "hidden",
+      border: "0.5px solid #E5E5EA", background: "#FFFFFF",
+      boxShadow: "0 1px 2px rgba(15,23,42,0.04)",
+    }}>
+      <div style={{ position: "relative" }}>
+        <MiniMap height={110} />
+        <span style={{
+          position: "absolute", top: 10, left: 10,
+          fontSize: 10, fontWeight: 700, color: "#3D55A1", background: "rgba(255,255,255,0.92)",
+          padding: "4px 9px", borderRadius: 999, textTransform: "uppercase", letterSpacing: 0.6,
+          display: "inline-flex", alignItems: "center", gap: 5,
+        }}>
+          <span style={{ width: 5, height: 5, borderRadius: 999, background: "#3D55A1", boxShadow: "0 0 0 3px rgba(61,85,161,0.25)" }} />
+          Live · in {lesson.minutesUntil}m
+        </span>
+        <span style={{
+          position: "absolute", top: 10, right: 10,
+          fontSize: 11, fontWeight: 700, color: "#3D55A1", background: "rgba(255,255,255,0.92)",
+          padding: "4px 9px", borderRadius: 999, fontVariantNumeric: "tabular-nums",
+        }}>
+          <Navigation size={11} style={{ display: "inline", marginRight: 4, verticalAlign: "-2px" }} />
+          {lesson.etaMinutes}m · {lesson.distanceMiles}mi
+        </span>
+      </div>
+      <div style={{ padding: 16 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+          <div>
+            <div style={{ fontSize: 28, fontWeight: 700, color: "#0F172A", letterSpacing: -0.8, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>{lesson.startTime}</div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: "#0F172A", marginTop: 6 }}>{lesson.pupilName}</div>
+            <div style={{ fontSize: 11, color: "#64748B", marginTop: 1 }}>{lesson.lessonType} · {lesson.postcode}</div>
+          </div>
+          <div style={{
+            width: 44, height: 44, borderRadius: 999, background: "linear-gradient(135deg,#3D55A1,#7C8DD6)",
+            color: "#FFF", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 14,
+          }}>{lesson.initials}</div>
+        </div>
+        <div style={{ display: "flex", gap: 8, marginTop: 14 }}>
+          <button style={btnSecondary}><Phone size={14} /> Call</button>
+          <button style={btnPrimary}><Navigation size={14} /> Navigate</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// V40 · Live Card · Side Mini Map — info left, square map right.
+// ---------------------------------------------------------------------------
+function V40LiveSideMap() {
+  return (
+    <div style={{
+      borderRadius: 18, fontFamily: iosFont, overflow: "hidden",
+      border: "0.5px solid #E5E5EA",
+      background:
+        "radial-gradient(120% 70% at 100% 0%, #DBEAFE 0%, transparent 55%), " +
+        "radial-gradient(120% 70% at 0% 100%, #DCFCE7 0%, transparent 55%), #FFFFFF",
+    }}>
+      <div style={{ display: "flex", gap: 12, padding: 14 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: "#3D55A1", textTransform: "uppercase", letterSpacing: 0.6, display: "inline-flex", alignItems: "center", gap: 6 }}>
+            <span style={{ width: 6, height: 6, borderRadius: 999, background: "#10B981", boxShadow: "0 0 0 4px rgba(16,185,129,0.18)" }} />
+            Live · in {lesson.minutesUntil}m
+          </div>
+          <div style={{ fontSize: 26, fontWeight: 700, color: "#0F172A", letterSpacing: -0.8, fontVariantNumeric: "tabular-nums", lineHeight: 1, marginTop: 6 }}>{lesson.startTime}</div>
+          <div style={{ fontSize: 13, fontWeight: 600, color: "#0F172A", marginTop: 6 }}>{lesson.pupilName}</div>
+          <div style={{ fontSize: 11, color: "#64748B", marginTop: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{lesson.pickup}</div>
+        </div>
+        <div style={{
+          width: 92, height: 92, borderRadius: 12, overflow: "hidden", flexShrink: 0,
+          border: "0.5px solid #E5E5EA", position: "relative",
+        }}>
+          <MiniMap height={92} />
+          <span style={{
+            position: "absolute", bottom: 4, left: 4, right: 4,
+            fontSize: 9, fontWeight: 700, color: "#FFF", background: "rgba(15,23,42,0.7)",
+            padding: "3px 6px", borderRadius: 6, textAlign: "center",
+            fontVariantNumeric: "tabular-nums",
+          }}>
+            {lesson.etaMinutes}m · {lesson.distanceMiles}mi
+          </span>
+        </div>
+      </div>
+      <div style={{ display: "flex", gap: 8, padding: "0 14px 14px" }}>
+        <button style={btnSecondary}><Phone size={14} /> Call</button>
+        <button style={btnPrimary}><Navigation size={14} /> Navigate</button>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// V41 · Live Card · Map Inset — corner-tucked rounded map under hero info.
+// ---------------------------------------------------------------------------
+function V41LiveMapInset() {
+  return (
+    <div style={{
+      position: "relative", borderRadius: 18, padding: 16, fontFamily: iosFont, overflow: "hidden",
+      background:
+        "radial-gradient(120% 80% at 0% 0%, #DBEAFE 0%, transparent 55%), " +
+        "radial-gradient(120% 80% at 100% 100%, #FCE7F3 0%, transparent 60%), #FFFFFF",
+      border: "0.5px solid #E5E5EA",
+    }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 600, color: "#3D55A1", textTransform: "uppercase", letterSpacing: 0.6, display: "inline-flex", alignItems: "center", gap: 6 }}>
+            <span style={{ width: 6, height: 6, borderRadius: 999, background: "#EC4899", boxShadow: "0 0 0 4px rgba(236,72,153,0.18)" }} />
+            Live · in {lesson.minutesUntil}m
+          </div>
+          <div style={{ fontSize: 30, fontWeight: 700, color: "#0F172A", letterSpacing: -0.8, fontVariantNumeric: "tabular-nums", lineHeight: 1, marginTop: 6 }}>{lesson.startTime}</div>
+          <div style={{ fontSize: 13, fontWeight: 600, color: "#0F172A", marginTop: 6 }}>{lesson.pupilName}</div>
+          <div style={{ fontSize: 11, color: "#64748B", marginTop: 1 }}>{lesson.lessonType}</div>
+        </div>
+        <div style={{
+          width: 48, height: 48, borderRadius: 999, background: "linear-gradient(135deg,#3D55A1,#7C8DD6)",
+          color: "#FFF", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 16,
+        }}>{lesson.initials}</div>
+      </div>
+      <div style={{
+        marginTop: 12, position: "relative", borderRadius: 12, overflow: "hidden",
+        border: "0.5px solid #E5E5EA", background: "#FFF",
+      }}>
+        <MiniMap height={84} />
+        <div style={{
+          position: "absolute", inset: 0, padding: "8px 10px",
+          display: "flex", flexDirection: "column", justifyContent: "space-between",
+        }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{
+              fontSize: 10, fontWeight: 700, color: "#0F172A", background: "rgba(255,255,255,0.92)",
+              padding: "3px 8px", borderRadius: 999, display: "inline-flex", alignItems: "center", gap: 4,
+            }}>
+              <MapPin size={10} color="#3D55A1" /> {lesson.postcode}
+            </span>
+            <span style={{
+              fontSize: 10, fontWeight: 700, color: "#3D55A1", background: "rgba(255,255,255,0.92)",
+              padding: "3px 8px", borderRadius: 999, fontVariantNumeric: "tabular-nums",
+            }}>
+              {lesson.etaMinutes}m · {lesson.distanceMiles}mi
+            </span>
+          </div>
+        </div>
+      </div>
+      <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+        <button style={btnSecondary}><Phone size={14} /> Call</button>
+        <button style={btnPrimary}><Navigation size={14} /> Navigate</button>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// V42 · Live Card · Dark Map Hero — full dark map header with overlay info.
+// ---------------------------------------------------------------------------
+function V42LiveDarkMapHero() {
+  return (
+    <div style={{
+      borderRadius: 18, fontFamily: iosFont, overflow: "hidden",
+      border: "0.5px solid rgba(15,23,42,0.08)", background: "#FFFFFF",
+      boxShadow: "0 10px 28px -14px rgba(15,23,42,0.35), 0 2px 6px rgba(15,23,42,0.06)",
+    }}>
+      <div style={{ position: "relative", height: 150 }}>
+        <MiniMap height={150} dark accent="#7C8DD6" />
+        <div style={{
+          position: "absolute", inset: 0,
+          background: "linear-gradient(180deg, rgba(15,23,42,0) 40%, rgba(15,23,42,0.85) 100%)",
+        }} />
+        <div style={{ position: "absolute", top: 12, left: 12, right: 12, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span style={{
+            fontSize: 10, fontWeight: 700, color: "#A5B4FC", background: "rgba(255,255,255,0.08)",
+            padding: "4px 9px", borderRadius: 999, textTransform: "uppercase", letterSpacing: 0.6,
+            display: "inline-flex", alignItems: "center", gap: 5,
+            border: "0.5px solid rgba(255,255,255,0.12)",
+          }}>
+            <span style={{ width: 5, height: 5, borderRadius: 999, background: "#34D399", boxShadow: "0 0 0 3px rgba(52,211,153,0.3)" }} />
+            Live · in {lesson.minutesUntil}m
+          </span>
+          <span style={{
+            fontSize: 11, fontWeight: 700, color: "#FFF", background: "rgba(255,255,255,0.12)",
+            padding: "4px 10px", borderRadius: 999, fontVariantNumeric: "tabular-nums",
+            border: "0.5px solid rgba(255,255,255,0.18)",
+          }}>
+            {lesson.etaMinutes}m · {lesson.distanceMiles}mi
+          </span>
+        </div>
+        <div style={{ position: "absolute", left: 14, right: 14, bottom: 12, color: "#FFF", display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 10 }}>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontSize: 28, fontWeight: 700, letterSpacing: -0.8, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>{lesson.startTime}</div>
+            <div style={{ fontSize: 13, fontWeight: 600, marginTop: 4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{lesson.pupilName}</div>
+            <div style={{ fontSize: 11, opacity: 0.75, marginTop: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{lesson.pickup}</div>
+          </div>
+          <div style={{
+            width: 44, height: 44, borderRadius: 999, background: "rgba(255,255,255,0.18)",
+            border: "1px solid rgba(255,255,255,0.25)",
+            display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 14, flexShrink: 0,
+          }}>{lesson.initials}</div>
+        </div>
+      </div>
+      <div style={{ display: "flex", gap: 8, padding: 12 }}>
+        <button style={btnSecondary}><Phone size={14} /> Call</button>
+        <button style={btnPrimary}><Navigation size={14} /> Navigate · {lesson.postcode}</button>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Page
 // ---------------------------------------------------------------------------
 const VARIANTS = [
