@@ -564,60 +564,84 @@ export function UpNextExpanded({
 
         <Divider />
 
-        {/* SECTION — Action grid (moved to top) */}
+        {/* SECTION — Action pills (match Call/Text/Go style) */}
         <SectionLabel>Actions</SectionLabel>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr 1fr",
-            gap: 8,
-            padding: "0 16px 8px",
-          }}
-        >
-          <ActionTile Icon={NavIcon} label="Navigate" onClick={navigateMap} />
-          <ActionTile Icon={Phone} label="Call" onClick={callPupil} disabled={!pupilPhone} />
-          <ActionTile Icon={MessageSquare} label="Text" onClick={messagePupil} />
-          <ActionTile Icon={ClipboardList} label="Prep" onClick={openPrep} />
-          <ActionTile
-            Icon={Send}
-            label="On My Way"
-            onClick={onMyWay}
-            active={norm === "on_the_way" || norm === "en_route"}
-            disabled={busyAction === "on_the_way"}
-          />
-          <ActionTile
-            Icon={Clock}
-            label="Running Later"
-            onClick={runningLate}
-            active={norm === "running_late" || norm === "late"}
-            disabled={busyAction === "running_late"}
-          />
-        </div>
-        <button
-          type="button"
-          onClick={arrived}
-          disabled={busyAction === "arrived"}
-          style={{
-            width: "calc(100% - 32px)",
-            margin: "0 16px 4px",
-            height: 44,
-            background: BLUE,
-            color: "#FFFFFF",
-            border: "none",
+        {(() => {
+          const PILL_BG = "#EDF2FE";
+          const PILL_FG = "#3D55A1";
+          const ACTIVE_BG = BLUE;
+          const ACTIVE_FG = "#FFFFFF";
+          const pillBase = (opts: { active?: boolean; disabled?: boolean }) => ({
+            flex: 1,
+            minWidth: 0,
+            height: 38,
             borderRadius: 12,
-            fontWeight: 700,
-            fontSize: 14,
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 8,
-            cursor: "pointer",
-            opacity: busyAction === "arrived" ? 0.6 : 1,
-          }}
-        >
-          <CheckCheck size={16} strokeWidth={2.4} />
-          {norm === "arrived" ? "Arrived ✓" : "Arrived"}
-        </button>
+            backgroundColor: opts.active ? ACTIVE_BG : PILL_BG,
+            color: opts.active ? ACTIVE_FG : PILL_FG,
+            border: "none",
+            display: "inline-flex" as const,
+            alignItems: "center" as const,
+            justifyContent: "center" as const,
+            gap: 6,
+            fontSize: 12,
+            fontWeight: 600 as const,
+            cursor: opts.disabled ? "not-allowed" as const : "pointer" as const,
+            opacity: opts.disabled ? 0.5 : 1,
+            padding: "0 10px",
+          });
+          const onMyWayActive = norm === "on_the_way" || norm === "en_route";
+          const lateActive = norm === "running_late" || norm === "late";
+          const arrivedActive = norm === "arrived";
+          return (
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, padding: "0 16px 8px" }}>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button type="button" onClick={navigateMap} style={pillBase({})}>
+                  <NavIcon style={{ width: 13, height: 13 }} strokeWidth={1.9} /> Navigate
+                </button>
+                <button type="button" onClick={callPupil} disabled={!pupilPhone} style={pillBase({ disabled: !pupilPhone })}>
+                  <Phone style={{ width: 13, height: 13 }} strokeWidth={1.9} /> Call
+                </button>
+                <button type="button" onClick={messagePupil} style={pillBase({})}>
+                  <MessageSquare style={{ width: 13, height: 13 }} strokeWidth={1.9} /> Text
+                </button>
+              </div>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button type="button" onClick={openPrep} style={pillBase({})}>
+                  <ClipboardList style={{ width: 13, height: 13 }} strokeWidth={1.9} /> Prep
+                </button>
+                <button
+                  type="button"
+                  onClick={onMyWay}
+                  disabled={busyAction === "on_the_way"}
+                  style={pillBase({ active: onMyWayActive, disabled: busyAction === "on_the_way" })}
+                >
+                  <Send style={{ width: 13, height: 13 }} strokeWidth={1.9} /> On My Way
+                </button>
+                <button
+                  type="button"
+                  onClick={runningLate}
+                  disabled={busyAction === "running_late"}
+                  style={pillBase({ active: lateActive, disabled: busyAction === "running_late" })}
+                >
+                  <Clock style={{ width: 13, height: 13 }} strokeWidth={1.9} /> Running Later
+                </button>
+              </div>
+              <button
+                type="button"
+                onClick={arrived}
+                disabled={busyAction === "arrived"}
+                style={{
+                  ...pillBase({ active: true, disabled: busyAction === "arrived" }),
+                  width: "100%",
+                  fontWeight: 700,
+                }}
+              >
+                <CheckCheck style={{ width: 14, height: 14 }} strokeWidth={2.2} />
+                {arrivedActive ? "Arrived ✓" : "Arrived"}
+              </button>
+            </div>
+          );
+        })()}
 
         <Divider />
 
