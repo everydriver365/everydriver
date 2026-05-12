@@ -2149,6 +2149,10 @@ const VARIANTS = [
   { id: "v36", name: "Brief Pro · Map", desc: "Live Brief Pro with a static map strip on top.", Component: V36LiveBriefProMap },
   { id: "v37", name: "Brief Pro · Dark", desc: "Dark gradient hero — pops on light blue backgrounds.", Component: V37LiveBriefProDark },
   { id: "v38", name: "Brief Pro · Dark + Map", desc: "Dark hero + map strip for maximum contrast on blue.", Component: V38LiveBriefProDarkMap },
+  { id: "v39", name: "Live · Map Strip", desc: "Full-width mini map header above the live info.", Component: V39LiveMapStrip },
+  { id: "v40", name: "Live · Side Map", desc: "Info on the left, square mini map tile on the right.", Component: V40LiveSideMap },
+  { id: "v41", name: "Live · Map Inset", desc: "Hero info above a rounded inset map with chips.", Component: V41LiveMapInset },
+  { id: "v42", name: "Live · Dark Map Hero", desc: "Full dark map hero with overlay info — high impact.", Component: V42LiveDarkMapHero },
 ];
 
 export default function InstructorNextUpLab() {
