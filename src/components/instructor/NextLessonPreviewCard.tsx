@@ -44,8 +44,6 @@ const C = {
 const FONT =
   '-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Inter", sans-serif';
 
-const COLLAPSED_MAP_H = 170;
-const EXPANDED_MAP_H = 280;
 
 /* -------------------------------------------------------------------------- */
 /*  Caches & SDK                                                               */
