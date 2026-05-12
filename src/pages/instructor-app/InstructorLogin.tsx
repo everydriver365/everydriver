@@ -106,21 +106,6 @@ export default function InstructorLogin() {
         setBiometricAvailable(available);
         if (available) {
           setBiometryLabel(await getBiometryLabel());
-          // Auto-prompt on native AND in wrapped apps (Despia / PWA / WebView)
-          // so reopening the app feels like Face ID unlock.
-          if (isNativePlatform() || isWrappedApp()) {
-            const creds = await getBiometricCredentials("instructor", "Sign in to EveryDriver");
-            if (creds) {
-              setBiometricLoading(true);
-              const { error: signInError } = await signIn(creds.email, creds.password);
-              if (!signInError) {
-                toast.success("Welcome back!");
-                navigate("/instructor");
-                return;
-              }
-              setBiometricLoading(false);
-            }
-          }
         }
       } catch (err) {
         console.log('Biometric not available:', err);
