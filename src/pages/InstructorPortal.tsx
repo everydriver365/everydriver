@@ -214,10 +214,14 @@ export default function InstructorPortal() {
       <InstructorPortalLayout>
         <div className="space-y-0">
         <DemoModeBanner />
-        <MobileHomeRedesign
-          instructorId={instructorId}
-          instructorName={instructorData?.name}
-        />
+        {layoutStyle === "settings-v2" ? (
+          <SettingsV2HomeView instructorId={instructorId} instructor={instructorData as any} />
+        ) : (
+          <MobileHomeRedesign
+            instructorId={instructorId}
+            instructorName={instructorData?.name}
+          />
+        )}
         <TakePaymentModal
           open={paymentModalOpen}
           onOpenChange={setPaymentModalOpen}
