@@ -11,6 +11,8 @@ import {
   MessageSquare,
   Navigation,
   Sparkles,
+  CreditCard,
+  FileText,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { pupilAvatarColor } from "@/lib/pupilAvatarColor";
