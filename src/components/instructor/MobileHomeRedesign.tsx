@@ -28,6 +28,7 @@ import { useNextLessonDetails } from "@/hooks/useNextLessonDetails";
 import { useInstructorLiveStats } from "@/hooks/useInstructorLiveStats";
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
 import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
+import { useMessageSound } from "@/hooks/useMessageSound";
 import { useInstructorPupilsPaymentSummary } from "@/hooks/usePupilPaymentStatus";
 import { useRealGapSlots } from "@/hooks/useRealGapSlots";
 import { useFranchiseStatus } from "@/hooks/useFranchiseStatus";
@@ -1710,6 +1711,7 @@ export function MobileHomeRedesign({
   const pendingJobs = usePendingJobsCount();
   const { data: swapCount = 0 } = useTestSwapNotifications(instructorId);
   const { data: unread = 0 } = useUnreadMessagesCount(instructorId);
+  useMessageSound(instructorId, unread);
   const needsYouAlerts = useNeedsYouAlerts(instructorId, {
     jobs: pendingJobs,
     msgs: unread,

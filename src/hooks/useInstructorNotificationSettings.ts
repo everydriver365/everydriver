@@ -23,6 +23,8 @@ export interface DailySummaryInclude {
   test_swaps: boolean;
 }
 
+export type MessageSoundChoice = "chime" | "ding" | "pop" | "none";
+
 export interface NotificationSettings {
   delivery_cadence: DeliveryCadence;
   quiet_hours_enabled: boolean;
@@ -35,6 +37,8 @@ export interface NotificationSettings {
   daily_summary_enabled: boolean;
   daily_summary_time: string; // "07:00"
   daily_summary_include: DailySummaryInclude;
+  message_sound_enabled: boolean;
+  message_sound_choice: MessageSoundChoice;
 }
 
 const DEFAULT_INCLUDE: DailySummaryInclude = {
@@ -65,6 +69,8 @@ const DEFAULTS: NotificationSettings = {
   daily_summary_enabled: true,
   daily_summary_time: "07:00",
   daily_summary_include: DEFAULT_INCLUDE,
+  message_sound_enabled: true,
+  message_sound_choice: "chime",
 };
 
 export function useInstructorNotificationSettings(instructorId: string | undefined) {
@@ -94,6 +100,8 @@ export function useInstructorNotificationSettings(instructorId: string | undefin
         daily_summary_enabled: row.daily_summary_enabled === undefined ? DEFAULTS.daily_summary_enabled : Boolean(row.daily_summary_enabled),
         daily_summary_time: ((row.daily_summary_time as string) ?? DEFAULTS.daily_summary_time).slice(0, 5),
         daily_summary_include: { ...DEFAULT_INCLUDE, ...((row.daily_summary_include as Partial<DailySummaryInclude>) ?? {}) },
+        message_sound_enabled: row.message_sound_enabled === undefined ? DEFAULTS.message_sound_enabled : Boolean(row.message_sound_enabled),
+        message_sound_choice: ((row.message_sound_choice as MessageSoundChoice) ?? DEFAULTS.message_sound_choice),
       });
     }
     setLoading(false);
@@ -123,6 +131,8 @@ export function useInstructorNotificationSettings(instructorId: string | undefin
             daily_summary_enabled: next.daily_summary_enabled,
             daily_summary_time: next.daily_summary_time,
             daily_summary_include: next.daily_summary_include,
+            message_sound_enabled: next.message_sound_enabled,
+            message_sound_choice: next.message_sound_choice,
           } as never,
           { onConflict: "instructor_id" },
         );
