@@ -2053,7 +2053,7 @@ export function MobileHomeRedesign({
         fontFamily: FONT,
         WebkitFontSmoothing: "antialiased",
         color: CHARCOAL,
-        padding: "10px 14px 100px",
+        padding: "10px 16px 100px",
       }}
     >
       {/* Header row */}
