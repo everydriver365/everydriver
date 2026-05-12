@@ -1277,49 +1277,78 @@ export function UpNextExpanded({
         <Divider />
 
         {/* SECTION 9 — Footer */}
-        <div style={{ display: "flex", gap: 8, padding: "12px 16px 4px" }}>
-          <button
-            type="button"
-            onClick={() => setRescheduleOpen(true)}
+        <div style={{ padding: "12px 16px 4px" }}>
+          <div
             style={{
-              flex: 1,
-              height: 44,
-              background: "#FFFFFF",
-              color: BLUE,
-              border: `1px solid ${BLUE}`,
-              borderRadius: 12,
-              fontWeight: 700,
-              fontSize: 13,
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 6,
-              cursor: "pointer",
+              backgroundColor: "#FFF",
+              borderRadius: 16,
+              padding: "12px 14px",
+              border: "0.5px solid rgba(26,82,160,0.08)",
             }}
           >
-            <RefreshCw size={14} /> Reschedule
-          </button>
-          <button
-            type="button"
-            onClick={() => setCancelOpen(true)}
-            style={{
-              flex: 1,
-              height: 44,
-              background: "#FFFFFF",
-              color: RED,
-              border: `1px solid ${RED}`,
-              borderRadius: 12,
-              fontWeight: 700,
-              fontSize: 13,
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 6,
-              cursor: "pointer",
-            }}
-          >
-            <XCircle size={14} /> Cancel Lesson
-          </button>
+            <div style={{ display: "flex", gap: 7, marginBottom: 10 }}>
+              <button
+                type="button"
+                onClick={() => setRescheduleOpen(true)}
+                style={{
+                  flex: 1,
+                  backgroundColor: "#F8F9FF",
+                  borderRadius: 10,
+                  border: "1px solid rgba(26,82,160,0.25)",
+                  padding: "8px 6px",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 5,
+                  cursor: "pointer",
+                  color: "#1A52A0",
+                }}
+              >
+                <RefreshCw size={11} strokeWidth={1.8} />
+                <span style={{ fontSize: 11, fontWeight: 600 }}>Reschedule</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setCancelOpen(true)}
+                style={{
+                  flex: 1,
+                  backgroundColor: "#FFF8F8",
+                  borderRadius: 10,
+                  border: "1px solid rgba(204,34,41,0.20)",
+                  padding: "8px 6px",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 5,
+                  cursor: "pointer",
+                  color: "#CC2229",
+                }}
+              >
+                <XCircle size={11} strokeWidth={1.8} />
+                <span style={{ fontSize: 11, fontWeight: 600 }}>Cancel lesson</span>
+              </button>
+            </div>
+            <div style={{ height: 0.5, backgroundColor: "#F0F3F8", marginBottom: 8 }} />
+            <button
+              type="button"
+              onClick={() => navigate("/instructor/schedule")}
+              style={{
+                width: "100%",
+                background: "transparent",
+                border: "none",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 4,
+                cursor: "pointer",
+                padding: 0,
+                color: "#1A52A0",
+              }}
+            >
+              <span style={{ fontSize: 11, fontWeight: 600 }}>View all lessons</span>
+              <ChevronRight size={9} strokeWidth={2.2} />
+            </button>
+          </div>
         </div>
       </div>
 
