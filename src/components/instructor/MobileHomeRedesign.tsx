@@ -2229,16 +2229,21 @@ export function MobileHomeRedesign({
         <div
           style={{
             ...bentoPad,
+            padding: 8,
             background: "linear-gradient(135deg,#EDF2FE,#DCE6FA)",
             cursor: "pointer",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
           }}
           onClick={() => navigate("/instructor/schedule")}
         >
-          <Clock size={16} color={BLUE} />
-          <div style={{ fontSize: 22, fontWeight: 800, color: BLUE, marginTop: 2, letterSpacing: "-0.02em" }}>
-            {hoursDone}
+          <Clock size={12} color={BLUE} />
+          <div style={{ fontSize: 16, fontWeight: 800, color: BLUE, marginTop: 1, letterSpacing: "-0.02em", lineHeight: 1 }}>
+            {hoursDone}h
           </div>
-          <div style={{ fontSize: 9, color: BLUE, fontWeight: 800, letterSpacing: "0.1em" }}>HRS THIS WEEK</div>
+          <div style={{ fontSize: 8, color: BLUE, fontWeight: 800, letterSpacing: "0.08em", marginTop: 2 }}>WEEK</div>
         </div>
       </div>
 
