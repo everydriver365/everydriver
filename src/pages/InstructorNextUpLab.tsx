@@ -560,6 +560,213 @@ function Mini({ icon, top, bottom }: { icon: React.ReactNode; top: string; botto
 }
 
 // ---------------------------------------------------------------------------
+// V13 · Stacked Cards — primary card with peek of the lesson after.
+// ---------------------------------------------------------------------------
+function V13StackedCards() {
+  return (
+    <div style={{ fontFamily: iosFont, position: "relative", paddingBottom: 14 }}>
+      <div style={{
+        position: "absolute", left: 16, right: 16, bottom: 0, height: 28,
+        background: "#FFF", border: "0.5px solid #E5E5EA", borderTop: "none",
+        borderRadius: "0 0 14px 14px", opacity: 0.7,
+      }} />
+      <div style={{
+        position: "absolute", left: 8, right: 8, bottom: 6, height: 28,
+        background: "#FFF", border: "0.5px solid #E5E5EA", borderTop: "none",
+        borderRadius: "0 0 14px 14px", opacity: 0.85,
+      }} />
+      <div style={{ background: "#FFF", border: "0.5px solid #E5E5EA", borderRadius: 14, padding: 16, position: "relative" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span style={{ fontSize: 11, fontWeight: 600, color: "#3D55A1", textTransform: "uppercase", letterSpacing: 0.4 }}>Up next · in {lesson.minutesUntil}m</span>
+          <span style={{ fontSize: 11, color: "#6E6E73", fontVariantNumeric: "tabular-nums" }}>{lesson.startTime}</span>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 12 }}>
+          <div style={{ width: 44, height: 44, borderRadius: 12, background: "linear-gradient(135deg,#3D55A1,#7C8DD6)", color: "#FFF", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 14 }}>{lesson.initials}</div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 15, fontWeight: 600, color: "#000" }}>{lesson.pupilName}</div>
+            <div style={{ fontSize: 12, color: "#6E6E73", marginTop: 1 }}>{lesson.lessonType} · {lesson.postcode}</div>
+          </div>
+        </div>
+        <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+          <button style={btnSecondary}><Phone size={14} /></button>
+          <button style={btnSecondary}><MessageSquare size={14} /></button>
+          <button style={btnPrimary}><Navigation size={14} /> {lesson.etaMinutes}m</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// V14 · Glanceable — minimalist, single line of essentials.
+// ---------------------------------------------------------------------------
+function V14Glanceable() {
+  return (
+    <div style={{
+      background: "#FFF", border: "0.5px solid #E5E5EA", borderRadius: 14,
+      padding: "14px 16px", fontFamily: iosFont,
+      display: "flex", alignItems: "center", justifyContent: "space-between",
+    }}>
+      <div style={{ minWidth: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <span style={{ width: 6, height: 6, borderRadius: 999, background: "#3D55A1", boxShadow: "0 0 0 4px #EDF2FE" }} />
+          <span style={{ fontSize: 16, fontWeight: 600, color: "#0F172A", fontVariantNumeric: "tabular-nums" }}>{lesson.startTime}</span>
+          <span style={{ fontSize: 12, color: "#3D55A1", fontWeight: 600 }}>· in {lesson.minutesUntil}m</span>
+        </div>
+        <div style={{ fontSize: 13, color: "#0F172A", marginTop: 4, fontWeight: 500 }}>{lesson.pupilName}</div>
+        <div style={{ fontSize: 11, color: "#6E6E73", marginTop: 1 }}>{lesson.postcode} · {lesson.distanceMiles}mi</div>
+      </div>
+      <ChevronRight size={18} color="#C7C7CC" />
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// V15 · iOS Widget — looks like a Lock Screen widget tile.
+// ---------------------------------------------------------------------------
+function V15IOSWidget() {
+  return (
+    <div style={{
+      background: "linear-gradient(180deg, #1F2937 0%, #0F172A 100%)",
+      borderRadius: 22, padding: 16, fontFamily: iosFont, color: "#FFF",
+      aspectRatio: "1 / 1", maxWidth: 220, margin: "0 auto",
+      display: "flex", flexDirection: "column", justifyContent: "space-between",
+      boxShadow: "0 12px 30px -10px rgba(15,23,42,0.5)",
+    }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 600, opacity: 0.75, textTransform: "uppercase", letterSpacing: 0.6 }}>
+          <CalendarClock size={11} /> Up next
+        </span>
+        <span style={{ fontSize: 10, opacity: 0.6 }}>DSM</span>
+      </div>
+      <div>
+        <div style={{ fontSize: 28, fontWeight: 700, letterSpacing: -1, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>{lesson.startTime}</div>
+        <div style={{ fontSize: 12, opacity: 0.85, marginTop: 6, fontWeight: 500 }}>{lesson.pupilName}</div>
+        <div style={{ fontSize: 10, opacity: 0.6, marginTop: 2 }}>{lesson.postcode} · {lesson.distanceMiles}mi</div>
+      </div>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 11, fontWeight: 600 }}>
+        <span style={{ color: "#7DD3FC" }}>in {lesson.minutesUntil}m</span>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 4, opacity: 0.85 }}>
+          <Navigation size={11} /> {lesson.etaMinutes}m
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// V16 · Driver Brief — pre-trip checklist style with subtle ticks.
+// ---------------------------------------------------------------------------
+function V16DriverBrief() {
+  const items = [
+    { label: "Pupil paid", value: "£" + lesson.price, ok: lesson.paid },
+    { label: "Travel time", value: `${lesson.etaMinutes} min`, ok: true },
+    { label: "Weather", value: lesson.weather, ok: true },
+  ];
+  return (
+    <div style={{ background: "#FFF", border: "0.5px solid #E5E5EA", borderRadius: 16, padding: 16, fontFamily: iosFont }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <span style={{ fontSize: 11, fontWeight: 600, color: "#6E6E73", textTransform: "uppercase", letterSpacing: 0.4 }}>Pre-lesson brief</span>
+        <span style={{ fontSize: 11, color: "#3D55A1", fontWeight: 600, fontVariantNumeric: "tabular-nums" }}>{lesson.startTime} · in {lesson.minutesUntil}m</span>
+      </div>
+      <div style={{ fontSize: 17, fontWeight: 600, color: "#000", marginTop: 8 }}>{lesson.pupilName}</div>
+      <div style={{ fontSize: 12, color: "#6E6E73", marginTop: 1 }}>{lesson.lessonType}</div>
+      <div style={{ marginTop: 12, borderTop: "1px solid #F2F2F7" }}>
+        {items.map((it, i) => (
+          <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: i < items.length - 1 ? "1px solid #F2F2F7" : "none" }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 13, color: "#0F172A" }}>
+              <CheckCircle2 size={14} color={it.ok ? "#16A34A" : "#94A3B8"} />
+              {it.label}
+            </span>
+            <span style={{ fontSize: 13, fontWeight: 600, color: "#0F172A" }}>{it.value}</span>
+          </div>
+        ))}
+      </div>
+      <button style={{ ...btnPrimary, width: "100%", marginTop: 14 }}>
+        <Navigation size={14} /> Navigate · {lesson.postcode}
+      </button>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// V17 · Pill Header — single tall pill with rounded inner sections.
+// ---------------------------------------------------------------------------
+function V17PillHeader() {
+  return (
+    <div style={{
+      background: "#0F172A", borderRadius: 999, padding: 6, fontFamily: iosFont,
+      display: "flex", alignItems: "center", gap: 8, color: "#FFF",
+    }}>
+      <div style={{
+        width: 56, height: 56, borderRadius: 999, background: "#3D55A1",
+        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flexShrink: 0,
+      }}>
+        <div style={{ fontSize: 14, fontWeight: 700, lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>{lesson.startTime.split(":")[0]}</div>
+        <div style={{ fontSize: 11, fontWeight: 600, lineHeight: 1, marginTop: 2, fontVariantNumeric: "tabular-nums" }}>:{lesson.startTime.split(":")[1]}</div>
+      </div>
+      <div style={{ flex: 1, minWidth: 0, paddingRight: 4 }}>
+        <div style={{ fontSize: 13, fontWeight: 600, lineHeight: 1.2 }}>{lesson.pupilName}</div>
+        <div style={{ fontSize: 10, opacity: 0.7, marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          in {lesson.minutesUntil}m · {lesson.postcode} · {lesson.etaMinutes}m drive
+        </div>
+      </div>
+      <button style={{
+        width: 56, height: 56, borderRadius: 999, background: "#FFF", color: "#0F172A",
+        display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+      }}>
+        <Navigation size={18} />
+      </button>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// V18 · Bento Grid — equal-weight info cells.
+// ---------------------------------------------------------------------------
+function V18Bento() {
+  return (
+    <div style={{ background: "#FFF", border: "0.5px solid #E5E5EA", borderRadius: 16, padding: 12, fontFamily: iosFont }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "4px 4px 10px" }}>
+        <span style={{ fontSize: 11, fontWeight: 600, color: "#6E6E73", textTransform: "uppercase", letterSpacing: 0.4 }}>Up next</span>
+        <span style={{ fontSize: 11, fontWeight: 600, color: "#3D55A1" }}>in {lesson.minutesUntil}m</span>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gridTemplateRows: "auto auto", gap: 8 }}>
+        <BentoCell bg="#EDF2FE" rowSpan={2}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: "#3D55A1", textTransform: "uppercase", letterSpacing: 0.4 }}>Pupil</div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: "#0F172A", marginTop: 6, lineHeight: 1.2 }}>{lesson.pupilName}</div>
+          <div style={{ fontSize: 11, color: "#3D55A1", marginTop: 4 }}>{lesson.lessonType}</div>
+          <div style={{ marginTop: "auto", paddingTop: 14, fontSize: 24, fontWeight: 700, color: "#0F172A", fontVariantNumeric: "tabular-nums", letterSpacing: -0.6 }}>{lesson.startTime}</div>
+        </BentoCell>
+        <BentoCell bg="#FEF3C7">
+          <div style={{ fontSize: 10, fontWeight: 600, color: "#92400E", textTransform: "uppercase", letterSpacing: 0.4 }}>ETA</div>
+          <div style={{ fontSize: 18, fontWeight: 700, color: "#0F172A", marginTop: 4, fontVariantNumeric: "tabular-nums" }}>{lesson.etaMinutes}m</div>
+          <div style={{ fontSize: 10, color: "#92400E", marginTop: 2 }}>{lesson.distanceMiles} miles</div>
+        </BentoCell>
+        <BentoCell bg="#DCFCE7">
+          <div style={{ fontSize: 10, fontWeight: 600, color: "#166534", textTransform: "uppercase", letterSpacing: 0.4 }}>{lesson.paid ? "Paid" : "Owed"}</div>
+          <div style={{ fontSize: 18, fontWeight: 700, color: "#0F172A", marginTop: 4 }}>£{lesson.price}</div>
+          <div style={{ fontSize: 10, color: "#166534", marginTop: 2 }}>{lesson.postcode}</div>
+        </BentoCell>
+      </div>
+      <button style={{ ...btnPrimary, width: "100%", marginTop: 10 }}>
+        <Navigation size={14} /> Navigate
+      </button>
+    </div>
+  );
+}
+function BentoCell({ children, bg, rowSpan }: { children: React.ReactNode; bg: string; rowSpan?: number }) {
+  return (
+    <div style={{
+      background: bg, borderRadius: 12, padding: 12, gridRow: rowSpan ? `span ${rowSpan}` : undefined,
+      display: "flex", flexDirection: "column", minHeight: 80,
+    }}>
+      {children}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Page
 // ---------------------------------------------------------------------------
 const VARIANTS = [
@@ -575,6 +782,12 @@ const VARIANTS = [
   { id: "v10", name: "Status Banner", desc: "Coloured top bar communicates state at a glance.", Component: V10StatusBanner },
   { id: "v11", name: "Editorial", desc: "Magazine pacing with serif name and stat row.", Component: V11Editorial },
   { id: "v12", name: "Live Card", desc: "Ambient gradient with live pulse and metric tiles.", Component: V12LiveCard },
+  { id: "v13", name: "Stacked Cards", desc: "Primary card with a peek of the next lesson behind.", Component: V13StackedCards },
+  { id: "v14", name: "Glanceable", desc: "Minimalist single-line list row, ultra-low chrome.", Component: V14Glanceable },
+  { id: "v15", name: "iOS Widget", desc: "Square Lock Screen widget styling, dark surface.", Component: V15IOSWidget },
+  { id: "v16", name: "Driver Brief", desc: "Pre-lesson checklist with paid / travel / weather.", Component: V16DriverBrief },
+  { id: "v17", name: "Pill Header", desc: "All-pill bar with avatar dot and round CTA.", Component: V17PillHeader },
+  { id: "v18", name: "Bento Grid", desc: "Equal-weight bento cells: pupil, ETA, payment.", Component: V18Bento },
 ];
 
 export default function InstructorNextUpLab() {
