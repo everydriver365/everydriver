@@ -1908,7 +1908,14 @@ const VARIANTS = [
 
 export default function InstructorNextUpLab() {
   const [active, setActive] = useState<string>("all");
+  const [bg, setBg] = useState<string>("#F4F7F6");
   const visible = active === "all" ? VARIANTS : VARIANTS.filter(v => v.id === active);
+  const bgOptions = [
+    { id: "neutral",   label: "Neutral",   color: "#F4F7F6" },
+    { id: "lightblue", label: "Light blue", color: "#EDF2FE" },
+    { id: "blue",      label: "Brand tint", color: "#DCEAFE" },
+    { id: "white",     label: "White",     color: "#FFFFFF" },
+  ];
 
   return (
     <div style={{ minHeight: "100vh", background: "#F4F7F6", padding: "32px 16px 96px" }}>
