@@ -18,6 +18,7 @@ const InstructorNotifications = lazy(() => import("@/pages/InstructorNotificatio
 const InstallInstructor = lazy(() => import("@/pages/InstallInstructor"));
 const IconPreviewPage = lazy(() => import("@/pages/instructor/IconPreviewPage"));
 const QuickActionsRedesignDemo = lazy(() => import("@/pages/instructor/QuickActionsRedesignDemo"));
+const UpcomingEventsRedesignDemo = lazy(() => import("@/pages/instructor/UpcomingEventsRedesignDemo"));
 const InstructorAccessibilitySettings = lazy(() => import("@/pages/instructor/InstructorAccessibilitySettings"));
 const InstructorModules = lazy(() => import("@/pages/instructor-app/InstructorModules"));
 const InstructorMySite = lazy(() => import("@/pages/instructor-app/InstructorMySite"));
