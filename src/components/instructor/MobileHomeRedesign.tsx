@@ -1310,7 +1310,21 @@ function AttentionCard({ rows }: { rows: AttentionRow[] }) {
   );
 }
 
-function UpgradeCard({ rows }: { rows: UpgradeRowSpec[] }) {
+interface FranchisePanelData {
+  feeStatus: "paid" | "owing" | "none";
+  amountOwing: number;
+  bonusDue: number;
+  onFeeClick: () => void;
+  onBonusClick: () => void;
+}
+
+function UpgradeCard({
+  rows,
+  franchise,
+}: {
+  rows: UpgradeRowSpec[];
+  franchise?: FranchisePanelData;
+}) {
   const [open, setOpen] = useState(false);
   if (rows.length === 0) return null;
 
@@ -1461,7 +1475,125 @@ function UpgradeCard({ rows }: { rows: UpgradeRowSpec[] }) {
             </button>
           </div>
         ))}
+      {open && franchise && (
+        <>
+          <div
+            style={{
+              padding: "8px 12px 4px",
+              fontSize: 10,
+              fontWeight: 700,
+              color: "#8E8E93",
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              borderTop: "0.5px solid #F0F3F8",
+              marginTop: 2,
+            }}
+          >
+            Franchise
+          </div>
+          <FranchiseInlineRow
+            Icon={PoundSterling}
+            label="Franchise fee"
+            valueText={
+              franchise.feeStatus === "owing"
+                ? `£${franchise.amountOwing.toFixed(0)} owing`
+                : franchise.feeStatus === "paid"
+                  ? "Up to date"
+                  : "Not on franchise"
+            }
+            valueBg={franchise.feeStatus === "owing" ? "#FDECEE" : "#E8F5EE"}
+            valueColor={franchise.feeStatus === "owing" ? "#CC2229" : "#1F7A45"}
+            iconBg="#E8F5EE"
+            iconColor="#1F7A45"
+            onClick={franchise.onFeeClick}
+          />
+          <RowDivider />
+          <FranchiseInlineRow
+            Icon={Wallet}
+            label="Bonus payments"
+            valueText={
+              franchise.bonusDue > 0 ? `£${franchise.bonusDue.toFixed(0)} due` : "£0"
+            }
+            valueBg={franchise.bonusDue > 0 ? "#E8F5EE" : "#F0F3F8"}
+            valueColor={franchise.bonusDue > 0 ? "#1F7A45" : "#8E8E93"}
+            iconBg="#FFF6E6"
+            iconColor="#B45309"
+            onClick={franchise.onBonusClick}
+          />
+        </>
+      )}
     </GroupCard>
+  );
+}
+
+function FranchiseInlineRow({
+  Icon,
+  iconBg,
+  iconColor,
+  label,
+  valueText,
+  valueBg,
+  valueColor,
+  onClick,
+}: {
+  Icon: LucideIcon;
+  iconBg: string;
+  iconColor: string;
+  label: string;
+  valueText: string;
+  valueBg: string;
+  valueColor: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        width: "100%",
+        display: "flex",
+        alignItems: "center",
+        gap: 9,
+        padding: "8px 12px",
+        background: "transparent",
+        border: "none",
+        cursor: "pointer",
+        textAlign: "left",
+      }}
+    >
+      <span
+        style={{
+          width: 26,
+          height: 26,
+          borderRadius: 7,
+          background: iconBg,
+          color: iconColor,
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+        }}
+      >
+        <Icon size={12} strokeWidth={1.8} />
+      </span>
+      <div style={{ flex: 1, minWidth: 0, fontSize: 13, fontWeight: 700, color: "#1A1A1A" }}>
+        {label}
+      </div>
+      <span
+        style={{
+          background: valueBg,
+          color: valueColor,
+          borderRadius: 16,
+          padding: "4px 10px",
+          fontSize: 11,
+          fontWeight: 700,
+          flexShrink: 0,
+        }}
+      >
+        {valueText}
+      </span>
+      <ChevronRight size={12} color="#C7C7CC" strokeWidth={1.8} />
+    </button>
   );
 }
 
@@ -2018,13 +2150,15 @@ export function MobileHomeRedesign({
           )}
         </div>
         <AttentionCard rows={attentionRows} />
-        <UpgradeCard rows={upgradeRows} />
-        <FranchiseCard
-          feeStatus={franchiseStatus?.feeStatus ?? "none"}
-          amountOwing={franchiseStatus?.amountOwing ?? 0}
-          bonusDue={franchiseStatus?.bonusDue ?? 0}
-          onFeeClick={() => navigate("/instructor/payments?tab=franchise")}
-          onBonusClick={() => navigate("/instructor/payments?tab=bonus")}
+        <UpgradeCard
+          rows={upgradeRows}
+          franchise={{
+            feeStatus: franchiseStatus?.feeStatus ?? "none",
+            amountOwing: franchiseStatus?.amountOwing ?? 0,
+            bonusDue: franchiseStatus?.bonusDue ?? 0,
+            onFeeClick: () => navigate("/instructor/payments?tab=franchise"),
+            onBonusClick: () => navigate("/instructor/payments?tab=bonus"),
+          }}
         />
       </div>
 
