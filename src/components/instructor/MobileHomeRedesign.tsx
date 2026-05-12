@@ -1464,6 +1464,136 @@ function UpgradeCard({ rows }: { rows: UpgradeRowSpec[] }) {
     </GroupCard>
   );
 }
+
+function FranchiseCard({
+  feeStatus,
+  amountOwing,
+  bonusDue,
+  onFeeClick,
+  onBonusClick,
+}: {
+  feeStatus: "paid" | "owing" | "none";
+  amountOwing: number;
+  bonusDue: number;
+  onFeeClick: () => void;
+  onBonusClick: () => void;
+}) {
+  const feeText =
+    feeStatus === "owing"
+      ? `£${amountOwing.toFixed(0)} owing`
+      : feeStatus === "paid"
+        ? "Up to date"
+        : "Not on franchise";
+  const feeColor = feeStatus === "owing" ? "#CC2229" : "#1F7A45";
+  const feeBg = feeStatus === "owing" ? "#FDECEE" : "#E8F5EE";
+
+  const bonusText = bonusDue > 0 ? `£${bonusDue.toFixed(0)} due` : "£0";
+  const bonusColor = bonusDue > 0 ? "#1F7A45" : "#8E8E93";
+  const bonusBg = bonusDue > 0 ? "#E8F5EE" : "#F0F3F8";
+
+  const Row = ({
+    Icon,
+    iconBg,
+    iconColor,
+    label,
+    valueText,
+    valueBg,
+    valueColor,
+    onClick,
+  }: {
+    Icon: LucideIcon;
+    iconBg: string;
+    iconColor: string;
+    label: string;
+    valueText: string;
+    valueBg: string;
+    valueColor: string;
+    onClick: () => void;
+  }) => (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        width: "100%",
+        display: "flex",
+        alignItems: "center",
+        gap: 9,
+        padding: "8px 12px",
+        background: "transparent",
+        border: "none",
+        cursor: "pointer",
+        textAlign: "left",
+      }}
+    >
+      <span
+        style={{
+          width: 26,
+          height: 26,
+          borderRadius: 7,
+          background: iconBg,
+          color: iconColor,
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+        }}
+      >
+        <Icon size={12} strokeWidth={1.8} />
+      </span>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: "#1A1A1A" }}>
+          {label}
+        </div>
+      </div>
+      <span
+        style={{
+          background: valueBg,
+          color: valueColor,
+          borderRadius: 16,
+          padding: "4px 10px",
+          fontSize: 11,
+          fontWeight: 700,
+          flexShrink: 0,
+        }}
+      >
+        {valueText}
+      </span>
+      <ChevronRight size={12} color="#C7C7CC" strokeWidth={1.8} />
+    </button>
+  );
+
+  return (
+    <GroupCard borderColor="rgba(31,122,69,0.10)">
+      <GroupHeader
+        label="Franchise"
+        dotColor="#1F7A45"
+        bg="rgba(31,122,69,0.04)"
+        borderColor="rgba(31,122,69,0.08)"
+      />
+      <Row
+        Icon={PoundSterling}
+        iconBg="#E8F5EE"
+        iconColor="#1F7A45"
+        label="Franchise fee"
+        valueText={feeText}
+        valueBg={feeBg}
+        valueColor={feeColor}
+        onClick={onFeeClick}
+      />
+      <RowDivider />
+      <Row
+        Icon={Wallet}
+        iconBg="#FFF6E6"
+        iconColor="#B45309"
+        label="Bonus payments"
+        valueText={bonusText}
+        valueBg={bonusBg}
+        valueColor={bonusColor}
+        onClick={onBonusClick}
+      />
+    </GroupCard>
+  );
+}
 interface MobileHomeRedesignProps {
   instructorId: string;
   instructorName?: string | null;
@@ -1745,18 +1875,7 @@ export function MobileHomeRedesign({
       tierLabel: membershipLevel,
       tierBg: "#FFF6E6",
       tierColor: "#B45309",
-      subtitle: (() => {
-        const fs = franchiseStatus;
-        const upgradeBit = nextMembership ? `Upgrade to ${nextMembership}` : "Top tier";
-        const feeBit =
-          fs?.feeStatus === "owing"
-            ? `Franchise £${fs.amountOwing.toFixed(0)} owing`
-            : fs?.feeStatus === "paid"
-              ? "Franchise up to date"
-              : "No franchise";
-        const bonusBit = `£${(fs?.bonusDue ?? 0).toFixed(0)} bonus due`;
-        return [upgradeBit, feeBit, bonusBit].join(" · ");
-      })(),
+      subtitle: nextMembership ? `Upgrade to ${nextMembership}` : "Top tier",
       upgradeBg: "#B45309",
       upgradeFg: "#FFFFFF",
       ctaLabel: nextMembership ? "Upgrade" : "Manage",
@@ -1900,6 +2019,13 @@ export function MobileHomeRedesign({
         </div>
         <AttentionCard rows={attentionRows} />
         <UpgradeCard rows={upgradeRows} />
+        <FranchiseCard
+          feeStatus={franchiseStatus?.feeStatus ?? "none"}
+          amountOwing={franchiseStatus?.amountOwing ?? 0}
+          bonusDue={franchiseStatus?.bonusDue ?? 0}
+          onFeeClick={() => navigate("/instructor/payments?tab=franchise")}
+          onBonusClick={() => navigate("/instructor/payments?tab=bonus")}
+        />
       </div>
 
       {/* Upcoming events */}
