@@ -783,10 +783,6 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                   </div>
                 )}
 
-                {/* placeholder to keep JSX structure intact (closed below) */}
-                <div style={{ display: "none" }}>
-                  </div>
-                </SheetHeader>
 
                 <nav
                   className="flex-1 overflow-y-auto"
