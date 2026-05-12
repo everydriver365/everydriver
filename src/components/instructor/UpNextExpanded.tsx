@@ -847,11 +847,10 @@ export function UpNextExpanded({
         <SectionLabel>Lesson details</SectionLabel>
         <div
           style={{
-            display: "flex",
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr 1fr",
             gap: 8,
             padding: "0 16px 12px",
-            overflowX: "auto",
-            scrollbarWidth: "none",
           }}
         >
           <StatChip Icon={Clock} value={`${durationMinutes}m`} label="Duration" />
