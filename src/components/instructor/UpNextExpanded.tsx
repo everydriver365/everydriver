@@ -564,6 +564,63 @@ export function UpNextExpanded({
 
         <Divider />
 
+        {/* SECTION — Action grid (moved to top) */}
+        <SectionLabel>Actions</SectionLabel>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr 1fr",
+            gap: 8,
+            padding: "0 16px 8px",
+          }}
+        >
+          <ActionTile Icon={NavIcon} label="Navigate" onClick={navigateMap} />
+          <ActionTile Icon={Phone} label="Call" onClick={callPupil} disabled={!pupilPhone} />
+          <ActionTile Icon={MessageSquare} label="Text" onClick={messagePupil} />
+          <ActionTile Icon={ClipboardList} label="Prep" onClick={openPrep} />
+          <ActionTile
+            Icon={Send}
+            label="On My Way"
+            onClick={onMyWay}
+            active={norm === "on_the_way" || norm === "en_route"}
+            disabled={busyAction === "on_the_way"}
+          />
+          <ActionTile
+            Icon={Clock}
+            label="Running Later"
+            onClick={runningLate}
+            active={norm === "running_late" || norm === "late"}
+            disabled={busyAction === "running_late"}
+          />
+        </div>
+        <button
+          type="button"
+          onClick={arrived}
+          disabled={busyAction === "arrived"}
+          style={{
+            width: "calc(100% - 32px)",
+            margin: "0 16px 4px",
+            height: 44,
+            background: BLUE,
+            color: "#FFFFFF",
+            border: "none",
+            borderRadius: 12,
+            fontWeight: 700,
+            fontSize: 14,
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 8,
+            cursor: "pointer",
+            opacity: busyAction === "arrived" ? 0.6 : 1,
+          }}
+        >
+          <CheckCheck size={16} strokeWidth={2.4} />
+          {norm === "arrived" ? "Arrived ✓" : "Arrived"}
+        </button>
+
+        <Divider />
+
         {/* SECTION 2 — Pick-up address */}
         <SectionLabel>Pick-up address</SectionLabel>
         <button
@@ -657,63 +714,6 @@ export function UpNextExpanded({
             )}
           </div>
         )}
-
-        <Divider />
-
-        {/* SECTION 3 — Action grid */}
-        <SectionLabel>Actions</SectionLabel>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr 1fr",
-            gap: 8,
-            padding: "0 16px 8px",
-          }}
-        >
-          <ActionTile Icon={NavIcon} label="Navigate" onClick={navigateMap} />
-          <ActionTile Icon={Phone} label="Call" onClick={callPupil} disabled={!pupilPhone} />
-          <ActionTile Icon={MessageSquare} label="Text" onClick={messagePupil} />
-          <ActionTile Icon={ClipboardList} label="Prep" onClick={openPrep} />
-          <ActionTile
-            Icon={Send}
-            label="On My Way"
-            onClick={onMyWay}
-            active={norm === "on_the_way" || norm === "en_route"}
-            disabled={busyAction === "on_the_way"}
-          />
-          <ActionTile
-            Icon={Clock}
-            label="Running Later"
-            onClick={runningLate}
-            active={norm === "running_late" || norm === "late"}
-            disabled={busyAction === "running_late"}
-          />
-        </div>
-        <button
-          type="button"
-          onClick={arrived}
-          disabled={busyAction === "arrived"}
-          style={{
-            width: "calc(100% - 32px)",
-            margin: "0 16px 4px",
-            height: 44,
-            background: BLUE,
-            color: "#FFFFFF",
-            border: "none",
-            borderRadius: 12,
-            fontWeight: 700,
-            fontSize: 14,
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 8,
-            cursor: "pointer",
-            opacity: busyAction === "arrived" ? 0.6 : 1,
-          }}
-        >
-          <CheckCheck size={16} strokeWidth={2.4} />
-          {norm === "arrived" ? "Arrived ✓" : "Arrived"}
-        </button>
 
         <Divider />
 
