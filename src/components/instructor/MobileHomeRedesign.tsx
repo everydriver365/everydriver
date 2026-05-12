@@ -615,21 +615,10 @@ function UpNextTile({
             </button>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, background: BLUE_TINT, border: `0.5px solid ${BORDER}`, borderRadius: 12, padding: "8px 10px", minWidth: 0 }}>
-              <Calendar size={13} strokeWidth={2.2} style={{ color: BLUE, flexShrink: 0 }} />
-              <span style={{ fontSize: 12, color: CHARCOAL, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{dayText}</span>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, background: BLUE_TINT, border: `0.5px solid ${BORDER}`, borderRadius: 12, padding: "8px 10px", minWidth: 0 }}>
-              <Clock size={13} strokeWidth={2.2} style={{ color: BLUE, flexShrink: 0 }} />
-              <span style={{ fontSize: 12, color: CHARCOAL, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{hoursLong(durationMinutes)}</span>
-            </div>
-          </div>
-
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <IconTile><Clock size={13} strokeWidth={2.2} /></IconTile>
+            <IconTile><Calendar size={13} strokeWidth={2.2} /></IconTile>
             <div style={{ fontSize: 14, color: CHARCOAL, fontWeight: 600 }}>
-              Standard lesson · <span style={{ color: MUTED, fontWeight: 500 }}>{hoursLong(durationMinutes)}</span>
+              {dayText} · <span style={{ color: MUTED, fontWeight: 500 }}>{hoursLong(durationMinutes)}</span>
             </div>
           </div>
 
