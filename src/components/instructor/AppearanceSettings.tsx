@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useInstructorAppearance, LayoutStyle } from "@/hooks/useInstructorAppearance";
 import { useTheme } from "@/context/ThemeContext";
+import { useInstructorTheme } from "@/context/InstructorThemeContext";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
