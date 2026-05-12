@@ -69,6 +69,8 @@ const DEFAULTS: NotificationSettings = {
   daily_summary_enabled: true,
   daily_summary_time: "07:00",
   daily_summary_include: DEFAULT_INCLUDE,
+  message_sound_enabled: true,
+  message_sound_choice: "chime",
 };
 
 export function useInstructorNotificationSettings(instructorId: string | undefined) {
