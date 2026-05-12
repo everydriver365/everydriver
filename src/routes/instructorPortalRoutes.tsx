@@ -18,6 +18,7 @@ const InstructorNotifications = lazy(() => import("@/pages/InstructorNotificatio
 const InstallInstructor = lazy(() => import("@/pages/InstallInstructor"));
 const IconPreviewPage = lazy(() => import("@/pages/instructor/IconPreviewPage"));
 const QuickActionsRedesignDemo = lazy(() => import("@/pages/instructor/QuickActionsRedesignDemo"));
+const UpcomingEventsRedesignDemo = lazy(() => import("@/pages/instructor/UpcomingEventsRedesignDemo"));
 const InstructorAccessibilitySettings = lazy(() => import("@/pages/instructor/InstructorAccessibilitySettings"));
 const InstructorModules = lazy(() => import("@/pages/instructor-app/InstructorModules"));
 const InstructorMySite = lazy(() => import("@/pages/instructor-app/InstructorMySite"));
@@ -155,6 +156,7 @@ export const instructorPortalRoutes = (
     <Route path="/instructor" element={<InstructorPortal />} />
     <Route path="/instructor/icon-preview" element={<IconPreviewPage />} />
     <Route path="/instructor/quick-actions-redesign" element={<QuickActionsRedesignDemo />} />
+    <Route path="/instructor/upcoming-events-redesign" element={<UpcomingEventsRedesignDemo />} />
     <Route path="/instructor/pupils" element={<InstructorPupils />} />
     <Route path="/instructor/pupils/:pupilId" element={<PremiumPupilProfile />} />
     <Route path="/instructor/schedule" element={<InstructorSchedule />} />
