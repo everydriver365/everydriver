@@ -1337,6 +1337,235 @@ function V30LivePro() {
 }
 
 // ---------------------------------------------------------------------------
+// V31 · Live Brief — Live Card ambient + checklist rows underneath.
+// ---------------------------------------------------------------------------
+function V31LiveBrief() {
+  const items = [
+    { icon: <PoundSterling size={13} />, label: "Pupil paid", value: "£" + lesson.price, ok: lesson.paid },
+    { icon: <Route size={13} />,         label: "Travel time", value: `${lesson.etaMinutes}m · ${lesson.distanceMiles}mi`, ok: true },
+    { icon: <Clock size={13} />,         label: "Weather", value: lesson.weather, ok: true },
+  ];
+  return (
+    <div style={{
+      position: "relative", borderRadius: 18, padding: 16, fontFamily: iosFont, overflow: "hidden",
+      background:
+        "radial-gradient(120% 70% at 100% 0%, #DBEAFE 0%, transparent 55%), " +
+        "radial-gradient(120% 70% at 0% 100%, #DCFCE7 0%, transparent 55%), #FFFFFF",
+      border: "0.5px solid #E5E5EA",
+    }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 600, color: "#3D55A1", textTransform: "uppercase", letterSpacing: 0.6, display: "inline-flex", alignItems: "center", gap: 6 }}>
+            <span style={{ width: 6, height: 6, borderRadius: 999, background: "#10B981", boxShadow: "0 0 0 4px rgba(16,185,129,0.18)" }} />
+            Live brief · in {lesson.minutesUntil}m
+          </div>
+          <div style={{ fontSize: 28, fontWeight: 700, color: "#0F172A", letterSpacing: -0.8, fontVariantNumeric: "tabular-nums", lineHeight: 1, marginTop: 6 }}>{lesson.startTime}</div>
+          <div style={{ fontSize: 12, color: "#475569", marginTop: 3 }}>{lesson.pupilName} · {lesson.lessonType}</div>
+        </div>
+        <div style={{
+          width: 48, height: 48, borderRadius: 999,
+          background: "linear-gradient(135deg,#3D55A1,#7C8DD6)",
+          color: "#FFF", display: "flex", alignItems: "center", justifyContent: "center",
+          fontWeight: 700, fontSize: 16,
+        }}>{lesson.initials}</div>
+      </div>
+      <div style={{ marginTop: 12, background: "rgba(255,255,255,0.7)", border: "0.5px solid #E5E5EA", borderRadius: 12, padding: "4px 12px", backdropFilter: "blur(6px)" }}>
+        {items.map((it, i) => (
+          <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "9px 0", borderBottom: i < items.length - 1 ? "1px solid #F1F5F9" : "none" }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 13, color: "#0F172A" }}>
+              <CheckCircle2 size={14} color={it.ok ? "#16A34A" : "#94A3B8"} />
+              <span style={{ color: "#475569" }}>{it.icon}</span>
+              {it.label}
+            </span>
+            <span style={{ fontSize: 13, fontWeight: 600, color: "#0F172A", fontVariantNumeric: "tabular-nums" }}>{it.value}</span>
+          </div>
+        ))}
+      </div>
+      <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+        <button style={btnSecondary}><Phone size={14} /> Call</button>
+        <button style={btnPrimary}><Navigation size={14} /> Navigate · {lesson.postcode}</button>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// V32 · Live Brief Dark — glassy dark surface with checklist chips.
+// ---------------------------------------------------------------------------
+function V32LiveBriefDark() {
+  const items = [
+    { label: "Paid", value: "£" + lesson.price, ok: lesson.paid },
+    { label: "Travel", value: `${lesson.etaMinutes}m`, ok: true },
+    { label: "Weather", value: lesson.weather, ok: true },
+    { label: "Pickup", value: lesson.postcode, ok: true },
+  ];
+  return (
+    <div style={{
+      position: "relative", borderRadius: 18, padding: 16, fontFamily: iosFont, overflow: "hidden", color: "#FFF",
+      background:
+        "radial-gradient(120% 70% at 0% 0%, rgba(61,85,161,0.55) 0%, transparent 55%), " +
+        "radial-gradient(120% 80% at 100% 100%, rgba(124,58,237,0.45) 0%, transparent 60%), #0B1220",
+      border: "0.5px solid rgba(255,255,255,0.08)",
+    }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <span style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.6, display: "inline-flex", alignItems: "center", gap: 6, color: "#A5B4FC" }}>
+          <span style={{ width: 6, height: 6, borderRadius: 999, background: "#34D399", boxShadow: "0 0 0 4px rgba(52,211,153,0.22)" }} />
+          Live brief
+        </span>
+        <span style={{ fontSize: 11, fontWeight: 600, color: "#CBD5E1", fontVariantNumeric: "tabular-nums" }}>in {lesson.minutesUntil}m</span>
+      </div>
+      <div style={{ marginTop: 8, display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+        <div>
+          <div style={{ fontSize: 30, fontWeight: 700, letterSpacing: -1, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>{lesson.startTime}</div>
+          <div style={{ fontSize: 13, fontWeight: 600, marginTop: 6 }}>{lesson.pupilName}</div>
+          <div style={{ fontSize: 11, opacity: 0.7, marginTop: 1 }}>{lesson.lessonType}</div>
+        </div>
+        <div style={{
+          width: 44, height: 44, borderRadius: 999, background: "rgba(255,255,255,0.12)",
+          display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 14,
+        }}>{lesson.initials}</div>
+      </div>
+      <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+        {items.map((it, i) => (
+          <div key={i} style={{
+            display: "flex", justifyContent: "space-between", alignItems: "center",
+            padding: "8px 10px", borderRadius: 10,
+            background: "rgba(255,255,255,0.06)", border: "0.5px solid rgba(255,255,255,0.08)",
+          }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11, opacity: 0.85 }}>
+              <CheckCircle2 size={12} color={it.ok ? "#34D399" : "#94A3B8"} />
+              {it.label}
+            </span>
+            <span style={{ fontSize: 11, fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>{it.value}</span>
+          </div>
+        ))}
+      </div>
+      <button style={{
+        marginTop: 12, width: "100%", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
+        padding: "10px 14px", borderRadius: 12, background: "#FFFFFF", color: "#0F172A",
+        fontWeight: 600, fontSize: 13, border: "none",
+      }}>
+        <Navigation size={14} /> Navigate
+      </button>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// V33 · Live Brief Compact — single ambient card with inline check chips.
+// ---------------------------------------------------------------------------
+function V33LiveBriefCompact() {
+  const chips = [
+    { label: "Paid £" + lesson.price, ok: lesson.paid },
+    { label: lesson.etaMinutes + "m drive", ok: true },
+    { label: lesson.weather, ok: true },
+  ];
+  return (
+    <div style={{
+      position: "relative", borderRadius: 16, padding: 14, fontFamily: iosFont, overflow: "hidden",
+      background:
+        "radial-gradient(120% 70% at 100% 0%, #FCE7F3 0%, transparent 55%), " +
+        "radial-gradient(120% 70% at 0% 100%, #DBEAFE 0%, transparent 55%), #FFFFFF",
+      border: "0.5px solid #E5E5EA",
+    }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <span style={{ fontSize: 11, fontWeight: 600, color: "#3D55A1", textTransform: "uppercase", letterSpacing: 0.6, display: "inline-flex", alignItems: "center", gap: 6 }}>
+          <span style={{ width: 6, height: 6, borderRadius: 999, background: "#EC4899", boxShadow: "0 0 0 4px rgba(236,72,153,0.18)" }} />
+          Live brief · {lesson.startTime}
+        </span>
+        <span style={{ fontSize: 11, color: "#64748B", fontVariantNumeric: "tabular-nums" }}>in {lesson.minutesUntil}m</span>
+      </div>
+      <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 10 }}>
+        <div style={{
+          width: 40, height: 40, borderRadius: 999, background: "linear-gradient(135deg,#3D55A1,#7C8DD6)",
+          color: "#FFF", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 14, flexShrink: 0,
+        }}>{lesson.initials}</div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 14, fontWeight: 600, color: "#0F172A" }}>{lesson.pupilName}</div>
+          <div style={{ fontSize: 11, color: "#64748B", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{lesson.pickup}</div>
+        </div>
+      </div>
+      <div style={{ marginTop: 10, display: "flex", flexWrap: "wrap", gap: 6 }}>
+        {chips.map((c, i) => (
+          <span key={i} style={{
+            display: "inline-flex", alignItems: "center", gap: 5,
+            padding: "5px 9px", borderRadius: 999,
+            background: "rgba(255,255,255,0.75)", border: "0.5px solid #E5E5EA",
+            fontSize: 11, fontWeight: 600, color: "#0F172A",
+          }}>
+            <CheckCircle2 size={11} color={c.ok ? "#16A34A" : "#94A3B8"} />
+            {c.label}
+          </span>
+        ))}
+      </div>
+      <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+        <button style={btnSecondary}><Phone size={14} /> Call</button>
+        <button style={btnPrimary}><Navigation size={14} /> Navigate</button>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// V34 · Live Brief Pro — split: ambient hero on top, brief checklist bottom.
+// ---------------------------------------------------------------------------
+function V34LiveBriefPro() {
+  const items = [
+    { icon: <PoundSterling size={13} color="#16A34A" />, label: "Payment",   value: lesson.paid ? "Paid · £" + lesson.price : "Outstanding" },
+    { icon: <Car size={13} color="#3D55A1" />,           label: "Vehicle",   value: "Ready" },
+    { icon: <Route size={13} color="#3D55A1" />,         label: "Travel",    value: `${lesson.etaMinutes}m · ${lesson.distanceMiles}mi` },
+    { icon: <MapPin size={13} color="#3D55A1" />,        label: "Pickup",    value: lesson.postcode },
+  ];
+  return (
+    <div style={{
+      borderRadius: 18, fontFamily: iosFont, overflow: "hidden",
+      border: "0.5px solid #E5E5EA", background: "#FFFFFF",
+    }}>
+      <div style={{
+        position: "relative", padding: 16,
+        background:
+          "radial-gradient(120% 70% at 100% 0%, #DBEAFE 0%, transparent 55%), " +
+          "radial-gradient(120% 70% at 0% 100%, #EDE9FE 0%, transparent 55%), #F8FAFC",
+      }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 600, color: "#3D55A1", textTransform: "uppercase", letterSpacing: 0.6, display: "inline-flex", alignItems: "center", gap: 6 }}>
+              <span style={{ width: 6, height: 6, borderRadius: 999, background: "#3D55A1", boxShadow: "0 0 0 4px rgba(61,85,161,0.18)" }} />
+              Live · in {lesson.minutesUntil}m
+            </div>
+            <div style={{ fontSize: 30, fontWeight: 700, color: "#0F172A", letterSpacing: -0.8, fontVariantNumeric: "tabular-nums", lineHeight: 1, marginTop: 6 }}>{lesson.startTime}</div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: "#0F172A", marginTop: 6 }}>{lesson.pupilName}</div>
+            <div style={{ fontSize: 11, color: "#64748B", marginTop: 1 }}>{lesson.lessonType}</div>
+          </div>
+          <div style={{
+            width: 52, height: 52, borderRadius: 999, background: "linear-gradient(135deg,#3D55A1,#7C8DD6)",
+            color: "#FFF", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 17,
+          }}>{lesson.initials}</div>
+        </div>
+      </div>
+      <div style={{ padding: "4px 14px" }}>
+        {items.map((it, i) => (
+          <div key={i} style={{
+            display: "flex", justifyContent: "space-between", alignItems: "center",
+            padding: "10px 0", borderBottom: i < items.length - 1 ? "1px solid #F1F5F9" : "none",
+          }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 12, color: "#475569", fontWeight: 500 }}>
+              {it.icon}
+              {it.label}
+            </span>
+            <span style={{ fontSize: 12, fontWeight: 600, color: "#0F172A", fontVariantNumeric: "tabular-nums" }}>{it.value}</span>
+          </div>
+        ))}
+      </div>
+      <div style={{ display: "flex", gap: 8, padding: 12, borderTop: "1px solid #F1F5F9" }}>
+        <button style={btnSecondary}><Phone size={14} /> Call</button>
+        <button style={btnPrimary}><Navigation size={14} /> Navigate</button>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Page
 // ---------------------------------------------------------------------------
 const VARIANTS = [
