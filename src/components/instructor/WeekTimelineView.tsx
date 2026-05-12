@@ -332,7 +332,6 @@ export function WeekTimelineView({
                       position: "relative",
                       borderLeft: "0.5px solid #F0F3F8",
                       background: isWeekend ? "#FAFBFC" : "#FFFFFF",
-                      scrollSnapAlign: "start",
                     }}
                   >
                     {hours.map((_, i) => (
