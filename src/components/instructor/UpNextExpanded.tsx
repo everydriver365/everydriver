@@ -15,6 +15,7 @@ import {
   Copy,
   Navigation as NavIcon,
   Phone,
+  MapPin,
   MessageSquare,
   ClipboardList,
   Send,
