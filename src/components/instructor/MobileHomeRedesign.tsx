@@ -2139,7 +2139,7 @@ export function MobileHomeRedesign({
 
       {/* Bento: Up next hero */}
       {nextLesson && (
-        <div style={{ ...bento, padding: 0, marginBottom: 8 }}>
+        <div style={{ marginBottom: 8 }}>
           <UpNextTile
             pupilId={nextLesson.pupilId}
             instructorId={instructorId}
