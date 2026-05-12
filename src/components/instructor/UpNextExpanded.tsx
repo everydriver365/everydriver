@@ -1,46 +1,13 @@
-import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { formatDistanceToNow } from "date-fns";
-import { useVehicleHealth } from "@/hooks/useVehicleHealth";
-import { AlertTriangle } from "lucide-react";
-import { enrichFaultCode } from "@/lib/obdCodeLookup";
-import { usePupilLessonHistory, type PupilLessonHistoryEntry } from "@/hooks/usePupilLessonHistory";
-import { PreviousLessonModal } from "./PreviousLessonModal";
-import { UpNextLiveMapStrip } from "./UpNextLiveMapStrip";
-import { parse as parseDateFn } from "date-fns";
-import { useQueryClient } from "@tanstack/react-query";
 import {
-  CheckCircle2,
-  AlertCircle,
-  Copy,
   Navigation as NavIcon,
-  Phone,
-  MessageSquare,
-  ClipboardList,
-  Send,
   Clock,
-  CheckCheck,
-  CloudOff,
-  Cloud,
-  CloudSun,
-  CloudFog,
-  CloudDrizzle,
-  CloudRain,
-  CloudSnow,
-  CloudLightning,
-  Snowflake,
-  Sun,
-  Wind,
-  Eye,
-  Car,
-  History,
-  StickyNote,
-  Tag,
-  RefreshCw,
-  XCircle,
-  PoundSterling,
-  type LucideIcon,
+  CreditCard,
+  FileText,
 } from "lucide-react";
+import { useTrafficETA } from "@/hooks/useTrafficETA";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import { useLessonWeather } from "@/hooks/useLessonWeather";
 import { useDrivingAlerts, type DrivingAlert } from "@/hooks/useDrivingAlerts";
 import { format } from "date-fns";
