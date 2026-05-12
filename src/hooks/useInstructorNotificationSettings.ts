@@ -23,6 +23,8 @@ export interface DailySummaryInclude {
   test_swaps: boolean;
 }
 
+export type MessageSoundChoice = "chime" | "ding" | "pop" | "none";
+
 export interface NotificationSettings {
   delivery_cadence: DeliveryCadence;
   quiet_hours_enabled: boolean;
@@ -35,6 +37,8 @@ export interface NotificationSettings {
   daily_summary_enabled: boolean;
   daily_summary_time: string; // "07:00"
   daily_summary_include: DailySummaryInclude;
+  message_sound_enabled: boolean;
+  message_sound_choice: MessageSoundChoice;
 }
 
 const DEFAULT_INCLUDE: DailySummaryInclude = {
