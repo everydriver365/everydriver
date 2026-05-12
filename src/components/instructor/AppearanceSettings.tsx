@@ -234,6 +234,17 @@ export function AppearanceSettings({ instructorId }: AppearanceSettingsProps) {
   };
 
   const { theme, setTheme } = useTheme();
+  const { setMode: setInstructorMode } = useInstructorTheme();
+  const applyTheme = (t: "system" | "light" | "dark") => {
+    setTheme(t);
+    // Instructor portal tokens are scoped to .instructor-portal.dsm-dark,
+    // so we must also drive the instructor theme for the toggle to take effect.
+    const resolved =
+      t === "system"
+        ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
+        : t;
+    setInstructorMode(resolved);
+  };
 
   return (
     <div className="space-y-6">
