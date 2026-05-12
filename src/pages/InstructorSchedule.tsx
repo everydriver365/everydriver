@@ -325,6 +325,17 @@ export default function InstructorSchedule() {
         <div className="flex-1 overflow-auto pb-4">
           {viewMode === 'list' ? (
             <MultiDayScheduleView key={mobileListRefreshKey} instructorId={instructorId} />
+          ) : viewMode === 'week' ? (
+            <div className="h-[calc(100vh-12rem)] overflow-hidden">
+              <WeekTimelineView
+                events={calendar.events}
+                currentDate={calendar.currentDate}
+                onGoToDate={calendar.goToDate}
+                onEventClick={(event) => setSelectedEvent(event)}
+                onAddEvent={handleAddEvent}
+                loading={calendar.loading}
+              />
+            </div>
           ) : viewMode === 'month' ? (
             <MobileMonthCalendarView instructorId={instructorId} />
           ) : viewMode === 'schedule' ? (
