@@ -1305,7 +1305,7 @@ export function UpNextExpanded({
                   color: "#1A52A0",
                 }}
               >
-                <RefreshCw size={11} strokeWidth={1.8} />
+                
                 <span style={{ fontSize: 11, fontWeight: 600 }}>Reschedule</span>
               </button>
               <button
