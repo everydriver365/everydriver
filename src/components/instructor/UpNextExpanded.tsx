@@ -723,14 +723,16 @@ export function UpNextExpanded({
         <Divider />
 
         {/* Live mini map */}
-        <UpNextLiveMapStrip
-          pickupPostcode={pickupPostcode}
-          pickupLocation={pickupLocation}
-          instructorId={instructorId}
-          hasDestination={!!fullAddress}
-          onNavigate={(e) => { e.stopPropagation(); navigateMap(); }}
-          height={130}
-        />
+        <div style={{ marginTop: 12 }}>
+          <UpNextLiveMapStrip
+            pickupPostcode={pickupPostcode}
+            pickupLocation={pickupLocation}
+            instructorId={instructorId}
+            hasDestination={!!fullAddress}
+            onNavigate={(e) => { e.stopPropagation(); navigateMap(); }}
+            height={130}
+          />
+        </div>
 
         {/* SECTION 1 — Status banners */}
         <div style={{ paddingTop: 14 }}>
