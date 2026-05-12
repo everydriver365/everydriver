@@ -1,33 +1,44 @@
 ## Goal
-Make each Needs You tile (Jobs, Msgs, Swaps, Calls, Enquiries) gently pulse when its own count rises, and keep pulsing until the user taps that tile.
+Play a subtle notification sound when a new pupil message arrives, and let the instructor toggle/choose it from Settings → Notifications.
 
 ## Approach
-Add per-tile "new since last seen" tracking in `MobileHomeRedesign.tsx`, and animate the `BentoMini` count + dot when that tile has unseen items.
+Detect rising `unread` count via the existing `useUnreadMessagesCount` hook, play a short audio chime, and gate the chime behind a new persisted preference (default ON). Respect Quiet Hours and the existing "Pupil messages" category mute.
 
 ## Steps
 
-1. **Track last-seen counts per tile** (localStorage, per instructor)
-   - Key: `needsYou.lastSeen.{instructorId}` → `{ jobs, msgs, swaps, calls, enquiries }`
-   - On mount, read; if a current count > stored last-seen, that tile is "alerting".
+1. **Add preference fields** to `instructor_notification_settings` (migration):
+   - `message_sound_enabled boolean not null default true`
+   - `message_sound_choice text not null default 'chime'` — values: `chime | ding | pop | none`
+   - Update `useInstructorNotificationSettings` defaults, types, load + update payloads.
 
-2. **Extend `BentoMini`** with an `alerting?: boolean` prop
-   - When true, apply a subtle infinite pulse to the number (scale 1 → 1.08 → 1, 1.6s) and a soft halo behind it using the tile's `fg` colour at low opacity.
-   - Respect `prefers-reduced-motion` (no transform, just opacity fade).
+2. **Add chime assets**
+   - Add three short (≤300 ms) royalty-free WAV/MP3 files in `public/sounds/`: `chime.mp3`, `ding.mp3`, `pop.mp3`.
 
-3. **Clear on tap**
-   - Tile `onClick` writes the current count back to last-seen for that key, then navigates as today. Pulse stops immediately.
+3. **Create `useMessageSound` hook** (`src/hooks/useMessageSound.ts`)
+   - Inputs: `instructorId`, current `unread` count.
+   - Reads notification settings; on first user gesture caches an `HTMLAudioElement` per choice (browsers require gesture to unlock audio).
+   - When `unread` increases vs prior render AND `sound_enabled` AND category not muted AND not in quiet hours AND `choice !== 'none'` → play at volume ~0.35.
+   - Skips first run after mount (so it doesn't fire on initial load).
+   - Throttle to once per 2s to avoid bursts.
 
-4. **Live updates**
-   - Counts already come from `usePendingJobsCount`, `useUnreadMessagesCount`, `useTestSwapNotifications`, plus the `missedCallsCount`/`enquiriesCount` placeholders. No data wiring changes — pulse simply reacts to count increases.
+4. **Wire it in** `MobileHomeRedesign.tsx` next to existing `useUnreadMessagesCount` call so the home page is the trigger point. (One-line addition.)
+
+5. **Settings UI** in `NotificationsPage.tsx`
+   - New card "Sound" with:
+     - Toggle: "Play sound for new messages"
+     - Select: Chime / Ding / Pop / None
+     - "Preview" button that plays the chosen sound
+   - Persist via existing dirty/save flow.
 
 ## Files
-
-- `src/components/instructor/MobileHomeRedesign.tsx`
-  - Add `useLastSeenCounts` helper (small inline hook).
-  - Compute `alerting` per tile.
-  - Pass `alerting` into the 5 `BentoMini` calls and clear on click.
-  - Update `BentoMini` to render the pulse animation.
+- new migration: `add message_sound_enabled, message_sound_choice columns`
+- `src/hooks/useInstructorNotificationSettings.ts` — types + defaults + load/update
+- `src/hooks/useMessageSound.ts` (new)
+- `src/components/instructor/MobileHomeRedesign.tsx` — call hook
+- `src/components/instructor/settings/pages/NotificationsPage.tsx` — Sound card
+- `public/sounds/chime.mp3`, `ding.mp3`, `pop.mp3` (new)
 
 ## Notes
-- Pulse is scoped to the count digit, not the whole card, so the home screen stays calm.
-- No backend or schema changes.
+- Default ON with the gentlest "chime" choice.
+- Respects existing Quiet Hours and "Pupil messages" mute.
+- No schema change to `messages` table; we ride the existing realtime/refetch the unread hook already does.
