@@ -89,15 +89,35 @@ export function WeekTimelineView({
   const totalHeight = (endHour - startHour) * HOUR_HEIGHT;
   const GUTTER = 44;
 
-  const eventsByDay = useMemo(() => {
+  const isAllDay = (ev: CalendarEvent) => {
+    const durMs = ev.end.getTime() - ev.start.getTime();
+    return (
+      ev.start.getHours() === 0 &&
+      ev.start.getMinutes() === 0 &&
+      durMs >= 23 * 60 * 60 * 1000
+    );
+  };
+
+  const { eventsByDay, allDayByDay } = useMemo(() => {
     const map: Record<string, CalendarEvent[]> = {};
-    days.forEach((d) => (map[format(d, "yyyy-MM-dd")] = []));
+    const allDay: Record<string, CalendarEvent[]> = {};
+    days.forEach((d) => {
+      const k = format(d, "yyyy-MM-dd");
+      map[k] = [];
+      allDay[k] = [];
+    });
     events.forEach((ev) => {
       const k = format(ev.start, "yyyy-MM-dd");
-      if (map[k]) map[k].push(ev);
+      if (!(k in map)) return;
+      if (isAllDay(ev)) allDay[k].push(ev);
+      else map[k].push(ev);
     });
-    return map;
+    return { eventsByDay: map, allDayByDay: allDay };
   }, [events, days]);
+
+  const maxAllDay = Math.max(0, ...Object.values(allDayByDay).map((a) => a.length));
+  const ALL_DAY_ROW_H = 18;
+  const allDayStripH = maxAllDay > 0 ? maxAllDay * (ALL_DAY_ROW_H + 2) + 4 : 0;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", backgroundColor: "#FFFFFF" }}>
