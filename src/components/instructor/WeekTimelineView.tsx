@@ -202,7 +202,8 @@ export function WeekTimelineView({
           minHeight: 0,
           overflowX: "auto",
           overflowY: "hidden",
-          scrollSnapType: "x mandatory",
+          scrollSnapType: "none",
+          overscrollBehaviorX: "contain",
           WebkitOverflowScrolling: "touch",
           touchAction: "pan-x pan-y",
         }}
