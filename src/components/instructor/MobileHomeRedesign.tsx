@@ -1748,15 +1748,14 @@ export function MobileHomeRedesign({
       subtitle: (() => {
         const fs = franchiseStatus;
         const upgradeBit = nextMembership ? `Upgrade to ${nextMembership}` : "Top tier";
-        if (!fs) return upgradeBit;
         const feeBit =
-          fs.feeStatus === "owing"
-            ? `£${fs.amountOwing.toFixed(0)} owing`
-            : fs.feeStatus === "paid"
-              ? "Fee up to date"
-              : null;
-        const bonusBit = fs.bonusDue > 0 ? `£${fs.bonusDue.toFixed(0)} bonus due` : null;
-        return [upgradeBit, feeBit, bonusBit].filter(Boolean).join(" · ");
+          fs?.feeStatus === "owing"
+            ? `Franchise £${fs.amountOwing.toFixed(0)} owing`
+            : fs?.feeStatus === "paid"
+              ? "Franchise up to date"
+              : "No franchise";
+        const bonusBit = `£${(fs?.bonusDue ?? 0).toFixed(0)} bonus due`;
+        return [upgradeBit, feeBit, bonusBit].join(" · ");
       })(),
       upgradeBg: "#B45309",
       upgradeFg: "#FFFFFF",
