@@ -721,6 +721,10 @@ function LessonRow({
               marginTop: 1,
               wordBreak: "break-word",
               lineHeight: 1.3,
+              display: "-webkit-box",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
             }}
           >
             {address}
