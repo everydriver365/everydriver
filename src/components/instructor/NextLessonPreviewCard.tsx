@@ -769,51 +769,6 @@ export function NextLessonPreviewCard(props: NextLessonPreviewCardProps) {
 /*  Sub-components                                                             */
 /* -------------------------------------------------------------------------- */
 
-function ActionBtn({
-  label,
-  icon,
-  variant,
-  onClick,
-  disabled,
-}: {
-  label: string;
-  icon: React.ReactNode;
-  variant: "primary" | "secondary";
-  onClick: (e: React.MouseEvent) => void;
-  disabled?: boolean;
-}) {
-  const primary = variant === "primary";
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      style={{
-        flex: 1,
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 6,
-        padding: 11,
-        borderRadius: 22,
-        border: "none",
-        background: primary ? C.blue : C.blueTint,
-        color: primary ? "#FFFFFF" : C.blue,
-        fontSize: 13,
-        fontWeight: 500,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.5 : 1,
-        WebkitTapHighlightColor: "transparent",
-        fontFamily: FONT,
-      }}
-      aria-label={label}
-    >
-      {icon}
-      {label}
-    </button>
-  );
-}
-
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
     <div
