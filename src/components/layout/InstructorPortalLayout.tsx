@@ -685,40 +685,32 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                         <X size={14} strokeWidth={2} color="#FFF" />
                       </SheetClose>
                     </div>
-                    <div style={{ display: "flex", gap: 6 }}>
-                      {[
-                        { value: String(todayOverview?.lessonCount ?? 0), label: "lessons today" },
-                        { value: String(activePupilsCount), label: "active pupils" },
-                        { value: `£${todayOverview?.expectedEarnings ?? 0}`, label: "today" },
-                      ].map((stat, i) => (
-                        <div
-                          key={i}
-                          style={{
-                            flex: 1,
-                            backgroundColor: "rgba(255,255,255,0.12)",
-                            borderRadius: 10,
-                            padding: "7px 8px",
-                            display: "flex",
-                            flexDirection: "column",
-                            alignItems: "center",
-                          }}
-                        >
-                          <span style={{ fontSize: 14, fontWeight: 700, color: "#FFF", lineHeight: "17px" }}>
-                            {stat.value}
-                          </span>
-                          <span
-                            style={{
-                              fontSize: 8,
-                              color: "rgba(255,255,255,0.6)",
-                              marginTop: 2,
-                              textAlign: "center",
-                            }}
-                          >
-                            {stat.label}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsMobileMenuOpen(false);
+                        setMobileSearchOpen(true);
+                        setMobileSearchQuery("");
+                        setMobileSearchResults([]);
+                      }}
+                      style={{
+                        width: "100%",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                        backgroundColor: "rgba(255,255,255,0.12)",
+                        border: "1px solid rgba(255,255,255,0.15)",
+                        borderRadius: 12,
+                        padding: "9px 12px",
+                        color: "rgba(255,255,255,0.7)",
+                        fontSize: 13,
+                        cursor: "pointer",
+                        textAlign: "left",
+                      }}
+                    >
+                      <Search size={14} strokeWidth={2} />
+                      <span>Search pupils, lessons, pages…</span>
+                    </button>
                   </div>
                 </SheetHeader>
 
