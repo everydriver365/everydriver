@@ -59,11 +59,12 @@ export function WeekTimelineView({
     () => Array.from({ length: TOTAL_DAYS }, (_, i) => addDays(anchorDate, i)),
     [anchorDate]
   );
-  const visibleWeek = useMemo(
-    () => Array.from({ length: 7 }, (_, i) => addDays(startOfWeek(currentDate, { weekStartsOn: 1 }), i)),
-    [currentDate]
-  );
-  const weekStart = visibleWeek[0];
+  // Live week label that updates while scrolling, separate from the committed currentDate
+  const [displayWeekStart, setDisplayWeekStart] = useState<Date>(() => startOfWeek(currentDate, { weekStartsOn: 1 }));
+  useEffect(() => {
+    setDisplayWeekStart(startOfWeek(currentDate, { weekStartsOn: 1 }));
+  }, [currentDate]);
+  const weekStart = displayWeekStart;
 
   // Hours range: derive from events visible in window
   const { startHour, endHour } = useMemo(() => {
