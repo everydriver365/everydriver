@@ -456,6 +456,8 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
         seen.add(key);
         items.push({ id: key, name: s.label, subtitle: "Settings", href: s.href });
       }
+
+      setMobileSearchResults(items);
     }, 300);
     return () => clearTimeout(timeout);
   }, [mobileSearchQuery, instructor?.id]);
