@@ -170,6 +170,49 @@ export function WeekTimelineView({
         })}
       </div>
 
+      {/* All-day strip */}
+      {maxAllDay > 0 && (
+        <div style={{ display: "grid", gridTemplateColumns: `${GUTTER}px repeat(7, 1fr)`, borderBottom: "0.5px solid #F0F3F8", background: "#FAFBFC" }}>
+          <div style={{ fontSize: 9, color: "#8E8E93", fontWeight: 600, textAlign: "right", padding: "4px 4px 0 0" }}>
+            all-day
+          </div>
+          {days.map((d) => {
+            const k = format(d, "yyyy-MM-dd");
+            const items = allDayByDay[k] || [];
+            return (
+              <div key={k} style={{ borderLeft: "0.5px solid #F0F3F8", padding: "2px 1px", display: "flex", flexDirection: "column", gap: 2, minHeight: allDayStripH }}>
+                {items.map((ev) => {
+                  const colors = eventColor(ev);
+                  return (
+                    <button
+                      key={ev.id}
+                      onClick={() => onEventClick(ev)}
+                      style={{
+                        height: ALL_DAY_ROW_H,
+                        background: colors.bg,
+                        color: colors.text,
+                        border: "none",
+                        borderRadius: 3,
+                        padding: "0 4px",
+                        textAlign: "left",
+                        fontSize: 9,
+                        fontWeight: 600,
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        cursor: "pointer",
+                      }}
+                    >
+                      {ev.title}
+                    </button>
+                  );
+                })}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
       {/* Scrollable timetable */}
       <div ref={scrollRef} style={{ flex: 1, overflow: "auto" }}>
         <div style={{ display: "grid", gridTemplateColumns: `${GUTTER}px repeat(7, 1fr)`, position: "relative", height: totalHeight }}>
