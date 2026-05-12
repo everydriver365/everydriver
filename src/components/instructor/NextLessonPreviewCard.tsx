@@ -356,7 +356,6 @@ export function NextLessonPreviewCard(props: NextLessonPreviewCardProps) {
     navigate(`/instructor/pupils/${pupilId}?lesson=${lessonId}`);
   };
 
-  const mapH = expanded ? EXPANDED_MAP_H : COLLAPSED_MAP_H;
   const lessonsCount = history.data?.filter((h) => h.status === "completed").length ?? null;
   const lastLessonDate = history.data?.find((h) => h.status === "completed")?.lesson_date ?? null;
   const lastLessonNote = history.data?.find((h) => h.notes && h.status === "completed")?.notes ?? null;
