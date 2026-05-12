@@ -385,9 +385,7 @@ export function NextLessonPreviewCard(props: NextLessonPreviewCardProps) {
     return relativeDay;
   })();
 
-  /* ─── Collapsed: new redesigned layout ─── */
-  if (!expanded) {
-    return (
+  return (
       <div style={{ padding: "0 16px", fontFamily: FONT, WebkitFontSmoothing: "antialiased" }}>
         <div style={{
           fontSize: 10, fontWeight: 700, color: "#8E8E93",
