@@ -50,9 +50,9 @@ export function WeekTimelineView({
   onEventClick,
   onAddEvent,
 }: Props) {
-  // Window anchored 1 week before the week containing currentDate
+  // Window anchored N weeks before the week containing currentDate
   const anchorDate = useMemo(
-    () => addDays(startOfWeek(currentDate, { weekStartsOn: 1 }), -7),
+    () => addDays(startOfWeek(currentDate, { weekStartsOn: 1 }), -7 * ANCHOR_OFFSET_WEEKS),
     [currentDate]
   );
   const days = useMemo(
