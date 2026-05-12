@@ -1136,27 +1136,58 @@ function LessonList({
 
   items.sort((a, b) => a.sortKey - b.sortKey);
 
+  // Group consecutive lessons into a single agenda card; open slots stay separate.
+  const groups: Array<
+    | { kind: "lessons"; lessons: ScheduleLesson[] }
+    | { kind: "slot"; item: Extract<Item, { kind: "slot" }> }
+  > = [];
+  for (const it of items) {
+    if (it.kind === "lesson") {
+      const last = groups[groups.length - 1];
+      if (last && last.kind === "lessons") last.lessons.push(it.lesson);
+      else groups.push({ kind: "lessons", lessons: [it.lesson] });
+    } else {
+      groups.push({ kind: "slot", item: it });
+    }
+  }
+
   return (
     <div>
-      {items.map((item) => {
-        if (item.kind === "lesson") {
-          const l = item.lesson;
-          const eolDone = eolSet?.has(eolKey(l.pupilId, l.startTimeFull)) ?? false;
+      {groups.map((g, gi) => {
+        if (g.kind === "lessons") {
           return (
-            <LessonRow
-              key={l.id}
-              lesson={l}
-              now={now}
-              eolDone={eolDone}
-              onClick={() => onLessonClick(l.id)}
-              onEOLClick={(e) => {
-                e.stopPropagation();
-                onLessonEOL(l);
+            <div
+              key={`lessons-${gi}`}
+              style={{
+                background: CARD_BG,
+                borderRadius: 16,
+                border: `0.5px solid ${DSM_BLUE_BORDER}`,
+                overflow: "hidden",
+                marginBottom: 8,
               }}
-              stackedMeta={stackedMeta}
-            />
+            >
+              {g.lessons.map((l, li) => {
+                const eolDone = eolSet?.has(eolKey(l.pupilId, l.startTimeFull)) ?? false;
+                return (
+                  <LessonRow
+                    key={l.id}
+                    lesson={l}
+                    now={now}
+                    eolDone={eolDone}
+                    isFirst={li === 0}
+                    onClick={() => onLessonClick(l.id)}
+                    onEOLClick={(e) => {
+                      e.stopPropagation();
+                      onLessonEOL(l);
+                    }}
+                    stackedMeta={stackedMeta}
+                  />
+                );
+              })}
+            </div>
           );
         }
+        const item = g.item;
         const isPast = item.endDate.getTime() <= now.getTime();
         return (
           <OpenSlotCard
