@@ -1745,18 +1745,7 @@ export function MobileHomeRedesign({
       tierLabel: membershipLevel,
       tierBg: "#FFF6E6",
       tierColor: "#B45309",
-      subtitle: (() => {
-        const fs = franchiseStatus;
-        const upgradeBit = nextMembership ? `Upgrade to ${nextMembership}` : "Top tier";
-        const feeBit =
-          fs?.feeStatus === "owing"
-            ? `Franchise £${fs.amountOwing.toFixed(0)} owing`
-            : fs?.feeStatus === "paid"
-              ? "Franchise up to date"
-              : "No franchise";
-        const bonusBit = `£${(fs?.bonusDue ?? 0).toFixed(0)} bonus due`;
-        return [upgradeBit, feeBit, bonusBit].join(" · ");
-      })(),
+      subtitle: nextMembership ? `Upgrade to ${nextMembership}` : "Top tier",
       upgradeBg: "#B45309",
       upgradeFg: "#FFFFFF",
       ctaLabel: nextMembership ? "Upgrade" : "Manage",
