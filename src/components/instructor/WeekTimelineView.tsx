@@ -267,7 +267,7 @@ export function WeekTimelineView({
 
           {/* All-day strip */}
           {maxAllDay > 0 && (
-            <div style={{ display: "flex", borderBottom: "0.5px solid #F0F3F8", background: "#FAFBFC", minHeight: allDayStripH }}>
+            <div style={{ display: "flex", borderBottom: "0.5px solid #F0F3F8", background: "#FAFBFC", minHeight: allDayStripH, position: "sticky", top: DAY_HEADER_H, zIndex: 5 }}>
               <div style={{ width: GUTTER, position: "sticky", left: 0, zIndex: 4, background: "#FAFBFC", fontSize: 9, color: "#8E8E93", fontWeight: 600, textAlign: "right", padding: "4px 4px 0 0" }}>
                 all-day
               </div>
