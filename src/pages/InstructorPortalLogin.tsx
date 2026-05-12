@@ -197,6 +197,8 @@ export default function InstructorPortalLogin() {
           void resendSignupConfirmation(email.trim(), `${window.location.origin}/instructor/login`);
         } else if (signInError.message.includes("Invalid login")) {
           setError("Invalid email or password");
+        } else if (/timed out|timeout|busy|try again|database error/i.test(signInError.message)) {
+          setError("The login service is busy. Please wait a few seconds and try again.");
         } else {
           setError(signInError.message);
         }
