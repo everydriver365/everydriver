@@ -646,6 +646,31 @@ function LessonRow({
             {lessonTypeLabel}
           </div>
         )}
+        <button
+          type="button"
+          onClick={(ev) => {
+            ev.stopPropagation();
+            onEOLClick(ev);
+          }}
+          style={{
+            background: "transparent",
+            border: "none",
+            padding: "2px 4px",
+            marginTop: 2,
+            cursor: "pointer",
+            fontSize: 9,
+            fontWeight: 700,
+            color: DSM_BLUE,
+            letterSpacing: 0.2,
+            textTransform: "uppercase",
+            textDecoration: "underline",
+            textUnderlineOffset: 2,
+            opacity: eolDone ? 0.55 : 1,
+          }}
+          aria-label={eolDone ? "End of lesson complete" : "Complete end of lesson"}
+        >
+          {eolDone ? "EOL ✓" : "EOL"}
+        </button>
       </div>
       <span
         style={{
