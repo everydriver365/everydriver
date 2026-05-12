@@ -1122,136 +1122,228 @@ function RowDivider() {
 
 function AttentionRowItem({
   row,
+  showNewBadge,
+  isLast,
 }: {
   row: AttentionRow;
+  showNewBadge: boolean;
+  isLast: boolean;
 }) {
   const count = row.badge ? Number(row.badge.label) || 0 : 0;
   const isClear = !!row.isClear;
   const isActive = !isClear && count > 0;
-  const badgeBg = row.badge?.bg ?? "#CC2229";
-  const badgeFg = row.badge?.fg ?? "#FFFFFF";
+  const accent = row.iconColor;
 
   return (
-    <button
-      type="button"
-      onClick={row.onClick}
-      style={{
-        width: "100%",
-        display: "flex",
-        alignItems: "center",
-        gap: 9,
-        padding: "9px 12px",
-        background: isActive && row.group === "urgent" ? "#FFFBFB" : "transparent",
-        border: "none",
-        cursor: "pointer",
-        textAlign: "left",
-        opacity: isClear ? 0.4 : 1,
-      }}
-    >
-      <span style={{ position: "relative", flexShrink: 0 }}>
+    <>
+      <button
+        type="button"
+        onClick={row.onClick}
+        style={{
+          width: "100%",
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          padding: "10px 14px",
+          background: isActive ? "#FFFBFB" : "transparent",
+          border: "none",
+          cursor: "pointer",
+          textAlign: "left",
+          opacity: isClear ? 0.38 : 1,
+        }}
+      >
+        {/* Left accent band */}
         <span
           style={{
-            width: 28,
-            height: 28,
-            borderRadius: 8,
-            background: isClear ? "#F2F4F8" : row.iconBg,
-            color: isClear ? "#8E8E93" : row.iconColor,
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
+            width: 4,
+            height: 34,
+            borderRadius: 2,
+            flexShrink: 0,
+            background: isActive ? accent : "#E0E5EE",
           }}
-        >
-          <row.Icon size={12} strokeWidth={1.6} />
-        </span>
-        {isActive && count > 0 && (
+        />
+
+        {/* Icon tile */}
+        <span style={{ position: "relative", flexShrink: 0 }}>
           <span
             style={{
-              position: "absolute",
-              top: -3,
-              right: -3,
-              width: 10,
-              height: 10,
-              borderRadius: 5,
-              background: "#CC2229",
-              border: "1.5px solid #FFF",
+              width: 30,
+              height: 30,
+              borderRadius: 9,
+              background: isActive ? row.iconBg : "#F2F4F8",
+              color: isActive ? row.iconColor : "#8E8E93",
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
             }}
-          />
-        )}
-      </span>
+          >
+            <row.Icon size={14} strokeWidth={1.7} />
+          </span>
+          {showNewBadge && (
+            <span
+              style={{
+                position: "absolute",
+                top: -3,
+                right: -3,
+                width: 9,
+                height: 9,
+                borderRadius: 5,
+                background: "#CC2229",
+                border: "1.5px solid #FFF",
+              }}
+            />
+          )}
+        </span>
 
-      <div style={{ flex: 1, minWidth: 0 }}>
+        {/* Text */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div
+            style={{
+              fontSize: 13,
+              fontWeight: isActive ? 700 : 600,
+              color: isActive ? accent : "#8E8E93",
+              lineHeight: 1.2,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {row.title}
+          </div>
+          <div
+            style={{
+              fontSize: 11,
+              color: "#8E8E93",
+              marginTop: 2,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {row.subtitle}
+          </div>
+        </div>
+
+        {/* Right element */}
+        {isClear ? (
+          <span
+            style={{
+              background: "#E8F8ED",
+              borderRadius: 20,
+              padding: "2px 7px",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 3,
+              flexShrink: 0,
+            }}
+          >
+            <Check size={9} color="#1A7A3C" strokeWidth={2.5} />
+            <span style={{ fontSize: 10, fontWeight: 700, color: "#1A7A3C" }}>Clear</span>
+          </span>
+        ) : count > 0 ? (
+          <span
+            style={{
+              background: accent,
+              color: "#FFFFFF",
+              borderRadius: 20,
+              minWidth: 20,
+              height: 20,
+              padding: "0 6px",
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 11,
+              fontWeight: 700,
+              fontVariantNumeric: "tabular-nums",
+              flexShrink: 0,
+            }}
+          >
+            {count}
+          </span>
+        ) : null}
+
+        <ChevronRight
+          size={12}
+          color={isActive ? accent : "#D0D5DD"}
+          strokeWidth={isActive ? 2 : 1.8}
+          style={{ flexShrink: 0, marginLeft: 2 }}
+        />
+      </button>
+
+      {showNewBadge && (
         <div
           style={{
-            fontSize: 14,
-            fontWeight: isActive && row.group === "urgent" ? 700 : 600,
-            color: isActive && row.group === "urgent" ? "#CC2229" : "#1A1A1A",
-          }}
-        >
-          {row.title}
-        </div>
-        <div style={{ fontSize: 12, color: "#8E8E93", marginTop: 1 }}>
-          {row.subtitle}
-        </div>
-      </div>
-
-      {isClear ? (
-        <span
-          style={{
-            background: "#E8F8ED",
-            borderRadius: 20,
-            padding: "2px 7px",
-            display: "inline-flex",
+            padding: "3px 14px",
+            background: "#FFF8F8",
+            borderTop: "0.5px solid rgba(204,34,41,0.08)",
+            borderBottom: "0.5px solid rgba(204,34,41,0.08)",
+            display: "flex",
             alignItems: "center",
-            gap: 3,
-            flexShrink: 0,
+            gap: 4,
           }}
         >
-          <Check size={8} color="#1A7A3C" strokeWidth={2.5} />
-          <span style={{ fontSize: 11, fontWeight: 700, color: "#1A7A3C", letterSpacing: "0.04em", textTransform: "uppercase" }}>
-            Clear
+          <span style={{ width: 4, height: 4, borderRadius: 2, background: "#CC2229" }} />
+          <span
+            style={{
+              fontSize: 9,
+              fontWeight: 700,
+              color: "#CC2229",
+              letterSpacing: 0.6,
+              textTransform: "uppercase",
+            }}
+          >
+            Just arrived
           </span>
-        </span>
-      ) : count > 0 ? (
-        <span
-          style={{
-            background: badgeBg,
-            color: badgeFg,
-            borderRadius: 20,
-            minWidth: 18,
-            height: 18,
-            padding: "0 5px",
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: 12,
-            fontWeight: 700,
-            fontVariantNumeric: "tabular-nums",
-            flexShrink: 0,
-          }}
-        >
-          {count}
-        </span>
-      ) : null}
+        </div>
+      )}
 
-      <ChevronRight
-        size={12}
-        color={isActive && row.group === "urgent" ? "#CC2229" : "#C7C7CC"}
-        strokeWidth={isActive && row.group === "urgent" ? 2 : 1.8}
-      />
-    </button>
+      {!isLast && !showNewBadge && (
+        <div style={{ height: 0.5, background: "#F0F3F8" }} />
+      )}
+    </>
   );
 }
 
 function AttentionCard({ rows }: { rows: AttentionRow[] }) {
-  const urgent = rows.filter((r) => r.group === "urgent");
-  const todo = rows.filter((r) => r.group === "todo");
+  // Priority order based on declaration order in attentionRows.
+  const withPriority = React.useMemo(
+    () => rows.map((r, i) => ({ row: r, priority: i, count: r.badge ? Number(r.badge.label) || 0 : 0 })),
+    [rows]
+  );
+
+  // Session-only "just arrived" tracking.
+  const prevCounts = React.useRef<Record<string, number>>({});
+  const [newlyActivated, setNewlyActivated] = React.useState<Set<string>>(new Set());
+
+  React.useEffect(() => {
+    const justActivated: string[] = [];
+    withPriority.forEach(({ row, count }) => {
+      const prev = prevCounts.current[row.key] ?? count;
+      if (prev === 0 && count > 0) justActivated.push(row.key);
+      prevCounts.current[row.key] = count;
+    });
+    if (justActivated.length === 0) return;
+    setNewlyActivated((p) => {
+      const next = new Set(p);
+      justActivated.forEach((k) => next.add(k));
+      return next;
+    });
+    const t = setTimeout(() => {
+      setNewlyActivated((p) => {
+        const next = new Set(p);
+        justActivated.forEach((k) => next.delete(k));
+        return next;
+      });
+    }, 30000);
+    return () => clearTimeout(t);
+  }, [withPriority]);
 
   if (rows.length === 0) {
     return (
       <div
         style={{
           background: "#FFF",
-          borderRadius: 13,
+          borderRadius: 18,
           padding: 16,
           textAlign: "center",
           border: `0.5px solid ${BORDER}`,
@@ -1263,46 +1355,30 @@ function AttentionCard({ rows }: { rows: AttentionRow[] }) {
     );
   }
 
-  const urgentActive = urgent.filter((r) => !r.isClear).length;
-  const todoActive = todo.filter((r) => !r.isClear).length;
+  const sorted = [...withPriority].sort((a, b) => {
+    const aActive = !a.row.isClear && a.count > 0 ? 0 : 1;
+    const bActive = !b.row.isClear && b.count > 0 ? 0 : 1;
+    if (aActive !== bActive) return aActive - bActive;
+    return a.priority - b.priority;
+  });
 
   return (
-    <div>
-      {urgent.length > 0 && (
-        <GroupCard borderColor="rgba(204,34,41,0.12)">
-          <GroupHeader
-            label="Urgent"
-            dotColor="#CC2229"
-            bg="rgba(204,34,41,0.05)"
-            borderColor="rgba(204,34,41,0.08)"
-            countLabel={`${urgentActive} need${urgentActive === 1 ? "s" : ""} action`}
-          />
-          {urgent.map((r, i) => (
-            <div key={r.key}>
-              {i > 0 && <RowDivider />}
-              <AttentionRowItem row={r} />
-            </div>
-          ))}
-        </GroupCard>
-      )}
-
-      {todo.length > 0 && (
-        <GroupCard borderColor="rgba(180,83,9,0.10)">
-          <GroupHeader
-            label="To do"
-            dotColor="#B45309"
-            bg="rgba(180,83,9,0.04)"
-            borderColor="rgba(180,83,9,0.08)"
-            countLabel={`${todoActive} need attention`}
-          />
-          {todo.map((r, i) => (
-            <div key={r.key}>
-              {i > 0 && <RowDivider />}
-              <AttentionRowItem row={r} />
-            </div>
-          ))}
-        </GroupCard>
-      )}
+    <div
+      style={{
+        background: "#FFF",
+        borderRadius: 18,
+        overflow: "hidden",
+        border: "0.5px solid rgba(26,82,160,0.08)",
+      }}
+    >
+      {sorted.map(({ row }, i) => (
+        <AttentionRowItem
+          key={row.key}
+          row={row}
+          showNewBadge={newlyActivated.has(row.key)}
+          isLast={i === sorted.length - 1}
+        />
+      ))}
     </div>
   );
 }
