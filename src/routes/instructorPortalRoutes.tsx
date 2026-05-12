@@ -156,6 +156,7 @@ export const instructorPortalRoutes = (
     <Route path="/instructor" element={<InstructorPortal />} />
     <Route path="/instructor/icon-preview" element={<IconPreviewPage />} />
     <Route path="/instructor/quick-actions-redesign" element={<QuickActionsRedesignDemo />} />
+    <Route path="/instructor/upcoming-events-redesign" element={<UpcomingEventsRedesignDemo />} />
     <Route path="/instructor/pupils" element={<InstructorPupils />} />
     <Route path="/instructor/pupils/:pupilId" element={<PremiumPupilProfile />} />
     <Route path="/instructor/schedule" element={<InstructorSchedule />} />
