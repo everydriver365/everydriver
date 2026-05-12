@@ -1710,6 +1710,13 @@ export function MobileHomeRedesign({
   const pendingJobs = usePendingJobsCount();
   const { data: swapCount = 0 } = useTestSwapNotifications(instructorId);
   const { data: unread = 0 } = useUnreadMessagesCount(instructorId);
+  const needsYouAlerts = useNeedsYouAlerts(instructorId, {
+    jobs: pendingJobs,
+    msgs: unread,
+    swaps: swapCount,
+    calls: 0,
+    enquiries: 0,
+  });
   const { data: paymentsSummary } = useInstructorPupilsPaymentSummary(instructorId);
   const { data: gapData } = useRealGapSlots(instructorId);
   const { data: weekly } = useWeeklyGoals(instructorId);
