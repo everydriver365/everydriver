@@ -533,6 +533,23 @@ export function UpNextExpanded({
           overflow: "hidden",
         }}
       >
+        {/* Mini map at top of expanded section */}
+        <button
+          type="button"
+          onClick={navigateMap}
+          aria-label="Open in maps"
+          style={{
+            display: "block",
+            width: "100%",
+            padding: 0,
+            border: "none",
+            background: "transparent",
+            cursor: fullAddress ? "pointer" : "default",
+          }}
+        >
+          <StaticMapPreview hasDestination={!!fullAddress} height={120} />
+        </button>
+
         {/* SECTION 1 — Status banners */}
         <div style={{ paddingTop: 14 }}>
           {checkInStatus === "confirmed" && (
