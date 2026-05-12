@@ -570,7 +570,7 @@ export function UpNextExpanded({
                 </div>
 
                 {/* Row 1 — Comms */}
-                <div style={{ display: "flex", gap: 6, marginBottom: 6 }}>
+                <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
                   <button
                     type="button"
                     onClick={callPupil}
@@ -578,18 +578,19 @@ export function UpNextExpanded({
                     style={{
                       ...rowBtn,
                       flex: 1.4,
+                      height: 38,
                       backgroundColor: "#CC2229",
-                      borderRadius: 11,
-                      padding: "8px 6px",
-                      gap: 5,
+                      borderRadius: 12,
+                      padding: "0 10px",
+                      gap: 6,
                       color: "#FFF",
                       boxShadow: "0 2px 5px rgba(204,34,41,0.22)",
                       opacity: !pupilPhone ? 0.5 : 1,
                       cursor: !pupilPhone ? "not-allowed" : "pointer",
                     }}
                   >
-                    <Phone style={{ width: 11, height: 11 }} strokeWidth={1.8} />
-                    <span style={{ fontSize: 11, fontWeight: 700 }}>Call</span>
+                    <Phone style={{ width: 13, height: 13 }} strokeWidth={2} />
+                    <span style={{ fontSize: 12, fontWeight: 700 }}>Call</span>
                   </button>
                   <button
                     type="button"
@@ -597,15 +598,16 @@ export function UpNextExpanded({
                     style={{
                       ...rowBtn,
                       flex: 1,
+                      height: 38,
                       backgroundColor: "#EEF3FF",
-                      borderRadius: 11,
-                      padding: "8px 6px",
-                      gap: 4,
+                      borderRadius: 12,
+                      padding: "0 10px",
+                      gap: 6,
                       color: "#1A52A0",
                     }}
                   >
-                    <MessageSquare style={{ width: 11, height: 11 }} strokeWidth={1.7} />
-                    <span style={{ fontSize: 11, fontWeight: 600 }}>Text</span>
+                    <MessageSquare style={{ width: 13, height: 13 }} strokeWidth={1.9} />
+                    <span style={{ fontSize: 12, fontWeight: 600 }}>Text</span>
                   </button>
                   <button
                     type="button"
@@ -613,20 +615,21 @@ export function UpNextExpanded({
                     style={{
                       ...rowBtn,
                       flex: 1,
+                      height: 38,
                       backgroundColor: "#EEF3FF",
-                      borderRadius: 11,
-                      padding: "8px 6px",
-                      gap: 4,
+                      borderRadius: 12,
+                      padding: "0 10px",
+                      gap: 6,
                       color: "#1A52A0",
                     }}
                   >
-                    <NavIcon style={{ width: 11, height: 11 }} strokeWidth={1.7} />
-                    <span style={{ fontSize: 11, fontWeight: 600 }}>Navigate</span>
+                    <NavIcon style={{ width: 13, height: 13 }} strokeWidth={1.9} />
+                    <span style={{ fontSize: 12, fontWeight: 600 }}>Navigate</span>
                   </button>
                 </div>
 
                 {/* Row 2 — Status */}
-                <div style={{ display: "flex", gap: 6, marginBottom: 8 }}>
+                <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
                   <button
                     type="button"
                     onClick={onMyWay}
@@ -634,10 +637,11 @@ export function UpNextExpanded({
                     style={{
                       ...rowBtn,
                       flex: 1.2,
+                      height: 38,
                       backgroundColor: "#E8F8ED",
-                      borderRadius: 11,
-                      padding: "7px 6px",
-                      gap: 4,
+                      borderRadius: 12,
+                      padding: "0 8px",
+                      gap: 6,
                       color: "#1A7A3C",
                       border: "0.5px solid rgba(26,122,60,0.15)",
                       opacity: busyAction === "on_the_way" ? 0.5 : 1,
@@ -645,8 +649,8 @@ export function UpNextExpanded({
                       outline: onMyWayActive ? "1.5px solid #1A7A3C" : "none",
                     }}
                   >
-                    <Send style={{ width: 10, height: 10 }} strokeWidth={1.9} />
-                    <span style={{ fontSize: 10, fontWeight: 700 }}>On My Way</span>
+                    <Send style={{ width: 13, height: 13 }} strokeWidth={1.9} />
+                    <span style={{ fontSize: 12, fontWeight: 700 }}>On My Way</span>
                   </button>
                   <button
                     type="button"
@@ -655,10 +659,11 @@ export function UpNextExpanded({
                     style={{
                       ...rowBtn,
                       flex: 1.2,
+                      height: 38,
                       backgroundColor: "#FFF6E6",
-                      borderRadius: 11,
-                      padding: "7px 6px",
-                      gap: 4,
+                      borderRadius: 12,
+                      padding: "0 8px",
+                      gap: 6,
                       color: "#B45309",
                       border: "0.5px solid rgba(180,83,9,0.15)",
                       opacity: busyAction === "running_late" ? 0.5 : 1,
@@ -666,8 +671,8 @@ export function UpNextExpanded({
                       outline: lateActive ? "1.5px solid #B45309" : "none",
                     }}
                   >
-                    <Clock style={{ width: 10, height: 10 }} strokeWidth={1.9} />
-                    <span style={{ fontSize: 10, fontWeight: 700 }}>Running Late</span>
+                    <Clock style={{ width: 13, height: 13 }} strokeWidth={1.9} />
+                    <span style={{ fontSize: 12, fontWeight: 700 }}>Running Late</span>
                   </button>
                   <button
                     type="button"
@@ -675,15 +680,16 @@ export function UpNextExpanded({
                     style={{
                       ...rowBtn,
                       flex: 1,
+                      height: 38,
                       backgroundColor: "#F2F4F8",
-                      borderRadius: 11,
-                      padding: "7px 6px",
-                      gap: 4,
+                      borderRadius: 12,
+                      padding: "0 10px",
+                      gap: 6,
                       color: "#5B6B8A",
                     }}
                   >
-                    <ClipboardList style={{ width: 10, height: 10 }} strokeWidth={1.7} />
-                    <span style={{ fontSize: 10, fontWeight: 600 }}>Prep</span>
+                    <ClipboardList style={{ width: 13, height: 13 }} strokeWidth={1.7} />
+                    <span style={{ fontSize: 12, fontWeight: 600 }}>Prep</span>
                   </button>
                 </div>
 
@@ -695,9 +701,10 @@ export function UpNextExpanded({
                   style={{
                     ...rowBtn,
                     width: "100%",
+                    height: 38,
                     backgroundColor: "#1A52A0",
-                    borderRadius: 11,
-                    padding: "10px 0",
+                    borderRadius: 12,
+                    padding: "0 10px",
                     gap: 6,
                     color: "#FFF",
                     boxShadow: "0 2px 7px rgba(26,82,160,0.20)",
@@ -705,7 +712,7 @@ export function UpNextExpanded({
                     cursor: busyAction === "arrived" ? "not-allowed" : "pointer",
                   }}
                 >
-                  <CheckCheck style={{ width: 12, height: 12 }} strokeWidth={2.2} />
+                  <CheckCheck style={{ width: 13, height: 13 }} strokeWidth={2.2} />
                   <span style={{ fontSize: 12, fontWeight: 700 }}>
                     {arrivedActive ? "Arrived ✓" : "Arrived"}
                   </span>
