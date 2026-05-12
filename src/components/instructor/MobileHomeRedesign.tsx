@@ -2147,6 +2147,38 @@ export function MobileHomeRedesign({
               instructorId={instructorId}
             />
           )}
+          <button
+            type="button"
+            onClick={() => setExpanded((v) => !v)}
+            aria-expanded={expanded}
+            style={{
+              width: "100%",
+              border: "none",
+              borderTop: "0.5px solid rgba(0,0,0,0.05)",
+              padding: "8px 0",
+              backgroundColor: "#FAFBFD",
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 4,
+              cursor: "pointer",
+              borderBottomLeftRadius: 16,
+              borderBottomRightRadius: 16,
+            }}
+          >
+            <span style={{ fontSize: 12, fontWeight: 600, color: "#8E8E93" }}>
+              {expanded ? "Hide details" : "Details"}
+            </span>
+            <ChevronDown
+              size={11}
+              strokeWidth={2.5}
+              style={{
+                color: "#C7C7CC",
+                transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
+                transition: "transform 200ms ease",
+              }}
+            />
+          </button>
         </div>
       )}
 
