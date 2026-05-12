@@ -1251,46 +1251,77 @@ function AttentionCard({ rows }: { rows: AttentionRow[] }) {
     );
   }
 
-  const urgentActive = urgent.filter((r) => !r.isClear).length;
-  const todoActive = todo.filter((r) => !r.isClear).length;
+  const urgentCount = urgent.filter((r) => !r.isClear).length;
+  const todoCount = todo.filter((r) => !r.isClear).length;
+
+  const tabs: Array<{ id: "urgent" | "todo"; label: string; count: number; tint: string; rows: AttentionRow[] }> = [];
+  if (urgent.length > 0) tabs.push({ id: "urgent", label: "Urgent", count: urgentCount, tint: "#CC2229", rows: urgent });
+  if (todo.length > 0) tabs.push({ id: "todo", label: "To do", count: todoCount, tint: "#B45309", rows: todo });
+
+  const [activeTab, setActiveTab] = useState<"urgent" | "todo">(tabs[0]?.id ?? "urgent");
+  const safeActive = tabs.find((t) => t.id === activeTab) ?? tabs[0];
+  if (!safeActive) return null;
 
   return (
     <div>
-      {urgent.length > 0 && (
-        <GroupCard borderColor="rgba(204,34,41,0.12)">
-          <GroupHeader
-            label="Urgent"
-            dotColor="#CC2229"
-            bg="rgba(204,34,41,0.05)"
-            borderColor="rgba(204,34,41,0.08)"
-            countLabel={`${urgentActive} need${urgentActive === 1 ? "s" : ""} action`}
-          />
-          {urgent.map((r, i) => (
-            <div key={r.key}>
-              {i > 0 && <RowDivider />}
-              <AttentionRowItem row={r} />
-            </div>
-          ))}
-        </GroupCard>
-      )}
+      <div
+        style={{
+          display: "flex",
+          gap: 18,
+          borderBottom: `0.5px solid ${BORDER}`,
+          marginBottom: 6,
+        }}
+      >
+        {tabs.map((t) => {
+          const active = t.id === safeActive.id;
+          return (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => setActiveTab(t.id)}
+              style={{
+                background: "transparent",
+                border: "none",
+                padding: "4px 0 8px",
+                borderBottom: active ? `2px solid ${t.tint}` : "2px solid transparent",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                cursor: "pointer",
+                marginBottom: -1,
+              }}
+            >
+              <span style={{ fontSize: 13, fontWeight: 700, color: active ? "#1A1A1A" : MUTED }}>
+                {t.label}
+              </span>
+              <span
+                style={{
+                  background: active ? t.tint : "#F1F5F9",
+                  color: active ? "#FFF" : MUTED,
+                  fontSize: 10.5,
+                  fontWeight: 700,
+                  padding: "1px 6px",
+                  borderRadius: 999,
+                  minWidth: 16,
+                  textAlign: "center",
+                  fontVariantNumeric: "tabular-nums",
+                }}
+              >
+                {t.count}
+              </span>
+            </button>
+          );
+        })}
+      </div>
 
-      {todo.length > 0 && (
-        <GroupCard borderColor="rgba(180,83,9,0.10)">
-          <GroupHeader
-            label="To do"
-            dotColor="#B45309"
-            bg="rgba(180,83,9,0.04)"
-            borderColor="rgba(180,83,9,0.08)"
-            countLabel={`${todoActive} need attention`}
-          />
-          {todo.map((r, i) => (
-            <div key={r.key}>
-              {i > 0 && <RowDivider />}
-              <AttentionRowItem row={r} />
-            </div>
-          ))}
-        </GroupCard>
-      )}
+      <div>
+        {safeActive.rows.map((r, i) => (
+          <div key={r.key}>
+            {i > 0 && <RowDivider />}
+            <AttentionRowItem row={r} />
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
