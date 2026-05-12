@@ -2237,13 +2237,20 @@ export function MobileHomeRedesign({
         <MobileHomeBottomSections instructorId={instructorId} />
       </div>
 
-      {/* Needs attention + Upgrade */}
-      <div style={{ marginBottom: 8 }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 4px 8px" }}>
+      {/* Needs attention — bento mosaic */}
+      <div style={{ ...bento, padding: "12px 14px 6px", marginBottom: 8 }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: 10,
+          }}
+        >
           <span
             style={{
               fontSize: 11,
-              fontWeight: 700,
+              fontWeight: 800,
               color: MUTED,
               letterSpacing: "0.1em",
               textTransform: "uppercase",
@@ -2256,36 +2263,60 @@ export function MobileHomeRedesign({
               style={{
                 background: "#CC2229",
                 color: "#FFFFFF",
-                borderRadius: 10,
+                borderRadius: 999,
                 padding: "2px 8px",
-                fontSize: 11,
-                fontWeight: 700,
+                fontSize: 10,
+                fontWeight: 800,
                 fontVariantNumeric: "tabular-nums",
               }}
             >
-              {totalAttentionCount} item{totalAttentionCount === 1 ? "" : "s"}
+              {totalAttentionCount}
             </span>
           )}
         </div>
-        <div style={{ ...bento, padding: 0 }}>
-          <AttentionCard rows={attentionRows} />
-        </div>
-        <div style={{ ...bento, padding: 0, marginTop: 8 }}>
-          <UpgradeCard
-            rows={upgradeRows}
-            franchise={{
-              feeStatus: franchiseStatus?.feeStatus ?? "none",
-              amountOwing: franchiseStatus?.amountOwing ?? 0,
-              bonusDue: franchiseStatus?.bonusDue ?? 0,
-              onFeeClick: () => navigate("/instructor/payments?tab=franchise"),
-              onBonusClick: () => navigate("/instructor/payments?tab=bonus"),
-            }}
-          />
-        </div>
+        <AttentionCard rows={attentionRows} />
       </div>
 
-      {/* Upcoming events */}
-      <div style={{ ...bento, padding: 0 }}>
+      {/* Membership — bento mosaic */}
+      <div style={{ ...bento, padding: "12px 14px", marginBottom: 8 }}>
+        <div
+          style={{
+            fontSize: 11,
+            fontWeight: 800,
+            color: MUTED,
+            letterSpacing: "0.1em",
+            textTransform: "uppercase",
+            marginBottom: 10,
+          }}
+        >
+          Membership
+        </div>
+        <UpgradeCard
+          rows={upgradeRows}
+          franchise={{
+            feeStatus: franchiseStatus?.feeStatus ?? "none",
+            amountOwing: franchiseStatus?.amountOwing ?? 0,
+            bonusDue: franchiseStatus?.bonusDue ?? 0,
+            onFeeClick: () => navigate("/instructor/payments?tab=franchise"),
+            onBonusClick: () => navigate("/instructor/payments?tab=bonus"),
+          }}
+        />
+      </div>
+
+      {/* Upcoming events — bento mosaic */}
+      <div style={{ ...bento, padding: "12px 14px", marginBottom: 8 }}>
+        <div
+          style={{
+            fontSize: 11,
+            fontWeight: 800,
+            color: MUTED,
+            letterSpacing: "0.1em",
+            textTransform: "uppercase",
+            marginBottom: 10,
+          }}
+        >
+          Upcoming events
+        </div>
         <UpcomingEventsTile instructorId={instructorId} />
       </div>
 
