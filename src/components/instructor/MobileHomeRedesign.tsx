@@ -1483,6 +1483,7 @@ export function MobileHomeRedesign({
   const { data: gapData } = useRealGapSlots(instructorId);
   const { data: weekly } = useWeeklyGoals(instructorId);
   const { data: franchiseStatus } = useFranchiseStatus(instructorId);
+  const { data: membership } = useInstructorMembership(instructorId);
   const [expanded, setExpanded] = useState(false);
   const [divertSheetOpen, setDivertSheetOpen] = useState(false);
 
