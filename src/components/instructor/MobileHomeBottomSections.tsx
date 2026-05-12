@@ -797,7 +797,7 @@ function QuickAccessSection({ instructorId }: { instructorId: string }) {
     return [...pinned, ...rest];
   }, [pinnedIds]);
 
-  const PER_PAGE = 4;
+  const PER_PAGE = 8;
   const pages: typeof tiles[] = useMemo(() => {
     if (tiles.length === 0) return [];
     const out: typeof tiles[] = [];
