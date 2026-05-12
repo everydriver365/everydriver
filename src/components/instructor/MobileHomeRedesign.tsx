@@ -1029,6 +1029,7 @@ interface UpgradeRowSpec {
   subtitle: string;
   upgradeBg: string;
   upgradeFg?: string;
+  ctaLabel?: string;
   onClick: () => void;
 }
 
