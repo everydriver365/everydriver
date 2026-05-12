@@ -1305,7 +1305,7 @@ export function UpNextExpanded({
                   color: "#1A52A0",
                 }}
               >
-                
+                <RefreshCw size={11} strokeWidth={1.8} />
                 <span style={{ fontSize: 11, fontWeight: 600 }}>Reschedule</span>
               </button>
               <button
@@ -1325,7 +1325,7 @@ export function UpNextExpanded({
                   color: "#CC2229",
                 }}
               >
-                
+                <XCircle size={11} strokeWidth={1.8} />
                 <span style={{ fontSize: 11, fontWeight: 600 }}>Cancel lesson</span>
               </button>
             </div>
@@ -1347,7 +1347,7 @@ export function UpNextExpanded({
               }}
             >
               <span style={{ fontSize: 11, fontWeight: 600 }}>View all lessons</span>
-              
+              <ChevronRight size={9} strokeWidth={2.2} />
             </button>
           </div>
         </div>
