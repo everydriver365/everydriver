@@ -1666,13 +1666,10 @@ export function MobileHomeRedesign({
   }
 
   // Total active attention count (for the section header pill).
-  // Sums real counts plus a +1 for boolean rows that don't carry a number.
   const totalAttentionCount =
-    missedCallsCount +
-    enquiriesCount +
     pendingJobs +
     swapCount +
-    openSlots +
+    openSlotDays +
     dormantCount +
     unread +
     (debt > 0 ? 1 : 0) +
