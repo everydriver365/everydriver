@@ -1900,6 +1900,10 @@ const VARIANTS = [
   { id: "v32", name: "Live Brief Dark", desc: "Glassy dark surface with a 2×2 brief grid.", Component: V32LiveBriefDark },
   { id: "v33", name: "Live Brief Compact", desc: "Single ambient card with inline check chips.", Component: V33LiveBriefCompact },
   { id: "v34", name: "Live Brief Pro", desc: "Ambient hero on top, full brief checklist beneath.", Component: V34LiveBriefPro },
+  { id: "v35", name: "Brief Pro · No Map", desc: "Refined Live Brief Pro hero, no map strip.", Component: V35LiveBriefProNoMap },
+  { id: "v36", name: "Brief Pro · Map", desc: "Live Brief Pro with a static map strip on top.", Component: V36LiveBriefProMap },
+  { id: "v37", name: "Brief Pro · Dark", desc: "Dark gradient hero — pops on light blue backgrounds.", Component: V37LiveBriefProDark },
+  { id: "v38", name: "Brief Pro · Dark + Map", desc: "Dark hero + map strip for maximum contrast on blue.", Component: V38LiveBriefProDarkMap },
 ];
 
 export default function InstructorNextUpLab() {
