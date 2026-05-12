@@ -578,16 +578,7 @@ function UpNextTile({
           boxShadow: "0 2px 18px rgba(26,82,160,0.13)",
         }}
       >
-        {/* ── V39 LIVE MAP STRIP ── */}
-        <UpNextMapStrip
-          pickupPostcode={pickupPostcode}
-          pickupLocation={pickupLocation}
-          instructorId={instructorId}
-          hasDestination={hasDestination}
-          onNavigate={navTo}
-          countdownLine={countdownLine}
-        />
-
+        {/* Map strip removed — mini map now lives at top of expanded section */}
         {/* ── V39 DETAILS ── */}
         <div style={{ padding: "14px 16px 12px", display: "flex", flexDirection: "column", gap: 10 }}>
           <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 12 }}>
