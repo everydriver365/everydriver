@@ -2226,11 +2226,11 @@ export function MobileHomeRedesign({
         <div style={bentoPad}>
           <div style={kpiLabel}>NEEDS YOU</div>
           <div style={{ display: "flex", gap: 14, marginTop: 8, justifyContent: "space-between" }}>
-            <BentoMini count={pendingJobs} label="Jobs" fg="#92400E" onClick={() => navigate("/instructor/jobs")} />
-            <BentoMini count={unread} label="Msgs" fg={BLUE} onClick={() => navigate("/instructor/messages")} />
-            <BentoMini count={swapCount} label="Swaps" fg="#166534" onClick={() => navigate("/instructor/test-requests")} />
-            <BentoMini count={missedCallsCount} label="Calls" fg="#CC2229" onClick={() => navigate("/instructor/calls")} />
-            <BentoMini count={enquiriesCount} label="Enquiries" fg="#CC2229" onClick={() => navigate("/instructor/enquiries")} />
+            <BentoMini count={pendingJobs} label="Jobs" fg="#92400E" alerting={needsYouAlerts.alerting.jobs} onClick={() => { needsYouAlerts.acknowledge("jobs"); navigate("/instructor/jobs"); }} />
+            <BentoMini count={unread} label="Msgs" fg={BLUE} alerting={needsYouAlerts.alerting.msgs} onClick={() => { needsYouAlerts.acknowledge("msgs"); navigate("/instructor/messages"); }} />
+            <BentoMini count={swapCount} label="Swaps" fg="#166534" alerting={needsYouAlerts.alerting.swaps} onClick={() => { needsYouAlerts.acknowledge("swaps"); navigate("/instructor/test-requests"); }} />
+            <BentoMini count={missedCallsCount} label="Calls" fg="#CC2229" alerting={needsYouAlerts.alerting.calls} onClick={() => { needsYouAlerts.acknowledge("calls"); navigate("/instructor/calls"); }} />
+            <BentoMini count={enquiriesCount} label="Enquiries" fg="#CC2229" alerting={needsYouAlerts.alerting.enquiries} onClick={() => { needsYouAlerts.acknowledge("enquiries"); navigate("/instructor/enquiries"); }} />
           </div>
         </div>
         <div
