@@ -1310,7 +1310,21 @@ function AttentionCard({ rows }: { rows: AttentionRow[] }) {
   );
 }
 
-function UpgradeCard({ rows }: { rows: UpgradeRowSpec[] }) {
+interface FranchisePanelData {
+  feeStatus: "paid" | "owing" | "none";
+  amountOwing: number;
+  bonusDue: number;
+  onFeeClick: () => void;
+  onBonusClick: () => void;
+}
+
+function UpgradeCard({
+  rows,
+  franchise,
+}: {
+  rows: UpgradeRowSpec[];
+  franchise?: FranchisePanelData;
+}) {
   const [open, setOpen] = useState(false);
   if (rows.length === 0) return null;
 
