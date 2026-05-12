@@ -685,32 +685,106 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                         <X size={14} strokeWidth={2} color="#FFF" />
                       </SheetClose>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsMobileMenuOpen(false);
-                        setMobileSearchOpen(true);
-                        setMobileSearchQuery("");
-                        setMobileSearchResults([]);
-                      }}
-                      style={{
-                        width: "100%",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 8,
-                        backgroundColor: "rgba(255,255,255,0.12)",
-                        border: "1px solid rgba(255,255,255,0.15)",
-                        borderRadius: 12,
-                        padding: "9px 12px",
-                        color: "rgba(255,255,255,0.7)",
-                        fontSize: 13,
-                        cursor: "pointer",
-                        textAlign: "left",
-                      }}
-                    >
-                      <Search size={14} strokeWidth={2} />
-                      <span>Search pupils, lessons, pages…</span>
-                    </button>
+                    <div style={{ position: "relative" }}>
+                      <Search
+                        size={14}
+                        strokeWidth={2}
+                        style={{
+                          position: "absolute",
+                          left: 12,
+                          top: "50%",
+                          transform: "translateY(-50%)",
+                          color: "rgba(255,255,255,0.7)",
+                          pointerEvents: "none",
+                        }}
+                      />
+                      <input
+                        type="text"
+                        placeholder="Search pupils, lessons, pages…"
+                        value={mobileSearchQuery}
+                        onChange={(e) => setMobileSearchQuery(e.target.value)}
+                        style={{
+                          width: "100%",
+                          backgroundColor: "rgba(255,255,255,0.12)",
+                          border: "1px solid rgba(255,255,255,0.15)",
+                          borderRadius: 12,
+                          padding: "9px 34px 9px 32px",
+                          color: "#FFF",
+                          fontSize: 13,
+                          outline: "none",
+                        }}
+                      />
+                      {mobileSearchQuery && (
+                        <button
+                          type="button"
+                          onClick={() => { setMobileSearchQuery(""); setMobileSearchResults([]); }}
+                          aria-label="Clear search"
+                          style={{
+                            position: "absolute",
+                            right: 8,
+                            top: "50%",
+                            transform: "translateY(-50%)",
+                            background: "transparent",
+                            border: 0,
+                            color: "rgba(255,255,255,0.7)",
+                            cursor: "pointer",
+                            padding: 4,
+                          }}
+                        >
+                          <X size={12} strokeWidth={2} />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </SheetHeader>
+
+                {mobileSearchQuery.length >= 2 && (
+                  <div
+                    className="overflow-y-auto"
+                    style={{
+                      margin: "8px 12px 0",
+                      maxHeight: 240,
+                      borderRadius: 12,
+                      backgroundColor: "#FFF",
+                      border: "1px solid rgba(0,0,0,0.06)",
+                      boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
+                    }}
+                  >
+                    {mobileSearchResults.length === 0 ? (
+                      <div className="flex flex-col items-center gap-1 p-4">
+                        <Search className="h-5 w-5 text-muted-foreground/40" />
+                        <p className="text-sm text-muted-foreground">No results found</p>
+                      </div>
+                    ) : (
+                      <div className="p-1">
+                        {mobileSearchResults.map((item) => (
+                          <button
+                            key={item.id}
+                            onClick={() => {
+                              navigate(item.href || `/instructor/pupils?pupil=${item.id}`);
+                              setIsMobileMenuOpen(false);
+                              setMobileSearchQuery("");
+                              setMobileSearchResults([]);
+                            }}
+                            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left hover:bg-accent transition-colors"
+                          >
+                            <div className="h-9 w-9 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-semibold shrink-0">
+                              {item.name.split(" ").map(n => n[0]).join("")}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="text-sm font-medium truncate">{item.name}</div>
+                              <div className="text-xs text-muted-foreground">{item.subtitle}</div>
+                            </div>
+                            <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/40 shrink-0" />
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* placeholder to keep JSX structure intact (closed below) */}
+                <div style={{ display: "none" }}>
                   </div>
                 </SheetHeader>
 
