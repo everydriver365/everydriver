@@ -591,7 +591,10 @@ function LessonRow({
   const fee = lesson.amountDue ?? 0;
   const showPayPill = !isCancelled && fee > 0;
   const showEOLPill = isPast || isCompleted || eolDone;
-  const address = shortLine(lesson.pickupLocation, lesson.pickupPostcode);
+  const address = [lesson.pickupLocation, lesson.pickupPostcode]
+    .filter(Boolean)
+    .join(", ")
+    .trim() || "Pickup";
   const lessonTypeLabel = lesson.lessonType
     ? String(lesson.lessonType).replace(/_/g, " ")
     : "";
@@ -716,9 +719,8 @@ function LessonRow({
               fontSize: 10,
               color: TEXT_TERTIARY,
               marginTop: 1,
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
+              wordBreak: "break-word",
+              lineHeight: 1.3,
             }}
           >
             {address}
