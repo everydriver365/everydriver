@@ -108,9 +108,9 @@ export function Footer() {
                 <Phone className="h-4 w-4" />
                 <a href={`tel:${contactPhone.replace(/\s/g, "")}`} className="hover:text-accent">{contactPhone}</a>
               </li>
-              <li className="flex items-center gap-2">
-                <Mail className="h-4 w-4" />
-                <a href={`mailto:${contactEmail}`} className="hover:text-accent break-all">{contactEmail}</a>
+              <li className="flex items-start gap-2">
+                <MapPin className="h-4 w-4 mt-0.5" />
+                <span>{contactArea}</span>
               </li>
               <li className="flex items-start gap-2">
                 <MapPin className="h-4 w-4 mt-0.5" />
