@@ -1380,7 +1380,7 @@ function UpgradeCard({ rows }: { rows: UpgradeRowSpec[] }) {
               display: "flex",
               alignItems: "center",
               gap: 9,
-              padding: "9px 12px",
+              padding: "7px 12px",
               background: "transparent",
               border: "none",
               cursor: "pointer",
@@ -1400,40 +1400,38 @@ function UpgradeCard({ rows }: { rows: UpgradeRowSpec[] }) {
                 flexShrink: 0,
               }}
             >
-              <r.Icon size={12} strokeWidth={1.6} />
+              <r.Icon size={14} strokeWidth={1.8} />
             </span>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 1 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 0 }}>
                 <span style={{ fontSize: 14, fontWeight: 700, color: "#1A1A1A" }}>{r.label}</span>
                 <span
                   style={{
                     background: r.tierBg,
                     color: r.tierColor,
-                    borderRadius: 4,
-                    padding: "1px 5px",
+                    borderRadius: 999,
+                    padding: "1px 7px",
                     fontSize: 10,
                     fontWeight: 700,
-                    letterSpacing: "0.04em",
-                    textTransform: "uppercase",
                   }}
                 >
                   {r.tierLabel}
                 </span>
               </div>
-              <div style={{ fontSize: 12, color: "#8E8E93" }}>{r.subtitle}</div>
+              <div style={{ fontSize: 11, color: "#8E8E93" }}>{r.subtitle}</div>
             </div>
             <span
               style={{
-                background: r.upgradeBg,
-                color: r.upgradeFg ?? "#FFF",
-                borderRadius: 20,
-                padding: "4px 10px",
+                background: r.ctaBg,
+                color: r.ctaFg ?? "#FFF",
+                borderRadius: 999,
+                padding: "5px 12px",
                 fontSize: 12,
                 fontWeight: 700,
                 flexShrink: 0,
               }}
             >
-              Upgrade
+              {r.ctaLabel}
             </span>
             <ChevronRight size={12} color="#C7C7CC" strokeWidth={1.8} />
           </button>
