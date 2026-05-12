@@ -74,22 +74,12 @@ export default function InstructorPortalLogin() {
     };
 
     const checkBiometricAvailability = async () => {
+      // Only check availability — never auto-trigger Face ID on page load.
+      // Auto-triggering left the spinner stuck in TestFlight and blocked
+      // email/password sign-in. Face ID now only runs when the user taps the button.
       try {
         const available = await isBiometricAvailable("instructor");
         setBiometricAvailable(available);
-        if (available && (isNativePlatform() || isWrappedApp())) {
-          const creds = await getBiometricCredentials("instructor", "Sign in to EveryDriver");
-          if (creds) {
-            setBiometricLoading(true);
-            const { error: signInError } = await signIn(creds.email, creds.password);
-            if (!signInError) {
-              toast.success("Welcome back!", { duration: 2000 });
-              navigate("/instructor");
-              return;
-            }
-            setBiometricLoading(false);
-          }
-        }
       } catch (err) {
         console.log('Biometric not available:', err);
       }
@@ -125,6 +115,11 @@ export default function InstructorPortalLogin() {
   const handleBiometricLogin = async () => {
     setBiometricLoading(true);
     setError("");
+    // Hard cap so the spinner can never get stuck in TestFlight.
+    const safety = setTimeout(() => {
+      setBiometricLoading(false);
+      setError("Face ID timed out. Please use email and password.");
+    }, 20000);
     try {
       const creds = await getBiometricCredentials("instructor", "Sign in to EveryDriver");
       if (!creds) {
@@ -142,6 +137,7 @@ export default function InstructorPortalLogin() {
       console.error("Biometric login error:", err);
       setError("Biometric login not available. Please use email and password.");
     } finally {
+      clearTimeout(safety);
       setBiometricLoading(false);
     }
   };
