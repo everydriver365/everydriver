@@ -672,6 +672,52 @@ function LessonRow({
             marginTop: 6,
           }}
         >
+          <button
+            type="button"
+            onClick={(ev) => {
+              ev.stopPropagation();
+              onEOLClick(ev);
+            }}
+            style={{
+              background: "transparent",
+              border: "none",
+              padding: "2px 4px",
+              cursor: "pointer",
+              fontSize: 10,
+              fontWeight: 700,
+              color: DSM_BLUE,
+              letterSpacing: 0.2,
+              textTransform: "uppercase",
+              textDecoration: "underline",
+              textUnderlineOffset: 2,
+              opacity: eolDone ? 0.55 : 1,
+            }}
+            aria-label={eolDone ? "End of lesson complete" : "Complete end of lesson"}
+          >
+            {eolDone ? "EOL ✓" : "EOL"}
+          </button>
+          <button
+            type="button"
+            onClick={(ev) => {
+              ev.stopPropagation();
+              onClick();
+            }}
+            style={{
+              background: "transparent",
+              border: "none",
+              padding: "2px 4px",
+              cursor: "pointer",
+              fontSize: 10,
+              fontWeight: 700,
+              color: DSM_BLUE,
+              letterSpacing: 0.2,
+              textTransform: "uppercase",
+              textDecoration: "underline",
+              textUnderlineOffset: 2,
+            }}
+          >
+            Profile
+          </button>
           {showPayPill && (
             <div
               style={{
@@ -736,52 +782,6 @@ function LessonRow({
               Cancelled
             </span>
           )}
-          <button
-            type="button"
-            onClick={(ev) => {
-              ev.stopPropagation();
-              onEOLClick(ev);
-            }}
-            style={{
-              background: "transparent",
-              border: "none",
-              padding: "2px 4px",
-              cursor: "pointer",
-              fontSize: 10,
-              fontWeight: 700,
-              color: DSM_BLUE,
-              letterSpacing: 0.2,
-              textTransform: "uppercase",
-              textDecoration: "underline",
-              textUnderlineOffset: 2,
-              opacity: eolDone ? 0.55 : 1,
-            }}
-            aria-label={eolDone ? "End of lesson complete" : "Complete end of lesson"}
-          >
-            {eolDone ? "EOL ✓" : "EOL"}
-          </button>
-          <button
-            type="button"
-            onClick={(ev) => {
-              ev.stopPropagation();
-              onClick();
-            }}
-            style={{
-              background: "transparent",
-              border: "none",
-              padding: "2px 4px",
-              cursor: "pointer",
-              fontSize: 10,
-              fontWeight: 700,
-              color: DSM_BLUE,
-              letterSpacing: 0.2,
-              textTransform: "uppercase",
-              textDecoration: "underline",
-              textUnderlineOffset: 2,
-            }}
-          >
-            Profile
-          </button>
         </div>
       </div>
       {isLive ? (
