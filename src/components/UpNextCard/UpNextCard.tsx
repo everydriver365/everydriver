@@ -344,7 +344,7 @@ export function UpNextCard(props: UpNextCardProps) {
               transition={{ duration: 0.25, ease: "easeOut" }}
               style={{ overflow: "hidden" }}
             >
-              <div style={{ padding: "0 14px 14px", borderTop: "0.5px solid #EEF0F4" }}>
+              <div style={{ padding: 0, borderTop: "0.5px solid #EEF0F4" }}>
                 <NextUpTile {...props} hideHeader forceExpanded />
               </div>
             </motion.div>

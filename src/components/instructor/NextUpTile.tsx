@@ -838,9 +838,11 @@ export function NextUpTile({
 
           {/* ── HERO CARD — native iOS UIKit grouped table view style ── */}
           <div style={{
-            background: "#FFFFFF",
-            borderRadius: 13,
-            overflow: "hidden",
+            background: hideHeader ? "transparent" : "#FFFFFF",
+            borderRadius: hideHeader ? 0 : 13,
+            overflow: hideHeader ? "visible" : "hidden",
+            paddingLeft: hideHeader ? 16 : 0,
+            paddingRight: hideHeader ? 16 : 0,
             fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, sans-serif',
           }}>
             {/* ── 1. STATUS ROW — pulsing amber dot + Awaiting badge / Today ── */}
