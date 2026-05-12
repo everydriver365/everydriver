@@ -1270,34 +1270,7 @@ function AttentionRowItem({
         />
       </button>
 
-      {showNewBadge && (
-        <div
-          style={{
-            padding: "3px 14px",
-            background: "#FFF8F8",
-            borderTop: "0.5px solid rgba(204,34,41,0.08)",
-            borderBottom: "0.5px solid rgba(204,34,41,0.08)",
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
-          }}
-        >
-          <span style={{ width: 4, height: 4, borderRadius: 2, background: "#CC2229" }} />
-          <span
-            style={{
-              fontSize: 9,
-              fontWeight: 700,
-              color: "#CC2229",
-              letterSpacing: 0.6,
-              textTransform: "uppercase",
-            }}
-          >
-            Just arrived
-          </span>
-        </div>
-      )}
-
-      {!isLast && !showNewBadge && (
+      {!isLast && (
         <div style={{ height: 0.5, background: "#F0F3F8" }} />
       )}
     </>
