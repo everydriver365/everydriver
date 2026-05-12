@@ -259,7 +259,7 @@ export function AppearanceSettings({ instructorId }: AppearanceSettingsProps) {
           ]).map(opt => (
             <button
               key={opt.value}
-              onClick={() => setTheme(opt.value)}
+              onClick={() => applyTheme(opt.value)}
               className={cn(
                 "flex items-center justify-center gap-1.5 py-2 rounded-2xl text-xs font-medium transition-all",
                 theme === opt.value
