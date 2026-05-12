@@ -3,6 +3,7 @@ import { PhoneFrame } from "@/components/instructor/homeLab/PhoneFrame";
 import {
   A1StatTriad, A2PriorityHero, A3ChipCluster, A4Timeline,
   A5TwoColumn, A6BannerStack, A7Inbox,
+  A8Carousel, A9ScoreRing, A10AIBrief, A11Tabbed, A12FocusSnooze, A13Ticker,
 } from "@/components/instructor/homeLab/redesign2026/attentionVariants";
 
 const VARIANTS = [
@@ -13,6 +14,12 @@ const VARIANTS = [
   { id: "a5", name: "Two Column",     desc: "Side-by-side Urgent / To-do mini cards. Bento inside bento.",        Component: A5TwoColumn },
   { id: "a6", name: "Banner Stack",   desc: "Standalone left-bordered alert banners. No outer card.",             Component: A6BannerStack },
   { id: "a7", name: "Inbox Style",    desc: "Mail-style rows with unread dots. Familiar, ultra dense.",           Component: A7Inbox },
+  { id: "a8", name: "Swipe Carousel", desc: "Horizontal swipeable cards, one per item with Resolve CTA.",         Component: A8Carousel },
+  { id: "a9", name: "Score Ring",     desc: "Apple-style ring showing urgent ratio + condensed list.",            Component: A9ScoreRing },
+  { id: "a10", name: "AI Brief",      desc: "Dark concierge header with AI-written summary + action shortcuts.",  Component: A10AIBrief },
+  { id: "a11", name: "Tabbed",        desc: "Urgent / To-do / Done tabs with bulk-resolve CTA.",                  Component: A11Tabbed },
+  { id: "a12", name: "Focus + Snooze", desc: "Single most-important item with Resolve & Snooze actions.",         Component: A12FocusSnooze },
+  { id: "a13", name: "Status Ticker", desc: "Slim status bar + scrollable chip ticker. Lowest visual weight.",    Component: A13Ticker },
 ];
 
 export default function InstructorAttentionLab2026() {
