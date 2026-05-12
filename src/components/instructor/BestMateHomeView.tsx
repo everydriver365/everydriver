@@ -284,6 +284,7 @@ export function BestMateHomeView({ instructorId, instructor }: BestMateHomeViewP
               lessonStatus={(nextLesson as any).lessonStatus}
                     lastLessonPlan={nextLesson.lastLessonPlan}
                   />
+                </>
                 )}
 
                 {todayLessons && todayLessons.length > 0 && (
