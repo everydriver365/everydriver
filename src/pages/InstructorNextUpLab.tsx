@@ -569,6 +569,12 @@ const VARIANTS = [
   { id: "v4", name: "Compact Strip", desc: "Single dense row — leaves room for everything else.", Component: V4CompactStrip },
   { id: "v5", name: "Glass Dark", desc: "Premium gradient + glassy chips, attention-grabbing.", Component: V5GlassDark },
   { id: "v6", name: "Timeline", desc: "Time spine on the left, address card on the right.", Component: V6Timeline },
+  { id: "v7", name: "Boarding Pass", desc: "Ticket-style with notch and dashed divider.", Component: V7BoardingPass },
+  { id: "v8", name: "Countdown Ring", desc: "Circular progress around minutes-until.", Component: V8CountdownRing },
+  { id: "v9", name: "Split Action", desc: "Info on the left, tall navigate column on the right.", Component: V9SplitAction },
+  { id: "v10", name: "Status Banner", desc: "Coloured top bar communicates state at a glance.", Component: V10StatusBanner },
+  { id: "v11", name: "Editorial", desc: "Magazine pacing with serif name and stat row.", Component: V11Editorial },
+  { id: "v12", name: "Live Card", desc: "Ambient gradient with live pulse and metric tiles.", Component: V12LiveCard },
 ];
 
 export default function InstructorNextUpLab() {
