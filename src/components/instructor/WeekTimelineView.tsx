@@ -89,15 +89,35 @@ export function WeekTimelineView({
   const totalHeight = (endHour - startHour) * HOUR_HEIGHT;
   const GUTTER = 44;
 
-  const eventsByDay = useMemo(() => {
+  const isAllDay = (ev: CalendarEvent) => {
+    const durMs = ev.end.getTime() - ev.start.getTime();
+    return (
+      ev.start.getHours() === 0 &&
+      ev.start.getMinutes() === 0 &&
+      durMs >= 23 * 60 * 60 * 1000
+    );
+  };
+
+  const { eventsByDay, allDayByDay } = useMemo(() => {
     const map: Record<string, CalendarEvent[]> = {};
-    days.forEach((d) => (map[format(d, "yyyy-MM-dd")] = []));
+    const allDay: Record<string, CalendarEvent[]> = {};
+    days.forEach((d) => {
+      const k = format(d, "yyyy-MM-dd");
+      map[k] = [];
+      allDay[k] = [];
+    });
     events.forEach((ev) => {
       const k = format(ev.start, "yyyy-MM-dd");
-      if (map[k]) map[k].push(ev);
+      if (!(k in map)) return;
+      if (isAllDay(ev)) allDay[k].push(ev);
+      else map[k].push(ev);
     });
-    return map;
+    return { eventsByDay: map, allDayByDay: allDay };
   }, [events, days]);
+
+  const maxAllDay = Math.max(0, ...Object.values(allDayByDay).map((a) => a.length));
+  const ALL_DAY_ROW_H = 18;
+  const allDayStripH = maxAllDay > 0 ? maxAllDay * (ALL_DAY_ROW_H + 2) + 4 : 0;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", backgroundColor: "#FFFFFF" }}>
@@ -149,6 +169,49 @@ export function WeekTimelineView({
           );
         })}
       </div>
+
+      {/* All-day strip */}
+      {maxAllDay > 0 && (
+        <div style={{ display: "grid", gridTemplateColumns: `${GUTTER}px repeat(7, 1fr)`, borderBottom: "0.5px solid #F0F3F8", background: "#FAFBFC" }}>
+          <div style={{ fontSize: 9, color: "#8E8E93", fontWeight: 600, textAlign: "right", padding: "4px 4px 0 0" }}>
+            all-day
+          </div>
+          {days.map((d) => {
+            const k = format(d, "yyyy-MM-dd");
+            const items = allDayByDay[k] || [];
+            return (
+              <div key={k} style={{ borderLeft: "0.5px solid #F0F3F8", padding: "2px 1px", display: "flex", flexDirection: "column", gap: 2, minHeight: allDayStripH }}>
+                {items.map((ev) => {
+                  const colors = eventColor(ev);
+                  return (
+                    <button
+                      key={ev.id}
+                      onClick={() => onEventClick(ev)}
+                      style={{
+                        height: ALL_DAY_ROW_H,
+                        background: colors.bg,
+                        color: colors.text,
+                        border: "none",
+                        borderRadius: 3,
+                        padding: "0 4px",
+                        textAlign: "left",
+                        fontSize: 9,
+                        fontWeight: 600,
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        cursor: "pointer",
+                      }}
+                    >
+                      {ev.title}
+                    </button>
+                  );
+                })}
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* Scrollable timetable */}
       <div ref={scrollRef} style={{ flex: 1, overflow: "auto" }}>
