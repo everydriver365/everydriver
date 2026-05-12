@@ -39,6 +39,7 @@ import {
   XCircle,
   PoundSterling,
   type LucideIcon,
+  ChevronRight,
 } from "lucide-react";
 import { useLessonWeather } from "@/hooks/useLessonWeather";
 import { useDrivingAlerts, type DrivingAlert } from "@/hooks/useDrivingAlerts";
