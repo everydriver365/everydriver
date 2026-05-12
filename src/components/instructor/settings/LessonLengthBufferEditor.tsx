@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useSettingsDirty } from "./SettingsDirtyContext";
+import { useOptionalSettingsDirty as useSettingsDirty } from "./useOptionalSettingsDirty";
 import { toast } from "@/hooks/use-toast";
 
 const LENGTHS = [60, 90, 120];
