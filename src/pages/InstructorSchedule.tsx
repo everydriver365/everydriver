@@ -326,7 +326,7 @@ export default function InstructorSchedule() {
           {viewMode === 'list' ? (
             <MultiDayScheduleView key={mobileListRefreshKey} instructorId={instructorId} />
           ) : viewMode === 'week' ? (
-            <div className="h-[calc(100vh-12rem)] overflow-hidden">
+            <div className="h-full overflow-hidden pb-20">
               <WeekTimelineView
                 events={calendar.events}
                 currentDate={calendar.currentDate}
