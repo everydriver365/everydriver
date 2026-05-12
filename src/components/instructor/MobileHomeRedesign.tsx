@@ -2215,7 +2215,7 @@ export function MobileHomeRedesign({
       </div>
 
       {/* Bento alerts strip */}
-      <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 8, marginBottom: 8 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "3.2fr 1fr", gap: 8, marginBottom: 8 }}>
         <div style={bentoPad}>
           <div style={kpiLabel}>NEEDS YOU</div>
           <div style={{ display: "flex", gap: 14, marginTop: 8, justifyContent: "space-between" }}>
