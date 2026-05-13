@@ -291,13 +291,101 @@ function CourseFact({ icon: Icon, label }: { icon: any; label: string }) {
   );
 }
 
+/** Splits "Mon, 1 Jun 2026" → { dow: "Mon", dm: "1 Jun", year: "2026" } */
+function splitStartDate(s: string) {
+  const [dow, rest] = s.split(",").map((x) => x.trim());
+  const parts = (rest || "").split(" ");
+  const year = parts.pop() || "";
+  const dm = parts.join(" ");
+  return { dow, dm, year };
+}
+
+/** Reusable booking panel — Start date → Price → CTAs. Used on every card. */
+function BookingPanel({
+  c,
+  variant = "compact",
+}: {
+  c: SampleCourse;
+  variant?: "compact" | "featured";
+}) {
+  const { dow, dm, year } = splitStartDate(c.startDate);
+  const isFeatured = variant === "featured";
+  return (
+    <div
+      className={`flex flex-col ${
+        isFeatured
+          ? "gap-4 rounded-2xl border border-slate-200 bg-gradient-to-b from-white to-slate-50/80 p-5 shadow-inner"
+          : "gap-3"
+      }`}
+    >
+      {/* START DATE block */}
+      <div className="rounded-xl border border-sky-100 bg-sky-50/70 p-3">
+        <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-sky-700">
+          <CalendarIcon className="h-3 w-3" />
+          Starts
+        </div>
+        <div
+          className={`mt-1 font-bold leading-tight text-slate-900 ${
+            isFeatured ? "text-xl" : "text-[17px]"
+          }`}
+        >
+          {dow}, {dm}
+        </div>
+        <div className="text-[12px] font-medium text-slate-500">{year}</div>
+      </div>
+
+      {/* PRICE block */}
+      <div className="rounded-xl bg-[#0B2545]/[0.04] p-3">
+        <div
+          className={`font-extrabold leading-none tracking-tight text-[#0B2545] ${
+            isFeatured ? "text-[44px]" : "text-[34px]"
+          }`}
+        >
+          £{c.price.toLocaleString()}
+        </div>
+        <div className="mt-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+          Total price
+        </div>
+        <div className="mt-2 flex flex-col gap-1">
+          {c.klarna && (
+            <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-700">
+              <img src={klarnaLogo} alt="Klarna" className="h-3.5 w-3.5" />
+              Klarna · 3 × £{(c.price / 3).toFixed(2)}
+            </div>
+          )}
+          {c.clearpay && (
+            <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-700">
+              <img src={clearpayLogo} alt="Clearpay" className="h-3.5 w-3.5" />
+              Clearpay · 4 × £{(c.price / 4).toFixed(2)}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* CTAs */}
+      <div className="flex flex-col gap-2">
+        <button
+          className={`inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#0B2545] font-semibold text-white shadow-md shadow-[#0B2545]/20 transition hover:bg-[#13346b] ${
+            isFeatured ? "h-12 text-sm" : "h-11 text-sm"
+          }`}
+        >
+          View &amp; Book
+          <ChevronRight className="h-4 w-4" />
+        </button>
+        <button className="inline-flex h-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-[12px] font-semibold text-slate-700 hover:bg-slate-50">
+          Compare
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function FeaturedCard({ c }: { c: SampleCourse }) {
   const accent = ACCENTS[c.accent];
   return (
     <article className="relative overflow-hidden rounded-3xl border border-slate-200/70 bg-white shadow-[0_20px_50px_-25px_rgba(11,37,69,0.25)]">
-      {/* Soft gradient backdrop */}
       <div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${accent.band} opacity-[0.04]`} />
-      <div className="grid gap-0 md:grid-cols-[260px_1fr]">
+      <div className="grid gap-0 lg:grid-cols-[220px_1fr_300px]">
         {/* Hero column */}
         <div className={`relative flex flex-col justify-between bg-gradient-to-br ${accent.band} p-6 text-white`}>
           <div className="flex items-center gap-1.5 self-start rounded-full bg-white/15 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide backdrop-blur">
@@ -305,7 +393,7 @@ function FeaturedCard({ c }: { c: SampleCourse }) {
             {c.badge}
           </div>
           <div>
-            <div className="text-[88px] font-black leading-none tracking-tight drop-shadow-sm">
+            <div className="text-[80px] font-black leading-none tracking-tight drop-shadow-sm">
               {c.hours}
             </div>
             <div className="-mt-1 text-sm font-semibold uppercase tracking-[0.18em] text-white/85">
@@ -314,19 +402,19 @@ function FeaturedCard({ c }: { c: SampleCourse }) {
           </div>
           <div className="flex items-center gap-2 text-xs font-medium text-white/80">
             <ShieldCheck className="h-4 w-4" />
-            DVSA approved instructor
+            DVSA approved
           </div>
           <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10 blur-2xl" />
         </div>
 
         {/* Body */}
-        <div className="relative flex flex-col gap-4 p-6">
+        <div className="relative flex flex-col gap-4 border-r border-slate-100 p-6">
           <div className="flex items-start justify-between gap-4">
             <div>
               <div className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700">
                 <Trophy className="h-3 w-3" /> Top match for SO22 5DD
               </div>
-              <h3 className="text-2xl font-bold text-slate-900">{c.title}</h3>
+              <h3 className="text-2xl font-bold leading-tight text-slate-900">{c.title}</h3>
               <p className="mt-1 max-w-xl text-sm text-slate-600">{c.blurb}</p>
             </div>
             <button className="shrink-0 rounded-full border border-slate-200 bg-white p-2 text-slate-400 transition hover:border-rose-200 hover:text-rose-500">
@@ -334,47 +422,21 @@ function FeaturedCard({ c }: { c: SampleCourse }) {
             </button>
           </div>
 
-          <div className="grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-4">
-            <CourseFact icon={Clock} label={`${c.hours} hours`} />
-            <CourseFact icon={MapPin} label={`${c.location} · ${c.distance}`} />
-            <CourseFact icon={User} label={c.instructor} />
+          <div className="grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-2">
+            <CourseFact icon={Clock} label={`${c.hours} hours total`} />
             <CourseFact icon={Settings2} label={c.transmission} />
+            <CourseFact icon={User} label={c.instructor} />
+            <CourseFact icon={MapPin} label={`${c.location} · ${c.distance}`} />
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4">
-            <div className="flex flex-wrap items-end justify-between gap-4">
-              <div>
-                <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                  Starts
-                </div>
-                <div className="text-lg font-semibold text-slate-900">{c.startDate}</div>
-              </div>
-              <div className="text-right">
-                <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                  Total
-                </div>
-                <div className="text-3xl font-extrabold text-[#0B2545]">£{c.price}</div>
-                <div className="text-[11px] text-slate-500">or 3× £{Math.round(c.price / 3)} with Klarna</div>
-              </div>
-            </div>
-            <div className="mt-3 flex flex-wrap items-center gap-2">
-              <PaymentPill enabled={c.klarna} logo={klarnaLogo} label="Klarna" />
-              <PaymentPill enabled={c.clearpay} logo={clearpayLogo} label="Clearpay" />
-              <div className="flex items-center gap-1 text-[11px] text-slate-500">
-                <Lock className="h-3 w-3" /> Secure checkout
-              </div>
-            </div>
+          <div className="mt-auto flex items-center gap-2 text-[11px] text-slate-500">
+            <Lock className="h-3 w-3" /> Secure checkout · Free cancellation
           </div>
+        </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <button className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-[#0B2545] px-5 text-sm font-semibold text-white shadow-md shadow-[#0B2545]/20 transition hover:bg-[#13346b] sm:flex-none sm:px-8">
-              View &amp; Book
-              <ChevronRight className="h-4 w-4" />
-            </button>
-            <button className="inline-flex h-11 items-center justify-center rounded-xl border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-700 hover:bg-slate-50">
-              Compare
-            </button>
-          </div>
+        {/* Right booking panel */}
+        <div className="bg-slate-50/40 p-5 lg:p-6">
+          <BookingPanel c={c} variant="featured" />
         </div>
       </div>
     </article>
@@ -387,8 +449,8 @@ function StandardCard({ c }: { c: SampleCourse }) {
     <article
       className={`group relative flex flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm ring-1 ${accent.ring} transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-slate-900/5`}
     >
-      {/* Top band */}
-      <div className={`relative h-24 bg-gradient-to-br ${accent.band} px-5 py-4 text-white`}>
+      {/* Top band — visual identity */}
+      <div className={`relative h-20 bg-gradient-to-br ${accent.band} px-5 py-3 text-white`}>
         <div className="flex items-start justify-between">
           <span className="inline-flex items-center gap-1 rounded-full bg-white/20 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider backdrop-blur">
             {c.badge}
@@ -397,63 +459,39 @@ function StandardCard({ c }: { c: SampleCourse }) {
             <Heart className="h-3.5 w-3.5" />
           </button>
         </div>
-        <div className="absolute -right-2 bottom-0 flex items-baseline text-white/95">
-          <span className="text-[64px] font-black leading-none tracking-tight drop-shadow">
+        <div className="absolute -right-1 bottom-0 flex items-baseline text-white/95">
+          <span className="text-[56px] font-black leading-none tracking-tight drop-shadow">
             {c.hours}
           </span>
           <span className="mb-2 ml-1 text-xs font-bold uppercase tracking-widest">hr</span>
         </div>
       </div>
 
-      <div className="flex flex-1 flex-col gap-3 p-5">
-        <div>
-          <h3 className="text-base font-bold leading-tight text-slate-900">{c.title}</h3>
-          <p className="mt-1 line-clamp-2 text-[13px] text-slate-500">{c.blurb}</p>
-        </div>
-
-        <div className="grid grid-cols-2 gap-x-3 gap-y-1.5">
-          <CourseFact icon={Clock} label={`${c.hours} hrs`} />
-          <CourseFact icon={Settings2} label={c.transmission} />
-          <CourseFact icon={MapPin} label={c.distance} />
-          <CourseFact icon={User} label={c.instructor.split(" ")[0]} />
-        </div>
-
-        <div className="flex items-center gap-2 rounded-xl bg-slate-50 px-3 py-2 text-[12px] font-medium text-slate-700">
-          <CalendarIcon className="h-3.5 w-3.5 text-emerald-600" />
-          <span>Available from</span>
-          <span className="ml-auto font-semibold text-slate-900">{c.startDate}</span>
-        </div>
-
-        <div className="flex items-end justify-between border-t border-dashed border-slate-200 pt-3">
+      {/* Two-column body: details (left) + booking panel (right) */}
+      <div className="grid flex-1 gap-4 p-5 sm:grid-cols-[1fr_180px]">
+        {/* Left: title + meta */}
+        <div className="flex flex-col gap-3">
           <div>
-            <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-              Total
-            </div>
-            <div className="text-2xl font-extrabold text-[#0B2545]">£{c.price}</div>
+            <h3 className="text-base font-bold leading-tight text-slate-900">{c.title}</h3>
+            <p className="mt-1 line-clamp-2 text-[13px] text-slate-500">{c.blurb}</p>
           </div>
-          <div className="flex flex-col items-end gap-1">
-            {c.klarna && (
-              <div className="flex items-center gap-1 text-[10px] font-medium text-slate-600">
-                <img src={klarnaLogo} alt="Klarna" className="h-3 w-3" />
-                3× £{Math.round(c.price / 3)}
-              </div>
-            )}
-            {c.clearpay && (
-              <div className="flex items-center gap-1 text-[10px] font-medium text-slate-600">
-                <img src={clearpayLogo} alt="Clearpay" className="h-3 w-3" />
-                4× £{Math.round(c.price / 4)}
-              </div>
-            )}
+          <div className="flex flex-wrap gap-1.5">
+            <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-600">
+              {c.transmission}
+            </span>
+            <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-600">
+              {c.hours} hrs
+            </span>
+          </div>
+          <div className="mt-auto space-y-1.5">
+            <CourseFact icon={User} label={c.instructor} />
+            <CourseFact icon={MapPin} label={`${c.location} · ${c.distance}`} />
           </div>
         </div>
 
-        <div className="mt-1 flex items-center gap-2">
-          <button className="inline-flex h-10 flex-1 items-center justify-center gap-1.5 rounded-lg bg-[#0B2545] text-sm font-semibold text-white shadow-sm transition hover:bg-[#13346b]">
-            View &amp; Book
-          </button>
-          <button className="inline-flex h-10 items-center justify-center rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 hover:bg-slate-50">
-            Compare
-          </button>
+        {/* Right: booking panel (stacks under on mobile) */}
+        <div className="border-t border-dashed border-slate-200 pt-4 sm:border-l sm:border-t-0 sm:border-dashed sm:pl-4 sm:pt-0">
+          <BookingPanel c={c} />
         </div>
       </div>
     </article>
