@@ -139,10 +139,12 @@ export function Footer() {
 
         <div className="mt-8 border-t border-primary-foreground/10 pt-8 text-center text-sm text-primary-foreground/50">
           <p>© {new Date().getFullYear()} {copyrightName}. All rights reserved.</p>
-          <div className="mt-2 flex justify-center gap-4">
+          <div className="mt-2 flex justify-center gap-4 flex-wrap">
             <a href="/privacy-policy" className="hover:text-accent">Privacy Policy</a>
             <span>|</span>
             <Link to="/terms-of-service" className="hover:text-accent">Terms of Service</Link>
+            <span>|</span>
+            <Link to="/instructor-app/login" className="hover:text-accent">Instructor login</Link>
           </div>
         </div>
       </div>
