@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { PostcodeAutocomplete } from "@/components/PostcodeAutocomplete";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { DynamicCourseCard } from "@/components/DynamicCourseCard";
-import { CourseRowCard } from "@/components/courses/CourseRowCard";
 import { CourseTableList } from "@/components/courses/CourseTableList";
 import { Edit2, SlidersHorizontal, ShieldCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
