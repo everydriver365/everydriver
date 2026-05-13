@@ -269,7 +269,7 @@ function SidebarCalendar({
                   } ${isToday && !isSelected ? "ring-1 ring-primary/40" : ""}`}
                 >
                   <span>{format(day.date, "d")}</span>
-                  {day.isAvailable && day.courseCount > 0 && (
+                  {!hideCounts && day.isAvailable && day.courseCount > 0 && (
                     <span className={`text-[9px] font-semibold leading-none ${
                       isSelected ? "text-primary-foreground/80" : "text-emerald-600 dark:text-emerald-400"
                     }`}>
