@@ -69,16 +69,19 @@ function OptionE({ c }: { c: Course }) {
           <span className="font-semibold text-foreground">{c.instructor}</span>
           <Star className="h-3 w-3 fill-amber-400 text-amber-400" />{c.rating} ({c.reviews})
         </div>
-        <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs">
-          <span className="flex items-center gap-1"><Calendar className="h-3 w-3 text-red-600" /><b className="font-bold">{c.startDate}</b> · {c.startTime}</span>
-          <span className="flex items-center gap-1"><MapPin className="h-3 w-3 text-red-600" />{c.distance} mi away</span>
+        <div className="mt-3 inline-flex items-center gap-2 rounded-lg bg-red-600 text-white px-3 py-1.5 shadow-md">
+          <Calendar className="h-4 w-4" />
+          <span className="text-[10px] font-black uppercase tracking-widest opacity-80">Starts</span>
+          <span className="text-base font-black">{c.startDate} · {c.startTime}</span>
         </div>
+        <div className="mt-2 text-xs text-muted-foreground flex items-center gap-1"><MapPin className="h-3 w-3" />{c.distance} mi away</div>
       </div>
       {/* Right CTA */}
-      <div className="shrink-0 flex flex-col justify-between items-end p-5 bg-gradient-to-b from-slate-50 to-slate-100 border-l border-dashed border-slate-300">
-        {c.oldPrice && <span className="text-xs line-through text-muted-foreground">£{c.oldPrice}</span>}
-        <div className="text-3xl font-black text-slate-900 leading-none">£{c.price}</div>
-        <Button size="sm" className="mt-3 bg-red-600 hover:bg-red-700 text-white rounded-full font-black uppercase tracking-wider">
+      <div className="shrink-0 flex flex-col justify-center items-center p-5 bg-gradient-to-b from-slate-50 to-slate-100 border-l border-dashed border-slate-300 min-w-[160px]">
+        {c.oldPrice && <span className="text-sm line-through text-muted-foreground">£{c.oldPrice}</span>}
+        <div className="text-5xl font-black text-slate-900 leading-none tracking-tight">£{c.price}</div>
+        <div className="text-[10px] uppercase tracking-widest text-slate-500 mt-1">all-in</div>
+        <Button size="sm" className="mt-3 w-full bg-red-600 hover:bg-red-700 text-white rounded-full font-black uppercase tracking-wider">
           Book <ArrowRight className="h-3.5 w-3.5" />
         </Button>
       </div>
