@@ -299,11 +299,15 @@ export default function Courses() {
   const initialPostcode = searchParams.get("postcode") || "";
   const initialRadius = searchParams.get("radius") || "10";
   const initialTransmission = searchParams.get("transmission") || "all";
+  const initialKlarna = searchParams.get("klarna") === "1";
+  const initialClearpay = searchParams.get("clearpay") === "1";
   const [postcode, setPostcode] = useState(initialPostcode);
   const [radius, setRadius] = useState(initialRadius);
   const [showRadiusFallbackNotice, setShowRadiusFallbackNotice] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [transmission, setTransmission] = useState(initialTransmission);
+  const [klarnaOnly, setKlarnaOnly] = useState(initialKlarna);
+  const [clearpayOnly, setClearpayOnly] = useState(initialClearpay);
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState<SortOption>("soonest");
   const [geoCache, setGeoCache] = useState<GeoCache>({});
