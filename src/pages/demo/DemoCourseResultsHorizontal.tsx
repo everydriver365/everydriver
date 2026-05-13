@@ -57,32 +57,34 @@ function badgePill(b?: Course["badge"]) {
 }
 
 /* ============================================================
-   OPTION A — Classic Horizontal: image-left, content-center, CTA-right
+   OPTION A — Classic Horizontal: compact avatar, BIG hours, CTA-right
    ============================================================ */
 function OptionA({ c }: { c: Course }) {
   const b = badgePill(c.badge);
   return (
     <div className="group relative overflow-hidden rounded-2xl border bg-card shadow-sm hover:shadow-lg transition-all">
-      <div className="flex flex-col md:flex-row">
-        {/* Avatar / image */}
-        <div className="relative md:w-56 md:flex-shrink-0 bg-gradient-to-br from-primary/10 to-primary/5 p-6 flex items-center justify-center">
-          <img src={c.avatar} alt={c.instructor} className="h-28 w-28 rounded-full object-cover ring-4 ring-background shadow-md" />
+      <div className="flex flex-col md:flex-row items-stretch">
+        {/* Left: hours pillar */}
+        <div className="relative md:w-32 md:flex-shrink-0 bg-gradient-to-br from-primary/15 to-primary/5 p-5 flex flex-col items-center justify-center gap-1">
+          <span className="text-5xl font-black text-primary leading-none">{c.hours}</span>
+          <span className="text-sm font-semibold uppercase tracking-wide text-primary/80">hours</span>
           {b && (
-            <span className={`absolute top-3 left-3 inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ${b.cls}`}>
-              <b.icon className="h-3 w-3" /> {b.label}
+            <span className={`mt-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold ${b.cls}`}>
+              <b.icon className="h-2.5 w-2.5" /> {b.label}
             </span>
           )}
         </div>
 
         {/* Middle */}
         <div className="flex-1 p-5">
-          <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <img src={c.avatar} alt={c.instructor} className="h-8 w-8 rounded-full object-cover ring-1 ring-muted" />
             <div>
-              <h3 className="text-lg font-bold leading-tight">{c.instructor}</h3>
-              <div className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
-                <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+              <h3 className="text-base font-bold leading-tight">{c.instructor}</h3>
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
                 <span className="font-semibold text-foreground">{c.rating}</span>
-                <span>({c.reviews} reviews)</span>
+                <span>({c.reviews})</span>
                 <span>·</span>
                 <span>{c.passRate}% pass rate</span>
               </div>
@@ -91,9 +93,9 @@ function OptionA({ c }: { c: Course }) {
 
           <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div className="flex items-center gap-2"><MapPin className="h-4 w-4 text-muted-foreground" />{c.distance} mi</div>
-            <div className="flex items-center gap-2"><Clock className="h-4 w-4 text-muted-foreground" />{c.hours} hours</div>
-            <div className="flex items-center gap-2"><Car className="h-4 w-4 text-muted-foreground" />{c.transmission}</div>
             <div className="flex items-center gap-2"><Calendar className="h-4 w-4 text-muted-foreground" />{c.startDate}</div>
+            <div className="flex items-center gap-2"><Car className="h-4 w-4 text-muted-foreground" />{c.transmission}</div>
+            <div className="flex items-center gap-2"><Clock className="h-4 w-4 text-muted-foreground" />{c.startTime}</div>
           </div>
 
           <div className="mt-3 flex flex-wrap gap-1.5">
