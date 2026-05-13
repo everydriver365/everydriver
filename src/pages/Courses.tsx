@@ -992,7 +992,7 @@ export default function Courses() {
     (priceRange !== "any" ? 1 : 0) +
     (selectedInstructorId ? 1 : 0);
 
-  const isListMode = viewMode === "list";
+  const isListMode = (viewMode as string) === "list";
 
   return (
     <MainLayout>
@@ -1520,8 +1520,8 @@ export default function Courses() {
                             onClick={() => setViewMode("list")}
                             className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-all"
                             style={{
-                              background: viewMode === "list" ? "#0a1936" : "transparent",
-                              color: viewMode === "list" ? "white" : "#7a7a7a",
+                              background: (viewMode as string) === "list" ? "#0a1936" : "transparent",
+                              color: (viewMode as string) === "list" ? "white" : "#7a7a7a",
                             }}
                             aria-label="List view"
                           >
@@ -1532,8 +1532,8 @@ export default function Courses() {
                             onClick={() => setViewMode("grid")}
                             className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-all"
                             style={{
-                              background: viewMode === "grid" ? "#0a1936" : "transparent",
-                              color: viewMode === "grid" ? "white" : "#7a7a7a",
+                              background: (viewMode as string) === "grid" ? "#0a1936" : "transparent",
+                              color: (viewMode as string) === "grid" ? "white" : "#7a7a7a",
                             }}
                             aria-label="Grid view"
                           >
