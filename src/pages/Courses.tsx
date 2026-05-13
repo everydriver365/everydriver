@@ -952,35 +952,63 @@ export default function Courses() {
               {searchedAreaName ? `Courses in ${searchedAreaName}` : "Find a Course"}
             </h1>
 
-            <div className="flex flex-col gap-3 rounded-xl bg-card p-4 shadow-md sm:flex-row sm:items-center">
-              <PostcodeAutocomplete
-                value={postcode}
-                onChange={setPostcode}
-                onSelect={handlePostcodeSelect}
-                placeholder="Enter your postcode"
-                className="flex-1"
-                inputClassName="h-11 border bg-background"
-              />
-              <select
-                value={radius}
-                onChange={(e) => setRadius(e.target.value)}
-                className="h-11 rounded-lg border bg-background px-4 text-foreground"
-              >
-                <option value="5">5 miles</option>
-                <option value="10">10 miles</option>
-                <option value="15">15 miles</option>
-                <option value="25">25 miles</option>
-                <option value="35">35 miles</option>
-                <option value="50">50 miles</option>
-              </select>
-              <Button variant="accent" size="lg" className="h-11" onClick={() => handleSearch()} disabled={isSearching}>
-                {isSearching ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <Search className="mr-2 h-4 w-4" />
-                )}
-                Search
-              </Button>
+            <div className="rounded-3xl border border-slate-100 bg-white p-2 shadow-[0_20px_50px_rgba(0,0,0,0.08)] md:p-3">
+              <div className="flex flex-col items-stretch gap-2 sm:flex-row">
+                {/* Postcode input */}
+                <div className="group relative flex-1">
+                  <label className="absolute -top-2 left-11 z-10 bg-white px-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                    Postcode
+                  </label>
+                  <PostcodeAutocomplete
+                    value={postcode}
+                    onChange={setPostcode}
+                    onSelect={handlePostcodeSelect}
+                    placeholder="Enter postcode"
+                    className="w-full"
+                    inputClassName="h-14 rounded-2xl border-0 bg-slate-50/60 pl-12 pr-4 font-medium text-slate-700 placeholder:text-slate-400 focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-blue-500/20"
+                  />
+                  <MapPin className="pointer-events-none absolute left-5 top-1/2 z-10 h-5 w-5 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-blue-500" />
+                </div>
+
+                {/* Radius select */}
+                <div className="group relative w-full sm:w-56">
+                  <label className="absolute -top-2 left-11 z-10 bg-white px-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                    Search Radius
+                  </label>
+                  <svg className="pointer-events-none absolute left-5 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                  </svg>
+                  <select
+                    value={radius}
+                    onChange={(e) => setRadius(e.target.value)}
+                    className="h-14 w-full appearance-none rounded-2xl border-0 bg-slate-50/60 pl-12 pr-10 font-medium text-slate-700 outline-none transition-all focus:bg-white focus:ring-2 focus:ring-blue-500/20"
+                  >
+                    <option value="5">5 miles</option>
+                    <option value="10">10 miles</option>
+                    <option value="15">15 miles</option>
+                    <option value="25">25 miles</option>
+                    <option value="35">35 miles</option>
+                    <option value="50">50 miles</option>
+                  </select>
+                  <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                </div>
+
+                {/* Search button */}
+                <button
+                  onClick={() => handleSearch()}
+                  disabled={isSearching}
+                  className="group flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-[#0B2545] px-8 font-bold text-white shadow-lg shadow-[#0B2545]/20 transition-all hover:bg-[#0B2545]/90 active:scale-95 disabled:opacity-60 sm:w-auto"
+                >
+                  {isSearching ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    <>
+                      <span>Search</span>
+                      <Search className="h-5 w-5 transition-transform group-hover:translate-x-0.5" />
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
 
             {/* More Filters Button - Desktop only */}
