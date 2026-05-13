@@ -204,13 +204,11 @@ export function HeroSearchSection({
             {/* Postcode */}
             <div className="px-5 py-4 border-b border-[#e3e3ea]">
               <label
-                htmlFor="hero-postcode-mobile"
                 className="block text-sm font-bold text-black mb-1"
               >
                 Postcode<span className="text-[#CC2229] ml-0.5">*</span>
               </label>
               <PostcodeAutocomplete
-                id="hero-postcode-mobile"
                 value={postcode}
                 onChange={setPostcode}
                 onSelect={(pc) => setPostcode(pc)}
@@ -220,7 +218,6 @@ export function HeroSearchSection({
                   postcodeError ? "text-[#CC2229] placeholder:text-[#CC2229]" : "text-black"
                 }`}
                 showGeolocation={true}
-                required
               />
               {postcodeError && (
                 <span className="text-xs text-[#CC2229] mt-1 block">
