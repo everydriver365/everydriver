@@ -9,6 +9,8 @@ import {
 } from "@/components/ui/accordion";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
+import { SEOHead } from "@/components/SEOHead";
+import { useMemo } from "react";
 
 interface FAQ {
   id: string;
