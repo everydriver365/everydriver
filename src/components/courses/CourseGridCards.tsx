@@ -125,7 +125,7 @@ export function CourseGridCards({ courses }: CourseGridCardsProps) {
         const type = courseTypeLabel(c);
         const trans = transmissionLabel(c.instructor.car_type);
         const dark = isDarkGradient(c.hours);
-        const headerText = dark ? "#ffffff" : "#0a1936";
+        const headerText = c.courseImageUrl || dark ? "#ffffff" : "#0a1936";
         const key = `${c.instructor.id}-${c.hours}-${c.bookableDate.toISOString()}`;
         const isFav = !!favs[key];
 
