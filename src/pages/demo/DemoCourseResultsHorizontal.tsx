@@ -355,9 +355,9 @@ function OptionB({ c }: { c: Course }) {
               );
             })()}
 
-            <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Driving Course · Issued</div>
-            <h3 className="text-xl font-black mt-1 leading-tight">{c.startDate}</h3>
-            <div className="text-sm text-muted-foreground">Departs {c.startTime} · {c.area}</div>
+            <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Departure</div>
+            <h3 className="text-3xl font-black mt-1 leading-none tracking-tight">{c.startDate}</h3>
+            <div className="text-sm font-semibold text-orange-600 mt-0.5">{c.startTime} · {c.area}</div>
 
             <div className="mt-4 grid grid-cols-3 gap-3">
               <PassStat label="Pass rate" value={`${c.passRate}%`} />
@@ -372,14 +372,14 @@ function OptionB({ c }: { c: Course }) {
           </div>
 
           {/* Right: price */}
-          <div className="md:w-52 md:flex-shrink-0 p-6 border-t md:border-t-0 md:border-l border-dashed flex md:flex-col items-center justify-between gap-3 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20">
+          <div className="md:w-56 md:flex-shrink-0 p-6 border-t md:border-t-0 md:border-l border-dashed flex md:flex-col items-center justify-between gap-3 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20">
             <div className="text-center">
               <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Total fare</div>
               <div className="flex items-baseline gap-1.5 justify-center">
-                {c.oldPrice && <span className="text-xs text-muted-foreground line-through">£{c.oldPrice}</span>}
-                <span className="text-3xl font-black text-orange-600">£{c.price}</span>
+                {c.oldPrice && <span className="text-sm text-muted-foreground line-through">£{c.oldPrice}</span>}
+                <span className="text-5xl font-black text-orange-600 leading-none">£{c.price}</span>
               </div>
-              <div className="text-[10px] text-muted-foreground">incl. test fee</div>
+              <div className="text-[10px] text-muted-foreground mt-1">incl. test fee</div>
             </div>
             <Button className="w-full gap-1.5 bg-gradient-to-r from-orange-500 to-pink-600 hover:from-orange-600 hover:to-pink-700 text-white border-0 font-bold shadow-md">
               Board now <ArrowRight className="h-4 w-4" />
