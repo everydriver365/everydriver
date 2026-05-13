@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
-import { Calendar, MapPin, User, Heart, ChevronRight } from "lucide-react";
+import { Calendar, MapPin, User, ChevronRight } from "lucide-react";
 import { useState } from "react";
 
 interface GridCourse {
@@ -105,7 +105,6 @@ const transPillStyle = (label: string) => {
 
 export function CourseGridCards({ courses }: CourseGridCardsProps) {
   const navigate = useNavigate();
-  const [favs, setFavs] = useState<Record<string, boolean>>({});
 
   const goTo = (c: GridCourse) => {
     const dateParam = c.bookableDate ? `&date=${format(c.bookableDate, "yyyy-MM-dd")}` : "";
@@ -127,7 +126,6 @@ export function CourseGridCards({ courses }: CourseGridCardsProps) {
         const dark = isDarkGradient(c.hours);
         const headerText = c.courseImageUrl || dark ? "#ffffff" : "#0a1936";
         const key = `${c.instructor.id}-${c.hours}-${c.bookableDate.toISOString()}`;
-        const isFav = !!favs[key];
 
         return (
           <div
@@ -253,39 +251,6 @@ export function CourseGridCards({ courses }: CourseGridCardsProps) {
                   </span>
                 )}
               </div>
-
-              {/* Top-right favourite */}
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setFavs((prev) => ({ ...prev, [key]: !prev[key] }));
-                }}
-                aria-label={isFav ? "Remove from favourites" : "Add to favourites"}
-                style={{
-                  position: "absolute",
-                  top: 12,
-                  right: 12,
-                  width: 34,
-                  height: 34,
-                  borderRadius: "50%",
-                  background: "rgba(255,255,255,0.95)",
-                  border: "none",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  cursor: "pointer",
-                  backdropFilter: "blur(6px)",
-                  boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
-                  zIndex: 2,
-                }}
-              >
-                <Heart
-                  style={{ width: 17, height: 17 }}
-                  color={isFav ? "#d92e3a" : "#7a7a7a"}
-                  fill={isFav ? "#d92e3a" : "none"}
-                />
-              </button>
 
               {/* Bottom-left hours */}
               <div
