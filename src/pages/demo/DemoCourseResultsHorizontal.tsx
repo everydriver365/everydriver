@@ -163,24 +163,21 @@ function OptionG({ c }: { c: Course }) {
             <img src={c.avatar} alt="" className="h-5 w-5 rounded-full ring-1 ring-white/20" />
             {c.instructor} · <Star className="h-3 w-3 fill-amber-400 text-amber-400" />{c.rating}
           </div>
-          <div className="mt-4 grid grid-cols-3 gap-2">
-            {[
-              { i: Calendar, l: c.startDate.split(" ").slice(0,2).join(" "), s: "Start" },
-              { i: Clock, l: c.startTime, s: "Time" },
-              { i: MapPin, l: `${c.distance} mi`, s: "Distance" },
-            ].map((s, i) => (
-              <div key={i} className="rounded-xl bg-white/[0.04] ring-1 ring-white/10 px-3 py-2">
-                <div className="flex items-center gap-1 text-[10px] uppercase text-white/50"><s.i className="h-3 w-3" />{s.s}</div>
-                <div className="text-sm font-bold">{s.l}</div>
-              </div>
-            ))}
+          <div className="mt-4 rounded-xl bg-gradient-to-r from-cyan-500/10 via-purple-500/10 to-pink-500/10 ring-1 ring-white/10 p-3 flex items-center gap-3">
+            <Calendar className="h-5 w-5 text-cyan-300 shrink-0" />
+            <div className="flex-1 min-w-0">
+              <div className="text-[10px] font-black uppercase tracking-widest text-cyan-300/80">Starts</div>
+              <div className="text-lg font-black leading-tight">{c.startDate} <span className="text-white/60 font-semibold">· {c.startTime}</span></div>
+            </div>
+            <div className="flex items-center gap-1 text-[11px] text-white/70 pl-3 border-l border-white/10"><MapPin className="h-3 w-3" />{c.distance} mi</div>
           </div>
         </div>
         {/* CTA */}
-        <div className="shrink-0 flex flex-col justify-center items-end gap-3 p-6 bg-gradient-to-b from-white/[0.03] to-transparent">
-          {c.oldPrice && <span className="text-xs line-through text-white/40">£{c.oldPrice}</span>}
-          <div className="text-3xl font-black text-white leading-none">£{c.price}</div>
-          <Button size="sm" className="rounded-full bg-gradient-to-r from-cyan-400 to-fuchsia-500 text-white font-bold border-0 hover:opacity-90">
+        <div className="shrink-0 flex flex-col justify-center items-center gap-3 p-6 bg-gradient-to-b from-white/[0.03] to-transparent min-w-[180px]">
+          {c.oldPrice && <span className="text-sm line-through text-white/40">£{c.oldPrice}</span>}
+          <div className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-br from-cyan-300 via-white to-pink-300 leading-none">£{c.price}</div>
+          <div className="text-[10px] uppercase tracking-widest text-white/50">all-in</div>
+          <Button size="sm" className="w-full rounded-full bg-gradient-to-r from-cyan-400 to-fuchsia-500 text-white font-bold border-0 hover:opacity-90">
             Reserve <ArrowRight className="h-3.5 w-3.5" />
           </Button>
         </div>
