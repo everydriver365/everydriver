@@ -51,7 +51,7 @@ export function Header() {
       <div className="bg-primary overflow-x-hidden">
       <nav className="px-4 max-w-7xl mx-auto flex h-16 items-center justify-between relative" role="navigation" aria-label="Main navigation">
         <Link to={homeLink} className="hidden md:flex items-center gap-2">
-          <img src={logo} alt={logoAlt} className="h-9 -mx-1" />
+          <img src={logo} alt={logoAlt} className="h-12 -mx-1" />
           {logoText && <span className="text-sm font-semibold text-nav-foreground">{logoText}</span>}
         </Link>
 
