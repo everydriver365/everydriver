@@ -982,6 +982,20 @@ export default function Courses() {
     });
   }, [coursesWithDistance]);
 
+  // Top instructor for "Your Match" card (closest available for the day)
+  const topMatchInstructor = availableInstructorsForFilter[0] || null;
+
+  // Active filter count (for the Filters button badge)
+  const activeFilterCount =
+    (transmission !== "all" ? 1 : 0) +
+    (klarnaOnly ? 1 : 0) +
+    (clearpayOnly ? 1 : 0) +
+    (courseType !== "all" ? 1 : 0) +
+    (priceRange !== "any" ? 1 : 0) +
+    (selectedInstructorId ? 1 : 0);
+
+  const isListMode = viewMode === "list";
+
   return (
     <MainLayout>
       <SEOHead
