@@ -210,7 +210,7 @@ export default function Index() {
 
   return (
     <MainLayout>
-      <SEOHead />
+      <SEOHead jsonLd={homepageJsonLd} />
       {/* Hero Section - Left/Right Split Layout */}
       {wlConfig && (
         <section className="hidden md:block">
