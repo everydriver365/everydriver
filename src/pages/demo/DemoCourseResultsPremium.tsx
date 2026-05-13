@@ -362,9 +362,6 @@ function BookingPanel({
           View &amp; Book
           <ChevronRight className="h-4 w-4" />
         </button>
-        <button className="inline-flex h-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-[12px] font-semibold text-slate-700 hover:bg-slate-50">
-          Compare
-        </button>
       </div>
     </div>
   );
