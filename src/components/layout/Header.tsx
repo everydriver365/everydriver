@@ -37,6 +37,13 @@ export function Header() {
   const winchesterPhone = "07767 693276";
   const navLinks = [{ href: homeLink, label: "Home" }, ...baseNavLinks];
 
+  // Drive365: render dedicated header
+  const branding = useDomainBranding();
+  const isDrive365 = branding.brandName === "Drive365" || location.pathname.startsWith("/drive365");
+  if (isDrive365) {
+    return <Drive365Header />;
+  }
+
   const toggleTheme = () => {
     setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
   };
