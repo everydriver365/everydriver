@@ -295,7 +295,7 @@ export function CourseGridCards({ courses }: CourseGridCardsProps) {
             </div>
 
             {/* Content body */}
-            <div style={{ padding: "16px 18px 18px" }}>
+            <div style={{ padding: "16px 18px 18px", display: "flex", flexDirection: "column", flex: 1 }}>
               {/* Tag pills */}
               <div style={{ display: "flex", gap: 5, marginBottom: 10 }}>
                 <span
