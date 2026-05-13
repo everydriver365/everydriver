@@ -9,6 +9,8 @@ import {
 } from "@/components/ui/accordion";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
+import { SEOHead } from "@/components/SEOHead";
+import { useMemo } from "react";
 
 interface FAQ {
   id: string;
@@ -42,8 +44,29 @@ export default function FAQs() {
   // Group FAQs by category
   const categories = [...new Set(faqs.map(faq => faq.category))];
 
+  const faqJsonLd = useMemo(() => {
+    if (!faqs.length) return undefined;
+    return {
+      id: "faqpage-jsonld",
+      data: {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        mainEntity: faqs.map((f) => ({
+          "@type": "Question",
+          name: f.question,
+          acceptedAnswer: { "@type": "Answer", text: f.answer },
+        })),
+      },
+    };
+  }, [faqs]);
+
   return (
     <MainLayout>
+      <SEOHead
+        title="Driving Lesson FAQs | Common Questions Answered | EveryDriver"
+        description="Answers to common questions about booking driving lessons, intensive courses, payment options, instructors and the DVSA test."
+        jsonLd={faqJsonLd}
+      />
       <div className="container py-8 pb-24">
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-8">

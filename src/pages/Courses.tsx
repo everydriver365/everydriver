@@ -13,6 +13,7 @@ import { useSearchParams } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getWhitelabelInstructorSlug } from "@/lib/whitelabel";
 import { resolveHourlyRate, type PostcodeRateRule } from "@/lib/pricing/resolveHourlyRate";
+import { SEOHead } from "@/components/SEOHead";
 
 // Standard course hours to display
 const DISPLAY_HOURS = [10, 20, 30, 40, 28]; // 28 = Test in a Week
@@ -921,6 +922,10 @@ export default function Courses() {
 
   return (
     <MainLayout>
+      <SEOHead
+        title="Driving Courses Near You | Compare & Book | EveryDriver"
+        description="Compare intensive, semi-intensive and weekly driving courses from DVSA-approved instructors near you. Book online with 0% finance options."
+      />
       {/* Search Header */}
       <section className="border-b bg-background py-8">
         <div className="container">

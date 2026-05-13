@@ -8,6 +8,12 @@ interface SEOHeadProps {
   description?: string;
   /** When true, emits <meta name="robots" content="noindex,follow"> */
   noindex?: boolean;
+  /** og:type override — defaults to "website". Use "article" for news posts. */
+  type?: "website" | "article";
+  /** Page-specific image override for og:image / twitter:image. */
+  image?: string;
+  /** Optional JSON-LD payload(s) injected into <head>. */
+  jsonLd?: { id: string; data: Record<string, unknown> } | Array<{ id: string; data: Record<string, unknown> }>;
 }
 
 /**
@@ -19,7 +25,7 @@ interface SEOHeadProps {
  * geo + hreflang + canonical hints so search engines treat the site as
  * a distinct local UK driving school rather than a Drive365 duplicate.
  */
-export function SEOHead({ title, description, noindex }: SEOHeadProps) {
+export function SEOHead({ title, description, noindex, type = "website", image, jsonLd }: SEOHeadProps) {
   const { getSetting, loading } = useSiteSettings();
   const location = useLocation();
 
@@ -57,13 +63,15 @@ export function SEOHead({ title, description, noindex }: SEOHeadProps) {
     // ---------- Open Graph / Twitter ----------
     const ogTitle = isWL ? pageTitle : (getSetting("og_title") || pageTitle);
     const ogDescription = isWL ? metaDescription : (getSetting("og_description") || metaDescription);
-    const ogImage = isWL
-      ? absoluteUrl(wl!.logoPath)
-      : getSetting("og_image_url");
+    const ogImage = image
+      ? absoluteUrl(image)
+      : isWL
+        ? absoluteUrl(wl!.logoPath)
+        : getSetting("og_image_url");
 
     setMetaTag("og:title", ogTitle, "property");
     setMetaTag("og:description", ogDescription, "property");
-    setMetaTag("og:type", "website", "property");
+    setMetaTag("og:type", type, "property");
     setMetaTag("og:locale", "en_GB", "property");
     setMetaTag("og:site_name", baseSiteTitle, "property");
     if (ogImage) setMetaTag("og:image", ogImage, "property");
@@ -128,8 +136,25 @@ export function SEOHead({ title, description, noindex }: SEOHeadProps) {
       removeJsonLd("wl-localbusiness");
       removeLink("alternate", "en-GB");
       removeLink("alternate", "x-default");
+      // Self-referencing canonical for the marketing/main domain — every
+      // route advertises its own URL so search engines don't treat
+      // /courses, /faqs, /about etc. as duplicates of the homepage.
+      upsertLink("canonical", `${window.location.origin}${location.pathname}`);
     }
-  }, [loading, title, description, noindex, location.pathname, getSetting]);
+
+    // Page-level JSON-LD payloads (Article, FAQPage, WebSite, Organization, …)
+    const previousIds = (window as unknown as { __seoLdIds?: string[] }).__seoLdIds || [];
+    previousIds.forEach((id) => removeJsonLd(id));
+    const nextIds: string[] = [];
+    if (jsonLd) {
+      const items = Array.isArray(jsonLd) ? jsonLd : [jsonLd];
+      items.forEach(({ id, data }) => {
+        injectJsonLd(id, data);
+        nextIds.push(id);
+      });
+    }
+    (window as unknown as { __seoLdIds?: string[] }).__seoLdIds = nextIds;
+  }, [loading, title, description, noindex, type, image, jsonLd, location.pathname, getSetting]);
 
   return null;
 }

@@ -10,6 +10,14 @@ import { Label } from "@/components/ui/label";
 import { BespokeEnquiryForm } from "@/components/BespokeEnquiryForm";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { SEOHead } from "@/components/SEOHead";
+
+const CONTACT_SEO = (
+  <SEOHead
+    title="Contact EveryDriver | Get in Touch With Our Team"
+    description="Contact EveryDriver for help with bookings, callback requests or bespoke driving course enquiries. UK-based support team, fast response."
+  />
+);
 
 export default function Contact() {
   const [searchParams] = useSearchParams();
@@ -86,6 +94,7 @@ export default function Contact() {
   if (isSubmitted && (isCallback || !isBespoke)) {
     return (
       <MainLayout>
+        {CONTACT_SEO}
         <div className="container py-8 pb-24">
           <div className="max-w-lg mx-auto">
             <Card>
@@ -108,6 +117,7 @@ export default function Contact() {
 
   return (
     <MainLayout>
+      {CONTACT_SEO}
       <div className="container py-8 pb-24">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-8">
