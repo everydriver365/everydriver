@@ -94,7 +94,7 @@ export function CourseSearchHeader({
               <div>
                 <label className="mb-2 block text-sm font-medium">Transmission</label>
                 <select
-                  className="w-full rounded-lg border bg-background px-3 py-2"
+                  className="w-full rounded-lg border bg-background pl-4 pr-3 py-2"
                   value={transmission}
                   onChange={(e) => setTransmission(e.target.value)}
                 >
