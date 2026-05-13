@@ -693,10 +693,8 @@ export function SatNavLiveMap({
       const initialZoom = zoomForSpeed(speedKmh ?? null);
       lastAutoZoomRef.current = initialZoom;
 
-      // For vector + fullscreen + follow, the world is rotated to heading-up,
-      // so the on-screen arrow direction must be compensated to ~0°.
-      const useSatNavCam =
-        fullscreenRef.current && followModeRef.current && vectorReadyRef.current;
+      // Flat top-down map — vehicle stays dead-centred, no tilt/rotation.
+      const useSatNavCam = false;
       const screenHeading = useSatNavCam ? 0 : headingNow;
 
       if (!markerRef.current) {
