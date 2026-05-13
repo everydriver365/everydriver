@@ -1491,22 +1491,35 @@ export default function Courses() {
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: index * 0.05 }}
                         >
-                          <DynamicCourseCard
-                            instructor={course.instructor}
-                            hours={course.hours}
-                            nextAvailable={course.bookableDate}
-                            courseImageUrl={course.courseImageUrl}
-                            isPopular={course.isPopular}
-                            availableFrom={course.availableFrom}
-                            distance={course.distance}
-                            features={course.features}
-                            isIntensive={course.isIntensive}
-                            discountedPrice={course.discountedPrice}
-                            customFeatures={course.customFeatures}
-                            areaName={areaCache[course.instructor.home_postcode?.replace(/\s+/g, "").toUpperCase()] || null}
-                            effectiveHourlyRate={resolvedRateFor(course.instructor)}
-                            learnerPostcode={searchedPostcode}
-                          />
+                          {viewMode === "list" ? (
+                            <CourseRowCard
+                              instructor={course.instructor}
+                              hours={course.hours}
+                              nextAvailable={course.bookableDate}
+                              distance={course.distance}
+                              isIntensive={course.isIntensive}
+                              price={course.hours * (resolvedRateFor(course.instructor) ?? course.instructor.hourly_rate ?? 40) + (course.instructor.school_skim_amount || 0)}
+                              discountedPrice={course.discountedPrice}
+                              areaName={areaCache[course.instructor.home_postcode?.replace(/\s+/g, "").toUpperCase()] || null}
+                            />
+                          ) : (
+                            <DynamicCourseCard
+                              instructor={course.instructor}
+                              hours={course.hours}
+                              nextAvailable={course.bookableDate}
+                              courseImageUrl={course.courseImageUrl}
+                              isPopular={course.isPopular}
+                              availableFrom={course.availableFrom}
+                              distance={course.distance}
+                              features={course.features}
+                              isIntensive={course.isIntensive}
+                              discountedPrice={course.discountedPrice}
+                              customFeatures={course.customFeatures}
+                              areaName={areaCache[course.instructor.home_postcode?.replace(/\s+/g, "").toUpperCase()] || null}
+                              effectiveHourlyRate={resolvedRateFor(course.instructor)}
+                              learnerPostcode={searchedPostcode}
+                            />
+                          )}
                         </motion.div>
                       ))}
                       {mobileVisibleCount < filteredCourses.length && (
