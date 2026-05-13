@@ -275,20 +275,25 @@ function OptionA({ c }: { c: Course }) {
           <h3 className="text-2xl font-black leading-tight">{c.hours}-hour {c.transmission}</h3>
           <div className="text-sm text-white/60 mt-0.5">with {c.instructor} · {c.area}</div>
 
-          <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-2">
-            <Chip icon={Calendar} label={c.startDate} />
-            <Chip icon={Clock} label={c.startTime} />
-            <Chip icon={MapPin} label={`${c.distance} mi`} />
-            <Chip icon={Trophy} label={`${c.passRate}% pass`} />
+          <div className="mt-4 rounded-xl bg-white/5 border border-white/10 p-3 flex items-center gap-3">
+            <Calendar className="h-5 w-5 text-cyan-300 shrink-0" />
+            <div className="flex-1 min-w-0">
+              <div className="text-[10px] font-bold uppercase tracking-widest text-white/50">Starts</div>
+              <div className="text-lg font-black leading-tight">{c.startDate} <span className="text-white/60 font-semibold">· {c.startTime}</span></div>
+            </div>
+            <div className="hidden sm:flex items-center gap-2 pl-3 border-l border-white/10">
+              <Chip icon={MapPin} label={`${c.distance} mi`} />
+              <Chip icon={Trophy} label={`${c.passRate}%`} />
+            </div>
           </div>
         </div>
 
         {/* CTA */}
         <div className="md:w-56 md:flex-shrink-0 p-6 border-t md:border-t-0 md:border-l border-white/10 flex md:flex-col items-center justify-between gap-3 bg-gradient-to-br from-white/5 to-transparent">
           <div className="text-right md:text-center">
-            {c.oldPrice && <div className="text-xs text-white/50 line-through">£{c.oldPrice}</div>}
-            <div className="text-3xl font-black bg-gradient-to-r from-cyan-300 to-fuchsia-300 bg-clip-text text-transparent">£{c.price}</div>
-            <div className="text-[10px] text-white/60">£{Math.round(c.price / c.hours)}/hr · all-in</div>
+            {c.oldPrice && <div className="text-sm text-white/50 line-through">£{c.oldPrice}</div>}
+            <div className="text-5xl font-black bg-gradient-to-r from-cyan-300 to-fuchsia-300 bg-clip-text text-transparent leading-none">£{c.price}</div>
+            <div className="text-[10px] text-white/60 mt-1">£{Math.round(c.price / c.hours)}/hr · all-in</div>
           </div>
           <Button className="w-full gap-1.5 bg-gradient-to-r from-cyan-400 to-fuchsia-500 hover:from-cyan-300 hover:to-fuchsia-400 text-slate-900 font-bold border-0 shadow-lg shadow-fuchsia-500/30">
             Book now <ArrowRight className="h-4 w-4" />
