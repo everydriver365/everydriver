@@ -1510,6 +1510,36 @@ export default function Courses() {
                         })}
                       </div>
                       <div className="flex items-center gap-2">
+                        {/* View toggle */}
+                        <div
+                          className="inline-flex items-center rounded-full p-0.5"
+                          style={{ border: "1px solid #e8e8ee", background: "white" }}
+                        >
+                          <button
+                            onClick={() => setViewMode("list")}
+                            className="flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold transition-all"
+                            style={{
+                              background: viewMode === "list" ? "#0a1936" : "transparent",
+                              color: viewMode === "list" ? "white" : "#7a7a7a",
+                            }}
+                            aria-label="List view"
+                          >
+                            <List className="h-3 w-3" />
+                            List
+                          </button>
+                          <button
+                            onClick={() => setViewMode("grid")}
+                            className="flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold transition-all"
+                            style={{
+                              background: (viewMode as string) === "grid" ? "#0a1936" : "transparent",
+                              color: (viewMode as string) === "grid" ? "white" : "#7a7a7a",
+                            }}
+                            aria-label="Grid view"
+                          >
+                            <LayoutGrid className="h-3 w-3" />
+                            Grid
+                          </button>
+                        </div>
                         <label
                           htmlFor="course-sort"
                           style={{
