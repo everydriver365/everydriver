@@ -554,6 +554,7 @@ function StandardCard({ c }: { c: SampleCourse }) {
 
 export default function DemoCourseResultsPremium() {
   const [activeChip, setActiveChip] = useState("All");
+  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const featured = SAMPLE.find((c) => c.featured)!;
   const rest = SAMPLE.filter((c) => !c.featured);
 
