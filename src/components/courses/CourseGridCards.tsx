@@ -185,7 +185,6 @@ export function CourseGridCards({ courses }: CourseGridCardsProps) {
               WebkitBackfaceVisibility: "hidden",
             }}
           >
-          >
             {/* Visual header */}
             <div
               className="relative overflow-hidden"
