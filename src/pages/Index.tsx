@@ -235,8 +235,18 @@ export default function Index() {
         </section>
       )}
 
-      {/* Original Hero — hidden on desktop for whitelabel sites */}
-      <section className={`bg-background py-16 lg:py-24 border-b border-border ${wlConfig ? "md:hidden" : ""}`}>
+      {/* Drive365 Hero — full-width image with overlapping search pill */}
+      {!wlConfig && (
+        <section className="px-4 pt-4 pb-6">
+          <HeroSearchSection
+            backgroundImage="/src/assets/hero-driving.jpg"
+            className="mx-auto"
+          />
+        </section>
+      )}
+
+      {/* Original Hero — kept for whitelabel mobile fallback */}
+      <section className={`bg-background py-16 lg:py-24 border-b border-border ${wlConfig ? "" : "hidden"}`}>
         <div className="container max-w-6xl">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             {/* Left: Text & Search */}
