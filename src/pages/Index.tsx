@@ -236,14 +236,11 @@ export default function Index() {
         </section>
       )}
 
-      {/* Drive365 Hero — full-width image with overlapping search pill */}
+      {/* Drive365 Hero — contained card with overlapping search pill */}
       {!wlConfig && (
-        <section className="px-4 pt-4 pb-6">
-          <HeroSearchSection
-            backgroundImage={drive365HeroTestCentre}
-            className="mx-auto"
-          />
-        </section>
+        <div className="pt-6">
+          <HeroSearchSection backgroundImage={drive365HeroTestCentre} />
+        </div>
       )}
 
       {/* Original Hero — kept for whitelabel mobile fallback */}
