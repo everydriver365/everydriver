@@ -141,7 +141,8 @@ function SidebarCalendar({
   courseCounts,
   onSelectDate, 
   loading,
-  monthOptions 
+  monthOptions,
+  hideCounts,
 }: SidebarCalendarProps) {
   const today = startOfDay(new Date());
   
