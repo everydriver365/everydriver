@@ -909,8 +909,8 @@ export function SatNavLiveMap({
         const lng = lerp(from.lng, target.lng, e);
         const hd = lerpAngle(from.heading, target.heading, e);
 
-        const satNavCam =
-          fullscreenRef.current && followModeRef.current && vectorReadyRef.current;
+        // Flat top-down map — vehicle locked centre, no tilt/heading rotation.
+        const satNavCam = false;
 
         marker.setPosition({ lat, lng });
         // When the world is rotated heading-up, Google rotates marker symbols
