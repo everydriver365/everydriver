@@ -19,6 +19,7 @@ interface PostcodeAutocompleteProps {
   className?: string;
   inputClassName?: string;
   showGeolocation?: boolean;
+  showInputIcon?: boolean;
 }
 
 export function PostcodeAutocomplete({
@@ -29,6 +30,7 @@ export function PostcodeAutocomplete({
   className,
   inputClassName,
   showGeolocation = true,
+  showInputIcon = true,
 }: PostcodeAutocompleteProps) {
   const [suggestions, setSuggestions] = useState<PostcodeSuggestion[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -238,7 +240,9 @@ export function PostcodeAutocomplete({
     <div ref={wrapperRef} className={cn("relative", className)}>
       <div className="relative flex gap-2">
         <div className="relative flex-1">
-          <MapPin className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground pointer-events-none z-10" />
+          {showInputIcon && (
+            <MapPin className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground pointer-events-none z-10" />
+          )}
           <Input
             ref={inputRef}
             type="text"
@@ -249,7 +253,7 @@ export function PostcodeAutocomplete({
             onFocus={() => {
               if (suggestions.length > 0) setShowDropdown(true);
             }}
-            className={cn("pl-10", inputClassName)}
+            className={cn(showInputIcon ? "pl-10" : "pl-3", inputClassName)}
             autoComplete="off"
           />
           {isLoading && (

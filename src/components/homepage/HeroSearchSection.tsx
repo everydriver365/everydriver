@@ -110,6 +110,7 @@ export function HeroSearchSection({
                   postcodeError ? "text-[#CC2229] placeholder:text-[#CC2229]" : "text-black"
                 }`}
                 showGeolocation={false}
+                showInputIcon={false}
               />
               {postcodeError && (
                 <span className="absolute -bottom-5 left-7 text-xs text-[#CC2229]">
