@@ -879,6 +879,13 @@ export default function Courses() {
         }
       }
 
+      if (klarnaOnly && !course.instructor.klarna_enabled) {
+        return false;
+      }
+      if (clearpayOnly && !course.instructor.clearpay_enabled) {
+        return false;
+      }
+
       if (userLocation && course.distance !== undefined) {
         if (course.distance > parseInt(radius)) {
           return false;
