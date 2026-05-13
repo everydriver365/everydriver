@@ -80,7 +80,7 @@ export function HeroSearchSection({
             }}
           />
           {/* Text overlay */}
-          <div className="absolute inset-0 flex items-center">
+          <div className="absolute inset-0 flex items-start pt-6 sm:pt-10 lg:pt-12">
             <div className="px-6 sm:px-10 lg:px-14 max-w-[60%] sm:max-w-[55%] lg:max-w-[50%]">
               {/* Premium badge */}
               <div className="inline-flex items-center gap-2 mb-3 sm:mb-4 px-2.5 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15">
