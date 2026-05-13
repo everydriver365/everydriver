@@ -97,13 +97,11 @@ export function HeroSearchSection({
             {/* Section 1 — Postcode */}
             <div className="flex-1 flex flex-col justify-center px-6 lg:px-8 min-w-0 relative">
               <label
-                htmlFor="hero-postcode"
                 className="text-sm lg:text-base font-bold text-black leading-tight"
               >
                 Postcode<span className="text-[#CC2229] ml-0.5">*</span>
               </label>
               <PostcodeAutocomplete
-                id="hero-postcode"
                 value={postcode}
                 onChange={setPostcode}
                 onSelect={(pc) => setPostcode(pc)}
@@ -113,7 +111,6 @@ export function HeroSearchSection({
                   postcodeError ? "text-[#CC2229] placeholder:text-[#CC2229]" : "text-black"
                 }`}
                 showGeolocation={true}
-                required
               />
               {postcodeError && (
                 <span className="absolute -bottom-5 left-6 lg:left-8 text-xs text-[#CC2229]">
