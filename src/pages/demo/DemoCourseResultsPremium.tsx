@@ -24,11 +24,13 @@ import clearpayLogo from "@/assets/clearpay-round-logo.svg";
 import courseHours10 from "@/assets/course-hours-10.png";
 import courseHours20 from "@/assets/course-hours-20.png";
 import courseHours30 from "@/assets/course-hours-30.png";
+import courseHours40 from "@/assets/course-hours-40.png";
 
 const HOURS_ICONS: Record<number, string> = {
   10: courseHours10,
   20: courseHours20,
   30: courseHours30,
+  40: courseHours40,
 };
 
 /**
