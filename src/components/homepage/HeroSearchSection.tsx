@@ -62,12 +62,12 @@ export function HeroSearchSection({
       <div className="relative">
         {/* Image container — rounded + overflow hidden */}
         <div
-          className="relative w-full h-[200px] sm:h-[300px] lg:h-[360px] overflow-hidden rounded-3xl"
+          className="relative isolate transform-gpu w-full h-[200px] sm:h-[300px] lg:h-[360px] overflow-hidden rounded-3xl"
         >
           <img
             src={backgroundImage}
             alt=""
-            className="absolute inset-0 w-full h-full object-cover"
+            className="absolute inset-0 w-full h-full object-cover rounded-3xl"
             style={{ objectPosition: "center 35%" }}
             loading="eager"
           />

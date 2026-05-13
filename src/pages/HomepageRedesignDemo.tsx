@@ -90,11 +90,11 @@ export default function HomepageRedesignDemo() {
             </div>
 
             <div className="relative">
-              <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-border">
+              <div className="relative isolate transform-gpu rounded-3xl overflow-hidden shadow-2xl border border-border">
                 <img
                   src={featuresHeroImg}
                   alt="EveryDriver instructor diary app showing calendar and vehicle tracking"
-                  className="w-full"
+                  className="w-full rounded-3xl"
                 />
               </div>
               
