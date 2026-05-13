@@ -132,7 +132,7 @@ export function HeroSearchSection({
                   ref={radiusRef}
                   value={radius}
                   onChange={(e) => setRadius(e.target.value)}
-                  className="w-full h-7 lg:h-8 appearance-none bg-transparent border-0 p-0 pr-6 text-[15px] lg:text-base font-normal text-black focus:ring-0 cursor-pointer"
+                  className="w-full h-7 lg:h-8 appearance-none bg-transparent border-0 py-0 pl-2 pr-6 text-[15px] lg:text-base font-normal text-black focus:ring-0 cursor-pointer"
                   aria-label="Search radius"
                 >
                   {RADIUS_OPTIONS.map((opt) => (
@@ -156,7 +156,7 @@ export function HeroSearchSection({
                   ref={transmissionRef}
                   value={transmission}
                   onChange={(e) => setTransmission(e.target.value)}
-                  className="w-full h-7 lg:h-8 appearance-none bg-transparent border-0 p-0 pr-6 text-[15px] lg:text-base font-normal text-black focus:ring-0 cursor-pointer"
+                  className="w-full h-7 lg:h-8 appearance-none bg-transparent border-0 py-0 pl-2 pr-6 text-[15px] lg:text-base font-normal text-black focus:ring-0 cursor-pointer"
                   aria-label="Transmission type"
                 >
                   {TRANSMISSION_OPTIONS.map((opt) => (
