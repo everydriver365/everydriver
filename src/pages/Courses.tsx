@@ -769,6 +769,20 @@ export default function Courses() {
     setSearchParams({});
   };
 
+  const handleResetFilters = () => {
+    setTransmission("all");
+    setSortBy("soonest");
+    setKlarnaOnly(false);
+    setClearpayOnly(false);
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.delete("transmission");
+      next.delete("klarna");
+      next.delete("clearpay");
+      return next;
+    });
+  };
+
   const fetchData = async () => {
     setLoading(true);
     try {
