@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
-import { Calendar, MapPin, User, ChevronRight, Star, CheckCircle } from "lucide-react";
+import { Calendar, MapPin, User, Heart, ChevronRight } from "lucide-react";
 import { useState } from "react";
 
 interface GridCourse {
@@ -12,9 +12,6 @@ interface GridCourse {
     clearpay_enabled?: boolean | null;
     rating?: number | null;
     home_postcode?: string | null;
-    profile_image_url?: string | null;
-    bio?: string | null;
-    brand_colour?: string | null;
   };
   hours: number;
   bookableDate: Date;
@@ -24,8 +21,6 @@ interface GridCourse {
   price: number;
   discountedPrice?: number | null;
   areaName?: string | null;
-  courseImageUrl?: string | null;
-  features?: string[] | null;
 }
 
 interface CourseGridCardsProps {
@@ -54,9 +49,8 @@ function isDarkGradient(h: number) {
 
 function transmissionLabel(carType?: string | null) {
   if (!carType) return "Manual";
-  const t = carType.toLowerCase();
-  if (t.includes("both") || (t.includes("manual") && t.includes("auto"))) return "Manual & Auto";
-  if (t.includes("auto")) return "Automatic";
+  if (carType === "automatic") return "Automatic";
+  if (carType === "both") return "Manual & Auto";
   return "Manual";
 }
 
@@ -110,7 +104,8 @@ const transPillStyle = (label: string) => {
 
 export function CourseGridCards({ courses }: CourseGridCardsProps) {
   const navigate = useNavigate();
-  const [flipped, setFlipped] = useState<Record<string, boolean>>({});
+  const [favs, setFavs] = useState<Record<string, boolean>>({});
+
   const goTo = (c: GridCourse) => {
     const dateParam = c.bookableDate ? `&date=${format(c.bookableDate, "yyyy-MM-dd")}` : "";
     navigate(`/book/${c.instructor.id}?hours=${c.hours}${dateParam}`);
@@ -119,7 +114,7 @@ export function CourseGridCards({ courses }: CourseGridCardsProps) {
   return (
     <div
       className="grid gap-4 grid-cols-1 md:grid-cols-2 2xl:grid-cols-3"
-      style={{ alignItems: "start", gridAutoRows: "1fr" }}
+      style={{ alignItems: "start" }}
     >
       {courses.map((c) => {
         const final = c.discountedPrice && c.discountedPrice < c.price ? c.discountedPrice : c.price;
@@ -129,29 +124,15 @@ export function CourseGridCards({ courses }: CourseGridCardsProps) {
         const type = courseTypeLabel(c);
         const trans = transmissionLabel(c.instructor.car_type);
         const dark = isDarkGradient(c.hours);
-        const headerText = c.courseImageUrl || dark ? "#ffffff" : "#0a1936";
+        const headerText = dark ? "#ffffff" : "#0a1936";
         const key = `${c.instructor.id}-${c.hours}-${c.bookableDate.toISOString()}`;
-        const isFlipped = !!flipped[key];
-        const brand = c.instructor.brand_colour || "#0a1936";
-        const initials = (c.instructor.name || "?")
-          .split(" ")
-          .map((n) => n[0])
-          .filter(Boolean)
-          .slice(0, 2)
-          .join("")
-          .toUpperCase();
-        const finalPrice = c.discountedPrice && c.discountedPrice < c.price ? c.discountedPrice : c.price;
-        const featuresList = (c.features || []).filter(Boolean).slice(0, 6);
-        const fallbackFeatures = ["Theory support", "Home pick-up", "Test-route practice", "Mock test included"];
-        const displayFeatures = featuresList.length > 0 ? featuresList : fallbackFeatures;
+        const isFav = !!favs[key];
 
         return (
           <div
             key={key}
-            className="group cursor-pointer"
-            style={{ perspective: "1200px", height: "100%" }}
-            onMouseEnter={() => setFlipped((p) => ({ ...p, [key]: true }))}
-            onMouseLeave={() => setFlipped((p) => ({ ...p, [key]: false }))}
+            role="button"
+            tabIndex={0}
             onClick={() => goTo(c)}
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " ") {
@@ -159,31 +140,22 @@ export function CourseGridCards({ courses }: CourseGridCardsProps) {
                 goTo(c);
               }
             }}
-            role="button"
-            tabIndex={0}
-          >
-          <div
-            style={{
-              position: "relative",
-              height: "100%",
-              width: "100%",
-              transition: "transform 500ms ease",
-              transformStyle: "preserve-3d",
-              transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
-            }}
-          >
-          <div
+            className="group cursor-pointer"
             style={{
               background: "#ffffff",
               borderRadius: 14,
               border: "1px solid #e8e8ee",
               boxShadow: "0 1px 2px rgba(10,25,54,0.04)",
               overflow: "hidden",
-              display: "flex",
-              flexDirection: "column",
-              height: "100%",
-              backfaceVisibility: "hidden",
-              WebkitBackfaceVisibility: "hidden",
+              transition: "transform 200ms ease, box-shadow 200ms ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = "translateY(-2px)";
+              e.currentTarget.style.boxShadow = "0 8px 24px rgba(10,25,54,0.08)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "translateY(0)";
+              e.currentTarget.style.boxShadow = "0 1px 2px rgba(10,25,54,0.04)";
             }}
           >
             {/* Visual header */}
@@ -194,45 +166,17 @@ export function CourseGridCards({ courses }: CourseGridCardsProps) {
                 background: gradientForHours(c.hours),
               }}
             >
-              {/* Hero image */}
-              {c.courseImageUrl && (
-                <img
-                  src={c.courseImageUrl}
-                  alt=""
-                  loading="lazy"
-                  style={{
-                    position: "absolute",
-                    inset: 0,
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                  }}
-                />
-              )}
-              {/* Colour-tinted gradient overlay so badges/numbers stay legible */}
-              <div
-                style={{
-                  position: "absolute",
-                  inset: 0,
-                  background: c.courseImageUrl
-                    ? `linear-gradient(180deg, rgba(10,25,54,0.15) 0%, rgba(10,25,54,0.55) 100%), ${gradientForHours(c.hours)}`
-                    : "transparent",
-                  mixBlendMode: c.courseImageUrl ? "multiply" : "normal",
-                  opacity: c.courseImageUrl ? 0.55 : 1,
-                  pointerEvents: "none",
-                }}
-              />
               {/* Radial highlight overlay */}
               <div
                 style={{
                   position: "absolute",
                   inset: 0,
-                  background: "radial-gradient(circle at top right, rgba(255,255,255,0.25) 0%, transparent 60%)",
+                  background: "radial-gradient(circle at top right, rgba(255,255,255,0.3) 0%, transparent 60%)",
                   pointerEvents: "none",
                 }}
               />
-              {/* Car illustration — only when no hero image */}
-              {!c.courseImageUrl && <CourseCarSvg hours={c.hours} />}
+              {/* Car illustration */}
+              <CourseCarSvg hours={c.hours} />
 
               {/* Top-left badges */}
               <div
@@ -278,6 +222,39 @@ export function CourseGridCards({ courses }: CourseGridCardsProps) {
                 )}
               </div>
 
+              {/* Top-right favourite */}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setFavs((prev) => ({ ...prev, [key]: !prev[key] }));
+                }}
+                aria-label={isFav ? "Remove from favourites" : "Add to favourites"}
+                style={{
+                  position: "absolute",
+                  top: 12,
+                  right: 12,
+                  width: 34,
+                  height: 34,
+                  borderRadius: "50%",
+                  background: "rgba(255,255,255,0.95)",
+                  border: "none",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                  backdropFilter: "blur(6px)",
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+                  zIndex: 2,
+                }}
+              >
+                <Heart
+                  style={{ width: 17, height: 17 }}
+                  color={isFav ? "#d92e3a" : "#7a7a7a"}
+                  fill={isFav ? "#d92e3a" : "none"}
+                />
+              </button>
+
               {/* Bottom-left hours */}
               <div
                 style={{
@@ -315,7 +292,7 @@ export function CourseGridCards({ courses }: CourseGridCardsProps) {
             </div>
 
             {/* Content body */}
-            <div style={{ padding: "16px 18px 18px", display: "flex", flexDirection: "column", flex: 1 }}>
+            <div style={{ padding: "16px 18px 18px" }}>
               {/* Tag pills */}
               <div style={{ display: "flex", gap: 5, marginBottom: 10 }}>
                 <span
@@ -495,195 +472,6 @@ export function CourseGridCards({ courses }: CourseGridCardsProps) {
                 </div>
               </div>
             </div>
-          </div>
-
-          {/* Back face */}
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              borderRadius: 14,
-              overflow: "hidden",
-              display: "flex",
-              flexDirection: "column",
-              padding: 20,
-              color: "#ffffff",
-              background: `linear-gradient(160deg, ${brand} 0%, ${brand} 60%, rgba(0,0,0,0.25) 100%)`,
-              backfaceVisibility: "hidden",
-              WebkitBackfaceVisibility: "hidden",
-              transform: "rotateY(180deg)",
-              boxShadow: "0 8px 24px rgba(10,25,54,0.12)",
-            }}
-          >
-            {/* Header: avatar + name + rating */}
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              {c.instructor.profile_image_url ? (
-                <img
-                  src={c.instructor.profile_image_url}
-                  alt=""
-                  style={{
-                    width: 48,
-                    height: 48,
-                    borderRadius: "50%",
-                    objectFit: "cover",
-                    border: "2px solid rgba(255,255,255,0.5)",
-                    flexShrink: 0,
-                  }}
-                />
-              ) : (
-                <div
-                  style={{
-                    width: 48,
-                    height: 48,
-                    borderRadius: "50%",
-                    background: "rgba(255,255,255,0.18)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontWeight: 800,
-                    fontSize: 15,
-                    flexShrink: 0,
-                  }}
-                >
-                  {initials}
-                </div>
-              )}
-              <div style={{ minWidth: 0, flex: 1 }}>
-                <div
-                  style={{
-                    fontWeight: 700,
-                    fontSize: 15,
-                    letterSpacing: "-0.01em",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {c.instructor.name || "Instructor"}
-                </div>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 5,
-                    fontSize: 12,
-                    opacity: 0.9,
-                    marginTop: 3,
-                  }}
-                >
-                  <Star style={{ width: 12, height: 12, fill: "#fbbf24", color: "#fbbf24" }} />
-                  <span>{(c.instructor.rating ?? 4.9).toFixed(1)}</span>
-                  <span style={{ opacity: 0.6 }}>·</span>
-                  <span>{trans}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Bio */}
-            <p
-              style={{
-                fontSize: 13,
-                lineHeight: 1.5,
-                marginTop: 14,
-                opacity: 0.88,
-                display: "-webkit-box",
-                WebkitLineClamp: 3,
-                WebkitBoxOrient: "vertical",
-                overflow: "hidden",
-              }}
-            >
-              {c.instructor.bio ||
-                `Experienced ${trans.toLowerCase()} driving instructor ready to help you pass your test.`}
-            </p>
-
-            {/* Features — single column, capped at 4 */}
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 6,
-                marginTop: 14,
-                flex: 1,
-                minHeight: 0,
-                overflow: "hidden",
-              }}
-            >
-              {displayFeatures.slice(0, 4).map((feature, idx) => (
-                <div
-                  key={idx}
-                  style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12.5 }}
-                >
-                  <CheckCircle
-                    style={{ width: 13, height: 13, color: "#34d399", flexShrink: 0 }}
-                  />
-                  <span
-                    style={{
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      opacity: 0.92,
-                    }}
-                  >
-                    {feature}
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            {/* Footer: price + CTA */}
-            <div
-              style={{
-                marginTop: 14,
-                paddingTop: 14,
-                borderTop: "1px solid rgba(255,255,255,0.18)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: 10,
-              }}
-            >
-              <div style={{ minWidth: 0 }}>
-                <div
-                  style={{
-                    fontSize: 22,
-                    fontWeight: 800,
-                    letterSpacing: "-0.02em",
-                    lineHeight: 1,
-                  }}
-                >
-                  £{Math.round(finalPrice).toLocaleString()}
-                </div>
-                <div style={{ fontSize: 10.5, opacity: 0.7, marginTop: 4 }}>
-                  or from £{Math.round(finalPrice / 4)}/mo
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  goTo(c);
-                }}
-                style={{
-                  background: "#ffffff",
-                  color: brand,
-                  fontSize: 12.5,
-                  fontWeight: 700,
-                  padding: "10px 14px",
-                  borderRadius: 10,
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 4,
-                  border: "none",
-                  cursor: "pointer",
-                  flexShrink: 0,
-                }}
-              >
-                Book now
-                <ChevronRight style={{ width: 14, height: 14 }} />
-              </button>
-            </div>
-          </div>
-          </div>
           </div>
         );
       })}

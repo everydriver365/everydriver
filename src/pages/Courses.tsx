@@ -319,7 +319,7 @@ export default function Courses() {
   const [priceRange, setPriceRange] = useState(initialPriceRange);
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState<SortOption>("soonest");
-  const [viewMode, setViewMode] = useState<"list" | "grid">("grid");
+  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [geoCache, setGeoCache] = useState<GeoCache>({});
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [isSearching, setIsSearching] = useState(false);
@@ -992,7 +992,7 @@ export default function Courses() {
     (priceRange !== "any" ? 1 : 0) +
     (selectedInstructorId ? 1 : 0);
 
-  const isListMode = (viewMode as string) === "list";
+  const isListMode = viewMode === "list";
 
   return (
     <MainLayout>
@@ -1510,38 +1510,7 @@ export default function Courses() {
                           );
                         })}
                       </div>
-                      <div className="flex items-center gap-3">
-                        {/* List/Grid view toggle */}
-                        <div
-                          className="inline-flex items-center rounded-full p-0.5"
-                          style={{ border: "1px solid #e8e8ee", background: "white" }}
-                        >
-                          <button
-                            onClick={() => setViewMode("list")}
-                            className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-all"
-                            style={{
-                              background: (viewMode as string) === "list" ? "#0a1936" : "transparent",
-                              color: (viewMode as string) === "list" ? "white" : "#7a7a7a",
-                            }}
-                            aria-label="List view"
-                          >
-                            <List className="h-3.5 w-3.5" />
-                            List
-                          </button>
-                          <button
-                            onClick={() => setViewMode("grid")}
-                            className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-all"
-                            style={{
-                              background: String(viewMode) === "grid" ? "#0a1936" : "transparent",
-                              color: String(viewMode) === "grid" ? "white" : "#7a7a7a",
-                            }}
-                            aria-label="Grid view"
-                          >
-                            <LayoutGrid className="h-3.5 w-3.5" />
-                            Grid
-                          </button>
-                        </div>
-
+                      <div className="flex items-center gap-2">
                         <label
                           htmlFor="course-sort"
                           style={{
@@ -1747,8 +1716,6 @@ export default function Courses() {
                             distance: c.distance,
                             price: c.hours * rate + skim,
                             discountedPrice: c.discountedPrice,
-                            courseImageUrl: c.courseImageUrl,
-                            features: c.features,
                             areaName:
                               areaCache[c.instructor.home_postcode?.replace(/\s+/g, "").toUpperCase()] ||
                               null,
