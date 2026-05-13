@@ -67,7 +67,7 @@ export function HeroSearchSection({
           <img
             src={backgroundImage}
             alt=""
-            className="absolute inset-0 w-full h-full object-contain rounded-3xl"
+            className="absolute inset-0 w-full h-full object-cover rounded-3xl"
             loading="eager"
           />
           <div
