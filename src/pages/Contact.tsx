@@ -10,6 +10,14 @@ import { Label } from "@/components/ui/label";
 import { BespokeEnquiryForm } from "@/components/BespokeEnquiryForm";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { SEOHead } from "@/components/SEOHead";
+
+const CONTACT_SEO = (
+  <SEOHead
+    title="Contact EveryDriver | Get in Touch With Our Team"
+    description="Contact EveryDriver for help with bookings, callback requests or bespoke driving course enquiries. UK-based support team, fast response."
+  />
+);
 
 export default function Contact() {
   const [searchParams] = useSearchParams();
