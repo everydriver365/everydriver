@@ -198,40 +198,43 @@ function OptionB({ c }: { c: Course }) {
 }
 
 /* ============================================================
-   OPTION C — Compact Booking.com style: dense, stat-heavy, scannable
+   OPTION C — Compact Booking-Style: tiny avatar, scannable, BIG hours
    ============================================================ */
 function OptionC({ c }: { c: Course }) {
   const b = badgePill(c.badge);
   return (
     <div className="rounded-xl border bg-card hover:shadow-md transition-all overflow-hidden">
-      <div className="flex flex-col sm:flex-row">
-        <div className="sm:w-44 sm:flex-shrink-0 relative bg-muted/40 p-4 flex sm:flex-col items-center sm:items-start gap-3 sm:gap-2">
-          <img src={c.avatar} alt={c.instructor} className="h-16 w-16 sm:h-20 sm:w-20 rounded-lg object-cover" />
-          <div>
-            <div className="font-semibold text-sm leading-tight">{c.instructor}</div>
-            <div className="text-xs text-muted-foreground mt-0.5">{c.area}</div>
-            {b && (
-              <span className={`mt-2 inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-bold ${b.cls}`}>
-                <b.icon className="h-2.5 w-2.5" /> {b.label}
-              </span>
-            )}
-          </div>
+      <div className="flex flex-col sm:flex-row items-stretch">
+        {/* Hours pillar */}
+        <div className="sm:w-28 sm:flex-shrink-0 relative bg-muted/40 p-3 flex flex-row sm:flex-col items-center justify-center gap-1 sm:gap-0">
+          <span className="text-4xl sm:text-3xl font-black text-primary leading-none">{c.hours}</span>
+          <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">hrs</span>
+          {b && (
+            <span className={`mt-1 sm:mt-1 inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-bold ${b.cls}`}>
+              <b.icon className="h-2.5 w-2.5" /> {b.label}
+            </span>
+          )}
         </div>
 
         <div className="flex-1 p-4 border-t sm:border-t-0 sm:border-l">
-          <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <img src={c.avatar} alt={c.instructor} className="h-7 w-7 rounded-full object-cover ring-1 ring-muted" />
             <div>
-              <div className="inline-flex items-center gap-2">
-                <span className="rounded bg-primary text-primary-foreground px-1.5 py-0.5 text-xs font-bold">{c.rating}</span>
-                <span className="text-sm font-semibold">Excellent</span>
-                <span className="text-xs text-muted-foreground">{c.reviews} reviews</span>
+              <div className="flex items-center gap-1.5 text-sm font-bold leading-tight">{c.instructor}</div>
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <span className="rounded bg-primary text-primary-foreground px-1 py-0 text-[10px] font-bold">{c.rating}</span>
+                <span>{c.reviews} reviews</span>
+                <span>·</span>
+                <span>{c.passRate}% pass</span>
               </div>
-              <h3 className="mt-2 font-bold">{c.hours}-hour {c.transmission} course</h3>
-              <div className="text-sm text-muted-foreground">Starts {c.startDate} at {c.startTime}</div>
             </div>
           </div>
 
-          <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs">
+          <div className="mt-2 font-bold text-sm">
+            {c.hours}-hour {c.transmission} course · starts {c.startDate} at {c.startTime}
+          </div>
+
+          <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs">
             <span className="inline-flex items-center gap-1 text-emerald-600 font-medium"><CheckCircle2 className="h-3 w-3" /> Test included</span>
             <span className="inline-flex items-center gap-1 text-emerald-600 font-medium"><Shield className="h-3 w-3" /> Free cancellation</span>
             <span className="inline-flex items-center gap-1 text-muted-foreground"><MapPin className="h-3 w-3" />{c.distance} mi away</span>
@@ -240,7 +243,6 @@ function OptionC({ c }: { c: Course }) {
 
         <div className="sm:w-48 sm:flex-shrink-0 p-4 sm:border-l flex sm:flex-col items-end justify-between gap-2">
           <div className="text-right">
-            <div className="text-xs text-muted-foreground">{c.hours} hours</div>
             {c.oldPrice && <div className="text-xs text-muted-foreground line-through">£{c.oldPrice}</div>}
             <div className="text-2xl font-bold">£{c.price}</div>
             <div className="text-[10px] text-muted-foreground">incl. VAT & test fee</div>
