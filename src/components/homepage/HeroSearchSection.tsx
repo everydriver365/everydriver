@@ -78,17 +78,9 @@ export function HeroSearchSection({
               "linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.15) 55%, rgba(0,0,0,0.35) 100%)",
           }}
         />
-
       </section>
 
-      {/* TEST: red div outside hero */}
-      <div className="hidden sm:block relative z-10 -mt-11 px-4" style={{ background: 'lime' }}>
-        <div className="max-w-[1100px] mx-auto bg-red-500 text-white px-8 py-4 rounded-full text-xl font-bold text-center">
-          OUTSIDE TEST PILL
-        </div>
-      </div>
-
-      {/* Desktop / tablet pill — overlaps hero bottom (sits OUTSIDE clipped section) */}
+      {/* Desktop / tablet pill — overlaps hero bottom */}
       <div className="hidden sm:block relative z-10 -mt-11 lg:-mt-12 px-4 lg:px-8">
         <form
           onSubmit={handleSubmit}
@@ -96,10 +88,10 @@ export function HeroSearchSection({
           aria-label="Search for driving instructors"
         >
           <div
-            className="flex items-center bg-white h-[78px] lg:h-[84px] w-full transition-shadow duration-200 hover:shadow-[0_18px_48px_rgba(0,0,0,0.22)]"
+            className="flex items-center bg-white h-[78px] lg:h-[84px] w-full"
             style={{
               borderRadius: "9999px",
-              boxShadow: "0 12px 40px rgba(0,0,0,0.18)",
+              boxShadow: "0 14px 44px rgba(0,0,0,0.20), 0 2px 8px rgba(0,0,0,0.10)",
             }}
           >
             {/* Postcode */}
