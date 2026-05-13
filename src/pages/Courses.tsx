@@ -302,6 +302,8 @@ export default function Courses() {
   const initialTransmission = searchParams.get("transmission") || "all";
   const initialKlarna = searchParams.get("klarna") === "1";
   const initialClearpay = searchParams.get("clearpay") === "1";
+  const initialCourseType = searchParams.get("courseType") || "all";
+  const initialPriceRange = searchParams.get("priceRange") || "any";
   const [postcode, setPostcode] = useState(initialPostcode);
   const [radius, setRadius] = useState(initialRadius);
   const [showRadiusFallbackNotice, setShowRadiusFallbackNotice] = useState(false);
@@ -309,6 +311,8 @@ export default function Courses() {
   const [transmission, setTransmission] = useState(initialTransmission);
   const [klarnaOnly, setKlarnaOnly] = useState(initialKlarna);
   const [clearpayOnly, setClearpayOnly] = useState(initialClearpay);
+  const [courseType, setCourseType] = useState(initialCourseType);
+  const [priceRange, setPriceRange] = useState(initialPriceRange);
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState<SortOption>("soonest");
   const [viewMode, setViewMode] = useState<"list" | "grid">("grid");
@@ -774,11 +778,16 @@ export default function Courses() {
     setSortBy("soonest");
     setKlarnaOnly(false);
     setClearpayOnly(false);
+    setCourseType("all");
+    setPriceRange("any");
+    setSelectedInstructorId(null);
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev);
       next.delete("transmission");
       next.delete("klarna");
       next.delete("clearpay");
+      next.delete("courseType");
+      next.delete("priceRange");
       return next;
     });
   };
@@ -906,6 +915,26 @@ export default function Courses() {
         if (course.distance > parseInt(radius)) {
           return false;
         }
+      }
+
+      // Course Type filter
+      if (courseType !== "all") {
+        if (courseType === "test-in-a-week") {
+          if (!course.isIntensive) return false;
+        } else {
+          const wantHours = parseInt(courseType);
+          if (!Number.isNaN(wantHours) && course.hours !== wantHours) return false;
+        }
+      }
+
+      // Price Range filter
+      if (priceRange !== "any") {
+        const skim = course.instructor.school_skim_amount || 0;
+        const rate = course.instructor.hourly_rate || 40;
+        const computed = course.discountedPrice || (course.hours * rate + skim);
+        if (priceRange === "under-500" && computed >= 500) return false;
+        if (priceRange === "500-1000" && (computed < 500 || computed > 1000)) return false;
+        if (priceRange === "over-1000" && computed <= 1000) return false;
       }
 
       return true;
@@ -1070,17 +1099,22 @@ export default function Courses() {
                     <div className="relative">
                       <select
                         className="w-full appearance-none rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-800 shadow-sm transition focus:border-[#0B2545] focus:outline-none focus:ring-2 focus:ring-[#0B2545]/10"
-                        value={sortBy === "price-low" ? "cheapest" : "any"}
+                        value={priceRange}
                         onChange={(e) => {
-                          if (e.target.value === "cheapest") setSortBy("price-low");
-                          else if (sortBy === "price-low") setSortBy("soonest");
+                          const v = e.target.value;
+                          setPriceRange(v);
+                          setSearchParams((prev) => {
+                            const next = new URLSearchParams(prev);
+                            if (v === "any") next.delete("priceRange");
+                            else next.set("priceRange", v);
+                            return next;
+                          });
                         }}
                       >
                         <option value="any">Any price</option>
-                        <option value="cheapest">Cheapest first</option>
-                        <option disabled>Under £500</option>
-                        <option disabled>£500-£1000</option>
-                        <option disabled>Over £1000</option>
+                        <option value="under-500">Under £500</option>
+                        <option value="500-1000">£500 – £1,000</option>
+                        <option value="over-1000">Over £1,000</option>
                       </select>
                       <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                     </div>
@@ -1089,13 +1123,26 @@ export default function Courses() {
                 <div>
                   <label className="mb-2 block text-sm font-semibold text-foreground">Course Type</label>
                   <div className="relative">
-                    <select className="w-full appearance-none rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-800 shadow-sm transition focus:border-[#0B2545] focus:outline-none focus:ring-2 focus:ring-[#0B2545]/10">
-                      <option>All courses</option>
-                      <option>10 Hours</option>
-                      <option>20 Hours</option>
-                      <option>30 Hours</option>
-                      <option>40 Hours</option>
-                      <option>Test in a Week</option>
+                    <select
+                      className="w-full appearance-none rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-800 shadow-sm transition focus:border-[#0B2545] focus:outline-none focus:ring-2 focus:ring-[#0B2545]/10"
+                      value={courseType}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        setCourseType(v);
+                        setSearchParams((prev) => {
+                          const next = new URLSearchParams(prev);
+                          if (v === "all") next.delete("courseType");
+                          else next.set("courseType", v);
+                          return next;
+                        });
+                      }}
+                    >
+                      <option value="all">All courses</option>
+                      <option value="10">10 Hours</option>
+                      <option value="20">20 Hours</option>
+                      <option value="30">30 Hours</option>
+                      <option value="40">40 Hours</option>
+                      <option value="test-in-a-week">Test in a Week</option>
                     </select>
                     <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                   </div>
@@ -1393,35 +1440,33 @@ export default function Courses() {
                       </button>
                     </div>
 
-                    {/* View toggle (desktop only) */}
-                    {!isMobile && (
-                      <div className="flex items-center rounded-full border border-slate-200 bg-white p-1 shadow-sm gap-0.5">
-                        <button
-                          onClick={() => setViewMode("list")}
-                          className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold transition-all ${
-                            viewMode === "list"
-                              ? "bg-[#0B2545] text-white shadow-md shadow-[#0B2545]/25"
-                              : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                          }`}
-                          aria-label="List view"
-                        >
-                          <List className="h-3.5 w-3.5" />
-                          List
-                        </button>
-                        <button
-                          onClick={() => setViewMode("grid")}
-                          className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold transition-all ${
-                            viewMode === "grid"
-                              ? "bg-[#0B2545] text-white shadow-md shadow-[#0B2545]/25"
-                              : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                          }`}
-                          aria-label="Grid view"
-                        >
-                          <LayoutGrid className="h-3.5 w-3.5" />
-                          Grid
-                        </button>
-                      </div>
-                    )}
+                    {/* View toggle */}
+                    <div className="flex items-center rounded-full border border-slate-200 bg-white p-1 shadow-sm gap-0.5">
+                      <button
+                        onClick={() => setViewMode("list")}
+                        className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold transition-all ${
+                          viewMode === "list"
+                            ? "bg-[#0B2545] text-white shadow-md shadow-[#0B2545]/25"
+                            : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                        }`}
+                        aria-label="List view"
+                      >
+                        <List className="h-3.5 w-3.5" />
+                        List
+                      </button>
+                      <button
+                        onClick={() => setViewMode("grid")}
+                        className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold transition-all ${
+                          viewMode === "grid"
+                            ? "bg-[#0B2545] text-white shadow-md shadow-[#0B2545]/25"
+                            : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                        }`}
+                        aria-label="Grid view"
+                      >
+                        <LayoutGrid className="h-3.5 w-3.5" />
+                        Grid
+                      </button>
+                    </div>
 
                     {/* Reset Filters */}
                     <button
@@ -1446,22 +1491,35 @@ export default function Courses() {
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: index * 0.05 }}
                         >
-                          <DynamicCourseCard
-                            instructor={course.instructor}
-                            hours={course.hours}
-                            nextAvailable={course.bookableDate}
-                            courseImageUrl={course.courseImageUrl}
-                            isPopular={course.isPopular}
-                            availableFrom={course.availableFrom}
-                            distance={course.distance}
-                            features={course.features}
-                            isIntensive={course.isIntensive}
-                            discountedPrice={course.discountedPrice}
-                            customFeatures={course.customFeatures}
-                            areaName={areaCache[course.instructor.home_postcode?.replace(/\s+/g, "").toUpperCase()] || null}
-                            effectiveHourlyRate={resolvedRateFor(course.instructor)}
-                            learnerPostcode={searchedPostcode}
-                          />
+                          {viewMode === "list" ? (
+                            <CourseRowCard
+                              instructor={course.instructor}
+                              hours={course.hours}
+                              nextAvailable={course.bookableDate}
+                              distance={course.distance}
+                              isIntensive={course.isIntensive}
+                              price={course.hours * (resolvedRateFor(course.instructor) ?? course.instructor.hourly_rate ?? 40) + (course.instructor.school_skim_amount || 0)}
+                              discountedPrice={course.discountedPrice}
+                              areaName={areaCache[course.instructor.home_postcode?.replace(/\s+/g, "").toUpperCase()] || null}
+                            />
+                          ) : (
+                            <DynamicCourseCard
+                              instructor={course.instructor}
+                              hours={course.hours}
+                              nextAvailable={course.bookableDate}
+                              courseImageUrl={course.courseImageUrl}
+                              isPopular={course.isPopular}
+                              availableFrom={course.availableFrom}
+                              distance={course.distance}
+                              features={course.features}
+                              isIntensive={course.isIntensive}
+                              discountedPrice={course.discountedPrice}
+                              customFeatures={course.customFeatures}
+                              areaName={areaCache[course.instructor.home_postcode?.replace(/\s+/g, "").toUpperCase()] || null}
+                              effectiveHourlyRate={resolvedRateFor(course.instructor)}
+                              learnerPostcode={searchedPostcode}
+                            />
+                          )}
                         </motion.div>
                       ))}
                       {mobileVisibleCount < filteredCourses.length && (
@@ -1551,9 +1609,25 @@ export default function Courses() {
                         : "We couldn't find courses matching your search. Try widening your search radius, entering a different postcode, or removing some filters."}
                     </p>
                     <div className="mt-6 flex flex-wrap justify-center gap-3">
+                      {(() => {
+                        const nextDate = availableDatesInMonth.find(
+                          (d) => !selectedDate || !isSameDay(d, selectedDate)
+                        );
+                        if (!nextDate) return null;
+                        return (
+                          <Button
+                            variant="default"
+                            onClick={() => setSelectedDate(nextDate)}
+                            className="gap-1.5"
+                          >
+                            <CalendarIcon className="h-4 w-4" />
+                            Try {format(nextDate, "EEE d MMM")}
+                          </Button>
+                        );
+                      })()}
                       {userLocation && parseInt(radius) < 50 && (
                         <Button
-                          variant="default"
+                          variant="outline"
                           onClick={() => {
                             const next = parseInt(radius) < 25 ? "25" : "50";
                             setRadius(next);
@@ -1563,7 +1637,7 @@ export default function Courses() {
                           Expand to {parseInt(radius) < 25 ? "25" : "50"} miles
                         </Button>
                       )}
-                      <Button variant="outline" onClick={() => { setSelectedInstructorId(null); setSortBy("soonest"); setTransmission("all"); }}>
+                      <Button variant="outline" onClick={handleResetFilters}>
                         Clear Filters
                       </Button>
                       <Button variant="outline" asChild>

@@ -1,28 +1,42 @@
-## Problem
+# Search Page Improvements Plan
 
-On `/drive365/search`, switching to **List view** currently just renders the same `DynamicCourseCard` (vertical card) one-per-row. On the demo page (`DemoCourseResultsPremium`), List view uses a much nicer compact horizontal row — accent strip, hours pill, body with chips, price + CTAs on the right. The two should match.
+## Current Issues Found
 
-## Plan
+1. **Broken "Course Type" filter** — the `<select>` has no `value` or `onChange` hooked up, so choosing 10/20/30/40 Hours or "Test in a Week" does nothing.
+2. **Broken price-range buckets** — "Under £500", "£500-£1000", "Over £1000" are all `disabled` and non-functional.
+3. **Mobile always shows grid cards** — the list view ( cleaner for scanning ) is desktop-only. On mobile users get flip cards which take up a lot of vertical space.
+4. **No "no results" smart fallback** — when zero courses match, the page suggests widening radius but doesn't offer "next available date" or "nearest instructor regardless of date".
 
-1. **Create `src/components/courses/CourseRowCard.tsx`** — a real-data version of the demo's `StandardCard`:
-   - Left coloured accent strip (navy gradient)
-   - Hours pill section using existing `course-hours-*.png` icons when applicable, otherwise a gradient hours block
-   - Middle body: course title, transmission · instructor · location · distance row, start-date pill, Klarna/Clearpay split-payment pills (only when `instructor.klarna_enabled` / `clearpay_enabled`)
-   - Right column: total price, "View & Book" navy button (links to existing course detail route), heart/save icon button
-   - Props mirror what `DynamicCourseCard` already receives (instructor, hours, bookableDate, distance, isIntensive, etc.) plus computed `price`
+## Proposed Improvements
 
-2. **Wire it into `src/pages/Courses.tsx`** at line ~1463:
-   - When `viewMode === "list"` (desktop only), render `<CourseRowCard ... />` instead of `<DynamicCourseCard ... />`
-   - When `viewMode === "grid"`, keep the existing `DynamicCourseCard` 2-column grid unchanged
-   - Mobile view (`isMobile` branch above) is untouched per the no-mobile-changes rule
+### 1. Fix Course Type Filter (functional)
+- Wire the Course Type `<select>` to state and filter logic so users can narrow by 10/20/30/40 Hours or "Test in a Week".
+- Add the state variable, update `filteredCourses` memo, and sync with URL params so a shared link preserves the course-type filter.
 
-3. **No backend / data shape changes.** Reuse the same `course` object already produced by the search query.
+### 2. Fix Price-Range Buckets (functional)
+- Enable the three disabled price-range options.
+- Add a `priceRange` state ("any" | "under-500" | "500-1000" | "over-1000").
+- Filter courses by `computedPrice` against these bounds. Sync to URL params.
 
-### Files touched
-- `src/components/courses/CourseRowCard.tsx` (new)
-- `src/pages/Courses.tsx` (swap component in the desktop list branch only)
+### 3. Enable List View on Mobile
+- Remove the `!isMobile` guard around the view toggle.
+- Ensure `CourseRowCard` (already mobile-responsive from the last edit) renders cleanly in the mobile list branch too.
+- Default mobile view can stay "grid" if desired, but users can switch.
 
-### Out of scope
-- Mobile layout
-- Featured/sponsored card styling
-- Grid view styling
+### 4. Smart "No Results" Fallbacks
+- When zero courses match the current date + postcode + filters, show a panel:
+  - "Next available date for this area: [date]" — finds the earliest date with any courses.
+  - "Show all instructors regardless of date" — toggle to view instructor profiles/courses without date restriction.
+  - Keep the existing "Expand radius" CTA.
+
+### 5. (Optional) Saved / Recent Postcodes
+- Store last 3 searched postcodes in `localStorage`.
+- Show them as quick-tap chips below the postcode input for repeat visitors.
+
+---
+
+## Technical Notes
+
+- All changes are within `src/pages/Courses.tsx` and `src/components/courses/CourseRowCard.tsx` (already responsive).
+- URL param sync uses existing `useSearchParams` pattern.
+- No backend changes needed; filtering is client-side on already-fetched `coursesWithDistance`.
