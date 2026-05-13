@@ -54,8 +54,9 @@ function isDarkGradient(h: number) {
 
 function transmissionLabel(carType?: string | null) {
   if (!carType) return "Manual";
-  if (carType === "automatic") return "Automatic";
-  if (carType === "both") return "Manual & Auto";
+  const t = carType.toLowerCase();
+  if (t.includes("both") || (t.includes("manual") && t.includes("auto"))) return "Manual & Auto";
+  if (t.includes("auto")) return "Automatic";
   return "Manual";
 }
 
