@@ -136,8 +136,25 @@ export function SEOHead({ title, description, noindex, type = "website", image, 
       removeJsonLd("wl-localbusiness");
       removeLink("alternate", "en-GB");
       removeLink("alternate", "x-default");
+      // Self-referencing canonical for the marketing/main domain — every
+      // route advertises its own URL so search engines don't treat
+      // /courses, /faqs, /about etc. as duplicates of the homepage.
+      upsertLink("canonical", `${window.location.origin}${location.pathname}`);
     }
-  }, [loading, title, description, noindex, location.pathname, getSetting]);
+
+    // Page-level JSON-LD payloads (Article, FAQPage, WebSite, Organization, …)
+    const previousIds = (window as unknown as { __seoLdIds?: string[] }).__seoLdIds || [];
+    previousIds.forEach((id) => removeJsonLd(id));
+    const nextIds: string[] = [];
+    if (jsonLd) {
+      const items = Array.isArray(jsonLd) ? jsonLd : [jsonLd];
+      items.forEach(({ id, data }) => {
+        injectJsonLd(id, data);
+        nextIds.push(id);
+      });
+    }
+    (window as unknown as { __seoLdIds?: string[] }).__seoLdIds = nextIds;
+  }, [loading, title, description, noindex, type, image, jsonLd, location.pathname, getSetting]);
 
   return null;
 }
