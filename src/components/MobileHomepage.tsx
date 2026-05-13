@@ -516,12 +516,12 @@ export function MobileHomepage() {
               </div>
             </Link>
             <div className="h-px bg-border my-2" />
-            <a href="https://everydriver.co.uk/instructor-app/login" onClick={() => setIsMenuOpen(false)}>
+            <Link to="/instructor-app/login" onClick={() => setIsMenuOpen(false)}>
               <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-secondary transition-colors">
                 <UserCog className="h-5 w-5 text-muted-foreground" />
                 <span className="font-medium">Instructor Login</span>
               </div>
-            </a>
+            </Link>
             <Link to="/about" onClick={() => setIsMenuOpen(false)}>
               <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-secondary transition-colors">
                 <Info className="h-5 w-5 text-muted-foreground" />
