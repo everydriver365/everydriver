@@ -1696,40 +1696,33 @@ export default function Courses() {
                         </div>
                       )}
                     </>
-                  ) : isMobile ? (
-                    // Mobile: Same flip cards as desktop, single column
-                    <div className="flex flex-col gap-4">
-                      {filteredCourses.slice(0, mobileVisibleCount).map((course, index) => (
-                        <motion.div
-                          key={`${course.instructor.id}-${course.hours}-${course.bookableDate.toISOString()}`}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: index * 0.05 }}
-                        >
-                          <DynamicCourseCard
-                            instructor={course.instructor}
-                            hours={course.hours}
-                            nextAvailable={course.bookableDate}
-                            courseImageUrl={course.courseImageUrl}
-                            isPopular={course.isPopular}
-                            availableFrom={course.availableFrom}
-                            distance={course.distance}
-                            features={course.features}
-                            isIntensive={course.isIntensive}
-                            discountedPrice={course.discountedPrice}
-                            customFeatures={course.customFeatures}
-                            areaName={areaCache[course.instructor.home_postcode?.replace(/\s+/g, "").toUpperCase()] || null}
-                            effectiveHourlyRate={resolvedRateFor(course.instructor)}
-                            learnerPostcode={searchedPostcode}
-                          />
-                        </motion.div>
-                      ))}
-                      {mobileVisibleCount < filteredCourses.length && (
-                        <motion.div
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          className="mt-4"
-                        >
+                  ) : (
+                    // Grid view — new redesigned cards (responsive)
+                    <>
+                      <CourseGridCards
+                        courses={(isMobile
+                          ? filteredCourses.slice(0, mobileVisibleCount)
+                          : filteredCourses
+                        ).map((c) => {
+                          const rate = resolvedRateFor(c.instructor) ?? c.instructor.hourly_rate ?? 40;
+                          const skim = c.instructor.school_skim_amount || 0;
+                          return {
+                            instructor: c.instructor,
+                            hours: c.hours,
+                            bookableDate: c.bookableDate,
+                            isPopular: c.isPopular,
+                            isIntensive: c.isIntensive,
+                            distance: c.distance,
+                            price: c.hours * rate + skim,
+                            discountedPrice: c.discountedPrice,
+                            areaName:
+                              areaCache[c.instructor.home_postcode?.replace(/\s+/g, "").toUpperCase()] ||
+                              null,
+                          };
+                        })}
+                      />
+                      {isMobile && mobileVisibleCount < filteredCourses.length && (
+                        <div className="mt-4">
                           <Button
                             variant="outline"
                             size="lg"
@@ -1739,44 +1732,6 @@ export default function Courses() {
                             <ChevronDown className="h-4 w-4" />
                             Load More ({filteredCourses.length - mobileVisibleCount} remaining)
                           </Button>
-                        </motion.div>
-                      )}
-                    </div>
-                  ) : (
-                    // Desktop: 2-column grid with flip cards
-                    <>
-                      <div className="grid gap-6 sm:grid-cols-2">
-                        {filteredCourses.slice(0, 6).map((course, index) => (
-                          <motion.div
-                            key={`${course.instructor.id}-${course.hours}-${course.bookableDate.toISOString()}`}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: index * 0.05 }}
-                          >
-                            <DynamicCourseCard
-                              instructor={course.instructor}
-                              hours={course.hours}
-                              nextAvailable={course.bookableDate}
-                              courseImageUrl={course.courseImageUrl}
-                              isPopular={course.isPopular}
-                              availableFrom={course.availableFrom}
-                              distance={course.distance}
-                              features={course.features}
-                              isIntensive={course.isIntensive}
-                              discountedPrice={course.discountedPrice}
-                              customFeatures={course.customFeatures}
-                              areaName={areaCache[course.instructor.home_postcode?.replace(/\s+/g, "").toUpperCase()] || null}
-                              effectiveHourlyRate={resolvedRateFor(course.instructor)}
-                              learnerPostcode={searchedPostcode}
-                            />
-                          </motion.div>
-                        ))}
-                      </div>
-                      {filteredCourses.length > 6 && (
-                        <div className="mt-6 text-center">
-                          <p className="text-sm text-muted-foreground">
-                            Showing 6 of {filteredCourses.length} courses
-                          </p>
                         </div>
                       )}
                     </>
