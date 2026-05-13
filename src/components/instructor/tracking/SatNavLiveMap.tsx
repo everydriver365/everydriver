@@ -693,10 +693,8 @@ export function SatNavLiveMap({
       const initialZoom = zoomForSpeed(speedKmh ?? null);
       lastAutoZoomRef.current = initialZoom;
 
-      // For vector + fullscreen + follow, the world is rotated to heading-up,
-      // so the on-screen arrow direction must be compensated to ~0°.
-      const useSatNavCam =
-        fullscreenRef.current && followModeRef.current && vectorReadyRef.current;
+      // Flat top-down map — vehicle stays dead-centred, no tilt/rotation.
+      const useSatNavCam = false;
       const screenHeading = useSatNavCam ? 0 : headingNow;
 
       if (!markerRef.current) {
@@ -911,8 +909,8 @@ export function SatNavLiveMap({
         const lng = lerp(from.lng, target.lng, e);
         const hd = lerpAngle(from.heading, target.heading, e);
 
-        const satNavCam =
-          fullscreenRef.current && followModeRef.current && vectorReadyRef.current;
+        // Flat top-down map — vehicle locked centre, no tilt/heading rotation.
+        const satNavCam = false;
 
         marker.setPosition({ lat, lng });
         // When the world is rotated heading-up, Google rotates marker symbols
