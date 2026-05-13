@@ -631,25 +631,6 @@ export default function DemoCourseResultsPremium() {
             </div>
           </div>
 
-          {/* Available start dates */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <h3 className="mb-3 text-sm font-bold text-slate-900">Available start dates</h3>
-            <div className="flex flex-wrap gap-2">
-              {START_PILLS.map((p) => (
-                <button
-                  key={p.label}
-                  className={`rounded-full border px-3 py-1.5 text-[12px] font-semibold transition ${
-                    p.active
-                      ? "border-[#0B2545] bg-[#0B2545] text-white shadow"
-                      : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50"
-                  }`}
-                >
-                  {p.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
           {/* Nearby instructors */}
           <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
             <h3 className="mb-3 flex items-center gap-2 text-sm font-bold text-slate-900">
