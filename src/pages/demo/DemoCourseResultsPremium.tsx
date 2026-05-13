@@ -468,6 +468,87 @@ function FeaturedCard({ c }: { c: SampleCourse }) {
   );
 }
 
+function GridCard({ c }: { c: SampleCourse }) {
+  const accent = ACCENTS[c.accent];
+  const { dow, dm, year } = splitStartDate(c.startDate);
+  return (
+    <article className="group relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm transition-all hover:shadow-md">
+      {/* Top accent band */}
+      <div className={`h-1.5 w-full bg-gradient-to-r ${accent.band}`} />
+
+      <div className="p-4">
+        {/* Header row */}
+        <div className="mb-3 flex items-center justify-between">
+          {getCourseIcon(c) ? (
+            <img src={getCourseIcon(c)} alt={`${c.hours} hours`} className="h-12 w-12 object-contain" />
+          ) : (
+            <div className={`flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${accent.band} text-white shadow-sm`}>
+              <span className="text-base font-black leading-none">{c.hours}</span>
+            </div>
+          )}
+          <button className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 transition hover:border-rose-200 hover:text-rose-500">
+            <Heart className="h-3.5 w-3.5" />
+          </button>
+        </div>
+
+        {/* Title & details */}
+        <h3 className="mb-1 text-[14px] font-bold leading-tight text-slate-900">{c.title}</h3>
+        <div className="mb-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-slate-500">
+          <span className="flex items-center gap-1">
+            <User className="h-3 w-3 text-slate-400" />
+            {c.instructor}
+          </span>
+          <span className="flex items-center gap-1">
+            <MapPin className="h-3 w-3 text-slate-400" />
+            {c.location}
+          </span>
+          <span className="flex items-center gap-1">
+            <Settings2 className="h-3 w-3 text-slate-400" />
+            {c.transmission}
+          </span>
+        </div>
+
+        {/* Date pill */}
+        <div className="mb-3 inline-flex items-center gap-1.5 rounded-lg border border-sky-100 bg-sky-50 px-2 py-1">
+          <CalendarIcon className="h-3 w-3 text-sky-600" />
+          <span className="text-[11px] font-bold text-sky-800">{dow}, {dm}</span>
+          <span className="text-[10px] text-sky-600">{year}</span>
+        </div>
+
+        {/* Payment pills */}
+        <div className="mb-3 flex flex-wrap items-center gap-1.5">
+          {c.klarna && (
+            <span className="inline-flex items-center gap-1 rounded-full border border-pink-200 bg-pink-50 px-2 py-0.5 text-[10px] font-semibold text-pink-800">
+              <img src={klarnaLogo} alt="" className="h-3 w-3" />
+              3 × £{(c.price / 3).toFixed(0)}
+            </span>
+          )}
+          {c.clearpay && (
+            <span className="inline-flex items-center gap-1 rounded-full border border-violet-200 bg-violet-50 px-2 py-0.5 text-[10px] font-semibold text-violet-800">
+              <img src={clearpayLogo} alt="" className="h-3 w-3" />
+              4 × £{(c.price / 4).toFixed(0)}
+            </span>
+          )}
+        </div>
+
+        {/* Price + CTA */}
+        <div className="flex items-center justify-between border-t border-slate-100 pt-3">
+          <div>
+            <div className="text-[18px] font-extrabold leading-none tracking-tight text-[#0B2545]">
+              £{c.price.toLocaleString()}
+            </div>
+            <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Total</div>
+          </div>
+          <button className="inline-flex h-8 items-center justify-center gap-1 rounded-lg bg-[#0B2545] px-3 text-[12px] font-semibold text-white shadow-sm transition hover:bg-[#13346b]">
+            View &amp; Book
+            <ChevronRight className="h-3 w-3" />
+          </button>
+        </div>
+      </div>
+    </article>
+  );
+}
+
 function StandardCard({ c }: { c: SampleCourse }) {
   const accent = ACCENTS[c.accent];
   const { dow, dm, year } = splitStartDate(c.startDate);
