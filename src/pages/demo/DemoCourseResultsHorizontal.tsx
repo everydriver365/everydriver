@@ -39,6 +39,192 @@ function badgePill(b?: Course["badge"]) {
 }
 
 /* ============================================================
+   OPTION E — "Racing Stripe" — motorsport diagonal, checkered, speed lines
+   ============================================================ */
+function OptionE({ c }: { c: Course }) {
+  const b = badgePill(c.badge);
+  return (
+    <div className="group relative flex overflow-hidden rounded-2xl bg-white shadow-xl ring-1 ring-black/5 hover:-translate-y-0.5 transition-all">
+      {/* Left diagonal hours block */}
+      <div className="relative w-44 shrink-0 bg-gradient-to-br from-red-600 via-red-700 to-black text-white"
+           style={{ clipPath: "polygon(0 0, 100% 0, 88% 100%, 0% 100%)" }}>
+        <div className="absolute inset-0 opacity-20"
+             style={{ backgroundImage: "repeating-linear-gradient(45deg, white 0 8px, transparent 8px 16px)" }} />
+        <div className="relative h-full flex flex-col justify-center pl-5 pr-8">
+          <div className="text-[11px] font-black uppercase tracking-widest text-white/70">Course</div>
+          <div className="font-black leading-none text-7xl drop-shadow-lg">{c.hours}</div>
+          <div className="text-xs font-bold uppercase tracking-wider mt-1">Hours</div>
+        </div>
+      </div>
+      {/* Centre */}
+      <div className="flex-1 p-5 min-w-0">
+        <div className="flex items-center gap-2 mb-2">
+          {b && <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-black uppercase ${b.cls}`}><b.icon className="h-3 w-3" />{b.label}</span>}
+          <span className="inline-flex items-center gap-1 rounded-full bg-slate-900 text-white px-2 py-0.5 text-[10px] font-bold"><Car className="h-3 w-3" />{c.transmission}</span>
+          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700"><Trophy className="h-3 w-3" />{c.passRate}% pass</span>
+        </div>
+        <h3 className="text-xl font-black leading-tight">{c.hours}-hour intensive · {c.area}</h3>
+        <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
+          <img src={c.avatar} alt="" className="h-5 w-5 rounded-full" />
+          <span className="font-semibold text-foreground">{c.instructor}</span>
+          <Star className="h-3 w-3 fill-amber-400 text-amber-400" />{c.rating} ({c.reviews})
+        </div>
+        <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs">
+          <span className="flex items-center gap-1"><Calendar className="h-3 w-3 text-red-600" /><b className="font-bold">{c.startDate}</b> · {c.startTime}</span>
+          <span className="flex items-center gap-1"><MapPin className="h-3 w-3 text-red-600" />{c.distance} mi away</span>
+        </div>
+      </div>
+      {/* Right CTA */}
+      <div className="shrink-0 flex flex-col justify-between items-end p-5 bg-gradient-to-b from-slate-50 to-slate-100 border-l border-dashed border-slate-300">
+        {c.oldPrice && <span className="text-xs line-through text-muted-foreground">£{c.oldPrice}</span>}
+        <div className="text-3xl font-black text-slate-900 leading-none">£{c.price}</div>
+        <Button size="sm" className="mt-3 bg-red-600 hover:bg-red-700 text-white rounded-full font-black uppercase tracking-wider">
+          Book <ArrowRight className="h-3.5 w-3.5" />
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================
+   OPTION F — "Brutalist" — thick borders, raw blocks, hard shadows
+   ============================================================ */
+function OptionF({ c }: { c: Course }) {
+  const b = badgePill(c.badge);
+  return (
+    <div className="group relative flex bg-yellow-300 border-[3px] border-black rounded-none shadow-[8px_8px_0_0_#000] hover:shadow-[4px_4px_0_0_#000] hover:translate-x-1 hover:translate-y-1 transition-all overflow-hidden">
+      <div className="w-40 shrink-0 bg-black text-yellow-300 flex flex-col items-center justify-center border-r-[3px] border-black">
+        <div className="text-[10px] font-black uppercase tracking-[0.2em]">Hours</div>
+        <div className="text-8xl font-black leading-none tabular-nums">{c.hours}</div>
+        <div className="mt-2 px-2 py-0.5 bg-yellow-300 text-black text-[10px] font-black uppercase">{c.transmission}</div>
+      </div>
+      <div className="flex-1 p-5 min-w-0">
+        <div className="flex items-center gap-2 flex-wrap mb-2">
+          {b && <span className="inline-flex items-center gap-1 bg-black text-yellow-300 px-2 py-0.5 text-[10px] font-black uppercase border-2 border-black"><b.icon className="h-3 w-3" />{b.label}</span>}
+          <span className="bg-white border-2 border-black px-2 py-0.5 text-[10px] font-black uppercase">{c.passRate}% PASS</span>
+          <span className="bg-white border-2 border-black px-2 py-0.5 text-[10px] font-black uppercase">★ {c.rating}</span>
+        </div>
+        <h3 className="text-2xl font-black uppercase leading-tight text-black">{c.area}</h3>
+        <p className="text-sm font-bold text-black/80">with {c.instructor} · starts {c.startDate}</p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {c.features.slice(0,3).map(f => (
+            <span key={f} className="text-[11px] font-bold bg-white border-2 border-black px-2 py-0.5">{f}</span>
+          ))}
+        </div>
+      </div>
+      <div className="w-44 shrink-0 bg-black text-white p-5 flex flex-col justify-between items-end border-l-[3px] border-black">
+        <div className="text-right">
+          {c.oldPrice && <div className="text-xs line-through text-white/60">£{c.oldPrice}</div>}
+          <div className="text-4xl font-black leading-none">£{c.price}</div>
+        </div>
+        <button className="w-full bg-yellow-300 text-black font-black uppercase tracking-wider py-2 border-2 border-yellow-300 hover:bg-white hover:border-white">
+          Book →
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================
+   OPTION G — "Aurora" — luxury dark with iridescent gradient ring
+   ============================================================ */
+function OptionG({ c }: { c: Course }) {
+  const b = badgePill(c.badge);
+  return (
+    <div className="group relative rounded-3xl p-[2px] bg-[conic-gradient(from_180deg_at_50%_50%,#22d3ee_0deg,#a855f7_120deg,#ec4899_240deg,#22d3ee_360deg)] hover:p-[3px] transition-all">
+      <div className="relative flex rounded-[22px] bg-[#0b1020] overflow-hidden">
+        {/* Hours pill */}
+        <div className="relative w-48 shrink-0 flex flex-col items-center justify-center p-6">
+          <div className="absolute inset-3 rounded-2xl bg-gradient-to-br from-cyan-500/20 via-purple-500/10 to-pink-500/20 blur-xl" />
+          <div className="relative">
+            <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-cyan-300/80 text-center">Hours</div>
+            <div className="text-7xl font-black text-transparent bg-clip-text bg-gradient-to-br from-cyan-300 via-white to-pink-300 leading-none tabular-nums">{c.hours}</div>
+            <div className="text-[10px] font-semibold uppercase tracking-widest text-white/50 text-center mt-1">+ test</div>
+          </div>
+        </div>
+        {/* Centre */}
+        <div className="flex-1 p-6 min-w-0 text-white">
+          <div className="flex items-center gap-2 mb-2">
+            {b && <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-black uppercase ${b.cls}`}><b.icon className="h-3 w-3" />{b.label}</span>}
+            <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-300">{c.transmission}</span>
+            <span className="text-[10px] text-white/60">· {c.passRate}% pass rate</span>
+          </div>
+          <h3 className="text-xl font-bold tracking-tight">{c.area}</h3>
+          <div className="mt-1 flex items-center gap-2 text-xs text-white/70">
+            <img src={c.avatar} alt="" className="h-5 w-5 rounded-full ring-1 ring-white/20" />
+            {c.instructor} · <Star className="h-3 w-3 fill-amber-400 text-amber-400" />{c.rating}
+          </div>
+          <div className="mt-4 grid grid-cols-3 gap-2">
+            {[
+              { i: Calendar, l: c.startDate.split(" ").slice(0,2).join(" "), s: "Start" },
+              { i: Clock, l: c.startTime, s: "Time" },
+              { i: MapPin, l: `${c.distance} mi`, s: "Distance" },
+            ].map((s, i) => (
+              <div key={i} className="rounded-xl bg-white/[0.04] ring-1 ring-white/10 px-3 py-2">
+                <div className="flex items-center gap-1 text-[10px] uppercase text-white/50"><s.i className="h-3 w-3" />{s.s}</div>
+                <div className="text-sm font-bold">{s.l}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+        {/* CTA */}
+        <div className="shrink-0 flex flex-col justify-center items-end gap-3 p-6 bg-gradient-to-b from-white/[0.03] to-transparent">
+          {c.oldPrice && <span className="text-xs line-through text-white/40">£{c.oldPrice}</span>}
+          <div className="text-3xl font-black text-white leading-none">£{c.price}</div>
+          <Button size="sm" className="rounded-full bg-gradient-to-r from-cyan-400 to-fuchsia-500 text-white font-bold border-0 hover:opacity-90">
+            Reserve <ArrowRight className="h-3.5 w-3.5" />
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================
+   OPTION H — "Receipt / Invoice" — clean monospace, structured data
+   ============================================================ */
+function OptionH({ c }: { c: Course }) {
+  const b = badgePill(c.badge);
+  return (
+    <div className="group relative flex overflow-hidden rounded-xl bg-white border border-slate-200 hover:border-slate-900 hover:shadow-lg transition-all">
+      {/* Left big number */}
+      <div className="w-36 shrink-0 bg-slate-50 border-r border-dashed border-slate-300 flex flex-col items-center justify-center p-4">
+        <div className="font-mono text-[10px] uppercase tracking-widest text-slate-500">qty/hours</div>
+        <div className="font-black text-7xl text-slate-900 leading-none tabular-nums">{c.hours}</div>
+        <div className="font-mono text-[10px] uppercase tracking-widest text-slate-500 mt-1">@ £{Math.round(c.price/c.hours)}/hr</div>
+      </div>
+      {/* Body */}
+      <div className="flex-1 p-5 min-w-0 font-mono text-[12px]">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-[10px] uppercase tracking-widest text-slate-400">course #{c.id.padStart(4,"0")}</span>
+          {b && <span className={`inline-flex items-center gap-1 rounded-sm px-1.5 py-0.5 text-[10px] font-bold uppercase ${b.cls}`}><b.icon className="h-3 w-3" />{b.label}</span>}
+        </div>
+        <h3 className="font-sans text-lg font-bold text-slate-900 leading-tight">{c.instructor} — {c.area}</h3>
+        <div className="mt-3 space-y-1 text-slate-700">
+          <div className="flex justify-between border-b border-dotted border-slate-300 pb-1"><span>Transmission</span><span className="font-bold">{c.transmission}</span></div>
+          <div className="flex justify-between border-b border-dotted border-slate-300 pb-1"><span>Starts</span><span className="font-bold">{c.startDate} · {c.startTime}</span></div>
+          <div className="flex justify-between border-b border-dotted border-slate-300 pb-1"><span>Distance</span><span className="font-bold">{c.distance} mi</span></div>
+          <div className="flex justify-between border-b border-dotted border-slate-300 pb-1"><span>Pass rate</span><span className="font-bold text-emerald-700">{c.passRate}%</span></div>
+          <div className="flex justify-between border-b border-dotted border-slate-300 pb-1"><span>Rating</span><span className="font-bold">★ {c.rating} ({c.reviews})</span></div>
+        </div>
+      </div>
+      {/* Right total */}
+      <div className="w-52 shrink-0 bg-slate-900 text-white p-5 flex flex-col justify-between">
+        <div>
+          <div className="font-mono text-[10px] uppercase tracking-widest text-white/50">Total inc. test</div>
+          {c.oldPrice && <div className="text-xs line-through text-white/40">£{c.oldPrice}.00</div>}
+          <div className="text-4xl font-black leading-none tabular-nums">£{c.price}</div>
+          <div className="font-mono text-[10px] text-emerald-300 mt-1">Klarna 3× £{Math.round(c.price/3)}</div>
+        </div>
+        <Button size="sm" className="w-full rounded-md bg-white text-slate-900 hover:bg-slate-100 font-bold">
+          Checkout <ChevronRight className="h-3.5 w-3.5" />
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================
    OPTION A — "Speedometer" — bold gradient hours dial, neon energy
    ============================================================ */
 function OptionA({ c }: { c: Course }) {
@@ -426,6 +612,26 @@ export default function DemoCourseResultsHorizontal() {
         <Section id="D" title="Glass-morphism" tagline="Soft pastel gradient hero with frosted stat tiles. Friendly and modern."
           accent="bg-gradient-to-r from-pink-400 via-purple-400 to-cyan-400 text-white">
           {COURSES.map(c => <OptionD key={c.id} c={c} />)}
+        </Section>
+
+        <Section id="E" title="Racing Stripe" tagline="Motorsport energy — diagonal red block, checkered texture, urgent CTA."
+          accent="bg-gradient-to-r from-red-600 to-black text-white">
+          {COURSES.map(c => <OptionE key={c.id} c={c} />)}
+        </Section>
+
+        <Section id="F" title="Brutalist" tagline="Hard borders, yellow & black, hard drop-shadows. Loud and unmissable."
+          accent="bg-yellow-300 text-black border-2 border-black">
+          {COURSES.map(c => <OptionF key={c.id} c={c} />)}
+        </Section>
+
+        <Section id="G" title="Aurora" tagline="Iridescent conic ring on deep navy. Premium, futuristic, expensive-feeling."
+          accent="bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 text-white">
+          {COURSES.map(c => <OptionG key={c.id} c={c} />)}
+        </Section>
+
+        <Section id="H" title="Receipt" tagline="Monospace, structured, line-itemised. Reads like an invoice — utility & trust."
+          accent="bg-slate-900 text-white">
+          {COURSES.map(c => <OptionH key={c.id} c={c} />)}
         </Section>
 
         <div className="rounded-2xl border bg-muted/30 p-6 text-center">
