@@ -1462,31 +1462,49 @@ export default function Courses() {
                     // Desktop: 2-column grid with flip cards
                     <>
                       <div className={`grid gap-6 ${viewMode === "grid" ? "sm:grid-cols-2" : "grid-cols-1"}`}>
-                        {filteredCourses.slice(0, 6).map((course, index) => (
-                          <motion.div
-                            key={`${course.instructor.id}-${course.hours}-${course.bookableDate.toISOString()}`}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: index * 0.05 }}
-                          >
-                            <DynamicCourseCard
-                              instructor={course.instructor}
-                              hours={course.hours}
-                              nextAvailable={course.bookableDate}
-                              courseImageUrl={course.courseImageUrl}
-                              isPopular={course.isPopular}
-                              availableFrom={course.availableFrom}
-                              distance={course.distance}
-                              features={course.features}
-                              isIntensive={course.isIntensive}
-                              discountedPrice={course.discountedPrice}
-                              customFeatures={course.customFeatures}
-                              areaName={areaCache[course.instructor.home_postcode?.replace(/\s+/g, "").toUpperCase()] || null}
-                              effectiveHourlyRate={resolvedRateFor(course.instructor)}
-                              learnerPostcode={searchedPostcode}
-                            />
-                          </motion.div>
-                        ))}
+                        {filteredCourses.slice(0, 6).map((course, index) => {
+                          const rate = resolvedRateFor(course.instructor) ?? course.instructor.hourly_rate ?? 40;
+                          const skim = course.instructor.school_skim_amount || 0;
+                          const computedPrice = course.hours * rate + skim;
+                          return (
+                            <motion.div
+                              key={`${course.instructor.id}-${course.hours}-${course.bookableDate.toISOString()}`}
+                              initial={{ opacity: 0, y: 20 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: index * 0.05 }}
+                            >
+                              {viewMode === "list" ? (
+                                <CourseRowCard
+                                  instructor={course.instructor}
+                                  hours={course.hours}
+                                  nextAvailable={course.bookableDate}
+                                  distance={course.distance}
+                                  isIntensive={course.isIntensive}
+                                  price={computedPrice}
+                                  discountedPrice={course.discountedPrice}
+                                  areaName={areaCache[course.instructor.home_postcode?.replace(/\s+/g, "").toUpperCase()] || null}
+                                />
+                              ) : (
+                                <DynamicCourseCard
+                                  instructor={course.instructor}
+                                  hours={course.hours}
+                                  nextAvailable={course.bookableDate}
+                                  courseImageUrl={course.courseImageUrl}
+                                  isPopular={course.isPopular}
+                                  availableFrom={course.availableFrom}
+                                  distance={course.distance}
+                                  features={course.features}
+                                  isIntensive={course.isIntensive}
+                                  discountedPrice={course.discountedPrice}
+                                  customFeatures={course.customFeatures}
+                                  areaName={areaCache[course.instructor.home_postcode?.replace(/\s+/g, "").toUpperCase()] || null}
+                                  effectiveHourlyRate={resolvedRateFor(course.instructor)}
+                                  learnerPostcode={searchedPostcode}
+                                />
+                              )}
+                            </motion.div>
+                          );
+                        })}
                       </div>
                       {filteredCourses.length > 6 && (
                         <div className="mt-6 text-center">
