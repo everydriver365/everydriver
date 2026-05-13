@@ -1,6 +1,10 @@
-The hero image itself now has radius classes, but the page-level learner CSS is still neutralising/clashing with radius and the rendered section lacks a reliable clipping boundary at the visible image edge.
+Replace the Drive365 hero image with the newly uploaded panoramic photo (learner + car + phone mockup on a rooftop).
 
-Plan:
-1. Update the Drive365 desktop hero image wrapper in `HeroSearchSection` so the visible image is clipped by a dedicated rounded container with explicit inline `borderRadius` and `overflow: hidden`, not just Tailwind classes.
-2. Update the learner-app CSS opt-out so `.drive365-hero-rounded` and all direct overlay/image children preserve the same radius and clipping, while leaving the intentional square learner tiles/cards unchanged.
-3. Verify `/drive365` at the current desktop viewport and confirm the top hero image corners render rounded.
+## Steps
+1. Copy `user-uploads://d365_new_hero.png` to `src/assets/drive365-hero-driver.webp` (overwrite existing), so the existing import in `HeroSearchSection.tsx` picks it up automatically.
+2. Since the new image is a wide panorama (~3.5:1), switch the image fit from `object-contain` with `inset-4` padding back to `object-cover` filling the frame edge-to-edge — this avoids large empty bands around the image.
+3. No other changes; headline, search box, and layout stay the same.
+
+## Files
+- `src/assets/drive365-hero-driver.webp` (replaced)
+- `src/components/homepage/HeroSearchSection.tsx` (image classes only)
