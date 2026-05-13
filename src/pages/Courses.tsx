@@ -1099,17 +1099,22 @@ export default function Courses() {
                     <div className="relative">
                       <select
                         className="w-full appearance-none rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-800 shadow-sm transition focus:border-[#0B2545] focus:outline-none focus:ring-2 focus:ring-[#0B2545]/10"
-                        value={sortBy === "price-low" ? "cheapest" : "any"}
+                        value={priceRange}
                         onChange={(e) => {
-                          if (e.target.value === "cheapest") setSortBy("price-low");
-                          else if (sortBy === "price-low") setSortBy("soonest");
+                          const v = e.target.value;
+                          setPriceRange(v);
+                          setSearchParams((prev) => {
+                            const next = new URLSearchParams(prev);
+                            if (v === "any") next.delete("priceRange");
+                            else next.set("priceRange", v);
+                            return next;
+                          });
                         }}
                       >
                         <option value="any">Any price</option>
-                        <option value="cheapest">Cheapest first</option>
-                        <option disabled>Under £500</option>
-                        <option disabled>£500-£1000</option>
-                        <option disabled>Over £1000</option>
+                        <option value="under-500">Under £500</option>
+                        <option value="500-1000">£500 – £1,000</option>
+                        <option value="over-1000">Over £1,000</option>
                       </select>
                       <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                     </div>
@@ -1118,13 +1123,26 @@ export default function Courses() {
                 <div>
                   <label className="mb-2 block text-sm font-semibold text-foreground">Course Type</label>
                   <div className="relative">
-                    <select className="w-full appearance-none rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-800 shadow-sm transition focus:border-[#0B2545] focus:outline-none focus:ring-2 focus:ring-[#0B2545]/10">
-                      <option>All courses</option>
-                      <option>10 Hours</option>
-                      <option>20 Hours</option>
-                      <option>30 Hours</option>
-                      <option>40 Hours</option>
-                      <option>Test in a Week</option>
+                    <select
+                      className="w-full appearance-none rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-800 shadow-sm transition focus:border-[#0B2545] focus:outline-none focus:ring-2 focus:ring-[#0B2545]/10"
+                      value={courseType}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        setCourseType(v);
+                        setSearchParams((prev) => {
+                          const next = new URLSearchParams(prev);
+                          if (v === "all") next.delete("courseType");
+                          else next.set("courseType", v);
+                          return next;
+                        });
+                      }}
+                    >
+                      <option value="all">All courses</option>
+                      <option value="10">10 Hours</option>
+                      <option value="20">20 Hours</option>
+                      <option value="30">30 Hours</option>
+                      <option value="40">40 Hours</option>
+                      <option value="test-in-a-week">Test in a Week</option>
                     </select>
                     <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                   </div>
