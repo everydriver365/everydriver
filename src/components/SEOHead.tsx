@@ -25,7 +25,7 @@ interface SEOHeadProps {
  * geo + hreflang + canonical hints so search engines treat the site as
  * a distinct local UK driving school rather than a Drive365 duplicate.
  */
-export function SEOHead({ title, description, noindex }: SEOHeadProps) {
+export function SEOHead({ title, description, noindex, type = "website", image, jsonLd }: SEOHeadProps) {
   const { getSetting, loading } = useSiteSettings();
   const location = useLocation();
 
