@@ -94,6 +94,7 @@ export default function Contact() {
   if (isSubmitted && (isCallback || !isBespoke)) {
     return (
       <MainLayout>
+        {CONTACT_SEO}
         <div className="container py-8 pb-24">
           <div className="max-w-lg mx-auto">
             <Card>
