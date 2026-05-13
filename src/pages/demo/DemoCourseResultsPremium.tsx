@@ -22,6 +22,12 @@ import {
 import klarnaLogo from "@/assets/klarna-round-logo.svg";
 import clearpayLogo from "@/assets/clearpay-round-logo.svg";
 import courseHours10 from "@/assets/course-hours-10.png";
+import courseHours20 from "@/assets/course-hours-20.png";
+
+const HOURS_ICONS: Record<number, string> = {
+  10: courseHours10,
+  20: courseHours20,
+};
 
 /**
  * Premium redesign demo for the course results page.
