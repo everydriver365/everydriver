@@ -467,27 +467,74 @@ function StandardCard({ c }: { c: SampleCourse }) {
         </div>
       </div>
 
-      {/* Two-column body: details (left) + booking panel (right) */}
-      <div className="grid flex-1 gap-4 p-5 sm:grid-cols-[1fr_180px]">
-        {/* Left: title + meta */}
-        <div className="flex flex-col gap-3">
-          <div>
-            <h3 className="text-base font-bold leading-tight text-slate-900">{c.title}</h3>
-            <p className="mt-1 line-clamp-2 text-[13px] text-slate-500">{c.blurb}</p>
+      {/* Body */}
+      <div className="flex flex-1 flex-col gap-3 p-5">
+        <div>
+          <h3 className="text-base font-bold leading-tight text-slate-900">{c.title}</h3>
+          <p className="mt-1 line-clamp-2 text-[13px] text-slate-500">{c.blurb}</p>
+        </div>
+        <div className="flex flex-wrap gap-1.5">
+          <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-600">
+            {c.transmission}
+          </span>
+          <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-600">
+            {c.hours} hrs
+          </span>
+        </div>
+        <div className="space-y-1.5">
+          <CourseFact icon={User} label={c.instructor} />
+          <CourseFact icon={MapPin} label={`${c.location} · ${c.distance}`} />
+        </div>
+
+        {/* Booking strip — Date | Price | CTA, scannable from a distance */}
+        <div className="mt-auto grid grid-cols-[auto_1fr] gap-3 border-t border-dashed border-slate-200 pt-4">
+          {/* Start date pill */}
+          <div className="rounded-xl border border-sky-100 bg-sky-50/70 px-3 py-2">
+            <div className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-[0.14em] text-sky-700">
+              <CalendarIcon className="h-3 w-3" /> Starts
+            </div>
+            <div className="mt-0.5 text-[15px] font-bold leading-tight text-slate-900">
+              {splitStartDate(c.startDate).dow}, {splitStartDate(c.startDate).dm}
+            </div>
+            <div className="text-[11px] font-medium text-slate-500">
+              {splitStartDate(c.startDate).year}
+            </div>
           </div>
-          <div className="flex flex-wrap gap-1.5">
-            <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-600">
-              {c.transmission}
-            </span>
-            <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-600">
-              {c.hours} hrs
-            </span>
-          </div>
-          <div className="mt-auto space-y-1.5">
-            <CourseFact icon={User} label={c.instructor} />
-            <CourseFact icon={MapPin} label={`${c.location} · ${c.distance}`} />
+          {/* Price */}
+          <div className="text-right">
+            <div className="text-[28px] font-extrabold leading-none tracking-tight text-[#0B2545]">
+              £{c.price.toLocaleString()}
+            </div>
+            <div className="mt-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+              Total price
+            </div>
+            <div className="mt-1 flex flex-col items-end gap-0.5">
+              {c.klarna && (
+                <div className="flex items-center gap-1 text-[10px] font-medium text-slate-600">
+                  <img src={klarnaLogo} alt="" className="h-3 w-3" />
+                  3 × £{(c.price / 3).toFixed(2)}
+                </div>
+              )}
+              {c.clearpay && (
+                <div className="flex items-center gap-1 text-[10px] font-medium text-slate-600">
+                  <img src={clearpayLogo} alt="" className="h-3 w-3" />
+                  4 × £{(c.price / 4).toFixed(2)}
+                </div>
+              )}
+            </div>
           </div>
         </div>
+
+        <div className="flex items-center gap-2">
+          <button className="inline-flex h-11 flex-1 items-center justify-center gap-1.5 rounded-xl bg-[#0B2545] text-sm font-semibold text-white shadow-md shadow-[#0B2545]/20 transition hover:bg-[#13346b]">
+            View &amp; Book
+            <ChevronRight className="h-4 w-4" />
+          </button>
+          <button className="inline-flex h-11 items-center justify-center rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+            Compare
+          </button>
+        </div>
+      </div>
 
         {/* Right: booking panel (stacks under on mobile) */}
         <div className="border-t border-dashed border-slate-200 pt-4 sm:border-l sm:border-t-0 sm:border-dashed sm:pl-4 sm:pt-0">
