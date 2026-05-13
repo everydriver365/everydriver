@@ -50,7 +50,7 @@ export function HeroSearchSection({
       radius,
       transmission,
     });
-    navigate(`/search?${params.toString()}`);
+    navigate(`/drive365/search?${params.toString()}`);
   };
 
   useEffect(() => {
