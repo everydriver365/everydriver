@@ -1292,7 +1292,7 @@ export default function Courses() {
                    {/* Transmission Filter + Sort buttons */}
                   <div className="flex flex-wrap items-center gap-2">
                     {/* Transmission Pills */}
-                    <div className="flex items-center rounded-full bg-muted p-1 gap-0.5">
+                    <div className="flex items-center rounded-full border border-slate-200 bg-white p-1 shadow-sm gap-0.5">
                       {[
                         { value: "all", label: "All" },
                         { value: "manual", label: "Manual" },
@@ -1301,10 +1301,10 @@ export default function Courses() {
                         <button
                           key={option.value}
                           onClick={() => setTransmission(option.value)}
-                          className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all ${
+                          className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-all ${
                             transmission === option.value
-                              ? "bg-primary text-primary-foreground shadow-sm"
-                              : "text-muted-foreground hover:text-foreground"
+                              ? "bg-[#0B2545] text-white shadow-md shadow-[#0B2545]/25"
+                              : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                           }`}
                         >
                           {option.label}
@@ -1313,13 +1313,13 @@ export default function Courses() {
                     </div>
 
                     {/* Sort Pills */}
-                    <div className="flex items-center rounded-full bg-muted p-1 gap-0.5">
+                    <div className="flex items-center rounded-full border border-slate-200 bg-white p-1 shadow-sm gap-0.5">
                       <button
                         onClick={() => setSortBy("soonest")}
-                        className={`flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-medium transition-all ${
+                        className={`flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-semibold transition-all ${
                           sortBy === "soonest"
-                            ? "bg-primary text-primary-foreground shadow-sm"
-                            : "text-muted-foreground hover:text-foreground"
+                            ? "bg-[#0B2545] text-white shadow-md shadow-[#0B2545]/25"
+                            : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                         }`}
                       >
                         <CalendarIcon className="h-3.5 w-3.5" />
@@ -1328,10 +1328,10 @@ export default function Courses() {
                       <button
                         onClick={() => setSortBy("nearest")}
                         disabled={!userLocation}
-                        className={`flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-medium transition-all ${
+                        className={`flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-semibold transition-all ${
                           sortBy === "nearest"
-                            ? "bg-primary text-primary-foreground shadow-sm"
-                            : "text-muted-foreground hover:text-foreground"
+                            ? "bg-[#0B2545] text-white shadow-md shadow-[#0B2545]/25"
+                            : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                         } ${!userLocation ? "opacity-40 cursor-not-allowed" : ""}`}
                       >
                         <Navigation className="h-3.5 w-3.5" />
@@ -1339,26 +1339,26 @@ export default function Courses() {
                       </button>
                       <button
                         onClick={() => setSortBy("price-low")}
-                        className={`flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-medium transition-all ${
+                        className={`flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-semibold transition-all ${
                           sortBy === "price-low"
-                            ? "bg-primary text-primary-foreground shadow-sm"
-                            : "text-muted-foreground hover:text-foreground"
+                            ? "bg-[#0B2545] text-white shadow-md shadow-[#0B2545]/25"
+                            : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                         }`}
                       >
                         <PoundSterling className="h-3.5 w-3.5" />
-                        Price
+                        Cheapest
                       </button>
                     </div>
 
                     {/* View toggle (desktop only) */}
                     {!isMobile && (
-                      <div className="flex items-center rounded-full bg-muted p-1 gap-0.5">
+                      <div className="flex items-center rounded-full border border-slate-200 bg-white p-1 shadow-sm gap-0.5">
                         <button
                           onClick={() => setViewMode("list")}
-                          className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-all ${
+                          className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold transition-all ${
                             viewMode === "list"
-                              ? "bg-primary text-primary-foreground shadow-sm"
-                              : "text-muted-foreground hover:text-foreground"
+                              ? "bg-[#0B2545] text-white shadow-md shadow-[#0B2545]/25"
+                              : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                           }`}
                           aria-label="List view"
                         >
@@ -1367,10 +1367,10 @@ export default function Courses() {
                         </button>
                         <button
                           onClick={() => setViewMode("grid")}
-                          className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-all ${
+                          className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold transition-all ${
                             viewMode === "grid"
-                              ? "bg-primary text-primary-foreground shadow-sm"
-                              : "text-muted-foreground hover:text-foreground"
+                              ? "bg-[#0B2545] text-white shadow-md shadow-[#0B2545]/25"
+                              : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                           }`}
                           aria-label="Grid view"
                         >
