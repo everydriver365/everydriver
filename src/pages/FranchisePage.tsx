@@ -348,7 +348,7 @@ export default function FranchisePage() {
       </section>
 
       {/* What's Included — £50/week */}
-      <section className="py-16 md:py-24 bg-white">
+      <section className="py-16 md:py-24 bg-background">
         <div className="container max-w-5xl">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-14">
             <h2 className="text-3xl md:text-5xl font-extrabold text-foreground mb-3">

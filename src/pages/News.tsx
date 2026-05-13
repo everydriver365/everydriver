@@ -23,7 +23,7 @@ export default function News() {
       />
 
       {/* Hero */}
-      <section className="bg-gradient-to-b from-orange-50 to-background pt-16 pb-12">
+      <section className="bg-background pt-16 pb-12">
         <div className="container max-w-5xl text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
