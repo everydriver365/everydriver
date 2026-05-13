@@ -525,9 +525,6 @@ function StandardCard({ c }: { c: SampleCourse }) {
             View &amp; Book
             <ChevronRight className="h-3.5 w-3.5" />
           </button>
-          <button className="inline-flex h-9 items-center justify-center rounded-lg border border-slate-200 bg-white px-3 text-[12px] font-semibold text-slate-600 hover:bg-slate-50">
-            Compare
-          </button>
           <button className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 transition hover:border-rose-200 hover:text-rose-500">
             <Heart className="h-3.5 w-3.5" />
           </button>
