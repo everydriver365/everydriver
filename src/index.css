@@ -812,7 +812,7 @@
 }
 
 /* Learner app (Drive365): remove all border radius from tiles/cards */
-.learner-app *:not(.rounded-full):not([class*="avatar"]):not([class*="badge"]):not([class*="Avatar"]) {
+.learner-app *:not(.rounded-full):not([class*="avatar"]):not([class*="badge"]):not([class*="Avatar"]):not(.drive365-hero-rounded):not(.drive365-hero-rounded *):not(.etg-rounded-tile):not(.etg-rounded-tile *) {
   border-radius: 0 !important;
 }
 
