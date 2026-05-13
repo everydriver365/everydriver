@@ -22,7 +22,6 @@ import { useIncludedFeatures } from "@/hooks/useIncludedFeatures";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useRouteLogo } from "@/hooks/useRouteLogo";
-import { EarlierTestRequestTile } from "@/components/benefits/EarlierTestRequestTile";
 
 export default function Benefits() {
   const location = useLocation();
@@ -141,9 +140,6 @@ export default function Benefits() {
       {/* Features List */}
       {!loading && (
         <div className="px-4 space-y-3">
-          {/* Earlier Test Guarantee - Featured Tile */}
-          <EarlierTestRequestTile />
-
           {features.map((feature, index) => (
               <motion.div
                 key={feature.id}

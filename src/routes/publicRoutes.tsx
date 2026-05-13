@@ -18,7 +18,7 @@ const Help = lazy(() => import("@/pages/Help"));
 const Intensives = lazy(() => import("@/pages/Intensives"));
 const SemiIntensive = lazy(() => import("@/pages/SemiIntensive"));
 const Benefits = lazy(() => import("@/pages/Benefits"));
-const EarlierTestGuarantee = lazy(() => import("@/pages/EarlierTestGuarantee"));
+
 const News = lazy(() => import("@/pages/News"));
 const NewsArticle = lazy(() => import("@/pages/NewsArticle"));
 const InstallPupil = lazy(() => import("@/pages/InstallPupil"));
@@ -120,7 +120,7 @@ export const publicRoutes = (
     <Route path="/intensives" element={<Intensives />} />
     <Route path="/semi-intensive" element={<SemiIntensive />} />
     <Route path="/benefits" element={<Benefits />} />
-    <Route path="/earlier-test-guarantee" element={<EarlierTestGuarantee />} />
+    
     <Route path="/news" element={<News />} />
     <Route path="/news/:slug" element={<NewsArticle />} />
     <Route path="/pupil/install" element={<InstallPupil />} />
