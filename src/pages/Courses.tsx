@@ -294,11 +294,13 @@ export default function Courses() {
   const isMobile = useIsMobile();
   const [searchParams, setSearchParams] = useSearchParams();
   const initialPostcode = searchParams.get("postcode") || "";
+  const initialRadius = searchParams.get("radius") || "10";
+  const initialTransmission = searchParams.get("transmission") || "all";
   const [postcode, setPostcode] = useState(initialPostcode);
-  const [radius, setRadius] = useState("10");
+  const [radius, setRadius] = useState(initialRadius);
   const [showRadiusFallbackNotice, setShowRadiusFallbackNotice] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
-  const [transmission, setTransmission] = useState("all");
+  const [transmission, setTransmission] = useState(initialTransmission);
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState<SortOption>("soonest");
   const [geoCache, setGeoCache] = useState<GeoCache>({});
