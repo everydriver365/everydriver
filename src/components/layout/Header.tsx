@@ -7,6 +7,8 @@ import { useState } from "react";
 
 import { PromoBanner } from "./PromoBanner";
 import { SecondaryNav } from "./SecondaryNav";
+import { Drive365Header } from "./Drive365Header";
+import { useDomainBranding } from "@/hooks/useDomainBranding";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { useTheme } from "@/context/ThemeContext";
