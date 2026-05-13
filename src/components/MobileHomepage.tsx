@@ -19,7 +19,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import semiIntensiveIcon from "@/assets/semi-intensive-icon.jpg";
 import weeklyLessonsIcon from "@/assets/weekly-lessons-icon.jpg";
-import earlierTestGuaranteedBadge from "@/assets/free-retest-badge.png";
+
 import referFriendsImage from "@/assets/refer-friends.png";
 import { useDomainBranding } from "@/hooks/useDomainBranding";
 
@@ -237,33 +237,6 @@ export function MobileHomepage() {
         </div>
       </div>
       
-      {/* Free Re-Test if you Fail Promotion */}
-      <div className="px-4 pt-6">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }} 
-          animate={{ opacity: 1, y: 0 }} 
-          transition={{ delay: 1.0 }}
-          onClick={() => navigate("/earlier-test-guarantee")}
-          className="etg-rounded-tile overflow-hidden shadow-xl cursor-pointer active:scale-[0.98] transition-transform"
-          style={{ borderRadius: '16px' }}
-        >
-          <div className="flex">
-            <div className="w-2/5 bg-emerald-600 flex items-center justify-center p-5">
-              <img src={earlierTestGuaranteedBadge} alt="Free Re-Test if you Fail" className="w-full max-w-[120px] object-contain drop-shadow-lg" />
-            </div>
-            <div className="flex-1 bg-card p-4 flex flex-col justify-center">
-              <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">✓ Guaranteed</span>
-              <h4 className="font-bold text-foreground text-sm mt-1">Free Re-Test if you Fail</h4>
-              <p className="text-xs text-muted-foreground mt-1">Or your £62 test fee refunded in full</p>
-              <div className="mt-2 flex items-center gap-1 text-emerald-600">
-                <span className="text-xs font-semibold">Find out more</span>
-                <ChevronRight className="h-3 w-3" />
-              </div>
-            </div>
-          </div>
-        </motion.div>
-      </div>
-
       {/* What's Included Section */}
       <div className="px-4 pt-6">
         <h3 className="font-bold text-foreground text-sm uppercase tracking-wider mb-3">What's Included</h3>

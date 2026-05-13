@@ -67,7 +67,7 @@ import logoMsa from "@/assets/logo-msa.jpg";
 import logoCpd from "@/assets/logo-cpd.jpg";
 import logoCardPayments from "@/assets/logo-card-payments.png";
 import heroMobile from "@/assets/hero-mobile.png";
-import earlyTestBadge from "@/assets/free-retest-badge.png";
+
 import heroInstructorNew from "@/assets/hero-instructor-new.png";
 import heroLearner from "@/assets/hero-learner.jpg";
 import referFriends from "@/assets/refer-friends.png";
@@ -397,26 +397,6 @@ export default function Index() {
       </section>
 
       {/* Free Re-Test Promotion Banner */}
-      <section className="py-4">
-        <Link to="/earlier-test-guarantee">
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-            viewport={{ once: true }}
-            className="border-y bg-card shadow-lg hover:shadow-xl transition-shadow overflow-hidden group"
-          >
-            <div className="bg-gradient-to-r from-emerald-600 to-emerald-500 px-8 py-4 flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <img src={earlyTestBadge} alt="Free Re-Test if you Fail" className="w-28 h-28 object-contain drop-shadow-lg" />
-                <h3 className="text-2xl font-black text-white">Free Re-Test if you Fail</h3>
-              </div>
-              <Badge className="bg-white/20 text-white border-0 hover:bg-white/20 text-sm px-4 py-1">Most Popular</Badge>
-            </div>
-          </motion.div>
-        </Link>
-      </section>
-
       {/* Choose Your Learning Path Section */}
       <section className="bg-background py-16">
         <div className="container">
@@ -458,7 +438,6 @@ export default function Index() {
                   <Zap className="h-3 w-3" />
                   Fast Track
                 </Badge>
-                <img src={earlyTestBadge} alt="Free Re-Test if you Fail" className="absolute left-2 bottom-2 w-32 h-32 drop-shadow-lg object-contain" />
               </div>
               <div className="p-6">
                 <h3 className="text-xl font-bold">Intensive Courses</h3>
@@ -513,7 +492,7 @@ export default function Index() {
                   <Star className="h-3 w-3" />
                   Popular
                 </Badge>
-                <img src={earlyTestBadge} alt="Free Re-Test if you Fail" className="absolute left-2 bottom-2 w-32 h-32 drop-shadow-lg object-contain" />
+                
               </div>
               <div className="p-6">
                 <h3 className="text-xl font-bold">Semi-Intensive</h3>
