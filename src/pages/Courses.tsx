@@ -7,6 +7,7 @@ import { PostcodeAutocomplete } from "@/components/PostcodeAutocomplete";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { DynamicCourseCard } from "@/components/DynamicCourseCard";
 import { CourseTableList } from "@/components/courses/CourseTableList";
+import { CourseGridCards } from "@/components/courses/CourseGridCards";
 import { Edit2, SlidersHorizontal, ShieldCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
