@@ -496,6 +496,144 @@ export function CourseGridCards({ courses }: CourseGridCardsProps) {
               </div>
             </div>
           </div>
+
+          {/* Back face */}
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              borderRadius: 14,
+              overflow: "hidden",
+              display: "flex",
+              flexDirection: "column",
+              padding: 18,
+              color: "#ffffff",
+              background: brand,
+              backfaceVisibility: "hidden",
+              WebkitBackfaceVisibility: "hidden",
+              transform: "rotateY(180deg)",
+              boxShadow: "0 8px 24px rgba(10,25,54,0.12)",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              {c.instructor.profile_image_url ? (
+                <img
+                  src={c.instructor.profile_image_url}
+                  alt=""
+                  style={{ width: 44, height: 44, borderRadius: "50%", objectFit: "cover", border: "2px solid rgba(255,255,255,0.4)" }}
+                />
+              ) : (
+                <div
+                  style={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: "50%",
+                    background: "rgba(255,255,255,0.2)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontWeight: 800,
+                    fontSize: 14,
+                    letterSpacing: "0.04em",
+                  }}
+                >
+                  {initials}
+                </div>
+              )}
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontWeight: 800, fontSize: 14, letterSpacing: "-0.01em" }}>
+                  {c.instructor.name || "Instructor"}
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, opacity: 0.85, marginTop: 2 }}>
+                  <Star style={{ width: 11, height: 11, fill: "#fbbf24", color: "#fbbf24" }} />
+                  <span>{(c.instructor.rating ?? 4.9).toFixed(1)} rating</span>
+                </div>
+              </div>
+            </div>
+
+            <p
+              style={{
+                fontSize: 12.5,
+                lineHeight: 1.5,
+                marginTop: 12,
+                opacity: 0.85,
+                display: "-webkit-box",
+                WebkitLineClamp: 3,
+                WebkitBoxOrient: "vertical",
+                overflow: "hidden",
+              }}
+            >
+              {c.instructor.bio ||
+                `Experienced ${transmissionLabel(c.instructor.car_type).toLowerCase()} driving instructor ready to help you pass your test.`}
+            </p>
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: "4px 10px",
+                marginTop: 12,
+                flex: 1,
+              }}
+            >
+              {displayFeatures.map((feature, idx) => (
+                <div
+                  key={idx}
+                  style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11.5, opacity: 0.9 }}
+                >
+                  <CheckCircle style={{ width: 12, height: 12, color: "#34d399", flexShrink: 0 }} />
+                  <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {feature}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <div
+              style={{
+                marginTop: 12,
+                paddingTop: 12,
+                borderTop: "1px solid rgba(255,255,255,0.2)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <div>
+                <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: "-0.02em", lineHeight: 1 }}>
+                  £{Math.round(finalPrice).toLocaleString()}
+                </div>
+                <div style={{ fontSize: 10, opacity: 0.75, marginTop: 4 }}>
+                  or from £{Math.round(finalPrice / 4)}/month
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  goTo(c);
+                }}
+                style={{
+                  background: "#ffffff",
+                  color: brand,
+                  fontSize: 12,
+                  fontWeight: 700,
+                  padding: "9px 14px",
+                  borderRadius: 8,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 4,
+                  border: "none",
+                  cursor: "pointer",
+                }}
+              >
+                Learn more
+                <ChevronRight style={{ width: 13, height: 13 }} />
+              </button>
+            </div>
+          </div>
+          </div>
+          </div>
         );
       })}
     </div>
