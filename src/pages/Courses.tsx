@@ -992,7 +992,7 @@ export default function Courses() {
     (priceRange !== "any" ? 1 : 0) +
     (selectedInstructorId ? 1 : 0);
 
-  const isListMode = viewMode === "list";
+  const isListMode = (viewMode as string) === "list";
 
   return (
     <MainLayout>
@@ -1510,7 +1510,38 @@ export default function Courses() {
                           );
                         })}
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-3">
+                        {/* List/Grid view toggle */}
+                        <div
+                          className="inline-flex items-center rounded-full p-0.5"
+                          style={{ border: "1px solid #e8e8ee", background: "white" }}
+                        >
+                          <button
+                            onClick={() => setViewMode("list")}
+                            className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-all"
+                            style={{
+                              background: (viewMode as string) === "list" ? "#0a1936" : "transparent",
+                              color: (viewMode as string) === "list" ? "white" : "#7a7a7a",
+                            }}
+                            aria-label="List view"
+                          >
+                            <List className="h-3.5 w-3.5" />
+                            List
+                          </button>
+                          <button
+                            onClick={() => setViewMode("grid")}
+                            className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-all"
+                            style={{
+                              background: (viewMode as string) === "grid" ? "#0a1936" : "transparent",
+                              color: (viewMode as string) === "grid" ? "white" : "#7a7a7a",
+                            }}
+                            aria-label="Grid view"
+                          >
+                            <LayoutGrid className="h-3.5 w-3.5" />
+                            Grid
+                          </button>
+                        </div>
+
                         <label
                           htmlFor="course-sort"
                           style={{
