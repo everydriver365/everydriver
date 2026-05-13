@@ -615,6 +615,7 @@ export default function DemoCourseResultsPremium() {
                 </label>
                 <select className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800">
                   <option>Any price</option>
+                  <option>Cheapest first</option>
                   <option>Under £500</option>
                   <option>£500 – £1000</option>
                 </select>
