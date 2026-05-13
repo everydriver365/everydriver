@@ -1021,11 +1021,19 @@ export default function Courses() {
                 {!isMobile && (
                   <div>
                     <label className="mb-2 block text-sm font-medium">Price Range</label>
-                    <select className="w-full rounded-lg border bg-background px-3 py-2">
-                      <option>Any price</option>
-                      <option>Under £500</option>
-                      <option>£500-£1000</option>
-                      <option>Over £1000</option>
+                    <select
+                      className="w-full rounded-lg border bg-background px-3 py-2"
+                      value={sortBy === "price-low" ? "cheapest" : "any"}
+                      onChange={(e) => {
+                        if (e.target.value === "cheapest") setSortBy("price-low");
+                        else if (sortBy === "price-low") setSortBy("soonest");
+                      }}
+                    >
+                      <option value="any">Any price</option>
+                      <option value="cheapest">Cheapest first</option>
+                      <option disabled>Under £500</option>
+                      <option disabled>£500-£1000</option>
+                      <option disabled>Over £1000</option>
                     </select>
                   </div>
                 )}
@@ -1332,6 +1340,36 @@ export default function Courses() {
                         Price
                       </button>
                     </div>
+
+                    {/* View toggle (desktop only) */}
+                    {!isMobile && (
+                      <div className="flex items-center rounded-full bg-muted p-1 gap-0.5">
+                        <button
+                          onClick={() => setViewMode("list")}
+                          className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-all ${
+                            viewMode === "list"
+                              ? "bg-primary text-primary-foreground shadow-sm"
+                              : "text-muted-foreground hover:text-foreground"
+                          }`}
+                          aria-label="List view"
+                        >
+                          <List className="h-3.5 w-3.5" />
+                          List
+                        </button>
+                        <button
+                          onClick={() => setViewMode("grid")}
+                          className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-all ${
+                            viewMode === "grid"
+                              ? "bg-primary text-primary-foreground shadow-sm"
+                              : "text-muted-foreground hover:text-foreground"
+                          }`}
+                          aria-label="Grid view"
+                        >
+                          <LayoutGrid className="h-3.5 w-3.5" />
+                          Grid
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -1385,7 +1423,7 @@ export default function Courses() {
                   ) : (
                     // Desktop: 2-column grid with flip cards
                     <>
-                      <div className="grid gap-6 sm:grid-cols-2">
+                      <div className={`grid gap-6 ${viewMode === "grid" ? "sm:grid-cols-2" : "grid-cols-1"}`}>
                         {filteredCourses.slice(0, 6).map((course, index) => (
                           <motion.div
                             key={`${course.instructor.id}-${course.hours}-${course.bookableDate.toISOString()}`}
