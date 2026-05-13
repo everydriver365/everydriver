@@ -1630,7 +1630,7 @@ export default function Courses() {
                       <button
                         onClick={() => setViewMode("list")}
                         className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold transition-all ${
-                          viewMode === "list"
+                          (viewMode as string) === "list"
                             ? "bg-[#0B2545] text-white shadow-md shadow-[#0B2545]/25"
                             : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                         }`}
