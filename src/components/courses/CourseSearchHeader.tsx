@@ -54,7 +54,7 @@ export function CourseSearchHeader({
             <select
               value={radius}
               onChange={(e) => setRadius(e.target.value)}
-              className="h-11 rounded-lg border-0 bg-secondary px-4 text-foreground"
+              className="h-11 rounded-lg border-0 bg-secondary pl-6 pr-4 text-foreground"
             >
               <option value="5">5 miles</option>
               <option value="10">10 miles</option>
@@ -94,7 +94,7 @@ export function CourseSearchHeader({
               <div>
                 <label className="mb-2 block text-sm font-medium">Transmission</label>
                 <select
-                  className="w-full rounded-lg border bg-background px-3 py-2"
+                  className="w-full rounded-lg border bg-background pl-4 pr-3 py-2"
                   value={transmission}
                   onChange={(e) => setTransmission(e.target.value)}
                 >
