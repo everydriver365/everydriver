@@ -778,11 +778,16 @@ export default function Courses() {
     setSortBy("soonest");
     setKlarnaOnly(false);
     setClearpayOnly(false);
+    setCourseType("all");
+    setPriceRange("any");
+    setSelectedInstructorId(null);
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev);
       next.delete("transmission");
       next.delete("klarna");
       next.delete("clearpay");
+      next.delete("courseType");
+      next.delete("priceRange");
       return next;
     });
   };
