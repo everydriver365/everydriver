@@ -445,10 +445,15 @@ function OptionC({ c }: { c: Course }) {
             </div>
 
             <h3 className="text-2xl md:text-3xl font-black leading-[1.05] tracking-tight">
-              {c.transmission} licence,<br />sorted by <span className={`bg-gradient-to-r ${accent} bg-clip-text text-transparent`}>{c.startDate.split(" ").slice(1).join(" ")}</span>.
+              {c.transmission} licence in {c.hours} hours.
             </h3>
+            <div className={`mt-3 inline-flex items-center gap-2 rounded-xl px-3 py-2 bg-gradient-to-r ${accent} text-white shadow-md`}>
+              <Calendar className="h-4 w-4" />
+              <span className="text-[10px] font-black uppercase tracking-widest opacity-80">Starts</span>
+              <span className="text-base font-black">{c.startDate} · {c.startTime}</span>
+            </div>
             <div className="mt-2 text-sm text-muted-foreground">
-              Starts {c.startDate} · {c.startTime} · {c.area} · with {c.instructor}
+              {c.area} · with {c.instructor}
             </div>
           </div>
 
@@ -462,14 +467,14 @@ function OptionC({ c }: { c: Course }) {
         </div>
 
         {/* CTA stripe */}
-        <div className={`md:w-56 md:flex-shrink-0 p-6 bg-gradient-to-br ${accent} text-white flex md:flex-col items-center justify-between gap-3`}>
+        <div className={`md:w-60 md:flex-shrink-0 p-6 bg-gradient-to-br ${accent} text-white flex md:flex-col items-center justify-between gap-3`}>
           <div className="text-center">
             <div className="text-[10px] font-bold uppercase tracking-[0.25em] opacity-80">From</div>
             <div className="flex items-baseline gap-1.5 justify-center">
-              {c.oldPrice && <span className="text-xs opacity-70 line-through">£{c.oldPrice}</span>}
-              <span className="text-4xl font-black drop-shadow">£{c.price}</span>
+              {c.oldPrice && <span className="text-sm opacity-70 line-through">£{c.oldPrice}</span>}
+              <span className="text-6xl font-black drop-shadow leading-none">£{c.price}</span>
             </div>
-            <div className="text-[10px] opacity-80 mt-0.5">or 4 × £{Math.round(c.price / 4)} Klarna</div>
+            <div className="text-[11px] opacity-90 mt-1.5">or 4 × £{Math.round(c.price / 4)} Klarna</div>
           </div>
           <Button className="w-full gap-1.5 bg-white text-foreground hover:bg-white/90 font-black shadow-lg">
             Grab it <Rocket className="h-4 w-4" />
