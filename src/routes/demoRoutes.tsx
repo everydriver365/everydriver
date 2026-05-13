@@ -106,5 +106,6 @@ export const demoRoutes = (
     <Route path="/demo/next-up-redesigns" element={<DemoNextUpRedesigns />} />
     <Route path="/demo/instructor-app-redesigns" element={<DemoInstructorAppRedesigns />} />
     <Route path="/demo/course-results-horizontal" element={<DemoCourseResultsHorizontal />} />
+    <Route path="/demo/course-results-premium" element={<DemoCourseResultsPremium />} />
   </>
 );
