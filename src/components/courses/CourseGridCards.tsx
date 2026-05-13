@@ -130,12 +130,27 @@ export function CourseGridCards({ courses }: CourseGridCardsProps) {
         const dark = isDarkGradient(c.hours);
         const headerText = c.courseImageUrl || dark ? "#ffffff" : "#0a1936";
         const key = `${c.instructor.id}-${c.hours}-${c.bookableDate.toISOString()}`;
+        const isFlipped = !!flipped[key];
+        const brand = c.instructor.brand_colour || "#0a1936";
+        const initials = (c.instructor.name || "?")
+          .split(" ")
+          .map((n) => n[0])
+          .filter(Boolean)
+          .slice(0, 2)
+          .join("")
+          .toUpperCase();
+        const finalPrice = c.discountedPrice && c.discountedPrice < c.price ? c.discountedPrice : c.price;
+        const featuresList = (c.features || []).filter(Boolean).slice(0, 6);
+        const fallbackFeatures = ["Theory support", "Home pick-up", "Test-route practice", "Mock test included"];
+        const displayFeatures = featuresList.length > 0 ? featuresList : fallbackFeatures;
 
         return (
           <div
             key={key}
-            role="button"
-            tabIndex={0}
+            className="group cursor-pointer"
+            style={{ perspective: "1200px", height: "100%" }}
+            onMouseEnter={() => setFlipped((p) => ({ ...p, [key]: true }))}
+            onMouseLeave={() => setFlipped((p) => ({ ...p, [key]: false }))}
             onClick={() => goTo(c)}
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " ") {
@@ -143,26 +158,33 @@ export function CourseGridCards({ courses }: CourseGridCardsProps) {
                 goTo(c);
               }
             }}
-            className="group cursor-pointer"
+            role="button"
+            tabIndex={0}
+          >
+          <div
+            style={{
+              position: "relative",
+              height: "100%",
+              width: "100%",
+              transition: "transform 500ms ease",
+              transformStyle: "preserve-3d",
+              transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
+            }}
+          >
+          <div
             style={{
               background: "#ffffff",
               borderRadius: 14,
               border: "1px solid #e8e8ee",
               boxShadow: "0 1px 2px rgba(10,25,54,0.04)",
               overflow: "hidden",
-              transition: "transform 200ms ease, box-shadow 200ms ease",
               display: "flex",
               flexDirection: "column",
               height: "100%",
+              backfaceVisibility: "hidden",
+              WebkitBackfaceVisibility: "hidden",
             }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = "translateY(-2px)";
-              e.currentTarget.style.boxShadow = "0 8px 24px rgba(10,25,54,0.08)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = "translateY(0)";
-              e.currentTarget.style.boxShadow = "0 1px 2px rgba(10,25,54,0.04)";
-            }}
+          >
           >
             {/* Visual header */}
             <div
