@@ -767,11 +767,12 @@ export default function Courses() {
       const instructorsQuery = supabase.from("public_instructors").select("*").eq("is_active", true);
       if (whitelabelSlug) instructorsQuery.eq("app_slug", whitelabelSlug);
 
-      const [instructorsRes, coursesRes, templatesRes, workingHoursRes, overridesRes] = await Promise.all([
+      const [instructorsRes, coursesRes, templatesRes, workingHoursRes, availabilityWindowsRes, overridesRes] = await Promise.all([
         instructorsQuery,
         supabase.from("instructor_courses").select("*").eq("is_active", true),
         supabase.from("course_templates").select("course_hours, course_name, default_image_url, is_popular, features, is_intensive").eq("is_active", true),
         supabase.from("instructor_working_hours").select("instructor_id, day_of_week, is_active"),
+        supabase.from("availability_windows").select("instructor_id, day_of_week, is_active"),
         supabase.from("instructor_date_overrides").select("instructor_id, override_date, override_end_date, is_available"),
       ]);
 
@@ -779,10 +780,17 @@ export default function Courses() {
       if (coursesRes.error) throw coursesRes.error;
       if (templatesRes.error) throw templatesRes.error;
       if (workingHoursRes.error) throw workingHoursRes.error;
+      if (availabilityWindowsRes.error) throw availabilityWindowsRes.error;
       if (overridesRes.error) throw overridesRes.error;
 
       const loadedInstructors = instructorsRes.data || [];
-      const loadedWorkingHours = workingHoursRes.data || [];
+      // Merge both availability sources: some instructors store hours in
+      // instructor_working_hours, others in availability_windows. Union both
+      // so search availability checks find rows for either.
+      const loadedWorkingHours = [
+        ...(workingHoursRes.data || []),
+        ...(availabilityWindowsRes.data || []),
+      ];
       const loadedOverrides = overridesRes.data || [];
 
       setInstructors(loadedInstructors);
