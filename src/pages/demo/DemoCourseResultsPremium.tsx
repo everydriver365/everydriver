@@ -373,58 +373,81 @@ function BookingPanel({
 
 function FeaturedCard({ c }: { c: SampleCourse }) {
   const accent = ACCENTS[c.accent];
+  const { dow, dm, year } = splitStartDate(c.startDate);
   return (
-    <article className="relative overflow-hidden rounded-3xl border border-slate-200/70 bg-white shadow-[0_20px_50px_-25px_rgba(11,37,69,0.25)]">
-      <div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${accent.band} opacity-[0.04]`} />
-      <div className="grid gap-0 lg:grid-cols-[220px_1fr_300px]">
-        {/* Hero column */}
-        <div className={`relative flex flex-col justify-between bg-gradient-to-br ${accent.band} p-6 text-white`}>
-          <div className="flex items-center gap-1.5 self-start rounded-full bg-white/15 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide backdrop-blur">
-            <Sparkles className="h-3 w-3" />
-            {c.badge}
-          </div>
-          <div>
-            <div className="text-[80px] font-black leading-none tracking-tight drop-shadow-sm">
-              {c.hours}
-            </div>
-            <div className="-mt-1 text-sm font-semibold uppercase tracking-[0.18em] text-white/85">
-              Hours
-            </div>
-          </div>
-          <div className="flex items-center gap-2 text-xs font-medium text-white/80">
-            <ShieldCheck className="h-4 w-4" />
-            DVSA approved
-          </div>
-          <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10 blur-2xl" />
+    <article className="group relative flex items-stretch gap-0 overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm transition-all hover:shadow-md ring-1 ring-[#0B2545]/10">
+      {/* Left accent strip */}
+      <div className={`w-1.5 shrink-0 bg-gradient-to-b ${accent.band}`} />
+
+      {/* Hours pill + badge */}
+      <div className="flex shrink-0 flex-col items-center justify-center gap-2 border-r border-slate-100 bg-slate-50/50 px-4 py-4">
+        <div className={`flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${accent.band} text-white shadow-sm`}>
+          <span className="text-lg font-black leading-none">{c.hours}</span>
         </div>
+        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">hr</span>
+        <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide ${accent.chip}`}>
+          {c.badge}
+        </span>
+      </div>
 
-        {/* Body */}
-        <div className="relative flex flex-col gap-4 border-r border-slate-100 p-6">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h3 className="text-2xl font-bold leading-tight text-slate-900">{c.title}</h3>
-              <p className="mt-1 max-w-xl text-sm text-slate-600">{c.blurb}</p>
-            </div>
-            <button className="shrink-0 rounded-full border border-slate-200 bg-white p-2 text-slate-400 transition hover:border-rose-200 hover:text-rose-500">
-              <Heart className="h-4 w-4" />
-            </button>
-          </div>
-
-          <div className="grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-2">
-            <CourseFact icon={Clock} label={`${c.hours} hours total`} />
-            <CourseFact icon={Settings2} label={c.transmission} />
-            <CourseFact icon={User} label={c.instructor} />
-            <CourseFact icon={MapPin} label={`${c.location} · ${c.distance}`} />
-          </div>
-
-          <div className="mt-auto flex items-center gap-2 text-[11px] text-slate-500">
-            <Lock className="h-3 w-3" /> Secure checkout · Free cancellation
-          </div>
+      {/* Body */}
+      <div className="flex min-w-0 flex-1 flex-col justify-center gap-1.5 px-4 py-3">
+        <h3 className="truncate text-[15px] font-bold leading-tight text-slate-900">{c.title}</h3>
+        <p className="truncate text-[12px] text-slate-500">{c.blurb}</p>
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-slate-500">
+          <span className="flex items-center gap-1">
+            <Settings2 className="h-3 w-3 text-slate-400" />
+            {c.transmission}
+          </span>
+          <span className="flex items-center gap-1">
+            <User className="h-3 w-3 text-slate-400" />
+            {c.instructor}
+          </span>
+          <span className="flex items-center gap-1">
+            <MapPin className="h-3 w-3 text-slate-400" />
+            {c.location} · {c.distance}
+          </span>
         </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="inline-flex items-center gap-1.5 rounded-lg border border-sky-100 bg-sky-50 px-2 py-1">
+            <CalendarIcon className="h-3 w-3 text-sky-600" />
+            <span className="text-[12px] font-bold text-sky-800">{dow}, {dm}</span>
+            <span className="text-[11px] text-sky-600">{year}</span>
+          </div>
+          {c.klarna && (
+            <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-medium text-slate-600">
+              <img src={klarnaLogo} alt="" className="h-3 w-3" />
+              3 × £{(c.price / 3).toFixed(0)}
+            </span>
+          )}
+          {c.clearpay && (
+            <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-medium text-slate-600">
+              <img src={clearpayLogo} alt="" className="h-3 w-3" />
+              4 × £{(c.price / 4).toFixed(0)}
+            </span>
+          )}
+        </div>
+      </div>
 
-        {/* Right booking panel */}
-        <div className="bg-slate-50/40 p-5 lg:p-6">
-          <BookingPanel c={c} variant="featured" />
+      {/* Right: price + CTAs */}
+      <div className="flex shrink-0 flex-col items-end justify-center gap-2 border-l border-slate-100 bg-slate-50/30 px-4 py-3">
+        <div className="text-right">
+          <div className="text-[22px] font-extrabold leading-none tracking-tight text-[#0B2545]">
+            £{c.price.toLocaleString()}
+          </div>
+          <div className="mt-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500">Total</div>
+        </div>
+        <div className="flex items-center gap-2">
+          <button className="inline-flex h-9 items-center justify-center gap-1 rounded-lg bg-[#0B2545] px-4 text-[13px] font-semibold text-white shadow-sm transition hover:bg-[#13346b]">
+            View &amp; Book
+            <ChevronRight className="h-3.5 w-3.5" />
+          </button>
+          <button className="inline-flex h-9 items-center justify-center rounded-lg border border-slate-200 bg-white px-3 text-[12px] font-semibold text-slate-600 hover:bg-slate-50">
+            Compare
+          </button>
+          <button className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 transition hover:border-rose-200 hover:text-rose-500">
+            <Heart className="h-3.5 w-3.5" />
+          </button>
         </div>
       </div>
     </article>
