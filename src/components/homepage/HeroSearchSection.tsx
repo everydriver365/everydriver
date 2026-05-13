@@ -59,9 +59,9 @@ export function HeroSearchSection({
 
   return (
     <div className={className}>
-      {/* Hero image container — overflow-hidden keeps rounded corners clean */}
+      {/* Hero image container */}
       <section
-        className="relative w-full overflow-hidden h-[360px] sm:h-[400px] lg:h-[540px]"
+        className="relative w-full h-[360px] sm:h-[400px] lg:h-[540px]"
         style={{ borderRadius: "14px" }}
         aria-label="Find a driving instructor"
       >
@@ -71,7 +71,6 @@ export function HeroSearchSection({
           className="absolute inset-0 w-full h-full object-cover"
           loading="eager"
         />
-        {/* Dark bottom gradient */}
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
@@ -79,6 +78,13 @@ export function HeroSearchSection({
               "linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.15) 55%, rgba(0,0,0,0.35) 100%)",
           }}
         />
+
+        {/* TEST: simple red div inside hero */}
+        <div className="absolute bottom-0 left-0 right-0 flex justify-center pb-8 z-20">
+          <div className="bg-red-500 text-white px-8 py-4 rounded-full text-xl font-bold">
+            TEST PILL SHOULD BE VISIBLE
+          </div>
+        </div>
       </section>
 
       {/* Desktop / tablet pill — overlaps hero bottom (sits OUTSIDE clipped section) */}
