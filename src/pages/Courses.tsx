@@ -1540,6 +1540,34 @@ export default function Courses() {
                             style={{ width: 14, height: 14, color: "#7a7a7a" }}
                           />
                         </div>
+
+                        {/* View toggle */}
+                        <div className="flex items-center rounded-full border border-slate-200 bg-white p-1 shadow-sm gap-0.5">
+                          <button
+                            onClick={() => setViewMode("list")}
+                            className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-all ${
+                              viewMode === "list"
+                                ? "bg-[#0B2545] text-white shadow-md shadow-[#0B2545]/25"
+                                : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                            }`}
+                            aria-label="List view"
+                          >
+                            <List className="h-3.5 w-3.5" />
+                            List
+                          </button>
+                          <button
+                            onClick={() => setViewMode("grid")}
+                            className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-all ${
+                              (viewMode as string) === "grid"
+                                ? "bg-[#0B2545] text-white shadow-md shadow-[#0B2545]/25"
+                                : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                            }`}
+                            aria-label="Grid view"
+                          >
+                            <LayoutGrid className="h-3.5 w-3.5" />
+                            Grid
+                          </button>
+                        </div>
                       </div>
                     </div>
                     <div className="mb-3">
