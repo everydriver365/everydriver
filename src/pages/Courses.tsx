@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { PostcodeAutocomplete } from "@/components/PostcodeAutocomplete";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { DynamicCourseCard } from "@/components/DynamicCourseCard";
-import { CourseRowCard } from "@/components/courses/CourseRowCard";
+import { CourseTableList } from "@/components/courses/CourseTableList";
+import { Edit2, SlidersHorizontal, ShieldCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -128,6 +129,7 @@ interface SidebarCalendarProps {
   onSelectDate: (date: Date) => void;
   loading: boolean;
   monthOptions: { value: string; label: string }[];
+  hideCounts?: boolean;
 }
 
 function SidebarCalendar({ 
@@ -138,7 +140,8 @@ function SidebarCalendar({
   courseCounts,
   onSelectDate, 
   loading,
-  monthOptions 
+  monthOptions,
+  hideCounts,
 }: SidebarCalendarProps) {
   const today = startOfDay(new Date());
   
@@ -265,7 +268,7 @@ function SidebarCalendar({
                   } ${isToday && !isSelected ? "ring-1 ring-primary/40" : ""}`}
                 >
                   <span>{format(day.date, "d")}</span>
-                  {day.isAvailable && day.courseCount > 0 && (
+                  {!hideCounts && day.isAvailable && day.courseCount > 0 && (
                     <span className={`text-[9px] font-semibold leading-none ${
                       isSelected ? "text-primary-foreground/80" : "text-emerald-600 dark:text-emerald-400"
                     }`}>
@@ -315,7 +318,7 @@ export default function Courses() {
   const [priceRange, setPriceRange] = useState(initialPriceRange);
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState<SortOption>("soonest");
-  const [viewMode, setViewMode] = useState<"list" | "grid">("grid");
+  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [geoCache, setGeoCache] = useState<GeoCache>({});
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [isSearching, setIsSearching] = useState(false);
@@ -978,6 +981,18 @@ export default function Courses() {
     });
   }, [coursesWithDistance]);
 
+
+  // Active filter count (for the Filters button badge)
+  const activeFilterCount =
+    (transmission !== "all" ? 1 : 0) +
+    (klarnaOnly ? 1 : 0) +
+    (clearpayOnly ? 1 : 0) +
+    (courseType !== "all" ? 1 : 0) +
+    (priceRange !== "any" ? 1 : 0) +
+    (selectedInstructorId ? 1 : 0);
+
+  const isListMode = viewMode === "list";
+
   return (
     <MainLayout>
       <SEOHead
@@ -1203,14 +1218,48 @@ export default function Courses() {
                 onSelectDate={setSelectedDate}
                 loading={loading}
                 monthOptions={monthOptions}
+                hideCounts={isListMode}
               />
-              
+
+              {/* Pass Promise card — list view only */}
+              {isListMode && (
+                <div
+                  className="relative overflow-hidden rounded-xl p-4"
+                  style={{
+                    background: "linear-gradient(135deg, #0a1936 0%, #1a2f5c 100%)",
+                  }}
+                >
+                  <div
+                    className="pointer-events-none absolute -right-6 -top-6 h-24 w-24"
+                    style={{
+                      background:
+                        "radial-gradient(circle, rgba(217,46,58,0.3) 0%, transparent 70%)",
+                    }}
+                  />
+                  <div className="relative flex items-center gap-3">
+                    <div
+                      className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md"
+                      style={{ background: "#d92e3a" }}
+                    >
+                      <ShieldCheck className="h-4 w-4 text-white" />
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: "white" }}>
+                        Pass Promise
+                      </div>
+                      <div style={{ fontSize: 11, color: "#9aa0b5", marginTop: 1 }}>
+                        Re-test on us if you don't pass.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
               {/* Instructors Filter Tile */}
               {availableInstructorsForFilter.length > 0 && (
                 <div className="rounded-xl border bg-card p-4 shadow-sm">
                   <div className="mb-3 flex items-center justify-between">
-                    <h3 className="text-sm font-semibold">
-                      Instructors {userLocation ? "Nearby" : "Available"}
+                    <h3 className={isListMode ? "text-[10px] font-bold uppercase tracking-[0.18em] text-[#7a7a7a]" : "text-sm font-semibold"}>
+                      {isListMode ? "Your Match" : `Instructors ${userLocation ? "Nearby" : "Available"}`}
                     </h3>
                     {selectedInstructorId && (
                       <button
@@ -1303,8 +1352,71 @@ export default function Courses() {
 
           {/* Right Column: Course Tiles */}
           <div className="flex-1">
-            {/* Location display with clear button */}
-            {searchedPostcode && (
+            {/* Compact header strip — list mode */}
+            {isListMode && searchedPostcode && (
+              <div
+                className="mb-4 flex items-center justify-between rounded-lg bg-white px-4 py-3"
+                style={{ borderBottom: "1px solid #e8e8ee" }}
+              >
+                <div>
+                  <div
+                    style={{
+                      fontSize: 10,
+                      fontWeight: 700,
+                      letterSpacing: "0.18em",
+                      color: "#7a7a7a",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    Courses near
+                  </div>
+                  <div className="flex items-baseline gap-2">
+                    <span
+                      style={{
+                        fontSize: 18,
+                        fontWeight: 800,
+                        color: "#0a1936",
+                        letterSpacing: "-0.02em",
+                      }}
+                    >
+                      {searchedAreaName || searchedPostcode}
+                    </span>
+                    <span style={{ fontSize: 12, color: "#7a7a7a" }}>
+                      {searchedPostcode} · {radius} mi
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={clearSearch}
+                    className="inline-flex items-center gap-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold transition-colors hover:bg-slate-50"
+                    style={{ border: "1px solid #d0d0d8", color: "#0a1936" }}
+                  >
+                    <Edit2 className="h-3.5 w-3.5" />
+                    Change
+                  </button>
+                  <button
+                    onClick={() => setShowFilters((v) => !v)}
+                    className="relative inline-flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-semibold text-white transition-colors hover:opacity-90"
+                    style={{ background: "#0a1936" }}
+                  >
+                    <SlidersHorizontal className="h-3.5 w-3.5" />
+                    Filters
+                    {activeFilterCount > 0 && (
+                      <span
+                        className="absolute -right-1.5 -top-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full px-1 text-[10px] font-bold text-white"
+                        style={{ background: "#d92e3a" }}
+                      >
+                        {activeFilterCount}
+                      </span>
+                    )}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Original green banner — hidden in list mode */}
+            {!isListMode && searchedPostcode && (
               <motion.div 
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -1369,6 +1481,76 @@ export default function Courses() {
                   </div>
                 )}
                 {/* Selected date header */}
+                {isListMode ? (
+                  <>
+                    <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                      <div
+                        className="inline-flex items-center rounded-full p-0.5"
+                        style={{ border: "1px solid #e8e8ee", background: "white" }}
+                      >
+                        {[
+                          { value: "all", label: "All" },
+                          { value: "manual", label: "Manual" },
+                          { value: "automatic", label: "Automatic" },
+                        ].map((opt) => {
+                          const active = transmission === opt.value;
+                          return (
+                            <button
+                              key={opt.value}
+                              onClick={() => setTransmission(opt.value)}
+                              className="rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all"
+                              style={{
+                                background: active ? "#0a1936" : "transparent",
+                                color: active ? "white" : "#7a7a7a",
+                              }}
+                            >
+                              {opt.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <label
+                          htmlFor="course-sort"
+                          style={{
+                            fontSize: 11,
+                            fontWeight: 700,
+                            letterSpacing: "0.12em",
+                            color: "#7a7a7a",
+                            textTransform: "uppercase",
+                          }}
+                        >
+                          Sort
+                        </label>
+                        <div className="relative">
+                          <select
+                            id="course-sort"
+                            value={sortBy}
+                            onChange={(e) => setSortBy(e.target.value as SortOption)}
+                            className="appearance-none rounded-md bg-white py-1.5 pl-3 pr-8 text-sm font-semibold focus:outline-none"
+                            style={{ border: "1px solid #d0d0d8", color: "#0a1936" }}
+                          >
+                            <option value="nearest" disabled={!userLocation}>Nearest first</option>
+                            <option value="soonest">Soonest</option>
+                            <option value="price-low">Cheapest</option>
+                          </select>
+                          <ChevronDown
+                            className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2"
+                            style={{ width: 14, height: 14, color: "#7a7a7a" }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="mb-3">
+                      <h2 style={{ fontSize: 18, fontWeight: 800, color: "#0a1936", letterSpacing: "-0.02em" }}>
+                        {format(selectedDate, "EEEE, d MMMM")}
+                      </h2>
+                      <p style={{ fontSize: 12, color: "#7a7a7a", marginTop: 2 }}>
+                        {filteredCourses.length} course{filteredCourses.length !== 1 ? "s" : ""} available
+                      </p>
+                    </div>
+                  </>
+                ) : (
                 <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
                   <div>
                     <h2 className="text-xl font-bold">
@@ -1445,7 +1627,7 @@ export default function Courses() {
                       <button
                         onClick={() => setViewMode("list")}
                         className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold transition-all ${
-                          viewMode === "list"
+                          (viewMode as string) === "list"
                             ? "bg-[#0B2545] text-white shadow-md shadow-[#0B2545]/25"
                             : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                         }`}
@@ -1457,7 +1639,7 @@ export default function Courses() {
                       <button
                         onClick={() => setViewMode("grid")}
                         className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold transition-all ${
-                          viewMode === "grid"
+                          (viewMode as string) === "grid"
                             ? "bg-[#0B2545] text-white shadow-md shadow-[#0B2545]/25"
                             : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                         }`}
@@ -1479,9 +1661,42 @@ export default function Courses() {
                     </button>
                   </div>
                 </div>
+                )}
 
                 {filteredCourses.length > 0 ? (
-                  isMobile ? (
+                  isListMode ? (
+                    <>
+                      <CourseTableList
+                        courses={(isMobile ? filteredCourses.slice(0, mobileVisibleCount) : filteredCourses).map((c) => {
+                          const rate = resolvedRateFor(c.instructor) ?? c.instructor.hourly_rate ?? 40;
+                          const skim = c.instructor.school_skim_amount || 0;
+                          return {
+                            instructor: c.instructor,
+                            hours: c.hours,
+                            bookableDate: c.bookableDate,
+                            isPopular: c.isPopular,
+                            isIntensive: c.isIntensive,
+                            distance: c.distance,
+                            price: c.hours * rate + skim,
+                            discountedPrice: c.discountedPrice,
+                          };
+                        })}
+                      />
+                      {isMobile && mobileVisibleCount < filteredCourses.length && (
+                        <div className="mt-4">
+                          <Button
+                            variant="outline"
+                            size="lg"
+                            onClick={handleLoadMore}
+                            className="w-full gap-2"
+                          >
+                            <ChevronDown className="h-4 w-4" />
+                            Load More ({filteredCourses.length - mobileVisibleCount} remaining)
+                          </Button>
+                        </div>
+                      )}
+                    </>
+                  ) : isMobile ? (
                     // Mobile: Same flip cards as desktop, single column
                     <div className="flex flex-col gap-4">
                       {filteredCourses.slice(0, mobileVisibleCount).map((course, index) => (
@@ -1491,35 +1706,22 @@ export default function Courses() {
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: index * 0.05 }}
                         >
-                          {viewMode === "list" ? (
-                            <CourseRowCard
-                              instructor={course.instructor}
-                              hours={course.hours}
-                              nextAvailable={course.bookableDate}
-                              distance={course.distance}
-                              isIntensive={course.isIntensive}
-                              price={course.hours * (resolvedRateFor(course.instructor) ?? course.instructor.hourly_rate ?? 40) + (course.instructor.school_skim_amount || 0)}
-                              discountedPrice={course.discountedPrice}
-                              areaName={areaCache[course.instructor.home_postcode?.replace(/\s+/g, "").toUpperCase()] || null}
-                            />
-                          ) : (
-                            <DynamicCourseCard
-                              instructor={course.instructor}
-                              hours={course.hours}
-                              nextAvailable={course.bookableDate}
-                              courseImageUrl={course.courseImageUrl}
-                              isPopular={course.isPopular}
-                              availableFrom={course.availableFrom}
-                              distance={course.distance}
-                              features={course.features}
-                              isIntensive={course.isIntensive}
-                              discountedPrice={course.discountedPrice}
-                              customFeatures={course.customFeatures}
-                              areaName={areaCache[course.instructor.home_postcode?.replace(/\s+/g, "").toUpperCase()] || null}
-                              effectiveHourlyRate={resolvedRateFor(course.instructor)}
-                              learnerPostcode={searchedPostcode}
-                            />
-                          )}
+                          <DynamicCourseCard
+                            instructor={course.instructor}
+                            hours={course.hours}
+                            nextAvailable={course.bookableDate}
+                            courseImageUrl={course.courseImageUrl}
+                            isPopular={course.isPopular}
+                            availableFrom={course.availableFrom}
+                            distance={course.distance}
+                            features={course.features}
+                            isIntensive={course.isIntensive}
+                            discountedPrice={course.discountedPrice}
+                            customFeatures={course.customFeatures}
+                            areaName={areaCache[course.instructor.home_postcode?.replace(/\s+/g, "").toUpperCase()] || null}
+                            effectiveHourlyRate={resolvedRateFor(course.instructor)}
+                            learnerPostcode={searchedPostcode}
+                          />
                         </motion.div>
                       ))}
                       {mobileVisibleCount < filteredCourses.length && (
@@ -1543,50 +1745,32 @@ export default function Courses() {
                   ) : (
                     // Desktop: 2-column grid with flip cards
                     <>
-                      <div className={`grid gap-6 ${viewMode === "grid" ? "sm:grid-cols-2" : "grid-cols-1"}`}>
-                        {filteredCourses.slice(0, 6).map((course, index) => {
-                          const rate = resolvedRateFor(course.instructor) ?? course.instructor.hourly_rate ?? 40;
-                          const skim = course.instructor.school_skim_amount || 0;
-                          const computedPrice = course.hours * rate + skim;
-                          return (
-                            <motion.div
-                              key={`${course.instructor.id}-${course.hours}-${course.bookableDate.toISOString()}`}
-                              initial={{ opacity: 0, y: 20 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              transition={{ delay: index * 0.05 }}
-                            >
-                              {viewMode === "list" ? (
-                                <CourseRowCard
-                                  instructor={course.instructor}
-                                  hours={course.hours}
-                                  nextAvailable={course.bookableDate}
-                                  distance={course.distance}
-                                  isIntensive={course.isIntensive}
-                                  price={computedPrice}
-                                  discountedPrice={course.discountedPrice}
-                                  areaName={areaCache[course.instructor.home_postcode?.replace(/\s+/g, "").toUpperCase()] || null}
-                                />
-                              ) : (
-                                <DynamicCourseCard
-                                  instructor={course.instructor}
-                                  hours={course.hours}
-                                  nextAvailable={course.bookableDate}
-                                  courseImageUrl={course.courseImageUrl}
-                                  isPopular={course.isPopular}
-                                  availableFrom={course.availableFrom}
-                                  distance={course.distance}
-                                  features={course.features}
-                                  isIntensive={course.isIntensive}
-                                  discountedPrice={course.discountedPrice}
-                                  customFeatures={course.customFeatures}
-                                  areaName={areaCache[course.instructor.home_postcode?.replace(/\s+/g, "").toUpperCase()] || null}
-                                  effectiveHourlyRate={resolvedRateFor(course.instructor)}
-                                  learnerPostcode={searchedPostcode}
-                                />
-                              )}
-                            </motion.div>
-                          );
-                        })}
+                      <div className="grid gap-6 sm:grid-cols-2">
+                        {filteredCourses.slice(0, 6).map((course, index) => (
+                          <motion.div
+                            key={`${course.instructor.id}-${course.hours}-${course.bookableDate.toISOString()}`}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: index * 0.05 }}
+                          >
+                            <DynamicCourseCard
+                              instructor={course.instructor}
+                              hours={course.hours}
+                              nextAvailable={course.bookableDate}
+                              courseImageUrl={course.courseImageUrl}
+                              isPopular={course.isPopular}
+                              availableFrom={course.availableFrom}
+                              distance={course.distance}
+                              features={course.features}
+                              isIntensive={course.isIntensive}
+                              discountedPrice={course.discountedPrice}
+                              customFeatures={course.customFeatures}
+                              areaName={areaCache[course.instructor.home_postcode?.replace(/\s+/g, "").toUpperCase()] || null}
+                              effectiveHourlyRate={resolvedRateFor(course.instructor)}
+                              learnerPostcode={searchedPostcode}
+                            />
+                          </motion.div>
+                        ))}
                       </div>
                       {filteredCourses.length > 6 && (
                         <div className="mt-6 text-center">
