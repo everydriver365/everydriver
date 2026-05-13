@@ -8,6 +8,12 @@ interface SEOHeadProps {
   description?: string;
   /** When true, emits <meta name="robots" content="noindex,follow"> */
   noindex?: boolean;
+  /** og:type override — defaults to "website". Use "article" for news posts. */
+  type?: "website" | "article";
+  /** Page-specific image override for og:image / twitter:image. */
+  image?: string;
+  /** Optional JSON-LD payload(s) injected into <head>. */
+  jsonLd?: { id: string; data: Record<string, unknown> } | Array<{ id: string; data: Record<string, unknown> }>;
 }
 
 /**
