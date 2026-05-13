@@ -91,7 +91,7 @@ export function HeroSearchSection({
         >
           {/* Desktop / tablet pill search box */}
           <div
-            className="hidden sm:flex items-stretch bg-white rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.15)] overflow-hidden h-[100px] w-[85%] mx-auto transition-transform duration-200 hover:shadow-[0_14px_36px_rgba(0,0,0,0.18)]"
+            className="hidden sm:flex items-stretch bg-white rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.15)] overflow-hidden h-[100px] w-[95%] lg:w-[85%] mx-auto transition-transform duration-200 hover:shadow-[0_14px_36px_rgba(0,0,0,0.18)]"
             style={{ borderRadius: "50px" }}
           >
             {/* Section 1 — Postcode */}
