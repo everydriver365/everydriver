@@ -1,26 +1,29 @@
-# Remove `/earlier-test-guarantee` Page and Related Components
+# Unify Drive365 Page Background
 
-## Scope
-Remove the standalone `/earlier-test-guarantee` page and all directly related production components now that the free re-test CTA has been removed from the homepage.
+## Goal
+Make every Drive365 (learner-facing) page use the same background color as the area behind the homepage hero — the `--background` token (`hsl(220 10% 90%)`, light slate-grey).
 
-## Changes
+## Approach
 
-### 1. Delete page and component files
-- `src/pages/EarlierTestGuarantee.tsx`
-- `src/components/benefits/EarlierTestRequestTile.tsx`
-- `src/pages/DemoETGBanner.tsx`
-- `src/pages/DemoETGDesigns.tsx`
+### 1. Pin the canvas on `MainLayout`
+Add `bg-background` to the root wrapper in `src/components/layout/MainLayout.tsx` so every page rendered through it inherits the same color the homepage hero sits on.
 
-### 2. Remove route definitions
-- `src/routes/publicRoutes.tsx` — remove `EarlierTestGuarantee` lazy import and `/earlier-test-guarantee` Route
-- `src/routes/demoRoutes.tsx` — remove `/demo/etg-banner` and `/demo-etg-designs` routes
+### 2. Strip page-level background overrides
+Audit pages that wrap themselves in a different color (`bg-white`, `bg-muted`, `bg-muted/30`, `bg-gradient-to-*`, `bg-card`, etc. on the outermost wrapper) and remove those so the `MainLayout` color shows through. Section-level colors stay (e.g. dark hero cards, colored CTA bands) — only the page canvas changes.
 
-### 3. Remove usages
-- `src/pages/Benefits.tsx` — remove `EarlierTestRequestTile` import and `<EarlierTestRequestTile />` JSX usage
+Pages to audit (Drive365/learner only — mini-website, school, instructor, admin, accessible portal are excluded):
+- `Index.tsx`, `Courses.tsx`, `WhitelabelCourses.tsx`, `WhitelabelAreaPage.tsx`
+- `About.tsx`, `Contact.tsx`, `Reviews.tsx`, `Help.tsx`, `FAQs.tsx`
+- `Intensives.tsx`, `SemiIntensive.tsx`, `Benefits.tsx`, `Theory.tsx`
+- `News.tsx`, `NewsArticle.tsx`
+- `BookingSummary.tsx`, `BookingConfirmation.tsx`
+- `PrivacyPolicy.tsx`, `TermsOfService.tsx`, `GoogleApiDisclosure.tsx`
+- `FranchisePage.tsx` + `franchise/*`
 
-### 4. Clean up sitemap
-- `public/sitemap.xml` — remove `/earlier-test-guarantee` URL entry
+### 3. Out of scope
+- Mini-website (`/i/:slug`), school sites, pupil/instructor portals, admin, `accessible-portal` — these have their own scoped design systems.
+- Section-level colored bands inside pages (heroes, CTA strips, feature panels) are kept.
+- Dark mode tokens — only the default (light) `--background` is targeted.
 
-## Out of scope
-- Demo/design exploration pages (`DemoHeroSections`, `DemoCTASections`, `DemoFeatureSections`, `DemoKenD*`, `DemoMiniWebsite*`) — these are static `/demo/*` design previews with mock copy, not production features tied to the guarantee page.
-- The `free-retest-badge.png` asset may still be referenced by demo pages; it will become orphaned from production code and can be cleaned up separately if desired.
+## Risk
+Low. Background is a presentation-only change; layout and components untouched.
