@@ -18,6 +18,8 @@ import {
   Navigation,
   CreditCard,
   Lock,
+  LayoutGrid,
+  List,
 } from "lucide-react";
 import klarnaLogo from "@/assets/klarna-round-logo.svg";
 import clearpayLogo from "@/assets/clearpay-round-logo.svg";
