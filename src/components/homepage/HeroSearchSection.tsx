@@ -92,6 +92,7 @@ export function HeroSearchSection({
             style={{
               borderRadius: "9999px",
               boxShadow: "0 14px 44px rgba(0,0,0,0.20), 0 2px 8px rgba(0,0,0,0.10)",
+              border: "1px solid rgba(0,0,0,0.08)",
             }}
           >
             {/* Postcode */}
