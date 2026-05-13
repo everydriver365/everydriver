@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, PoundSterling, Navigation, MapPin, X, ChevronDown } from "lucide-react";
+import { Calendar as CalendarIcon, PoundSterling, Navigation, MapPin, X, ChevronDown, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DynamicCourseCard } from "@/components/DynamicCourseCard";
 
@@ -110,13 +110,22 @@ export function CourseGrid({
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-sm font-medium text-muted-foreground">Sort:</span>
           <Button
+            variant={sortBy === "soonest" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setSortBy("soonest")}
+            className="gap-1.5"
+          >
+            <Clock className="h-3.5 w-3.5" />
+            Soonest
+          </Button>
+          <Button
             variant={sortBy === "price-low" ? "default" : "outline"}
             size="sm"
             onClick={() => setSortBy("price-low")}
             className="gap-1.5"
           >
             <PoundSterling className="h-3.5 w-3.5" />
-            Price
+            Cheapest
           </Button>
           <Button
             variant={sortBy === "nearest" ? "default" : "outline"}
