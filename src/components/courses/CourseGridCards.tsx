@@ -148,6 +148,9 @@ export function CourseGridCards({ courses }: CourseGridCardsProps) {
               boxShadow: "0 1px 2px rgba(10,25,54,0.04)",
               overflow: "hidden",
               transition: "transform 200ms ease, box-shadow 200ms ease",
+              display: "flex",
+              flexDirection: "column",
+              height: "100%",
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = "translateY(-2px)";
