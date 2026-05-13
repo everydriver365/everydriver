@@ -758,8 +758,8 @@ export default function DemoCourseResultsPremium() {
           {/* Featured */}
           <FeaturedCard c={featured} />
 
-          {/* Grid */}
-          <div className="grid gap-5 md:grid-cols-2">
+          {/* List */}
+          <div className="flex flex-col gap-3">
             {rest.map((c, i) => (
               <StandardCard key={i} c={c} />
             ))}
