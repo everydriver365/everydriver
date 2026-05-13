@@ -981,8 +981,6 @@ export default function Courses() {
     });
   }, [coursesWithDistance]);
 
-  // Top instructor for "Your Match" card (closest available for the day)
-  const topMatchInstructor = availableInstructorsForFilter[0] || null;
 
   // Active filter count (for the Filters button badge)
   const activeFilterCount =
