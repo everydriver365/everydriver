@@ -527,29 +527,30 @@ function OptionD({ c }: { c: Course }) {
               </div>
             </div>
 
-            <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-              <FrostStat icon={Calendar} label="Starts" value={c.startDate} accent="from-pink-500/10 to-pink-500/0 text-pink-600" />
-              <FrostStat icon={Clock} label="Time" value={c.startTime} accent="from-purple-500/10 to-purple-500/0 text-purple-600" />
-              <FrostStat icon={Car} label="Gearbox" value={c.transmission} accent="from-cyan-500/10 to-cyan-500/0 text-cyan-600" />
-              <FrostStat icon={MapPin} label="Distance" value={`${c.distance} mi`} accent="from-emerald-500/10 to-emerald-500/0 text-emerald-600" />
+            <div className="mt-4 rounded-2xl p-3 bg-gradient-to-r from-pink-100 via-purple-100 to-cyan-100 dark:from-pink-950/30 dark:via-purple-950/30 dark:to-cyan-950/30 flex items-center gap-3">
+              <Calendar className="h-6 w-6 text-purple-600 shrink-0" />
+              <div className="flex-1">
+                <div className="text-[10px] font-black uppercase tracking-widest text-purple-700 dark:text-purple-300">Starts</div>
+                <div className="text-xl font-black leading-tight">{c.startDate} <span className="text-muted-foreground font-semibold">· {c.startTime}</span></div>
+              </div>
             </div>
 
-            <div className="mt-3 flex flex-wrap gap-1.5">
-              {c.features.slice(0, 3).map(f => (
-                <span key={f} className="inline-flex items-center gap-1 text-[11px] text-muted-foreground"><CheckCircle2 className="h-3 w-3 text-emerald-500" />{f}</span>
-              ))}
+            <div className="mt-3 grid grid-cols-3 gap-2">
+              <FrostStat icon={Car} label="Gearbox" value={c.transmission} accent="from-cyan-500/10 to-cyan-500/0 text-cyan-600" />
+              <FrostStat icon={MapPin} label="Distance" value={`${c.distance} mi`} accent="from-emerald-500/10 to-emerald-500/0 text-emerald-600" />
+              <FrostStat icon={Trophy} label="Pass" value={`${c.passRate}%`} accent="from-pink-500/10 to-pink-500/0 text-pink-600" />
             </div>
           </div>
 
           {/* CTA */}
-          <div className="md:w-56 md:flex-shrink-0 p-6 border-t md:border-t-0 md:border-l flex md:flex-col items-center justify-between gap-3 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20">
+          <div className="md:w-60 md:flex-shrink-0 p-6 border-t md:border-t-0 md:border-l flex md:flex-col items-center justify-between gap-3 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20">
             <div className="text-center md:text-left">
               <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">From</div>
               <div className="flex items-baseline gap-1.5">
-                {c.oldPrice && <span className="text-xs text-muted-foreground line-through">£{c.oldPrice}</span>}
-                <span className="text-3xl font-black bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 bg-clip-text text-transparent">£{c.price}</span>
+                {c.oldPrice && <span className="text-sm text-muted-foreground line-through">£{c.oldPrice}</span>}
+                <span className="text-5xl font-black bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 bg-clip-text text-transparent leading-none">£{c.price}</span>
               </div>
-              <div className="text-[10px] text-muted-foreground">4 × £{Math.round(c.price / 4)} Klarna</div>
+              <div className="text-[11px] text-muted-foreground mt-1">4 × £{Math.round(c.price / 4)} Klarna</div>
             </div>
             <Button className="w-full gap-1.5 bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 hover:opacity-90 text-white border-0 font-bold shadow-lg shadow-purple-500/30">
               Book now <ChevronRight className="h-4 w-4" />
