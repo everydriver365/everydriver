@@ -1261,8 +1261,8 @@ export default function Courses() {
               {availableInstructorsForFilter.length > 0 && (
                 <div className="rounded-xl border bg-card p-4 shadow-sm">
                   <div className="mb-3 flex items-center justify-between">
-                    <h3 className="text-sm font-semibold">
-                      Instructors {userLocation ? "Nearby" : "Available"}
+                    <h3 className={isListMode ? "text-[10px] font-bold uppercase tracking-[0.18em] text-[#7a7a7a]" : "text-sm font-semibold"}>
+                      {isListMode ? "Your Match" : `Instructors ${userLocation ? "Nearby" : "Available"}`}
                     </h3>
                     {selectedInstructorId && (
                       <button
