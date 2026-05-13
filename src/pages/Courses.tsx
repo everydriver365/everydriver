@@ -1007,61 +1007,70 @@ export default function Courses() {
                 className={`mt-4 grid gap-4 rounded-xl border bg-card p-4 ${isMobile ? 'grid-cols-1' : 'sm:grid-cols-3'}`}
               >
                 <div>
-                  <label className="mb-2 block text-sm font-medium">Transmission</label>
-                  <select
-                    className="w-full rounded-lg border bg-background px-3 py-2"
-                    value={transmission}
-                    onChange={(e) => setTransmission(e.target.value)}
-                  >
-                    <option value="all">All</option>
-                    <option value="manual">Manual</option>
-                    <option value="automatic">Automatic</option>
-                  </select>
+                  <label className="mb-2 block text-sm font-semibold text-foreground">Transmission</label>
+                  <div className="relative">
+                    <select
+                      className="w-full appearance-none rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-800 shadow-sm transition focus:border-[#0B2545] focus:outline-none focus:ring-2 focus:ring-[#0B2545]/10"
+                      value={transmission}
+                      onChange={(e) => setTransmission(e.target.value)}
+                    >
+                      <option value="all">All</option>
+                      <option value="manual">Manual</option>
+                      <option value="automatic">Automatic</option>
+                    </select>
+                    <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                  </div>
                 </div>
                 {!isMobile && (
                   <div>
-                    <label className="mb-2 block text-sm font-medium">Price Range</label>
-                    <select
-                      className="w-full rounded-lg border bg-background px-3 py-2"
-                      value={sortBy === "price-low" ? "cheapest" : "any"}
-                      onChange={(e) => {
-                        if (e.target.value === "cheapest") setSortBy("price-low");
-                        else if (sortBy === "price-low") setSortBy("soonest");
-                      }}
-                    >
-                      <option value="any">Any price</option>
-                      <option value="cheapest">Cheapest first</option>
-                      <option disabled>Under £500</option>
-                      <option disabled>£500-£1000</option>
-                      <option disabled>Over £1000</option>
-                    </select>
+                    <label className="mb-2 block text-sm font-semibold text-foreground">Price Range</label>
+                    <div className="relative">
+                      <select
+                        className="w-full appearance-none rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-800 shadow-sm transition focus:border-[#0B2545] focus:outline-none focus:ring-2 focus:ring-[#0B2545]/10"
+                        value={sortBy === "price-low" ? "cheapest" : "any"}
+                        onChange={(e) => {
+                          if (e.target.value === "cheapest") setSortBy("price-low");
+                          else if (sortBy === "price-low") setSortBy("soonest");
+                        }}
+                      >
+                        <option value="any">Any price</option>
+                        <option value="cheapest">Cheapest first</option>
+                        <option disabled>Under £500</option>
+                        <option disabled>£500-£1000</option>
+                        <option disabled>Over £1000</option>
+                      </select>
+                      <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                    </div>
                   </div>
                 )}
                 <div>
-                  <label className="mb-2 block text-sm font-medium">Course Type</label>
-                  <select className="w-full rounded-lg border bg-background px-3 py-2">
-                    <option>All courses</option>
-                    <option>10 Hours</option>
-                    <option>20 Hours</option>
-                    <option>30 Hours</option>
-                    <option>40 Hours</option>
-                    <option>Test in a Week</option>
-                  </select>
+                  <label className="mb-2 block text-sm font-semibold text-foreground">Course Type</label>
+                  <div className="relative">
+                    <select className="w-full appearance-none rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-800 shadow-sm transition focus:border-[#0B2545] focus:outline-none focus:ring-2 focus:ring-[#0B2545]/10">
+                      <option>All courses</option>
+                      <option>10 Hours</option>
+                      <option>20 Hours</option>
+                      <option>30 Hours</option>
+                      <option>40 Hours</option>
+                      <option>Test in a Week</option>
+                    </select>
+                    <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                  </div>
                 </div>
                 <div>
-                  <label className="mb-2 block text-sm font-medium">Pay Later</label>
+                  <label className="mb-2 block text-sm font-semibold text-foreground">Pay Later</label>
                   <div className="flex flex-wrap gap-2">
                     <button
                       type="button"
                       onClick={() => setKlarnaOnly((v) => !v)}
-                      className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium transition-all ${
+                      className={`inline-flex items-center gap-1.5 rounded-xl border px-3.5 py-2.5 text-sm font-semibold shadow-sm transition-all ${
                         klarnaOnly
-                          ? "border-pink-400 bg-pink-100 text-pink-700"
-                          : "border-border bg-background text-muted-foreground hover:bg-muted"
+                          ? "border-pink-300 bg-pink-50 text-pink-700 ring-1 ring-pink-300/40"
+                          : "border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:bg-slate-50"
                       }`}
                       aria-pressed={klarnaOnly}
                     >
-                      <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#FFB3C7] text-[10px] font-bold text-[#242424]">
+                      <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-pink-400 text-[10px] font-bold text-white shadow-sm">
                         K
                       </span>
                       Klarna
@@ -1069,14 +1078,14 @@ export default function Courses() {
                     <button
                       type="button"
                       onClick={() => setClearpayOnly((v) => !v)}
-                      className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium transition-all ${
+                      className={`inline-flex items-center gap-1.5 rounded-xl border px-3.5 py-2.5 text-sm font-semibold shadow-sm transition-all ${
                         clearpayOnly
-                          ? "border-purple-400 bg-purple-100 text-purple-700"
-                          : "border-border bg-background text-muted-foreground hover:bg-muted"
+                          ? "border-violet-300 bg-violet-50 text-violet-700 ring-1 ring-violet-300/40"
+                          : "border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:bg-slate-50"
                       }`}
                       aria-pressed={clearpayOnly}
                     >
-                      <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#7856FF] text-[10px] font-bold text-white">
+                      <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-violet-500 text-[10px] font-bold text-white shadow-sm">
                         C
                       </span>
                       Clearpay
