@@ -63,13 +63,15 @@ export function SEOHead({ title, description, noindex, type = "website", image, 
     // ---------- Open Graph / Twitter ----------
     const ogTitle = isWL ? pageTitle : (getSetting("og_title") || pageTitle);
     const ogDescription = isWL ? metaDescription : (getSetting("og_description") || metaDescription);
-    const ogImage = isWL
-      ? absoluteUrl(wl!.logoPath)
-      : getSetting("og_image_url");
+    const ogImage = image
+      ? absoluteUrl(image)
+      : isWL
+        ? absoluteUrl(wl!.logoPath)
+        : getSetting("og_image_url");
 
     setMetaTag("og:title", ogTitle, "property");
     setMetaTag("og:description", ogDescription, "property");
-    setMetaTag("og:type", "website", "property");
+    setMetaTag("og:type", type, "property");
     setMetaTag("og:locale", "en_GB", "property");
     setMetaTag("og:site_name", baseSiteTitle, "property");
     if (ogImage) setMetaTag("og:image", ogImage, "property");
