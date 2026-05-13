@@ -69,16 +69,19 @@ function OptionE({ c }: { c: Course }) {
           <span className="font-semibold text-foreground">{c.instructor}</span>
           <Star className="h-3 w-3 fill-amber-400 text-amber-400" />{c.rating} ({c.reviews})
         </div>
-        <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs">
-          <span className="flex items-center gap-1"><Calendar className="h-3 w-3 text-red-600" /><b className="font-bold">{c.startDate}</b> · {c.startTime}</span>
-          <span className="flex items-center gap-1"><MapPin className="h-3 w-3 text-red-600" />{c.distance} mi away</span>
+        <div className="mt-3 inline-flex items-center gap-2 rounded-lg bg-red-600 text-white px-3 py-1.5 shadow-md">
+          <Calendar className="h-4 w-4" />
+          <span className="text-[10px] font-black uppercase tracking-widest opacity-80">Starts</span>
+          <span className="text-base font-black">{c.startDate} · {c.startTime}</span>
         </div>
+        <div className="mt-2 text-xs text-muted-foreground flex items-center gap-1"><MapPin className="h-3 w-3" />{c.distance} mi away</div>
       </div>
       {/* Right CTA */}
-      <div className="shrink-0 flex flex-col justify-between items-end p-5 bg-gradient-to-b from-slate-50 to-slate-100 border-l border-dashed border-slate-300">
-        {c.oldPrice && <span className="text-xs line-through text-muted-foreground">£{c.oldPrice}</span>}
-        <div className="text-3xl font-black text-slate-900 leading-none">£{c.price}</div>
-        <Button size="sm" className="mt-3 bg-red-600 hover:bg-red-700 text-white rounded-full font-black uppercase tracking-wider">
+      <div className="shrink-0 flex flex-col justify-center items-center p-5 bg-gradient-to-b from-slate-50 to-slate-100 border-l border-dashed border-slate-300 min-w-[160px]">
+        {c.oldPrice && <span className="text-sm line-through text-muted-foreground">£{c.oldPrice}</span>}
+        <div className="text-5xl font-black text-slate-900 leading-none tracking-tight">£{c.price}</div>
+        <div className="text-[10px] uppercase tracking-widest text-slate-500 mt-1">all-in</div>
+        <Button size="sm" className="mt-3 w-full bg-red-600 hover:bg-red-700 text-white rounded-full font-black uppercase tracking-wider">
           Book <ArrowRight className="h-3.5 w-3.5" />
         </Button>
       </div>
@@ -105,17 +108,23 @@ function OptionF({ c }: { c: Course }) {
           <span className="bg-white border-2 border-black px-2 py-0.5 text-[10px] font-black uppercase">★ {c.rating}</span>
         </div>
         <h3 className="text-2xl font-black uppercase leading-tight text-black">{c.area}</h3>
-        <p className="text-sm font-bold text-black/80">with {c.instructor} · starts {c.startDate}</p>
+        <p className="text-sm font-bold text-black/80">with {c.instructor}</p>
+        <div className="mt-3 inline-flex items-center gap-2 bg-black text-yellow-300 px-3 py-1.5 border-2 border-black">
+          <Calendar className="h-4 w-4" />
+          <span className="text-[10px] font-black uppercase tracking-widest">Starts</span>
+          <span className="text-base font-black uppercase">{c.startDate} · {c.startTime}</span>
+        </div>
         <div className="mt-3 flex flex-wrap gap-2">
-          {c.features.slice(0,3).map(f => (
+          {c.features.slice(0,2).map(f => (
             <span key={f} className="text-[11px] font-bold bg-white border-2 border-black px-2 py-0.5">{f}</span>
           ))}
         </div>
       </div>
-      <div className="w-44 shrink-0 bg-black text-white p-5 flex flex-col justify-between items-end border-l-[3px] border-black">
-        <div className="text-right">
-          {c.oldPrice && <div className="text-xs line-through text-white/60">£{c.oldPrice}</div>}
-          <div className="text-4xl font-black leading-none">£{c.price}</div>
+      <div className="w-48 shrink-0 bg-black text-white p-5 flex flex-col justify-between items-stretch border-l-[3px] border-black">
+        <div className="text-center">
+          <div className="text-[10px] font-black uppercase tracking-widest text-white/60">Total</div>
+          {c.oldPrice && <div className="text-sm line-through text-white/50">£{c.oldPrice}</div>}
+          <div className="text-6xl font-black leading-none tabular-nums text-yellow-300">£{c.price}</div>
         </div>
         <button className="w-full bg-yellow-300 text-black font-black uppercase tracking-wider py-2 border-2 border-yellow-300 hover:bg-white hover:border-white">
           Book →
@@ -154,24 +163,21 @@ function OptionG({ c }: { c: Course }) {
             <img src={c.avatar} alt="" className="h-5 w-5 rounded-full ring-1 ring-white/20" />
             {c.instructor} · <Star className="h-3 w-3 fill-amber-400 text-amber-400" />{c.rating}
           </div>
-          <div className="mt-4 grid grid-cols-3 gap-2">
-            {[
-              { i: Calendar, l: c.startDate.split(" ").slice(0,2).join(" "), s: "Start" },
-              { i: Clock, l: c.startTime, s: "Time" },
-              { i: MapPin, l: `${c.distance} mi`, s: "Distance" },
-            ].map((s, i) => (
-              <div key={i} className="rounded-xl bg-white/[0.04] ring-1 ring-white/10 px-3 py-2">
-                <div className="flex items-center gap-1 text-[10px] uppercase text-white/50"><s.i className="h-3 w-3" />{s.s}</div>
-                <div className="text-sm font-bold">{s.l}</div>
-              </div>
-            ))}
+          <div className="mt-4 rounded-xl bg-gradient-to-r from-cyan-500/10 via-purple-500/10 to-pink-500/10 ring-1 ring-white/10 p-3 flex items-center gap-3">
+            <Calendar className="h-5 w-5 text-cyan-300 shrink-0" />
+            <div className="flex-1 min-w-0">
+              <div className="text-[10px] font-black uppercase tracking-widest text-cyan-300/80">Starts</div>
+              <div className="text-lg font-black leading-tight">{c.startDate} <span className="text-white/60 font-semibold">· {c.startTime}</span></div>
+            </div>
+            <div className="flex items-center gap-1 text-[11px] text-white/70 pl-3 border-l border-white/10"><MapPin className="h-3 w-3" />{c.distance} mi</div>
           </div>
         </div>
         {/* CTA */}
-        <div className="shrink-0 flex flex-col justify-center items-end gap-3 p-6 bg-gradient-to-b from-white/[0.03] to-transparent">
-          {c.oldPrice && <span className="text-xs line-through text-white/40">£{c.oldPrice}</span>}
-          <div className="text-3xl font-black text-white leading-none">£{c.price}</div>
-          <Button size="sm" className="rounded-full bg-gradient-to-r from-cyan-400 to-fuchsia-500 text-white font-bold border-0 hover:opacity-90">
+        <div className="shrink-0 flex flex-col justify-center items-center gap-3 p-6 bg-gradient-to-b from-white/[0.03] to-transparent min-w-[180px]">
+          {c.oldPrice && <span className="text-sm line-through text-white/40">£{c.oldPrice}</span>}
+          <div className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-br from-cyan-300 via-white to-pink-300 leading-none">£{c.price}</div>
+          <div className="text-[10px] uppercase tracking-widest text-white/50">all-in</div>
+          <Button size="sm" className="w-full rounded-full bg-gradient-to-r from-cyan-400 to-fuchsia-500 text-white font-bold border-0 hover:opacity-90">
             Reserve <ArrowRight className="h-3.5 w-3.5" />
           </Button>
         </div>
@@ -200,21 +206,25 @@ function OptionH({ c }: { c: Course }) {
           {b && <span className={`inline-flex items-center gap-1 rounded-sm px-1.5 py-0.5 text-[10px] font-bold uppercase ${b.cls}`}><b.icon className="h-3 w-3" />{b.label}</span>}
         </div>
         <h3 className="font-sans text-lg font-bold text-slate-900 leading-tight">{c.instructor} — {c.area}</h3>
+        <div className="mt-3 rounded-md bg-slate-900 text-white px-3 py-2 flex items-center gap-2">
+          <Calendar className="h-4 w-4" />
+          <span className="font-mono text-[10px] uppercase tracking-widest opacity-70">Starts</span>
+          <span className="font-sans text-base font-black">{c.startDate} · {c.startTime}</span>
+        </div>
         <div className="mt-3 space-y-1 text-slate-700">
           <div className="flex justify-between border-b border-dotted border-slate-300 pb-1"><span>Transmission</span><span className="font-bold">{c.transmission}</span></div>
-          <div className="flex justify-between border-b border-dotted border-slate-300 pb-1"><span>Starts</span><span className="font-bold">{c.startDate} · {c.startTime}</span></div>
           <div className="flex justify-between border-b border-dotted border-slate-300 pb-1"><span>Distance</span><span className="font-bold">{c.distance} mi</span></div>
           <div className="flex justify-between border-b border-dotted border-slate-300 pb-1"><span>Pass rate</span><span className="font-bold text-emerald-700">{c.passRate}%</span></div>
           <div className="flex justify-between border-b border-dotted border-slate-300 pb-1"><span>Rating</span><span className="font-bold">★ {c.rating} ({c.reviews})</span></div>
         </div>
       </div>
       {/* Right total */}
-      <div className="w-52 shrink-0 bg-slate-900 text-white p-5 flex flex-col justify-between">
+      <div className="w-56 shrink-0 bg-slate-900 text-white p-5 flex flex-col justify-between">
         <div>
           <div className="font-mono text-[10px] uppercase tracking-widest text-white/50">Total inc. test</div>
-          {c.oldPrice && <div className="text-xs line-through text-white/40">£{c.oldPrice}.00</div>}
-          <div className="text-4xl font-black leading-none tabular-nums">£{c.price}</div>
-          <div className="font-mono text-[10px] text-emerald-300 mt-1">Klarna 3× £{Math.round(c.price/3)}</div>
+          {c.oldPrice && <div className="text-sm line-through text-white/40">£{c.oldPrice}.00</div>}
+          <div className="text-6xl font-black leading-none tabular-nums">£{c.price}</div>
+          <div className="font-mono text-[11px] text-emerald-300 mt-2">Klarna 3× £{Math.round(c.price/3)}</div>
         </div>
         <Button size="sm" className="w-full rounded-md bg-white text-slate-900 hover:bg-slate-100 font-bold">
           Checkout <ChevronRight className="h-3.5 w-3.5" />
@@ -275,20 +285,25 @@ function OptionA({ c }: { c: Course }) {
           <h3 className="text-2xl font-black leading-tight">{c.hours}-hour {c.transmission}</h3>
           <div className="text-sm text-white/60 mt-0.5">with {c.instructor} · {c.area}</div>
 
-          <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-2">
-            <Chip icon={Calendar} label={c.startDate} />
-            <Chip icon={Clock} label={c.startTime} />
-            <Chip icon={MapPin} label={`${c.distance} mi`} />
-            <Chip icon={Trophy} label={`${c.passRate}% pass`} />
+          <div className="mt-4 rounded-xl bg-white/5 border border-white/10 p-3 flex items-center gap-3">
+            <Calendar className="h-5 w-5 text-cyan-300 shrink-0" />
+            <div className="flex-1 min-w-0">
+              <div className="text-[10px] font-bold uppercase tracking-widest text-white/50">Starts</div>
+              <div className="text-lg font-black leading-tight">{c.startDate} <span className="text-white/60 font-semibold">· {c.startTime}</span></div>
+            </div>
+            <div className="hidden sm:flex items-center gap-2 pl-3 border-l border-white/10">
+              <Chip icon={MapPin} label={`${c.distance} mi`} />
+              <Chip icon={Trophy} label={`${c.passRate}%`} />
+            </div>
           </div>
         </div>
 
         {/* CTA */}
         <div className="md:w-56 md:flex-shrink-0 p-6 border-t md:border-t-0 md:border-l border-white/10 flex md:flex-col items-center justify-between gap-3 bg-gradient-to-br from-white/5 to-transparent">
           <div className="text-right md:text-center">
-            {c.oldPrice && <div className="text-xs text-white/50 line-through">£{c.oldPrice}</div>}
-            <div className="text-3xl font-black bg-gradient-to-r from-cyan-300 to-fuchsia-300 bg-clip-text text-transparent">£{c.price}</div>
-            <div className="text-[10px] text-white/60">£{Math.round(c.price / c.hours)}/hr · all-in</div>
+            {c.oldPrice && <div className="text-sm text-white/50 line-through">£{c.oldPrice}</div>}
+            <div className="text-5xl font-black bg-gradient-to-r from-cyan-300 to-fuchsia-300 bg-clip-text text-transparent leading-none">£{c.price}</div>
+            <div className="text-[10px] text-white/60 mt-1">£{Math.round(c.price / c.hours)}/hr · all-in</div>
           </div>
           <Button className="w-full gap-1.5 bg-gradient-to-r from-cyan-400 to-fuchsia-500 hover:from-cyan-300 hover:to-fuchsia-400 text-slate-900 font-bold border-0 shadow-lg shadow-fuchsia-500/30">
             Book now <ArrowRight className="h-4 w-4" />
@@ -350,9 +365,9 @@ function OptionB({ c }: { c: Course }) {
               );
             })()}
 
-            <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Driving Course · Issued</div>
-            <h3 className="text-xl font-black mt-1 leading-tight">{c.startDate}</h3>
-            <div className="text-sm text-muted-foreground">Departs {c.startTime} · {c.area}</div>
+            <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Departure</div>
+            <h3 className="text-3xl font-black mt-1 leading-none tracking-tight">{c.startDate}</h3>
+            <div className="text-sm font-semibold text-orange-600 mt-0.5">{c.startTime} · {c.area}</div>
 
             <div className="mt-4 grid grid-cols-3 gap-3">
               <PassStat label="Pass rate" value={`${c.passRate}%`} />
@@ -367,14 +382,14 @@ function OptionB({ c }: { c: Course }) {
           </div>
 
           {/* Right: price */}
-          <div className="md:w-52 md:flex-shrink-0 p-6 border-t md:border-t-0 md:border-l border-dashed flex md:flex-col items-center justify-between gap-3 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20">
+          <div className="md:w-56 md:flex-shrink-0 p-6 border-t md:border-t-0 md:border-l border-dashed flex md:flex-col items-center justify-between gap-3 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20">
             <div className="text-center">
               <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Total fare</div>
               <div className="flex items-baseline gap-1.5 justify-center">
-                {c.oldPrice && <span className="text-xs text-muted-foreground line-through">£{c.oldPrice}</span>}
-                <span className="text-3xl font-black text-orange-600">£{c.price}</span>
+                {c.oldPrice && <span className="text-sm text-muted-foreground line-through">£{c.oldPrice}</span>}
+                <span className="text-5xl font-black text-orange-600 leading-none">£{c.price}</span>
               </div>
-              <div className="text-[10px] text-muted-foreground">incl. test fee</div>
+              <div className="text-[10px] text-muted-foreground mt-1">incl. test fee</div>
             </div>
             <Button className="w-full gap-1.5 bg-gradient-to-r from-orange-500 to-pink-600 hover:from-orange-600 hover:to-pink-700 text-white border-0 font-bold shadow-md">
               Board now <ArrowRight className="h-4 w-4" />
@@ -440,10 +455,15 @@ function OptionC({ c }: { c: Course }) {
             </div>
 
             <h3 className="text-2xl md:text-3xl font-black leading-[1.05] tracking-tight">
-              {c.transmission} licence,<br />sorted by <span className={`bg-gradient-to-r ${accent} bg-clip-text text-transparent`}>{c.startDate.split(" ").slice(1).join(" ")}</span>.
+              {c.transmission} licence in {c.hours} hours.
             </h3>
+            <div className={`mt-3 inline-flex items-center gap-2 rounded-xl px-3 py-2 bg-gradient-to-r ${accent} text-white shadow-md`}>
+              <Calendar className="h-4 w-4" />
+              <span className="text-[10px] font-black uppercase tracking-widest opacity-80">Starts</span>
+              <span className="text-base font-black">{c.startDate} · {c.startTime}</span>
+            </div>
             <div className="mt-2 text-sm text-muted-foreground">
-              Starts {c.startDate} · {c.startTime} · {c.area} · with {c.instructor}
+              {c.area} · with {c.instructor}
             </div>
           </div>
 
@@ -457,14 +477,14 @@ function OptionC({ c }: { c: Course }) {
         </div>
 
         {/* CTA stripe */}
-        <div className={`md:w-56 md:flex-shrink-0 p-6 bg-gradient-to-br ${accent} text-white flex md:flex-col items-center justify-between gap-3`}>
+        <div className={`md:w-60 md:flex-shrink-0 p-6 bg-gradient-to-br ${accent} text-white flex md:flex-col items-center justify-between gap-3`}>
           <div className="text-center">
             <div className="text-[10px] font-bold uppercase tracking-[0.25em] opacity-80">From</div>
             <div className="flex items-baseline gap-1.5 justify-center">
-              {c.oldPrice && <span className="text-xs opacity-70 line-through">£{c.oldPrice}</span>}
-              <span className="text-4xl font-black drop-shadow">£{c.price}</span>
+              {c.oldPrice && <span className="text-sm opacity-70 line-through">£{c.oldPrice}</span>}
+              <span className="text-6xl font-black drop-shadow leading-none">£{c.price}</span>
             </div>
-            <div className="text-[10px] opacity-80 mt-0.5">or 4 × £{Math.round(c.price / 4)} Klarna</div>
+            <div className="text-[11px] opacity-90 mt-1.5">or 4 × £{Math.round(c.price / 4)} Klarna</div>
           </div>
           <Button className="w-full gap-1.5 bg-white text-foreground hover:bg-white/90 font-black shadow-lg">
             Grab it <Rocket className="h-4 w-4" />
@@ -517,29 +537,30 @@ function OptionD({ c }: { c: Course }) {
               </div>
             </div>
 
-            <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-              <FrostStat icon={Calendar} label="Starts" value={c.startDate} accent="from-pink-500/10 to-pink-500/0 text-pink-600" />
-              <FrostStat icon={Clock} label="Time" value={c.startTime} accent="from-purple-500/10 to-purple-500/0 text-purple-600" />
-              <FrostStat icon={Car} label="Gearbox" value={c.transmission} accent="from-cyan-500/10 to-cyan-500/0 text-cyan-600" />
-              <FrostStat icon={MapPin} label="Distance" value={`${c.distance} mi`} accent="from-emerald-500/10 to-emerald-500/0 text-emerald-600" />
+            <div className="mt-4 rounded-2xl p-3 bg-gradient-to-r from-pink-100 via-purple-100 to-cyan-100 dark:from-pink-950/30 dark:via-purple-950/30 dark:to-cyan-950/30 flex items-center gap-3">
+              <Calendar className="h-6 w-6 text-purple-600 shrink-0" />
+              <div className="flex-1">
+                <div className="text-[10px] font-black uppercase tracking-widest text-purple-700 dark:text-purple-300">Starts</div>
+                <div className="text-xl font-black leading-tight">{c.startDate} <span className="text-muted-foreground font-semibold">· {c.startTime}</span></div>
+              </div>
             </div>
 
-            <div className="mt-3 flex flex-wrap gap-1.5">
-              {c.features.slice(0, 3).map(f => (
-                <span key={f} className="inline-flex items-center gap-1 text-[11px] text-muted-foreground"><CheckCircle2 className="h-3 w-3 text-emerald-500" />{f}</span>
-              ))}
+            <div className="mt-3 grid grid-cols-3 gap-2">
+              <FrostStat icon={Car} label="Gearbox" value={c.transmission} accent="from-cyan-500/10 to-cyan-500/0 text-cyan-600" />
+              <FrostStat icon={MapPin} label="Distance" value={`${c.distance} mi`} accent="from-emerald-500/10 to-emerald-500/0 text-emerald-600" />
+              <FrostStat icon={Trophy} label="Pass" value={`${c.passRate}%`} accent="from-pink-500/10 to-pink-500/0 text-pink-600" />
             </div>
           </div>
 
           {/* CTA */}
-          <div className="md:w-56 md:flex-shrink-0 p-6 border-t md:border-t-0 md:border-l flex md:flex-col items-center justify-between gap-3 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20">
+          <div className="md:w-60 md:flex-shrink-0 p-6 border-t md:border-t-0 md:border-l flex md:flex-col items-center justify-between gap-3 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20">
             <div className="text-center md:text-left">
               <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">From</div>
               <div className="flex items-baseline gap-1.5">
-                {c.oldPrice && <span className="text-xs text-muted-foreground line-through">£{c.oldPrice}</span>}
-                <span className="text-3xl font-black bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 bg-clip-text text-transparent">£{c.price}</span>
+                {c.oldPrice && <span className="text-sm text-muted-foreground line-through">£{c.oldPrice}</span>}
+                <span className="text-5xl font-black bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 bg-clip-text text-transparent leading-none">£{c.price}</span>
               </div>
-              <div className="text-[10px] text-muted-foreground">4 × £{Math.round(c.price / 4)} Klarna</div>
+              <div className="text-[11px] text-muted-foreground mt-1">4 × £{Math.round(c.price / 4)} Klarna</div>
             </div>
             <Button className="w-full gap-1.5 bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 hover:opacity-90 text-white border-0 font-bold shadow-lg shadow-purple-500/30">
               Book now <ChevronRight className="h-4 w-4" />
