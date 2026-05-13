@@ -1609,9 +1609,25 @@ export default function Courses() {
                         : "We couldn't find courses matching your search. Try widening your search radius, entering a different postcode, or removing some filters."}
                     </p>
                     <div className="mt-6 flex flex-wrap justify-center gap-3">
+                      {(() => {
+                        const nextDate = availableDatesInMonth.find(
+                          (d) => !selectedDate || !isSameDay(d, selectedDate)
+                        );
+                        if (!nextDate) return null;
+                        return (
+                          <Button
+                            variant="default"
+                            onClick={() => setSelectedDate(nextDate)}
+                            className="gap-1.5"
+                          >
+                            <CalendarIcon className="h-4 w-4" />
+                            Try {format(nextDate, "EEE d MMM")}
+                          </Button>
+                        );
+                      })()}
                       {userLocation && parseInt(radius) < 50 && (
                         <Button
-                          variant="default"
+                          variant="outline"
                           onClick={() => {
                             const next = parseInt(radius) < 25 ? "25" : "50";
                             setRadius(next);
@@ -1621,7 +1637,7 @@ export default function Courses() {
                           Expand to {parseInt(radius) < 25 ? "25" : "50"} miles
                         </Button>
                       )}
-                      <Button variant="outline" onClick={() => { setSelectedInstructorId(null); setSortBy("soonest"); setTransmission("all"); }}>
+                      <Button variant="outline" onClick={handleResetFilters}>
                         Clear Filters
                       </Button>
                       <Button variant="outline" asChild>
