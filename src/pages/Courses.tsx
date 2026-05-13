@@ -1039,6 +1039,41 @@ export default function Courses() {
                     <option>Test in a Week</option>
                   </select>
                 </div>
+                <div>
+                  <label className="mb-2 block text-sm font-medium">Pay Later</label>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setKlarnaOnly((v) => !v)}
+                      className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium transition-all ${
+                        klarnaOnly
+                          ? "border-pink-400 bg-pink-100 text-pink-700"
+                          : "border-border bg-background text-muted-foreground hover:bg-muted"
+                      }`}
+                      aria-pressed={klarnaOnly}
+                    >
+                      <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#FFB3C7] text-[10px] font-bold text-[#242424]">
+                        K
+                      </span>
+                      Klarna
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setClearpayOnly((v) => !v)}
+                      className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium transition-all ${
+                        clearpayOnly
+                          ? "border-purple-400 bg-purple-100 text-purple-700"
+                          : "border-border bg-background text-muted-foreground hover:bg-muted"
+                      }`}
+                      aria-pressed={clearpayOnly}
+                    >
+                      <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#7856FF] text-[10px] font-bold text-white">
+                        C
+                      </span>
+                      Clearpay
+                    </button>
+                  </div>
+                </div>
               </motion.div>
             )}
           </motion.div>
