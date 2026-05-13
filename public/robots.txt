@@ -13,5 +13,6 @@ Allow: /
 User-agent: *
 Allow: /
 
+Sitemap: https://everydriver.lovable.app/sitemap.xml
 Sitemap: https://qyqeibovdhyohkfagujv.supabase.co/functions/v1/mini-website-sitemap-index
 Sitemap: https://qyqeibovdhyohkfagujv.supabase.co/functions/v1/whitelabel-sitemap?host=winchesterdrivingschool.co.uk
