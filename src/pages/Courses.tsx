@@ -1747,6 +1747,7 @@ export default function Courses() {
                             distance: c.distance,
                             price: c.hours * rate + skim,
                             discountedPrice: c.discountedPrice,
+                            courseImageUrl: c.courseImageUrl,
                             areaName:
                               areaCache[c.instructor.home_postcode?.replace(/\s+/g, "").toUpperCase()] ||
                               null,

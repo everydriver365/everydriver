@@ -21,6 +21,7 @@ interface GridCourse {
   price: number;
   discountedPrice?: number | null;
   areaName?: string | null;
+  courseImageUrl?: string | null;
 }
 
 interface CourseGridCardsProps {
@@ -124,7 +125,7 @@ export function CourseGridCards({ courses }: CourseGridCardsProps) {
         const type = courseTypeLabel(c);
         const trans = transmissionLabel(c.instructor.car_type);
         const dark = isDarkGradient(c.hours);
-        const headerText = dark ? "#ffffff" : "#0a1936";
+        const headerText = c.courseImageUrl || dark ? "#ffffff" : "#0a1936";
         const key = `${c.instructor.id}-${c.hours}-${c.bookableDate.toISOString()}`;
         const isFav = !!favs[key];
 
@@ -169,17 +170,45 @@ export function CourseGridCards({ courses }: CourseGridCardsProps) {
                 background: gradientForHours(c.hours),
               }}
             >
+              {/* Hero image */}
+              {c.courseImageUrl && (
+                <img
+                  src={c.courseImageUrl}
+                  alt=""
+                  loading="lazy"
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                  }}
+                />
+              )}
+              {/* Colour-tinted gradient overlay so badges/numbers stay legible */}
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  background: c.courseImageUrl
+                    ? `linear-gradient(180deg, rgba(10,25,54,0.15) 0%, rgba(10,25,54,0.55) 100%), ${gradientForHours(c.hours)}`
+                    : "transparent",
+                  mixBlendMode: c.courseImageUrl ? "multiply" : "normal",
+                  opacity: c.courseImageUrl ? 0.55 : 1,
+                  pointerEvents: "none",
+                }}
+              />
               {/* Radial highlight overlay */}
               <div
                 style={{
                   position: "absolute",
                   inset: 0,
-                  background: "radial-gradient(circle at top right, rgba(255,255,255,0.3) 0%, transparent 60%)",
+                  background: "radial-gradient(circle at top right, rgba(255,255,255,0.25) 0%, transparent 60%)",
                   pointerEvents: "none",
                 }}
               />
-              {/* Car illustration */}
-              <CourseCarSvg hours={c.hours} />
+              {/* Car illustration — only when no hero image */}
+              {!c.courseImageUrl && <CourseCarSvg hours={c.hours} />}
 
               {/* Top-left badges */}
               <div
