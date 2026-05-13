@@ -117,11 +117,38 @@ export default function Index() {
   const { data: upsells } = useBookingUpsells();
   const earlierTestUpsell = upsells?.find(u => u.name.toLowerCase().includes('earlier test'));
 
+  const homepageJsonLd = [
+    {
+      id: "home-website-jsonld",
+      data: {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        name: "EveryDriver",
+        url: "https://everydriver.lovable.app/",
+        potentialAction: {
+          "@type": "SearchAction",
+          target: "https://everydriver.lovable.app/courses?postcode={search_term_string}",
+          "query-input": "required name=search_term_string",
+        },
+      },
+    },
+    {
+      id: "home-organization-jsonld",
+      data: {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        name: "EveryDriver",
+        url: "https://everydriver.lovable.app/",
+        logo: "https://everydriver.lovable.app/everydriver-logo-full.png",
+      },
+    },
+  ];
+
   // Show mobile-optimized layout on mobile devices
   if (isMobile) {
     return (
       <>
-        <SEOHead />
+        <SEOHead jsonLd={homepageJsonLd} />
         <MobileHomepage />
       </>
     );
