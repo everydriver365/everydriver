@@ -36,7 +36,7 @@ const HOURS_ICONS: Record<number, string> = {
 
 const getCourseIcon = (c: { hours: number; title: string }): string | undefined => {
   if (/test\s*in\s*a\s*week/i.test(c.title)) return courseTestInAWeek;
-  return getCourseIcon(c);
+  return HOURS_ICONS[c.hours];
 };
 
 /**
