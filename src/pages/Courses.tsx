@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { motion } from "framer-motion";
-import { Search, MapPin, Filter, ChevronDown, PoundSterling, Navigation, Loader2, Calendar as CalendarIcon, ChevronLeft, ChevronRight, X, LayoutGrid, List } from "lucide-react";
+import { Search, MapPin, Filter, ChevronDown, PoundSterling, Navigation, Loader2, Calendar as CalendarIcon, ChevronLeft, ChevronRight, X, LayoutGrid, List, RotateCcw } from "lucide-react";
 import { isFuture, parseISO, format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, isSameDay, isAfter, isBefore, startOfDay } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { PostcodeAutocomplete } from "@/components/PostcodeAutocomplete";
@@ -769,6 +769,20 @@ export default function Courses() {
     setSearchParams({});
   };
 
+  const handleResetFilters = () => {
+    setTransmission("all");
+    setSortBy("soonest");
+    setKlarnaOnly(false);
+    setClearpayOnly(false);
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.delete("transmission");
+      next.delete("klarna");
+      next.delete("clearpay");
+      return next;
+    });
+  };
+
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -1408,6 +1422,16 @@ export default function Courses() {
                         </button>
                       </div>
                     )}
+
+                    {/* Reset Filters */}
+                    <button
+                      onClick={handleResetFilters}
+                      className="flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-600 shadow-sm transition-all hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600"
+                      title="Reset filters"
+                    >
+                      <RotateCcw className="h-3.5 w-3.5" />
+                      Reset
+                    </button>
                   </div>
                 </div>
 
