@@ -75,9 +75,20 @@ export function HeroSearchSection({
             className="absolute inset-0 pointer-events-none"
             style={{
               background:
-                "linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.15) 55%, rgba(0,0,0,0.35) 100%)",
+                "linear-gradient(to right, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.25) 40%, rgba(0,0,0,0) 65%)",
             }}
           />
+          {/* Text overlay */}
+          <div className="absolute inset-0 flex items-center">
+            <div className="px-6 sm:px-10 lg:px-14 max-w-[55%] sm:max-w-[50%]">
+              <h2 className="text-white text-2xl sm:text-3xl lg:text-4xl font-extrabold leading-tight drop-shadow-lg">
+                Learn to Drive
+              </h2>
+              <p className="text-white/90 text-xs sm:text-sm lg:text-base mt-2 sm:mt-3 font-medium leading-snug drop-shadow-md">
+                Money back if you pass first time, a FREE retest if you don't
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Desktop / tablet pill — overhangs the hero bottom */}
