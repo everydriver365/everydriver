@@ -151,15 +151,18 @@ function OptionB({ c }: { c: Course }) {
 
           {/* Body */}
           <div className="flex-1 p-6 relative">
-            {b && (
-              <div className={`absolute top-4 right-4 -rotate-12 inline-flex items-center gap-1 rounded-md px-3 py-1 text-xs font-black uppercase tracking-wider border-2 ${
-                c.badge === "popular" ? "border-orange-500 text-orange-500" :
-                c.badge === "premium" ? "border-violet-600 text-violet-600" :
-                "border-emerald-600 text-emerald-600"
-              } bg-background/80`}>
-                <b!.icon className="h-3 w-3" /> {b!.label}
-              </div>
-            )}
+            {b && (() => {
+              const Icon = b.icon;
+              return (
+                <div className={`absolute top-4 right-4 -rotate-12 inline-flex items-center gap-1 rounded-md px-3 py-1 text-xs font-black uppercase tracking-wider border-2 ${
+                  c.badge === "popular" ? "border-orange-500 text-orange-500" :
+                  c.badge === "premium" ? "border-violet-600 text-violet-600" :
+                  "border-emerald-600 text-emerald-600"
+                } bg-background/80`}>
+                  <Icon className="h-3 w-3" /> {b.label}
+                </div>
+              );
+            })()}
 
             <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Driving Course · Issued</div>
             <h3 className="text-xl font-black mt-1 leading-tight">{c.startDate}</h3>
