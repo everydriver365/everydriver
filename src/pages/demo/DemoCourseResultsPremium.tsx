@@ -210,14 +210,6 @@ const NEARBY = [
   { name: "Mark Reynolds", initials: "MR", trans: "Manual", distance: "3.4 mi", rating: 4.7, available: false },
 ];
 
-const START_PILLS = [
-  { label: "Mon, 1 Jun", active: true },
-  { label: "Tue, 2 Jun" },
-  { label: "Wed, 3 Jun" },
-  { label: "Thu, 4 Jun" },
-  { label: "Fri, 5 Jun" },
-];
-
 const FILTER_CHIPS = ["All", "Manual", "Automatic", "Soonest", "Nearest", "Price"];
 
 function MiniCalendar() {
@@ -628,25 +620,6 @@ export default function DemoCourseResultsPremium() {
               <span className="flex items-center gap-1.5">
                 <span className="h-2.5 w-2.5 rounded-sm bg-[#0B2545]" /> Selected
               </span>
-            </div>
-          </div>
-
-          {/* Available start dates */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <h3 className="mb-3 text-sm font-bold text-slate-900">Available start dates</h3>
-            <div className="flex flex-wrap gap-2">
-              {START_PILLS.map((p) => (
-                <button
-                  key={p.label}
-                  className={`rounded-full border px-3 py-1.5 text-[12px] font-semibold transition ${
-                    p.active
-                      ? "border-[#0B2545] bg-[#0B2545] text-white shadow"
-                      : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50"
-                  }`}
-                >
-                  {p.label}
-                </button>
-              ))}
             </div>
           </div>
 
