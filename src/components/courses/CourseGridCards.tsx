@@ -109,7 +109,7 @@ const transPillStyle = (label: string) => {
 
 export function CourseGridCards({ courses }: CourseGridCardsProps) {
   const navigate = useNavigate();
-
+  const [flipped, setFlipped] = useState<Record<string, boolean>>({});
   const goTo = (c: GridCourse) => {
     const dateParam = c.bookableDate ? `&date=${format(c.bookableDate, "yyyy-MM-dd")}` : "";
     navigate(`/book/${c.instructor.id}?hours=${c.hours}${dateParam}`);
