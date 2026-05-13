@@ -35,6 +35,8 @@ interface Instructor {
   is_active: boolean;
   available_from: string | null;
   school_skim_amount?: number | null;
+  klarna_enabled?: boolean | null;
+  clearpay_enabled?: boolean | null;
 }
 
 interface InstructorCourse {
@@ -297,11 +299,15 @@ export default function Courses() {
   const initialPostcode = searchParams.get("postcode") || "";
   const initialRadius = searchParams.get("radius") || "10";
   const initialTransmission = searchParams.get("transmission") || "all";
+  const initialKlarna = searchParams.get("klarna") === "1";
+  const initialClearpay = searchParams.get("clearpay") === "1";
   const [postcode, setPostcode] = useState(initialPostcode);
   const [radius, setRadius] = useState(initialRadius);
   const [showRadiusFallbackNotice, setShowRadiusFallbackNotice] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [transmission, setTransmission] = useState(initialTransmission);
+  const [klarnaOnly, setKlarnaOnly] = useState(initialKlarna);
+  const [clearpayOnly, setClearpayOnly] = useState(initialClearpay);
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState<SortOption>("soonest");
   const [geoCache, setGeoCache] = useState<GeoCache>({});
@@ -873,6 +879,13 @@ export default function Courses() {
         }
       }
 
+      if (klarnaOnly && !course.instructor.klarna_enabled) {
+        return false;
+      }
+      if (clearpayOnly && !course.instructor.clearpay_enabled) {
+        return false;
+      }
+
       if (userLocation && course.distance !== undefined) {
         if (course.distance > parseInt(radius)) {
           return false;
@@ -1025,6 +1038,41 @@ export default function Courses() {
                     <option>40 Hours</option>
                     <option>Test in a Week</option>
                   </select>
+                </div>
+                <div>
+                  <label className="mb-2 block text-sm font-medium">Pay Later</label>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setKlarnaOnly((v) => !v)}
+                      className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium transition-all ${
+                        klarnaOnly
+                          ? "border-pink-400 bg-pink-100 text-pink-700"
+                          : "border-border bg-background text-muted-foreground hover:bg-muted"
+                      }`}
+                      aria-pressed={klarnaOnly}
+                    >
+                      <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#FFB3C7] text-[10px] font-bold text-[#242424]">
+                        K
+                      </span>
+                      Klarna
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setClearpayOnly((v) => !v)}
+                      className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium transition-all ${
+                        clearpayOnly
+                          ? "border-purple-400 bg-purple-100 text-purple-700"
+                          : "border-border bg-background text-muted-foreground hover:bg-muted"
+                      }`}
+                      aria-pressed={clearpayOnly}
+                    >
+                      <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#7856FF] text-[10px] font-bold text-white">
+                        C
+                      </span>
+                      Clearpay
+                    </button>
+                  </div>
                 </div>
               </motion.div>
             )}
