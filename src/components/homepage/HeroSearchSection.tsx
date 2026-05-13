@@ -107,12 +107,12 @@ export function HeroSearchSection({
               {/* Pay later logos */}
               <div className="mt-3 sm:mt-4 flex items-center gap-2">
                 <span className="text-white/70 text-[10px] sm:text-xs font-medium uppercase tracking-wider drop-shadow">
-                  Pay in 3 with
+                  spread your payments
                 </span>
                 <img
                   src={klarnaClearpayPills}
                   alt="Klarna and Clearpay"
-                  className="h-5 sm:h-6 lg:h-7 w-auto drop-shadow-md"
+                  className="h-7 sm:h-9 lg:h-10 w-auto drop-shadow-md"
                 />
               </div>
             </div>
