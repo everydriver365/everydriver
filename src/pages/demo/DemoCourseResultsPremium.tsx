@@ -25,12 +25,18 @@ import courseHours10 from "@/assets/course-hours-10.png";
 import courseHours20 from "@/assets/course-hours-20.png";
 import courseHours30 from "@/assets/course-hours-30.png";
 import courseHours40 from "@/assets/course-hours-40.png";
+import courseTestInAWeek from "@/assets/course-test-in-a-week.png";
 
 const HOURS_ICONS: Record<number, string> = {
   10: courseHours10,
   20: courseHours20,
   30: courseHours30,
   40: courseHours40,
+};
+
+const getCourseIcon = (c: { hours: number; title: string }): string | undefined => {
+  if (/test\s*in\s*a\s*week/i.test(c.title)) return courseTestInAWeek;
+  return HOURS_ICONS[c.hours];
 };
 
 /**
@@ -387,8 +393,8 @@ function FeaturedCard({ c }: { c: SampleCourse }) {
 
       {/* Hours pill */}
       <div className="flex shrink-0 flex-col items-center justify-center gap-2 border-r border-slate-100 bg-slate-50/50 px-4 py-4">
-        {HOURS_ICONS[c.hours] ? (
-          <img src={HOURS_ICONS[c.hours]} alt={`${c.hours} hours`} className="h-14 w-14 object-contain" />
+        {getCourseIcon(c) ? (
+          <img src={getCourseIcon(c)} alt={`${c.hours} hours`} className="h-14 w-14 object-contain" />
         ) : (
           <>
             <div className={`flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${accent.band} text-white shadow-sm`}>
@@ -470,8 +476,8 @@ function StandardCard({ c }: { c: SampleCourse }) {
 
       {/* Hours pill */}
       <div className="flex shrink-0 flex-col items-center justify-center gap-2 border-r border-slate-100 bg-slate-50/50 px-4 py-4">
-        {HOURS_ICONS[c.hours] ? (
-          <img src={HOURS_ICONS[c.hours]} alt={`${c.hours} hours`} className="h-14 w-14 object-contain" />
+        {getCourseIcon(c) ? (
+          <img src={getCourseIcon(c)} alt={`${c.hours} hours`} className="h-14 w-14 object-contain" />
         ) : (
           <>
             <div className={`flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${accent.band} text-white shadow-sm`}>
