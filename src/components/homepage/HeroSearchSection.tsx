@@ -75,17 +75,33 @@ export function HeroSearchSection({
             className="absolute inset-0 pointer-events-none"
             style={{
               background:
-                "linear-gradient(to right, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.25) 40%, rgba(0,0,0,0) 65%)",
+                "linear-gradient(to right, rgba(9,14,30,0.85) 0%, rgba(9,14,30,0.55) 38%, rgba(9,14,30,0) 65%)",
             }}
           />
           {/* Text overlay */}
           <div className="absolute inset-0 flex items-center">
-            <div className="px-6 sm:px-10 lg:px-14 max-w-[55%] sm:max-w-[50%]">
-              <h2 className="text-white text-2xl sm:text-3xl lg:text-4xl font-extrabold leading-tight drop-shadow-lg">
-                Learn to Drive
+            <div className="px-6 sm:px-10 lg:px-14 max-w-[60%] sm:max-w-[55%] lg:max-w-[50%]">
+              {/* Premium badge */}
+              <div className="inline-flex items-center gap-2 mb-3 sm:mb-4 px-2.5 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15">
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-sky-400" />
+                </span>
+                <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.2em] text-white/90">
+                  DVSA Approved
+                </span>
+              </div>
+              {/* Headline */}
+              <h2 className="text-white text-3xl sm:text-5xl lg:text-6xl font-extrabold leading-[1.05] tracking-tight drop-shadow-2xl">
+                Learn to{" "}
+                <span className="text-transparent bg-clip-text bg-gradient-to-br from-sky-300 to-sky-500">
+                  Drive
+                </span>
               </h2>
-              <p className="text-white/90 text-xs sm:text-sm lg:text-base mt-2 sm:mt-3 font-medium leading-snug drop-shadow-md">
-                Money back if you pass first time, a FREE retest if you don't
+              {/* Subtext */}
+              <p className="text-white/85 text-xs sm:text-base lg:text-lg mt-3 sm:mt-4 font-medium leading-snug max-w-md drop-shadow-md">
+                <span className="text-white font-semibold">Money back</span> if you pass first time,{" "}
+                <span className="text-white font-semibold">FREE retest</span> if you don't.
               </p>
             </div>
           </div>
