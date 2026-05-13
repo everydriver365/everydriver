@@ -417,14 +417,14 @@ function FeaturedCard({ c }: { c: SampleCourse }) {
             <span className="text-[11px] text-sky-600">{year}</span>
           </div>
           {c.klarna && (
-            <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-medium text-slate-600">
-              <img src={klarnaLogo} alt="" className="h-3 w-3" />
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-pink-200 bg-pink-50 px-2.5 py-1 text-[11px] font-semibold text-pink-800">
+              <img src={klarnaLogo} alt="" className="h-4 w-4" />
               3 × £{(c.price / 3).toFixed(0)}
             </span>
           )}
           {c.clearpay && (
-            <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-medium text-slate-600">
-              <img src={clearpayLogo} alt="" className="h-3 w-3" />
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-200 bg-violet-50 px-2.5 py-1 text-[11px] font-semibold text-violet-800">
+              <img src={clearpayLogo} alt="" className="h-4 w-4" />
               4 × £{(c.price / 4).toFixed(0)}
             </span>
           )}
