@@ -117,6 +117,7 @@ export default function Contact() {
 
   return (
     <MainLayout>
+      {CONTACT_SEO}
       <div className="container py-8 pb-24">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-8">
