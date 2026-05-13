@@ -66,7 +66,10 @@ export function CourseRowCard({
   title,
 }: CourseRowCardProps) {
   const navigate = useNavigate();
-  const finalPrice = discountedPrice ?? price;
+  // Match DynamicCourseCard pricing: discountedPrice replaces total when truthy.
+  const totalPrice = price;
+  const finalPrice = discountedPrice || totalPrice;
+  const hasDiscount = !!discountedPrice && discountedPrice < totalPrice;
   const courseTitle = title || `${hours} Hour Course`;
   const icon = getCourseIcon(hours, courseTitle);
   const date = nextAvailable ? splitDate(nextAvailable) : null;
@@ -151,11 +154,16 @@ export function CourseRowCard({
       {/* Right: price + CTAs */}
       <div className="flex shrink-0 flex-col items-end justify-center gap-2 border-l border-slate-100 bg-slate-50/30 px-4 py-3">
         <div className="text-right">
-          <div className="text-[22px] font-extrabold leading-none tracking-tight text-[#0B2545]">
+          {hasDiscount && (
+            <div className="text-[11px] font-medium leading-none text-slate-400 line-through">
+              £{Math.round(totalPrice).toLocaleString()}
+            </div>
+          )}
+          <div className={`text-[22px] font-extrabold leading-none tracking-tight ${hasDiscount ? "text-emerald-600" : "text-[#0B2545]"} ${hasDiscount ? "mt-1" : ""}`}>
             £{Math.round(finalPrice).toLocaleString()}
           </div>
           <div className="mt-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-            Total
+            {hasDiscount ? `Save £${Math.round(totalPrice - finalPrice)}` : "Total"}
           </div>
         </div>
         <div className="flex items-center gap-2">
