@@ -771,7 +771,7 @@ export default function DemoCourseResultsPremium() {
           <FeaturedCard c={featured} />
 
           {/* Grid */}
-          <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-5 md:grid-cols-2">
             {rest.map((c, i) => (
               <StandardCard key={i} c={c} />
             ))}
