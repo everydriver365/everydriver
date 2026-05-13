@@ -1422,6 +1422,16 @@ export default function Courses() {
                         </button>
                       </div>
                     )}
+
+                    {/* Reset Filters */}
+                    <button
+                      onClick={handleResetFilters}
+                      className="flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-600 shadow-sm transition-all hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600"
+                      title="Reset filters"
+                    >
+                      <RotateCcw className="h-3.5 w-3.5" />
+                      Reset
+                    </button>
                   </div>
                 </div>
 
