@@ -506,57 +506,86 @@ export function CourseGridCards({ courses }: CourseGridCardsProps) {
               overflow: "hidden",
               display: "flex",
               flexDirection: "column",
-              padding: 18,
+              padding: 20,
               color: "#ffffff",
-              background: brand,
+              background: `linear-gradient(160deg, ${brand} 0%, ${brand} 60%, rgba(0,0,0,0.25) 100%)`,
               backfaceVisibility: "hidden",
               WebkitBackfaceVisibility: "hidden",
               transform: "rotateY(180deg)",
               boxShadow: "0 8px 24px rgba(10,25,54,0.12)",
             }}
           >
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            {/* Header: avatar + name + rating */}
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
               {c.instructor.profile_image_url ? (
                 <img
                   src={c.instructor.profile_image_url}
                   alt=""
-                  style={{ width: 44, height: 44, borderRadius: "50%", objectFit: "cover", border: "2px solid rgba(255,255,255,0.4)" }}
+                  style={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: "50%",
+                    objectFit: "cover",
+                    border: "2px solid rgba(255,255,255,0.5)",
+                    flexShrink: 0,
+                  }}
                 />
               ) : (
                 <div
                   style={{
-                    width: 44,
-                    height: 44,
+                    width: 48,
+                    height: 48,
                     borderRadius: "50%",
-                    background: "rgba(255,255,255,0.2)",
+                    background: "rgba(255,255,255,0.18)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     fontWeight: 800,
-                    fontSize: 14,
-                    letterSpacing: "0.04em",
+                    fontSize: 15,
+                    flexShrink: 0,
                   }}
                 >
                   {initials}
                 </div>
               )}
-              <div style={{ minWidth: 0 }}>
-                <div style={{ fontWeight: 800, fontSize: 14, letterSpacing: "-0.01em" }}>
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <div
+                  style={{
+                    fontWeight: 700,
+                    fontSize: 15,
+                    letterSpacing: "-0.01em",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
                   {c.instructor.name || "Instructor"}
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, opacity: 0.85, marginTop: 2 }}>
-                  <Star style={{ width: 11, height: 11, fill: "#fbbf24", color: "#fbbf24" }} />
-                  <span>{(c.instructor.rating ?? 4.9).toFixed(1)} rating</span>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 5,
+                    fontSize: 12,
+                    opacity: 0.9,
+                    marginTop: 3,
+                  }}
+                >
+                  <Star style={{ width: 12, height: 12, fill: "#fbbf24", color: "#fbbf24" }} />
+                  <span>{(c.instructor.rating ?? 4.9).toFixed(1)}</span>
+                  <span style={{ opacity: 0.6 }}>·</span>
+                  <span>{trans}</span>
                 </div>
               </div>
             </div>
 
+            {/* Bio */}
             <p
               style={{
-                fontSize: 12.5,
+                fontSize: 13,
                 lineHeight: 1.5,
-                marginTop: 12,
-                opacity: 0.85,
+                marginTop: 14,
+                opacity: 0.88,
                 display: "-webkit-box",
                 WebkitLineClamp: 3,
                 WebkitBoxOrient: "vertical",
@@ -564,47 +593,68 @@ export function CourseGridCards({ courses }: CourseGridCardsProps) {
               }}
             >
               {c.instructor.bio ||
-                `Experienced ${transmissionLabel(c.instructor.car_type).toLowerCase()} driving instructor ready to help you pass your test.`}
+                `Experienced ${trans.toLowerCase()} driving instructor ready to help you pass your test.`}
             </p>
 
+            {/* Features — single column, capped at 4 */}
             <div
               style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: "4px 10px",
-                marginTop: 12,
+                display: "flex",
+                flexDirection: "column",
+                gap: 6,
+                marginTop: 14,
                 flex: 1,
+                minHeight: 0,
+                overflow: "hidden",
               }}
             >
-              {displayFeatures.map((feature, idx) => (
+              {displayFeatures.slice(0, 4).map((feature, idx) => (
                 <div
                   key={idx}
-                  style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11.5, opacity: 0.9 }}
+                  style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12.5 }}
                 >
-                  <CheckCircle style={{ width: 12, height: 12, color: "#34d399", flexShrink: 0 }} />
-                  <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  <CheckCircle
+                    style={{ width: 13, height: 13, color: "#34d399", flexShrink: 0 }}
+                  />
+                  <span
+                    style={{
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                      opacity: 0.92,
+                    }}
+                  >
                     {feature}
                   </span>
                 </div>
               ))}
             </div>
 
+            {/* Footer: price + CTA */}
             <div
               style={{
-                marginTop: 12,
-                paddingTop: 12,
-                borderTop: "1px solid rgba(255,255,255,0.2)",
+                marginTop: 14,
+                paddingTop: 14,
+                borderTop: "1px solid rgba(255,255,255,0.18)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
+                gap: 10,
               }}
             >
-              <div>
-                <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: "-0.02em", lineHeight: 1 }}>
+              <div style={{ minWidth: 0 }}>
+                <div
+                  style={{
+                    fontSize: 22,
+                    fontWeight: 800,
+                    letterSpacing: "-0.02em",
+                    lineHeight: 1,
+                  }}
+                >
                   £{Math.round(finalPrice).toLocaleString()}
                 </div>
-                <div style={{ fontSize: 10, opacity: 0.75, marginTop: 4 }}>
-                  or from £{Math.round(finalPrice / 4)}/month
+                <div style={{ fontSize: 10.5, opacity: 0.7, marginTop: 4 }}>
+                  or from £{Math.round(finalPrice / 4)}/mo
                 </div>
               </div>
               <button
@@ -616,19 +666,20 @@ export function CourseGridCards({ courses }: CourseGridCardsProps) {
                 style={{
                   background: "#ffffff",
                   color: brand,
-                  fontSize: 12,
+                  fontSize: 12.5,
                   fontWeight: 700,
-                  padding: "9px 14px",
-                  borderRadius: 8,
+                  padding: "10px 14px",
+                  borderRadius: 10,
                   display: "inline-flex",
                   alignItems: "center",
                   gap: 4,
                   border: "none",
                   cursor: "pointer",
+                  flexShrink: 0,
                 }}
               >
-                Learn more
-                <ChevronRight style={{ width: 13, height: 13 }} />
+                Book now
+                <ChevronRight style={{ width: 14, height: 14 }} />
               </button>
             </div>
           </div>
