@@ -240,7 +240,7 @@ export default function Index() {
       {!wlConfig && (
         <section className="px-4 pt-4 pb-6">
           <HeroSearchSection
-            backgroundImage="/src/assets/hero-driving.jpg"
+            backgroundImage={drive365HeroTestCentre}
             className="mx-auto"
           />
         </section>
