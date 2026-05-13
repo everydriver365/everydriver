@@ -68,7 +68,8 @@ export function HeroSearchSection({
           <img
             src={backgroundImage}
             alt=""
-            className="absolute inset-0 w-full h-full object-cover object-center"
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{ objectPosition: "center 35%" }}
             loading="eager"
           />
           <div
