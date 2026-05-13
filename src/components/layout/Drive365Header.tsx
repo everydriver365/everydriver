@@ -167,9 +167,6 @@ export function Drive365Header() {
                 </Link>
               ))}
               <div className="h-px bg-white/10 my-2" />
-              <Link to="/instructor-app/login" className="text-[#9aa0b5] text-sm py-2">
-                Instructor login
-              </Link>
               <Link to="/pupil/login" className="text-[#9aa0b5] text-sm py-2">
                 Pupil login
               </Link>
