@@ -3,6 +3,7 @@ import {
   Search,
   MapPin,
   Calendar as CalendarIcon,
+  User,
   Settings2,
   ArrowUpDown,
   ChevronLeft,
