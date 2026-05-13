@@ -466,10 +466,16 @@ function StandardCard({ c }: { c: SampleCourse }) {
 
       {/* Hours pill */}
       <div className="flex shrink-0 flex-col items-center justify-center gap-2 border-r border-slate-100 bg-slate-50/50 px-4 py-4">
-        <div className={`flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${accent.band} text-white shadow-sm`}>
-          <span className="text-lg font-black leading-none">{c.hours}</span>
-        </div>
-        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">hr</span>
+        {c.hours === 10 ? (
+          <img src={courseHours10} alt={`${c.hours} hours`} className="h-14 w-14 object-contain" />
+        ) : (
+          <>
+            <div className={`flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${accent.band} text-white shadow-sm`}>
+              <span className="text-lg font-black leading-none">{c.hours}</span>
+            </div>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">hr</span>
+          </>
+        )}
       </div>
 
       {/* Body */}
