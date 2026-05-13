@@ -110,7 +110,7 @@ export function HeroSearchSection({
                 inputClassName={`h-7 lg:h-8 border-0 bg-transparent p-0 text-[15px] lg:text-base font-normal focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-[#9CA3AF] ${
                   postcodeError ? "text-[#CC2229] placeholder:text-[#CC2229]" : "text-black"
                 }`}
-                showGeolocation={true}
+                showGeolocation={false}
               />
               {postcodeError && (
                 <span className="absolute -bottom-5 left-7 text-xs text-[#CC2229]">
@@ -204,7 +204,7 @@ export function HeroSearchSection({
                 inputClassName={`h-8 border-0 bg-transparent p-0 text-lg font-normal focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-[#9CA3AF] ${
                   postcodeError ? "text-[#CC2229] placeholder:text-[#CC2229]" : "text-black"
                 }`}
-                showGeolocation={true}
+                showGeolocation={false}
               />
               {postcodeError && (
                 <span className="text-xs text-[#CC2229] mt-1 block">
