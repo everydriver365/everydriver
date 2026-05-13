@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Star, MapPin, Clock, Calendar, Car, CheckCircle2, Zap, Award,
-  Shield, ArrowRight, PoundSterling, Users, ChevronRight, Sparkles, Flame,
+  Shield, ArrowRight, Sparkles, Flame, Trophy, Rocket, Ticket, ChevronRight,
 } from "lucide-react";
 
 type Course = {
@@ -26,170 +26,173 @@ type Course = {
 };
 
 const COURSES: Course[] = [
-  {
-    id: "1", instructor: "Sarah Mitchell", rating: 4.9, reviews: 247,
-    area: "Winchester, SO22", distance: 2.3, hours: 30, price: 1290, oldPrice: 1450,
-    startDate: "Mon 18 May", startTime: "09:00", transmission: "Manual",
-    passRate: 94, features: ["Test included", "Pickup & drop-off", "Free theory app"],
-    badge: "popular", avatar: "https://i.pravatar.cc/120?img=47",
-  },
-  {
-    id: "2", instructor: "James Patel", rating: 4.8, reviews: 189,
-    area: "Eastleigh, SO50", distance: 4.1, hours: 25, price: 1080,
-    startDate: "Wed 20 May", startTime: "10:30", transmission: "Auto",
-    passRate: 91, features: ["Test included", "Female-friendly", "Klarna available"],
-    badge: "premium", avatar: "https://i.pravatar.cc/120?img=12",
-  },
-  {
-    id: "3", instructor: "Emma Wilson", rating: 5.0, reviews: 312,
-    area: "Southampton, SO15", distance: 6.8, hours: 20, price: 880,
-    startDate: "Fri 22 May", startTime: "08:00", transmission: "Manual",
-    passRate: 96, features: ["DVSA approved", "Mock tests", "Clearpay"],
-    badge: "fast", avatar: "https://i.pravatar.cc/120?img=23",
-  },
+  { id: "1", instructor: "Sarah Mitchell", rating: 4.9, reviews: 247, area: "Winchester, SO22", distance: 2.3, hours: 30, price: 1290, oldPrice: 1450, startDate: "Mon 18 May", startTime: "09:00", transmission: "Manual", passRate: 94, features: ["Test included", "Pickup & drop-off", "Free theory app"], badge: "popular", avatar: "https://i.pravatar.cc/120?img=47" },
+  { id: "2", instructor: "James Patel", rating: 4.8, reviews: 189, area: "Eastleigh, SO50", distance: 4.1, hours: 25, price: 1080, startDate: "Wed 20 May", startTime: "10:30", transmission: "Auto", passRate: 91, features: ["Test included", "Female-friendly", "Klarna available"], badge: "premium", avatar: "https://i.pravatar.cc/120?img=12" },
+  { id: "3", instructor: "Emma Wilson", rating: 5.0, reviews: 312, area: "Southampton, SO15", distance: 6.8, hours: 20, price: 880, startDate: "Fri 22 May", startTime: "08:00", transmission: "Manual", passRate: 96, features: ["DVSA approved", "Mock tests", "Clearpay"], badge: "fast", avatar: "https://i.pravatar.cc/120?img=23" },
 ];
 
 function badgePill(b?: Course["badge"]) {
   if (b === "popular") return { icon: Flame, label: "Most Popular", cls: "bg-orange-500 text-white" };
   if (b === "premium") return { icon: Sparkles, label: "Premium", cls: "bg-violet-600 text-white" };
-  if (b === "fast") return { icon: Zap, label: "Fast Track", cls: "bg-emerald-600 text-white" };
+  if (b === "fast") return { icon: Zap, label: "Fast Track", cls: "bg-emerald-500 text-white" };
   return null;
 }
 
 /* ============================================================
-   OPTION A — Classic Horizontal: compact avatar, BIG hours, CTA-right
+   OPTION A — "Speedometer" — bold gradient hours dial, neon energy
    ============================================================ */
 function OptionA({ c }: { c: Course }) {
   const b = badgePill(c.badge);
+  const pct = Math.min(100, (c.hours / 40) * 100);
   return (
-    <div className="group relative overflow-hidden rounded-2xl border bg-card shadow-sm hover:shadow-lg transition-all">
-      <div className="flex flex-col md:flex-row items-stretch">
-        {/* Left: hours pillar */}
-        <div className="relative md:w-32 md:flex-shrink-0 bg-gradient-to-br from-primary/15 to-primary/5 p-5 flex flex-col items-center justify-center gap-1">
-          <span className="text-5xl font-black text-primary leading-none">{c.hours}</span>
-          <span className="text-sm font-semibold uppercase tracking-wide text-primary/80">hours</span>
-          {b && (
-            <span className={`mt-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold ${b.cls}`}>
-              <b.icon className="h-2.5 w-2.5" /> {b.label}
-            </span>
-          )}
+    <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 text-white shadow-[0_20px_60px_-20px_rgba(99,102,241,0.5)] hover:shadow-[0_30px_80px_-20px_rgba(99,102,241,0.7)] transition-all">
+      {/* glow blobs */}
+      <div className="absolute -top-20 -left-20 h-64 w-64 rounded-full bg-cyan-500/30 blur-3xl" />
+      <div className="absolute -bottom-20 -right-20 h-64 w-64 rounded-full bg-fuchsia-500/30 blur-3xl" />
+
+      <div className="relative flex flex-col md:flex-row items-stretch">
+        {/* Hours dial */}
+        <div className="md:w-44 md:flex-shrink-0 p-6 flex items-center justify-center border-b md:border-b-0 md:border-r border-white/10">
+          <div className="relative h-32 w-32">
+            <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90">
+              <circle cx="50" cy="50" r="42" stroke="rgba(255,255,255,0.1)" strokeWidth="8" fill="none" />
+              <circle cx="50" cy="50" r="42" stroke="url(#gradA)" strokeWidth="8" fill="none"
+                strokeDasharray={`${(pct / 100) * 264} 264`} strokeLinecap="round" />
+              <defs>
+                <linearGradient id="gradA" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stopColor="#22d3ee" />
+                  <stop offset="100%" stopColor="#e879f9" />
+                </linearGradient>
+              </defs>
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <span className="text-4xl font-black bg-gradient-to-r from-cyan-300 to-fuchsia-300 bg-clip-text text-transparent leading-none">{c.hours}</span>
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/60 mt-1">hours</span>
+            </div>
+          </div>
         </div>
 
         {/* Middle */}
-        <div className="flex-1 p-5">
-          <div className="flex items-center gap-2.5">
-            <img src={c.avatar} alt={c.instructor} className="h-8 w-8 rounded-full object-cover ring-1 ring-muted" />
-            <div>
-              <h3 className="text-base font-bold leading-tight">{c.instructor}</h3>
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-                <span className="font-semibold text-foreground">{c.rating}</span>
-                <span>({c.reviews})</span>
-                <span>·</span>
-                <span>{c.passRate}% pass rate</span>
-              </div>
-            </div>
+        <div className="flex-1 p-6">
+          <div className="flex items-center gap-2.5 mb-3">
+            {b && (
+              <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ${b.cls}`}>
+                <b.icon className="h-3 w-3" /> {b.label}
+              </span>
+            )}
+            <span className="inline-flex items-center gap-1 text-xs text-white/70">
+              <Star className="h-3 w-3 fill-amber-300 text-amber-300" />
+              <b className="text-amber-200">{c.rating}</b> · {c.reviews} reviews
+            </span>
           </div>
 
-          <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-            <div className="flex items-center gap-2"><MapPin className="h-4 w-4 text-muted-foreground" />{c.distance} mi</div>
-            <div className="flex items-center gap-2"><Calendar className="h-4 w-4 text-muted-foreground" />{c.startDate}</div>
-            <div className="flex items-center gap-2"><Car className="h-4 w-4 text-muted-foreground" />{c.transmission}</div>
-            <div className="flex items-center gap-2"><Clock className="h-4 w-4 text-muted-foreground" />{c.startTime}</div>
-          </div>
+          <h3 className="text-2xl font-black leading-tight">{c.hours}-hour {c.transmission}</h3>
+          <div className="text-sm text-white/60 mt-0.5">with {c.instructor} · {c.area}</div>
 
-          <div className="mt-3 flex flex-wrap gap-1.5">
-            {c.features.map(f => (
-              <Badge key={f} variant="secondary" className="font-normal gap-1"><CheckCircle2 className="h-3 w-3 text-emerald-500" />{f}</Badge>
-            ))}
+          <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-2">
+            <Chip icon={Calendar} label={c.startDate} />
+            <Chip icon={Clock} label={c.startTime} />
+            <Chip icon={MapPin} label={`${c.distance} mi`} />
+            <Chip icon={Trophy} label={`${c.passRate}% pass`} />
           </div>
         </div>
 
-        {/* Right CTA */}
-        <div className="md:w-52 md:flex-shrink-0 border-t md:border-t-0 md:border-l p-5 flex md:flex-col items-center justify-between md:justify-center gap-3 bg-muted/30">
+        {/* CTA */}
+        <div className="md:w-56 md:flex-shrink-0 p-6 border-t md:border-t-0 md:border-l border-white/10 flex md:flex-col items-center justify-between gap-3 bg-gradient-to-br from-white/5 to-transparent">
           <div className="text-right md:text-center">
-            {c.oldPrice && <div className="text-xs text-muted-foreground line-through">£{c.oldPrice}</div>}
-            <div className="text-2xl font-extrabold text-primary">£{c.price}</div>
-            <div className="text-xs text-muted-foreground">£{Math.round(c.price / c.hours)}/hr</div>
+            {c.oldPrice && <div className="text-xs text-white/50 line-through">£{c.oldPrice}</div>}
+            <div className="text-3xl font-black bg-gradient-to-r from-cyan-300 to-fuchsia-300 bg-clip-text text-transparent">£{c.price}</div>
+            <div className="text-[10px] text-white/60">£{Math.round(c.price / c.hours)}/hr · all-in</div>
           </div>
-          <Button className="w-full gap-1.5">Book now <ArrowRight className="h-4 w-4" /></Button>
+          <Button className="w-full gap-1.5 bg-gradient-to-r from-cyan-400 to-fuchsia-500 hover:from-cyan-300 hover:to-fuchsia-400 text-slate-900 font-bold border-0 shadow-lg shadow-fuchsia-500/30">
+            Book now <ArrowRight className="h-4 w-4" />
+          </Button>
         </div>
       </div>
     </div>
   );
 }
 
+function Chip({ icon: Icon, label }: { icon: any; label: string }) {
+  return (
+    <div className="flex items-center gap-1.5 rounded-lg bg-white/5 border border-white/10 px-2.5 py-1.5 text-xs font-medium text-white/90">
+      <Icon className="h-3.5 w-3.5 text-cyan-300" /> {label}
+    </div>
+  );
+}
+
 /* ============================================================
-   OPTION B — Editorial Strip: small avatar, BIG hours badge, rich info
+   OPTION B — "Boarding Pass" — ticket-style with perforation & stamp
    ============================================================ */
 function OptionB({ c }: { c: Course }) {
   const b = badgePill(c.badge);
   return (
-    <div className="group relative rounded-2xl border bg-card overflow-hidden hover:border-primary/40 transition-all">
-      <div className="flex flex-col lg:flex-row items-stretch">
-        {/* Left: hours pillar */}
-        <div className="relative lg:w-32 lg:flex-shrink-0 bg-[linear-gradient(135deg,hsl(var(--primary))_0%,hsl(var(--primary)/0.6)_100%)] flex flex-col items-center justify-center p-5 gap-1">
-          <span className="text-5xl font-black text-white leading-none drop-shadow-sm">{c.hours}</span>
-          <span className="text-sm font-semibold uppercase tracking-wide text-white/80">hours</span>
-          {b && (
-            <span className="mt-2 inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-bold bg-white/90 text-foreground">
-              <b.icon className="h-2.5 w-2.5" /> {b.label}
-            </span>
-          )}
-          <div className="absolute bottom-3 left-0 right-0 text-center">
-            <span className="text-[10px] font-medium text-white/70">{c.area}</span>
-          </div>
-        </div>
+    <div className="relative">
+      <div className="relative overflow-hidden rounded-2xl bg-card shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] hover:shadow-[0_20px_50px_-10px_rgba(0,0,0,0.2)] transition-all">
+        {/* perforation circles */}
+        <div className="hidden md:block absolute left-[152px] top-1/2 -translate-y-1/2 -translate-x-1/2 h-6 w-6 rounded-full bg-background border" />
+        <div className="hidden md:block absolute left-[152px] -top-3 -translate-x-1/2 h-6 w-6 rounded-full bg-background border" />
+        <div className="hidden md:block absolute left-[152px] -bottom-3 -translate-x-1/2 h-6 w-6 rounded-full bg-background border" />
 
-        <div className="flex-1 p-6">
-          <div className="flex items-start justify-between gap-3 flex-wrap">
-            <div className="flex items-center gap-2.5">
-              <img src={c.avatar} alt={c.instructor} className="h-9 w-9 rounded-lg object-cover ring-1 ring-muted" />
-              <div>
-                <h3 className="text-lg font-bold leading-tight">{c.instructor}</h3>
-                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-                  <b className="text-foreground">{c.rating}</b>
-                  <span>· {c.reviews} reviews</span>
+        <div className="flex flex-col md:flex-row items-stretch">
+          {/* Stub: hours */}
+          <div className="md:w-[152px] md:flex-shrink-0 relative bg-gradient-to-br from-amber-400 via-orange-500 to-pink-600 p-6 text-white flex flex-col items-center justify-center">
+            <Ticket className="absolute top-3 left-3 h-4 w-4 opacity-50" />
+            <div className="text-[10px] font-bold uppercase tracking-[0.25em] opacity-90">Course</div>
+            <div className="text-6xl font-black leading-none mt-1 drop-shadow-md">{c.hours}</div>
+            <div className="text-sm font-bold uppercase tracking-wider mt-1">hours</div>
+            <div className="mt-3 px-2 py-0.5 rounded-full bg-white/25 backdrop-blur text-[10px] font-bold uppercase tracking-wider">
+              {c.transmission}
+            </div>
+          </div>
+
+          {/* dashed divider */}
+          <div className="hidden md:block border-l-2 border-dashed border-muted-foreground/20 mx-0" />
+
+          {/* Body */}
+          <div className="flex-1 p-6 relative">
+            {b && (() => {
+              const Icon = b.icon;
+              return (
+                <div className={`absolute top-4 right-4 -rotate-12 inline-flex items-center gap-1 rounded-md px-3 py-1 text-xs font-black uppercase tracking-wider border-2 ${
+                  c.badge === "popular" ? "border-orange-500 text-orange-500" :
+                  c.badge === "premium" ? "border-violet-600 text-violet-600" :
+                  "border-emerald-600 text-emerald-600"
+                } bg-background/80`}>
+                  <Icon className="h-3 w-3" /> {b.label}
                 </div>
+              );
+            })()}
+
+            <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Driving Course · Issued</div>
+            <h3 className="text-xl font-black mt-1 leading-tight">{c.startDate}</h3>
+            <div className="text-sm text-muted-foreground">Departs {c.startTime} · {c.area}</div>
+
+            <div className="mt-4 grid grid-cols-3 gap-3">
+              <PassStat label="Pass rate" value={`${c.passRate}%`} />
+              <PassStat label="Distance" value={`${c.distance} mi`} />
+              <PassStat label="Rating" value={`★ ${c.rating}`} />
+            </div>
+
+            <div className="mt-4 flex items-center gap-2 pt-3 border-t border-dashed">
+              <img src={c.avatar} alt="" className="h-5 w-5 rounded-full object-cover ring-1 ring-border" />
+              <span className="text-xs text-muted-foreground">Instructor: <b className="text-foreground">{c.instructor}</b></span>
+            </div>
+          </div>
+
+          {/* Right: price */}
+          <div className="md:w-52 md:flex-shrink-0 p-6 border-t md:border-t-0 md:border-l border-dashed flex md:flex-col items-center justify-between gap-3 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20">
+            <div className="text-center">
+              <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Total fare</div>
+              <div className="flex items-baseline gap-1.5 justify-center">
+                {c.oldPrice && <span className="text-xs text-muted-foreground line-through">£{c.oldPrice}</span>}
+                <span className="text-3xl font-black text-orange-600">£{c.price}</span>
               </div>
+              <div className="text-[10px] text-muted-foreground">incl. test fee</div>
             </div>
-            <div className="flex items-baseline gap-2">
-              {c.oldPrice && <span className="text-sm text-muted-foreground line-through">£{c.oldPrice}</span>}
-              <span className="text-3xl font-black text-primary">£{c.price}</span>
-            </div>
-          </div>
-
-          <div className="mt-2 flex items-center gap-3 text-sm text-muted-foreground">
-            <span className="inline-flex items-center gap-1"><Award className="h-4 w-4 text-emerald-600" />{c.passRate}% pass</span>
-            <span>·</span>
-            <span className="inline-flex items-center gap-1"><Car className="h-4 w-4" />{c.transmission}</span>
-            <span>·</span>
-            <span className="inline-flex items-center gap-1"><MapPin className="h-4 w-4" />{c.distance} mi</span>
-          </div>
-
-          <div className="mt-4 grid grid-cols-3 gap-3 text-center">
-            <div className="rounded-lg bg-muted/50 p-2">
-              <div className="text-xs text-muted-foreground">Starts</div>
-              <div className="font-bold">{c.startDate}</div>
-            </div>
-            <div className="rounded-lg bg-muted/50 p-2">
-              <div className="text-xs text-muted-foreground">Time</div>
-              <div className="font-bold">{c.startTime}</div>
-            </div>
-            <div className="rounded-lg bg-muted/50 p-2">
-              <div className="text-xs text-muted-foreground">Gearbox</div>
-              <div className="font-bold">{c.transmission}</div>
-            </div>
-          </div>
-
-          <div className="mt-4 flex items-center justify-between gap-3">
-            <div className="flex flex-wrap gap-1.5">
-              {c.features.slice(0, 2).map(f => (
-                <span key={f} className="text-xs inline-flex items-center gap-1 text-muted-foreground"><CheckCircle2 className="h-3 w-3 text-emerald-500" />{f}</span>
-              ))}
-            </div>
-            <Button size="sm" className="gap-1.5">View course <ChevronRight className="h-4 w-4" /></Button>
+            <Button className="w-full gap-1.5 bg-gradient-to-r from-orange-500 to-pink-600 hover:from-orange-600 hover:to-pink-700 text-white border-0 font-bold shadow-md">
+              Board now <ArrowRight className="h-4 w-4" />
+            </Button>
           </div>
         </div>
       </div>
@@ -197,57 +200,89 @@ function OptionB({ c }: { c: Course }) {
   );
 }
 
+function PassStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{label}</div>
+      <div className="text-base font-black mt-0.5">{value}</div>
+    </div>
+  );
+}
+
 /* ============================================================
-   OPTION C — Compact Booking-Style: tiny avatar, scannable, BIG hours
+   OPTION C — "Magazine" — colour-block, oversized typography
    ============================================================ */
 function OptionC({ c }: { c: Course }) {
+  const accent = c.badge === "popular" ? "from-rose-500 to-orange-500"
+    : c.badge === "premium" ? "from-violet-600 to-indigo-600"
+    : "from-emerald-500 to-teal-500";
+  const tint = c.badge === "popular" ? "bg-rose-50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-300"
+    : c.badge === "premium" ? "bg-violet-50 dark:bg-violet-950/20 text-violet-700 dark:text-violet-300"
+    : "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-300";
   const b = badgePill(c.badge);
+
   return (
-    <div className="rounded-xl border bg-card hover:shadow-md transition-all overflow-hidden">
-      <div className="flex flex-col sm:flex-row items-stretch">
-        {/* Hours pillar */}
-        <div className="sm:w-28 sm:flex-shrink-0 relative bg-muted/40 p-3 flex flex-row sm:flex-col items-center justify-center gap-1 sm:gap-0">
-          <span className="text-4xl sm:text-3xl font-black text-primary leading-none">{c.hours}</span>
-          <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">hrs</span>
-          {b && (
-            <span className={`mt-1 sm:mt-1 inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-bold ${b.cls}`}>
-              <b.icon className="h-2.5 w-2.5" /> {b.label}
-            </span>
-          )}
+    <div className="group relative overflow-hidden rounded-3xl border-2 border-transparent hover:border-foreground/10 bg-card transition-all hover:-translate-y-0.5">
+      <div className="flex flex-col md:flex-row items-stretch min-h-[200px]">
+        {/* Gigantic hours typography */}
+        <div className={`md:w-72 md:flex-shrink-0 relative p-6 ${tint} flex items-center justify-center overflow-hidden`}>
+          <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_30%_20%,white,transparent_50%)]" />
+          <div className="relative text-center">
+            <div className={`text-[120px] md:text-[140px] font-black leading-[0.85] tracking-tighter bg-gradient-to-br ${accent} bg-clip-text text-transparent`}>
+              {c.hours}
+            </div>
+            <div className="text-sm font-black uppercase tracking-[0.4em] -mt-2">hours</div>
+            <div className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold">
+              <Award className="h-3.5 w-3.5" />
+              {c.passRate}% PASS RATE
+            </div>
+          </div>
         </div>
 
-        <div className="flex-1 p-4 border-t sm:border-t-0 sm:border-l">
-          <div className="flex items-center gap-2">
-            <img src={c.avatar} alt={c.instructor} className="h-7 w-7 rounded-full object-cover ring-1 ring-muted" />
-            <div>
-              <div className="flex items-center gap-1.5 text-sm font-bold leading-tight">{c.instructor}</div>
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <span className="rounded bg-primary text-primary-foreground px-1 py-0 text-[10px] font-bold">{c.rating}</span>
-                <span>{c.reviews} reviews</span>
-                <span>·</span>
-                <span>{c.passRate}% pass</span>
-              </div>
+        {/* Body */}
+        <div className="flex-1 p-6 flex flex-col justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 mb-2 flex-wrap">
+              {b && (
+                <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-white bg-gradient-to-r ${accent}`}>
+                  <b.icon className="h-3 w-3" /> {b.label}
+                </span>
+              )}
+              <span className="inline-flex items-center gap-1 text-xs font-medium">
+                <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" /> {c.rating} · {c.reviews}
+              </span>
+            </div>
+
+            <h3 className="text-2xl md:text-3xl font-black leading-[1.05] tracking-tight">
+              {c.transmission} licence,<br />sorted by <span className={`bg-gradient-to-r ${accent} bg-clip-text text-transparent`}>{c.startDate.split(" ").slice(1).join(" ")}</span>.
+            </h3>
+            <div className="mt-2 text-sm text-muted-foreground">
+              Starts {c.startDate} · {c.startTime} · {c.area} · with {c.instructor}
             </div>
           </div>
 
-          <div className="mt-2 font-bold text-sm">
-            {c.hours}-hour {c.transmission} course · starts {c.startDate} at {c.startTime}
-          </div>
-
-          <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs">
-            <span className="inline-flex items-center gap-1 text-emerald-600 font-medium"><CheckCircle2 className="h-3 w-3" /> Test included</span>
-            <span className="inline-flex items-center gap-1 text-emerald-600 font-medium"><Shield className="h-3 w-3" /> Free cancellation</span>
-            <span className="inline-flex items-center gap-1 text-muted-foreground"><MapPin className="h-3 w-3" />{c.distance} mi away</span>
+          <div className="flex flex-wrap gap-1.5">
+            {c.features.map(f => (
+              <span key={f} className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-[11px] font-semibold">
+                <CheckCircle2 className="h-3 w-3 text-emerald-500" />{f}
+              </span>
+            ))}
           </div>
         </div>
 
-        <div className="sm:w-48 sm:flex-shrink-0 p-4 sm:border-l flex sm:flex-col items-end justify-between gap-2">
-          <div className="text-right">
-            {c.oldPrice && <div className="text-xs text-muted-foreground line-through">£{c.oldPrice}</div>}
-            <div className="text-2xl font-bold">£{c.price}</div>
-            <div className="text-[10px] text-muted-foreground">incl. VAT & test fee</div>
+        {/* CTA stripe */}
+        <div className={`md:w-56 md:flex-shrink-0 p-6 bg-gradient-to-br ${accent} text-white flex md:flex-col items-center justify-between gap-3`}>
+          <div className="text-center">
+            <div className="text-[10px] font-bold uppercase tracking-[0.25em] opacity-80">From</div>
+            <div className="flex items-baseline gap-1.5 justify-center">
+              {c.oldPrice && <span className="text-xs opacity-70 line-through">£{c.oldPrice}</span>}
+              <span className="text-4xl font-black drop-shadow">£{c.price}</span>
+            </div>
+            <div className="text-[10px] opacity-80 mt-0.5">or 4 × £{Math.round(c.price / 4)} Klarna</div>
           </div>
-          <Button size="sm" className="w-full sm:w-auto">See availability →</Button>
+          <Button className="w-full gap-1.5 bg-white text-foreground hover:bg-white/90 font-black shadow-lg">
+            Grab it <Rocket className="h-4 w-4" />
+          </Button>
         </div>
       </div>
     </div>
@@ -255,48 +290,74 @@ function OptionC({ c }: { c: Course }) {
 }
 
 /* ============================================================
-   OPTION D — Premium Glass Card: tiny avatar, prominent hours ring
+   OPTION D — "Glass-morphism" — soft pastel hero, frosted stats
    ============================================================ */
 function OptionD({ c }: { c: Course }) {
   const b = badgePill(c.badge);
   return (
-    <div className="relative rounded-2xl p-[1.5px] bg-gradient-to-r from-primary/40 via-violet-500/30 to-emerald-500/40 hover:from-primary/70 hover:to-emerald-500/70 transition-all">
-      <div className="rounded-[15px] bg-card overflow-hidden">
+    <div className="relative rounded-[28px] p-[2px] bg-gradient-to-br from-pink-400 via-purple-400 to-cyan-400 hover:shadow-[0_25px_60px_-15px_rgba(168,85,247,0.4)] transition-all">
+      <div className="rounded-[26px] overflow-hidden bg-card">
         <div className="flex flex-col md:flex-row items-stretch">
-          {/* Hours ring + tiny avatar */}
-          <div className="relative md:w-44 md:flex-shrink-0 p-5 flex md:flex-col items-center justify-center gap-3 bg-gradient-to-br from-muted/50 to-transparent">
-            <div className="relative h-20 w-20 rounded-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-primary/5 ring-2 ring-primary/20">
-              <span className="text-3xl font-black text-primary leading-none">{c.hours}</span>
-              <span className="absolute -bottom-1 left-0 right-0 text-center text-[9px] font-bold uppercase tracking-wider text-primary/70">hours</span>
+          {/* Hours hero */}
+          <div className="md:w-56 md:flex-shrink-0 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-pink-300 via-purple-300 to-cyan-300" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,white,transparent_60%)] opacity-60" />
+            {/* floating shapes */}
+            <div className="absolute top-4 right-4 h-12 w-12 rounded-full bg-white/40 backdrop-blur-md" />
+            <div className="absolute bottom-6 left-4 h-8 w-8 rounded-full bg-white/30 backdrop-blur-md" />
+            <div className="relative h-full flex flex-col items-center justify-center p-6 text-white">
+              <div className="text-7xl font-black leading-none drop-shadow-[0_4px_20px_rgba(0,0,0,0.2)]">{c.hours}</div>
+              <div className="text-xs font-black uppercase tracking-[0.3em] mt-1 drop-shadow">hours</div>
+              {b && (
+                <span className="mt-3 inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider bg-white/30 backdrop-blur-md border border-white/40">
+                  <b.icon className="h-3 w-3" /> {b.label}
+                </span>
+              )}
             </div>
-            <div className="flex items-center gap-2">
-              <img src={c.avatar} alt={c.instructor} className="h-6 w-6 rounded-full object-cover ring-1 ring-muted" />
-              <div className="text-xs text-muted-foreground">{c.instructor}</div>
-            </div>
-            {b && (
-              <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold ${b.cls}`}>
-                <b.icon className="h-2.5 w-2.5" /> {b.label}
-              </span>
-            )}
           </div>
 
-          <div className="flex-1 p-5 grid grid-cols-2 sm:grid-cols-4 gap-3 content-center border-t md:border-t-0 md:border-l">
-            <Stat icon={Calendar} label="Starts" value={c.startDate} />
-            <Stat icon={Clock} label="Time" value={c.startTime} />
-            <Stat icon={Car} label="Gearbox" value={c.transmission} />
-            <Stat icon={Award} label="Pass rate" value={`${c.passRate}%`} />
+          {/* Stats */}
+          <div className="flex-1 p-6">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <div className="flex items-center gap-2">
+                <img src={c.avatar} alt="" className="h-7 w-7 rounded-full object-cover ring-2 ring-purple-200" />
+                <div>
+                  <div className="text-sm font-bold leading-tight">{c.instructor}</div>
+                  <div className="text-[11px] text-muted-foreground flex items-center gap-1">
+                    <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                    {c.rating} · {c.reviews} reviews · {c.passRate}% pass
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+              <FrostStat icon={Calendar} label="Starts" value={c.startDate} accent="from-pink-500/10 to-pink-500/0 text-pink-600" />
+              <FrostStat icon={Clock} label="Time" value={c.startTime} accent="from-purple-500/10 to-purple-500/0 text-purple-600" />
+              <FrostStat icon={Car} label="Gearbox" value={c.transmission} accent="from-cyan-500/10 to-cyan-500/0 text-cyan-600" />
+              <FrostStat icon={MapPin} label="Distance" value={`${c.distance} mi`} accent="from-emerald-500/10 to-emerald-500/0 text-emerald-600" />
+            </div>
+
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {c.features.slice(0, 3).map(f => (
+                <span key={f} className="inline-flex items-center gap-1 text-[11px] text-muted-foreground"><CheckCircle2 className="h-3 w-3 text-emerald-500" />{f}</span>
+              ))}
+            </div>
           </div>
 
-          <div className="md:w-56 md:flex-shrink-0 p-5 flex md:flex-col items-center md:items-stretch justify-between gap-3 border-t md:border-t-0 md:border-l bg-gradient-to-br from-primary/5 to-transparent">
+          {/* CTA */}
+          <div className="md:w-56 md:flex-shrink-0 p-6 border-t md:border-t-0 md:border-l flex md:flex-col items-center justify-between gap-3 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20">
             <div className="text-center md:text-left">
-              <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">From</div>
+              <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">From</div>
               <div className="flex items-baseline gap-1.5">
                 {c.oldPrice && <span className="text-xs text-muted-foreground line-through">£{c.oldPrice}</span>}
-                <span className="text-3xl font-black bg-gradient-to-r from-primary to-violet-600 bg-clip-text text-transparent">£{c.price}</span>
+                <span className="text-3xl font-black bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 bg-clip-text text-transparent">£{c.price}</span>
               </div>
-              <div className="text-[10px] text-muted-foreground">or 4 × £{Math.round(c.price / 4)} with Klarna</div>
+              <div className="text-[10px] text-muted-foreground">4 × £{Math.round(c.price / 4)} Klarna</div>
             </div>
-            <Button className="w-full gap-1.5" size="sm">Book now <ArrowRight className="h-4 w-4" /></Button>
+            <Button className="w-full gap-1.5 bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 hover:opacity-90 text-white border-0 font-bold shadow-lg shadow-purple-500/30">
+              Book now <ChevronRight className="h-4 w-4" />
+            </Button>
           </div>
         </div>
       </div>
@@ -304,16 +365,12 @@ function OptionD({ c }: { c: Course }) {
   );
 }
 
-function Stat({ icon: Icon, label, value }: { icon: any; label: string; value: string }) {
+function FrostStat({ icon: Icon, label, value, accent }: { icon: any; label: string; value: string; accent: string }) {
   return (
-    <div className="flex items-center gap-2.5">
-      <div className="h-9 w-9 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
-        <Icon className="h-4 w-4 text-muted-foreground" />
-      </div>
-      <div className="min-w-0">
-        <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">{label}</div>
-        <div className="text-sm font-bold truncate">{value}</div>
-      </div>
+    <div className={`rounded-xl bg-gradient-to-br ${accent} p-2.5 border border-current/10`}>
+      <Icon className="h-3.5 w-3.5 opacity-80" />
+      <div className="text-[9px] font-bold uppercase tracking-wider opacity-70 mt-1">{label}</div>
+      <div className="text-sm font-black truncate text-foreground">{value}</div>
     </div>
   );
 }
@@ -326,16 +383,14 @@ function Section({
 }: { id: string; title: string; tagline: string; accent: string; children: React.ReactNode }) {
   return (
     <section className="space-y-4">
-      <div className="flex items-end justify-between gap-4 flex-wrap">
-        <div>
-          <div className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold ${accent}`}>
-            Option {id}
-          </div>
-          <h2 className="mt-2 text-2xl font-bold">{title}</h2>
-          <p className="text-sm text-muted-foreground max-w-xl">{tagline}</p>
+      <div>
+        <div className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-black uppercase tracking-wider ${accent}`}>
+          Option {id}
         </div>
+        <h2 className="mt-2 text-3xl font-black tracking-tight">{title}</h2>
+        <p className="text-sm text-muted-foreground max-w-xl">{tagline}</p>
       </div>
-      <div className="space-y-3">{children}</div>
+      <div className="space-y-4">{children}</div>
     </section>
   );
 }
@@ -343,42 +398,39 @@ function Section({
 export default function DemoCourseResultsHorizontal() {
   return (
     <MainLayout>
-      <div className="container py-8 space-y-12">
+      <div className="container py-8 space-y-14">
         <header className="max-w-3xl">
-          <Badge variant="secondary" className="mb-3">Design exploration</Badge>
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Course results — horizontal layouts</h1>
+          <Badge variant="secondary" className="mb-3">Design exploration · v2</Badge>
+          <h1 className="text-4xl md:text-5xl font-black tracking-tight">Course results — bolder horizontals</h1>
           <p className="mt-2 text-muted-foreground">
-            Four horizontal card directions for the course discovery page. Each shows the same instructor data
-            so you can compare information density, visual weight and CTA prominence. Pick one (or mix) and
-            we'll roll it into the live results grid.
+            Four distinctive directions. Hours stays the hero, the instructor avatar is intentionally tiny.
+            Pick whichever feels right and we'll roll it into the live results grid.
           </p>
         </header>
 
-        <Section id="A" title="Classic Horizontal" tagline="Image-left, info-centre, sticky CTA-right. Familiar, balanced, easy to scan."
-          accent="bg-primary/10 text-primary">
+        <Section id="A" title="Speedometer" tagline="Dark, neon, energy-driven. The hours dial is the star — premium tech feel."
+          accent="bg-gradient-to-r from-cyan-400 to-fuchsia-500 text-white">
           {COURSES.map(c => <OptionA key={c.id} c={c} />)}
         </Section>
 
-        <Section id="B" title="Editorial Strip" tagline="Bold gradient hero panel with editorial feel. Better for premium positioning and storytelling."
-          accent="bg-violet-500/10 text-violet-600">
+        <Section id="B" title="Boarding Pass" tagline="Treat each course like a ticket — perforation, stamp, fare. Playful and ownable."
+          accent="bg-gradient-to-r from-amber-400 to-pink-500 text-white">
           {COURSES.map(c => <OptionB key={c.id} c={c} />)}
         </Section>
 
-        <Section id="C" title="Compact Booking-Style" tagline="Dense, stat-heavy and highly scannable. Great when users compare many options at once."
-          accent="bg-emerald-500/10 text-emerald-600">
+        <Section id="C" title="Magazine" tagline="Editorial colour blocks, oversized hours typography, opinionated headlines."
+          accent="bg-gradient-to-r from-rose-500 to-orange-500 text-white">
           {COURSES.map(c => <OptionC key={c.id} c={c} />)}
         </Section>
 
-        <Section id="D" title="Premium Glass Card" tagline="Gradient frame, structured stats grid and Klarna nudge. Feels modern and high-end."
-          accent="bg-amber-500/10 text-amber-600">
+        <Section id="D" title="Glass-morphism" tagline="Soft pastel gradient hero with frosted stat tiles. Friendly and modern."
+          accent="bg-gradient-to-r from-pink-400 via-purple-400 to-cyan-400 text-white">
           {COURSES.map(c => <OptionD key={c.id} c={c} />)}
         </Section>
 
         <div className="rounded-2xl border bg-muted/30 p-6 text-center">
-          <Users className="h-6 w-6 mx-auto text-muted-foreground" />
-          <p className="mt-2 text-sm text-muted-foreground">
-            Tell me which option (A, B, C or D) you'd like applied to the real course results page —
-            or pick & mix elements you like from each.
+          <p className="text-sm text-muted-foreground">
+            Tell me which option (A, B, C or D) — or mix elements from each — and I'll apply it to the real course results page.
           </p>
         </div>
       </div>
