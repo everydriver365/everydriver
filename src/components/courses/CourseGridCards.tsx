@@ -252,39 +252,6 @@ export function CourseGridCards({ courses }: CourseGridCardsProps) {
                 )}
               </div>
 
-              {/* Top-right favourite */}
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setFavs((prev) => ({ ...prev, [key]: !prev[key] }));
-                }}
-                aria-label={isFav ? "Remove from favourites" : "Add to favourites"}
-                style={{
-                  position: "absolute",
-                  top: 12,
-                  right: 12,
-                  width: 34,
-                  height: 34,
-                  borderRadius: "50%",
-                  background: "rgba(255,255,255,0.95)",
-                  border: "none",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  cursor: "pointer",
-                  backdropFilter: "blur(6px)",
-                  boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
-                  zIndex: 2,
-                }}
-              >
-                <Heart
-                  style={{ width: 17, height: 17 }}
-                  color={isFav ? "#d92e3a" : "#7a7a7a"}
-                  fill={isFav ? "#d92e3a" : "none"}
-                />
-              </button>
-
               {/* Bottom-left hours */}
               <div
                 style={{
