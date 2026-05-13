@@ -302,6 +302,8 @@ export default function Courses() {
   const initialTransmission = searchParams.get("transmission") || "all";
   const initialKlarna = searchParams.get("klarna") === "1";
   const initialClearpay = searchParams.get("clearpay") === "1";
+  const initialCourseType = searchParams.get("courseType") || "all";
+  const initialPriceRange = searchParams.get("priceRange") || "any";
   const [postcode, setPostcode] = useState(initialPostcode);
   const [radius, setRadius] = useState(initialRadius);
   const [showRadiusFallbackNotice, setShowRadiusFallbackNotice] = useState(false);
