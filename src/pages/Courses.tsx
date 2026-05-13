@@ -1532,8 +1532,8 @@ export default function Courses() {
                             onClick={() => setViewMode("grid")}
                             className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-all"
                             style={{
-                              background: (viewMode as string) === "grid" ? "#0a1936" : "transparent",
-                              color: (viewMode as string) === "grid" ? "white" : "#7a7a7a",
+                              background: String(viewMode) === "grid" ? "#0a1936" : "transparent",
+                              color: String(viewMode) === "grid" ? "white" : "#7a7a7a",
                             }}
                             aria-label="Grid view"
                           >
