@@ -79,13 +79,14 @@ export function HeroSearchSection({
           }}
         />
 
-        {/* TEST: simple red div inside hero */}
-        <div className="absolute bottom-0 left-0 right-0 flex justify-center pb-8 z-20">
-          <div className="bg-red-500 text-white px-8 py-4 rounded-full text-xl font-bold">
-            TEST PILL SHOULD BE VISIBLE
-          </div>
-        </div>
       </section>
+
+      {/* TEST: red div outside hero */}
+      <div className="relative z-10 -mt-11 px-4" style={{ background: 'lime' }}>
+        <div className="max-w-[1100px] mx-auto bg-red-500 text-white px-8 py-4 rounded-full text-xl font-bold text-center">
+          OUTSIDE TEST PILL
+        </div>
+      </div>
 
       {/* Desktop / tablet pill — overlaps hero bottom (sits OUTSIDE clipped section) */}
       <div className="hidden sm:block relative z-10 -mt-11 lg:-mt-12 px-4 lg:px-8">
