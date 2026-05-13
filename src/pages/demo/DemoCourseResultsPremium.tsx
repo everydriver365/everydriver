@@ -210,14 +210,6 @@ const NEARBY = [
   { name: "Mark Reynolds", initials: "MR", trans: "Manual", distance: "3.4 mi", rating: 4.7, available: false },
 ];
 
-const START_PILLS = [
-  { label: "Mon, 1 Jun", active: true },
-  { label: "Tue, 2 Jun" },
-  { label: "Wed, 3 Jun" },
-  { label: "Thu, 4 Jun" },
-  { label: "Fri, 5 Jun" },
-];
-
 const FILTER_CHIPS = ["All", "Manual", "Automatic", "Soonest", "Nearest", "Price"];
 
 function MiniCalendar() {
