@@ -1484,6 +1484,76 @@ export default function Courses() {
                   </div>
                 )}
                 {/* Selected date header */}
+                {isListMode ? (
+                  <>
+                    <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                      <div
+                        className="inline-flex items-center rounded-full p-0.5"
+                        style={{ border: "1px solid #e8e8ee", background: "white" }}
+                      >
+                        {[
+                          { value: "all", label: "All" },
+                          { value: "manual", label: "Manual" },
+                          { value: "automatic", label: "Automatic" },
+                        ].map((opt) => {
+                          const active = transmission === opt.value;
+                          return (
+                            <button
+                              key={opt.value}
+                              onClick={() => setTransmission(opt.value)}
+                              className="rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all"
+                              style={{
+                                background: active ? "#0a1936" : "transparent",
+                                color: active ? "white" : "#7a7a7a",
+                              }}
+                            >
+                              {opt.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <label
+                          htmlFor="course-sort"
+                          style={{
+                            fontSize: 11,
+                            fontWeight: 700,
+                            letterSpacing: "0.12em",
+                            color: "#7a7a7a",
+                            textTransform: "uppercase",
+                          }}
+                        >
+                          Sort
+                        </label>
+                        <div className="relative">
+                          <select
+                            id="course-sort"
+                            value={sortBy}
+                            onChange={(e) => setSortBy(e.target.value as SortOption)}
+                            className="appearance-none rounded-md bg-white py-1.5 pl-3 pr-8 text-sm font-semibold focus:outline-none"
+                            style={{ border: "1px solid #d0d0d8", color: "#0a1936" }}
+                          >
+                            <option value="nearest" disabled={!userLocation}>Nearest first</option>
+                            <option value="soonest">Soonest</option>
+                            <option value="price-low">Cheapest</option>
+                          </select>
+                          <ChevronDown
+                            className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2"
+                            style={{ width: 14, height: 14, color: "#7a7a7a" }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="mb-3">
+                      <h2 style={{ fontSize: 18, fontWeight: 800, color: "#0a1936", letterSpacing: "-0.02em" }}>
+                        {format(selectedDate, "EEEE, d MMMM")}
+                      </h2>
+                      <p style={{ fontSize: 12, color: "#7a7a7a", marginTop: 2 }}>
+                        {filteredCourses.length} course{filteredCourses.length !== 1 ? "s" : ""} available
+                      </p>
+                    </div>
+                  </>
+                ) : (
                 <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
                   <div>
                     <h2 className="text-xl font-bold">
@@ -1594,6 +1664,7 @@ export default function Courses() {
                     </button>
                   </div>
                 </div>
+                )}
 
                 {filteredCourses.length > 0 ? (
                   isMobile ? (
