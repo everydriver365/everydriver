@@ -348,7 +348,8 @@ export default function Courses() {
     const today = startOfDay(new Date());
     if (isBefore(day, today)) return false;
 
-    const dayOfWeek = getDay(day);
+    const jsDow = getDay(day);
+    const dayOfWeek = jsDow === 0 ? 7 : jsDow; // DB uses 1=Mon..7=Sun
     const dateStr = format(day, "yyyy-MM-dd");
 
     return instructorsList.some((instructor) => {
@@ -457,7 +458,8 @@ export default function Courses() {
     return allDays.filter((day) => {
       if (isBefore(day, today)) return false;
 
-      const dayOfWeek = getDay(day); // 0 = Sunday, 1 = Monday, etc.
+      const jsDow = getDay(day);
+      const dayOfWeek = jsDow === 0 ? 7 : jsDow; // DB uses 1=Mon..7=Sun
       const dateStr = format(day, "yyyy-MM-dd");
 
       return relevantInstructors.some((instructor) => {
@@ -493,7 +495,8 @@ export default function Courses() {
     const counts: { [dateStr: string]: number } = {};
     
     for (const day of availableDatesInMonth) {
-      const dayOfWeek = getDay(day);
+      const jsDow = getDay(day);
+      const dayOfWeek = jsDow === 0 ? 7 : jsDow; // DB uses 1=Mon..7=Sun
       const dateStr = format(day, "yyyy-MM-dd");
       let count = 0;
 
@@ -545,7 +548,8 @@ export default function Courses() {
   const coursesForSelectedDate = useMemo(() => {
     if (!selectedDate) return [];
 
-    const dayOfWeek = getDay(selectedDate);
+    const jsDowSel = getDay(selectedDate);
+    const dayOfWeek = jsDowSel === 0 ? 7 : jsDowSel; // DB uses 1=Mon..7=Sun
     const dateStr = format(selectedDate, "yyyy-MM-dd");
     const courses: CourseWithInstructor[] = [];
 
