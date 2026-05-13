@@ -1355,8 +1355,71 @@ export default function Courses() {
 
           {/* Right Column: Course Tiles */}
           <div className="flex-1">
-            {/* Location display with clear button */}
-            {searchedPostcode && (
+            {/* Compact header strip — list mode */}
+            {isListMode && searchedPostcode && (
+              <div
+                className="mb-4 flex items-center justify-between rounded-lg bg-white px-4 py-3"
+                style={{ borderBottom: "1px solid #e8e8ee" }}
+              >
+                <div>
+                  <div
+                    style={{
+                      fontSize: 10,
+                      fontWeight: 700,
+                      letterSpacing: "0.18em",
+                      color: "#7a7a7a",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    Courses near
+                  </div>
+                  <div className="flex items-baseline gap-2">
+                    <span
+                      style={{
+                        fontSize: 18,
+                        fontWeight: 800,
+                        color: "#0a1936",
+                        letterSpacing: "-0.02em",
+                      }}
+                    >
+                      {searchedAreaName || searchedPostcode}
+                    </span>
+                    <span style={{ fontSize: 12, color: "#7a7a7a" }}>
+                      {searchedPostcode} · {radius} mi
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={clearSearch}
+                    className="inline-flex items-center gap-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold transition-colors hover:bg-slate-50"
+                    style={{ border: "1px solid #d0d0d8", color: "#0a1936" }}
+                  >
+                    <Edit2 className="h-3.5 w-3.5" />
+                    Change
+                  </button>
+                  <button
+                    onClick={() => setShowFilters((v) => !v)}
+                    className="relative inline-flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-semibold text-white transition-colors hover:opacity-90"
+                    style={{ background: "#0a1936" }}
+                  >
+                    <SlidersHorizontal className="h-3.5 w-3.5" />
+                    Filters
+                    {activeFilterCount > 0 && (
+                      <span
+                        className="absolute -right-1.5 -top-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full px-1 text-[10px] font-bold text-white"
+                        style={{ background: "#d92e3a" }}
+                      >
+                        {activeFilterCount}
+                      </span>
+                    )}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Original green banner — hidden in list mode */}
+            {!isListMode && searchedPostcode && (
               <motion.div 
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
