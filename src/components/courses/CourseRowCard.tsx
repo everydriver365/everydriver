@@ -66,7 +66,10 @@ export function CourseRowCard({
   title,
 }: CourseRowCardProps) {
   const navigate = useNavigate();
-  const finalPrice = discountedPrice ?? price;
+  // Match DynamicCourseCard pricing: discountedPrice replaces total when truthy.
+  const totalPrice = price;
+  const finalPrice = discountedPrice || totalPrice;
+  const hasDiscount = !!discountedPrice && discountedPrice < totalPrice;
   const courseTitle = title || `${hours} Hour Course`;
   const icon = getCourseIcon(hours, courseTitle);
   const date = nextAvailable ? splitDate(nextAvailable) : null;
