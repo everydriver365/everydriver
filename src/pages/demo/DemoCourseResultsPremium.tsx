@@ -16,7 +16,6 @@ import {
   CheckCircle2,
   Zap,
   GraduationCap,
-  Trophy,
   Car,
   Navigation,
   CreditCard,
