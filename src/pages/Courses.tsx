@@ -921,6 +921,10 @@ export default function Courses() {
 
   return (
     <MainLayout>
+      <SEOHead
+        title="Driving Courses Near You | Compare & Book | EveryDriver"
+        description="Compare intensive, semi-intensive and weekly driving courses from DVSA-approved instructors near you. Book online with 0% finance options."
+      />
       {/* Search Header */}
       <section className="border-b bg-background py-8">
         <div className="container">
