@@ -88,6 +88,7 @@ export const publicRoutes = (
 
     {/* Search results — alias to courses with search params */}
     <Route path="/search" element={<Courses />} />
+    <Route path="/drive365/search" element={<Courses />} />
 
     {/* Whitelabel preview shortcuts (e.g. /winchester) */}
     <Route path="/winchester" element={<WhitelabelPreviewRedirect />} />
