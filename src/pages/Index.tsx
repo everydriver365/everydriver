@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { PostcodeAutocomplete } from "@/components/PostcodeAutocomplete";
 import { CoursePlannerSheet } from "@/components/course-planner/CoursePlannerSheet";
 import { HeroSearchSection } from "@/components/homepage/HeroSearchSection";
+import drive365HeroTestCentre from "@/assets/drive365-hero-test-centre.jpg";
 import { FeatureDetailModal } from "@/components/FeatureDetailModal";
 import { FeatureData } from "@/hooks/useHomepageFeatures";
 import {
@@ -239,7 +240,7 @@ export default function Index() {
       {!wlConfig && (
         <section className="px-4 pt-4 pb-6">
           <HeroSearchSection
-            backgroundImage="/src/assets/hero-driving.jpg"
+            backgroundImage={drive365HeroTestCentre}
             className="mx-auto"
           />
         </section>
