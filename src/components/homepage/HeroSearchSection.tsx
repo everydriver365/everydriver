@@ -122,7 +122,7 @@ export function HeroSearchSection({
             <div className="self-center w-px bg-[#e3e3ea] shrink-0" style={{ height: "44px" }} />
 
             {/* Radius */}
-            <div className="flex-1 flex flex-col justify-center px-5 min-w-0">
+            <div className="flex flex-col justify-center px-5 min-w-0 w-24 lg:w-28">
               <label htmlFor="hero-radius" className="text-[13px] font-bold text-black leading-tight">
                 Radius
               </label>
@@ -146,7 +146,7 @@ export function HeroSearchSection({
             <div className="self-center w-px bg-[#e3e3ea] shrink-0" style={{ height: "44px" }} />
 
             {/* Transmission */}
-            <div className="flex-1 flex flex-col justify-center px-5 min-w-0">
+            <div className="flex flex-col justify-center px-5 min-w-0 w-28 lg:w-32">
               <label htmlFor="hero-transmission" className="text-[13px] font-bold text-black leading-tight">
                 Transmission
               </label>
