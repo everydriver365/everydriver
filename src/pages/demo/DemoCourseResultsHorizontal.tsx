@@ -108,17 +108,23 @@ function OptionF({ c }: { c: Course }) {
           <span className="bg-white border-2 border-black px-2 py-0.5 text-[10px] font-black uppercase">★ {c.rating}</span>
         </div>
         <h3 className="text-2xl font-black uppercase leading-tight text-black">{c.area}</h3>
-        <p className="text-sm font-bold text-black/80">with {c.instructor} · starts {c.startDate}</p>
+        <p className="text-sm font-bold text-black/80">with {c.instructor}</p>
+        <div className="mt-3 inline-flex items-center gap-2 bg-black text-yellow-300 px-3 py-1.5 border-2 border-black">
+          <Calendar className="h-4 w-4" />
+          <span className="text-[10px] font-black uppercase tracking-widest">Starts</span>
+          <span className="text-base font-black uppercase">{c.startDate} · {c.startTime}</span>
+        </div>
         <div className="mt-3 flex flex-wrap gap-2">
-          {c.features.slice(0,3).map(f => (
+          {c.features.slice(0,2).map(f => (
             <span key={f} className="text-[11px] font-bold bg-white border-2 border-black px-2 py-0.5">{f}</span>
           ))}
         </div>
       </div>
-      <div className="w-44 shrink-0 bg-black text-white p-5 flex flex-col justify-between items-end border-l-[3px] border-black">
-        <div className="text-right">
-          {c.oldPrice && <div className="text-xs line-through text-white/60">£{c.oldPrice}</div>}
-          <div className="text-4xl font-black leading-none">£{c.price}</div>
+      <div className="w-48 shrink-0 bg-black text-white p-5 flex flex-col justify-between items-stretch border-l-[3px] border-black">
+        <div className="text-center">
+          <div className="text-[10px] font-black uppercase tracking-widest text-white/60">Total</div>
+          {c.oldPrice && <div className="text-sm line-through text-white/50">£{c.oldPrice}</div>}
+          <div className="text-6xl font-black leading-none tabular-nums text-yellow-300">£{c.price}</div>
         </div>
         <button className="w-full bg-yellow-300 text-black font-black uppercase tracking-wider py-2 border-2 border-yellow-300 hover:bg-white hover:border-white">
           Book →
