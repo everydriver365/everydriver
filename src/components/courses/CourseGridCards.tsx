@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
-import { Calendar, MapPin, User, ChevronRight } from "lucide-react";
+import { Calendar, MapPin, User, ChevronRight, Star, CheckCircle } from "lucide-react";
 import { useState } from "react";
 
 interface GridCourse {
@@ -12,6 +12,9 @@ interface GridCourse {
     clearpay_enabled?: boolean | null;
     rating?: number | null;
     home_postcode?: string | null;
+    profile_image_url?: string | null;
+    bio?: string | null;
+    brand_colour?: string | null;
   };
   hours: number;
   bookableDate: Date;
@@ -22,6 +25,7 @@ interface GridCourse {
   discountedPrice?: number | null;
   areaName?: string | null;
   courseImageUrl?: string | null;
+  features?: string[] | null;
 }
 
 interface CourseGridCardsProps {
