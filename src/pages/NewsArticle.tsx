@@ -56,6 +56,26 @@ export default function NewsArticle() {
       <SEOHead
         title={`${article.title} | Drive365 News`}
         description={article.description}
+        type="article"
+        image={article.imageUrl || undefined}
+        jsonLd={{
+          id: "article-jsonld",
+          data: {
+            "@context": "https://schema.org",
+            "@type": "NewsArticle",
+            headline: article.title,
+            description: article.description,
+            image: article.imageUrl || undefined,
+            datePublished: article.pubDate || undefined,
+            dateModified: article.pubDate || undefined,
+            mainEntityOfPage: typeof window !== "undefined" ? window.location.href : undefined,
+            publisher: {
+              "@type": "Organization",
+              name: "Drive365",
+              logo: { "@type": "ImageObject", url: "https://everydriver.lovable.app/drive365-logo.png" },
+            },
+          },
+        }}
       />
 
       <article className="py-12">
