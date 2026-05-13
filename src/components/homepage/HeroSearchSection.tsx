@@ -82,7 +82,7 @@ export function HeroSearchSection({
       </section>
 
       {/* Desktop / tablet pill — overlaps hero bottom (sits OUTSIDE clipped section) */}
-      <div className="hidden sm:block relative z-10 -mt-11 lg:-mt-12 px-4 lg:px-8" style={{ background: 'red' }}>
+      <div className="block relative z-10 -mt-11 lg:-mt-12 px-4 lg:px-8" style={{ background: 'red' }}>
         <form
           onSubmit={handleSubmit}
           className="w-full max-w-[1100px] mx-auto"
