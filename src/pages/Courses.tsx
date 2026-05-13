@@ -426,7 +426,11 @@ export default function Courses() {
 
     return instructors.filter((instructor) => {
       const instructorPostcode = instructor.home_postcode.replace(/\s+/g, "").toUpperCase();
-      const instructorLocation = geoCache[instructorPostcode];
+      const cached = geoCache[instructorPostcode];
+      const instructorLocation = cached
+        ?? ((instructor as any).lat != null && (instructor as any).lng != null
+          ? { lat: Number((instructor as any).lat), lng: Number((instructor as any).lng) }
+          : null);
       if (!instructorLocation) return false;
 
       const distance = calculateDistance(
@@ -683,7 +687,11 @@ export default function Courses() {
         if (!instructorIds.has(instructor.id)) return false;
 
         const instructorPostcode = instructor.home_postcode.replace(/\s+/g, "").toUpperCase();
-        const instructorLocation = fullGeoCache[instructorPostcode];
+        const cached = fullGeoCache[instructorPostcode];
+        const instructorLocation = cached
+          ?? ((instructor as any).lat != null && (instructor as any).lng != null
+            ? { lat: Number((instructor as any).lat), lng: Number((instructor as any).lng) }
+            : null);
         if (!instructorLocation) return false;
 
         const distance = calculateDistance(
@@ -820,7 +828,11 @@ export default function Courses() {
 
     return coursesForSelectedDate.map((course) => {
       const instructorPostcode = course.instructor.home_postcode.replace(/\s+/g, "").toUpperCase();
-      const instructorLocation = geoCache[instructorPostcode];
+      const cached = geoCache[instructorPostcode];
+      const instructorLocation = cached
+        ?? ((course.instructor as any).lat != null && (course.instructor as any).lng != null
+          ? { lat: Number((course.instructor as any).lat), lng: Number((course.instructor as any).lng) }
+          : null);
 
       if (instructorLocation) {
         const distance = calculateDistance(
