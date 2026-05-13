@@ -120,29 +120,40 @@ function OptionA({ c }: { c: Course }) {
 }
 
 /* ============================================================
-   OPTION B — Editorial Strip: large hero strip, dense info row
+   OPTION B — Editorial Strip: small avatar, BIG hours badge, rich info
    ============================================================ */
 function OptionB({ c }: { c: Course }) {
   const b = badgePill(c.badge);
   return (
     <div className="group relative rounded-2xl border bg-card overflow-hidden hover:border-primary/40 transition-all">
-      <div className="flex flex-col lg:flex-row">
-        <div className="relative lg:w-72 lg:flex-shrink-0 h-40 lg:h-auto bg-[linear-gradient(135deg,hsl(var(--primary))_0%,hsl(var(--primary)/0.6)_100%)] flex items-center justify-center">
-          <img src={c.avatar} alt={c.instructor} className="h-24 w-24 rounded-2xl object-cover ring-4 ring-white/40 shadow-xl" />
+      <div className="flex flex-col lg:flex-row items-stretch">
+        {/* Left: hours pillar */}
+        <div className="relative lg:w-32 lg:flex-shrink-0 bg-[linear-gradient(135deg,hsl(var(--primary))_0%,hsl(var(--primary)/0.6)_100%)] flex flex-col items-center justify-center p-5 gap-1">
+          <span className="text-5xl font-black text-white leading-none drop-shadow-sm">{c.hours}</span>
+          <span className="text-sm font-semibold uppercase tracking-wide text-white/80">hours</span>
           {b && (
-            <span className={`absolute top-3 left-3 inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-bold ${b.cls}`}>
-              <b.icon className="h-3 w-3" /> {b.label}
+            <span className="mt-2 inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-bold bg-white/90 text-foreground">
+              <b.icon className="h-2.5 w-2.5" /> {b.label}
             </span>
           )}
-          <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-white">
-            <span className="text-xs font-medium opacity-90">{c.area}</span>
-            <span className="text-xs font-semibold bg-white/20 backdrop-blur px-2 py-0.5 rounded-full">{c.distance} mi</span>
+          <div className="absolute bottom-3 left-0 right-0 text-center">
+            <span className="text-[10px] font-medium text-white/70">{c.area}</span>
           </div>
         </div>
 
         <div className="flex-1 p-6">
-          <div className="flex items-baseline justify-between gap-3 flex-wrap">
-            <h3 className="text-xl font-bold">{c.instructor}</h3>
+          <div className="flex items-start justify-between gap-3 flex-wrap">
+            <div className="flex items-center gap-2.5">
+              <img src={c.avatar} alt={c.instructor} className="h-9 w-9 rounded-lg object-cover ring-1 ring-muted" />
+              <div>
+                <h3 className="text-lg font-bold leading-tight">{c.instructor}</h3>
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                  <b className="text-foreground">{c.rating}</b>
+                  <span>· {c.reviews} reviews</span>
+                </div>
+              </div>
+            </div>
             <div className="flex items-baseline gap-2">
               {c.oldPrice && <span className="text-sm text-muted-foreground line-through">£{c.oldPrice}</span>}
               <span className="text-3xl font-black text-primary">£{c.price}</span>
@@ -150,18 +161,14 @@ function OptionB({ c }: { c: Course }) {
           </div>
 
           <div className="mt-2 flex items-center gap-3 text-sm text-muted-foreground">
-            <span className="inline-flex items-center gap-1"><Star className="h-4 w-4 fill-amber-400 text-amber-400" /><b className="text-foreground">{c.rating}</b> · {c.reviews}</span>
-            <span>·</span>
             <span className="inline-flex items-center gap-1"><Award className="h-4 w-4 text-emerald-600" />{c.passRate}% pass</span>
             <span>·</span>
             <span className="inline-flex items-center gap-1"><Car className="h-4 w-4" />{c.transmission}</span>
+            <span>·</span>
+            <span className="inline-flex items-center gap-1"><MapPin className="h-4 w-4" />{c.distance} mi</span>
           </div>
 
           <div className="mt-4 grid grid-cols-3 gap-3 text-center">
-            <div className="rounded-lg bg-muted/50 p-2">
-              <div className="text-xs text-muted-foreground">Hours</div>
-              <div className="font-bold">{c.hours}h</div>
-            </div>
             <div className="rounded-lg bg-muted/50 p-2">
               <div className="text-xs text-muted-foreground">Starts</div>
               <div className="font-bold">{c.startDate}</div>
@@ -169,6 +176,10 @@ function OptionB({ c }: { c: Course }) {
             <div className="rounded-lg bg-muted/50 p-2">
               <div className="text-xs text-muted-foreground">Time</div>
               <div className="font-bold">{c.startTime}</div>
+            </div>
+            <div className="rounded-lg bg-muted/50 p-2">
+              <div className="text-xs text-muted-foreground">Gearbox</div>
+              <div className="font-bold">{c.transmission}</div>
             </div>
           </div>
 
