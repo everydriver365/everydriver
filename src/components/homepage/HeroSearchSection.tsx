@@ -62,7 +62,7 @@ export function HeroSearchSection({
       <div className="relative">
         {/* Image container — rounded + overflow hidden */}
         <div
-          className="relative isolate transform-gpu w-full h-[200px] sm:h-[300px] lg:h-[360px] overflow-hidden rounded-3xl"
+          className="drive365-hero-rounded relative isolate transform-gpu w-full h-[200px] sm:h-[300px] lg:h-[360px] overflow-hidden rounded-3xl"
         >
           <img
             src={backgroundImage}
