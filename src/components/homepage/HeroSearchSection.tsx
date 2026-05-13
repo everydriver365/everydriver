@@ -82,7 +82,7 @@ export function HeroSearchSection({
       </section>
 
       {/* TEST: red div outside hero */}
-      <div className="relative z-10 -mt-11 px-4" style={{ background: 'lime' }}>
+      <div className="hidden sm:block relative z-10 -mt-11 px-4" style={{ background: 'lime' }}>
         <div className="max-w-[1100px] mx-auto bg-red-500 text-white px-8 py-4 rounded-full text-xl font-bold text-center">
           OUTSIDE TEST PILL
         </div>
