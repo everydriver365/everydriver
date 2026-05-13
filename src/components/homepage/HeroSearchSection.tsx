@@ -62,13 +62,12 @@ export function HeroSearchSection({
       <div className="relative">
         {/* Image container — rounded + overflow hidden */}
         <div
-          className="drive365-hero-rounded relative isolate transform-gpu w-full h-[200px] sm:h-[300px] lg:h-[360px] overflow-hidden rounded-3xl"
+          className="drive365-hero-rounded relative isolate transform-gpu w-full h-[200px] sm:h-[300px] lg:h-[360px] overflow-hidden rounded-3xl bg-neutral-900"
         >
           <img
             src={backgroundImage}
             alt=""
-            className="absolute inset-0 w-full h-full object-cover rounded-3xl"
-            style={{ objectPosition: "center 35%" }}
+            className="absolute inset-0 w-full h-full object-contain rounded-3xl"
             loading="eager"
           />
           <div
