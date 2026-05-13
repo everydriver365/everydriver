@@ -362,9 +362,6 @@ function BookingPanel({
           View &amp; Book
           <ChevronRight className="h-4 w-4" />
         </button>
-        <button className="inline-flex h-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-[12px] font-semibold text-slate-700 hover:bg-slate-50">
-          Compare
-        </button>
       </div>
     </div>
   );
@@ -443,9 +440,6 @@ function FeaturedCard({ c }: { c: SampleCourse }) {
           <button className="inline-flex h-9 items-center justify-center gap-1 rounded-lg bg-[#0B2545] px-4 text-[13px] font-semibold text-white shadow-sm transition hover:bg-[#13346b]">
             View &amp; Book
             <ChevronRight className="h-3.5 w-3.5" />
-          </button>
-          <button className="inline-flex h-9 items-center justify-center rounded-lg border border-slate-200 bg-white px-3 text-[12px] font-semibold text-slate-600 hover:bg-slate-50">
-            Compare
           </button>
           <button className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 transition hover:border-rose-200 hover:text-rose-500">
             <Heart className="h-3.5 w-3.5" />
@@ -530,9 +524,6 @@ function StandardCard({ c }: { c: SampleCourse }) {
           <button className="inline-flex h-9 items-center justify-center gap-1 rounded-lg bg-[#0B2545] px-4 text-[13px] font-semibold text-white shadow-sm transition hover:bg-[#13346b]">
             View &amp; Book
             <ChevronRight className="h-3.5 w-3.5" />
-          </button>
-          <button className="inline-flex h-9 items-center justify-center rounded-lg border border-slate-200 bg-white px-3 text-[12px] font-semibold text-slate-600 hover:bg-slate-50">
-            Compare
           </button>
           <button className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 transition hover:border-rose-200 hover:text-rose-500">
             <Heart className="h-3.5 w-3.5" />
