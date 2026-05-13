@@ -16,7 +16,6 @@ import {
   CheckCircle2,
   Zap,
   GraduationCap,
-  Trophy,
   Car,
   Navigation,
   CreditCard,
@@ -411,9 +410,6 @@ function FeaturedCard({ c }: { c: SampleCourse }) {
         <div className="relative flex flex-col gap-4 border-r border-slate-100 p-6">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <div className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700">
-                <Trophy className="h-3 w-3" /> Top match for SO22 5DD
-              </div>
               <h3 className="text-2xl font-bold leading-tight text-slate-900">{c.title}</h3>
               <p className="mt-1 max-w-xl text-sm text-slate-600">{c.blurb}</p>
             </div>
