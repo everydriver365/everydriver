@@ -9,6 +9,7 @@ import { IOSCourseCard } from "@/components/IOSCourseCard";
 import { Badge } from "@/components/ui/badge";
 import { PostcodeAutocomplete } from "@/components/PostcodeAutocomplete";
 import { CoursePlannerSheet } from "@/components/course-planner/CoursePlannerSheet";
+import { HeroSearchSection } from "@/components/homepage/HeroSearchSection";
 import { FeatureDetailModal } from "@/components/FeatureDetailModal";
 import { FeatureData } from "@/hooks/useHomepageFeatures";
 import {
