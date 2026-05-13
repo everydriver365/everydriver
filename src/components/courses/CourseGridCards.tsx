@@ -21,6 +21,7 @@ interface GridCourse {
   price: number;
   discountedPrice?: number | null;
   areaName?: string | null;
+  courseImageUrl?: string | null;
 }
 
 interface CourseGridCardsProps {
