@@ -59,150 +59,125 @@ export function HeroSearchSection({
 
   return (
     <div className={className}>
-      {/* Hero image container */}
+      {/* Hero image container — overflow-hidden keeps rounded corners clean */}
       <section
-        className="relative w-full overflow-hidden"
+        className="relative w-full overflow-hidden h-[360px] sm:h-[400px] lg:h-[540px]"
         style={{ borderRadius: "14px" }}
         aria-label="Find a driving instructor"
       >
-        {/* Background image */}
-        <div className="absolute inset-0">
-          <img
-            src={backgroundImage}
-            alt=""
-            className="w-full h-full object-cover"
-            loading="eager"
-          />
-          {/* Dark gradient overlay — transparent at top, ~30% black at bottom */}
+        <img
+          src={backgroundImage}
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover"
+          loading="eager"
+        />
+        {/* Dark bottom gradient */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              "linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.15) 55%, rgba(0,0,0,0.35) 100%)",
+          }}
+        />
+      </section>
+
+      {/* Desktop / tablet pill — overlaps hero bottom (sits OUTSIDE clipped section) */}
+      <div className="hidden sm:block relative z-10 -mt-12 lg:-mt-14 px-6 lg:px-10">
+        <form
+          onSubmit={handleSubmit}
+          className="w-full max-w-[1280px] mx-auto"
+          aria-label="Search for driving instructors"
+        >
           <div
-            className="absolute inset-0"
-            style={{
-              background:
-                "linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.15) 50%, rgba(0,0,0,0.30) 100%)",
-            }}
-          />
-        </div>
-
-        {/* Hero content container — desktop/tablet only for overlap */}
-        <div className="hidden sm:flex flex-col items-center justify-end h-[400px] lg:h-[540px] px-4 pb-10 lg:pb-10">
-          {/* Desktop / tablet pill search box — overlaps hero bottom */}
-          <form
-            onSubmit={handleSubmit}
-            className="w-full max-w-[1480px] mx-auto"
-            aria-label="Search for driving instructors"
+            className="flex items-stretch bg-white shadow-[0_14px_40px_rgba(0,0,0,0.18)] h-[96px] w-full transition-shadow duration-200 hover:shadow-[0_18px_48px_rgba(0,0,0,0.22)]"
+            style={{ borderRadius: "9999px" }}
           >
-            <div
-              className="flex items-stretch bg-white rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.15)] overflow-hidden h-[100px] w-[95%] lg:w-[85%] mx-auto transition-shadow duration-200 hover:shadow-[0_14px_36px_rgba(0,0,0,0.18)]"
-              style={{ borderRadius: "50px" }}
-            >
-              {/* Section 1 — Postcode */}
-              <div className="flex-1 flex flex-col justify-center px-6 lg:px-8 min-w-0 relative">
-                <label className="text-sm lg:text-base font-bold text-black leading-tight">
-                  Postcode<span className="text-[#CC2229] ml-0.5">*</span>
-                </label>
-                <PostcodeAutocomplete
-                  value={postcode}
-                  onChange={setPostcode}
-                  onSelect={(pc) => setPostcode(pc)}
-                  placeholder="e.g. SO30 2TD"
-                  className="w-full"
-                  inputClassName={`h-7 lg:h-8 border-0 bg-transparent p-0 text-lg lg:text-xl font-normal focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-[#9CA3AF] ${
-                    postcodeError ? "text-[#CC2229] placeholder:text-[#CC2229]" : "text-black"
-                  }`}
-                  showGeolocation={true}
-                />
-                {postcodeError && (
-                  <span className="absolute -bottom-5 left-6 lg:left-8 text-xs text-[#CC2229]">
-                    Please enter a postcode
-                  </span>
-                )}
-              </div>
+            {/* Postcode */}
+            <div className="flex-1 flex flex-col justify-center pl-8 pr-6 min-w-0 relative">
+              <label className="text-[13px] lg:text-sm font-bold text-black leading-tight">
+                Postcode<span className="text-[#CC2229] ml-0.5">*</span>
+              </label>
+              <PostcodeAutocomplete
+                value={postcode}
+                onChange={setPostcode}
+                onSelect={(pc) => setPostcode(pc)}
+                placeholder="e.g. SO30 2TD"
+                className="w-full"
+                inputClassName={`h-7 lg:h-8 border-0 bg-transparent p-0 text-base lg:text-lg font-normal focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-[#9CA3AF] ${
+                  postcodeError ? "text-[#CC2229] placeholder:text-[#CC2229]" : "text-black"
+                }`}
+                showGeolocation={true}
+              />
+              {postcodeError && (
+                <span className="absolute -bottom-5 left-8 text-xs text-[#CC2229]">
+                  Please enter a postcode
+                </span>
+              )}
+            </div>
 
-              {/* Divider 1 */}
-              <div className="self-center w-[2px] bg-[#e3e3ea] shrink-0" style={{ height: "56px" }} />
+            <div className="self-center w-px bg-[#e3e3ea] shrink-0" style={{ height: "56px" }} />
 
-              {/* Section 2 — Radius */}
-              <div className="flex-1 flex flex-col justify-center px-6 lg:px-8 min-w-0 relative">
-                <label
-                  htmlFor="hero-radius"
-                  className="text-sm lg:text-base font-bold text-black leading-tight"
+            {/* Radius */}
+            <div className="flex-1 flex flex-col justify-center px-6 min-w-0">
+              <label htmlFor="hero-radius" className="text-[13px] lg:text-sm font-bold text-black leading-tight">
+                Radius
+              </label>
+              <div className="relative">
+                <select
+                  id="hero-radius"
+                  ref={radiusRef}
+                  value={radius}
+                  onChange={(e) => setRadius(e.target.value)}
+                  className="w-full h-7 lg:h-8 appearance-none bg-transparent border-0 p-0 pr-6 text-base lg:text-lg font-normal text-black focus:ring-0 cursor-pointer"
+                  aria-label="Search radius"
                 >
-                  Radius
-                </label>
-                <div className="relative">
-                  <select
-                    id="hero-radius"
-                    ref={radiusRef}
-                    value={radius}
-                    onChange={(e) => setRadius(e.target.value)}
-                    className="w-full h-7 lg:h-8 appearance-none bg-transparent border-0 p-0 pr-6 text-lg lg:text-xl font-normal text-black focus:ring-0 cursor-pointer"
-                    aria-label="Search radius"
-                  >
-                    {RADIUS_OPTIONS.map((opt) => (
-                      <option key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown
-                    className="absolute right-0 top-1/2 -translate-y-1/2 h-4 w-4 text-[#9CA3AF] pointer-events-none"
-                    aria-hidden="true"
-                  />
-                </div>
-              </div>
-
-              {/* Divider 2 */}
-              <div className="self-center w-[2px] bg-[#e3e3ea] shrink-0" style={{ height: "56px" }} />
-
-              {/* Section 3 — Transmission */}
-              <div className="flex-1 flex flex-col justify-center px-6 lg:px-8 min-w-0 relative">
-                <label
-                  htmlFor="hero-transmission"
-                  className="text-sm lg:text-base font-bold text-black leading-tight"
-                >
-                  Transmission
-                </label>
-                <div className="relative">
-                  <select
-                    id="hero-transmission"
-                    ref={transmissionRef}
-                    value={transmission}
-                    onChange={(e) => setTransmission(e.target.value)}
-                    className="w-full h-7 lg:h-8 appearance-none bg-transparent border-0 p-0 pr-6 text-lg lg:text-xl font-normal text-black focus:ring-0 cursor-pointer"
-                    aria-label="Transmission type"
-                  >
-                    {TRANSMISSION_OPTIONS.map((opt) => (
-                      <option key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown
-                    className="absolute right-0 top-1/2 -translate-y-1/2 h-4 w-4 text-[#9CA3AF] pointer-events-none"
-                    aria-hidden="true"
-                  />
-                </div>
-              </div>
-
-              {/* Section 4 — Search button */}
-              <div className="flex items-center px-[18px]">
-                <button
-                  type="submit"
-                  className="flex items-center justify-center gap-2 h-16 px-6 lg:px-8 bg-[#1d4ed8] hover:bg-[#1e40af] text-white font-bold text-lg lg:text-xl rounded-full transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 active:shadow-none focus:outline-none focus:ring-2 focus:ring-[#1d4ed8] focus:ring-offset-2"
-                  aria-label="Search all instructors"
-                >
-                  <Search className="h-5 w-5 lg:h-6 lg:w-6" aria-hidden="true" />
-                  <span className="hidden lg:inline">Search all Instructors</span>
-                  <span className="lg:hidden">Search</span>
-                </button>
+                  {RADIUS_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-0 top-1/2 -translate-y-1/2 h-4 w-4 text-[#9CA3AF] pointer-events-none" aria-hidden="true" />
               </div>
             </div>
-          </form>
-        </div>
 
-        {/* Mobile hero — no search box inside */}
-        <div className="sm:hidden h-[360px]" />
-      </section>
+            <div className="self-center w-px bg-[#e3e3ea] shrink-0" style={{ height: "56px" }} />
+
+            {/* Transmission */}
+            <div className="flex-1 flex flex-col justify-center px-6 min-w-0">
+              <label htmlFor="hero-transmission" className="text-[13px] lg:text-sm font-bold text-black leading-tight">
+                Transmission
+              </label>
+              <div className="relative">
+                <select
+                  id="hero-transmission"
+                  ref={transmissionRef}
+                  value={transmission}
+                  onChange={(e) => setTransmission(e.target.value)}
+                  className="w-full h-7 lg:h-8 appearance-none bg-transparent border-0 p-0 pr-6 text-base lg:text-lg font-normal text-black focus:ring-0 cursor-pointer"
+                  aria-label="Transmission type"
+                >
+                  {TRANSMISSION_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-0 top-1/2 -translate-y-1/2 h-4 w-4 text-[#9CA3AF] pointer-events-none" aria-hidden="true" />
+              </div>
+            </div>
+
+            {/* Search button — inset rounded pill */}
+            <div className="flex items-center pr-2 pl-4">
+              <button
+                type="submit"
+                className="flex items-center justify-center gap-2 h-[72px] px-6 lg:px-8 bg-[#1d4ed8] hover:bg-[#1e40af] text-white font-bold text-base lg:text-lg rounded-full transition-all duration-200 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#1d4ed8] focus:ring-offset-2 whitespace-nowrap"
+                aria-label="Search all instructors"
+              >
+                <Search className="h-5 w-5" aria-hidden="true" />
+                <span className="hidden lg:inline">Search all Instructors</span>
+                <span className="lg:hidden">Search</span>
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
 
       {/* Mobile search box — sits BELOW the hero image */}
       <div className="sm:hidden -mt-4 px-4 relative z-10">
