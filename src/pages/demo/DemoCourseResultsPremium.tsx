@@ -535,12 +535,6 @@ function StandardCard({ c }: { c: SampleCourse }) {
           </button>
         </div>
       </div>
-
-        {/* Right: booking panel (stacks under on mobile) */}
-        <div className="border-t border-dashed border-slate-200 pt-4 sm:border-l sm:border-t-0 sm:border-dashed sm:pl-4 sm:pt-0">
-          <BookingPanel c={c} />
-        </div>
-      </div>
     </article>
   );
 }
