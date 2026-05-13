@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
-import { Calendar, MapPin, User, Heart, ChevronRight } from "lucide-react";
+import { Calendar, MapPin, User, ChevronRight } from "lucide-react";
 import { useState } from "react";
 
 interface GridCourse {
