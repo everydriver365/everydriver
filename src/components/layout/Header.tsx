@@ -7,6 +7,8 @@ import { useState } from "react";
 
 import { PromoBanner } from "./PromoBanner";
 import { SecondaryNav } from "./SecondaryNav";
+import { Drive365Header } from "./Drive365Header";
+import { useDomainBranding } from "@/hooks/useDomainBranding";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { useTheme } from "@/context/ThemeContext";
@@ -34,6 +36,13 @@ export function Header() {
   const isWinchester = whitelabel?.host === "winchesterdrivingschool.co.uk";
   const winchesterPhone = "07767 693276";
   const navLinks = [{ href: homeLink, label: "Home" }, ...baseNavLinks];
+
+  // Drive365: render dedicated header
+  const branding = useDomainBranding();
+  const isDrive365 = branding.brandName === "Drive365" || location.pathname.startsWith("/drive365");
+  if (isDrive365) {
+    return <Drive365Header />;
+  }
 
   const toggleTheme = () => {
     setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
