@@ -9,10 +9,8 @@ const DemoPupilProfile = lazy(() => import("@/pages/DemoPupilProfile"));
 const SmartNudgesDemo = lazy(() => import("@/pages/SmartNudgesDemo"));
 const HomepageRedesignDemo = lazy(() => import("@/pages/HomepageRedesignDemo"));
 const DemoPortals = lazy(() => import("@/pages/DemoPortals"));
-const DemoETGDesigns = lazy(() => import("@/pages/DemoETGDesigns"));
 const DemoVideoSections = lazy(() => import("@/pages/DemoVideoSections"));
 const DemoNervousToReady = lazy(() => import("@/pages/DemoNervousToReady"));
-const DemoETGBanner = lazy(() => import("@/pages/DemoETGBanner"));
 const DemoNewsSections = lazy(() => import("@/pages/DemoNewsSections"));
 const DemoCTASections = lazy(() => import("@/pages/DemoCTASections"));
 const DemoFeatureSections = lazy(() => import("@/pages/DemoFeatureSections"));
@@ -70,10 +68,8 @@ export const demoRoutes = (
     <Route path="/demo/smart-nudges" element={<SmartNudgesDemo />} />
     <Route path="/demo/homepage-redesign" element={<HomepageRedesignDemo />} />
     <Route path="/demo/portals" element={<DemoPortals />} />
-    <Route path="/demo/etg-designs" element={<DemoETGDesigns />} />
     <Route path="/demo/video-sections" element={<DemoVideoSections />} />
     <Route path="/demo/nervous-to-ready" element={<DemoNervousToReady />} />
-    <Route path="/demo/etg-banner" element={<DemoETGBanner />} />
     <Route path="/demo/news-sections" element={<DemoNewsSections />} />
     <Route path="/demo/cta-sections" element={<DemoCTASections />} />
     <Route path="/demo/feature-sections" element={<DemoFeatureSections />} />
@@ -86,7 +82,7 @@ export const demoRoutes = (
     <Route path="/demo/mini-website-landing" element={<DemoMiniWebsiteLanding />} />
     <Route path="/demo/hero-sections" element={<DemoHeroSections />} />
     <Route path="/demo/hero-sections-2" element={<DemoHeroSections2 />} />
-    <Route path="/demo-etg-designs" element={<DemoETGDesigns />} />
+    
     <Route path="/demo/course-cards" element={<DemoCourseCards />} />
     <Route path="/demo/promo-bars" element={<DemoPromoBars />} />
     <Route path="/demo/mini-website-course-cards" element={<DemoMiniWebsiteCourseCards />} />
