@@ -917,6 +917,26 @@ export default function Courses() {
         }
       }
 
+      // Course Type filter
+      if (courseType !== "all") {
+        if (courseType === "test-in-a-week") {
+          if (!course.isIntensive) return false;
+        } else {
+          const wantHours = parseInt(courseType);
+          if (!Number.isNaN(wantHours) && course.hours !== wantHours) return false;
+        }
+      }
+
+      // Price Range filter
+      if (priceRange !== "any") {
+        const skim = course.instructor.school_skim_amount || 0;
+        const rate = course.instructor.hourly_rate || 40;
+        const computed = course.discountedPrice || (course.hours * rate + skim);
+        if (priceRange === "under-500" && computed >= 500) return false;
+        if (priceRange === "500-1000" && (computed < 500 || computed > 1000)) return false;
+        if (priceRange === "over-1000" && computed <= 1000) return false;
+      }
+
       return true;
     })
     .sort((a, b) => {
