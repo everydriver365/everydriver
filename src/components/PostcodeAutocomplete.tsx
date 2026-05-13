@@ -19,6 +19,7 @@ interface PostcodeAutocompleteProps {
   className?: string;
   inputClassName?: string;
   showGeolocation?: boolean;
+  showInputIcon?: boolean;
 }
 
 export function PostcodeAutocomplete({
