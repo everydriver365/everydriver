@@ -255,7 +255,7 @@ function OptionC({ c }: { c: Course }) {
 }
 
 /* ============================================================
-   OPTION D — Premium Glass Card: gradient frame, stacked stats
+   OPTION D — Premium Glass Card: tiny avatar, prominent hours ring
    ============================================================ */
 function OptionD({ c }: { c: Course }) {
   const b = badgePill(c.badge);
@@ -263,27 +263,26 @@ function OptionD({ c }: { c: Course }) {
     <div className="relative rounded-2xl p-[1.5px] bg-gradient-to-r from-primary/40 via-violet-500/30 to-emerald-500/40 hover:from-primary/70 hover:to-emerald-500/70 transition-all">
       <div className="rounded-[15px] bg-card overflow-hidden">
         <div className="flex flex-col md:flex-row items-stretch">
-          <div className="relative md:w-64 md:flex-shrink-0 p-6 flex items-center gap-4 bg-gradient-to-br from-muted/50 to-transparent">
-            <img src={c.avatar} alt={c.instructor} className="h-20 w-20 rounded-2xl object-cover shadow-md" />
-            <div>
-              <h3 className="font-bold leading-tight">{c.instructor}</h3>
-              <div className="text-xs text-muted-foreground">{c.area}</div>
-              <div className="mt-1.5 flex items-center gap-1 text-xs">
-                <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-                <b>{c.rating}</b>
-                <span className="text-muted-foreground">({c.reviews})</span>
-              </div>
-              {b && (
-                <span className={`mt-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold ${b.cls}`}>
-                  <b.icon className="h-2.5 w-2.5" /> {b.label}
-                </span>
-              )}
+          {/* Hours ring + tiny avatar */}
+          <div className="relative md:w-44 md:flex-shrink-0 p-5 flex md:flex-col items-center justify-center gap-3 bg-gradient-to-br from-muted/50 to-transparent">
+            <div className="relative h-20 w-20 rounded-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-primary/5 ring-2 ring-primary/20">
+              <span className="text-3xl font-black text-primary leading-none">{c.hours}</span>
+              <span className="absolute -bottom-1 left-0 right-0 text-center text-[9px] font-bold uppercase tracking-wider text-primary/70">hours</span>
             </div>
+            <div className="flex items-center gap-2">
+              <img src={c.avatar} alt={c.instructor} className="h-6 w-6 rounded-full object-cover ring-1 ring-muted" />
+              <div className="text-xs text-muted-foreground">{c.instructor}</div>
+            </div>
+            {b && (
+              <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold ${b.cls}`}>
+                <b.icon className="h-2.5 w-2.5" /> {b.label}
+              </span>
+            )}
           </div>
 
           <div className="flex-1 p-5 grid grid-cols-2 sm:grid-cols-4 gap-3 content-center border-t md:border-t-0 md:border-l">
-            <Stat icon={Clock} label="Course" value={`${c.hours} hrs`} />
             <Stat icon={Calendar} label="Starts" value={c.startDate} />
+            <Stat icon={Clock} label="Time" value={c.startTime} />
             <Stat icon={Car} label="Gearbox" value={c.transmission} />
             <Stat icon={Award} label="Pass rate" value={`${c.passRate}%`} />
           </div>
