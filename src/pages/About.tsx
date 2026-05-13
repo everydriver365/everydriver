@@ -1,10 +1,15 @@
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Users, Award, Shield, Heart } from "lucide-react";
+import { SEOHead } from "@/components/SEOHead";
 
 export default function About() {
   return (
     <MainLayout>
+      <SEOHead
+        title="About EveryDriver | UK Driving School Network"
+        description="EveryDriver connects UK learners with DVSA-approved driving instructors offering intensive courses, weekly lessons and flexible 0% finance."
+      />
       <div className="container py-12 pb-24">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
