@@ -59,9 +59,9 @@ export function HeroSearchSection({
 
   return (
     <div className={className}>
-      {/* Hero image container — overflow-hidden keeps rounded corners clean */}
+      {/* Hero image container */}
       <section
-        className="relative w-full overflow-hidden h-[360px] sm:h-[400px] lg:h-[540px]"
+        className="relative w-full h-[360px] sm:h-[400px] lg:h-[540px]"
         style={{ borderRadius: "14px" }}
         aria-label="Find a driving instructor"
       >
@@ -71,7 +71,6 @@ export function HeroSearchSection({
           className="absolute inset-0 w-full h-full object-cover"
           loading="eager"
         />
-        {/* Dark bottom gradient */}
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
@@ -81,20 +80,24 @@ export function HeroSearchSection({
         />
       </section>
 
-      {/* Desktop / tablet pill — overlaps hero bottom (sits OUTSIDE clipped section) */}
-      <div className="hidden sm:block relative z-10 -mt-12 lg:-mt-14 px-6 lg:px-10">
+      {/* Desktop / tablet pill — overlaps hero bottom */}
+      <div className="hidden sm:block relative z-10 -mt-11 lg:-mt-12 px-4 lg:px-8">
         <form
           onSubmit={handleSubmit}
-          className="w-full max-w-[1280px] mx-auto"
+          className="w-full max-w-[1100px] mx-auto"
           aria-label="Search for driving instructors"
         >
           <div
-            className="flex items-stretch bg-white shadow-[0_14px_40px_rgba(0,0,0,0.18)] h-[96px] w-full transition-shadow duration-200 hover:shadow-[0_18px_48px_rgba(0,0,0,0.22)]"
-            style={{ borderRadius: "9999px" }}
+            className="flex items-center bg-white h-[78px] lg:h-[84px] w-full"
+            style={{
+              borderRadius: "9999px",
+              boxShadow: "0 14px 44px rgba(0,0,0,0.20), 0 2px 8px rgba(0,0,0,0.10)",
+              border: "1px solid rgba(0,0,0,0.08)",
+            }}
           >
             {/* Postcode */}
-            <div className="flex-1 flex flex-col justify-center pl-8 pr-6 min-w-0 relative">
-              <label className="text-[13px] lg:text-sm font-bold text-black leading-tight">
+            <div className="flex-1 flex flex-col justify-center pl-7 pr-5 min-w-0 relative">
+              <label className="text-[13px] font-bold text-black leading-tight">
                 Postcode<span className="text-[#CC2229] ml-0.5">*</span>
               </label>
               <PostcodeAutocomplete
@@ -103,23 +106,23 @@ export function HeroSearchSection({
                 onSelect={(pc) => setPostcode(pc)}
                 placeholder="e.g. SO30 2TD"
                 className="w-full"
-                inputClassName={`h-7 lg:h-8 border-0 bg-transparent p-0 text-base lg:text-lg font-normal focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-[#9CA3AF] ${
+                inputClassName={`h-7 lg:h-8 border-0 bg-transparent p-0 text-[15px] lg:text-base font-normal focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-[#9CA3AF] ${
                   postcodeError ? "text-[#CC2229] placeholder:text-[#CC2229]" : "text-black"
                 }`}
                 showGeolocation={true}
               />
               {postcodeError && (
-                <span className="absolute -bottom-5 left-8 text-xs text-[#CC2229]">
+                <span className="absolute -bottom-5 left-7 text-xs text-[#CC2229]">
                   Please enter a postcode
                 </span>
               )}
             </div>
 
-            <div className="self-center w-px bg-[#e3e3ea] shrink-0" style={{ height: "56px" }} />
+            <div className="self-center w-px bg-[#e3e3ea] shrink-0" style={{ height: "44px" }} />
 
             {/* Radius */}
-            <div className="flex-1 flex flex-col justify-center px-6 min-w-0">
-              <label htmlFor="hero-radius" className="text-[13px] lg:text-sm font-bold text-black leading-tight">
+            <div className="flex-1 flex flex-col justify-center px-5 min-w-0">
+              <label htmlFor="hero-radius" className="text-[13px] font-bold text-black leading-tight">
                 Radius
               </label>
               <div className="relative">
@@ -128,7 +131,7 @@ export function HeroSearchSection({
                   ref={radiusRef}
                   value={radius}
                   onChange={(e) => setRadius(e.target.value)}
-                  className="w-full h-7 lg:h-8 appearance-none bg-transparent border-0 p-0 pr-6 text-base lg:text-lg font-normal text-black focus:ring-0 cursor-pointer"
+                  className="w-full h-7 lg:h-8 appearance-none bg-transparent border-0 p-0 pr-6 text-[15px] lg:text-base font-normal text-black focus:ring-0 cursor-pointer"
                   aria-label="Search radius"
                 >
                   {RADIUS_OPTIONS.map((opt) => (
@@ -139,11 +142,11 @@ export function HeroSearchSection({
               </div>
             </div>
 
-            <div className="self-center w-px bg-[#e3e3ea] shrink-0" style={{ height: "56px" }} />
+            <div className="self-center w-px bg-[#e3e3ea] shrink-0" style={{ height: "44px" }} />
 
             {/* Transmission */}
-            <div className="flex-1 flex flex-col justify-center px-6 min-w-0">
-              <label htmlFor="hero-transmission" className="text-[13px] lg:text-sm font-bold text-black leading-tight">
+            <div className="flex-1 flex flex-col justify-center px-5 min-w-0">
+              <label htmlFor="hero-transmission" className="text-[13px] font-bold text-black leading-tight">
                 Transmission
               </label>
               <div className="relative">
@@ -152,7 +155,7 @@ export function HeroSearchSection({
                   ref={transmissionRef}
                   value={transmission}
                   onChange={(e) => setTransmission(e.target.value)}
-                  className="w-full h-7 lg:h-8 appearance-none bg-transparent border-0 p-0 pr-6 text-base lg:text-lg font-normal text-black focus:ring-0 cursor-pointer"
+                  className="w-full h-7 lg:h-8 appearance-none bg-transparent border-0 p-0 pr-6 text-[15px] lg:text-base font-normal text-black focus:ring-0 cursor-pointer"
                   aria-label="Transmission type"
                 >
                   {TRANSMISSION_OPTIONS.map((opt) => (
@@ -163,14 +166,14 @@ export function HeroSearchSection({
               </div>
             </div>
 
-            {/* Search button — inset rounded pill */}
-            <div className="flex items-center pr-2 pl-4">
+            {/* Search button — blue pill inset on the right */}
+            <div className="flex items-center pr-2 pl-3 shrink-0">
               <button
                 type="submit"
-                className="flex items-center justify-center gap-2 h-[72px] px-6 lg:px-8 bg-[#1d4ed8] hover:bg-[#1e40af] text-white font-bold text-base lg:text-lg rounded-full transition-all duration-200 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#1d4ed8] focus:ring-offset-2 whitespace-nowrap"
+                className="flex items-center justify-center gap-2 h-[60px] lg:h-[68px] px-5 lg:px-7 bg-[#1d4ed8] hover:bg-[#1e40af] text-white font-bold text-sm lg:text-base rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#1d4ed8] focus:ring-offset-2 whitespace-nowrap"
                 aria-label="Search all instructors"
               >
-                <Search className="h-5 w-5" aria-hidden="true" />
+                <Search className="h-4 w-4 lg:h-5 lg:w-5" aria-hidden="true" />
                 <span className="hidden lg:inline">Search all Instructors</span>
                 <span className="lg:hidden">Search</span>
               </button>
