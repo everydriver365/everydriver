@@ -614,6 +614,26 @@ export default function DemoCourseResultsHorizontal() {
           {COURSES.map(c => <OptionD key={c.id} c={c} />)}
         </Section>
 
+        <Section id="E" title="Racing Stripe" tagline="Motorsport energy — diagonal red block, checkered texture, urgent CTA."
+          accent="bg-gradient-to-r from-red-600 to-black text-white">
+          {COURSES.map(c => <OptionE key={c.id} c={c} />)}
+        </Section>
+
+        <Section id="F" title="Brutalist" tagline="Hard borders, yellow & black, hard drop-shadows. Loud and unmissable."
+          accent="bg-yellow-300 text-black border-2 border-black">
+          {COURSES.map(c => <OptionF key={c.id} c={c} />)}
+        </Section>
+
+        <Section id="G" title="Aurora" tagline="Iridescent conic ring on deep navy. Premium, futuristic, expensive-feeling."
+          accent="bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 text-white">
+          {COURSES.map(c => <OptionG key={c.id} c={c} />)}
+        </Section>
+
+        <Section id="H" title="Receipt" tagline="Monospace, structured, line-itemised. Reads like an invoice — utility & trust."
+          accent="bg-slate-900 text-white">
+          {COURSES.map(c => <OptionH key={c.id} c={c} />)}
+        </Section>
+
         <div className="rounded-2xl border bg-muted/30 p-6 text-center">
           <p className="text-sm text-muted-foreground">
             Tell me which option (A, B, C or D) — or mix elements from each — and I'll apply it to the real course results page.
