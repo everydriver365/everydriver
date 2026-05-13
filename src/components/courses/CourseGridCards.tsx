@@ -114,7 +114,7 @@ export function CourseGridCards({ courses }: CourseGridCardsProps) {
   return (
     <div
       className="grid gap-4 grid-cols-1 md:grid-cols-2 2xl:grid-cols-3"
-      style={{ alignItems: "start" }}
+      style={{ alignItems: "start", gridAutoRows: "1fr" }}
     >
       {courses.map((c) => {
         const final = c.discountedPrice && c.discountedPrice < c.price ? c.discountedPrice : c.price;
