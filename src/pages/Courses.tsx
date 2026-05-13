@@ -35,6 +35,8 @@ interface Instructor {
   is_active: boolean;
   available_from: string | null;
   school_skim_amount?: number | null;
+  klarna_enabled?: boolean | null;
+  clearpay_enabled?: boolean | null;
 }
 
 interface InstructorCourse {
