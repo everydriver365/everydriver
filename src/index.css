@@ -822,6 +822,12 @@
   border-radius: inherit !important;
 }
 
+/* Allow rounded corners on Drive365 hero image */
+.learner-app .drive365-hero-rounded,
+.learner-app .drive365-hero-rounded > img {
+  border-radius: 1.5rem !important;
+}
+
 /* iOS shadow hierarchy */
 .ios-shadow-elevated {
   box-shadow:
