@@ -396,49 +396,25 @@ export default function Index() {
         </div>
       </section>
 
-      {/* Free Re-Test Promotion Banner — Feature Grid */}
+      {/* Free Re-Test Promotion Banner */}
       <section className="py-4">
-          <Link to="/earlier-test-guarantee">
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4 }}
-              viewport={{ once: true }}
-              className="border-y bg-card shadow-lg hover:shadow-xl transition-shadow overflow-hidden group"
-            >
-              <div className="bg-gradient-to-r from-emerald-600 to-emerald-500 px-8 py-4 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <img src={earlyTestBadge} alt="Free Re-Test if you Fail" className="w-28 h-28 object-contain drop-shadow-lg" />
-                  <h3 className="text-2xl font-black text-white">Free Re-Test if you Fail</h3>
-                </div>
-                <Badge className="bg-white/20 text-white border-0 hover:bg-white/20 text-sm px-4 py-1">Most Popular</Badge>
+        <Link to="/earlier-test-guarantee">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            viewport={{ once: true }}
+            className="border-y bg-card shadow-lg hover:shadow-xl transition-shadow overflow-hidden group"
+          >
+            <div className="bg-gradient-to-r from-emerald-600 to-emerald-500 px-8 py-4 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <img src={earlyTestBadge} alt="Free Re-Test if you Fail" className="w-28 h-28 object-contain drop-shadow-lg" />
+                <h3 className="text-2xl font-black text-white">Free Re-Test if you Fail</h3>
               </div>
-              <div className="px-8 py-6">
-                <div className="grid grid-cols-4 gap-6 max-w-5xl mx-auto">
-                  {[
-                    { icon: Timer, title: "4 Weeks Sooner", desc: "Average time saved" },
-                    { icon: Shield, title: "Money Back", desc: "If we can't find earlier" },
-                    { icon: CalendarCheck, title: "24/7 Monitoring", desc: "Automated scanning" },
-                    { icon: Zap, title: "Instant Alerts", desc: "SMS & app notifications" },
-                  ].map(f => (
-                    <div key={f.title} className="text-center">
-                      <div className="h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center mx-auto mb-2">
-                        <f.icon className="h-5 w-5 text-emerald-600" />
-                      </div>
-                      <p className="text-sm font-bold">{f.title}</p>
-                      <p className="text-xs text-muted-foreground">{f.desc}</p>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-5 pt-4 border-t flex items-center justify-between max-w-5xl mx-auto">
-                  <p className="text-sm text-muted-foreground">Skip months of waiting — we do the hard work for you.</p>
-                  <span className="text-emerald-600 font-bold text-sm flex items-center gap-1 group-hover:gap-2 transition-all">
-                    Learn More <ArrowRight className="h-4 w-4" />
-                  </span>
-                </div>
-              </div>
-            </motion.div>
-          </Link>
+              <Badge className="bg-white/20 text-white border-0 hover:bg-white/20 text-sm px-4 py-1">Most Popular</Badge>
+            </div>
+          </motion.div>
+        </Link>
       </section>
 
       {/* Choose Your Learning Path Section */}
