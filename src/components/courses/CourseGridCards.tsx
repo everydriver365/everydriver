@@ -114,7 +114,7 @@ export function CourseGridCards({ courses }: CourseGridCardsProps) {
   return (
     <div
       className="grid gap-4 grid-cols-1 md:grid-cols-2 2xl:grid-cols-3"
-      style={{ alignItems: "start" }}
+      style={{ alignItems: "start", gridAutoRows: "1fr" }}
     >
       {courses.map((c) => {
         const final = c.discountedPrice && c.discountedPrice < c.price ? c.discountedPrice : c.price;
@@ -148,6 +148,9 @@ export function CourseGridCards({ courses }: CourseGridCardsProps) {
               boxShadow: "0 1px 2px rgba(10,25,54,0.04)",
               overflow: "hidden",
               transition: "transform 200ms ease, box-shadow 200ms ease",
+              display: "flex",
+              flexDirection: "column",
+              height: "100%",
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = "translateY(-2px)";
@@ -292,7 +295,7 @@ export function CourseGridCards({ courses }: CourseGridCardsProps) {
             </div>
 
             {/* Content body */}
-            <div style={{ padding: "16px 18px 18px" }}>
+            <div style={{ padding: "16px 18px 18px", display: "flex", flexDirection: "column", flex: 1 }}>
               {/* Tag pills */}
               <div style={{ display: "flex", gap: 5, marginBottom: 10 }}>
                 <span
