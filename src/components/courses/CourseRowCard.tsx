@@ -66,7 +66,6 @@ export function CourseRowCard({
   title,
 }: CourseRowCardProps) {
   const navigate = useNavigate();
-  // Match DynamicCourseCard pricing: discountedPrice replaces total when truthy.
   const totalPrice = price;
   const finalPrice = discountedPrice || totalPrice;
   const hasDiscount = !!discountedPrice && discountedPrice < totalPrice;
@@ -87,28 +86,30 @@ export function CourseRowCard({
   };
 
   return (
-    <article className="group relative flex items-stretch gap-0 overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm transition-all hover:shadow-md">
+    <article className="group relative flex flex-col sm:flex-row items-stretch gap-0 overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm transition-all hover:shadow-md">
       {/* Accent strip */}
-      <div className="w-1.5 shrink-0 bg-gradient-to-b from-[#0B2545] to-[#13346b]" />
+      <div className="hidden sm:block w-1.5 shrink-0 bg-gradient-to-b from-[#0B2545] to-[#13346b]" />
+      {/* Mobile accent bar */}
+      <div className="sm:hidden h-1 w-full shrink-0 bg-gradient-to-r from-[#0B2545] to-[#13346b]" />
 
       {/* Hours / icon */}
-      <div className="flex shrink-0 flex-col items-center justify-center gap-2 border-r border-slate-100 bg-slate-50/50 px-4 py-4">
+      <div className="flex shrink-0 flex-row sm:flex-col items-center gap-3 sm:gap-2 border-b sm:border-b-0 sm:border-r border-slate-100 bg-slate-50/50 px-4 py-3 sm:py-4">
         {icon ? (
-          <img src={icon} alt={`${hours} hours`} className="h-14 w-14 object-contain" />
+          <img src={icon} alt={`${hours} hours`} className="h-10 w-10 sm:h-14 sm:w-14 object-contain" />
         ) : (
           <>
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-[#0B2545] to-[#13346b] text-white shadow-sm">
-              <span className="text-lg font-black leading-none">{hours}</span>
+            <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-xl bg-gradient-to-br from-[#0B2545] to-[#13346b] text-white shadow-sm">
+              <span className="text-base sm:text-lg font-black leading-none">{hours}</span>
             </div>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">hr</span>
+            <span className="hidden sm:block text-[10px] font-bold uppercase tracking-widest text-slate-400">hr</span>
           </>
         )}
       </div>
 
       {/* Body */}
       <div className="flex min-w-0 flex-1 flex-col justify-center gap-1.5 px-4 py-3">
-        <h3 className="truncate text-[15px] font-bold leading-tight text-slate-900">{courseTitle}</h3>
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-slate-500">
+        <h3 className="truncate text-sm sm:text-[15px] font-bold leading-tight text-slate-900">{courseTitle}</h3>
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] sm:text-[12px] text-slate-500">
           <span className="flex items-center gap-1">
             <Settings2 className="h-3 w-3 text-slate-400" />
             {transmission}
@@ -122,64 +123,66 @@ export function CourseRowCard({
           {(areaName || typeof distance === "number") && (
             <span className="flex items-center gap-1">
               <MapPin className="h-3 w-3 text-slate-400" />
-              {areaName || ""}
-              {areaName && typeof distance === "number" ? " · " : ""}
-              {typeof distance === "number" ? `${distance.toFixed(1)} mi` : ""}
+              <span className="truncate max-w-[120px] sm:max-w-none">
+                {areaName || ""}
+                {areaName && typeof distance === "number" ? " · " : ""}
+                {typeof distance === "number" ? `${distance.toFixed(1)} mi` : ""}
+              </span>
             </span>
           )}
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {date && (
-            <div className="inline-flex items-center gap-1.5 rounded-lg border border-sky-100 bg-sky-50 px-2 py-1">
+            <div className="inline-flex items-center gap-1 rounded-lg border border-sky-100 bg-sky-50 px-2 py-1">
               <CalendarIcon className="h-3 w-3 text-sky-600" />
-              <span className="text-[12px] font-bold text-sky-800">
+              <span className="text-[11px] sm:text-[12px] font-bold text-sky-800">
                 {date.dow}, {date.dm}
               </span>
-              <span className="text-[11px] text-sky-600">{date.year}</span>
+              <span className="text-[10px] sm:text-[11px] text-sky-600">{date.year}</span>
             </div>
           )}
           {instructor.klarna_enabled && (
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-pink-200 bg-pink-50 px-2.5 py-1 text-[11px] font-semibold text-pink-800">
-              <img src={klarnaLogo} alt="" className="h-4 w-4" />3 × £{(finalPrice / 3).toFixed(0)}
+            <span className="inline-flex items-center gap-1 rounded-full border border-pink-200 bg-pink-50 px-2 py-1 text-[10px] sm:text-[11px] font-semibold text-pink-800">
+              <img src={klarnaLogo} alt="" className="h-3.5 w-3.5 sm:h-4 sm:w-4" />3 × £{(finalPrice / 3).toFixed(0)}
             </span>
           )}
           {instructor.clearpay_enabled && (
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-200 bg-violet-50 px-2.5 py-1 text-[11px] font-semibold text-violet-800">
-              <img src={clearpayLogo} alt="" className="h-4 w-4" />4 × £{(finalPrice / 4).toFixed(0)}
+            <span className="inline-flex items-center gap-1 rounded-full border border-violet-200 bg-violet-50 px-2 py-1 text-[10px] sm:text-[11px] font-semibold text-violet-800">
+              <img src={clearpayLogo} alt="" className="h-3.5 w-3.5 sm:h-4 sm:w-4" />4 × £{(finalPrice / 4).toFixed(0)}
             </span>
           )}
         </div>
       </div>
 
       {/* Right: price + CTAs */}
-      <div className="flex shrink-0 flex-col items-end justify-center gap-2 border-l border-slate-100 bg-slate-50/30 px-4 py-3">
-        <div className="text-right">
+      <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2 sm:gap-2 border-t sm:border-t-0 sm:border-l border-slate-100 bg-slate-50/30 px-4 py-3">
+        <div className="text-left sm:text-right">
           {hasDiscount && (
-            <div className="text-[11px] font-medium leading-none text-slate-400 line-through">
+            <div className="text-[10px] sm:text-[11px] font-medium leading-none text-slate-400 line-through">
               £{Math.round(totalPrice).toLocaleString()}
             </div>
           )}
-          <div className={`text-[22px] font-extrabold leading-none tracking-tight ${hasDiscount ? "text-emerald-600" : "text-[#0B2545]"} ${hasDiscount ? "mt-1" : ""}`}>
+          <div className={`text-lg sm:text-[22px] font-extrabold leading-none tracking-tight ${hasDiscount ? "text-emerald-600" : "text-[#0B2545]"} ${hasDiscount ? "mt-0.5 sm:mt-1" : ""}`}>
             £{Math.round(finalPrice).toLocaleString()}
           </div>
-          <div className="mt-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+          <div className="mt-0.5 text-[9px] sm:text-[10px] font-semibold uppercase tracking-wide text-slate-500">
             {hasDiscount ? `Save £${Math.round(totalPrice - finalPrice)}` : "Total"}
           </div>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={handleBook}
-            className="inline-flex h-9 items-center justify-center gap-1 rounded-lg bg-[#0B2545] px-4 text-[13px] font-semibold text-white shadow-sm transition hover:bg-[#13346b]"
+            className="inline-flex h-8 sm:h-9 items-center justify-center gap-1 rounded-lg bg-[#0B2545] px-3 sm:px-4 text-xs sm:text-[13px] font-semibold text-white shadow-sm transition hover:bg-[#13346b]"
           >
             View &amp; Book
-            <ChevronRight className="h-3.5 w-3.5" />
+            <ChevronRight className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
           </button>
           <button
             type="button"
             aria-label="Save course"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 transition hover:border-rose-200 hover:text-rose-500"
+            className="inline-flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 transition hover:border-rose-200 hover:text-rose-500"
           >
-            <Heart className="h-3.5 w-3.5" />
+            <Heart className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
           </button>
         </div>
       </div>
