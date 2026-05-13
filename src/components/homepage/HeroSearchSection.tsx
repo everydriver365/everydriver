@@ -91,9 +91,8 @@ export function HeroSearchSection({
           }}
         >
           <div
-            className="flex items-center bg-white h-[78px] lg:h-[84px] w-full"
+            className="flex items-center bg-white h-[78px] lg:h-[84px] w-full rounded-full"
             style={{
-              borderRadius: "9999px",
               boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
             }}
           >
