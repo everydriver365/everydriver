@@ -206,21 +206,25 @@ function OptionH({ c }: { c: Course }) {
           {b && <span className={`inline-flex items-center gap-1 rounded-sm px-1.5 py-0.5 text-[10px] font-bold uppercase ${b.cls}`}><b.icon className="h-3 w-3" />{b.label}</span>}
         </div>
         <h3 className="font-sans text-lg font-bold text-slate-900 leading-tight">{c.instructor} — {c.area}</h3>
+        <div className="mt-3 rounded-md bg-slate-900 text-white px-3 py-2 flex items-center gap-2">
+          <Calendar className="h-4 w-4" />
+          <span className="font-mono text-[10px] uppercase tracking-widest opacity-70">Starts</span>
+          <span className="font-sans text-base font-black">{c.startDate} · {c.startTime}</span>
+        </div>
         <div className="mt-3 space-y-1 text-slate-700">
           <div className="flex justify-between border-b border-dotted border-slate-300 pb-1"><span>Transmission</span><span className="font-bold">{c.transmission}</span></div>
-          <div className="flex justify-between border-b border-dotted border-slate-300 pb-1"><span>Starts</span><span className="font-bold">{c.startDate} · {c.startTime}</span></div>
           <div className="flex justify-between border-b border-dotted border-slate-300 pb-1"><span>Distance</span><span className="font-bold">{c.distance} mi</span></div>
           <div className="flex justify-between border-b border-dotted border-slate-300 pb-1"><span>Pass rate</span><span className="font-bold text-emerald-700">{c.passRate}%</span></div>
           <div className="flex justify-between border-b border-dotted border-slate-300 pb-1"><span>Rating</span><span className="font-bold">★ {c.rating} ({c.reviews})</span></div>
         </div>
       </div>
       {/* Right total */}
-      <div className="w-52 shrink-0 bg-slate-900 text-white p-5 flex flex-col justify-between">
+      <div className="w-56 shrink-0 bg-slate-900 text-white p-5 flex flex-col justify-between">
         <div>
           <div className="font-mono text-[10px] uppercase tracking-widest text-white/50">Total inc. test</div>
-          {c.oldPrice && <div className="text-xs line-through text-white/40">£{c.oldPrice}.00</div>}
-          <div className="text-4xl font-black leading-none tabular-nums">£{c.price}</div>
-          <div className="font-mono text-[10px] text-emerald-300 mt-1">Klarna 3× £{Math.round(c.price/3)}</div>
+          {c.oldPrice && <div className="text-sm line-through text-white/40">£{c.oldPrice}.00</div>}
+          <div className="text-6xl font-black leading-none tabular-nums">£{c.price}</div>
+          <div className="font-mono text-[11px] text-emerald-300 mt-2">Klarna 3× £{Math.round(c.price/3)}</div>
         </div>
         <Button size="sm" className="w-full rounded-md bg-white text-slate-900 hover:bg-slate-100 font-bold">
           Checkout <ChevronRight className="h-3.5 w-3.5" />
