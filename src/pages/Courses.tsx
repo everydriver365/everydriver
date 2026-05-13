@@ -311,6 +311,8 @@ export default function Courses() {
   const [transmission, setTransmission] = useState(initialTransmission);
   const [klarnaOnly, setKlarnaOnly] = useState(initialKlarna);
   const [clearpayOnly, setClearpayOnly] = useState(initialClearpay);
+  const [courseType, setCourseType] = useState(initialCourseType);
+  const [priceRange, setPriceRange] = useState(initialPriceRange);
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState<SortOption>("soonest");
   const [viewMode, setViewMode] = useState<"list" | "grid">("grid");
