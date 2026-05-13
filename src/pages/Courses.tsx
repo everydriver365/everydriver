@@ -130,6 +130,7 @@ interface SidebarCalendarProps {
   onSelectDate: (date: Date) => void;
   loading: boolean;
   monthOptions: { value: string; label: string }[];
+  hideCounts?: boolean;
 }
 
 function SidebarCalendar({ 
