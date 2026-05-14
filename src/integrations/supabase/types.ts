@@ -18760,6 +18760,45 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: string
       }
+      get_public_instructor_booking_preferences: {
+        Args: { p_instructor_id: string }
+        Returns: {
+          id: string
+          prefer_earliest_slot: boolean
+        }[]
+      }
+      get_public_instructor_manual_blocks: {
+        Args: {
+          p_from_datetime: string
+          p_instructor_ids: string[]
+          p_to_datetime: string
+        }
+        Returns: {
+          end_datetime: string
+          instructor_id: string
+          start_datetime: string
+        }[]
+      }
+      get_public_instructor_presence: {
+        Args: { p_instructor_id: string }
+        Returns: {
+          id: string
+          last_active_at: string
+        }[]
+      }
+      get_public_scheduled_lesson_blocks: {
+        Args: {
+          p_from_date: string
+          p_instructor_ids: string[]
+          p_to_date: string
+        }
+        Returns: {
+          duration_minutes: number
+          instructor_id: string
+          lesson_date: string
+          start_time: string
+        }[]
+      }
       get_pupil_payment_info: {
         Args: { p_instructor_id: string; p_pupil_id: string }
         Returns: {
