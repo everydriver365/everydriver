@@ -145,6 +145,9 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
   });
   const [premiumPlacements, setPremiumPlacements] = useState<{ instructor_id: string; placement_type: string; priority_score: number }[]>([]);
 
+  const workingHours = sources.workingHours as unknown as WorkingHours[];
+  const dateOverrides = sources.overrides as unknown as DateOverride[];
+
   const monthOptions = useMemo(() => getMonthOptions(), []);
 
   // Get display hours based on course type filter
@@ -269,8 +272,12 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
       setInstructors(loadedInstructors);
       setInstructorCourses(coursesRes.data || []);
       setCourseTemplates(templatesRes.data || []);
-      setWorkingHours(loadedWorkingHours);
-      setDateOverrides(loadedOverrides);
+      const newSources: CourseAvailabilitySources = {
+        ...sources,
+        workingHours: loadedWorkingHours as any,
+        overrides: loadedOverrides as any,
+      };
+      setSources(newSources);
 
       // Store premium placements (filter expired)
       const now = new Date().toISOString();
@@ -279,7 +286,7 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
       );
       setPremiumPlacements(activePlacements);
 
-      const firstAvailable = findFirstAvailableDate(loadedInstructors, loadedWorkingHours, loadedOverrides);
+      const firstAvailable = findFirstAvailableDate(loadedInstructors, newSources);
       if (firstAvailable) {
         setSelectedMonth(firstAvailable.month);
         setSelectedDate(firstAvailable.date);
@@ -413,7 +420,7 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
     setSortBy("soonest");
     
     // Jump back to first available date for all instructors
-    const firstAvailable = findFirstAvailableDate(instructors, workingHours, dateOverrides);
+    const firstAvailable = findFirstAvailableDate(instructors, sources);
     if (firstAvailable) {
       setSelectedMonth(firstAvailable.month);
       setSelectedDate(firstAvailable.date);
