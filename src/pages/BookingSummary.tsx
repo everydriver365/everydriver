@@ -969,7 +969,7 @@ export default function BookingSummary() {
   // Enquiry-only mode: short-circuit the entire payment/scheduling flow
   if (bookingMode === "enquiry_only") {
     return (
-      <EnquiryOnlyView
+      <EnquiryFlow
         instructor={instructor}
         courseName={courseName}
         hours={hours}
