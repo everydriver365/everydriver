@@ -927,7 +927,7 @@ export function LessonScheduler({
             >
               {remainingHours > 0
                 ? `Book ${remainingHoursDisplay} more ${remainingHoursDisplay === 1 ? "hour" : "hours"} to continue`
-                : "Confirm all lessons"}
+                : "All lessons booked, proceed to payment"}
             </Button>
             <p className="text-[11px] text-[#6B7280] text-center">
               Edit any lesson before confirming
