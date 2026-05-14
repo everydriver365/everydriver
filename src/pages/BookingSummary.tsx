@@ -1722,11 +1722,13 @@ export default function BookingSummary() {
               instructorFirstName={instructor.name?.split(" ")[0]}
               pupilPostcode={differentPickup ? pickupPostcode : pupilPostcode}
               onSlotsChange={handleSlotsChange}
+              onConfirm={() => paymentBlockRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
             />
           </motion.div>
         )}
 
         {/* Step 3: Payment */}
+        <div ref={paymentBlockRef}>
         <CoursePaymentBlock
           courseName={courseName}
           hours={hours}
