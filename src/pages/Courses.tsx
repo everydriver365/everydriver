@@ -484,106 +484,31 @@ export default function Courses() {
   // Calculate course counts for each available date in the month
   const courseCountsInMonth = useMemo(() => {
     const counts: { [dateStr: string]: number } = {};
-    
     for (const day of availableDatesInMonth) {
-      const jsDow = getDay(day);
-      const dayOfWeek = jsDow === 0 ? 7 : jsDow; // DB uses 1=Mon..7=Sun
       const dateStr = format(day, "yyyy-MM-dd");
       let count = 0;
-
       for (const instructor of relevantInstructors) {
-        if (instructor.available_from && isAfter(parseISO(instructor.available_from), day)) {
-          continue;
-        }
-
-        const override = dateOverrides.find(
-          (o) =>
-            o.instructor_id === instructor.id &&
-            (o.override_date === dateStr ||
-              (o.override_end_date &&
-                dateStr >= o.override_date &&
-                dateStr <= o.override_end_date))
-        );
-
-        let isAvailable = false;
-        if (override) {
-          isAvailable = override.is_available;
-        } else {
-          isAvailable = workingHours.some(
-            (wh) =>
-              wh.instructor_id === instructor.id &&
-              wh.day_of_week === dayOfWeek &&
-              wh.is_active
-          );
-        }
-
-        if (!isAvailable) continue;
-
-        const offeredCourses = instructorCourses.filter(
-          (c) => c.instructor_id === instructor.id
-        );
-
+        if (!hasInstructorAvailabilityOn(instructor, day, availabilitySources)) continue;
+        const offeredCourses = instructorCourses.filter((c) => c.instructor_id === instructor.id);
         for (const hours of DISPLAY_HOURS) {
-          const courseData = offeredCourses.find((c) => c.course_hours === hours);
-          if (courseData) count++;
+          if (offeredCourses.find((c) => c.course_hours === hours)) count++;
         }
       }
-
       counts[dateStr] = count;
     }
-
     return counts;
-  }, [availableDatesInMonth, relevantInstructors, instructorCourses, workingHours, dateOverrides]);
+  }, [availableDatesInMonth, relevantInstructors, instructorCourses, availabilitySources]);
 
   // Generate courses for the selected date
   const coursesForSelectedDate = useMemo(() => {
     if (!selectedDate) return [];
-
-    const jsDowSel = getDay(selectedDate);
-    const dayOfWeek = jsDowSel === 0 ? 7 : jsDowSel; // DB uses 1=Mon..7=Sun
-    const dateStr = format(selectedDate, "yyyy-MM-dd");
     const courses: CourseWithInstructor[] = [];
-
     for (const instructor of relevantInstructors) {
-      // Check available_from restriction
-      if (instructor.available_from && isAfter(parseISO(instructor.available_from), selectedDate)) {
-        continue;
-      }
-
-      // Check date overrides first
-      const override = dateOverrides.find(
-        (o) =>
-          o.instructor_id === instructor.id &&
-          (o.override_date === dateStr ||
-            (o.override_end_date &&
-              dateStr >= o.override_date &&
-              dateStr <= o.override_end_date))
-      );
-
-      let isAvailable = false;
-      if (override) {
-        isAvailable = override.is_available;
-      } else {
-        // Check working hours
-        isAvailable = workingHours.some(
-          (wh) =>
-            wh.instructor_id === instructor.id &&
-            wh.day_of_week === dayOfWeek &&
-            wh.is_active
-        );
-      }
-
-      if (!isAvailable) continue;
-
-      // Get courses this instructor offers
-      const offeredCourses = instructorCourses.filter(
-        (c) => c.instructor_id === instructor.id
-      );
-
+      if (!hasInstructorAvailabilityOn(instructor, selectedDate, availabilitySources)) continue;
+      const offeredCourses = instructorCourses.filter((c) => c.instructor_id === instructor.id);
       for (const hours of DISPLAY_HOURS) {
         const courseData = offeredCourses.find((c) => c.course_hours === hours);
         const template = courseTemplates.find((t) => t.course_hours === hours);
-
         if (courseData) {
           courses.push({
             instructor,
@@ -601,9 +526,8 @@ export default function Courses() {
         }
       }
     }
-
     return courses;
-  }, [selectedDate, relevantInstructors, instructorCourses, courseTemplates, workingHours, dateOverrides]);
+  }, [selectedDate, relevantInstructors, instructorCourses, courseTemplates, availabilitySources]);
 
   // Geocode postcodes via edge function
   const geocodePostcodes = useCallback(async (postcodes: string[]): Promise<{ geoCache: GeoCache; areaCache: { [postcode: string]: string | null } }> => {
