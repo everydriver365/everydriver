@@ -202,6 +202,7 @@ serve(async (req) => {
         return new Response(
           JSON.stringify({
             error: "SLOT_UNAVAILABLE",
+            fallback: true,
             message: "One or more requested slots are no longer available",
             conflicts,
           }),
