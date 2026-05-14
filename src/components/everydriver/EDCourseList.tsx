@@ -65,7 +65,15 @@ export function EDCourseList({ courses }: EDCourseListProps) {
     const dateParam = c.bookableDate
       ? `&date=${format(c.bookableDate, "yyyy-MM-dd")}`
       : "";
-    navigate(`/book/${c.instructor.id}?hours=${c.hours}${dateParam}`);
+    // Preserve the ?everydriver=1 preview override so the booking page also
+    // renders the EveryDriver clone. On the real everydriver.co.uk host the
+    // param is absent and host-detection takes over.
+    const edParam =
+      typeof window !== "undefined" &&
+      new URLSearchParams(window.location.search).get("everydriver") === "1"
+        ? "&everydriver=1"
+        : "";
+    navigate(`/book/${c.instructor.id}?hours=${c.hours}${dateParam}${edParam}`);
   };
 
   return (
