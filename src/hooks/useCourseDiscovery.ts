@@ -598,10 +598,16 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
       switch (sortBy) {
         case "soonest":
           return a.bookableDate.getTime() - b.bookableDate.getTime();
-        case "price-low":
-          const priceA = a.hours * (a.instructor.hourly_rate || 40);
-          const priceB = b.hours * (b.instructor.hourly_rate || 40);
-          return priceA - priceB;
+        case "price-low": {
+          // No hard-coded fallback: instructors without a configured hourly_rate
+          // are sorted to the end so we never invent a price.
+          const rateA = a.instructor.hourly_rate;
+          const rateB = b.instructor.hourly_rate;
+          if (rateA == null && rateB == null) return 0;
+          if (rateA == null) return 1;
+          if (rateB == null) return -1;
+          return a.hours * rateA - b.hours * rateB;
+        }
         case "nearest":
           if (a.distance === undefined) return 1;
           if (b.distance === undefined) return -1;
