@@ -1765,6 +1765,7 @@ export default function BookingSummary() {
           onBankCheckout={handleInstantBankPay}
           onCashCheckout={handleCashPayment}
         />
+        </div>
 
         {/* Square hosted card form (revealed after card checkout) */}
         {showHostedFields && courseDetails && (
