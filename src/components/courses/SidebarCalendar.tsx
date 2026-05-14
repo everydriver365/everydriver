@@ -118,7 +118,7 @@ export function SidebarCalendar({
       {loading ? (
         <div className="grid grid-cols-7 gap-1">
           {Array.from({ length: 35 }).map((_, i) => (
-            <div key={i} className="h-9 w-full animate-pulse rounded-md bg-muted" />
+            <div key={i} className="h-12 w-full animate-pulse rounded-md bg-muted" />
           ))}
         </div>
       ) : (
