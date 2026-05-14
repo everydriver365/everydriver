@@ -131,18 +131,23 @@ export async function checkLessonClash(args: CheckArgs): Promise<ClashResult> {
     return d.getHours() * 60 + d.getMinutes();
   };
 
+  // All busy events block — including all-day. We only use the holiday/leave
+  // regex as a hint for a friendlier label on the toast.
   const eventSlots: Slot[] = events
-    .filter((e: any) => {
+    .map((e: any) => {
       const dur = new Date(e.end_time).getTime() - new Date(e.start_time).getTime();
       const isAllDay = dur >= 24 * 60 * 60 * 1000;
-      return !isAllDay || ALL_DAY_BLOCKING.test(e.title || '');
+      const rawTitle = (e.title || '').trim();
+      const label = isAllDay
+        ? (ALL_DAY_BLOCKING.test(rawTitle) ? rawTitle : (rawTitle || 'Unavailable (all day)'))
+        : (rawTitle || 'Calendar event');
+      return {
+        start: tsToMin(e.start_time),
+        end: tsToMin(e.end_time),
+        name: label,
+        kind: 'event' as const,
+      };
     })
-    .map((e: any) => ({
-      start: tsToMin(e.start_time),
-      end: tsToMin(e.end_time),
-      name: e.title || 'Calendar event',
-      kind: 'event' as const,
-    }))
     .filter((s) => s.end > s.start);
 
   const blockSlots: Slot[] = blocks
