@@ -131,6 +131,7 @@ export default function BookingSummary() {
   const [bankHolidays, setBankHolidays] = useState<Set<string>>(() => new Set());
   const [loading, setLoading] = useState(true);
   const [pausedInstructorName, setPausedInstructorName] = useState<string | null>(null);
+  const [loadErrorReason, setLoadErrorReason] = useState<string | null>(null);
   const [selectedSlots, setSelectedSlots] = useState<SelectedSlot[]>([]);
   const [reviews, setReviews] = useState<CourseReview[]>([]);
   const [locationName, setLocationName] = useState<string>("");
