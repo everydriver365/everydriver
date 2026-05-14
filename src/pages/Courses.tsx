@@ -525,7 +525,7 @@ export default function Courses() {
       }
     }
     return courses;
-  }, [selectedDate, relevantInstructors, instructorCourses, courseTemplates, availabilitySources]);
+  }, [selectedDate, relevantInstructors, instructors, instructorIdsWithCourses, instructorCourses, courseTemplates, availabilitySources]);
 
   // Geocode postcodes via edge function
   const geocodePostcodes = useCallback(async (postcodes: string[]): Promise<{ geoCache: GeoCache; areaCache: { [postcode: string]: string | null } }> => {
