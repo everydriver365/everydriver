@@ -50,6 +50,15 @@ export function HeroSearchSection({
       radius,
       transmission,
     });
+    // Preserve ?everydriver=1 preview override so the EveryDriver clone keeps
+    // rendering after navigation (otherwise the param drops and we fall back
+    // to the Drive365 search page).
+    if (
+      typeof window !== "undefined" &&
+      new URLSearchParams(window.location.search).get("everydriver") === "1"
+    ) {
+      params.set("everydriver", "1");
+    }
     navigate(`/drive365/search?${params.toString()}`);
   };
 
