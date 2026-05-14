@@ -86,6 +86,10 @@ export const adminRoutes = (
       element={<ProtectedAdminRoute><PaymentAudit /></ProtectedAdminRoute>}
     />
     <Route
+      path="/admin/webhook-log"
+      element={<ProtectedAdminRoute><WebhookDeliveryLog /></ProtectedAdminRoute>}
+    />
+    <Route
       path="/admin/custom-domain-queue"
       element={<ProtectedAdminRoute><CustomDomainQueue /></ProtectedAdminRoute>}
     />
