@@ -626,6 +626,13 @@ serve(async (req: Request) => {
 
   } catch (error) {
     console.error("Webhook error:", error);
+    try {
+      const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+      await sb.from("webhook_delivery_log").insert({
+        provider: "square", processed: false, response_status: 500,
+        error: String((error as Error)?.message ?? error),
+      });
+    } catch {}
     return new Response(
       JSON.stringify({ error: "Webhook processing failed" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
