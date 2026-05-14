@@ -40,11 +40,11 @@ export function CourseCard({ course }: CourseCardProps) {
         {/* Front of Card */}
         <div className="absolute inset-0 overflow-hidden border border-border/50 bg-card shadow-lg shadow-black/10 [backface-visibility:hidden] transition-shadow duration-300 group-hover:shadow-xl group-hover:shadow-black/15">
           {/* Hero Image Section */}
-          <div className="relative h-44 overflow-hidden">
+          <div className="relative h-44 overflow-hidden bg-muted">
             <img
               src={course.image || heroImage}
               alt={course.title}
-              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+              className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-105"
             />
             
             {course.isPopular && (
