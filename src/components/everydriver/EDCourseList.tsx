@@ -102,16 +102,16 @@ export function EDCourseList({ courses }: EDCourseListProps) {
             className="ed-course-card group cursor-pointer bg-white transition-colors"
             style={{
               border: `1px solid ${BORDER}`,
-              borderRadius: 12,
-              padding: 16,
+              borderRadius: 16,
+              padding: 20,
             }}
           >
             {/* Desktop layout */}
             <div
               className="hidden sm:grid items-center"
               style={{
-                gridTemplateColumns: "70px 1fr auto",
-                gap: 16,
+                gridTemplateColumns: "104px 1fr auto",
+                gap: 20,
               }}
             >
               {/* Hours block */}
@@ -121,16 +121,16 @@ export function EDCourseList({ courses }: EDCourseListProps) {
                     className="absolute"
                     style={{
                       top: -10,
-                      left: "50%",
-                      transform: "translateX(-50%)",
+                      left: -8,
                       background: AMBER,
                       color: NAVY,
-                      fontSize: 9,
+                      fontSize: 10,
                       fontWeight: 800,
-                      letterSpacing: "0.06em",
-                      padding: "2px 8px",
-                      borderRadius: 999,
+                      letterSpacing: "0.08em",
+                      padding: "3px 10px",
+                      borderRadius: 6,
                       whiteSpace: "nowrap",
+                      zIndex: 1,
                     }}
                   >
                     POPULAR
@@ -140,28 +140,28 @@ export function EDCourseList({ courses }: EDCourseListProps) {
                   className="flex flex-col items-center justify-center"
                   style={{
                     background: HOUR_FILL,
-                    borderRadius: 10,
-                    width: 70,
-                    height: 70,
+                    borderRadius: 14,
+                    width: 104,
+                    height: 104,
                   }}
                 >
                   <div
                     style={{
-                      fontSize: 22,
+                      fontSize: 34,
                       fontWeight: 800,
                       color: NAVY,
                       lineHeight: 1,
-                      letterSpacing: "-0.02em",
+                      letterSpacing: "-0.03em",
                     }}
                   >
                     {c.hours}
                   </div>
                   <div
                     style={{
-                      marginTop: 4,
+                      marginTop: 6,
                       fontSize: 10,
                       fontWeight: 700,
-                      letterSpacing: "0.1em",
+                      letterSpacing: "0.14em",
                       color: TEXT_GREY,
                     }}
                   >
@@ -174,7 +174,7 @@ export function EDCourseList({ courses }: EDCourseListProps) {
               <div style={{ minWidth: 0 }}>
                 <div
                   style={{
-                    fontSize: 15,
+                    fontSize: 20,
                     fontWeight: 700,
                     color: NAVY,
                     letterSpacing: "-0.01em",
@@ -184,9 +184,9 @@ export function EDCourseList({ courses }: EDCourseListProps) {
                 </div>
                 <div
                   className="flex items-center"
-                  style={{ gap: 6, marginTop: 4, color: TEXT_GREY, fontSize: 12 }}
+                  style={{ gap: 6, marginTop: 6, color: TEXT_GREY, fontSize: 13 }}
                 >
-                  <CalendarIcon style={{ width: 12, height: 12 }} />
+                  <CalendarIcon style={{ width: 14, height: 14 }} />
                   Starts {format(c.bookableDate, "EEE d MMM")}
                 </div>
 
@@ -194,7 +194,7 @@ export function EDCourseList({ courses }: EDCourseListProps) {
                 {(c.instructor.klarna_enabled || c.instructor.clearpay_enabled) && (
                   <div
                     className="flex flex-wrap items-center"
-                    style={{ gap: 6, marginTop: 8 }}
+                    style={{ gap: 8, marginTop: 12 }}
                   >
                     {c.instructor.klarna_enabled && (
                       <span
@@ -202,17 +202,17 @@ export function EDCourseList({ courses }: EDCourseListProps) {
                         style={{
                           background: "#FFA8CD",
                           color: "#0a0a0a",
-                          padding: "4px 10px",
-                          borderRadius: 6,
-                          fontSize: 11,
+                          padding: "6px 12px",
+                          borderRadius: 8,
+                          fontSize: 12,
                           fontWeight: 700,
-                          gap: 6,
+                          gap: 8,
                         }}
                       >
                         <img
                           src={klarnaLogo}
                           alt="Klarna"
-                          style={{ height: 11, width: "auto" }}
+                          style={{ height: 12, width: "auto" }}
                         />
                         3 × £{klarnaPer}
                       </span>
@@ -223,17 +223,17 @@ export function EDCourseList({ courses }: EDCourseListProps) {
                         style={{
                           background: "#B2FCE4",
                           color: "#0a0a0a",
-                          padding: "4px 10px",
-                          borderRadius: 6,
-                          fontSize: 11,
+                          padding: "6px 12px",
+                          borderRadius: 8,
+                          fontSize: 12,
                           fontWeight: 700,
-                          gap: 6,
+                          gap: 8,
                         }}
                       >
                         <img
                           src={clearpayLogo}
                           alt="Clearpay"
-                          style={{ height: 11, width: "auto" }}
+                          style={{ height: 12, width: "auto" }}
                         />
                         4 × £{clearpayPer}
                       </span>
@@ -243,10 +243,10 @@ export function EDCourseList({ courses }: EDCourseListProps) {
               </div>
 
               {/* Price + action */}
-              <div className="flex flex-col items-end" style={{ gap: 6 }}>
+              <div className="flex flex-col items-end" style={{ gap: 4 }}>
                 <div
                   style={{
-                    fontSize: 22,
+                    fontSize: 30,
                     fontWeight: 800,
                     color: NAVY,
                     letterSpacing: "-0.02em",
@@ -255,7 +255,7 @@ export function EDCourseList({ courses }: EDCourseListProps) {
                 >
                   £{Math.round(final).toLocaleString()}
                 </div>
-                <div style={{ fontSize: 11, color: TEXT_GREY }}>
+                <div style={{ fontSize: 12, color: TEXT_GREY }}>
                   £{perHour}/hr
                 </div>
                 <button
@@ -263,16 +263,17 @@ export function EDCourseList({ courses }: EDCourseListProps) {
                     e.stopPropagation();
                     goTo(c);
                   }}
-                  className="inline-flex items-center transition-opacity hover:opacity-90"
+                  className="inline-flex items-center transition-colors"
                   style={{
-                    background: NAVY,
-                    color: "white",
-                    fontSize: 13,
+                    background: "white",
+                    color: NAVY,
+                    border: `1px solid ${BORDER}`,
+                    fontSize: 14,
                     fontWeight: 600,
-                    padding: "6px 12px",
-                    borderRadius: 8,
-                    gap: 4,
-                    marginTop: 2,
+                    padding: "8px 18px",
+                    borderRadius: 10,
+                    gap: 6,
+                    marginTop: 10,
                   }}
                 >
                   View
