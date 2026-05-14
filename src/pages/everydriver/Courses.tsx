@@ -1008,15 +1008,20 @@ export default function Courses() {
             animate={{ opacity: 1, y: 0 }}
             className="mx-auto max-w-4xl"
           >
-            <h1 className="mb-6 text-2xl font-bold md:text-3xl">
-              {searchedAreaName ? `Courses in ${searchedAreaName}` : "Find a Course"}
+            <h1 className="mb-1 text-center text-2xl font-extrabold md:text-3xl" style={{ color: "#0A2B6B" }}>
+              {searchedAreaName ? `Courses in ${searchedAreaName}` : "Find a course"}
             </h1>
+            {searchedAreaName && (
+              <p className="mb-6 text-center" style={{ fontSize: 13, color: "#6B7280" }}>
+                {filteredCourses.length} course{filteredCourses.length !== 1 ? "s" : ""} available · matched with your instructor
+              </p>
+            )}
 
             <div className="rounded-3xl border border-slate-100 bg-white p-2 shadow-[0_20px_50px_rgba(0,0,0,0.08)] md:p-3">
               <div className="flex flex-col items-stretch gap-2 sm:flex-row">
                 {/* Postcode input */}
                 <div className="group relative flex-1">
-                  <label className="absolute -top-2 left-11 z-10 bg-white px-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  <label className="absolute -top-2 left-4 z-10 bg-white px-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
                     Postcode
                   </label>
                   <PostcodeAutocomplete
@@ -1025,9 +1030,10 @@ export default function Courses() {
                     onSelect={handlePostcodeSelect}
                     placeholder="Enter postcode"
                     className="w-full"
-                    inputClassName="h-14 rounded-2xl border-0 bg-slate-50/60 pl-12 pr-4 font-medium text-slate-700 placeholder:text-slate-400 focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-blue-500/20"
+                    inputClassName="h-14 rounded-2xl border-0 bg-slate-50/60 px-4 font-medium text-slate-700 placeholder:text-slate-400 focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-blue-500/20"
+                    showInputIcon={false}
+                    showGeolocation={false}
                   />
-                  <MapPin className="pointer-events-none absolute left-5 top-1/2 z-10 h-5 w-5 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-blue-500" />
                 </div>
 
                 {/* Radius select */}
@@ -1071,21 +1077,7 @@ export default function Courses() {
               </div>
             </div>
 
-            {/* More Filters Button - Desktop only */}
-            {!isMobile && (
-              <div className="mt-4 flex items-center">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowFilters(!showFilters)}
-                  className="gap-2"
-                >
-                  <Filter className="h-4 w-4" />
-                  More Filters
-                  <ChevronDown className={`h-4 w-4 transition-transform ${showFilters ? "rotate-180" : ""}`} />
-                </Button>
-              </div>
-            )}
+            {/* "More Filters" removed — duplicated by Filters in results bar */}
 
             {showFilters && (
               <motion.div
@@ -1222,25 +1214,16 @@ export default function Courses() {
                 hideCounts={isListMode}
               />
 
-              {/* Pass Promise card — list view only */}
+              {/* Pass Promise card — list view only. Flat navy, no decorative blob. */}
               {isListMode && (
                 <div
-                  className="relative overflow-hidden rounded-xl p-4"
-                  style={{
-                    background: "linear-gradient(135deg, #0a1936 0%, #1a2f5c 100%)",
-                  }}
+                  className="rounded-xl p-4"
+                  style={{ background: "#0A2B6B" }}
                 >
-                  <div
-                    className="pointer-events-none absolute -right-6 -top-6 h-24 w-24"
-                    style={{
-                      background:
-                        "radial-gradient(circle, rgba(217,46,58,0.3) 0%, transparent 70%)",
-                    }}
-                  />
-                  <div className="relative flex items-center gap-3">
+                  <div className="flex items-center gap-3">
                     <div
                       className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md"
-                      style={{ background: "#d92e3a" }}
+                      style={{ background: "#3FB76B" }}
                     >
                       <ShieldCheck className="h-4 w-4 text-white" />
                     </div>
@@ -1248,7 +1231,7 @@ export default function Courses() {
                       <div style={{ fontSize: 13, fontWeight: 700, color: "white" }}>
                         Pass Promise
                       </div>
-                      <div style={{ fontSize: 11, color: "#9aa0b5", marginTop: 1 }}>
+                      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.7)", marginTop: 1 }}>
                         Re-test on us if you don't pass.
                       </div>
                     </div>
@@ -1299,30 +1282,48 @@ export default function Courses() {
                               : undefined,
                           }}
                         >
-                          <div 
-                            className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-full border-2"
-                            style={{
-                              backgroundColor: getBrandBgColor(instructor.brand_colour) || 'hsl(var(--muted))',
-                              borderColor: instructor.brand_colour || 'hsl(var(--border))',
-                            }}
-                          >
-                            {instructor.profile_image_url ? (
-                              <img
-                                src={instructor.profile_image_url}
-                                alt={instructor.name}
-                                className="h-full w-full object-cover"
-                              />
-                            ) : (
-                              <div 
-                                className="flex h-full w-full items-center justify-center text-sm font-semibold"
+                          {(() => {
+                            const initials = (instructor.name || "")
+                              .split(/\s+/)
+                              .filter(Boolean)
+                              .slice(0, 2)
+                              .map((p) => p.charAt(0).toUpperCase())
+                              .join("");
+                            return (
+                              <div
+                                className="relative flex-shrink-0 overflow-hidden rounded-full"
                                 style={{
-                                  color: instructor.brand_colour || 'hsl(var(--primary))',
+                                  width: isListMode ? 38 : 40,
+                                  height: isListMode ? 38 : 40,
+                                  border: isListMode ? "none" : "2px solid",
+                                  borderColor: isListMode ? undefined : (instructor.brand_colour || 'hsl(var(--border))'),
+                                  background: isListMode
+                                    ? "linear-gradient(135deg, #3FB76B 0%, #1D9E75 100%)"
+                                    : (getBrandBgColor(instructor.brand_colour) || 'hsl(var(--muted))'),
                                 }}
                               >
-                                {instructor.name.charAt(0)}
+                                {instructor.profile_image_url ? (
+                                  <img
+                                    src={instructor.profile_image_url}
+                                    alt={instructor.name}
+                                    className="h-full w-full object-cover"
+                                  />
+                                ) : (
+                                  <div
+                                    className="flex h-full w-full items-center justify-center"
+                                    style={{
+                                      color: isListMode ? "white" : (instructor.brand_colour || 'hsl(var(--primary))'),
+                                      fontSize: isListMode ? 13 : 14,
+                                      fontWeight: 600,
+                                      letterSpacing: "0.02em",
+                                    }}
+                                  >
+                                    {initials || instructor.name.charAt(0)}
+                                  </div>
+                                )}
                               </div>
-                            )}
-                          </div>
+                            );
+                          })()}
                           <div className="flex-1 min-w-0">
                             <p className="truncate text-sm font-medium">{instructor.name}</p>
                             <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -1398,15 +1399,15 @@ export default function Courses() {
                   </button>
                   <button
                     onClick={() => setShowFilters((v) => !v)}
-                    className="relative inline-flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-semibold text-white transition-colors hover:opacity-90"
-                    style={{ background: "#0a1936" }}
+                    className="relative inline-flex items-center gap-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold transition-colors hover:bg-slate-50"
+                    style={{ border: "1px solid #d0d0d8", color: "#0a1936" }}
                   >
                     <SlidersHorizontal className="h-3.5 w-3.5" />
                     Filters
                     {activeFilterCount > 0 && (
                       <span
                         className="absolute -right-1.5 -top-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full px-1 text-[10px] font-bold text-white"
-                        style={{ background: "#d92e3a" }}
+                        style={{ background: "#E63946" }}
                       >
                         {activeFilterCount}
                       </span>
