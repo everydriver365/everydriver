@@ -69,6 +69,143 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    // ── Server-side availability re-validation ──────────────────────────────
+    // Re-runs the same checks the public search does (working hours, date
+    // overrides, scheduled lessons, manual blocks, busy calendar events,
+    // instructor buffer) at booking time. Live data only — if working hours
+    // aren't configured for the requested day, the booking is rejected.
+    if (booking.slots.length > 0) {
+      const toMin = (t: string) => {
+        const [h, m] = t.split(":").map(Number);
+        return h * 60 + (m || 0);
+      };
+      const dates = Array.from(new Set(booking.slots.map((s) => s.date))).sort();
+      const fromYmd = dates[0];
+      const toYmd = dates[dates.length - 1];
+      const fromIso = new Date(`${fromYmd}T00:00:00Z`).toISOString();
+      const toIso = new Date(`${toYmd}T23:59:59Z`).toISOString();
+
+      const [whRes, ovRes, lessonRes, blockRes, evRes, instRes] = await Promise.all([
+        supabase
+          .from("instructor_working_hours")
+          .select("day_of_week, start_time, end_time, is_active")
+          .eq("instructor_id", booking.instructorId)
+          .eq("is_active", true),
+        supabase
+          .from("instructor_date_overrides")
+          .select("override_date, is_available, start_time, end_time")
+          .eq("instructor_id", booking.instructorId)
+          .gte("override_date", fromYmd)
+          .lte("override_date", toYmd),
+        supabase
+          .from("scheduled_lessons")
+          .select("lesson_date, start_time, duration_minutes")
+          .eq("instructor_id", booking.instructorId)
+          .gte("lesson_date", fromYmd)
+          .lte("lesson_date", toYmd)
+          .neq("status", "cancelled")
+          .is("deleted_at", null),
+        supabase
+          .from("instructor_manual_blocks")
+          .select("start_datetime, end_datetime")
+          .eq("instructor_id", booking.instructorId)
+          .gte("end_datetime", fromIso)
+          .lte("start_datetime", toIso),
+        supabase
+          .from("instructor_calendar_events")
+          .select("start_time, end_time, is_busy")
+          .eq("instructor_id", booking.instructorId)
+          .eq("is_busy", true)
+          .gte("end_time", fromIso)
+          .lte("start_time", toIso),
+        supabase
+          .from("instructors")
+          .select("buffer_minutes")
+          .eq("id", booking.instructorId)
+          .maybeSingle(),
+      ]);
+
+      const buffer = Number(instRes.data?.buffer_minutes ?? 0);
+      const conflicts: { date: string; startTime: string; reason: string }[] = [];
+
+      for (const slot of booking.slots) {
+        const slotStart = toMin(slot.startTime);
+        const slotEnd = toMin(slot.endTime);
+        const dow = new Date(`${slot.date}T00:00:00Z`).getUTCDay();
+        const override = (ovRes.data || []).find((o) => o.override_date === slot.date);
+
+        // Determine the working window for this date (override wins).
+        let windowStart: number | null = null;
+        let windowEnd: number | null = null;
+        if (override) {
+          if (!override.is_available) {
+            conflicts.push({ date: slot.date, startTime: slot.startTime, reason: "Date marked unavailable by instructor" });
+            continue;
+          }
+          if (override.start_time && override.end_time) {
+            windowStart = toMin(override.start_time);
+            windowEnd = toMin(override.end_time);
+          }
+        }
+        if (windowStart == null) {
+          const wh = (whRes.data || []).filter((w) => w.day_of_week === dow);
+          if (wh.length === 0) {
+            conflicts.push({ date: slot.date, startTime: slot.startTime, reason: "Instructor has no working hours configured for this day" });
+            continue;
+          }
+          // Slot must fit entirely inside at least one window.
+          const fits = wh.some((w) => slotStart >= toMin(w.start_time) && slotEnd <= toMin(w.end_time));
+          if (!fits) {
+            conflicts.push({ date: slot.date, startTime: slot.startTime, reason: "Outside instructor working hours" });
+            continue;
+          }
+        } else if (slotStart < windowStart || slotEnd > windowEnd!) {
+          conflicts.push({ date: slot.date, startTime: slot.startTime, reason: "Outside instructor working hours for this date" });
+          continue;
+        }
+
+        // Lesson clashes (with buffer).
+        const lessonHit = (lessonRes.data || []).some((l) => {
+          if (l.lesson_date !== slot.date) return false;
+          const ls = toMin(l.start_time);
+          const le = ls + Number(l.duration_minutes || 0);
+          return slotStart < le + buffer && slotEnd + buffer > ls;
+        });
+        if (lessonHit) {
+          conflicts.push({ date: slot.date, startTime: slot.startTime, reason: "Conflicts with an existing lesson" });
+          continue;
+        }
+
+        // Manual blocks / busy calendar events (clipped to this date).
+        const dayStartIso = new Date(`${slot.date}T00:00:00Z`).getTime();
+        const slotStartMs = dayStartIso + slotStart * 60_000;
+        const slotEndMs = dayStartIso + slotEnd * 60_000;
+        const overlaps = (s: string, e: string) => {
+          const sMs = new Date(s).getTime();
+          const eMs = new Date(e).getTime();
+          return slotStartMs < eMs + buffer * 60_000 && slotEndMs + buffer * 60_000 > sMs;
+        };
+        if ((blockRes.data || []).some((b) => overlaps(b.start_datetime, b.end_datetime))) {
+          conflicts.push({ date: slot.date, startTime: slot.startTime, reason: "Conflicts with an instructor block" });
+          continue;
+        }
+        if ((evRes.data || []).some((e) => overlaps(e.start_time, e.end_time))) {
+          conflicts.push({ date: slot.date, startTime: slot.startTime, reason: "Conflicts with a busy calendar event" });
+          continue;
+        }
+      }
+
+      if (conflicts.length > 0) {
+        return new Response(
+          JSON.stringify({
+            error: "One or more requested slots are no longer available",
+            conflicts,
+          }),
+          { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
+
     // Determine payment type and amounts
     const paymentType = booking.paymentType || 'full';
     const amountPaid = booking.amountPaid || (paymentType === 'full' ? booking.totalPrice : booking.depositAmount || 0);
