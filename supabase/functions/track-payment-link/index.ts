@@ -108,7 +108,7 @@ serve(async (req: Request) => {
               pupil_id: linkData.pupil_id,
               instructor_id: linkData.instructor_id,
               amount: paidAmount,
-              payment_method: "payment_link",
+              payment_method: "Square",
               notes: `Email Payment Link - Code: ${linkCode}`,
             });
 

@@ -398,7 +398,7 @@ serve(async (req: Request) => {
                     instructor_id: pupil.instructor_id,
                     pupil_id: pupilId,
                     amount: creditAmount,
-                    payment_method: "clearpay",
+                    payment_method: "Clearpay",
                     notes: `Clearpay Payment ${captureResult.id}${feeAmount > 0 ? ` (admin fee: £${feeAmount.toFixed(2)})` : ''}`,
                   });
 
@@ -576,7 +576,7 @@ serve(async (req: Request) => {
               instructor_id: pupil.instructor_id,
               pupil_id: pupilId,
               amount: klarnaCreditAmount,
-              payment_method: "klarna",
+              payment_method: "Klarna",
               notes: `Klarna Payment - Order: ${klarnaOrderId}${klarnaFee > 0 ? ` (admin fee: £${klarnaFee.toFixed(2)})` : ''}`,
             });
 

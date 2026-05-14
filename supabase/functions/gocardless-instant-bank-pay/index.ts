@@ -134,7 +134,7 @@ serve(async (req) => {
       amount: amount,
       currency: "GBP",
       status: "pending",
-      payment_method: "gocardless_instant_bank_pay",
+      payment_method: "GoCardless Bank Pay",
       gocardless_payment_id: billingRequestId,
       metadata: {
         billing_request_id: billingRequestId,
