@@ -12,7 +12,12 @@
 // are treated as informational context and do NOT block the day on their own,
 // matching the existing slot-search behavior.
 
-import { format, isAfter, parseISO, startOfDay, isBefore } from "date-fns";
+import { format, isAfter, parseISO, startOfDay, isBefore, addDays } from "date-fns";
+import type { SupabaseClient } from "@supabase/supabase-js";
+
+// Default travel-time padding around any conflict, mirroring availabilityCore.
+// Always added on top of the instructor's configured buffer.
+export const TRAVEL_FALLBACK_MIN = 10;
 
 export type WeeklyHourRow = {
   instructor_id: string;
@@ -54,6 +59,8 @@ export type ManualBlockRow = {
 export interface InstructorLite {
   id: string;
   available_from?: string | null;
+  /** Per-instructor configured buffer between lessons in minutes. */
+  buffer_minutes?: number | null;
 }
 
 export interface CourseAvailabilitySources {
@@ -166,25 +173,33 @@ function isAllDayLikeEvent(ev: CalendarEventRow): boolean {
   }
 }
 
+/**
+ * Build the conflict list for `dateStr`, expanded by `padMinutes` on each side.
+ * Padding is applied per-conflict so that buffer + travel time around an
+ * existing lesson, manual block, or Google Calendar event blocks the search
+ * results AND the booking validator from offering an overlapping slot.
+ */
 function getDayConflicts(
   instructorId: string,
   dateStr: string,
   src: CourseAvailabilitySources,
+  padMinutes = 0,
 ): Window[] {
   const conflicts: Window[] = [];
+  const pad = Math.max(0, padMinutes);
 
   for (const l of src.scheduledLessons) {
     if (l.instructor_id !== instructorId) continue;
     if (l.lesson_date !== dateStr) continue;
     const s = timeToMin((l.start_time || "").slice(0, 5));
     if (s == null) continue;
-    conflicts.push({ start: s, end: s + (l.duration_minutes || 60) });
+    conflicts.push({ start: s - pad, end: s + (l.duration_minutes || 60) + pad });
   }
 
   for (const b of src.manualBlocks) {
     if (b.instructor_id !== instructorId) continue;
     const c = clipEventToDay(b.start_datetime, b.end_datetime, dateStr);
-    if (c) conflicts.push(c);
+    if (c) conflicts.push({ start: c.start - pad, end: c.end + pad });
   }
 
   for (const ev of src.calendarEvents) {
@@ -192,7 +207,7 @@ function getDayConflicts(
     if (ev.is_busy === false) continue;
     if (isAllDayLikeEvent(ev)) continue; // ignore informational all-day events
     const c = clipEventToDay(ev.start_time, ev.end_time, dateStr);
-    if (c) conflicts.push(c);
+    if (c) conflicts.push({ start: c.start - pad, end: c.end + pad });
   }
 
   return conflicts;
@@ -227,11 +242,39 @@ function subtractConflicts(windows: Window[], conflicts: Window[]): Window[] {
   return free.filter((s) => s.end - s.start > 0);
 }
 
+/** Build the working windows for the instructor on `day`, honouring overrides. */
+function resolveWindowsForDay(
+  instructor: InstructorLite,
+  day: Date,
+  src: CourseAvailabilitySources,
+): Window[] {
+  const dateStr = format(day, "yyyy-MM-dd");
+  const jsDow = day.getDay();
+  const override = getOverride(instructor.id, dateStr, src);
+
+  if (override && override.is_available === false) return [];
+
+  if (override && override.is_available && (override.start_time || override.end_time)) {
+    const s = timeToMin(override.start_time) ?? timeToMin(DEFAULT_DAY_START)!;
+    const e = timeToMin(override.end_time) ?? timeToMin(DEFAULT_DAY_END)!;
+    return e > s ? [{ start: s, end: e }] : [];
+  }
+
+  if (override && override.is_available) {
+    const weekly = getWeeklyWindows(instructor.id, jsDow, src);
+    return weekly.length > 0
+      ? weekly
+      : [{ start: timeToMin(DEFAULT_DAY_START)!, end: timeToMin(DEFAULT_DAY_END)! }];
+  }
+
+  return getWeeklyWindows(instructor.id, jsDow, src);
+}
+
 export function hasInstructorAvailabilityOn(
   instructor: InstructorLite,
   day: Date,
   src: CourseAvailabilitySources,
-  opts: { minFreeMinutes?: number } = {},
+  opts: { minFreeMinutes?: number; applyBuffers?: boolean } = {},
 ): boolean {
   const today = startOfDay(new Date());
   if (isBefore(day, today)) return false;
@@ -239,33 +282,20 @@ export function hasInstructorAvailabilityOn(
     return false;
   }
 
-  const dateStr = format(day, "yyyy-MM-dd");
-  const jsDow = day.getDay();
-  const override = getOverride(instructor.id, dateStr, src);
-
-  // Explicit unavailable override always wins.
-  if (override && override.is_available === false) return false;
-
-  let windows: Window[] = [];
-
-  if (override && override.is_available && (override.start_time || override.end_time)) {
-    const s = timeToMin(override.start_time) ?? timeToMin(DEFAULT_DAY_START)!;
-    const e = timeToMin(override.end_time) ?? timeToMin(DEFAULT_DAY_END)!;
-    if (e > s) windows = [{ start: s, end: e }];
-  } else if (override && override.is_available) {
-    // Override flagged available with no times — fall back to default working window.
-    const weekly = getWeeklyWindows(instructor.id, jsDow, src);
-    windows = weekly.length > 0 ? weekly : [{
-      start: timeToMin(DEFAULT_DAY_START)!,
-      end: timeToMin(DEFAULT_DAY_END)!,
-    }];
-  } else {
-    windows = getWeeklyWindows(instructor.id, jsDow, src);
-  }
-
+  const windows = resolveWindowsForDay(instructor, day, src);
   if (windows.length === 0) return false;
 
-  const conflicts = getDayConflicts(instructor.id, dateStr, src);
+  // For day-level availability we apply buffer + travel padding by default so
+  // that an instructor with a 9–5 day already booked 9–4 (with a 30 min buffer)
+  // doesn't show as having a free hour at 4 pm if a learner couldn't actually
+  // book it at the booking step.
+  const applyBuffers = opts.applyBuffers !== false;
+  const pad = applyBuffers
+    ? Math.max(0, instructor.buffer_minutes ?? 0) + TRAVEL_FALLBACK_MIN
+    : 0;
+
+  const dateStr = format(day, "yyyy-MM-dd");
+  const conflicts = getDayConflicts(instructor.id, dateStr, src, pad);
   const free = subtractConflicts(windows, conflicts);
 
   // If today, drop spans that have already passed.
@@ -278,4 +308,179 @@ export function hasInstructorAvailabilityOn(
     if (span.end - effectiveStart >= minFree) return true;
   }
   return false;
+}
+
+// ---------------------------------------------------------------------------
+// Shared loader — used by useCourseDiscovery (browser) and the booking guard
+// inside the create-booking edge function (Deno) so both consumers see exactly
+// the same six tables in exactly the same shape. The edge function copies an
+// equivalent helper rather than importing this directly because it runs Deno.
+// ---------------------------------------------------------------------------
+export async function loadCourseAvailabilitySources(
+  client: SupabaseClient,
+  instructorIds: string[],
+  fromDate: Date,
+  toDate: Date,
+): Promise<CourseAvailabilitySources> {
+  if (instructorIds.length === 0) {
+    return {
+      workingHours: [],
+      availabilityWindows: [],
+      overrides: [],
+      calendarEvents: [],
+      scheduledLessons: [],
+      manualBlocks: [],
+    };
+  }
+
+  const fromStr = format(fromDate, "yyyy-MM-dd");
+  const toStr = format(toDate, "yyyy-MM-dd");
+  const fromIso = startOfDay(fromDate).toISOString();
+  const toIso = startOfDay(addDays(toDate, 1)).toISOString();
+
+  const [
+    workingHoursRes,
+    availabilityWindowsRes,
+    overridesRes,
+    manualBlocksRes,
+    scheduledLessonsRes,
+    calendarEventsRes,
+  ] = await Promise.all([
+    client
+      .from("instructor_working_hours")
+      .select("instructor_id, day_of_week, is_active, start_time, end_time")
+      .in("instructor_id", instructorIds),
+    client
+      .from("availability_windows")
+      .select("instructor_id, day_of_week, is_active, start_time, end_time")
+      .in("instructor_id", instructorIds),
+    client
+      .from("instructor_date_overrides")
+      .select("instructor_id, override_date, override_end_date, is_available, start_time, end_time")
+      .in("instructor_id", instructorIds)
+      .or(`override_date.gte.${fromStr},override_end_date.gte.${fromStr}`)
+      .lte("override_date", toStr),
+    client
+      .from("instructor_manual_blocks")
+      .select("instructor_id, start_datetime, end_datetime")
+      .in("instructor_id", instructorIds)
+      .gte("end_datetime", fromIso)
+      .lte("start_datetime", toIso),
+    client
+      .from("scheduled_lessons")
+      .select("instructor_id, lesson_date, start_time, duration_minutes")
+      .in("instructor_id", instructorIds)
+      .neq("status", "cancelled")
+      .is("deleted_at", null)
+      .gte("lesson_date", fromStr)
+      .lte("lesson_date", toStr),
+    client
+      .from("instructor_calendar_events")
+      .select("instructor_id, start_time, end_time, is_busy")
+      .in("instructor_id", instructorIds)
+      .gte("end_time", fromIso)
+      .lte("start_time", toIso),
+  ]);
+
+  return {
+    workingHours: (workingHoursRes.data as WeeklyHourRow[]) ?? [],
+    availabilityWindows: (availabilityWindowsRes.data as WeeklyHourRow[]) ?? [],
+    overrides: (overridesRes.data as DateOverrideRow[]) ?? [],
+    manualBlocks: (manualBlocksRes.data as ManualBlockRow[]) ?? [],
+    scheduledLessons: (scheduledLessonsRes.data as ScheduledLessonRow[]) ?? [],
+    calendarEvents: (calendarEventsRes.data as CalendarEventRow[]) ?? [],
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Booking-time guard — runs the same conflict logic against an exact
+// (date, startMin, durationMin) slot. Returns ok=true when the slot fits
+// inside a working window with no overlap (after buffer/travel padding).
+// ---------------------------------------------------------------------------
+export type BookingRejectReason =
+  | "past"
+  | "outside_working_hours"
+  | "lesson_clash"
+  | "manual_block"
+  | "gcal_conflict"
+  | "buffer";
+
+export interface BookingValidationResult {
+  ok: boolean;
+  reason?: BookingRejectReason;
+  conflict?: { startMin: number; endMin: number; kind: BookingRejectReason };
+}
+
+export function validateBookingSlot(
+  instructor: InstructorLite,
+  day: Date,
+  startMin: number,
+  durationMin: number,
+  src: CourseAvailabilitySources,
+): BookingValidationResult {
+  const today = startOfDay(new Date());
+  const dateStr = format(day, "yyyy-MM-dd");
+
+  if (isBefore(day, today)) return { ok: false, reason: "past" };
+  if (instructor.available_from && isAfter(parseISO(instructor.available_from), day)) {
+    return { ok: false, reason: "past" };
+  }
+
+  const endMin = startMin + durationMin;
+  const windows = resolveWindowsForDay(instructor, day, src);
+  const insideWindow = windows.some((w) => startMin >= w.start && endMin <= w.end);
+  if (!insideWindow) return { ok: false, reason: "outside_working_hours" };
+
+  const pad = Math.max(0, instructor.buffer_minutes ?? 0) + TRAVEL_FALLBACK_MIN;
+
+  // Check each conflict source separately so the rejection reason is precise.
+  const lessonConflicts = getDayConflicts(instructor.id, dateStr, {
+    ...src,
+    manualBlocks: [],
+    calendarEvents: [],
+  }, pad);
+  for (const c of lessonConflicts) {
+    if (c.start < endMin && c.end > startMin) {
+      const isBuffer = c.start >= startMin - pad && c.end <= endMin + pad
+        ? false
+        : (c.start <= startMin - pad || c.end >= endMin + pad);
+      return {
+        ok: false,
+        reason: isBuffer ? "buffer" : "lesson_clash",
+        conflict: { startMin: c.start + pad, endMin: c.end - pad, kind: "lesson_clash" },
+      };
+    }
+  }
+
+  const blockConflicts = getDayConflicts(instructor.id, dateStr, {
+    ...src,
+    scheduledLessons: [],
+    calendarEvents: [],
+  }, pad);
+  for (const c of blockConflicts) {
+    if (c.start < endMin && c.end > startMin) {
+      return {
+        ok: false,
+        reason: "manual_block",
+        conflict: { startMin: c.start + pad, endMin: c.end - pad, kind: "manual_block" },
+      };
+    }
+  }
+
+  const gcalConflicts = getDayConflicts(instructor.id, dateStr, {
+    ...src,
+    scheduledLessons: [],
+    manualBlocks: [],
+  }, pad);
+  for (const c of gcalConflicts) {
+    if (c.start < endMin && c.end > startMin) {
+      return {
+        ok: false,
+        reason: "gcal_conflict",
+        conflict: { startMin: c.start + pad, endMin: c.end - pad, kind: "gcal_conflict" },
+      };
+    }
+  }
+
+  return { ok: true };
 }

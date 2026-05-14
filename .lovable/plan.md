@@ -1,132 +1,94 @@
-# EveryDriver Availability & Booking — Read-Only Audit
+# One availability engine for search + booking
 
-No code changed. Findings only, mapped to the four parts of your request.
+## What's actually wrong today
 
----
+The codebase already contains a comprehensive availability resolver — `src/lib/courseAvailability.ts` — that reads working hours (both DOW conventions), date overrides, manual blocks, scheduled lessons, **and** Google Calendar busy events from `instructor_calendar_events`. It correctly ignores all-day informational events, handles overlapping windows, and returns "is this instructor genuinely free".
 
-## Part 1 — How the current system is wired
+Three things are wrong with how it's wired:
 
-### 1. Where instructor availability lives in the database
+1. **The EveryDriver results page (`src/pages/everydriver/Courses.tsx`, 1876 lines) does not use it.** It has its own broken resolver that only loads `instructor_working_hours` rows without their times, never queries calendar events, manual blocks, or lessons, and treats "any active row for that DOW" as "available all day". This is why Ken disappears for some months and why the same postcode returns different results on `/courses` vs `/intensives`.
+2. **`useCourseDiscovery` (the hook used by `/intensives`, `/semi-intensive`) also has its own resolver** — better than the Courses.tsx one, but still parallel code.
+3. **The booking flow only validates against the DB trigger `prevent_lesson_clash`**, which knows about `scheduled_lessons` only. It does NOT block a booking that lands on a Google Calendar event, a manual block, or inside an instructor's buffer/travel window.
 
-There are **four** sources of truth, all in the public schema:
+The resolver is also missing two policy bits you mentioned: instructor-defined **buffer minutes** and **travel time** padding around conflicts, and a check that the **course duration** actually fits in the remaining free span.
 
-| Table | Purpose | Key columns |
-|---|---|---|
-| `instructor_working_hours` | Recurring weekly hours (legacy / primary) | `instructor_id`, `day_of_week` (**0=Sun..6=Sat**), `start_time`, `end_time`, `is_active` |
-| `availability_windows` | Newer recurring weekly hours (multiple windows per day) | `instructor_id`, `day_of_week` (**1=Mon..7=Sun**), `start_time`, `end_time`, `is_active`, `label` |
-| `instructor_date_overrides` | One-off day overrides (holidays / extra availability) | `instructor_id`, `override_date`, `override_end_date`, `is_available`, optional `start_time`/`end_time` |
-| `instructor_manual_blocks` | Personal blocks (admin/dentist/etc.) | `instructor_id`, `start_datetime`, `end_datetime` (timestamptz) |
+## Target
 
-Plus two conflict sources that *consume* the windows above:
+One resolver. Two consumers. Zero per-instructor maintenance.
 
-- `scheduled_lessons` — booked lessons (`lesson_date`, `start_time`, `duration_minutes`).
-- `instructor_calendar_events` — cached Google Calendar busy events (`start_time`, `end_time` timestamptz, `is_busy`, `external_event_id`).
+```text
+                 ┌──────────────────────────────┐
+                 │  src/lib/courseAvailability  │  ← single source of truth
+                 │  (working hrs + overrides +  │
+                 │   lessons + blocks + GCal +  │
+                 │   buffer + travel + duration)│
+                 └──────────────┬───────────────┘
+                                │
+              ┌─────────────────┼──────────────────┐
+              ▼                                    ▼
+    Search results page              Booking submit guard
+    (one unified page)               (edge function: validate-booking)
+```
 
-Sample (Ken, Mondays):
-- `instructor_working_hours`: `day_of_week=1, start_time=10:30, end_time=16:00, is_active=true`
-- `instructor_calendar_events`: `start_time=2026-06-08T10:00+01, end_time=2026-06-08T11:00+01, is_busy=true`
+When a new instructor signs up and configures their working hours, buffer, travel time, and connects Google Calendar, the same resolver picks it all up automatically — no code change.
 
-> ⚠️ **Two day-of-week conventions live side by side** (0=Sun in `instructor_working_hours`, 1=Mon in `availability_windows`). The shared resolver handles both; the EveryDriver page only handles 1=Mon..7=Sun.
+## Plan
 
-### 2. Google Calendar credentials & auth
+### 1. Extend the resolver (`src/lib/courseAvailability.ts`)
 
-- Two tables exist:
-  - `instructor_calendar_tokens` — OAuth flow (`access_token`, `refresh_token`, `token_expiry`, `provider='google'`). RLS = service role only.
-  - `instructor_google_service_calendar` — Domain-Wide-Delegation **service-account** flow (just stores the `calendar_id` to impersonate; tokens are minted per-request from a server secret).
-- The live integration in use is the **service-account / DWD** path. Edge function `google-calendar-service` builds a JWT with scope `https://www.googleapis.com/auth/calendar`, exchanges it for an access token, then hits `calendar/v3/calendars/{calendarId}/events`.
-- The private key + service email are pulled from edge-function env vars (not from per-instructor rows).
+Add three things to `hasInstructorAvailabilityOn` and a new `firstFittingSpanOn` helper:
 
-### 3. What runs when a learner searches for courses
+- **Buffer + travel padding.** Accept `bufferMinutes` and `travelMinutes` per instructor. When subtracting conflicts, expand each conflict by `bufferMinutes + travelMinutes` on both sides (matching `availabilityCore.ts`'s existing convention used in Find Slot / Fill Gaps). First lesson of the day uses travel-from-home; back-to-back uses buffer only — the existing "lesson-buffer-logic" memory rule.
+- **Course-duration fit.** Replace the current `MIN_FREE_MINUTES = 60` constant with a `requiredMinutes` parameter. For an N-hour intensive that's typically 2–4 hours per day across multiple days; for a single weekly lesson it's the lesson length. The caller passes what it needs.
+- **`CourseAvailabilitySources` loader.** Add `loadCourseAvailabilitySources(instructorIds, dateRange)` so both consumers fetch the same six tables in the same way (working hours, availability windows, overrides, manual blocks, scheduled lessons, calendar events) with `select('*')` shapes that match the resolver. One round-trip per page load instead of N.
 
-The user is on `/courses?postcode=SO225AB`, which is **`src/pages/everydriver/Courses.tsx`** (the EveryDriver branded page), not the generic `src/pages/Courses.tsx` that I refactored last week.
+No DB schema changes needed — all tables and `instructor_calendar_events` already exist.
 
-Flow on that page:
-1. `fetchData()` (line ~820) loads, in parallel:
-   - `instructors` (active, non-deleted, with `available_from`, postcode, etc.)
-   - `instructor_working_hours` — but **only `instructor_id, day_of_week, is_active`** (no `start_time`/`end_time`)
-   - `availability_windows` — same trimmed select
-   - `instructor_date_overrides` — only `is_available` (no times)
-   - `courses`
-   - **Does NOT load `instructor_calendar_events`, `instructor_manual_blocks`, or `scheduled_lessons` for the listing.**
-2. `handleSearch()` filters instructors by postcode/radius (geocode + Haversine), then maps courses to nearby instructors.
-3. The "YOUR INSTRUCTORS" tile at the top of the calendar is built by `findFirstAvailableDate()` → `isDateAvailable()` (lines 376–429). That helper says a date is "available" iff:
-   - the day is in the future, AND
-   - either an override row exists for that date with `is_available=true/false`, OR
-   - any working-hours row exists for that `day_of_week` with `is_active=true`.
+### 2. One unified search results page
 
-### 4. What decides whether a specific date is bookable
+- New component `src/pages/everydriver/CourseResults.tsx` modelled on the working `Intensives.tsx` shell. Uses shared `CourseSearchHeader` + `SidebarCalendar` + `CourseGrid`, powered by `useCourseDiscovery` which is migrated to call the extended `courseAvailability` resolver instead of its own private logic.
+- Reads `?postcode=` and `?type=` from the URL. A small segmented control switches All / Intensive / Semi-Intensive without a page reload.
+- Routes `/courses`, `/search`, `/drive365/search`, `/services` → `<CourseResults defaultType="all" />`.
+- `/intensives` and `/semi-intensive` keep their hero + render `<CourseResults defaultType="intensive" hero={...} />`.
+- Delete `src/pages/everydriver/Courses.tsx`.
 
-There are now **two** different resolvers in the codebase, and they disagree:
+### 3. Booking-flow guard (the part that was missing)
 
-- **EveryDriver page (`src/pages/everydriver/Courses.tsx`)** uses the local `isDateAvailable()` above — purely "is there a row?" with no times, no calendar, no lessons, no manual blocks.
-- **Generic `/courses` page** uses `src/lib/courseAvailability.ts → hasInstructorAvailabilityOn()` which:
-  - Builds the day's working windows (merging both DOW conventions),
-  - Subtracts conflicts from `scheduled_lessons` + `instructor_manual_blocks` + `instructor_calendar_events` (skipping events flagged `is_busy=false` and skipping all-day ≥23h or midnight-start ≥12h events),
-  - Requires the largest remaining free span to be ≥ `MIN_FREE_MINUTES` (60).
+The DB trigger `prevent_lesson_clash` stays as the last-line backstop against double-booking lessons against lessons. We add an edge function `validate-booking` that the booking flow calls before insert:
 
-Booking-time conflict prevention sits in the DB trigger `prevent_lesson_clash` on `scheduled_lessons` — see §8.
+- Inputs: `instructor_id`, `lesson_date`, `start_time`, `duration_minutes`, optional `pupil_pickup_postcode`.
+- Loads the same six sources via the new shared loader, runs the resolver, and returns `{ ok: boolean, reason?: 'gcal_conflict' | 'manual_block' | 'buffer' | 'outside_working_hours' | 'lesson_clash', conflict_window?: {...} }`.
+- The booking summary screen (`EDBookingSummary`) calls this on submit. If `ok=false`, show the reason and refuse to submit.
+- Same function is reusable from the instructor-facing booking screens, the parent portal, and any future channel (WhatsApp bot, AI agent). One rule, one place.
 
-### 5. Google Calendar refresh / cache
+### 4. New-instructor "just works" guarantee
 
-- Google events are **cached in `instructor_calendar_events`** by the edge function `google-calendar-service` action `fetchExternalEvents`.
-- Each sync **deletes all events for the instructor** then re-upserts a window of **−30 days to +365 days**, paginated 2,500 per page.
-- The sync is **only triggered on demand**: when the instructor opens their Schedule page (`InstructorSchedule.tsx`), the mobile schedule view, or `CalendarSyncPreview`. There is **no cron job and no learner-side refresh**. The visible `last_sync` on the row tells you when an instructor last opened their own schedule.
-- Course search reads the cache directly — it never calls Google.
+Because the resolver reads the standard tables every instructor populates during onboarding (`instructor_working_hours`, `instructor_buffer_minutes` / `instructor_travel_minutes` on the instructor row, `instructor_google_service_calendar` for GCal sync), a brand-new instructor who:
+- sets their weekly working hours,
+- sets a buffer and travel-time default,
+- connects their Google Calendar,
 
-### 6. What happens when Google Calendar fails
+…immediately appears correctly in search results and is correctly protected at booking time. No per-instructor migration, no code change, no Lovable visit needed.
 
-- In the edge function: error is caught, `sync_error` written to `instructor_google_service_calendar`, function returns 500.
-- In course search: irrelevant — search never calls Google. It reads `instructor_calendar_events`, and if the cache is empty/stale the instructor is treated as **fully available** (no conflicts to subtract). **Failure-open behaviour.**
+### 5. QA pass after build
 
----
+- `/courses?postcode=SO302TD` (your current URL) returns the same instructor list as `/intensives?postcode=SO302TD`, only differing by which course rows show.
+- Ken appears for June (Saturdays/Sundays no longer dropped).
+- Block 10–11 on an instructor's Google Calendar → that hour is removed from availability and a 9–11 lesson at the booking step is rejected with `gcal_conflict`.
+- Set buffer = 30 min, travel = 15 min → a back-to-back 9-hour intensive is only offered on days with one contiguous span ≥ (course hours × 60) + buffer/travel padding.
+- Brand-new test instructor with only working hours filled in → appears in results without any code changes.
 
-## Part 2 — Scenario walkthrough
+## What this does NOT do
 
-For each scenario: *Expected* vs *what the code actually does today on the EveryDriver page* (which is what the user is seeing).
+- Does not change instructor working-hour, buffer, travel, or Google Calendar **inputs** — only how they're consumed.
+- Does not touch `/theory`, instructor portal, school portal, or Drive365 (non-EveryDriver) public routes.
+- Does not change card visuals, calendar visuals, or the booking summary layout.
+- Does not change the `prevent_lesson_clash` DB trigger (kept as backstop).
 
-| # | Scenario | Expected | Actual on `/courses` (EveryDriver) |
-|---|---|---|---|
-| 1 | Mon 9–5 working, Google event 10–11, learner wants 10h intensive starting Mon | Show only if a continuous 10h window remains; here it does not, so hide. | Shows. The page only checks "is there a working-hours row for that DOW" — it ignores course duration entirely and ignores Google events. |
-| 2 | All-day Google event Tuesday | Hide instructor / mark Tues unavailable. | Shows as available. EveryDriver page never reads `instructor_calendar_events`. (Even the new shared resolver deliberately ignores all-day events ≥23h or midnight-start ≥12h, treating them as informational — so it would also show.) |
-| 3 | Back-to-back calendar events | Buffer enforced before/after? | **No buffer at all** in either resolver. The instructor lesson-buffer logic stored in memory (`gap-offer-buffer-rules`, `lesson-buffer-logic`) is applied only inside the instructor portal's own gap/scheduler code, not on the public Courses page. |
-| 4 | Instructor changes availability rules | Reflected within seconds (no caching). | Reflected on next page load — `fetchData()` re-queries on mount. There is no client-side TTL, but there is also no realtime subscription, so an open tab will not refresh until reload. |
-| 5 | Learner in France searches UK courses | Display in UK time / instructor local time. | All times are formatted with the **browser's local timezone** via `date-fns format(..., 'yyyy-MM-dd')` and `new Date().getHours()`. A French (UTC+1) browser computing `getDay()`/`getHours()` on a UK ISO timestamp will see wrong hours and can flip a date across midnight near 23:00/00:00 UK. Working-hours rows are stored as naive `time` and assumed UK. |
-| 6 | Google Calendar API errors for an instructor | Fail closed (assume busy) or warn. | **Fails open.** `sync_error` is recorded but the cached row set is whatever was last written; if the instructor never connected or the very first sync failed, the events table is empty and they look totally free. |
-| 7 | Recurring weekly Google event (e.g. every Wed 2–4) | Block every future Wednesday 2–4. | The sync uses `singleEvents=true`, so Google **expands recurrences into individual instances** within the −30d/+365d window. Anything beyond +365d is invisible. EveryDriver page ignores them anyway. |
-| 8 | Two simultaneous bookings of the same slot | Exactly one wins. | Enforced at the DB level by trigger `prevent_lesson_clash` on `scheduled_lessons` (advisory lock per instructor+date, raises `check_violation` if any non-cancelled lesson overlaps). Edge function `create-booking` will surface that as an error. So the DB is safe; the UI may show a generic error message. |
+## Technical notes (for the build pass)
 
----
-
-## Part 3 — Gaps & most likely cause of "wrong courses appearing"
-
-### Scenarios not handled correctly
-- **#1, #2, #6, #3** — broken on the EveryDriver page; partially better on the unused generic page.
-- **#5** — timezone handling is ambient browser-local everywhere; no UK pinning.
-- **#7** — works for the first 365 days only.
-
-### Most likely source of "instructors / courses appearing when they shouldn't"
-**`src/pages/everydriver/Courses.tsx`, lines 376–406 + 820–824.** This is the page the user is on. The "YOUR INSTRUCTORS" tile and the calendar-day availability are built from a resolver that:
-1. Selects working hours **without `start_time`/`end_time`**, so it can't subtract anything.
-2. **Never queries** `instructor_calendar_events`, `instructor_manual_blocks`, or `scheduled_lessons`.
-3. Treats "any active row for that DOW" as "available all day" regardless of overrides with times, course duration, or conflicts.
-
-Conversely, this is also why **Ken's avatar is missing** in some month views: when overrides exist, the page short-circuits on `override.is_available` and ignores everything else; and where the page expects `day_of_week` to be `1=Mon..7=Sun` but Ken's rows use `0=Sun..6=Sat`, his Sundays/Saturdays are silently dropped.
-
-The shared resolver in `src/lib/courseAvailability.ts` is correct in principle but is wired to the wrong page.
-
-### Incorrect assumptions baked into the code
-- All instructors store DOW the same way (false: two conventions in two tables).
-- Working-hours rows imply full-day availability (false: they have explicit times).
-- Calendar cache is fresh (false: only refreshed when an instructor opens their schedule).
-- Google failures should fail open (current behaviour, almost certainly wrong for a booking product).
-- All-day events are informational (intentional, but probably wrong for "School holidays Mon–Fri").
-- Browser timezone == UK (false for any non-UK learner).
-- Course `duration_hours` doesn't need to be matched against free time (false — that's the whole point for intensives).
-- No buffer needed before/after Google events (inconsistent with instructor-portal buffer rules).
-- Recurring events beyond 365 days don't need handling.
-
----
-
-## Part 4 — No code changed
-
-Nothing was modified. Tell me which of the above you want addressed and in what order, and I'll plan fixes in a separate pass.
+- `src/lib/courseAvailability.ts` — extend `hasInstructorAvailabilityOn` signature: add `instructor.bufferMinutes`, `instructor.travelMinutes`, `requiredMinutes`. Replace `MIN_FREE_MINUTES` constant with the parameter; default to current value for backwards compat.
+- New `loadCourseAvailabilitySources(instructorIds: string[], from: Date, to: Date): Promise<CourseAvailabilitySources>` co-located in the same file.
+- `useCourseDiscovery` — replace internal availability logic with calls to `loadCourseAvailabilitySources` + `hasInstructorAvailabilityOn`. Drop the duplicated WorkingHours/DateOverride loading.
+- New edge function `supabase/functions/validate-booking/index.ts` — service-role read on the six tables, runs the resolver, returns JSON. Wired into `src/pages/everydriver/BookingSummary.tsx` on confirm.
+- Files retired: `src/pages/everydriver/Courses.tsx` (1876 lines), and the bespoke availability functions inside `useCourseDiscovery` (~150 lines).
