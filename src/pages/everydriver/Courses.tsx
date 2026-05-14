@@ -1513,104 +1513,14 @@ export default function Courses() {
                 )}
                 {/* Selected date header */}
                 {isListMode ? (
-                  <>
-                    <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-                      <div
-                        className="inline-flex items-center rounded-full p-0.5"
-                        style={{ border: "1px solid #e8e8ee", background: "white" }}
-                      >
-                        {[
-                          { value: "all", label: "All" },
-                          { value: "manual", label: "Manual" },
-                          { value: "automatic", label: "Automatic" },
-                        ].map((opt) => {
-                          const active = transmission === opt.value;
-                          return (
-                            <button
-                              key={opt.value}
-                              onClick={() => setTransmission(opt.value)}
-                              className="rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all"
-                              style={{
-                                background: active ? "#0a1936" : "transparent",
-                                color: active ? "white" : "#7a7a7a",
-                              }}
-                            >
-                              {opt.label}
-                            </button>
-                          );
-                        })}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {/* View toggle */}
-                        <div
-                          className="inline-flex items-center rounded-full p-0.5"
-                          style={{ border: "1px solid #e8e8ee", background: "white" }}
-                        >
-                          <button
-                            onClick={() => setViewMode("list")}
-                            className="flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold transition-all"
-                            style={{
-                              background: viewMode === "list" ? "#0a1936" : "transparent",
-                              color: viewMode === "list" ? "white" : "#7a7a7a",
-                            }}
-                            aria-label="List view"
-                          >
-                            <List className="h-3 w-3" />
-                            List
-                          </button>
-                          <button
-                            onClick={() => setViewMode("grid")}
-                            className="flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold transition-all"
-                            style={{
-                              background: (viewMode as string) === "grid" ? "#0a1936" : "transparent",
-                              color: (viewMode as string) === "grid" ? "white" : "#7a7a7a",
-                            }}
-                            aria-label="Grid view"
-                          >
-                            <LayoutGrid className="h-3 w-3" />
-                            Grid
-                          </button>
-                        </div>
-                        <label
-                          htmlFor="course-sort"
-                          style={{
-                            fontSize: 11,
-                            fontWeight: 700,
-                            letterSpacing: "0.12em",
-                            color: "#7a7a7a",
-                            textTransform: "uppercase",
-                          }}
-                        >
-                          Sort
-                        </label>
-                        <div className="relative">
-                          <select
-                            id="course-sort"
-                            value={sortBy}
-                            onChange={(e) => setSortBy(e.target.value as SortOption)}
-                            className="appearance-none rounded-md bg-white py-1.5 pl-3 pr-8 text-sm font-semibold focus:outline-none"
-                            style={{ border: "1px solid #d0d0d8", color: "#0a1936" }}
-                          >
-                            <option value="nearest" disabled={!userLocation}>Nearest first</option>
-                            <option value="soonest">Soonest</option>
-                            <option value="price-low">Cheapest</option>
-                          </select>
-                          <ChevronDown
-                            className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2"
-                            style={{ width: 14, height: 14, color: "#7a7a7a" }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                    <div className="mb-3">
-                      <h2 style={{ fontSize: 18, fontWeight: 800, color: "#0a1936", letterSpacing: "-0.02em" }}>
-                        {format(selectedDate, "EEEE, d MMMM")}
-                      </h2>
-                      <p style={{ fontSize: 12, color: "#7a7a7a", marginTop: 2 }}>
-                        {filteredCourses.length} course{filteredCourses.length !== 1 ? "s" : ""} available
-                      </p>
-                    </div>
-                  </>
+                  <div className="mb-3">
+                    <h2 style={{ fontSize: 22, fontWeight: 800, color: "#0A2B6B", letterSpacing: "-0.02em" }}>
+                      {format(selectedDate, "EEEE, d MMMM")}
+                    </h2>
+                    <p style={{ fontSize: 13, color: "#6B7280", marginTop: 2 }}>
+                      {filteredCourses.length} course{filteredCourses.length !== 1 ? "s" : ""} available
+                    </p>
+                  </div>
                 ) : (
                 <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
                   <div>
