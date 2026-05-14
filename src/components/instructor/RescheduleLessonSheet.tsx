@@ -102,6 +102,14 @@ export function RescheduleLessonSheet({
     }
   }, [open, instructorId]);
 
+  // Refresh Google Calendar cache for the reschedule horizon when the sheet opens.
+  useGoogleCalendarRefresh({
+    instructorId,
+    from: new Date(),
+    to: addDays(new Date(), bookingAdvanceDays),
+    enabled: open,
+  });
+
   const fetchAvailability = async () => {
     setLoading(true);
     setError(null);
