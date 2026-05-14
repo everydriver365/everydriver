@@ -242,42 +242,35 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
       if (instructorId) {
         coursesQuery = coursesQuery.eq("instructor_id", instructorId);
       }
-      let workingHoursQuery = supabase.from("instructor_working_hours").select("instructor_id, day_of_week, is_active");
-      if (instructorId) {
-        workingHoursQuery = workingHoursQuery.eq("instructor_id", instructorId);
-      }
-      let overridesQuery = supabase.from("instructor_date_overrides").select("instructor_id, override_date, override_end_date, is_available");
-      if (instructorId) {
-        overridesQuery = overridesQuery.eq("instructor_id", instructorId);
-      }
 
-      const [instructorsRes, coursesRes, templatesRes, workingHoursRes, overridesRes, premiumRes] = await Promise.all([
+      const [instructorsRes, coursesRes, templatesRes, premiumRes] = await Promise.all([
         instructorsQuery,
         coursesQuery,
         supabase.from("course_templates").select("course_hours, course_name, default_image_url, is_popular, is_intensive, features").eq("is_active", true),
-        workingHoursQuery,
-        overridesQuery,
         supabase.from("instructor_premium_placements").select("instructor_id, placement_type, priority_score, expires_at").eq("is_active", true),
       ]);
 
       if (instructorsRes.error) throw instructorsRes.error;
       if (coursesRes.error) throw coursesRes.error;
       if (templatesRes.error) throw templatesRes.error;
-      if (workingHoursRes.error) throw workingHoursRes.error;
-      if (overridesRes.error) throw overridesRes.error;
 
       const loadedInstructors = instructorsRes.data || [];
-      const loadedWorkingHours = workingHoursRes.data || [];
-      const loadedOverrides = overridesRes.data || [];
-
       setInstructors(loadedInstructors);
       setInstructorCourses(coursesRes.data || []);
       setCourseTemplates(templatesRes.data || []);
-      const newSources: CourseAvailabilitySources = {
-        ...sources,
-        workingHours: loadedWorkingHours as any,
-        overrides: loadedOverrides as any,
-      };
+
+      // Load all six availability sources for every instructor across the
+      // search horizon (today + 18 months). Single round-trip — both calendar
+      // dots and the per-day course list use the result so display is always
+      // consistent with the booking-time guard in create-booking.
+      const fromDate = new Date();
+      const toDate = addMonths(fromDate, 18);
+      const newSources = await loadCourseAvailabilitySources(
+        supabase as any,
+        loadedInstructors.map((i) => i.id),
+        fromDate,
+        toDate,
+      );
       setSources(newSources);
 
       // Store premium placements (filter expired)
