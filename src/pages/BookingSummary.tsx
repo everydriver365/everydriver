@@ -169,8 +169,8 @@ export default function BookingSummary() {
   
   // Deposit payment state
   const [depositEnabled, setDepositEnabled] = useState(false);
-  const [depositAmount, setDepositAmount] = useState(350);
-  const [depositDeadlineDays, setDepositDeadlineDays] = useState(30);
+  const [depositAmount, setDepositAmount] = useState(0);
+  const [depositDeadlineDays, setDepositDeadlineDays] = useState(0);
   const [paymentOption, setPaymentOption] = useState<'full' | 'deposit'>('deposit');
   
   // Cancellation policy text
