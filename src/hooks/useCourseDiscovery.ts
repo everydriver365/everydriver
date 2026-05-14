@@ -149,24 +149,44 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
 
   const monthOptions = useMemo(() => getMonthOptions(), []);
 
-  // Get display hours based on course type filter
+  // Build the candidate hour list dynamically from course_templates +
+  // instructor_courses. The intensive/semi-intensive split is driven by
+  // course_templates.is_intensive — no hard-coded buckets.
   const displayHours = useMemo(() => {
-    // When filtering by instructor, show all their course hours
+    const intensiveSet = new Set<number>();
+    const semiSet = new Set<number>();
+    const allSet = new Set<number>();
+
+    for (const t of courseTemplates) {
+      allSet.add(t.course_hours);
+      if (t.is_intensive) intensiveSet.add(t.course_hours);
+      else semiSet.add(t.course_hours);
+    }
+    // Include any hours an instructor actually offers, even if no template row
+    // exists (default to semi-intensive bucket).
+    for (const c of instructorCourses) {
+      allSet.add(c.course_hours);
+      if (!intensiveSet.has(c.course_hours) && !semiSet.has(c.course_hours)) {
+        semiSet.add(c.course_hours);
+      }
+    }
+
+    let pool: Set<number>;
     if (instructorId) {
-      const instructorHours = instructorCourses
-        .filter(c => c.instructor_id === instructorId)
-        .map(c => c.course_hours);
-      return instructorHours.length > 0 ? instructorHours : [...new Set([...INTENSIVE_HOURS, ...SEMI_INTENSIVE_HOURS])];
+      pool = new Set(
+        instructorCourses
+          .filter((c) => c.instructor_id === instructorId)
+          .map((c) => c.course_hours),
+      );
+    } else if (courseTypeFilter === "intensive") {
+      pool = intensiveSet;
+    } else if (courseTypeFilter === "semi-intensive") {
+      pool = semiSet;
+    } else {
+      pool = allSet;
     }
-    switch (courseTypeFilter) {
-      case "intensive":
-        return INTENSIVE_HOURS;
-      case "semi-intensive":
-        return SEMI_INTENSIVE_HOURS;
-      default:
-        return [...new Set([...INTENSIVE_HOURS, ...SEMI_INTENSIVE_HOURS])];
-    }
-  }, [courseTypeFilter, instructorId, instructorCourses]);
+    return Array.from(pool).sort((a, b) => a - b);
+  }, [courseTypeFilter, instructorId, instructorCourses, courseTemplates]);
 
   // Single source of truth: delegates to courseAvailability resolver, which
   // honours working hours, date overrides, manual blocks, scheduled lessons,
