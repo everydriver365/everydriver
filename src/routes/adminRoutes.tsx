@@ -81,6 +81,10 @@ export const adminRoutes = (
       element={<ProtectedAdminRoute><PlatformFees /></ProtectedAdminRoute>}
     />
     <Route
+      path="/admin/payment-audit"
+      element={<ProtectedAdminRoute><PaymentAudit /></ProtectedAdminRoute>}
+    />
+    <Route
       path="/admin/custom-domain-queue"
       element={<ProtectedAdminRoute><CustomDomainQueue /></ProtectedAdminRoute>}
     />
