@@ -167,52 +167,28 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
     }
   }, [courseTypeFilter, instructorId, instructorCourses]);
 
-  const isDateAvailable = useCallback((day: Date, instructorsList: Instructor[], workingHoursList: WorkingHours[], dateOverridesList: DateOverride[]) => {
+  // Single source of truth: delegates to courseAvailability resolver, which
+  // honours working hours, date overrides, manual blocks, scheduled lessons,
+  // Google Calendar busy events, and instructor buffer + travel padding.
+  const isDateAvailable = useCallback((day: Date, instructorsList: Instructor[], src: CourseAvailabilitySources) => {
     const today = startOfDay(new Date());
     if (isBefore(day, today)) return false;
-
-    const dayOfWeek = getDay(day);
-    const dateStr = format(day, "yyyy-MM-dd");
-
-    return instructorsList.some((instructor) => {
-      if (instructor.available_from && isAfter(parseISO(instructor.available_from), day)) {
-        return false;
-      }
-
-      const override = dateOverridesList.find(
-        (o) =>
-          o.instructor_id === instructor.id &&
-          (o.override_date === dateStr ||
-            (o.override_end_date &&
-              dateStr >= o.override_date &&
-              dateStr <= o.override_end_date))
-      );
-      if (override) return override.is_available;
-
-      return workingHoursList.some(
-        (wh) =>
-          wh.instructor_id === instructor.id &&
-          wh.day_of_week === dayOfWeek &&
-          wh.is_active
-      );
-    });
+    return instructorsList.some((instructor) =>
+      hasInstructorAvailabilityOn(instructor as InstructorLite, day, src),
+    );
   }, []);
 
-  const findFirstAvailableDate = useCallback((instructorsList: Instructor[], workingHoursList: WorkingHours[], dateOverridesList: DateOverride[]) => {
+  const findFirstAvailableDate = useCallback((instructorsList: Instructor[], src: CourseAvailabilitySources) => {
     const today = startOfDay(new Date());
-    
     for (const monthOption of monthOptions) {
       const [year, month] = monthOption.value.split("-").map(Number);
       const monthStart = startOfMonth(new Date(year, month - 1));
       const monthEnd = endOfMonth(monthStart);
       const searchStart = isAfter(monthStart, today) ? monthStart : today;
-      
       if (isBefore(monthEnd, today)) continue;
-      
       const daysInMonth = eachDayOfInterval({ start: searchStart, end: monthEnd });
-      
       for (const day of daysInMonth) {
-        if (isDateAvailable(day, instructorsList, workingHoursList, dateOverridesList)) {
+        if (isDateAvailable(day, instructorsList, src)) {
           return { date: day, month: monthOption.value };
         }
       }
