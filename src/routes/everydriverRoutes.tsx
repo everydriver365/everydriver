@@ -7,7 +7,7 @@ import { lazyWithRetry as lazy } from "@/utils/lazyWithRetry";
 // instructor subdomains continue to use src/routes/publicRoutes.tsx.
 
 const EDIndex = lazy(() => import("@/pages/everydriver/Index"));
-const EDCourses = lazy(() => import("@/pages/everydriver/Courses"));
+const EDCourses = lazy(() => import("@/pages/everydriver/CourseResults"));
 const EDBenefits = lazy(() => import("@/pages/everydriver/Benefits"));
 const EDIntensives = lazy(() => import("@/pages/everydriver/Intensives"));
 const EDSemiIntensive = lazy(() => import("@/pages/everydriver/SemiIntensive"));
