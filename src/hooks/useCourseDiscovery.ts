@@ -145,6 +145,9 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
   });
   const [premiumPlacements, setPremiumPlacements] = useState<{ instructor_id: string; placement_type: string; priority_score: number }[]>([]);
 
+  const workingHours = sources.workingHours as unknown as WorkingHours[];
+  const dateOverrides = sources.overrides as unknown as DateOverride[];
+
   const monthOptions = useMemo(() => getMonthOptions(), []);
 
   // Get display hours based on course type filter
