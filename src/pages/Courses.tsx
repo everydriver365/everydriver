@@ -615,7 +615,7 @@ export default function Courses() {
         return distance <= radiusMiles;
       });
 
-      let firstAvailable = findFirstAvailableDate(instructorsNearby, workingHours, dateOverrides);
+      let firstAvailable = findFirstAvailableDate(instructorsNearby, availabilitySources);
       let usedFallback = false;
 
       // Auto-expand radius once if nothing nearby
@@ -627,7 +627,7 @@ export default function Courses() {
       // Final fallback: search all instructors with active courses so the grid still renders
       if (!firstAvailable) {
         const allWithCourses = instructors.filter((i) => instructorIds.has(i.id));
-        firstAvailable = findFirstAvailableDate(allWithCourses, workingHours, dateOverrides);
+        firstAvailable = findFirstAvailableDate(allWithCourses, availabilitySources);
         if (firstAvailable) {
           usedFallback = true;
           console.warn(`[Courses] Postcode ${cleanPostcode}: no nearby instructors, showing all available courses`);
@@ -697,40 +697,107 @@ export default function Courses() {
       const instructorsQuery = supabase.from("public_instructors").select("*").eq("is_active", true);
       if (whitelabelSlug) instructorsQuery.eq("app_slug", whitelabelSlug);
 
-      const [instructorsRes, coursesRes, templatesRes, workingHoursRes, availabilityWindowsRes, overridesRes] = await Promise.all([
+      const [instructorsRes, coursesRes, templatesRes] = await Promise.all([
         instructorsQuery,
         supabase.from("instructor_courses").select("*").eq("is_active", true),
         supabase.from("course_templates").select("course_hours, course_name, default_image_url, is_popular, features, is_intensive").eq("is_active", true),
-        supabase.from("instructor_working_hours").select("instructor_id, day_of_week, is_active"),
-        supabase.from("availability_windows").select("instructor_id, day_of_week, is_active"),
-        supabase.from("instructor_date_overrides").select("instructor_id, override_date, override_end_date, is_available"),
       ]);
 
       if (instructorsRes.error) throw instructorsRes.error;
       if (coursesRes.error) throw coursesRes.error;
       if (templatesRes.error) throw templatesRes.error;
+
+      const loadedInstructors = instructorsRes.data || [];
+      const instructorIds = loadedInstructors.map((i: any) => i.id).filter(Boolean);
+      const firstMonth = startOfDay(new Date());
+      const lastMonthOption = monthOptions[monthOptions.length - 1];
+      const [lastYear, lastMonth] = lastMonthOption.value.split("-").map(Number);
+      const rangeEnd = endOfMonth(new Date(lastYear, lastMonth - 1));
+      const fromYmd = format(firstMonth, "yyyy-MM-dd");
+      const toYmd = format(rangeEnd, "yyyy-MM-dd");
+      const fromIso = firstMonth.toISOString();
+      const toIso = new Date(rangeEnd.getFullYear(), rangeEnd.getMonth(), rangeEnd.getDate() + 1).toISOString();
+
+      const [workingHoursRes, availabilityWindowsRes, overridesRes, lessonsRes, blocksRes, eventsRes] = instructorIds.length > 0
+        ? await Promise.all([
+            supabase
+              .from("instructor_working_hours")
+              .select("instructor_id, day_of_week, start_time, end_time, is_active")
+              .in("instructor_id", instructorIds),
+            supabase
+              .from("availability_windows")
+              .select("instructor_id, day_of_week, start_time, end_time, is_active")
+              .in("instructor_id", instructorIds),
+            supabase
+              .from("instructor_date_overrides")
+              .select("instructor_id, override_date, override_end_date, is_available, start_time, end_time")
+              .in("instructor_id", instructorIds)
+              .gte("override_date", fromYmd)
+              .lte("override_date", toYmd),
+            supabase
+              .from("scheduled_lessons")
+              .select("instructor_id, lesson_date, start_time, duration_minutes, status")
+              .in("instructor_id", instructorIds)
+              .gte("lesson_date", fromYmd)
+              .lte("lesson_date", toYmd)
+              .neq("status", "cancelled"),
+            supabase
+              .from("instructor_manual_blocks")
+              .select("instructor_id, start_datetime, end_datetime")
+              .in("instructor_id", instructorIds)
+              .gte("end_datetime", fromIso)
+              .lte("start_datetime", toIso),
+            supabase
+              .from("instructor_calendar_events")
+              .select("instructor_id, start_time, end_time, is_busy")
+              .in("instructor_id", instructorIds)
+              .eq("is_busy", true)
+              .gte("end_time", fromIso)
+              .lte("start_time", toIso),
+          ])
+        : [
+            { data: [], error: null },
+            { data: [], error: null },
+            { data: [], error: null },
+            { data: [], error: null },
+            { data: [], error: null },
+            { data: [], error: null },
+          ];
+
       if (workingHoursRes.error) throw workingHoursRes.error;
       if (availabilityWindowsRes.error) throw availabilityWindowsRes.error;
       if (overridesRes.error) throw overridesRes.error;
+      if (lessonsRes.error) throw lessonsRes.error;
+      if (blocksRes.error) throw blocksRes.error;
+      if (eventsRes.error) throw eventsRes.error;
 
-      const loadedInstructors = instructorsRes.data || [];
-      // Merge both availability sources: some instructors store hours in
-      // instructor_working_hours, others in availability_windows. Both tables
-      // use the same numbering as the date checks below (1=Mon..7=Sun).
-      const loadedWorkingHours = [
-        ...(workingHoursRes.data || []),
-        ...(availabilityWindowsRes.data || []),
-      ];
+      const loadedWorkingHourRows = workingHoursRes.data || [];
+      const loadedAvailabilityWindowRows = availabilityWindowsRes.data || [];
       const loadedOverrides = overridesRes.data || [];
+      const loadedCalendarEvents = eventsRes.data || [];
+      const loadedScheduledLessons = lessonsRes.data || [];
+      const loadedManualBlocks = blocksRes.data || [];
+      const loadedAvailabilitySources: CourseAvailabilitySources = {
+        workingHours: loadedWorkingHourRows,
+        availabilityWindows: loadedAvailabilityWindowRows,
+        overrides: loadedOverrides,
+        calendarEvents: loadedCalendarEvents,
+        scheduledLessons: loadedScheduledLessons,
+        manualBlocks: loadedManualBlocks,
+      };
 
       setInstructors(loadedInstructors);
       setInstructorCourses(coursesRes.data || []);
       setCourseTemplates(templatesRes.data || []);
-      setWorkingHours(loadedWorkingHours);
-      setDateOverrides(loadedOverrides);
+      setWorkingHourRows(loadedWorkingHourRows);
+      setAvailabilityWindowRows(loadedAvailabilityWindowRows);
+      setOverrideRows(loadedOverrides);
+      setCalendarEvents(loadedCalendarEvents);
+      setScheduledLessons(loadedScheduledLessons);
+      setManualBlocks(loadedManualBlocks);
 
       // Auto-advance to first available date
-      const firstAvailable = findFirstAvailableDate(loadedInstructors, loadedWorkingHours, loadedOverrides);
+      const firstAvailable = findFirstAvailableDate(loadedInstructors, loadedAvailabilitySources);
       if (firstAvailable) {
         setSelectedMonth(firstAvailable.month);
         setSelectedDate(firstAvailable.date);
@@ -741,7 +808,6 @@ export default function Courses() {
       await geocodePostcodes(allPostcodes);
 
       // Load postcode rate overrides for all visible instructors (single batched query)
-      const instructorIds = (instructorsRes.data || []).map((i: any) => i.id).filter(Boolean);
       if (instructorIds.length) {
         const { data: rateRows } = await supabase
           .from("instructor_postcode_rates")
