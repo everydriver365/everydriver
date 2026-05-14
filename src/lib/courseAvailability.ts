@@ -360,20 +360,20 @@ export async function loadCourseAvailabilitySources(
       .in("instructor_id", instructorIds)
       .or(`override_date.gte.${fromStr},override_end_date.gte.${fromStr}`)
       .lte("override_date", toStr),
-    client
-      .from("instructor_manual_blocks")
-      .select("instructor_id, start_datetime, end_datetime")
-      .in("instructor_id", instructorIds)
-      .gte("end_datetime", fromIso)
-      .lte("start_datetime", toIso),
-    client
-      .from("scheduled_lessons")
-      .select("instructor_id, lesson_date, start_time, duration_minutes")
-      .in("instructor_id", instructorIds)
-      .neq("status", "cancelled")
-      .is("deleted_at", null)
-      .gte("lesson_date", fromStr)
-      .lte("lesson_date", toStr),
+    // Public-safe RPC: returns only instructor_id + start/end datetime, no titles/notes.
+    // Works for anonymous website visitors as well as logged-in users.
+    client.rpc("get_public_instructor_manual_blocks", {
+      p_instructor_ids: instructorIds,
+      p_from_datetime: fromIso,
+      p_to_datetime: toIso,
+    }),
+    // Public-safe RPC: returns only instructor_id, lesson_date, start_time,
+    // duration_minutes for non-cancelled lessons. No pupil details.
+    client.rpc("get_public_scheduled_lesson_blocks", {
+      p_instructor_ids: instructorIds,
+      p_from_date: fromStr,
+      p_to_date: toStr,
+    }),
     client
       .from("instructor_calendar_events")
       .select("instructor_id, start_time, end_time, is_busy")

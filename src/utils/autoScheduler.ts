@@ -115,6 +115,8 @@ export async function findOptimalSlots(params: AutoScheduleParams): Promise<Slot
   const lookAheadDays = courseType === 'intensive' ? 14 : courseType === 'semi-intensive' ? 30 : 60;
 
   // Fetch all availability data
+  const fromDate = formatDate(startFromDate);
+  const toDate = formatDate(addDays(startFromDate, lookAheadDays));
   const [workingHoursRes, overridesRes, lessonsRes] = await Promise.all([
     supabase
       .from('instructor_working_hours')
@@ -124,15 +126,14 @@ export async function findOptimalSlots(params: AutoScheduleParams): Promise<Slot
       .from('instructor_date_overrides')
       .select('*')
       .eq('instructor_id', instructorId)
-      .gte('override_date', formatDate(startFromDate))
-      .lte('override_date', formatDate(addDays(startFromDate, lookAheadDays))),
-    supabase
-      .from('scheduled_lessons')
-      .select('lesson_date, start_time, duration_minutes')
-      .eq('instructor_id', instructorId)
-      .gte('lesson_date', formatDate(startFromDate))
-      .lte('lesson_date', formatDate(addDays(startFromDate, lookAheadDays)))
-      .neq('status', 'cancelled'),
+      .gte('override_date', fromDate)
+      .lte('override_date', toDate),
+    // Public-safe RPC — works for anonymous booking visitors.
+    supabase.rpc('get_public_scheduled_lesson_blocks', {
+      p_instructor_ids: [instructorId],
+      p_from_date: fromDate,
+      p_to_date: toDate,
+    }),
   ]);
 
   const workingHours = (workingHoursRes.data || []) as unknown as WorkingHours[];

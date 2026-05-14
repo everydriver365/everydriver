@@ -12,13 +12,11 @@ export function useInstructorOnlineStatus(instructorId: string | undefined) {
   useEffect(() => {
     if (!instructorId) return;
 
-    // Check last_active_at as initial fallback
+    // Public-safe RPC — works for anonymous chat widgets too.
     const checkLastActive = async () => {
       const { data } = await supabase
-        .from("instructors")
-        .select("last_active_at")
-        .eq("id", instructorId)
-        .single();
+        .rpc("get_public_instructor_presence", { p_instructor_id: instructorId })
+        .maybeSingle();
 
       if (data?.last_active_at) {
         const lastActive = new Date(data.last_active_at as string).getTime();
