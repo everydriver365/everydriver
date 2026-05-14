@@ -242,7 +242,7 @@ export function LessonScheduler({
     try {
       const today = format(new Date(), "yyyy-MM-dd");
       const maxDate = format(addDays(new Date(), bookingAdvanceDays), "yyyy-MM-dd");
-      const [hoursRes, overridesRes, calendarRes, instructorRes, lessonsRes] = await Promise.all([
+      const [hoursRes, overridesRes, calendarRes, prefRes, lessonsRes] = await Promise.all([
         supabase
           .from("instructor_working_hours")
           .select("*")
@@ -259,19 +259,16 @@ export function LessonScheduler({
           .eq("instructor_id", instructorId)
           .eq("is_busy", true)
           .gte("start_time", today),
+        // Public-safe RPC — works for anonymous booking visitors.
         supabase
-          .from("instructors")
-          .select("prefer_earliest_slot")
-          .eq("id", instructorId)
-          .single(),
-        supabase
-          .from("scheduled_lessons")
-          .select("lesson_date, start_time, duration_minutes")
-          .eq("instructor_id", instructorId)
-          .neq("status", "cancelled")
-          .is("deleted_at", null)
-          .gte("lesson_date", today)
-          .lte("lesson_date", maxDate),
+          .rpc("get_public_instructor_booking_preferences", { p_instructor_id: instructorId })
+          .maybeSingle(),
+        // Public-safe RPC — exposes only date/start/duration, no pupil data.
+        supabase.rpc("get_public_scheduled_lesson_blocks", {
+          p_instructor_ids: [instructorId],
+          p_from_date: today,
+          p_to_date: maxDate,
+        }),
       ]);
 
       const hours = hoursRes.data;
@@ -279,7 +276,7 @@ export function LessonScheduler({
       const calendarEvents = calendarRes.data;
       const existingLessons = lessonsRes.data;
 
-      setPreferEarliestSlot((instructorRes.data as any)?.prefer_earliest_slot ?? false);
+      setPreferEarliestSlot((prefRes.data as any)?.prefer_earliest_slot ?? false);
 
       setWorkingHours(
         (hours || []).map((h) => ({
