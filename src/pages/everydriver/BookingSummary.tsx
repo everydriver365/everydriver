@@ -504,7 +504,8 @@ export default function BookingSummary() {
 
       if (error) {
         console.error("Booking error:", error);
-        toast.error("Failed to create your booking. Please try again.");
+        const friendly = await describeBookingConflictResponse(error);
+        toast.error(friendly || "Failed to create your booking. Please try again.");
         return null;
       }
 
