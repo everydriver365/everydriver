@@ -12,7 +12,12 @@
 // are treated as informational context and do NOT block the day on their own,
 // matching the existing slot-search behavior.
 
-import { format, isAfter, parseISO, startOfDay, isBefore } from "date-fns";
+import { format, isAfter, parseISO, startOfDay, isBefore, addDays } from "date-fns";
+import type { SupabaseClient } from "@supabase/supabase-js";
+
+// Default travel-time padding around any conflict, mirroring availabilityCore.
+// Always added on top of the instructor's configured buffer.
+export const TRAVEL_FALLBACK_MIN = 10;
 
 export type WeeklyHourRow = {
   instructor_id: string;
