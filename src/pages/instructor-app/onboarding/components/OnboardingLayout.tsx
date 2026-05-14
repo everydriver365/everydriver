@@ -27,7 +27,7 @@ export function OnboardingLayout({
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
               <img
-                src="/everydriver-logo-full.png"
+                src="/everydriver-logo-full.svg"
                 alt="EveryDriver"
                 className="h-8"
               />
