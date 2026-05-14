@@ -737,9 +737,9 @@ export function LessonScheduler({
           </div>
 
           {/* Inner two-column: calendar + slots */}
-          <div className="grid gap-[14px] md:grid-cols-2">
+          <div className="grid gap-5 md:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
             {/* Calendar */}
-            <div className="px-1.5">
+            <div>
               <CalendarComponent
                 mode="single"
                 selected={selectedDate}
