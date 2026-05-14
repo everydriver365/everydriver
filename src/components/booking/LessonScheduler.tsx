@@ -7,6 +7,7 @@ import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { WaitlistDialog } from "./WaitlistDialog";
+import { useGoogleCalendarRefresh } from "@/hooks/useGoogleCalendarRefresh";
 
 interface WorkingHour {
   day_of_week: number;
