@@ -748,7 +748,9 @@ export function LessonScheduler({
                 month={viewMonth}
                 onMonthChange={setViewMonth}
                 disabled={(date) => !isDateAvailable(date)}
-                formatters={{ formatWeekdayName: (d) => format(d, "EEEEEE") }}
+                weekStartsOn={1}
+                locale={enGB}
+                formatters={{ formatWeekdayName: (d) => format(d, "EEEEEE", { locale: enGB }) }}
                 modifiers={{
                   hasLesson: (date) => selectedSlots.some((s) => isSameDay(s.date, date)),
                   available: (date) =>
