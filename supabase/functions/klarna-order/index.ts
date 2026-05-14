@@ -140,8 +140,15 @@ serve(async (req: Request) => {
 
     if (data.instructorId && data.pupilId) {
       try {
-        // Idempotency check: skip if a payment_history row already references this Klarna order_id
-        const { data: existing, error: existErr } = await supabase
+        // Idempotency: prefer external_payment_ref, fall back to legacy notes match
+        const externalRef = `klarna:${orderId}`;
+        const { data: existingByRef } = await supabase
+          .from("payment_history")
+          .select("id")
+          .eq("external_payment_ref", externalRef)
+          .maybeSingle();
+
+        const { data: existingLegacy, error: existErr } = existingByRef ? { data: null, error: null } : await supabase
           .from("payment_history")
           .select("id")
           .eq("pupil_id", data.pupilId)
@@ -153,7 +160,7 @@ serve(async (req: Request) => {
           console.error("Klarna idempotency check error:", existErr);
         }
 
-        if (existing) {
+        if (existingByRef || existingLegacy) {
           console.log("Klarna order already recorded, skipping insert:", orderId);
         } else {
           const amountGbp = Math.round(data.order_amount) / 100;
@@ -166,6 +173,7 @@ serve(async (req: Request) => {
               instructor_id: data.instructorId,
               amount: amountGbp,
               payment_method: "Klarna",
+              external_payment_ref: externalRef,
               notes: noteText,
             });
 
