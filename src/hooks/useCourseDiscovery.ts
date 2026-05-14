@@ -144,7 +144,6 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
     manualBlocks: [],
   });
   const [premiumPlacements, setPremiumPlacements] = useState<{ instructor_id: string; placement_type: string; priority_score: number }[]>([]);
-  const [premiumPlacements, setPremiumPlacements] = useState<{ instructor_id: string; placement_type: string; priority_score: number }[]>([]);
 
   const monthOptions = useMemo(() => getMonthOptions(), []);
 
