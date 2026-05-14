@@ -152,8 +152,15 @@ async function handleBillingRequest(supabase: any, event: any) {
         .maybeSingle();
 
       if (paymentIntent) {
-        // Idempotency: skip if a payment_history row already references this billing request
-        const { data: existingPh } = await supabase
+        // Idempotency: prefer external_payment_ref, fall back to legacy notes match
+        const externalRef = `gocardless:${billingRequestId}`;
+        const { data: existingByRef } = await supabase
+          .from("payment_history")
+          .select("id")
+          .eq("external_payment_ref", externalRef)
+          .maybeSingle();
+
+        const { data: existingPh } = existingByRef ? { data: null } : await supabase
           .from("payment_history")
           .select("id")
           .eq("pupil_id", paymentIntent.pupil_id)
@@ -161,7 +168,7 @@ async function handleBillingRequest(supabase: any, event: any) {
           .limit(1)
           .maybeSingle();
 
-        if (existingPh) {
+        if (existingByRef || existingPh) {
           console.log("IBP already recorded in payment_history, skipping:", billingRequestId);
         } else {
           await supabase
@@ -195,6 +202,7 @@ async function handleBillingRequest(supabase: any, event: any) {
             instructor_id: instructorId,
             amount: paymentIntent.amount,
             payment_method: "GoCardless Bank Pay",
+            external_payment_ref: externalRef,
             notes: `Instant Bank Pay · billing_request_id:${billingRequestId} · payment_id:${paymentId}`,
           });
 
