@@ -1763,6 +1763,7 @@ export default function BookingSummary() {
           onBankCheckout={handleInstantBankPay}
           onCashCheckout={handleCashPayment}
         />
+        </div>
 
         {showHostedFields && courseDetails && (
           <motion.div
