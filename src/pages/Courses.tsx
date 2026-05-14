@@ -874,11 +874,12 @@ export default function Courses() {
         }
       }
 
-      // Price Range filter
+      // Price Range filter (live data only — skip courses with no published rate)
       if (priceRange !== "any") {
-        const skim = course.instructor.school_skim_amount || 0;
-        const rate = course.instructor.hourly_rate || 40;
-        const computed = course.discountedPrice || (course.hours * rate + skim);
+        const skim = Number(course.instructor.school_skim_amount ?? 0);
+        const rate = Number(course.instructor.hourly_rate ?? 0);
+        if (!rate) return false;
+        const computed = course.discountedPrice ?? (course.hours * rate + skim);
         if (priceRange === "under-500" && computed >= 500) return false;
         if (priceRange === "500-1000" && (computed < 500 || computed > 1000)) return false;
         if (priceRange === "over-1000" && computed <= 1000) return false;
@@ -890,12 +891,17 @@ export default function Courses() {
       switch (sortBy) {
         case "soonest":
           return a.bookableDate.getTime() - b.bookableDate.getTime();
-        case "price-low":
-          const skimA = a.instructor.school_skim_amount || 0;
-          const skimB = b.instructor.school_skim_amount || 0;
-          const priceA = (a.hours * (a.instructor.hourly_rate || 40)) + skimA;
-          const priceB = (b.hours * (b.instructor.hourly_rate || 40)) + skimB;
-          return priceA - priceB;
+        case "price-low": {
+          // Instructors with no published rate sort to the bottom.
+          const rateA = Number(a.instructor.hourly_rate ?? 0);
+          const rateB = Number(b.instructor.hourly_rate ?? 0);
+          if (!rateA && !rateB) return 0;
+          if (!rateA) return 1;
+          if (!rateB) return -1;
+          const skimA = Number(a.instructor.school_skim_amount ?? 0);
+          const skimB = Number(b.instructor.school_skim_amount ?? 0);
+          return ((a.hours * rateA) + skimA) - ((b.hours * rateB) + skimB);
+        }
         case "nearest":
           if (a.distance === undefined) return 1;
           if (b.distance === undefined) return -1;
@@ -1642,8 +1648,8 @@ export default function Courses() {
                     <>
                       <CourseTableList
                         courses={(isMobile ? filteredCourses.slice(0, mobileVisibleCount) : filteredCourses).map((c) => {
-                          const rate = resolvedRateFor(c.instructor) ?? c.instructor.hourly_rate ?? 40;
-                          const skim = c.instructor.school_skim_amount || 0;
+                          const rate = resolvedRateFor(c.instructor) ?? Number(c.instructor.hourly_rate ?? 0);
+                          const skim = Number(c.instructor.school_skim_amount ?? 0);
                           return {
                             instructor: c.instructor,
                             hours: c.hours,

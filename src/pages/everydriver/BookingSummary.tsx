@@ -131,6 +131,7 @@ export default function BookingSummary() {
   const [bankHolidays, setBankHolidays] = useState<Set<string>>(() => new Set());
   const [loading, setLoading] = useState(true);
   const [pausedInstructorName, setPausedInstructorName] = useState<string | null>(null);
+  const [loadErrorReason, setLoadErrorReason] = useState<string | null>(null);
   const [selectedSlots, setSelectedSlots] = useState<SelectedSlot[]>([]);
   const [reviews, setReviews] = useState<CourseReview[]>([]);
   const [locationName, setLocationName] = useState<string>("");
@@ -168,8 +169,8 @@ export default function BookingSummary() {
   
   // Deposit payment state
   const [depositEnabled, setDepositEnabled] = useState(false);
-  const [depositAmount, setDepositAmount] = useState(350);
-  const [depositDeadlineDays, setDepositDeadlineDays] = useState(30);
+  const [depositAmount, setDepositAmount] = useState(0);
+  const [depositDeadlineDays, setDepositDeadlineDays] = useState(0);
   const [paymentOption, setPaymentOption] = useState<'full' | 'deposit'>('deposit');
   
   // Cancellation policy text
@@ -313,26 +314,52 @@ export default function BookingSummary() {
           }
         }
         console.error("Error fetching instructor:", instructorRes.error);
+        setLoadErrorReason(instructorRes.error
+          ? "We couldn't load this instructor right now. Please try again."
+          : "This instructor profile is unavailable or no longer accepting bookings.");
         setLoading(false);
         return;
       }
 
-      // Set deposit settings from instructor
+      const instructor = instructorRes.data;
+      const template = templateRes.data;
+      const instructorCourse = instructorCourseRes.data;
+
+      // LIVE DATA ONLY — refuse to load if the instructor hasn't configured pricing
+      // or core scheduling values. No magic fallbacks.
+      if (!instructor.hourly_rate || Number(instructor.hourly_rate) <= 0) {
+        setLoadErrorReason("This instructor hasn't published an hourly rate yet, so this course can't be booked online. Please contact them directly.");
+        setLoading(false);
+        return;
+      }
+      if (!instructor.preferred_lesson_length || Number(instructor.preferred_lesson_length) <= 0) {
+        setLoadErrorReason("This instructor hasn't configured a preferred lesson length yet, so this course can't be booked online.");
+        setLoading(false);
+        return;
+      }
+      if (instructor.buffer_minutes === null || instructor.buffer_minutes === undefined) {
+        setLoadErrorReason("This instructor hasn't configured their travel buffer yet, so this course can't be booked online.");
+        setLoading(false);
+        return;
+      }
+      if (!instructor.booking_advance_days || Number(instructor.booking_advance_days) <= 0) {
+        setLoadErrorReason("This instructor hasn't set how far ahead pupils can book, so this course can't be booked online.");
+        setLoading(false);
+        return;
+      }
+
+      // Set deposit settings from instructor (live values only — no magic defaults)
       setDepositEnabled(instructorRes.data.deposit_enabled ?? false);
-      setDepositAmount(instructorRes.data.deposit_amount ?? 350);
-      setDepositDeadlineDays(instructorRes.data.deposit_deadline_days ?? 30);
+      setDepositAmount(instructorRes.data.deposit_amount ?? 0);
+      setDepositDeadlineDays(instructorRes.data.deposit_deadline_days ?? 0);
       setCancellationPolicyText(instructorRes.data.cancellation_policy_text ?? "");
       setCashPaymentsEnabled((instructorRes.data as any).cash_payments_enabled ?? false);
       setInstantBankPayEnabled((instructorRes.data as any).instant_bank_pay_enabled ?? false);
       setKlarnaEnabled((instructorRes.data as any).klarna_enabled ?? false);
       setClearpayEnabled((instructorRes.data as any).clearpay_enabled ?? false);
 
-      const instructor = instructorRes.data;
-      const template = templateRes.data;
-      const instructorCourse = instructorCourseRes.data;
-      
-      const hourlyRate = instructor.hourly_rate || 40;
-      const schoolSkim = instructor.school_skim_amount || 0;
+      const hourlyRate = Number(instructor.hourly_rate);
+      const schoolSkim = Number(instructor.school_skim_amount ?? 0);
       setBaseHourlyRate(hourlyRate);
       setSchoolSkimAmount(schoolSkim);
       setRateModifiers({
@@ -343,7 +370,9 @@ export default function BookingSummary() {
         odd_hours_end: (instructor as any).odd_hours_end ?? null,
       });
       loadUkBankHolidays().then(setBankHolidays);
-      const courseName = template?.course_name || (hours === 28 ? "Test in a Week" : `${hours} Hour Course`);
+      // Course name comes from the template if present, otherwise a neutral
+      // descriptive label based on the requested hours. No hardcoded names.
+      const courseName = template?.course_name || `${hours} Hour Course`;
       const courseImageUrl = instructorCourse?.course_image_url || template?.default_image_url || null;
 
       fetchLocationName(instructor.home_postcode);
@@ -352,11 +381,11 @@ export default function BookingSummary() {
         instructor: {
           ...instructor,
           home_address: null,
-          preferred_lesson_length: instructor.preferred_lesson_length || 60,
-          booking_advance_days: instructor.booking_advance_days || 28,
+          preferred_lesson_length: instructor.preferred_lesson_length,
+          booking_advance_days: instructor.booking_advance_days,
           available_from: instructor.available_from || null,
           allowed_lesson_lengths: instructor.allowed_lesson_lengths || null,
-          buffer_minutes: instructor.buffer_minutes || 15,
+          buffer_minutes: instructor.buffer_minutes,
           car_image_url: instructor.car_image_url || null,
           welcome_video_url: instructor.welcome_video_url || null,
           booking_mode: instructor.booking_mode || 'pupil_choice',
@@ -883,8 +912,16 @@ export default function BookingSummary() {
     }
     return (
       <MainLayout>
-        <div className="container py-16 text-center">
-          <h1 className="text-2xl font-bold">Course not found</h1>
+        <div className="container py-16 text-center max-w-xl mx-auto">
+          <div className="mx-auto mb-4 inline-flex h-12 w-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
+            <Calendar className="h-6 w-6" />
+          </div>
+          <h1 className="text-2xl font-bold">
+            {loadErrorReason ? "Course unavailable" : "Course not found"}
+          </h1>
+          {loadErrorReason && (
+            <p className="mt-2 text-sm text-muted-foreground">{loadErrorReason}</p>
+          )}
           <Button onClick={() => navigate("/courses")} className="mt-4">
             Back to Courses
           </Button>
@@ -1688,7 +1725,7 @@ export default function BookingSummary() {
               instructorId={instructor.id}
               totalHours={hours}
               maxLessonLength={instructor.preferred_lesson_length}
-              bookingAdvanceDays={instructor.booking_advance_days || 28}
+              bookingAdvanceDays={instructor.booking_advance_days}
               availableFrom={instructor.available_from}
               allowedLessonLengths={instructor.allowed_lesson_lengths || undefined}
               bufferMinutes={instructor.buffer_minutes}
