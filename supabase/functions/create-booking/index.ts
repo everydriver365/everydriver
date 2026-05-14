@@ -261,10 +261,12 @@ serve(async (req) => {
     // 2. Create scheduled lessons for each slot (if any provided)
     let lessons: any[] = [];
     if (booking.slots.length > 0) {
-      // Hold lessons off Google Calendar until payment completes. Cash bookings
-      // intentionally proceed without an upfront payment, so they sync immediately.
-      const isCashBooking = (booking as any).paymentType === 'cash';
-      const awaitingInitialPayment = !isCashBooking && amountPaid < booking.totalPrice;
+      // Hold lessons off Google Calendar until payment is actually received.
+      // Public-flow bookings always reach create-booking BEFORE the payment
+      // gateway confirms — so we mark every paid booking as pending and let
+      // confirm-booking / the payment webhooks clear the flag once the money
+      // has actually moved. Only £0 bookings sync immediately.
+      const awaitingInitialPayment = booking.totalPrice > 0;
 
       const lessonInserts = booking.slots.map((slot) => ({
         instructor_id: booking.instructorId,
