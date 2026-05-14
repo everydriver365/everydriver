@@ -208,3 +208,32 @@ export function describeLessonClashError(err: unknown): string | null {
   return null;
 }
 
+/**
+ * Parses an error returned by `supabase.functions.invoke('create-booking', ...)`
+ * and surfaces a friendly message when the edge function rejected the booking
+ * with a 409 (slots no longer available). Returns null when the error is
+ * unrelated, so the caller can fall back to its generic message.
+ */
+export async function describeBookingConflictResponse(err: unknown): Promise<string | null> {
+  if (!err || typeof err !== 'object') return null;
+  const ctx = (err as any).context;
+  if (!ctx || typeof ctx.clone !== 'function') return null;
+  try {
+    const body = await ctx.clone().json();
+    const conflicts = Array.isArray(body?.conflicts) ? body.conflicts : null;
+    if (conflicts && conflicts.length > 0) {
+      const c = conflicts[0];
+      const when = c.startTime && c.date ? `${c.startTime} on ${c.date}` : '';
+      const reason = c.reason ? ` — ${c.reason}` : '';
+      const extra = conflicts.length > 1 ? ` (+${conflicts.length - 1} more)` : '';
+      return `That slot is no longer available${when ? ` (${when})` : ''}${reason}.${extra} Please pick another time.`;
+    }
+    if (typeof body?.error === 'string' && /no longer available|already booked|clash/i.test(body.error)) {
+      return body.error;
+    }
+  } catch {
+    /* not JSON — fall through */
+  }
+  return null;
+}
+
