@@ -1114,12 +1114,16 @@ export type Database = {
       }
       booking_enquiries: {
         Row: {
+          admin_email_error: string | null
+          admin_email_sent_at: string | null
           contacted_at: string | null
           converted_pupil_id: string | null
           course_hours: number | null
           course_name: string | null
           created_at: string
           id: string
+          instructor_email_error: string | null
+          instructor_email_sent_at: string | null
           instructor_id: string
           message: string | null
           pupil_email: string
@@ -1127,16 +1131,21 @@ export type Database = {
           pupil_phone: string
           pupil_postcode: string | null
           source: string | null
+          source_page: string | null
           status: string
           updated_at: string
         }
         Insert: {
+          admin_email_error?: string | null
+          admin_email_sent_at?: string | null
           contacted_at?: string | null
           converted_pupil_id?: string | null
           course_hours?: number | null
           course_name?: string | null
           created_at?: string
           id?: string
+          instructor_email_error?: string | null
+          instructor_email_sent_at?: string | null
           instructor_id: string
           message?: string | null
           pupil_email: string
@@ -1144,16 +1153,21 @@ export type Database = {
           pupil_phone: string
           pupil_postcode?: string | null
           source?: string | null
+          source_page?: string | null
           status?: string
           updated_at?: string
         }
         Update: {
+          admin_email_error?: string | null
+          admin_email_sent_at?: string | null
           contacted_at?: string | null
           converted_pupil_id?: string | null
           course_hours?: number | null
           course_name?: string | null
           created_at?: string
           id?: string
+          instructor_email_error?: string | null
+          instructor_email_sent_at?: string | null
           instructor_id?: string
           message?: string | null
           pupil_email?: string
@@ -1161,6 +1175,7 @@ export type Database = {
           pupil_phone?: string
           pupil_postcode?: string | null
           source?: string | null
+          source_page?: string | null
           status?: string
           updated_at?: string
         }
@@ -9116,6 +9131,7 @@ export type Database = {
           tracking_mode: string
           truelayer_enabled: boolean | null
           twitter_url: string | null
+          typical_response_hours: number | null
           updated_at: string
           vehicle_mpg: number | null
           website_button_color: string | null
@@ -9319,6 +9335,7 @@ export type Database = {
           tracking_mode?: string
           truelayer_enabled?: boolean | null
           twitter_url?: string | null
+          typical_response_hours?: number | null
           updated_at?: string
           vehicle_mpg?: number | null
           website_button_color?: string | null
@@ -9522,6 +9539,7 @@ export type Database = {
           tracking_mode?: string
           truelayer_enabled?: boolean | null
           twitter_url?: string | null
+          typical_response_hours?: number | null
           updated_at?: string
           vehicle_mpg?: number | null
           website_button_color?: string | null

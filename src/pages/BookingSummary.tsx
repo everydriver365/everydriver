@@ -19,7 +19,7 @@ import { PaymentMessaging } from "@/components/payments/PaymentMessaging";
 import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutocomplete";
 import { PostcodeAddressLookup } from "@/components/booking/PostcodeAddressLookup";
 import { MobileBookingView } from "@/components/booking/MobileBookingView";
-import { EnquiryOnlyView } from "@/components/booking/EnquiryOnlyView";
+import { EnquiryFlow } from "@/components/booking/EnquiryFlow";
 import { UpsellSelector } from "@/components/booking/UpsellSelector";
 import { SquareWalletButtons } from "@/components/payments/SquareWalletButtons";
 import { KlarnaPaymentModal } from "@/components/payments/KlarnaPaymentModal";
@@ -969,7 +969,7 @@ export default function BookingSummary() {
   // Enquiry-only mode: short-circuit the entire payment/scheduling flow
   if (bookingMode === "enquiry_only") {
     return (
-      <EnquiryOnlyView
+      <EnquiryFlow
         instructor={instructor}
         courseName={courseName}
         hours={hours}
