@@ -196,12 +196,16 @@ serve(async (req) => {
       }
 
       if (conflicts.length > 0) {
+        // Return 200 with a structured error so the supabase-js client doesn't
+        // throw FunctionsHttpError (which surfaces as a blank-screen runtime
+        // error in Lovable). The frontend reads `data.error === 'SLOT_UNAVAILABLE'`.
         return new Response(
           JSON.stringify({
-            error: "One or more requested slots are no longer available",
+            error: "SLOT_UNAVAILABLE",
+            message: "One or more requested slots are no longer available",
             conflicts,
           }),
-          { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
     }

@@ -123,9 +123,9 @@ export default function BookingConfirmation() {
               },
             });
 
-            if (bookingError || !bookingResult?.pupilId) {
-              console.error("GoCardless post-payment booking creation failed:", bookingError);
-              const friendly = await describeBookingConflictResponse(bookingError);
+            if (bookingError || bookingResult?.error === 'SLOT_UNAVAILABLE' || !bookingResult?.pupilId) {
+              console.error("GoCardless post-payment booking creation failed:", bookingError || bookingResult);
+              const friendly = await describeBookingConflictResponse(bookingError || bookingResult);
               toast.error(friendly || "Payment received but booking creation failed. Please contact support.");
               localStorage.removeItem("gc_pending_booking");
               setLoading(false);
