@@ -50,7 +50,6 @@ export default function CourseResults({
     setSelectedDate,
     monthOptions,
     availableDatesInMonth,
-    availableInstructorsByDate,
     filteredCourses,
     handleSearch,
     searchedPostcode,
