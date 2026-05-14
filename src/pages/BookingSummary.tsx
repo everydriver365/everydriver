@@ -536,6 +536,7 @@ export default function BookingSummary() {
         const conflicts: Array<{ date: string; startTime: string; reason?: string }> =
           (data?.conflicts as any) || [];
         if (conflicts.length > 0) {
+          setUnavailableSlots(conflicts);
           // Drop the now-unavailable slots so the pupil can pick replacements.
           const conflictKeys = new Set(conflicts.map((c) => `${c.date}__${c.startTime}`));
           setSelectedSlots((prev) =>
