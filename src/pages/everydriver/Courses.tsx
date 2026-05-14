@@ -1008,13 +1008,17 @@ export default function Courses() {
             animate={{ opacity: 1, y: 0 }}
             className="mx-auto max-w-4xl"
           >
-            <h1 className="mb-1 text-center text-2xl font-extrabold md:text-3xl" style={{ color: "#0A2B6B" }}>
-              {searchedAreaName ? `Courses in ${searchedAreaName}` : "Find a course"}
-            </h1>
-            {searchedAreaName && (
-              <p className="mb-6 text-center" style={{ fontSize: 13, color: "#6B7280" }}>
-                {filteredCourses.length} course{filteredCourses.length !== 1 ? "s" : ""} available · matched with your instructor
-              </p>
+            {!(isListMode && searchedPostcode) && (
+              <>
+                <h1 className="mb-1 text-center text-2xl font-extrabold md:text-3xl" style={{ color: "#0A2B6B" }}>
+                  {searchedAreaName ? `Courses in ${searchedAreaName}` : "Find a course"}
+                </h1>
+                {searchedAreaName && (
+                  <p className="mb-6 text-center" style={{ fontSize: 13, color: "#6B7280" }}>
+                    {filteredCourses.length} course{filteredCourses.length !== 1 ? "s" : ""} available · matched with your instructor
+                  </p>
+                )}
+              </>
             )}
 
             <div className="rounded-3xl border border-slate-100 bg-white p-2 shadow-[0_20px_50px_rgba(0,0,0,0.08)] md:p-3">
