@@ -409,8 +409,10 @@ export default function BookingSummary() {
     fetchDetails();
   }, [instructorId, hours]);
 
+  const [unavailableSlots, setUnavailableSlots] = useState<Array<{ date: string; startTime: string; reason?: string }>>([]);
   const handleSlotsChange = useCallback((slots: SelectedSlot[]) => {
     setSelectedSlots(slots);
+    setUnavailableSlots([]);
   }, []);
 
   const scheduledHours = selectedSlots.reduce((acc, slot) => acc + slot.duration / 60, 0);
@@ -534,6 +536,7 @@ export default function BookingSummary() {
         const conflicts: Array<{ date: string; startTime: string; reason?: string }> =
           (data?.conflicts as any) || [];
         if (conflicts.length > 0) {
+          setUnavailableSlots(conflicts);
           // Drop the now-unavailable slots so the pupil can pick replacements.
           const conflictKeys = new Set(conflicts.map((c) => `${c.date}__${c.startTime}`));
           setSelectedSlots((prev) =>
@@ -1760,6 +1763,33 @@ export default function BookingSummary() {
             transition={{ delay: 0.25 }}
             className="mb-6"
           >
+            {unavailableSlots.length > 0 && (
+              <div className="mb-4 rounded-2xl border border-destructive/30 bg-destructive/5 p-4">
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-semibold text-destructive mb-1">
+                      {unavailableSlots.length === 1 ? "1 slot is no longer available" : `${unavailableSlots.length} slots are no longer available`}
+                    </h4>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Your instructor's calendar changed since you picked these times. Please choose replacement times below to continue to payment.
+                    </p>
+                    <ul className="space-y-1 text-sm">
+                      {unavailableSlots.map((s, i) => {
+                        const d = new Date(`${s.date}T00:00:00`);
+                        const label = d.toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" });
+                        return (
+                          <li key={`${s.date}-${s.startTime}-${i}`} className="flex flex-wrap items-center gap-x-2">
+                            <span className="font-medium text-foreground">{label} at {s.startTime}</span>
+                            {s.reason && <span className="text-xs text-muted-foreground">— {s.reason}</span>}
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            )}
             <LessonScheduler
               instructorId={instructor.id}
               totalHours={hours}
