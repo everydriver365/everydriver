@@ -217,7 +217,7 @@ serve(async (req: Request) => {
           instructor_id: instructorId,
           pupil_id: pupilId,
           amount: creditAmount,
-          payment_method: "square_checkout",
+          payment_method: "Square",
           payout_status: payoutStatus,
           external_payment_ref: `square:${paymentId}`,
           notes: `Square Checkout Payment - ID: ${paymentId}${feeAmount > 0 ? ` (admin fee: £${feeAmount.toFixed(2)})` : ''}${isAutoTransfer ? ' (auto-paid via Square)' : ''}`,
