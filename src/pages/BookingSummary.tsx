@@ -457,6 +457,7 @@ export default function BookingSummary() {
 
   const bookingInProgressRef = useRef(false);
   const paymentBlockRef = useRef<HTMLDivElement | null>(null);
+  const schedulerRef = useRef<HTMLDivElement | null>(null);
   const ensureBookingCreated = async (
     paymentType: 'full' | 'deposit' = 'full',
     amountPaid?: number
