@@ -2,6 +2,14 @@ import { useMemo } from "react";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isSameDay, isBefore, startOfDay } from "date-fns";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+
+interface AvatarInstructor {
+  id: string;
+  name: string;
+  profile_image_url: string | null;
+}
 
 interface SidebarCalendarProps {
   selectedMonth: string;
@@ -11,6 +19,12 @@ interface SidebarCalendarProps {
   onSelectDate: (date: Date) => void;
   loading: boolean;
   monthOptions: { value: string; label: string }[];
+  /** YYYY-MM-DD → instructors free that day. Optional. */
+  availableInstructorsByDate?: Map<string, AvatarInstructor[]>;
+}
+
+function getInitials(name: string): string {
+  return name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
 }
 
 export function SidebarCalendar({ 
