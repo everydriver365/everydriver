@@ -465,21 +465,6 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
     });
   }, [selectedMonth, instructors, instructorsInArea, sources, userLocation]);
 
-  // Map of YYYY-MM-DD → instructors free that day, for the visible month.
-  // Used by SidebarCalendar to render avatar dots under each available date.
-  const availableInstructorsByDate = useMemo(() => {
-    const map = new Map<string, Instructor[]>();
-    const relevantInstructors = userLocation ? instructorsInArea : instructors;
-    for (const day of availableDatesInMonth) {
-      const key = format(day, "yyyy-MM-dd");
-      const free = relevantInstructors.filter((instructor) =>
-        hasInstructorAvailabilityOn(instructor as InstructorLite, day, sources),
-      );
-      map.set(key, free);
-    }
-    return map;
-  }, [availableDatesInMonth, instructors, instructorsInArea, sources, userLocation]);
-
   // Auto-jump the calendar to the first month that has availability for the
   // currently scoped instructors (whitelabel partner or location search).
   // Only triggers when the selected month is empty but a later month has dates.
@@ -635,7 +620,6 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
     setSelectedDate,
     monthOptions,
     availableDatesInMonth,
-    availableInstructorsByDate,
     nextAvailableDates,
     filteredCourses,
     handleSearch,
