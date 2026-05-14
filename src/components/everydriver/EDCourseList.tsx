@@ -1,8 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { Calendar as CalendarIcon, ChevronRight } from "lucide-react";
-import klarnaLogo from "@/assets/klarna-wordmark.svg";
-import clearpayLogo from "@/assets/clearpay-wordmark.svg";
+import klarnaLogo from "@/assets/klarna-round-logo.svg";
+import clearpayLogo from "@/assets/clearpay-round-logo.svg";
 
 // EveryDriver-only redesigned list view for course search results.
 // Brand tokens (literal hex per spec — intentionally not using semantic
@@ -207,7 +207,7 @@ export function EDCourseList({ courses }: EDCourseListProps) {
                         <img
                           src={klarnaLogo}
                           alt="Klarna"
-                          style={{ height: 10, width: "auto" }}
+                          style={{ height: 14, width: 14 }}
                         />
                         3 × £{klarnaPer}
                       </span>
@@ -229,7 +229,7 @@ export function EDCourseList({ courses }: EDCourseListProps) {
                         <img
                           src={clearpayLogo}
                           alt="Clearpay"
-                          style={{ height: 10, width: "auto" }}
+                          style={{ height: 14, width: 14 }}
                         />
                         4 × £{clearpayPer}
                       </span>
@@ -392,7 +392,7 @@ export function EDCourseList({ courses }: EDCourseListProps) {
                         lineHeight: 1,
                       }}
                     >
-                      <img src={klarnaLogo} alt="Klarna" style={{ height: 10, width: "auto" }} />
+                      <img src={klarnaLogo} alt="Klarna" style={{ height: 14, width: 14 }} />
                       3 × £{klarnaPer}
                     </span>
                   )}
@@ -410,7 +410,7 @@ export function EDCourseList({ courses }: EDCourseListProps) {
                         lineHeight: 1,
                       }}
                     >
-                      <img src={clearpayLogo} alt="Clearpay" style={{ height: 10, width: "auto" }} />
+                      <img src={clearpayLogo} alt="Clearpay" style={{ height: 14, width: 14 }} />
                       4 × £{clearpayPer}
                     </span>
                   )}

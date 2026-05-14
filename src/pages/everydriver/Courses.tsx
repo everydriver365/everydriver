@@ -1049,6 +1049,7 @@ export default function Courses() {
                     inputClassName="h-14 rounded-2xl border-0 bg-slate-50/60 px-4 font-medium text-slate-700 placeholder:text-slate-400 focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-blue-500/20"
                     showInputIcon={false}
                     showGeolocation={false}
+                    enableDictation={false}
                   />
                 </div>
 
@@ -1075,6 +1076,19 @@ export default function Courses() {
                   <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                 </div>
 
+                {/* Date display (read-only — driven by sidebar calendar) */}
+                <div className="group relative w-full sm:w-56">
+                  <label className="absolute -top-2 left-11 z-10 bg-white px-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                    Date
+                  </label>
+                  <CalendarIcon className="pointer-events-none absolute left-5 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+                  <div
+                    className="flex h-14 w-full items-center rounded-2xl bg-slate-50/60 pl-12 pr-4 font-medium text-slate-700"
+                    aria-label="Selected start date"
+                  >
+                    {selectedDate ? format(selectedDate, "EEE d MMM") : "Pick from calendar"}
+                  </div>
+                </div>
                 {/* Search button */}
                 <button
                   onClick={() => handleSearch()}
