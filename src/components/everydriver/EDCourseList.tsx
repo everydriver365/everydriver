@@ -1,8 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { Calendar as CalendarIcon, ChevronRight } from "lucide-react";
-import klarnaLogo from "@/assets/klarna-wordmark.svg";
-import clearpayLogo from "@/assets/clearpay-wordmark.svg";
+import klarnaLogo from "@/assets/klarna-round-logo.svg";
+import clearpayLogo from "@/assets/clearpay-round-logo.svg";
 
 // EveryDriver-only redesigned list view for course search results.
 // Brand tokens (literal hex per spec — intentionally not using semantic
