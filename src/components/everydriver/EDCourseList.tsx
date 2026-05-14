@@ -207,7 +207,7 @@ export function EDCourseList({ courses }: EDCourseListProps) {
                         <img
                           src={klarnaLogo}
                           alt="Klarna"
-                          style={{ height: 10, width: "auto" }}
+                          style={{ height: 14, width: 14 }}
                         />
                         3 × £{klarnaPer}
                       </span>
@@ -229,7 +229,7 @@ export function EDCourseList({ courses }: EDCourseListProps) {
                         <img
                           src={clearpayLogo}
                           alt="Clearpay"
-                          style={{ height: 10, width: "auto" }}
+                          style={{ height: 14, width: 14 }}
                         />
                         4 × £{clearpayPer}
                       </span>
@@ -392,7 +392,7 @@ export function EDCourseList({ courses }: EDCourseListProps) {
                         lineHeight: 1,
                       }}
                     >
-                      <img src={klarnaLogo} alt="Klarna" style={{ height: 10, width: "auto" }} />
+                      <img src={klarnaLogo} alt="Klarna" style={{ height: 14, width: 14 }} />
                       3 × £{klarnaPer}
                     </span>
                   )}
@@ -410,7 +410,7 @@ export function EDCourseList({ courses }: EDCourseListProps) {
                         lineHeight: 1,
                       }}
                     >
-                      <img src={clearpayLogo} alt="Clearpay" style={{ height: 10, width: "auto" }} />
+                      <img src={clearpayLogo} alt="Clearpay" style={{ height: 14, width: 14 }} />
                       4 × £{clearpayPer}
                     </span>
                   )}
