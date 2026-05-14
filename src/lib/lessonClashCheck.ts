@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
+import { refreshGoogleCalendarForDate } from '@/lib/refreshGoogleCalendar';
 
 export interface ClashSlot {
   name: string;
