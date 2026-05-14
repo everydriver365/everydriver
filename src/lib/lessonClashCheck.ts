@@ -216,24 +216,35 @@ export function describeLessonClashError(err: unknown): string | null {
  */
 export async function describeBookingConflictResponse(err: unknown): Promise<string | null> {
   if (!err || typeof err !== 'object') return null;
+
+  // Path 1: structured payload passed directly (200 OK with error body).
+  if (Array.isArray((err as any).conflicts) && (err as any).conflicts.length > 0) {
+    return formatConflictMessage((err as any).conflicts);
+  }
+
+  // Path 2: legacy — non-2xx response wrapped in FunctionsHttpError with .context
   const ctx = (err as any).context;
-  if (!ctx || typeof ctx.clone !== 'function') return null;
-  try {
-    const body = await ctx.clone().json();
-    const conflicts = Array.isArray(body?.conflicts) ? body.conflicts : null;
-    if (conflicts && conflicts.length > 0) {
-      const c = conflicts[0];
-      const when = c.startTime && c.date ? `${c.startTime} on ${c.date}` : '';
-      const reason = c.reason ? ` — ${c.reason}` : '';
-      const extra = conflicts.length > 1 ? ` (+${conflicts.length - 1} more)` : '';
-      return `That slot is no longer available${when ? ` (${when})` : ''}${reason}.${extra} Please pick another time.`;
+  if (ctx && typeof ctx.clone === 'function') {
+    try {
+      const body = await ctx.clone().json();
+      if (Array.isArray(body?.conflicts) && body.conflicts.length > 0) {
+        return formatConflictMessage(body.conflicts);
+      }
+      if (typeof body?.error === 'string' && /no longer available|already booked|clash|SLOT_UNAVAILABLE/i.test(body.error)) {
+        return body.message || body.error;
+      }
+    } catch {
+      /* not JSON — fall through */
     }
-    if (typeof body?.error === 'string' && /no longer available|already booked|clash/i.test(body.error)) {
-      return body.error;
-    }
-  } catch {
-    /* not JSON — fall through */
   }
   return null;
+}
+
+function formatConflictMessage(conflicts: any[]): string {
+  const c = conflicts[0];
+  const when = c.startTime && c.date ? `${c.startTime} on ${c.date}` : '';
+  const reason = c.reason ? ` — ${c.reason}` : '';
+  const extra = conflicts.length > 1 ? ` (+${conflicts.length - 1} more)` : '';
+  return `That slot is no longer available${when ? ` (${when})` : ''}${reason}.${extra} Please pick another time.`;
 }
 
