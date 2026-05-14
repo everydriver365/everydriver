@@ -2,7 +2,9 @@ import { useLocation } from "react-router-dom";
 import { useMemo } from "react";
 import drive365Logo from "@/assets/drive365-logo.png";
 import dsmLogo from "@/assets/dsm-logo.png";
-import { getWhitelabelConfig } from "@/lib/whitelabel";
+import { getWhitelabelConfig, isEveryDriverHost } from "@/lib/whitelabel";
+
+const everyDriverLogo = "/everydriver-logo-full.svg";
 
 const DRIVE365_ROUTE_PREFIXES = [
   "/drive365",
