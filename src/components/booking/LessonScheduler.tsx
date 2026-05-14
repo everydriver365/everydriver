@@ -762,21 +762,23 @@ export function LessonScheduler({
                 classNames={{
                   caption: "hidden",
                   nav: "hidden",
+                  months: "w-full",
+                  month: "w-full space-y-2",
                   table: "w-full border-collapse",
-                  head_row: "flex w-full",
+                  head_row: "grid grid-cols-7 gap-1.5 mb-1",
                   head_cell:
-                    "flex-1 text-[10px] font-semibold normal-case text-[#9CA3AF] py-1",
-                  row: "flex w-full mt-[3px] gap-[3px]",
-                  cell: "flex-1 aspect-square p-0 text-sm relative",
-                  day: "w-full h-full flex items-center justify-center rounded-md text-[13px] font-normal text-[#D1D5DB] cursor-default transition-colors",
+                    "text-[11px] font-semibold uppercase tracking-wide text-[#9CA3AF] text-center",
+                  row: "grid grid-cols-7 gap-1.5 mt-1.5",
+                  cell: "p-0 text-sm relative",
+                  day: "w-full h-10 flex items-center justify-center rounded-lg text-[13px] font-medium text-[#D1D5DB] cursor-default transition-colors",
                   day_selected:
                     "!bg-[#0A2B6B] !text-white !font-semibold hover:!bg-[#0A2B6B]",
                   day_disabled:
                     "!text-[#D1D5DB] !bg-transparent !font-normal cursor-default hover:!bg-transparent",
                   day_outside: "!text-[#E5E7EB]",
-                  day_today: "",
+                  day_today: "ring-1 ring-[#0A2B6B]/30",
                 }}
-                className="p-0 pointer-events-auto"
+                className="p-0 w-full pointer-events-auto"
               />
               {/* Legend */}
               <div className="mt-3 pt-3 border-t border-[#E5E7EB] flex items-center gap-4 flex-wrap">
