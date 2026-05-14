@@ -54,6 +54,8 @@ export function KlarnaPaymentModal({
   onSuccess,
   consumer,
   billing,
+  pupilId,
+  instructorId,
 }: KlarnaPaymentModalProps) {
   const [loading, setLoading] = useState(true);
   const [authorizing, setAuthorizing] = useState(false);
