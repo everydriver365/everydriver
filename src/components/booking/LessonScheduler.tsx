@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { format, addDays, startOfDay, startOfMonth, addMonths, subMonths, isSameDay, isAfter, isBefore, parse } from "date-fns";
+import { enGB } from "date-fns/locale";
 import { CalendarDays, Clock, X, Check, Bell, Sparkles, ChevronLeft, ChevronRight, Plus, CalendarPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
@@ -747,7 +748,9 @@ export function LessonScheduler({
                 month={viewMonth}
                 onMonthChange={setViewMonth}
                 disabled={(date) => !isDateAvailable(date)}
-                formatters={{ formatWeekdayName: (d) => format(d, "EEEEEE") }}
+                weekStartsOn={1}
+                locale={enGB}
+                formatters={{ formatWeekdayName: (d) => format(d, "EEEEEE", { locale: enGB }) }}
                 modifiers={{
                   hasLesson: (date) => selectedSlots.some((s) => isSameDay(s.date, date)),
                   available: (date) =>
