@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import {
   hasInstructorAvailabilityOn,
+  loadCourseAvailabilitySources,
   type CourseAvailabilitySources,
   type InstructorLite,
 } from "@/lib/courseAvailability";
@@ -145,8 +146,6 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
   });
   const [premiumPlacements, setPremiumPlacements] = useState<{ instructor_id: string; placement_type: string; priority_score: number }[]>([]);
 
-  const workingHours = sources.workingHours as unknown as WorkingHours[];
-  const dateOverrides = sources.overrides as unknown as DateOverride[];
 
   const monthOptions = useMemo(() => getMonthOptions(), []);
 
@@ -241,42 +240,35 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
       if (instructorId) {
         coursesQuery = coursesQuery.eq("instructor_id", instructorId);
       }
-      let workingHoursQuery = supabase.from("instructor_working_hours").select("instructor_id, day_of_week, is_active");
-      if (instructorId) {
-        workingHoursQuery = workingHoursQuery.eq("instructor_id", instructorId);
-      }
-      let overridesQuery = supabase.from("instructor_date_overrides").select("instructor_id, override_date, override_end_date, is_available");
-      if (instructorId) {
-        overridesQuery = overridesQuery.eq("instructor_id", instructorId);
-      }
 
-      const [instructorsRes, coursesRes, templatesRes, workingHoursRes, overridesRes, premiumRes] = await Promise.all([
+      const [instructorsRes, coursesRes, templatesRes, premiumRes] = await Promise.all([
         instructorsQuery,
         coursesQuery,
         supabase.from("course_templates").select("course_hours, course_name, default_image_url, is_popular, is_intensive, features").eq("is_active", true),
-        workingHoursQuery,
-        overridesQuery,
         supabase.from("instructor_premium_placements").select("instructor_id, placement_type, priority_score, expires_at").eq("is_active", true),
       ]);
 
       if (instructorsRes.error) throw instructorsRes.error;
       if (coursesRes.error) throw coursesRes.error;
       if (templatesRes.error) throw templatesRes.error;
-      if (workingHoursRes.error) throw workingHoursRes.error;
-      if (overridesRes.error) throw overridesRes.error;
 
       const loadedInstructors = instructorsRes.data || [];
-      const loadedWorkingHours = workingHoursRes.data || [];
-      const loadedOverrides = overridesRes.data || [];
-
       setInstructors(loadedInstructors);
       setInstructorCourses(coursesRes.data || []);
       setCourseTemplates(templatesRes.data || []);
-      const newSources: CourseAvailabilitySources = {
-        ...sources,
-        workingHours: loadedWorkingHours as any,
-        overrides: loadedOverrides as any,
-      };
+
+      // Load all six availability sources for every instructor across the
+      // search horizon (today + 18 months). Single round-trip — both calendar
+      // dots and the per-day course list use the result so display is always
+      // consistent with the booking-time guard in create-booking.
+      const fromDate = new Date();
+      const toDate = addMonths(fromDate, 18);
+      const newSources = await loadCourseAvailabilitySources(
+        supabase as any,
+        loadedInstructors.map((i) => i.id),
+        fromDate,
+        toDate,
+      );
       setSources(newSources);
 
       // Store premium placements (filter expired)
@@ -348,7 +340,7 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
 
         // If instructors found in area, jump to their first available date
         if (instructorsNearby.length > 0) {
-          const firstAvailable = findFirstAvailableDateForInstructors(instructorsNearby, workingHours, dateOverrides);
+          const firstAvailable = findFirstAvailableDate(instructorsNearby, sources);
           if (firstAvailable) {
             setSelectedMonth(firstAvailable.month);
             setSelectedDate(firstAvailable.date);
@@ -363,54 +355,6 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
       setIsSearching(false);
     }
   };
-
-  const findFirstAvailableDateForInstructors = useCallback((instructorsList: Instructor[], workingHoursList: WorkingHours[], dateOverridesList: DateOverride[]) => {
-    const today = startOfDay(new Date());
-    
-    for (const monthOption of monthOptions) {
-      const [year, month] = monthOption.value.split("-").map(Number);
-      const monthStart = startOfMonth(new Date(year, month - 1));
-      const monthEnd = endOfMonth(monthStart);
-      const searchStart = isAfter(monthStart, today) ? monthStart : today;
-      
-      if (isBefore(monthEnd, today)) continue;
-      
-      const daysInMonth = eachDayOfInterval({ start: searchStart, end: monthEnd });
-      
-      for (const day of daysInMonth) {
-        const dayOfWeek = getDay(day);
-        const dateStr = format(day, "yyyy-MM-dd");
-        
-        const isAvailable = instructorsList.some((instructor) => {
-          if (instructor.available_from && isAfter(parseISO(instructor.available_from), day)) {
-            return false;
-          }
-
-          const override = dateOverridesList.find(
-            (o) =>
-              o.instructor_id === instructor.id &&
-              (o.override_date === dateStr ||
-                (o.override_end_date &&
-                  dateStr >= o.override_date &&
-                  dateStr <= o.override_end_date))
-          );
-          if (override) return override.is_available;
-
-          return workingHoursList.some(
-            (wh) =>
-              wh.instructor_id === instructor.id &&
-              wh.day_of_week === dayOfWeek &&
-              wh.is_active
-          );
-        });
-        
-        if (isAvailable) {
-          return { date: day, month: monthOption.value };
-        }
-      }
-    }
-    return null;
-  }, [monthOptions]);
 
   const clearSearch = () => {
     setPostcode("");
@@ -450,7 +394,10 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
     });
   }, [instructors, userLocation, radius, geoCache]);
 
-  // Upcoming available dates across the next ~6 months (cap 12 dates)
+  // Upcoming available dates across the next ~6 months (cap 12 dates).
+  // Delegates to hasInstructorAvailabilityOn so calendar dots match the
+  // booking-time guard exactly: working hours, overrides, manual blocks,
+  // scheduled lessons, Google Calendar events, and buffer/travel padding.
   const nextAvailableDates = useMemo(() => {
     const today = startOfDay(new Date());
     const relevantInstructors = userLocation ? instructorsInArea : instructors;
@@ -468,28 +415,9 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
       const days = eachDayOfInterval({ start: searchStart, end: monthEnd });
 
       for (const day of days) {
-        const dayOfWeek = getDay(day);
-        const dateStr = format(day, "yyyy-MM-dd");
-        const isAvailable = relevantInstructors.some((instructor) => {
-          if (instructor.available_from && isAfter(parseISO(instructor.available_from), day)) {
-            return false;
-          }
-          const override = dateOverrides.find(
-            (o) =>
-              o.instructor_id === instructor.id &&
-              (o.override_date === dateStr ||
-                (o.override_end_date &&
-                  dateStr >= o.override_date &&
-                  dateStr <= o.override_end_date))
-          );
-          if (override) return override.is_available;
-          return workingHours.some(
-            (wh) =>
-              wh.instructor_id === instructor.id &&
-              wh.day_of_week === dayOfWeek &&
-              wh.is_active
-          );
-        });
+        const isAvailable = relevantInstructors.some((instructor) =>
+          hasInstructorAvailabilityOn(instructor as InstructorLite, day, sources),
+        );
         if (isAvailable) {
           results.push(day);
           if (results.length >= 12) return results;
@@ -497,7 +425,7 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
       }
     }
     return results;
-  }, [instructors, instructorsInArea, userLocation, workingHours, dateOverrides, monthOptions]);
+  }, [instructors, instructorsInArea, userLocation, sources, monthOptions]);
 
   const availableDatesInMonth = useMemo(() => {
     const [year, month] = selectedMonth.split("-").map(Number);
@@ -507,39 +435,15 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
 
     const allDays = eachDayOfInterval({ start: monthStart, end: monthEnd });
 
-    // Use filtered instructors based on location search
     const relevantInstructors = userLocation ? instructorsInArea : instructors;
 
     return allDays.filter((day) => {
       if (isBefore(day, today)) return false;
-
-      const dayOfWeek = getDay(day);
-      const dateStr = format(day, "yyyy-MM-dd");
-
-      return relevantInstructors.some((instructor) => {
-        if (instructor.available_from && isAfter(parseISO(instructor.available_from), day)) {
-          return false;
-        }
-
-        const override = dateOverrides.find(
-          (o) =>
-            o.instructor_id === instructor.id &&
-            (o.override_date === dateStr ||
-              (o.override_end_date &&
-                dateStr >= o.override_date &&
-                dateStr <= o.override_end_date))
-        );
-        if (override) return override.is_available;
-
-        return workingHours.some(
-          (wh) =>
-            wh.instructor_id === instructor.id &&
-            wh.day_of_week === dayOfWeek &&
-            wh.is_active
-        );
-      });
+      return relevantInstructors.some((instructor) =>
+        hasInstructorAvailabilityOn(instructor as InstructorLite, day, sources),
+      );
     });
-  }, [selectedMonth, instructors, instructorsInArea, workingHours, dateOverrides, userLocation]);
+  }, [selectedMonth, instructors, instructorsInArea, sources, userLocation]);
 
   // Auto-jump the calendar to the first month that has availability for the
   // currently scoped instructors (whitelabel partner or location search).
@@ -562,37 +466,14 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
   const coursesForSelectedDate = useMemo(() => {
     if (!selectedDate) return [];
 
-    const dayOfWeek = getDay(selectedDate);
-    const dateStr = format(selectedDate, "yyyy-MM-dd");
     const courses: CourseWithInstructor[] = [];
 
     for (const instructor of instructors) {
-      if (instructor.available_from && isAfter(parseISO(instructor.available_from), selectedDate)) {
+      // Single source of truth: same resolver as calendar dots and the
+      // booking-time guard. Honours overrides, blocks, GCal, lessons, buffers.
+      if (!hasInstructorAvailabilityOn(instructor as InstructorLite, selectedDate, sources)) {
         continue;
       }
-
-      const override = dateOverrides.find(
-        (o) =>
-          o.instructor_id === instructor.id &&
-          (o.override_date === dateStr ||
-            (o.override_end_date &&
-              dateStr >= o.override_date &&
-              dateStr <= o.override_end_date))
-      );
-
-      let isAvailable = false;
-      if (override) {
-        isAvailable = override.is_available;
-      } else {
-        isAvailable = workingHours.some(
-          (wh) =>
-            wh.instructor_id === instructor.id &&
-            wh.day_of_week === dayOfWeek &&
-            wh.is_active
-        );
-      }
-
-      if (!isAvailable) continue;
 
       const offeredCourses = instructorCourses.filter(
         (c) => c.instructor_id === instructor.id
@@ -602,13 +483,8 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
         const courseData = offeredCourses.find((c) => c.course_hours === hours);
         const template = courseTemplates.find((t) => t.course_hours === hours);
 
-        // Filter by intensive flag if needed
-        if (courseTypeFilter === "intensive" && template && !template.is_intensive) {
-          continue;
-        }
-        if (courseTypeFilter === "semi-intensive" && template && template.is_intensive) {
-          continue;
-        }
+        if (courseTypeFilter === "intensive" && template && !template.is_intensive) continue;
+        if (courseTypeFilter === "semi-intensive" && template && template.is_intensive) continue;
 
         if (courseData) {
           const placement = premiumPlacements.find((p) => p.instructor_id === instructor.id);
@@ -634,7 +510,7 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
     }
 
     return courses;
-  }, [selectedDate, instructors, instructorCourses, courseTemplates, workingHours, dateOverrides, displayHours, courseTypeFilter, premiumPlacements]);
+  }, [selectedDate, instructors, instructorCourses, courseTemplates, sources, displayHours, courseTypeFilter, premiumPlacements]);
 
   const coursesWithDistance = useMemo(() => {
     if (!userLocation) return coursesForSelectedDate;
