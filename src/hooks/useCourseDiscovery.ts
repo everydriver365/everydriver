@@ -342,7 +342,7 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
 
         // If instructors found in area, jump to their first available date
         if (instructorsNearby.length > 0) {
-          const firstAvailable = findFirstAvailableDateForInstructors(instructorsNearby, workingHours, dateOverrides);
+          const firstAvailable = findFirstAvailableDate(instructorsNearby, sources);
           if (firstAvailable) {
             setSelectedMonth(firstAvailable.month);
             setSelectedDate(firstAvailable.date);
@@ -357,54 +357,6 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
       setIsSearching(false);
     }
   };
-
-  const findFirstAvailableDateForInstructors = useCallback((instructorsList: Instructor[], workingHoursList: WorkingHours[], dateOverridesList: DateOverride[]) => {
-    const today = startOfDay(new Date());
-    
-    for (const monthOption of monthOptions) {
-      const [year, month] = monthOption.value.split("-").map(Number);
-      const monthStart = startOfMonth(new Date(year, month - 1));
-      const monthEnd = endOfMonth(monthStart);
-      const searchStart = isAfter(monthStart, today) ? monthStart : today;
-      
-      if (isBefore(monthEnd, today)) continue;
-      
-      const daysInMonth = eachDayOfInterval({ start: searchStart, end: monthEnd });
-      
-      for (const day of daysInMonth) {
-        const dayOfWeek = getDay(day);
-        const dateStr = format(day, "yyyy-MM-dd");
-        
-        const isAvailable = instructorsList.some((instructor) => {
-          if (instructor.available_from && isAfter(parseISO(instructor.available_from), day)) {
-            return false;
-          }
-
-          const override = dateOverridesList.find(
-            (o) =>
-              o.instructor_id === instructor.id &&
-              (o.override_date === dateStr ||
-                (o.override_end_date &&
-                  dateStr >= o.override_date &&
-                  dateStr <= o.override_end_date))
-          );
-          if (override) return override.is_available;
-
-          return workingHoursList.some(
-            (wh) =>
-              wh.instructor_id === instructor.id &&
-              wh.day_of_week === dayOfWeek &&
-              wh.is_active
-          );
-        });
-        
-        if (isAvailable) {
-          return { date: day, month: monthOption.value };
-        }
-      }
-    }
-    return null;
-  }, [monthOptions]);
 
   const clearSearch = () => {
     setPostcode("");
