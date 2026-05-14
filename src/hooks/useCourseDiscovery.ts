@@ -1,7 +1,13 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, isSameDay, isAfter, isBefore, startOfDay, parseISO } from "date-fns";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, addMonths, isAfter, isBefore, startOfDay } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import {
+  hasInstructorAvailabilityOn,
+  loadCourseAvailabilitySources,
+  type CourseAvailabilitySources,
+  type InstructorLite,
+} from "@/lib/courseAvailability";
 
 export type SortOption = "soonest" | "price-low" | "nearest";
 export type CourseTypeFilter = "all" | "intensive" | "semi-intensive";
