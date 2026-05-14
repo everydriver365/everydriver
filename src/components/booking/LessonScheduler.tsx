@@ -737,7 +737,7 @@ export function LessonScheduler({
           </div>
 
           {/* Inner two-column: calendar + slots */}
-          <div className="grid gap-5 md:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
+          <div className="grid gap-5 md:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
             {/* Calendar */}
             <div>
               <CalendarComponent
