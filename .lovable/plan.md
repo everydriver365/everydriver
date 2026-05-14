@@ -1,82 +1,44 @@
+# Lesson scheduler redesign
 
-## What I found in the project
+Yes, your spec works as-is. It's well-defined and matches what the current scheduler is missing (no scroll between calendar/slots, persistent lesson list). One caveat at the bottom about sticky positioning — flagged because it is the most likely thing to bite us.
 
-**Drive365 brand assets that exist:**
-- Logo: `/public/drive365-logo.png` (also `everydriver-logo*` variants — will not use)
-- Hero imagery: `/public/drive365-hero*.{jpg,png,webp}`
-- Dark navy header colour `#142040` is already used in the existing `EnquiryOnlyView` and on Drive365 surfaces
-- Generic CSS tokens in `src/index.css` `:root` — `--primary: 230 61% 10%` (very dark navy ≈ `#0a1226`), `--success: 142 71% 45%`, `--radius: 0.5rem`. Default font stack is the project-wide system/Inter sans.
+## What changes
 
-**What does NOT exist (you asked me to flag these):**
-1. There is **no dedicated Drive365 design-token block, no Drive365 font stack, no Drive365 accent colour, and no scoped `.drive365` theme class**. The only "Drive365" things are the logo PNG, hero images, and the dark navy used ad-hoc. I will treat the existing `--primary` deep navy as the Drive365 primary and use `#142040` as the header bar colour (matches what's already shipping on the enquiry page header today). If you want a different/official Drive365 hex, accent colour or font, please supply them — otherwise I'll lock these in.
-2. **No SVG version of the Drive365 logo** (only PNG). For the email header on a navy background I'll either (a) use the PNG as-is, or (b) ask you for a white/transparent SVG. Recommend (b) for crispness — flag.
+### 1. `src/components/booking/LessonScheduler.tsx` — rebuild internals
+Replace the current vertical-stack layout (calendar → length panel → slots → list) with the spec:
 
-**Database — schema mismatch with your spec:**
-- The existing table is `public.booking_enquiries` with fields `pupil_name / pupil_email / pupil_phone / pupil_postcode / course_name / course_hours / message / source / status / contacted_at / converted_pupil_id`.
-- Your spec asks for an `enquiries` table with `learner_*` fields plus `instructor_email_sent_at / admin_email_sent_at / instructor_email_error / admin_email_error / source_page`.
-- I will **extend `booking_enquiries`** (not create a parallel table) with the four new tracking columns + `source_page`. Renaming `pupil_*` → `learner_*` would break a lot of existing code (instructor enquiries inbox, conversion-to-pupil flow, notify-booking-enquiry, etc.), so I'll keep the column names and just present them as "learner" in the UI/email. **Confirm.**
-- The `instructors` table does **not** have `booking_method`, `typical_response_hours`, `first_name`, `last_name`, `photo_url` or `area`. It has `name`, `email`, `phone`, `profile_image_url`. I'll:
-  - derive first name from `split(name)`
-  - default response time to 24h (no column to read from) — if you want this configurable per-instructor I'll add `typical_response_hours int` to `instructors`. **Confirm.**
-  - the existing "show enquiry view" gate is in `BookingSummary.tsx`; I'll leave that gating logic untouched and just swap what gets rendered.
+- **Header card** (full width): icon + title/helper on left, hours-booked + 8px progress bar on right. Drive365 navy `#142040` for primary, soft blue tint for icon backdrop.
+- **Two-column grid** below (`grid-cols-[60%_40%]`, 16px gap):
+  - **Left workspace card**: toolbar (month nav left, length pill toggle right) + inner `grid-cols-2` with calendar on the left and slot pane on the right separated by `border-l pl-[14px]`.
+  - **Right scheduled-lessons card**: `position: sticky; top: 16px;` with internal `max-h-[320px] overflow-y-auto` list and confirm button pinned underneath.
+- **Calendar cells**: keep existing day-state logic but restyle to the four states (past, available soft-green, has-lesson soft-blue + dot, selected primary). Add legend row.
+- **Slot pane**: group existing slot data into Morning (<12), Afternoon (12–17), Evening (≥17). Single vertical column of full-width buttons, time range left, green plus right. Booked slots rendered in place, greyed + strikethrough, disabled.
+- **Length toggle**: compact pill group (1 / 1.5 / 2 / 3 hr) inside toolbar; remove the existing full-width "Choose your lesson length" panel.
+- **Empty states**: icon + copy for "Click any available date…" (slot pane, min-h 280px) and "Click any date to schedule your first lesson" (lessons list).
+- **Confirm button**: disabled grey with "Book {n} more hours to continue" until remaining = 0, then primary "Confirm all lessons" + 11px hint underneath.
+- All copy in sentence case; only MORNING/AFTERNOON/EVENING uppercase + tracked.
 
-**Email sending — important blocker:**
-- The configured Lovable Email domain is `drivinglessonswinchester.com` and it is currently in `provisioning_failed` state. **`drive365.co.uk` is NOT verified anywhere** — not in Lovable Email, not in Resend (the existing `notify-booking-enquiry` function sends from `notifications@resend.dev`).
-- That means I **cannot** send the admin email from `noreply@drive365.co.uk` until the domain is verified. Per the prior chat we were mid-way through getting `notify.drive365.co.uk` delegated — that work is still outstanding (SiteGround NS limitation / Cloudflare migration).
-- **Recommendation:** I switch the admin notification to use **Lovable's built-in transactional email system** (queued, retried, suppression-aware) which automatically uses your verified Lovable Email domain once DNS is live. Until DNS for a Drive365 sender is configured, the email will either (a) fall back to the existing Resend path with `from: Drive365 Enquiries <onboarding@resend.dev>` so it still sends, or (b) hold until the domain is verified. **Pick one.**
+### 2. Both `BookingSummary.tsx` pages (Drive365 + EveryDriver, lines ~1715)
+Remove the wrapper that renders the duplicate "Select Your Lesson Slots" header and the outer "0/10h" pill. The new in-component header replaces both.
 
----
+### 3. Responsive (<900px)
+- Outer two-column grid → single column (workspace first, lessons after).
+- Right card: `lg:sticky lg:top-4` so sticky is desktop-only; stays static on mobile.
+- Inner calendar/slots grid also stacks; the `border-l pl-[14px]` becomes `border-t pt-[14px]` via responsive classes.
 
-## Questions before I build
+### 4. Brand tokens
+Use existing Drive365 tokens already in the project: navy `#142040` (primary), accent blue `#2B7BC8`, slate-50 `#F9FAFB` row backgrounds, success green for available cells. No new colours invented; will pull from `tailwind.config.ts` / `index.css` rather than hardcoding.
 
-1. **Drive365 brand spec:** OK to use `--primary` deep navy + header `#142040` + system font stack, or do you have an official hex / font / accent to supply?
-2. **Schema:** OK to extend `booking_enquiries` (keep `pupil_*` names internally, present as "learner" in UI/email) and add `typical_response_hours` to `instructors`?
-3. **Email sender:** Until `drive365.co.uk` DNS is verified, do you want me to (a) send via Resend from `onboarding@resend.dev` with display name "Drive365 Enquiries" so it works today, or (b) wire it up to Lovable Email and accept it won't send until you finish the DNS work?
+## Sticky-positioning caveat (your warning, confirmed)
+The booking page wraps content in motion divs and gradient sections. If `sticky` doesn't engage, the cause will be an ancestor with `overflow: hidden`, `overflow-x: clip`, or `transform`/`will-change` (which creates a containing block and breaks sticky). Plan: when wiring it up, walk up the DOM from the lessons card and remove/relocate any such ancestor styles around the scheduler section only — without changing the rest of the page's overflow rules.
 
----
+## Out of scope
+- No business logic changes: slot generation, conflict checking, RPCs, and persistence stay identical. Pure presentational rebuild + duplicate-header removal.
+- Mobile booking view (`MobileBookingView.tsx`) is not touched — per project rule, mobile layouts only change when explicitly asked. The responsive stacking above only covers narrow desktop widths within the existing `LessonScheduler` component.
 
-## Build plan (once the questions above are answered)
-
-### 1. Brand tokens
-Add a scoped `.drive365-brand` block in `src/index.css` defining `--d365-primary`, `--d365-primary-foreground`, `--d365-accent`, `--d365-success`, `--d365-success-tint`, `--d365-surface`, `--d365-surface-tint`, `--d365-border`, `--d365-text`, `--d365-text-muted`, `--d365-radius-card: 16px`, `--d365-radius-input: 10px`. Export Tailwind aliases in `tailwind.config.ts`. All three pieces consume these — single source of truth.
-
-### 2. New components
-- `src/components/booking/EnquiryForm.tsx` — Piece 1 exactly to your spec (avatar, header, fields with optional tags, trust signals).
-- `src/components/booking/EnquiryConfirmation.tsx` — Piece 2 exactly to your spec (success circle, instructor recap, 3-step timeline, outline CTA, footnote).
-- A new wrapper `src/components/booking/EnquiryFlow.tsx` that holds submit state and swaps between form ↔ confirmation.
-- `BookingSummary.tsx` swaps `EnquiryOnlyView` → `EnquiryFlow`. `EnquiryOnlyView` is left in place for now (deletion in a follow-up to keep this PR focused on the redesign).
-
-### 3. Migration
-`booking_enquiries`: add `source_page text`, `instructor_email_sent_at timestamptz`, `admin_email_sent_at timestamptz`, `instructor_email_error text`, `admin_email_error text`. (Optional: `instructors.typical_response_hours int default 24`.)
-
-### 4. Submit flow
-1. Validate (zod, same shape as today)
-2. Insert into `booking_enquiries` with `source_page = window.location.pathname`
-3. `supabase.functions.invoke("notify-booking-enquiry", ...)` (existing — sends to instructor)
-4. `supabase.functions.invoke("notify-admin-enquiry", ...)` (NEW)
-5. Each function PATCHes back its own timestamp/error column
-6. Show `EnquiryConfirmation` regardless of email success/failure
-
-### 5. New edge function `notify-admin-enquiry`
-- Reads enquiry + instructor
-- Renders the Drive365-branded HTML email (table-based, inline styles, max 600px, mobile stacking via media query, plain-text fallback)
-- Header bar `#142040` + Drive365 logo + "NEW ENQUIRY" pill
-- Learner block / quoted message / Instructor block / centred CTA → `https://everydriver.lovable.app/admin/enquiries/{id}` / footer
-- `From`: depends on Q3 answer
-- `Reply-To`: learner email
-- `Subject`: `New enquiry: {learner name} → {instructor name}`
-- Sends to `Deno.env.get("ADMIN_ENQUIRY_EMAIL")` — I'll request this secret via `add_secret` (your spec says `enquiries@drive365.co.uk`).
-
-### 6. Verification
-- Render both screens at `/book/...` against viewport 1078×688 and a mobile width
-- Trigger a test enquiry, confirm row in `booking_enquiries`, confirm both edge function logs show success, confirm admin email arrives
-- Report back with screenshots of all three pieces (form / confirmation / rendered email HTML)
-
-### 7. SPF/DKIM status I'll report
-- Lovable Email: `drive365.co.uk` not configured → flag
-- Resend: `drive365.co.uk` not verified → flag
-- Whichever path you pick in Q3 will determine the exact DNS to-do list I hand back
-
----
-
-Reply with answers to the three questions and I'll execute the plan in one pass.
+## Deliverables on completion
+- Desktop screenshot with a date selected and 3 lessons scheduled.
+- Scroll test confirming the lessons column stays in view (or note + fix if an ancestor blocks sticky).
+- Internal-scroll test with >5 lessons.
+- 375px screenshot showing the workspace stacked above the lessons card.
+- Confirmation that only existing Drive365 tokens were used.

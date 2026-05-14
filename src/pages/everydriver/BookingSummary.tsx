@@ -1707,23 +1707,8 @@ export default function BookingSummary() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.25 }}
-            className="rounded-2xl border bg-card p-4 sm:p-6 shadow-sm mb-6"
+            className="mb-6"
           >
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h2 className="text-lg font-semibold flex items-center gap-2">
-                  <Calendar className="h-5 w-5 text-primary" />
-                  Select Your Lesson Slots
-                </h2>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Schedule {hours} hours across multiple lessons
-                </p>
-              </div>
-              <Badge variant={isFullyScheduled ? "default" : "secondary"} className={isFullyScheduled ? "bg-emerald-500" : ""}>
-                {scheduledHours}/{hours}h
-              </Badge>
-            </div>
-            
             <LessonScheduler
               instructorId={instructor.id}
               totalHours={hours}
@@ -1733,6 +1718,7 @@ export default function BookingSummary() {
               allowedLessonLengths={instructor.allowed_lesson_lengths || undefined}
               bufferMinutes={instructor.buffer_minutes}
               instructorHomePostcode={instructor.home_postcode}
+              instructorFirstName={instructor.name?.split(" ")[0]}
               pupilPostcode={differentPickup ? pickupPostcode : pupilPostcode}
               onSlotsChange={handleSlotsChange}
             />
