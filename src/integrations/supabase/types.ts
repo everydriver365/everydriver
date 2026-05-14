@@ -12274,6 +12274,7 @@ export type Database = {
           amount: number
           created_at: string
           deleted_at: string | null
+          external_payment_ref: string | null
           id: string
           instructor_id: string
           lesson_id: string | null
@@ -12289,6 +12290,7 @@ export type Database = {
           amount: number
           created_at?: string
           deleted_at?: string | null
+          external_payment_ref?: string | null
           id?: string
           instructor_id: string
           lesson_id?: string | null
@@ -12304,6 +12306,7 @@ export type Database = {
           amount?: number
           created_at?: string
           deleted_at?: string | null
+          external_payment_ref?: string | null
           id?: string
           instructor_id?: string
           lesson_id?: string | null
