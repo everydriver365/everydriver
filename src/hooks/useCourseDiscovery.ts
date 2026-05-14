@@ -82,10 +82,10 @@ interface GeoCache {
   [postcode: string]: { lat: number; lng: number } | null;
 }
 
-// Intensive course hours (short duration, high intensity)
-const INTENSIVE_HOURS = [20, 28, 36];
-// Semi-intensive course hours (longer duration)
-const SEMI_INTENSIVE_HOURS = [30, 36, 40];
+// Hour buckets are no longer hard-coded — they are derived dynamically from
+// course_templates + instructor_courses so any new course an instructor offers
+// flows through automatically. The intensive/semi-intensive split uses
+// course_templates.is_intensive as the single source of truth.
 
 function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 3959;
