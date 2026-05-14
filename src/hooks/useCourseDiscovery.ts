@@ -135,8 +135,15 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
   const [instructors, setInstructors] = useState<Instructor[]>([]);
   const [instructorCourses, setInstructorCourses] = useState<InstructorCourse[]>([]);
   const [courseTemplates, setCourseTemplates] = useState<CourseTemplate[]>([]);
-  const [workingHours, setWorkingHours] = useState<WorkingHours[]>([]);
-  const [dateOverrides, setDateOverrides] = useState<DateOverride[]>([]);
+  const [sources, setSources] = useState<CourseAvailabilitySources>({
+    workingHours: [],
+    availabilityWindows: [],
+    overrides: [],
+    calendarEvents: [],
+    scheduledLessons: [],
+    manualBlocks: [],
+  });
+  const [premiumPlacements, setPremiumPlacements] = useState<{ instructor_id: string; placement_type: string; priority_score: number }[]>([]);
   const [premiumPlacements, setPremiumPlacements] = useState<{ instructor_id: string; placement_type: string; priority_score: number }[]>([]);
 
   const monthOptions = useMemo(() => getMonthOptions(), []);
