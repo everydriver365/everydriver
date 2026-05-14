@@ -1213,11 +1213,12 @@ export default function Courses() {
       </section>
 
       {/* Two Column Layout: Calendar + Courses */}
-      <section className="container py-8">
-        <div className="flex flex-col gap-8 lg:flex-row">
+      <section className="py-8" style={{ background: isListMode ? "#F9FAFB" : undefined }}>
+        <div className="container">
+        <div className="flex flex-col gap-5 lg:flex-row" style={{ gap: isListMode ? 20 : undefined }}>
           {/* Left Column: Calendar + Instructors */}
-          <div className="w-full lg:w-80 lg:flex-shrink-0">
-            <div className="sticky top-20 space-y-4">
+          <div className="w-full lg:flex-shrink-0" style={{ width: isListMode ? undefined : undefined }}>
+            <div className={`sticky top-20 ${isListMode ? "" : "space-y-4"}`} style={isListMode ? { display: "flex", flexDirection: "column", gap: 16, width: 280 } : undefined}>
               <SidebarCalendar
                 selectedMonth={selectedMonth}
                 setSelectedMonth={setSelectedMonth}
