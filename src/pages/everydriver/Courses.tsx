@@ -1282,30 +1282,48 @@ export default function Courses() {
                               : undefined,
                           }}
                         >
-                          <div 
-                            className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-full border-2"
-                            style={{
-                              backgroundColor: getBrandBgColor(instructor.brand_colour) || 'hsl(var(--muted))',
-                              borderColor: instructor.brand_colour || 'hsl(var(--border))',
-                            }}
-                          >
-                            {instructor.profile_image_url ? (
-                              <img
-                                src={instructor.profile_image_url}
-                                alt={instructor.name}
-                                className="h-full w-full object-cover"
-                              />
-                            ) : (
-                              <div 
-                                className="flex h-full w-full items-center justify-center text-sm font-semibold"
+                          {(() => {
+                            const initials = (instructor.name || "")
+                              .split(/\s+/)
+                              .filter(Boolean)
+                              .slice(0, 2)
+                              .map((p) => p.charAt(0).toUpperCase())
+                              .join("");
+                            return (
+                              <div
+                                className="relative flex-shrink-0 overflow-hidden rounded-full"
                                 style={{
-                                  color: instructor.brand_colour || 'hsl(var(--primary))',
+                                  width: isListMode ? 38 : 40,
+                                  height: isListMode ? 38 : 40,
+                                  border: isListMode ? "none" : "2px solid",
+                                  borderColor: isListMode ? undefined : (instructor.brand_colour || 'hsl(var(--border))'),
+                                  background: isListMode
+                                    ? "linear-gradient(135deg, #3FB76B 0%, #1D9E75 100%)"
+                                    : (getBrandBgColor(instructor.brand_colour) || 'hsl(var(--muted))'),
                                 }}
                               >
-                                {instructor.name.charAt(0)}
+                                {instructor.profile_image_url ? (
+                                  <img
+                                    src={instructor.profile_image_url}
+                                    alt={instructor.name}
+                                    className="h-full w-full object-cover"
+                                  />
+                                ) : (
+                                  <div
+                                    className="flex h-full w-full items-center justify-center"
+                                    style={{
+                                      color: isListMode ? "white" : (instructor.brand_colour || 'hsl(var(--primary))'),
+                                      fontSize: isListMode ? 13 : 14,
+                                      fontWeight: 600,
+                                      letterSpacing: "0.02em",
+                                    }}
+                                  >
+                                    {initials || instructor.name.charAt(0)}
+                                  </div>
+                                )}
                               </div>
-                            )}
-                          </div>
+                            );
+                          })()}
                           <div className="flex-1 min-w-0">
                             <p className="truncate text-sm font-medium">{instructor.name}</p>
                             <div className="flex items-center gap-2 text-xs text-muted-foreground">
