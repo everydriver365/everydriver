@@ -248,6 +248,7 @@ export function PostcodeAutocomplete({
           <Input
             ref={inputRef}
             type="text"
+            enableDictation={enableDictation}
             placeholder={placeholder}
             value={value}
             onChange={(e) => onChange(e.target.value.toUpperCase())}
