@@ -230,3 +230,22 @@ export function getWhitelabelInstructorSlug(): string | null {
  * has finished. Now empty because everything is DB-driven.
  */
 export const ALL_WHITELABEL_HOSTS: string[] = [];
+
+/**
+ * True when the current hostname is an EveryDriver marketing host. These
+ * hosts render the cloned `src/pages/everydriver/*` page set instead of
+ * the Drive365 originals (see src/routes/everydriverRoutes.tsx).
+ *
+ * Lovable preview/sandbox URLs are intentionally excluded so the existing
+ * instructor-marketing `HomepageRedesignDemo` remains the default there.
+ */
+export function isEveryDriverHost(
+  hostname: string = typeof window !== "undefined" ? window.location.hostname : "",
+): boolean {
+  const host = hostname.toLowerCase().replace(/^www\./, "");
+  return (
+    host === "everydriver.co.uk" ||
+    host === "everydriver.co" ||
+    host === "everydriver.lovable.app"
+  );
+}
