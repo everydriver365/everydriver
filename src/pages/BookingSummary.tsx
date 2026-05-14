@@ -1737,262 +1737,83 @@ export default function BookingSummary() {
           </motion.div>
         )}
 
-        {/* Step 3: Payment Options */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="rounded-2xl border bg-card p-4 sm:p-6 shadow-sm"
-        >
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold flex items-center gap-2">
-              <CreditCard className="h-5 w-5 text-primary" />
-              Payment
-            </h2>
-            <div className="text-right">
-              <div className="text-2xl font-bold">£{totalPrice + upsellTotal}</div>
-              <div className="text-xs text-muted-foreground">
-                {upsellTotal > 0 ? `Course £${totalPrice} + extras £${upsellTotal.toFixed(2)}` : `Total for ${hours} hours`}
-              </div>
-              <div className="text-[11px] text-muted-foreground/80">Includes £{platformFee.toFixed(2)} platform fee</div>
-            </div>
-          </div>
+        {/* Step 3: Payment */}
+        <CoursePaymentBlock
+          courseName={courseName}
+          hours={hours}
+          instructorName={instructor.name}
+          locationName={locationName || instructor.home_postcode}
+          totalPrice={totalPrice}
+          upsellTotal={upsellTotal}
+          depositEnabled={depositEnabled}
+          depositAmount={depositAmount}
+          depositDeadlineDays={depositDeadlineDays}
+          paymentOption={paymentOption}
+          setPaymentOption={setPaymentOption}
+          canSubmit={canSubmit}
+          isPupilDetailsComplete={isPupilDetailsComplete}
+          isFullyScheduled={isFullyScheduled}
+          requiresSlotSelection={requiresSlotSelection}
+          hoursRemaining={Math.max(0, hours - scheduledHours)}
+          klarnaEnabled={klarnaEnabled}
+          clearpayEnabled={clearpayEnabled}
+          instantBankPayEnabled={instantBankPayEnabled}
+          cashPaymentsEnabled={cashPaymentsEnabled}
+          squareAvailable={gatewayHealth.square.available}
+          clearpayAvailable={gatewayHealth.clearpay.available}
+          isElavonLoading={isElavonLoading}
+          isKlarnaLoading={isKlarnaLoading}
+          isClearpayLoading={isClearpayLoading}
+          isInstantBankPayLoading={isInstantBankPayLoading}
+          isCashProcessing={isCashProcessing}
+          onCardCheckout={handleElavonCheckout}
+          onKlarnaCheckout={handleKlarnaCheckout}
+          onClearpayCheckout={handleClearpayCheckout}
+          onBankCheckout={handleInstantBankPay}
+          onCashCheckout={handleCashPayment}
+        />
 
-          {!canSubmit && (
-            <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 mb-4 text-center">
-              <span className="text-amber-700 text-sm font-medium">
-                {!isPupilDetailsComplete 
-                  ? "Please complete all your details above"
-                  : requiresSlotSelection 
-                    ? `Please schedule all ${hours} hours first`
-                    : "Please complete your details above"}
-              </span>
-            </div>
-          )}
-
-          {/* Express Checkout - Apple/Google Pay */}
-          {canSubmit && (
-            <div className="sm:col-span-2 mb-2">
-              <SquareWalletButtons
-                amount={totalPrice + upsellTotal}
-                instructorId={instructor.id}
-                customerName={pupilName}
-                customerEmail={pupilEmail}
-                onPaid={async () => {
-                  const pupilId = bookingPupilId;
-                  if (pupilId) {
-                    await triggerConfirmBooking(pupilId);
-                    navigate(`/booking-confirmation?pupilId=${pupilId}`);
-                  }
-                }}
-                onProcessing={(p) => setIsSubmitting(p)}
-                disabled={isSubmitting || isElavonLoading || isClearpayLoading}
-                ensureBookingCreated={async () => {
-                  const id = await ensureBookingCreated();
-                  return id;
-                }}
-              />
-            </div>
-          )}
-
-          <div className="grid gap-3 sm:grid-cols-2">
-            {/* NPI Card Payment - With Deposit Option */}
-            <div className="w-full rounded-lg border-2 border-primary p-4 bg-gradient-to-br from-primary/5 to-primary/10 dark:from-primary/10 dark:to-primary/20 relative">
-              <div className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs px-2 py-0.5 rounded-full font-medium">
-                Recommended
-              </div>
-              <div className="flex items-center justify-between mb-3">
-                <span className="rounded bg-primary px-2 py-0.5 text-xs font-bold text-primary-foreground flex items-center gap-1">
-                  <Banknote className="h-3 w-3" />
-                  Card
-                </span>
-                <span className="text-xs text-primary">
-                  {isElavonLoading ? "Loading..." : "Secure Payment"}
-                </span>
-              </div>
-
-              {/* Deposit Toggle (only if enabled) */}
-              {depositEnabled && (
-                <div className="mb-4 p-3 rounded-lg bg-background/60 border space-y-2">
-                  <div className="flex items-center gap-3">
-                    <button
-                      onClick={() => setPaymentOption('full')}
-                      className={`flex-1 p-2 rounded-lg border-2 text-center text-sm transition-all ${
-                        paymentOption === 'full' 
-                          ? 'border-primary bg-primary/10 font-semibold' 
-                          : 'border-border hover:border-primary/50'
-                      }`}
-                    >
-                      <div className="font-medium">Pay in Full</div>
-                      <div className="text-lg font-bold">£{totalPrice + upsellTotal}</div>
-                    </button>
-                    <button
-                      onClick={() => setPaymentOption('deposit')}
-                      className={`flex-1 p-2 rounded-lg border-2 text-center text-sm transition-all ${
-                        paymentOption === 'deposit' 
-                          ? 'border-primary bg-primary/10 font-semibold' 
-                          : 'border-border hover:border-primary/50'
-                      }`}
-                    >
-                      <div className="font-medium">Pay Deposit</div>
-                      <div className="text-lg font-bold">£{depositAmount}</div>
-                    </button>
-                  </div>
-                  {paymentOption === 'deposit' && (
-                    <div className="text-xs text-amber-600 dark:text-amber-400 bg-amber-500/10 rounded p-2">
-                      <strong>⚠️ Important:</strong> Remaining £{(totalPrice + upsellTotal) - depositAmount} must be paid {depositDeadlineDays} days before your first lesson, or booking will be cancelled and deposit forfeited.
-                    </div>
-                  )}
-                </div>
-              )}
-
-              <Button
-                onClick={handleElavonCheckout}
-                disabled={!canSubmit || isElavonLoading || !gatewayHealth.square.available}
-                className="w-full"
-              >
-                {isElavonLoading ? (
-                  <><Loader2 className="h-4 w-4 animate-spin mr-2" /> Processing...</>
-                ) : (
-                  <>Pay £{paymentOption === 'deposit' && depositEnabled ? depositAmount : totalPrice + upsellTotal} with Card</>
-                )}
-              </Button>
-              <p className="text-xs text-muted-foreground mt-2 text-center">Visa, Mastercard, Amex accepted</p>
-            </div>
-
-
-            {/* Clearpay - Confirmed Working */}
-            {clearpayEnabled && (
-            <button
-              onClick={handleClearpayCheckout}
-              disabled={!canSubmit || isClearpayLoading || !gatewayHealth.clearpay.available}
-              className="w-full rounded-lg border-2 border-[#b2fce4] p-4 bg-gradient-to-br from-[#b2fce4]/10 to-[#b2fce4]/20 hover:from-[#b2fce4]/20 hover:to-[#b2fce4]/30 transition-colors text-left disabled:opacity-50 disabled:cursor-not-allowed flex flex-col"
-            >
-              <div className="flex items-center justify-between mb-2">
-                <span className="rounded bg-[#b2fce4] px-2 py-0.5 text-xs font-bold text-black">
-                  clearpay
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  {isClearpayLoading ? "Loading..." : "Pay in 4"}
-                </span>
-              </div>
-              <div className="font-semibold text-sm">4 × £{((totalPrice + upsellTotal) / 4).toFixed(2)}</div>
-              <div className="text-xs text-muted-foreground mt-auto pt-1">Interest-free instalments</div>
-            </button>
-            )}
-
-            {/* Klarna - Server-side redirect */}
-            {klarnaEnabled && (
-            <button
-              onClick={handleKlarnaCheckout}
-              disabled={!canSubmit || isKlarnaLoading}
-              className="w-full rounded-lg border-2 border-[#FFB3C7] p-4 bg-gradient-to-br from-[#ffb3c7]/10 to-[#ffb3c7]/20 hover:from-[#ffb3c7]/20 hover:to-[#ffb3c7]/30 transition-colors text-left disabled:opacity-50 disabled:pointer-events-none"
-            >
-              <div className="flex items-center justify-between mb-3">
-                <span className="rounded bg-[#ffb3c7] px-2 py-0.5 text-xs font-bold text-black">
-                  Klarna.
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  Pay in 3 instalments
-                </span>
-              </div>
-              <div className="font-semibold text-sm">
-                {isKlarnaLoading ? "Loading..." : `3 × £${((totalPrice + upsellTotal) / 3).toFixed(2)}`}
-              </div>
-              {!canSubmit && (
-                <p className="mt-2 text-xs text-muted-foreground">
-                  To enable Klarna: {isPupilDetailsComplete ? "details ✅" : "complete your details"} and {isFullyScheduled ? "schedule ✅" : `schedule ${(hours - scheduledHours).toFixed(1)} more hour(s)`}.
-                </p>
-              )}
-            </button>
-            )}
-
-            {/* Cash Payment */}
-            {cashPaymentsEnabled && (
+        {showHostedFields && courseDetails && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mt-6 rounded-2xl border bg-card p-4 sm:p-6 shadow-sm"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold flex items-center gap-2">
+                <CreditCard className="h-5 w-5 text-primary" />
+                Enter card details
+              </h3>
               <button
-                onClick={handleCashPayment}
-                disabled={!canSubmit || isCashProcessing}
-                className="w-full rounded-lg border-2 border-emerald-300 dark:border-emerald-700 p-4 bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-950/30 dark:to-emerald-900/30 hover:from-emerald-100 hover:to-emerald-200 dark:hover:from-emerald-950/50 dark:hover:to-emerald-900/50 transition-colors text-left disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={() => setShowHostedFields(false)}
+                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
               >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="rounded bg-emerald-600 px-2 py-0.5 text-xs font-bold text-white flex items-center gap-1">
-                    <Banknote className="h-3 w-3" />
-                    Cash
-                  </span>
-                  <span className="text-xs text-muted-foreground">Pay your instructor</span>
-                </div>
-                <div className="font-semibold text-sm">
-                  {isCashProcessing ? "Processing..." : `£${totalPrice + upsellTotal}`}
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">Pay cash directly to your instructor</p>
+                Cancel
               </button>
-            )}
-
-            {/* Instant Bank Pay (GoCardless) */}
-            {instantBankPayEnabled && (
-              <button
-                onClick={handleInstantBankPay}
-                disabled={!canSubmit || isInstantBankPayLoading}
-                className="w-full rounded-lg border-2 border-blue-300 dark:border-blue-700 p-4 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/30 dark:to-blue-900/30 hover:from-blue-100 hover:to-blue-200 dark:hover:from-blue-950/50 dark:hover:to-blue-900/50 transition-colors text-left disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="rounded bg-blue-600 px-2 py-0.5 text-xs font-bold text-white">🏦 Pay by Bank</span>
-                  <span className="text-xs text-muted-foreground">Instant confirmation</span>
-                </div>
-                <div className="font-semibold text-sm">
-                  {isInstantBankPayLoading ? "Connecting..." : `£${totalPrice + upsellTotal}`}
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">Pay directly from your bank account</p>
-              </button>
-            )}
-
-          </div>
-
-
-          {/* Cardstream Embedded Card Form */}
-          {showHostedFields && courseDetails && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mt-6"
-            >
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold flex items-center gap-2">
-                  <CreditCard className="h-5 w-5 text-primary" />
-                  Enter Card Details
-                </h3>
-                <button 
-                  onClick={() => setShowHostedFields(false)}
-                  className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Cancel
-                </button>
-              </div>
-              <SquarePaymentForm
-                amount={paymentOption === 'deposit' && depositEnabled ? depositAmount : totalPrice + upsellTotal}
-                pupilId={bookingPupilId || undefined}
-                instructorId={instructor.id}
-                customerName={pupilName.trim()}
-                customerEmail={pupilEmail.trim()}
-                onCancel={() => setShowHostedFields(false)}
-                onPaid={async () => {
-                  const isDepositPayment = paymentOption === 'deposit' && depositEnabled;
-                  const fullPaymentAmount = totalPrice + upsellTotal;
-                  const pupilId = await ensureBookingCreated(
-                    isDepositPayment ? 'deposit' : 'full',
-                    isDepositPayment ? depositAmount : fullPaymentAmount
-                  );
-                  toast.success("Payment successful!");
-                  if (pupilId) {
-                    await triggerConfirmBooking(pupilId);
-                    navigate(`/booking-confirmation?pupilId=${pupilId}&npi=success`);
-                  }
-                }}
-              />
-            </motion.div>
-          )}
-
-        </motion.div>
+            </div>
+            <SquarePaymentForm
+              amount={paymentOption === 'deposit' && depositEnabled ? depositAmount : totalPrice + upsellTotal}
+              pupilId={bookingPupilId || undefined}
+              instructorId={instructor.id}
+              customerName={pupilName.trim()}
+              customerEmail={pupilEmail.trim()}
+              onCancel={() => setShowHostedFields(false)}
+              onPaid={async () => {
+                const isDepositPayment = paymentOption === 'deposit' && depositEnabled;
+                const fullPaymentAmount = totalPrice + upsellTotal;
+                const pupilId = await ensureBookingCreated(
+                  isDepositPayment ? 'deposit' : 'full',
+                  isDepositPayment ? depositAmount : fullPaymentAmount
+                );
+                toast.success("Payment successful!");
+                if (pupilId) {
+                  await triggerConfirmBooking(pupilId);
+                  navigate(`/booking-confirmation?pupilId=${pupilId}&npi=success`);
+                }
+              }}
+            />
+          </motion.div>
+        )}
 
         {/* Cancellation Policy */}
         {cancellationPolicyText && (
