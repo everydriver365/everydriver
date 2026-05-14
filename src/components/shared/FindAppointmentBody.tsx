@@ -1,9 +1,10 @@
 import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { format, parseISO } from "date-fns";
+import { format, parseISO, addDays } from "date-fns";
 import { Loader2, Search, X, Calendar as CalendarIcon, ChevronDown, Filter, CalendarSearch } from "lucide-react";
 import { useInstructorAvailabilitySearch, AvailableSlot, TimeOfDay } from "@/hooks/useInstructorAvailabilitySearch";
+import { refreshGoogleCalendar } from "@/lib/refreshGoogleCalendar";
 import { cn } from "@/lib/utils";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
