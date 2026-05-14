@@ -23,6 +23,13 @@ interface CheckArgs {
   durationMinutes: number;
   bufferMinutes?: number;
   excludeLessonId?: string;
+  /**
+   * When true (default), pull the latest Google Calendar events for this
+   * instructor/day into `instructor_calendar_events` before evaluating clash.
+   * Throttled by sessionStorage TTL so it never spams the edge function.
+   * Set to false in tight loops where the caller has already refreshed.
+   */
+  refreshGoogle?: boolean;
 }
 
 const ALL_DAY_BLOCKING = /(holiday|annual leave|vacation|bank holiday|time off|\bleave\b|off work|out of office|\booo\b)/i;
