@@ -58,6 +58,7 @@ export async function checkLessonClash(args: CheckArgs): Promise<ClashResult> {
     durationMinutes,
     bufferMinutes = 0,
     excludeLessonId,
+    refreshGoogle = true,
   } = args;
 
   const dateStr = typeof date === 'string' ? date : format(date, 'yyyy-MM-dd');
@@ -66,6 +67,17 @@ export async function checkLessonClash(args: CheckArgs): Promise<ClashResult> {
 
   const dayStart = new Date(`${dateStr}T00:00:00`);
   const dayEnd = new Date(`${dateStr}T23:59:59.999`);
+
+  // Pull the freshest Google Calendar state for this day before reading the
+  // cache. Non-blocking on failure — falls back to whatever the cron sync
+  // last wrote. Throttled per (instructor, day) inside the helper.
+  if (refreshGoogle) {
+    try {
+      await refreshGoogleCalendarForDate(instructorId, dateStr);
+    } catch {
+      /* ignore — cached events still apply */
+    }
+  }
 
   let lessonsQuery = supabase
     .from('scheduled_lessons')
