@@ -317,10 +317,10 @@ export default function BookingSummary() {
         return;
       }
 
-      // Set deposit settings from instructor
+      // Set deposit settings from instructor (live values only — no fallbacks)
       setDepositEnabled(instructorRes.data.deposit_enabled ?? false);
-      setDepositAmount(instructorRes.data.deposit_amount ?? 350);
-      setDepositDeadlineDays(instructorRes.data.deposit_deadline_days ?? 30);
+      setDepositAmount(instructorRes.data.deposit_amount ?? null);
+      setDepositDeadlineDays(instructorRes.data.deposit_deadline_days ?? null);
       setCancellationPolicyText(instructorRes.data.cancellation_policy_text ?? "");
       setCashPaymentsEnabled((instructorRes.data as any).cash_payments_enabled ?? false);
       setInstantBankPayEnabled((instructorRes.data as any).instant_bank_pay_enabled ?? false);
