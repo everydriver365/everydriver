@@ -7,6 +7,7 @@ import { PostcodeAutocomplete } from "@/components/PostcodeAutocomplete";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { DynamicCourseCard } from "@/components/DynamicCourseCard";
 import { CourseTableList } from "@/components/courses/CourseTableList";
+import { EDCourseList } from "@/components/everydriver/EDCourseList";
 import { Edit2, SlidersHorizontal, ShieldCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -1696,7 +1697,7 @@ export default function Courses() {
                 {filteredCourses.length > 0 ? (
                   isListMode ? (
                     <>
-                      <CourseTableList
+                      <EDCourseList
                         courses={(isMobile ? filteredCourses.slice(0, mobileVisibleCount) : filteredCourses).map((c) => {
                           const rate = resolvedRateFor(c.instructor) ?? c.instructor.hourly_rate ?? 40;
                           const skim = c.instructor.school_skim_amount || 0;
