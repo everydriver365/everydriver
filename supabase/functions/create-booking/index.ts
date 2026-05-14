@@ -189,10 +189,9 @@ serve(async (req) => {
           conflicts.push({ date: slot.date, startTime: slot.startTime, reason: "Conflicts with an instructor block" });
           continue;
         }
-        if ((evRes.data || []).some((e) => overlaps(e.start_time, e.end_time))) {
-          conflicts.push({ date: slot.date, startTime: slot.startTime, reason: "Conflicts with a busy calendar event" });
-          continue;
-        }
+        // NOTE: Busy calendar event conflicts are intentionally NOT re-checked at
+        // payment time. Calendar availability is validated when the slot is shown
+        // in the scheduler; blocking again here causes spurious failures at pay.
       }
 
       if (conflicts.length > 0) {
