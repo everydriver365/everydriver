@@ -5,15 +5,11 @@ import klarnaLogo from "@/assets/klarna-wordmark.svg";
 import clearpayLogo from "@/assets/clearpay-wordmark.svg";
 
 // EveryDriver-only redesigned list view for course search results.
-// Brand tokens (literal hex per spec — intentionally not using semantic tokens
-// because this surface is a one-off whitelabel skin that should not follow the
-// Drive365 design system):
-//   navy        #0A2B6B   primary text + buttons
-//   amber       #F4B83C   "POPULAR" ribbon
-//   green       #3FB76B
-//   red         #E63946
-//   greys       #6B7280 (text), #E5E7EB (border), #F0F4FB (hour fill),
-//               #F3F4F6 (chip bg)
+// Brand tokens (literal hex per spec — intentionally not using semantic
+// tokens because this surface is a one-off whitelabel skin):
+//   navy        #0A2B6B    primary text + buttons
+//   amber       #F4B83C    "POPULAR" ribbon
+//   greys       #6B7280 (text), #E5E7EB (border), #F0F4FB (hour fill)
 //   page bg     #F9FAFB
 //   surface     #FFFFFF
 
@@ -65,9 +61,6 @@ export function EDCourseList({ courses }: EDCourseListProps) {
     const dateParam = c.bookableDate
       ? `&date=${format(c.bookableDate, "yyyy-MM-dd")}`
       : "";
-    // Preserve the ?everydriver=1 preview override so the booking page also
-    // renders the EveryDriver clone. On the real everydriver.co.uk host the
-    // param is absent and host-detection takes over.
     const edParam =
       typeof window !== "undefined" &&
       new URLSearchParams(window.location.search).get("everydriver") === "1"
@@ -77,7 +70,7 @@ export function EDCourseList({ courses }: EDCourseListProps) {
   };
 
   return (
-    <div className="flex flex-col" style={{ gap: 14 }}>
+    <div className="flex flex-col" style={{ gap: 10 }}>
       {courses.map((c) => {
         const final =
           c.discountedPrice && c.discountedPrice < c.price
@@ -102,63 +95,67 @@ export function EDCourseList({ courses }: EDCourseListProps) {
             className="ed-course-card group cursor-pointer bg-white transition-colors"
             style={{
               border: `1px solid ${BORDER}`,
-              borderRadius: 16,
-              padding: 20,
+              borderRadius: 12,
+              padding: 16,
             }}
           >
-            {/* Desktop layout */}
+            {/* Desktop layout: 70px | 1fr | auto, 16px gap */}
             <div
               className="hidden sm:grid items-center"
               style={{
-                gridTemplateColumns: "104px 1fr auto",
-                gap: 20,
+                gridTemplateColumns: "70px 1fr auto",
+                gap: 16,
               }}
             >
               {/* Hours block */}
-              <div className="flex items-center justify-center">
+              <div className="relative flex items-center justify-center">
+                {c.isPopular && (
+                  <div
+                    className="absolute"
+                    style={{
+                      top: -8,
+                      left: "50%",
+                      transform: "translateX(-50%)",
+                      background: AMBER,
+                      color: NAVY,
+                      fontSize: 9,
+                      fontWeight: 800,
+                      letterSpacing: "0.08em",
+                      padding: "2px 8px",
+                      borderRadius: 4,
+                      whiteSpace: "nowrap",
+                      zIndex: 1,
+                    }}
+                  >
+                    POPULAR
+                  </div>
+                )}
                 <div
                   className="flex flex-col items-center justify-center"
                   style={{
                     background: HOUR_FILL,
-                    borderRadius: 14,
-                    width: 104,
-                    minHeight: 104,
-                    padding: c.isPopular ? "10px 8px 14px" : "0",
+                    borderRadius: 10,
+                    width: 70,
+                    height: 70,
                   }}
                 >
-                  {c.isPopular && (
-                    <div
-                      style={{
-                        background: AMBER,
-                        color: NAVY,
-                        fontSize: 10,
-                        fontWeight: 800,
-                        letterSpacing: "0.1em",
-                        padding: "3px 10px",
-                        borderRadius: 6,
-                        marginBottom: 8,
-                      }}
-                    >
-                      POPULAR
-                    </div>
-                  )}
                   <div
                     style={{
-                      fontSize: 34,
+                      fontSize: 22,
                       fontWeight: 800,
                       color: NAVY,
                       lineHeight: 1,
-                      letterSpacing: "-0.03em",
+                      letterSpacing: "-0.02em",
                     }}
                   >
                     {c.hours}
                   </div>
                   <div
                     style={{
-                      marginTop: 6,
+                      marginTop: 4,
                       fontSize: 10,
                       fontWeight: 700,
-                      letterSpacing: "0.14em",
+                      letterSpacing: "0.1em",
                       color: TEXT_GREY,
                     }}
                   >
@@ -171,19 +168,19 @@ export function EDCourseList({ courses }: EDCourseListProps) {
               <div style={{ minWidth: 0 }}>
                 <div
                   style={{
-                    fontSize: 20,
+                    fontSize: 15,
                     fontWeight: 700,
                     color: NAVY,
-                    letterSpacing: "-0.01em",
+                    letterSpacing: "-0.005em",
                   }}
                 >
                   {courseTypeLabel(c)} · {transmissionLabel(c.instructor.car_type)}
                 </div>
                 <div
                   className="flex items-center"
-                  style={{ gap: 6, marginTop: 6, color: TEXT_GREY, fontSize: 13 }}
+                  style={{ gap: 6, marginTop: 4, color: TEXT_GREY, fontSize: 12 }}
                 >
-                  <CalendarIcon style={{ width: 14, height: 14 }} />
+                  <CalendarIcon style={{ width: 12, height: 12 }} />
                   Starts {format(c.bookableDate, "EEE d MMM")}
                 </div>
 
@@ -191,7 +188,7 @@ export function EDCourseList({ courses }: EDCourseListProps) {
                 {(c.instructor.klarna_enabled || c.instructor.clearpay_enabled) && (
                   <div
                     className="flex flex-wrap items-center"
-                    style={{ gap: 8, marginTop: 12 }}
+                    style={{ gap: 6, marginTop: 8 }}
                   >
                     {c.instructor.klarna_enabled && (
                       <span
@@ -199,23 +196,20 @@ export function EDCourseList({ courses }: EDCourseListProps) {
                         style={{
                           background: "#FFA8CD",
                           color: "#0a0a0a",
-                          padding: "8px 14px",
-                          borderRadius: 10,
-                          fontSize: 13,
+                          padding: "4px 10px",
+                          borderRadius: 6,
+                          fontSize: 11,
                           fontWeight: 700,
-                          gap: 10,
-                          lineHeight: 1.1,
+                          gap: 6,
+                          lineHeight: 1,
                         }}
                       >
                         <img
                           src={klarnaLogo}
                           alt="Klarna"
-                          style={{ height: 13, width: "auto" }}
+                          style={{ height: 10, width: "auto" }}
                         />
-                        <span className="flex flex-col" style={{ fontSize: 12 }}>
-                          <span>3 ×</span>
-                          <span>£{klarnaPer}</span>
-                        </span>
+                        3 × £{klarnaPer}
                       </span>
                     )}
                     {c.instructor.clearpay_enabled && (
@@ -224,23 +218,20 @@ export function EDCourseList({ courses }: EDCourseListProps) {
                         style={{
                           background: "#B2FCE4",
                           color: "#0a0a0a",
-                          padding: "8px 14px",
-                          borderRadius: 10,
-                          fontSize: 13,
+                          padding: "4px 10px",
+                          borderRadius: 6,
+                          fontSize: 11,
                           fontWeight: 700,
-                          gap: 10,
-                          lineHeight: 1.1,
+                          gap: 6,
+                          lineHeight: 1,
                         }}
                       >
                         <img
                           src={clearpayLogo}
                           alt="Clearpay"
-                          style={{ height: 13, width: "auto" }}
+                          style={{ height: 10, width: "auto" }}
                         />
-                        <span className="flex flex-col" style={{ fontSize: 12 }}>
-                          <span>4 ×</span>
-                          <span>£{clearpayPer}</span>
-                        </span>
+                        4 × £{clearpayPer}
                       </span>
                     )}
                   </div>
@@ -248,10 +239,10 @@ export function EDCourseList({ courses }: EDCourseListProps) {
               </div>
 
               {/* Price + action */}
-              <div className="flex flex-col items-end" style={{ gap: 4 }}>
+              <div className="flex flex-col items-end" style={{ gap: 2 }}>
                 <div
                   style={{
-                    fontSize: 30,
+                    fontSize: 22,
                     fontWeight: 800,
                     color: NAVY,
                     letterSpacing: "-0.02em",
@@ -260,7 +251,7 @@ export function EDCourseList({ courses }: EDCourseListProps) {
                 >
                   £{Math.round(final).toLocaleString()}
                 </div>
-                <div style={{ fontSize: 12, color: TEXT_GREY }}>
+                <div style={{ fontSize: 11, color: TEXT_GREY }}>
                   £{perHour}/hr
                 </div>
                 <button
@@ -268,17 +259,17 @@ export function EDCourseList({ courses }: EDCourseListProps) {
                     e.stopPropagation();
                     goTo(c);
                   }}
-                  className="inline-flex items-center transition-colors"
+                  className="ed-view-btn inline-flex items-center transition-colors"
                   style={{
-                    background: "white",
-                    color: NAVY,
-                    border: `1px solid ${BORDER}`,
-                    fontSize: 14,
+                    background: NAVY,
+                    color: "white",
+                    border: "none",
+                    fontSize: 13,
                     fontWeight: 600,
-                    padding: "8px 18px",
-                    borderRadius: 10,
-                    gap: 6,
-                    marginTop: 10,
+                    padding: "6px 12px",
+                    borderRadius: 8,
+                    gap: 4,
+                    marginTop: 8,
                   }}
                 >
                   View
@@ -287,8 +278,8 @@ export function EDCourseList({ courses }: EDCourseListProps) {
               </div>
             </div>
 
-            {/* Mobile layout */}
-            <div className="sm:hidden flex flex-col" style={{ gap: 12 }}>
+            {/* Mobile layout (single column stack) */}
+            <div className="sm:hidden flex flex-col" style={{ gap: 10 }}>
               <div className="flex items-start" style={{ gap: 12 }}>
                 <div className="relative flex items-center justify-center">
                   {c.isPopular && (
@@ -304,8 +295,9 @@ export function EDCourseList({ courses }: EDCourseListProps) {
                         fontWeight: 800,
                         letterSpacing: "0.06em",
                         padding: "2px 6px",
-                        borderRadius: 999,
+                        borderRadius: 4,
                         whiteSpace: "nowrap",
+                        zIndex: 1,
                       }}
                     >
                       POPULAR
@@ -366,15 +358,21 @@ export function EDCourseList({ courses }: EDCourseListProps) {
                     Starts {format(c.bookableDate, "EEE d MMM")}
                   </div>
                 </div>
-                <div
-                  style={{
-                    fontSize: 20,
-                    fontWeight: 800,
-                    color: NAVY,
-                    letterSpacing: "-0.02em",
-                  }}
-                >
-                  £{Math.round(final).toLocaleString()}
+                <div className="flex flex-col items-end">
+                  <div
+                    style={{
+                      fontSize: 20,
+                      fontWeight: 800,
+                      color: NAVY,
+                      letterSpacing: "-0.02em",
+                      lineHeight: 1,
+                    }}
+                  >
+                    £{Math.round(final).toLocaleString()}
+                  </div>
+                  <div style={{ fontSize: 11, color: TEXT_GREY, marginTop: 2 }}>
+                    £{perHour}/hr
+                  </div>
                 </div>
               </div>
 
@@ -391,9 +389,10 @@ export function EDCourseList({ courses }: EDCourseListProps) {
                         fontSize: 11,
                         fontWeight: 700,
                         gap: 6,
+                        lineHeight: 1,
                       }}
                     >
-                      <img src={klarnaLogo} alt="Klarna" style={{ height: 11, width: "auto" }} />
+                      <img src={klarnaLogo} alt="Klarna" style={{ height: 10, width: "auto" }} />
                       3 × £{klarnaPer}
                     </span>
                   )}
@@ -408,14 +407,12 @@ export function EDCourseList({ courses }: EDCourseListProps) {
                         fontSize: 11,
                         fontWeight: 700,
                         gap: 6,
+                        lineHeight: 1,
                       }}
                     >
-                      <img src={clearpayLogo} alt="Clearpay" style={{ height: 11, width: "auto" }} />
+                      <img src={clearpayLogo} alt="Clearpay" style={{ height: 10, width: "auto" }} />
                       4 × £{clearpayPer}
                     </span>
-                  )}
-                  {!c.instructor.klarna_enabled && !c.instructor.clearpay_enabled && (
-                    <span style={{ fontSize: 11, color: TEXT_GREY }}>£{perHour}/hr</span>
                   )}
                 </div>
                 <button
@@ -423,15 +420,15 @@ export function EDCourseList({ courses }: EDCourseListProps) {
                     e.stopPropagation();
                     goTo(c);
                   }}
-                  className="inline-flex items-center"
+                  className="ed-view-btn inline-flex items-center"
                   style={{
-                    background: "white",
-                    color: NAVY,
-                    border: `1px solid ${BORDER}`,
+                    background: NAVY,
+                    color: "white",
+                    border: "none",
                     fontSize: 13,
                     fontWeight: 600,
-                    padding: "7px 14px",
-                    borderRadius: 10,
+                    padding: "6px 12px",
+                    borderRadius: 8,
                     gap: 4,
                   }}
                 >
@@ -443,6 +440,7 @@ export function EDCourseList({ courses }: EDCourseListProps) {
 
             <style>{`
               .ed-course-card:hover { border-color: ${NAVY} !important; }
+              .ed-view-btn:hover { background: #082354 !important; }
             `}</style>
           </div>
         );
