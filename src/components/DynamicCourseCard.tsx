@@ -159,7 +159,7 @@ export function DynamicCourseCard({
             />
 
             {/* Pills — at the bottom of the image */}
-            <div className="absolute bottom-0 left-0 right-0 flex flex-wrap items-center gap-1.5 bg-white/80 px-3 py-1.5">
+            <div className="absolute bottom-0 left-0 right-0 flex flex-wrap items-center gap-1.5 px-3 py-1.5">
               {isPopular && (
                 <Badge className="rounded-none border-0 bg-emerald-500 text-white">Popular</Badge>
               )}
