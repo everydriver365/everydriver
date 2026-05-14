@@ -1231,7 +1231,7 @@ export default function Courses() {
         <div className="container">
         <div className="flex flex-col gap-5 lg:flex-row" style={{ gap: isListMode ? 20 : undefined }}>
           {/* Left Column: Calendar + Instructors */}
-          <div className="w-full lg:flex-shrink-0" style={{ width: isListMode ? undefined : undefined }}>
+          <div className="w-full lg:w-[280px] lg:flex-shrink-0">
             <div className={`sticky top-20 ${isListMode ? "" : "space-y-4"}`} style={isListMode ? { display: "flex", flexDirection: "column", gap: 16, width: 280 } : undefined}>
               <SidebarCalendar
                 selectedMonth={selectedMonth}
