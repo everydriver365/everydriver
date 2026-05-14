@@ -97,7 +97,6 @@ serve(async (req) => {
         .from("scheduled_lessons")
         .update({ awaiting_initial_payment: false })
         .eq("pupil_id", pupilId)
-        .eq("instructor_id", instructorId)
         .eq("awaiting_initial_payment", true);
       if (clearErr) {
         console.error("Failed to clear awaiting_initial_payment flag:", clearErr);
