@@ -41,6 +41,8 @@ interface KlarnaPaymentModalProps {
     city: string;
     country: string;
   };
+  pupilId?: string | null;
+  instructorId?: string | null;
 }
 
 export function KlarnaPaymentModal({
@@ -52,6 +54,8 @@ export function KlarnaPaymentModal({
   onSuccess,
   consumer,
   billing,
+  pupilId,
+  instructorId,
 }: KlarnaPaymentModalProps) {
   const [loading, setLoading] = useState(true);
   const [authorizing, setAuthorizing] = useState(false);
@@ -211,6 +215,9 @@ export function KlarnaPaymentModal({
                 merchant_reference: merchantReference,
                 purchase_country: "GB",
                 purchase_currency: "GBP",
+                instructorId: instructorId ?? undefined,
+                pupilId: pupilId ?? undefined,
+                bookingRef: merchantReference,
               },
             });
 

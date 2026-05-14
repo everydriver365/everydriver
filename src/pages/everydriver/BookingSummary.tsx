@@ -1092,6 +1092,8 @@ export default function BookingSummary() {
             city: locationName || "UK",
             country: "GB",
           }}
+          pupilId={bookingPupilId}
+          instructorId={instructor?.id ?? null}
         />
       )}
     </>
@@ -2033,6 +2035,8 @@ export default function BookingSummary() {
             city: locationName || "UK",
             country: "GB",
           }}
+          pupilId={bookingPupilId}
+          instructorId={instructor?.id ?? null}
         />
       )}
     </MainLayout>
