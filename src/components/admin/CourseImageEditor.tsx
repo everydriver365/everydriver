@@ -179,15 +179,19 @@ export function CourseImageEditor({ instructorId, selectedCourses }: CourseImage
             <Label className="text-sm font-medium">
               {COURSE_LABELS[img.courseHours] || `${img.courseHours}h Course`}
             </Label>
-            
-            <div className="relative aspect-video rounded-lg border-2 border-dashed border-muted-foreground/25 bg-muted/50 overflow-hidden">
-              {img.preview ? (
-                <>
+
+            {img.preview ? (
+              <div className="space-y-2">
+                {/* Cropped 4:3 preview — exactly how the card will display it */}
+                <div className="relative aspect-[4/3] rounded-lg border bg-muted overflow-hidden">
                   <img
                     src={img.preview}
-                    alt={`${img.courseHours}h course`}
+                    alt={`${img.courseHours}h cropped preview`}
                     className="h-full w-full object-cover"
                   />
+                  <div className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-md bg-background/90 px-2 py-1 text-[10px] font-semibold text-foreground shadow-sm">
+                    <Crop className="h-3 w-3" /> Card preview · 4:3
+                  </div>
                   <Button
                     type="button"
                     variant="destructive"
@@ -197,12 +201,47 @@ export function CourseImageEditor({ instructorId, selectedCourses }: CourseImage
                   >
                     <X className="h-3 w-3" />
                   </Button>
-                </>
-              ) : (
+                </div>
+
+                {/* Full image with the 4:3 crop window overlaid so the user can see what's cut */}
+                <div className="relative rounded-md border border-dashed bg-muted/40 p-2">
+                  <p className="mb-1 text-[10px] uppercase tracking-wide text-muted-foreground">
+                    Full image · grey areas will be cropped
+                  </p>
+                  <div className="relative mx-auto max-h-40 w-fit">
+                    <img
+                      src={img.preview}
+                      alt={`${img.courseHours}h original`}
+                      className="block max-h-40 w-auto opacity-50"
+                    />
+                    {/* 4:3 visible window overlay */}
+                    <div
+                      className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 border-2 border-primary shadow-[0_0_0_9999px_rgba(0,0,0,0)] outline outline-1 outline-primary/40"
+                      style={{
+                        aspectRatio: "4 / 3",
+                        width: "min(100%, calc((100% / var(--src-ar, 1.5)) * (4 / 3)))",
+                        maxWidth: "100%",
+                        maxHeight: "100%",
+                      }}
+                    />
+                  </div>
+                  <label className="mt-2 flex cursor-pointer items-center justify-center gap-1.5 text-[11px] text-primary hover:underline">
+                    <RefreshCw className="h-3 w-3" /> Replace image
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => handleImageChange(img.courseHours, e)}
+                    />
+                  </label>
+                </div>
+              </div>
+            ) : (
+              <div className="relative aspect-[4/3] rounded-lg border-2 border-dashed border-muted-foreground/25 bg-muted/50 overflow-hidden">
                 <label className="flex h-full cursor-pointer flex-col items-center justify-center gap-2 p-4 text-center">
                   <ImageIcon className="h-8 w-8 text-muted-foreground/50" />
                   <span className="text-xs text-muted-foreground">
-                    Click to upload
+                    Click to upload (4:3 recommended)
                   </span>
                   <input
                     type="file"
@@ -211,8 +250,8 @@ export function CourseImageEditor({ instructorId, selectedCourses }: CourseImage
                     onChange={(e) => handleImageChange(img.courseHours, e)}
                   />
                 </label>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         ))}
       </div>
