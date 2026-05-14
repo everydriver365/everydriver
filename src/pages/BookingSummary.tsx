@@ -1724,7 +1724,7 @@ export default function BookingSummary() {
               instructorId={instructor.id}
               totalHours={hours}
               maxLessonLength={instructor.preferred_lesson_length}
-              bookingAdvanceDays={instructor.booking_advance_days || 28}
+              bookingAdvanceDays={instructor.booking_advance_days}
               availableFrom={instructor.available_from}
               allowedLessonLengths={instructor.allowed_lesson_lengths || undefined}
               bufferMinutes={instructor.buffer_minutes}
