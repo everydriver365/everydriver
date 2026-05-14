@@ -40,7 +40,7 @@ export function CourseCard({ course }: CourseCardProps) {
         {/* Front of Card */}
         <div className="absolute inset-0 flex flex-col overflow-hidden border border-border/50 bg-card shadow-lg shadow-black/10 [backface-visibility:hidden] transition-shadow duration-300 group-hover:shadow-xl group-hover:shadow-black/15">
           {/* Hero Image Section */}
-          <div className="relative h-44 shrink-0 overflow-hidden bg-muted">
+          <div className="relative aspect-[4/3] shrink-0 overflow-hidden bg-muted">
             <img
               src={course.image || heroImage}
               alt={course.title}
