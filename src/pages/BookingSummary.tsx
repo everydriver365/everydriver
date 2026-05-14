@@ -898,6 +898,46 @@ export default function BookingSummary() {
     setShowHostedFields(true);
   };
 
+  const [isRetryingBooking, setIsRetryingBooking] = useState(false);
+  const handleRefreshAndRetry = async () => {
+    if (isRetryingBooking) return;
+    setIsRetryingBooking(true);
+    try {
+      // 1) Force-resync Google Calendar for every date that previously conflicted
+      //    plus every currently-selected date — so the retry uses fresh data.
+      const dateSet = new Set<string>(unavailableSlots.map((s) => s.date));
+      for (const s of selectedSlots) dateSet.add(s.date.toISOString().slice(0, 10));
+      const dates = Array.from(dateSet);
+      if (dates.length > 0) {
+        await Promise.all(
+          dates.map((d) => refreshGoogleCalendarForDate(instructor.id, d, true))
+        );
+      }
+      // 2) If pupil hasn't picked replacement times yet, prompt them.
+      const scheduledNow = selectedSlots.reduce((a, s) => a + s.duration / 60, 0);
+      if (scheduledNow < hours) {
+        toast.message("Calendar refreshed. Please pick replacement times to continue.");
+        schedulerRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+        return;
+      }
+      // 3) Replay the last booking attempt with the original payment intent.
+      const last = lastBookingAttemptRef.current ?? { paymentType: 'full' as const };
+      const pupilId = await ensureBookingCreated(last.paymentType, last.amountPaid);
+      if (pupilId) {
+        setUnavailableSlots([]);
+        toast.success("Booking re-created. Continue with payment.");
+        setTimeout(() => {
+          paymentBlockRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 100);
+      }
+    } catch (e) {
+      console.error("Retry after refresh failed", e);
+      toast.error("Could not retry booking. Please try again.");
+    } finally {
+      setIsRetryingBooking(false);
+    }
+  };
+
 
   if (loading) {
     return (
