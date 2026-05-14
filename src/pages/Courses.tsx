@@ -820,16 +820,11 @@ export default function Courses() {
 
       const loadedInstructors = instructorsRes.data || [];
       // Merge both availability sources: some instructors store hours in
-      // instructor_working_hours, others in availability_windows. Union both
-      // so search availability checks find rows for either.
-      // availability_windows uses ISO day numbering (1=Mon..7=Sun);
-      // remap 7 → 0 to align with JS Date.getDay() (0=Sun..6=Sat).
+      // instructor_working_hours, others in availability_windows. Both tables
+      // use the same numbering as the date checks below (1=Mon..7=Sun).
       const loadedWorkingHours = [
         ...(workingHoursRes.data || []),
-        ...((availabilityWindowsRes.data || []).map((w: any) => ({
-          ...w,
-          day_of_week: w.day_of_week === 7 ? 0 : w.day_of_week,
-        }))),
+        ...(availabilityWindowsRes.data || []),
       ];
       const loadedOverrides = overridesRes.data || [];
 
