@@ -125,6 +125,7 @@ export default function CourseResults({
                 onSelectDate={setSelectedDate}
                 loading={loading}
                 monthOptions={monthOptions}
+                availableInstructorsByDate={availableInstructorsByDate}
               />
             </div>
           </div>
