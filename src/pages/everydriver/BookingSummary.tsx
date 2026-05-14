@@ -597,7 +597,7 @@ export default function BookingSummary() {
             },
           ],
           redirectUrls: {
-            confirmUrl: `${currentUrl}/booking-confirmation?pupilId=${pupilId}&clearpay=success&ref=${merchantReference}`,
+            confirmUrl: `${currentUrl}/booking-confirmation?pupilId=${pupilId}&clearpay=success&ref=${merchantReference}&instructorId=${instructor.id}&amount=${(totalPrice + upsellTotal).toFixed(2)}`,
             cancelUrl: `${currentUrl}/book/${instructor.id}?hours=${hours}&clearpay=cancelled`,
           },
         },
