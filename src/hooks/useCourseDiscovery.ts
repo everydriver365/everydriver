@@ -468,37 +468,14 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
   const coursesForSelectedDate = useMemo(() => {
     if (!selectedDate) return [];
 
-    const dayOfWeek = getDay(selectedDate);
-    const dateStr = format(selectedDate, "yyyy-MM-dd");
     const courses: CourseWithInstructor[] = [];
 
     for (const instructor of instructors) {
-      if (instructor.available_from && isAfter(parseISO(instructor.available_from), selectedDate)) {
+      // Single source of truth: same resolver as calendar dots and the
+      // booking-time guard. Honours overrides, blocks, GCal, lessons, buffers.
+      if (!hasInstructorAvailabilityOn(instructor as InstructorLite, selectedDate, sources)) {
         continue;
       }
-
-      const override = dateOverrides.find(
-        (o) =>
-          o.instructor_id === instructor.id &&
-          (o.override_date === dateStr ||
-            (o.override_end_date &&
-              dateStr >= o.override_date &&
-              dateStr <= o.override_end_date))
-      );
-
-      let isAvailable = false;
-      if (override) {
-        isAvailable = override.is_available;
-      } else {
-        isAvailable = workingHours.some(
-          (wh) =>
-            wh.instructor_id === instructor.id &&
-            wh.day_of_week === dayOfWeek &&
-            wh.is_active
-        );
-      }
-
-      if (!isAvailable) continue;
 
       const offeredCourses = instructorCourses.filter(
         (c) => c.instructor_id === instructor.id
@@ -508,13 +485,8 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
         const courseData = offeredCourses.find((c) => c.course_hours === hours);
         const template = courseTemplates.find((t) => t.course_hours === hours);
 
-        // Filter by intensive flag if needed
-        if (courseTypeFilter === "intensive" && template && !template.is_intensive) {
-          continue;
-        }
-        if (courseTypeFilter === "semi-intensive" && template && template.is_intensive) {
-          continue;
-        }
+        if (courseTypeFilter === "intensive" && template && !template.is_intensive) continue;
+        if (courseTypeFilter === "semi-intensive" && template && template.is_intensive) continue;
 
         if (courseData) {
           const placement = premiumPlacements.find((p) => p.instructor_id === instructor.id);
@@ -540,7 +512,7 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
     }
 
     return courses;
-  }, [selectedDate, instructors, instructorCourses, courseTemplates, workingHours, dateOverrides, displayHours, courseTypeFilter, premiumPlacements]);
+  }, [selectedDate, instructors, instructorCourses, courseTemplates, sources, displayHours, courseTypeFilter, premiumPlacements]);
 
   const coursesWithDistance = useMemo(() => {
     if (!userLocation) return coursesForSelectedDate;
