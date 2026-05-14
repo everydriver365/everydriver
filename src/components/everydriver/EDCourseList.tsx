@@ -420,12 +420,13 @@ export function EDCourseList({ courses }: EDCourseListProps) {
                   }}
                   className="inline-flex items-center"
                   style={{
-                    background: NAVY,
-                    color: "white",
+                    background: "white",
+                    color: NAVY,
+                    border: `1px solid ${BORDER}`,
                     fontSize: 13,
                     fontWeight: 600,
-                    padding: "6px 12px",
-                    borderRadius: 8,
+                    padding: "7px 14px",
+                    borderRadius: 10,
                     gap: 4,
                   }}
                 >
