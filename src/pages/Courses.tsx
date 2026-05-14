@@ -485,21 +485,6 @@ export default function Courses() {
   // Generate courses for the selected date
   const coursesForSelectedDate = useMemo(() => {
     if (!selectedDate) return [];
-    const debugAvail = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("debug") === "avail";
-    if (debugAvail) {
-      console.log("[avail] selectedDate=", format(selectedDate, "yyyy-MM-dd"), "relevantInstructors=", relevantInstructors.length);
-      console.log("[avail] all instructors fetched=", instructors.length, "withCourses=", relevantInstructors.map(i => i.name));
-      const allWithCourses = instructors.filter(i => instructorIdsWithCourses.has(i.id));
-      const dropped = allWithCourses.filter(i => !relevantInstructors.find(r => r.id === i.id));
-      if (dropped.length) console.log("[avail] dropped by radius:", dropped.map(i => i.name));
-      for (const inst of instructors.filter(i => instructorIdsWithCourses.has(i.id))) {
-        const ok = hasInstructorAvailabilityOn(inst, selectedDate, availabilitySources);
-        const wh = availabilitySources.workingHours.filter(w => w.instructor_id === inst.id);
-        const aw = availabilitySources.availabilityWindows.filter(w => w.instructor_id === inst.id);
-        const ev = availabilitySources.calendarEvents.filter(e => e.instructor_id === inst.id && format(new Date(e.start_time), "yyyy-MM-dd") === format(selectedDate, "yyyy-MM-dd"));
-        console.log(`[avail] ${inst.name} (${inst.id.slice(0,8)}) avail=${ok} wh=${wh.length} aw=${aw.length} eventsOnDay=${ev.length}`);
-      }
-    }
     const courses: CourseWithInstructor[] = [];
     for (const instructor of relevantInstructors) {
       if (!hasInstructorAvailabilityOn(instructor, selectedDate, availabilitySources)) continue;
