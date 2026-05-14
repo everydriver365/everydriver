@@ -20,6 +20,7 @@ interface PostcodeAutocompleteProps {
   inputClassName?: string;
   showGeolocation?: boolean;
   showInputIcon?: boolean;
+  enableDictation?: boolean;
 }
 
 export function PostcodeAutocomplete({
@@ -31,6 +32,7 @@ export function PostcodeAutocomplete({
   inputClassName,
   showGeolocation = true,
   showInputIcon = true,
+  enableDictation = true,
 }: PostcodeAutocompleteProps) {
   const [suggestions, setSuggestions] = useState<PostcodeSuggestion[]>([]);
   const [isLoading, setIsLoading] = useState(false);
