@@ -16,6 +16,7 @@ import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 import { invalidateLessonQueries } from '@/lib/invalidateLessonQueries';
 import { checkLessonClash, describeLessonClashError } from '@/lib/lessonClashCheck';
+import { useGoogleCalendarRefresh } from '@/hooks/useGoogleCalendarRefresh';
 import { cn } from '@/lib/utils';
 import { CompetencyPicker } from './CompetencyPicker';
 import { GoogleAddressAutocomplete } from '@/components/admin/GoogleAddressAutocomplete';
