@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { motion } from "framer-motion";
 import { Search, MapPin, Filter, ChevronDown, PoundSterling, Navigation, Loader2, Calendar as CalendarIcon, ChevronLeft, ChevronRight, X, LayoutGrid, List, RotateCcw } from "lucide-react";
-import { isFuture, parseISO, format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, isSameDay, isAfter, isBefore, startOfDay } from "date-fns";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, isSameDay, isAfter, isBefore, startOfDay } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { PostcodeAutocomplete } from "@/components/PostcodeAutocomplete";
 import { MainLayout } from "@/components/layout/MainLayout";
@@ -66,19 +66,6 @@ interface CourseTemplate {
   is_popular: boolean | null;
   features: string[] | null;
   is_intensive: boolean | null;
-}
-
-interface WorkingHours {
-  instructor_id: string;
-  day_of_week: number;
-  is_active: boolean;
-}
-
-interface DateOverride {
-  instructor_id: string;
-  override_date: string;
-  override_end_date: string | null;
-  is_available: boolean;
 }
 
 interface CourseWithInstructor {
@@ -470,10 +457,6 @@ export default function Courses() {
     // For each day, check if any relevant instructor (in area + has courses) is available
     return allDays.filter((day) => {
       if (isBefore(day, today)) return false;
-
-      const jsDow = getDay(day);
-      const dayOfWeek = jsDow === 0 ? 7 : jsDow; // DB uses 1=Mon..7=Sun
-      const dateStr = format(day, "yyyy-MM-dd");
 
       return relevantInstructors.some((instructor) =>
         hasInstructorAvailabilityOn(instructor, day, availabilitySources)
