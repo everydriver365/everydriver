@@ -131,18 +131,23 @@ export async function checkLessonClash(args: CheckArgs): Promise<ClashResult> {
     return d.getHours() * 60 + d.getMinutes();
   };
 
+  // All busy events block — including all-day. We only use the holiday/leave
+  // regex as a hint for a friendlier label on the toast.
   const eventSlots: Slot[] = events
-    .filter((e: any) => {
+    .map((e: any) => {
       const dur = new Date(e.end_time).getTime() - new Date(e.start_time).getTime();
       const isAllDay = dur >= 24 * 60 * 60 * 1000;
-      return !isAllDay || ALL_DAY_BLOCKING.test(e.title || '');
+      const rawTitle = (e.title || '').trim();
+      const label = isAllDay
+        ? (ALL_DAY_BLOCKING.test(rawTitle) ? rawTitle : (rawTitle || 'Unavailable (all day)'))
+        : (rawTitle || 'Calendar event');
+      return {
+        start: tsToMin(e.start_time),
+        end: tsToMin(e.end_time),
+        name: label,
+        kind: 'event' as const,
+      };
     })
-    .map((e: any) => ({
-      start: tsToMin(e.start_time),
-      end: tsToMin(e.end_time),
-      name: e.title || 'Calendar event',
-      kind: 'event' as const,
-    }))
     .filter((s) => s.end > s.start);
 
   const blockSlots: Slot[] = blocks
@@ -199,6 +204,35 @@ export function describeLessonClashError(err: unknown): string | null {
   const msg = e.message || '';
   if (e.code === '23514' || e.code === 'check_violation' || /Lesson clash/i.test(msg)) {
     return "That slot is already booked. Please pick another time.";
+  }
+  return null;
+}
+
+/**
+ * Parses an error returned by `supabase.functions.invoke('create-booking', ...)`
+ * and surfaces a friendly message when the edge function rejected the booking
+ * with a 409 (slots no longer available). Returns null when the error is
+ * unrelated, so the caller can fall back to its generic message.
+ */
+export async function describeBookingConflictResponse(err: unknown): Promise<string | null> {
+  if (!err || typeof err !== 'object') return null;
+  const ctx = (err as any).context;
+  if (!ctx || typeof ctx.clone !== 'function') return null;
+  try {
+    const body = await ctx.clone().json();
+    const conflicts = Array.isArray(body?.conflicts) ? body.conflicts : null;
+    if (conflicts && conflicts.length > 0) {
+      const c = conflicts[0];
+      const when = c.startTime && c.date ? `${c.startTime} on ${c.date}` : '';
+      const reason = c.reason ? ` — ${c.reason}` : '';
+      const extra = conflicts.length > 1 ? ` (+${conflicts.length - 1} more)` : '';
+      return `That slot is no longer available${when ? ` (${when})` : ''}${reason}.${extra} Please pick another time.`;
+    }
+    if (typeof body?.error === 'string' && /no longer available|already booked|clash/i.test(body.error)) {
+      return body.error;
+    }
+  } catch {
+    /* not JSON — fall through */
   }
   return null;
 }

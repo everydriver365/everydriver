@@ -399,15 +399,13 @@ export function LessonScheduler({
       return externalEvents.some((event) => {
         const eventStart = new Date(event.start_time);
         const eventEnd = new Date(event.end_time);
-        
-        // Skip all-day events (duration >= 24 hours — informational, not time-specific blocks)
-        const diffMs = eventEnd.getTime() - eventStart.getTime();
-        if (diffMs >= 24 * 60 * 60 * 1000) return false;
-        
-        // Expand conflict zone by buffer
+
+        // All-day events are still blocking — instructors mark themselves
+        // unavailable that way (holidays, off-days, all-day appointments).
+        // Expand conflict zone by buffer.
         const bufferedStart = new Date(eventStart.getTime() - bufferMs);
         const bufferedEnd = new Date(eventEnd.getTime() + bufferMs);
-        
+
         return (
           (slotStartDateTime >= bufferedStart && slotStartDateTime < bufferedEnd) ||
           (slotEndDateTime > bufferedStart && slotEndDateTime <= bufferedEnd) ||

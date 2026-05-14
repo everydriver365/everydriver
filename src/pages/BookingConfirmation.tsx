@@ -13,6 +13,7 @@ import { usePaymentInvalidation } from "@/hooks/usePaymentInvalidation";
 import { downloadMultiEventICS, getGoogleCalendarUrl } from "@/lib/calendar-export";
 import { shareContent } from "@/lib/share-utils";
 import { toast } from "sonner";
+import { describeBookingConflictResponse } from "@/lib/lessonClashCheck";
 import confetti from "canvas-confetti";
 
 interface ScheduledLesson {
@@ -124,7 +125,8 @@ export default function BookingConfirmation() {
 
             if (bookingError || !bookingResult?.pupilId) {
               console.error("GoCardless post-payment booking creation failed:", bookingError);
-              toast.error("Payment received but booking creation failed. Please contact support.");
+              const friendly = await describeBookingConflictResponse(bookingError);
+              toast.error(friendly || "Payment received but booking creation failed. Please contact support.");
               localStorage.removeItem("gc_pending_booking");
               setLoading(false);
               return;
