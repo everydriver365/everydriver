@@ -147,12 +147,15 @@ export function DynamicCourseCard({
             </div>
           )}
 
-          {/* Hero Image — fills the space */}
-          <div className="relative aspect-[4/3] overflow-hidden bg-muted">
+          {/* Hero Image — locked 4:3, smoothly clamped height across breakpoints */}
+          <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted max-h-[clamp(11rem,28vw,18rem)]">
             <img
-              src={courseImageUrl || `https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800&h=400&fit=crop`}
+              src={courseImageUrl || `https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=1200&h=900&fit=crop`}
               alt={courseName}
-              className="block h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+              loading="lazy"
+              decoding="async"
+              sizes="(min-width: 1280px) 28rem, (min-width: 640px) 45vw, 100vw"
+              className="block h-full w-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
             />
           </div>
 
