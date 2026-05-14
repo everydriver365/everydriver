@@ -133,6 +133,7 @@ serve(async (req: Request) => {
               instructor_id: data.instructorId,
               amount: capturedAmount,
               payment_method: "Clearpay",
+              external_payment_ref: `clearpay:${result.id}`,
               notes: noteText,
             });
 
