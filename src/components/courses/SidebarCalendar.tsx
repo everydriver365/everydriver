@@ -2,6 +2,14 @@ import { useMemo } from "react";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isSameDay, isBefore, startOfDay } from "date-fns";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+
+interface AvatarInstructor {
+  id: string;
+  name: string;
+  profile_image_url: string | null;
+}
 
 interface SidebarCalendarProps {
   selectedMonth: string;
@@ -11,16 +19,23 @@ interface SidebarCalendarProps {
   onSelectDate: (date: Date) => void;
   loading: boolean;
   monthOptions: { value: string; label: string }[];
+  /** YYYY-MM-DD → instructors free that day. Optional. */
+  availableInstructorsByDate?: Map<string, AvatarInstructor[]>;
 }
 
-export function SidebarCalendar({ 
-  selectedMonth, 
-  setSelectedMonth, 
-  selectedDate, 
-  availableDates, 
-  onSelectDate, 
+function getInitials(name: string): string {
+  return name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
+}
+
+export function SidebarCalendar({
+  selectedMonth,
+  setSelectedMonth,
+  selectedDate,
+  availableDates,
+  onSelectDate,
   loading,
-  monthOptions 
+  monthOptions,
+  availableInstructorsByDate,
 }: SidebarCalendarProps) {
   const today = startOfDay(new Date());
   
@@ -103,7 +118,7 @@ export function SidebarCalendar({
       {loading ? (
         <div className="grid grid-cols-7 gap-1">
           {Array.from({ length: 35 }).map((_, i) => (
-            <div key={i} className="h-9 w-full animate-pulse rounded-md bg-muted" />
+            <div key={i} className="h-12 w-full animate-pulse rounded-md bg-muted" />
           ))}
         </div>
       ) : (
@@ -118,35 +133,76 @@ export function SidebarCalendar({
           </div>
           
           {/* Calendar grid */}
-          <div className="grid grid-cols-7 gap-1">
-            {calendarDays.map((day, index) => {
-              if (!day.date) {
-                return <div key={`empty-${index}`} className="h-9" />;
-              }
-              
-              const isSelected = selectedDate && isSameDay(day.date, selectedDate);
-              const isToday = isSameDay(day.date, today);
-              
-              return (
-                <button
-                  key={day.date.toISOString()}
-                  onClick={() => day.isAvailable && onSelectDate(day.date!)}
-                  disabled={!day.isAvailable || day.isPast}
-                  className={`relative flex h-9 items-center justify-center rounded-md text-sm font-medium transition-all ${
-                    isSelected
-                      ? "bg-primary text-primary-foreground shadow-md"
-                      : day.isAvailable
-                        ? "bg-emerald-500/20 text-emerald-700 hover:bg-emerald-500/30 dark:text-emerald-400"
-                        : day.isPast
-                          ? "text-muted-foreground/30 cursor-not-allowed"
-                          : "text-muted-foreground/50 cursor-not-allowed"
-                  } ${isToday && !isSelected ? "ring-1 ring-primary/40" : ""}`}
-                >
-                  {format(day.date, "d")}
-                </button>
-              );
-            })}
-          </div>
+          <TooltipProvider delayDuration={150}>
+            <div className="grid grid-cols-7 gap-1">
+              {calendarDays.map((day, index) => {
+                if (!day.date) {
+                  return <div key={`empty-${index}`} className="h-12" />;
+                }
+
+                const isSelected = selectedDate && isSameDay(day.date, selectedDate);
+                const isToday = isSameDay(day.date, today);
+                const dayKey = format(day.date, "yyyy-MM-dd");
+                const freeInstructors = day.isAvailable
+                  ? availableInstructorsByDate?.get(dayKey) ?? []
+                  : [];
+                const visible = freeInstructors.slice(0, 3);
+                const overflow = Math.max(0, freeInstructors.length - visible.length);
+
+                const button = (
+                  <button
+                    key={day.date.toISOString()}
+                    onClick={() => day.isAvailable && onSelectDate(day.date!)}
+                    disabled={!day.isAvailable || day.isPast}
+                    className={`relative flex h-12 w-full flex-col items-center justify-start rounded-md pt-1 text-sm font-medium transition-all ${
+                      isSelected
+                        ? "bg-primary text-primary-foreground shadow-md"
+                        : day.isAvailable
+                          ? "bg-emerald-500/20 text-emerald-700 hover:bg-emerald-500/30 dark:text-emerald-400"
+                          : day.isPast
+                            ? "text-muted-foreground/30 cursor-not-allowed"
+                            : "text-muted-foreground/50 cursor-not-allowed"
+                    } ${isToday && !isSelected ? "ring-1 ring-primary/40" : ""}`}
+                  >
+                    <span className="leading-none">{format(day.date, "d")}</span>
+                    {visible.length > 0 && (
+                      <div className="mt-1 flex items-center -space-x-1.5">
+                        {visible.map((ins) => (
+                          <Avatar
+                            key={ins.id}
+                            className="h-4 w-4 ring-2 ring-card"
+                          >
+                            {ins.profile_image_url ? (
+                              <AvatarImage src={ins.profile_image_url} alt={ins.name} />
+                            ) : null}
+                            <AvatarFallback className="text-[8px] bg-primary text-primary-foreground">
+                              {getInitials(ins.name)}
+                            </AvatarFallback>
+                          </Avatar>
+                        ))}
+                        {overflow > 0 && (
+                          <span className="ml-1 rounded-full bg-muted px-1 text-[8px] font-semibold text-muted-foreground">
+                            +{overflow}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </button>
+                );
+
+                if (freeInstructors.length === 0) return button;
+
+                return (
+                  <Tooltip key={day.date.toISOString()}>
+                    <TooltipTrigger asChild>{button}</TooltipTrigger>
+                    <TooltipContent side="top" className="text-xs">
+                      {freeInstructors.map((i) => i.name).join(", ")}
+                    </TooltipContent>
+                  </Tooltip>
+                );
+              })}
+            </div>
+          </TooltipProvider>
         </>
       )}
       

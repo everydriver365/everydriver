@@ -50,6 +50,7 @@ export default function CourseResults({
     setSelectedDate,
     monthOptions,
     availableDatesInMonth,
+    availableInstructorsByDate,
     filteredCourses,
     handleSearch,
     searchedPostcode,
@@ -124,6 +125,7 @@ export default function CourseResults({
                 onSelectDate={setSelectedDate}
                 loading={loading}
                 monthOptions={monthOptions}
+                availableInstructorsByDate={availableInstructorsByDate}
               />
             </div>
           </div>
