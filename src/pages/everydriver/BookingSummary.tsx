@@ -410,8 +410,10 @@ export default function BookingSummary() {
     fetchDetails();
   }, [instructorId, hours]);
 
+  const [unavailableSlots, setUnavailableSlots] = useState<Array<{ date: string; startTime: string; reason?: string }>>([]);
   const handleSlotsChange = useCallback((slots: SelectedSlot[]) => {
     setSelectedSlots(slots);
+    setUnavailableSlots([]);
   }, []);
 
   const scheduledHours = selectedSlots.reduce((acc, slot) => acc + slot.duration / 60, 0);
