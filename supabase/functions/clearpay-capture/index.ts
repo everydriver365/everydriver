@@ -8,7 +8,12 @@ const corsHeaders = {
 
 interface ClearpayConfirmRequest {
   token: string;
-  merchantReference: string;
+  merchantReference?: string;
+  // NEW — required for proper recording
+  instructorId?: string;
+  pupilId?: string;
+  amount?: number; // GBP, optional override (capture response is source of truth if omitted)
+  notes?: string;
 }
 
 serve(async (req: Request) => {
@@ -32,8 +37,14 @@ serve(async (req: Request) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     const data: ClearpayConfirmRequest = await req.json();
-    
-    console.log("Clearpay capture request:", data);
+
+    console.log("Clearpay capture request:", {
+      hasToken: !!data.token,
+      merchantReference: data.merchantReference,
+      instructorId: data.instructorId,
+      pupilId: data.pupilId,
+      amount: data.amount,
+    });
 
     if (!data.token) {
       return new Response(
@@ -43,17 +54,36 @@ serve(async (req: Request) => {
     }
 
     const isSandbox = Deno.env.get("CLEARPAY_SANDBOX") === "true";
-    const baseUrl = isSandbox 
+    const baseUrl = isSandbox
       ? "https://global.api-sandbox.afterpay.com"
       : "https://api.eu.afterpay.com";
 
     const authHeader = btoa(`${merchantId}:${secretKey}`);
 
+    // === Idempotency: skip if a payment_history row already references this Clearpay token ===
+    if (data.pupilId) {
+      const { data: existing, error: existErr } = await supabase
+        .from("payment_history")
+        .select("id")
+        .eq("pupil_id", data.pupilId)
+        .ilike("notes", `%clearpay_token:${data.token}%`)
+        .limit(1)
+        .maybeSingle();
+      if (existErr) console.error("Clearpay idempotency check error:", existErr);
+      if (existing) {
+        console.log("Clearpay token already captured & recorded, skipping:", data.token);
+        return new Response(
+          JSON.stringify({ success: true, alreadyCaptured: true }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
+
     // Capture the payment (immediate capture)
-    const capturePayload = {
+    const capturePayload: Record<string, unknown> = {
       token: data.token,
-      merchantReference: data.merchantReference,
     };
+    if (data.merchantReference) capturePayload.merchantReference = data.merchantReference;
 
     console.log("Capturing Clearpay payment:", capturePayload);
 
@@ -73,32 +103,62 @@ serve(async (req: Request) => {
     if (!response.ok) {
       console.error("Clearpay capture error:", result);
       return new Response(
-        JSON.stringify({ 
+        JSON.stringify({
           error: result.message || "Payment capture failed",
-          details: result 
+          details: result,
         }),
         { status: response.status, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Payment successful - log it
     console.log("Clearpay payment captured successfully:", result.id);
 
-    // Optionally store payment record
-    if (data.merchantReference) {
+    // === Record to DB ===
+    if (data.instructorId && data.pupilId) {
       try {
-        await supabase
-          .from("payment_history")
-          .insert({
-            instructor_id: data.merchantReference.split("-")[0], // Assumes format: instructorId-timestamp
-            pupil_id: data.merchantReference.split("-")[1] || null,
-            amount: parseFloat(result.amount?.amount || "0"),
-            payment_method: "clearpay",
-            notes: `Clearpay payment ${result.id}`,
-          });
+        const capturedAmount =
+          typeof data.amount === "number" && data.amount > 0
+            ? Number(data.amount)
+            : parseFloat(result.amount?.amount || "0");
+
+        if (!capturedAmount || capturedAmount <= 0) {
+          console.error("Clearpay: captured amount invalid, skipping DB write");
+        } else {
+          const noteText = `${data.notes ? data.notes + " · " : ""}Clearpay ${data.merchantReference || ""} · clearpay_token:${data.token} · clearpay_payment_id:${result.id}`.trim();
+
+          const { error: insErr } = await supabase
+            .from("payment_history")
+            .insert({
+              pupil_id: data.pupilId,
+              instructor_id: data.instructorId,
+              amount: capturedAmount,
+              payment_method: "Clearpay",
+              notes: noteText,
+            });
+
+          if (insErr) {
+            console.error("Clearpay payment_history insert error:", insErr);
+          } else {
+            const { error: balErr } = await supabase.rpc("increment_pupil_balance", {
+              p_pupil_id: data.pupilId,
+              p_amount: capturedAmount,
+            });
+            if (balErr) {
+              console.error("Clearpay increment_pupil_balance error:", balErr);
+            } else {
+              console.log(`Clearpay recorded: £${capturedAmount} for pupil ${data.pupilId}`);
+            }
+          }
+        }
       } catch (dbError) {
-        console.log("Could not log payment to history:", dbError);
+        console.error("Clearpay DB recording error:", dbError);
       }
+    } else {
+      console.warn("Clearpay captured but instructorId/pupilId missing — payment_history NOT recorded.", {
+        instructorId: data.instructorId,
+        pupilId: data.pupilId,
+        captureId: result.id,
+      });
     }
 
     return new Response(

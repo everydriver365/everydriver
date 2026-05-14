@@ -194,7 +194,38 @@ export default function BookingConfirmation() {
           const isRedirectPayment = clearpaySuccess || klarnaSuccess || squareSuccess;
           if (isRedirectPayment && !confirmTriggeredRef.current) {
             confirmTriggeredRef.current = true;
-            const instructorId = pupilData.instructor_id || instructorData?.id;
+            const instructorId =
+              pupilData.instructor_id || instructorData?.id || searchParams.get("instructorId");
+
+            // Clearpay: capture the authorised payment & record it before notifying
+            if (clearpaySuccess) {
+              const orderToken = searchParams.get("orderToken") || searchParams.get("token");
+              const amountStr = searchParams.get("amount");
+              const amount = amountStr ? parseFloat(amountStr) : undefined;
+              if (orderToken && instructorId) {
+                try {
+                  const { error: capErr } = await supabase.functions.invoke("clearpay-capture", {
+                    body: {
+                      token: orderToken,
+                      merchantReference: paymentRef || undefined,
+                      instructorId,
+                      pupilId: resolvedPupilId,
+                      amount,
+                    },
+                  });
+                  if (capErr) console.error("clearpay-capture error:", capErr);
+                  else console.log("clearpay-capture succeeded");
+                } catch (err) {
+                  console.error("clearpay-capture invoke failed:", err);
+                }
+              } else {
+                console.warn("Clearpay redirect missing orderToken or instructorId — skipping capture", {
+                  orderToken,
+                  instructorId,
+                });
+              }
+            }
+
             if (instructorId) {
               try {
                 await supabase.functions.invoke("confirm-booking", {
