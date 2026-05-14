@@ -486,6 +486,7 @@ export default function BookingSummary() {
       setIsRefreshingAvailability(false);
     }
   };
+  const lastBookingAttemptRef = useRef<{ paymentType: 'full' | 'deposit'; amountPaid?: number } | null>(null);
   const ensureBookingCreated = async (
     paymentType: 'full' | 'deposit' = 'full',
     amountPaid?: number
@@ -502,6 +503,7 @@ export default function BookingSummary() {
     }
     
     bookingInProgressRef.current = true;
+    lastBookingAttemptRef.current = { paymentType, amountPaid };
 
     try {
       const { data, error } = await supabase.functions.invoke("create-booking", {
@@ -894,6 +896,46 @@ export default function BookingSummary() {
 
     // Show inline hosted fields directly — booking will be created after payment succeeds
     setShowHostedFields(true);
+  };
+
+  const [isRetryingBooking, setIsRetryingBooking] = useState(false);
+  const handleRefreshAndRetry = async () => {
+    if (isRetryingBooking) return;
+    setIsRetryingBooking(true);
+    try {
+      // 1) Force-resync Google Calendar for every date that previously conflicted
+      //    plus every currently-selected date — so the retry uses fresh data.
+      const dateSet = new Set<string>(unavailableSlots.map((s) => s.date));
+      for (const s of selectedSlots) dateSet.add(s.date.toISOString().slice(0, 10));
+      const dates = Array.from(dateSet);
+      if (dates.length > 0) {
+        await Promise.all(
+          dates.map((d) => refreshGoogleCalendarForDate(instructor.id, d, true))
+        );
+      }
+      // 2) If pupil hasn't picked replacement times yet, prompt them.
+      const scheduledNow = selectedSlots.reduce((a, s) => a + s.duration / 60, 0);
+      if (scheduledNow < hours) {
+        toast.message("Calendar refreshed. Please pick replacement times to continue.");
+        schedulerRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+        return;
+      }
+      // 3) Replay the last booking attempt with the original payment intent.
+      const last = lastBookingAttemptRef.current ?? { paymentType: 'full' as const };
+      const pupilId = await ensureBookingCreated(last.paymentType, last.amountPaid);
+      if (pupilId) {
+        setUnavailableSlots([]);
+        toast.success("Booking re-created. Continue with payment.");
+        setTimeout(() => {
+          paymentBlockRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 100);
+      }
+    } catch (e) {
+      console.error("Retry after refresh failed", e);
+      toast.error("Could not retry booking. Please try again.");
+    } finally {
+      setIsRetryingBooking(false);
+    }
   };
 
 
@@ -1786,6 +1828,15 @@ export default function BookingSummary() {
                         );
                       })}
                     </ul>
+                    <button
+                      type="button"
+                      onClick={handleRefreshAndRetry}
+                      disabled={isRetryingBooking}
+                      className="mt-3 inline-flex items-center gap-2 rounded-xl bg-destructive px-3 py-2 text-sm font-medium text-destructive-foreground hover:bg-destructive/90 transition-colors disabled:opacity-60"
+                    >
+                      <RefreshCw className={`h-4 w-4 ${isRetryingBooking ? "animate-spin" : ""}`} />
+                      {isRetryingBooking ? "Retrying…" : "Refresh & retry booking"}
+                    </button>
                   </div>
                 </div>
               </div>
