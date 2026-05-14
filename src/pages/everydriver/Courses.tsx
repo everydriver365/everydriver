@@ -1077,21 +1077,7 @@ export default function Courses() {
               </div>
             </div>
 
-            {/* More Filters Button - Desktop only */}
-            {!isMobile && (
-              <div className="mt-4 flex items-center">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowFilters(!showFilters)}
-                  className="gap-2"
-                >
-                  <Filter className="h-4 w-4" />
-                  More Filters
-                  <ChevronDown className={`h-4 w-4 transition-transform ${showFilters ? "rotate-180" : ""}`} />
-                </Button>
-              </div>
-            )}
+            {/* "More Filters" removed — duplicated by Filters in results bar */}
 
             {showFilters && (
               <motion.div
@@ -1228,25 +1214,16 @@ export default function Courses() {
                 hideCounts={isListMode}
               />
 
-              {/* Pass Promise card — list view only */}
+              {/* Pass Promise card — list view only. Flat navy, no decorative blob. */}
               {isListMode && (
                 <div
-                  className="relative overflow-hidden rounded-xl p-4"
-                  style={{
-                    background: "linear-gradient(135deg, #0a1936 0%, #1a2f5c 100%)",
-                  }}
+                  className="rounded-xl p-4"
+                  style={{ background: "#0A2B6B" }}
                 >
-                  <div
-                    className="pointer-events-none absolute -right-6 -top-6 h-24 w-24"
-                    style={{
-                      background:
-                        "radial-gradient(circle, rgba(217,46,58,0.3) 0%, transparent 70%)",
-                    }}
-                  />
-                  <div className="relative flex items-center gap-3">
+                  <div className="flex items-center gap-3">
                     <div
                       className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md"
-                      style={{ background: "#d92e3a" }}
+                      style={{ background: "#3FB76B" }}
                     >
                       <ShieldCheck className="h-4 w-4 text-white" />
                     </div>
@@ -1254,7 +1231,7 @@ export default function Courses() {
                       <div style={{ fontSize: 13, fontWeight: 700, color: "white" }}>
                         Pass Promise
                       </div>
-                      <div style={{ fontSize: 11, color: "#9aa0b5", marginTop: 1 }}>
+                      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.7)", marginTop: 1 }}>
                         Re-test on us if you don't pass.
                       </div>
                     </div>
@@ -1404,15 +1381,15 @@ export default function Courses() {
                   </button>
                   <button
                     onClick={() => setShowFilters((v) => !v)}
-                    className="relative inline-flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-semibold text-white transition-colors hover:opacity-90"
-                    style={{ background: "#0a1936" }}
+                    className="relative inline-flex items-center gap-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold transition-colors hover:bg-slate-50"
+                    style={{ border: "1px solid #d0d0d8", color: "#0a1936" }}
                   >
                     <SlidersHorizontal className="h-3.5 w-3.5" />
                     Filters
                     {activeFilterCount > 0 && (
                       <span
                         className="absolute -right-1.5 -top-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full px-1 text-[10px] font-bold text-white"
-                        style={{ background: "#d92e3a" }}
+                        style={{ background: "#E63946" }}
                       >
                         {activeFilterCount}
                       </span>
