@@ -15502,6 +15502,7 @@ export type Database = {
       scheduled_lessons: {
         Row: {
           amount_due: number | null
+          awaiting_initial_payment: boolean
           booking_status: string | null
           cancellation_note: string | null
           cancellation_reason: string | null
@@ -15552,6 +15553,7 @@ export type Database = {
         }
         Insert: {
           amount_due?: number | null
+          awaiting_initial_payment?: boolean
           booking_status?: string | null
           cancellation_note?: string | null
           cancellation_reason?: string | null
@@ -15602,6 +15604,7 @@ export type Database = {
         }
         Update: {
           amount_due?: number | null
+          awaiting_initial_payment?: boolean
           booking_status?: string | null
           cancellation_note?: string | null
           cancellation_reason?: string | null

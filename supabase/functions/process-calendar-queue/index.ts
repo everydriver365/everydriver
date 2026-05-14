@@ -314,7 +314,26 @@ Deno.serve(async (req) => {
             continue;
           }
 
-          const lesson = lessonRaw as LessonData;
+          const lesson = lessonRaw as LessonData & { awaiting_initial_payment?: boolean };
+
+          // Defer push to Google Calendar until the booking has been paid for.
+          // Public-flow bookings start with awaiting_initial_payment = true and
+          // get cleared on payment success. We leave the queue row unprocessed
+          // so the next run picks it up — unless it's been pending too long.
+          if ((lesson as any).awaiting_initial_payment === true) {
+            const queuedAt = new Date((item as any).created_at || Date.now());
+            const ageMs = Date.now() - queuedAt.getTime();
+            const STALE_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+            if (ageMs > STALE_MS) {
+              await supabase
+                .from("calendar_sync_queue")
+                .update({ processed_at: new Date().toISOString(), error: "awaiting payment - timed out" })
+                .eq("id", item.id);
+            } else {
+              console.log(`Skipping lesson ${item.lesson_id} — awaiting initial payment`);
+            }
+            continue;
+          }
 
           // If lesson is cancelled, delete from Google Calendar instead of syncing
           if (lesson.status === "cancelled" && lesson.google_event_id) {

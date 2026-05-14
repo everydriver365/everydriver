@@ -456,6 +456,7 @@ export default function BookingSummary() {
   }, [canSubmit, showHostedFields]);
 
   const bookingInProgressRef = useRef(false);
+  const paymentBlockRef = useRef<HTMLDivElement | null>(null);
   const ensureBookingCreated = async (
     paymentType: 'full' | 'deposit' = 'full',
     amountPaid?: number
@@ -1722,11 +1723,13 @@ export default function BookingSummary() {
               instructorFirstName={instructor.name?.split(" ")[0]}
               pupilPostcode={differentPickup ? pickupPostcode : pupilPostcode}
               onSlotsChange={handleSlotsChange}
+              onConfirm={() => paymentBlockRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
             />
           </motion.div>
         )}
 
         {/* Step 3: Payment */}
+        <div ref={paymentBlockRef}>
         <CoursePaymentBlock
           courseName={courseName}
           hours={hours}
@@ -1761,6 +1764,7 @@ export default function BookingSummary() {
           onBankCheckout={handleInstantBankPay}
           onCashCheckout={handleCashPayment}
         />
+        </div>
 
         {showHostedFields && courseDetails && (
           <motion.div

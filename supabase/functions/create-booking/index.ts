@@ -261,6 +261,13 @@ serve(async (req) => {
     // 2. Create scheduled lessons for each slot (if any provided)
     let lessons: any[] = [];
     if (booking.slots.length > 0) {
+      // Hold lessons off Google Calendar until payment is actually received.
+      // Public-flow bookings always reach create-booking BEFORE the payment
+      // gateway confirms — so we mark every paid booking as pending and let
+      // confirm-booking / the payment webhooks clear the flag once the money
+      // has actually moved. Only £0 bookings sync immediately.
+      const awaitingInitialPayment = booking.totalPrice > 0;
+
       const lessonInserts = booking.slots.map((slot) => ({
         instructor_id: booking.instructorId,
         pupil_id: pupil.id,
@@ -272,6 +279,7 @@ serve(async (req) => {
         lesson_type: "driving",
         status: "scheduled",
         payment_status: "pending",
+        awaiting_initial_payment: awaitingInitialPayment,
         // Pricing snapshot at booking — preserves the rate paid even if the
         // instructor later changes their hourly rate or surcharges.
         ...(slot.pricePerHour != null ? { price_per_hour: slot.pricePerHour } : {}),
