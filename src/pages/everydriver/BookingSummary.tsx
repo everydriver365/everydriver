@@ -537,6 +537,7 @@ export default function BookingSummary() {
         const conflicts: Array<{ date: string; startTime: string; reason?: string }> =
           (data?.conflicts as any) || [];
         if (conflicts.length > 0) {
+          setUnavailableSlots(conflicts);
           const conflictKeys = new Set(conflicts.map((c) => `${c.date}__${c.startTime}`));
           setSelectedSlots((prev) =>
             prev.filter((s) => {
