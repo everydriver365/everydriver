@@ -18452,6 +18452,7 @@ export type Database = {
       }
       public_instructors: {
         Row: {
+          adi_code_of_practice: boolean | null
           allowed_lesson_lengths: number[] | null
           app_slug: string | null
           available_from: string | null
@@ -18469,6 +18470,7 @@ export type Database = {
           car_make: string | null
           car_model: string | null
           car_type: string | null
+          cash_payments_enabled: boolean | null
           clearpay_enabled: boolean | null
           cpd_certified: boolean | null
           created_at: string | null
@@ -18489,6 +18491,7 @@ export type Database = {
           hourly_rate: number | null
           id: string | null
           instagram_url: string | null
+          instant_bank_pay_enabled: boolean | null
           instructor_grade: string | null
           is_active: boolean | null
           klarna_enabled: boolean | null
@@ -18508,6 +18511,7 @@ export type Database = {
           pupil_app_dark_mode: boolean | null
           pupil_app_enabled: boolean | null
           radius_miles: number | null
+          school_skim_amount: number | null
           secondary_colour: string | null
           special_skills: string | null
           twitter_url: string | null
@@ -18524,6 +18528,7 @@ export type Database = {
           welcome_video_url: string | null
         }
         Insert: {
+          adi_code_of_practice?: boolean | null
           allowed_lesson_lengths?: number[] | null
           app_slug?: string | null
           available_from?: string | null
@@ -18541,6 +18546,7 @@ export type Database = {
           car_make?: string | null
           car_model?: string | null
           car_type?: string | null
+          cash_payments_enabled?: boolean | null
           clearpay_enabled?: boolean | null
           cpd_certified?: boolean | null
           created_at?: string | null
@@ -18561,6 +18567,7 @@ export type Database = {
           hourly_rate?: number | null
           id?: string | null
           instagram_url?: string | null
+          instant_bank_pay_enabled?: boolean | null
           instructor_grade?: string | null
           is_active?: boolean | null
           klarna_enabled?: boolean | null
@@ -18580,6 +18587,7 @@ export type Database = {
           pupil_app_dark_mode?: boolean | null
           pupil_app_enabled?: boolean | null
           radius_miles?: number | null
+          school_skim_amount?: number | null
           secondary_colour?: string | null
           special_skills?: string | null
           twitter_url?: string | null
@@ -18596,6 +18604,7 @@ export type Database = {
           welcome_video_url?: string | null
         }
         Update: {
+          adi_code_of_practice?: boolean | null
           allowed_lesson_lengths?: number[] | null
           app_slug?: string | null
           available_from?: string | null
@@ -18613,6 +18622,7 @@ export type Database = {
           car_make?: string | null
           car_model?: string | null
           car_type?: string | null
+          cash_payments_enabled?: boolean | null
           clearpay_enabled?: boolean | null
           cpd_certified?: boolean | null
           created_at?: string | null
@@ -18633,6 +18643,7 @@ export type Database = {
           hourly_rate?: number | null
           id?: string | null
           instagram_url?: string | null
+          instant_bank_pay_enabled?: boolean | null
           instructor_grade?: string | null
           is_active?: boolean | null
           klarna_enabled?: boolean | null
@@ -18652,6 +18663,7 @@ export type Database = {
           pupil_app_dark_mode?: boolean | null
           pupil_app_enabled?: boolean | null
           radius_miles?: number | null
+          school_skim_amount?: number | null
           secondary_colour?: string | null
           special_skills?: string | null
           twitter_url?: string | null

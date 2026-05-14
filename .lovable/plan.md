@@ -1,40 +1,59 @@
-# Fix: courses/instructors not showing on public search
+# Fix: "Course unavailable" on every booking page for anonymous visitors
 
 ## Root cause
 
-The browser console shows:
+Ken's database row is fine: `hourly_rate=45`, `preferred_lesson_length=120`, `buffer_minutes=30`, `booking_advance_days=365`, `is_active=true`.
 
-```
-error: permission denied for table instructors
-[Courses] No instructors within 10mi of SO302TD – expanding to 25mi
-```
+The "unavailable" copy comes from `BookingSummary.tsx` line 319:
 
-`src/hooks/useInstructorAvailabilitySearch.ts` (line 113) queries the protected `instructors` table:
+> "This instructor profile is unavailable or no longer accepting bookings."
+
+That branch fires whenever `instructorRes.error || !instructorRes.data` is true. The query at line 281 reads from the protected `instructors` table:
 
 ```ts
-supabase.from("instructors").select("id, name, car_type, home_postcode, buffer_minutes")
+supabase.from("instructors").select(`id, name, profile_image_url, … cash_payments_enabled, klarna_enabled, clearpay_enabled, instant_bank_pay_enabled, school_skim_amount, …`).eq("id", instructorId).maybeSingle()
 ```
 
-Public visitors aren't authenticated, so RLS denies the read, the result is empty, and downstream every date returns zero availability — so the calendar has no available dates and the grid shows no courses.
+Anonymous visitors are denied by RLS (same `permission denied for table instructors` we just fixed in the search hook), so `error` is set and the user sees "Course unavailable". Logged-in instructors don't see the bug because their RLS lets them through.
 
-Every other public surface (`useCourseDiscovery`, mini-site, etc.) reads from the `public_instructors` view, which is the security-invoker view exposing only non-PII fields and is allowed for anon.
+The natural fix is to read from the `public_instructors` view (which is already what every other public surface uses), but four columns this page consumes are NOT exposed by the view today:
+
+- `cash_payments_enabled`
+- `instant_bank_pay_enabled`
+- `school_skim_amount`
+- `adi_code_of_practice`
+
+These are not PII — they're public booking-relevant settings (which payment methods to show, the school surcharge already baked into displayed prices, and a public ADI credential badge).
 
 ## Change
 
-Single-line fix in `src/hooks/useInstructorAvailabilitySearch.ts`:
+### 1. Migration — add the four missing columns to `public_instructors`
 
-- Replace `.from("instructors")` with `.from("public_instructors")` for the availability batch query.
-- Keep the same selected columns (`id, name, car_type, home_postcode, buffer_minutes` — all present on the view, verified against the live schema).
+Recreate the view (drop + create with `security_invoker=on`) with the same column list it has today plus:
 
-No other files need changes. Availability logic, working-hours/overrides/lessons/blocks/calendar reads are unaffected (they already query the right tables under their own RLS).
+- `cash_payments_enabled`
+- `instant_bank_pay_enabled`
+- `school_skim_amount`
+- `adi_code_of_practice`
+
+The base `instructors` table SELECT policy stays unchanged — visitors still cannot read PII (auth_user_id, phone, email, etc.).
+
+### 2. Code edits — both BookingSummary files
+
+`src/pages/BookingSummary.tsx` and `src/pages/everydriver/BookingSummary.tsx` (lines ~281–293):
+
+- Change `.from("instructors")` → `.from("public_instructors")`
+- Keep the same `select(...)` column list (it's now fully covered by the view).
+
+No other changes — the `loadErrorReason` branches stay as-is, and Ken now passes all four configuration checks because his real row data flows through.
 
 ## Verification
 
-1. Reload `/courses` (or `/drive365/search`) as anonymous visitor with postcode `SO22 5DR` / `SO30 2TD`.
-2. Console should no longer show `permission denied for table instructors`.
-3. Calendar should show available dates with instructor avatars; grid should list real courses.
-4. Confirm no regression on the instructor portal (which still has full RLS access via the base table elsewhere).
+1. Open `/courses` → click any of Ken's tiles → should land on the live BookingSummary, no "Course unavailable" message.
+2. Browser console should not show `permission denied for table instructors`.
+3. Logged-in instructor portal: confirm no regression on any of their own booking-related screens (those screens already query the base table under their own RLS, untouched).
+4. Confirm price card still shows the school skim correctly and that Cash / Instant Bank Pay tiles only appear when their respective toggles are on.
 
 ## Out of scope
 
-No schema/RLS changes — `public_instructors` already exists for exactly this purpose. No new fallbacks; if an instructor has no working hours configured they still correctly produce zero availability per the LIVE DATA ONLY rule.
+No fallback values added anywhere; missing-config branches stay strict per LIVE DATA ONLY. No changes to write-side RLS or to any auth-scoped reads.

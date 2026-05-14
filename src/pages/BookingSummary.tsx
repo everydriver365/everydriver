@@ -278,7 +278,7 @@ export default function BookingSummary() {
       if (!instructorId) return;
 
       const [instructorRes, templateRes, instructorCourseRes, reviewsRes, rulesRes] = await Promise.all([
-        supabase.from("instructors").select(`
+        supabase.from("public_instructors").select(`
           id, name, profile_image_url, car_type, car_make, car_model, car_image_url,
           home_postcode, hourly_rate, bio, special_skills, brand_colour,
           preferred_lesson_length, booking_advance_days, available_from,
