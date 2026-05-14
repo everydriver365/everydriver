@@ -144,6 +144,18 @@ export function FindAppointmentBody({
     },
   });
 
+  // Refresh Google Calendar cache for every instructor in the search horizon
+  // so date/slot results reflect events booked outside our app. Throttled per
+  // (instructor, range) by sessionStorage TTL — safe to re-run on filter change.
+  useEffect(() => {
+    if (instructorIds.length === 0) return;
+    const fromIso = new Date(`${nextOnly ? today : fromDate}T00:00:00`).toISOString();
+    const toIso = addDays(new Date(`${nextOnly ? today : fromDate}T00:00:00`), nextOnly ? 60 : days).toISOString();
+    instructorIds.forEach((id) => {
+      void refreshGoogleCalendar({ instructorId: id, fromIso, toIso });
+    });
+  }, [instructorIds, fromDate, days, nextOnly, today]);
+
   const { data: searchResult, isFetching } = useInstructorAvailabilitySearch({
     instructorIds,
     selectedInstructorId: nextOnly ? "all" : selectedInstructorId,
