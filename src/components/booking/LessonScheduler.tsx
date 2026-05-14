@@ -690,31 +690,31 @@ export function LessonScheduler({
       {/* Two-column grid: workspace + sticky lessons list */}
       <div className="grid gap-4 lg:grid-cols-[3fr_2fr] items-start">
         {/* Workspace card */}
-        <div className="rounded-[12px] border bg-card p-4 shadow-sm">
+        <div className="rounded-[12px] border border-[#E5E7EB] bg-white p-[18px] shadow-sm">
           {/* Toolbar */}
-          <div className="mb-[14px] flex items-center justify-between gap-3 flex-wrap">
-            <div className="flex items-center gap-1">
+          <div className="mb-3 pb-3 border-b border-[#E5E7EB] flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex items-center gap-1.5">
               <button
                 type="button"
                 onClick={() => setViewMonth((m) => subMonths(m, 1))}
-                className="flex h-[26px] w-[26px] items-center justify-center rounded-md border border-border/60 text-foreground/70 hover:bg-muted hover:text-foreground transition-colors"
+                className="flex h-[28px] w-[28px] items-center justify-center rounded-md border border-[#E5E7EB] text-[#6B7280] hover:bg-[#F9FAFB] hover:text-[#0A2B6B] transition-colors"
                 aria-label="Previous month"
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
-              <div className="px-2 text-[14px] font-bold text-foreground tabular-nums">
+              <div className="px-2 text-[16px] font-bold text-[#0A2B6B] tabular-nums">
                 {format(viewMonth, "MMMM yyyy")}
               </div>
               <button
                 type="button"
                 onClick={() => setViewMonth((m) => addMonths(m, 1))}
-                className="flex h-[26px] w-[26px] items-center justify-center rounded-md border border-border/60 text-foreground/70 hover:bg-muted hover:text-foreground transition-colors"
+                className="flex h-[28px] w-[28px] items-center justify-center rounded-md border border-[#E5E7EB] text-[#6B7280] hover:bg-[#F9FAFB] hover:text-[#0A2B6B] transition-colors"
                 aria-label="Next month"
               >
                 <ChevronRight className="h-4 w-4" />
               </button>
             </div>
-            <div className="flex items-center gap-1 rounded-lg bg-primary/5 p-[3px]">
+            <div className="flex items-center gap-1 rounded-lg bg-[#F0F4FB] p-[3px]">
               {durationOptions.map((d) => {
                 const isSelected = selectedDuration === d;
                 return (
@@ -725,8 +725,8 @@ export function LessonScheduler({
                     className={cn(
                       "px-2.5 py-1 text-[11px] font-semibold rounded-md transition-colors",
                       isSelected
-                        ? "bg-primary text-primary-foreground shadow-sm"
-                        : "text-muted-foreground hover:text-foreground"
+                        ? "bg-[#0A2B6B] text-white shadow-sm"
+                        : "text-[#6B7280] hover:text-[#0A2B6B]"
                     )}
                   >
                     {formatLengthShort(d)}
@@ -739,7 +739,7 @@ export function LessonScheduler({
           {/* Inner two-column: calendar + slots */}
           <div className="grid gap-[14px] md:grid-cols-2">
             {/* Calendar */}
-            <div>
+            <div className="px-1.5">
               <CalendarComponent
                 mode="single"
                 selected={selectedDate}
@@ -747,15 +747,17 @@ export function LessonScheduler({
                 month={viewMonth}
                 onMonthChange={setViewMonth}
                 disabled={(date) => !isDateAvailable(date)}
+                formatters={{ formatWeekdayName: (d) => format(d, "EEEEE") }}
                 modifiers={{
                   hasLesson: (date) => selectedSlots.some((s) => isSameDay(s.date, date)),
                   available: (date) =>
                     isDateAvailable(date) && !selectedSlots.some((s) => isSameDay(s.date, date)),
                 }}
                 modifiersClassNames={{
+                  available:
+                    "!bg-[#E8F5EE] !text-[#0F6E56] !font-semibold hover:!bg-[#DCEFE3] cursor-pointer",
                   hasLesson:
-                    "!bg-primary/10 !text-primary font-semibold relative after:absolute after:bottom-[3px] after:left-1/2 after:-translate-x-1/2 after:h-1 after:w-1 after:rounded-full after:bg-primary",
-                  available: "!bg-emerald-50 !text-emerald-700 font-semibold hover:!bg-emerald-100",
+                    "!bg-[#F0F4FB] !text-[#0A2B6B] !font-semibold relative after:content-[''] after:absolute after:left-1/2 after:-translate-x-1/2 after:bottom-[2px] after:h-1 after:w-1 after:rounded-full after:bg-[#0A2B6B]",
                 }}
                 classNames={{
                   caption: "hidden",
@@ -763,50 +765,55 @@ export function LessonScheduler({
                   table: "w-full border-collapse",
                   head_row: "flex w-full",
                   head_cell:
-                    "flex-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground py-1",
+                    "flex-1 text-[10px] font-semibold normal-case text-[#9CA3AF] py-1",
                   row: "flex w-full mt-[3px] gap-[3px]",
                   cell: "flex-1 aspect-square p-0 text-sm relative",
-                  day: "w-full h-full flex items-center justify-center rounded-md text-[13px] font-medium transition-colors aria-selected:!bg-primary aria-selected:!text-primary-foreground",
-                  day_disabled: "text-muted-foreground/50 cursor-not-allowed opacity-60",
-                  day_outside: "text-muted-foreground/30",
-                  day_today: "ring-1 ring-primary/40",
+                  day: "w-full h-full flex items-center justify-center rounded-md text-[13px] font-normal text-[#D1D5DB] cursor-default transition-colors",
+                  day_selected:
+                    "!bg-[#0A2B6B] !text-white !font-semibold hover:!bg-[#0A2B6B]",
+                  day_disabled:
+                    "!text-[#D1D5DB] !bg-transparent !font-normal cursor-default hover:!bg-transparent",
+                  day_outside: "!text-[#E5E7EB]",
+                  day_today: "",
                 }}
                 className="p-0 pointer-events-auto"
               />
               {/* Legend */}
-              <div className="mt-3 pt-3 border-t border-border/60 flex items-center gap-4 flex-wrap">
+              <div className="mt-3 pt-3 border-t border-[#E5E7EB] flex items-center gap-4 flex-wrap">
                 <div className="flex items-center gap-1.5">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                  <span className="text-[10px] text-muted-foreground">Available</span>
+                  <span className="h-2.5 w-2.5 rounded-[3px] bg-[#E8F5EE] border border-[#0F6E56]/20" />
+                  <span className="text-[10px] text-[#6B7280]">Available</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-                  <span className="text-[10px] text-muted-foreground">Has lesson</span>
+                  <span className="relative h-2.5 w-2.5 rounded-[3px] bg-[#F0F4FB]">
+                    <span className="absolute left-1/2 -translate-x-1/2 bottom-[1px] h-1 w-1 rounded-full bg-[#0A2B6B]" />
+                  </span>
+                  <span className="text-[10px] text-[#6B7280]">Has lesson</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <span className="h-1.5 w-1.5 rounded-full bg-primary ring-2 ring-primary/30" />
-                  <span className="text-[10px] text-muted-foreground">Selected</span>
+                  <span className="h-2.5 w-2.5 rounded-[3px] bg-[#0A2B6B]" />
+                  <span className="text-[10px] text-[#6B7280]">Selected</span>
                 </div>
               </div>
             </div>
 
             {/* Slots */}
-            <div className="md:border-l md:border-t-0 border-t md:pl-[14px] md:pt-0 pt-[14px] min-h-[280px]">
+            <div className="md:border-l md:border-[#E5E7EB] md:border-t-0 border-t border-[#E5E7EB] md:pl-[14px] md:pt-0 pt-[14px]">
               {selectedDate ? (
                 <div className="space-y-3">
                   <div>
-                    <div className="text-[13px] font-bold text-foreground">
+                    <div className="text-[13px] font-bold text-[#0A2B6B]">
                       {format(selectedDate, "EEE d MMMM")}
                     </div>
-                    <div className="text-[11px] text-muted-foreground mt-0.5">
+                    <div className="text-[11px] text-[#6B7280] mt-0.5">
                       {formatLengthShort(selectedDuration)} slots
                       {pupilPostcode ? ` · Pickup ${pupilPostcode}` : ""}
                     </div>
                   </div>
                   {slotsForSelectedDate.length === 0 ? (
                     <div className="py-6 text-center space-y-3">
-                      <Clock className="h-6 w-6 mx-auto text-muted-foreground/60" />
-                      <p className="text-[12px] text-muted-foreground">
+                      <Clock className="h-6 w-6 mx-auto text-[#D1D5DB]" />
+                      <p className="text-[12px] text-[#6B7280]">
                         No available slots for this date
                       </p>
                       {pupilId && (
@@ -829,16 +836,16 @@ export function LessonScheduler({
                     </div>
                   )}
                   {preferEarliestSlot && slotsForSelectedDate.length > 0 && (
-                    <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground pt-1">
-                      <Sparkles className="h-3 w-3 text-primary" />
+                    <div className="flex items-center gap-1.5 text-[10px] text-[#6B7280] pt-1">
+                      <Sparkles className="h-3 w-3 text-[#0A2B6B]" />
                       Earliest slots prioritised by your instructor
                     </div>
                   )}
                 </div>
               ) : (
-                <div className="h-full min-h-[260px] flex flex-col items-center justify-center text-center px-4">
-                  <CalendarDays className="h-7 w-7 text-muted-foreground/50 mb-2" />
-                  <p className="text-[12px] text-muted-foreground">
+                <div className="pt-6 flex flex-col items-center text-center px-4">
+                  <CalendarDays className="h-7 w-7 text-[#D1D5DB] mb-2" />
+                  <p className="text-[13px] text-[#6B7280]">
                     Click any available date to see times
                   </p>
                 </div>
@@ -848,38 +855,38 @@ export function LessonScheduler({
         </div>
 
         {/* Scheduled lessons (sticky on desktop) */}
-        <div className="rounded-[12px] border bg-card p-4 shadow-sm lg:sticky lg:top-4">
+        <div className="rounded-[12px] border border-[#E5E7EB] bg-white p-4 shadow-sm lg:sticky lg:top-4">
           <div className="flex items-center justify-between mb-3">
-            <h4 className="text-[14px] font-bold text-foreground">Your lessons</h4>
-            <span className="text-[12px] text-muted-foreground">
+            <h4 className="text-[14px] font-bold text-[#0A2B6B]">Your lessons</h4>
+            <span className="text-[12px] text-[#6B7280]">
               {selectedSlots.length} booked · {scheduledHours} hr
             </span>
           </div>
 
           {selectedSlots.length > 0 ? (
-            <div className="space-y-1.5 max-h-[320px] overflow-y-auto pr-1 -mr-1">
+            <div className="max-h-[320px] overflow-y-auto pr-1 -mr-1">
               {sortedSlots.map((slot, index) => {
                 const originalIndex = selectedSlots.indexOf(slot);
                 return (
                   <div
                     key={`${slot.date.getTime()}-${slot.startTime}`}
-                    className="flex items-center gap-[10px] rounded-lg bg-muted/60 px-[10px] py-[9px]"
+                    className="flex items-center gap-[10px] rounded-lg bg-[#F9FAFB] p-2.5 mb-1.5 last:mb-0"
                   >
-                    <div className="flex h-[22px] w-[22px] items-center justify-center rounded-md bg-primary text-primary-foreground text-[11px] font-bold shrink-0">
+                    <div className="flex h-[22px] w-[22px] items-center justify-center rounded-md bg-[#0A2B6B] text-white text-[11px] font-bold shrink-0">
                       {index + 1}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-[12px] font-semibold text-foreground truncate">
+                      <div className="text-[12px] font-semibold text-[#0A2B6B] truncate">
                         {format(slot.date, "EEE d MMM")} · {slot.startTime}
                       </div>
-                      <div className="text-[10px] text-muted-foreground truncate">
+                      <div className="text-[10px] text-[#6B7280] truncate">
                         {slot.duration / 60} hr{instructorFirstName ? ` · ${instructorFirstName}` : ""}
                       </div>
                     </div>
                     <button
                       type="button"
                       onClick={() => handleRemoveSlot(originalIndex)}
-                      className="text-muted-foreground hover:text-destructive transition-colors p-1 -m-1"
+                      className="text-[#9CA3AF] hover:text-[#E63946] transition-colors p-1 -m-1"
                       aria-label="Remove lesson"
                     >
                       <X className="h-3.5 w-3.5" />
@@ -890,8 +897,8 @@ export function LessonScheduler({
             </div>
           ) : (
             <div className="py-8 text-center space-y-2">
-              <CalendarDays className="h-7 w-7 mx-auto text-muted-foreground/50" />
-              <p className="text-[12px] text-muted-foreground px-2">
+              <CalendarDays className="h-7 w-7 mx-auto text-[#D1D5DB]" />
+              <p className="text-[12px] text-[#6B7280] px-2">
                 Click any date to schedule your first lesson
               </p>
             </div>
@@ -909,7 +916,7 @@ export function LessonScheduler({
                 ? `Book ${remainingHoursDisplay} more ${remainingHoursDisplay === 1 ? "hour" : "hours"} to continue`
                 : "Confirm all lessons"}
             </Button>
-            <p className="text-[11px] text-muted-foreground text-center">
+            <p className="text-[11px] text-[#6B7280] text-center">
               Edit any lesson before confirming
             </p>
           </div>
