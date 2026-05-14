@@ -20,6 +20,7 @@ import NotFound from "./pages/NotFound";
 
 // Route modules
 import { publicRoutes } from "@/routes/publicRoutes";
+import { everydriverRoutes } from "@/routes/everydriverRoutes";
 import { instructorPortalRoutes } from "@/routes/instructorPortalRoutes";
 import { instructorAppRoutes } from "@/routes/instructorAppRoutes";
 import { adminRoutes } from "@/routes/adminRoutes";
@@ -27,6 +28,7 @@ import { demoRoutes } from "@/routes/demoRoutes";
 import { everyInstructorRoutes } from "@/routes/everyInstructorRoutes";
 import { schoolRoutes } from "@/routes/schoolRoutes";
 import { parentRoutes } from "@/routes/parentRoutes";
+import { isEveryDriverHost } from "@/lib/whitelabel";
 
 const queryClient = new QueryClient();
 
@@ -52,7 +54,7 @@ const App = () => (
                     <Routes>
                       <Route path="/" element={<ConditionalHome />} />
                       <Route path="/index" element={<ConditionalHome />} />
-                      {publicRoutes}
+                      {isEveryDriverHost() ? everydriverRoutes : publicRoutes}
                       {instructorPortalRoutes}
                       {instructorAppRoutes}
                       {adminRoutes}
