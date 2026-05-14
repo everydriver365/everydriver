@@ -420,7 +420,7 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
     setSortBy("soonest");
     
     // Jump back to first available date for all instructors
-    const firstAvailable = findFirstAvailableDate(instructors, workingHours, dateOverrides);
+    const firstAvailable = findFirstAvailableDate(instructors, sources);
     if (firstAvailable) {
       setSelectedMonth(firstAvailable.month);
       setSelectedDate(firstAvailable.date);
