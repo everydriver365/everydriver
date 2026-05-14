@@ -163,15 +163,21 @@ serve(async (req: Request) => {
           break;
         }
 
-        // Check if payment_history already recorded (idempotency)
-        const { data: existing } = await supabase
+        // Idempotency: lookup by external_payment_ref (preferred), with notes-based legacy fallback
+        const { data: existingByRef } = await supabase
+          .from("payment_history")
+          .select("id")
+          .eq("external_payment_ref", `square:${paymentId}`)
+          .maybeSingle();
+
+        const { data: existingLegacy } = existingByRef ? { data: null } : await supabase
           .from("payment_history")
           .select("id")
           .eq("pupil_id", pupilId)
           .ilike("notes", `%${paymentId}%`)
           .maybeSingle();
 
-        if (existing) {
+        if (existingByRef || existingLegacy) {
           console.log(`Payment ${paymentId} already recorded, skipping`);
           break;
         }
@@ -213,6 +219,7 @@ serve(async (req: Request) => {
           amount: creditAmount,
           payment_method: "square_checkout",
           payout_status: payoutStatus,
+          external_payment_ref: `square:${paymentId}`,
           notes: `Square Checkout Payment - ID: ${paymentId}${feeAmount > 0 ? ` (admin fee: £${feeAmount.toFixed(2)})` : ''}${isAutoTransfer ? ' (auto-paid via Square)' : ''}`,
         });
 

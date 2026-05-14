@@ -60,7 +60,7 @@ serve(async (req: Request) => {
 
     const authHeader = btoa(`${merchantId}:${secretKey}`);
 
-    // === Idempotency: skip if a payment_history row already references this Clearpay token ===
+    // === Idempotency: prefer external_payment_ref (set after capture), legacy fallback by notes ===
     if (data.pupilId) {
       const { data: existing, error: existErr } = await supabase
         .from("payment_history")
@@ -133,6 +133,7 @@ serve(async (req: Request) => {
               instructor_id: data.instructorId,
               amount: capturedAmount,
               payment_method: "Clearpay",
+              external_payment_ref: `clearpay:${result.id}`,
               notes: noteText,
             });
 
