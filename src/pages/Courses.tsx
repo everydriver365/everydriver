@@ -475,33 +475,11 @@ export default function Courses() {
       const dayOfWeek = jsDow === 0 ? 7 : jsDow; // DB uses 1=Mon..7=Sun
       const dateStr = format(day, "yyyy-MM-dd");
 
-      return relevantInstructors.some((instructor) => {
-        // Check available_from restriction
-        if (instructor.available_from && isAfter(parseISO(instructor.available_from), day)) {
-          return false;
-        }
-
-        // Check date overrides first
-        const override = dateOverrides.find(
-          (o) =>
-            o.instructor_id === instructor.id &&
-            (o.override_date === dateStr ||
-              (o.override_end_date &&
-                dateStr >= o.override_date &&
-                dateStr <= o.override_end_date))
-        );
-        if (override) return override.is_available;
-
-        // Check working hours
-        return workingHours.some(
-          (wh) =>
-            wh.instructor_id === instructor.id &&
-            wh.day_of_week === dayOfWeek &&
-            wh.is_active
-        );
-      });
+      return relevantInstructors.some((instructor) =>
+        hasInstructorAvailabilityOn(instructor, day, availabilitySources)
+      );
     });
-  }, [selectedMonth, relevantInstructors, workingHours, dateOverrides]);
+  }, [selectedMonth, relevantInstructors, availabilitySources]);
 
   // Calculate course counts for each available date in the month
   const courseCountsInMonth = useMemo(() => {
