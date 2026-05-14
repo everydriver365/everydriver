@@ -272,8 +272,12 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
       setInstructors(loadedInstructors);
       setInstructorCourses(coursesRes.data || []);
       setCourseTemplates(templatesRes.data || []);
-      setWorkingHours(loadedWorkingHours);
-      setDateOverrides(loadedOverrides);
+      const newSources: CourseAvailabilitySources = {
+        ...sources,
+        workingHours: loadedWorkingHours as any,
+        overrides: loadedOverrides as any,
+      };
+      setSources(newSources);
 
       // Store premium placements (filter expired)
       const now = new Date().toISOString();
@@ -282,7 +286,7 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
       );
       setPremiumPlacements(activePlacements);
 
-      const firstAvailable = findFirstAvailableDate(loadedInstructors, loadedWorkingHours, loadedOverrides);
+      const firstAvailable = findFirstAvailableDate(loadedInstructors, newSources);
       if (firstAvailable) {
         setSelectedMonth(firstAvailable.month);
         setSelectedDate(firstAvailable.date);
