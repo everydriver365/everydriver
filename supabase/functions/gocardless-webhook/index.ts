@@ -48,6 +48,20 @@ serve(async (req) => {
     const body = JSON.parse(rawBody);
     const { events } = body;
 
+    // Log webhook delivery (best-effort)
+    try {
+      await supabase.from("webhook_delivery_log").insert({
+        provider: "gocardless",
+        event_id: events?.[0]?.id ?? null,
+        event_type: events?.map((e: any) => `${e.resource_type}.${e.action}`).join(",") ?? null,
+        signature_valid: !!Deno.env.get("GOCARDLESS_WEBHOOK_SECRET"),
+        processed: true,
+        processed_at: new Date().toISOString(),
+        response_status: 200,
+        payload: body,
+      });
+    } catch (e) { console.warn("webhook log insert failed", e); }
+
     if (!events || !Array.isArray(events)) {
       return new Response(
         JSON.stringify({ message: "No events to process" }),
