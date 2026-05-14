@@ -110,7 +110,7 @@ export function useInstructorAvailabilitySearch(params: SearchParams) {
         eventsRes,
       ] = await Promise.all([
         supabase
-          .from("instructors")
+          .from("public_instructors")
           .select("id, name, car_type, home_postcode, buffer_minutes")
           .in("id", targetIds),
         supabase
