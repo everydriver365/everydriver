@@ -486,6 +486,7 @@ export default function BookingSummary() {
       setIsRefreshingAvailability(false);
     }
   };
+  const lastBookingAttemptRef = useRef<{ paymentType: 'full' | 'deposit'; amountPaid?: number } | null>(null);
   const ensureBookingCreated = async (
     paymentType: 'full' | 'deposit' = 'full',
     amountPaid?: number
@@ -502,6 +503,7 @@ export default function BookingSummary() {
     }
     
     bookingInProgressRef.current = true;
+    lastBookingAttemptRef.current = { paymentType, amountPaid };
 
     try {
       const { data, error } = await supabase.functions.invoke("create-booking", {
