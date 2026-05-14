@@ -1,44 +1,48 @@
-# Lesson scheduler redesign
+# Lesson scheduler visual polish
 
-Yes, your spec works as-is. It's well-defined and matches what the current scheduler is missing (no scroll between calendar/slots, persistent lesson list). One caveat at the bottom about sticky positioning — flagged because it is the most likely thing to bite us.
+Pure CSS/styling pass on `src/components/booking/LessonScheduler.tsx`. No layout, structure, prop, or logic changes.
 
-## What changes
+## Changes
 
-### 1. `src/components/booking/LessonScheduler.tsx` — rebuild internals
-Replace the current vertical-stack layout (calendar → length panel → slots → list) with the spec:
+### Calendar (workspace card, left)
+- Add `pl-1.5 pr-1.5` inset around the calendar block (issue 6).
+- `head_cell`: render single-letter labels via `formatters={{ formatWeekdayName: (d) => format(d, "EEEEE") }}` and style `text-[10px] font-semibold normal-case text-[#9CA3AF]` (issue 8).
+- Cell base `day` class reset to weight 400, colour `#D1D5DB`, no bg, `cursor-default` (past/unavailable default — issue 1).
+- Replace `modifiersClassNames` with explicit hex states using `!important` to beat shadcn defaults:
+  - `available`: `!bg-[#E8F5EE] !text-[#0F6E56] !font-semibold cursor-pointer hover:!bg-[#DCEFE3]`
+  - `hasLesson`: `!bg-[#F0F4FB] !text-[#0A2B6B] !font-semibold relative` + `after:content-[''] after:absolute after:left-1/2 after:-translate-x-1/2 after:bottom-[2px] after:h-1 after:w-1 after:rounded-full after:bg-[#0A2B6B]` (issue 1, dot fix).
+  - `selected` (via `day_selected` classNames override): `!bg-[#0A2B6B] !text-white !font-semibold` — must come last in modifier order so it wins over `available`/`hasLesson`.
+- Disabled state: `day_disabled: "!text-[#D1D5DB] !bg-transparent !font-normal cursor-default hover:!bg-transparent"`.
 
-- **Header card** (full width): icon + title/helper on left, hours-booked + 8px progress bar on right. Drive365 navy `#142040` for primary, soft blue tint for icon backdrop.
-- **Two-column grid** below (`grid-cols-[60%_40%]`, 16px gap):
-  - **Left workspace card**: toolbar (month nav left, length pill toggle right) + inner `grid-cols-2` with calendar on the left and slot pane on the right separated by `border-l pl-[14px]`.
-  - **Right scheduled-lessons card**: `position: sticky; top: 16px;` with internal `max-h-[320px] overflow-y-auto` list and confirm button pinned underneath.
-- **Calendar cells**: keep existing day-state logic but restyle to the four states (past, available soft-green, has-lesson soft-blue + dot, selected primary). Add legend row.
-- **Slot pane**: group existing slot data into Morning (<12), Afternoon (12–17), Evening (≥17). Single vertical column of full-width buttons, time range left, green plus right. Booked slots rendered in place, greyed + strikethrough, disabled.
-- **Length toggle**: compact pill group (1 / 1.5 / 2 / 3 hr) inside toolbar; remove the existing full-width "Choose your lesson length" panel.
-- **Empty states**: icon + copy for "Click any available date…" (slot pane, min-h 280px) and "Click any date to schedule your first lesson" (lessons list).
-- **Confirm button**: disabled grey with "Book {n} more hours to continue" until remaining = 0, then primary "Confirm all lessons" + 11px hint underneath.
-- All copy in sentence case; only MORNING/AFTERNOON/EVENING uppercase + tracked.
+### Legend (issue 7)
+- Replace `rounded-full` dots with `h-2.5 w-2.5 rounded-[3px]` swatches in `#E8F5EE`, `#F0F4FB` (with the navy dot inside for "Has lesson"), and `#0A2B6B`.
 
-### 2. Both `BookingSummary.tsx` pages (Drive365 + EveryDriver, lines ~1715)
-Remove the wrapper that renders the duplicate "Select Your Lesson Slots" header and the outer "0/10h" pill. The new in-component header replaces both.
+### Toolbar (issue 5)
+- Bump month label to `text-[16px] font-bold`.
+- Add `border-b border-[#E5E7EB] pb-3 mb-3` under the toolbar row to define the space.
 
-### 3. Responsive (<900px)
-- Outer two-column grid → single column (workspace first, lessons after).
-- Right card: `lg:sticky lg:top-4` so sticky is desktop-only; stays static on mobile.
-- Inner calendar/slots grid also stacks; the `border-l pl-[14px]` becomes `border-t pt-[14px]` via responsive classes.
+### Workspace card (issue 9)
+- Change `p-4` → `p-[18px]`.
 
-### 4. Brand tokens
-Use existing Drive365 tokens already in the project: navy `#142040` (primary), accent blue `#2B7BC8`, slate-50 `#F9FAFB` row backgrounds, success green for available cells. No new colours invented; will pull from `tailwind.config.ts` / `index.css` rather than hardcoding.
+### Time slots column (issue 4)
+- Drop `min-h-[280px]` to `min-h-0`.
+- Empty state: 28px `CalendarDays` in `text-[#D1D5DB]`, `text-[13px] text-muted-foreground` below, stacked, vertically aligned to top with `pt-6`, total block ≈100px. Replace the current `h-full min-h-[260px] flex items-center justify-center`.
 
-## Sticky-positioning caveat (your warning, confirmed)
-The booking page wraps content in motion divs and gradient sections. If `sticky` doesn't engage, the cause will be an ancestor with `overflow: hidden`, `overflow-x: clip`, or `transform`/`will-change` (which creates a containing block and breaks sticky). Plan: when wiring it up, walk up the DOM from the lessons card and remove/relocate any such ancestor styles around the scheduler section only — without changing the rest of the page's overflow rules.
+### Scheduled lessons card (issues 2, 3, 9)
+- Card: `bg-white border border-[#E5E7EB] p-4` (16px). Force white over any `bg-card` token.
+- Lesson row:
+  - `bg-[#F9FAFB]` (replace `bg-muted/60`)
+  - `rounded-lg p-2.5 mb-1.5` (10px / 6px)
+  - Number badge: `h-[22px] w-[22px] rounded-md bg-[#0A2B6B] text-white text-[11px] font-bold`.
+  - Date/time text: `text-[#0A2B6B]`.
+  - Metadata text: `text-[#6B7280]`.
+  - × button: `text-[#9CA3AF] hover:text-[#E63946]`.
 
-## Out of scope
-- No business logic changes: slot generation, conflict checking, RPCs, and persistence stay identical. Pure presentational rebuild + duplicate-header removal.
-- Mobile booking view (`MobileBookingView.tsx`) is not touched — per project rule, mobile layouts only change when explicitly asked. The responsive stacking above only covers narrow desktop widths within the existing `LessonScheduler` component.
+### Workspace card background
+- Keep `bg-white border border-[#E5E7EB]` consistent with lessons card so both sit on the page-grey background.
 
-## Deliverables on completion
-- Desktop screenshot with a date selected and 3 lessons scheduled.
-- Scroll test confirming the lessons column stays in view (or note + fix if an ancestor blocks sticky).
-- Internal-scroll test with >5 lessons.
-- 375px screenshot showing the workspace stacked above the lessons card.
-- Confirmation that only existing Drive365 tokens were used.
+## Files touched
+- `src/components/booking/LessonScheduler.tsx` only.
+
+## Verification
+- Reload `/book/c9843b58…?hours=10&date=2026-06-02`, click a date, confirm the three states are visually distinct, the navy dot renders on has-lesson days, the lessons card is white and rows are pale.
