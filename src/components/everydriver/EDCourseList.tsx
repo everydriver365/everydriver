@@ -115,36 +115,33 @@ export function EDCourseList({ courses }: EDCourseListProps) {
               }}
             >
               {/* Hours block */}
-              <div className="relative flex items-center justify-center">
-                {c.isPopular && (
-                  <div
-                    className="absolute"
-                    style={{
-                      top: -10,
-                      left: -8,
-                      background: AMBER,
-                      color: NAVY,
-                      fontSize: 10,
-                      fontWeight: 800,
-                      letterSpacing: "0.08em",
-                      padding: "3px 10px",
-                      borderRadius: 6,
-                      whiteSpace: "nowrap",
-                      zIndex: 1,
-                    }}
-                  >
-                    POPULAR
-                  </div>
-                )}
+              <div className="flex items-center justify-center">
                 <div
                   className="flex flex-col items-center justify-center"
                   style={{
                     background: HOUR_FILL,
                     borderRadius: 14,
                     width: 104,
-                    height: 104,
+                    minHeight: 104,
+                    padding: c.isPopular ? "10px 8px 14px" : "0",
                   }}
                 >
+                  {c.isPopular && (
+                    <div
+                      style={{
+                        background: AMBER,
+                        color: NAVY,
+                        fontSize: 10,
+                        fontWeight: 800,
+                        letterSpacing: "0.1em",
+                        padding: "3px 10px",
+                        borderRadius: 6,
+                        marginBottom: 8,
+                      }}
+                    >
+                      POPULAR
+                    </div>
+                  )}
                   <div
                     style={{
                       fontSize: 34,
