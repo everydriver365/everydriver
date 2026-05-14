@@ -94,5 +94,9 @@ export const adminRoutes = (
       path="/admin/custom-domain-queue"
       element={<ProtectedAdminRoute><CustomDomainQueue /></ProtectedAdminRoute>}
     />
+    <Route
+      path="/admin/course-image-optimizer"
+      element={<ProtectedAdminRoute><CourseImageOptimizer /></ProtectedAdminRoute>}
+    />
   </>
 );
