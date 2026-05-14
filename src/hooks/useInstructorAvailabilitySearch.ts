@@ -152,26 +152,10 @@ export function useInstructorAvailabilitySearch(params: SearchParams) {
         return !!area && area.startsWith(postcodePrefix.toUpperCase());
       });
 
-      // Default fallback working window when an instructor hasn't configured
-      // any working hours yet. Mon–Sat 08:00–20:00 so Find/Next slot still
-      // returns useful results out of the box.
-      const DEFAULT_WH_DAYS = [1, 2, 3, 4, 5, 6];
-      const DEFAULT_WH_START = "08:00";
-      const DEFAULT_WH_END = "20:00";
-      const rawWorkingHours = workingHoursRes.data || [];
-      const instructorsWithWH = new Set(rawWorkingHours.map((w) => w.instructor_id));
-      const fallbackWH = instructors
-        .filter((i) => !instructorsWithWH.has(i.id))
-        .flatMap((i) =>
-          DEFAULT_WH_DAYS.map((dow) => ({
-            instructor_id: i.id,
-            day_of_week: dow,
-            start_time: DEFAULT_WH_START,
-            end_time: DEFAULT_WH_END,
-            is_active: true,
-          })),
-        );
-      const workingHours = [...rawWorkingHours, ...fallbackWH];
+      // No hard-coded fallback working window: instructors who have not
+      // configured working hours simply have no availability and will not
+      // appear in results until they set them up in their portal.
+      const workingHours = workingHoursRes.data || [];
       const overrides = overridesRes.data || [];
       const lessons = lessonsRes.data || [];
       const blocks = blocksRes.data || [];
