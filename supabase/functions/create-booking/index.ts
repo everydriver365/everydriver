@@ -351,7 +351,7 @@ serve(async (req) => {
           instructor_id: booking.instructorId,
           pupil_id: pupil.id,
           amount: 0,
-          payment_method: "free",
+          payment_method: "Free",
           notes: `Free booking: ${booking.courseType}`,
         });
         console.log("Free booking payment_history recorded");
