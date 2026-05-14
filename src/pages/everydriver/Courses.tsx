@@ -1022,7 +1022,7 @@ export default function Courses() {
           >
             {!(isListMode && searchedPostcode) && (
               <>
-                <h1 className="mb-1 text-center text-2xl font-extrabold md:text-3xl" style={{ color: "#0A2B6B" }}>
+                <h1 className="mb-1 text-center" style={{ fontSize: 24, fontWeight: 800, color: "#0A2B6B", letterSpacing: "-0.02em" }}>
                   {searchedAreaName ? `Courses in ${searchedAreaName}` : "Find a course"}
                 </h1>
                 {searchedAreaName && (
@@ -1033,7 +1033,7 @@ export default function Courses() {
               </>
             )}
 
-            <div className="rounded-3xl border border-slate-100 bg-white p-2 shadow-[0_20px_50px_rgba(0,0,0,0.08)] md:p-3">
+            <div className="rounded-2xl bg-white p-2 md:p-3" style={{ border: "1px solid #E5E7EB" }}>
               <div className="flex flex-col items-stretch gap-2 sm:flex-row">
                 {/* Postcode input */}
                 <div className="group relative flex-1">
