@@ -1564,7 +1564,7 @@ export default function Courses() {
                 {/* Selected date header */}
                 {isListMode ? (
                   <div className="mb-3">
-                    <h2 style={{ fontSize: 22, fontWeight: 800, color: "#0A2B6B", letterSpacing: "-0.02em" }}>
+                    <h2 style={{ fontSize: 16, fontWeight: 700, color: "#0A2B6B", letterSpacing: "-0.01em" }}>
                       {format(selectedDate, "EEEE, d MMMM")}
                     </h2>
                     <p style={{ fontSize: 13, color: "#6B7280", marginTop: 2 }}>
