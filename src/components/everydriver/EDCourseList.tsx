@@ -77,7 +77,7 @@ export function EDCourseList({ courses }: EDCourseListProps) {
   };
 
   return (
-    <div className="flex flex-col" style={{ gap: 10 }}>
+    <div className="flex flex-col" style={{ gap: 14 }}>
       {courses.map((c) => {
         const final =
           c.discountedPrice && c.discountedPrice < c.price
