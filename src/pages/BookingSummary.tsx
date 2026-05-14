@@ -21,6 +21,7 @@ import { PostcodeAddressLookup } from "@/components/booking/PostcodeAddressLooku
 import { MobileBookingView } from "@/components/booking/MobileBookingView";
 import { EnquiryFlow } from "@/components/booking/EnquiryFlow";
 import { UpsellSelector } from "@/components/booking/UpsellSelector";
+import { CoursePaymentBlock } from "@/components/booking/CoursePaymentBlock";
 import { SquareWalletButtons } from "@/components/payments/SquareWalletButtons";
 import { KlarnaPaymentModal } from "@/components/payments/KlarnaPaymentModal";
 import { supabase } from "@/integrations/supabase/client";
