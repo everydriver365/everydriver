@@ -912,8 +912,16 @@ export default function BookingSummary() {
     }
     return (
       <MainLayout>
-        <div className="container py-16 text-center">
-          <h1 className="text-2xl font-bold">Course not found</h1>
+        <div className="container py-16 text-center max-w-xl mx-auto">
+          <div className="mx-auto mb-4 inline-flex h-12 w-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
+            <Calendar className="h-6 w-6" />
+          </div>
+          <h1 className="text-2xl font-bold">
+            {loadErrorReason ? "Course unavailable" : "Course not found"}
+          </h1>
+          {loadErrorReason && (
+            <p className="mt-2 text-sm text-muted-foreground">{loadErrorReason}</p>
+          )}
           <Button onClick={() => navigate("/courses")} className="mt-4">
             Back to Courses
           </Button>
