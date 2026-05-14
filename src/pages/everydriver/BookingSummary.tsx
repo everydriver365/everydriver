@@ -450,7 +450,7 @@ export default function BookingSummary() {
   
   // For auto_assign and instructor_assigns modes, we don't require slot selection
   const requiresSlotSelection = bookingMode === 'pupil_choice';
-  const canSubmit = isPupilDetailsComplete && (requiresSlotSelection ? isFullyScheduled : true) && !isSubmitting;
+  const canSubmit = isPupilDetailsComplete && (requiresSlotSelection ? isFullyScheduled : true) && !isSubmitting && unavailableSlots.length === 0;
 
   // Auto-show card form when canSubmit becomes true
   useEffect(() => {
