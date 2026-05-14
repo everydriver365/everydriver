@@ -9,6 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { checkLessonClash, describeLessonClashError } from "@/lib/lessonClashCheck";
+import { useGoogleCalendarRefresh } from "@/hooks/useGoogleCalendarRefresh";
 
 interface WorkingHour {
   day_of_week: number;
@@ -100,6 +101,14 @@ export function RescheduleLessonSheet({
       fetchAvailability();
     }
   }, [open, instructorId]);
+
+  // Refresh Google Calendar cache for the reschedule horizon when the sheet opens.
+  useGoogleCalendarRefresh({
+    instructorId,
+    from: new Date(),
+    to: addDays(new Date(), bookingAdvanceDays),
+    enabled: open,
+  });
 
   const fetchAvailability = async () => {
     setLoading(true);

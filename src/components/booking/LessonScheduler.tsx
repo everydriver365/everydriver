@@ -7,6 +7,7 @@ import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { WaitlistDialog } from "./WaitlistDialog";
+import { useGoogleCalendarRefresh } from "@/hooks/useGoogleCalendarRefresh";
 
 interface WorkingHour {
   day_of_week: number;
@@ -113,6 +114,15 @@ export function LessonScheduler({
   useEffect(() => {
     fetchAvailability();
   }, [instructorId]);
+
+  // Pull the latest Google Calendar state into the cache before showing slots,
+  // so date tiles and slot lists reflect events booked outside our app.
+  // Throttled per (instructor, range) by sessionStorage TTL.
+  useGoogleCalendarRefresh({
+    instructorId,
+    from: new Date(),
+    to: addDays(new Date(), bookingAdvanceDays),
+  });
 
   // Fetch travel time from instructor home to pupil postcode
   useEffect(() => {

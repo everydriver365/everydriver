@@ -16,6 +16,7 @@ import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 import { invalidateLessonQueries } from '@/lib/invalidateLessonQueries';
 import { checkLessonClash, describeLessonClashError } from '@/lib/lessonClashCheck';
+import { useGoogleCalendarRefresh } from '@/hooks/useGoogleCalendarRefresh';
 import { cn } from '@/lib/utils';
 import { CompetencyPicker } from './CompetencyPicker';
 import { GoogleAddressAutocomplete } from '@/components/admin/GoogleAddressAutocomplete';
@@ -286,6 +287,15 @@ export function AddLessonSheet({
       loadUkBankHolidays().then(setBankHolidays).catch(() => {});
     }
   }, [open, defaultDate, defaultStartTime, defaultDurationHours, instructorId]);
+
+  // Refresh Google Calendar cache for the focal day so the date picker /
+  // clash check sees externally-booked events without waiting for cron.
+  useGoogleCalendarRefresh({
+    instructorId,
+    from: lessonDate,
+    to: lessonDate,
+    enabled: open && !!lessonDate,
+  });
 
   useEffect(() => {
     if (isDrivingTest && instructorId) fetchTestCentres();

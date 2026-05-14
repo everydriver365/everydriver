@@ -1,9 +1,10 @@
 import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { format, parseISO } from "date-fns";
+import { format, parseISO, addDays } from "date-fns";
 import { Loader2, Search, X, Calendar as CalendarIcon, ChevronDown, Filter, CalendarSearch } from "lucide-react";
 import { useInstructorAvailabilitySearch, AvailableSlot, TimeOfDay } from "@/hooks/useInstructorAvailabilitySearch";
+import { refreshGoogleCalendar } from "@/lib/refreshGoogleCalendar";
 import { cn } from "@/lib/utils";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -142,6 +143,18 @@ export function FindAppointmentBody({
       return data || [];
     },
   });
+
+  // Refresh Google Calendar cache for every instructor in the search horizon
+  // so date/slot results reflect events booked outside our app. Throttled per
+  // (instructor, range) by sessionStorage TTL — safe to re-run on filter change.
+  useEffect(() => {
+    if (instructorIds.length === 0) return;
+    const fromIso = new Date(`${nextOnly ? today : fromDate}T00:00:00`).toISOString();
+    const toIso = addDays(new Date(`${nextOnly ? today : fromDate}T00:00:00`), nextOnly ? 60 : days).toISOString();
+    instructorIds.forEach((id) => {
+      void refreshGoogleCalendar({ instructorId: id, fromIso, toIso });
+    });
+  }, [instructorIds, fromDate, days, nextOnly, today]);
 
   const { data: searchResult, isFetching } = useInstructorAvailabilitySearch({
     instructorIds,

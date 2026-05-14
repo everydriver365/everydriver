@@ -1,48 +1,57 @@
-# Lesson scheduler visual polish
+## Goal
 
-Pure CSS/styling pass on `src/components/booking/LessonScheduler.tsx`. No layout, structure, prop, or logic changes.
+Guarantee that **every** booking entry point — pupil-facing, instructor-facing, and AI/automated — checks Google Calendar before offering or confirming a slot. Today some flows only read the cached `instructor_calendar_events` table; others skip Google entirely and rely on `scheduled_lessons` + working hours. The cache itself can be stale (cron sync runs on a schedule).
 
-## Changes
+## Current state
 
-### Calendar (workspace card, left)
-- Add `pl-1.5 pr-1.5` inset around the calendar block (issue 6).
-- `head_cell`: render single-letter labels via `formatters={{ formatWeekdayName: (d) => format(d, "EEEEE") }}` and style `text-[10px] font-semibold normal-case text-[#9CA3AF]` (issue 8).
-- Cell base `day` class reset to weight 400, colour `#D1D5DB`, no bg, `cursor-default` (past/unavailable default — issue 1).
-- Replace `modifiersClassNames` with explicit hex states using `!important` to beat shadcn defaults:
-  - `available`: `!bg-[#E8F5EE] !text-[#0F6E56] !font-semibold cursor-pointer hover:!bg-[#DCEFE3]`
-  - `hasLesson`: `!bg-[#F0F4FB] !text-[#0A2B6B] !font-semibold relative` + `after:content-[''] after:absolute after:left-1/2 after:-translate-x-1/2 after:bottom-[2px] after:h-1 after:w-1 after:rounded-full after:bg-[#0A2B6B]` (issue 1, dot fix).
-  - `selected` (via `day_selected` classNames override): `!bg-[#0A2B6B] !text-white !font-semibold` — must come last in modifier order so it wins over `available`/`hasLesson`.
-- Disabled state: `day_disabled: "!text-[#D1D5DB] !bg-transparent !font-normal cursor-default hover:!bg-transparent"`.
+Already consults `instructor_calendar_events` (cached Google sync):
+- `LessonScheduler.tsx` (public course booking) — date tiles AND slot list both block on Google events. ✅ already correct.
+- `useInstructorAvailabilitySearch.ts`, `useRealGapSlots.ts`, `lib/courseAvailability.ts`, `pages/PublicAvailability.tsx`, `AddLessonSheet.tsx`, `RescheduleLessonSheet.tsx`, `MultiDayScheduleView.tsx`, `MobileMonthCalendarView.tsx`, `NewMobileScheduleView.tsx`, `ScheduleDayTabs.tsx`, `end-lesson/StepBookNext.tsx`, `GapsFiller.tsx`, `autoScheduler.ts`.
 
-### Legend (issue 7)
-- Replace `rounded-full` dots with `h-2.5 w-2.5 rounded-[3px]` swatches in `#E8F5EE`, `#F0F4FB` (with the navy dot inside for "Has lesson"), and `#0A2B6B`.
+Likely gaps to verify and fix:
+- `lib/lessonClashCheck.ts` — final write-time clash check before inserting a lesson. Must include Google events.
+- AI booking approval path (Famulor) — confirm it runs the same clash check.
+- Pupil portal "request reschedule" / "find me a slot" flows.
+- Any flow reading only `scheduled_lessons` without joining `instructor_calendar_events`.
 
-### Toolbar (issue 5)
-- Bump month label to `text-[16px] font-bold`.
-- Add `border-b border-[#E5E7EB] pb-3 mb-3` under the toolbar row to define the space.
+The cache can lag because the bi-directional sync (memory: `automated-google-calendar-sync`) runs on `pg_cron`, not on demand.
 
-### Workspace card (issue 9)
-- Change `p-4` → `p-[18px]`.
+## Plan
 
-### Time slots column (issue 4)
-- Drop `min-h-[280px]` to `min-h-0`.
-- Empty state: 28px `CalendarDays` in `text-[#D1D5DB]`, `text-[13px] text-muted-foreground` below, stacked, vertically aligned to top with `pt-6`, total block ≈100px. Replace the current `h-full min-h-[260px] flex items-center justify-center`.
+### 1. Audit (read-only, produce a checklist)
+- Grep every booking-write path: insert into `scheduled_lessons`, AI booking confirmation, reschedule, gap-fill, manual add, course checkout finalisation.
+- For each, confirm it runs `lessonClashCheck` (or equivalent) and that the check queries `instructor_calendar_events` AND `scheduled_lessons` AND `instructor_date_overrides`.
+- Output the gap list as a doc at `docs/qa/google-calendar-coverage.md`.
 
-### Scheduled lessons card (issues 2, 3, 9)
-- Card: `bg-white border border-[#E5E7EB] p-4` (16px). Force white over any `bg-card` token.
-- Lesson row:
-  - `bg-[#F9FAFB]` (replace `bg-muted/60`)
-  - `rounded-lg p-2.5 mb-1.5` (10px / 6px)
-  - Number badge: `h-[22px] w-[22px] rounded-md bg-[#0A2B6B] text-white text-[11px] font-bold`.
-  - Date/time text: `text-[#0A2B6B]`.
-  - Metadata text: `text-[#6B7280]`.
-  - × button: `text-[#9CA3AF] hover:text-[#E63946]`.
+### 2. Centralise the "is this slot free?" check
+- Make `lib/lessonClashCheck.ts` the single source of truth. It must take `(instructorId, dateStr, startTime, durationMinutes, bufferMinutes)` and reject if **any** of: existing scheduled lesson, manual block, `instructor_calendar_events` row, or full-day override overlaps (with buffer).
+- Replace ad-hoc clash checks in write paths with this function.
 
-### Workspace card background
-- Keep `bg-white border border-[#E5E7EB]` consistent with lessons card so both sit on the page-grey background.
+### 3. Freshen Google data on demand at every booking entry
+- Add a lightweight "refresh-on-open" call to `google-calendar-service` action `resyncRange` (or `fetchExternalEvents` with persist=true) when a booking surface mounts:
+  - Public `LessonScheduler` (course booking) — sync the instructor for `[today, today + booking_advance_days]` once per session, debounced.
+  - Instructor `AddLessonSheet` / `RescheduleLessonSheet` — sync for the visible week.
+  - `FindAppointmentBody` / `useInstructorAvailabilitySearch` — sync for the search horizon.
+  - AI booking approval (Famulor) — sync the targeted day **server-side** before computing free slots.
+- Failure to sync must NOT block the UI: fall back to cached events and show a small "calendar last synced HH:mm" hint.
 
-## Files touched
-- `src/components/booking/LessonScheduler.tsx` only.
+### 4. Server-side guard at write time
+- In the edge function (or RPC) that inserts a `scheduled_lessons` row, call `google-calendar-service.fetchExternalEvents` for the target date right before inserting, then run `lessonClashCheck`. This is the last line of defence against a stale cache.
+- If a Google conflict is found, return a structured error so the UI can show "This slot was just taken in your Google Calendar — pick another time."
 
-## Verification
-- Reload `/book/c9843b58…?hours=10&date=2026-06-02`, click a date, confirm the three states are visually distinct, the navy dot renders on has-lesson days, the lessons card is white and rows are pale.
+### 5. Tests / verification
+- Add a Vitest suite for `lessonClashCheck` covering: lesson overlap, buffered overlap, Google event overlap, all-day-event ignore, override-block, no-conflict.
+- Manual QA pass (documented in the same `docs/qa/google-calendar-coverage.md`) for each of the 8+ booking entries listed above.
+
+## Technical details
+
+- Use existing `google-calendar-service` action `resyncRange` for date-range refresh (already writes to `instructor_calendar_events`).
+- Debounce client-side refresh per `(instructorId, range)` with a 60-second TTL in `sessionStorage` to avoid hammering the edge function on tab focus.
+- All-day events (>= 24h) continue to be informational only, matching the existing `LessonScheduler` rule.
+- Buffer logic stays per memory `lesson-buffer-logic` and `gap-offer-buffer-rules` (first-of-day vs back-to-back).
+- Live-data rule: if Google sync fails AND the cache is empty for that instructor, surface a clear "Calendar unavailable, please retry" empty state — never silently allow bookings.
+
+## Out of scope
+
+- Changing the bi-directional sync architecture (still service account + DWD per memory).
+- Editing mobile layouts beyond what is needed for the empty/error states (per mobile update policy).
