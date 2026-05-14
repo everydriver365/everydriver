@@ -583,398 +583,337 @@ export function LessonScheduler({
     );
   }
 
+  // Group slots by time of day
+  const slotsForSelectedDate = selectedDate ? getAvailableTimeSlots(selectedDate) : [];
+  const grouped = useMemo(() => {
+    const m: string[] = [];
+    const a: string[] = [];
+    const e: string[] = [];
+    for (const t of slotsForSelectedDate) {
+      const h = parseInt(t.slice(0, 2), 10);
+      if (h < 12) m.push(t);
+      else if (h < 17) a.push(t);
+      else e.push(t);
+    }
+    return { morning: m, afternoon: a, evening: e };
+  }, [slotsForSelectedDate]);
+
+  const sortedSlots = useMemo(
+    () => [...selectedSlots].sort((a, b) => {
+      const t = a.date.getTime() - b.date.getTime();
+      return t !== 0 ? t : a.startTime.localeCompare(b.startTime);
+    }),
+    [selectedSlots]
+  );
+
+  const progressPct = Math.min(100, Math.round((scheduledHours / totalHours) * 100));
+  const remainingHoursDisplay = Math.max(0, remainingHours);
+
+  const renderSlotGroup = (label: string, items: string[]) => {
+    if (items.length === 0) return null;
+    return (
+      <div className="space-y-1">
+        <div className="text-[10px] font-semibold tracking-[1px] text-muted-foreground">
+          {label}
+        </div>
+        <div className="flex flex-col gap-1">
+          {items.map((time) => {
+            const end = addMinutesToTime(time, selectedDuration);
+            return (
+              <button
+                key={time}
+                type="button"
+                onClick={() => selectedDate && handleSelectSlot(selectedDate, time)}
+                disabled={remainingHours <= 0}
+                className={cn(
+                  "group flex w-full items-center justify-between rounded-md border border-border/70 bg-card px-3 py-2 text-left transition-colors",
+                  "hover:border-primary hover:bg-muted/40",
+                  "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-border/70 disabled:hover:bg-card"
+                )}
+              >
+                <span className="text-[12px] font-semibold text-foreground">
+                  {time} – {end}
+                </span>
+                <Plus className="h-3.5 w-3.5 text-emerald-600 group-hover:text-emerald-700" strokeWidth={2.5} />
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="font-semibold flex items-center gap-2">
-          <Calendar className="h-4 w-4" />
-          Schedule Your Lessons
-        </h3>
-        <Badge variant={remainingHours > 0 ? "secondary" : "default"}>
-          {scheduledHours}/{totalHours} hours scheduled
-        </Badge>
+      {/* Header card */}
+      <div className="rounded-[12px] border bg-card px-[22px] py-[18px] shadow-sm">
+        <div className="flex items-center justify-between gap-4 flex-wrap">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="flex h-[38px] w-[38px] items-center justify-center rounded-[10px] bg-primary/10 text-primary shrink-0">
+              <CalendarPlus className="h-[18px] w-[18px]" />
+            </div>
+            <div className="min-w-0">
+              <h3 className="text-[16px] font-bold leading-tight text-foreground">
+                Schedule your lessons
+              </h3>
+              <p className="text-[12px] text-muted-foreground mt-0.5">
+                Pick a date, then tap a time. Mix lengths and dates as you go.
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-col items-start sm:items-end gap-1.5 min-w-[180px]">
+            <div className="text-[12px] text-muted-foreground">
+              <span className="text-[15px] font-bold text-primary">{scheduledHours}</span>
+              <span className="text-foreground/80">/{totalHours} hours booked</span>
+            </div>
+            <div className="h-2 w-full sm:w-[200px] rounded-full bg-primary/10 overflow-hidden">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-emerald-600 transition-all"
+                style={{ width: `${progressPct}%` }}
+              />
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Warning if course can't be divided by instructor's allowed lengths */}
+      {/* Course-can't-fit warning */}
       {!courseCanBeCompleted && (
-        <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3">
+        <div className="rounded-[12px] border border-destructive/30 bg-destructive/5 p-3">
           <p className="text-sm text-destructive font-medium">
-            ⚠️ This {totalHours}-hour course cannot be evenly divided into the instructor's allowed lesson lengths ({baseDurationOptions.map(d => formatDuration(d)).join(', ')}). Please contact the instructor to adjust the course hours or lesson length options.
+            This {totalHours}-hour course can't be evenly divided into the instructor's allowed lengths
+            ({baseDurationOptions.map(d => formatDuration(d)).join(', ')}). Please contact the instructor.
           </p>
         </div>
       )}
 
-      {/* Lesson Length Selection - Made Prominent */}
-      <div className="rounded-xl border-2 border-primary/20 bg-primary/5 p-4">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-          <div className="flex-1">
-            <p className="font-medium text-foreground">
-              Choose your lesson length
-            </p>
-            <p className="text-sm text-muted-foreground mt-0.5">
-              Select how long each lesson should be for your {totalHours}-hour course
-            </p>
+      {/* Two-column grid: workspace + sticky lessons list */}
+      <div className="grid gap-4 lg:grid-cols-[3fr_2fr] items-start">
+        {/* Workspace card */}
+        <div className="rounded-[12px] border bg-card p-4 shadow-sm">
+          {/* Toolbar */}
+          <div className="mb-[14px] flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => setViewMonth((m) => subMonths(m, 1))}
+                className="flex h-[26px] w-[26px] items-center justify-center rounded-md border border-border/60 text-foreground/70 hover:bg-muted hover:text-foreground transition-colors"
+                aria-label="Previous month"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <div className="px-2 text-[14px] font-bold text-foreground tabular-nums">
+                {format(viewMonth, "MMMM yyyy")}
+              </div>
+              <button
+                type="button"
+                onClick={() => setViewMonth((m) => addMonths(m, 1))}
+                className="flex h-[26px] w-[26px] items-center justify-center rounded-md border border-border/60 text-foreground/70 hover:bg-muted hover:text-foreground transition-colors"
+                aria-label="Next month"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="flex items-center gap-1 rounded-lg bg-primary/5 p-[3px]">
+              {durationOptions.map((d) => {
+                const isSelected = selectedDuration === d;
+                return (
+                  <button
+                    key={d}
+                    type="button"
+                    onClick={() => setSelectedDuration(d)}
+                    className={cn(
+                      "px-2.5 py-1 text-[11px] font-semibold rounded-md transition-colors",
+                      isSelected
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    {formatLengthShort(d)}
+                  </button>
+                );
+              })}
+            </div>
           </div>
-          <div className="flex flex-wrap gap-2">
-            {durationOptions.map((d) => {
-              const hours = d / 60;
-              const isSelected = selectedDuration === d;
-              const colorClass = hours <= 1.5 
-                ? "border-emerald-500 bg-emerald-50 text-emerald-700 hover:bg-emerald-100" 
-                : hours <= 2.5 
-                  ? "border-amber-500 bg-amber-50 text-amber-700 hover:bg-amber-100"
-                  : "border-blue-500 bg-blue-50 text-blue-700 hover:bg-blue-100";
-              return (
-                <Button
-                  key={d}
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setSelectedDuration(d)}
-                  className={cn(
-                    "font-semibold transition-all",
-                    isSelected 
-                      ? `${colorClass} ring-2 ring-offset-2 ring-primary` 
-                      : colorClass
-                  )}
-                >
-                  {formatDuration(d)}
-                  {completionDuration === d && (
-                    <span className="ml-1 text-[10px] opacity-75">(finish)</span>
-                  )}
-                </Button>
-              );
-            })}
-          </div>
-        </div>
-        {completionDuration && (
-          <p className="text-xs text-muted-foreground mt-2 px-1">
-            💡 A {formatDuration(completionDuration)} lesson has been added to complete your {totalHours}-hour course (instructor allows {baseDurationOptions.map(d => formatDuration(d)).join(', ')} lessons)
-          </p>
-        )}
-      </div>
 
-      {/* Calendar, Time Slots, and Selected Lessons */}
-      {isMobile ? (
-        /* ── Mobile Layout: Calendar + Chips + Bottom Sheet ── */
-        <div className="relative">
-          {/* Calendar */}
-          <div className="rounded-lg border p-2">
-            <CalendarComponent
-              mode="single"
-              selected={selectedDate}
-              onSelect={setSelectedDate}
-              month={viewMonth}
-              onMonthChange={setViewMonth}
-              disabled={(date) => !isDateAvailable(date)}
-              modifiers={{
-                booked: (date) =>
-                  selectedSlots.some((s) => isSameDay(s.date, date)),
-                available: (date) => isDateAvailable(date) && !selectedSlots.some((s) => isSameDay(s.date, date)),
-              }}
-              modifiersStyles={{
-                booked: {
-                  backgroundColor: "hsl(var(--primary))",
-                  color: "hsl(var(--primary-foreground))",
-                  fontWeight: "bold",
-                },
-                available: {
-                  backgroundColor: "hsl(var(--success) / 0.15)",
-                  color: "hsl(var(--success))",
-                  fontWeight: "600",
-                },
-              }}
-              components={{
-                DayContent: (props: { date: Date }) => {
-                  const isBooked = selectedSlots.some((s) => isSameDay(s.date, props.date));
-                  return (
-                    <div className="relative flex items-center justify-center w-full h-full">
-                      <span>{props.date.getDate()}</span>
-                      {isBooked && (
-                        <Check className="absolute bottom-0 right-0 h-3 w-3 text-white pointer-events-none" strokeWidth={3} />
+          {/* Inner two-column: calendar + slots */}
+          <div className="grid gap-[14px] md:grid-cols-2">
+            {/* Calendar */}
+            <div>
+              <CalendarComponent
+                mode="single"
+                selected={selectedDate}
+                onSelect={setSelectedDate}
+                month={viewMonth}
+                onMonthChange={setViewMonth}
+                disabled={(date) => !isDateAvailable(date)}
+                modifiers={{
+                  hasLesson: (date) => selectedSlots.some((s) => isSameDay(s.date, date)),
+                  available: (date) =>
+                    isDateAvailable(date) && !selectedSlots.some((s) => isSameDay(s.date, date)),
+                }}
+                modifiersClassNames={{
+                  hasLesson:
+                    "!bg-primary/10 !text-primary font-semibold relative after:absolute after:bottom-[3px] after:left-1/2 after:-translate-x-1/2 after:h-1 after:w-1 after:rounded-full after:bg-primary",
+                  available: "!bg-emerald-50 !text-emerald-700 font-semibold hover:!bg-emerald-100",
+                }}
+                classNames={{
+                  caption: "hidden",
+                  nav: "hidden",
+                  table: "w-full border-collapse",
+                  head_row: "flex w-full",
+                  head_cell:
+                    "flex-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground py-1",
+                  row: "flex w-full mt-[3px] gap-[3px]",
+                  cell: "flex-1 aspect-square p-0 text-sm relative",
+                  day: "w-full h-full flex items-center justify-center rounded-md text-[13px] font-medium transition-colors aria-selected:!bg-primary aria-selected:!text-primary-foreground",
+                  day_disabled: "text-muted-foreground/50 cursor-not-allowed opacity-60",
+                  day_outside: "text-muted-foreground/30",
+                  day_today: "ring-1 ring-primary/40",
+                }}
+                className="p-0 pointer-events-auto"
+              />
+              {/* Legend */}
+              <div className="mt-3 pt-3 border-t border-border/60 flex items-center gap-4 flex-wrap">
+                <div className="flex items-center gap-1.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                  <span className="text-[10px] text-muted-foreground">Available</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                  <span className="text-[10px] text-muted-foreground">Has lesson</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-primary ring-2 ring-primary/30" />
+                  <span className="text-[10px] text-muted-foreground">Selected</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Slots */}
+            <div className="md:border-l md:border-t-0 border-t md:pl-[14px] md:pt-0 pt-[14px] min-h-[280px]">
+              {selectedDate ? (
+                <div className="space-y-3">
+                  <div>
+                    <div className="text-[13px] font-bold text-foreground">
+                      {format(selectedDate, "EEE d MMMM")}
+                    </div>
+                    <div className="text-[11px] text-muted-foreground mt-0.5">
+                      {formatLengthShort(selectedDuration)} slots
+                      {pupilPostcode ? ` · Pickup ${pupilPostcode}` : ""}
+                    </div>
+                  </div>
+                  {slotsForSelectedDate.length === 0 ? (
+                    <div className="py-6 text-center space-y-3">
+                      <Clock className="h-6 w-6 mx-auto text-muted-foreground/60" />
+                      <p className="text-[12px] text-muted-foreground">
+                        No available slots for this date
+                      </p>
+                      {pupilId && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setWaitlistDialogOpen(true)}
+                          className="gap-2"
+                        >
+                          <Bell className="h-4 w-4" />
+                          Join waitlist
+                        </Button>
                       )}
                     </div>
-                  );
-                },
-              }}
-              className={cn(
-                "p-1 pointer-events-auto",
-                "[&_table]:w-full",
-                "[&_td]:p-0.5 [&_th]:p-0.5 [&_th]:text-xs [&_th]:font-medium",
-                "[&_button]:h-9 [&_button]:w-9 [&_button]:text-sm [&_button]:rounded-2xl",
-                "[&_.rdp-caption]:text-sm [&_.rdp-caption]:pb-2",
-                "[&_.rdp-nav_button]:h-7 [&_.rdp-nav_button]:w-7"
+                  ) : (
+                    <div className="space-y-[10px]">
+                      {renderSlotGroup("MORNING", grouped.morning)}
+                      {renderSlotGroup("AFTERNOON", grouped.afternoon)}
+                      {renderSlotGroup("EVENING", grouped.evening)}
+                    </div>
+                  )}
+                  {preferEarliestSlot && slotsForSelectedDate.length > 0 && (
+                    <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground pt-1">
+                      <Sparkles className="h-3 w-3 text-primary" />
+                      Earliest slots prioritised by your instructor
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="h-full min-h-[260px] flex flex-col items-center justify-center text-center px-4">
+                  <CalendarDays className="h-7 w-7 text-muted-foreground/50 mb-2" />
+                  <p className="text-[12px] text-muted-foreground">
+                    Click any available date to see times
+                  </p>
+                </div>
               )}
-            />
+            </div>
+          </div>
+        </div>
+
+        {/* Scheduled lessons (sticky on desktop) */}
+        <div className="rounded-[12px] border bg-card p-4 shadow-sm lg:sticky lg:top-4">
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="text-[14px] font-bold text-foreground">Your lessons</h4>
+            <span className="text-[12px] text-muted-foreground">
+              {selectedSlots.length} booked · {scheduledHours} hr
+            </span>
           </div>
 
-          {/* Compact Scheduled Lesson Chips */}
-          {selectedSlots.length > 0 && (
-            <div className="mt-3 flex flex-wrap gap-1.5">
-              {selectedSlots
-                .sort((a, b) => a.date.getTime() - b.date.getTime())
-                .map((slot, index) => (
-                  <Badge
-                    key={index}
-                    variant="secondary"
-                    className="pl-2 pr-1 py-1 text-xs gap-1 cursor-pointer"
-                    onClick={() => handleRemoveSlot(index)}
+          {selectedSlots.length > 0 ? (
+            <div className="space-y-1.5 max-h-[320px] overflow-y-auto pr-1 -mr-1">
+              {sortedSlots.map((slot, index) => {
+                const originalIndex = selectedSlots.indexOf(slot);
+                return (
+                  <div
+                    key={`${slot.date.getTime()}-${slot.startTime}`}
+                    className="flex items-center gap-[10px] rounded-lg bg-muted/60 px-[10px] py-[9px]"
                   >
-                    {format(slot.date, "EEE d")} {slot.startTime} · {slot.duration / 60}h
-                    <X className="h-3 w-3 text-muted-foreground hover:text-destructive" />
-                  </Badge>
-                ))}
+                    <div className="flex h-[22px] w-[22px] items-center justify-center rounded-md bg-primary text-primary-foreground text-[11px] font-bold shrink-0">
+                      {index + 1}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-[12px] font-semibold text-foreground truncate">
+                        {format(slot.date, "EEE d MMM")} · {slot.startTime}
+                      </div>
+                      <div className="text-[10px] text-muted-foreground truncate">
+                        {slot.duration / 60} hr{instructorFirstName ? ` · ${instructorFirstName}` : ""}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveSlot(originalIndex)}
+                      className="text-muted-foreground hover:text-destructive transition-colors p-1 -m-1"
+                      aria-label="Remove lesson"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="py-8 text-center space-y-2">
+              <CalendarDays className="h-7 w-7 mx-auto text-muted-foreground/50" />
+              <p className="text-[12px] text-muted-foreground px-2">
+                Click any date to schedule your first lesson
+              </p>
             </div>
           )}
 
-          {/* Bottom Sheet Time Picker */}
-          <AnimatePresence>
-            {selectedDate && (
-              <motion.div
-                initial={{ y: "100%", opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: "100%", opacity: 0 }}
-                transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                className="mt-3 rounded-xl border-2 border-primary/20 bg-card shadow-lg p-3"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-medium text-sm">
-                    {format(selectedDate, "EEE, d MMM")}
-                  </h4>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 w-7 p-0"
-                    onClick={() => setSelectedDate(undefined)}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-                <div className="grid grid-cols-3 gap-1.5">
-                  {(() => {
-                    const slots = getAvailableTimeSlots(selectedDate);
-                    return slots.map((time, idx) => (
-                    <Button
-                      key={time}
-                      variant="outline"
-                      size="sm"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleSelectSlot(selectedDate, time);
-                      }}
-                      onTouchEnd={(e) => {
-                        e.preventDefault();
-                        handleSelectSlot(selectedDate, time);
-                      }}
-                      disabled={remainingHours <= 0}
-                      className={cn(
-                        "text-xs h-10 min-h-[44px] active:scale-95 transition-transform touch-manipulation",
-                        preferEarliestSlot && idx === 0 && "border-primary bg-primary/10 ring-1 ring-primary"
-                      )}
-                    >
-                      {preferEarliestSlot && idx === 0 && <Sparkles className="h-3 w-3 mr-1 text-primary pointer-events-none" />}
-                      {!(preferEarliestSlot && idx === 0) && <Clock className="h-3 w-3 mr-1 pointer-events-none" />}
-                      {time}
-                    </Button>
-                    ));
-                  })()}
-                  {getAvailableTimeSlots(selectedDate).length === 0 && (
-                    <div className="col-span-3 text-center py-4 space-y-3">
-                      <p className="text-xs text-muted-foreground">
-                        No available slots for this date
-                      </p>
-                      {pupilId && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setWaitlistDialogOpen(true)}
-                          className="gap-2"
-                        >
-                          <Bell className="h-4 w-4" />
-                          Join Waitlist
-                        </Button>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      ) : (
-        /* ── Desktop Layout: 3-column grid ── */
-        <div className="grid gap-4 lg:grid-cols-3">
-          {/* Calendar */}
-          <div className="rounded-lg border p-2">
-            <CalendarComponent
-              mode="single"
-              selected={selectedDate}
-              onSelect={setSelectedDate}
-              month={viewMonth}
-              onMonthChange={setViewMonth}
-              disabled={(date) => !isDateAvailable(date)}
-              modifiers={{
-                booked: (date) =>
-                  selectedSlots.some((s) => isSameDay(s.date, date)),
-                available: (date) => isDateAvailable(date) && !selectedSlots.some((s) => isSameDay(s.date, date)),
-              }}
-              modifiersStyles={{
-                booked: {
-                  backgroundColor: "hsl(var(--primary))",
-                  color: "hsl(var(--primary-foreground))",
-                  fontWeight: "bold",
-                },
-                available: {
-                  backgroundColor: "hsl(var(--success) / 0.15)",
-                  color: "hsl(var(--success))",
-                  fontWeight: "600",
-                },
-              }}
-              components={{
-                DayContent: (props: { date: Date }) => {
-                  const isBooked = selectedSlots.some((s) => isSameDay(s.date, props.date));
-                  return (
-                    <div className="relative flex items-center justify-center w-full h-full">
-                      <span>{props.date.getDate()}</span>
-                      {isBooked && (
-                        <Check className="absolute bottom-0 right-0 h-3 w-3 text-white pointer-events-none" strokeWidth={3} />
-                      )}
-                    </div>
-                  );
-                },
-              }}
-              className={cn(
-                "p-1 pointer-events-auto",
-                "[&_table]:w-full",
-                "[&_td]:p-0.5 [&_th]:p-0.5 [&_th]:text-xs [&_th]:font-medium",
-                "[&_button]:h-9 [&_button]:w-9 [&_button]:text-sm [&_button]:rounded-2xl",
-                "[&_.rdp-caption]:text-sm [&_.rdp-caption]:pb-2",
-                "[&_.rdp-nav_button]:h-7 [&_.rdp-nav_button]:w-7"
-              )}
-            />
-          </div>
-
-          {/* Time Slots */}
-          <div className="rounded-lg border p-3">
-            {selectedDate ? (
-              <div>
-                <h4 className="font-medium mb-2 text-sm">
-                  Times for {format(selectedDate, "EEE, d MMM")}
-                </h4>
-                <div className="grid grid-cols-2 gap-1.5 max-h-[240px] overflow-y-auto touch-pan-y">
-                  {(() => {
-                    const slots = getAvailableTimeSlots(selectedDate);
-                    return slots.map((time, idx) => (
-                    <Button
-                      key={time}
-                      variant="outline"
-                      size="sm"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleSelectSlot(selectedDate, time);
-                      }}
-                      onTouchEnd={(e) => {
-                        e.preventDefault();
-                        handleSelectSlot(selectedDate, time);
-                      }}
-                      disabled={remainingHours <= 0}
-                      className={cn(
-                        "text-xs h-10 min-h-[44px] active:scale-95 transition-transform touch-manipulation",
-                        preferEarliestSlot && idx === 0 && "border-primary bg-primary/10 ring-1 ring-primary"
-                      )}
-                    >
-                      {preferEarliestSlot && idx === 0 && <Sparkles className="h-3 w-3 mr-1 text-primary pointer-events-none" />}
-                      {!(preferEarliestSlot && idx === 0) && <Clock className="h-3 w-3 mr-1 pointer-events-none" />}
-                      {time}
-                    </Button>
-                    ));
-                  })()}
-                  {getAvailableTimeSlots(selectedDate).length === 0 && (
-                    <div className="col-span-2 text-center py-4 space-y-3">
-                      <p className="text-xs text-muted-foreground">
-                        No available slots for this date
-                      </p>
-                      {pupilId && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setWaitlistDialogOpen(true)}
-                          className="gap-2"
-                        >
-                          <Bell className="h-4 w-4" />
-                          Join Waitlist
-                        </Button>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <div className="h-full flex items-center justify-center text-muted-foreground text-xs py-8">
-                Select a date to see times
-              </div>
-            )}
-          </div>
-
-          {/* Selected Lessons */}
-          <div className="rounded-lg border p-3">
-            <h4 className="font-medium mb-2 text-sm">Scheduled Lessons</h4>
-            {selectedSlots.length > 0 ? (
-              <div className="space-y-2 max-h-[280px] overflow-y-auto">
-                {selectedSlots
-                  .sort((a, b) => a.date.getTime() - b.date.getTime())
-                  .map((slot, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between rounded-lg bg-secondary/50 px-3 py-2"
-                    >
-                      <div className="flex flex-col gap-0.5">
-                        <div className="text-sm font-medium">
-                          {format(slot.date, "EEE, d MMM")}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Badge variant="outline" className="text-xs">
-                            {slot.startTime} - {slot.endTime}
-                          </Badge>
-                          <span className="text-xs text-muted-foreground">
-                            ({slot.duration / 60}h)
-                          </span>
-                        </div>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleRemoveSlot(index)}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
-              </div>
-            ) : (
-              <div className="h-full flex items-center justify-center text-muted-foreground text-sm py-8">
-                No lessons scheduled yet
-              </div>
-            )}
+          {/* Confirm button */}
+          <div className="mt-4 space-y-1.5">
+            <Button
+              type="button"
+              onClick={() => onConfirm?.()}
+              disabled={remainingHours > 0}
+              className="w-full"
+            >
+              {remainingHours > 0
+                ? `Book ${remainingHoursDisplay} more ${remainingHoursDisplay === 1 ? "hour" : "hours"} to continue`
+                : "Confirm all lessons"}
+            </Button>
+            <p className="text-[11px] text-muted-foreground text-center">
+              Edit any lesson before confirming
+            </p>
           </div>
         </div>
-      )}
-
-      {/* Remaining Hours Warning */}
-      {remainingHours > 0 && selectedSlots.length > 0 && (
-        <p className="text-sm text-warning">
-          You still have {remainingHours} hours to schedule. Continue selecting
-          dates and times above.
-        </p>
-      )}
-
-      {remainingHours <= 0 && (
-        <p className="text-sm text-success flex items-center gap-2">
-          <Clock className="h-4 w-4" />
-          All {totalHours} hours have been scheduled!
-        </p>
-      )}
+      </div>
 
       {/* Waitlist Dialog */}
       {pupilId && (
