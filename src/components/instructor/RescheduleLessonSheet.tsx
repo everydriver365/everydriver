@@ -9,6 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { checkLessonClash, describeLessonClashError } from "@/lib/lessonClashCheck";
+import { useGoogleCalendarRefresh } from "@/hooks/useGoogleCalendarRefresh";
 
 interface WorkingHour {
   day_of_week: number;
