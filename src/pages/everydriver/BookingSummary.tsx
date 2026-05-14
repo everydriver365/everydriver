@@ -20,6 +20,7 @@ import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutoc
 import { PostcodeAddressLookup } from "@/components/booking/PostcodeAddressLookup";
 import { MobileBookingView } from "@/components/booking/MobileBookingView";
 import { EnquiryFlow } from "@/components/booking/EnquiryFlow";
+import { CoursePaymentBlock } from "@/components/booking/CoursePaymentBlock";
 import { UpsellSelector } from "@/components/booking/UpsellSelector";
 import { SquareWalletButtons } from "@/components/payments/SquareWalletButtons";
 import { KlarnaPaymentModal } from "@/components/payments/KlarnaPaymentModal";
