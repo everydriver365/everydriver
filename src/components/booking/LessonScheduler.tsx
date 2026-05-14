@@ -770,7 +770,7 @@ export function LessonScheduler({
                     "text-[11px] font-semibold uppercase tracking-wide text-[#9CA3AF] text-center",
                   row: "grid grid-cols-7 gap-1.5 mt-1.5",
                   cell: "p-0 text-sm relative",
-                  day: "w-full h-10 flex items-center justify-center rounded-lg text-[13px] font-medium text-[#D1D5DB] cursor-default transition-colors",
+                  day: "w-full h-[30px] flex items-center justify-center rounded-lg text-[13px] font-medium text-[#D1D5DB] cursor-default transition-colors",
                   day_selected:
                     "!bg-[#0A2B6B] !text-white !font-semibold hover:!bg-[#0A2B6B]",
                   day_disabled:
