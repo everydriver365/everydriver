@@ -258,21 +258,33 @@ function SidebarCalendar({
                   key={day.date.toISOString()}
                   onClick={() => day.isAvailable && onSelectDate(day.date!)}
                   disabled={!day.isAvailable || day.isPast}
-                  className={`relative flex h-10 flex-col items-center justify-center rounded-md text-sm font-medium transition-all ${
-                    isSelected
-                      ? "bg-primary text-primary-foreground shadow-md"
+                  className="relative flex flex-col items-center justify-center text-sm font-semibold transition-colors"
+                  style={{
+                    aspectRatio: "1 / 1",
+                    borderRadius: 6,
+                    background: isSelected
+                      ? "#0A2B6B"
                       : day.isAvailable
-                        ? "bg-emerald-500/20 text-emerald-700 hover:bg-emerald-500/30 dark:text-emerald-400"
+                        ? "#E8F5EE"
+                        : "transparent",
+                    color: isSelected
+                      ? "#FFFFFF"
+                      : day.isAvailable
+                        ? "#0F6E56"
                         : day.isPast
-                          ? "text-muted-foreground/30 cursor-not-allowed"
-                          : "text-muted-foreground/50 cursor-not-allowed"
-                  } ${isToday && !isSelected ? "ring-1 ring-primary/40" : ""}`}
+                          ? "#D1D5DB"
+                          : "#D1D5DB",
+                    cursor: day.isAvailable ? "pointer" : "not-allowed",
+                  }}
                 >
                   <span>{format(day.date, "d")}</span>
                   {!hideCounts && day.isAvailable && day.courseCount > 0 && (
-                    <span className={`text-[9px] font-semibold leading-none ${
-                      isSelected ? "text-primary-foreground/80" : "text-emerald-600 dark:text-emerald-400"
-                    }`}>
+                    <span style={{
+                      fontSize: 9,
+                      fontWeight: 700,
+                      lineHeight: 1,
+                      color: isSelected ? "rgba(255,255,255,0.8)" : "#0F6E56",
+                    }}>
                       {day.courseCount}
                     </span>
                   )}
@@ -284,13 +296,13 @@ function SidebarCalendar({
       )}
       
       {/* Legend */}
-      <div className="mt-4 flex items-center justify-center gap-4 text-xs text-muted-foreground border-t pt-3">
+      <div className="mt-4 flex items-center justify-center gap-4 border-t pt-3" style={{ fontSize: 11, color: "#6B7280" }}>
         <div className="flex items-center gap-1.5">
-          <span className="h-3 w-3 rounded bg-emerald-500/20" />
+          <span className="h-3 w-3 rounded" style={{ background: "#E8F5EE" }} />
           <span>Available</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="h-3 w-3 rounded bg-primary" />
+          <span className="h-3 w-3 rounded" style={{ background: "#0A2B6B" }} />
           <span>Selected</span>
         </div>
       </div>
@@ -1010,7 +1022,7 @@ export default function Courses() {
           >
             {!(isListMode && searchedPostcode) && (
               <>
-                <h1 className="mb-1 text-center text-2xl font-extrabold md:text-3xl" style={{ color: "#0A2B6B" }}>
+                <h1 className="mb-1 text-center" style={{ fontSize: 24, fontWeight: 800, color: "#0A2B6B", letterSpacing: "-0.02em" }}>
                   {searchedAreaName ? `Courses in ${searchedAreaName}` : "Find a course"}
                 </h1>
                 {searchedAreaName && (
@@ -1021,7 +1033,7 @@ export default function Courses() {
               </>
             )}
 
-            <div className="rounded-3xl border border-slate-100 bg-white p-2 shadow-[0_20px_50px_rgba(0,0,0,0.08)] md:p-3">
+            <div className="rounded-2xl bg-white p-2 md:p-3" style={{ border: "1px solid #E5E7EB" }}>
               <div className="flex flex-col items-stretch gap-2 sm:flex-row">
                 {/* Postcode input */}
                 <div className="group relative flex-1">
@@ -1201,11 +1213,12 @@ export default function Courses() {
       </section>
 
       {/* Two Column Layout: Calendar + Courses */}
-      <section className="container py-8">
-        <div className="flex flex-col gap-8 lg:flex-row">
+      <section className="py-8" style={{ background: isListMode ? "#F9FAFB" : undefined }}>
+        <div className="container">
+        <div className="flex flex-col gap-5 lg:flex-row" style={{ gap: isListMode ? 20 : undefined }}>
           {/* Left Column: Calendar + Instructors */}
-          <div className="w-full lg:w-80 lg:flex-shrink-0">
-            <div className="sticky top-20 space-y-4">
+          <div className="w-full lg:flex-shrink-0" style={{ width: isListMode ? undefined : undefined }}>
+            <div className={`sticky top-20 ${isListMode ? "" : "space-y-4"}`} style={isListMode ? { display: "flex", flexDirection: "column", gap: 16, width: 280 } : undefined}>
               <SidebarCalendar
                 selectedMonth={selectedMonth}
                 setSelectedMonth={setSelectedMonth}
@@ -1218,36 +1231,93 @@ export default function Courses() {
                 hideCounts={isListMode}
               />
 
-              {/* Pass Promise card — list view only. Flat navy, no decorative blob. */}
+              {/* Your instructor — list view: single matched card */}
+              {isListMode && availableInstructorsForFilter.length > 0 && (() => {
+                const matched = availableInstructorsForFilter[0];
+                const instructor = matched.instructor;
+                const initials = (instructor.name || "")
+                  .split(/\s+/)
+                  .filter(Boolean)
+                  .slice(0, 2)
+                  .map((p) => p.charAt(0).toUpperCase())
+                  .join("");
+                const transmissionText = instructor.car_type === "automatic"
+                  ? "Automatic"
+                  : instructor.car_type === "both"
+                    ? "Manual & auto"
+                    : "Manual";
+                return (
+                  <div
+                    className="bg-white p-4"
+                    style={{ border: "1px solid #E5E7EB", borderRadius: 12 }}
+                  >
+                    <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.14em", color: "#6B7280", marginBottom: 10 }}>
+                      YOUR INSTRUCTOR
+                    </div>
+                    <div className="flex items-center" style={{ gap: 12 }}>
+                      <div
+                        className="relative flex-shrink-0 overflow-hidden rounded-full"
+                        style={{
+                          width: 38,
+                          height: 38,
+                          background: "linear-gradient(135deg, #3FB76B 0%, #1D9E75 100%)",
+                        }}
+                      >
+                        {instructor.profile_image_url ? (
+                          <img src={instructor.profile_image_url} alt={instructor.name} className="h-full w-full object-cover" />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center" style={{ color: "white", fontSize: 13, fontWeight: 700 }}>
+                            {initials || instructor.name.charAt(0)}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="truncate" style={{ fontSize: 14, fontWeight: 600, color: "#0A2B6B" }}>{instructor.name}</p>
+                        <p style={{ fontSize: 12, color: "#6B7280", marginTop: 1 }}>
+                          {transmissionText} · {matched.distance !== undefined ? `${matched.distance.toFixed(1)} mi away` : "Nearby"}
+                        </p>
+                      </div>
+                    </div>
+                    <div style={{ borderTop: "1px solid #E5E7EB", marginTop: 12, paddingTop: 10 }} className="flex items-center" >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="#F4B83C" stroke="none" style={{ marginRight: 6 }}>
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                      </svg>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: "#0A2B6B" }}>4.9</span>
+                      <span style={{ fontSize: 12, color: "#6B7280", marginLeft: 4 }}>· 247 reviews</span>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Pass Promise card — list view only */}
               {isListMode && (
                 <div
-                  className="rounded-xl p-4"
-                  style={{ background: "#0A2B6B" }}
+                  className="p-4"
+                  style={{ background: "#0A2B6B", borderRadius: 12 }}
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center" style={{ gap: 10, marginBottom: 6 }}>
                     <div
-                      className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md"
-                      style={{ background: "#3FB76B" }}
+                      className="flex flex-shrink-0 items-center justify-center"
+                      style={{ background: "#3FB76B", width: 24, height: 24, borderRadius: 6 }}
                     >
-                      <ShieldCheck className="h-4 w-4 text-white" />
+                      <ShieldCheck className="h-3.5 w-3.5 text-white" />
                     </div>
-                    <div>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: "white" }}>
-                        Pass Promise
-                      </div>
-                      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.7)", marginTop: 1 }}>
-                        Re-test on us if you don't pass.
-                      </div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: "white" }}>
+                      Pass Promise
                     </div>
+                  </div>
+                  <div style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", lineHeight: 1.4 }}>
+                    Don't pass first time? We re-test on us.
                   </div>
                 </div>
               )}
-              {/* Instructors Filter Tile */}
-              {availableInstructorsForFilter.length > 0 && (
+
+              {/* Instructors Filter Tile — non-list (grid) mode only */}
+              {!isListMode && availableInstructorsForFilter.length > 0 && (
                 <div className="rounded-xl border bg-card p-4 shadow-sm">
                   <div className="mb-3 flex items-center justify-between">
-                    <h3 className={isListMode ? "text-[10px] font-bold uppercase tracking-[0.18em] text-[#7a7a7a]" : "text-sm font-semibold"}>
-                      {isListMode ? "Your Match" : `Instructors ${userLocation ? "Nearby" : "Available"}`}
+                    <h3 className="text-sm font-semibold">
+                      {`Instructors ${userLocation ? "Nearby" : "Available"}`}
                     </h3>
                     {selectedInstructorId && (
                       <button
@@ -1260,7 +1330,6 @@ export default function Courses() {
                   </div>
                   <div className="space-y-2 max-h-64 overflow-y-auto">
                     {availableInstructorsForFilter.map(({ instructor, distance }) => {
-                      // Convert hex to rgba for background with opacity
                       const getBrandBgColor = (hex: string | null) => {
                         if (!hex) return undefined;
                         const r = parseInt(hex.slice(1, 3), 16);
@@ -1268,7 +1337,12 @@ export default function Courses() {
                         const b = parseInt(hex.slice(5, 7), 16);
                         return `rgba(${r}, ${g}, ${b}, 0.15)`;
                       };
-                      
+                      const initials = (instructor.name || "")
+                        .split(/\s+/)
+                        .filter(Boolean)
+                        .slice(0, 2)
+                        .map((p) => p.charAt(0).toUpperCase())
+                        .join("");
                       return (
                         <button
                           key={instructor.id}
@@ -1286,48 +1360,24 @@ export default function Courses() {
                               : undefined,
                           }}
                         >
-                          {(() => {
-                            const initials = (instructor.name || "")
-                              .split(/\s+/)
-                              .filter(Boolean)
-                              .slice(0, 2)
-                              .map((p) => p.charAt(0).toUpperCase())
-                              .join("");
-                            return (
-                              <div
-                                className="relative flex-shrink-0 overflow-hidden rounded-full"
-                                style={{
-                                  width: isListMode ? 38 : 40,
-                                  height: isListMode ? 38 : 40,
-                                  border: isListMode ? "none" : "2px solid",
-                                  borderColor: isListMode ? undefined : (instructor.brand_colour || 'hsl(var(--border))'),
-                                  background: isListMode
-                                    ? "linear-gradient(135deg, #3FB76B 0%, #1D9E75 100%)"
-                                    : (getBrandBgColor(instructor.brand_colour) || 'hsl(var(--muted))'),
-                                }}
-                              >
-                                {instructor.profile_image_url ? (
-                                  <img
-                                    src={instructor.profile_image_url}
-                                    alt={instructor.name}
-                                    className="h-full w-full object-cover"
-                                  />
-                                ) : (
-                                  <div
-                                    className="flex h-full w-full items-center justify-center"
-                                    style={{
-                                      color: isListMode ? "white" : (instructor.brand_colour || 'hsl(var(--primary))'),
-                                      fontSize: isListMode ? 13 : 14,
-                                      fontWeight: 600,
-                                      letterSpacing: "0.02em",
-                                    }}
-                                  >
-                                    {initials || instructor.name.charAt(0)}
-                                  </div>
-                                )}
+                          <div
+                            className="relative flex-shrink-0 overflow-hidden rounded-full"
+                            style={{
+                              width: 40,
+                              height: 40,
+                              border: "2px solid",
+                              borderColor: instructor.brand_colour || 'hsl(var(--border))',
+                              background: getBrandBgColor(instructor.brand_colour) || 'hsl(var(--muted))',
+                            }}
+                          >
+                            {instructor.profile_image_url ? (
+                              <img src={instructor.profile_image_url} alt={instructor.name} className="h-full w-full object-cover" />
+                            ) : (
+                              <div className="flex h-full w-full items-center justify-center" style={{ color: instructor.brand_colour || 'hsl(var(--primary))', fontSize: 14, fontWeight: 600 }}>
+                                {initials || instructor.name.charAt(0)}
                               </div>
-                            );
-                          })()}
+                            )}
+                          </div>
                           <div className="flex-1 min-w-0">
                             <p className="truncate text-sm font-medium">{instructor.name}</p>
                             <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -1340,9 +1390,9 @@ export default function Courses() {
                               )}
                             </div>
                           </div>
-                          <div 
+                          <div
                             className="h-3 w-3 rounded-full flex-shrink-0 border"
-                            style={{ 
+                            style={{
                               backgroundColor: instructor.brand_colour || 'hsl(var(--primary))',
                               borderColor: instructor.brand_colour || 'hsl(var(--primary))',
                             }}
@@ -1514,7 +1564,7 @@ export default function Courses() {
                 {/* Selected date header */}
                 {isListMode ? (
                   <div className="mb-3">
-                    <h2 style={{ fontSize: 22, fontWeight: 800, color: "#0A2B6B", letterSpacing: "-0.02em" }}>
+                    <h2 style={{ fontSize: 16, fontWeight: 700, color: "#0A2B6B", letterSpacing: "-0.01em" }}>
                       {format(selectedDate, "EEEE, d MMMM")}
                     </h2>
                     <p style={{ fontSize: 13, color: "#6B7280", marginTop: 2 }}>
@@ -1804,6 +1854,7 @@ export default function Courses() {
               </>
             )}
           </div>
+        </div>
         </div>
       </section>
     </MainLayout>
