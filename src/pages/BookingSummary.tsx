@@ -505,6 +505,27 @@ export default function BookingSummary() {
 
       if (error || data?.error === 'SLOT_UNAVAILABLE') {
         console.error("Booking error:", error || data);
+        const conflicts: Array<{ date: string; startTime: string; reason?: string }> =
+          (data?.conflicts as any) || [];
+        if (conflicts.length > 0) {
+          // Drop the now-unavailable slots so the pupil can pick replacements.
+          const conflictKeys = new Set(conflicts.map((c) => `${c.date}__${c.startTime}`));
+          setSelectedSlots((prev) =>
+            prev.filter((s) => {
+              const dateStr = s.date.toISOString().slice(0, 10);
+              return !conflictKeys.has(`${dateStr}__${s.startTime}`);
+            }),
+          );
+          // Force-refresh Google Calendar for the affected days so the
+          // scheduler immediately reflects the busy events.
+          for (const c of conflicts) {
+            void refreshGoogleCalendarForDate(instructor.id, c.date, true);
+          }
+          // Scroll the pupil back to the scheduler.
+          setTimeout(() => {
+            schedulerRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+          }, 100);
+        }
         const friendly = await describeBookingConflictResponse(error || data);
         toast.error(friendly || "Failed to create your booking. Please try again.");
         return null;
