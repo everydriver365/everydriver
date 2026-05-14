@@ -1358,55 +1358,72 @@ export default function Courses() {
 
           {/* Right Column: Course Tiles */}
           <div className="flex-1">
-            {/* Compact header strip — list mode */}
+            {/* Reference-style results bar — list mode */}
             {isListMode && searchedPostcode && (
               <div
-                className="mb-4 flex items-center justify-between rounded-lg bg-white px-4 py-3"
-                style={{ borderBottom: "1px solid #e8e8ee" }}
+                className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-white px-4 py-3"
+                style={{ border: "1px solid #E5E7EB" }}
               >
-                <div>
-                  <div
-                    style={{
-                      fontSize: 10,
-                      fontWeight: 700,
-                      letterSpacing: "0.18em",
-                      color: "#7a7a7a",
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    Courses near
-                  </div>
-                  <div className="flex items-baseline gap-2">
-                    <span
-                      style={{
-                        fontSize: 18,
-                        fontWeight: 800,
-                        color: "#0a1936",
-                        letterSpacing: "-0.02em",
-                      }}
-                    >
-                      {searchedAreaName || searchedPostcode}
-                    </span>
-                    <span style={{ fontSize: 12, color: "#7a7a7a" }}>
-                      {searchedPostcode} · {radius} mi
-                    </span>
-                  </div>
+                <div className="flex items-baseline gap-2" style={{ minWidth: 0 }}>
+                  <span style={{ fontSize: 18, fontWeight: 800, color: "#0A2B6B", letterSpacing: "-0.02em" }}>
+                    {filteredCourses.length} course{filteredCourses.length !== 1 ? "s" : ""}
+                  </span>
+                  <span style={{ fontSize: 13, color: "#6B7280" }}>·</span>
+                  <span style={{ fontSize: 13, color: "#6B7280" }} className="truncate">
+                    {searchedAreaName || searchedPostcode}, {searchedPostcode} · within {radius} mi
+                  </span>
                 </div>
+
+                <div
+                  className="inline-flex items-center rounded-full p-0.5"
+                  style={{ background: "#F3F4F6" }}
+                >
+                  {[
+                    { value: "all", label: "All" },
+                    { value: "manual", label: "Manual" },
+                    { value: "automatic", label: "Automatic" },
+                  ].map((opt) => {
+                    const active = transmission === opt.value;
+                    return (
+                      <button
+                        key={opt.value}
+                        onClick={() => setTransmission(opt.value)}
+                        className="rounded-full px-4 py-1.5 text-xs font-bold transition-all"
+                        style={{
+                          background: active ? "white" : "transparent",
+                          color: active ? "#0A2B6B" : "#6B7280",
+                          boxShadow: active ? "0 1px 2px rgba(10,43,107,0.08)" : "none",
+                        }}
+                      >
+                        {opt.label}
+                      </button>
+                    );
+                  })}
+                </div>
+
                 <div className="flex items-center gap-2">
-                  <button
-                    onClick={clearSearch}
-                    className="inline-flex items-center gap-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold transition-colors hover:bg-slate-50"
-                    style={{ border: "1px solid #d0d0d8", color: "#0a1936" }}
-                  >
-                    <Edit2 className="h-3.5 w-3.5" />
-                    Change
-                  </button>
+                  <div className="relative">
+                    <select
+                      value={sortBy}
+                      onChange={(e) => setSortBy(e.target.value as SortOption)}
+                      className="appearance-none rounded-lg bg-white py-2 pl-8 pr-8 text-sm font-semibold focus:outline-none"
+                      style={{ border: "1px solid #E5E7EB", color: "#0A2B6B" }}
+                    >
+                      <option value="soonest">Soonest</option>
+                      <option value="nearest" disabled={!userLocation}>Nearest first</option>
+                      <option value="price-low">Cheapest</option>
+                    </select>
+                    <svg className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0A2B6B" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M3 6h18M6 12h12M10 18h4" />
+                    </svg>
+                    <ChevronDown className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2" style={{ width: 14, height: 14, color: "#6B7280" }} />
+                  </div>
                   <button
                     onClick={() => setShowFilters((v) => !v)}
-                    className="relative inline-flex items-center gap-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold transition-colors hover:bg-slate-50"
-                    style={{ border: "1px solid #d0d0d8", color: "#0a1936" }}
+                    className="relative inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-2 text-sm font-semibold transition-colors hover:bg-slate-50"
+                    style={{ border: "1px solid #E5E7EB", color: "#0A2B6B" }}
                   >
-                    <SlidersHorizontal className="h-3.5 w-3.5" />
+                    <Filter className="h-3.5 w-3.5" />
                     Filters
                     {activeFilterCount > 0 && (
                       <span
@@ -1416,6 +1433,14 @@ export default function Courses() {
                         {activeFilterCount}
                       </span>
                     )}
+                  </button>
+                  <button
+                    onClick={clearSearch}
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-2 text-sm font-semibold transition-colors hover:bg-slate-50"
+                    style={{ border: "1px solid #E5E7EB", color: "#0A2B6B" }}
+                  >
+                    <Edit2 className="h-3.5 w-3.5" />
+                    Change
                   </button>
                 </div>
               </div>
