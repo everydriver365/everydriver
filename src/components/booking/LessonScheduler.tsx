@@ -1,18 +1,8 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { format, addDays, startOfDay, startOfMonth, isSameDay, isAfter, isBefore, parse } from "date-fns";
-import { Calendar, Clock, X, Check, Bell, Sparkles } from "lucide-react";
-import { AnimatePresence, motion } from "framer-motion";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { format, addDays, startOfDay, startOfMonth, addMonths, subMonths, isSameDay, isSameMonth, isAfter, isBefore, parse } from "date-fns";
+import { CalendarDays, Clock, X, Check, Bell, Sparkles, ChevronLeft, ChevronRight, Plus, CalendarPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { WaitlistDialog } from "./WaitlistDialog";
