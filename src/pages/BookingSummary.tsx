@@ -1729,6 +1729,7 @@ export default function BookingSummary() {
         {/* Step 2: Lesson Scheduler - Only show for pupil_choice mode */}
         {requiresSlotSelection && (
           <motion.div
+            ref={schedulerRef}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.25 }}
