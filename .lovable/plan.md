@@ -1,97 +1,51 @@
-# Clone Drive365 → EveryDriver (full twin set)
+## Why Richard isn't showing
 
-Goal: produce an editable, byte-for-byte copy of every Drive365 public page under a new `everydriver/` namespace, and have `everydriver.co.uk` (plus `everydriver.co` and `everydriver.lovable.app`) automatically render that twin set instead of the Drive365 originals. Drive365 pages stay 100% untouched.
+I checked the database directly. Richard **does** have working hours — they were saved on 7 May into the `availability_windows` table (Mon–Fri 08:00–20:00, plus Sat & Sun mornings). The other instructors (Ken, Martin, Sarah) keep theirs in a different table, `instructor_working_hours`. The courses page reads from both and merges them, so in theory Richard should appear.
 
-## What gets cloned
+Two bugs are stopping him:
 
-The Drive365 public surface (everything currently reachable from the Drive365 learner site):
+### Bug 1 — RLS hides Richard's hours from the public site
+`instructor_working_hours` has a policy `Working hours publicly viewable for booking (USING true)`, so unauthenticated visitors can read it. `availability_windows` has only one policy: instructors can manage **their own** rows. There is **no public SELECT policy**. So when an anon visitor loads `/courses`, the API returns `[]` for that table — confirmed in the network log. Without any matching availability rows, the date filter drops Richard's courses entirely.
 
-- `Index` (home)
-- `Courses`, `BookingSummary`, `BookingConfirmation`
-- `Benefits`, `Intensives`, `SemiIntensive`, `Theory`
-- `News`, `NewsArticle`
-- `FAQs`, `Help`
-- `About`, `Contact`, `Reviews`
-- `FranchisePage` + `franchise/FranchiseHealthcare`, `FranchiseBonus`, `FranchiseWhatsIncluded`, `FranchiseTechnology`
-- `HealthBenefitsPage`
-- `ComparisonPage`
+### Bug 2 — Day-of-week numbering mismatch
+Richard's rows are stored with `day_of_week` values **1–7** (ISO style: Mon=1 … Sun=7). The courses page compares against `date.getDay()`, which uses the JavaScript convention **0–6** (Sun=0 … Sat=6). After fixing the RLS, days 1–6 would happen to line up for Mon–Sat, but Sunday would never match (stored as 7, JS expects 0). The Availability Windows manager UI also assumes 0–6, which is why Richard's saved hours probably look wrong inside his portal too.
 
-Not cloned (intentionally shared, not Drive365-specific): legal pages (Privacy/Terms/Google API), pupil portal/login, mini-website routes, school routes, accessible hub, instructor/admin/school portals, demo pages.
+## Plan
 
-## File layout
+### 1. Database migration — add public SELECT policy on `availability_windows`
 
-```
-src/pages/everydriver/
-  Index.tsx
-  Courses.tsx
-  Benefits.tsx
-  Intensives.tsx
-  SemiIntensive.tsx
-  Theory.tsx
-  News.tsx
-  NewsArticle.tsx
-  FAQs.tsx
-  Help.tsx
-  About.tsx
-  Contact.tsx
-  Reviews.tsx
-  FranchisePage.tsx
-  HealthBenefitsPage.tsx
-  ComparisonPage.tsx
-  BookingSummary.tsx
-  BookingConfirmation.tsx
-  franchise/
-    FranchiseHealthcare.tsx
-    FranchiseBonus.tsx
-    FranchiseWhatsIncluded.tsx
-    FranchiseTechnology.tsx
+Mirror the existing `instructor_working_hours` policy:
+
+```sql
+CREATE POLICY "Availability windows publicly viewable for booking"
+  ON public.availability_windows
+  FOR SELECT
+  USING (true);
 ```
 
-Each file starts as a verbatim copy of its Drive365 sibling — same imports, same components, same data hooks. No behaviour change on day one. You then edit them freely without touching Drive365.
+Only non-PII columns are exposed (`instructor_id`, `day_of_week`, `start_time`, `end_time`, `is_active`, `label`) — same shape as the other table the public booking flow already reads.
 
-Shared building blocks (`MainLayout`, `Header`, `Footer`, `CourseTableList`, `SidebarCalendar`, `CourseCard`, hooks, `lib/`, etc.) are NOT duplicated. They keep working for both, and you only fork one when an EveryDriver page genuinely needs it to differ.
+### 2. Normalise day numbers when merging in `src/pages/everydriver/Courses.tsx`
 
-## Routing
+Where the two availability sources are unioned (around line 838), remap any `day_of_week === 7` from `availability_windows` to `0` so it lines up with `date.getDay()`:
 
-New file `src/routes/everydriverRoutes.tsx` mirrors `publicRoutes.tsx` for the cloned set, importing from `@/pages/everydriver/*`.
-
-In `src/App.tsx`, add a host check at the top of the `<Routes>`:
-
-```tsx
-{isEveryDriverHost() ? everydriverRoutes : publicRoutes}
-{/* instructorPortalRoutes, adminRoutes, demoRoutes, schoolRoutes etc. mounted unconditionally below */}
+```ts
+const loadedWorkingHours = [
+  ...(workingHoursRes.data || []),
+  ...((availabilityWindowsRes.data || []).map((w: any) => ({
+    ...w,
+    day_of_week: w.day_of_week === 7 ? 0 : w.day_of_week,
+  }))),
+];
 ```
 
-`isEveryDriverHost()` (added to `src/lib/whitelabel.ts` or a tiny new helper) returns true when hostname is `everydriver.co.uk`, `www.everydriver.co.uk`, `everydriver.co`, `www.everydriver.co`, or `everydriver.lovable.app` — and false for `drive365.co.uk`, instructor subdomains, custom whitelabel domains, the accessible hosts, `bookings.drive365.co.uk`, and lovable preview URLs (which keep showing the existing instructor-marketing `HomepageRedesignDemo`).
+Apply the same normalisation in `src/pages/Courses.tsx` (the older courses page that reads the same tables).
 
-`ConditionalHome` gets one extra branch so `/` on an EveryDriver host renders `pages/everydriver/Index` instead of falling through to `HomepageRedesignDemo`.
+### 3. Verify
 
-Portal/admin/demo/instructor-app/school/parent routes are mounted on every host as today — only the public marketing surface forks.
+- Reload `/courses?postcode=SO225AB` (or SO30 2TD) — Richard's card should appear in the "Your Instructor" sidebar (or the multi-instructor list in grid mode), and his courses in the results.
+- Check Sunday is now treated as available for Richard.
 
-## Sitemap
+### Out of scope (flagging for later)
 
-`public/sitemap.xml` currently lists Drive365 routes. After this change, EveryDriver and Drive365 share URL paths but live on different hostnames, so no path additions are needed. The existing sitemap stays valid for both — we only need to confirm the `BASE_URL` is correct for each host (already handled by Lovable hosting per-domain).
-
-## Day-one verification
-
-1. Visit `everydriver.lovable.app/` → renders the cloned `everydriver/Index` (visually identical to Drive365 home).
-2. Visit `drive365.co.uk/` → unchanged.
-3. Click through `/courses`, `/benefits`, `/franchise`, `/about`, `/contact`, `/news` on each host and confirm both render their respective copies without errors.
-4. Instructor and pupil portals still work on both hosts.
-
-## Trade-offs you should know about
-
-- **Maintenance doubles for cloned pages.** A bug fix in `Drive365 Benefits` won't reach `EveryDriver Benefits` unless you copy it across. This is the cost you're explicitly buying with the "full duplicate" choice.
-- **Shared components stay shared.** If you want, e.g., a different course card on EveryDriver, you fork `CourseTableList` into `everydriver/CourseTableList` at that point — not now.
-- **SEO:** identical content on two hostnames can cause duplicate-content issues with Google. Once you start editing the EveryDriver copies they'll diverge and this resolves itself; in the meantime you may want a `robots.txt` `Disallow` on one host or a `<link rel="canonical">` strategy. Out of scope for the clone itself — flag it after.
-
-## Technical notes
-
-- Cloning is mechanical: `cp src/pages/Foo.tsx src/pages/everydriver/Foo.tsx`, then update imports inside the new file only if they reference each other (most don't — they import shared components).
-- Lazy imports in `everydriverRoutes.tsx` use `lazyWithRetry` exactly like `publicRoutes.tsx`.
-- No DB changes, no edge function changes, no auth changes.
-- `MainLayout`/`Header`/`Footer` already pick branding from `useDomainBranding`, which returns the EveryDriver brand on EveryDriver hosts — so the chrome is already correct. The clones inherit that automatically.
-
-## Estimated size
-
-~18 cloned page files + 1 new routes file + ~10 lines in `App.tsx` + ~10 lines in `whitelabel.ts`. No design work, no logic changes.
+The `AvailabilityWindowsManager` UI in the instructor portal stores `day_of_week` inconsistently (defaults to `1`, lets the user pick 1–7) but renders by filtering `day_of_week === i` with `i` running 0–6. That's a separate fix to standardise the manager on 0–6 (or migrate all rows to ISO 1–7 and update every reader). Not needed to make Richard show on the public courses page — say the word and I'll do it as a follow-up.
