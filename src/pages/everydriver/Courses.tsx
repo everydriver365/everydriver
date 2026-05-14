@@ -1049,6 +1049,7 @@ export default function Courses() {
                     inputClassName="h-14 rounded-2xl border-0 bg-slate-50/60 px-4 font-medium text-slate-700 placeholder:text-slate-400 focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-blue-500/20"
                     showInputIcon={false}
                     showGeolocation={false}
+                    enableDictation={false}
                   />
                 </div>
 
