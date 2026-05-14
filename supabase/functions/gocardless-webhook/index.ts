@@ -152,29 +152,54 @@ async function handleBillingRequest(supabase: any, event: any) {
         .maybeSingle();
 
       if (paymentIntent) {
-        await supabase
-          .from("payment_intents")
-          .update({
-            status: "completed",
-            gocardless_payment_id: paymentId,
-          })
-          .eq("id", paymentIntent.id);
+        // Idempotency: skip if a payment_history row already references this billing request
+        const { data: existingPh } = await supabase
+          .from("payment_history")
+          .select("id")
+          .eq("pupil_id", paymentIntent.pupil_id)
+          .ilike("notes", `%billing_request_id:${billingRequestId}%`)
+          .limit(1)
+          .maybeSingle();
 
-        if (paymentIntent.pupil_id && paymentIntent.amount) {
-          await supabase.rpc("increment_pupil_balance", {
-            p_pupil_id: paymentIntent.pupil_id,
-            p_amount: paymentIntent.amount,
+        if (existingPh) {
+          console.log("IBP already recorded in payment_history, skipping:", billingRequestId);
+        } else {
+          await supabase
+            .from("payment_intents")
+            .update({
+              status: "completed",
+              gocardless_payment_id: paymentId,
+            })
+            .eq("id", paymentIntent.id);
+
+          // Resolve instructor_id from pupil
+          let instructorId: string | null = null;
+          if (paymentIntent.pupil_id) {
+            const { data: pupilRow } = await supabase
+              .from("pupils")
+              .select("instructor_id")
+              .eq("id", paymentIntent.pupil_id)
+              .maybeSingle();
+            instructorId = pupilRow?.instructor_id ?? null;
+          }
+
+          if (paymentIntent.pupil_id && paymentIntent.amount) {
+            await supabase.rpc("increment_pupil_balance", {
+              p_pupil_id: paymentIntent.pupil_id,
+              p_amount: paymentIntent.amount,
+            });
+          }
+
+          await supabase.from("payment_history").insert({
+            pupil_id: paymentIntent.pupil_id,
+            instructor_id: instructorId,
+            amount: paymentIntent.amount,
+            payment_method: "GoCardless Bank Pay",
+            notes: `Instant Bank Pay · billing_request_id:${billingRequestId} · payment_id:${paymentId}`,
           });
+
+          console.log("Instant Bank Pay recorded:", paymentId, "instructor:", instructorId);
         }
-
-        await supabase.from("payment_history").insert({
-          pupil_id: paymentIntent.pupil_id,
-          amount: paymentIntent.amount,
-          payment_method: "GoCardless Bank Pay",
-          notes: `Instant Bank Pay - ${paymentId}`,
-        });
-
-        console.log("Instant Bank Pay completed:", paymentId);
 
         const metadata = paymentIntent.metadata as any;
         if (metadata?.booking_ref && paymentIntent.pupil_id) {
