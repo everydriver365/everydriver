@@ -3,7 +3,9 @@
 import { format } from "date-fns";
 
 export const STEP_MINUTES = 15;
-export const TRAVEL_FALLBACK_MIN = 10;
+// No hard-coded travel padding: buffer comes only from instructor settings
+// (`bufferMinutes`) and per-pupil overrides (`padOverrideMin`).
+export const TRAVEL_FALLBACK_MIN = 0;
 
 export type TimeOfDay = "any" | "morning" | "afternoon" | "evening";
 
