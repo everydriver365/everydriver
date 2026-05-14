@@ -139,7 +139,7 @@ export default function Index() {
         "@type": "Organization",
         name: "EveryDriver",
         url: "https://everydriver.lovable.app/",
-        logo: "https://everydriver.lovable.app/everydriver-logo-full.png",
+        logo: "https://everydriver.lovable.app/everydriver-logo-full.svg",
       },
     },
   ];
