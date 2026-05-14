@@ -258,21 +258,33 @@ function SidebarCalendar({
                   key={day.date.toISOString()}
                   onClick={() => day.isAvailable && onSelectDate(day.date!)}
                   disabled={!day.isAvailable || day.isPast}
-                  className={`relative flex h-10 flex-col items-center justify-center rounded-md text-sm font-medium transition-all ${
-                    isSelected
-                      ? "bg-primary text-primary-foreground shadow-md"
+                  className="relative flex flex-col items-center justify-center text-sm font-semibold transition-colors"
+                  style={{
+                    aspectRatio: "1 / 1",
+                    borderRadius: 6,
+                    background: isSelected
+                      ? "#0A2B6B"
                       : day.isAvailable
-                        ? "bg-emerald-500/20 text-emerald-700 hover:bg-emerald-500/30 dark:text-emerald-400"
+                        ? "#E8F5EE"
+                        : "transparent",
+                    color: isSelected
+                      ? "#FFFFFF"
+                      : day.isAvailable
+                        ? "#0F6E56"
                         : day.isPast
-                          ? "text-muted-foreground/30 cursor-not-allowed"
-                          : "text-muted-foreground/50 cursor-not-allowed"
-                  } ${isToday && !isSelected ? "ring-1 ring-primary/40" : ""}`}
+                          ? "#D1D5DB"
+                          : "#D1D5DB",
+                    cursor: day.isAvailable ? "pointer" : "not-allowed",
+                  }}
                 >
                   <span>{format(day.date, "d")}</span>
                   {!hideCounts && day.isAvailable && day.courseCount > 0 && (
-                    <span className={`text-[9px] font-semibold leading-none ${
-                      isSelected ? "text-primary-foreground/80" : "text-emerald-600 dark:text-emerald-400"
-                    }`}>
+                    <span style={{
+                      fontSize: 9,
+                      fontWeight: 700,
+                      lineHeight: 1,
+                      color: isSelected ? "rgba(255,255,255,0.8)" : "#0F6E56",
+                    }}>
                       {day.courseCount}
                     </span>
                   )}
