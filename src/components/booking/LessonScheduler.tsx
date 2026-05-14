@@ -606,8 +606,6 @@ export function LessonScheduler({
     );
   }
 
-    [selectedSlots]
-  );
 
   const progressPct = Math.min(100, Math.round((scheduledHours / totalHours) * 100));
   const remainingHoursDisplay = Math.max(0, remainingHours);
