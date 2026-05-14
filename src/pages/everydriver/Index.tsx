@@ -203,9 +203,19 @@ export default function Index() {
   const videoThumbnailImg = getImage("video_thumbnail", videoThumbnail);
   const welcomeVideoUrl = getImage("welcome_video", "");
 
+  const everyDriverCoursePath = (pc?: string) => {
+    const params = new URLSearchParams();
+    if (pc) params.set("postcode", pc);
+    if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("everydriver") === "1") {
+      params.set("everydriver", "1");
+    }
+    const query = params.toString();
+    return `/courses${query ? `?${query}` : ""}`;
+  };
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    window.location.href = `/courses?postcode=${postcode}`;
+    navigate(everyDriverCoursePath(postcode.trim()));
   };
 
   return (
@@ -234,7 +244,7 @@ export default function Index() {
                       onChange={setPostcode}
                       onSelect={(pc) => {
                         setPostcode(pc);
-                        navigate(`/courses?postcode=${encodeURIComponent(pc)}`);
+                        navigate(everyDriverCoursePath(pc));
                       }}
                       placeholder="Enter postcode..."
                       className="flex-1 min-w-0"
@@ -303,7 +313,7 @@ export default function Index() {
                       onChange={setPostcode}
                       onSelect={(pc) => {
                         setPostcode(pc);
-                        navigate(`/courses?postcode=${encodeURIComponent(pc)}`);
+                        navigate(everyDriverCoursePath(pc));
                       }}
                       placeholder="Enter your postcode..."
                       className="flex-1"
@@ -315,7 +325,7 @@ export default function Index() {
                     size="lg" 
                     className="rounded-full h-12 px-6 bg-accent text-accent-foreground hover:bg-accent/90 shadow-lg"
                     onClick={() => {
-                      if (postcode) navigate(`/courses?postcode=${encodeURIComponent(postcode)}`);
+                      if (postcode) navigate(everyDriverCoursePath(postcode.trim()));
                     }}
                   >
                     <Search className="h-4 w-4 mr-2" /> Find

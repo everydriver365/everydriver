@@ -13,7 +13,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { useTheme } from "@/context/ThemeContext";
 import { useRouteLogo } from "@/hooks/useRouteLogo";
-import { getWhitelabelConfig } from "@/lib/whitelabel";
+import { getWhitelabelConfig, isEveryDriverPreviewOverrideActive } from "@/lib/whitelabel";
 
 const baseNavLinks = [
   { href: "/courses", label: "Courses" },
@@ -51,7 +51,9 @@ export function Header() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (postcode.trim()) {
-      navigate(`/courses?postcode=${encodeURIComponent(postcode.trim())}`);
+      const params = new URLSearchParams({ postcode: postcode.trim() });
+      if (isEveryDriverPreviewOverrideActive()) params.set("everydriver", "1");
+      navigate(`/courses?${params.toString()}`);
     }
   };
 

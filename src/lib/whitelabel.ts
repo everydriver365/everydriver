@@ -37,12 +37,56 @@ export interface WhitelabelConfig {
 
 const EVERYDRIVER_HOST_SUFFIX = ".everydriver.co.uk";
 const DRIVE365_HOST_SUFFIX = ".drive365.co.uk";
+const EVERYDRIVER_PREVIEW_OVERRIDE_KEY = "lovable_everydriver_override";
 
 let cachedConfig: WhitelabelConfig | null | undefined = undefined; // undefined = not loaded yet
 let loadPromise: Promise<WhitelabelConfig | null> | null = null;
 
 function normaliseHost(hostname: string): string {
   return hostname.toLowerCase().replace(/^www\./, "");
+}
+
+function isLovablePreviewHost(host: string): boolean {
+  return host.endsWith(".lovable.app") || host.endsWith(".lovableproject.com");
+}
+
+export function isEveryDriverPreviewOverrideActive(
+  hostname: string = typeof window !== "undefined" ? window.location.hostname : "",
+): boolean {
+  if (typeof window === "undefined") return false;
+
+  const host = normaliseHost(hostname);
+  if (!isLovablePreviewHost(host)) return false;
+
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const explicitOverride = params.get("everydriver");
+
+    if (explicitOverride === "1" || explicitOverride === "true") {
+      window.sessionStorage.setItem(EVERYDRIVER_PREVIEW_OVERRIDE_KEY, "1");
+      return true;
+    }
+
+    if (["0", "false", "off"].includes(explicitOverride || "")) {
+      window.sessionStorage.removeItem(EVERYDRIVER_PREVIEW_OVERRIDE_KEY);
+      return false;
+    }
+
+    if (window.sessionStorage.getItem(EVERYDRIVER_PREVIEW_OVERRIDE_KEY) === "1") {
+      return true;
+    }
+
+    // In Lovable preview the EveryDriver clone uses the clean /courses route;
+    // Drive365 search remains available at /drive365/search.
+    if (window.location.pathname === "/courses" || window.location.pathname === "/search") {
+      window.sessionStorage.setItem(EVERYDRIVER_PREVIEW_OVERRIDE_KEY, "1");
+      return true;
+    }
+  } catch {
+    /* ignore storage/query failures */
+  }
+
+  return false;
 }
 
 /**
@@ -250,14 +294,8 @@ export function isEveryDriverHost(
   ) {
     return true;
   }
-  // Preview override: append ?everydriver=1 to any URL to force EveryDriver mode
-  if (typeof window !== "undefined") {
-    try {
-      const params = new URLSearchParams(window.location.search);
-      if (params.get("everydriver") === "1") return true;
-    } catch {
-      /* ignore */
-    }
-  }
+  // Preview override: explicit ?everydriver=1, sticky session flag, or clean
+  // /courses preview route used by the EveryDriver clone.
+  if (isEveryDriverPreviewOverrideActive(hostname)) return true;
   return false;
 }
