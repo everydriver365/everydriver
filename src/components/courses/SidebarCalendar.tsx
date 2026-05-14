@@ -27,14 +27,15 @@ function getInitials(name: string): string {
   return name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
 }
 
-export function SidebarCalendar({ 
-  selectedMonth, 
-  setSelectedMonth, 
-  selectedDate, 
-  availableDates, 
-  onSelectDate, 
+export function SidebarCalendar({
+  selectedMonth,
+  setSelectedMonth,
+  selectedDate,
+  availableDates,
+  onSelectDate,
   loading,
-  monthOptions 
+  monthOptions,
+  availableInstructorsByDate,
 }: SidebarCalendarProps) {
   const today = startOfDay(new Date());
   
