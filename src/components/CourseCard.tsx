@@ -38,36 +38,36 @@ export function CourseCard({ course }: CourseCardProps) {
         }`}
       >
         {/* Front of Card */}
-        <div className="absolute inset-0 overflow-hidden border border-border/50 bg-card shadow-lg shadow-black/10 [backface-visibility:hidden] transition-shadow duration-300 group-hover:shadow-xl group-hover:shadow-black/15">
+        <div className="absolute inset-0 flex flex-col overflow-hidden border border-border/50 bg-card shadow-lg shadow-black/10 [backface-visibility:hidden] transition-shadow duration-300 group-hover:shadow-xl group-hover:shadow-black/15">
           {/* Hero Image Section */}
-          <div className="relative h-44 overflow-hidden bg-muted">
+          <div className="relative h-44 shrink-0 overflow-hidden bg-muted">
             <img
               src={course.image || heroImage}
               alt={course.title}
               className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-105"
             />
-            
+          </div>
+
+          {/* Badge Ribbon */}
+          <div className="shrink-0 flex flex-wrap gap-2 px-5 py-2">
             {course.isPopular && (
-              <Badge className="absolute left-3 top-3 border-0 bg-emerald-500 text-white gap-1">
+              <Badge className="border-0 bg-emerald-500 text-white gap-1">
                 <TrendingUp className="h-3 w-3" />
                 Popular
               </Badge>
             )}
-            
-            <div className="absolute right-3 top-3 flex flex-col gap-2">
-              {course.tags.map((tag) => (
-                <Badge
-                  key={tag}
-                  className="border-0 bg-primary/90 text-primary-foreground backdrop-blur-sm"
-                >
-                  {tag}
-                </Badge>
-              ))}
-            </div>
+            {course.tags.map((tag) => (
+              <Badge
+                key={tag}
+                className="border-0 bg-primary/90 text-primary-foreground"
+              >
+                {tag}
+              </Badge>
+            ))}
           </div>
 
           {/* Content Section */}
-          <div className="flex h-[calc(100%-11rem)]">
+          <div className="flex flex-1 min-h-0">
             <div className="flex flex-col items-center justify-center bg-accent px-3 py-4 text-accent-foreground min-w-[80px]">
               <span className="text-[9px] font-medium uppercase tracking-wider opacity-90">Next</span>
               <span className="text-[9px] font-medium uppercase tracking-wider opacity-90">Available</span>
@@ -75,7 +75,7 @@ export function CourseCard({ course }: CourseCardProps) {
               <span className="text-xs font-medium">{course.nextAvailableMonth}</span>
             </div>
 
-            <div className="flex-1 p-3">
+            <div className="flex-1 p-3 overflow-y-auto">
               <h3 className="text-base font-bold text-foreground line-clamp-2">{course.title}</h3>
               
               <div className="mt-2 space-y-1 text-xs text-muted-foreground">
