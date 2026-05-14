@@ -89,8 +89,20 @@ serve(async (req) => {
       console.error("Instructor notification error (non-fatal):", notifyError);
     }
 
-    // 2. Sync lessons to Google Calendar — flush the queue now
+    // 2. Sync lessons to Google Calendar — clear the "awaiting initial payment"
+    //    hold on this pupil's lessons (payment has just succeeded), then flush
+    //    the queue so the events get pushed to Google Calendar.
     try {
+      const { error: clearErr } = await supabase
+        .from("scheduled_lessons")
+        .update({ awaiting_initial_payment: false })
+        .eq("pupil_id", pupilId)
+        .eq("instructor_id", instructorId)
+        .eq("awaiting_initial_payment", true);
+      if (clearErr) {
+        console.error("Failed to clear awaiting_initial_payment flag:", clearErr);
+      }
+
       const syncResponse = await fetch(
         `${supabaseUrl}/functions/v1/process-calendar-queue`,
         {
