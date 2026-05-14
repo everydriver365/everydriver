@@ -43,6 +43,16 @@ export function useRouteLogo() {
       };
     }
 
+    if (isEveryDriverHost()) {
+      return {
+        logo: everyDriverLogo,
+        logoAlt: "EveryDriver",
+        logoText: null,
+        homeLink: "/",
+        isDrive365: false,
+      };
+    }
+
     return {
       logo: isDrive365Route ? drive365Logo : dsmLogo,
       logoAlt: isDrive365Route ? "Drive365" : "DSM",
