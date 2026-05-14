@@ -575,16 +575,8 @@ export function LessonScheduler({
     setSelectedSlots((prev) => prev.filter((_, i) => i !== index));
   };
 
-  if (loading) {
-    return (
-      <div className="animate-pulse p-4 text-center text-muted-foreground">
-        Loading availability...
-      </div>
-    );
-  }
-
-  // Group slots by time of day
-  const slotsForSelectedDate = selectedDate ? getAvailableTimeSlots(selectedDate) : [];
+  // Group slots by time of day (must be above any early return to keep hook order stable)
+  const slotsForSelectedDate = selectedDate && !loading ? getAvailableTimeSlots(selectedDate) : [];
   const grouped = useMemo(() => {
     const m: string[] = [];
     const a: string[] = [];
@@ -605,6 +597,15 @@ export function LessonScheduler({
     }),
     [selectedSlots]
   );
+
+  if (loading) {
+    return (
+      <div className="animate-pulse p-4 text-center text-muted-foreground">
+        Loading availability...
+      </div>
+    );
+  }
+
 
   const progressPct = Math.min(100, Math.round((scheduledHours / totalHours) * 100));
   const remainingHoursDisplay = Math.max(0, remainingHours);
