@@ -1828,6 +1828,15 @@ export default function BookingSummary() {
                         );
                       })}
                     </ul>
+                    <button
+                      type="button"
+                      onClick={handleRefreshAndRetry}
+                      disabled={isRetryingBooking}
+                      className="mt-3 inline-flex items-center gap-2 rounded-xl bg-destructive px-3 py-2 text-sm font-medium text-destructive-foreground hover:bg-destructive/90 transition-colors disabled:opacity-60"
+                    >
+                      <RefreshCw className={`h-4 w-4 ${isRetryingBooking ? "animate-spin" : ""}`} />
+                      {isRetryingBooking ? "Retrying…" : "Refresh & retry booking"}
+                    </button>
                   </div>
                 </div>
               </div>
