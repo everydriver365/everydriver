@@ -215,6 +215,9 @@ export function KlarnaPaymentModal({
                 merchant_reference: merchantReference,
                 purchase_country: "GB",
                 purchase_currency: "GBP",
+                instructorId: instructorId ?? undefined,
+                pupilId: pupilId ?? undefined,
+                bookingRef: merchantReference,
               },
             });
 
