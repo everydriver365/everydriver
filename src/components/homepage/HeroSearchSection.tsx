@@ -23,11 +23,13 @@ const TRANSMISSION_OPTIONS = [
 interface HeroSearchSectionProps {
   backgroundImage?: string;
   className?: string;
+  searchPath?: string;
 }
 
 export function HeroSearchSection({
   backgroundImage = "/src/assets/hero-driving.jpg",
   className = "",
+  searchPath = "/drive365/search",
 }: HeroSearchSectionProps) {
   const navigate = useNavigate();
   const [postcode, setPostcode] = useState("");
@@ -59,7 +61,7 @@ export function HeroSearchSection({
     ) {
       params.set("everydriver", "1");
     }
-    navigate(`/drive365/search?${params.toString()}`);
+    navigate(`${searchPath}?${params.toString()}`);
   };
 
   useEffect(() => {

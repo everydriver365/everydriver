@@ -266,7 +266,7 @@ export default function Index() {
       {/* Drive365 Hero — contained card with overlapping search pill */}
       {!wlConfig && (
         <div className="pt-6">
-          <HeroSearchSection backgroundImage={drive365HeroTestCentre} />
+          <HeroSearchSection backgroundImage={drive365HeroTestCentre} searchPath="/courses" />
         </div>
       )}
 
