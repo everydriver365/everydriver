@@ -41,6 +41,8 @@ interface KlarnaPaymentModalProps {
     city: string;
     country: string;
   };
+  pupilId?: string | null;
+  instructorId?: string | null;
 }
 
 export function KlarnaPaymentModal({
