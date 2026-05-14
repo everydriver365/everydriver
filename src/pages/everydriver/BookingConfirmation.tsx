@@ -13,6 +13,7 @@ import { usePaymentInvalidation } from "@/hooks/usePaymentInvalidation";
 import { downloadMultiEventICS, getGoogleCalendarUrl } from "@/lib/calendar-export";
 import { shareContent } from "@/lib/share-utils";
 import { toast } from "sonner";
+import { describeBookingConflictResponse } from "@/lib/lessonClashCheck";
 import confetti from "canvas-confetti";
 
 interface ScheduledLesson {
