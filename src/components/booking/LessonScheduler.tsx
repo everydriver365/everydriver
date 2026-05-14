@@ -42,21 +42,28 @@ interface LessonSchedulerProps {
   availableFrom?: string | null;
   allowedLessonLengths?: number[];
   bufferMinutes?: number;
-  pupilId?: string; // Optional - needed for waitlist functionality
+  pupilId?: string;
   instructorHomePostcode?: string;
   pupilPostcode?: string;
+  instructorFirstName?: string;
   onSlotsChange: (slots: SelectedSlot[]) => void;
+  onConfirm?: () => void;
 }
 
 const TIME_SLOTS = Array.from({ length: 24 }, (_, i) => {
-  const hour = Math.floor(i / 2) + 7; // Start from 7 AM
+  const hour = Math.floor(i / 2) + 7;
   const minutes = i % 2 === 0 ? "00" : "30";
-  if (hour > 20) return null; // End at 8 PM
+  if (hour > 20) return null;
   return `${hour.toString().padStart(2, "0")}:${minutes}`;
 }).filter(Boolean) as string[];
 
-// Default allowed lesson lengths (1-7 hours)
 const DEFAULT_LESSON_LENGTHS = [60, 120, 180, 240, 300, 360, 420];
+
+const formatLengthShort = (minutes: number) => {
+  const hours = minutes / 60;
+  if (Number.isInteger(hours)) return `${hours} hr`;
+  return `${hours} hr`;
+};
 
 const formatDuration = (minutes: number) => {
   if (minutes < 60) return `${minutes} mins`;
@@ -76,7 +83,9 @@ export function LessonScheduler({
   pupilId,
   instructorHomePostcode,
   pupilPostcode,
+  instructorFirstName,
   onSlotsChange,
+  onConfirm,
 }: LessonSchedulerProps) {
   const isMobile = useIsMobile();
   const [workingHours, setWorkingHours] = useState<WorkingHour[]>([]);
