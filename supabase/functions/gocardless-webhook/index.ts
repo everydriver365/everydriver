@@ -48,6 +48,20 @@ serve(async (req) => {
     const body = JSON.parse(rawBody);
     const { events } = body;
 
+    // Log webhook delivery (best-effort)
+    try {
+      await supabase.from("webhook_delivery_log").insert({
+        provider: "gocardless",
+        event_id: events?.[0]?.id ?? null,
+        event_type: events?.map((e: any) => `${e.resource_type}.${e.action}`).join(",") ?? null,
+        signature_valid: !!Deno.env.get("GOCARDLESS_WEBHOOK_SECRET"),
+        processed: true,
+        processed_at: new Date().toISOString(),
+        response_status: 200,
+        payload: body,
+      });
+    } catch (e) { console.warn("webhook log insert failed", e); }
+
     if (!events || !Array.isArray(events)) {
       return new Response(
         JSON.stringify({ message: "No events to process" }),
@@ -83,6 +97,13 @@ serve(async (req) => {
 
   } catch (error) {
     console.error("Error in gocardless-webhook:", error);
+    try {
+      const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+      await sb.from("webhook_delivery_log").insert({
+        provider: "gocardless", processed: false, response_status: 500,
+        error: String((error as Error)?.message ?? error),
+      });
+    } catch {}
     return new Response(
       JSON.stringify({ error: "Internal server error" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }

@@ -53,6 +53,19 @@ serve(async (req: Request) => {
 
     console.log("Received Square webhook:", eventType);
 
+    try {
+      await supabase.from("webhook_delivery_log").insert({
+        provider: "square",
+        event_id: payload.event_id ?? null,
+        event_type: eventType ?? null,
+        signature_valid: !!Deno.env.get("SQUARE_WEBHOOK_SIGNATURE_KEY"),
+        processed: true,
+        processed_at: new Date().toISOString(),
+        response_status: 200,
+        payload,
+      });
+    } catch (e) { console.warn("webhook log insert failed", e); }
+
     switch (eventType) {
       case "payment.completed":
       case "payment.updated": {
@@ -613,6 +626,13 @@ serve(async (req: Request) => {
 
   } catch (error) {
     console.error("Webhook error:", error);
+    try {
+      const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+      await sb.from("webhook_delivery_log").insert({
+        provider: "square", processed: false, response_status: 500,
+        error: String((error as Error)?.message ?? error),
+      });
+    } catch {}
     return new Response(
       JSON.stringify({ error: "Webhook processing failed" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }

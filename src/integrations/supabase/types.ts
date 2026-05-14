@@ -18253,6 +18253,51 @@ export type Database = {
           },
         ]
       }
+      webhook_delivery_log: {
+        Row: {
+          error: string | null
+          event_id: string | null
+          event_type: string | null
+          id: string
+          notes: string | null
+          payload: Json | null
+          processed: boolean
+          processed_at: string | null
+          provider: string
+          received_at: string
+          response_status: number | null
+          signature_valid: boolean | null
+        }
+        Insert: {
+          error?: string | null
+          event_id?: string | null
+          event_type?: string | null
+          id?: string
+          notes?: string | null
+          payload?: Json | null
+          processed?: boolean
+          processed_at?: string | null
+          provider: string
+          received_at?: string
+          response_status?: number | null
+          signature_valid?: boolean | null
+        }
+        Update: {
+          error?: string | null
+          event_id?: string | null
+          event_type?: string | null
+          id?: string
+          notes?: string | null
+          payload?: Json | null
+          processed?: boolean
+          processed_at?: string | null
+          provider?: string
+          received_at?: string
+          response_status?: number | null
+          signature_valid?: boolean | null
+        }
+        Relationships: []
+      }
       whatsapp_conversations: {
         Row: {
           ai_enabled: boolean
