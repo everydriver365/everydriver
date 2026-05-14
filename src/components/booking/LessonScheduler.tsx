@@ -115,6 +115,15 @@ export function LessonScheduler({
     fetchAvailability();
   }, [instructorId]);
 
+  // Pull the latest Google Calendar state into the cache before showing slots,
+  // so date tiles and slot lists reflect events booked outside our app.
+  // Throttled per (instructor, range) by sessionStorage TTL.
+  useGoogleCalendarRefresh({
+    instructorId,
+    from: new Date(),
+    to: addDays(new Date(), bookingAdvanceDays),
+  });
+
   // Fetch travel time from instructor home to pupil postcode
   useEffect(() => {
     if (!instructorHomePostcode || !pupilPostcode) {
