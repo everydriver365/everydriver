@@ -147,41 +147,13 @@ export function DynamicCourseCard({
             </div>
           )}
 
-          {/* Hero Image — fixed aspect, no cropping */}
+          {/* Hero Image — fills the space */}
           <div className="relative aspect-[4/3] overflow-hidden bg-muted">
             <img
               src={courseImageUrl || `https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800&h=400&fit=crop`}
               alt={courseName}
-              className="block h-full w-full object-contain transition-transform duration-300 group-hover:scale-105"
+              className="block h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
             />
-          </div>
-
-          {/* Meta shelf — pills moved off the image */}
-          <div className="flex flex-wrap items-center gap-1.5 px-4 py-2 border-b border-border/50">
-            {isPopular && (
-              <Badge className="border-0 bg-emerald-500 text-white">Popular</Badge>
-            )}
-            {showIntensiveBadge && (
-              <Badge className={`border-0 text-white ${isIntensive ? "bg-primary" : "bg-amber-500"}`}>
-                {isIntensive ? <Zap className="h-3 w-3 mr-1" /> : <TrendingUp className="h-3 w-3 mr-1" />}
-                {intensiveLabel}
-              </Badge>
-            )}
-            <Badge variant="secondary" className="bg-secondary text-secondary-foreground">
-              <Car className="h-3 w-3 mr-1" />
-              {transmissionLabel}
-            </Badge>
-            {hasDiscount && (
-              <Badge className="border-0 bg-red-500 text-white">
-                Save £{(totalPrice - discountedPrice!).toFixed(0)}
-              </Badge>
-            )}
-            {distance !== undefined && (
-              <div className="ml-auto flex items-center gap-1 text-primary">
-                <MapPin className="h-3.5 w-3.5" />
-                <span className="text-xs font-bold">{distance.toFixed(1)} mi</span>
-              </div>
-            )}
           </div>
 
           {/* Lower body: navy date rail + white content */}
@@ -199,6 +171,34 @@ export function DynamicCourseCard({
 
             {/* Content */}
             <div className="flex-1 px-4 py-4 space-y-2">
+              {/* Pills — above the title, square corners */}
+              <div className="flex flex-wrap items-center gap-1.5">
+                {isPopular && (
+                  <Badge className="rounded-none border-0 bg-emerald-500 text-white">Popular</Badge>
+                )}
+                {showIntensiveBadge && (
+                  <Badge className={`rounded-none border-0 text-white ${isIntensive ? "bg-primary" : "bg-amber-500"}`}>
+                    {isIntensive ? <Zap className="h-3 w-3 mr-1" /> : <TrendingUp className="h-3 w-3 mr-1" />}
+                    {intensiveLabel}
+                  </Badge>
+                )}
+                <Badge variant="secondary" className="rounded-none bg-secondary text-secondary-foreground">
+                  <Car className="h-3 w-3 mr-1" />
+                  {transmissionLabel}
+                </Badge>
+                {hasDiscount && (
+                  <Badge className="rounded-none border-0 bg-red-500 text-white">
+                    Save £{(totalPrice - discountedPrice!).toFixed(0)}
+                  </Badge>
+                )}
+                {distance !== undefined && (
+                  <div className="ml-auto flex items-center gap-1 text-primary">
+                    <MapPin className="h-3.5 w-3.5" />
+                    <span className="text-xs font-bold">{distance.toFixed(1)} mi</span>
+                  </div>
+                )}
+              </div>
+
               <h3 className="text-base sm:text-lg font-bold text-foreground uppercase tracking-wide leading-snug">
                 {courseName}
               </h3>
