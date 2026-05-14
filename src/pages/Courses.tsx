@@ -360,8 +360,23 @@ export default function Courses() {
   const [instructors, setInstructors] = useState<Instructor[]>([]);
   const [instructorCourses, setInstructorCourses] = useState<InstructorCourse[]>([]);
   const [courseTemplates, setCourseTemplates] = useState<CourseTemplate[]>([]);
-  const [workingHours, setWorkingHours] = useState<WorkingHours[]>([]);
-  const [dateOverrides, setDateOverrides] = useState<DateOverride[]>([]);
+  // Separate weekly availability sources so each can use its own day-of-week
+  // convention (working_hours = 0..6 Sun..Sat, availability_windows = 1..7 Mon..Sun).
+  const [workingHourRows, setWorkingHourRows] = useState<WeeklyHourRow[]>([]);
+  const [availabilityWindowRows, setAvailabilityWindowRows] = useState<WeeklyHourRow[]>([]);
+  const [overrideRows, setOverrideRows] = useState<DateOverrideRow[]>([]);
+  const [calendarEvents, setCalendarEvents] = useState<CalendarEventRow[]>([]);
+  const [scheduledLessons, setScheduledLessons] = useState<ScheduledLessonRow[]>([]);
+  const [manualBlocks, setManualBlocks] = useState<ManualBlockRow[]>([]);
+
+  const availabilitySources: CourseAvailabilitySources = useMemo(() => ({
+    workingHours: workingHourRows,
+    availabilityWindows: availabilityWindowRows,
+    overrides: overrideRows,
+    calendarEvents,
+    scheduledLessons,
+    manualBlocks,
+  }), [workingHourRows, availabilityWindowRows, overrideRows, calendarEvents, scheduledLessons, manualBlocks]);
 
   const monthOptions = useMemo(() => getMonthOptions(), []);
   
