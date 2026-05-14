@@ -199,19 +199,23 @@ export function EDCourseList({ courses }: EDCourseListProps) {
                         style={{
                           background: "#FFA8CD",
                           color: "#0a0a0a",
-                          padding: "6px 12px",
-                          borderRadius: 8,
-                          fontSize: 12,
+                          padding: "8px 14px",
+                          borderRadius: 10,
+                          fontSize: 13,
                           fontWeight: 700,
-                          gap: 8,
+                          gap: 10,
+                          lineHeight: 1.1,
                         }}
                       >
                         <img
                           src={klarnaLogo}
                           alt="Klarna"
-                          style={{ height: 12, width: "auto" }}
+                          style={{ height: 13, width: "auto" }}
                         />
-                        3 × £{klarnaPer}
+                        <span className="flex flex-col" style={{ fontSize: 12 }}>
+                          <span>3 ×</span>
+                          <span>£{klarnaPer}</span>
+                        </span>
                       </span>
                     )}
                     {c.instructor.clearpay_enabled && (
@@ -220,19 +224,23 @@ export function EDCourseList({ courses }: EDCourseListProps) {
                         style={{
                           background: "#B2FCE4",
                           color: "#0a0a0a",
-                          padding: "6px 12px",
-                          borderRadius: 8,
-                          fontSize: 12,
+                          padding: "8px 14px",
+                          borderRadius: 10,
+                          fontSize: 13,
                           fontWeight: 700,
-                          gap: 8,
+                          gap: 10,
+                          lineHeight: 1.1,
                         }}
                       >
                         <img
                           src={clearpayLogo}
                           alt="Clearpay"
-                          style={{ height: 12, width: "auto" }}
+                          style={{ height: 13, width: "auto" }}
                         />
-                        4 × £{clearpayPer}
+                        <span className="flex flex-col" style={{ fontSize: 12 }}>
+                          <span>4 ×</span>
+                          <span>£{clearpayPer}</span>
+                        </span>
                       </span>
                     )}
                   </div>
