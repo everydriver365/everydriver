@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Clock, MapPin, Car, CheckCircle, CreditCard, User, Award, ShieldCheck, Star, Loader2, Calendar, Play, Backpack, AlertCircle, FileText, Banknote, Sparkles, UserCog } from "lucide-react";
+import { ArrowLeft, Clock, MapPin, Car, CheckCircle, CreditCard, User, Award, ShieldCheck, Star, Loader2, Calendar, Play, Backpack, AlertCircle, FileText, Banknote, Sparkles, UserCog, RefreshCw } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { format, parseISO, startOfDay, addDays, getDay, isAfter } from "date-fns";
 import { Button } from "@/components/ui/button";
@@ -459,6 +459,31 @@ export default function BookingSummary() {
   const bookingInProgressRef = useRef(false);
   const paymentBlockRef = useRef<HTMLDivElement | null>(null);
   const schedulerRef = useRef<HTMLDivElement | null>(null);
+  const [isRefreshingAvailability, setIsRefreshingAvailability] = useState(false);
+  const handleRefreshAvailability = async () => {
+    if (isRefreshingAvailability) return;
+    setIsRefreshingAvailability(true);
+    try {
+      const dates = Array.from(new Set(
+        selectedSlots.map((s) => s.date.toISOString().slice(0, 10))
+      ));
+      const targets = dates.length > 0 ? dates : [new Date().toISOString().slice(0, 10)];
+      const results = await Promise.all(
+        targets.map((d) => refreshGoogleCalendarForDate(instructor.id, d, true))
+      );
+      const ok = results.every((r) => r?.ok !== false);
+      if (ok) {
+        toast.success("Availability refreshed from Google Calendar");
+      } else {
+        toast.message("Availability refreshed (some days could not be synced)");
+      }
+    } catch (e) {
+      console.error("Refresh availability failed", e);
+      toast.error("Could not refresh availability. Please try again.");
+    } finally {
+      setIsRefreshingAvailability(false);
+    }
+  };
   const ensureBookingCreated = async (
     paymentType: 'full' | 'deposit' = 'full',
     amountPaid?: number
@@ -1754,6 +1779,17 @@ export default function BookingSummary() {
 
         {/* Step 3: Payment */}
         <div ref={paymentBlockRef}>
+        <div className="flex justify-end mb-2">
+          <button
+            type="button"
+            onClick={handleRefreshAvailability}
+            disabled={isRefreshingAvailability}
+            className="inline-flex items-center gap-2 text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60"
+          >
+            <RefreshCw className={`h-3.5 w-3.5 ${isRefreshingAvailability ? "animate-spin" : ""}`} />
+            {isRefreshingAvailability ? "Refreshing…" : "Refresh availability"}
+          </button>
+        </div>
         <CoursePaymentBlock
           courseName={courseName}
           hours={hours}
