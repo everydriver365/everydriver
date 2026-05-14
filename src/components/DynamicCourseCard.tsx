@@ -148,7 +148,7 @@ export function DynamicCourseCard({
           )}
 
           {/* Hero Image — locked 4:3, smoothly clamped height across breakpoints */}
-          <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted max-h-[clamp(11rem,28vw,18rem)]">
+          <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted max-h-[clamp(14rem,31vw,21rem)]">
             <img
               src={courseImageUrl || `https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=1200&h=900&fit=crop`}
               alt={courseName}
