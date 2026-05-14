@@ -199,7 +199,7 @@ serve(async (req: Request) => {
           pupil_id: pupilId,
           instructor_id: instructorId || null,
           amount,
-          payment_method: "card",
+          payment_method: "Square",
           payout_status: payoutStatus,
           notes: `Square payment ${payment.id} — ${orderReference}${useInstructorToken ? ' (auto-paid via Square)' : ''}`,
         });
