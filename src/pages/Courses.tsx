@@ -1648,8 +1648,8 @@ export default function Courses() {
                     <>
                       <CourseTableList
                         courses={(isMobile ? filteredCourses.slice(0, mobileVisibleCount) : filteredCourses).map((c) => {
-                          const rate = resolvedRateFor(c.instructor) ?? c.instructor.hourly_rate ?? 40;
-                          const skim = c.instructor.school_skim_amount || 0;
+                          const rate = resolvedRateFor(c.instructor) ?? Number(c.instructor.hourly_rate ?? 0);
+                          const skim = Number(c.instructor.school_skim_amount ?? 0);
                           return {
                             instructor: c.instructor,
                             hours: c.hours,
