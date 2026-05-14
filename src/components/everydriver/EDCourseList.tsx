@@ -1,8 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { Calendar as CalendarIcon, ChevronRight } from "lucide-react";
-import klarnaLogo from "@/assets/klarna-logo.svg";
-import clearpayLogo from "@/assets/clearpay-logo.svg";
+import klarnaLogo from "@/assets/klarna-wordmark.svg";
+import clearpayLogo from "@/assets/clearpay-wordmark.svg";
 
 // EveryDriver-only redesigned list view for course search results.
 // Brand tokens (literal hex per spec — intentionally not using semantic tokens
@@ -211,9 +211,8 @@ export function EDCourseList({ courses }: EDCourseListProps) {
                       >
                         <img
                           src={klarnaLogo}
-                          alt=""
-                          aria-hidden
-                          style={{ width: 14, height: 14, borderRadius: 999 }}
+                          alt="Klarna"
+                          style={{ height: 11, width: "auto" }}
                         />
                         3 × £{klarnaPer}
                       </span>
@@ -233,9 +232,8 @@ export function EDCourseList({ courses }: EDCourseListProps) {
                       >
                         <img
                           src={clearpayLogo}
-                          alt=""
-                          aria-hidden
-                          style={{ width: 14, height: 14, borderRadius: 999 }}
+                          alt="Clearpay"
+                          style={{ height: 11, width: "auto" }}
                         />
                         4 × £{clearpayPer}
                       </span>
@@ -389,7 +387,7 @@ export function EDCourseList({ courses }: EDCourseListProps) {
                         gap: 6,
                       }}
                     >
-                      <img src={klarnaLogo} alt="" aria-hidden style={{ width: 14, height: 14, borderRadius: 999 }} />
+                      <img src={klarnaLogo} alt="Klarna" style={{ height: 11, width: "auto" }} />
                       3 × £{klarnaPer}
                     </span>
                   )}
@@ -406,7 +404,7 @@ export function EDCourseList({ courses }: EDCourseListProps) {
                         gap: 6,
                       }}
                     >
-                      <img src={clearpayLogo} alt="" aria-hidden style={{ width: 14, height: 14, borderRadius: 999 }} />
+                      <img src={clearpayLogo} alt="Clearpay" style={{ height: 11, width: "auto" }} />
                       4 × £{clearpayPer}
                     </span>
                   )}
