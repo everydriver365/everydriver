@@ -288,6 +288,15 @@ export function AddLessonSheet({
     }
   }, [open, defaultDate, defaultStartTime, defaultDurationHours, instructorId]);
 
+  // Refresh Google Calendar cache for the focal day so the date picker /
+  // clash check sees externally-booked events without waiting for cron.
+  useGoogleCalendarRefresh({
+    instructorId,
+    from: lessonDate,
+    to: lessonDate,
+    enabled: open && !!lessonDate,
+  });
+
   useEffect(() => {
     if (isDrivingTest && instructorId) fetchTestCentres();
   }, [isDrivingTest, instructorId]);
