@@ -59,6 +59,8 @@ export type ManualBlockRow = {
 export interface InstructorLite {
   id: string;
   available_from?: string | null;
+  /** Per-instructor configured buffer between lessons in minutes. */
+  buffer_minutes?: number | null;
 }
 
 export interface CourseAvailabilitySources {
