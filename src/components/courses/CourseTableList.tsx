@@ -180,7 +180,7 @@ export function CourseTableList({ courses }: CourseTableListProps) {
                     {courseTypeLabel(c)} · {transmissionLabel(c.instructor.car_type)}
                   </div>
                   <div style={{ fontSize: 11, color: "#7a7a7a", marginTop: 2 }}>
-                    Starts {format(c.bookableDate, "EEE d MMM")}
+                    {c.instructor.name ? `${c.instructor.name} · ` : ""}Starts {format(c.bookableDate, "EEE d MMM")}
                   </div>
                 </div>
 
