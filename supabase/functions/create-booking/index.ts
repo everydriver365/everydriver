@@ -261,6 +261,11 @@ serve(async (req) => {
     // 2. Create scheduled lessons for each slot (if any provided)
     let lessons: any[] = [];
     if (booking.slots.length > 0) {
+      // Hold lessons off Google Calendar until payment completes. Cash bookings
+      // intentionally proceed without an upfront payment, so they sync immediately.
+      const isCashBooking = (booking as any).paymentType === 'cash';
+      const awaitingInitialPayment = !isCashBooking && amountPaid < booking.totalPrice;
+
       const lessonInserts = booking.slots.map((slot) => ({
         instructor_id: booking.instructorId,
         pupil_id: pupil.id,
@@ -272,6 +277,7 @@ serve(async (req) => {
         lesson_type: "driving",
         status: "scheduled",
         payment_status: "pending",
+        awaiting_initial_payment: awaitingInitialPayment,
         // Pricing snapshot at booking — preserves the rate paid even if the
         // instructor later changes their hourly rate or surcharges.
         ...(slot.pricePerHour != null ? { price_per_hour: slot.pricePerHour } : {}),
