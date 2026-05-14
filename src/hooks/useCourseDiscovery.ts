@@ -396,7 +396,10 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
     });
   }, [instructors, userLocation, radius, geoCache]);
 
-  // Upcoming available dates across the next ~6 months (cap 12 dates)
+  // Upcoming available dates across the next ~6 months (cap 12 dates).
+  // Delegates to hasInstructorAvailabilityOn so calendar dots match the
+  // booking-time guard exactly: working hours, overrides, manual blocks,
+  // scheduled lessons, Google Calendar events, and buffer/travel padding.
   const nextAvailableDates = useMemo(() => {
     const today = startOfDay(new Date());
     const relevantInstructors = userLocation ? instructorsInArea : instructors;
@@ -414,28 +417,9 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
       const days = eachDayOfInterval({ start: searchStart, end: monthEnd });
 
       for (const day of days) {
-        const dayOfWeek = getDay(day);
-        const dateStr = format(day, "yyyy-MM-dd");
-        const isAvailable = relevantInstructors.some((instructor) => {
-          if (instructor.available_from && isAfter(parseISO(instructor.available_from), day)) {
-            return false;
-          }
-          const override = dateOverrides.find(
-            (o) =>
-              o.instructor_id === instructor.id &&
-              (o.override_date === dateStr ||
-                (o.override_end_date &&
-                  dateStr >= o.override_date &&
-                  dateStr <= o.override_end_date))
-          );
-          if (override) return override.is_available;
-          return workingHours.some(
-            (wh) =>
-              wh.instructor_id === instructor.id &&
-              wh.day_of_week === dayOfWeek &&
-              wh.is_active
-          );
-        });
+        const isAvailable = relevantInstructors.some((instructor) =>
+          hasInstructorAvailabilityOn(instructor as InstructorLite, day, sources),
+        );
         if (isAvailable) {
           results.push(day);
           if (results.length >= 12) return results;
@@ -443,7 +427,7 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
       }
     }
     return results;
-  }, [instructors, instructorsInArea, userLocation, workingHours, dateOverrides, monthOptions]);
+  }, [instructors, instructorsInArea, userLocation, sources, monthOptions]);
 
   const availableDatesInMonth = useMemo(() => {
     const [year, month] = selectedMonth.split("-").map(Number);
@@ -453,39 +437,15 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
 
     const allDays = eachDayOfInterval({ start: monthStart, end: monthEnd });
 
-    // Use filtered instructors based on location search
     const relevantInstructors = userLocation ? instructorsInArea : instructors;
 
     return allDays.filter((day) => {
       if (isBefore(day, today)) return false;
-
-      const dayOfWeek = getDay(day);
-      const dateStr = format(day, "yyyy-MM-dd");
-
-      return relevantInstructors.some((instructor) => {
-        if (instructor.available_from && isAfter(parseISO(instructor.available_from), day)) {
-          return false;
-        }
-
-        const override = dateOverrides.find(
-          (o) =>
-            o.instructor_id === instructor.id &&
-            (o.override_date === dateStr ||
-              (o.override_end_date &&
-                dateStr >= o.override_date &&
-                dateStr <= o.override_end_date))
-        );
-        if (override) return override.is_available;
-
-        return workingHours.some(
-          (wh) =>
-            wh.instructor_id === instructor.id &&
-            wh.day_of_week === dayOfWeek &&
-            wh.is_active
-        );
-      });
+      return relevantInstructors.some((instructor) =>
+        hasInstructorAvailabilityOn(instructor as InstructorLite, day, sources),
+      );
     });
-  }, [selectedMonth, instructors, instructorsInArea, workingHours, dateOverrides, userLocation]);
+  }, [selectedMonth, instructors, instructorsInArea, sources, userLocation]);
 
   // Auto-jump the calendar to the first month that has availability for the
   // currently scoped instructors (whitelabel partner or location search).
