@@ -1779,6 +1779,17 @@ export default function BookingSummary() {
 
         {/* Step 3: Payment */}
         <div ref={paymentBlockRef}>
+        <div className="flex justify-end mb-2">
+          <button
+            type="button"
+            onClick={handleRefreshAvailability}
+            disabled={isRefreshingAvailability}
+            className="inline-flex items-center gap-2 text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60"
+          >
+            <RefreshCw className={`h-3.5 w-3.5 ${isRefreshingAvailability ? "animate-spin" : ""}`} />
+            {isRefreshingAvailability ? "Refreshing…" : "Refresh availability"}
+          </button>
+        </div>
         <CoursePaymentBlock
           courseName={courseName}
           hours={hours}
