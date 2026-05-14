@@ -1008,15 +1008,20 @@ export default function Courses() {
             animate={{ opacity: 1, y: 0 }}
             className="mx-auto max-w-4xl"
           >
-            <h1 className="mb-6 text-2xl font-bold md:text-3xl">
-              {searchedAreaName ? `Courses in ${searchedAreaName}` : "Find a Course"}
+            <h1 className="mb-1 text-center text-2xl font-extrabold md:text-3xl" style={{ color: "#0A2B6B" }}>
+              {searchedAreaName ? `Courses in ${searchedAreaName}` : "Find a course"}
             </h1>
+            {searchedAreaName && (
+              <p className="mb-6 text-center" style={{ fontSize: 13, color: "#6B7280" }}>
+                {filteredCourses.length} course{filteredCourses.length !== 1 ? "s" : ""} available · matched with your instructor
+              </p>
+            )}
 
             <div className="rounded-3xl border border-slate-100 bg-white p-2 shadow-[0_20px_50px_rgba(0,0,0,0.08)] md:p-3">
               <div className="flex flex-col items-stretch gap-2 sm:flex-row">
                 {/* Postcode input */}
                 <div className="group relative flex-1">
-                  <label className="absolute -top-2 left-11 z-10 bg-white px-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  <label className="absolute -top-2 left-4 z-10 bg-white px-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
                     Postcode
                   </label>
                   <PostcodeAutocomplete
@@ -1025,9 +1030,10 @@ export default function Courses() {
                     onSelect={handlePostcodeSelect}
                     placeholder="Enter postcode"
                     className="w-full"
-                    inputClassName="h-14 rounded-2xl border-0 bg-slate-50/60 pl-12 pr-4 font-medium text-slate-700 placeholder:text-slate-400 focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-blue-500/20"
+                    inputClassName="h-14 rounded-2xl border-0 bg-slate-50/60 px-4 font-medium text-slate-700 placeholder:text-slate-400 focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-blue-500/20"
+                    showInputIcon={false}
+                    showGeolocation={false}
                   />
-                  <MapPin className="pointer-events-none absolute left-5 top-1/2 z-10 h-5 w-5 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-blue-500" />
                 </div>
 
                 {/* Radius select */}
