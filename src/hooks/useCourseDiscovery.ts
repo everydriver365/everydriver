@@ -26,6 +26,7 @@ export interface Instructor {
   brand_colour: string | null;
   is_active: boolean;
   available_from: string | null;
+  buffer_minutes?: number | null;
 }
 
 export interface InstructorCourse {
