@@ -97,6 +97,13 @@ serve(async (req) => {
 
   } catch (error) {
     console.error("Error in gocardless-webhook:", error);
+    try {
+      const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+      await sb.from("webhook_delivery_log").insert({
+        provider: "gocardless", processed: false, response_status: 500,
+        error: String((error as Error)?.message ?? error),
+      });
+    } catch {}
     return new Response(
       JSON.stringify({ error: "Internal server error" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
