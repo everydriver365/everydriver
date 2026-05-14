@@ -460,6 +460,31 @@ export default function BookingSummary() {
   const bookingInProgressRef = useRef(false);
   const paymentBlockRef = useRef<HTMLDivElement | null>(null);
   const schedulerRef = useRef<HTMLDivElement | null>(null);
+  const [isRefreshingAvailability, setIsRefreshingAvailability] = useState(false);
+  const handleRefreshAvailability = async () => {
+    if (isRefreshingAvailability) return;
+    setIsRefreshingAvailability(true);
+    try {
+      const dates = Array.from(new Set(
+        selectedSlots.map((s) => s.date.toISOString().slice(0, 10))
+      ));
+      const targets = dates.length > 0 ? dates : [new Date().toISOString().slice(0, 10)];
+      const results = await Promise.all(
+        targets.map((d) => refreshGoogleCalendarForDate(instructor.id, d, true))
+      );
+      const ok = results.every((r) => r?.ok !== false);
+      if (ok) {
+        toast.success("Availability refreshed from Google Calendar");
+      } else {
+        toast.message("Availability refreshed (some days could not be synced)");
+      }
+    } catch (e) {
+      console.error("Refresh availability failed", e);
+      toast.error("Could not refresh availability. Please try again.");
+    } finally {
+      setIsRefreshingAvailability(false);
+    }
+  };
   const ensureBookingCreated = async (
     paymentType: 'full' | 'deposit' = 'full',
     amountPaid?: number
