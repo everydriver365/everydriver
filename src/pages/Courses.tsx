@@ -16,6 +16,15 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { getWhitelabelInstructorSlug } from "@/lib/whitelabel";
 import { resolveHourlyRate, type PostcodeRateRule } from "@/lib/pricing/resolveHourlyRate";
 import { SEOHead } from "@/components/SEOHead";
+import {
+  hasInstructorAvailabilityOn,
+  type CourseAvailabilitySources,
+  type WeeklyHourRow,
+  type DateOverrideRow,
+  type CalendarEventRow,
+  type ScheduledLessonRow,
+  type ManualBlockRow,
+} from "@/lib/courseAvailability";
 
 // Standard course hours to display
 const DISPLAY_HOURS = [10, 20, 30, 40, 28]; // 28 = Test in a Week
