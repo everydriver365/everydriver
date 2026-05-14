@@ -243,9 +243,21 @@ export function isEveryDriverHost(
   hostname: string = typeof window !== "undefined" ? window.location.hostname : "",
 ): boolean {
   const host = hostname.toLowerCase().replace(/^www\./, "");
-  return (
+  if (
     host === "everydriver.co.uk" ||
     host === "everydriver.co" ||
     host === "everydriver.lovable.app"
-  );
+  ) {
+    return true;
+  }
+  // Preview override: append ?everydriver=1 to any URL to force EveryDriver mode
+  if (typeof window !== "undefined") {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("everydriver") === "1") return true;
+    } catch {
+      /* ignore */
+    }
+  }
+  return false;
 }
