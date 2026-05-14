@@ -27,6 +27,7 @@ import { KlarnaPaymentModal } from "@/components/payments/KlarnaPaymentModal";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { describeBookingConflictResponse } from "@/lib/lessonClashCheck";
+import { refreshGoogleCalendarForDate } from "@/lib/refreshGoogleCalendar";
 import { usePaymentGatewayHealth } from "@/hooks/usePaymentGatewayHealth";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -458,6 +459,7 @@ export default function BookingSummary() {
 
   const bookingInProgressRef = useRef(false);
   const paymentBlockRef = useRef<HTMLDivElement | null>(null);
+  const schedulerRef = useRef<HTMLDivElement | null>(null);
   const ensureBookingCreated = async (
     paymentType: 'full' | 'deposit' = 'full',
     amountPaid?: number
@@ -505,6 +507,23 @@ export default function BookingSummary() {
 
       if (error || data?.error === 'SLOT_UNAVAILABLE') {
         console.error("Booking error:", error || data);
+        const conflicts: Array<{ date: string; startTime: string; reason?: string }> =
+          (data?.conflicts as any) || [];
+        if (conflicts.length > 0) {
+          const conflictKeys = new Set(conflicts.map((c) => `${c.date}__${c.startTime}`));
+          setSelectedSlots((prev) =>
+            prev.filter((s) => {
+              const dateStr = s.date.toISOString().slice(0, 10);
+              return !conflictKeys.has(`${dateStr}__${s.startTime}`);
+            }),
+          );
+          for (const c of conflicts) {
+            void refreshGoogleCalendarForDate(instructor.id, c.date, true);
+          }
+          setTimeout(() => {
+            schedulerRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+          }, 100);
+        }
         const friendly = await describeBookingConflictResponse(error || data);
         toast.error(friendly || "Failed to create your booking. Please try again.");
         return null;
@@ -1707,6 +1726,7 @@ export default function BookingSummary() {
         {/* Step 2: Lesson Scheduler - Only show for pupil_choice mode */}
         {requiresSlotSelection && (
           <motion.div
+            ref={schedulerRef}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.25 }}
