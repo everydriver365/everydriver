@@ -34,6 +34,27 @@ export default function TestSwap() {
         description="Free, secure driving test swap service. Match with another learner and get an earlier DVSA practical test date — no fees, no waiting lists."
       />
 
+      {savedId && (
+        <section className="pt-6 sm:pt-8">
+          <div className="mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-8">
+            <div className="rounded-2xl border bg-primary/5 p-4 sm:p-5 flex items-center justify-between gap-3 flex-wrap">
+              <div className="text-sm">
+                <div className="font-semibold">Welcome back</div>
+                <div className="text-muted-foreground">You've already registered for a test swap. Pick up where you left off.</div>
+              </div>
+              <div className="flex gap-2">
+                <Link to={`/test-swap/matches/${savedId}`}>
+                  <Button size="sm">View my matches</Button>
+                </Link>
+                <Link to={`/test-swap/edit/${savedId}`}>
+                  <Button size="sm" variant="outline">Edit my details</Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Hero banner — matches Drive365 homepage hero shape */}
       <section className="pt-6 sm:pt-8">
         <div className="mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-8">
