@@ -21,6 +21,7 @@ import { PostcodeAddressLookup } from "@/components/booking/PostcodeAddressLooku
 import { MobileBookingView } from "@/components/booking/MobileBookingView";
 import { EnquiryFlow } from "@/components/booking/EnquiryFlow";
 import { CoursePaymentBlock } from "@/components/booking/CoursePaymentBlock";
+import { TestSwapOptInCard, type SwapPreference } from "@/components/everydriver/TestSwapOptInCard";
 import { UpsellSelector } from "@/components/booking/UpsellSelector";
 import { SquareWalletButtons } from "@/components/payments/SquareWalletButtons";
 import { KlarnaPaymentModal } from "@/components/payments/KlarnaPaymentModal";
@@ -178,6 +179,47 @@ export default function BookingSummary() {
   
   // Cancellation policy text
   const [cancellationPolicyText, setCancellationPolicyText] = useState("");
+
+  // Test Swap opt-in (optional new step inserted before payment submit)
+  const [swapOptIn, setSwapOptIn] = useState(false);
+  const [swapTestDate, setSwapTestDate] = useState("");
+  const [swapTestTime, setSwapTestTime] = useState("");
+  const [swapTestCentre, setSwapTestCentre] = useState("");
+  const [swapPreference, setSwapPreference] = useState<SwapPreference>("earlier");
+  const [swapConsent, setSwapConsent] = useState(false);
+  const [swapConsentTimestamp, setSwapConsentTimestamp] = useState<string | null>(null);
+  const swapSavedRef = useRef(false);
+
+  const handleSwapConsentChange = (next: boolean) => {
+    setSwapConsent(next);
+    setSwapConsentTimestamp(next ? new Date().toISOString() : null);
+  };
+
+  const saveSwapOptInIfNeeded = useCallback(async (pupilId: string) => {
+    if (swapSavedRef.current) return;
+    if (!swapOptIn || !swapConsent || !swapConsentTimestamp) return;
+    try {
+      const { error } = await supabase.from("booking_test_swap_optins").insert({
+        pupil_id: pupilId,
+        instructor_id: instructor!.id,
+        test_date: swapTestDate.trim() || null,
+        test_time: swapTestTime.trim() || null,
+        test_centre: swapTestCentre.trim() || null,
+        preference: swapPreference,
+        consent_given: true,
+        consent_timestamp: swapConsentTimestamp,
+      });
+      if (error) {
+        console.error("Failed to save swap opt-in:", error);
+      } else {
+        swapSavedRef.current = true;
+      }
+    } catch (err) {
+      console.error("Swap opt-in insert threw:", err);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [swapOptIn, swapConsent, swapConsentTimestamp, swapTestDate, swapTestTime, swapTestCentre, swapPreference]);
+
   
   // Cash payments
   const [cashPaymentsEnabled, setCashPaymentsEnabled] = useState(false);
@@ -561,6 +603,8 @@ export default function BookingSummary() {
 
       setBookingPupilId(data.pupilId);
       bookingPupilIdRef.current = data.pupilId;
+      // Persist optional Test Swap opt-in (no-op unless the learner opted in & consented)
+      void saveSwapOptInIfNeeded(data.pupilId);
       toast.info(`Booking created — completing payment...`);
       return data.pupilId as string;
     } finally {
@@ -1257,11 +1301,14 @@ export default function BookingSummary() {
         {/* Desktop Progress Indicator */}
         <div className="mb-6 flex items-center justify-center gap-2">
           {[
-            { step: 1, label: "Your Details" },
-            { step: 2, label: "Choose Lessons" },
-            { step: 3, label: "Payment" },
+            { step: 1, label: "Your Details", optional: false },
+            { step: 2, label: "Choose Lessons", optional: false },
+            { step: 3, label: "Payment", optional: false },
+            { step: 4, label: "Test swap", optional: true },
           ].map((s, i, arr) => {
-            const step = isPupilDetailsComplete ? (isFullyScheduled ? 3 : 2) : 1;
+            const baseStep = isPupilDetailsComplete ? (isFullyScheduled ? 3 : 2) : 1;
+            // Step 4 (swap) is shown as current once payment is reachable
+            const step = baseStep === 3 ? 4 : baseStep;
             const isDone = step > s.step;
             const isCurrent = step === s.step;
             return (
@@ -1277,6 +1324,9 @@ export default function BookingSummary() {
                   <span className={`text-[10px] font-medium ${isCurrent ? 'text-primary' : isDone ? 'text-foreground' : 'text-muted-foreground'}`}>
                     {s.label}
                   </span>
+                  {s.optional && (
+                    <span className="text-[9px] text-muted-foreground -mt-0.5">Optional</span>
+                  )}
                 </div>
                 {i < arr.length - 1 && <div className={`w-12 h-0.5 mb-4 rounded-full ${isDone ? 'bg-primary' : 'bg-muted'}`} />}
               </div>
@@ -1864,6 +1914,25 @@ export default function BookingSummary() {
             {isRefreshingAvailability ? "Refreshing…" : "Refresh availability"}
           </button>
         </div>
+
+        {/* Step 4 (Optional): Test Swap opt-in — sits between Payment and confirmation */}
+        {canSubmit && (
+          <TestSwapOptInCard
+            swapOptIn={swapOptIn}
+            setSwapOptIn={setSwapOptIn}
+            swapTestDate={swapTestDate}
+            setSwapTestDate={setSwapTestDate}
+            swapTestTime={swapTestTime}
+            setSwapTestTime={setSwapTestTime}
+            swapTestCentre={swapTestCentre}
+            setSwapTestCentre={setSwapTestCentre}
+            swapPreference={swapPreference}
+            setSwapPreference={setSwapPreference}
+            swapConsent={swapConsent}
+            onConsentChange={handleSwapConsentChange}
+          />
+        )}
+
         <CoursePaymentBlock
           courseName={courseName}
           hours={hours}
@@ -1897,6 +1966,11 @@ export default function BookingSummary() {
           onClearpayCheckout={handleClearpayCheckout}
           onBankCheckout={handleInstantBankPay}
           onCashCheckout={handleCashPayment}
+          disabledReason={
+            swapOptIn && !swapConsent
+              ? "Tick the swap consent box or turn off the swap toggle to continue."
+              : null
+          }
         />
         </div>
 

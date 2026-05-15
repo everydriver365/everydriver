@@ -1383,6 +1383,67 @@ export type Database = {
           },
         ]
       }
+      booking_test_swap_optins: {
+        Row: {
+          consent_given: boolean
+          consent_timestamp: string
+          created_at: string
+          id: string
+          instructor_id: string
+          preference: string
+          pupil_id: string
+          test_centre: string | null
+          test_date: string | null
+          test_time: string | null
+        }
+        Insert: {
+          consent_given: boolean
+          consent_timestamp: string
+          created_at?: string
+          id?: string
+          instructor_id: string
+          preference: string
+          pupil_id: string
+          test_centre?: string | null
+          test_date?: string | null
+          test_time?: string | null
+        }
+        Update: {
+          consent_given?: boolean
+          consent_timestamp?: string
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          preference?: string
+          pupil_id?: string
+          test_centre?: string | null
+          test_date?: string | null
+          test_time?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_test_swap_optins_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_test_swap_optins_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_test_swap_optins_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       booking_upsells: {
         Row: {
           badge_text: string | null
