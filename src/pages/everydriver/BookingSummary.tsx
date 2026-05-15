@@ -897,6 +897,7 @@ export default function BookingSummary() {
       }
 
       if (data?.authorisationUrl) {
+        persistDraftBeforeRedirect();
         window.location.href = data.authorisationUrl;
       } else {
         toast.error("Could not get bank payment URL");
