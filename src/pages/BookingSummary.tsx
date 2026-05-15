@@ -210,16 +210,15 @@ export default function BookingSummary() {
     .filter((u) => selectedUpsells.includes(u.id))
     .reduce((sum, u) => sum + Number(u.price), 0);
 
-  // Clean up GoCardless pending booking on cancellation
-  useEffect(() => {
-    if (searchParams.get("gocardless") === "cancelled") {
-      localStorage.removeItem("gc_pending_booking");
-    }
-  }, []);
-
   const hours = parseInt(searchParams.get("hours") || "10");
   const selectedDateParam = searchParams.get("date");
   const selectedDate = selectedDateParam ? parseISO(selectedDateParam) : null;
+
+  const { saveDraft, loadDraft, clearDraft } = useCheckoutDraft(
+    "checkout-draft",
+    instructorId,
+    hours
+  );
 
   // IMPORTANT: Keep merchant reference stable across re-renders.
   // If this changes, Klarna may fail with "container selector is invalid" because
