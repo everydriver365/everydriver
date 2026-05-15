@@ -45,9 +45,11 @@ interface PupilPortalProfileEditProps {
   pupil: PupilData;
   onPupilUpdate: (updates: Partial<PupilData>) => void;
   brandColour: string | null;
+  swapOptedIn?: boolean;
+  onOpenSwapSettings?: () => void;
 }
 
-export function PupilPortalProfileEdit({ pupil, onPupilUpdate, brandColour }: PupilPortalProfileEditProps) {
+export function PupilPortalProfileEdit({ pupil, onPupilUpdate, brandColour, swapOptedIn = false, onOpenSwapSettings }: PupilPortalProfileEditProps) {
   const [postcodeValue, setPostcodeValue] = useState(pupil.postcode || "");
   const [addressValue, setAddressValue] = useState(pupil.address || "");
   const [pickupAddressValue, setPickupAddressValue] = useState(pupil.pickup_address || "");
