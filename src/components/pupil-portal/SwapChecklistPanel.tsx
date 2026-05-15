@@ -96,6 +96,7 @@ export function SwapChecklistPanel({ onClose, onOpenSwapSettings }: SwapChecklis
       return "";
     }
   });
+  const [refTouched, setRefTouched] = useState(false);
   const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
 
   useEffect(() => {
@@ -103,6 +104,22 @@ export function SwapChecklistPanel({ onClose, onOpenSwapSettings }: SwapChecklis
       localStorage.setItem("swap_partner_ref", partnerRef);
     } catch { /* noop */ }
   }, [partnerRef]);
+
+  const validateRef = (value: string) => {
+    const trimmed = value.trim();
+    if (!trimmed) return null;
+    if (!/^\d+$/.test(trimmed)) return "Booking reference should be numbers only";
+    if (trimmed.length < 8) return "Looks too short — DVSA references are usually 8–12 digits";
+    if (trimmed.length > 12) return "Looks too long — DVSA references are usually 8–12 digits";
+    return null;
+  };
+
+  const refError = refTouched ? validateRef(partnerRef) : null;
+
+  const handlePartnerRefChange = (value: string) => {
+    setPartnerRef(value);
+    if (value.trim()) setRefTouched(true);
+  };
 
   const copyPartnerRef = async () => {
     const value = partnerRef.trim();
@@ -213,9 +230,16 @@ export function SwapChecklistPanel({ onClose, onOpenSwapSettings }: SwapChecklis
         >
           <div className="min-w-0">
             <p className="text-[11px] text-[#5F5E5A]">Learner B's booking reference</p>
-            <p className="text-[15px] font-medium text-[#2C2C2A] tracking-wider truncate">
+            <p
+              className={`text-[15px] font-medium tracking-wider truncate ${
+                refError ? "text-[#CC2229]" : "text-[#2C2C2A]"
+              }`}
+            >
               {partnerRef}
             </p>
+            {refError && (
+              <p className="text-[11px] text-[#CC2229] mt-0.5">{refError}</p>
+            )}
           </div>
           <button
             type="button"
@@ -242,8 +266,9 @@ export function SwapChecklistPanel({ onClose, onOpenSwapSettings }: SwapChecklis
               onToggle={() => toggleStep(step.id)}
               onAction={handleStepAction}
               partnerRef={partnerRef}
-              onPartnerRefChange={setPartnerRef}
+              onPartnerRefChange={handlePartnerRefChange}
               onCopyPartnerRef={copyPartnerRef}
+              refError={refError}
             />
           </div>
         ))}
@@ -306,6 +331,7 @@ function SwapStepCard({
   partnerRef,
   onPartnerRefChange,
   onCopyPartnerRef,
+  refError,
 }: {
   step: SwapStep;
   index: number;
@@ -315,6 +341,7 @@ function SwapStepCard({
   partnerRef: string;
   onPartnerRefChange: (v: string) => void;
   onCopyPartnerRef: () => void;
+  refError: string | null;
 }) {
   return (
     <div
@@ -422,14 +449,16 @@ function SwapStepCard({
           <div className="flex items-center gap-2">
             <input
               type="text"
-              inputMode="text"
-              autoCapitalize="characters"
+              inputMode="numeric"
+              autoCapitalize="off"
               autoCorrect="off"
               spellCheck={false}
               value={partnerRef}
               onChange={(e) => onPartnerRefChange(e.target.value)}
               placeholder="e.g. 1234567890"
-              className="flex-1 border border-[#D3D1C7] rounded-lg bg-white text-[13px] text-[#2C2C2A] tracking-wider"
+              className={`flex-1 rounded-lg bg-white text-[13px] text-[#2C2C2A] tracking-wider border ${
+                refError ? "border-[#CC2229]" : "border-[#D3D1C7]"
+              }`}
               style={{ padding: 9 }}
             />
             <button
@@ -443,9 +472,13 @@ function SwapStepCard({
               Copy
             </button>
           </div>
-          <p className="text-[11px] text-[#888780] mt-1.5">
-            Stored only for this session. Never shared via Drive365.
-          </p>
+          {refError ? (
+            <p className="text-[11px] text-[#CC2229] mt-1.5">{refError}</p>
+          ) : (
+            <p className="text-[11px] text-[#888780] mt-1.5">
+              Stored only for this session. Never shared via Drive365.
+            </p>
+          )}
         </div>
       )}
 
