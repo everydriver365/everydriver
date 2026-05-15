@@ -40,28 +40,39 @@ interface InstructorCoursesManagerProps {
 export function InstructorCoursesManager({ instructorId }: InstructorCoursesManagerProps) {
   const [courses, setCourses] = useState<InstructorCourse[]>([]);
   const [templates, setTemplates] = useState<CourseTemplate[]>([]);
+  const [hourlyRate, setHourlyRate] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [pendingHours, setPendingHours] = useState<number | null>(null);
+  const [offerCourseId, setOfferCourseId] = useState<string | null>(null);
+
+  const COURSE_SELECT =
+    "id, course_hours, course_name, course_image_url, is_active, offer_active, offer_label, offer_percent_off, offer_starts_at, offer_ends_at, discounted_price";
 
   useEffect(() => {
     (async () => {
       setLoading(true);
       try {
-        const [coursesRes, templatesRes] = await Promise.all([
+        const [coursesRes, templatesRes, instructorRes] = await Promise.all([
           supabase
             .from("instructor_courses")
-            .select("id, course_hours, course_name, course_image_url, is_active")
+            .select(COURSE_SELECT)
             .eq("instructor_id", instructorId),
           supabase
             .from("course_templates")
             .select("id, course_hours, course_name, short_description, default_image_url, is_intensive")
             .eq("is_active", true)
             .order("course_hours"),
+          supabase
+            .from("instructors")
+            .select("hourly_rate")
+            .eq("id", instructorId)
+            .maybeSingle(),
         ]);
 
         if (coursesRes.error) throw coursesRes.error;
-        setCourses(coursesRes.data || []);
+        setCourses((coursesRes.data || []) as InstructorCourse[]);
         setTemplates(templatesRes.data || []);
+        setHourlyRate(instructorRes.data?.hourly_rate ?? null);
       } catch (error) {
         console.error("Error fetching courses:", error);
         toast.error("Failed to load courses");
@@ -85,6 +96,12 @@ export function InstructorCoursesManager({ instructorId }: InstructorCoursesMana
         course_name: template.course_name,
         course_image_url: template.default_image_url,
         is_active: true,
+        offer_active: false,
+        offer_label: null,
+        offer_percent_off: null,
+        offer_starts_at: null,
+        offer_ends_at: null,
+        discounted_price: null,
       }]);
     }
 
@@ -105,11 +122,11 @@ export function InstructorCoursesManager({ instructorId }: InstructorCoursesMana
             is_active: nextActive,
             course_image_url: template.default_image_url,
           })
-          .select("id, course_hours, course_name, course_image_url, is_active")
+          .select(COURSE_SELECT)
           .single();
         if (error) throw error;
         setCourses(prev => prev.map(c =>
-          c.id === `tmp-${template.course_hours}` ? data : c
+          c.id === `tmp-${template.course_hours}` ? (data as InstructorCourse) : c
         ));
       }
       toast.success(
