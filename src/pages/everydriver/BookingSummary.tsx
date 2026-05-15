@@ -2116,6 +2116,7 @@ export default function BookingSummary() {
                 const pupilId = bookingPupilId;
                 if (pupilId) {
                   await triggerConfirmBooking(pupilId);
+                  clearDraft();
                   navigate(`/booking-confirmation?pupilId=${pupilId}`);
                 }
               }}
