@@ -7,6 +7,7 @@ import Drive365Home from "@/components/home/Drive365Home";
 import { Link, useNavigate } from "react-router-dom";
 import { SEOHead } from "@/components/SEOHead";
 import { IOSCourseCard } from "@/components/IOSCourseCard";
+import { CourseRowCard } from "@/components/courses/CourseRowCard";
 import { Badge } from "@/components/ui/badge";
 import { PostcodeAutocomplete } from "@/components/PostcodeAutocomplete";
 import { CoursePlannerSheet } from "@/components/course-planner/CoursePlannerSheet";
@@ -332,11 +333,11 @@ export default function Index() {
             </Link>
           </motion.div>
 
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="flex flex-col gap-3">
             {featuredLoading ? (
               <>
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-[340px] animate-pulse rounded-xl bg-muted" />
+                  <div key={i} className="h-[110px] animate-pulse rounded-2xl bg-muted" />
                 ))}
               </>
             ) : featuredCourses.length > 0 ? (
@@ -348,22 +349,18 @@ export default function Index() {
                   transition={{ duration: 0.5, delay: 0.1 + index * 0.05 }}
                   viewport={{ once: true }}
                 >
-                  <IOSCourseCard
+                  <CourseRowCard
                     instructor={course.instructor}
                     hours={course.hours}
                     nextAvailable={course.bookableDate}
-                    courseImageUrl={course.courseImageUrl}
-                    isPopular={course.isPopular}
-                    availableFrom={course.availableFrom}
-                    features={course.features}
                     isIntensive={course.isIntensive}
+                    price={(course.instructor.hourly_rate || 40) * course.hours}
                     discountedPrice={course.discountedPrice}
-                    customFeatures={course.customFeatures}
                   />
                 </motion.div>
               ))
             ) : (
-              <div className="col-span-full py-12 text-center">
+              <div className="py-12 text-center">
                 <p className="text-muted-foreground">No courses available at the moment. Check back soon!</p>
               </div>
             )}
