@@ -98,6 +98,7 @@ export const publicRoutes = (
     <Route path="/sitemap.xml" element={<SitemapRedirect />} />
     <Route path="/test-swap" element={<TestSwap />} />
     <Route path="/test-swap/register" element={<TestSwapRegister />} />
+    <Route path="/test-swap/matches/:signupId" element={<TestSwapMatches />} />
 
     {/* Drive365 Accessible hub */}
     <Route path="/accessible" element={<AccessibleHome />} />
