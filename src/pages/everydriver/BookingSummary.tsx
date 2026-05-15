@@ -603,6 +603,8 @@ export default function BookingSummary() {
 
       setBookingPupilId(data.pupilId);
       bookingPupilIdRef.current = data.pupilId;
+      // Persist optional Test Swap opt-in (no-op unless the learner opted in & consented)
+      void saveSwapOptInIfNeeded(data.pupilId);
       toast.info(`Booking created — completing payment...`);
       return data.pupilId as string;
     } finally {
@@ -1299,11 +1301,14 @@ export default function BookingSummary() {
         {/* Desktop Progress Indicator */}
         <div className="mb-6 flex items-center justify-center gap-2">
           {[
-            { step: 1, label: "Your Details" },
-            { step: 2, label: "Choose Lessons" },
-            { step: 3, label: "Payment" },
+            { step: 1, label: "Your Details", optional: false },
+            { step: 2, label: "Choose Lessons", optional: false },
+            { step: 3, label: "Payment", optional: false },
+            { step: 4, label: "Test swap", optional: true },
           ].map((s, i, arr) => {
-            const step = isPupilDetailsComplete ? (isFullyScheduled ? 3 : 2) : 1;
+            const baseStep = isPupilDetailsComplete ? (isFullyScheduled ? 3 : 2) : 1;
+            // Step 4 (swap) is shown as current once payment is reachable
+            const step = baseStep === 3 ? 4 : baseStep;
             const isDone = step > s.step;
             const isCurrent = step === s.step;
             return (
@@ -1319,6 +1324,9 @@ export default function BookingSummary() {
                   <span className={`text-[10px] font-medium ${isCurrent ? 'text-primary' : isDone ? 'text-foreground' : 'text-muted-foreground'}`}>
                     {s.label}
                   </span>
+                  {s.optional && (
+                    <span className="text-[9px] text-muted-foreground -mt-0.5">Optional</span>
+                  )}
                 </div>
                 {i < arr.length - 1 && <div className={`w-12 h-0.5 mb-4 rounded-full ${isDone ? 'bg-primary' : 'bg-muted'}`} />}
               </div>
@@ -1906,6 +1914,25 @@ export default function BookingSummary() {
             {isRefreshingAvailability ? "Refreshing…" : "Refresh availability"}
           </button>
         </div>
+
+        {/* Step 4 (Optional): Test Swap opt-in — sits between Payment and confirmation */}
+        {canSubmit && (
+          <TestSwapOptInCard
+            swapOptIn={swapOptIn}
+            setSwapOptIn={setSwapOptIn}
+            swapTestDate={swapTestDate}
+            setSwapTestDate={setSwapTestDate}
+            swapTestTime={swapTestTime}
+            setSwapTestTime={setSwapTestTime}
+            swapTestCentre={swapTestCentre}
+            setSwapTestCentre={setSwapTestCentre}
+            swapPreference={swapPreference}
+            setSwapPreference={setSwapPreference}
+            swapConsent={swapConsent}
+            onConsentChange={handleSwapConsentChange}
+          />
+        )}
+
         <CoursePaymentBlock
           courseName={courseName}
           hours={hours}
@@ -1939,6 +1966,11 @@ export default function BookingSummary() {
           onClearpayCheckout={handleClearpayCheckout}
           onBankCheckout={handleInstantBankPay}
           onCashCheckout={handleCashPayment}
+          disabledReason={
+            swapOptIn && !swapConsent
+              ? "Tick the swap consent box or turn off the swap toggle to continue."
+              : null
+          }
         />
         </div>
 
