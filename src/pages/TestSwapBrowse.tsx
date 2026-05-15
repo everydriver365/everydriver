@@ -10,6 +10,9 @@ import {
   Lock,
   Loader2,
   CalendarIcon,
+  Filter as FilterIcon,
+  Bookmark,
+  SlidersHorizontal,
 } from "lucide-react";
 import { SEOHead } from "@/components/SEOHead";
 import { supabase } from "@/integrations/supabase/client";
@@ -46,6 +49,7 @@ type SwapResult = {
   id: string;
   dateFormatted: string;
   timeFormatted: string;
+  rawDate: string;
   transmission: "Manual" | "Automatic" | null;
   preference: string | null;
   wantFrom: string;
@@ -62,6 +66,8 @@ type SwapResultGroup = {
 };
 
 const ANY_CENTRE = "__any__";
+const FILTER_OPTIONS = ["All", "Manual", "Automatic", "Soonest"] as const;
+type FilterOption = (typeof FILTER_OPTIONS)[number];
 
 function fmtDateLong(d?: string | null) {
   if (!d) return "";
@@ -96,6 +102,7 @@ export default function TestSwapBrowse() {
   const [results, setResults] = useState<SwapResultGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [savedSignupId, setSavedSignupId] = useState<string | null>(null);
+  const [isExpanded, setIsExpanded] = useState(true);
 
   useEffect(() => {
     try {
@@ -143,6 +150,7 @@ export default function TestSwapBrowse() {
         id: r.id,
         dateFormatted: fmtDateLong(r.current_test_date),
         timeFormatted: fmtTime(r.current_test_time),
+        rawDate: r.current_test_date,
         transmission: null,
         preference: null,
         wantFrom: fmtDateShort(r.earliest_new_date),
@@ -160,7 +168,7 @@ export default function TestSwapBrowse() {
       .map(([centre, swaps]) => ({
         centre,
         isActive: centreId !== ANY_CENTRE && centre === selectedCentreName,
-        swaps: [...swaps].sort((a, b) => Number(a.locked) - Number(b.locked)),
+        swaps,
       }))
       .sort((a, b) => {
         if (a.isActive && !b.isActive) return -1;
@@ -179,6 +187,14 @@ export default function TestSwapBrowse() {
 
   const totalCount = results.reduce((acc, g) => acc + g.swaps.length, 0);
 
+  // Auto-collapse the search panel when results arrive
+  useEffect(() => {
+    if (totalCount > 0) setIsExpanded(false);
+  }, [totalCount]);
+
+  const fromLabel = dateFrom ? format(dateFrom, "d MMM") : "Any";
+  const toLabel = dateTo ? format(dateTo, "d MMM") : "Any";
+
   return (
     <div className="min-h-screen" style={{ backgroundColor: "#F2F4F8" }}>
       <SEOHead
@@ -190,7 +206,12 @@ export default function TestSwapBrowse() {
       <div style={{ backgroundColor: "#0F2044" }}>
         <div className="mx-auto max-w-2xl">
           {/* Back + title */}
-          <div className="flex items-center gap-3 px-4 pt-3 pb-5">
+          <div
+            className={cn(
+              "flex items-center gap-3 px-4 pt-3",
+              isExpanded ? "pb-5" : "pb-3"
+            )}
+          >
             <button
               onClick={() => navigate(-1)}
               aria-label="Go back"
@@ -212,114 +233,149 @@ export default function TestSwapBrowse() {
             </div>
           </div>
 
-          {/* Search panel */}
-          <div
-            className="mx-4 mb-5 rounded-2xl p-3.5"
-            style={{
-              backgroundColor: "rgba(255,255,255,0.08)",
-              border: "1px solid rgba(255,255,255,0.13)",
-            }}
-          >
-            {/* Test centre */}
+          {/* Collapsed summary row */}
+          {!isExpanded && (
             <div
-              className="mb-1.5 text-[10px] font-bold uppercase"
-              style={{ color: "rgba(255,255,255,0.4)", letterSpacing: "0.7px" }}
+              className="mx-4 mb-5 flex items-center justify-between rounded-[14px] px-3.5 py-3"
+              style={{
+                backgroundColor: "rgba(255,255,255,0.08)",
+                border: "1px solid rgba(255,255,255,0.13)",
+              }}
             >
-              Test centre
-            </div>
-
-            <Select value={centreId} onValueChange={setCentreId}>
-              <SelectTrigger
-                className="mb-3 h-auto w-full rounded-[10px] border px-3 py-2.5 text-left text-[14px] font-medium text-white hover:bg-white/10 focus:ring-0 focus:ring-offset-0 [&>svg]:hidden"
-                style={{
-                  backgroundColor: "rgba(255,255,255,0.08)",
-                  borderColor: "rgba(255,255,255,0.14)",
-                }}
-              >
-                <span className="flex w-full items-center justify-between">
-                  <span className="truncate">{selectedCentreName}</span>
-                  <ChevronDown
-                    className="ml-2 h-3.5 w-3.5 shrink-0"
-                    style={{ color: "rgba(255,255,255,0.5)" }}
-                    strokeWidth={2}
-                  />
-                </span>
-              </SelectTrigger>
-              <SelectContent className="z-50 max-h-72 bg-popover">
-                <SelectItem value={ANY_CENTRE}>Any centre</SelectItem>
-                {centres.map((c) => (
-                  <SelectItem key={c.id} value={c.id}>
-                    {c.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            {/* Date range */}
-            <div
-              className="mb-1.5 text-[10px] font-bold uppercase"
-              style={{ color: "rgba(255,255,255,0.4)", letterSpacing: "0.7px" }}
-            >
-              Date range
-            </div>
-            <div className="mb-3.5 flex gap-2">
-              <DateField label="From" value={dateFrom} onChange={setDateFrom} />
-              <DateField label="To" value={dateTo} onChange={setDateTo} />
-            </div>
-
-            {/* Search row */}
-            <div className="flex items-center justify-between">
-              <button
-                onClick={handleSearch}
-                disabled={loading}
-                className="flex items-center gap-1.5 rounded-[10px] bg-white px-5 py-2.5 text-[13px] font-bold disabled:opacity-70"
-                style={{ color: "#1A52A0" }}
-              >
-                {loading ? (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                ) : (
-                  <SearchIcon className="h-3.5 w-3.5" strokeWidth={2.2} />
-                )}
-                Search
-              </button>
-
-              {totalCount > 0 && !loading && (
-                <div className="flex items-center gap-1.5">
-                  <Check className="h-3 w-3" style={{ color: "#5DCAA5" }} strokeWidth={2.5} />
-                  <span className="text-xs font-semibold" style={{ color: "#5DCAA5" }}>
-                    {totalCount} swap{totalCount !== 1 ? "s" : ""} available
-                  </span>
+              <div className="min-w-0">
+                <div
+                  className="text-[10px] font-bold uppercase"
+                  style={{
+                    color: "rgba(255,255,255,0.35)",
+                    letterSpacing: "0.6px",
+                  }}
+                >
+                  Searching
                 </div>
-              )}
+                <div className="mt-0.5 truncate text-[13px] font-semibold text-white">
+                  {selectedCentreName} · {fromLabel} → {toLabel}
+                </div>
+              </div>
+              <div className="ml-3 flex shrink-0 items-center gap-2">
+                {totalCount > 0 && (
+                  <div className="flex items-center gap-1">
+                    <Check
+                      className="h-2.5 w-2.5"
+                      style={{ color: "#5DCAA5" }}
+                      strokeWidth={2.5}
+                    />
+                    <span
+                      className="text-xs font-semibold"
+                      style={{ color: "#5DCAA5" }}
+                    >
+                      {totalCount} found
+                    </span>
+                  </div>
+                )}
+                <button
+                  onClick={() => setIsExpanded(true)}
+                  className="rounded-lg px-2.5 py-1 text-xs font-semibold text-white"
+                  style={{
+                    backgroundColor: "rgba(255,255,255,0.12)",
+                    border: "1px solid rgba(255,255,255,0.2)",
+                  }}
+                >
+                  Edit
+                </button>
+              </div>
             </div>
-          </div>
+          )}
+
+          {/* Expanded search panel */}
+          {isExpanded && (
+            <div
+              className="mx-4 mb-5 rounded-2xl p-3.5"
+              style={{
+                backgroundColor: "rgba(255,255,255,0.08)",
+                border: "1px solid rgba(255,255,255,0.13)",
+              }}
+            >
+              <div
+                className="mb-1.5 text-[10px] font-bold uppercase"
+                style={{ color: "rgba(255,255,255,0.4)", letterSpacing: "0.7px" }}
+              >
+                Test centre
+              </div>
+
+              <Select value={centreId} onValueChange={setCentreId}>
+                <SelectTrigger
+                  className="mb-3 h-auto w-full rounded-[10px] border px-3 py-2.5 text-left text-[14px] font-medium text-white hover:bg-white/10 focus:ring-0 focus:ring-offset-0 [&>svg]:hidden"
+                  style={{
+                    backgroundColor: "rgba(255,255,255,0.08)",
+                    borderColor: "rgba(255,255,255,0.14)",
+                  }}
+                >
+                  <span className="flex w-full items-center justify-between">
+                    <span className="truncate">{selectedCentreName}</span>
+                    <ChevronDown
+                      className="ml-2 h-3.5 w-3.5 shrink-0"
+                      style={{ color: "rgba(255,255,255,0.5)" }}
+                      strokeWidth={2}
+                    />
+                  </span>
+                </SelectTrigger>
+                <SelectContent className="z-50 max-h-72 bg-popover">
+                  <SelectItem value={ANY_CENTRE}>Any centre</SelectItem>
+                  {centres.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <div
+                className="mb-1.5 text-[10px] font-bold uppercase"
+                style={{ color: "rgba(255,255,255,0.4)", letterSpacing: "0.7px" }}
+              >
+                Date range
+              </div>
+              <div className="mb-3.5 flex gap-2">
+                <DateField label="From" value={dateFrom} onChange={setDateFrom} />
+                <DateField label="To" value={dateTo} onChange={setDateTo} />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <button
+                  onClick={handleSearch}
+                  disabled={loading}
+                  className="flex items-center gap-1.5 rounded-[10px] bg-white px-5 py-2.5 text-[13px] font-bold disabled:opacity-70"
+                  style={{ color: "#1A52A0" }}
+                >
+                  {loading ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <SearchIcon className="h-3.5 w-3.5" strokeWidth={2.2} />
+                  )}
+                  Search
+                </button>
+
+                {totalCount > 0 && !loading && (
+                  <div className="flex items-center gap-1.5">
+                    <Check className="h-3 w-3" style={{ color: "#5DCAA5" }} strokeWidth={2.5} />
+                    <span className="text-xs font-semibold" style={{ color: "#5DCAA5" }}>
+                      {totalCount} swap{totalCount !== 1 ? "s" : ""} available
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Results */}
       <div className="mx-auto max-w-2xl px-4 py-4 pb-10">
-        {loading ? (
-          <div className="flex items-center justify-center py-16">
-            <Loader2 className="h-6 w-6 animate-spin" style={{ color: "#1A52A0" }} />
-          </div>
-        ) : results.length === 0 ? (
-          <div className="flex flex-col items-center justify-center px-10 py-16 text-center">
-            <h2 className="mb-1.5 text-[15px] font-semibold" style={{ color: "#0F2044" }}>
-              No swaps found
-            </h2>
-            <p className="text-[13px] leading-5" style={{ color: "#6B7280" }}>
-              Try a different test centre or widen your date range.
-            </p>
-          </div>
-        ) : (
-          results.map((group) => (
-            <SwapCentreGroup
-              key={group.centre}
-              group={group}
-              savedSignupId={savedSignupId}
-            />
-          ))
-        )}
+        <SwapResultsList
+          results={results}
+          loading={loading}
+          savedSignupId={savedSignupId}
+        />
 
         <div className="mt-6 text-center">
           <Link
@@ -392,6 +448,114 @@ function DateField({
   );
 }
 
+function SwapResultsList({
+  results,
+  loading,
+  savedSignupId,
+}: {
+  results: SwapResultGroup[];
+  loading: boolean;
+  savedSignupId: string | null;
+}) {
+  const [activeFilter, setActiveFilter] = useState<FilterOption>("All");
+
+  const filteredResults = useMemo(() => {
+    let groups = results;
+
+    if (activeFilter === "Manual" || activeFilter === "Automatic") {
+      groups = groups
+        .map((group) => ({
+          ...group,
+          swaps: group.swaps.filter(
+            (s) => s.transmission?.toLowerCase() === activeFilter.toLowerCase()
+          ),
+        }))
+        .filter((group) => group.swaps.length > 0);
+    }
+
+    // Sort locked cards to bottom within each group
+    groups = groups.map((group) => ({
+      ...group,
+      swaps: [...group.swaps].sort((a, b) => {
+        if (a.locked && !b.locked) return 1;
+        if (!a.locked && b.locked) return -1;
+        if (activeFilter === "Soonest") {
+          return (a.rawDate ?? "").localeCompare(b.rawDate ?? "");
+        }
+        return 0;
+      }),
+    }));
+
+    return groups;
+  }, [results, activeFilter]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-16">
+        <Loader2 className="h-6 w-6 animate-spin" style={{ color: "#1A52A0" }} />
+      </div>
+    );
+  }
+
+  if (!results.length) {
+    return (
+      <div className="flex flex-col items-center justify-center px-10 py-16 text-center">
+        <h2 className="mb-1.5 text-[15px] font-semibold" style={{ color: "#0F2044" }}>
+          No swaps found
+        </h2>
+        <p className="text-[13px] leading-5" style={{ color: "#6B7280" }}>
+          Try a different test centre or widen your date range.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {/* Filter strip */}
+      <div className="-mx-4 mb-3.5 overflow-x-auto px-4 pb-1 [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: "none" }}>
+        <div className="flex items-center gap-1.5">
+          <button
+            className="flex shrink-0 items-center gap-1 rounded-full border bg-white px-3 py-1.5"
+            style={{ borderColor: "#D1D5DB" }}
+          >
+            <SlidersHorizontal className="h-2.5 w-2.5" style={{ color: "#6B7280" }} strokeWidth={2} />
+            <span className="text-xs font-medium" style={{ color: "#6B7280" }}>
+              Sort
+            </span>
+          </button>
+
+          {FILTER_OPTIONS.map((opt) => {
+            const active = activeFilter === opt;
+            return (
+              <button
+                key={opt}
+                onClick={() => setActiveFilter(opt)}
+                className="shrink-0 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors"
+                style={{
+                  borderColor: active ? "#0F2044" : "#D1D5DB",
+                  backgroundColor: active ? "#0F2044" : "#FFF",
+                  color: active ? "#FFF" : "#374151",
+                }}
+              >
+                {opt}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {filteredResults.map((group) => (
+        <SwapCentreGroup
+          key={group.centre}
+          group={group}
+          savedSignupId={savedSignupId}
+        />
+      ))}
+    </>
+  );
+}
+
 function SwapCentreGroup({
   group,
   savedSignupId,
@@ -401,25 +565,27 @@ function SwapCentreGroup({
 }) {
   return (
     <div className="mb-2">
-      <div className="mb-2.5 flex items-center gap-2">
+      <div className="flex items-center gap-1.5 pb-2">
         <MapPin
-          className="h-3.5 w-3.5"
+          className="h-3 w-3"
           style={{ color: group.isActive ? "#1A52A0" : "#9CA3AF" }}
           strokeWidth={2}
         />
         <span
-          className="text-[13px] font-bold"
+          className="text-xs font-bold"
           style={{ color: group.isActive ? "#0F2044" : "#6B7280" }}
         >
           {group.centre}
         </span>
         <span
-          className="rounded-full px-2 py-0.5 text-[10px] font-bold text-white"
-          style={{ backgroundColor: group.isActive ? "#1A52A0" : "#9CA3AF" }}
+          className="rounded-full px-2 py-px text-[10px] font-bold text-white"
+          style={{ backgroundColor: group.isActive ? "#0F2044" : "#9CA3AF" }}
         >
           {group.swaps.length}
         </span>
       </div>
+
+      <div className="mb-3" style={{ height: "0.5px", backgroundColor: "#E5E7EB" }} />
 
       {group.swaps.map((swap) =>
         swap.locked ? (
@@ -445,6 +611,7 @@ function SwapResultCard({
   swap: SwapResult;
   savedSignupId: string | null;
 }) {
+  const [saved, setSaved] = useState(false);
   const accent =
     ACCENT_COLOURS[swap.transmission?.toLowerCase() ?? ""] ?? ACCENT_COLOURS.default;
 
@@ -452,48 +619,68 @@ function SwapResultCard({
 
   return (
     <div
-      className="mb-2.5 overflow-hidden rounded-[14px] bg-white"
+      className="mb-2.5 overflow-hidden rounded-2xl bg-white"
       style={{
         border: "1px solid #E9EBF0",
-        boxShadow: "0 1px 4px rgba(15,32,68,0.06)",
+        boxShadow: "0 1px 4px rgba(15,32,68,0.05)",
       }}
     >
-      <div style={{ height: 3, backgroundColor: accent }} />
-      <div className="p-3.5">
-        <div className="mb-2 flex items-start justify-between">
-          <div>
-            <div
-              className="text-[15px] font-bold"
-              style={{ color: "#0F2044", letterSpacing: "-0.2px" }}
-            >
-              {swap.dateFormatted}
-            </div>
-            {swap.timeFormatted && (
-              <div className="mt-0.5 text-xs font-medium" style={{ color: "#6B7280" }}>
-                {swap.timeFormatted}
-              </div>
-            )}
+      {/* Coloured banner */}
+      <div
+        className="relative flex items-center justify-between overflow-hidden px-3.5"
+        style={{ height: 56, backgroundColor: accent }}
+      >
+        {/* Glow circle */}
+        <div
+          className="pointer-events-none absolute rounded-full"
+          style={{
+            width: 100,
+            height: 100,
+            backgroundColor: "#FFF",
+            opacity: 0.15,
+            right: -20,
+            top: -30,
+          }}
+        />
+        <div className="relative z-10">
+          <div
+            className="text-[16px] font-bold text-white"
+            style={{ letterSpacing: "-0.3px" }}
+          >
+            {swap.dateFormatted}
           </div>
-          {swap.distanceMiles && (
-            <div
-              className="flex items-center gap-1 rounded-lg px-2 py-1"
-              style={{ backgroundColor: "#F3F4F6" }}
-            >
-              <MapPin className="h-2.5 w-2.5" style={{ color: "#9CA3AF" }} strokeWidth={2} />
-              <span className="text-[11px] font-semibold" style={{ color: "#9CA3AF" }}>
-                {swap.distanceMiles} mi
-              </span>
+          {swap.timeFormatted && (
+            <div className="mt-px text-xs" style={{ color: "rgba(255,255,255,0.65)" }}>
+              {swap.timeFormatted}
             </div>
           )}
         </div>
+        {swap.distanceMiles && (
+          <div
+            className="relative z-10 flex items-center gap-1 rounded-full px-2 py-0.5"
+            style={{
+              backgroundColor: "rgba(255,255,255,0.18)",
+              border: "1px solid rgba(255,255,255,0.25)",
+            }}
+          >
+            <MapPin className="h-2 w-2 text-white" strokeWidth={2} />
+            <span className="text-[11px] font-semibold text-white">
+              {swap.distanceMiles} mi
+            </span>
+          </div>
+        )}
+      </div>
 
+      {/* Body */}
+      <div className="p-3 pb-3.5">
         {(swap.transmission || swap.preference) && (
-          <div className="mb-2.5 flex flex-wrap gap-1.5">
+          <div className="mb-2 flex flex-wrap gap-1.5">
             {swap.transmission && (
               <span
-                className="rounded-full px-2.5 py-1 text-[11px] font-semibold"
+                className="rounded-full px-2.5 py-0.5 text-[11px] font-semibold"
                 style={{
-                  backgroundColor: swap.transmission === "Automatic" ? "#E6F1FB" : "#EAF3DE",
+                  backgroundColor:
+                    swap.transmission === "Automatic" ? "#E6F1FB" : "#EAF3DE",
                   color: swap.transmission === "Automatic" ? "#1A52A0" : "#27500A",
                 }}
               >
@@ -502,7 +689,7 @@ function SwapResultCard({
             )}
             {swap.preference && (
               <span
-                className="rounded-full px-2.5 py-1 text-[11px] font-semibold"
+                className="rounded-full px-2.5 py-0.5 text-[11px] font-semibold"
                 style={{ backgroundColor: "#E1F5EE", color: "#085041" }}
               >
                 {swap.preference}
@@ -511,13 +698,18 @@ function SwapResultCard({
           </div>
         )}
 
-        <p className="mb-1.5 text-[13px] leading-5" style={{ color: "#374151" }}>
-          Learner wants a slot between{" "}
-          <span className="font-bold">{swap.wantFrom}</span>
+        <p className="mb-1 text-[13px] leading-5" style={{ color: "#374151" }}>
+          Wants a slot between{" "}
+          <span className="font-bold" style={{ color: "#0F2044" }}>
+            {swap.wantFrom}
+          </span>
           {swap.wantTo ? (
             <>
               {" "}
-              and <span className="font-bold">{swap.wantTo}</span>
+              and{" "}
+              <span className="font-bold" style={{ color: "#0F2044" }}>
+                {swap.wantTo}
+              </span>
             </>
           ) : null}
           .
@@ -532,13 +724,31 @@ function SwapResultCard({
           </p>
         )}
 
-        <Link
-          to={ctaTo}
-          className="block rounded-[10px] py-3 text-center text-sm font-bold text-white"
-          style={{ backgroundColor: accent }}
-        >
-          Request this swap
-        </Link>
+        <div className="mt-3 flex items-center gap-2">
+          <Link
+            to={ctaTo}
+            className="flex-1 rounded-[10px] py-2.5 text-center text-[13px] font-bold text-white"
+            style={{ backgroundColor: accent, letterSpacing: "-0.1px" }}
+          >
+            Request this swap
+          </Link>
+          <button
+            onClick={() => setSaved((s) => !s)}
+            aria-label={saved ? "Remove bookmark" : "Save swap"}
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] border transition-colors"
+            style={{
+              borderColor: saved ? accent : "#E5E7EB",
+              backgroundColor: saved ? `${accent}12` : "#FFF",
+            }}
+          >
+            <Bookmark
+              className="h-4 w-4"
+              style={{ color: saved ? accent : "#9CA3AF" }}
+              strokeWidth={1.8}
+              fill={saved ? accent : "none"}
+            />
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -547,30 +757,51 @@ function SwapResultCard({
 function SwapLockedCard({ swap }: { swap: SwapResult }) {
   return (
     <div
-      className="mb-2.5 overflow-hidden rounded-[14px] bg-white"
+      className="mb-2.5 overflow-hidden rounded-2xl bg-white"
       style={{
         border: "1px solid #E9EBF0",
-        opacity: 0.75,
+        opacity: 0.7,
       }}
     >
-      <div style={{ height: 3, backgroundColor: "#D1D5DB" }} />
-      <div className="p-3.5">
-        <div className="mb-2.5">
+      {/* Grey banner */}
+      <div
+        className="flex items-center gap-2 px-3.5"
+        style={{
+          height: 48,
+          backgroundColor: "#F3F4F6",
+          borderBottom: "1px solid #E9EBF0",
+        }}
+      >
+        <Lock className="h-3.5 w-3.5" style={{ color: "#9CA3AF" }} strokeWidth={1.8} />
+        <div className="flex-1">
           <div
-            className="text-[15px] font-bold"
+            className="text-[14px] font-bold"
             style={{ color: "#9CA3AF", letterSpacing: "-0.2px" }}
           >
             {swap.dateFormatted}
           </div>
           {swap.timeFormatted && (
-            <div className="mt-0.5 text-xs" style={{ color: "#9CA3AF" }}>
+            <div className="mt-px text-[11px]" style={{ color: "#C4C9D4" }}>
               {swap.timeFormatted}
             </div>
           )}
         </div>
-
         <div
-          className="mb-3 flex items-center gap-2 rounded-[10px] p-2.5"
+          className="rounded-full px-2 py-0.5 text-[10px] font-semibold"
+          style={{
+            backgroundColor: "#F3F4F6",
+            color: "#9CA3AF",
+            border: "1px solid #E5E7EB",
+          }}
+        >
+          Locked
+        </div>
+      </div>
+
+      {/* Body */}
+      <div className="p-3 pb-3.5">
+        <div
+          className="mb-2.5 flex items-center gap-2 rounded-[10px] p-2.5"
           style={{
             backgroundColor: "#F9FAFB",
             border: "1px dashed #D1D5DB",
@@ -578,19 +809,19 @@ function SwapLockedCard({ swap }: { swap: SwapResult }) {
         >
           <Lock className="h-3.5 w-3.5 shrink-0" style={{ color: "#9CA3AF" }} strokeWidth={1.8} />
           <span className="flex-1 text-xs leading-[18px]" style={{ color: "#6B7280" }}>
-            Register to view full details and request this swap.
+            Create a free account to see full details and request this swap.
           </span>
         </div>
 
         <Link
           to="/test-swap/register?returnTo=/test-swap/browse"
-          className="block rounded-[10px] py-2.5 text-center text-sm font-bold"
+          className="block rounded-[10px] py-2.5 text-center text-[13px] font-bold"
           style={{
             border: "1.5px solid #1A52A0",
             color: "#1A52A0",
           }}
         >
-          Register to request
+          Register to request this swap
         </Link>
       </div>
     </div>
