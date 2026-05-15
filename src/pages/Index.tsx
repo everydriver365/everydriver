@@ -7,6 +7,7 @@ import Drive365Home from "@/components/home/Drive365Home";
 import { Link, useNavigate } from "react-router-dom";
 import { SEOHead } from "@/components/SEOHead";
 import { IOSCourseCard } from "@/components/IOSCourseCard";
+import { CourseRowCard } from "@/components/courses/CourseRowCard";
 import { Badge } from "@/components/ui/badge";
 import { PostcodeAutocomplete } from "@/components/PostcodeAutocomplete";
 import { CoursePlannerSheet } from "@/components/course-planner/CoursePlannerSheet";
