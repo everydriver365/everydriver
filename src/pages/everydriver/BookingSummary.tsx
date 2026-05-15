@@ -831,6 +831,7 @@ export default function BookingSummary() {
       const pupilId = await ensureBookingCreated('full', 0);
       if (!pupilId) return;
       await triggerConfirmBooking(pupilId);
+      clearDraft();
       navigate(`/booking-confirmation?pupilId=${pupilId}&method=cash`);
     } catch (err) {
       console.error("Cash booking error:", err);
