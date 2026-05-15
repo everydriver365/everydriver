@@ -284,7 +284,7 @@ export default function Index() {
                     />
                   ) : (
                     <div style={{ height: "100%", width: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "#E8ECF2" }}>
-                      <IconComponent style={{ width: 40, height: 40, color: "#1A52A0", opacity: 0.4 }} />
+                      <IconComponent className="h-10 w-10 opacity-40" style={{ color: "#1A52A0" } as any} />
                     </div>
                   )}
                 </div>
