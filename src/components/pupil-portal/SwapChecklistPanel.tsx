@@ -303,6 +303,68 @@ function SwapStepCard({
           </span>
         </div>
       )}
+
+      {step.id === "partner_ref" && (
+        <div
+          className="border-t border-[#D3D1C7] bg-[#F8F6F0]"
+          style={{ padding: 12 }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <label className="block text-[11px] text-[#5F5E5A] mb-1">
+            Learner B's booking reference
+          </label>
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              inputMode="text"
+              autoCapitalize="characters"
+              autoCorrect="off"
+              spellCheck={false}
+              value={partnerRef}
+              onChange={(e) => onPartnerRefChange(e.target.value)}
+              placeholder="e.g. 1234567890"
+              className="flex-1 border border-[#D3D1C7] rounded-lg bg-white text-[13px] text-[#2C2C2A] tracking-wider"
+              style={{ padding: 9 }}
+            />
+            <button
+              type="button"
+              onClick={onCopyPartnerRef}
+              disabled={!partnerRef.trim()}
+              className="bg-[#1A52A0] disabled:bg-[#B4C4DA] text-white text-[12px] font-medium rounded-lg flex items-center gap-1.5"
+              style={{ padding: 10 }}
+            >
+              <Copy className="h-[13px] w-[13px]" />
+              Copy
+            </button>
+          </div>
+          <p className="text-[11px] text-[#888780] mt-1.5">
+            Stored only for this session. Never shared via Drive365.
+          </p>
+        </div>
+      )}
+
+      {step.id === "give_ref" && partnerRef.trim() && (
+        <div
+          className="border-t border-[#D3D1C7] bg-[#E6F1FB] flex items-center justify-between"
+          style={{ padding: 12 }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="min-w-0">
+            <p className="text-[11px] text-[#185FA5]">Learner B's reference</p>
+            <p className="text-[15px] font-medium text-[#0C447C] tracking-wider truncate">
+              {partnerRef}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onCopyPartnerRef}
+            className="bg-white text-[#1A52A0] text-[12px] font-medium rounded-lg flex items-center gap-1.5 px-2.5 py-1.5"
+          >
+            <Copy className="h-[13px] w-[13px]" />
+            Copy
+          </button>
+        </div>
+      )}
     </div>
   );
 }
