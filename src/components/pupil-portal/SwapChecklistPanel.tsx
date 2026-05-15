@@ -116,6 +116,16 @@ export function SwapChecklistPanel({ onClose, onOpenSwapSettings }: SwapChecklis
     setResetConfirmOpen(false);
   };
 
+  const copyDVSADetails = async () => {
+    const text = `DVSA helpline: 0300 200 1122 (Option 1)\nChange driving test: https://www.gov.uk/change-driving-test`;
+    try {
+      await navigator.clipboard.writeText(text);
+      toast({ title: "Copied", description: "DVSA phone and booking link copied to clipboard." });
+    } catch {
+      toast({ title: "Couldn't copy", description: "Copy manually: 0300 200 1122", variant: "destructive" });
+    }
+  };
+
   const handleStepAction = (action: SwapStepAction) => {
     if (action.phone) {
       window.location.href = `tel:${action.phone}`;
@@ -153,6 +163,14 @@ export function SwapChecklistPanel({ onClose, onOpenSwapSettings }: SwapChecklis
             }}
           />
         </div>
+        <button
+          onClick={copyDVSADetails}
+          className="mt-3 bg-[#E6F1FB] text-[#0C447C] text-[12px] font-medium rounded-lg flex items-center gap-1.5 self-start"
+          style={{ padding: "8px 10px" }}
+        >
+          <Copy className="h-[13px] w-[13px]" />
+          Copy DVSA details
+        </button>
       </div>
 
       <div className="flex flex-col gap-2 pb-5" style={{ padding: 14 }}>
