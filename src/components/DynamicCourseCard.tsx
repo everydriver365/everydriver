@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { MapPin, Clock, User, PoundSterling, Star, CheckCircle, Car, Zap, TrendingUp, ArrowRight } from "lucide-react";
+import { MapPin, Clock, User, PoundSterling, Star, CheckCircle, Car, Zap, TrendingUp, ArrowRight, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format, isFuture, parseISO, differenceInDays } from "date-fns";
 import { CompactPaymentBadges } from "@/components/payments/PaymentMessaging";
+import { computeOfferStatus } from "@/lib/courseOffer";
 
 interface DynamicCourseCardProps {
   instructor: {
