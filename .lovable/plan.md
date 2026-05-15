@@ -1,13 +1,24 @@
-## Problem
+## Why the Test Swap link is missing
 
-When a user on `drive365.co.uk` clicks the Test Swap banner (linking to `/test-swap`), the `DomainRouter` component redirects them to `everydriver.co.uk/test-swap` because `/test-swap` is not in the `LEARNER_ALLOWED_ROUTES` list.
+The shared `Header.tsx` has `{ href: "/test-swap", label: "Test Swap" }` already. **But** on Drive365 routes, `Header.tsx` short-circuits and renders the dedicated `Drive365Header` component (line 44–46), which has its own hard-coded `NAV_LINKS` array that doesn't include Test Swap.
+
+The shared `Footer.tsx` already has the Test Swap link, so the footer is fine on every site. The link is also visible on EveryDriver / whitelabel / non-Drive365 routes through `Header.tsx`. Only the Drive365 top nav is missing it.
 
 ## Fix
 
-1. **Add `/test-swap` to `LEARNER_ALLOWED_ROUTES`** in `src/components/DomainRouter.tsx` (line 25) so Drive365 no longer redirects it.
-2. **Add `/test-swap` to `everydriverRoutes.tsx`** so the route also resolves on EveryDriver domains (currently it would 404 there since only `publicRoutes` has it).
+**File:** `src/components/layout/Drive365Header.tsx`
 
-## Files to change
+Add Test Swap to `NAV_LINKS` (line 6–12), placed between Theory practice and Franchise so it sits prominently:
 
-- `src/components/DomainRouter.tsx` — add `"/test-swap"` to `LEARNER_ALLOWED_ROUTES`
-- `src/routes/everydriverRoutes.tsx` — add `const TestSwap = lazy(...)` and `<Route path="/test-swap" element={<TestSwap />} />`
+```ts
+const NAV_LINKS = [
+  { href: "/courses", label: "Courses", hasDropdown: true },
+  { href: "/theory", label: "Theory practice" },
+  { href: "/test-swap", label: "Test Swap" },
+  { href: "/drive365/franchise", label: "Franchise" },
+  { href: "/about", label: "About" },
+  { href: "/help", label: "Help" },
+];
+```
+
+That's the only change needed — the existing render loops handle desktop and mobile menu rendering automatically.
