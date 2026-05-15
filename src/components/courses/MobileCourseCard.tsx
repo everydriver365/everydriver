@@ -164,7 +164,18 @@ export function MobileCourseCard({ course, index }: MobileCourseCardProps) {
               </div>
 
               <div className="text-right flex-shrink-0">
-                <span className="text-lg font-black text-foreground">£{price.toLocaleString()}</span>
+                {offer.isLive ? (
+                  <>
+                    <div className="text-[10px] line-through text-muted-foreground leading-none">£{totalPrice.toLocaleString()}</div>
+                    <span className="text-lg font-black text-emerald-600 leading-none">£{price.toLocaleString()}</span>
+                    <Badge className="mt-0.5 border-0 bg-amber-500 text-white text-[9px] px-1.5 py-0 h-auto gap-0.5">
+                      <Sparkles className="h-2.5 w-2.5" />
+                      {offer.label || (offer.percentOff ? `${offer.percentOff}% off` : `Save £${offer.savings.toFixed(0)}`)}
+                    </Badge>
+                  </>
+                ) : (
+                  <span className="text-lg font-black text-foreground">£{price.toLocaleString()}</span>
+                )}
               </div>
             </div>
 
