@@ -59,6 +59,15 @@ export function isEveryDriverPreviewOverrideActive(
   if (!isLovablePreviewHost(host)) return false;
 
   try {
+    const pathname = window.location.pathname;
+    // Drive365 routes are never EveryDriver, even if the override was set
+    // in this session. Visiting any /drive365* path also clears the sticky flag
+    // so the rest of the session stays on Drive365 until ?everydriver=1 is used.
+    if (pathname === "/drive365" || pathname.startsWith("/drive365/")) {
+      window.sessionStorage.removeItem(EVERYDRIVER_PREVIEW_OVERRIDE_KEY);
+      return false;
+    }
+
     const params = new URLSearchParams(window.location.search);
     const explicitOverride = params.get("everydriver");
 
@@ -73,13 +82,6 @@ export function isEveryDriverPreviewOverrideActive(
     }
 
     if (window.sessionStorage.getItem(EVERYDRIVER_PREVIEW_OVERRIDE_KEY) === "1") {
-      return true;
-    }
-
-    // In Lovable preview the EveryDriver clone uses the clean /courses route;
-    // Drive365 search remains available at /drive365/search.
-    if (window.location.pathname === "/courses" || window.location.pathname === "/search") {
-      window.sessionStorage.setItem(EVERYDRIVER_PREVIEW_OVERRIDE_KEY, "1");
       return true;
     }
   } catch {
