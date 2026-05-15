@@ -108,8 +108,28 @@ export function SwapChecklistPanel({ onClose, onOpenSwapSettings }: SwapChecklis
   const allDone = doneCount === totalCount;
   const progress = doneCount / totalCount;
 
-  const toggleStep = (id: string) =>
-    setChecked((prev) => ({ ...prev, [id]: !prev[id] }));
+  const stepRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  const toggleStep = (id: string) => {
+    setChecked((prev) => {
+      const next = { ...prev, [id]: !prev[id] };
+      // If we just checked this step ON, scroll to the next incomplete step
+      if (next[id]) {
+        const justCheckedIndex = SWAP_STEPS.findIndex((s) => s.id === id);
+        const nextIncomplete = SWAP_STEPS.slice(justCheckedIndex + 1).find((s) => !next[s.id]);
+        if (nextIncomplete) {
+          const nextIndex = SWAP_STEPS.findIndex((s) => s.id === nextIncomplete.id);
+          const el = stepRefs.current[nextIndex];
+          if (el) {
+            requestAnimationFrame(() => {
+              el.scrollIntoView({ behavior: "smooth", block: "center" });
+            });
+          }
+        }
+      }
+      return next;
+    });
+  };
 
   const resetAll = () => {
     setChecked(Object.fromEntries(SWAP_STEPS.map((s) => [s.id, false])));
