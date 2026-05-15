@@ -228,74 +228,76 @@ export default function Index() {
         </div>
       </section>
 
-      {/* What's Included Section — V14 Glass Tiles */}
-      <section className="bg-gradient-to-b from-primary/5 to-background py-16">
-        <div className="container max-w-5xl">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            viewport={{ once: true }}
-            className="text-center mb-10"
-          >
-            <Badge className="mb-4 border-0 bg-primary text-primary-foreground">
-              Why Learners Love Us
-            </Badge>
-            <h2 className="mb-4 text-3xl font-bold md:text-4xl">
-              What's Included With Every Course
-            </h2>
-            <p className="mx-auto max-w-2xl text-muted-foreground">
-              Everything you need to pass your driving test, all included for free.
-            </p>
-          </motion.div>
+      {/* What's Included Section — Drive365 style */}
+      <section style={{ padding: "56px 5%", background: "#F0F2F5", width: "100%" }}>
+        <div style={{ fontSize: 11, fontWeight: 600, color: "#1A52A0", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 6 }}>
+          What's included
+        </div>
+        <h2 style={{ fontSize: 32, fontWeight: 700, color: "#0F2044", letterSpacing: -0.5, marginBottom: 10 }}>
+          Everything you need to pass
+        </h2>
+        <p style={{ fontSize: 15, color: "#5F6B7A", lineHeight: 1.6, maxWidth: 520, marginBottom: 36 }}>
+          Every course comes with the tools, support and flexibility to get you test-ready — included for free.
+        </p>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px,1fr))", gap: 20 }}>
+          {includedFeatures.map((feature, index) => {
+            const IconComponent = feature.icon;
+            const featureImage = feature.image_url || (() => {
+              switch(feature.title.toLowerCase()) {
+                case 'theory test support': return featureTheory;
+                case 'flexible payments': return featurePayments;
+                case 'free cancellation': return featureCancellation;
+                case 'free re-test': return featureRetest;
+                case 'live availability': return featureAvailability;
+                case 'theory test pro': return featureTheoryProImg;
+                default: return null;
+              }
+            })();
 
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
-            {includedFeatures.map((feature, index) => {
-              const IconComponent = feature.icon;
-              const featureImage = feature.image_url || (() => {
-                switch(feature.title.toLowerCase()) {
-                  case 'theory test support': return featureTheory;
-                  case 'flexible payments': return featurePayments;
-                  case 'free cancellation': return featureCancellation;
-                  case 'free re-test': return featureRetest;
-                  case 'live availability': return featureAvailability;
-                  case 'theory test pro': return featureTheoryProImg;
-                  default: return null;
-                }
-              })();
-
-              return (
-                <motion.button
-                  key={feature.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: index * 0.04 }}
-                  viewport={{ once: true }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => openFeatureModal(feature)}
-                  className="text-left rounded-2xl overflow-hidden bg-card/70 backdrop-blur ring-1 ring-border/50 shadow-sm hover:shadow-lg transition-all group"
-                >
-                  <div className="h-36 md:h-48 overflow-hidden">
-                    {featureImage ? (
-                      <img
-                        src={featureImage}
-                        alt={feature.title}
-                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                    ) : (
-                      <div className="h-full w-full bg-gradient-to-br from-primary/10 to-accent/5 flex items-center justify-center">
-                        <IconComponent className="h-10 w-10 text-primary/30" />
-                      </div>
-                    )}
+            return (
+              <motion.button
+                key={feature.id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: index * 0.04 }}
+                viewport={{ once: true }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => openFeatureModal(feature)}
+                style={{
+                  background: "#FFF",
+                  borderRadius: 18,
+                  overflow: "hidden",
+                  border: "1px solid #E0E4EB",
+                  display: "flex",
+                  flexDirection: "column",
+                  textAlign: "left",
+                  padding: 0,
+                  cursor: "pointer",
+                }}
+              >
+                <div style={{ height: 180, overflow: "hidden", background: "#F0F2F5" }}>
+                  {featureImage ? (
+                    <img
+                      src={featureImage}
+                      alt={feature.title}
+                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                    />
+                  ) : (
+                    <div style={{ height: "100%", width: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "#E8ECF2" }}>
+                      <IconComponent className="h-10 w-10 text-[#1A52A0] opacity-40" />
+                    </div>
+                  )}
+                </div>
+                <div style={{ padding: 22, flex: 1, display: "flex", flexDirection: "column" }}>
+                  <h3 style={{ fontSize: 16, fontWeight: 700, color: "#0F2044", marginBottom: 6 }}>{feature.title}</h3>
+                  <p style={{ fontSize: 13, color: "#5F6B7A", lineHeight: 1.6, marginBottom: 14 }}>{feature.description}</p>
+                  <div style={{ marginTop: "auto", display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 600, color: "#1A52A0" }}>
+                    Learn more <ChevronRight size={12} color="#1A52A0" strokeWidth={2.2} />
                   </div>
-                  <div className="p-3 md:p-4">
-                    <h3 className="font-semibold text-xs md:text-sm text-foreground">{feature.title}</h3>
-                    <p className="text-[10px] md:text-xs text-muted-foreground mt-0.5 line-clamp-2">{feature.description}</p>
-                  </div>
-                </motion.button>
-              );
-            })}
-          </div>
+                </div>
+              </motion.button>
+            );
+          })}
         </div>
       </section>
 
