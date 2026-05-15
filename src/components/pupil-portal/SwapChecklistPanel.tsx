@@ -116,7 +116,15 @@ export function SwapChecklistPanel({ onClose, onOpenSwapSettings }: SwapChecklis
     setResetConfirmOpen(false);
   };
 
-  const handleStepAction = (action: SwapStepAction) => {
+  const copyDVSADetails = async () => {
+    const text = `DVSA helpline: 0300 200 1122 (Option 1)\nChange driving test: https://www.gov.uk/change-driving-test`;
+    try {
+      await navigator.clipboard.writeText(text);
+      toast({ title: "Copied", description: "DVSA phone and booking link copied to clipboard." });
+    } catch {
+      toast({ title: "Couldn't copy", description: "Copy manually: 0300 200 1122", variant: "destructive" });
+    }
+  };
     if (action.phone) {
       window.location.href = `tel:${action.phone}`;
     } else if (action.url) {
