@@ -90,6 +90,7 @@ export function SwapChecklistPanel({ onClose, onOpenSwapSettings }: SwapChecklis
     Object.fromEntries(SWAP_STEPS.map((s) => [s.id, false]))
   );
   const [partnerRef, setPartnerRef] = useState("");
+  const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
 
   const copyPartnerRef = async () => {
     const value = partnerRef.trim();
@@ -110,8 +111,10 @@ export function SwapChecklistPanel({ onClose, onOpenSwapSettings }: SwapChecklis
   const toggleStep = (id: string) =>
     setChecked((prev) => ({ ...prev, [id]: !prev[id] }));
 
-  const resetAll = () =>
+  const resetAll = () => {
     setChecked(Object.fromEntries(SWAP_STEPS.map((s) => [s.id, false])));
+    setResetConfirmOpen(false);
+  };
 
   const handleStepAction = (action: SwapStepAction) => {
     if (action.phone) {
