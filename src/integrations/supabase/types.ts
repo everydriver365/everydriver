@@ -19176,6 +19176,23 @@ export type Database = {
           start_time: string
         }[]
       }
+      get_public_test_swap_signup_for_edit: {
+        Args: { p_id: string }
+        Returns: {
+          current_centre_id: string
+          current_centre_name: string
+          current_test_date: string
+          current_test_time: string
+          earliest_new_date: string
+          email: string
+          full_name: string
+          has_test_booked: boolean
+          id: string
+          latest_new_date: string
+          notes: string
+          phone: string
+        }[]
+      }
       get_public_test_swap_signup_self: {
         Args: { p_id: string }
         Returns: {
