@@ -19256,6 +19256,10 @@ export type Database = {
         Args: { p_requester_signup_id: string; p_target_signup_id: string }
         Returns: string
       }
+      submit_public_test_swap_signup: {
+        Args: { p_payload: Json }
+        Returns: string
+      }
       update_live_position:
         | {
             Args: {

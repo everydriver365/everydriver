@@ -116,15 +116,14 @@ export default function TestSwapRegister() {
       return;
     }
 
-    const { data: inserted, error } = await supabase
-      .from("public_test_swap_signups")
-      .insert(parsed.data as any)
-      .select("id")
-      .single();
+    const { data: newId, error } = await supabase.rpc(
+      "submit_public_test_swap_signup",
+      { p_payload: parsed.data as any }
+    );
 
     setSubmitting(false);
 
-    if (error || !inserted) {
+    if (error || !newId) {
       toast({
         title: "Couldn't submit",
         description: error?.message ?? "Please try again.",
@@ -133,7 +132,7 @@ export default function TestSwapRegister() {
       return;
     }
 
-    navigate(`/test-swap/matches/${inserted.id}`);
+    navigate(`/test-swap/matches/${newId}`);
   };
 
   return (
