@@ -57,6 +57,8 @@ interface Props {
   onClearpayCheckout: () => void;
   onBankCheckout: () => void;
   onCashCheckout: () => void;
+  // optional extra disable reason from outside (e.g. swap consent required)
+  disabledReason?: string | null;
 }
 
 export function CoursePaymentBlock({
@@ -92,6 +94,7 @@ export function CoursePaymentBlock({
   onClearpayCheckout,
   onBankCheckout,
   onCashCheckout,
+  disabledReason,
 }: Props) {
   const grandTotal = totalPrice + upsellTotal;
   const [selected, setSelected] = useState<PaymentMethodId>("card");
@@ -106,7 +109,8 @@ export function CoursePaymentBlock({
     ? "Complete your details above to continue."
     : requiresSlotSelection && !isFullyScheduled
       ? `Schedule the remaining ${hoursRemaining.toFixed(1)} hour${hoursRemaining === 1 ? "" : "s"} to continue.`
-      : null;
+      : disabledReason || null;
+  const externallyBlocked = !!disabledReason;
 
   const methods: Array<{
     id: PaymentMethodId;
@@ -368,7 +372,7 @@ export function CoursePaymentBlock({
                       {/* Pay button + inline gating + trust row */}
                       <PayCta
                         method={m.id}
-                        canSubmit={canSubmit}
+                        canSubmit={canSubmit && !externallyBlocked}
                         loading={isLoadingFor(m.id)}
                         gatingMessage={inlineGatingMessage}
                         cta={ctaFor(m.id)}
