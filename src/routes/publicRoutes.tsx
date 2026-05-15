@@ -94,6 +94,7 @@ export const publicRoutes = (
     {/* Whitelabel preview shortcuts (e.g. /winchester) */}
     <Route path="/winchester" element={<WhitelabelPreviewRedirect />} />
     <Route path="/sitemap.xml" element={<SitemapRedirect />} />
+    <Route path="/test-swap" element={<TestSwap />} />
 
     {/* Drive365 Accessible hub */}
     <Route path="/accessible" element={<AccessibleHome />} />
