@@ -229,7 +229,7 @@ const CourseCardImage: React.FC<{ courseId: string; badge: string; badgeColor: s
       <img
         src={intensiveCourseImg}
         alt="Learner celebrating after passing driving test"
-        style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+        style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }}
       />
     ) : (
       <svg viewBox="0 0 360 180" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" aria-hidden>
