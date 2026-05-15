@@ -11,6 +11,7 @@ import { PostcodeAutocomplete } from "@/components/PostcodeAutocomplete";
 import { CoursePlannerSheet } from "@/components/course-planner/CoursePlannerSheet";
 import { HeroSearchSection } from "@/components/homepage/HeroSearchSection";
 import drive365HeroTestCentre from "@/assets/drive365-hero-driver.webp";
+import testswapBanner from "@/assets/testswap-banner.png";
 import { FeatureDetailModal } from "@/components/FeatureDetailModal";
 import { FeatureData } from "@/hooks/useHomepageFeatures";
 import {
