@@ -57,6 +57,7 @@ function getNavGroups(selfBooking: boolean, reflective: boolean): NavGroup[] {
         { id: "documents", icon: FileText, label: "My Documents", desc: "Certificates & receipts" },
         { id: "messages", icon: MessageSquare, label: "Messages", desc: "Chat with instructor" },
         { id: "notes", icon: StickyNote, label: "My Notes", desc: "Personal & shared notes" },
+        { id: "swap-settings", icon: RefreshCw, label: "Test swap", desc: "Swap network & alerts" },
       ],
     },
     {

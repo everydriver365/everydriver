@@ -16,6 +16,8 @@ import { Label } from "@/components/ui/label";
 import { Bell } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { SwapProfileRow } from "@/components/pupil-portal/SwapProfileRow";
+import { SwapNotificationsRow } from "@/components/pupil-portal/SwapNotificationsRow";
 
 interface PupilData {
   id: string;
@@ -43,9 +45,11 @@ interface PupilPortalProfileEditProps {
   pupil: PupilData;
   onPupilUpdate: (updates: Partial<PupilData>) => void;
   brandColour: string | null;
+  swapOptedIn?: boolean;
+  onOpenSwapSettings?: () => void;
 }
 
-export function PupilPortalProfileEdit({ pupil, onPupilUpdate, brandColour }: PupilPortalProfileEditProps) {
+export function PupilPortalProfileEdit({ pupil, onPupilUpdate, brandColour, swapOptedIn = false, onOpenSwapSettings }: PupilPortalProfileEditProps) {
   const [postcodeValue, setPostcodeValue] = useState(pupil.postcode || "");
   const [addressValue, setAddressValue] = useState(pupil.address || "");
   const [pickupAddressValue, setPickupAddressValue] = useState(pupil.pickup_address || "");
@@ -445,6 +449,12 @@ export function PupilPortalProfileEdit({ pupil, onPupilUpdate, brandColour }: Pu
           </div>
         </div>
       </div>
+      {onOpenSwapSettings && (
+        <>
+          <SwapProfileRow optedIn={swapOptedIn} onClick={onOpenSwapSettings} />
+          <SwapNotificationsRow onClick={onOpenSwapSettings} />
+        </>
+      )}
     </InstructorCard>
   );
 }

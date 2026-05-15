@@ -63,6 +63,9 @@ import { SubPageHeader } from "@/components/pupil-portal/SubPageHeader";
 import { TestCountdownCard } from "@/components/pupil-portal/TestCountdownCard";
 import { PupilQuickActions } from "@/components/pupil-portal/PupilQuickActions";
 import { GroupedNavMenu } from "@/components/pupil-portal/GroupedNavMenu";
+import { SwapSettingsPanel } from "@/components/pupil-portal/SwapSettingsPanel";
+import { SwapNeedsAttentionBanner } from "@/components/pupil-portal/SwapNeedsAttentionBanner";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 import { ChevronDown } from "lucide-react";
 
@@ -105,9 +108,10 @@ interface Pupil {
   postcode: string | null;
   pickup_address: string | null;
   what3words: string | null;
+  test_date?: string | null;
 }
 
-type ActiveSection = 'home' | 'schedule' | 'payments' | 'theory' | 'progress' | 'history' | 'gaps' | 'test-info' | 'messages' | 'profile' | 'notes' | 'coaching' | 'test-requests' | 'reflections' | 'book' | 'lesson-tracks' | 'lesson-videos' | 'driving-style' | 'show-tell' | 'documents';
+type ActiveSection = 'home' | 'schedule' | 'payments' | 'theory' | 'progress' | 'history' | 'gaps' | 'test-info' | 'messages' | 'profile' | 'notes' | 'coaching' | 'test-requests' | 'reflections' | 'book' | 'lesson-tracks' | 'lesson-videos' | 'driving-style' | 'show-tell' | 'documents' | 'swap-settings';
 
 const sectionTitles: Record<string, string> = {
   schedule: "My Lessons",
@@ -143,7 +147,25 @@ export default function BrandedPupilPortal() {
   const [darkModeOverride, setDarkModeOverride] = useState<boolean | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [statsOpen, setStatsOpen] = useState(true);
+  const [swapPanelOpen, setSwapPanelOpen] = useState(false);
+  const [swapOptedIn, setSwapOptedIn] = useState(false);
   const { invalidatePaymentQueries } = usePaymentInvalidation();
+
+  useEffect(() => {
+    if (!pupil?.id) return;
+    let alive = true;
+    (async () => {
+      const { data } = await supabase
+        .from("pupil_swap_profile")
+        .select("opted_in")
+        .eq("pupil_id", pupil.id)
+        .maybeSingle();
+      if (alive) setSwapOptedIn(!!data?.opted_in);
+    })();
+    return () => { alive = false; };
+  }, [pupil?.id, swapPanelOpen]);
+
+  const openSwapSettings = () => setSwapPanelOpen(true);
 
   // Handle payment return params
   useEffect(() => {
@@ -248,7 +270,7 @@ export default function BrandedPupilPortal() {
   const fetchPupil = async (pupilId: string) => {
     const { data, error } = await supabase
       .from("pupils")
-      .select("id, name, phone, email, lessons_completed, progress, account_balance, prepaid_hours, profile_image_url, date_of_birth, driver_number, theory_cert_number, address, postcode, pickup_address, what3words")
+      .select("id, name, phone, email, lessons_completed, progress, account_balance, prepaid_hours, profile_image_url, date_of_birth, driver_number, theory_cert_number, address, postcode, pickup_address, what3words, test_date")
       .eq("id", pupilId)
       .single();
 
@@ -393,6 +415,11 @@ export default function BrandedPupilPortal() {
                   </div>
 
                   {/* ═══ ZONE 1: RIGHT NOW ═══ */}
+                  <SwapNeedsAttentionBanner
+                    hasTestBooked={!!pupil.test_date}
+                    optedIn={swapOptedIn}
+                    onClick={openSwapSettings}
+                  />
                   <SlotOfferNotification pupilId={pupil.id} onAccept={() => setActiveSection('schedule')} />
                   <PupilCheckInCard pupilId={pupil.id} />
                   <PushNotificationBanner pupilId={pupil.id} brandColour={drive365Blue} />
@@ -443,7 +470,10 @@ export default function BrandedPupilPortal() {
 
                   {/* ═══ ZONE 3: QUICK ACCESS ═══ */}
                   <GroupedNavMenu
-                    onNavigate={(section) => setActiveSection(section as ActiveSection)}
+                    onNavigate={(section) => {
+                      if (section === 'swap-settings') { openSwapSettings(); return; }
+                      setActiveSection(section as ActiveSection);
+                    }}
                     brandColour={instructor.brand_colour || drive365Blue}
                     selfBookingEnabled={instructor.pupil_self_booking_enabled ?? false}
                     reflectiveLogsEnabled={instructor.reflective_logs_enabled !== false}
@@ -621,6 +651,8 @@ export default function BrandedPupilPortal() {
                     pupil={pupil}
                     onPupilUpdate={(updates) => setPupil(prev => prev ? { ...prev, ...updates } : null)}
                     brandColour={drive365Blue}
+                    swapOptedIn={swapOptedIn}
+                    onOpenSwapSettings={openSwapSettings}
                   />
                 </div>
               </motion.div>
@@ -659,6 +691,18 @@ export default function BrandedPupilPortal() {
           brandColour={drive365Blue}
           darkMode={effectiveDarkMode}
         />
+      )}
+
+      {pupil && instructor && (
+        <Sheet open={swapPanelOpen} onOpenChange={setSwapPanelOpen}>
+          <SheetContent side="right" className="w-full sm:max-w-md p-0 overflow-y-auto">
+            <SwapSettingsPanel
+              pupilId={pupil.id}
+              instructorId={instructor.id}
+              onClose={() => setSwapPanelOpen(false)}
+            />
+          </SheetContent>
+        </Sheet>
       )}
     </div>
   );

@@ -1,110 +1,88 @@
-## Test Swap step — Drive365 booking flow
+# Test Swap — Settings & Profile (Drive365 / Pupil Portal)
 
-Add a new **optional** "Test swap" step to the Drive365 booking summary page, sitting between the Payment block and the existing payment-triggered submit/confirm. The supplied React Native code is translated to React web using existing shadcn primitives. No existing booking step, payment logic, or validation is modified.
+Translates the React Native spec to the existing web pupil portal (`BrandedPupilPortal.tsx` shell + `PupilPortalProfileEdit.tsx` + `GroupedNavMenu.tsx`). Uses Supabase + React Query (no Redux). Touches no existing fields/sections except by **insertion**.
 
-### Where it goes
+## Scope
 
-File: `src/pages/everydriver/BookingSummary.tsx`
+### 1. Database — `pupil_swap_profile`
 
-The current page has inline steps **Your Details → Choose Lessons → Payment**, where Payment also creates the booking and routes to `/booking-confirmation`. The new swap step is rendered as a card directly **above the `CoursePaymentBlock`** (i.e. visible after slots are scheduled, before the user taps a payment method). This is the closest match to "between Payment and Confirm" given the existing architecture.
+Migration (one row per pupil):
 
-Both desktop and mobile step indicators in `BookingSummary.tsx` get a 4th step labelled **"Test swap"** with an "Optional" caption underneath. The existing step-number logic stays untouched; the new pip is rendered as `current` once `isPupilDetailsComplete && isFullyScheduled`.
+- `id` uuid PK
+- `pupil_id` uuid unique not null (FK pupils)
+- `instructor_id` uuid not null (FK instructors)
+- `opted_in` bool default false
+- `email_notifications` bool default true
+- `sms_notifications` bool default false
+- `test_date` date null
+- `test_time` time null
+- `test_centre` text null
+- `preference` text default 'earlier' (check: earlier|later|any)
+- `consent_given` bool default false
+- `consent_timestamp` timestamptz null
+- `created_at`, `updated_at` (trigger updates `updated_at`)
 
-### Component
+RLS: pupils can read/write their own row (matched via existing pupil-auth RLS pattern using `pupil_id`); instructor can read pupils they own. Mirrors policies on `booking_test_swap_optins`.
 
-New file: `src/components/everydriver/TestSwapOptInCard.tsx` — pure presentational, controlled by props.
+### 2. New components
 
-Translation of the React Native spec:
+- `src/components/pupil-portal/SwapSettingsPanel.tsx` — full SwapSettings translated to Tailwind/shadcn:
+  - Header bar with back chevron, "Test swap" title, "Active" pill (`bg-[#E1F5EE] text-[#085041]`) when opted in.
+  - **Toggles card**: Join swap network (primary), Email notifications, SMS notifications. Sub-toggles disabled + `opacity-40` when `optedIn === false`. Turning main toggle off **also** sets email + SMS to false.
+  - **Test details form** (only when opted in): test date, test time, test centre, preferred swap (`Select`: earlier / later / any). Save button → upserts row, shows "Saved" for 2s then reverts.
+  - **Privacy note** card with lock icon and exact copy from spec (no booking reference shared).
+  - **Leave swap network** destructive link (only when opted in) → opens `AlertDialog` (shadcn `Alert` substitute) with Cancel + Leave network → clears opt-in + both notification toggles.
+  - Spacing exactly as spec (14px gutters, 14px card padding, 10px field gap, 4px label margin, 9px input padding). Colours from spec verbatim (`#1A52A0`, `#E6F1FB`, `#F1EFE8`, `#D3D1C7`, `#5F5E5A`, `#2C2C2A`, `#A32D2D`).
+  - Accepts `pupilId` + `onClose` props; manages local form state, persists via `supabase.from('pupil_swap_profile').upsert(...)` with `consent_timestamp = new Date().toISOString()` set when consent box is ticked.
 
-| RN element | Web equivalent |
-|---|---|
-| `View` / `ScrollView` | `div` with Tailwind |
-| `Text` | `p` / `span` |
-| `Switch` | shadcn `Switch` |
-| `TextInput` | shadcn `Input` |
-| `Picker` | shadcn `Select` |
-| `TouchableOpacity` (consent box) | shadcn `Checkbox` inside a clickable `label` |
-| `SwapIcon` / `InfoIcon` / `AlertIcon` / `CheckIcon` | lucide `ArrowLeftRight`, `Info`, `AlertTriangle`, `Check` |
+- `src/components/pupil-portal/SwapProfileRow.tsx` — small profile card row for the bottom of `PupilPortalProfileEdit`:
+  - Swap icon (lucide `Repeat`), "Test swap" label, sublabel ("Active — showing your slot" / "Not joined"), green "Active" badge when opted in, chevron right.
+  - `onClick` opens `SwapSettingsPanel` (sheet/dialog).
 
-Colours from the spec map to inline styles (kept literal so the visual matches):
-- Header background `#E6F1FB`, text `#0C447C`, "Optional" pill `#1A52A0`
-- Info banner `#E6F1FB` / border `#B5D4F4`
-- Toggle / consent container `#F1EFE8`
-- Warning banner `#FAEEDA` / border `#FAC775` / text `#854F0B`
-- Primary button `#1A52A0`
+- `src/components/pupil-portal/SwapNotificationsRow.tsx` — "Test swap alerts" notifications card inserted at bottom of `PupilPortalProfileEdit` (the spec's Settings → Notifications surrogate). Same opens-panel behaviour.
 
-Spacing matches the spec: 16px outer padding, 14px section gap, 10px field gap, 12px inner padding.
+- `src/components/pupil-portal/SwapNeedsAttentionBanner.tsx` — dashboard banner:
+  - Renders only when `hasTestBooked === true && optedIn === false`.
+  - Icon tile `bg-[#E6F1FB] text-[#1A52A0]`, left band `bg-[#1A52A0]`, label "Join test swap network", subtitle "Find learners to swap test slots with".
+  - Full-width row inserted at the very top of the dashboard area.
 
-The "Continue to confirmation" / "Skip this step" footer is **not** rendered as a separate footer — instead the existing payment buttons in `CoursePaymentBlock` act as the continue action, and a small "Skip — I don't have a test booked" link sits at the bottom of the card to clear `swapOptIn` and collapse the form. This keeps the existing payment UX as the single forward action.
+### 3. Wiring (insert-only edits)
 
-### State (added to `BookingSummary.tsx`)
+- **`src/components/pupil-portal/PupilPortalProfileEdit.tsx`**: append `<SwapProfileRow />` and `<SwapNotificationsRow />` at the end of the existing form. No existing fields or rows touched.
+- **`src/components/pupil-portal/GroupedNavMenu.tsx`**: append a new menu entry "Test swap" in the appropriate existing group; clicking opens the SwapSettingsPanel via a callback.
+- **`src/pages/BrandedPupilPortal.tsx`**:
+  - Add `swapPanelOpen` state + sheet/dialog rendering `SwapSettingsPanel`.
+  - Pass an `onOpenSwapSettings` handler into `GroupedNavMenu`, `PupilPortalProfileEdit`, and the new banner.
+  - Insert `<SwapNeedsAttentionBanner />` at the top of the dashboard view; derive `hasTestBooked` from existing pupil state (`pupil.test_date` / `practical_test_date`, whichever exists — fall back to `false` if absent, surfacing nothing rather than a fake state).
+  - Read `swapProfile` once via React Query (`['pupilSwapProfile', pupil.id]`) → drives sublabels, badges, and banner gating across all three entry points.
 
-```ts
-const [swapOptIn, setSwapOptIn]       = useState(false)
-const [swapTestDate, setSwapTestDate] = useState('')
-const [swapTestTime, setSwapTestTime] = useState('')
-const [swapTestCentre, setSwapTestCentre] = useState('')
-const [swapPreference, setSwapPreference] = useState<'earlier'|'later'|'any'>('earlier')
-const [swapConsent, setSwapConsent]   = useState(false)
-```
+### 4. Hard constraints honoured
 
-Pre-population: if the existing `pupils` row already loaded for the learner contains test data (`practical_test_date`, `practical_test_time`, `practical_test_centre`), seed those three fields once on mount. **No new API call** is added.
+- No existing profile/settings sections are modified — entries are appended.
+- Email/SMS toggles disabled + dimmed when not opted in.
+- Turning off main toggle clears email + SMS in same update.
+- Leave network shows confirmation dialog before clearing.
+- No booking reference shared anywhere; copy matches spec.
+- No new libraries — uses existing shadcn `Switch`, `Input`, `Select`, `Sheet`, `AlertDialog`, lucide icons.
+- `saved` resets after 2s.
+- Banner only renders under the documented condition.
 
-### Persistence
+## Files
 
-A new table is created (separate from the existing instructor-side `test_swap_offers`):
+**New**
+- `supabase/migrations/<timestamp>_pupil_swap_profile.sql`
+- `src/components/pupil-portal/SwapSettingsPanel.tsx`
+- `src/components/pupil-portal/SwapProfileRow.tsx`
+- `src/components/pupil-portal/SwapNotificationsRow.tsx`
+- `src/components/pupil-portal/SwapNeedsAttentionBanner.tsx`
 
-```sql
-create table public.booking_test_swap_optins (
-  id uuid primary key default gen_random_uuid(),
-  pupil_id uuid not null references public.pupils(id) on delete cascade,
-  instructor_id uuid not null references public.instructors(id) on delete cascade,
-  test_date text,         -- free-text, learner-entered
-  test_time text,
-  test_centre text,
-  preference text not null check (preference in ('earlier','later','any')),
-  consent_given boolean not null,
-  consent_timestamp timestamptz not null,
-  created_at timestamptz not null default now()
-);
-alter table public.booking_test_swap_optins enable row level security;
-```
+**Edited (insert-only)**
+- `src/components/pupil-portal/PupilPortalProfileEdit.tsx`
+- `src/components/pupil-portal/GroupedNavMenu.tsx`
+- `src/pages/BrandedPupilPortal.tsx`
 
-RLS:
-- Pupils can insert a row for themselves (matched via `pupil_id` belonging to the authenticated learner — using existing pupil-auth pattern).
-- Instructors can read rows for their own pupils via `get_instructor_id_for_user(auth.uid())`.
-- Admins full access via `has_role(auth.uid(), 'admin')`.
+## Out of scope
 
-The insert is fired from `ensureBookingCreated`'s success path (the same place the booking pupil id becomes known) **only when `swapOptIn === true && swapConsent === true`**. Skipped or un-consented = no row written. `consent_timestamp` is captured at the moment the consent checkbox is ticked and stored in state, then sent with the insert.
-
-### Hard-constraint compliance
-
-- Existing steps (Details / Choose Lessons / Payment) are untouched — only a new card is added before payment and a new pip on the indicators.
-- Skipping is always possible: the payment buttons remain enabled regardless of swap state when `swapOptIn === false`.
-- When `swapOptIn === true && swapConsent === false`, all payment buttons in `CoursePaymentBlock` are disabled via a new `disabledReason="Tick the swap consent box or turn off the swap toggle"` prop forwarded into `CoursePaymentBlock` (additive prop — existing behaviour preserved when not set).
-- Consent checkbox starts `false` and is never auto-ticked.
-- No swap data is written if the learner doesn't opt in.
-- `consent_timestamp` recorded as ISO 8601 `new Date().toISOString()` at the moment of ticking.
-- No new libraries — Switch, Input, Select, Checkbox already exist in shadcn.
-- Indicators show "Optional" caption under the swap pip.
-
-### Files
-
-**Create**
-- `src/components/everydriver/TestSwapOptInCard.tsx` — the new card component
-- Migration: create `booking_test_swap_optins` + RLS
-
-**Edit**
-- `src/pages/everydriver/BookingSummary.tsx`
-  - add the 6 state hooks
-  - render `<TestSwapOptInCard …/>` above `CoursePaymentBlock`
-  - add 4th pip ("Test swap" + "Optional") to the desktop and mobile step indicators
-  - in the booking-creation success paths, write to `booking_test_swap_optins` when opted-in + consented
-  - pass `disabledReason` to `CoursePaymentBlock` when consent is required but missing
-- `src/components/courses/CoursePaymentBlock.tsx` — accept optional `disabledReason?: string`; when set, all payment buttons render disabled with a tooltip showing the reason. Existing callers unaffected.
-
-### Out of scope
-
-- No matching/notification logic for the swap network (that's the existing instructor-side `test_swap_offers` flow).
-- Mobile native screens are not touched (per project memory).
-- No changes to `BookingConfirmation.tsx`.
+- Matching engine / notification dispatch (UI-only opt-in; existing `notify-test-swap-match` edge function is untouched).
+- Mobile-only native screens.
+- Any change to `booking_test_swap_optins` (prompt 2's table).
