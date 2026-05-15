@@ -583,7 +583,7 @@ function SwapLockedCard({ swap }: { swap: SwapResult }) {
         </div>
 
         <Link
-          to="/test-swap/register?returnTo=/test-swap/search"
+          to="/test-swap/register?returnTo=/test-swap/browse"
           className="block rounded-[10px] py-2.5 text-center text-sm font-bold"
           style={{
             border: "1.5px solid #1A52A0",
