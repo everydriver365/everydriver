@@ -928,6 +928,7 @@ export default function BookingSummary() {
       console.error("confirm-booking error:", err);
     }
 
+    clearDraft();
     navigate(`/booking-confirmation?pupilId=${pupilId}&klarna=success&ref=${orderId}`);
   };
 
