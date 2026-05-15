@@ -153,27 +153,38 @@ export default function TestSwapMatches() {
             Back to Test Swap
           </Link>
 
-          <div className="flex items-start justify-between gap-4 mb-2">
+          <div className="flex items-start justify-between gap-4 mb-2 flex-wrap">
             <h1 className="text-3xl md:text-4xl font-bold">
               {me ? `Hi ${me.full_name.split(" ")[0]}, here are your matches` : "Your matches"}
             </h1>
-            <Button variant="outline" size="sm" onClick={load} disabled={loading}>
-              <RefreshCw className={`h-4 w-4 mr-1 ${loading ? "animate-spin" : ""}`} />
-              Refresh
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={load} disabled={loading}>
+                <RefreshCw className={`h-4 w-4 mr-1 ${loading ? "animate-spin" : ""}`} />
+                Refresh
+              </Button>
+            </div>
           </div>
 
           {me && (
             <div className="rounded-2xl border bg-muted/30 p-4 mb-6 text-sm">
-              <div className="font-medium mb-1">Your details</div>
-              <div className="text-muted-foreground">
-                {me.has_test_booked ? (
-                  <>Current test: <span className="text-foreground">{me.current_centre_name ?? "—"} · {fmtDate(me.current_test_date)} {me.current_test_time?.slice(0,5)}</span></>
-                ) : (
-                  <>You haven't booked a test yet</>
-                )}
-                <span className="mx-2">·</span>
-                Want a date between <span className="text-foreground">{fmtDate(me.earliest_new_date)}</span> and <span className="text-foreground">{fmtDate(me.latest_new_date)}</span>
+              <div className="flex items-start justify-between gap-3 flex-wrap">
+                <div>
+                  <div className="font-medium mb-1">Your details</div>
+                  <div className="text-muted-foreground">
+                    {me.has_test_booked ? (
+                      <>Current test: <span className="text-foreground">{me.current_centre_name ?? "—"} · {fmtDate(me.current_test_date)} {me.current_test_time?.slice(0,5)}</span></>
+                    ) : (
+                      <>You haven't booked a test yet</>
+                    )}
+                    <span className="mx-2">·</span>
+                    Want a date between <span className="text-foreground">{fmtDate(me.earliest_new_date)}</span> and <span className="text-foreground">{fmtDate(me.latest_new_date)}</span>
+                  </div>
+                </div>
+                <Button asChild size="sm" variant="outline" className="shrink-0">
+                  <Link to={`/test-swap/edit/${signupId}`}>
+                    <Pencil className="h-4 w-4 mr-1" /> Edit my details
+                  </Link>
+                </Button>
               </div>
             </div>
           )}
