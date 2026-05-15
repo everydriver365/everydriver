@@ -181,6 +181,10 @@ export function InstructorCoursesManager({ instructorId }: InstructorCoursesMana
           const existing = courses.find(c => c.course_hours === template.course_hours);
           const isOn = !!existing?.is_active;
           const isPending = pendingHours === template.course_hours;
+          const offer = existing
+            ? computeOfferStatus((hourlyRate ?? 0) * template.course_hours, existing)
+            : null;
+          const isPersisted = !!existing && !existing.id.startsWith("tmp-");
 
           return (
             <Card key={template.id} className={!isOn ? "opacity-70" : ""}>
@@ -195,13 +199,35 @@ export function InstructorCoursesManager({ instructorId }: InstructorCoursesMana
                       {template.is_intensive && (
                         <Badge variant="outline" className="flex-shrink-0">Intensive</Badge>
                       )}
+                      {offer?.isLive && (
+                        <Badge className="flex-shrink-0 border-0 bg-amber-500 text-white gap-1">
+                          <Sparkles className="h-3 w-3" />
+                          {offer.label || `${offer.percentOff}% off`}
+                        </Badge>
+                      )}
                     </div>
                     <p className={`text-xs mt-1 ${isOn ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground"}`}>
                       {isOn ? "Visible to pupils" : "Hidden from pupils"}
+                      {offer?.isLive && (
+                        <span className="ml-2 text-muted-foreground">
+                          · Was £{offer.basePrice.toFixed(0)} → £{offer.finalPrice.toFixed(0)}
+                        </span>
+                      )}
                     </p>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
                     {isPending && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+                    {isOn && isPersisted && (
+                      <Button
+                        size="sm"
+                        variant={offer?.isLive ? "default" : "outline"}
+                        className={offer?.isLive ? "bg-amber-500 hover:bg-amber-600 text-white" : ""}
+                        onClick={() => setOfferCourseId(existing!.id)}
+                      >
+                        <Sparkles className="h-3.5 w-3.5 mr-1" />
+                        {offer?.isLive ? "Edit offer" : "Add offer"}
+                      </Button>
+                    )}
                     <Switch
                       checked={isOn}
                       disabled={isPending}
@@ -214,6 +240,34 @@ export function InstructorCoursesManager({ instructorId }: InstructorCoursesMana
           );
         })}
       </div>
+
+      {offerCourseId && (() => {
+        const c = courses.find(x => x.id === offerCourseId);
+        if (!c) return null;
+        return (
+          <CourseOfferDialog
+            open={!!offerCourseId}
+            onOpenChange={(o) => { if (!o) setOfferCourseId(null); }}
+            course={{
+              id: c.id,
+              course_name: c.course_name,
+              course_hours: c.course_hours,
+              offer_active: c.offer_active,
+              offer_label: c.offer_label,
+              offer_percent_off: c.offer_percent_off,
+              offer_starts_at: c.offer_starts_at,
+              offer_ends_at: c.offer_ends_at,
+              discounted_price: c.discounted_price,
+            }}
+            hourlyRate={hourlyRate}
+            onSaved={(next) => {
+              setCourses(prev => prev.map(p => p.id === next.id ? { ...p, ...next } as InstructorCourse : p));
+            }}
+          />
+        );
+      })()}
     </div>
+  );
+}
   );
 }
