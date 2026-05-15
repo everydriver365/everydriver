@@ -692,6 +692,18 @@ export default function BrandedPupilPortal() {
           darkMode={effectiveDarkMode}
         />
       )}
+
+      {pupil && instructor && (
+        <Sheet open={swapPanelOpen} onOpenChange={setSwapPanelOpen}>
+          <SheetContent side="right" className="w-full sm:max-w-md p-0 overflow-y-auto">
+            <SwapSettingsPanel
+              pupilId={pupil.id}
+              instructorId={instructor.id}
+              onClose={() => setSwapPanelOpen(false)}
+            />
+          </SheetContent>
+        </Sheet>
+      )}
     </div>
   );
 }
