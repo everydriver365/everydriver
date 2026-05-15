@@ -135,7 +135,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
   const benefits = [
     { icon: CheckCircle, title: "Free Re-Test", desc: "If you fail first time, we'll pay for your next test!" },
     { icon: BookOpen, title: "Free Theory Test", desc: "Need a theory test? We'll book it for free!" },
-    { icon: Shield, title: "Earlier Test Guaranteed", desc: "We find you an earlier test date or your money back." },
+    { icon: Shield, title: "Free Test Swapping", desc: "Use our test swapping software to link with another driver and swap your test." },
     { icon: Search, title: "Free Cancellation Finder", desc: "Access to the best test finding software available." },
     { icon: CreditCard, title: "Flexible Payments", desc: "Pay over up to 8 months with Klarna or Clearpay." },
     { icon: Clock, title: "Book Early, Save More", desc: "Early bird discounts and student offers available." },
@@ -182,7 +182,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                 />
                 <img
                   src={earlyTestBadge}
-                  alt="Earlier Test Guaranteed"
+                  alt="Free Test Swapping"
                   className="absolute -top-4 -right-4 sm:-top-6 sm:-right-6 w-24 h-24 sm:w-32 sm:h-32 object-contain drop-shadow-lg"
                 />
               </motion.div>
@@ -328,13 +328,13 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
             <img src={klarnaCleanpayLogos} alt="Pay with Klarna or Clearpay" className="h-10 sm:h-12 object-contain" />
           </div>
 
-          {/* Earlier Test Guarantee CTA */}
+          {/* Free Test Swapping CTA */}
           <Link to={links.contact} className="block">
             <div className="flex items-center gap-3 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-3 sm:p-4 hover:shadow-md transition-shadow">
-              <img src={earlyTestBadge} alt="Earlier Test Guaranteed" className="w-16 h-16 sm:w-20 sm:h-20 object-contain shrink-0" />
+              <img src={earlyTestBadge} alt="Free Test Swapping" className="w-16 h-16 sm:w-20 sm:h-20 object-contain shrink-0" />
               <div className="flex-1 min-w-0">
-                <div className="font-bold text-sm sm:text-base text-foreground">Earlier Test Guaranteed</div>
-                <div className="text-[11px] sm:text-xs text-muted-foreground">We find you an earlier test date or your money back</div>
+                <div className="font-bold text-sm sm:text-base text-foreground">Free Test Swapping</div>
+                <div className="text-[11px] sm:text-xs text-muted-foreground">Use our test swapping software to link with another driver and swap your test</div>
               </div>
               <ChevronRight className="h-5 w-5 text-amber-500 shrink-0" />
             </div>
@@ -376,7 +376,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                 <Badge className="absolute right-3 top-3 border-0 bg-primary text-primary-foreground gap-1">
                   <Zap className="h-3 w-3" /> Fast Track
                 </Badge>
-                <img src={earlyTestBadge} alt="Earlier Test Guarantee" className="absolute left-2 bottom-2 w-32 h-32 drop-shadow-lg object-contain" />
+                <img src={earlyTestBadge} alt="Free Test Swapping" className="absolute left-2 bottom-2 w-32 h-32 drop-shadow-lg object-contain" />
               </div>
               <div className="p-6">
                 <h3 className="text-xl font-bold" style={{ color: primaryColor }}>Intensive Courses</h3>
@@ -411,7 +411,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                 <Badge className="absolute right-3 top-3 border-0 bg-emerald-500 text-white gap-1">
                   <Star className="h-3 w-3" /> Popular
                 </Badge>
-                <img src={earlyTestBadge} alt="Earlier Test Guarantee" className="absolute left-2 bottom-2 w-32 h-32 drop-shadow-lg object-contain" />
+                <img src={earlyTestBadge} alt="Free Test Swapping" className="absolute left-2 bottom-2 w-32 h-32 drop-shadow-lg object-contain" />
               </div>
               <div className="p-6">
                 <h3 className="text-xl font-bold" style={{ color: primaryColor }}>Semi-Intensive</h3>
