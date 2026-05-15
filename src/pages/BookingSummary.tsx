@@ -119,6 +119,14 @@ interface CourseDetails {
   courseDescription: string | null;
   features: string[] | null;
   template: CourseTemplate | null;
+  offer?: {
+    isLive: boolean;
+    label: string | null;
+    finalPrice: number;
+    basePrice: number;
+    savings: number;
+    percentOff: number | null;
+  } | null;
 }
 
 export default function BookingSummary() {
