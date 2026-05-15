@@ -19176,6 +19176,19 @@ export type Database = {
           start_time: string
         }[]
       }
+      get_public_test_swap_signup_self: {
+        Args: { p_id: string }
+        Returns: {
+          current_centre_name: string
+          current_test_date: string
+          current_test_time: string
+          earliest_new_date: string
+          full_name: string
+          has_test_booked: boolean
+          id: string
+          latest_new_date: string
+        }[]
+      }
       get_pupil_payment_info: {
         Args: { p_instructor_id: string; p_pupil_id: string }
         Returns: {

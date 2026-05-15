@@ -1,25 +1,22 @@
-## Why registration fails
+## Remaining gap
 
-The form inserts into `public_test_swap_signups` and then chains `.select("id").single()`. The insert itself is allowed (anon INSERT policy exists with `consent_given = true`), but PostgREST's `RETURNING` requires a matching **SELECT** policy. There is no SELECT policy for `anon`, so the returning step fails — the client sees an error and never navigates to `/test-swap/matches/:id`.
+The previous fix lets people submit, but the success page (`/test-swap/matches/:signupId`) still hits the same RLS wall: it does a direct `.from("public_test_swap_signups").select(...).eq("id", signupId).maybeSingle()` to load the "me" row. Anon has no SELECT policy on that table, so `meRes.data` is `null` → page renders "Registration not found" right after a successful signup.
 
-We don't want to open SELECT to the public (the table contains email, phone, full name — PII).
+The other two RPCs the page uses (`get_test_swap_matches`, `request_test_swap`) are SECURITY DEFINER and granted to PUBLIC, so they already work.
 
 ## Fix
 
-1. **Add a SECURITY DEFINER RPC** `submit_public_test_swap_signup(p_payload jsonb)` that:
-   - Validates `consent_given = true` (rejects otherwise).
-   - Validates required fields (`full_name`, `email`, `phone`, `earliest_new_date`, `latest_new_date`).
-   - Inserts the row, returns the new `id` (uuid).
-   - Granted EXECUTE to `anon, authenticated`.
+1. **New SECURITY DEFINER RPC** `get_public_test_swap_signup_self(p_id uuid)` returning only the non-PII fields the matches page renders:
+   `id, full_name, current_centre_name, current_test_date, current_test_time, earliest_new_date, latest_new_date, has_test_booked`.
+   No email or phone exposed. Granted to `anon, authenticated`.
 
-2. **Update `src/pages/TestSwapRegister.tsx`** to call `supabase.rpc("submit_public_test_swap_signup", { p_payload: parsed.data })` instead of `.from(...).insert(...).select().single()`. Use the returned id to navigate to `/test-swap/matches/:id`.
+2. **Update `src/pages/TestSwapMatches.tsx`** — replace the direct table select with `supabase.rpc("get_public_test_swap_signup_self", { p_id: signupId })`. Keep the `notFound` handling.
 
-3. Leave the existing INSERT RLS policy in place as belt-and-braces (RPC bypasses it via SECURITY DEFINER, but keeping the policy means we don't accidentally lock out other paths).
+## Verification (after build)
+- Submit form → navigates to `/test-swap/matches/:id`.
+- Matches page loads "me" row + matches without RLS errors.
+- "Request swap" button still works (already uses RPC).
 
 ## Out of scope
-- No changes to matches page, notifications, or admin views.
-- No SELECT policy widening — PII stays protected.
-
-## Files changed
-- New migration adding the RPC.
-- `src/pages/TestSwapRegister.tsx` — swap insert call for the RPC.
+- No SELECT policy widening on the base table; PII stays protected.
+- No changes to register form, schema, edge functions, or admin views.
