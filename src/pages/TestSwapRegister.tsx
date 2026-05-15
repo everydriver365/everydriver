@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { z } from "zod";
 import { ArrowLeft, CheckCircle2, Loader2 } from "lucide-react";
 import { MainLayout } from "@/components/layout/MainLayout";
@@ -23,6 +23,8 @@ interface TestCentre {
   id: string;
   name: string;
 }
+
+const TEST_SWAP_LS_KEY = "test_swap_signup_id";
 
 const signupSchema = z
   .object({
@@ -58,9 +60,13 @@ const signupSchema = z
 export default function TestSwapRegister() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { signupId } = useParams<{ signupId?: string }>();
+  const isEdit = !!signupId;
+
   const [centres, setCentres] = useState<TestCentre[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
+  const [loadingExisting, setLoadingExisting] = useState(isEdit);
 
   const [form, setForm] = useState({
     full_name: "",
@@ -76,6 +82,7 @@ export default function TestSwapRegister() {
     consent_given: false,
   });
 
+  // Load centres
   useEffect(() => {
     (async () => {
       const { data } = await supabase
@@ -85,6 +92,44 @@ export default function TestSwapRegister() {
       setCentres((data as TestCentre[] | null) ?? []);
     })();
   }, []);
+
+  // Prefill in edit mode
+  useEffect(() => {
+    if (!signupId) return;
+    (async () => {
+      setLoadingExisting(true);
+      const { data, error } = await supabase.rpc(
+        "get_public_test_swap_signup_for_edit",
+        { p_id: signupId }
+      );
+      const row = Array.isArray(data) ? data[0] : data;
+      if (error || !row) {
+        toast({
+          title: "Couldn't load your details",
+          description: "This edit link may have expired.",
+          variant: "destructive",
+        });
+        setLoadingExisting(false);
+        return;
+      }
+      setForm({
+        full_name: row.full_name ?? "",
+        email: row.email ?? "",
+        phone: row.phone ?? "",
+        current_centre_id: row.current_centre_id ?? "",
+        has_test_booked: row.has_test_booked ?? true,
+        current_test_date: row.current_test_date ?? "",
+        current_test_time: row.current_test_time
+          ? String(row.current_test_time).slice(0, 5)
+          : "",
+        earliest_new_date: row.earliest_new_date ?? "",
+        latest_new_date: row.latest_new_date ?? "",
+        notes: row.notes ?? "",
+        consent_given: true,
+      });
+      setLoadingExisting(false);
+    })();
+  }, [signupId, toast]);
 
   const setField = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
@@ -116,6 +161,28 @@ export default function TestSwapRegister() {
       return;
     }
 
+    if (isEdit && signupId) {
+      const { error } = await supabase.rpc("update_public_test_swap_signup", {
+        p_id: signupId,
+        p_payload: parsed.data as any,
+      });
+      setSubmitting(false);
+      if (error) {
+        toast({
+          title: "Couldn't update",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+      try {
+        localStorage.setItem(TEST_SWAP_LS_KEY, signupId);
+      } catch {}
+      toast({ title: "Details updated", description: "Your swap details have been saved." });
+      navigate(`/test-swap/matches/${signupId}`);
+      return;
+    }
+
     const { data: newId, error } = await supabase.rpc(
       "submit_public_test_swap_signup",
       { p_payload: parsed.data as any }
@@ -132,24 +199,27 @@ export default function TestSwapRegister() {
       return;
     }
 
+    try {
+      localStorage.setItem(TEST_SWAP_LS_KEY, String(newId));
+    } catch {}
     navigate(`/test-swap/matches/${newId}`);
   };
 
   return (
     <MainLayout>
       <SEOHead
-        title="Register for a Driving Test Swap | Drive365"
+        title={isEdit ? "Edit Your Test Swap Details | Drive365" : "Register for a Driving Test Swap | Drive365"}
         description="Join the free Drive365 test swap pool. Tell us your current DVSA test date and the dates you'd prefer — we'll match you with another learner."
       />
 
       <section className="py-10 md:py-14">
         <div className="container max-w-2xl">
           <Link
-            to="/test-swap"
+            to={isEdit && signupId ? `/test-swap/matches/${signupId}` : "/test-swap"}
             className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-6"
           >
             <ArrowLeft className="h-4 w-4 mr-1" />
-            Back to Test Swap
+            {isEdit ? "Back to my matches" : "Back to Test Swap"}
           </Link>
 
           {done ? (
@@ -167,14 +237,19 @@ export default function TestSwapRegister() {
                 <Button onClick={() => navigate("/drive365")}>Drive365 home</Button>
               </div>
             </div>
+          ) : loadingExisting ? (
+            <div className="flex items-center gap-2 text-muted-foreground py-12 justify-center">
+              <Loader2 className="h-4 w-4 animate-spin" /> Loading your details…
+            </div>
           ) : (
             <>
               <h1 className="text-3xl md:text-4xl font-bold mb-2">
-                Register for a test swap
+                {isEdit ? "Edit your swap details" : "Register for a test swap"}
               </h1>
               <p className="text-muted-foreground mb-8">
-                Free and secure. Tell us your current test details and the dates
-                you'd prefer, and we'll match you with another learner.
+                {isEdit
+                  ? "Update your test details or preferred date window. Changes take effect immediately."
+                  : "Free and secure. Tell us your current test details and the dates you'd prefer, and we'll match you with another learner."}
               </p>
 
               <form
@@ -212,7 +287,13 @@ export default function TestSwapRegister() {
                       onChange={(e) => setField("email", e.target.value)}
                       maxLength={255}
                       required
+                      readOnly={isEdit}
                     />
+                    {isEdit && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Email can't be changed here — contact us if you need to update it.
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -350,7 +431,7 @@ export default function TestSwapRegister() {
                   disabled={submitting}
                 >
                   {submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                  Join the swap pool
+                  {isEdit ? "Save changes" : "Join the swap pool"}
                 </Button>
               </form>
             </>
