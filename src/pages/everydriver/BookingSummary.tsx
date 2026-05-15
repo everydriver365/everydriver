@@ -29,6 +29,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { describeBookingConflictResponse } from "@/lib/lessonClashCheck";
 import { refreshGoogleCalendarForDate } from "@/lib/refreshGoogleCalendar";
+import { useCheckoutDraft } from "@/hooks/useCheckoutDraft";
 import { usePaymentGatewayHealth } from "@/hooks/usePaymentGatewayHealth";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { useIsMobile } from "@/hooks/use-mobile";
