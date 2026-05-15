@@ -195,17 +195,21 @@ export function SwapChecklistPanel({ onClose, onOpenSwapSettings }: SwapChecklis
 
       <div className="flex flex-col gap-2 pb-5" style={{ padding: 14 }}>
         {SWAP_STEPS.map((step, index) => (
-          <SwapStepCard
+          <div
             key={step.id}
-            step={step}
-            index={index}
-            isChecked={!!checked[step.id]}
-            onToggle={() => toggleStep(step.id)}
-            onAction={handleStepAction}
-            partnerRef={partnerRef}
-            onPartnerRefChange={setPartnerRef}
-            onCopyPartnerRef={copyPartnerRef}
-          />
+            ref={(el) => { stepRefs.current[index] = el; }}
+          >
+            <SwapStepCard
+              step={step}
+              index={index}
+              isChecked={!!checked[step.id]}
+              onToggle={() => toggleStep(step.id)}
+              onAction={handleStepAction}
+              partnerRef={partnerRef}
+              onPartnerRefChange={setPartnerRef}
+              onCopyPartnerRef={copyPartnerRef}
+            />
+          </div>
         ))}
 
         {allDone && (
