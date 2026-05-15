@@ -138,16 +138,6 @@ export function SwapChecklistPanel({ pupilId, instructorId, onClose, onOpenSwapS
     } catch { /* noop */ }
   }, [partnerRef]);
 
-  useEffect(() => {
-    const handler = (e: BeforeUnloadEvent) => {
-      if (allDone) return;
-      e.preventDefault();
-      e.returnValue = "";
-    };
-    window.addEventListener("beforeunload", handler);
-    return () => window.removeEventListener("beforeunload", handler);
-  }, [allDone]);
-
   const validateRef = (value: string) => {
     const trimmed = value.trim();
     if (!trimmed) return null;
