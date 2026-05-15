@@ -147,7 +147,25 @@ export default function BrandedPupilPortal() {
   const [darkModeOverride, setDarkModeOverride] = useState<boolean | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [statsOpen, setStatsOpen] = useState(true);
+  const [swapPanelOpen, setSwapPanelOpen] = useState(false);
+  const [swapOptedIn, setSwapOptedIn] = useState(false);
   const { invalidatePaymentQueries } = usePaymentInvalidation();
+
+  useEffect(() => {
+    if (!pupil?.id) return;
+    let alive = true;
+    (async () => {
+      const { data } = await supabase
+        .from("pupil_swap_profile")
+        .select("opted_in")
+        .eq("pupil_id", pupil.id)
+        .maybeSingle();
+      if (alive) setSwapOptedIn(!!data?.opted_in);
+    })();
+    return () => { alive = false; };
+  }, [pupil?.id, swapPanelOpen]);
+
+  const openSwapSettings = () => setSwapPanelOpen(true);
 
   // Handle payment return params
   useEffect(() => {
