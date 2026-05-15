@@ -232,6 +232,12 @@ const CourseCardImage: React.FC<{ courseId: string; badge: string; badgeColor: s
         alt="Learner celebrating after passing driving test"
         style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }}
       />
+    ) : courseId === "weekly" ? (
+      <img
+        src={weeklyCourseImg}
+        alt="Learner driver holding L-plates from car window"
+        style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+      />
     ) : (
       <svg viewBox="0 0 360 180" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" aria-hidden>
         {courseId === "weekly" ? (
