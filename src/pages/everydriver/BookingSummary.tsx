@@ -1268,7 +1268,7 @@ export default function BookingSummary() {
         instantBankPayEnabled={instantBankPayEnabled}
         klarnaEnabled={klarnaEnabled}
         clearpayEnabled={clearpayEnabled}
-        onWalletSuccess={(pupilId) => navigate(`/booking-confirmation?pupilId=${pupilId}`)}
+        onWalletSuccess={(pupilId) => { clearDraft(); navigate(`/booking-confirmation?pupilId=${pupilId}`); }}
         showEmbeddedCheckout={showHostedFields}
         embeddedCheckoutPupilId={bookingPupilId}
         onEmbeddedCheckoutSuccess={async () => {
@@ -1281,6 +1281,7 @@ export default function BookingSummary() {
           toast.success("Payment successful!");
           if (pupilId) {
             await triggerConfirmBooking(pupilId);
+            clearDraft();
             navigate(`/booking-confirmation?pupilId=${pupilId}&npi=success`);
           }
         }}
