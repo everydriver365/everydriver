@@ -36,6 +36,11 @@ export interface InstructorCourse {
   course_image_url: string | null;
   discounted_price: number | null;
   custom_features: string[] | null;
+  offer_active: boolean | null;
+  offer_label: string | null;
+  offer_percent_off: number | null;
+  offer_starts_at: string | null;
+  offer_ends_at: string | null;
 }
 
 export interface CourseTemplate {
@@ -73,6 +78,11 @@ export interface CourseWithInstructor {
   isIntensive: boolean;
   discountedPrice: number | null;
   customFeatures: string[] | null;
+  offerActive: boolean | null;
+  offerLabel: string | null;
+  offerPercentOff: number | null;
+  offerStartsAt: string | null;
+  offerEndsAt: string | null;
   isPremium?: boolean;
   placementType?: string;
   priorityScore?: number;
