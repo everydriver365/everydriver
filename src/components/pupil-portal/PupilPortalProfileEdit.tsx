@@ -449,6 +449,12 @@ export function PupilPortalProfileEdit({ pupil, onPupilUpdate, brandColour, swap
           </div>
         </div>
       </div>
+      {onOpenSwapSettings && (
+        <>
+          <SwapProfileRow optedIn={swapOptedIn} onClick={onOpenSwapSettings} />
+          <SwapNotificationsRow onClick={onOpenSwapSettings} />
+        </>
+      )}
     </InstructorCard>
   );
 }
