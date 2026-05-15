@@ -12,6 +12,7 @@ import {
 import heroLearnerImg from "@/assets/drive365-hero-learner.jpeg";
 import intensiveCourseImg from "@/assets/course-intensive-pass.jpg";
 import weeklyCourseImg from "@/assets/course-weekly-lessons.jpg";
+import semiCourseImg from "@/assets/course-semi-intensive.jpg";
 
 const NAV_LINKS = [
   { label: "Find an instructor", href: "/instructors" },
@@ -236,6 +237,12 @@ const CourseCardImage: React.FC<{ courseId: string; badge: string; badgeColor: s
       <img
         src={weeklyCourseImg}
         alt="Learner driver holding L-plates from car window"
+        style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+      />
+    ) : courseId === "semi" ? (
+      <img
+        src={semiCourseImg}
+        alt="Two happy learners in a car"
         style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }}
       />
     ) : (
