@@ -45,6 +45,7 @@ const LEARNER_ALLOWED_ROUTES = [
   "/drive365/franchise", // Franchise recruitment page
   "/franchise",          // Franchise recruitment page (legacy)
   "/accessible",         // Drive365 Accessible hub
+  "/test-swap",          // Test Swap landing page
 ];
 
 // Routes that should stay on their current domain (shared routes)
