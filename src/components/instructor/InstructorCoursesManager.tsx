@@ -269,5 +269,4 @@ export function InstructorCoursesManager({ instructorId }: InstructorCoursesMana
     </div>
   );
 }
-  );
-}
+
