@@ -56,7 +56,7 @@ export default function TestSwap() {
             yours in return.
           </p>
           <div className="flex flex-wrap justify-center gap-3">
-            <Link to="/courses">
+            <Link to="/test-swap/register">
               <Button size="lg" className="gap-2">
                 Find a swap match
                 <ArrowRight className="h-4 w-4" />
@@ -124,7 +124,7 @@ export default function TestSwap() {
             <p className="opacity-90 mb-5">
               Search for an instructor and let us know you're open to a test swap when you book.
             </p>
-            <Link to="/courses">
+            <Link to="/test-swap/register">
               <Button size="lg" variant="secondary" className="gap-2">
                 Find a swap match
                 <ArrowRight className="h-4 w-4" />
