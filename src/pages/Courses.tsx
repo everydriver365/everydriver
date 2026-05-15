@@ -1697,6 +1697,11 @@ export default function Courses() {
                             features={course.features}
                             isIntensive={course.isIntensive}
                             discountedPrice={course.discountedPrice}
+                  offerActive={course.offerActive}
+                  offerLabel={course.offerLabel}
+                  offerPercentOff={course.offerPercentOff}
+                  offerStartsAt={course.offerStartsAt}
+                  offerEndsAt={course.offerEndsAt}
                             customFeatures={course.customFeatures}
                             areaName={areaCache[course.instructor.home_postcode?.replace(/\s+/g, "").toUpperCase()] || null}
                             effectiveHourlyRate={resolvedRateFor(course.instructor)}
@@ -1744,6 +1749,11 @@ export default function Courses() {
                               features={course.features}
                               isIntensive={course.isIntensive}
                               discountedPrice={course.discountedPrice}
+                  offerActive={course.offerActive}
+                  offerLabel={course.offerLabel}
+                  offerPercentOff={course.offerPercentOff}
+                  offerStartsAt={course.offerStartsAt}
+                  offerEndsAt={course.offerEndsAt}
                               customFeatures={course.customFeatures}
                               areaName={areaCache[course.instructor.home_postcode?.replace(/\s+/g, "").toUpperCase()] || null}
                               effectiveHourlyRate={resolvedRateFor(course.instructor)}
