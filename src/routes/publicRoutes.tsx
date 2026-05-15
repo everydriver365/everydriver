@@ -75,6 +75,7 @@ const AccessibleGarages = lazy(() => import("@/pages/accessible/AccessibleGarage
 const AccessibleGarageProfile = lazy(() => import("@/pages/accessible/AccessibleGarageProfile"));
 const AccessibleTrackers = lazy(() => import("@/pages/accessible/AccessibleTrackers"));
 const TestSwap = lazy(() => import("@/pages/TestSwap"));
+const TestSwapRegister = lazy(() => import("@/pages/TestSwapRegister"));
 
 // Conditional routes (domain-aware)
 const ConditionalContact = lazy(() => import("@/components/ConditionalRoutes").then(m => ({ default: m.ConditionalContact })));
@@ -95,6 +96,7 @@ export const publicRoutes = (
     <Route path="/winchester" element={<WhitelabelPreviewRedirect />} />
     <Route path="/sitemap.xml" element={<SitemapRedirect />} />
     <Route path="/test-swap" element={<TestSwap />} />
+    <Route path="/test-swap/register" element={<TestSwapRegister />} />
 
     {/* Drive365 Accessible hub */}
     <Route path="/accessible" element={<AccessibleHome />} />
