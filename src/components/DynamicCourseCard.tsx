@@ -193,8 +193,9 @@ export function DynamicCourseCard({
                 {transmissionLabel}
               </Badge>
               {hasDiscount && (
-                <Badge className="rounded-none border-0 bg-red-500 text-white">
-                  Save £{(totalPrice - discountedPrice!).toFixed(0)}
+                <Badge className="rounded-none border-0 bg-red-500 text-white gap-1">
+                  <Sparkles className="h-3 w-3" />
+                  {offer.label || (offer.percentOff ? `${offer.percentOff}% off` : `Save £${offer.savings.toFixed(0)}`)}
                 </Badge>
               )}
               {distance !== undefined && (
