@@ -424,6 +424,10 @@ export default function BrandedPupilPortal() {
                     optedIn={swapOptedIn}
                     onClick={openSwapSettings}
                   />
+                  <SwapChecklistNeedsAttentionBanner
+                    swapStatus={swapStatus}
+                    onClick={() => setSwapChecklistOpen(true)}
+                  />
                   <SlotOfferNotification pupilId={pupil.id} onAccept={() => setActiveSection('schedule')} />
                   <PupilCheckInCard pupilId={pupil.id} />
                   <PushNotificationBanner pupilId={pupil.id} brandColour={drive365Blue} />
