@@ -66,21 +66,19 @@ export default function TestSwapMatches() {
     setLoading(true);
 
     const [meRes, matchesRes] = await Promise.all([
-      supabase
-        .from("public_test_swap_signups")
-        .select("id, full_name, current_centre_name, current_test_date, current_test_time, earliest_new_date, latest_new_date, has_test_booked")
-        .eq("id", signupId)
-        .maybeSingle(),
+      supabase.rpc("get_public_test_swap_signup_self", { p_id: signupId }),
       supabase.rpc("get_test_swap_matches", { p_signup_id: signupId }),
     ]);
 
-    if (!meRes.data) {
+    const meRow = Array.isArray(meRes.data) ? meRes.data[0] : meRes.data;
+
+    if (!meRow) {
       setNotFound(true);
       setLoading(false);
       return;
     }
 
-    setMe(meRes.data as MeRow);
+    setMe(meRow as MeRow);
     setMatches(((matchesRes.data as MatchRow[] | null) ?? []));
     setLoading(false);
   }, [signupId]);
