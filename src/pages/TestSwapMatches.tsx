@@ -84,11 +84,14 @@ export default function TestSwapMatches() {
   }, [signupId]);
 
   useEffect(() => {
+    if (signupId) {
+      try { localStorage.setItem("test_swap_signup_id", signupId); } catch {}
+    }
     load();
     const onFocus = () => load();
     window.addEventListener("focus", onFocus);
     return () => window.removeEventListener("focus", onFocus);
-  }, [load]);
+  }, [load, signupId]);
 
   const handleRequest = async () => {
     if (!confirmTarget || !signupId) return;
