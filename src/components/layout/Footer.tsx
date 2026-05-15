@@ -81,6 +81,7 @@ export function Footer() {
             <h3 className="mb-4 font-semibold">Quick Links</h3>
             <ul className="space-y-2 text-sm text-primary-foreground/70">
               <li><Link to="/courses" className="hover:text-accent">Find Courses</Link></li>
+              <li><Link to="/test-swap" className="hover:text-accent">Test Swap</Link></li>
               <li><Link to="/about" className="hover:text-accent">About Us</Link></li>
               <li><Link to="/pricing" className="hover:text-accent">Pricing</Link></li>
               <li><Link to="/faq" className="hover:text-accent">FAQ</Link></li>
