@@ -320,16 +320,12 @@ export default function Drive365Home() {
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 48, alignItems: "flex-end", width: "100%", position: "relative", zIndex: 1 }}>
           <div>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "rgba(93,202,165,0.15)", border: "1px solid rgba(93,202,165,0.3)", borderRadius: 20, padding: "4px 12px", fontSize: 11, color: "#5DCAA5", marginBottom: 18, fontWeight: 500 }}>
-              <ShieldCheck size={10} color="#5DCAA5" />
-              DVSA Approved
-            </div>
             <h1 style={{ fontSize: 46, fontWeight: 700, color: "#FFF", lineHeight: 1.14, letterSpacing: -1.5, marginBottom: 16, whiteSpace: "pre-line" }}>
               {"Learn to drive\nwith "}
               <span style={{ color: "#5DCAA5" }}>confidence</span>
             </h1>
             <p style={{ fontSize: 15, color: "rgba(255,255,255,0.6)", lineHeight: 1.7, marginBottom: 24, maxWidth: 440 }}>
-              Money back if you pass first time. Free retest if you don't. Find a DVSA-approved instructor near you today.
+              Money back if you pass first time. Free retest if you don't. Find an instructor near you today.
             </p>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 32 }}>
               <span style={{ fontSize: 11, color: "rgba(255,255,255,0.4)" }}>Spread the cost with</span>
