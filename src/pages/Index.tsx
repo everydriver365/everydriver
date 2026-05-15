@@ -217,13 +217,24 @@ export default function Index() {
 
       {/* Test Swap Banner */}
       <section className="bg-[#0d2c5a]">
-        <div className="container max-w-7xl px-0 md:px-4">
-          <Link to="/test-swap" aria-label="Need an earlier driving test? Find a swap match">
-            <img
-              src={testswapBanner}
-              alt="Need an earlier driving test? Swap, don't wait. Find a swap match — free, safe and secure."
-              className="w-full h-auto block hover:opacity-95 transition-opacity"
-            />
+        <div className="container max-w-7xl px-4 py-5">
+          <Link
+            to="/test-swap"
+            aria-label="Need an earlier driving test? Find a swap match"
+            className="flex items-center justify-between gap-4 rounded-2xl bg-[#163a6e] px-6 py-5 hover:bg-[#1a437d] transition-colors"
+          >
+            <div className="flex items-center gap-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1A52A0]">
+                <Calendar className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-white">Need an earlier driving test?</p>
+                <p className="text-xs text-white/70">Swap, don't wait. Find a swap match — free, safe and secure.</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-1 text-sm font-semibold text-white">
+              Find a swap <ChevronRight className="h-4 w-4" />
+            </div>
           </Link>
         </div>
       </section>
