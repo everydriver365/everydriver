@@ -28,6 +28,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { describeBookingConflictResponse } from "@/lib/lessonClashCheck";
 import { refreshGoogleCalendarForDate } from "@/lib/refreshGoogleCalendar";
+import { useCheckoutDraft } from "@/hooks/useCheckoutDraft";
 import { usePaymentGatewayHealth } from "@/hooks/usePaymentGatewayHealth";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -132,7 +133,7 @@ interface CourseDetails {
 
 export default function BookingSummary() {
   const { instructorId } = useParams();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [courseDetails, setCourseDetails] = useState<CourseDetails | null>(null);
@@ -209,16 +210,15 @@ export default function BookingSummary() {
     .filter((u) => selectedUpsells.includes(u.id))
     .reduce((sum, u) => sum + Number(u.price), 0);
 
-  // Clean up GoCardless pending booking on cancellation
-  useEffect(() => {
-    if (searchParams.get("gocardless") === "cancelled") {
-      localStorage.removeItem("gc_pending_booking");
-    }
-  }, []);
-
   const hours = parseInt(searchParams.get("hours") || "10");
   const selectedDateParam = searchParams.get("date");
   const selectedDate = selectedDateParam ? parseISO(selectedDateParam) : null;
+
+  const { saveDraft, loadDraft, clearDraft } = useCheckoutDraft(
+    "checkout-draft",
+    instructorId,
+    hours
+  );
 
   // IMPORTANT: Keep merchant reference stable across re-renders.
   // If this changes, Klarna may fail with "container selector is invalid" because
@@ -458,9 +458,97 @@ export default function BookingSummary() {
     };
   };
 
+  // Build a serializable draft of the current checkout state for persistence
+  // across external payment redirects (Square / Clearpay / GoCardless / NPI).
+  const buildCheckoutDraft = useCallback(() => ({
+    pupilName,
+    pupilEmail,
+    pupilPhone,
+    pupilAddress,
+    pupilPostcode,
+    differentPickup,
+    pickupAddress,
+    pickupPostcode,
+    pickupWhat3words,
+    hasSpecialNeeds,
+    specialNeeds,
+    selectedSlots: selectedSlots.map((s) => ({
+      date: s.date.toISOString(),
+      startTime: s.startTime,
+      endTime: s.endTime,
+      duration: s.duration,
+    })),
+    selectedUpsells,
+    paymentOption,
+  }), [
+    pupilName, pupilEmail, pupilPhone, pupilAddress, pupilPostcode,
+    differentPickup, pickupAddress, pickupPostcode, pickupWhat3words,
+    hasSpecialNeeds, specialNeeds, selectedSlots, selectedUpsells, paymentOption,
+  ]);
+
+  const persistDraftBeforeRedirect = useCallback(() => {
+    try {
+      saveDraft(buildCheckoutDraft());
+    } catch (e) {
+      console.warn("Failed to persist checkout draft", e);
+    }
+  }, [saveDraft, buildCheckoutDraft]);
+
+  // Rehydrate draft + handle cancel return from any external gateway
+  const hasRehydratedRef = useRef(false);
+  useEffect(() => {
+    if (hasRehydratedRef.current) return;
+    if (!instructorId) return;
+
+    const cancelKeys = ["gocardless", "square", "clearpay", "npi"];
+    const cancelledKey = cancelKeys.find((k) => searchParams.get(k) === "cancelled");
+
+    if (cancelledKey === "gocardless") {
+      // Stale half-built booking; safe to discard
+      localStorage.removeItem("gc_pending_booking");
+    }
+
+    if (!cancelledKey) return;
+
+    const draft = loadDraft();
+    if (draft) {
+      setPupilName(draft.pupilName || "");
+      setPupilEmail(draft.pupilEmail || "");
+      setPupilPhone(draft.pupilPhone || "");
+      setPupilAddress(draft.pupilAddress || "");
+      setPupilPostcode(draft.pupilPostcode || "");
+      setDifferentPickup(!!draft.differentPickup);
+      setPickupAddress(draft.pickupAddress || "");
+      setPickupPostcode(draft.pickupPostcode || "");
+      setPickupWhat3words(draft.pickupWhat3words || "");
+      setHasSpecialNeeds(!!draft.hasSpecialNeeds);
+      setSpecialNeeds(draft.specialNeeds || "");
+      setSelectedUpsells(Array.isArray(draft.selectedUpsells) ? draft.selectedUpsells : []);
+      setPaymentOption(draft.paymentOption === "full" ? "full" : "deposit");
+      if (Array.isArray(draft.selectedSlots)) {
+        setSelectedSlots(
+          draft.selectedSlots.map((s) => ({
+            date: new Date(s.date),
+            startTime: s.startTime,
+            endTime: s.endTime,
+            duration: s.duration,
+          }))
+        );
+      }
+    }
+
+    // Strip the cancelled flag from the URL so refreshes don't re-trigger
+    const next = new URLSearchParams(searchParams);
+    cancelKeys.forEach((k) => next.delete(k));
+    setSearchParams(next, { replace: true });
+
+    toast.info("Payment cancelled — your booking details are saved. Pick another method to try again.");
+    hasRehydratedRef.current = true;
+  }, [instructorId, searchParams, setSearchParams, loadDraft]);
+  
   // Get booking mode - default to pupil_choice
   const bookingMode = courseDetails?.instructor?.booking_mode || 'pupil_choice';
-  
+
   // For auto_assign and instructor_assigns modes, we don't require slot selection
   const requiresSlotSelection = bookingMode === 'pupil_choice';
   const canSubmit = isPupilDetailsComplete && (requiresSlotSelection ? isFullyScheduled : true) && !isSubmitting && unavailableSlots.length === 0;
@@ -614,6 +702,7 @@ export default function BookingSummary() {
       if (!pupilId) return;
       // Free booking — trigger notifications immediately
       await triggerConfirmBooking(pupilId);
+      clearDraft();
       navigate(`/booking-confirmation?pupilId=${pupilId}&free=true`);
     } catch (err) {
       console.error("Booking error:", err);
@@ -680,6 +769,7 @@ export default function BookingSummary() {
       }
 
       if (data?.redirectUrl) {
+        persistDraftBeforeRedirect();
         window.location.href = data.redirectUrl;
       } else {
         toast.error("Could not get Clearpay checkout URL");
@@ -723,6 +813,7 @@ export default function BookingSummary() {
       const pupilId = await ensureBookingCreated('full', 0);
       if (!pupilId) return;
       await triggerConfirmBooking(pupilId);
+      clearDraft();
       navigate(`/booking-confirmation?pupilId=${pupilId}&method=cash`);
     } catch (err) {
       console.error("Cash booking error:", err);
@@ -790,6 +881,7 @@ export default function BookingSummary() {
       }
 
       if (data?.authorisationUrl) {
+        persistDraftBeforeRedirect();
         window.location.href = data.authorisationUrl;
       } else {
         toast.error("Could not get bank payment URL");
@@ -818,6 +910,7 @@ export default function BookingSummary() {
       console.error("confirm-booking error:", err);
     }
 
+    clearDraft();
     navigate(`/booking-confirmation?pupilId=${pupilId}&klarna=success&ref=${orderId}`);
   };
 
@@ -889,6 +982,7 @@ export default function BookingSummary() {
       }
 
       if (data?.checkoutUrl) {
+        persistDraftBeforeRedirect();
         window.location.href = data.checkoutUrl;
       } else {
         toast.error("Could not get Square checkout URL");
@@ -1161,7 +1255,7 @@ export default function BookingSummary() {
         instantBankPayEnabled={instantBankPayEnabled}
         klarnaEnabled={klarnaEnabled}
         clearpayEnabled={clearpayEnabled}
-        onWalletSuccess={(pupilId) => navigate(`/booking-confirmation?pupilId=${pupilId}`)}
+        onWalletSuccess={(pupilId) => { clearDraft(); navigate(`/booking-confirmation?pupilId=${pupilId}`); }}
         showEmbeddedCheckout={showHostedFields}
         embeddedCheckoutPupilId={bookingPupilId}
         onEmbeddedCheckoutSuccess={async () => {
@@ -1174,6 +1268,7 @@ export default function BookingSummary() {
           toast.success("Payment successful!");
           if (pupilId) {
             await triggerConfirmBooking(pupilId);
+            clearDraft();
             navigate(`/booking-confirmation?pupilId=${pupilId}&npi=success`);
           }
         }}
@@ -1957,6 +2052,7 @@ export default function BookingSummary() {
                 toast.success("Payment successful!");
                 if (pupilId) {
                   await triggerConfirmBooking(pupilId);
+                  clearDraft();
                   navigate(`/booking-confirmation?pupilId=${pupilId}&npi=success`);
                 }
               }}
