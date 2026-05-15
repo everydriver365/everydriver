@@ -259,8 +259,9 @@ export function SwapChecklistPanel({ onClose, onOpenSwapSettings }: SwapChecklis
               onToggle={() => toggleStep(step.id)}
               onAction={handleStepAction}
               partnerRef={partnerRef}
-              onPartnerRefChange={setPartnerRef}
+              onPartnerRefChange={handlePartnerRefChange}
               onCopyPartnerRef={copyPartnerRef}
+              refError={refError}
             />
           </div>
         ))}
