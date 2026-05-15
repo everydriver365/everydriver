@@ -238,6 +238,18 @@ export function MobileHomepage() {
         </div>
       </div>
       
+      {/* Test Swap Banner */}
+      <div className="px-4 pt-6">
+        <Link to="/test-swap" aria-label="Need an earlier driving test? Find a swap match" className="block rounded-2xl overflow-hidden">
+          <img
+            src={testswapBanner}
+            alt="Need an earlier driving test? Swap, don't wait."
+            className="w-full h-auto block"
+            loading="lazy"
+          />
+        </Link>
+      </div>
+
       {/* What's Included Section */}
       <div className="px-4 pt-6">
         <h3 className="font-bold text-foreground text-sm uppercase tracking-wider mb-3">What's Included</h3>
