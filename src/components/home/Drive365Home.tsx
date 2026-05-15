@@ -380,8 +380,20 @@ export default function Drive365Home() {
               <span style={{ background: "#FFF", borderRadius: 5, padding: "3px 9px", fontSize: 11, fontWeight: 700, color: "#1E3545" }}>clearpay</span>
             </div>
           </div>
-          <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "flex-end" }}>
-            <HeroCarIllustration />
+          <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center" }}>
+            <img
+              src={heroLearnerImg}
+              alt="Confident learner driver behind the wheel"
+              style={{
+                width: "100%",
+                maxWidth: 520,
+                height: "auto",
+                borderRadius: 20,
+                objectFit: "cover",
+                boxShadow: "0 24px 60px rgba(0,0,0,0.45)",
+                display: "block",
+              }}
+            />
           </div>
         </div>
       </section>
