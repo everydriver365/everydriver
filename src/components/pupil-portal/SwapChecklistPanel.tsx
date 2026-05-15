@@ -1,8 +1,9 @@
 import { useState } from "react";
 import {
   ChevronLeft, Check, ExternalLink, Phone, CheckCircle2,
-  Repeat, Lock, Lightbulb,
+  Repeat, Lock, Lightbulb, Copy,
 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface SwapStepAction {
   label: string;
