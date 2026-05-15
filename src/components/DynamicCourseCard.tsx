@@ -41,6 +41,11 @@ interface DynamicCourseCardProps {
   isPremium?: boolean;
   placementType?: string;
   areaName?: string | null;
+  offerActive?: boolean | null;
+  offerLabel?: string | null;
+  offerPercentOff?: number | null;
+  offerStartsAt?: string | null;
+  offerEndsAt?: string | null;
   /** Effective hourly rate after applying any postcode-rule override for the learner's postcode. */
   effectiveHourlyRate?: number | null;
   /** Learner's postcode (for "pricing for SO22…" hint). */
