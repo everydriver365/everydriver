@@ -1,11 +1,14 @@
 import { useState, useEffect } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, Sparkles } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { friendlyDbError } from "@/lib/supabaseError";
+import { CourseOfferDialog, type CourseOfferRow } from "@/components/courses/CourseOfferDialog";
+import { computeOfferStatus } from "@/lib/courseOffer";
 
 interface InstructorCourse {
   id: string;
@@ -13,6 +16,12 @@ interface InstructorCourse {
   course_name: string;
   course_image_url: string | null;
   is_active: boolean;
+  offer_active: boolean | null;
+  offer_label: string | null;
+  offer_percent_off: number | null;
+  offer_starts_at: string | null;
+  offer_ends_at: string | null;
+  discounted_price: number | null;
 }
 
 interface CourseTemplate {
