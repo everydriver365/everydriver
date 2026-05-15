@@ -164,7 +164,19 @@ export function CourseGrid({
       </div>
 
       {filteredCourses.length > 0 ? (
-        isMobile ? (
+        viewMode === "list" ? (
+          <EDCourseList
+            courses={(isMobile ? filteredCourses.slice(0, mobileVisibleCount) : filteredCourses).map((c) => ({
+              instructor: c.instructor,
+              hours: c.hours,
+              bookableDate: c.bookableDate,
+              isPopular: c.isPopular,
+              isIntensive: c.isIntensive,
+              distance: c.distance,
+              discountedPrice: c.discountedPrice,
+            }))}
+          />
+        ) : isMobile ? (
           // Mobile: same flip cards as desktop, single column with load more
           <div className="flex flex-col gap-4">
             {filteredCourses.slice(0, mobileVisibleCount).map((course, index) => (
