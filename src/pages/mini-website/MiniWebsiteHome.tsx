@@ -21,7 +21,6 @@ import { Input } from "@/components/ui/input";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
-import earlyTestBadge from "@/assets/free-retest-badge.png";
 import defaultHeroImage from "@/assets/frontpagesquare-4.png";
 import intensiveCourseTile from "@/assets/intensive-course-tile.jpg";
 import weeklyLessonsTile from "@/assets/weekly-lessons-tile.webp";
@@ -180,11 +179,6 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                   alt={instructorName}
                   className="w-[45vw] h-[45vw] max-w-[220px] max-h-[220px] sm:w-48 sm:h-48 lg:w-64 lg:h-64 rounded-lg object-cover"
                 />
-                <img
-                  src={earlyTestBadge}
-                  alt="Free Test Swapping"
-                  className="absolute -top-4 -right-4 sm:-top-6 sm:-right-6 w-24 h-24 sm:w-32 sm:h-32 object-contain drop-shadow-lg"
-                />
               </motion.div>
 
               {/* Polaroid 2 — Student passing */}
@@ -331,7 +325,6 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
           {/* Free Test Swapping CTA */}
           <Link to={links.contact} className="block">
             <div className="flex items-center gap-3 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-3 sm:p-4 hover:shadow-md transition-shadow">
-              <img src={earlyTestBadge} alt="Free Test Swapping" className="w-16 h-16 sm:w-20 sm:h-20 object-contain shrink-0" />
               <div className="flex-1 min-w-0">
                 <div className="font-bold text-sm sm:text-base text-foreground">Free Test Swapping</div>
                 <div className="text-[11px] sm:text-xs text-muted-foreground">Use our test swapping software to link with another driver and swap your test</div>
@@ -376,7 +369,6 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                 <Badge className="absolute right-3 top-3 border-0 bg-primary text-primary-foreground gap-1">
                   <Zap className="h-3 w-3" /> Fast Track
                 </Badge>
-                <img src={earlyTestBadge} alt="Free Test Swapping" className="absolute left-2 bottom-2 w-32 h-32 drop-shadow-lg object-contain" />
               </div>
               <div className="p-6">
                 <h3 className="text-xl font-bold" style={{ color: primaryColor }}>Intensive Courses</h3>
@@ -411,7 +403,6 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                 <Badge className="absolute right-3 top-3 border-0 bg-emerald-500 text-white gap-1">
                   <Star className="h-3 w-3" /> Popular
                 </Badge>
-                <img src={earlyTestBadge} alt="Free Test Swapping" className="absolute left-2 bottom-2 w-32 h-32 drop-shadow-lg object-contain" />
               </div>
               <div className="p-6">
                 <h3 className="text-xl font-bold" style={{ color: primaryColor }}>Semi-Intensive</h3>
