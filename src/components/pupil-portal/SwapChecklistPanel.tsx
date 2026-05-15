@@ -442,14 +442,16 @@ function SwapStepCard({
           <div className="flex items-center gap-2">
             <input
               type="text"
-              inputMode="text"
-              autoCapitalize="characters"
+              inputMode="numeric"
+              autoCapitalize="off"
               autoCorrect="off"
               spellCheck={false}
               value={partnerRef}
               onChange={(e) => onPartnerRefChange(e.target.value)}
               placeholder="e.g. 1234567890"
-              className="flex-1 border border-[#D3D1C7] rounded-lg bg-white text-[13px] text-[#2C2C2A] tracking-wider"
+              className={`flex-1 rounded-lg bg-white text-[13px] text-[#2C2C2A] tracking-wider border ${
+                refError ? "border-[#CC2229]" : "border-[#D3D1C7]"
+              }`}
               style={{ padding: 9 }}
             />
             <button
@@ -463,9 +465,13 @@ function SwapStepCard({
               Copy
             </button>
           </div>
-          <p className="text-[11px] text-[#888780] mt-1.5">
-            Stored only for this session. Never shared via Drive365.
-          </p>
+          {refError ? (
+            <p className="text-[11px] text-[#CC2229] mt-1.5">{refError}</p>
+          ) : (
+            <p className="text-[11px] text-[#888780] mt-1.5">
+              Stored only for this session. Never shared via Drive365.
+            </p>
+          )}
         </div>
       )}
 
