@@ -194,6 +194,27 @@ export function SwapChecklistPanel({ onClose, onOpenSwapSettings }: SwapChecklis
         <SwapOutcomeCard />
         <SwapTipsCard />
       </div>
+
+      {/* Reset confirmation */}
+      <AlertDialog open={resetConfirmOpen} onOpenChange={setResetConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reset checklist?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will clear all {doneCount} completed steps. You'll need to tick them again.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={resetAll}
+              className="bg-[#A32D2D] hover:bg-[#8a2424] text-white"
+            >
+              Reset all
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
