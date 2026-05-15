@@ -324,6 +324,7 @@ function SwapStepCard({
   partnerRef,
   onPartnerRefChange,
   onCopyPartnerRef,
+  refError,
 }: {
   step: SwapStep;
   index: number;
@@ -333,6 +334,7 @@ function SwapStepCard({
   partnerRef: string;
   onPartnerRefChange: (v: string) => void;
   onCopyPartnerRef: () => void;
+  refError: string | null;
 }) {
   return (
     <div
