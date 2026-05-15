@@ -21,6 +21,7 @@ import semiIntensiveIcon from "@/assets/semi-intensive-icon.jpg";
 import weeklyLessonsIcon from "@/assets/weekly-lessons-icon.jpg";
 
 import referFriendsImage from "@/assets/refer-friends.png";
+import testswapBanner from "@/assets/testswap-banner.png";
 import { useDomainBranding } from "@/hooks/useDomainBranding";
 
 export function MobileHomepage() {
