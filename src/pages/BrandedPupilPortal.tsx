@@ -65,6 +65,8 @@ import { PupilQuickActions } from "@/components/pupil-portal/PupilQuickActions";
 import { GroupedNavMenu } from "@/components/pupil-portal/GroupedNavMenu";
 import { SwapSettingsPanel } from "@/components/pupil-portal/SwapSettingsPanel";
 import { SwapNeedsAttentionBanner } from "@/components/pupil-portal/SwapNeedsAttentionBanner";
+import { SwapChecklistPanel } from "@/components/pupil-portal/SwapChecklistPanel";
+import { SwapChecklistNeedsAttentionBanner } from "@/components/pupil-portal/SwapChecklistNeedsAttentionBanner";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 import { ChevronDown } from "lucide-react";
@@ -148,6 +150,8 @@ export default function BrandedPupilPortal() {
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [statsOpen, setStatsOpen] = useState(true);
   const [swapPanelOpen, setSwapPanelOpen] = useState(false);
+  const [swapChecklistOpen, setSwapChecklistOpen] = useState(false);
+  const swapStatus: "none" | "pending" | "matched" = "none";
   const [swapOptedIn, setSwapOptedIn] = useState(false);
   const { invalidatePaymentQueries } = usePaymentInvalidation();
 
