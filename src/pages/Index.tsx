@@ -248,8 +248,6 @@ export default function Index() {
         </div>
       </section>
 
-      {/* Featured Courses Section */}
-
       {/* Feature Detail Modal */}
       <FeatureDetailModal
         feature={selectedFeature}
