@@ -28,6 +28,7 @@ const EXCLUDED_EXACT = new Set<string>([
   "/reset-password",
   "/auth/redirect",
   "/sitemap.xml",
+  "/test-swap",
 ]);
 
 const EXCLUDED_PREFIXES = [
