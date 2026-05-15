@@ -702,6 +702,7 @@ export default function BookingSummary() {
       if (!pupilId) return;
       // Free booking — trigger notifications immediately
       await triggerConfirmBooking(pupilId);
+      clearDraft();
       navigate(`/booking-confirmation?pupilId=${pupilId}&free=true`);
     } catch (err) {
       console.error("Booking error:", err);
