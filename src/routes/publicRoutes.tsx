@@ -96,6 +96,7 @@ export const publicRoutes = (
     <Route path="/winchester" element={<WhitelabelPreviewRedirect />} />
     <Route path="/sitemap.xml" element={<SitemapRedirect />} />
     <Route path="/test-swap" element={<TestSwap />} />
+    <Route path="/test-swap/register" element={<TestSwapRegister />} />
 
     {/* Drive365 Accessible hub */}
     <Route path="/accessible" element={<AccessibleHome />} />
