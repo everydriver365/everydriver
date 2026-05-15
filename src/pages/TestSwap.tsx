@@ -26,7 +26,6 @@ export default function TestSwap() {
       <SEOHead
         title="Need an Earlier Driving Test? Swap, Don't Wait | Drive365"
         description="Free, secure driving test swap service. Match with another learner and get an earlier DVSA practical test date — no fees, no waiting lists."
-        canonicalUrl="/test-swap"
       />
 
       {/* Hero banner */}
