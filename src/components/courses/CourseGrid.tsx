@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, PoundSterling, Navigation, MapPin, X, ChevronDown, Clock } from "lucide-react";
+import { Calendar as CalendarIcon, PoundSterling, Navigation, MapPin, X, ChevronDown, Clock, LayoutGrid, List } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DynamicCourseCard } from "@/components/DynamicCourseCard";
+import { EDCourseList } from "@/components/everydriver/EDCourseList";
 
 import { CourseWithInstructor, SortOption } from "@/hooks/useCourseDiscovery";
 import { useIsMobile } from "@/hooks/use-mobile";
