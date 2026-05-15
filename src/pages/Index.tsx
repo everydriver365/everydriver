@@ -236,6 +236,15 @@ export default function Index() {
               Find a swap <ChevronRight className="h-4 w-4" />
             </div>
           </Link>
+          <div className="mt-3 flex justify-center">
+            <Link
+              to="/test-swap"
+              className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium text-white/90 backdrop-blur-sm transition-colors hover:bg-white/20 hover:text-white"
+            >
+              <HelpCircle className="h-4 w-4" />
+              How test swapping works
+            </Link>
+          </div>
         </div>
       </section>
 
