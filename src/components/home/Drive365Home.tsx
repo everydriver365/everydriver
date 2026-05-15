@@ -304,49 +304,6 @@ export default function Drive365Home() {
 
   return (
     <div style={{ width: "100%", overflow: "hidden", background: "#F0F2F5" }}>
-      {/* HomeNav */}
-      <nav
-        style={{
-          background: "#0F2044",
-          padding: "0 5%",
-          display: "flex",
-          alignItems: "center",
-          height: 58,
-          gap: 24,
-          width: "100%",
-        }}
-      >
-        <div style={{ fontSize: 20, fontWeight: 700, color: "#FFF", letterSpacing: -0.5 }}>
-          Drive<span style={{ color: "#5DCAA5" }}>365</span>
-        </div>
-        <div style={{ display: "flex", gap: 24, marginLeft: "auto" }}>
-          {NAV_LINKS.map((link) => (
-            <Link
-              key={link.href}
-              to={link.href}
-              style={{ fontSize: 13, color: "rgba(255,255,255,0.6)", textDecoration: "none" }}
-            >
-              {link.label}
-            </Link>
-          ))}
-        </div>
-        <button
-          onClick={() => navigate("/instructors")}
-          style={{
-            background: "#1D9E75",
-            border: "none",
-            borderRadius: 7,
-            padding: "7px 18px",
-            fontSize: 13,
-            fontWeight: 600,
-            color: "#FFF",
-            cursor: "pointer",
-            marginLeft: 12,
-          }}
-        >
-          Get started
-        </button>
-      </nav>
 
       {/* HomeHero */}
       <section
