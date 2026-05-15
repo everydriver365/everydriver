@@ -708,6 +708,21 @@ export default function BrandedPupilPortal() {
               pupilId={pupil.id}
               instructorId={instructor.id}
               onClose={() => setSwapPanelOpen(false)}
+              onOpenChecklist={() => {
+                setSwapPanelOpen(false);
+                setSwapChecklistOpen(true);
+              }}
+            />
+          </SheetContent>
+        </Sheet>
+      )}
+
+      {pupil && instructor && (
+        <Sheet open={swapChecklistOpen} onOpenChange={setSwapChecklistOpen}>
+          <SheetContent side="right" className="w-full sm:max-w-md p-0 overflow-y-auto">
+            <SwapChecklistPanel
+              onClose={() => setSwapChecklistOpen(false)}
+              onOpenSwapSettings={() => setSwapPanelOpen(true)}
             />
           </SheetContent>
         </Sheet>
