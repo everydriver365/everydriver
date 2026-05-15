@@ -87,7 +87,7 @@ function fmtTime(t?: string | null) {
   return `${display}:${m} ${ampm}`;
 }
 
-export default function TestSwapSearch() {
+export default function TestSwapBrowse() {
   const navigate = useNavigate();
   const [centres, setCentres] = useState<Centre[]>([]);
   const [centreId, setCentreId] = useState<string>(ANY_CENTRE);
