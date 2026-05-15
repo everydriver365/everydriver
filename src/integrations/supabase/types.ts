@@ -19119,6 +19119,26 @@ export type Database = {
         Args: { p_instructor_id: string; p_pupil_id: string }
         Returns: boolean
       }
+      browse_public_test_swaps: {
+        Args: {
+          p_centre_id?: string
+          p_from_date?: string
+          p_limit?: number
+          p_to_date?: string
+        }
+        Returns: {
+          created_at: string
+          current_centre_id: string
+          current_centre_name: string
+          current_test_date: string
+          current_test_time: string
+          earliest_new_date: string
+          first_name: string
+          id: string
+          latest_new_date: string
+          notes: string
+        }[]
+      }
       check_save_offer_eligibility: {
         Args: { p_instructor_id: string }
         Returns: boolean

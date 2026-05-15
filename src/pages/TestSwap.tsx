@@ -92,6 +92,11 @@ export default function TestSwap() {
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
+            <Link to="/test-swap/browse">
+              <Button size="lg" variant="secondary" className="gap-2">
+                Browse available swaps
+              </Button>
+            </Link>
             <Link to="/faqs">
               <Button size="lg" variant="outline">
                 How it works
