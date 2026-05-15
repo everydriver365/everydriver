@@ -510,6 +510,11 @@ export default function Courses() {
             isIntensive: template?.is_intensive || false,
             discountedPrice: courseData.discounted_price || null,
             customFeatures: courseData.custom_features || null,
+            offerActive: (courseData as any).offer_active ?? null,
+            offerLabel: (courseData as any).offer_label ?? null,
+            offerPercentOff: (courseData as any).offer_percent_off ?? null,
+            offerStartsAt: (courseData as any).offer_starts_at ?? null,
+            offerEndsAt: (courseData as any).offer_ends_at ?? null,
           });
         }
       }
