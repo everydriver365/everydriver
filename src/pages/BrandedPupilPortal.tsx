@@ -721,6 +721,8 @@ export default function BrandedPupilPortal() {
         <Sheet open={swapChecklistOpen} onOpenChange={setSwapChecklistOpen}>
           <SheetContent side="right" className="w-full sm:max-w-md p-0 overflow-y-auto">
             <SwapChecklistPanel
+              pupilId={pupil.id}
+              instructorId={instructor.id}
               onClose={() => setSwapChecklistOpen(false)}
               onOpenSwapSettings={() => setSwapPanelOpen(true)}
             />
