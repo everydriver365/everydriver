@@ -69,7 +69,7 @@ export function Drive365Header() {
           </Link>
 
           {/* Center nav (desktop) */}
-          <nav className="hidden lg:flex items-center gap-9 mx-auto">
+          <nav className="hidden lg:flex items-center gap-6 xl:gap-9 mx-auto">
             {NAV_LINKS.map((link) =>
               link.hasDropdown ? (
                 <div
