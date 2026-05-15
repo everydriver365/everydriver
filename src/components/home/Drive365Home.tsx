@@ -230,7 +230,7 @@ const CourseCardImage: React.FC<{ courseId: string; badge: string; badgeColor: s
       <img
         src={intensiveCourseImg}
         alt="Learner celebrating after passing driving test"
-        style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+        style={{ position: "absolute", top: "20px", left: 0, width: "100%", height: "calc(100% + 20px)", objectFit: "cover", display: "block" }}
       />
     ) : courseId === "weekly" ? (
       <img
