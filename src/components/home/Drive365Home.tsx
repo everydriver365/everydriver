@@ -12,6 +12,7 @@ import {
 import heroLearnerImg from "@/assets/drive365-hero-learner.jpeg";
 import intensiveCourseImg from "@/assets/course-intensive-pass.jpg";
 import weeklyCourseImg from "@/assets/course-weekly-lessons.jpg";
+import semiCourseImg from "@/assets/course-semi-intensive.jpg";
 
 const NAV_LINKS = [
   { label: "Find an instructor", href: "/instructors" },
