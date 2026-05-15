@@ -1072,7 +1072,8 @@ export default function BookingSummary() {
     Math.round((surchargedSlotsTotal + remainingHours * effectiveHourlyRate) * 100) / 100;
   // Bookings include a flat £1 platform fee (separate from school skim & Service Fee).
   const platformFee = PLATFORM_FEE_GBP;
-  const totalPrice = surchargeTotal + schoolSkimAmount + platformFee;
+  const offerSavings = courseDetails?.offer?.isLive ? courseDetails.offer.savings : 0;
+  const totalPrice = Math.max(0, surchargeTotal + schoolSkimAmount + platformFee - offerSavings);
   const postcodeOverrideActive = effectiveHourlyRate !== baseHourlyRate;
   const surchargesActive = totalPrice > (hours * effectiveHourlyRate + schoolSkimAmount + platformFee) + 0.001;
 
