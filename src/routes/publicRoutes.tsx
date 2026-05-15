@@ -78,6 +78,7 @@ const TestSwap = lazy(() => import("@/pages/TestSwap"));
 const TestSwapRegister = lazy(() => import("@/pages/TestSwapRegister"));
 const TestSwapMatches = lazy(() => import("@/pages/TestSwapMatches"));
 const TestSwapBrowse = lazy(() => import("@/pages/TestSwapBrowse"));
+const TestSwapSearch = lazy(() => import("@/pages/TestSwapSearch"));
 
 // Conditional routes (domain-aware)
 const ConditionalContact = lazy(() => import("@/components/ConditionalRoutes").then(m => ({ default: m.ConditionalContact })));
