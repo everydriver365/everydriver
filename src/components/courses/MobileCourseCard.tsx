@@ -41,6 +41,11 @@ interface Course {
   isPremium?: boolean;
   placementType?: string;
   areaName?: string | null;
+  offerActive?: boolean | null;
+  offerLabel?: string | null;
+  offerPercentOff?: number | null;
+  offerStartsAt?: string | null;
+  offerEndsAt?: string | null;
 }
 
 interface MobileCourseCardProps {
@@ -55,7 +60,16 @@ export function MobileCourseCard({ course, index }: MobileCourseCardProps) {
 
   const schoolSkim = instructor.school_skim_amount || 0;
   const basePrice = instructor.hourly_rate ? instructor.hourly_rate * hours : 0;
-  const price = discountedPrice || (basePrice + schoolSkim);
+  const totalPrice = basePrice + schoolSkim;
+  const offer = computeOfferStatus(totalPrice, {
+    offer_active: course.offerActive,
+    offer_label: course.offerLabel,
+    offer_percent_off: course.offerPercentOff,
+    offer_starts_at: course.offerStartsAt,
+    offer_ends_at: course.offerEndsAt,
+    discounted_price: discountedPrice,
+  });
+  const price = offer.isLive ? offer.finalPrice : totalPrice;
   const formattedDate = format(bookableDate, "d MMM");
   const transmissionType = instructor.car_type || "Manual";
 
