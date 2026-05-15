@@ -17,6 +17,7 @@ import { getWhitelabelConfig, isEveryDriverPreviewOverrideActive } from "@/lib/w
 
 const baseNavLinks = [
   { href: "/courses", label: "Courses" },
+  { href: "/test-swap", label: "Test Swap" },
   { href: "/about", label: "About" },
   { href: "/drive365/franchise", label: "Franchise" },
   { href: "/faqs", label: "FAQs" },
