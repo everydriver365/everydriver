@@ -163,6 +163,14 @@ export function SwapChecklistPanel({ onClose, onOpenSwapSettings }: SwapChecklis
             }}
           />
         </div>
+        <button
+          onClick={copyDVSADetails}
+          className="mt-3 bg-[#E6F1FB] text-[#0C447C] text-[12px] font-medium rounded-lg flex items-center gap-1.5 self-start"
+          style={{ padding: "8px 10px" }}
+        >
+          <Copy className="h-[13px] w-[13px]" />
+          Copy DVSA details
+        </button>
       </div>
 
       <div className="flex flex-col gap-2 pb-5" style={{ padding: 14 }}>
