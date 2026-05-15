@@ -10,9 +10,31 @@ interface PromoMessage {
   link_text: string | null;
 }
 
+function resolvePromoLink(linkUrl: string): { href: string; external: boolean } {
+  if (typeof window === "undefined") {
+    return { href: linkUrl, external: /^https?:\/\//i.test(linkUrl) };
+  }
+
+  try {
+    const parsed = new URL(linkUrl, window.location.origin);
+    const host = parsed.hostname.toLowerCase().replace(/^www\./, "");
+    const isCurrentHost = parsed.origin === window.location.origin;
+    const isLegacyTestSwapLink = host === "everydriver.co.uk" && parsed.pathname === "/test-swap";
+
+    if (isCurrentHost || isLegacyTestSwapLink) {
+      return { href: `${parsed.pathname}${parsed.search}${parsed.hash}`, external: false };
+    }
+
+    return { href: parsed.href, external: true };
+  } catch {
+    return { href: linkUrl, external: /^https?:\/\//i.test(linkUrl) };
+  }
+}
+
 export function PromoBanner() {
   const [promo, setPromo] = useState<PromoMessage | null>(null);
   const [isVisible, setIsVisible] = useState(true);
+  const promoLink = promo?.link_url ? resolvePromoLink(promo.link_url) : null;
 
   useEffect(() => {
     async function fetchPromo() {
@@ -37,14 +59,24 @@ export function PromoBanner() {
     <div className="bg-[hsl(var(--promo-banner))] text-[hsl(var(--promo-banner-foreground))]">
       <div className="container py-2 flex items-center justify-center gap-3 text-sm">
         <span className="text-center font-medium">{promo.message}</span>
-        {promo.link_url && promo.link_text && (
-          <Link 
-            to={promo.link_url} 
-            className="inline-flex items-center font-semibold hover:underline whitespace-nowrap"
-          >
-            {promo.link_text}
-            <ChevronRight className="h-4 w-4" />
-          </Link>
+        {promoLink && promo.link_text && (
+          promoLink.external ? (
+            <a
+              href={promoLink.href}
+              className="inline-flex items-center font-semibold hover:underline whitespace-nowrap"
+            >
+              {promo.link_text}
+              <ChevronRight className="h-4 w-4" />
+            </a>
+          ) : (
+            <Link 
+              to={promoLink.href} 
+              className="inline-flex items-center font-semibold hover:underline whitespace-nowrap"
+            >
+              {promo.link_text}
+              <ChevronRight className="h-4 w-4" />
+            </Link>
+          )
         )}
         <button 
           onClick={() => setIsVisible(false)}
