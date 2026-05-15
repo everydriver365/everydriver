@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useLayoutEffect } from "react";
 import {
   ChevronLeft, Check, ExternalLink, Phone, CheckCircle2,
   Repeat, Lock, Lightbulb, Copy,
@@ -108,8 +108,28 @@ export function SwapChecklistPanel({ onClose, onOpenSwapSettings }: SwapChecklis
   const allDone = doneCount === totalCount;
   const progress = doneCount / totalCount;
 
-  const toggleStep = (id: string) =>
-    setChecked((prev) => ({ ...prev, [id]: !prev[id] }));
+  const stepRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  const toggleStep = (id: string) => {
+    setChecked((prev) => {
+      const next = { ...prev, [id]: !prev[id] };
+      // If we just checked this step ON, scroll to the next incomplete step
+      if (next[id]) {
+        const justCheckedIndex = SWAP_STEPS.findIndex((s) => s.id === id);
+        const nextIncomplete = SWAP_STEPS.slice(justCheckedIndex + 1).find((s) => !next[s.id]);
+        if (nextIncomplete) {
+          const nextIndex = SWAP_STEPS.findIndex((s) => s.id === nextIncomplete.id);
+          const el = stepRefs.current[nextIndex];
+          if (el) {
+            requestAnimationFrame(() => {
+              el.scrollIntoView({ behavior: "smooth", block: "center" });
+            });
+          }
+        }
+      }
+      return next;
+    });
+  };
 
   const resetAll = () => {
     setChecked(Object.fromEntries(SWAP_STEPS.map((s) => [s.id, false])));
@@ -175,17 +195,21 @@ export function SwapChecklistPanel({ onClose, onOpenSwapSettings }: SwapChecklis
 
       <div className="flex flex-col gap-2 pb-5" style={{ padding: 14 }}>
         {SWAP_STEPS.map((step, index) => (
-          <SwapStepCard
+          <div
             key={step.id}
-            step={step}
-            index={index}
-            isChecked={!!checked[step.id]}
-            onToggle={() => toggleStep(step.id)}
-            onAction={handleStepAction}
-            partnerRef={partnerRef}
-            onPartnerRefChange={setPartnerRef}
-            onCopyPartnerRef={copyPartnerRef}
-          />
+            ref={(el) => { stepRefs.current[index] = el; }}
+          >
+            <SwapStepCard
+              step={step}
+              index={index}
+              isChecked={!!checked[step.id]}
+              onToggle={() => toggleStep(step.id)}
+              onAction={handleStepAction}
+              partnerRef={partnerRef}
+              onPartnerRefChange={setPartnerRef}
+              onCopyPartnerRef={copyPartnerRef}
+            />
+          </div>
         ))}
 
         {allDone && (
