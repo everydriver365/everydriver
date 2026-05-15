@@ -10,6 +10,7 @@ import {
   User,
 } from "lucide-react";
 import heroLearnerImg from "@/assets/drive365-hero-learner.jpeg";
+import intensiveCourseImg from "@/assets/course-intensive-pass.jpg";
 
 const NAV_LINKS = [
   { label: "Find an instructor", href: "/instructors" },
