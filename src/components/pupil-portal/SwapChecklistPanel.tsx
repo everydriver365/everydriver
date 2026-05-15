@@ -205,6 +205,30 @@ export function SwapChecklistPanel({ onClose, onOpenSwapSettings }: SwapChecklis
         </button>
       </div>
 
+      {/* Partner reference summary */}
+      {partnerRef.trim() && (
+        <div
+          className="bg-white border-b border-[#D3D1C7] flex items-center justify-between"
+          style={{ padding: 12 }}
+        >
+          <div className="min-w-0">
+            <p className="text-[11px] text-[#5F5E5A]">Learner B's booking reference</p>
+            <p className="text-[15px] font-medium text-[#2C2C2A] tracking-wider truncate">
+              {partnerRef}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={copyPartnerRef}
+            className="bg-[#E6F1FB] text-[#1A52A0] text-[12px] font-medium rounded-lg flex items-center gap-1.5 shrink-0"
+            style={{ padding: "8px 10px" }}
+          >
+            <Copy className="h-[13px] w-[13px]" />
+            Copy
+          </button>
+        </div>
+      )}
+
       <div className="flex flex-col gap-2 pb-5" style={{ padding: 14 }}>
         {SWAP_STEPS.map((step, index) => (
           <div
