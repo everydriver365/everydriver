@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 const NAV_LINKS = [
   { href: "/courses", label: "Courses", hasDropdown: true },
   { href: "/theory", label: "Theory practice" },
+  { href: "/test-swap", label: "Test Swap" },
   { href: "/drive365/franchise", label: "Franchise" },
   { href: "/about", label: "About" },
   { href: "/help", label: "Help" },
