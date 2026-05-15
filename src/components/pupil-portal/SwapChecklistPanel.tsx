@@ -4,6 +4,10 @@ import {
   Repeat, Lock, Lightbulb, Copy,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface SwapStepAction {
   label: string;
@@ -86,6 +90,7 @@ export function SwapChecklistPanel({ onClose, onOpenSwapSettings }: SwapChecklis
     Object.fromEntries(SWAP_STEPS.map((s) => [s.id, false]))
   );
   const [partnerRef, setPartnerRef] = useState("");
+  const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
 
   const copyPartnerRef = async () => {
     const value = partnerRef.trim();
@@ -106,8 +111,10 @@ export function SwapChecklistPanel({ onClose, onOpenSwapSettings }: SwapChecklis
   const toggleStep = (id: string) =>
     setChecked((prev) => ({ ...prev, [id]: !prev[id] }));
 
-  const resetAll = () =>
+  const resetAll = () => {
     setChecked(Object.fromEntries(SWAP_STEPS.map((s) => [s.id, false])));
+    setResetConfirmOpen(false);
+  };
 
   const handleStepAction = (action: SwapStepAction) => {
     if (action.phone) {
@@ -133,7 +140,7 @@ export function SwapChecklistPanel({ onClose, onOpenSwapSettings }: SwapChecklis
           <p className="text-[13px] text-[#5F5E5A]">
             {doneCount} of {totalCount} steps complete
           </p>
-          <button onClick={resetAll} className="text-[12px] text-[#888780]">
+          <button onClick={() => setResetConfirmOpen(true)} className="text-[12px] text-[#888780]">
             Reset
           </button>
         </div>
@@ -187,6 +194,27 @@ export function SwapChecklistPanel({ onClose, onOpenSwapSettings }: SwapChecklis
         <SwapOutcomeCard />
         <SwapTipsCard />
       </div>
+
+      {/* Reset confirmation */}
+      <AlertDialog open={resetConfirmOpen} onOpenChange={setResetConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reset checklist?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will clear all {doneCount} completed steps. You'll need to tick them again.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={resetAll}
+              className="bg-[#A32D2D] hover:bg-[#8a2424] text-white"
+            >
+              Reset all
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
