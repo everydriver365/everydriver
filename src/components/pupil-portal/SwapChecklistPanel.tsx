@@ -125,6 +125,8 @@ export function SwapChecklistPanel({ onClose, onOpenSwapSettings }: SwapChecklis
       toast({ title: "Couldn't copy", description: "Copy manually: 0300 200 1122", variant: "destructive" });
     }
   };
+
+  const handleStepAction = (action: SwapStepAction) => {
     if (action.phone) {
       window.location.href = `tel:${action.phone}`;
     } else if (action.url) {
