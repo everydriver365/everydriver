@@ -651,6 +651,8 @@ export default function BrandedPupilPortal() {
                     pupil={pupil}
                     onPupilUpdate={(updates) => setPupil(prev => prev ? { ...prev, ...updates } : null)}
                     brandColour={drive365Blue}
+                    swapOptedIn={swapOptedIn}
+                    onOpenSwapSettings={openSwapSettings}
                   />
                 </div>
               </motion.div>
