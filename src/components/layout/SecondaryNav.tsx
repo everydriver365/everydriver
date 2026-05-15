@@ -1,10 +1,11 @@
 import { Link } from "react-router-dom";
-import { BookOpen, FileEdit, Phone, User } from "lucide-react";
+import { BookOpen, CalendarDays, FileEdit, Phone, User } from "lucide-react";
 
 const secondaryLinks = [
   { href: "/theory", label: "Theory Practice", icon: BookOpen, external: false },
   { href: "/contact?type=bespoke", label: "Bespoke Course Request", icon: FileEdit, external: false },
   { href: "/contact?type=callback", label: "Request a Callback", icon: Phone, external: false },
+  { href: "/test-swap", label: "Test Swap", icon: CalendarDays, external: false },
   { href: "/instructor-app/login", label: "Instructor Login", icon: User, external: false },
   { href: "/pupil/login", label: "Pupil Login", icon: User, external: false },
 ];
