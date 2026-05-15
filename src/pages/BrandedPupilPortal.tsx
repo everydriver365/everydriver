@@ -63,6 +63,9 @@ import { SubPageHeader } from "@/components/pupil-portal/SubPageHeader";
 import { TestCountdownCard } from "@/components/pupil-portal/TestCountdownCard";
 import { PupilQuickActions } from "@/components/pupil-portal/PupilQuickActions";
 import { GroupedNavMenu } from "@/components/pupil-portal/GroupedNavMenu";
+import { SwapSettingsPanel } from "@/components/pupil-portal/SwapSettingsPanel";
+import { SwapNeedsAttentionBanner } from "@/components/pupil-portal/SwapNeedsAttentionBanner";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 import { ChevronDown } from "lucide-react";
 
