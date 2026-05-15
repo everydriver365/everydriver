@@ -20,13 +20,14 @@ interface EDCourse {
     car_type?: string | null;
     klarna_enabled?: boolean | null;
     clearpay_enabled?: boolean | null;
+    hourly_rate?: number | null;
   };
   hours: number;
   bookableDate: Date;
   isPopular?: boolean;
   isIntensive?: boolean;
   distance?: number;
-  price: number;
+  price?: number;
   discountedPrice?: number | null;
 }
 
