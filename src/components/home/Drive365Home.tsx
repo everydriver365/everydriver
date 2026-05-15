@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import heroLearnerImg from "@/assets/drive365-hero-learner.jpeg";
 import intensiveCourseImg from "@/assets/course-intensive-pass.jpg";
+import weeklyCourseImg from "@/assets/course-weekly-lessons.jpg";
 
 const NAV_LINKS = [
   { label: "Find an instructor", href: "/instructors" },
@@ -229,6 +230,12 @@ const CourseCardImage: React.FC<{ courseId: string; badge: string; badgeColor: s
       <img
         src={intensiveCourseImg}
         alt="Learner celebrating after passing driving test"
+        style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+      />
+    ) : courseId === "weekly" ? (
+      <img
+        src={weeklyCourseImg}
+        alt="Learner driver holding L-plates from car window"
         style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }}
       />
     ) : (
