@@ -125,7 +125,7 @@ interface CourseDetails {
 
 export default function BookingSummary() {
   const { instructorId } = useParams();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [courseDetails, setCourseDetails] = useState<CourseDetails | null>(null);
