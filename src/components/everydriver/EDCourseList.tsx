@@ -73,10 +73,13 @@ export function EDCourseList({ courses }: EDCourseListProps) {
   return (
     <div className="flex flex-col" style={{ gap: 10 }}>
       {courses.map((c) => {
+        const basePrice =
+          c.price ??
+          (c.instructor.hourly_rate != null ? c.instructor.hourly_rate * c.hours : 0);
         const final =
-          c.discountedPrice && c.discountedPrice < c.price
+          c.discountedPrice && c.discountedPrice < basePrice
             ? c.discountedPrice
-            : c.price;
+            : basePrice;
         const klarnaPer = Math.round(final / 3);
         const clearpayPer = Math.round(final / 4);
         const perHour = Math.round(final / Math.max(c.hours, 1));
