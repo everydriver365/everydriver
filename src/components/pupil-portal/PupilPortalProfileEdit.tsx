@@ -16,6 +16,8 @@ import { Label } from "@/components/ui/label";
 import { Bell } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { SwapProfileRow } from "@/components/pupil-portal/SwapProfileRow";
+import { SwapNotificationsRow } from "@/components/pupil-portal/SwapNotificationsRow";
 
 interface PupilData {
   id: string;
