@@ -470,7 +470,10 @@ export default function BrandedPupilPortal() {
 
                   {/* ═══ ZONE 3: QUICK ACCESS ═══ */}
                   <GroupedNavMenu
-                    onNavigate={(section) => setActiveSection(section as ActiveSection)}
+                    onNavigate={(section) => {
+                      if (section === 'swap-settings') { openSwapSettings(); return; }
+                      setActiveSection(section as ActiveSection);
+                    }}
                     brandColour={instructor.brand_colour || drive365Blue}
                     selfBookingEnabled={instructor.pupil_self_booking_enabled ?? false}
                     reflectiveLogsEnabled={instructor.reflective_logs_enabled !== false}
