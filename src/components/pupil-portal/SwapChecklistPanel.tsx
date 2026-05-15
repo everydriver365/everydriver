@@ -1,4 +1,4 @@
-import { useState, useRef, useLayoutEffect } from "react";
+import { useState, useRef, useLayoutEffect, useEffect } from "react";
 import {
   ChevronLeft, Check, ExternalLink, Phone, CheckCircle2,
   Repeat, Lock, Lightbulb, Copy,
@@ -89,8 +89,20 @@ export function SwapChecklistPanel({ onClose, onOpenSwapSettings }: SwapChecklis
   const [checked, setChecked] = useState<Record<string, boolean>>(
     Object.fromEntries(SWAP_STEPS.map((s) => [s.id, false]))
   );
-  const [partnerRef, setPartnerRef] = useState("");
+  const [partnerRef, setPartnerRef] = useState(() => {
+    try {
+      return localStorage.getItem("swap_partner_ref") ?? "";
+    } catch {
+      return "";
+    }
+  });
   const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("swap_partner_ref", partnerRef);
+    } catch { /* noop */ }
+  }, [partnerRef]);
 
   const copyPartnerRef = async () => {
     const value = partnerRef.trim();
