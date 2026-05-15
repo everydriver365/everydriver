@@ -77,6 +77,7 @@ export const everydriverRoutes = (
     <Route path="/booking-confirmation" element={<EDBookingConfirmation />} />
     <Route path="/test-swap" element={<TestSwap />} />
     <Route path="/test-swap/register" element={<TestSwapRegister />} />
+    <Route path="/test-swap/matches/:signupId" element={<TestSwapMatches />} />
 
     {/* Shared (uncloned) */}
     <Route path="/sitemap.xml" element={<SitemapRedirect />} />
