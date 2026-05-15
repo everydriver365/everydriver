@@ -81,9 +81,22 @@ interface SwapChecklistPanelProps {
 }
 
 export function SwapChecklistPanel({ onClose, onOpenSwapSettings }: SwapChecklistPanelProps) {
+  const { toast } = useToast();
   const [checked, setChecked] = useState<Record<string, boolean>>(
     Object.fromEntries(SWAP_STEPS.map((s) => [s.id, false]))
   );
+  const [partnerRef, setPartnerRef] = useState("");
+
+  const copyPartnerRef = async () => {
+    const value = partnerRef.trim();
+    if (!value) return;
+    try {
+      await navigator.clipboard.writeText(value);
+      toast({ title: "Copied", description: "Learner B's booking reference copied." });
+    } catch {
+      toast({ title: "Couldn't copy", description: "Copy the reference manually.", variant: "destructive" });
+    }
+  };
 
   const doneCount = Object.values(checked).filter(Boolean).length;
   const totalCount = SWAP_STEPS.length;
@@ -144,6 +157,9 @@ export function SwapChecklistPanel({ onClose, onOpenSwapSettings }: SwapChecklis
             isChecked={!!checked[step.id]}
             onToggle={() => toggleStep(step.id)}
             onAction={handleStepAction}
+            partnerRef={partnerRef}
+            onPartnerRefChange={setPartnerRef}
+            onCopyPartnerRef={copyPartnerRef}
           />
         ))}
 
