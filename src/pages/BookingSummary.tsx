@@ -2052,6 +2052,7 @@ export default function BookingSummary() {
                 toast.success("Payment successful!");
                 if (pupilId) {
                   await triggerConfirmBooking(pupilId);
+                  clearDraft();
                   navigate(`/booking-confirmation?pupilId=${pupilId}&npi=success`);
                 }
               }}
