@@ -37,6 +37,7 @@ import { fetchInstructorPostcodeRules } from "@/hooks/useInstructorPostcodeRules
 import { applyRateModifiers, loadUkBankHolidays, type RateModifiers } from "@/lib/pricing/applyRateModifiers";
 import { PLATFORM_FEE_GBP } from "@/lib/pricing/platformFee";
 import { getWhitelabelConfig } from "@/lib/whitelabel";
+import { computeOfferStatus } from "@/lib/courseOffer";
 
 
 interface Instructor {
