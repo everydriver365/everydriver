@@ -408,6 +408,11 @@ export default function BookingSummary() {
         courseDescription: template?.full_description || template?.short_description || null,
         features: template?.features || null,
         template: template || null,
+        offer: (() => {
+          const base = (hours * hourlyRate) + schoolSkim;
+          const s = computeOfferStatus(base, instructorCourse as any);
+          return s.isLive ? { isLive: true, label: s.label, finalPrice: s.finalPrice, basePrice: s.basePrice, savings: s.savings, percentOff: s.percentOff } : null;
+        })(),
       });
 
       if (reviewsRes.data) setReviews(reviewsRes.data);
