@@ -219,7 +219,7 @@ export default function Index() {
       <section className="bg-[#0d2c5a]">
         <div className="container max-w-7xl px-4 py-5">
           <Link
-            to="/test-swap"
+            to="/test-swap/search"
             aria-label="Need an earlier driving test? Find a swap match"
             className="flex items-center justify-between gap-4 rounded-2xl bg-[#163a6e] px-6 py-5 hover:bg-[#1a437d] transition-colors"
           >
