@@ -223,8 +223,6 @@ const CourseCardImage: React.FC<{ courseId: string; badge: string; badgeColor: s
       overflow: "hidden",
     }}
   >
-    {/* Sun/moon */}
-    <circle />
     <svg viewBox="0 0 360 180" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" aria-hidden>
       {courseId === "weekly" ? (
         <>
