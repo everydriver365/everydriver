@@ -74,6 +74,7 @@ const AccessibleForumNew = lazy(() => import("@/pages/accessible/AccessibleForum
 const AccessibleGarages = lazy(() => import("@/pages/accessible/AccessibleGarages"));
 const AccessibleGarageProfile = lazy(() => import("@/pages/accessible/AccessibleGarageProfile"));
 const AccessibleTrackers = lazy(() => import("@/pages/accessible/AccessibleTrackers"));
+const TestSwap = lazy(() => import("@/pages/TestSwap"));
 
 // Conditional routes (domain-aware)
 const ConditionalContact = lazy(() => import("@/components/ConditionalRoutes").then(m => ({ default: m.ConditionalContact })));
