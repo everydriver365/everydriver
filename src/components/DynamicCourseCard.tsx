@@ -67,6 +67,11 @@ export function DynamicCourseCard({
   isPremium = false,
   placementType,
   areaName,
+  offerActive,
+  offerLabel,
+  offerPercentOff,
+  offerStartsAt,
+  offerEndsAt,
   effectiveHourlyRate,
   learnerPostcode,
 }: DynamicCourseCardProps) {
@@ -78,8 +83,16 @@ export function DynamicCourseCard({
   const schoolSkim = instructor.school_skim_amount || 0;
   const basePrice = hours * hourlyRate;
   const totalPrice = basePrice + schoolSkim;
-  const finalPrice = discountedPrice || totalPrice;
-  const hasDiscount = discountedPrice && discountedPrice < totalPrice;
+  const offer = computeOfferStatus(totalPrice, {
+    offer_active: offerActive,
+    offer_label: offerLabel,
+    offer_percent_off: offerPercentOff,
+    offer_starts_at: offerStartsAt,
+    offer_ends_at: offerEndsAt,
+    discounted_price: discountedPrice,
+  });
+  const hasDiscount = offer.isLive;
+  const finalPrice = hasDiscount ? offer.finalPrice : totalPrice;
   const isPostcodeAdjusted = effectiveHourlyRate != null && effectiveHourlyRate > 0 && effectiveHourlyRate !== defaultRate;
   const learnerOutward = (learnerPostcode || "").replace(/\s+/g, "").toUpperCase().slice(0, -3) || null;
   const hasSurcharges =
