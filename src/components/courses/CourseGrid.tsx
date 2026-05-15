@@ -108,7 +108,7 @@ export function CourseGrid({
           </p>
         </div>
 
-        {/* Sort buttons */}
+        {/* Sort + view toggle */}
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-sm font-medium text-muted-foreground">Sort:</span>
           <Button
@@ -139,6 +139,27 @@ export function CourseGrid({
             <Navigation className="h-3.5 w-3.5" />
             Nearest
           </Button>
+
+          <div className="ml-2 inline-flex rounded-md border bg-card p-0.5">
+            <Button
+              variant={viewMode === "grid" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setViewMode("grid")}
+              className="h-8 gap-1.5 px-2"
+              aria-label="Grid view"
+            >
+              <LayoutGrid className="h-3.5 w-3.5" />
+            </Button>
+            <Button
+              variant={viewMode === "list" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setViewMode("list")}
+              className="h-8 gap-1.5 px-2"
+              aria-label="List view"
+            >
+              <List className="h-3.5 w-3.5" />
+            </Button>
+          </div>
         </div>
       </div>
 
