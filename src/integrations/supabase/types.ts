@@ -14289,6 +14289,38 @@ export type Database = {
           },
         ]
       }
+      pupil_swap_checklist: {
+        Row: {
+          completed_steps: Json
+          created_at: string
+          id: string
+          pupil_id: string
+          updated_at: string
+        }
+        Insert: {
+          completed_steps?: Json
+          created_at?: string
+          id?: string
+          pupil_id: string
+          updated_at?: string
+        }
+        Update: {
+          completed_steps?: Json
+          created_at?: string
+          id?: string
+          pupil_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pupil_swap_checklist_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: true
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pupil_swap_profile: {
         Row: {
           consent_given: boolean
