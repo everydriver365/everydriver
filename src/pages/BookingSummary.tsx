@@ -980,6 +980,7 @@ export default function BookingSummary() {
       }
 
       if (data?.checkoutUrl) {
+        persistDraftBeforeRedirect();
         window.location.href = data.checkoutUrl;
       } else {
         toast.error("Could not get Square checkout URL");
