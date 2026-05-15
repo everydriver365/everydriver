@@ -20,13 +20,14 @@ interface EDCourse {
     car_type?: string | null;
     klarna_enabled?: boolean | null;
     clearpay_enabled?: boolean | null;
+    hourly_rate?: number | null;
   };
   hours: number;
   bookableDate: Date;
   isPopular?: boolean;
   isIntensive?: boolean;
   distance?: number;
-  price: number;
+  price?: number;
   discountedPrice?: number | null;
 }
 
@@ -72,10 +73,13 @@ export function EDCourseList({ courses }: EDCourseListProps) {
   return (
     <div className="flex flex-col" style={{ gap: 10 }}>
       {courses.map((c) => {
+        const basePrice =
+          c.price ??
+          (c.instructor.hourly_rate != null ? c.instructor.hourly_rate * c.hours : 0);
         const final =
-          c.discountedPrice && c.discountedPrice < c.price
+          c.discountedPrice && c.discountedPrice < basePrice
             ? c.discountedPrice
-            : c.price;
+            : basePrice;
         const klarnaPer = Math.round(final / 3);
         const clearpayPer = Math.round(final / 4);
         const perHour = Math.round(final / Math.max(c.hours, 1));

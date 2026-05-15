@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, PoundSterling, Navigation, MapPin, X, ChevronDown, Clock } from "lucide-react";
+import { Calendar as CalendarIcon, PoundSterling, Navigation, MapPin, X, ChevronDown, Clock, LayoutGrid, List } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DynamicCourseCard } from "@/components/DynamicCourseCard";
+import { EDCourseList } from "@/components/everydriver/EDCourseList";
 
 import { CourseWithInstructor, SortOption } from "@/hooks/useCourseDiscovery";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -30,6 +31,7 @@ export function CourseGrid({
 }: CourseGridProps) {
   const isMobile = useIsMobile();
   const [mobileVisibleCount, setMobileVisibleCount] = useState(6);
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
   const handleLoadMore = () => {
     setMobileVisibleCount(prev => Math.min(prev + 6, filteredCourses.length));
@@ -106,7 +108,7 @@ export function CourseGrid({
           </p>
         </div>
 
-        {/* Sort buttons */}
+        {/* Sort + view toggle */}
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-sm font-medium text-muted-foreground">Sort:</span>
           <Button
@@ -137,11 +139,44 @@ export function CourseGrid({
             <Navigation className="h-3.5 w-3.5" />
             Nearest
           </Button>
+
+          <div className="ml-2 inline-flex rounded-md border bg-card p-0.5">
+            <Button
+              variant={viewMode === "grid" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setViewMode("grid")}
+              className="h-8 gap-1.5 px-2"
+              aria-label="Grid view"
+            >
+              <LayoutGrid className="h-3.5 w-3.5" />
+            </Button>
+            <Button
+              variant={viewMode === "list" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setViewMode("list")}
+              className="h-8 gap-1.5 px-2"
+              aria-label="List view"
+            >
+              <List className="h-3.5 w-3.5" />
+            </Button>
+          </div>
         </div>
       </div>
 
       {filteredCourses.length > 0 ? (
-        isMobile ? (
+        viewMode === "list" ? (
+          <EDCourseList
+            courses={(isMobile ? filteredCourses.slice(0, mobileVisibleCount) : filteredCourses).map((c) => ({
+              instructor: c.instructor,
+              hours: c.hours,
+              bookableDate: c.bookableDate,
+              isPopular: c.isPopular,
+              isIntensive: c.isIntensive,
+              distance: c.distance,
+              discountedPrice: c.discountedPrice,
+            }))}
+          />
+        ) : isMobile ? (
           // Mobile: same flip cards as desktop, single column with load more
           <div className="flex flex-col gap-4">
             {filteredCourses.slice(0, mobileVisibleCount).map((course, index) => (
