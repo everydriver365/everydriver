@@ -14289,6 +14289,79 @@ export type Database = {
           },
         ]
       }
+      pupil_swap_profile: {
+        Row: {
+          consent_given: boolean
+          consent_timestamp: string | null
+          created_at: string
+          email_notifications: boolean
+          id: string
+          instructor_id: string
+          opted_in: boolean
+          preference: string
+          pupil_id: string
+          sms_notifications: boolean
+          test_centre: string | null
+          test_date: string | null
+          test_time: string | null
+          updated_at: string
+        }
+        Insert: {
+          consent_given?: boolean
+          consent_timestamp?: string | null
+          created_at?: string
+          email_notifications?: boolean
+          id?: string
+          instructor_id: string
+          opted_in?: boolean
+          preference?: string
+          pupil_id: string
+          sms_notifications?: boolean
+          test_centre?: string | null
+          test_date?: string | null
+          test_time?: string | null
+          updated_at?: string
+        }
+        Update: {
+          consent_given?: boolean
+          consent_timestamp?: string | null
+          created_at?: string
+          email_notifications?: boolean
+          id?: string
+          instructor_id?: string
+          opted_in?: boolean
+          preference?: string
+          pupil_id?: string
+          sms_notifications?: boolean
+          test_centre?: string | null
+          test_date?: string | null
+          test_time?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pupil_swap_profile_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pupil_swap_profile_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pupil_swap_profile_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: true
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pupil_syllabus_progress: {
         Row: {
           competency_id: string
