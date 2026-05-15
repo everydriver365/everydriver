@@ -30,6 +30,7 @@ const EDBookingSummary = lazy(() => import("@/pages/everydriver/BookingSummary")
 const EDBookingConfirmation = lazy(() => import("@/pages/everydriver/BookingConfirmation"));
 const TestSwap = lazy(() => import("@/pages/TestSwap"));
 const TestSwapRegister = lazy(() => import("@/pages/TestSwapRegister"));
+const TestSwapMatches = lazy(() => import("@/pages/TestSwapMatches"));
 
 // Shared (not cloned) — re-mounted here so the EveryDriver host still
 // resolves these public utility/legal/portal routes.
@@ -76,6 +77,7 @@ export const everydriverRoutes = (
     <Route path="/booking-confirmation" element={<EDBookingConfirmation />} />
     <Route path="/test-swap" element={<TestSwap />} />
     <Route path="/test-swap/register" element={<TestSwapRegister />} />
+    <Route path="/test-swap/matches/:signupId" element={<TestSwapMatches />} />
 
     {/* Shared (uncloned) */}
     <Route path="/sitemap.xml" element={<SitemapRedirect />} />

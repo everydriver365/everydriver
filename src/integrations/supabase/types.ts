@@ -17614,6 +17614,48 @@ export type Database = {
           },
         ]
       }
+      test_swap_match_requests: {
+        Row: {
+          created_at: string
+          id: string
+          requester_signup_id: string
+          status: string
+          target_signup_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          requester_signup_id: string
+          status?: string
+          target_signup_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          requester_signup_id?: string
+          status?: string
+          target_signup_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "test_swap_match_requests_requester_signup_id_fkey"
+            columns: ["requester_signup_id"]
+            isOneToOne: false
+            referencedRelation: "public_test_swap_signups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "test_swap_match_requests_target_signup_id_fkey"
+            columns: ["target_signup_id"]
+            isOneToOne: false
+            referencedRelation: "public_test_swap_signups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       test_swap_offers: {
         Row: {
           created_at: string
@@ -19141,6 +19183,22 @@ export type Database = {
           name: string
         }[]
       }
+      get_test_swap_matches: {
+        Args: { p_signup_id: string }
+        Returns: {
+          already_requested: boolean
+          created_at: string
+          current_centre_name: string
+          current_test_date: string
+          current_test_time: string
+          earliest_new_date: string
+          first_name: string
+          has_test_booked: boolean
+          id: string
+          latest_new_date: string
+          notes: string
+        }[]
+      }
       get_whitelabel_instructor_status: {
         Args: { p_slug: string }
         Returns: {
@@ -19192,6 +19250,10 @@ export type Database = {
           p_speed_kmh?: number
           p_speed_limit_kmh?: number
         }
+        Returns: string
+      }
+      request_test_swap: {
+        Args: { p_requester_signup_id: string; p_target_signup_id: string }
         Returns: string
       }
       update_live_position:

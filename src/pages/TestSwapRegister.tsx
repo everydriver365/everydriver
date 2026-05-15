@@ -116,22 +116,24 @@ export default function TestSwapRegister() {
       return;
     }
 
-    const { error } = await supabase
+    const { data: inserted, error } = await supabase
       .from("public_test_swap_signups")
-      .insert(parsed.data as any);
+      .insert(parsed.data as any)
+      .select("id")
+      .single();
 
     setSubmitting(false);
 
-    if (error) {
+    if (error || !inserted) {
       toast({
         title: "Couldn't submit",
-        description: error.message,
+        description: error?.message ?? "Please try again.",
         variant: "destructive",
       });
       return;
     }
 
-    setDone(true);
+    navigate(`/test-swap/matches/${inserted.id}`);
   };
 
   return (
