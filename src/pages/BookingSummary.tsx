@@ -768,6 +768,7 @@ export default function BookingSummary() {
       }
 
       if (data?.redirectUrl) {
+        persistDraftBeforeRedirect();
         window.location.href = data.redirectUrl;
       } else {
         toast.error("Could not get Clearpay checkout URL");
