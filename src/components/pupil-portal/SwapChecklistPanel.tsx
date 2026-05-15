@@ -86,7 +86,7 @@ interface SwapChecklistPanelProps {
   onOpenSwapSettings?: () => void;
 }
 
-export function SwapChecklistPanel({ onClose, onOpenSwapSettings }: SwapChecklistPanelProps) {
+export function SwapChecklistPanel({ pupilId, instructorId, onClose, onOpenSwapSettings }: SwapChecklistPanelProps) {
   const { toast } = useToast();
   const [checked, setChecked] = useState<Record<string, boolean>>(
     Object.fromEntries(SWAP_STEPS.map((s) => [s.id, false]))
@@ -100,6 +100,36 @@ export function SwapChecklistPanel({ onClose, onOpenSwapSettings }: SwapChecklis
   });
   const [refTouched, setRefTouched] = useState(false);
   const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
+
+  // Load persisted checklist progress from DB
+  useEffect(() => {
+    if (!pupilId) return;
+    let alive = true;
+    (async () => {
+      const { data } = await supabase
+        .from("pupil_swap_checklist")
+        .select("completed_steps")
+        .eq("pupil_id", pupilId)
+        .maybeSingle();
+      if (!alive) return;
+      if (data?.completed_steps) {
+        setChecked(data.completed_steps as Record<string, boolean>);
+      }
+    })();
+    return () => { alive = false; };
+  }, [pupilId]);
+
+  const persistChecklist = async (steps: Record<string, boolean>) => {
+    if (!pupilId || !instructorId) return;
+    const { error } = await supabase.from("pupil_swap_checklist").upsert({
+      pupil_id: pupilId,
+      instructor_id: instructorId,
+      completed_steps: steps,
+    }, { onConflict: "pupil_id" });
+    if (error) {
+      console.error("Failed to save checklist progress", error);
+    }
+  };
 
   useEffect(() => {
     try {
@@ -158,13 +188,16 @@ export function SwapChecklistPanel({ onClose, onOpenSwapSettings }: SwapChecklis
           }
         }
       }
+      persistChecklist(next);
       return next;
     });
   };
 
   const resetAll = () => {
-    setChecked(Object.fromEntries(SWAP_STEPS.map((s) => [s.id, false])));
+    const next = Object.fromEntries(SWAP_STEPS.map((s) => [s.id, false]));
+    setChecked(next);
     setResetConfirmOpen(false);
+    persistChecklist(next);
   };
 
   const copyDVSADetails = async () => {
