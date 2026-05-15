@@ -415,6 +415,11 @@ export default function BrandedPupilPortal() {
                   </div>
 
                   {/* ═══ ZONE 1: RIGHT NOW ═══ */}
+                  <SwapNeedsAttentionBanner
+                    hasTestBooked={!!pupil.test_date}
+                    optedIn={swapOptedIn}
+                    onClick={openSwapSettings}
+                  />
                   <SlotOfferNotification pupilId={pupil.id} onAccept={() => setActiveSection('schedule')} />
                   <PupilCheckInCard pupilId={pupil.id} />
                   <PushNotificationBanner pupilId={pupil.id} brandColour={drive365Blue} />
