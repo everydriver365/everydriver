@@ -230,9 +230,16 @@ export function SwapChecklistPanel({ onClose, onOpenSwapSettings }: SwapChecklis
         >
           <div className="min-w-0">
             <p className="text-[11px] text-[#5F5E5A]">Learner B's booking reference</p>
-            <p className="text-[15px] font-medium text-[#2C2C2A] tracking-wider truncate">
+            <p
+              className={`text-[15px] font-medium tracking-wider truncate ${
+                refError ? "text-[#CC2229]" : "text-[#2C2C2A]"
+              }`}
+            >
               {partnerRef}
             </p>
+            {refError && (
+              <p className="text-[11px] text-[#CC2229] mt-0.5">{refError}</p>
+            )}
           </div>
           <button
             type="button"
