@@ -20,10 +20,16 @@ const EDAbout = lazy(() => import("@/pages/everydriver/About"));
 const EDContact = lazy(() => import("@/pages/everydriver/Contact"));
 const EDReviews = lazy(() => import("@/pages/everydriver/Reviews"));
 const EDFranchise = lazy(() => import("@/pages/everydriver/FranchisePage"));
-const EDFranchiseHealthcare = lazy(() => import("@/pages/everydriver/franchise/FranchiseHealthcare"));
-const EDFranchiseBonus = lazy(() => import("@/pages/everydriver/franchise/FranchiseBonus"));
-const EDFranchiseWhatsIncluded = lazy(() => import("@/pages/everydriver/franchise/FranchiseWhatsIncluded"));
-const EDFranchiseTechnology = lazy(() => import("@/pages/everydriver/franchise/FranchiseTechnology"));
+
+// Drive365 surface — when path starts /drive365, render the real Drive365
+// pages even on the EveryDriver host. "Drive365 must go to Drive365."
+const Drive365Index = lazy(() => import("@/pages/Index"));
+const Drive365Courses = lazy(() => import("@/pages/Courses"));
+const Drive365Franchise = lazy(() => import("@/pages/FranchisePage"));
+const Drive365FranchiseHealthcare = lazy(() => import("@/pages/franchise/FranchiseHealthcare"));
+const Drive365FranchiseBonus = lazy(() => import("@/pages/franchise/FranchiseBonus"));
+const Drive365FranchiseWhatsIncluded = lazy(() => import("@/pages/franchise/FranchiseWhatsIncluded"));
+const Drive365FranchiseTechnology = lazy(() => import("@/pages/franchise/FranchiseTechnology"));
 const EDHealthBenefits = lazy(() => import("@/pages/everydriver/HealthBenefitsPage"));
 const EDComparison = lazy(() => import("@/pages/everydriver/ComparisonPage"));
 const EDBookingSummary = lazy(() => import("@/pages/everydriver/BookingSummary"));
@@ -48,10 +54,13 @@ const SitemapRedirect = lazy(() => import("@/pages/SitemapRedirect"));
 
 export const everydriverRoutes = (
   <>
+    {/* Drive365 surface — must always render the Drive365 brand pages,
+        never the EveryDriver clone. */}
+    <Route path="/drive365" element={<Drive365Index />} />
+    <Route path="/drive365/search" element={<Drive365Courses />} />
+
     {/* Cloned EveryDriver marketing surface */}
-    <Route path="/drive365" element={<EDIndex />} />
     <Route path="/search" element={<EDCourses />} />
-    <Route path="/drive365/search" element={<EDCourses />} />
     <Route path="/courses" element={<EDCourses />} />
     <Route path="/benefits" element={<EDBenefits />} />
     <Route path="/intensives" element={<EDIntensives />} />
@@ -66,11 +75,12 @@ export const everydriverRoutes = (
     <Route path="/reviews" element={<EDReviews />} />
     <Route path="/services" element={<EDCourses />} />
     <Route path="/franchise" element={<EDFranchise />} />
-    <Route path="/drive365/franchise" element={<EDFranchise />} />
-    <Route path="/drive365/franchise/healthcare" element={<EDFranchiseHealthcare />} />
-    <Route path="/drive365/franchise/bonus" element={<EDFranchiseBonus />} />
-    <Route path="/drive365/franchise/whats-included" element={<EDFranchiseWhatsIncluded />} />
-    <Route path="/drive365/franchise/technology" element={<EDFranchiseTechnology />} />
+    {/* Drive365 franchise pages — keep on Drive365 brand. */}
+    <Route path="/drive365/franchise" element={<Drive365Franchise />} />
+    <Route path="/drive365/franchise/healthcare" element={<Drive365FranchiseHealthcare />} />
+    <Route path="/drive365/franchise/bonus" element={<Drive365FranchiseBonus />} />
+    <Route path="/drive365/franchise/whats-included" element={<Drive365FranchiseWhatsIncluded />} />
+    <Route path="/drive365/franchise/technology" element={<Drive365FranchiseTechnology />} />
     <Route path="/health-benefits" element={<EDHealthBenefits />} />
     <Route path="/compare" element={<EDComparison />} />
     <Route path="/book/:instructorId" element={<EDBookingSummary />} />
