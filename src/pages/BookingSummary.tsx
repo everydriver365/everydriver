@@ -37,6 +37,7 @@ import { fetchInstructorPostcodeRules } from "@/hooks/useInstructorPostcodeRules
 import { applyRateModifiers, loadUkBankHolidays, type RateModifiers } from "@/lib/pricing/applyRateModifiers";
 import { PLATFORM_FEE_GBP } from "@/lib/pricing/platformFee";
 import { getWhitelabelConfig } from "@/lib/whitelabel";
+import { computeOfferStatus } from "@/lib/courseOffer";
 
 
 interface Instructor {
@@ -119,6 +120,14 @@ interface CourseDetails {
   courseDescription: string | null;
   features: string[] | null;
   template: CourseTemplate | null;
+  offer?: {
+    isLive: boolean;
+    label: string | null;
+    finalPrice: number;
+    basePrice: number;
+    savings: number;
+    percentOff: number | null;
+  } | null;
 }
 
 export default function BookingSummary() {
@@ -295,7 +304,7 @@ export default function BookingSummary() {
           odd_hours_surcharge_amount, odd_hours_start, odd_hours_end
         `).eq("id", instructorId).maybeSingle(),
         supabase.from("course_templates").select("*").eq("course_hours", hours).maybeSingle(),
-        supabase.from("instructor_courses").select("course_image_url").eq("instructor_id", instructorId).eq("course_hours", hours).maybeSingle(),
+        supabase.from("instructor_courses").select("course_image_url, offer_active, offer_label, offer_percent_off, offer_starts_at, offer_ends_at, discounted_price").eq("instructor_id", instructorId).eq("course_hours", hours).maybeSingle(),
         supabase.from("course_reviews").select("*").eq("instructor_id", instructorId).eq("course_hours", hours).order("review_date", { ascending: false }).limit(5),
         fetchInstructorPostcodeRules(instructorId),
       ]);
@@ -400,6 +409,11 @@ export default function BookingSummary() {
         courseDescription: template?.full_description || template?.short_description || null,
         features: template?.features || null,
         template: template || null,
+        offer: (() => {
+          const base = (hours * hourlyRate) + schoolSkim;
+          const s = computeOfferStatus(base, instructorCourse as any);
+          return s.isLive ? { isLive: true, label: s.label, finalPrice: s.finalPrice, basePrice: s.basePrice, savings: s.savings, percentOff: s.percentOff } : null;
+        })(),
       });
 
       if (reviewsRes.data) setReviews(reviewsRes.data);
@@ -1058,7 +1072,8 @@ export default function BookingSummary() {
     Math.round((surchargedSlotsTotal + remainingHours * effectiveHourlyRate) * 100) / 100;
   // Bookings include a flat £1 platform fee (separate from school skim & Service Fee).
   const platformFee = PLATFORM_FEE_GBP;
-  const totalPrice = surchargeTotal + schoolSkimAmount + platformFee;
+  const offerSavings = courseDetails?.offer?.isLive ? courseDetails.offer.savings : 0;
+  const totalPrice = Math.max(0, surchargeTotal + schoolSkimAmount + platformFee - offerSavings);
   const postcodeOverrideActive = effectiveHourlyRate !== baseHourlyRate;
   const surchargesActive = totalPrice > (hours * effectiveHourlyRate + schoolSkimAmount + platformFee) + 0.001;
 

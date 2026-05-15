@@ -6520,6 +6520,11 @@ export type Database = {
           id: string
           instructor_id: string
           is_active: boolean
+          offer_active: boolean
+          offer_ends_at: string | null
+          offer_label: string | null
+          offer_percent_off: number | null
+          offer_starts_at: string | null
         }
         Insert: {
           course_hours: number
@@ -6531,6 +6536,11 @@ export type Database = {
           id?: string
           instructor_id: string
           is_active?: boolean
+          offer_active?: boolean
+          offer_ends_at?: string | null
+          offer_label?: string | null
+          offer_percent_off?: number | null
+          offer_starts_at?: string | null
         }
         Update: {
           course_hours?: number
@@ -6542,6 +6552,11 @@ export type Database = {
           id?: string
           instructor_id?: string
           is_active?: boolean
+          offer_active?: boolean
+          offer_ends_at?: string | null
+          offer_label?: string | null
+          offer_percent_off?: number | null
+          offer_starts_at?: string | null
         }
         Relationships: [
           {

@@ -80,6 +80,11 @@ interface CourseWithInstructor {
   isIntensive: boolean;
   discountedPrice: number | null;
   customFeatures: string[] | null;
+  offerActive?: boolean | null;
+  offerLabel?: string | null;
+  offerPercentOff?: number | null;
+  offerStartsAt?: string | null;
+  offerEndsAt?: string | null;
 }
 
 interface GeoCache {
@@ -505,6 +510,11 @@ export default function Courses() {
             isIntensive: template?.is_intensive || false,
             discountedPrice: courseData.discounted_price || null,
             customFeatures: courseData.custom_features || null,
+            offerActive: (courseData as any).offer_active ?? null,
+            offerLabel: (courseData as any).offer_label ?? null,
+            offerPercentOff: (courseData as any).offer_percent_off ?? null,
+            offerStartsAt: (courseData as any).offer_starts_at ?? null,
+            offerEndsAt: (courseData as any).offer_ends_at ?? null,
           });
         }
       }
@@ -1697,6 +1707,11 @@ export default function Courses() {
                             features={course.features}
                             isIntensive={course.isIntensive}
                             discountedPrice={course.discountedPrice}
+                  offerActive={course.offerActive}
+                  offerLabel={course.offerLabel}
+                  offerPercentOff={course.offerPercentOff}
+                  offerStartsAt={course.offerStartsAt}
+                  offerEndsAt={course.offerEndsAt}
                             customFeatures={course.customFeatures}
                             areaName={areaCache[course.instructor.home_postcode?.replace(/\s+/g, "").toUpperCase()] || null}
                             effectiveHourlyRate={resolvedRateFor(course.instructor)}
@@ -1744,6 +1759,11 @@ export default function Courses() {
                               features={course.features}
                               isIntensive={course.isIntensive}
                               discountedPrice={course.discountedPrice}
+                  offerActive={course.offerActive}
+                  offerLabel={course.offerLabel}
+                  offerPercentOff={course.offerPercentOff}
+                  offerStartsAt={course.offerStartsAt}
+                  offerEndsAt={course.offerEndsAt}
                               customFeatures={course.customFeatures}
                               areaName={areaCache[course.instructor.home_postcode?.replace(/\s+/g, "").toUpperCase()] || null}
                               effectiveHourlyRate={resolvedRateFor(course.instructor)}

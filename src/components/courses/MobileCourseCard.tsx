@@ -2,12 +2,13 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
-import { MapPin, Star, Check, Car, Calendar, Clock, ArrowRight, ChevronDown, Shield } from "lucide-react";
+import { MapPin, Star, Check, Car, Calendar, Clock, ArrowRight, ChevronDown, Shield, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CompactPaymentBadges } from "@/components/payments/PaymentMessaging";
 import { cn } from "@/lib/utils";
+import { computeOfferStatus } from "@/lib/courseOffer";
 import tenHoursBadge from "@/assets/10-hours-badge.png";
 import twentyHoursBadge from "@/assets/20-hours-badge.png";
 import thirtyHoursBadge from "@/assets/30-hours-badge.png";
@@ -40,6 +41,11 @@ interface Course {
   isPremium?: boolean;
   placementType?: string;
   areaName?: string | null;
+  offerActive?: boolean | null;
+  offerLabel?: string | null;
+  offerPercentOff?: number | null;
+  offerStartsAt?: string | null;
+  offerEndsAt?: string | null;
 }
 
 interface MobileCourseCardProps {
@@ -54,7 +60,16 @@ export function MobileCourseCard({ course, index }: MobileCourseCardProps) {
 
   const schoolSkim = instructor.school_skim_amount || 0;
   const basePrice = instructor.hourly_rate ? instructor.hourly_rate * hours : 0;
-  const price = discountedPrice || (basePrice + schoolSkim);
+  const totalPrice = basePrice + schoolSkim;
+  const offer = computeOfferStatus(totalPrice, {
+    offer_active: course.offerActive,
+    offer_label: course.offerLabel,
+    offer_percent_off: course.offerPercentOff,
+    offer_starts_at: course.offerStartsAt,
+    offer_ends_at: course.offerEndsAt,
+    discounted_price: discountedPrice,
+  });
+  const price = offer.isLive ? offer.finalPrice : totalPrice;
   const formattedDate = format(bookableDate, "d MMM");
   const transmissionType = instructor.car_type || "Manual";
 
@@ -149,7 +164,18 @@ export function MobileCourseCard({ course, index }: MobileCourseCardProps) {
               </div>
 
               <div className="text-right flex-shrink-0">
-                <span className="text-lg font-black text-foreground">£{price.toLocaleString()}</span>
+                {offer.isLive ? (
+                  <>
+                    <div className="text-[10px] line-through text-muted-foreground leading-none">£{totalPrice.toLocaleString()}</div>
+                    <span className="text-lg font-black text-emerald-600 leading-none">£{price.toLocaleString()}</span>
+                    <Badge className="mt-0.5 border-0 bg-amber-500 text-white text-[9px] px-1.5 py-0 h-auto gap-0.5">
+                      <Sparkles className="h-2.5 w-2.5" />
+                      {offer.label || (offer.percentOff ? `${offer.percentOff}% off` : `Save £${offer.savings.toFixed(0)}`)}
+                    </Badge>
+                  </>
+                ) : (
+                  <span className="text-lg font-black text-foreground">£{price.toLocaleString()}</span>
+                )}
               </div>
             </div>
 

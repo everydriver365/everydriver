@@ -36,6 +36,11 @@ export interface InstructorCourse {
   course_image_url: string | null;
   discounted_price: number | null;
   custom_features: string[] | null;
+  offer_active: boolean | null;
+  offer_label: string | null;
+  offer_percent_off: number | null;
+  offer_starts_at: string | null;
+  offer_ends_at: string | null;
 }
 
 export interface CourseTemplate {
@@ -73,6 +78,11 @@ export interface CourseWithInstructor {
   isIntensive: boolean;
   discountedPrice: number | null;
   customFeatures: string[] | null;
+  offerActive: boolean | null;
+  offerLabel: string | null;
+  offerPercentOff: number | null;
+  offerStartsAt: string | null;
+  offerEndsAt: string | null;
   isPremium?: boolean;
   placementType?: string;
   priorityScore?: number;
@@ -521,6 +531,11 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
             isIntensive: template?.is_intensive || false,
             discountedPrice: courseData.discounted_price || null,
             customFeatures: courseData.custom_features || null,
+            offerActive: courseData.offer_active ?? null,
+            offerLabel: courseData.offer_label ?? null,
+            offerPercentOff: courseData.offer_percent_off ?? null,
+            offerStartsAt: courseData.offer_starts_at ?? null,
+            offerEndsAt: courseData.offer_ends_at ?? null,
             isPremium: !!placement,
             placementType: placement?.placement_type,
             priorityScore: placement?.priority_score,

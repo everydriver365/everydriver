@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { MapPin, Clock, User, PoundSterling, Star, CheckCircle, Car, Zap, TrendingUp, ArrowRight } from "lucide-react";
+import { MapPin, Clock, User, PoundSterling, Star, CheckCircle, Car, Zap, TrendingUp, ArrowRight, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format, isFuture, parseISO, differenceInDays } from "date-fns";
 import { CompactPaymentBadges } from "@/components/payments/PaymentMessaging";
+import { computeOfferStatus } from "@/lib/courseOffer";
 
 interface DynamicCourseCardProps {
   instructor: {
@@ -40,6 +41,11 @@ interface DynamicCourseCardProps {
   isPremium?: boolean;
   placementType?: string;
   areaName?: string | null;
+  offerActive?: boolean | null;
+  offerLabel?: string | null;
+  offerPercentOff?: number | null;
+  offerStartsAt?: string | null;
+  offerEndsAt?: string | null;
   /** Effective hourly rate after applying any postcode-rule override for the learner's postcode. */
   effectiveHourlyRate?: number | null;
   /** Learner's postcode (for "pricing for SO22…" hint). */
@@ -61,6 +67,11 @@ export function DynamicCourseCard({
   isPremium = false,
   placementType,
   areaName,
+  offerActive,
+  offerLabel,
+  offerPercentOff,
+  offerStartsAt,
+  offerEndsAt,
   effectiveHourlyRate,
   learnerPostcode,
 }: DynamicCourseCardProps) {
@@ -72,8 +83,16 @@ export function DynamicCourseCard({
   const schoolSkim = instructor.school_skim_amount || 0;
   const basePrice = hours * hourlyRate;
   const totalPrice = basePrice + schoolSkim;
-  const finalPrice = discountedPrice || totalPrice;
-  const hasDiscount = discountedPrice && discountedPrice < totalPrice;
+  const offer = computeOfferStatus(totalPrice, {
+    offer_active: offerActive,
+    offer_label: offerLabel,
+    offer_percent_off: offerPercentOff,
+    offer_starts_at: offerStartsAt,
+    offer_ends_at: offerEndsAt,
+    discounted_price: discountedPrice,
+  });
+  const hasDiscount = offer.isLive;
+  const finalPrice = hasDiscount ? offer.finalPrice : totalPrice;
   const isPostcodeAdjusted = effectiveHourlyRate != null && effectiveHourlyRate > 0 && effectiveHourlyRate !== defaultRate;
   const learnerOutward = (learnerPostcode || "").replace(/\s+/g, "").toUpperCase().slice(0, -3) || null;
   const hasSurcharges =
@@ -174,8 +193,9 @@ export function DynamicCourseCard({
                 {transmissionLabel}
               </Badge>
               {hasDiscount && (
-                <Badge className="rounded-none border-0 bg-red-500 text-white">
-                  Save £{(totalPrice - discountedPrice!).toFixed(0)}
+                <Badge className="rounded-none border-0 bg-red-500 text-white gap-1">
+                  <Sparkles className="h-3 w-3" />
+                  {offer.label || (offer.percentOff ? `${offer.percentOff}% off` : `Save £${offer.savings.toFixed(0)}`)}
                 </Badge>
               )}
               {distance !== undefined && (

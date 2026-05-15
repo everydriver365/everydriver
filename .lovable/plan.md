@@ -1,73 +1,54 @@
-## Problem
+## Goal
+Add a "Discount / Special Offer" feature to course pricing, manageable from both the admin and instructor portals, and surfaced on course cards and course summary pages.
 
-On `/test-swap`, the two "Find a swap match" CTAs (hero + bottom card) and the homepage banner all link to `/courses` (instructor search). There is no learner-facing page to actually register interest in a test swap, so visitors get dumped into the lesson booking flow instead.
+## Today
+`public.instructor_courses` already has a `discounted_price` column, but it's not editable in the instructor UI, has no offer label/expiry/tag, and isn't rendered as a "discount" anywhere — `hourly_rate × hours` is shown as the price. There's nothing for an admin to override either.
 
 ## Plan
 
-### 1. New page: `/test-swap/register`
+### 1. Database (migration)
+Extend `public.instructor_courses` with offer metadata:
+- `offer_label text` — e.g. "Summer Sale", "New Driver Deal" (shown as a badge)
+- `offer_starts_at timestamptz` (nullable) and `offer_ends_at timestamptz` (nullable) — controls whether the offer is currently live
+- `offer_active boolean default false` — master on/off so an instructor can prep a deal without showing it
+- Keep existing `discounted_price` as the override price.
 
-A public, unauthenticated registration form for learners who want to join the swap pool. Captures the minimum needed to match two learners:
+No RLS changes needed (existing policies already allow instructor + admin to update).
 
-- Full name
-- Email + mobile
-- Current DVSA test centre (autocomplete from existing `test_centres` table)
-- Current test date + time (date/time pickers; optional if they don't have one yet — toggle "I don't have a test booked yet, notify me of matches")
-- Earliest acceptable new date + latest acceptable new date
-- Optional: preferred alternate centres (multi-select), notes
-- Consent checkbox (privacy + contact permission)
+### 2. Instructor portal — `InstructorCoursesManager.tsx`
+For each enabled course row, add an "Offer" pencil button that opens a small dialog with:
+- Discounted price (£) — required if offer enabled
+- Offer label (text, ≤30 chars)
+- Optional start / end dates
+- "Show this offer to pupils" switch (`offer_active`)
+- "Remove offer" button
 
-Wrapped in `MainLayout`, Drive365 styling, success state showing "We'll email you as soon as we find a match" and a link back to `/test-swap`.
+Show a small price preview ("Was £X · Now £Y · Save £Z") inside the dialog using `hourly_rate × course_hours`.
 
-### 2. Repoint all swap CTAs
+### 3. Admin portal
+In the existing instructor course editor (admin side, used in `InstructorForm` / course management), surface the same offer fields so support staff can run promotions on behalf of instructors.
 
-Update three links from `/courses` → `/test-swap/register`:
-- `src/pages/TestSwap.tsx` hero CTA (line ~60)
-- `src/pages/TestSwap.tsx` bottom card CTA (line ~128)
-- Keep the homepage banner on `/drive365` pointing at `/test-swap` (it already opens the info page, which is correct — the new register page is reached from there)
+### 4. Helper
+Add a small util `getCourseOfferStatus(course)` returning `{ isLive, basePrice, finalPrice, savings, label }` so all card/summary surfaces compute the same way (live = `offer_active && discounted_price && now within window`).
 
-The "How it works" button stays pointing at `/faqs`.
+### 5. UI surfaces — show the offer
+Update these to show a strikethrough base price, the discounted price, savings, and the offer label badge:
+- `src/components/CourseCard.tsx`
+- `src/components/courses/MobileCourseCard.tsx`
+- `src/components/IOSCourseCard.tsx`
+- `src/components/DynamicCourseCard.tsx`
+- `src/components/mini-website/MiniWebsiteCourseCard.tsx`
+- `src/pages/BookingSummary.tsx` and `src/pages/everydriver/BookingSummary.tsx` (course summary — show "Was / Now / You save" line and badge near total)
 
-### 3. Database: new `public_test_swap_signups` table
+`useCourseDiscovery.ts` already exposes `discounted_price`; extend its select + returned shape to include the new offer fields and pass through to cards.
 
-Existing `test_requests` requires an `instructor_id` and an authenticated user, so it can't accept public signups. Add a separate intake table:
+### 6. Out of scope (flag now, do later if you want)
+- Promo codes / coupon entry at checkout
+- Per-pupil targeted discounts
+- Sitewide platform-set discount banners
+- Persisting the discounted amount onto the actual `bookings`/`payment_history` row (today the booking flow charges the displayed final price; we'll keep that behaviour, just driven by the new offer logic).
 
-```text
-public_test_swap_signups
-  id uuid pk
-  full_name text
-  email text
-  phone text
-  current_centre_id uuid → test_centres(id) nullable
-  current_centre_name text
-  current_test_date date nullable
-  current_test_time time nullable
-  has_test_booked boolean
-  earliest_new_date date
-  latest_new_date date
-  alternate_centre_ids uuid[] default '{}'
-  notes text
-  consent_given boolean not null
-  status text default 'pending'   -- pending | matched | cancelled
-  created_at timestamptz default now()
-```
-
-RLS:
-- INSERT: allow anonymous (`anon` role) so the public form works without login.
-- SELECT/UPDATE/DELETE: admins only via `has_role(auth.uid(),'admin')`.
-
-Indexes on `current_centre_id`, `status`, `created_at`.
-
-### 4. Admin visibility (light touch)
-
-Out of scope for this task: building a full admin matching UI. The signups land in the table; an admin can review them via the existing backend. Mention this in the plan but do not build it unless you confirm you want it.
-
-## Out of scope
-
-- Admin matching dashboard / matching algorithm.
-- Email notifications when a match is found (can be added later via an edge function).
-- Linking signups to authenticated pupil accounts.
-
-## Questions before building
-
-1. Is a brand-new public intake table the right approach, or do you want this to flow into the existing `test_requests` table somehow (which currently requires an instructor)?
-2. Should we send a confirmation email on signup now, or just store the record and add email later?
+## Questions before I build
+1. Should the discount be entered as a **fixed final price** (current `discounted_price`), a **percentage off**, or **either**? Percentage is friendlier for "20% off" promos.
+2. Do you want **start/end dates** at all, or just an on/off toggle per course?
+3. Should the **admin** be able to set a discount that the instructor can't edit (locked promo), or is admin access just a convenience that mirrors the instructor's own controls?

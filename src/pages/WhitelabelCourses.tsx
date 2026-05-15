@@ -372,6 +372,11 @@ export default function WhitelabelCourses() {
                               features={course.features}
                               isIntensive={course.isIntensive}
                               discountedPrice={course.discountedPrice}
+                  offerActive={course.offerActive}
+                  offerLabel={course.offerLabel}
+                  offerPercentOff={course.offerPercentOff}
+                  offerStartsAt={course.offerStartsAt}
+                  offerEndsAt={course.offerEndsAt}
                               customFeatures={course.customFeatures}
                               isPremium={course.isPremium}
                               placementType={course.placementType}
@@ -411,6 +416,11 @@ export default function WhitelabelCourses() {
                             features={course.features}
                             isIntensive={course.isIntensive}
                             discountedPrice={course.discountedPrice}
+                  offerActive={course.offerActive}
+                  offerLabel={course.offerLabel}
+                  offerPercentOff={course.offerPercentOff}
+                  offerStartsAt={course.offerStartsAt}
+                  offerEndsAt={course.offerEndsAt}
                             customFeatures={course.customFeatures}
                             isPremium={course.isPremium}
                             placementType={course.placementType}
