@@ -303,7 +303,7 @@ export default function BookingSummary() {
           odd_hours_surcharge_amount, odd_hours_start, odd_hours_end
         `).eq("id", instructorId).maybeSingle(),
         supabase.from("course_templates").select("*").eq("course_hours", hours).maybeSingle(),
-        supabase.from("instructor_courses").select("course_image_url").eq("instructor_id", instructorId).eq("course_hours", hours).maybeSingle(),
+        supabase.from("instructor_courses").select("course_image_url, offer_active, offer_label, offer_percent_off, offer_starts_at, offer_ends_at, discounted_price").eq("instructor_id", instructorId).eq("course_hours", hours).maybeSingle(),
         supabase.from("course_reviews").select("*").eq("instructor_id", instructorId).eq("course_hours", hours).order("review_date", { ascending: false }).limit(5),
         fetchInstructorPostcodeRules(instructorId),
       ]);
