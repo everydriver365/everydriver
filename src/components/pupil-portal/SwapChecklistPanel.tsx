@@ -96,6 +96,7 @@ export function SwapChecklistPanel({ onClose, onOpenSwapSettings }: SwapChecklis
       return "";
     }
   });
+  const [refTouched, setRefTouched] = useState(false);
   const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
 
   useEffect(() => {
@@ -103,6 +104,22 @@ export function SwapChecklistPanel({ onClose, onOpenSwapSettings }: SwapChecklis
       localStorage.setItem("swap_partner_ref", partnerRef);
     } catch { /* noop */ }
   }, [partnerRef]);
+
+  const validateRef = (value: string) => {
+    const trimmed = value.trim();
+    if (!trimmed) return null;
+    if (!/^\d+$/.test(trimmed)) return "Booking reference should be numbers only";
+    if (trimmed.length < 8) return "Looks too short — DVSA references are usually 8–12 digits";
+    if (trimmed.length > 12) return "Looks too long — DVSA references are usually 8–12 digits";
+    return null;
+  };
+
+  const refError = refTouched ? validateRef(partnerRef) : null;
+
+  const handlePartnerRefChange = (value: string) => {
+    setPartnerRef(value);
+    if (value.trim()) setRefTouched(true);
+  };
 
   const copyPartnerRef = async () => {
     const value = partnerRef.trim();
