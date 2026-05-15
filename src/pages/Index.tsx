@@ -851,24 +851,6 @@ export default function Index() {
         </div>
       </section>
 
-      {/* Mobile Trust Badges */}
-      <section className="md:hidden border-t bg-muted/30 py-4">
-        <div className="container">
-          <div className="flex flex-wrap items-center justify-center gap-2">
-            <Badge variant="secondary" className="text-xs font-medium">ADI Code of Practice ✓</Badge>
-            <Badge variant="secondary" className="text-xs font-medium">MSA GB Member</Badge>
-            <Badge variant="secondary" className="text-xs font-medium">CPD Certified</Badge>
-          </div>
-          <div className="flex flex-wrap items-center justify-center gap-2 mt-2">
-            <Badge variant="outline" className="text-xs">Visa / Mastercard</Badge>
-            <Badge className="text-xs bg-[#ffb3c7] text-black border-0">Klarna</Badge>
-            <Badge className="text-xs bg-[#b2fce4] text-black border-0">Clearpay</Badge>
-            <Badge className="text-xs bg-[#ffd700] text-black border-0">0% Finance</Badge>
-          </div>
-        </div>
-      </section>
-
-      {/* Franchise Promotion Banner */}
       <section className="bg-primary text-primary-foreground py-12 md:py-16">
         <div className="container max-w-4xl text-center space-y-5">
           <Badge className="bg-accent text-accent-foreground text-sm">Now Recruiting</Badge>
