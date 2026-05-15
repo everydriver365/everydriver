@@ -270,7 +270,7 @@ export default function BrandedPupilPortal() {
   const fetchPupil = async (pupilId: string) => {
     const { data, error } = await supabase
       .from("pupils")
-      .select("id, name, phone, email, lessons_completed, progress, account_balance, prepaid_hours, profile_image_url, date_of_birth, driver_number, theory_cert_number, address, postcode, pickup_address, what3words")
+      .select("id, name, phone, email, lessons_completed, progress, account_balance, prepaid_hours, profile_image_url, date_of_birth, driver_number, theory_cert_number, address, postcode, pickup_address, what3words, test_date")
       .eq("id", pupilId)
       .single();
 
