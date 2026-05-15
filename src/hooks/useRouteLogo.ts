@@ -22,6 +22,13 @@ const DRIVE365_ROUTE_PREFIXES = [
   "/booking",
   "/booking-confirmation",
   "/search",
+  "/test-swap",
+  "/news",
+  "/reviews",
+  "/intensives",
+  "/semi-intensive",
+  "/compare",
+  "/health-benefits",
 ];
 
 export function useRouteLogo() {
