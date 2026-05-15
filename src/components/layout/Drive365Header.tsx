@@ -52,17 +52,17 @@ export function Drive365Header() {
           <Link to="/" className="flex flex-col items-start shrink-0">
             <span
               className="text-white font-extrabold leading-none"
-              style={{ fontSize: "22px", letterSpacing: "-0.02em", fontFamily: "Inter, Helvetica, sans-serif" }}
+              style={{ fontSize: "28px", letterSpacing: "-0.02em", fontFamily: "Inter, Helvetica, sans-serif" }}
             >
               Drive365
             </span>
-            <div className="flex items-center gap-[2px] mt-[6px]">
-              <span className="block bg-[#d92e3a]" style={{ width: "20px", height: "2px" }} />
-              <span className="block bg-[#1d4ed8]" style={{ width: "24px", height: "2px" }} />
+            <div className="flex items-center gap-[2px] mt-[8px]">
+              <span className="block bg-[#d92e3a]" style={{ width: "26px", height: "3px" }} />
+              <span className="block bg-[#1d4ed8]" style={{ width: "30px", height: "3px" }} />
             </div>
             <span
-              className="hidden xl:block mt-[4px] text-[#9aa0b5] uppercase"
-              style={{ fontSize: "9px", letterSpacing: "0.22em" }}
+              className="hidden xl:block mt-[5px] text-[#9aa0b5] uppercase"
+              style={{ fontSize: "10px", letterSpacing: "0.22em" }}
             >
               Intensives · Semi-Intensives · Lessons
             </span>
