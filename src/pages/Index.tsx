@@ -214,6 +214,619 @@ export default function Index() {
     <MainLayout>
       <SEOHead jsonLd={homepageJsonLd} />
       <Drive365Home />
+
+      {/* Test Swap Banner */}
+      <section className="bg-[#0d2c5a]">
+        <div className="container max-w-7xl px-0 md:px-4">
+          <Link to="/test-swap" aria-label="Need an earlier driving test? Find a swap match">
+            <img
+              src={testswapBanner}
+              alt="Need an earlier driving test? Swap, don't wait. Find a swap match — free, safe and secure."
+              className="w-full h-auto block hover:opacity-95 transition-opacity"
+            />
+          </Link>
+        </div>
+      </section>
+
+      {/* What's Included Section — V14 Glass Tiles */}
+      <section className="bg-gradient-to-b from-primary/5 to-background py-16">
+        <div className="container max-w-5xl">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            viewport={{ once: true }}
+            className="text-center mb-10"
+          >
+            <Badge className="mb-4 border-0 bg-primary text-primary-foreground">
+              Why Learners Love Us
+            </Badge>
+            <h2 className="mb-4 text-3xl font-bold md:text-4xl">
+              What's Included With Every Course
+            </h2>
+            <p className="mx-auto max-w-2xl text-muted-foreground">
+              Everything you need to pass your driving test, all included for free.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+            {includedFeatures.map((feature, index) => {
+              const IconComponent = feature.icon;
+              const featureImage = feature.image_url || (() => {
+                switch(feature.title.toLowerCase()) {
+                  case 'theory test support': return featureTheory;
+                  case 'flexible payments': return featurePayments;
+                  case 'free cancellation': return featureCancellation;
+                  case 'free re-test': return featureRetest;
+                  case 'live availability': return featureAvailability;
+                  case 'theory test pro': return featureTheoryProImg;
+                  default: return null;
+                }
+              })();
+
+              return (
+                <motion.button
+                  key={feature.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: index * 0.04 }}
+                  viewport={{ once: true }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => openFeatureModal(feature)}
+                  className="text-left rounded-2xl overflow-hidden bg-card/70 backdrop-blur ring-1 ring-border/50 shadow-sm hover:shadow-lg transition-all group"
+                >
+                  <div className="h-36 md:h-48 overflow-hidden">
+                    {featureImage ? (
+                      <img
+                        src={featureImage}
+                        alt={feature.title}
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="h-full w-full bg-gradient-to-br from-primary/10 to-accent/5 flex items-center justify-center">
+                        <IconComponent className="h-10 w-10 text-primary/30" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-3 md:p-4">
+                    <h3 className="font-semibold text-xs md:text-sm text-foreground">{feature.title}</h3>
+                    <p className="text-[10px] md:text-xs text-muted-foreground mt-0.5 line-clamp-2">{feature.description}</p>
+                  </div>
+                </motion.button>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Feature Detail Modal */}
+      <FeatureDetailModal
+        feature={selectedFeature}
+        open={featureModalOpen}
+        onClose={() => setFeatureModalOpen(false)}
+      />
+
+      {/* Featured Courses Section */}
+      <section className="bg-background py-16">
+        <div className="container">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            viewport={{ once: true }}
+            className="mb-8 flex items-center justify-between"
+          >
+            <div>
+              <Badge className="mb-2 border-0 bg-primary text-primary-foreground">
+                Available Now
+              </Badge>
+              <h2 className="text-2xl font-bold md:text-3xl">Featured Courses</h2>
+            </div>
+            <Link to="/courses">
+              <Button variant="outline" className="hidden gap-2 sm:flex">
+                View All Courses
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
+          </motion.div>
+
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {featuredLoading ? (
+              <>
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="h-[340px] animate-pulse rounded-xl bg-muted" />
+                ))}
+              </>
+            ) : featuredCourses.length > 0 ? (
+              featuredCourses.map((course, index) => (
+                <motion.div
+                  key={`${course.instructor.id}-${course.hours}`}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.1 + index * 0.05 }}
+                  viewport={{ once: true }}
+                >
+                  <IOSCourseCard
+                    instructor={course.instructor}
+                    hours={course.hours}
+                    nextAvailable={course.bookableDate}
+                    courseImageUrl={course.courseImageUrl}
+                    isPopular={course.isPopular}
+                    availableFrom={course.availableFrom}
+                    features={course.features}
+                    isIntensive={course.isIntensive}
+                    discountedPrice={course.discountedPrice}
+                    customFeatures={course.customFeatures}
+                  />
+                </motion.div>
+              ))
+            ) : (
+              <div className="col-span-full py-12 text-center">
+                <p className="text-muted-foreground">No courses available at the moment. Check back soon!</p>
+              </div>
+            )}
+          </div>
+
+          <div className="mt-6 text-center sm:hidden">
+            <Link to="/courses">
+              <Button className="gap-2">
+                View All Courses
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* From Nervous to Road Ready Section — Warm Organic */}
+      <section className="bg-gradient-to-b from-orange-50 via-amber-50/40 to-background py-20">
+        <div className="container max-w-5xl">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} viewport={{ once: true }} className="text-center mb-14">
+            <div className="flex justify-center mb-4">
+              <div className="h-12 w-12 rounded-full bg-amber-100 flex items-center justify-center">
+                <Heart className="h-6 w-6 text-amber-500 fill-amber-500" />
+              </div>
+            </div>
+            <h2 className="text-4xl font-black">Every Learner's Journey<br /><span className="text-amber-600">Starts Here</span></h2>
+            <p className="text-muted-foreground mt-3">From first lesson nerves to passing-day celebrations</p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              { name: "Sarah M.", course: "5-Day Intensive", img: testimonialSarahM, text: "The intensive course was exactly what I needed. My instructor was patient and really focused on my weak points." },
+              { name: "Emily R.", course: "Semi-Intensive", img: testimonialEmily, text: "I went from being terrified of roundabouts to navigating them with ease. Best decision I ever made." },
+              { name: "Priya T.", course: "10-Day Course", img: testimonialPriya, text: "Working full-time made it hard to learn, but the flexible scheduling meant I could fit lessons around my job." },
+            ].map((t, i) => (
+              <motion.div key={t.name} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: i * 0.15 }} viewport={{ once: true }}
+                className="text-center"
+              >
+                <img src={t.img} alt={t.name} className="h-20 w-20 rounded-full object-cover mx-auto mb-4 shadow-lg ring-4 ring-amber-100" />
+                <div className="flex justify-center gap-0.5 mb-3">
+                  {[...Array(5)].map((_, s) => (
+                    <Star key={s} className="h-4 w-4 fill-amber-400 text-amber-400" />
+                  ))}
+                </div>
+                <p className="text-sm text-muted-foreground italic leading-relaxed">"{t.text}"</p>
+                <p className="mt-3 text-sm font-bold">{t.name}</p>
+                <p className="text-xs text-muted-foreground">{t.course}</p>
+              </motion.div>
+            ))}
+          </div>
+
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.3 }} viewport={{ once: true }}
+            className="mt-14 bg-card rounded-3xl p-8 shadow-lg border flex items-center justify-between flex-wrap gap-6"
+          >
+            <div className="flex gap-8">
+              {stats.slice(0, 3).map((stat, index) => (
+                <div key={index} className="text-center">
+                  <div className="text-3xl font-black text-amber-600">{stat.value}</div>
+                  <div className="text-xs text-muted-foreground">{stat.label}</div>
+                </div>
+              ))}
+            </div>
+            <Button className="gap-2 bg-amber-500 hover:bg-amber-600 font-bold" asChild>
+              <Link to="/courses">Start Your Journey <ArrowRight className="h-4 w-4" /></Link>
+            </Button>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Video Story Section — Full-Bleed Hero */}
+      <section className="py-20">
+        <div className="container max-w-6xl">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.98 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="relative rounded-3xl overflow-hidden"
+          >
+            <img src={heroLearner} alt="Learner driving" className="w-full aspect-[16/7] object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent flex items-center">
+              <div className="p-8 md:p-16 max-w-lg">
+                <div className="flex gap-1 mb-4">
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <Star key={s} className="h-5 w-5 fill-amber-400 text-amber-400" />
+                  ))}
+                  <span className="text-white/70 text-sm ml-2">4.9 from 6,499 reviews</span>
+                </div>
+                <h2 className="text-4xl md:text-5xl font-black text-white mb-4 leading-tight">Watch Our Story</h2>
+                <p className="text-white/70 text-lg mb-8">Discover why thousands of learners trust us with their driving journey.</p>
+                <div className="flex gap-4 items-center">
+                  <Button
+                    size="lg"
+                    onClick={() => welcomeVideoUrl && setVideoModalOpen(true)}
+                    disabled={!welcomeVideoUrl}
+                    className="gap-2 bg-white text-foreground hover:bg-white/90"
+                  >
+                    <Play className="h-5 w-5 fill-foreground" /> Play Video
+                  </Button>
+                  <div className="flex -space-x-2">
+                    {[testimonialSarahFallback, testimonialJamesFallback, testimonialEmmaFallback].map((src, i) => (
+                      <img key={i} src={src} alt="Learner" className="h-10 w-10 rounded-full border-2 border-white object-cover" />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Video Modal */}
+      <Dialog open={videoModalOpen} onOpenChange={setVideoModalOpen}>
+        <DialogContent className="max-w-4xl p-0 overflow-hidden bg-black">
+          <div className="aspect-video">
+            {welcomeVideoUrl && videoModalOpen && (
+              <video
+                src={welcomeVideoUrl}
+                className="h-full w-full"
+                controls
+                autoPlay
+              />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Latest News & Tips — Warm Blog */}
+      <section className="bg-gradient-to-b from-orange-50 to-background py-20">
+        <div className="container max-w-5xl">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} viewport={{ once: true }} className="text-center mb-12">
+            <div className="h-12 w-12 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-4">
+              <BookOpen className="h-6 w-6 text-amber-600" />
+            </div>
+            <h2 className="text-4xl font-black">News & Tips</h2>
+            <p className="text-muted-foreground mt-2">Helpful reads for your driving journey</p>
+          </motion.div>
+
+          {newsLoading ? (
+            <div className="grid md:grid-cols-3 gap-8">
+              {[1, 2, 3].map(i => (
+                <div key={i} className="h-72 animate-pulse rounded-2xl bg-muted" />
+              ))}
+            </div>
+          ) : dvsaNews.length > 0 ? (
+            <div className="grid md:grid-cols-3 gap-8">
+              {dvsaNews.slice(0, 3).map((article, i) => (
+                <motion.div
+                  key={article.slug || article.link}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: i * 0.15 }}
+                  viewport={{ once: true }}
+                >
+                  <Link to={`/news/${article.slug}`} className="group block">
+                    <div className="rounded-2xl overflow-hidden shadow-md mb-4">
+                      <img
+                        src={article.imageUrl || (i === 0 ? newsFeatured : i === 1 ? newsArticle1 : newsArticle2)}
+                        alt={article.title}
+                        className="h-44 w-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                    </div>
+                    <Badge className="bg-amber-100 text-amber-700 border-0 text-xs hover:bg-amber-100 mb-2">
+                      {article.category || "DVSA News"}
+                    </Badge>
+                    <h3 className="font-bold text-lg mb-1 group-hover:text-amber-600 transition-colors">
+                      {article.title}
+                    </h3>
+                    <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
+                      {article.description}
+                    </p>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Clock className="h-3 w-3" />
+                      {article.pubDate ? new Date(article.pubDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : ''} • 3 min read
+                    </div>
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid md:grid-cols-3 gap-8">
+              {[
+                { title: "Latest DVSA News & Updates", desc: "Stay up to date with the latest driving test news.", img: newsFeatured },
+                { title: "Tips for New Learners", desc: "Expert advice to get you started on your journey.", img: newsArticle1 },
+                { title: "Check Back for More", desc: "We regularly publish new articles and tips.", img: newsArticle2 },
+              ].map((article, i) => (
+                <motion.div key={i} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: i * 0.15 }} viewport={{ once: true }} className="group">
+                  <div className="rounded-2xl overflow-hidden shadow-md mb-4">
+                    <img src={article.img} alt={article.title} className="h-44 w-full object-cover" />
+                  </div>
+                  <Badge className="bg-amber-100 text-amber-700 border-0 text-xs hover:bg-amber-100 mb-2">DVSA News</Badge>
+                  <h3 className="font-bold text-lg mb-1">{article.title}</h3>
+                  <p className="text-sm text-muted-foreground">{article.desc}</p>
+                </motion.div>
+              ))}
+            </div>
+          )}
+
+          <div className="text-center mt-10">
+            <Link to="/news">
+              <Button variant="outline" className="gap-2">
+                View All Articles <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Stats Section */}
+      <section className="py-12">
+        <div className="grid grid-cols-2 gap-4 bg-card p-6 shadow-lg md:grid-cols-4 md:gap-8 md:p-8">
+          {stats.map((stat, index) => (
+            <motion.div
+              key={stat.label}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+              viewport={{ once: true }}
+              className="text-center"
+            >
+              <div className="text-2xl font-bold text-primary md:text-3xl">{stat.value}</div>
+              <div className="text-sm text-muted-foreground">{stat.label}</div>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
+      {/* Features Section — Bento Grid with Images */}
+      <section className="bg-background py-24">
+        <div className="container max-w-6xl">
+          <div className="text-center mb-12">
+            <Badge className="mb-4 bg-primary text-primary-foreground border-0">All-in-One Platform</Badge>
+            <h2 className="text-4xl font-bold text-foreground mb-3">
+              Everything You Need to <span className="text-primary">Learn to Drive</span>
+            </h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Our platform connects learners, instructors, and parents in one seamless experience.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            {[
+              {
+                title: "Search, Compare & Book",
+                description: "Find and compare local instructors, check real-time availability, and book directly online.",
+                link: "/courses",
+                image: drivingTestCentreImg,
+              },
+              {
+                title: "Parent Portal",
+                description: "Stay informed with lesson updates and payment visibility.",
+                link: "/parent",
+                image: getImage("feature_parent_portal", referFriends)
+              },
+              {
+                title: "Live Availability",
+                description: "Real-time calendar sync shows when instructors are free.",
+                image: getImage("feature_availability", featureAvailabilityFallback)
+              },
+              {
+                title: "Local Instructors",
+                description: "Find certified instructors near you by postcode.",
+                image: localInstructorImg
+              },
+              {
+                title: "Track Progress",
+                description: "Monitor your journey with detailed progress reports.",
+                image: getImage("feature_progress", featureTheoryFallback)
+              },
+              {
+                title: "Theory Support",
+                description: "Free theory test prep with practice questions and mock tests.",
+                link: "/theory",
+                image: getImage("feature_theory", featureTheoryFallback)
+              },
+            ].map((f, i) => {
+              const content = (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: i * 0.06 }}
+                  viewport={{ once: true }}
+                  className="rounded-2xl bg-card ring-1 ring-border overflow-hidden hover:shadow-xl transition-all cursor-pointer group"
+                >
+                  <div className="overflow-hidden h-36 md:h-48">
+                    <img
+                      src={f.image}
+                      alt={f.title}
+                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  </div>
+                  <div className="p-4">
+                    <h3 className="font-bold text-foreground text-sm mb-1">{f.title}</h3>
+                    <p className="text-muted-foreground text-xs line-clamp-2">{f.description}</p>
+                  </div>
+                </motion.div>
+              );
+              return f.link ? <Link key={i} to={f.link}>{content}</Link> : <div key={i}>{content}</div>;
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section — Social Proof Wall */}
+      <section className="bg-gradient-to-b from-primary/5 via-accent/5 to-background py-24">
+        <div className="container">
+          <div className="text-center mb-10">
+            <div className="inline-flex items-center gap-3 mb-4">
+              <div className="flex -space-x-2">
+                <img src={testimonialSarah} alt="" className="h-11 w-11 rounded-full object-cover border-2 border-background" />
+                <img src={testimonialJames} alt="" className="h-11 w-11 rounded-full object-cover border-2 border-background" />
+                <img src={testimonialEmma} alt="" className="h-11 w-11 rounded-full object-cover border-2 border-background" />
+                <img src={testimonialSarahM} alt="" className="h-11 w-11 rounded-full object-cover border-2 border-background" />
+              </div>
+              <span className="text-sm text-muted-foreground">6,499+ happy drivers</span>
+            </div>
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              viewport={{ once: true }}
+              className="text-3xl font-bold md:text-4xl"
+            >
+              Trusted by Thousands
+            </motion.h2>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            {testimonials.filter(t => !t.is_featured).slice(0, 6).map((testimonial, i) => (
+              <motion.div
+                key={testimonial.id}
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                transition={{ delay: i * 0.06 }}
+                viewport={{ once: true }}
+                className="rounded-xl bg-card border border-border p-4 hover:border-primary/30 transition-colors"
+              >
+                <div className="flex gap-0.5 mb-2">
+                  {Array.from({ length: 5 }).map((_, si) => (
+                    <Star key={si} className="h-3 w-3 fill-amber-400 text-amber-400" />
+                  ))}
+                </div>
+                <p className="text-xs text-foreground/70 leading-relaxed line-clamp-3">"{testimonial.content}"</p>
+                <p className="text-xs font-semibold mt-3">
+                  {testimonial.name}{" "}
+                  <span className="font-normal text-muted-foreground">· {testimonial.role}</span>
+                </p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section — Bold Asymmetric */}
+      <section className="py-24">
+        <div className="container max-w-6xl">
+          <div className="grid md:grid-cols-3 gap-4">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              viewport={{ once: true }}
+              className="md:col-span-2 rounded-3xl bg-primary p-10 md:p-14 flex flex-col justify-center"
+            >
+              <h2 className="text-3xl md:text-4xl font-black text-white mb-4 leading-tight">
+                Ready to Start<br />Driving?
+              </h2>
+              <p className="text-white/70 mb-8 text-base max-w-md">
+                Search, compare and book your driving lessons in seconds. Over 650 instructors nationwide.
+              </p>
+              <Link to="/courses">
+                <Button size="lg" className="w-fit bg-white text-primary hover:bg-white/90 font-bold gap-2 px-8">
+                  Search Courses <ArrowRight className="h-4 w-4" />
+                </Button>
+              </Link>
+            </motion.div>
+            <div className="space-y-4">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.1 }}
+                viewport={{ once: true }}
+                className="rounded-3xl bg-amber-400 p-8 text-center"
+              >
+                <Zap className="h-8 w-8 text-amber-900 mx-auto mb-2" />
+                <div className="font-black text-amber-900 text-lg">Intensive Courses</div>
+                <div className="text-amber-800 text-sm">Pass in as little as 1 week</div>
+              </motion.div>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                viewport={{ once: true }}
+                className="rounded-3xl bg-zinc-900 p-8 text-center"
+              >
+                <Shield className="h-8 w-8 text-emerald-400 mx-auto mb-2" />
+                <div className="font-black text-white text-lg">Free Re-Test</div>
+                <div className="text-zinc-400 text-sm">We've got you covered</div>
+              </motion.div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Mobile Trust Badges */}
+      <section className="md:hidden border-t bg-muted/30 py-4">
+        <div className="container">
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            <Badge variant="secondary" className="text-xs font-medium">ADI Code of Practice ✓</Badge>
+            <Badge variant="secondary" className="text-xs font-medium">MSA GB Member</Badge>
+            <Badge variant="secondary" className="text-xs font-medium">CPD Certified</Badge>
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-2 mt-2">
+            <Badge variant="outline" className="text-xs">Visa / Mastercard</Badge>
+            <Badge className="text-xs bg-[#ffb3c7] text-black border-0">Klarna</Badge>
+            <Badge className="text-xs bg-[#b2fce4] text-black border-0">Clearpay</Badge>
+            <Badge className="text-xs bg-[#ffd700] text-black border-0">0% Finance</Badge>
+          </div>
+        </div>
+      </section>
+
+      {/* Franchise Promotion Banner */}
+      <section className="bg-primary text-primary-foreground py-12 md:py-16">
+        <div className="container max-w-4xl text-center space-y-5">
+          <Badge className="bg-accent text-accent-foreground text-sm">Now Recruiting</Badge>
+          <h2 className="text-2xl md:text-3xl font-bold">Are You a Driving Instructor?</h2>
+          <p className="text-primary-foreground/80 max-w-2xl mx-auto">
+            Join the Drive365 franchise — free private healthcare, £50 bonus every time a pupil passes,
+            and the best tech platform in the business. From just £99/week.
+          </p>
+          <Button size="lg" variant="secondary" className="text-base px-8" asChild>
+            <Link to="/drive365/franchise">
+              Learn More <ChevronRight className="h-4 w-4 ml-1" />
+            </Link>
+          </Button>
+        </div>
+      </section>
+
+      {/* Desktop Trust Badges - V9 Stacked Compact Design */}
+      <section className="hidden md:block bg-card border-y border-border py-6">
+        <div className="container max-w-3xl space-y-4">
+          <div className="flex items-center justify-center gap-8">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+              <img src={logoAdiCode} alt="ADI Code of Practice" className="h-9 object-contain" />
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+              <img src={logoMsa} alt="MSA GB - For all driver trainers" className="h-9 object-contain" />
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+              <img src={logoCpd} alt="Continuing Professional Development" className="h-9 object-contain" />
+            </div>
+          </div>
+          <div className="h-px bg-border w-full" />
+          <div className="flex items-center justify-center gap-6">
+            <span className="text-sm text-muted-foreground">Pay with</span>
+            <img src={logoCardPayments} alt="Visa, MasterCard, Maestro, JCB" className="h-6 object-contain" />
+            <img src={logoKlarna} alt="Klarna" className="h-6 object-contain rounded" />
+            <img src={logoClearpay} alt="Clearpay" className="h-6 object-contain rounded" />
+          </div>
+        </div>
+      </section>
+
       <CoursePlannerSheet
         open={plannerOpen}
         onOpenChange={setPlannerOpen}
