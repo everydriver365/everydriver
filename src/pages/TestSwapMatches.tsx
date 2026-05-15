@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, CalendarDays, MapPin, RefreshCw, Sparkles, Loader2, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, CalendarDays, MapPin, RefreshCw, Sparkles, Loader2, CheckCircle2, Pencil } from "lucide-react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { SEOHead } from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
