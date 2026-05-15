@@ -31,7 +31,7 @@ export default function TestSwap() {
       {/* Hero banner — matches Drive365 homepage hero shape */}
       <section className="pt-6 sm:pt-8">
         <div className="mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-8">
-          <div className="relative w-full h-[200px] sm:h-[300px] lg:h-[360px] overflow-hidden rounded-3xl bg-neutral-900">
+          <div className="drive365-hero-rounded relative isolate transform-gpu w-full h-[200px] sm:h-[300px] lg:h-[360px] overflow-hidden rounded-3xl bg-neutral-900">
             <img
               src={testswapBanner}
               alt="Find an earlier driving test — swap with another learner. Free, safe and secure."
