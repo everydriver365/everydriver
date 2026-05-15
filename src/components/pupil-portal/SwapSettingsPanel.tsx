@@ -14,6 +14,7 @@ interface SwapSettingsPanelProps {
   pupilId: string;
   instructorId: string;
   onClose: () => void;
+  onOpenChecklist?: () => void;
 }
 
 type Preference = "earlier" | "later" | "any";
@@ -42,7 +43,7 @@ const EMPTY: SwapProfile = {
   consent_timestamp: null,
 };
 
-export function SwapSettingsPanel({ pupilId, instructorId, onClose }: SwapSettingsPanelProps) {
+export function SwapSettingsPanel({ pupilId, instructorId, onClose, onOpenChecklist }: SwapSettingsPanelProps) {
   const { toast } = useToast();
   const [profile, setProfile] = useState<SwapProfile>(EMPTY);
   const [loading, setLoading] = useState(true);
@@ -139,6 +140,14 @@ export function SwapSettingsPanel({ pupilId, instructorId, onClose }: SwapSettin
           <span className="ml-auto bg-[#E1F5EE] text-[#085041] text-[11px] font-medium rounded-full px-2.5 py-0.5">
             Active
           </span>
+        )}
+        {onOpenChecklist && (
+          <button
+            onClick={onOpenChecklist}
+            className={`text-[12px] font-medium text-[#1A52A0] underline-offset-2 hover:underline ${optedIn ? "" : "ml-auto"}`}
+          >
+            How to swap
+          </button>
         )}
       </div>
 
