@@ -585,6 +585,19 @@ export default function Index() {
         </div>
       </section>
 
+      {/* Test Swap Banner */}
+      <section className="bg-[#0d2c5a]">
+        <div className="container max-w-7xl px-0 md:px-4">
+          <Link to="/test-swap" aria-label="Need an earlier driving test? Find a swap match">
+            <img
+              src={testswapBanner}
+              alt="Need an earlier driving test? Swap, don't wait. Find a swap match — free, safe and secure."
+              className="w-full h-auto block hover:opacity-95 transition-opacity"
+            />
+          </Link>
+        </div>
+      </section>
+
       {/* What's Included Section — V14 Glass Tiles */}
       <section className="bg-gradient-to-b from-primary/5 to-background py-16">
         <div className="container max-w-5xl">
