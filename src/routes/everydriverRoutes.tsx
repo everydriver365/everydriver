@@ -28,6 +28,7 @@ const EDHealthBenefits = lazy(() => import("@/pages/everydriver/HealthBenefitsPa
 const EDComparison = lazy(() => import("@/pages/everydriver/ComparisonPage"));
 const EDBookingSummary = lazy(() => import("@/pages/everydriver/BookingSummary"));
 const EDBookingConfirmation = lazy(() => import("@/pages/everydriver/BookingConfirmation"));
+const TestSwap = lazy(() => import("@/pages/TestSwap"));
 
 // Shared (not cloned) — re-mounted here so the EveryDriver host still
 // resolves these public utility/legal/portal routes.
