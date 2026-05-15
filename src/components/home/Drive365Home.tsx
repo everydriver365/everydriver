@@ -9,6 +9,7 @@ import {
   CreditCard,
   User,
 } from "lucide-react";
+import heroLearnerImg from "@/assets/drive365-hero-learner.jpeg";
 
 const NAV_LINKS = [
   { label: "Find an instructor", href: "/instructors" },
