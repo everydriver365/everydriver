@@ -22,6 +22,11 @@ const steps = [
 ];
 
 export default function TestSwap() {
+  const [savedId, setSavedId] = useState<string | null>(null);
+  useEffect(() => {
+    try { setSavedId(localStorage.getItem("test_swap_signup_id")); } catch {}
+  }, []);
+
   return (
     <MainLayout>
       <SEOHead
