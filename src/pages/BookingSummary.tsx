@@ -458,8 +458,93 @@ export default function BookingSummary() {
     };
   };
 
-  // Get booking mode - default to pupil_choice
-  const bookingMode = courseDetails?.instructor?.booking_mode || 'pupil_choice';
+  // Build a serializable draft of the current checkout state for persistence
+  // across external payment redirects (Square / Clearpay / GoCardless / NPI).
+  const buildCheckoutDraft = useCallback(() => ({
+    pupilName,
+    pupilEmail,
+    pupilPhone,
+    pupilAddress,
+    pupilPostcode,
+    differentPickup,
+    pickupAddress,
+    pickupPostcode,
+    pickupWhat3words,
+    hasSpecialNeeds,
+    specialNeeds,
+    selectedSlots: selectedSlots.map((s) => ({
+      date: s.date.toISOString(),
+      startTime: s.startTime,
+      endTime: s.endTime,
+      duration: s.duration,
+    })),
+    selectedUpsells,
+    paymentOption,
+  }), [
+    pupilName, pupilEmail, pupilPhone, pupilAddress, pupilPostcode,
+    differentPickup, pickupAddress, pickupPostcode, pickupWhat3words,
+    hasSpecialNeeds, specialNeeds, selectedSlots, selectedUpsells, paymentOption,
+  ]);
+
+  const persistDraftBeforeRedirect = useCallback(() => {
+    try {
+      saveDraft(buildCheckoutDraft());
+    } catch (e) {
+      console.warn("Failed to persist checkout draft", e);
+    }
+  }, [saveDraft, buildCheckoutDraft]);
+
+  // Rehydrate draft + handle cancel return from any external gateway
+  const hasRehydratedRef = useRef(false);
+  useEffect(() => {
+    if (hasRehydratedRef.current) return;
+    if (!instructorId) return;
+
+    const cancelKeys = ["gocardless", "square", "clearpay", "npi"];
+    const cancelledKey = cancelKeys.find((k) => searchParams.get(k) === "cancelled");
+
+    if (cancelledKey === "gocardless") {
+      // Stale half-built booking; safe to discard
+      localStorage.removeItem("gc_pending_booking");
+    }
+
+    if (!cancelledKey) return;
+
+    const draft = loadDraft();
+    if (draft) {
+      setPupilName(draft.pupilName || "");
+      setPupilEmail(draft.pupilEmail || "");
+      setPupilPhone(draft.pupilPhone || "");
+      setPupilAddress(draft.pupilAddress || "");
+      setPupilPostcode(draft.pupilPostcode || "");
+      setDifferentPickup(!!draft.differentPickup);
+      setPickupAddress(draft.pickupAddress || "");
+      setPickupPostcode(draft.pickupPostcode || "");
+      setPickupWhat3words(draft.pickupWhat3words || "");
+      setHasSpecialNeeds(!!draft.hasSpecialNeeds);
+      setSpecialNeeds(draft.specialNeeds || "");
+      setSelectedUpsells(Array.isArray(draft.selectedUpsells) ? draft.selectedUpsells : []);
+      setPaymentOption(draft.paymentOption === "full" ? "full" : "deposit");
+      if (Array.isArray(draft.selectedSlots)) {
+        setSelectedSlots(
+          draft.selectedSlots.map((s) => ({
+            date: new Date(s.date),
+            startTime: s.startTime,
+            endTime: s.endTime,
+            duration: s.duration,
+          }))
+        );
+      }
+    }
+
+    // Strip the cancelled flag from the URL so refreshes don't re-trigger
+    const next = new URLSearchParams(searchParams);
+    cancelKeys.forEach((k) => next.delete(k));
+    setSearchParams(next, { replace: true });
+
+    toast.info("Payment cancelled — your booking details are saved. Pick another method to try again.");
+    hasRehydratedRef.current = true;
+  }, [instructorId, searchParams, setSearchParams, loadDraft]);
   
   // For auto_assign and instructor_assigns modes, we don't require slot selection
   const requiresSlotSelection = bookingMode === 'pupil_choice';
