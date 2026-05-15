@@ -80,6 +80,8 @@ const SWAP_STEPS: SwapStep[] = [
 ];
 
 interface SwapChecklistPanelProps {
+  pupilId: string;
+  instructorId: string;
   onClose: () => void;
   onOpenSwapSettings?: () => void;
 }
