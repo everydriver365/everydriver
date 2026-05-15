@@ -170,6 +170,16 @@ export function SwapChecklistPanel({ pupilId, instructorId, onClose, onOpenSwapS
   const allDone = doneCount === totalCount;
   const progress = doneCount / totalCount;
 
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      if (allDone) return;
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [allDone]);
+
   const stepRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   const toggleStep = (id: string) => {
