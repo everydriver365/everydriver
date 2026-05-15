@@ -13224,6 +13224,74 @@ export type Database = {
         }
         Relationships: []
       }
+      public_test_swap_signups: {
+        Row: {
+          alternate_centre_ids: string[]
+          consent_given: boolean
+          created_at: string
+          current_centre_id: string | null
+          current_centre_name: string | null
+          current_test_date: string | null
+          current_test_time: string | null
+          earliest_new_date: string | null
+          email: string
+          full_name: string
+          has_test_booked: boolean
+          id: string
+          latest_new_date: string | null
+          notes: string | null
+          phone: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          alternate_centre_ids?: string[]
+          consent_given?: boolean
+          created_at?: string
+          current_centre_id?: string | null
+          current_centre_name?: string | null
+          current_test_date?: string | null
+          current_test_time?: string | null
+          earliest_new_date?: string | null
+          email: string
+          full_name: string
+          has_test_booked?: boolean
+          id?: string
+          latest_new_date?: string | null
+          notes?: string | null
+          phone: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          alternate_centre_ids?: string[]
+          consent_given?: boolean
+          created_at?: string
+          current_centre_id?: string | null
+          current_centre_name?: string | null
+          current_test_date?: string | null
+          current_test_time?: string | null
+          earliest_new_date?: string | null
+          email?: string
+          full_name?: string
+          has_test_booked?: boolean
+          id?: string
+          latest_new_date?: string | null
+          notes?: string | null
+          phone?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "public_test_swap_signups_current_centre_id_fkey"
+            columns: ["current_centre_id"]
+            isOneToOne: false
+            referencedRelation: "test_centres"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pupil_achievements: {
         Row: {
           achievement_name: string
