@@ -10,6 +10,7 @@ import {
   User,
 } from "lucide-react";
 import heroLearnerImg from "@/assets/drive365-hero-learner.jpeg";
+import intensiveCourseImg from "@/assets/course-intensive-pass.jpg";
 
 const NAV_LINKS = [
   { label: "Find an instructor", href: "/instructors" },
@@ -224,51 +225,41 @@ const CourseCardImage: React.FC<{ courseId: string; badge: string; badgeColor: s
       overflow: "hidden",
     }}
   >
-    <svg viewBox="0 0 360 180" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" aria-hidden>
-      {courseId === "weekly" ? (
-        <>
-          <circle cx="300" cy="40" r="22" fill="#FBBF24" opacity="0.85" />
-          <path d="M0 130 Q90 100 180 120 T360 110 L360 180 L0 180 Z" fill="#1D9E75" opacity="0.55" />
-          <path d="M0 150 Q120 130 240 145 T360 140 L360 180 L0 180 Z" fill="#0F2044" opacity="0.6" />
-        </>
-      ) : courseId === "semi" ? (
-        <>
-          <circle cx="290" cy="45" r="20" fill="#FDE68A" opacity="0.9" />
-          <path d="M0 120 L60 80 L130 115 L210 70 L290 110 L360 90 L360 180 L0 180 Z" fill="#3B6D11" opacity="0.6" />
-          <path d="M0 145 L80 125 L170 140 L260 120 L360 135 L360 180 L0 180 Z" fill="#0F2044" opacity="0.6" />
-        </>
-      ) : (
-        <>
-          <rect x="40" y="40" width="40" height="100" fill="#0A1733" opacity="0.7" />
-          <rect x="90" y="60" width="30" height="80" fill="#0E1F44" opacity="0.7" />
-          <rect x="130" y="30" width="50" height="110" fill="#0A1733" opacity="0.7" />
-          <rect x="190" y="55" width="35" height="85" fill="#0E1F44" opacity="0.7" />
-          <rect x="235" y="40" width="45" height="100" fill="#0A1733" opacity="0.7" />
-          <rect x="290" y="65" width="40" height="75" fill="#0E1F44" opacity="0.7" />
-          <path d="M0 150 L360 150 L360 180 L0 180 Z" fill="#0F2044" />
-          <rect x="20" y="162" width="20" height="3" fill="#5DCAA5" opacity="0.7" />
-          <rect x="60" y="162" width="20" height="3" fill="#5DCAA5" opacity="0.7" />
-          <rect x="100" y="162" width="20" height="3" fill="#5DCAA5" opacity="0.7" />
-          <rect x="140" y="162" width="20" height="3" fill="#5DCAA5" opacity="0.7" />
-          <rect x="180" y="162" width="20" height="3" fill="#5DCAA5" opacity="0.7" />
-          <rect x="220" y="162" width="20" height="3" fill="#5DCAA5" opacity="0.7" />
-          <rect x="260" y="162" width="20" height="3" fill="#5DCAA5" opacity="0.7" />
-          <rect x="300" y="162" width="20" height="3" fill="#5DCAA5" opacity="0.7" />
-        </>
-      )}
-      {/* car */}
-      <g transform="translate(110,110)">
-        <path
-          d="M0 30 Q5 10 25 8 L80 8 Q100 10 108 25 L120 25 Q125 25 125 31 L125 36 Q125 40 121 40 L110 40 Q108 48 100 48 Q92 48 90 40 L40 40 Q38 48 30 48 Q22 48 20 40 L8 40 Q4 40 4 36 L4 32 Q4 30 0 30 Z"
-          fill="#E63946"
-        />
-        <path d="M22 18 L40 10 L72 10 L88 18 Z" fill="#0F2044" />
-        <rect x="28" y="28" width="9" height="9" fill="#FFF" rx="1" />
-        <text x="32.5" y="35" fontSize="7" fontWeight="700" fill="#E63946" textAnchor="middle">L</text>
-        <circle cx="22" cy="42" r="7" fill="#0A0A0A" />
-        <circle cx="98" cy="42" r="7" fill="#0A0A0A" />
-      </g>
-    </svg>
+    {courseId === "intensive" ? (
+      <img
+        src={intensiveCourseImg}
+        alt="Learner celebrating after passing driving test"
+        style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+      />
+    ) : (
+      <svg viewBox="0 0 360 180" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" aria-hidden>
+        {courseId === "weekly" ? (
+          <>
+            <circle cx="300" cy="40" r="22" fill="#FBBF24" opacity="0.85" />
+            <path d="M0 130 Q90 100 180 120 T360 110 L360 180 L0 180 Z" fill="#1D9E75" opacity="0.55" />
+            <path d="M0 150 Q120 130 240 145 T360 140 L360 180 L0 180 Z" fill="#0F2044" opacity="0.6" />
+          </>
+        ) : (
+          <>
+            <circle cx="290" cy="45" r="20" fill="#FDE68A" opacity="0.9" />
+            <path d="M0 120 L60 80 L130 115 L210 70 L290 110 L360 90 L360 180 L0 180 Z" fill="#3B6D11" opacity="0.6" />
+            <path d="M0 145 L80 125 L170 140 L260 120 L360 135 L360 180 L0 180 Z" fill="#0F2044" opacity="0.6" />
+          </>
+        )}
+        {/* car */}
+        <g transform="translate(110,110)">
+          <path
+            d="M0 30 Q5 10 25 8 L80 8 Q100 10 108 25 L120 25 Q125 25 125 31 L125 36 Q125 40 121 40 L110 40 Q108 48 100 48 Q92 48 90 40 L40 40 Q38 48 30 48 Q22 48 20 40 L8 40 Q4 40 4 36 L4 32 Q4 30 0 30 Z"
+            fill="#E63946"
+          />
+          <path d="M22 18 L40 10 L72 10 L88 18 Z" fill="#0F2044" />
+          <rect x="28" y="28" width="9" height="9" fill="#FFF" rx="1" />
+          <text x="32.5" y="35" fontSize="7" fontWeight="700" fill="#E63946" textAnchor="middle">L</text>
+          <circle cx="22" cy="42" r="7" fill="#0A0A0A" />
+          <circle cx="98" cy="42" r="7" fill="#0A0A0A" />
+        </g>
+      </svg>
+    )}
     <div
       style={{
         position: "absolute",
