@@ -197,12 +197,18 @@ function SwapStepCard({
   isChecked,
   onToggle,
   onAction,
+  partnerRef,
+  onPartnerRefChange,
+  onCopyPartnerRef,
 }: {
   step: SwapStep;
   index: number;
   isChecked: boolean;
   onToggle: () => void;
   onAction: (action: SwapStepAction) => void;
+  partnerRef: string;
+  onPartnerRefChange: (v: string) => void;
+  onCopyPartnerRef: () => void;
 }) {
   return (
     <div
