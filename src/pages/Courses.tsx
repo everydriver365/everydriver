@@ -80,6 +80,11 @@ interface CourseWithInstructor {
   isIntensive: boolean;
   discountedPrice: number | null;
   customFeatures: string[] | null;
+  offerActive?: boolean | null;
+  offerLabel?: string | null;
+  offerPercentOff?: number | null;
+  offerStartsAt?: string | null;
+  offerEndsAt?: string | null;
 }
 
 interface GeoCache {
