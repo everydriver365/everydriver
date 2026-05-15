@@ -140,7 +140,7 @@ export function SwapChecklistPanel({ onClose, onOpenSwapSettings }: SwapChecklis
           <p className="text-[13px] text-[#5F5E5A]">
             {doneCount} of {totalCount} steps complete
           </p>
-          <button onClick={resetAll} className="text-[12px] text-[#888780]">
+          <button onClick={() => setResetConfirmOpen(true)} className="text-[12px] text-[#888780]">
             Reset
           </button>
         </div>
