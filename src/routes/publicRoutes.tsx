@@ -99,7 +99,6 @@ export const publicRoutes = (
     <Route path="/sitemap.xml" element={<SitemapRedirect />} />
     <Route path="/test-swap" element={<TestSwap />} />
     <Route path="/test-swap/browse" element={<TestSwapBrowse />} />
-    <Route path="/test-swap/search" element={<TestSwapSearch />} />
     <Route path="/test-swap/register" element={<TestSwapRegister />} />
     <Route path="/test-swap/edit/:signupId" element={<TestSwapRegister />} />
     <Route path="/test-swap/matches/:signupId" element={<TestSwapMatches />} />
