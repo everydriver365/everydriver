@@ -1,44 +1,41 @@
-## Problem
+## What changed
 
-When a pupil starts the booking checkout, picks a payment method (Square / Clearpay / GoCardless / NPI), and then cancels at the gateway, they're sent back to `/book/:instructorId?...=cancelled`. That route IS the BookingSummary page, but it loads fresh — pupil details, selected lesson slots, upsells, and deposit/full choice are all gone, so they have to start from scratch just to try a different method.
+The `/drive365` homepage used to render a long stack of marketing sections inline from `src/pages/Index.tsx`. At some point that page was collapsed down to a single `<Drive365Home />` component, which only ships 4 sections after the learning-path block:
 
-Klarna and the embedded Square hosted-fields don't have this issue (they're in-page modals), so this is specifically about flows that redirect to an external URL.
+1. Why Drive365
+2. Reviews
+3. Test Swap band
+4. Footer CTA
 
-## Fix
+The previous version had **10 additional sections** after "Choose Your Learning Path" that are no longer rendering.
 
-**Save a checkout draft to `localStorage` right before any external redirect, then rehydrate on mount.**
+## Sections to restore (in original order)
 
-1. **Add a `useCheckoutDraft` helper** keyed by `instructorId + hours` (so different courses don't collide):
-   - `saveDraft(state)` — writes pupil details, pickup fields, special-needs, selected slots (as ISO strings), selected upsells, payment option (full/deposit).
-   - `loadDraft()` — reads and returns it if present and not stale (e.g. < 2 hours old).
-   - `clearDraft()` — wipes it.
+After the existing "Choose your learning path" block, re-introduce:
 
-2. **Save before each external redirect** in `BookingSummary.tsx`:
-   - `handleClearpayCheckout` (line ~633)
-   - `handleSquareCheckout` (line ~847)
-   - `handleInstantBankPay` (line ~735) — already persists `gc_pending_booking`; extend it to also save the form draft so the user gets their form back on cancel.
-   - `handleNPICheckout` / `handleShowHostedFields` (in-page, but also save in case they reload).
+1. **Test Swap Banner** (dark band promoting the test-swap feature) — already partially present as "HomeSwapBand"; keep current styled version.
+2. **What's Included** — V14 Glass Tiles grid pulling from `useIncludedFeatures` + `FeatureDetailModal`.
+3. **Featured Courses** — dynamic course tiles from `useFeaturedCourses`.
+4. **From Nervous to Road Ready** — warm-organic story section.
+5. **Video Story** — full-bleed hero video using `welcome_video` / `video_thumbnail` site images, plus modal.
+6. **Latest News & Tips** — blog band fed by `useDVSANews` (`newsFeatured`, `newsArticle1/2`).
+7. **Stats** — band fed by `useHomepageStats`.
+8. **Features Bento Grid** — image-rich grid fed by `useHomepageFeatures` + `FeatureDetailModal`.
+9. **Testimonials Wall** — social-proof grid fed by `useHomepageTestimonials`.
+10. **CTA + Trust Badges + Franchise Banner** — final stack (mobile trust strip, franchise promo, desktop accreditations + payment logos).
 
-3. **Rehydrate on mount.** In the existing cancel-cleanup `useEffect` (line ~213), broaden the condition: if any of `gocardless`, `square`, `clearpay`, `npi` query param equals `cancelled`, load the draft and restore:
-   - `pupilName`, `pupilEmail`, `pupilPhone`, `pupilAddress`, `pupilPostcode`
-   - `differentPickup`, `pickupAddress`, `pickupPostcode`, `pickupWhat3words`
-   - `hasSpecialNeeds`, `specialNeeds`
-   - `selectedSlots` (parse ISO strings back to Date)
-   - `selectedUpsells`
-   - `paymentOption`
-   Then strip the `*=cancelled` param from the URL via `setSearchParams` and show a toast: "Payment cancelled — your booking details are saved, choose another method."
+The existing "Why Drive365", "Reviews", and "Footer CTA" inside `Drive365Home` overlap with #8/#9/#10 above. Plan: keep them for now and slot the restored sections **between the learning-path block and the existing "Why Drive365" block**, so nothing currently visible disappears. We can de-duplicate in a follow-up if you want.
 
-4. **Clear the draft on success.** On every successful navigate to `/booking-confirmation`, also call `clearDraft()`. (Done inside the success handlers — Klarna, cash, NPI success, Square/Clearpay/GoCardless success returns rehydrate then clear; for the redirect-back flows the booking-confirmation page already exists, so we clear the draft when BookingSummary unmounts on success or simply when `?...=success` hits the booking-confirmation page — easier to just clear at the start of `handleConfirm`/each success path inside BookingSummary).
+## How
 
-5. **Apply the same change to the everydriver variant** `src/pages/everydriver/BookingSummary.tsx`. Use the same helper, just a different storage key prefix (`ed-checkout-draft:`) so the two flows don't collide.
+- Source of truth: the JSX is recoverable from git commit `9fead5a62` (`src/pages/Index.tsx`, lines ~589–1265).
+- Implementation:
+  - Add the missing imports (assets + hooks) back into `src/pages/Index.tsx`.
+  - Insert the 10 sections **after** `<Drive365Home />` (so they render below the learning-path block but above the page footer). This keeps `Drive365Home` untouched.
+  - Re-wire dynamic data via the existing hooks already in the project (`useIncludedFeatures`, `useFeaturedCourses`, `useDVSANews`, `useHomepageStats`, `useHomepageFeatures`, `useHomepageTestimonials`, `useSiteImages`, `useBookingUpsells`).
+  - Restore `FeatureDetailModal` + video `Dialog` state in `Index.tsx`.
+  - No DB or backend changes required — all hooks and tables already exist.
 
-## Out of scope
-- No backend / RPC changes.
-- No change to which payment methods are offered or how they're labelled.
-- No change to the cancel URL structure (already points to the right page).
-- Mobile layout untouched.
+## One question before I build
 
-## Files changed
-- New: `src/hooks/useCheckoutDraft.ts`
-- `src/pages/BookingSummary.tsx`
-- `src/pages/everydriver/BookingSummary.tsx`
+Do you want **all 10** restored, or only a subset? If "all", I will pull them straight back from the pre-collapse version and insert them under `<Drive365Home />`. If you only want some, tell me which numbers from the list above and I will restore just those.
