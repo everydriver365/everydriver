@@ -546,6 +546,9 @@ export default function BookingSummary() {
     hasRehydratedRef.current = true;
   }, [instructorId, searchParams, setSearchParams, loadDraft]);
   
+  // Get booking mode - default to pupil_choice
+  const bookingMode = courseDetails?.instructor?.booking_mode || 'pupil_choice';
+
   // For auto_assign and instructor_assigns modes, we don't require slot selection
   const requiresSlotSelection = bookingMode === 'pupil_choice';
   const canSubmit = isPupilDetailsComplete && (requiresSlotSelection ? isFullyScheduled : true) && !isSubmitting && unavailableSlots.length === 0;
