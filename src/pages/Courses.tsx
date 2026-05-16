@@ -653,14 +653,15 @@ export default function Courses() {
       let firstAvailable = findFirstAvailableDate(instructorsNearby, availabilitySources);
       let usedFallback = false;
 
-      // Auto-expand radius once if nothing nearby
-      if (!firstAvailable && instructorsNearby.length === 0 && radiusMiles < 25) {
+      // Auto-expand radius once if nothing nearby. If mock instructors match
+      // the searched district, keep the result local and show those instead.
+      if (!firstAvailable && instructorsNearby.length === 0 && !hasPlaceholderNearby && radiusMiles < 25) {
         console.warn(`[Courses] No instructors within ${radiusMiles}mi of ${cleanPostcode} – expanding to 25mi`);
         setRadius("25");
       }
 
       // Final fallback: search all instructors with active courses so the grid still renders
-      if (!firstAvailable) {
+      if (!firstAvailable && !hasPlaceholderNearby) {
         const allWithCourses = instructors.filter((i) => instructorIds.has(i.id));
         firstAvailable = findFirstAvailableDate(allWithCourses, availabilitySources);
         if (firstAvailable) {
