@@ -778,56 +778,6 @@ export default function Index() {
         </div>
       </section>
 
-      {/* CTA Section — Bold Asymmetric */}
-      <section className="py-24">
-        <div className="container max-w-6xl">
-          <div className="grid md:grid-cols-3 gap-4">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              viewport={{ once: true }}
-              className="md:col-span-2 rounded-3xl bg-primary p-10 md:p-14 flex flex-col justify-center"
-            >
-              <h2 className="text-3xl md:text-4xl font-black text-white mb-4 leading-tight">
-                Ready to Start<br />Driving?
-              </h2>
-              <p className="text-white/70 mb-8 text-base max-w-md">
-                Search, compare and book your driving lessons in seconds. Over 650 instructors nationwide.
-              </p>
-              <Link to="/courses">
-                <Button size="lg" className="w-fit bg-white text-primary hover:bg-white/90 font-bold gap-2 px-8">
-                  Search Courses <ArrowRight className="h-4 w-4" />
-                </Button>
-              </Link>
-            </motion.div>
-            <div className="space-y-4">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.1 }}
-                viewport={{ once: true }}
-                className="rounded-3xl bg-amber-400 p-8 text-center"
-              >
-                <Zap className="h-8 w-8 text-amber-900 mx-auto mb-2" />
-                <div className="font-black text-amber-900 text-lg">Intensive Courses</div>
-                <div className="text-amber-800 text-sm">Pass in as little as 1 week</div>
-              </motion.div>
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-                viewport={{ once: true }}
-                className="rounded-3xl bg-zinc-900 p-8 text-center"
-              >
-                <Shield className="h-8 w-8 text-emerald-400 mx-auto mb-2" />
-                <div className="font-black text-white text-lg">Free Re-Test</div>
-                <div className="text-zinc-400 text-sm">We've got you covered</div>
-              </motion.div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       <section className="bg-primary text-primary-foreground py-12 md:py-16">
         <div className="container max-w-4xl text-center space-y-5">
