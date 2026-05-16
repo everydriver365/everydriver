@@ -17,6 +17,7 @@ import {
 import { useGoogleServiceCalendar } from "@/hooks/useGoogleServiceCalendar";
 import { CalendarResyncRangePanel } from "@/components/instructor/CalendarResyncRangePanel";
 import { CalendarSyncPreview } from "@/components/instructor/CalendarSyncPreview";
+import { CalendarImportPreview } from "@/components/instructor/CalendarImportPreview";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -175,6 +176,7 @@ export function GoogleServiceAccountSetup({ instructorId }: GoogleServiceAccount
           </Button>
 
           <CalendarSyncPreview instructorId={instructorId} onSynced={checkConnection} />
+          <CalendarImportPreview instructorId={instructorId} onApplied={checkConnection} />
 
           <AlertDialog>
             <AlertDialogTrigger asChild>
