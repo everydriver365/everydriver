@@ -10,6 +10,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { checkLessonClash, describeLessonClashError } from "@/lib/lessonClashCheck";
 import { useGoogleCalendarRefresh } from "@/hooks/useGoogleCalendarRefresh";
+import {
+  loadCourseAvailabilitySources,
+  computeDaySlots,
+  type InstructorLite,
+  type CourseAvailabilitySources,
+} from "@/lib/courseAvailability";
+import { fromMinutes } from "@/lib/availabilityEngine";
 
 interface WorkingHour {
   day_of_week: number;
