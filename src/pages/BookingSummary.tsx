@@ -339,7 +339,9 @@ export default function BookingSummary() {
 
       // LIVE DATA ONLY — refuse to load if the instructor hasn't configured pricing
       // or core scheduling values. No magic fallbacks.
-      if (!instructor.hourly_rate || Number(instructor.hourly_rate) <= 0) {
+      // Network placeholders are enquiry-only — skip pricing/scheduling gates and
+      // let the enquiry_only branch render the contact form.
+      if (!instructor.is_network_placeholder && (!instructor.hourly_rate || Number(instructor.hourly_rate) <= 0)) {
         setLoadErrorReason("This instructor hasn't published an hourly rate yet, so this course can't be booked online. Please contact them directly.");
         setLoading(false);
         return;
