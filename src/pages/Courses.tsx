@@ -296,13 +296,13 @@ function SidebarCalendar({
       )}
       
       {/* Legend */}
-      <div className="mt-4 flex items-center justify-center gap-4 text-xs text-muted-foreground border-t pt-3">
+      <div className="mt-4 flex items-center justify-center gap-4 text-xs text-[#4B5563] border-t pt-3">
         <div className="flex items-center gap-1.5">
-          <span className="h-3 w-3 rounded bg-emerald-500/20" />
+          <span className="h-3 w-3 rounded bg-[#EAF0FF]" />
           <span>Available</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="h-3 w-3 rounded bg-primary" />
+          <span className="h-3 w-3 rounded bg-[#2D3FE7]" />
           <span>Selected</span>
         </div>
       </div>
