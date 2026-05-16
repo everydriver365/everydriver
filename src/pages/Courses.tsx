@@ -865,13 +865,15 @@ export default function Courses() {
     });
   }, [coursesForSelectedDate, userLocation, geoCache]);
 
-  const filteredCourses = coursesWithDistance
+  const preFilteredCourses = coursesWithDistance
     .filter((course) => {
+      const isPlaceholder = !!course.instructor.is_network_placeholder;
+
       // Filter by selected instructor
       if (selectedInstructorId && course.instructor.id !== selectedInstructorId) {
         return false;
       }
-      
+
       if (transmission !== "all") {
         const carType = course.instructor.car_type.toLowerCase();
         if (transmission === "manual" && !carType.includes("manual") && carType !== "both") {
@@ -889,7 +891,8 @@ export default function Courses() {
         return false;
       }
 
-      if (userLocation && course.distance !== undefined) {
+      // Placeholders bypass radius (matched by district instead).
+      if (!isPlaceholder && userLocation && course.distance !== undefined) {
         if (course.distance > parseInt(radius)) {
           return false;
         }
@@ -909,16 +912,38 @@ export default function Courses() {
       if (priceRange !== "any") {
         const skim = Number(course.instructor.school_skim_amount ?? 0);
         const rate = Number(course.instructor.hourly_rate ?? 0);
-        if (!rate) return false;
-        const computed = course.discountedPrice ?? (course.hours * rate + skim);
-        if (priceRange === "under-500" && computed >= 500) return false;
-        if (priceRange === "500-1000" && (computed < 500 || computed > 1000)) return false;
-        if (priceRange === "over-1000" && computed <= 1000) return false;
+        if (!rate) {
+          // Placeholders rarely have a published rate; don't drop them on price filter.
+          if (!isPlaceholder) return false;
+        } else {
+          const computed = course.discountedPrice ?? (course.hours * rate + skim);
+          if (priceRange === "under-500" && computed >= 500) return false;
+          if (priceRange === "500-1000" && (computed < 500 || computed > 1000)) return false;
+          if (priceRange === "over-1000" && computed <= 1000) return false;
+        }
       }
 
       return true;
-    })
-    .sort((a, b) => {
+    });
+
+  // Placeholders only show as a fallback when no real courses are visible
+  // for the searched district.
+  const filteredCourses = (() => {
+    const searchedDistrict = extractPostcodeDistrict(searchedPostcode);
+    const real = preFilteredCourses.filter((c) => !c.instructor.is_network_placeholder);
+    const placeholders = preFilteredCourses.filter((c) => !!c.instructor.is_network_placeholder);
+    const visiblePlaceholders =
+      searchedDistrict && real.length === 0
+        ? placeholders.filter((c) => c.instructor.placeholder_district === searchedDistrict)
+        : [];
+    const combined = [...real, ...visiblePlaceholders];
+
+    return combined.sort((a, b) => {
+      const aPlace = !!a.instructor.is_network_placeholder;
+      const bPlace = !!b.instructor.is_network_placeholder;
+      if (aPlace && !bPlace) return 1;
+      if (!aPlace && bPlace) return -1;
+
       switch (sortBy) {
         case "soonest":
           return a.bookableDate.getTime() - b.bookableDate.getTime();
@@ -941,6 +966,7 @@ export default function Courses() {
           return 0;
       }
     });
+  })();
   
   // Get unique instructors from courses for the filter tile
   const availableInstructorsForFilter = useMemo(() => {
