@@ -509,6 +509,7 @@ export default function Courses() {
       return realInArea.some((instructor) =>
         hasInstructorAvailabilityOn(instructor, day, availabilitySources, {
           minFreeMinutes: instructorMinSlotMinutes(instructor),
+          candidatePickup: userLocation ?? undefined,
         })
       );
     });
