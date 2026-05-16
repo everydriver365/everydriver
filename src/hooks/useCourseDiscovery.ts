@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import {
   hasInstructorAvailabilityOn,
+  hasNetworkPlaceholderAvailabilityOn,
   loadCourseAvailabilitySources,
   type CourseAvailabilitySources,
   type InstructorLite,
@@ -305,9 +306,12 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
       // consistent with the booking-time guard in create-booking.
       const fromDate = new Date();
       const toDate = addMonths(fromDate, 18);
+      const realInstructorIds = loadedInstructors
+        .filter((i) => !i.is_network_placeholder)
+        .map((i) => i.id);
       const newSources = await loadCourseAvailabilitySources(
         supabase as any,
-        loadedInstructors.map((i) => i.id),
+        realInstructorIds,
         fromDate,
         toDate,
       );
@@ -326,7 +330,9 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
         setSelectedDate(firstAvailable.date);
       }
 
-      const allPostcodes = (instructorsRes.data || []).map((i) => i.home_postcode.replace(/\s+/g, "").toUpperCase());
+      const allPostcodes = (instructorsRes.data || [])
+        .filter((i) => !i.is_network_placeholder)
+        .map((i) => i.home_postcode.replace(/\s+/g, "").toUpperCase());
       await geocodePostcodes(allPostcodes);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -502,16 +508,15 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
 
     const relevantInstructors = (userLocation || searchedPostcode) ? instructorsInArea : instructors;
 
-    // If the only instructors in the searched area are network placeholders,
-    // every future day is "available" (the pupil submits an enquiry rather
-    // than booking a specific slot).
+    // Mock network instructors use fixed enquiry hours:
+    // Mon-Fri 08:00-19:00, Sat/Sun 09:00-12:00.
     const realInArea = relevantInstructors.filter((i) => !i.is_network_placeholder);
     const placeholdersOnly =
       !!(userLocation || searchedPostcode) && realInArea.length === 0 && relevantInstructors.length > 0;
 
     return allDays.filter((day) => {
       if (isBefore(day, today)) return false;
-      if (placeholdersOnly) return true;
+      if (placeholdersOnly) return hasNetworkPlaceholderAvailabilityOn(day);
       return realInArea.some((instructor) =>
         hasInstructorAvailabilityOn(instructor as InstructorLite, day, sources),
       );

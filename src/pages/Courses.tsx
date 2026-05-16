@@ -19,6 +19,7 @@ import { resolveHourlyRate, type PostcodeRateRule } from "@/lib/pricing/resolveH
 import { SEOHead } from "@/components/SEOHead";
 import {
   hasInstructorAvailabilityOn,
+  hasNetworkPlaceholderAvailabilityOn,
   type CourseAvailabilitySources,
   type WeeklyHourRow,
   type DateOverrideRow,
@@ -475,15 +476,15 @@ export default function Courses() {
 
     const allDays = eachDayOfInterval({ start: monthStart, end: monthEnd });
 
-    // Placeholders are enquiry-only — when the only matches in area are
-    // placeholders, treat every future day as available.
+    // Mock network instructors use fixed enquiry hours:
+    // Mon-Fri 08:00-19:00, Sat/Sun 09:00-12:00.
     const realInArea = relevantInstructors.filter((i) => !i.is_network_placeholder);
     const placeholdersOnly =
       !!(userLocation || searchedPostcode) && realInArea.length === 0 && relevantInstructors.length > 0;
 
     return allDays.filter((day) => {
       if (isBefore(day, today)) return false;
-      if (placeholdersOnly) return true;
+      if (placeholdersOnly) return hasNetworkPlaceholderAvailabilityOn(day);
       return realInArea.some((instructor) =>
         hasInstructorAvailabilityOn(instructor, day, availabilitySources)
       );
@@ -652,14 +653,15 @@ export default function Courses() {
       let firstAvailable = findFirstAvailableDate(instructorsNearby, availabilitySources);
       let usedFallback = false;
 
-      // Auto-expand radius once if nothing nearby
-      if (!firstAvailable && instructorsNearby.length === 0 && radiusMiles < 25) {
+      // Auto-expand radius once if nothing nearby. If mock instructors match
+      // the searched district, keep the result local and show those instead.
+      if (!firstAvailable && instructorsNearby.length === 0 && !hasPlaceholderNearby && radiusMiles < 25) {
         console.warn(`[Courses] No instructors within ${radiusMiles}mi of ${cleanPostcode} – expanding to 25mi`);
         setRadius("25");
       }
 
       // Final fallback: search all instructors with active courses so the grid still renders
-      if (!firstAvailable) {
+      if (!firstAvailable && !hasPlaceholderNearby) {
         const allWithCourses = instructors.filter((i) => instructorIds.has(i.id));
         firstAvailable = findFirstAvailableDate(allWithCourses, availabilitySources);
         if (firstAvailable) {
@@ -672,10 +674,16 @@ export default function Courses() {
         setSelectedMonth(firstAvailable.month);
         setSelectedDate(firstAvailable.date);
       } else if (hasPlaceholderNearby && !hasRealNearby) {
-        // Placeholder-only area: pick today so the enquiry cards render immediately.
-        const today = startOfDay(new Date());
-        setSelectedMonth(format(today, "yyyy-MM"));
-        setSelectedDate(today);
+        const placeholderAvailable = findFirstAvailableDate(
+          instructorsNearby.filter((i) => i.is_network_placeholder),
+          availabilitySources,
+        );
+        if (placeholderAvailable) {
+          setSelectedMonth(placeholderAvailable.month);
+          setSelectedDate(placeholderAvailable.date);
+        } else {
+          setSelectedDate(null);
+        }
       } else {
         setSelectedDate(null);
       }
@@ -748,6 +756,10 @@ export default function Courses() {
 
       const loadedInstructors = instructorsRes.data || [];
       const instructorIds = loadedInstructors.map((i: any) => i.id).filter(Boolean);
+      const realInstructorIds = loadedInstructors
+        .filter((i: any) => !i.is_network_placeholder)
+        .map((i: any) => i.id)
+        .filter(Boolean);
       const firstMonth = startOfDay(new Date());
       const lastMonthOption = monthOptions[monthOptions.length - 1];
       const [lastYear, lastMonth] = lastMonthOption.value.split("-").map(Number);
@@ -757,39 +769,39 @@ export default function Courses() {
       const fromIso = firstMonth.toISOString();
       const toIso = new Date(rangeEnd.getFullYear(), rangeEnd.getMonth(), rangeEnd.getDate() + 1).toISOString();
 
-      const [workingHoursRes, availabilityWindowsRes, overridesRes, lessonsRes, blocksRes, eventsRes] = instructorIds.length > 0
+      const [workingHoursRes, availabilityWindowsRes, overridesRes, lessonsRes, blocksRes, eventsRes] = realInstructorIds.length > 0
         ? await Promise.all([
             supabase
               .from("instructor_working_hours")
               .select("instructor_id, day_of_week, start_time, end_time, is_active")
-              .in("instructor_id", instructorIds),
+              .in("instructor_id", realInstructorIds),
             supabase
               .from("availability_windows")
               .select("instructor_id, day_of_week, start_time, end_time, is_active")
-              .in("instructor_id", instructorIds),
+              .in("instructor_id", realInstructorIds),
             supabase
               .from("instructor_date_overrides")
               .select("instructor_id, override_date, override_end_date, is_available, start_time, end_time")
-              .in("instructor_id", instructorIds)
+              .in("instructor_id", realInstructorIds)
               .gte("override_date", fromYmd)
               .lte("override_date", toYmd),
             supabase
               .from("scheduled_lessons")
               .select("instructor_id, lesson_date, start_time, duration_minutes, status")
-              .in("instructor_id", instructorIds)
+              .in("instructor_id", realInstructorIds)
               .gte("lesson_date", fromYmd)
               .lte("lesson_date", toYmd)
               .neq("status", "cancelled"),
             supabase
               .from("instructor_manual_blocks")
               .select("instructor_id, start_datetime, end_datetime")
-              .in("instructor_id", instructorIds)
+              .in("instructor_id", realInstructorIds)
               .gte("end_datetime", fromIso)
               .lte("start_datetime", toIso),
             supabase
               .from("instructor_calendar_events")
               .select("instructor_id, start_time, end_time, is_busy")
-              .in("instructor_id", instructorIds)
+              .in("instructor_id", realInstructorIds)
               .eq("is_busy", true)
               .gte("end_time", fromIso)
               .lte("start_time", toIso),
@@ -843,15 +855,18 @@ export default function Courses() {
       }
 
       // Geocode all instructor postcodes
-      const allPostcodes = (instructorsRes.data || []).map((i: any) => (i.home_postcode || "").replace(/\s+/g, "").toUpperCase()).filter(Boolean);
+      const allPostcodes = (instructorsRes.data || [])
+        .filter((i: any) => !i.is_network_placeholder)
+        .map((i: any) => (i.home_postcode || "").replace(/\s+/g, "").toUpperCase())
+        .filter(Boolean);
       await geocodePostcodes(allPostcodes);
 
       // Load postcode rate overrides for all visible instructors (single batched query)
-      if (instructorIds.length) {
+      if (realInstructorIds.length) {
         const { data: rateRows } = await supabase
           .from("instructor_postcode_rates")
           .select("instructor_id, outward_code, hourly_rate")
-          .in("instructor_id", instructorIds);
+          .in("instructor_id", realInstructorIds);
         const map: Record<string, PostcodeRateRule[]> = {};
         for (const r of (rateRows || []) as any[]) {
           (map[r.instructor_id] ||= []).push({ outward_code: r.outward_code, hourly_rate: Number(r.hourly_rate) });
