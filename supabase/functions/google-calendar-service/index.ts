@@ -980,11 +980,13 @@ Deno.serve(async (req) => {
               )
               .map((item: any) => {
                 const meeting = extractMeetingInfo(item);
+                const title = item.summary || "Busy";
                 return {
                   id: item.id,
-                  summary: item.summary || "Busy",
+                  summary: title,
                   start: item.start.dateTime || `${item.start.date}T00:00:00`,
                   end: item.end.dateTime || `${item.end.date}T23:59:59`,
+                  is_busy: computeIsBusy(item, title),
                   color: item.colorId ? (googleColorMap[item.colorId] || calendarDefaultColor) : calendarDefaultColor,
                   location: item.location || null,
                   description: item.description || null,
