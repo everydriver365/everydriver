@@ -350,37 +350,53 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
     setIsSearching(true);
     try {
       const cleanPostcode = postcode.replace(/\s+/g, "").toUpperCase();
-      const result = await geocodePostcodes([cleanPostcode]);
-      const location = result.geoCache[cleanPostcode];
-      const areaName = result.areaCache[cleanPostcode];
+      const district = extractPostcodeDistrict(cleanPostcode);
 
-      if (location) {
-        setUserLocation(location);
+      let result = await geocodePostcodes([cleanPostcode]);
+      let location = result.geoCache[cleanPostcode];
+      let areaName = result.areaCache[cleanPostcode];
+
+      // Fallback: if the full postcode didn't geocode, try the district
+      // (outcode) so radius search still works for typo'd inward codes and
+      // placeholder instructors for that district can still be matched.
+      if (!location && district && district !== cleanPostcode) {
+        const districtResult = await geocodePostcodes([district]);
+        location = districtResult.geoCache[district] || null;
+        areaName = areaName || districtResult.areaCache[district] || null;
+      }
+
+      // Valid UK outcode → always proceed, even with no coordinates, so
+      // placeholder (enquiry-only) instructors for that district appear.
+      if (district) {
+        if (location) setUserLocation(location);
+        else setUserLocation(null);
         setSearchedPostcode(cleanPostcode);
         setSearchedAreaName(areaName || null);
-        setSortBy("nearest");
-        
-        // Find instructors in the searched area using the full geoCache (includes previously geocoded instructor postcodes)
+        setSortBy(location ? "nearest" : "soonest");
+
         const radiusMiles = parseInt(radius);
         const fullGeoCache = { ...geoCache, ...result.geoCache };
-        
-        const instructorsNearby = instructors.filter((instructor) => {
-          const instructorPostcode = instructor.home_postcode.replace(/\s+/g, "").toUpperCase();
-          const instructorLocation = fullGeoCache[instructorPostcode];
-          
-          if (!instructorLocation) return false;
-          
-          const distance = calculateDistance(
-            location.lat,
-            location.lng,
-            instructorLocation.lat,
-            instructorLocation.lng
-          );
-          
-          return distance <= radiusMiles;
-        });
 
-        // If instructors found in area, jump to their first available date
+        const instructorsNearby = location
+          ? instructors.filter((instructor) => {
+              if (instructor.is_network_placeholder) {
+                return instructor.placeholder_district === district;
+              }
+              const instructorPostcode = instructor.home_postcode.replace(/\s+/g, "").toUpperCase();
+              const instructorLocation = fullGeoCache[instructorPostcode];
+              if (!instructorLocation) return false;
+              const distance = calculateDistance(
+                location.lat,
+                location.lng,
+                instructorLocation.lat,
+                instructorLocation.lng,
+              );
+              return distance <= radiusMiles;
+            })
+          : instructors.filter(
+              (i) => i.is_network_placeholder && i.placeholder_district === district,
+            );
+
         if (instructorsNearby.length > 0) {
           const firstAvailable = findFirstAvailableDate(instructorsNearby, sources);
           if (firstAvailable) {
@@ -388,8 +404,8 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
             setSelectedDate(firstAvailable.date);
           }
         }
-        
-        toast({ title: "Location found!", description: `Showing courses near ${areaName || cleanPostcode}` });
+
+        toast({ title: "Location found!", description: `Showing courses near ${areaName || district}` });
       } else {
         toast({ title: "Postcode not found", description: "Please check your postcode", variant: "destructive" });
       }
@@ -414,17 +430,19 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
   };
 
   // Filter instructors by location when a postcode search is active.
-  // Placeholders are matched purely by postcode-district (no geocoding needed).
+  // Placeholders are matched purely by postcode-district (no geocoding needed),
+  // so they work even when full-postcode geocoding failed.
   const instructorsInArea = useMemo(() => {
-    if (!userLocation) return instructors;
+    const searchedDistrict = extractPostcodeDistrict(searchedPostcode);
+    if (!userLocation && !searchedDistrict) return instructors;
 
     const radiusMiles = parseInt(radius);
-    const searchedDistrict = extractPostcodeDistrict(searchedPostcode);
 
     return instructors.filter((instructor) => {
       if (instructor.is_network_placeholder) {
         return !!searchedDistrict && instructor.placeholder_district === searchedDistrict;
       }
+      if (!userLocation) return false;
       const instructorPostcode = instructor.home_postcode.replace(/\s+/g, "").toUpperCase();
       const instructorLocation = geoCache[instructorPostcode];
 
@@ -447,7 +465,7 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
   // scheduled lessons, Google Calendar events, and buffer/travel padding.
   const nextAvailableDates = useMemo(() => {
     const today = startOfDay(new Date());
-    const relevantInstructors = userLocation ? instructorsInArea : instructors;
+    const relevantInstructors = (userLocation || searchedPostcode) ? instructorsInArea : instructors;
     if (relevantInstructors.length === 0) return [] as Date[];
 
     const results: Date[] = [];
@@ -482,14 +500,14 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
 
     const allDays = eachDayOfInterval({ start: monthStart, end: monthEnd });
 
-    const relevantInstructors = userLocation ? instructorsInArea : instructors;
+    const relevantInstructors = (userLocation || searchedPostcode) ? instructorsInArea : instructors;
 
     // If the only instructors in the searched area are network placeholders,
     // every future day is "available" (the pupil submits an enquiry rather
     // than booking a specific slot).
     const realInArea = relevantInstructors.filter((i) => !i.is_network_placeholder);
     const placeholdersOnly =
-      !!userLocation && realInArea.length === 0 && relevantInstructors.length > 0;
+      !!(userLocation || searchedPostcode) && realInArea.length === 0 && relevantInstructors.length > 0;
 
     return allDays.filter((day) => {
       if (isBefore(day, today)) return false;
@@ -505,7 +523,7 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
   // Only triggers when the selected month is empty but a later month has dates.
   useEffect(() => {
     if (loading) return;
-    const relevantInstructors = userLocation ? instructorsInArea : instructors;
+    const relevantInstructors = (userLocation || searchedPostcode) ? instructorsInArea : instructors;
     if (relevantInstructors.length === 0) return;
     if (availableDatesInMonth.length > 0) return;
     if (nextAvailableDates.length === 0) return;
@@ -625,7 +643,7 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
     //   2. their district matches the searched postcode's district, AND
     //   3. there are zero real courses in the result set (fallback only).
     const visiblePlaceholders =
-      userLocation && searchedDistrict && realCourses.length === 0
+      searchedDistrict && realCourses.length === 0
         ? placeholderCourses.filter((c) => c.instructor.placeholder_district === searchedDistrict)
         : [];
 
