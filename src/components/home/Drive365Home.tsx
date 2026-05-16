@@ -528,31 +528,6 @@ export default function Drive365Home() {
           ))}
         </div>
       </section>
-
-      {/* HomeWhyDrive365 */}
-      <section style={{ padding: "56px 5%", background: "#FFF", width: "100%" }}>
-        <div style={{ fontSize: 11, fontWeight: 600, color: "#1A52A0", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 6 }}>
-          Why Drive365
-        </div>
-        <h2 style={{ fontSize: 32, fontWeight: 700, color: "#0F2044", letterSpacing: -0.5, marginBottom: 28 }}>
-          Everything you need to pass
-        </h2>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px,1fr))", gap: 16 }}>
-          {WHY_ITEMS.map((item) => {
-            const Icon = item.icon;
-            return (
-              <div key={item.title} style={{ background: "#FFF", borderRadius: 14, padding: 22, border: "0.5px solid #E0E4EB" }}>
-                <div style={{ width: 40, height: 40, borderRadius: 10, background: item.iconBg, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 14 }}>
-                  <Icon size={18} color={item.iconColor} strokeWidth={1.7} />
-                </div>
-                <div style={{ fontSize: 14, fontWeight: 600, color: "#0F2044", marginBottom: 5 }}>{item.title}</div>
-                <div style={{ fontSize: 13, color: "#5F6B7A", lineHeight: 1.6 }}>{item.body}</div>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
       {/* HomeReviews */}
       <section style={{ padding: "56px 5%", background: "#F0F2F5", width: "100%" }}>
         <div style={{ fontSize: 11, fontWeight: 600, color: "#1A52A0", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 6 }}>
