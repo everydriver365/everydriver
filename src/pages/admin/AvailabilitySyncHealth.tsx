@@ -433,23 +433,43 @@ export default function AvailabilitySyncHealth() {
                       </div>
                       <div className="mt-1 text-xs text-muted-foreground">
                         IWH days: {r.iwhCount} · AW days: {r.awCount}
+                        {r.wideBusyCount > 0 && (
+                          <> · {r.wideBusyCount} wide GCal block{r.wideBusyCount === 1 ? "" : "s"}</>
+                        )}
                       </div>
                     </div>
-                    {(r.issues.includes("drift_iwh_only") || r.issues.includes("drift_aw_only")) && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => repair(r)}
-                        disabled={busyId === r.id}
-                      >
-                        {busyId === r.id ? (
-                          <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                        ) : (
-                          <Wrench className="w-3 h-3 mr-1" />
-                        )}
-                        Sync now
-                      </Button>
-                    )}
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {(r.issues.includes("drift_iwh_only") || r.issues.includes("drift_aw_only")) && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => repair(r)}
+                          disabled={busyId === r.id}
+                        >
+                          {busyId === r.id ? (
+                            <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                          ) : (
+                            <Wrench className="w-3 h-3 mr-1" />
+                          )}
+                          Sync now
+                        </Button>
+                      )}
+                      {r.issues.includes("gcal_wide_busy") && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => clearWideBusy(r)}
+                          disabled={busyId === r.id}
+                        >
+                          {busyId === r.id ? (
+                            <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                          ) : (
+                            <Wrench className="w-3 h-3 mr-1" />
+                          )}
+                          Clear wide blocks
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 ))}
                 {filtered.length > 500 && (
