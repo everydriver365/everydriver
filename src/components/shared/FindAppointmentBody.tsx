@@ -554,7 +554,7 @@ export function FindAppointmentBody({
                   <div className="text-[11px] uppercase tracking-wide font-semibold text-indigo-600">
                     Why slots were skipped
                   </div>
-                  {(Object.entries(rejection.byReason) as [import("@/lib/availabilityCore").RejectReason, number][])
+                  {(Object.entries(rejection.byReason) as [import("@/lib/availabilityEngine").RejectReason, number][])
                     .sort((a, b) => b[1] - a[1])
                     .slice(0, 5)
                     .map(([reason, count]) => (
