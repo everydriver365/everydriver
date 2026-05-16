@@ -508,7 +508,9 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
 
       for (const day of days) {
         const isAvailable = relevantInstructors.some((instructor) =>
-          hasInstructorAvailabilityOn(instructor as InstructorLite, day, sources),
+          hasInstructorAvailabilityOn(instructor as InstructorLite, day, sources, {
+            candidatePickup: userLocation ?? undefined,
+          }),
         );
         if (isAvailable) {
           results.push(day);
