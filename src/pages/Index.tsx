@@ -704,11 +704,6 @@ export default function Index() {
                 image: getImage("feature_parent_portal", referFriends)
               },
               {
-                title: "Live Availability",
-                description: "Real-time calendar sync shows when instructors are free.",
-                image: getImage("feature_availability", featureAvailabilityFallback)
-              },
-              {
                 title: "Local Instructors",
                 description: "Find certified instructors near you by postcode.",
                 image: localInstructorImg
