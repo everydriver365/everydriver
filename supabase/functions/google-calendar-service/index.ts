@@ -390,6 +390,94 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
+    // Read-only preview: fetches events from Google Calendar and classifies
+    // each one (timed vs all-day, duration, whether it WOULD block availability)
+    // WITHOUT writing anything to the database. Lets the instructor inspect the
+    // import before they commit.
+    if (action === "previewExternalEvents") {
+      if (!instructorId) {
+        return new Response(
+          JSON.stringify({ error: "Instructor ID is required" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      const { data: connection } = await supabase
+        .from("instructor_google_service_calendar")
+        .select("*")
+        .eq("instructor_id", instructorId)
+        .eq("is_active", true)
+        .single();
+      if (!connection) {
+        return new Response(
+          JSON.stringify({ error: "No Google Calendar connected" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      try {
+        const jwt = await generateJWT(serviceEmail, privateKey);
+        const accessToken = await getAccessToken(jwt);
+        const now = new Date();
+        const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        const oneYearLater = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000);
+
+        const events: any[] = [];
+        let pageToken: string | undefined;
+        do {
+          const params = new URLSearchParams({
+            timeMin: thirtyDaysAgo.toISOString(),
+            timeMax: oneYearLater.toISOString(),
+            singleEvents: "true",
+            orderBy: "startTime",
+            maxResults: "2500",
+          });
+          if (pageToken) params.set("pageToken", pageToken);
+          const response = await fetch(
+            `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(connection.calendar_id)}/events?${params}`,
+            { headers: { Authorization: `Bearer ${accessToken}` } }
+          );
+          if (!response.ok) {
+            const err = await response.text();
+            throw new Error(`Failed to fetch events: ${err}`);
+          }
+          const data = await response.json();
+          for (const item of (data.items || [])) {
+            if (!(item.start?.dateTime || item.start?.date)) continue;
+            if (!(item.end?.dateTime || item.end?.date)) continue;
+            const title = item.summary || "Busy";
+            const isAllDay = !item.start?.dateTime && !!item.start?.date;
+            const startIso = item.start.dateTime || `${item.start.date}T00:00:00`;
+            const endIso = item.end.dateTime || `${item.end.date}T23:59:59`;
+            const durationMs = new Date(endIso).getTime() - new Date(startIso).getTime();
+            const wouldBlock = computeIsBusy(item, title);
+            events.push({
+              id: item.id,
+              title,
+              isAllDay,
+              start: startIso,
+              end: endIso,
+              durationMinutes: Math.max(0, Math.round(durationMs / 60000)),
+              wouldBlock,
+              location: item.location || null,
+              htmlLink: item.htmlLink || null,
+              status: item.status || "confirmed",
+            });
+          }
+          pageToken = data.nextPageToken;
+        } while (pageToken);
+
+        return new Response(
+          JSON.stringify({ success: true, events, calendarId: connection.calendar_id }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      } catch (err) {
+        console.error("previewExternalEvents error:", err);
+        return new Response(
+          JSON.stringify({ error: err instanceof Error ? err.message : String(err) }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
+
     // Test connection action
     if (action === "testConnection") {
       if (!calendarId) {
