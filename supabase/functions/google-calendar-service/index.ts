@@ -1012,7 +1012,7 @@ Deno.serve(async (req) => {
               title: event.summary,
               start_time: event.start,
               end_time: event.end,
-              is_busy: true,
+              is_busy: event.is_busy ?? true,
               color: event.color,
               location: event.location,
               description: event.description,
@@ -1150,11 +1150,13 @@ Deno.serve(async (req) => {
           (data.items || []).forEach((item: any) => {
             if (!(item.start?.dateTime || item.start?.date)) return;
             if (!(item.end?.dateTime || item.end?.date)) return;
+            const title = item.summary || "Busy";
             fresh.set(item.id, {
               id: item.id,
-              title: item.summary || "Busy",
+              title,
               start: item.start.dateTime || `${item.start.date}T00:00:00`,
               end: item.end.dateTime || `${item.end.date}T23:59:59`,
+              is_busy: computeIsBusy(item, title),
               color: item.colorId ? (googleColorMap[item.colorId] || calendarDefaultColor) : calendarDefaultColor,
               location: item.location || null,
               description: item.description || null,
@@ -1204,7 +1206,7 @@ Deno.serve(async (req) => {
             title: ev.title,
             start_time: ev.start,
             end_time: ev.end,
-            is_busy: true,
+            is_busy: ev.is_busy ?? true,
             color: ev.color,
             location: ev.location,
             description: ev.description,
