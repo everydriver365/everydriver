@@ -410,7 +410,10 @@ export function LessonScheduler({
       const slotStartDateTime = new Date(`${dateStr}T${slotStart}:00`);
       const slotEndDateTime = new Date(`${dateStr}T${slotEnd}:00`);
 
-      const bufferMs = bufferMinutes * 60 * 1000;
+      // Match courseAvailability + booking-guard: pad each conflict by
+      // instructor buffer + travel fallback (or the live travel estimate if larger).
+      const padMinutes = bufferMinutes + Math.max(TRAVEL_FALLBACK_MIN, travelBufferMinutes ?? 0);
+      const bufferMs = padMinutes * 60 * 1000;
       return externalEvents.some((event) => {
         const eventStart = new Date(event.start_time);
         const eventEnd = new Date(event.end_time);
