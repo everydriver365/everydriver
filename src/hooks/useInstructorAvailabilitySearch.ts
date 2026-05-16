@@ -29,11 +29,25 @@ export interface AvailableSlot {
   sortKey: number;
 }
 
+export interface RejectedSlotDetail {
+  instructorId: string;
+  instructorName: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  reason: RejectReason;
+  /** Pre-formatted human-readable explanation including the conflicting
+   *  booking's time range and (for buffer rejections) the minutes required. */
+  description: string;
+}
+
 export interface RejectionSummary {
   total: number;
   byReason: Partial<Record<RejectReason, number>>;
   padMin: number;
-  describe: (reason: RejectReason) => string;
+  describe: (reason: RejectReason, cause?: TaggedConflict, padMin?: number) => string;
+  /** Up to 200 detailed rejections — for "why is this slot blocked?" tooltips. */
+  details: RejectedSlotDetail[];
 }
 
 export interface AvailabilitySearchResult {
