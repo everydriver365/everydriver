@@ -89,7 +89,7 @@ export async function findOptimalSlots(params: AutoScheduleParams): Promise<Slot
   const [instructorRes, sources] = await Promise.all([
     supabase
       .from('instructors')
-      .select('id, available_from, buffer_minutes, slot_increment_minutes, first_lesson_buffer_minutes, min_notice_minutes, is_network_placeholder')
+      .select('id, available_from, buffer_minutes, slot_increment_minutes, is_network_placeholder')
       .eq('id', instructorId)
       .maybeSingle(),
     loadCourseAvailabilitySources(supabase, [instructorId], fromDate, toDate),
