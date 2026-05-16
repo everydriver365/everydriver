@@ -249,9 +249,9 @@ export function CourseTableList({ courses }: CourseTableListProps) {
                 <div className="flex flex-col items-end gap-1.5">
                   <div
                     style={{
-                      fontSize: 16,
-                      fontWeight: 800,
-                      color: "#0a1936",
+                      fontSize: 20,
+                      fontWeight: 700,
+                      color: "#0A0A0A",
                       letterSpacing: "-0.015em",
                       lineHeight: 1,
                     }}
@@ -263,17 +263,20 @@ export function CourseTableList({ courses }: CourseTableListProps) {
                       e.stopPropagation();
                       goTo(c);
                     }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = "#1F2DC9")}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = "#2D3FE7")}
                     style={{
-                      background: "#d92e3a",
+                      background: "#2D3FE7",
                       color: "white",
-                      fontSize: 11,
-                      fontWeight: 700,
-                      padding: "6px 10px",
-                      borderRadius: 6,
+                      fontSize: 13,
+                      fontWeight: 500,
+                      padding: "8px 18px",
+                      borderRadius: 2,
                       lineHeight: 1,
                       display: "inline-flex",
                       alignItems: "center",
                       gap: 4,
+                      transition: "background 0.15s",
                     }}
                   >
                     View
