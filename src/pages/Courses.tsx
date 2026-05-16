@@ -1481,20 +1481,20 @@ export default function Courses() {
               <motion.div 
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mb-6 flex items-center justify-between rounded-xl border-2 border-emerald-500/30 bg-emerald-500/20 px-5 py-4 shadow-md"
+                className="mb-6 flex items-center justify-between rounded-xl border border-[#2D3FE7]/20 bg-[#EAF0FF] px-5 py-4"
               >
                 <div className="flex items-center gap-3">
                   <motion.div 
                     initial={{ scale: 1 }}
                     animate={{ scale: [1, 1.1, 1] }}
                     transition={{ duration: 0.6, delay: 0.3, times: [0, 0.5, 1] }}
-                    className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg shadow-emerald-500/30"
+                    className="flex h-10 w-10 items-center justify-center rounded-full bg-[#2D3FE7] text-white shadow-md"
                   >
                     <MapPin className="h-5 w-5" />
                   </motion.div>
                   <div>
-                    <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">Showing results for</p>
-                    <h2 className="text-xl font-bold text-foreground">
+                    <p className="text-[13px] font-medium text-[#4B5563]">Showing results for</p>
+                    <h2 className="text-base font-medium text-[#0A0A0A]">
                       {searchedPostcode}{searchedAreaName ? `, ${searchedAreaName}` : ''}
                     </h2>
                   </div>
@@ -1503,7 +1503,7 @@ export default function Courses() {
                   variant="outline" 
                   size="sm" 
                   onClick={clearSearch}
-                  className="gap-1.5 border-emerald-500/30 text-emerald-700 hover:bg-emerald-500/10 dark:text-emerald-400"
+                  className="gap-1.5 border-[#E5E7EB] bg-white text-[13px] text-[#0A0A0A] hover:!border-[#2D3FE7] hover:!bg-white"
                 >
                   <X className="h-4 w-4" />
                   Clear
