@@ -621,7 +621,7 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
     }
 
     return courses;
-  }, [selectedDate, instructors, instructorCourses, courseTemplates, sources, displayHours, courseTypeFilter, premiumPlacements]);
+  }, [selectedDate, instructors, instructorCourses, courseTemplates, sources, displayHours, courseTypeFilter, premiumPlacements, userLocation]);
 
   const coursesWithDistance = useMemo(() => {
     if (!userLocation) return coursesForSelectedDate;
