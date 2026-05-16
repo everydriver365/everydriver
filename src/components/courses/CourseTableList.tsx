@@ -23,18 +23,18 @@ interface CourseTableListProps {
   courses: TableCourse[];
 }
 
-// Category bar colour by course length
+// Category bar colour by course length — harmonised palette
 const HOURS_COLOR: Record<number, string> = {
-  10: "#caee1f",
-  20: "#1d4ed8",
-  28: "#d92e3a", // Test in a Week
-  30: "#d92e3a",
-  40: "#6b46c1",
-  50: "#0a1936",
+  10: "#5DCAA5", // teal — starter
+  20: "#2D3FE7", // brand blue
+  28: "#F59E0B", // amber — Test in a Week
+  30: "#F59E0B", // amber — extended
+  40: "#7C3AED", // purple — premium
+  50: "#7C3AED",
 };
 
 function colorForHours(h: number) {
-  return HOURS_COLOR[h] || "#0a1936";
+  return HOURS_COLOR[h] || "#2D3FE7";
 }
 
 function transmissionLabel(carType?: string | null) {
