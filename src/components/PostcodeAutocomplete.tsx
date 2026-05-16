@@ -38,16 +38,19 @@ export function PostcodeAutocomplete({
   const [isLoading, setIsLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
+  const [hasFetched, setHasFetched] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const skipNextFetchRef = useRef(false);
   const [isLocating, setIsLocating] = useState(false);
 
-  // Fetch suggestions from edge function
+  // Fetch suggestions from edge function. Keeps any previous suggestions
+  // visible until the new response lands, so the dropdown never flashes empty.
   const fetchSuggestions = useCallback(async (query: string) => {
     if (query.length < 2) {
       setSuggestions([]);
+      setHasFetched(false);
       return;
     }
 
@@ -57,23 +60,23 @@ export function PostcodeAutocomplete({
         body: { query },
       });
 
-      console.log('Autocomplete response:', data);
       if (error) throw error;
-      
-      const parsedSuggestions = data?.suggestions || [];
-      console.log('Parsed suggestions:', parsedSuggestions);
+
+      const parsedSuggestions: PostcodeSuggestion[] = data?.suggestions || [];
       setSuggestions(parsedSuggestions);
-      setShowDropdown(parsedSuggestions.length > 0);
       setHighlightedIndex(-1);
+      setHasFetched(true);
     } catch (error) {
       console.error('Autocomplete error:', error);
       setSuggestions([]);
+      setHasFetched(true);
     } finally {
       setIsLoading(false);
     }
   }, []);
 
-  // Debounced input handler
+  // Debounced input handler. Opens the panel immediately on ≥2 chars so the
+  // user sees the loading state instead of a blank gap before results land.
   useEffect(() => {
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
@@ -85,11 +88,15 @@ export function PostcodeAutocomplete({
     }
 
     if (value.length >= 2) {
+      setShowDropdown(true);
+      setIsLoading(true);
       debounceRef.current = setTimeout(() => {
         fetchSuggestions(value);
       }, 200);
     } else {
       setSuggestions([]);
+      setHasFetched(false);
+      setIsLoading(false);
       setShowDropdown(false);
     }
 
@@ -144,6 +151,7 @@ export function PostcodeAutocomplete({
     onChange(suggestion.postcode);
     setShowDropdown(false);
     setSuggestions([]);
+    setHasFetched(false);
     onSelect?.(suggestion.postcode, suggestion.area_name);
   };
 
