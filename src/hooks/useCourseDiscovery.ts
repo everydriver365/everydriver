@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import {
   hasInstructorAvailabilityOn,
+  hasNetworkPlaceholderAvailabilityOn,
   loadCourseAvailabilitySources,
   type CourseAvailabilitySources,
   type InstructorLite,
@@ -305,9 +306,12 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
       // consistent with the booking-time guard in create-booking.
       const fromDate = new Date();
       const toDate = addMonths(fromDate, 18);
+      const realInstructorIds = loadedInstructors
+        .filter((i) => !i.is_network_placeholder)
+        .map((i) => i.id);
       const newSources = await loadCourseAvailabilitySources(
         supabase as any,
-        loadedInstructors.map((i) => i.id),
+        realInstructorIds,
         fromDate,
         toDate,
       );
@@ -326,7 +330,9 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
         setSelectedDate(firstAvailable.date);
       }
 
-      const allPostcodes = (instructorsRes.data || []).map((i) => i.home_postcode.replace(/\s+/g, "").toUpperCase());
+      const allPostcodes = (instructorsRes.data || [])
+        .filter((i) => !i.is_network_placeholder)
+        .map((i) => i.home_postcode.replace(/\s+/g, "").toUpperCase());
       await geocodePostcodes(allPostcodes);
     } catch (error) {
       console.error("Error fetching data:", error);
