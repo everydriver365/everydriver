@@ -396,7 +396,7 @@ export function hasInstructorAvailabilityOn(
   instructor: InstructorLite,
   day: Date,
   src: CourseAvailabilitySources,
-  opts: { minFreeMinutes?: number; applyBuffers?: boolean } = {},
+  opts: { minFreeMinutes?: number; applyBuffers?: boolean; candidatePickup?: { lat: number; lng: number } } = {},
 ): boolean {
   if (instructor.is_network_placeholder) {
     return hasNetworkPlaceholderAvailabilityOn(day, opts.minFreeMinutes ?? MIN_FREE_MINUTES);
@@ -411,6 +411,7 @@ export function hasInstructorAvailabilityOn(
   const result = computeDaySlots(instructor, day, src, {
     durationMinutes: minFree,
     bufferMinutes: applyBuffers ? Math.max(0, instructor.buffer_minutes ?? 0) : 0,
+    candidatePickup: opts.candidatePickup,
   });
   return result.slots.length > 0;
 }
