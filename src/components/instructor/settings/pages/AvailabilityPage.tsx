@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { WorkingHoursEditor } from "@/components/admin/WorkingHoursEditor";
 import { useSettingsDirty } from "../SettingsDirtyContext";
 import { toast } from "@/hooks/use-toast";
+import { AvailabilityDiagnostic } from "@/components/instructor/AvailabilityDiagnostic";
 
 const LENGTHS = [60, 90, 120];
 
