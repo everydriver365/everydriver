@@ -393,6 +393,7 @@ export default function Courses() {
     overrides: overrideRows,
     calendarEvents,
     manualBlocks,
+    bookedLessonGeo: [],
   }), [workingHourRows, availabilityWindowRows, overrideRows, calendarEvents, manualBlocks]);
 
   const monthOptions = useMemo(() => getMonthOptions(), []);
