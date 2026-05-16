@@ -538,8 +538,8 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
       {/* HomeSwapBand */}
       <section
         style={{
-          background: "#191C2F",
-          padding: "56px 5%",
+          background: "#2D3FE7",
+          padding: "64px 80px",
           display: "flex",
           alignItems: "center",
           gap: 48,
@@ -549,29 +549,77 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
           flexWrap: "wrap",
         }}
       >
-        <div style={{ position: "absolute", width: 400, height: 400, borderRadius: "50%", background: "#3E57D9", opacity: 0.12, right: -120, top: -150, pointerEvents: "none" }} />
-        <div style={{ flex: "1 1 360px", position: "relative", zIndex: 1 }}>
-          <div style={{ fontSize: 11, fontWeight: 600, color: "#3E57D9", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 10 }}>
-            New — Free feature
+        <div style={{ position: "absolute", width: 420, height: 420, borderRadius: "50%", background: "rgba(255,255,255,0.08)", right: -80, top: -120, pointerEvents: "none" }} />
+        <div style={{ position: "absolute", width: 260, height: 260, borderRadius: "50%", background: "rgba(255,255,255,0.06)", right: 80, bottom: -100, pointerEvents: "none" }} />
+        <div style={{ position: "absolute", width: 140, height: 140, borderRadius: "50%", background: "rgba(255,255,255,0.10)", right: 220, top: 40, pointerEvents: "none" }} />
+
+        <div style={{ flex: "1 1 60%", position: "relative", zIndex: 1, maxWidth: 720 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: "#5DCAA5", letterSpacing: "0.125em", textTransform: "uppercase", marginBottom: 12 }}>
+            New → Free feature
           </div>
-          <h2 style={{ fontSize: 32, fontWeight: 700, color: "#FFF", letterSpacing: -0.5, marginBottom: 10, whiteSpace: "pre-line" }}>
+          <h2 style={{ fontSize: 36, fontWeight: 700, color: "#FFFFFF", letterSpacing: -0.5, lineHeight: 1.1, margin: 0, whiteSpace: "pre-line" }}>
             {"Can't wait months\nfor your test?"}
           </h2>
-          <p style={{ fontSize: 15, color: "rgba(255,255,255,0.6)", lineHeight: 1.7, maxWidth: 460 }}>
+          <p style={{ fontSize: 15, color: "rgba(255,255,255,0.85)", lineHeight: 1.6, maxWidth: 480, marginTop: 16, fontWeight: 400 }}>
             Swap your driving test date with another learner — completely free. Drive365 matches you, DVSA completes the swap. Your booking reference never changes.
           </p>
+          <div style={{ display: "flex", gap: 16, marginTop: 24, flexWrap: "wrap" }}>
+            <Link to="/test-swap">
+              <button
+                style={{ background: "#FFFFFF", border: "none", borderRadius: 2, padding: "12px 24px", fontSize: 14, fontWeight: 500, color: "#2D3FE7", cursor: "pointer", whiteSpace: "nowrap", transition: "background 120ms ease" }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "#F9FAFB")}
+                onMouseLeave={(e) => (e.currentTarget.style.background = "#FFFFFF")}
+              >
+                Find a swap match →
+              </button>
+            </Link>
+            <Link to="/test-swap#how-it-works">
+              <button
+                style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.6)", borderRadius: 2, padding: "12px 24px", fontSize: 14, fontWeight: 500, color: "#FFFFFF", cursor: "pointer", whiteSpace: "nowrap", transition: "all 120ms ease" }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#FFFFFF"; e.currentTarget.style.background = "rgba(255,255,255,0.1)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.6)"; e.currentTarget.style.background = "transparent"; }}
+              >
+                How it works
+              </button>
+            </Link>
+          </div>
         </div>
-        <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", gap: 10, flexShrink: 0 }}>
-          <Link to="/test-swap">
-            <button style={{ background: "#1D9E75", border: "none", borderRadius: 9, padding: "13px 24px", fontSize: 14, fontWeight: 600, color: "#FFF", cursor: "pointer", whiteSpace: "nowrap", width: "100%" }}>
-              Find a swap match →
-            </button>
-          </Link>
-          <Link to="/test-swap#how-it-works">
-            <button style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 9, padding: "13px 24px", fontSize: 14, color: "rgba(255,255,255,0.7)", cursor: "pointer", whiteSpace: "nowrap", width: "100%" }}>
-              How it works
-            </button>
-          </Link>
+
+        <div style={{ flex: "1 1 40%", position: "relative", zIndex: 1, display: "flex", alignItems: "center", justifyContent: "center", minHeight: 220 }}>
+          <svg viewBox="0 0 360 220" width="100%" style={{ maxWidth: 380, height: "auto" }} aria-hidden>
+            <g transform="translate(20,30)">
+              <rect x="0" y="10" width="120" height="140" rx="8" fill="none" stroke="#FFFFFF" strokeWidth="2" />
+              <rect x="0" y="10" width="120" height="28" rx="8" fill="#FFFFFF" opacity="0.15" />
+              <line x1="0" y1="38" x2="120" y2="38" stroke="#FFFFFF" strokeWidth="2" />
+              <line x1="25" y1="0" x2="25" y2="22" stroke="#FFFFFF" strokeWidth="3" strokeLinecap="round" />
+              <line x1="95" y1="0" x2="95" y2="22" stroke="#FFFFFF" strokeWidth="3" strokeLinecap="round" />
+              {Array.from({ length: 3 }).map((_, r) =>
+                Array.from({ length: 5 }).map((__, c) => (
+                  <circle key={`a-${r}-${c}`} cx={18 + c * 22} cy={58 + r * 26} r="3" fill="#FFFFFF" opacity="0.4" />
+                ))
+              )}
+              <circle cx="62" cy="84" r="10" fill="#5DCAA5" />
+              <text x="62" y="88" fontSize="11" fontWeight="700" fill="#FFFFFF" textAnchor="middle">12</text>
+            </g>
+            <g transform="translate(160,95)" stroke="#FFFFFF" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M0 8 L34 8 L28 2 M34 8 L28 14" />
+              <path d="M40 28 L6 28 L12 22 M6 28 L12 34" />
+            </g>
+            <g transform="translate(220,30)">
+              <rect x="0" y="10" width="120" height="140" rx="8" fill="none" stroke="#FFFFFF" strokeWidth="2" />
+              <rect x="0" y="10" width="120" height="28" rx="8" fill="#FFFFFF" opacity="0.15" />
+              <line x1="0" y1="38" x2="120" y2="38" stroke="#FFFFFF" strokeWidth="2" />
+              <line x1="25" y1="0" x2="25" y2="22" stroke="#FFFFFF" strokeWidth="3" strokeLinecap="round" />
+              <line x1="95" y1="0" x2="95" y2="22" stroke="#FFFFFF" strokeWidth="3" strokeLinecap="round" />
+              {Array.from({ length: 3 }).map((_, r) =>
+                Array.from({ length: 5 }).map((__, c) => (
+                  <circle key={`b-${r}-${c}`} cx={18 + c * 22} cy={58 + r * 26} r="3" fill="#FFFFFF" opacity="0.4" />
+                ))
+              )}
+              <circle cx="84" cy="110" r="10" fill="#5DCAA5" />
+              <text x="84" y="114" fontSize="11" fontWeight="700" fill="#FFFFFF" textAnchor="middle">3</text>
+            </g>
+          </svg>
         </div>
       </section>
 
