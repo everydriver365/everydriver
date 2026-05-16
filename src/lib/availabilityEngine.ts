@@ -32,8 +32,10 @@ import { format } from "date-fns";
 // ---------------------------------------------------------------------------
 
 export const STEP_MINUTES = 15;
-/** Default travel padding added on top of the instructor's buffer. */
-export const TRAVEL_FALLBACK_MIN = 10;
+/** Travel padding is no longer added on top of the instructor's buffer.
+ *  Only the instructor-configured `buffer_minutes` (and per-pupil
+ *  `travel_time_minutes` override, when set) gates slot spacing. */
+export const TRAVEL_FALLBACK_MIN = 0;
 /** Anything >= this duration (or starting at midnight & >= 12h) is treated as
  *  informational, not a hard block. */
 const ALL_DAY_MS = 23 * 60 * 60 * 1000;
