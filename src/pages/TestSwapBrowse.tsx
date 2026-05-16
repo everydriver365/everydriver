@@ -258,7 +258,7 @@ export default function TestSwapBrowse() {
   const postcodeSearched = postcode.trim().length > 0;
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: t.surface }}>
+    <div className="min-h-screen" style={{ backgroundColor: t.white }}>
       <SEOHead
         title="Find a driving test swap | Drive365"
         description="Search available driving test swaps by postcode. Find an earlier driving test near you."
@@ -266,7 +266,7 @@ export default function TestSwapBrowse() {
 
       <FindSwapNav onBack={() => navigate(-1)} />
 
-      <div className="mx-auto max-w-2xl">
+      <div className="mx-auto max-w-2xl bg-white">
         <FindSwapSearchCard
           postcode={postcode}
           setPostcode={setPostcode}
@@ -282,7 +282,7 @@ export default function TestSwapBrowse() {
           </div>
         ) : results.length === 0 ? (
           <div className="flex flex-col items-center justify-center px-10 py-16 text-center">
-            <h2 className="mb-1.5 text-[15px] font-semibold" style={{ color: t.navy }}>
+            <h2 className="mb-1.5 text-[15px] font-semibold" style={{ color: t.charcoal }}>
               No swaps found
             </h2>
             <p className="text-[13px] leading-5" style={{ color: t.mid }}>
@@ -333,7 +333,7 @@ function FindSwapNav({ onBack }: { onBack: () => void }) {
         <div className="min-w-0">
           <div
             className="text-[16px] font-bold leading-tight"
-            style={{ color: t.navy, letterSpacing: "-0.2px" }}
+            style={{ color: t.charcoal, letterSpacing: "-0.2px" }}
           >
             Find a swap
           </div>
@@ -573,7 +573,7 @@ function FindSwapResultCard({
           <div>
             <div
               className="text-[16px] font-bold leading-tight"
-              style={{ color: t.navy, letterSpacing: "-0.3px" }}
+              style={{ color: t.charcoal, letterSpacing: "-0.3px" }}
             >
               {swap.dateFormatted}
             </div>
