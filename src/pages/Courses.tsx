@@ -752,23 +752,36 @@ export default function Courses() {
     setLoading(true);
     try {
       const whitelabelSlug = getWhitelabelInstructorSlug();
-      // Supabase/PostgREST defaults to 1000 rows. We have thousands of network
-      // placeholders + courses, so explicitly lift the cap to avoid silent
-      // truncation that hides whole districts from the results.
-      const instructorsQuery = supabase
-        .from("public_instructors")
-        .select("*")
-        .eq("is_active", true)
-        .range(0, 49999);
-      if (whitelabelSlug) instructorsQuery.eq("app_slug", whitelabelSlug);
+
+      // PostgREST enforces a server-side max-rows of 1000, so `limit`/`range`
+      // alone cannot return more. Paginate explicitly so districts with many
+      // network placeholders aren't silently truncated.
+      const PAGE = 1000;
+      const fetchAll = async <T,>(
+        build: () => any,
+      ): Promise<{ data: T[]; error: any }> => {
+        const all: T[] = [];
+        let from = 0;
+        while (true) {
+          const { data, error } = await build().range(from, from + PAGE - 1);
+          if (error) return { data: all, error };
+          const rows = (data || []) as T[];
+          all.push(...rows);
+          if (rows.length < PAGE) break;
+          from += PAGE;
+          if (from > 100000) break; // hard safety stop
+        }
+        return { data: all, error: null };
+      };
 
       const [instructorsRes, coursesRes, templatesRes] = await Promise.all([
-        instructorsQuery,
-        supabase
-          .from("instructor_courses")
-          .select("*")
-          .eq("is_active", true)
-          .range(0, 49999),
+        fetchAll<any>(() => {
+          const q = supabase.from("public_instructors").select("*").eq("is_active", true);
+          return whitelabelSlug ? q.eq("app_slug", whitelabelSlug) : q;
+        }),
+        fetchAll<any>(() =>
+          supabase.from("instructor_courses").select("*").eq("is_active", true),
+        ),
         supabase
           .from("course_templates")
           .select("course_hours, course_name, default_image_url, is_popular, features, is_intensive")
