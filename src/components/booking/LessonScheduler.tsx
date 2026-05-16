@@ -340,15 +340,6 @@ export function LessonScheduler({
         }))
       );
 
-      // Convert existing scheduled_lessons into the same shape as external calendar events
-      // so they block pupil-facing slots via the same conflict logic.
-      const lessonEvents = (existingLessons || []).map((l: any) => {
-        const startIso = `${l.lesson_date}T${(l.start_time || '00:00:00').slice(0, 8)}`;
-        const startD = new Date(startIso);
-        const endD = new Date(startD.getTime() + (l.duration_minutes || 60) * 60_000);
-        return { start_time: startD.toISOString(), end_time: endD.toISOString() };
-      });
-
       const manualBlockEvents = (manualBlocks || []).map((b: any) => ({
         start_time: b.start_datetime,
         end_time: b.end_datetime,
@@ -372,7 +363,6 @@ export function LessonScheduler({
           start_time: e.start_time,
           end_time: e.end_time,
         })),
-        ...lessonEvents,
         ...manualBlockEvents,
       ]);
     } catch (error) {
