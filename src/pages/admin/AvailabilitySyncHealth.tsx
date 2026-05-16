@@ -92,7 +92,7 @@ export default function AvailabilitySyncHealth() {
       if (iErr) throw iErr;
 
       // Pull every active working-hours row from both tables in parallel.
-      const [iwhRes, awRes] = await Promise.all([
+      const [iwhRes, awRes, gcalRes] = await Promise.all([
         supabase
           .from("instructor_working_hours")
           .select("instructor_id, day_of_week")
@@ -101,14 +101,19 @@ export default function AvailabilitySyncHealth() {
           .from("availability_windows")
           .select("instructor_id, day_of_week")
           .eq("is_active", true),
+        // GCal events flagged busy that span a full working day or more —
+        // these wipe out availability for whoever owns them.
+        supabase
+          .from("instructor_calendar_events")
+          .select("instructor_id, start_time, end_time")
+          .eq("is_busy", true)
+          .gte("end_time", new Date().toISOString()),
       ]);
       if (iwhRes.error) throw iwhRes.error;
       if (awRes.error) throw awRes.error;
+      if (gcalRes.error) throw gcalRes.error;
 
       // Build per-instructor day sets + flag rows with invalid day numbers.
-      // iwh expects 0=Sun..6=Sat; aw expects 1=Mon..7=Sun. A row outside the
-      // valid range is silently dropped by every consumer that does
-      // `w.day_of_week === date.getDay()`, hiding that day from booking.
       const iwhDays = new Map<string, Set<number>>();
       const badDow = new Set<string>();
       for (const r of iwhRes.data ?? []) {
@@ -131,9 +136,21 @@ export default function AvailabilitySyncHealth() {
         awDays.set(r.instructor_id, set);
       }
 
+      // Count GCal busy events that run 20h+ — those are the "all-day or
+      // multi-day" type that silently block a whole working day.
+      const wideBusy = new Map<string, number>();
+      for (const r of gcalRes.data ?? []) {
+        const start = new Date(r.start_time).getTime();
+        const end = new Date(r.end_time).getTime();
+        if (!isFinite(start) || !isFinite(end)) continue;
+        if (end - start < 20 * 60 * 60 * 1000) continue;
+        wideBusy.set(r.instructor_id, (wideBusy.get(r.instructor_id) ?? 0) + 1);
+      }
+
       const built: InstructorRow[] = (instructors ?? []).map((inst: any) => {
         const iwh = iwhDays.get(inst.id) ?? new Set<number>();
         const aw = awDays.get(inst.id) ?? new Set<number>();
+        const wideBusyCount = wideBusy.get(inst.id) ?? 0;
         const issues: Issue[] = [];
 
         if (badDow.has(inst.id)) issues.push("bad_dow");
@@ -141,7 +158,6 @@ export default function AvailabilitySyncHealth() {
         if (iwh.size === 0 && aw.size === 0 && !badDow.has(inst.id)) {
           issues.push("no_hours");
         } else {
-          // Drift: any day present in one table but missing from the other.
           let iwhOnly = false;
           let awOnly = false;
           iwh.forEach((d) => {
@@ -158,6 +174,8 @@ export default function AvailabilitySyncHealth() {
           issues.push("future_from");
         }
 
+        if (wideBusyCount > 0) issues.push("gcal_wide_busy");
+
         return {
           id: inst.id,
           name: inst.name ?? "(unnamed)",
@@ -165,6 +183,7 @@ export default function AvailabilitySyncHealth() {
           available_from: inst.available_from ?? null,
           iwhCount: iwh.size,
           awCount: aw.size,
+          wideBusyCount,
           issues,
         };
       });
@@ -184,13 +203,22 @@ export default function AvailabilitySyncHealth() {
   }, [load]);
 
   const stats: Stats = useMemo(() => {
-    const s: Stats = { total: rows.length, healthy: 0, drift: 0, noHours: 0, futureFrom: 0, badDow: 0 };
+    const s: Stats = {
+      total: rows.length,
+      healthy: 0,
+      drift: 0,
+      noHours: 0,
+      futureFrom: 0,
+      badDow: 0,
+      gcalWideBusy: 0,
+    };
     for (const r of rows) {
       const driftish = r.issues.includes("drift_iwh_only") || r.issues.includes("drift_aw_only");
       if (driftish) s.drift++;
       if (r.issues.includes("no_hours")) s.noHours++;
       if (r.issues.includes("future_from")) s.futureFrom++;
       if (r.issues.includes("bad_dow")) s.badDow++;
+      if (r.issues.includes("gcal_wide_busy")) s.gcalWideBusy++;
       if (r.issues.length === 0) s.healthy++;
     }
     return s;
