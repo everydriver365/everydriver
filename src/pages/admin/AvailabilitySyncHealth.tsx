@@ -89,15 +89,27 @@ export default function AvailabilitySyncHealth() {
       if (iwhRes.error) throw iwhRes.error;
       if (awRes.error) throw awRes.error;
 
-      // Build per-instructor day sets, mapping iwh dow → aw dow for direct comparison.
+      // Build per-instructor day sets + flag rows with invalid day numbers.
+      // iwh expects 0=Sun..6=Sat; aw expects 1=Mon..7=Sun. A row outside the
+      // valid range is silently dropped by every consumer that does
+      // `w.day_of_week === date.getDay()`, hiding that day from booking.
       const iwhDays = new Map<string, Set<number>>();
+      const badDow = new Set<string>();
       for (const r of iwhRes.data ?? []) {
+        if (r.day_of_week < 0 || r.day_of_week > 6) {
+          badDow.add(r.instructor_id);
+          continue;
+        }
         const set = iwhDays.get(r.instructor_id) ?? new Set<number>();
         set.add(iwhDowToAwDow(r.day_of_week));
         iwhDays.set(r.instructor_id, set);
       }
       const awDays = new Map<string, Set<number>>();
       for (const r of awRes.data ?? []) {
+        if (r.day_of_week < 1 || r.day_of_week > 7) {
+          badDow.add(r.instructor_id);
+          continue;
+        }
         const set = awDays.get(r.instructor_id) ?? new Set<number>();
         set.add(r.day_of_week);
         awDays.set(r.instructor_id, set);
@@ -108,7 +120,9 @@ export default function AvailabilitySyncHealth() {
         const aw = awDays.get(inst.id) ?? new Set<number>();
         const issues: Issue[] = [];
 
-        if (iwh.size === 0 && aw.size === 0) {
+        if (badDow.has(inst.id)) issues.push("bad_dow");
+
+        if (iwh.size === 0 && aw.size === 0 && !badDow.has(inst.id)) {
           issues.push("no_hours");
         } else {
           // Drift: any day present in one table but missing from the other.
