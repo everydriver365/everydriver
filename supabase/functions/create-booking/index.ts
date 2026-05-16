@@ -260,6 +260,28 @@ serve(async (req) => {
     const awaitingInitialPayment = booking.totalPrice > 0;
 
     if (booking.slots.length > 0) {
+      // Geocode pickup postcode ONCE so every inserted lesson carries lat/lng.
+      // Later booking attempts can then compute realistic drive time between
+      // the previous lesson's dropoff (or pickup) and this candidate slot
+      // without re-hitting postcodes.io. Failure is non-fatal — coords stay null.
+      const pickupPostcode = booking.pickupPostcode ?? booking.pupilPostcode;
+      let pickupLat: number | null = null;
+      let pickupLng: number | null = null;
+      if (pickupPostcode) {
+        try {
+          const r = await fetch(
+            `https://api.postcodes.io/postcodes/${encodeURIComponent(pickupPostcode)}`,
+          );
+          if (r.ok) {
+            const j = await r.json();
+            pickupLat = j?.result?.latitude ?? null;
+            pickupLng = j?.result?.longitude ?? null;
+          }
+        } catch (err) {
+          console.warn("Pickup postcode geocode failed:", err);
+        }
+      }
+
       const inserts = booking.slots.map((s) => ({
         instructor_id:            booking.instructorId,
         pupil_id:                 pupil.id,
@@ -267,7 +289,9 @@ serve(async (req) => {
         start_time:               s.startTime,
         duration_minutes:         s.duration,
         pickup_location:          booking.pickupAddress  ?? booking.pupilAddress,
-        pickup_postcode:          booking.pickupPostcode ?? booking.pupilPostcode,
+        pickup_postcode:          pickupPostcode,
+        pickup_lat:               pickupLat,
+        pickup_lng:               pickupLng,
         lesson_type:              "driving",
         status:                   "scheduled",
         payment_status:           "pending",
