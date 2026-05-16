@@ -92,10 +92,12 @@ export function CourseSearchHeader({
 
         {/* Search card */}
         <div
-          className="mb-3 rounded-[14px] border bg-white p-4"
+          className="mb-3 bg-white"
           style={{
-            borderColor: tokens.border,
-            boxShadow: "0 2px 12px rgba(15,32,68,0.07)",
+            borderRadius: 4,
+            border: `1px solid ${tokens.border}`,
+            padding: 20,
+            boxShadow: "0 2px 12px rgba(15,32,68,0.05)",
           }}
         >
           {/* Unified search bar */}
