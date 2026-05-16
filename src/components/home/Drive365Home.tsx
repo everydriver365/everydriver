@@ -10,7 +10,7 @@ import {
   User,
 } from "lucide-react";
 import heroLearnerImg from "@/assets/drive365-hero-learner.jpeg";
-import intensiveCourseImg from "@/assets/course-intensive-pass.jpg";
+import intensiveCourseImg from "@/assets/drive365-intensive.jpeg";
 import weeklyCourseImg from "@/assets/course-weekly-lessons.jpg";
 import semiCourseImg from "@/assets/course-semi-intensive.jpg";
 
