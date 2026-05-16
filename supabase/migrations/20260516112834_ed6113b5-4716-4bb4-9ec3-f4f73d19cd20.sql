@@ -1,0 +1,1 @@
+UPDATE public.included_features SET image_url='https://qyqeibovdhyohkfagujv.supabase.co/storage/v1/object/public/instructor-images/included-features%2Ftest-swap-tile.png' WHERE id='cfb4f4e7-ec7a-49ff-b387-2c261ac66f14';
