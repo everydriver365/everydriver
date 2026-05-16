@@ -49,6 +49,16 @@ interface Instructor {
   school_skim_amount?: number | null;
   klarna_enabled?: boolean | null;
   clearpay_enabled?: boolean | null;
+  is_network_placeholder?: boolean | null;
+  placeholder_district?: string | null;
+}
+
+// Extract UK postcode district (outcode), e.g. "WD17 3AA" -> "WD17".
+function extractPostcodeDistrict(raw: string | null | undefined): string | null {
+  if (!raw) return null;
+  const cleaned = raw.replace(/\s+/g, "").toUpperCase();
+  const m = cleaned.match(/^([A-Z]{1,2}[0-9][A-Z0-9]?)/);
+  return m ? m[1] : null;
 }
 
 interface InstructorCourse {
@@ -422,11 +432,16 @@ export default function Courses() {
   }, [instructorCourses]);
 
   const instructorsInArea = useMemo(() => {
-    if (!userLocation) return instructors;
+    const searchedDistrict = extractPostcodeDistrict(searchedPostcode);
+    if (!userLocation && !searchedDistrict) return instructors;
 
     const radiusMiles = parseInt(radius);
 
     return instructors.filter((instructor) => {
+      if (instructor.is_network_placeholder) {
+        return !!searchedDistrict && instructor.placeholder_district === searchedDistrict;
+      }
+      if (!userLocation) return false;
       const instructorPostcode = instructor.home_postcode.replace(/\s+/g, "").toUpperCase();
       const cached = geoCache[instructorPostcode];
       const instructorLocation = cached
@@ -444,12 +459,12 @@ export default function Courses() {
 
       return distance <= radiusMiles;
     });
-  }, [instructors, userLocation, radius, geoCache]);
+  }, [instructors, userLocation, radius, geoCache, searchedPostcode]);
 
   const relevantInstructors = useMemo(() => {
-    const base = userLocation ? instructorsInArea : instructors;
+    const base = (userLocation || searchedPostcode) ? instructorsInArea : instructors;
     return base.filter((i) => instructorIdsWithCourses.has(i.id));
-  }, [instructors, instructorsInArea, instructorIdsWithCourses, userLocation]);
+  }, [instructors, instructorsInArea, instructorIdsWithCourses, userLocation, searchedPostcode]);
 
   // Get available dates for the selected month
   const availableDatesInMonth = useMemo(() => {
@@ -460,15 +475,20 @@ export default function Courses() {
 
     const allDays = eachDayOfInterval({ start: monthStart, end: monthEnd });
 
-    // For each day, check if any relevant instructor (in area + has courses) is available
+    // Placeholders are enquiry-only — when the only matches in area are
+    // placeholders, treat every future day as available.
+    const realInArea = relevantInstructors.filter((i) => !i.is_network_placeholder);
+    const placeholdersOnly =
+      !!(userLocation || searchedPostcode) && realInArea.length === 0 && relevantInstructors.length > 0;
+
     return allDays.filter((day) => {
       if (isBefore(day, today)) return false;
-
-      return relevantInstructors.some((instructor) =>
+      if (placeholdersOnly) return true;
+      return realInArea.some((instructor) =>
         hasInstructorAvailabilityOn(instructor, day, availabilitySources)
       );
     });
-  }, [selectedMonth, relevantInstructors, availabilitySources]);
+  }, [selectedMonth, relevantInstructors, availabilitySources, userLocation, searchedPostcode]);
 
   // Calculate course counts for each available date in the month
   const courseCountsInMonth = useMemo(() => {
@@ -477,7 +497,7 @@ export default function Courses() {
       const dateStr = format(day, "yyyy-MM-dd");
       let count = 0;
       for (const instructor of relevantInstructors) {
-        if (!hasInstructorAvailabilityOn(instructor, day, availabilitySources)) continue;
+        if (!instructor.is_network_placeholder && !hasInstructorAvailabilityOn(instructor, day, availabilitySources)) continue;
         const offeredCourses = instructorCourses.filter((c) => c.instructor_id === instructor.id);
         for (const hours of DISPLAY_HOURS) {
           if (offeredCourses.find((c) => c.course_hours === hours)) count++;
@@ -493,7 +513,7 @@ export default function Courses() {
     if (!selectedDate) return [];
     const courses: CourseWithInstructor[] = [];
     for (const instructor of relevantInstructors) {
-      if (!hasInstructorAvailabilityOn(instructor, selectedDate, availabilitySources)) continue;
+      if (!instructor.is_network_placeholder && !hasInstructorAvailabilityOn(instructor, selectedDate, availabilitySources)) continue;
       const offeredCourses = instructorCourses.filter((c) => c.instructor_id === instructor.id);
       for (const hours of DISPLAY_HOURS) {
         const courseData = offeredCourses.find((c) => c.course_hours === hours);
@@ -566,19 +586,28 @@ export default function Courses() {
     setIsSearching(true);
     try {
       const cleanPostcode = postcodeToSearch.replace(/\s+/g, "").toUpperCase();
-      const result = await geocodePostcodes([cleanPostcode]);
-      const location = result.geoCache[cleanPostcode];
-      const areaName = result.areaCache[cleanPostcode];
+      const district = extractPostcodeDistrict(cleanPostcode);
+      let result = await geocodePostcodes([cleanPostcode]);
+      let location = result.geoCache[cleanPostcode];
+      let areaName = result.areaCache[cleanPostcode];
 
-      if (!location) {
+      // Fallback: geocode the outcode so placeholder-only districts still work.
+      if (!location && district && district !== cleanPostcode) {
+        const districtResult = await geocodePostcodes([district]);
+        location = districtResult.geoCache[district] || null;
+        areaName = areaName || districtResult.areaCache[district] || null;
+        result = { geoCache: { ...result.geoCache, ...districtResult.geoCache }, areaCache: { ...result.areaCache, ...districtResult.areaCache } };
+      }
+
+      if (!location && !district) {
         toast({ title: "Postcode not found", description: "Please check your postcode", variant: "destructive" });
         return;
       }
 
-      setUserLocation(location);
+      if (location) setUserLocation(location); else setUserLocation(null);
       setSearchedPostcode(cleanPostcode);
       setSearchedAreaName(areaName || null);
-      setSortBy("nearest");
+      setSortBy(location ? "nearest" : "soonest");
       setSearchParams({ postcode: cleanPostcode });
 
       // Jump to the next available date for instructors in the searched area
@@ -590,6 +619,12 @@ export default function Courses() {
 
       const instructorsNearby = instructors.filter((instructor) => {
         if (!instructorIds.has(instructor.id)) return false;
+
+        if (instructor.is_network_placeholder) {
+          return !!district && instructor.placeholder_district === district;
+        }
+
+        if (!location) return false;
 
         const instructorPostcode = instructor.home_postcode.replace(/\s+/g, "").toUpperCase();
         const cached = fullGeoCache[instructorPostcode];
@@ -608,6 +643,11 @@ export default function Courses() {
 
         return distance <= radiusMiles;
       });
+
+      // If only placeholders match, treat today as the first "available" date —
+      // they're enquiry-only so the standard availability resolver returns nothing.
+      const hasRealNearby = instructorsNearby.some((i) => !i.is_network_placeholder);
+      const hasPlaceholderNearby = instructorsNearby.some((i) => i.is_network_placeholder);
 
       let firstAvailable = findFirstAvailableDate(instructorsNearby, availabilitySources);
       let usedFallback = false;
@@ -631,6 +671,11 @@ export default function Courses() {
       if (firstAvailable) {
         setSelectedMonth(firstAvailable.month);
         setSelectedDate(firstAvailable.date);
+      } else if (hasPlaceholderNearby && !hasRealNearby) {
+        // Placeholder-only area: pick today so the enquiry cards render immediately.
+        const today = startOfDay(new Date());
+        setSelectedMonth(format(today, "yyyy-MM"));
+        setSelectedDate(today);
       } else {
         setSelectedDate(null);
       }
@@ -845,13 +890,15 @@ export default function Courses() {
     });
   }, [coursesForSelectedDate, userLocation, geoCache]);
 
-  const filteredCourses = coursesWithDistance
+  const preFilteredCourses = coursesWithDistance
     .filter((course) => {
+      const isPlaceholder = !!course.instructor.is_network_placeholder;
+
       // Filter by selected instructor
       if (selectedInstructorId && course.instructor.id !== selectedInstructorId) {
         return false;
       }
-      
+
       if (transmission !== "all") {
         const carType = course.instructor.car_type.toLowerCase();
         if (transmission === "manual" && !carType.includes("manual") && carType !== "both") {
@@ -869,7 +916,8 @@ export default function Courses() {
         return false;
       }
 
-      if (userLocation && course.distance !== undefined) {
+      // Placeholders bypass radius (matched by district instead).
+      if (!isPlaceholder && userLocation && course.distance !== undefined) {
         if (course.distance > parseInt(radius)) {
           return false;
         }
@@ -889,16 +937,38 @@ export default function Courses() {
       if (priceRange !== "any") {
         const skim = Number(course.instructor.school_skim_amount ?? 0);
         const rate = Number(course.instructor.hourly_rate ?? 0);
-        if (!rate) return false;
-        const computed = course.discountedPrice ?? (course.hours * rate + skim);
-        if (priceRange === "under-500" && computed >= 500) return false;
-        if (priceRange === "500-1000" && (computed < 500 || computed > 1000)) return false;
-        if (priceRange === "over-1000" && computed <= 1000) return false;
+        if (!rate) {
+          // Placeholders rarely have a published rate; don't drop them on price filter.
+          if (!isPlaceholder) return false;
+        } else {
+          const computed = course.discountedPrice ?? (course.hours * rate + skim);
+          if (priceRange === "under-500" && computed >= 500) return false;
+          if (priceRange === "500-1000" && (computed < 500 || computed > 1000)) return false;
+          if (priceRange === "over-1000" && computed <= 1000) return false;
+        }
       }
 
       return true;
-    })
-    .sort((a, b) => {
+    });
+
+  // Placeholders only show as a fallback when no real courses are visible
+  // for the searched district.
+  const filteredCourses = (() => {
+    const searchedDistrict = extractPostcodeDistrict(searchedPostcode);
+    const real = preFilteredCourses.filter((c) => !c.instructor.is_network_placeholder);
+    const placeholders = preFilteredCourses.filter((c) => !!c.instructor.is_network_placeholder);
+    const visiblePlaceholders =
+      searchedDistrict && real.length === 0
+        ? placeholders.filter((c) => c.instructor.placeholder_district === searchedDistrict)
+        : [];
+    const combined = [...real, ...visiblePlaceholders];
+
+    return combined.sort((a, b) => {
+      const aPlace = !!a.instructor.is_network_placeholder;
+      const bPlace = !!b.instructor.is_network_placeholder;
+      if (aPlace && !bPlace) return 1;
+      if (!aPlace && bPlace) return -1;
+
       switch (sortBy) {
         case "soonest":
           return a.bookableDate.getTime() - b.bookableDate.getTime();
@@ -921,6 +991,7 @@ export default function Courses() {
           return 0;
       }
     });
+  })();
   
   // Get unique instructors from courses for the filter tile
   const availableInstructorsForFilter = useMemo(() => {
