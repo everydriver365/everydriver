@@ -1,6 +1,12 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.89.0";
 import { z } from "https://esm.sh/zod@3.25.76";
+import {
+  buildDayConflicts,
+  validateSlot,
+  toMinutes as engineToMin,
+  describeReason,
+} from "../_shared/availabilityEngine.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -75,10 +81,7 @@ serve(async (req) => {
     // instructor buffer) at booking time. Live data only — if working hours
     // aren't configured for the requested day, the booking is rejected.
     if (booking.slots.length > 0) {
-      const toMin = (t: string) => {
-        const [h, m] = t.split(":").map(Number);
-        return h * 60 + (m || 0);
-      };
+      const toMin = (t: string) => engineToMin(t);
       const dates = Array.from(new Set(booking.slots.map((s) => s.date))).sort();
       const fromYmd = dates[0];
       const toYmd = dates[dates.length - 1];
@@ -128,13 +131,22 @@ serve(async (req) => {
       const buffer = Number(instRes.data?.buffer_minutes ?? 0);
       const conflicts: { date: string; startTime: string; reason: string }[] = [];
 
+      // Group conflict sources by date once — engine handles clipping &
+      // the all-day Google rule, so we don't duplicate the logic here.
+      const lessonsByDate = new Map<string, any[]>();
+      for (const l of (lessonRes.data || [])) {
+        const arr = lessonsByDate.get(l.lesson_date) || [];
+        arr.push(l);
+        lessonsByDate.set(l.lesson_date, arr);
+      }
+
       for (const slot of booking.slots) {
         const slotStart = toMin(slot.startTime);
         const slotEnd = toMin(slot.endTime);
         const dow = new Date(`${slot.date}T00:00:00Z`).getUTCDay();
         const override = (ovRes.data || []).find((o) => o.override_date === slot.date);
 
-        // Determine the working window for this date (override wins).
+        // Determine working window (override wins).
         let windowStart: number | null = null;
         let windowEnd: number | null = null;
         if (override) {
@@ -153,51 +165,56 @@ serve(async (req) => {
             conflicts.push({ date: slot.date, startTime: slot.startTime, reason: "Instructor has no working hours configured for this day" });
             continue;
           }
-          // Slot must fit entirely inside at least one window.
-          const fits = wh.some((w) => slotStart >= toMin(w.start_time) && slotEnd <= toMin(w.end_time));
-          if (!fits) {
+          const fitting = wh.find((w) => slotStart >= toMin(w.start_time) && slotEnd <= toMin(w.end_time));
+          if (!fitting) {
             conflicts.push({ date: slot.date, startTime: slot.startTime, reason: "Outside instructor working hours" });
             continue;
           }
+          windowStart = toMin(fitting.start_time);
+          windowEnd = toMin(fitting.end_time);
         } else if (slotStart < windowStart || slotEnd > windowEnd!) {
           conflicts.push({ date: slot.date, startTime: slot.startTime, reason: "Outside instructor working hours for this date" });
           continue;
         }
 
-        // Lesson clashes (with buffer).
-        const lessonHit = (lessonRes.data || []).some((l) => {
-          if (l.lesson_date !== slot.date) return false;
-          const ls = toMin(l.start_time);
-          const le = ls + Number(l.duration_minutes || 0);
-          return slotStart < le + buffer && slotEnd + buffer > ls;
-        });
-        if (lessonHit) {
-          conflicts.push({ date: slot.date, startTime: slot.startTime, reason: "Conflicts with an existing lesson" });
-          continue;
-        }
+        // Build the conflict list via the shared engine (drops Google all-day
+        // events, clips multi-day blocks, etc.) — IDENTICAL rules to the UI.
+        const dayConflicts = buildDayConflicts(
+          slot.date,
+          (lessonsByDate.get(slot.date) || []).map((l: any) => ({
+            start_time: l.start_time,
+            duration_minutes: Number(l.duration_minutes || 60),
+          })),
+          (blockRes.data || []).map((b: any) => ({
+            start_datetime: b.start_datetime,
+            end_datetime: b.end_datetime,
+          })),
+          (evRes.data || []).map((e: any) => ({
+            start_time: e.start_time,
+            end_time: e.end_time,
+            is_busy: e.is_busy,
+          })),
+        );
 
-        // Manual blocks / busy calendar events (clipped to this date).
-        const dayStartIso = new Date(`${slot.date}T00:00:00Z`).getTime();
-        const slotStartMs = dayStartIso + slotStart * 60_000;
-        const slotEndMs = dayStartIso + slotEnd * 60_000;
-        const overlaps = (s: string, e: string) => {
-          const sMs = new Date(s).getTime();
-          const eMs = new Date(e).getTime();
-          return slotStartMs < eMs + buffer * 60_000 && slotEndMs + buffer * 60_000 > sMs;
-        };
-        if ((blockRes.data || []).some((b) => overlaps(b.start_datetime, b.end_datetime))) {
-          conflicts.push({ date: slot.date, startTime: slot.startTime, reason: "Conflicts with an instructor block" });
-          continue;
+        const result = validateSlot({
+          startMin: slotStart,
+          durationMinutes: slotEnd - slotStart,
+          dayStartMin: windowStart!,
+          dayEndMin: windowEnd!,
+          bufferMinutes: buffer,
+          conflicts: dayConflicts,
+        });
+
+        if (!result.ok) {
+          conflicts.push({
+            date: slot.date,
+            startTime: slot.startTime,
+            reason: describeReason(result.reason),
+          });
         }
-        // NOTE: Busy calendar event conflicts are intentionally NOT re-checked at
-        // payment time. Calendar availability is validated when the slot is shown
-        // in the scheduler; blocking again here causes spurious failures at pay.
       }
 
       if (conflicts.length > 0) {
-        // Return 200 with a structured error so the supabase-js client doesn't
-        // throw FunctionsHttpError (which surfaces as a blank-screen runtime
-        // error in Lovable). The frontend reads `data.error === 'SLOT_UNAVAILABLE'`.
         return new Response(
           JSON.stringify({
             error: "SLOT_UNAVAILABLE",
