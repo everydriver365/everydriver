@@ -24,7 +24,7 @@ import {
   mirrorIwhToAw,
 } from "@/lib/syncWeeklyHours";
 
-type Issue = "drift_iwh_only" | "drift_aw_only" | "no_hours" | "future_from";
+type Issue = "drift_iwh_only" | "drift_aw_only" | "no_hours" | "future_from" | "bad_dow";
 
 interface InstructorRow {
   id: string;
@@ -42,15 +42,17 @@ interface Stats {
   drift: number;
   noHours: number;
   futureFrom: number;
+  badDow: number;
 }
 
-type Tab = "all_issues" | "drift" | "no_hours" | "future_from" | "healthy";
+type Tab = "all_issues" | "drift" | "bad_dow" | "no_hours" | "future_from" | "healthy";
 
 const ISSUE_LABELS: Record<Issue, { label: string; tone: "warn" | "error" | "info" }> = {
   drift_iwh_only: { label: "Drift: missing from availability_windows", tone: "warn" },
   drift_aw_only: { label: "Drift: missing from working_hours", tone: "warn" },
   no_hours: { label: "No working hours set", tone: "info" },
   future_from: { label: "Hidden by Available-from date", tone: "info" },
+  bad_dow: { label: "Wrong day numbering — hides days from booking", tone: "error" },
 };
 
 export default function AvailabilitySyncHealth() {
