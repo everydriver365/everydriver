@@ -284,7 +284,9 @@ export function LessonScheduler({
       const maxDate = format(addDays(new Date(), bookingAdvanceDays), "yyyy-MM-dd");
       const fromIso = startOfDay(new Date()).toISOString();
       const toIso = addDays(startOfDay(new Date()), bookingAdvanceDays + 1).toISOString();
-      const [hoursRes, overridesRes, calendarRes, prefRes, lessonsRes, manualBlocksRes] = await Promise.all([
+      // BUSYNESS SOURCE: Google Calendar + manual blocks only.
+      // scheduled_lessons is CRM data and must NEVER be consulted for availability.
+      const [hoursRes, overridesRes, calendarRes, prefRes, manualBlocksRes] = await Promise.all([
         supabase
           .from("instructor_working_hours")
           .select("*")
@@ -304,12 +306,6 @@ export function LessonScheduler({
         supabase
           .rpc("get_public_instructor_booking_preferences", { p_instructor_id: instructorId })
           .maybeSingle(),
-        // Public-safe RPC — exposes only date/start/duration, no pupil data.
-        supabase.rpc("get_public_scheduled_lesson_blocks", {
-          p_instructor_ids: [instructorId],
-          p_from_date: today,
-          p_to_date: maxDate,
-        }),
         // Public-safe RPC — instructor-set manual blocks (holidays, off-time).
         supabase.rpc("get_public_instructor_manual_blocks", {
           p_instructor_ids: [instructorId],
@@ -321,7 +317,6 @@ export function LessonScheduler({
       const hours = hoursRes.data;
       const overrides = overridesRes.data;
       const calendarEvents = calendarRes.data;
-      const existingLessons = lessonsRes.data;
       const manualBlocks = manualBlocksRes.data;
 
       setPreferEarliestSlot((prefRes.data as any)?.prefer_earliest_slot ?? false);
@@ -344,15 +339,6 @@ export function LessonScheduler({
           is_available: o.is_available,
         }))
       );
-
-      // Convert existing scheduled_lessons into the same shape as external calendar events
-      // so they block pupil-facing slots via the same conflict logic.
-      const lessonEvents = (existingLessons || []).map((l: any) => {
-        const startIso = `${l.lesson_date}T${(l.start_time || '00:00:00').slice(0, 8)}`;
-        const startD = new Date(startIso);
-        const endD = new Date(startD.getTime() + (l.duration_minutes || 60) * 60_000);
-        return { start_time: startD.toISOString(), end_time: endD.toISOString() };
-      });
 
       const manualBlockEvents = (manualBlocks || []).map((b: any) => ({
         start_time: b.start_datetime,
@@ -377,7 +363,6 @@ export function LessonScheduler({
           start_time: e.start_time,
           end_time: e.end_time,
         })),
-        ...lessonEvents,
         ...manualBlockEvents,
       ]);
     } catch (error) {
