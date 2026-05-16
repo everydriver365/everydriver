@@ -522,7 +522,7 @@ export default function Courses() {
       const dateStr = format(day, "yyyy-MM-dd");
       let count = 0;
       for (const instructor of relevantInstructors) {
-        if (!instructor.is_network_placeholder && !hasInstructorAvailabilityOn(instructor, day, availabilitySources, { minFreeMinutes: instructorMinSlotMinutes(instructor) })) continue;
+        if (!instructor.is_network_placeholder && !hasInstructorAvailabilityOn(instructor, day, availabilitySources, { minFreeMinutes: instructorMinSlotMinutes(instructor), candidatePickup: userLocation ?? undefined })) continue;
         const offeredCourses = instructorCourses.filter((c) => c.instructor_id === instructor.id);
         for (const hours of DISPLAY_HOURS) {
           if (offeredCourses.find((c) => c.course_hours === hours)) count++;
