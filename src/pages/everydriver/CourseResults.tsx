@@ -87,30 +87,9 @@ export default function CourseResults({
         setTransmission={setTransmission}
         isSearching={isSearching}
         onSearch={handleSearch}
+        activeFilter={showTypeSwitcher ? (typeFromUrl as any) : undefined}
+        setActiveFilter={showTypeSwitcher ? ((v) => setType((v === "weekly" ? "all" : v) as CourseTypeFilter)) : undefined}
       />
-
-      {showTypeSwitcher && (
-        <div className="container pt-6">
-          <div className="inline-flex rounded-full border bg-card p-1 shadow-sm">
-            {(["all", "intensive", "semi-intensive"] as CourseTypeFilter[]).map((t) => {
-              const active = typeFromUrl === t;
-              const label =
-                t === "all" ? "All courses" : t === "intensive" ? "Intensive" : "Semi-intensive";
-              return (
-                <Button
-                  key={t}
-                  variant={active ? "default" : "ghost"}
-                  size="sm"
-                  className="rounded-full"
-                  onClick={() => setType(t)}
-                >
-                  {label}
-                </Button>
-              );
-            })}
-          </div>
-        </div>
-      )}
 
       <section className="container py-8 pb-24">
         <div className="flex flex-col gap-8 lg:flex-row">
