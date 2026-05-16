@@ -50,6 +50,8 @@ interface LessonSchedulerProps {
   instructorHomePostcode?: string;
   pupilPostcode?: string;
   instructorFirstName?: string;
+  /** Date to open and pre-select on first load (typically from course search). */
+  initialDate?: Date | null;
   onSlotsChange: (slots: SelectedSlot[]) => void;
   onConfirm?: () => void;
 }
