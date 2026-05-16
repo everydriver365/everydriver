@@ -213,11 +213,13 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
   // Single source of truth: delegates to courseAvailability resolver, which
   // honours working hours, date overrides, manual blocks, scheduled lessons,
   // Google Calendar busy events, and instructor buffer + travel padding.
-  const isDateAvailable = useCallback((day: Date, instructorsList: Instructor[], src: CourseAvailabilitySources) => {
+  const isDateAvailable = useCallback((day: Date, instructorsList: Instructor[], src: CourseAvailabilitySources, candidatePickup?: { lat: number; lng: number } | null) => {
     const today = startOfDay(new Date());
     if (isBefore(day, today)) return false;
     return instructorsList.some((instructor) =>
-      hasInstructorAvailabilityOn(instructor as InstructorLite, day, src),
+      hasInstructorAvailabilityOn(instructor as InstructorLite, day, src, {
+        candidatePickup: candidatePickup ?? undefined,
+      }),
     );
   }, []);
 
