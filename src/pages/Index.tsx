@@ -698,6 +698,12 @@ export default function Index() {
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {[
               {
+                title: "Parent Portal",
+                description: "Stay informed with lesson updates and payment visibility.",
+                link: "/parent",
+                image: getImage("feature_parent_portal", referFriends)
+              },
+              {
                 title: "Local Instructors",
                 description: "Find certified instructors near you by postcode.",
                 image: localInstructorImg
