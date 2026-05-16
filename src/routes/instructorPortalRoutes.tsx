@@ -180,6 +180,8 @@ export const instructorPortalRoutes = (
     <Route path="/instructor/settings/whatsapp" element={<InstructorWhatsAppSettings />} />
     <Route path="/instructor/settings/whatsapp/templates" element={<InstructorWhatsAppTemplates />} />
     <Route path="/instructor/settings/accessibility" element={<InstructorAccessibilitySettings />} />
+    <Route path="/instructor/settings/verification" element={<InstructorVerificationPage />} />
+    <Route path="/instructor/verification" element={<InstructorVerificationPage />} />
     {/* Unified Settings hub — keep last so it doesn't shadow specific routes above */}
     <Route path="/instructor/settings" element={<InstructorSettingsHub />} />
     <Route path="/instructor/settings/:categoryId" element={<InstructorSettingsHub />} />
