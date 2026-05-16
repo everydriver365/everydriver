@@ -115,7 +115,7 @@ export function Drive365Header() {
                             key={item.href}
                             to={item.href}
                             onClick={() => setCoursesOpen(false)}
-                            className="block px-4 py-2 text-sm text-[#0a1936] hover:bg-gray-50"
+                            className="block px-4 py-2 text-sm text-[#0a1936] hover:bg-[#1d4ed8]/10 hover:text-[#1d4ed8] transition-colors"
                           >
                             {item.label}
                           </Link>
