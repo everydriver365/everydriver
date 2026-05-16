@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { format, addDays, startOfDay, startOfMonth, addMonths, subMonths, isSameDay, isAfter, isBefore, parse } from "date-fns";
 import { enGB } from "date-fns/locale";
 import { CalendarDays, Clock, X, Check, Bell, Sparkles, ChevronLeft, ChevronRight, Plus, CalendarPlus } from "lucide-react";
@@ -50,6 +50,8 @@ interface LessonSchedulerProps {
   instructorHomePostcode?: string;
   pupilPostcode?: string;
   instructorFirstName?: string;
+  /** Date to open and pre-select on first load (typically from course search). */
+  initialDate?: Date | null;
   onSlotsChange: (slots: SelectedSlot[]) => void;
   onConfirm?: () => void;
 }
@@ -88,6 +90,7 @@ export function LessonScheduler({
   instructorHomePostcode,
   pupilPostcode,
   instructorFirstName,
+  initialDate,
   onSlotsChange,
   onConfirm,
 }: LessonSchedulerProps) {
@@ -195,33 +198,43 @@ export function LessonScheduler({
     };
   }, [instructorId, bookingAdvanceDays]);
 
-  // Navigate to the first available date's month when data loads
-  useEffect(() => {
-    if (!loading && workingHours.length > 0) {
-      const today = startOfDay(new Date());
-      const maxDate = addDays(today, bookingAdvanceDays);
-      
-      // Find the first available date
-      let checkDate = today;
-      
-      // If availableFrom is set and in the future, start from there
-      if (availableFrom) {
-        const availableFromDate = parse(availableFrom, "yyyy-MM-dd", new Date());
-        if (isAfter(availableFromDate, today)) {
-          checkDate = availableFromDate;
-        }
-      }
-      
-      // Find first date with availability
-      while (isBefore(checkDate, maxDate) || isSameDay(checkDate, maxDate)) {
-        if (isDateAvailableCheck(checkDate)) {
-          setViewMonth(startOfMonth(checkDate));
-          break;
-        }
-        checkDate = addDays(checkDate, 1);
-      }
+  // Find the first date with at least one genuinely bookable slot — uses the
+  // same logic as the slot picker so search & calendar agree.
+  const findFirstBookableDate = useCallback((): Date | null => {
+    const today = startOfDay(new Date());
+    const maxDate = addDays(today, bookingAdvanceDays);
+    let checkDate = today;
+    if (availableFrom) {
+      const availableFromDate = parse(availableFrom, "yyyy-MM-dd", new Date());
+      if (isAfter(availableFromDate, today)) checkDate = availableFromDate;
     }
-  }, [loading, workingHours, availableFrom, bookingAdvanceDays]);
+    while (isBefore(checkDate, maxDate) || isSameDay(checkDate, maxDate)) {
+      if (isDateAvailable(checkDate)) return checkDate;
+      checkDate = addDays(checkDate, 1);
+    }
+    return null;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bookingAdvanceDays, availableFrom, workingHours, dateOverrides, externalEvents, selectedDuration, bufferMinutes, travelBufferMinutes]);
+
+  // On first data load, honour the date passed in from search if it still has
+  // slots; otherwise jump to the next genuinely bookable date.
+  const initialJumpDoneRef = useRef(false);
+  useEffect(() => {
+    if (loading || workingHours.length === 0 || initialJumpDoneRef.current) return;
+    if (initialDate && isDateAvailable(initialDate)) {
+      setViewMonth(startOfMonth(initialDate));
+      setSelectedDate(initialDate);
+      initialJumpDoneRef.current = true;
+      return;
+    }
+    const first = findFirstBookableDate();
+    if (first) {
+      setViewMonth(startOfMonth(first));
+      setSelectedDate(first);
+      initialJumpDoneRef.current = true;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, workingHours, externalEvents, selectedDuration]);
 
   // Helper to check date availability without depending on isDateAvailable (avoids circular deps)
   const isDateAvailableCheck = useCallback((date: Date) => {
@@ -874,8 +887,23 @@ export function LessonScheduler({
                     <div className="py-6 text-center space-y-3">
                       <Clock className="h-6 w-6 mx-auto text-[#D1D5DB]" />
                       <p className="text-[12px] text-[#6B7280]">
-                        No available slots for this date
+                        No {formatLengthShort(selectedDuration)} slots available on this date
                       </p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const next = findFirstBookableDate();
+                          if (next) {
+                            setViewMonth(startOfMonth(next));
+                            setSelectedDate(next);
+                          }
+                        }}
+                        className="gap-2"
+                      >
+                        <CalendarDays className="h-4 w-4" />
+                        Jump to next available date
+                      </Button>
                       {pupilId && (
                         <Button
                           variant="outline"

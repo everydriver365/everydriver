@@ -1,54 +1,36 @@
-## Plain-English answer
+I found the mismatch. The public search and the booking calendar are not using the same definition of “available”.
 
-You don't need to learn the table names. Here's what's actually wrong: every place in the app that asks "what days does Ken work?" expects the answer to be saved using one set of day numbers (where Sunday = 0). Ken's record is saved using a **different numbering** (where Sunday = 7). So whenever the booking engine asks for Sunday, it gets nothing, and one of his rows (the stray "day 7") is junk the engine ignores.
+What is happening:
+- Ken’s working window is real: 10:30–16:00.
+- The search page currently marks dates/courses available using a broad day-level check.
+- The booking calendar then applies stricter slot rules: Ken only allows 2h/3h lessons, plus his buffer/travel padding, plus scheduled lessons and calendar blocks.
+- On 2 June specifically, Ken already has multiple scheduled lessons around 10:30/11:00 in the database, so the booking calendar correctly has no bookable 2h slot.
+- The booking page also ignores the `date=` passed from the course card, so it can open on a month/date that doesn’t match the advertised date.
 
-That alone shouldn't kill June — most of the codepaths *should* still find his weekdays. But Drive365 (the public course search) is more strict than the other pages, so it's the first surface where the mis-numbering becomes visible. We need to inspect it on the actual page to be 100% sure that's the root cause — there's a small chance Drive365 is also filtering on something else (instructor radius, course visibility, postcode coverage) that's hiding him independently.
+Plan to fix it properly:
 
-## Plan
+1. Make course search use exact bookable-slot logic
+   - Update the learner-facing course availability resolver so a course date only counts if the instructor has at least one real slot for the lesson lengths they allow.
+   - For Ken, that means 2h/3h availability, not just “at least 60 minutes free”.
+   - Keep existing conflict sources: scheduled lessons, manual blocks, Google Calendar busy events, buffers, and all-day informational-event filtering.
 
-### Step 1 — Confirm the actual Drive365 cause (read-only)
-Before changing anything else, inspect Drive365 with Ken in scope:
+2. Make each course card validate the actual course/date pair
+   - Filter `coursesForSelectedDate` so a 10h/20h/30h course is only shown on dates where the first bookable lesson can actually be selected.
+   - Course counts in the sidebar calendar will use the same exact logic, so dates won’t show misleading course counts.
 
-- Open the published `/courses` page (or course search) with Ken's instructor id in URL/postcode scope.
-- Capture what's rendered for his 5 courses for the June window — is it "no availability", is the card hidden entirely, or does it show a "first available" date that's wrong?
-- Check `useFeaturedCourses.findFirstAvailableDate` output for him: with today = 16 May and `available_from = 1 Jun 2026`, it should return Mon 1 Jun (his Monday hours match). If it returns `null`, that's the day-numbering bug confirmed for this surface. If it returns a date but the UI still says "no availability", a different filter is hiding him — likely course visibility, search radius, or the `public_instructors` view filtering on something.
+3. Make the booking calendar honour the selected date from search
+   - Pass the `?date=yyyy-mm-dd` value from `BookingSummary` into `MobileBookingView` and then into `LessonScheduler`.
+   - `LessonScheduler` will open on that month and preselect that date if it still has slots.
+   - If that date has become unavailable, it will automatically jump to the next genuinely bookable date.
 
-This step is essential so we don't "fix" the wrong thing.
+4. Remove the weak “first working day” jump
+   - Replace the current `isDateAvailableCheck` month-jump logic, which only checks working hours, with the exact slot availability check.
+   - This prevents the calendar opening on June just because working hours exist when no valid pupil slot exists.
 
-### Step 2 — Fix Ken's data
-Rewrite his two weekly-hours tables into the conventions the rest of the codebase actually uses. End-state we want for Ken:
+5. Add a clear no-slots state
+   - If a date is selected but has no valid slots, show a clear message and a “Next available date” action instead of leaving the learner staring at a blank/disabled calendar.
 
-| Day | Working hours |
-|---|---|
-| Mon | 10:30–16:00 |
-| Tue | 10:30–16:00 |
-| Wed | 10:30–16:00 |
-| Thu | 10:30–16:00 |
-| Fri | 10:30–16:00 |
-| Sat | 07:00–12:00 |
-| Sun | 07:00–12:00 |
-
-Do this via a one-off insert/update that deletes his existing rows in both tables and re-inserts them with the correct day numbers. Keep his `available_from = 2026-06-01` as-is.
-
-After the rewrite, re-verify by running the same Drive365 check from Step 1.
-
-### Step 3 — Catch this for everyone else
-The admin **Availability Sync Health** dashboard we just shipped only catches *drift* between the two tables — it does **not** flag when both tables are using the wrong numbering. Add a third check: any row in the weekly-hours tables whose day number is outside the expected range for that table → flag as **"Wrong day numbering"** with a one-click repair that rewrites the row using the correct convention (inferring the intended day from the working hours pattern).
-
-Then run that check across all 5,803 instructors so anyone else affected by the same bad backfill is fixed too.
-
-### Step 4 — Prevent it ever returning
-The dual-write helpers and the editors already enforce the correct convention going forward, but the bug came from an old backfill or manual write. Add a `CHECK` constraint to each weekly-hours table so the DB itself rejects rows outside the valid day range. New mis-numbered rows can never be inserted again.
-
-## Out of scope
-- Mobile layouts
-- Booking engine logic, scheduler clash rules
-- The legacy two-table design itself (separate refactor — every consumer in the codebase reads one or both directly; tracked separately)
-
-## Order of work
-1. Step 1 — Drive365 inspection (read-only, 5 min)
-2. Step 2 — Ken's data rewrite (1 min after Step 1 confirms)
-3. Step 3 — Convention check in the admin dashboard + bulk repair pass
-4. Step 4 — DB `CHECK` constraints
-
-Want me to start with Step 1 only, then come back with what I find before doing Steps 2–4? Or run 1 + 2 together, then 3 + 4 as a follow-up?
+6. Verify against Ken
+   - Check that June dates with no 2h/3h slots no longer appear as bookable for Ken.
+   - Check that the course card date and booking calendar date match.
+   - Check that July dates with genuine free 2h/3h slots show selectable times.

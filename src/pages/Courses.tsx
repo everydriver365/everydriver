@@ -53,6 +53,21 @@ interface Instructor {
   clearpay_enabled?: boolean | null;
   is_network_placeholder?: boolean | null;
   placeholder_district?: string | null;
+  allowed_lesson_lengths?: number[] | null;
+  preferred_lesson_length?: number | null;
+  buffer_minutes?: number | null;
+}
+
+// Smallest lesson the instructor will accept. The booking calendar refuses to
+// offer slots shorter than this, so course search must match that bar — otherwise
+// a date can advertise as "available" but produce a blank calendar at checkout.
+function instructorMinSlotMinutes(instructor: Instructor): number {
+  const allowed = (instructor.allowed_lesson_lengths || []).filter((n) => n > 0);
+  if (allowed.length > 0) return Math.min(...allowed);
+  if (instructor.preferred_lesson_length && instructor.preferred_lesson_length > 0) {
+    return instructor.preferred_lesson_length;
+  }
+  return 60;
 }
 
 // Extract UK postcode district (outcode), e.g. "WD17 3AA" -> "WD17".
@@ -390,8 +405,14 @@ export default function Courses() {
 
   // Helper to check if a date has availability (uses shared resolver including
   // Google Calendar busy events + existing scheduled lessons + manual blocks).
+  // Each instructor's check uses their own minimum lesson length so search
+  // matches what the booking calendar can actually offer.
   const isDateAvailable = useCallback((day: Date, instructorsList: Instructor[], src: CourseAvailabilitySources) => {
-    return instructorsList.some((instructor) => hasInstructorAvailabilityOn(instructor, day, src));
+    return instructorsList.some((instructor) =>
+      hasInstructorAvailabilityOn(instructor, day, src, {
+        minFreeMinutes: instructor.is_network_placeholder ? undefined : instructorMinSlotMinutes(instructor),
+      }),
+    );
   }, []);
 
   // Find first available date across next 6 months
@@ -487,7 +508,9 @@ export default function Courses() {
       if (isBefore(day, today)) return false;
       if (placeholdersOnly) return hasNetworkPlaceholderAvailabilityOn(day);
       return realInArea.some((instructor) =>
-        hasInstructorAvailabilityOn(instructor, day, availabilitySources)
+        hasInstructorAvailabilityOn(instructor, day, availabilitySources, {
+          minFreeMinutes: instructorMinSlotMinutes(instructor),
+        })
       );
     });
   }, [selectedMonth, relevantInstructors, availabilitySources, userLocation, searchedPostcode]);
@@ -499,7 +522,7 @@ export default function Courses() {
       const dateStr = format(day, "yyyy-MM-dd");
       let count = 0;
       for (const instructor of relevantInstructors) {
-        if (!instructor.is_network_placeholder && !hasInstructorAvailabilityOn(instructor, day, availabilitySources)) continue;
+        if (!instructor.is_network_placeholder && !hasInstructorAvailabilityOn(instructor, day, availabilitySources, { minFreeMinutes: instructorMinSlotMinutes(instructor) })) continue;
         const offeredCourses = instructorCourses.filter((c) => c.instructor_id === instructor.id);
         for (const hours of DISPLAY_HOURS) {
           if (offeredCourses.find((c) => c.course_hours === hours)) count++;
@@ -515,7 +538,7 @@ export default function Courses() {
     if (!selectedDate) return [];
     const courses: CourseWithInstructor[] = [];
     for (const instructor of relevantInstructors) {
-      if (!instructor.is_network_placeholder && !hasInstructorAvailabilityOn(instructor, selectedDate, availabilitySources)) continue;
+      if (!instructor.is_network_placeholder && !hasInstructorAvailabilityOn(instructor, selectedDate, availabilitySources, { minFreeMinutes: instructorMinSlotMinutes(instructor) })) continue;
       const offeredCourses = instructorCourses.filter((c) => c.instructor_id === instructor.id);
       for (const hours of DISPLAY_HOURS) {
         const courseData = offeredCourses.find((c) => c.course_hours === hours);

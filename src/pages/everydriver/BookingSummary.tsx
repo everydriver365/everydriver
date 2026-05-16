@@ -1981,6 +1981,7 @@ export default function BookingSummary() {
               instructorHomePostcode={instructor.home_postcode}
               instructorFirstName={instructor.name?.split(" ")[0]}
               pupilPostcode={differentPickup ? pickupPostcode : pupilPostcode}
+              initialDate={selectedDate ?? undefined}
               onSlotsChange={handleSlotsChange}
               onConfirm={() => paymentBlockRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
             />
