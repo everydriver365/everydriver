@@ -698,12 +698,6 @@ export default function Index() {
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {[
               {
-                title: "Search, Compare & Book",
-                description: "Find and compare local instructors, check real-time availability, and book directly online.",
-                link: "/courses",
-                image: drivingTestCentreImg,
-              },
-              {
                 title: "Parent Portal",
                 description: "Stay informed with lesson updates and payment visibility.",
                 link: "/parent",
