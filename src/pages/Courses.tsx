@@ -702,14 +702,11 @@ export default function Courses() {
         setSelectedDate(null);
       }
 
-      setShowRadiusFallbackNotice(usedFallback);
-
       toast({
         title: "Location found!",
-        description: usedFallback
-          ? `No instructors within ${radiusMiles} mi of ${areaName || cleanPostcode} – showing wider results`
-          : `Showing courses near ${areaName || cleanPostcode}`,
+        description: `Showing courses near ${areaName || cleanPostcode}`,
       });
+
     } finally {
       setIsSearching(false);
     }
