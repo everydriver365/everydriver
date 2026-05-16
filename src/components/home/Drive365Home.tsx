@@ -10,6 +10,7 @@ import {
   User,
 } from "lucide-react";
 import heroLearnerImg from "@/assets/drive365-hero-learner.jpeg";
+import heroPlaceholderImg from "@/assets/hero-placeholder-replacement.png";
 import intensiveCourseImg from "@/assets/drive365-intensive.jpeg";
 import weeklyCourseImg from "@/assets/course-weekly-lessons.jpg";
 import semiCourseImg from "@/assets/course-semi-intensive.jpg";
@@ -350,7 +351,7 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
         <div className="d365-hero">
           <div className="d365-hero-photo">
             <img
-              src="https://images.unsplash.com/photo-1590642916589-592bca10dfbf?w=800&q=80"
+              src={heroPlaceholderImg}
               alt="Smiling young learner driver holding a steering wheel, ready to start lessons with Drive 365"
               onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
             />
