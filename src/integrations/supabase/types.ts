@@ -8739,6 +8739,69 @@ export type Database = {
           },
         ]
       }
+      instructor_verifications: {
+        Row: {
+          admin_notes: string | null
+          created_at: string
+          credential_type: string
+          document_url: string | null
+          expires_at: string | null
+          id: string
+          instructor_id: string
+          status: string
+          submitted_at: string
+          updated_at: string
+          value: string | null
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string
+          credential_type: string
+          document_url?: string | null
+          expires_at?: string | null
+          id?: string
+          instructor_id: string
+          status?: string
+          submitted_at?: string
+          updated_at?: string
+          value?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string
+          credential_type?: string
+          document_url?: string | null
+          expires_at?: string | null
+          id?: string
+          instructor_id?: string
+          status?: string
+          submitted_at?: string
+          updated_at?: string
+          value?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_verifications_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_verifications_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       instructor_water_logs: {
         Row: {
           created_at: string
@@ -9236,6 +9299,7 @@ export type Database = {
           insurance_provider: string | null
           intake_questions_enabled: boolean | null
           is_active: boolean
+          is_founding_instructor: boolean
           is_network_placeholder: boolean
           is_online: boolean | null
           klarna_enabled: boolean | null
@@ -9299,6 +9363,7 @@ export type Database = {
           typical_response_hours: number | null
           updated_at: string
           vehicle_mpg: number | null
+          verified_pro_badge_enabled: boolean
           website_button_color: string | null
           website_font: string | null
           website_footer_bg: string | null
@@ -9442,6 +9507,7 @@ export type Database = {
           insurance_provider?: string | null
           intake_questions_enabled?: boolean | null
           is_active?: boolean
+          is_founding_instructor?: boolean
           is_network_placeholder?: boolean
           is_online?: boolean | null
           klarna_enabled?: boolean | null
@@ -9505,6 +9571,7 @@ export type Database = {
           typical_response_hours?: number | null
           updated_at?: string
           vehicle_mpg?: number | null
+          verified_pro_badge_enabled?: boolean
           website_button_color?: string | null
           website_font?: string | null
           website_footer_bg?: string | null
@@ -9648,6 +9715,7 @@ export type Database = {
           insurance_provider?: string | null
           intake_questions_enabled?: boolean | null
           is_active?: boolean
+          is_founding_instructor?: boolean
           is_network_placeholder?: boolean
           is_online?: boolean | null
           klarna_enabled?: boolean | null
@@ -9711,6 +9779,7 @@ export type Database = {
           typical_response_hours?: number | null
           updated_at?: string
           vehicle_mpg?: number | null
+          verified_pro_badge_enabled?: boolean
           website_button_color?: string | null
           website_font?: string | null
           website_footer_bg?: string | null
@@ -19412,6 +19481,16 @@ export type Database = {
           id: string
           latest_new_date: string
           notes: string
+        }[]
+      }
+      get_verified_pro_summary: {
+        Args: { p_instructor_id: string }
+        Returns: {
+          badge_enabled: boolean
+          instructor_id: string
+          is_founding: boolean
+          verified_credential_count: number
+          verified_types: string[]
         }[]
       }
       get_whitelabel_instructor_status: {
