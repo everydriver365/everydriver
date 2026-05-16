@@ -25,6 +25,7 @@ import {
   type Slot,
   type RejectedSlot,
 } from "./availabilityEngine";
+import { estimateDriveMinutes } from "./travelTime";
 
 export { TRAVEL_FALLBACK_MIN };
 
@@ -62,6 +63,22 @@ export type ManualBlockRow = {
   end_datetime: string;
 };
 
+/**
+ * Coords-only view of a booked lesson — used ONLY for inter-lesson travel
+ * padding. Busyness still comes from the calendar event (rule 5); this row
+ * just supplies the location metadata that GCal doesn't carry.
+ */
+export type BookedLessonGeoRow = {
+  instructor_id: string;
+  lesson_date: string;   // yyyy-MM-dd
+  start_time: string;    // HH:mm[:ss]
+  duration_minutes: number;
+  pickup_lat: number | null;
+  pickup_lng: number | null;
+  dropoff_lat: number | null;
+  dropoff_lng: number | null;
+};
+
 export interface InstructorLite {
   id: string;
   available_from?: string | null;
@@ -75,6 +92,8 @@ export interface CourseAvailabilitySources {
   overrides: DateOverrideRow[];
   calendarEvents: CalendarEventRow[];
   manualBlocks: ManualBlockRow[];
+  /** Booked-lesson coords for travel-time padding. May be empty. */
+  bookedLessonGeo: BookedLessonGeoRow[];
 }
 
 // ---------------------------------------------------------------------------
@@ -227,6 +246,11 @@ export interface DayComputeOptions {
   slotIncrementMinutes?: number;
   timeOfDay?: TimeOfDay;
   minNoticeMinutes?: number;
+  /** Coordinates of the candidate booking's pickup location. When provided
+   *  alongside `bookedLessonGeo`, the engine injects synthetic "travel"
+   *  conflicts around every existing booked lesson so a candidate slot cannot
+   *  start at a location the instructor can't realistically drive to in time. */
+  candidatePickup?: { lat: number; lng: number };
 }
 
 export interface DayComputeResult {
@@ -277,6 +301,48 @@ export function computeDaySlots(
       .map((e) => ({ start_time: e.start_time, end_time: e.end_time, is_busy: e.is_busy ?? true })),
   );
 
+  // Travel-time padding around existing booked lessons.
+  // Only adds conflicts when BOTH the booked lesson's pickup coords AND the
+  // candidate's pickup coords are known — otherwise we have no basis to
+  // estimate drive time and silently fall back to the standard buffer.
+  if (opts.candidatePickup && src.bookedLessonGeo?.length) {
+    const cand = opts.candidatePickup;
+    const dayLessons = src.bookedLessonGeo.filter(
+      (l) => l.instructor_id === instructor.id && l.lesson_date === dateStr,
+    );
+    for (const l of dayLessons) {
+      if (l.pickup_lat == null || l.pickup_lng == null) continue;
+      const startMin = parseHHMMtoMin(l.start_time);
+      const endMin = startMin + (l.duration_minutes ?? 0);
+      const pickup = { lat: Number(l.pickup_lat), lng: Number(l.pickup_lng) };
+      const dropoff =
+        l.dropoff_lat != null && l.dropoff_lng != null
+          ? { lat: Number(l.dropoff_lat), lng: Number(l.dropoff_lng) }
+          : pickup;
+
+      const travelIn = estimateDriveMinutes(cand, pickup);   // cand dropoff → lesson pickup
+      const travelOut = estimateDriveMinutes(dropoff, cand); // lesson dropoff → cand pickup
+      if (travelIn > 0) {
+        conflicts.push({
+          start: Math.max(0, startMin - travelIn),
+          end: startMin,
+          kind: "event",
+          label: "Travel from previous lesson",
+          padOverrideMin: 0,
+        });
+      }
+      if (travelOut > 0) {
+        conflicts.push({
+          start: endMin,
+          end: endMin + travelOut,
+          kind: "event",
+          label: "Travel to next lesson",
+          padOverrideMin: 0,
+        });
+      }
+    }
+  }
+
   const buffer = Math.max(0, instructor.buffer_minutes ?? 0);
   const firstLessonBuffer = Math.max(0, opts.firstLessonBufferMinutes ?? 0);
 
@@ -314,6 +380,11 @@ export function computeDaySlots(
   }
 
   return { windows, slots: allSlots, rejected: allRejected };
+}
+
+function parseHHMMtoMin(t: string): number {
+  const [h, m] = t.split(":").map((s) => parseInt(s, 10));
+  return (h || 0) * 60 + (m || 0);
 }
 
 /**
@@ -355,7 +426,7 @@ export async function loadCourseAvailabilitySources(
   toDate: Date,
 ): Promise<CourseAvailabilitySources> {
   if (instructorIds.length === 0) {
-    return { workingHours: [], availabilityWindows: [], overrides: [], calendarEvents: [], manualBlocks: [] };
+    return { workingHours: [], availabilityWindows: [], overrides: [], calendarEvents: [], manualBlocks: [], bookedLessonGeo: [] };
   }
 
   const fromStr = format(fromDate, "yyyy-MM-dd");
@@ -363,7 +434,7 @@ export async function loadCourseAvailabilitySources(
   const fromIso = startOfDay(fromDate).toISOString();
   const toIso   = startOfDay(addDays(toDate, 1)).toISOString();
 
-  const [whRes, awRes, ovRes, mbRes, ceRes] = await Promise.all([
+  const [whRes, awRes, ovRes, mbRes, ceRes, lgRes] = await Promise.all([
     client
       .from("instructor_working_hours")
       .select("instructor_id, day_of_week, is_active, start_time, end_time")
@@ -390,13 +461,22 @@ export async function loadCourseAvailabilitySources(
       p_from_datetime: fromIso,
       p_to_datetime: toIso,
     }),
+    // Public-safe RPC — returns ONLY coords + timing of booked lessons.
+    // Used by the engine to pad candidate slots with realistic travel time
+    // between consecutive bookings. No PII (names/addresses/postcodes/prices).
+    (client as any).rpc("get_public_instructor_lesson_geo", {
+      p_instructor_ids: instructorIds,
+      p_from_date: fromStr,
+      p_to_date: toStr,
+    }),
   ]);
 
   return {
-    workingHours:       (whRes.data  as WeeklyHourRow[])     ?? [],
-    availabilityWindows:(awRes.data  as WeeklyHourRow[])     ?? [],
-    overrides:          (ovRes.data  as DateOverrideRow[])   ?? [],
-    manualBlocks:       (mbRes.data  as ManualBlockRow[])    ?? [],
-    calendarEvents:     (ceRes.data  as CalendarEventRow[])  ?? [],
+    workingHours:       (whRes.data  as WeeklyHourRow[])      ?? [],
+    availabilityWindows:(awRes.data  as WeeklyHourRow[])      ?? [],
+    overrides:          (ovRes.data  as DateOverrideRow[])    ?? [],
+    manualBlocks:       (mbRes.data  as ManualBlockRow[])     ?? [],
+    calendarEvents:     (ceRes.data  as CalendarEventRow[])   ?? [],
+    bookedLessonGeo:    (lgRes.data  as BookedLessonGeoRow[]) ?? [],
   };
 }

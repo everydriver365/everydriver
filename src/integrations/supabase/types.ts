@@ -19413,6 +19413,23 @@ export type Database = {
           start_time: string
         }[]
       }
+      get_public_instructor_lesson_geo: {
+        Args: {
+          p_from_date: string
+          p_instructor_ids: string[]
+          p_to_date: string
+        }
+        Returns: {
+          dropoff_lat: number
+          dropoff_lng: number
+          duration_minutes: number
+          instructor_id: string
+          lesson_date: string
+          pickup_lat: number
+          pickup_lng: number
+          start_time: string
+        }[]
+      }
       get_public_instructor_manual_blocks: {
         Args: {
           p_from_datetime: string
