@@ -24,7 +24,13 @@ import {
   mirrorIwhToAw,
 } from "@/lib/syncWeeklyHours";
 
-type Issue = "drift_iwh_only" | "drift_aw_only" | "no_hours" | "future_from" | "bad_dow";
+type Issue =
+  | "drift_iwh_only"
+  | "drift_aw_only"
+  | "no_hours"
+  | "future_from"
+  | "bad_dow"
+  | "gcal_wide_busy";
 
 interface InstructorRow {
   id: string;
@@ -33,6 +39,7 @@ interface InstructorRow {
   available_from: string | null;
   iwhCount: number;
   awCount: number;
+  wideBusyCount: number;
   issues: Issue[];
 }
 
@@ -43,9 +50,17 @@ interface Stats {
   noHours: number;
   futureFrom: number;
   badDow: number;
+  gcalWideBusy: number;
 }
 
-type Tab = "all_issues" | "drift" | "bad_dow" | "no_hours" | "future_from" | "healthy";
+type Tab =
+  | "all_issues"
+  | "drift"
+  | "bad_dow"
+  | "gcal_wide_busy"
+  | "no_hours"
+  | "future_from"
+  | "healthy";
 
 const ISSUE_LABELS: Record<Issue, { label: string; tone: "warn" | "error" | "info" }> = {
   drift_iwh_only: { label: "Drift: missing from availability_windows", tone: "warn" },
@@ -53,6 +68,7 @@ const ISSUE_LABELS: Record<Issue, { label: string; tone: "warn" | "error" | "inf
   no_hours: { label: "No working hours set", tone: "info" },
   future_from: { label: "Hidden by Available-from date", tone: "info" },
   bad_dow: { label: "Wrong day numbering — hides days from booking", tone: "error" },
+  gcal_wide_busy: { label: "GCal all-day event blocking working day", tone: "error" },
 };
 
 export default function AvailabilitySyncHealth() {
@@ -76,7 +92,7 @@ export default function AvailabilitySyncHealth() {
       if (iErr) throw iErr;
 
       // Pull every active working-hours row from both tables in parallel.
-      const [iwhRes, awRes] = await Promise.all([
+      const [iwhRes, awRes, gcalRes] = await Promise.all([
         supabase
           .from("instructor_working_hours")
           .select("instructor_id, day_of_week")
@@ -85,14 +101,19 @@ export default function AvailabilitySyncHealth() {
           .from("availability_windows")
           .select("instructor_id, day_of_week")
           .eq("is_active", true),
+        // GCal events flagged busy that span a full working day or more —
+        // these wipe out availability for whoever owns them.
+        supabase
+          .from("instructor_calendar_events")
+          .select("instructor_id, start_time, end_time")
+          .eq("is_busy", true)
+          .gte("end_time", new Date().toISOString()),
       ]);
       if (iwhRes.error) throw iwhRes.error;
       if (awRes.error) throw awRes.error;
+      if (gcalRes.error) throw gcalRes.error;
 
       // Build per-instructor day sets + flag rows with invalid day numbers.
-      // iwh expects 0=Sun..6=Sat; aw expects 1=Mon..7=Sun. A row outside the
-      // valid range is silently dropped by every consumer that does
-      // `w.day_of_week === date.getDay()`, hiding that day from booking.
       const iwhDays = new Map<string, Set<number>>();
       const badDow = new Set<string>();
       for (const r of iwhRes.data ?? []) {
@@ -115,9 +136,21 @@ export default function AvailabilitySyncHealth() {
         awDays.set(r.instructor_id, set);
       }
 
+      // Count GCal busy events that run 20h+ — those are the "all-day or
+      // multi-day" type that silently block a whole working day.
+      const wideBusy = new Map<string, number>();
+      for (const r of gcalRes.data ?? []) {
+        const start = new Date(r.start_time).getTime();
+        const end = new Date(r.end_time).getTime();
+        if (!isFinite(start) || !isFinite(end)) continue;
+        if (end - start < 20 * 60 * 60 * 1000) continue;
+        wideBusy.set(r.instructor_id, (wideBusy.get(r.instructor_id) ?? 0) + 1);
+      }
+
       const built: InstructorRow[] = (instructors ?? []).map((inst: any) => {
         const iwh = iwhDays.get(inst.id) ?? new Set<number>();
         const aw = awDays.get(inst.id) ?? new Set<number>();
+        const wideBusyCount = wideBusy.get(inst.id) ?? 0;
         const issues: Issue[] = [];
 
         if (badDow.has(inst.id)) issues.push("bad_dow");
@@ -125,7 +158,6 @@ export default function AvailabilitySyncHealth() {
         if (iwh.size === 0 && aw.size === 0 && !badDow.has(inst.id)) {
           issues.push("no_hours");
         } else {
-          // Drift: any day present in one table but missing from the other.
           let iwhOnly = false;
           let awOnly = false;
           iwh.forEach((d) => {
@@ -142,6 +174,8 @@ export default function AvailabilitySyncHealth() {
           issues.push("future_from");
         }
 
+        if (wideBusyCount > 0) issues.push("gcal_wide_busy");
+
         return {
           id: inst.id,
           name: inst.name ?? "(unnamed)",
@@ -149,6 +183,7 @@ export default function AvailabilitySyncHealth() {
           available_from: inst.available_from ?? null,
           iwhCount: iwh.size,
           awCount: aw.size,
+          wideBusyCount,
           issues,
         };
       });
@@ -168,13 +203,22 @@ export default function AvailabilitySyncHealth() {
   }, [load]);
 
   const stats: Stats = useMemo(() => {
-    const s: Stats = { total: rows.length, healthy: 0, drift: 0, noHours: 0, futureFrom: 0, badDow: 0 };
+    const s: Stats = {
+      total: rows.length,
+      healthy: 0,
+      drift: 0,
+      noHours: 0,
+      futureFrom: 0,
+      badDow: 0,
+      gcalWideBusy: 0,
+    };
     for (const r of rows) {
       const driftish = r.issues.includes("drift_iwh_only") || r.issues.includes("drift_aw_only");
       if (driftish) s.drift++;
       if (r.issues.includes("no_hours")) s.noHours++;
       if (r.issues.includes("future_from")) s.futureFrom++;
       if (r.issues.includes("bad_dow")) s.badDow++;
+      if (r.issues.includes("gcal_wide_busy")) s.gcalWideBusy++;
       if (r.issues.length === 0) s.healthy++;
     }
     return s;
@@ -187,6 +231,7 @@ export default function AvailabilitySyncHealth() {
       if (tab === "healthy" && r.issues.length !== 0) return false;
       if (tab === "drift" && !r.issues.some((i) => i.startsWith("drift_"))) return false;
       if (tab === "bad_dow" && !r.issues.includes("bad_dow")) return false;
+      if (tab === "gcal_wide_busy" && !r.issues.includes("gcal_wide_busy")) return false;
       if (tab === "no_hours" && !r.issues.includes("no_hours")) return false;
       if (tab === "future_from" && !r.issues.includes("future_from")) return false;
       if (tab === "all_issues" && r.issues.length === 0) return false;
@@ -220,6 +265,45 @@ export default function AvailabilitySyncHealth() {
     }
   };
 
+  const clearWideBusy = async (row: InstructorRow) => {
+    setBusyId(row.id);
+    try {
+      // Flip all-day / multi-day GCal events for this instructor to
+      // informational (is_busy=false) so they no longer wipe out working hours.
+      // Matches the rule the sync now applies going forward.
+      const { data, error } = await supabase
+        .from("instructor_calendar_events")
+        .select("id, title, start_time, end_time")
+        .eq("instructor_id", row.id)
+        .eq("is_busy", true);
+      if (error) throw error;
+      const BLOCKING = /holiday|vacation|\bvac\b|\boff\b|leave|sick|away|closed|unavailable|annual leave|day off|out of office|\booo\b/i;
+      const targetIds = (data ?? [])
+        .filter((r: any) => {
+          const dur = new Date(r.end_time).getTime() - new Date(r.start_time).getTime();
+          if (dur < 20 * 60 * 60 * 1000) return false;
+          return !BLOCKING.test(r.title ?? "");
+        })
+        .map((r: any) => r.id);
+      if (targetIds.length === 0) {
+        toast.info("Nothing to clear");
+        return;
+      }
+      const { error: upErr } = await supabase
+        .from("instructor_calendar_events")
+        .update({ is_busy: false })
+        .in("id", targetIds);
+      if (upErr) throw upErr;
+      toast.success(`Cleared ${targetIds.length} wide block${targetIds.length === 1 ? "" : "s"} for ${row.name}`);
+      await load();
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e?.message ?? "Failed to clear");
+    } finally {
+      setBusyId(null);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
       <div className="max-w-6xl mx-auto space-y-6">
@@ -245,7 +329,7 @@ export default function AvailabilitySyncHealth() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-7 gap-3">
           <StatCard label="Total" value={stats.total} icon={<CalendarClock className="w-4 h-4" />} />
           <StatCard
             label="Healthy"
@@ -270,6 +354,12 @@ export default function AvailabilitySyncHealth() {
             icon={<CircleSlash className="w-4 h-4 text-muted-foreground" />}
           />
           <StatCard
+            label="GCal wide blocks"
+            value={stats.gcalWideBusy}
+            icon={<AlertTriangle className="w-4 h-4 text-red-600" />}
+            highlight={stats.gcalWideBusy > 0}
+          />
+          <StatCard
             label="Future from"
             value={stats.futureFrom}
             icon={<CalendarClock className="w-4 h-4 text-blue-600" />}
@@ -291,6 +381,7 @@ export default function AvailabilitySyncHealth() {
               <TabsList>
                 <TabsTrigger value="all_issues">All issues ({stats.total - stats.healthy})</TabsTrigger>
                 <TabsTrigger value="bad_dow">Bad day numbering ({stats.badDow})</TabsTrigger>
+                <TabsTrigger value="gcal_wide_busy">GCal wide blocks ({stats.gcalWideBusy})</TabsTrigger>
                 <TabsTrigger value="drift">Drift ({stats.drift})</TabsTrigger>
                 <TabsTrigger value="no_hours">No hours ({stats.noHours})</TabsTrigger>
                 <TabsTrigger value="future_from">Future from ({stats.futureFrom})</TabsTrigger>
@@ -342,23 +433,43 @@ export default function AvailabilitySyncHealth() {
                       </div>
                       <div className="mt-1 text-xs text-muted-foreground">
                         IWH days: {r.iwhCount} · AW days: {r.awCount}
+                        {r.wideBusyCount > 0 && (
+                          <> · {r.wideBusyCount} wide GCal block{r.wideBusyCount === 1 ? "" : "s"}</>
+                        )}
                       </div>
                     </div>
-                    {(r.issues.includes("drift_iwh_only") || r.issues.includes("drift_aw_only")) && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => repair(r)}
-                        disabled={busyId === r.id}
-                      >
-                        {busyId === r.id ? (
-                          <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                        ) : (
-                          <Wrench className="w-3 h-3 mr-1" />
-                        )}
-                        Sync now
-                      </Button>
-                    )}
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {(r.issues.includes("drift_iwh_only") || r.issues.includes("drift_aw_only")) && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => repair(r)}
+                          disabled={busyId === r.id}
+                        >
+                          {busyId === r.id ? (
+                            <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                          ) : (
+                            <Wrench className="w-3 h-3 mr-1" />
+                          )}
+                          Sync now
+                        </Button>
+                      )}
+                      {r.issues.includes("gcal_wide_busy") && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => clearWideBusy(r)}
+                          disabled={busyId === r.id}
+                        >
+                          {busyId === r.id ? (
+                            <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                          ) : (
+                            <Wrench className="w-3 h-3 mr-1" />
+                          )}
+                          Clear wide blocks
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 ))}
                 {filtered.length > 500 && (

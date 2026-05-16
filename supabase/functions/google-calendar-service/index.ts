@@ -14,6 +14,16 @@ interface JWTClaims {
   scope: string;
 }
 
+// Detects "blocking" all-day events (holidays, leave, sickness, etc.) by title.
+// Non-matching all-day events are treated as informational (is_busy=false)
+// so a stray all-day note doesn't wipe out the instructor's whole working day.
+const BLOCKING_TITLE_RE = /holiday|vacation|\bvac\b|\boff\b|leave|sick|away|closed|unavailable|annual leave|day off|out of office|\booo\b/i;
+function computeIsBusy(item: any, title: string | null): boolean {
+  const isAllDay = !item.start?.dateTime && !!item.start?.date;
+  if (!isAllDay) return true;
+  return BLOCKING_TITLE_RE.test(title || "");
+}
+
 // Base64url encode
 function base64urlEncode(data: Uint8Array): string {
   const base64 = btoa(String.fromCharCode(...data));
@@ -652,11 +662,13 @@ Deno.serve(async (req) => {
             )
             .map((item: any) => {
               const meeting = extractMeetingInfo(item);
+              const title = item.summary || "Busy";
               return {
                 id: item.id,
-                summary: item.summary || "Busy",
+                summary: title,
                 start: item.start.dateTime || `${item.start.date}T00:00:00`,
                 end: item.end.dateTime || `${item.end.date}T23:59:59`,
+                is_busy: computeIsBusy(item, title),
                 color: item.colorId ? (googleColorMap[item.colorId] || calendarDefaultColor) : calendarDefaultColor,
                 location: item.location || null,
                 description: item.description || null,
@@ -688,7 +700,7 @@ Deno.serve(async (req) => {
             title: event.summary,
             start_time: event.start,
             end_time: event.end,
-            is_busy: true,
+            is_busy: event.is_busy ?? true,
             color: event.color,
             location: event.location,
             description: event.description,
@@ -968,11 +980,13 @@ Deno.serve(async (req) => {
               )
               .map((item: any) => {
                 const meeting = extractMeetingInfo(item);
+                const title = item.summary || "Busy";
                 return {
                   id: item.id,
-                  summary: item.summary || "Busy",
+                  summary: title,
                   start: item.start.dateTime || `${item.start.date}T00:00:00`,
                   end: item.end.dateTime || `${item.end.date}T23:59:59`,
+                  is_busy: computeIsBusy(item, title),
                   color: item.colorId ? (googleColorMap[item.colorId] || calendarDefaultColor) : calendarDefaultColor,
                   location: item.location || null,
                   description: item.description || null,
@@ -998,7 +1012,7 @@ Deno.serve(async (req) => {
               title: event.summary,
               start_time: event.start,
               end_time: event.end,
-              is_busy: true,
+              is_busy: event.is_busy ?? true,
               color: event.color,
               location: event.location,
               description: event.description,
@@ -1136,11 +1150,13 @@ Deno.serve(async (req) => {
           (data.items || []).forEach((item: any) => {
             if (!(item.start?.dateTime || item.start?.date)) return;
             if (!(item.end?.dateTime || item.end?.date)) return;
+            const title = item.summary || "Busy";
             fresh.set(item.id, {
               id: item.id,
-              title: item.summary || "Busy",
+              title,
               start: item.start.dateTime || `${item.start.date}T00:00:00`,
               end: item.end.dateTime || `${item.end.date}T23:59:59`,
+              is_busy: computeIsBusy(item, title),
               color: item.colorId ? (googleColorMap[item.colorId] || calendarDefaultColor) : calendarDefaultColor,
               location: item.location || null,
               description: item.description || null,
@@ -1190,7 +1206,7 @@ Deno.serve(async (req) => {
             title: ev.title,
             start_time: ev.start,
             end_time: ev.end,
-            is_busy: true,
+            is_busy: ev.is_busy ?? true,
             color: ev.color,
             location: ev.location,
             description: ev.description,
