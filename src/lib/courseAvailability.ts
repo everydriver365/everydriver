@@ -404,12 +404,11 @@ export async function loadCourseAvailabilitySources(
       p_from_date: fromStr,
       p_to_date: toStr,
     }),
-    client
-      .from("instructor_calendar_events")
-      .select("instructor_id, start_time, end_time, is_busy")
-      .in("instructor_id", instructorIds)
-      .gte("end_time", fromIso)
-      .lte("start_time", toIso),
+    (client as any).rpc("get_public_instructor_calendar_blocks", {
+      p_instructor_ids: instructorIds,
+      p_from_datetime: fromIso,
+      p_to_datetime: toIso,
+    }),
   ]);
 
   return {
