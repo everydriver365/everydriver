@@ -310,121 +310,6 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
   return (
     <div style={{ width: "100%", overflow: "hidden", background: "#F6F6F8" }}>
 
-      {/* HomeHero */}
-      <section
-        style={{
-          background: "#191C2F",
-          position: "relative",
-          overflow: "hidden",
-          padding: "64px 5% 0",
-          width: "100%",
-        }}
-      >
-        <div style={{ position: "absolute", width: 600, height: 600, borderRadius: "50%", background: "#3E57D9", opacity: 0.07, top: -200, right: "10%", pointerEvents: "none" }} />
-        <div style={{ position: "absolute", width: 350, height: 350, borderRadius: "50%", background: "#1D9E75", opacity: 0.05, bottom: -100, left: "5%", pointerEvents: "none" }} />
-
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 48, alignItems: "flex-end", width: "100%", position: "relative", zIndex: 1 }}>
-          <div>
-            <h1 style={{ fontSize: 46, fontWeight: 700, color: "#FFF", lineHeight: 1.14, letterSpacing: -1.5, marginBottom: 16, whiteSpace: "pre-line" }}>
-              {"Learn to drive\nwith "}
-              <span style={{ color: "#3E57D9" }}>confidence</span>
-            </h1>
-            <p style={{ fontSize: 15, color: "rgba(255,255,255,0.6)", lineHeight: 1.7, marginBottom: 24, maxWidth: 440 }}>
-              Money back if you pass first time. Free retest if you don't. Find an instructor near you today.
-            </p>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 32 }}>
-              <span style={{ fontSize: 11, color: "rgba(255,255,255,0.4)" }}>Spread the cost with</span>
-              <span style={{ background: "#FFF", borderRadius: 5, padding: "3px 9px", fontSize: 11, fontWeight: 700, color: "#FF5B78" }}>klarna</span>
-              <span style={{ background: "#FFF", borderRadius: 5, padding: "3px 9px", fontSize: 11, fontWeight: 700, color: "#1E3545" }}>clearpay</span>
-            </div>
-          </div>
-          <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center" }}>
-            <img
-              src={heroLearnerImg}
-              alt="Confident learner driver behind the wheel"
-              style={{
-                width: "100%",
-                maxWidth: 520,
-                height: "auto",
-                borderRadius: 20,
-                objectFit: "cover",
-                boxShadow: "0 24px 60px rgba(0,0,0,0.45)",
-                display: "block",
-              }}
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* HomeSearchCard */}
-      <div style={{ background: "#F6F6F8", padding: "0 5%", width: "100%" }}>
-        <div
-          style={{
-            background: "#FFF",
-            borderRadius: 16,
-            boxShadow: "0 8px 32px rgba(15,32,68,0.13)",
-            padding: "22px 28px",
-            transform: "translateY(-50%)",
-            position: "relative",
-            zIndex: 10,
-          }}
-        >
-          <div style={{ display: "flex", gap: 12, alignItems: "flex-end", flexWrap: "wrap" }}>
-            <div style={{ display: "flex", flexDirection: "column", gap: 4, flex: "2 1 200px" }}>
-              <label style={{ fontSize: 11, fontWeight: 500, color: "#51567A" }}>Your postcode</label>
-              <input
-                type="text"
-                placeholder="e.g. SO30 2TD"
-                value={postcode}
-                onChange={(e) => setPostcode(e.target.value.toUpperCase())}
-                style={{ border: "1px solid #E9E5E8", borderRadius: 8, padding: "10px 13px", fontSize: 14, color: "#191C2F", background: "#F8F9FA", outline: "none", width: "100%" }}
-              />
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 4, flex: "1 1 120px" }}>
-              <label style={{ fontSize: 11, fontWeight: 500, color: "#51567A" }}>Radius</label>
-              <select
-                value={radius}
-                onChange={(e) => setRadius(e.target.value)}
-                style={{ border: "1px solid #E9E5E8", borderRadius: 8, padding: "10px 13px", fontSize: 14, color: "#191C2F", background: "#F8F9FA", outline: "none", width: "100%" }}
-              >
-                {["5 miles", "10 miles", "15 miles", "20 miles"].map((r) => <option key={r}>{r}</option>)}
-              </select>
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 4, flex: "1 1 120px" }}>
-              <label style={{ fontSize: 11, fontWeight: 500, color: "#51567A" }}>Transmission</label>
-              <select
-                value={transmission}
-                onChange={(e) => setTransmission(e.target.value)}
-                style={{ border: "1px solid #E9E5E8", borderRadius: 8, padding: "10px 13px", fontSize: 14, color: "#191C2F", background: "#F8F9FA", outline: "none", width: "100%" }}
-              >
-                {["Any", "Manual", "Automatic"].map((t) => <option key={t}>{t}</option>)}
-              </select>
-            </div>
-            <button
-              onClick={handleSearch}
-              style={{
-                background: "#3E57D9",
-                border: "none",
-                borderRadius: 10,
-                padding: "11px 26px",
-                fontSize: 14,
-                fontWeight: 600,
-                color: "#FFF",
-                cursor: "pointer",
-                whiteSpace: "nowrap",
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                height: 44,
-                flexShrink: 0,
-              }}
-            >
-              <Search size={15} color="#FFF" />
-              Search all instructors
-            </button>
-          </div>
-        </div>
-      </div>
 
       {/* HomeSocialProof */}
       <div
@@ -437,7 +322,7 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
           alignItems: "center",
           justifyContent: "center",
           width: "100%",
-          marginTop: -10,
+          
         }}
       >
         {PROOF_STATS.map((stat, i) => (

@@ -16,8 +16,6 @@ import drive365HeroTestCentre from "@/assets/drive365-hero-driver.webp";
 
 // Routes (or prefixes) where we DO NOT want to inject the hero.
 const EXCLUDED_EXACT = new Set<string>([
-  "/",
-  "/drive365",
   "/search",
   "/drive365/search",
   "/courses",
