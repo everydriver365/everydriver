@@ -1422,27 +1422,27 @@ export default function Courses() {
                 <div>
                   <div
                     style={{
-                      fontSize: 10,
-                      fontWeight: 700,
-                      letterSpacing: "0.18em",
-                      color: "#7a7a7a",
+                      fontSize: 12,
+                      fontWeight: 500,
+                      letterSpacing: "0.08em",
+                      color: "#9CA3AF",
                       textTransform: "uppercase",
                     }}
                   >
                     Courses near
                   </div>
-                  <div className="flex items-baseline gap-2">
+                  <div className="flex items-baseline gap-2 mt-1">
                     <span
                       style={{
-                        fontSize: 18,
-                        fontWeight: 800,
+                        fontSize: 28,
+                        fontWeight: 700,
                         color: "#0A0A0A",
                         letterSpacing: "-0.02em",
                       }}
                     >
                       {searchedAreaName || searchedPostcode}
                     </span>
-                    <span style={{ fontSize: 12, color: "#7a7a7a" }}>
+                    <span style={{ fontSize: 14, color: "#4B5563" }}>
                       {searchedPostcode} · {radius} mi
                     </span>
                   </div>
