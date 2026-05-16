@@ -368,6 +368,7 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
                 <br />
                 <b>Book through Drive 365 for a range of exclusive benefits when you book.</b>
               </p>
+              <PostcodeSearch />
             </div>
             <div className="d365-feat-row">
               <div className="d365-feat">
