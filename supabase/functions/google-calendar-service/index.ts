@@ -700,7 +700,7 @@ Deno.serve(async (req) => {
             title: event.summary,
             start_time: event.start,
             end_time: event.end,
-            is_busy: true,
+            is_busy: event.is_busy ?? true,
             color: event.color,
             location: event.location,
             description: event.description,
