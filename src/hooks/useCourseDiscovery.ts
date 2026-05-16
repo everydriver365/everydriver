@@ -413,28 +413,33 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
     }
   };
 
-  // Filter instructors by location when a postcode search is active
+  // Filter instructors by location when a postcode search is active.
+  // Placeholders are matched purely by postcode-district (no geocoding needed).
   const instructorsInArea = useMemo(() => {
     if (!userLocation) return instructors;
-    
+
     const radiusMiles = parseInt(radius);
-    
+    const searchedDistrict = extractPostcodeDistrict(searchedPostcode);
+
     return instructors.filter((instructor) => {
+      if (instructor.is_network_placeholder) {
+        return !!searchedDistrict && instructor.placeholder_district === searchedDistrict;
+      }
       const instructorPostcode = instructor.home_postcode.replace(/\s+/g, "").toUpperCase();
       const instructorLocation = geoCache[instructorPostcode];
-      
+
       if (!instructorLocation) return false;
-      
+
       const distance = calculateDistance(
         userLocation.lat,
         userLocation.lng,
         instructorLocation.lat,
         instructorLocation.lng
       );
-      
+
       return distance <= radiusMiles;
     });
-  }, [instructors, userLocation, radius, geoCache]);
+  }, [instructors, userLocation, radius, geoCache, searchedPostcode]);
 
   // Upcoming available dates across the next ~6 months (cap 12 dates).
   // Delegates to hasInstructorAvailabilityOn so calendar dots match the
