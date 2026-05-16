@@ -19316,6 +19316,19 @@ export type Database = {
           prefer_earliest_slot: boolean
         }[]
       }
+      get_public_instructor_calendar_blocks: {
+        Args: {
+          p_from_datetime: string
+          p_instructor_ids: string[]
+          p_to_datetime: string
+        }
+        Returns: {
+          end_time: string
+          instructor_id: string
+          is_busy: boolean
+          start_time: string
+        }[]
+      }
       get_public_instructor_manual_blocks: {
         Args: {
           p_from_datetime: string
