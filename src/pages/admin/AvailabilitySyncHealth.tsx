@@ -329,7 +329,7 @@ export default function AvailabilitySyncHealth() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-7 gap-3">
           <StatCard label="Total" value={stats.total} icon={<CalendarClock className="w-4 h-4" />} />
           <StatCard
             label="Healthy"
@@ -352,6 +352,12 @@ export default function AvailabilitySyncHealth() {
             label="No hours"
             value={stats.noHours}
             icon={<CircleSlash className="w-4 h-4 text-muted-foreground" />}
+          />
+          <StatCard
+            label="GCal wide blocks"
+            value={stats.gcalWideBusy}
+            icon={<AlertTriangle className="w-4 h-4 text-red-600" />}
+            highlight={stats.gcalWideBusy > 0}
           />
           <StatCard
             label="Future from"
