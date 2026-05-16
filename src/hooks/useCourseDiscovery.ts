@@ -27,6 +27,18 @@ export interface Instructor {
   is_active: boolean;
   available_from: string | null;
   buffer_minutes?: number | null;
+  is_network_placeholder?: boolean | null;
+  placeholder_district?: string | null;
+  booking_mode?: string | null;
+}
+
+// Extract the UK postcode district (outcode) from any postcode string.
+// e.g. "WD17 3AA" -> "WD17", "sw1a 1aa" -> "SW1A".
+export function extractPostcodeDistrict(raw: string | null | undefined): string | null {
+  if (!raw) return null;
+  const cleaned = raw.replace(/\s+/g, "").toUpperCase();
+  const m = cleaned.match(/^([A-Z]{1,2}[0-9][A-Z0-9]?)/);
+  return m ? m[1] : null;
 }
 
 export interface InstructorCourse {
