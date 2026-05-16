@@ -861,11 +861,11 @@ export default function Courses() {
       await geocodePostcodes(allPostcodes);
 
       // Load postcode rate overrides for all visible instructors (single batched query)
-      if (instructorIds.length) {
+      if (realInstructorIds.length) {
         const { data: rateRows } = await supabase
           .from("instructor_postcode_rates")
           .select("instructor_id, outward_code, hourly_rate")
-          .in("instructor_id", instructorIds);
+          .in("instructor_id", realInstructorIds);
         const map: Record<string, PostcodeRateRule[]> = {};
         for (const r of (rateRows || []) as any[]) {
           (map[r.instructor_id] ||= []).push({ outward_code: r.outward_code, hourly_rate: Number(r.hourly_rate) });
