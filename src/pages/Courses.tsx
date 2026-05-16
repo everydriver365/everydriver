@@ -1436,7 +1436,7 @@ export default function Courses() {
                       style={{
                         fontSize: 18,
                         fontWeight: 800,
-                        color: "#0a1936",
+                        color: "#0A0A0A",
                         letterSpacing: "-0.02em",
                       }}
                     >
@@ -1451,7 +1451,7 @@ export default function Courses() {
                   <button
                     onClick={clearSearch}
                     className="inline-flex items-center gap-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold transition-colors hover:bg-slate-50"
-                    style={{ border: "1px solid #d0d0d8", color: "#0a1936" }}
+                    style={{ border: "1px solid #d0d0d8", color: "#0A0A0A" }}
                   >
                     <Edit2 className="h-3.5 w-3.5" />
                     Change
@@ -1459,7 +1459,7 @@ export default function Courses() {
                   <button
                     onClick={() => setShowFilters((v) => !v)}
                     className="relative inline-flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-semibold text-white transition-colors hover:opacity-90"
-                    style={{ background: "#0a1936" }}
+                    style={{ background: "#2D3FE7" }}
                   >
                     <SlidersHorizontal className="h-3.5 w-3.5" />
                     Filters
@@ -1543,8 +1543,8 @@ export default function Courses() {
                               onClick={() => setTransmission(opt.value)}
                               className="rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all"
                               style={{
-                                background: active ? "#0a1936" : "transparent",
-                                color: active ? "white" : "#7a7a7a",
+                                background: active ? "#2D3FE7" : "transparent",
+                                color: active ? "white" : "#0A0A0A",
                               }}
                             >
                               {opt.label}
@@ -1562,8 +1562,8 @@ export default function Courses() {
                             onClick={() => setViewMode("list")}
                             className="flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold transition-all"
                             style={{
-                              background: viewMode === "list" ? "#0a1936" : "transparent",
-                              color: viewMode === "list" ? "white" : "#7a7a7a",
+                              background: viewMode === "list" ? "#2D3FE7" : "transparent",
+                              color: viewMode === "list" ? "white" : "#0A0A0A",
                             }}
                             aria-label="List view"
                           >
@@ -1574,8 +1574,8 @@ export default function Courses() {
                             onClick={() => setViewMode("grid")}
                             className="flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold transition-all"
                             style={{
-                              background: (viewMode as string) === "grid" ? "#0a1936" : "transparent",
-                              color: (viewMode as string) === "grid" ? "white" : "#7a7a7a",
+                              background: (viewMode as string) === "grid" ? "#2D3FE7" : "transparent",
+                              color: (viewMode as string) === "grid" ? "white" : "#0A0A0A",
                             }}
                             aria-label="Grid view"
                           >
@@ -1601,7 +1601,7 @@ export default function Courses() {
                             value={sortBy}
                             onChange={(e) => setSortBy(e.target.value as SortOption)}
                             className="appearance-none rounded-md bg-white py-1.5 pl-3 pr-8 text-sm font-semibold focus:outline-none"
-                            style={{ border: "1px solid #d0d0d8", color: "#0a1936" }}
+                            style={{ border: "1px solid #d0d0d8", color: "#0A0A0A" }}
                           >
                             <option value="nearest" disabled={!userLocation}>Nearest first</option>
                             <option value="soonest">Soonest</option>
@@ -1615,7 +1615,7 @@ export default function Courses() {
                       </div>
                     </div>
                     <div className="mb-3">
-                      <h2 style={{ fontSize: 18, fontWeight: 800, color: "#0a1936", letterSpacing: "-0.02em" }}>
+                      <h2 style={{ fontSize: 18, fontWeight: 800, color: "#0A0A0A", letterSpacing: "-0.02em" }}>
                         {format(selectedDate, "EEEE, d MMMM")}
                       </h2>
                       <p style={{ fontSize: 12, color: "#7a7a7a", marginTop: 2 }}>
