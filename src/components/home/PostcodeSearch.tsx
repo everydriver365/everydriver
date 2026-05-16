@@ -21,7 +21,7 @@ export function PostcodeSearch() {
       return;
     }
     setError(null);
-    navigate(`/instructors?postcode=${encodeURIComponent(v)}`);
+    navigate(`/courses?postcode=${encodeURIComponent(v)}`);
   };
 
   const onKey = (e: KeyboardEvent<HTMLInputElement>) => {
