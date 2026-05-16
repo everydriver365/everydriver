@@ -1,38 +1,16 @@
-## Recommendation: revert via History, don't re-code
+# Remove the "no instructors within 25 miles" banner
 
-You asked for the removed homepage sections back **exactly as before**. The cleanest way to get a pixel-perfect restore is to revert through Lovable's built-in History, not to have me re-implement them by hand.
+## What you see now
+On `/courses?postcode=EH12...` there's an amber banner above the results that reads:
+> No instructors found within 25 mi of EH12, Edinburgh. Showing wider results.
 
-### Why
+The EH12 mock instructors (Daniel King, Ava Young, etc.) are already in the database and the search logic already matches them by district. The banner is misleading because those mock instructors *are* showing up — the notice is left over from a real-instructor radius check.
 
-Over the last few days, multiple sections were removed from `src/pages/Index.tsx` and related homepage components across several separate edits — including:
+## Change
+In `src/pages/Courses.tsx`:
 
-- The **"Why Drive365"** grid (removed 2026-05-16 07:13)
-- The **Reviews / Testimonials** block
-- The **Test Swap** banner
-- Two **CTA blocks** ("ready to start learning")
-- The **Stats** strip
-- The three **feature tiles** (Search & Compare, Live Availability, Theory Support)
-- The **Free Retest CTA** (removed 2026-05-13 17:25)
+1. Delete the amber notice block (lines ~1502–1519) that renders when `showRadiusFallbackNotice` is true.
+2. Stop setting `showRadiusFallbackNotice` / `usedFallback` in the search handler (lines ~654, ~668, ~705) and remove the related `useState` (line ~325) so no dead state remains.
+3. Simplify the success toast (line ~707) to always read "Showing courses near {area}" — drop the "no instructors within X mi … wider results" variant.
 
-Each section had its own copy, imagery, spacing, gradients, and (for some) DB-driven content. Re-typing all of that from chat memory would lose details — exact copy, hex colours, asset references, ordering, and the responsive tweaks made in later passes — so it would not match "exactly as before".
-
-### What to do
-
-1. Open **History** (top of the chat) and find the entry **just before 16 May 07:13** — that is the last known state where every section was still on the page.
-2. Click revert on that version. The homepage sections come back as a single atomic restore.
-3. Anything you want to keep from after that point (logo swap, favicon, header restyle to match the footer) can be re-applied with one click from the archived later messages in chat.
-
-```xml
-<presentation-actions>
-  <presentation-open-history>View History</presentation-open-history>
-</presentation-actions>
-```
-
-### If you'd rather I rebuild manually
-
-I can do that, but I'll need you to confirm two things first:
-
-- **Which sections** to bring back (all of the list above, or a subset)
-- That you accept the result will be **a best-effort rebuild**, not byte-identical to the previous version
-
-Tell me which path you want and I'll proceed.
+No other logic changes. Mock instructors continue to render via the existing `is_network_placeholder` path.
