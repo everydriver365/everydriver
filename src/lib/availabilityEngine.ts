@@ -180,16 +180,16 @@ export function buildDayConflicts(
 ): TaggedConflict[] {
   const out: TaggedConflict[] = [];
 
-  for (const l of lessons) {
-    const startMin = toMinutes((l.start_time || "").slice(0, 5));
-    out.push({
-      start: startMin,
-      end: startMin + (l.duration_minutes || 60),
-      kind: "lesson",
-      label: l.label,
-      padOverrideMin: l.pupil_travel_min ?? undefined,
-    });
-  }
+  // ──────────────────────────────────────────────────────────────────────
+  // SOURCE-OF-TRUTH RULE (do NOT remove):
+  // Google Calendar (mirrored to `instructor_calendar_events`) is the ONLY
+  // source of "instructor is busy". `scheduled_lessons` is CRM/billing data
+  // and is intentionally NOT consulted here. Every booking writes a Google
+  // event in the same flow — that event is what blocks the slot.
+  // The `lessons` parameter is kept for backwards compatibility with the
+  // existing call sites but is deliberately ignored.
+  // ──────────────────────────────────────────────────────────────────────
+  void lessons;
 
   const clip = (sIso: string, eIso: string): Slot | null => {
     const sd = new Date(sIso);
