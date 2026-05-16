@@ -5,6 +5,7 @@ import {
   describeReason,
   fromMinutes,
   type RejectReason,
+  type TaggedConflict,
   type TimeOfDay,
 } from "@/lib/availabilityEngine";
 import {
