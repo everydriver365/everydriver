@@ -567,104 +567,95 @@ const TestSwapVisualDemo = () => {
     <div
       style={{
         flex: 1,
-        background: "rgba(255,255,255,0.06)",
-        border: "0.5px solid rgba(255,255,255,0.1)",
+        background: "#FFFFFF",
+        border: "1px solid #E5E7EB",
         borderRadius: 14,
-        padding: 16,
+        padding: 18,
         minWidth: 0,
+        boxShadow: "0 1px 2px rgba(15,32,68,0.04)",
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
         <div
           style={{
-            width: 40,
-            height: 40,
+            width: 44,
+            height: 44,
             borderRadius: "50%",
             background: learner.color,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            fontSize: 13,
-            fontWeight: 600,
+            fontSize: 14,
+            fontWeight: 700,
             color: "#FFF",
             flexShrink: 0,
           }}
         >
           {learner.initials}
         </div>
-        <div style={{ fontSize: 15, fontWeight: 600, color: "#FFF" }}>
+        <div style={{ fontSize: 17, fontWeight: 700, color: "#0F2044" }}>
           {learner.name}
         </div>
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            gap: 8,
-          }}
-        >
-          <span
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        <div>
+          <div
             style={{
               fontSize: 11,
-              fontWeight: 600,
-              letterSpacing: "0.06em",
+              fontWeight: 700,
+              letterSpacing: "0.08em",
               textTransform: "uppercase",
-              color: "rgba(255,255,255,0.4)",
+              color: "#9CA3AF",
+              marginBottom: 4,
             }}
           >
-            Before
-          </span>
-          <span
+            Test was
+          </div>
+          <div
             style={{
-              fontSize: 13,
-              color: "rgba(255,255,255,0.5)",
+              fontSize: 15,
+              color: "#6B7280",
               textDecoration: "line-through",
-              textAlign: "right",
+              fontWeight: 500,
             }}
           >
             {learner.was}
-          </span>
+          </div>
         </div>
         <div
           style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            gap: 8,
-            background: "rgba(29,158,117,0.14)",
-            border: "0.5px solid rgba(29,158,117,0.3)",
+            background: "#E8F7F0",
+            border: "1px solid #BFE5D2",
             borderRadius: 10,
-            padding: "8px 10px",
+            padding: "10px 12px",
           }}
         >
-          <span
+          <div
             style={{
               fontSize: 11,
-              fontWeight: 600,
-              letterSpacing: "0.06em",
+              fontWeight: 700,
+              letterSpacing: "0.08em",
               textTransform: "uppercase",
-              color: "#5DCAA5",
-            }}
-          >
-            After
-          </span>
-          <span
-            style={{
-              fontSize: 13,
-              fontWeight: 600,
-              color: "#FFF",
-              textAlign: "right",
+              color: "#1D9E75",
+              marginBottom: 4,
               display: "inline-flex",
               alignItems: "center",
               gap: 6,
             }}
           >
+            <Check size={13} color="#1D9E75" strokeWidth={3} />
+            New test
+          </div>
+          <div
+            style={{
+              fontSize: 16,
+              fontWeight: 700,
+              color: "#0F2044",
+            }}
+          >
             {learner.gets}
-            <Check size={14} color="#5DCAA5" strokeWidth={2.4} />
-          </span>
+          </div>
         </div>
       </div>
     </div>
@@ -673,21 +664,22 @@ const TestSwapVisualDemo = () => {
   const SwapBadge = () => (
     <div
       aria-hidden
+      className="swap-demo-badge"
       style={{
-        width: 44,
-        height: 44,
+        width: 48,
+        height: 48,
         borderRadius: "50%",
         background: "#1A52A0",
-        border: "0.5px solid rgba(255,255,255,0.2)",
-        boxShadow: "0 4px 16px rgba(0,0,0,0.25)",
+        boxShadow: "0 6px 16px rgba(26,82,160,0.35)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         flexShrink: 0,
         margin: "0 auto",
+        color: "#FFF",
       }}
     >
-      <ArrowLeftRight size={18} color="#FFF" strokeWidth={2} />
+      <ArrowLeftRight size={20} color="#FFF" strokeWidth={2.4} />
     </div>
   );
 
@@ -696,102 +688,109 @@ const TestSwapVisualDemo = () => {
       <C>
         <div
           style={{
-            background: "#0F2044",
+            background: "#FFFFFF",
+            border: "1px solid #E5E7EB",
             borderRadius: 18,
-            padding: "clamp(20px, 4vw, 28px)",
-            position: "relative",
-            overflow: "hidden",
+            padding: "clamp(20px, 4vw, 32px)",
+            boxShadow: "0 4px 24px rgba(15,32,68,0.06)",
           }}
         >
           <div
             style={{
-              position: "absolute",
-              width: 300,
-              height: 300,
-              borderRadius: "50%",
-              background: "#1A52A0",
-              opacity: 0.15,
-              top: -100,
-              right: -80,
-              pointerEvents: "none",
-            }}
-          />
-
-          <div
-            style={{
-              fontSize: 13,
-              fontWeight: 600,
-              color: "rgba(255,255,255,0.5)",
-              letterSpacing: "0.04em",
+              fontSize: 12,
+              fontWeight: 700,
+              color: "#1A52A0",
+              letterSpacing: "0.08em",
               textTransform: "uppercase",
-              marginBottom: 18,
-              position: "relative",
-              zIndex: 1,
+              marginBottom: 6,
             }}
           >
             Example swap
           </div>
+          <h3
+            style={{
+              fontSize: 20,
+              fontWeight: 700,
+              color: "#0F2044",
+              margin: 0,
+              marginBottom: 20,
+              letterSpacing: "-0.01em",
+            }}
+          >
+            Two learners trade test slots
+          </h3>
 
           {/* Learner cards: stack on mobile, row on md+ */}
-          <div
-            className="swap-demo-row"
-            style={{ position: "relative", zIndex: 1 }}
-          >
+          <div className="swap-demo-row">
             <LearnerCard learner={learners[0]} />
             <SwapBadge />
             <LearnerCard learner={learners[1]} />
           </div>
 
-          {/* Steps: 2x2 grid on mobile, single row on md+ */}
+          {/* Steps */}
           <div
-            className="swap-demo-steps"
             style={{
-              position: "relative",
-              zIndex: 1,
-              marginTop: 16,
+              marginTop: 24,
+              paddingTop: 20,
+              borderTop: "1px solid #E5E7EB",
             }}
           >
-            {steps.map((label, i) => (
-              <div
-                key={label}
-                style={{
-                  background: "rgba(255,255,255,0.05)",
-                  border: "0.5px solid rgba(255,255,255,0.08)",
-                  borderRadius: 10,
-                  padding: "10px 12px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 10,
-                }}
-              >
+            <div
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                color: "#6B7280",
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                marginBottom: 12,
+              }}
+            >
+              How it works
+            </div>
+            <div className="swap-demo-steps">
+              {steps.map((label, i) => (
                 <div
+                  key={label}
                   style={{
-                    width: 22,
-                    height: 22,
-                    borderRadius: "50%",
-                    background: "rgba(255,255,255,0.08)",
-                    color: "rgba(255,255,255,0.6)",
+                    background: "#F8FAFC",
+                    border: "1px solid #E5E7EB",
+                    borderRadius: 10,
+                    padding: "12px 14px",
                     display: "flex",
                     alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: 11,
-                    fontWeight: 600,
-                    flexShrink: 0,
+                    gap: 12,
                   }}
                 >
-                  {i + 1}
+                  <div
+                    style={{
+                      width: 26,
+                      height: 26,
+                      borderRadius: "50%",
+                      background: "#1A52A0",
+                      color: "#FFF",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: 13,
+                      fontWeight: 700,
+                      flexShrink: 0,
+                    }}
+                  >
+                    {i + 1}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 14,
+                      fontWeight: 500,
+                      color: "#0F2044",
+                      lineHeight: 1.3,
+                    }}
+                  >
+                    {label}
+                  </div>
                 </div>
-                <div
-                  style={{
-                    fontSize: 12,
-                    color: "rgba(255,255,255,0.75)",
-                    lineHeight: 1.3,
-                  }}
-                >
-                  {label}
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
 
           <a
@@ -799,30 +798,42 @@ const TestSwapVisualDemo = () => {
             style={{
               display: "flex",
               alignItems: "center",
-              gap: 12,
-              background: "rgba(255,255,255,0.05)",
-              border: "0.5px solid rgba(255,255,255,0.08)",
+              gap: 14,
+              background: "#F0F7FF",
+              border: "1px solid #C7DDF5",
               borderRadius: 12,
-              padding: "12px 14px",
-              marginTop: 14,
-              minHeight: 44,
-              position: "relative",
-              zIndex: 1,
+              padding: "14px 16px",
+              marginTop: 16,
+              minHeight: 56,
               textDecoration: "none",
             }}
           >
-            <Phone size={16} color="rgba(255,255,255,0.5)" strokeWidth={1.8} />
+            <div
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: "50%",
+                background: "#1A52A0",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
+            >
+              <Phone size={16} color="#FFF" strokeWidth={2.2} />
+            </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div
                 style={{
-                  fontSize: 11,
-                  color: "rgba(255,255,255,0.4)",
+                  fontSize: 12,
+                  color: "#6B7280",
                   marginBottom: 2,
+                  fontWeight: 500,
                 }}
               >
-                DVSA helpline · Booking refs &amp; payment stay unchanged
+                Call DVSA together · Booking refs &amp; payment stay unchanged
               </div>
-              <div style={{ fontSize: 16, fontWeight: 600, color: "#FFF" }}>
+              <div style={{ fontSize: 17, fontWeight: 700, color: "#0F2044" }}>
                 0300 200 1122 &nbsp;·&nbsp; Option 1
               </div>
             </div>
