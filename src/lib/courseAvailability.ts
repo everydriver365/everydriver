@@ -25,6 +25,7 @@ import {
   type Slot,
   type RejectedSlot,
 } from "./availabilityEngine";
+import { estimateDriveMinutes } from "./travelTime";
 
 export { TRAVEL_FALLBACK_MIN };
 
