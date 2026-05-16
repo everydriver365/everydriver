@@ -27,12 +27,14 @@ const FILTER_OPTIONS: { id: CourseFilterId; label: string; icon?: typeof Zap }[]
 ];
 
 const tokens = {
-  navy: "#0F2044",
-  blue: "#1A52A0",
-  red: "#CC2229",
-  mid: "#5F6B7A",
+  navy: "#0A0A0A",
+  blue: "#2D3FE7",
+  blueHover: "#1F2DC9",
+  red: "#2D3FE7",
+  mid: "#0A0A0A",
   muted: "#9CA3AF",
-  border: "#DDE3ED",
+  border: "#EAF0FF",
+  pillBorder: "#E5E7EB",
 };
 
 export function CourseSearchHeader({
@@ -82,8 +84,8 @@ export function CourseSearchHeader({
 
         {/* Title */}
         <h1
-          className="font-heading mb-5 text-[28px] font-bold leading-tight tracking-[-0.5px]"
-          style={{ color: tokens.navy }}
+          className="font-heading mb-5 text-[32px] font-bold leading-tight tracking-[-0.5px]"
+          style={{ color: tokens.navy, marginTop: 8 }}
         >
           {title}
         </h1>
@@ -209,15 +211,15 @@ export function CourseSearchHeader({
             <button
               type="submit"
               disabled={isSearching}
-              className="flex flex-shrink-0 items-center justify-center gap-2 px-6 py-3 text-white transition-opacity hover:opacity-90 disabled:opacity-60"
-              style={{ backgroundColor: tokens.red }}
+              className="flex flex-shrink-0 items-center justify-center gap-2 text-white transition-colors hover:!bg-[#1F2DC9] disabled:opacity-60"
+              style={{ backgroundColor: tokens.red, padding: "14px 28px", borderRadius: 2 }}
             >
               {isSearching ? (
                 <Loader2 size={16} strokeWidth={2.2} className="animate-spin" />
               ) : (
                 <Search size={16} strokeWidth={2.2} />
               )}
-              <span className="font-heading text-sm font-bold">Search</span>
+              <span className="font-heading text-sm font-medium">Search</span>
             </button>
           </form>
 
@@ -238,11 +240,13 @@ export function CourseSearchHeader({
                     key={opt.id}
                     type="button"
                     onClick={() => setActiveFilter?.(opt.id)}
-                    className="font-heading inline-flex items-center gap-[5px] rounded-full border px-[13px] py-[5px] text-[13px] font-medium transition-colors"
+                    className="font-heading inline-flex items-center gap-[5px] rounded-full border text-[13px] font-medium transition-colors hover:!border-[#2D3FE7] hover:!text-[#2D3FE7] data-[active=true]:hover:!text-white"
+                    data-active={isActive}
                     style={{
-                      borderColor: isActive ? tokens.blue : tokens.border,
+                      padding: "8px 16px",
+                      borderColor: isActive ? tokens.blue : tokens.pillBorder,
                       backgroundColor: isActive ? tokens.blue : "#FFF",
-                      color: isActive ? "#FFF" : tokens.mid,
+                      color: isActive ? "#FFF" : tokens.navy,
                     }}
                   >
                     {Icon && <Icon size={13} strokeWidth={2} />}

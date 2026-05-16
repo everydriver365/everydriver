@@ -1,40 +1,64 @@
-# Why the EH12 mock instructors aren't showing — and the fix
+## Goal
 
-## Root cause
+Bring `/courses` (Drive 365 search results page) into colour alignment with the new white home page. Desktop only. Course cards and overall layout stay exactly as-is.
 
-The Courses page can't see most placeholders because **both of its bootstrap queries are silently being clipped at the Supabase 1000-row default cap**:
+The header is already the reusable `Drive365Header` (white on desktop) — no work needed there beyond visual confirmation.
 
-| Query in `src/pages/Courses.tsx` `fetchData` | Rows actually in the DB |
-|---|---|
-| `public_instructors WHERE is_active` | **5,800** |
-| `instructor_courses WHERE is_active` | **26,102** |
+## Files to edit
 
-PostgREST returns only the first 1,000 rows of each. Whatever Daniel King / Ava Young (EH12) and the vast majority of seeded mock instructors fall outside that window. So:
+1. `src/components/courses/CourseSearchHeader.tsx` — heading area, search bar, search button, filter pills
+2. `src/pages/Courses.tsx` — "Showing results for" banner, sort/view toggle row
+3. `src/components/courses/SidebarCalendar.tsx` — available/selected day colours and legend
 
-1. `loadedInstructors` is missing the EH12 placeholders → they never reach `instructorsInArea`.
-2. Even for placeholders that *are* loaded, `instructorIdsWithCourses` is built from a clipped 1,000-row course list, so most placeholders look like they have no active courses and get dropped from `relevantInstructors`.
+(Instructors Nearby panel already uses neutral white/card tokens — will spot-check and only adjust if it visibly clashes. Orange status dot stays.)
 
-Result: the page falls through to the "No courses found within 25 miles of City of Edinburgh" empty state, even though the data exists.
+## Token mapping (applied via inline styles to match existing pattern in these files)
 
-The empty state copy is also misleading — when the user searches a district where only placeholders live, the message reads as if no instructors were in radius, not that nothing got returned.
+```text
+brand blue        #2D3FE7
+brand blue hover  #1F2DC9
+pale blue tint    #EAF0FF
+pale blue hover   #D6DFFF
+ink               #0A0A0A
+muted grey        #9CA3AF
+secondary text    #4B5563
+hairline border   #E5E7EB / #EAF0FF
+```
 
-## Fix
+## Changes
 
-In `src/pages/Courses.tsx` `fetchData` (around lines 755–766):
+### 1. `CourseSearchHeader.tsx`
+- Update `tokens` object: `navy → #0A0A0A`, `blue → #2D3FE7`, `red → #2D3FE7`, `muted → #9CA3AF`, `border → #EAF0FF`. Leave `mid` for secondary text but replace usages on pills with `#0A0A0A`.
+- Eyebrow "Driving courses": colour `#9CA3AF`, keep small accent bar but recolour to `#2D3FE7`.
+- Title: colour `#0A0A0A`, size `32px`, weight `700`, `marginTop: 8px` from eyebrow.
+- Search button: background `#2D3FE7`, hover `#1F2DC9`, radius `2px`, padding `14px 28px`.
+- Filter pills:
+  - Active: bg `#2D3FE7`, text white.
+  - Inactive: bg white, border `#E5E7EB`, text `#0A0A0A`; hover border + text `#2D3FE7`.
+  - Padding `8px 16px`, radius `20px`.
 
-1. **Scope `public_instructors` to the relevant set instead of pulling all 5,800 rows.** Two parallel queries:
-   - Real instructors with a home_postcode prefix matching the user's searched outward code (when known), plus any non-placeholders already in radius via cached coords.
-   - Placeholder instructors whose `placeholder_district` equals the searched district (when known).
-   When no postcode is set yet, load only real instructors with a published rate, paginating to lift the 1000 cap.
-2. **Scope `instructor_courses` to the loaded instructor IDs**, `.in("instructor_id", loadedIds)`. This both fixes the cap and slashes payload size.
-3. **Add an explicit `.range(0, 4999)`** on both queries as a safety belt so a future spike past 1k rows can't silently truncate again.
-4. **Tighten the empty-state copy** in `src/pages/Courses.tsx` ~line 1848 so a district with only placeholder enquiries reads "No instructors in EH12 yet — register your interest" rather than the radius-based message.
+### 2. `Courses.tsx`
+- "Showing results for" banner (≈ line 1484): change container to `bg-[#EAF0FF] border border-[#2D3FE7]/20`, drop emerald classes. Icon circle bg `#2D3FE7`. Label text `#4B5563`. Heading `#0A0A0A`. Clear button: white bg, `1px solid #E5E7EB`, text `#0A0A0A`, hover border `#2D3FE7`.
+- Sort/view toggle group (lines ~1529–1615): replace `#0a1936` active backgrounds with `#2D3FE7`, inactive text `#0A0A0A`, container border `#E5E7EB`. Applies to All/Manual/Automatic, List/Grid, and any other toggle using `#0a1936`.
+- Date heading (`format(selectedDate…)`): colour `#0A0A0A`, size `18px`, weight `700`. Subtitle "X courses available": `#4B5563`, `13px`.
+- Grep for any remaining `#0a1936`, `bg-emerald`, `text-emerald` within the desktop (non-mobile) branches of this page and swap to the new palette. Skip course-card components entirely.
+
+### 3. `SidebarCalendar.tsx`
+- Available days: replace `bg-emerald-500/20 text-emerald-700 hover:bg-emerald-500/30` with inline `background: #EAF0FF`, `color: #0A0A0A`, `hover: #D6DFFF`, radius `4px`.
+- Selected day: replace `bg-primary text-primary-foreground` with `background: #2D3FE7`, `color: #fff`.
+- Weekday header text colour `#9CA3AF`.
+- Legend swatches: "Available" → `#EAF0FF`, "Selected" → `#2D3FE7`, label text `#4B5563`.
+
+### 4. Instructors Nearby panel
+- Verify it already renders on a white card with neutral text. If a navy heading or accent is present, swap heading to `#0A0A0A` and any accent to `#2D3FE7`. Status dot stays `#F59E0B`.
+
+## Out of scope (explicitly untouched)
+
+- Mobile breakpoints (anything inside `isMobile` branches / `lg:` overrides for small screens).
+- Course card components (`CourseRowCard`, `CourseGrid`, `MobileCourseCard`, `CourseTableList`) — ribbons, tags, pricing all stay.
+- Home page, instructor profile, booking flow, other routes.
+- `Drive365Header` (already done in a previous turn).
 
 ## Verification
 
-After the change, hitting `/courses?postcode=EH120AA` should:
-- Load Daniel King and Ava Young (the two EH12 placeholders).
-- Render their course cards (10/20/28/30/40-hour tiles) without the empty state.
-- Keep the existing district fallback / availability behaviour intact for other postcodes.
-
-I'll spot-check by reloading the route in the preview and confirming the cards appear.
+- After edits, load `/courses?postcode=SO302TD` in the preview at desktop width and confirm: white header, blue search button, blue active pills, pale-blue results banner, blue selected calendar day, pale-blue available days, no mint green or red remaining in the chrome.
