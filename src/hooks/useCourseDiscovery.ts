@@ -350,15 +350,29 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
     setIsSearching(true);
     try {
       const cleanPostcode = postcode.replace(/\s+/g, "").toUpperCase();
-      const result = await geocodePostcodes([cleanPostcode]);
-      const location = result.geoCache[cleanPostcode];
-      const areaName = result.areaCache[cleanPostcode];
+      const district = extractPostcodeDistrict(cleanPostcode);
 
-      if (location) {
-        setUserLocation(location);
+      let result = await geocodePostcodes([cleanPostcode]);
+      let location = result.geoCache[cleanPostcode];
+      let areaName = result.areaCache[cleanPostcode];
+
+      // Fallback: if the full postcode didn't geocode, try the district
+      // (outcode) so radius search still works for typo'd inward codes and
+      // placeholder instructors for that district can still be matched.
+      if (!location && district && district !== cleanPostcode) {
+        const districtResult = await geocodePostcodes([district]);
+        location = districtResult.geoCache[district] || null;
+        areaName = areaName || districtResult.areaCache[district] || null;
+      }
+
+      // Valid UK outcode → always proceed, even with no coordinates, so
+      // placeholder (enquiry-only) instructors for that district appear.
+      if (district) {
+        if (location) setUserLocation(location);
+        else setUserLocation(null);
         setSearchedPostcode(cleanPostcode);
         setSearchedAreaName(areaName || null);
-        setSortBy("nearest");
+        setSortBy(location ? "nearest" : "soonest");
         
         // Find instructors in the searched area using the full geoCache (includes previously geocoded instructor postcodes)
         const radiusMiles = parseInt(radius);
