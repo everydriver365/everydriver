@@ -149,26 +149,28 @@ export function AdminLayout({
   ];
 
   return (
-    <PortalShell
-      sidebarGroups={sidebarGroups}
-      activeSection={activeSection}
-      sectionTitle={sectionTitle}
-      groupTitle={groupTitle}
-      onSectionChange={onSectionChange}
-      onLogout={onLogout}
-      tabCounts={tabCounts}
-      portalLabel="Admin"
-      logoSrc={dsmLogo}
-      logoAlt="DSM"
-      quickActions={quickActions}
-      headerExtra={
-        <>
-          {!isMobile && <HeaderSearchBox variant="admin" />}
-          <AdminNotificationBell onNavigate={onSectionChange} />
-        </>
-      }
-    >
-      {children}
-    </PortalShell>
+    <div className="admin-portal">
+      <PortalShell
+        sidebarGroups={sidebarGroups}
+        activeSection={activeSection}
+        sectionTitle={sectionTitle}
+        groupTitle={groupTitle}
+        onSectionChange={onSectionChange}
+        onLogout={onLogout}
+        tabCounts={tabCounts}
+        portalLabel="Admin"
+        logoSrc={dsmLogo}
+        logoAlt="DSM"
+        quickActions={quickActions}
+        headerExtra={
+          <>
+            {!isMobile && <HeaderSearchBox variant="admin" />}
+            <AdminNotificationBell onNavigate={onSectionChange} />
+          </>
+        }
+      >
+        {children}
+      </PortalShell>
+    </div>
   );
 }

@@ -209,7 +209,7 @@ export function SchoolLayout({
   ];
 
   return (
-    <>
+    <div className="school-portal">
       <PortalShell
         sidebarGroups={filteredGroups}
         activeSection={activeSection}
@@ -236,6 +236,6 @@ export function SchoolLayout({
         onClose={() => setPaymentOpen(false)}
         instructorIds={instructorIds}
       />
-    </>
+    </div>
   );
 }

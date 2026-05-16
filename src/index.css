@@ -1505,3 +1505,165 @@ body:not(:has(.instructor-portal)):not(:has(.pupil-portal)):not(:has(.school-por
   background-color: #F2F4F8 !important;
   background-image: none !important;
 }
+
+/* =====================================================================
+   2026 Desktop Portal Theme — Indigo + soft grey
+   Applies to instructor, admin and school portals on md+ screens only.
+   Mobile (< 768px) keeps the existing DSM tokens untouched per
+   mem://constraints/mobile-update-policy.
+   ===================================================================== */
+@media (min-width: 768px) {
+  .instructor-portal,
+  .admin-portal,
+  .school-portal {
+    /* ---- Legacy DSM tokens (HSL channel form for hsl(var(--x))) ---- */
+    --dsm-bg: 220 20% 97%;            /* #F7F8FA — sidebar / panel rail */
+    --dsm-page-bg: 0 0% 100%;          /* #FFFFFF — main canvas */
+    --background: 0 0% 100%;           /* bg-background pages */
+    --dsm-card: 220 14% 96%;           /* #F3F4F6 — tile fill */
+    --dsm-text: 0 0% 4%;               /* #0A0A0A */
+    --dsm-text-secondary: 220 9% 46%;  /* #6B7280 */
+    --dsm-accent-blue: 233 80% 54%;    /* #2D3FE7 */
+    --dsm-accent-red: 0 84% 60%;       /* #EF4444 */
+    --dsm-border: 220 13% 91%;         /* #E5E7EB */
+    --dsm-tile-icon-bg: 220 14% 96%;
+
+    /* Soft pastel icon washes */
+    --dsm-tint-blue-bg: 233 100% 96%;  /* #EEF0FF lavender */
+    --dsm-tint-blue-fg: 233 80% 54%;   /* #2D3FE7 */
+    --dsm-tint-orange-bg: 24 100% 95%; /* #FFF1E6 peach */
+    --dsm-tint-orange-fg: 24 95% 53%;
+    --dsm-tint-green-bg: 172 50% 93%;  /* #E6F7F5 mint */
+    --dsm-tint-green-fg: 172 84% 39%;  /* #00C8B8 teal */
+    --dsm-tint-red-bg: 0 100% 96%;
+    --dsm-tint-red-fg: 0 84% 60%;
+    --dsm-tint-purple-bg: 233 100% 96%;
+    --dsm-tint-purple-fg: 245 60% 55%;
+
+    /* ---- Unified --portal-* tokens (raw hex form) ---- */
+    --portal-surface: #FFFFFF;
+    --portal-surface-soft: #F7F8FA;
+    --portal-hairline: #E5E7EB;
+    --portal-hairline-strong: #D1D5DB;
+    --portal-text: #0A0A0A;
+    --portal-text-secondary: #6B7280;
+    --portal-text-tertiary: #9CA3AF;
+
+    --portal-accent: #2D3FE7;
+    --portal-accent-soft: #EEF0FF;
+    --portal-accent-strong: #1F2DC9;
+    --portal-accent-teal: #00C8B8;
+    --portal-accent-teal-soft: #E6F7F5;
+
+    --portal-danger: #EF4444;
+    --portal-danger-soft: #FEE2E2;
+    --portal-success: #10B981;
+    --portal-success-soft: #D1FAE5;
+    --portal-warning: #F59E0B;
+    --portal-warning-soft: #FEF3C7;
+
+    /* Radii — 10–14px range per spec */
+    --portal-radius-card: 12px;
+    --portal-radius-icon: 12px;
+    --portal-radius-button: 10px;
+    --portal-radius-control: 10px;
+    --portal-radius-input: 10px;
+    --portal-radius-sheet: 14px;
+    --portal-radius-nav: 14px;
+    --portal-radius-pill: 999px;
+    --portal-radius-sm: 10px;
+    --portal-radius-md: 12px;
+    --portal-radius-lg: 14px;
+    --portal-radius-xl: 14px;
+
+    --portal-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    --portal-shadow-pressed: 0 0 0 rgba(0, 0, 0, 0);
+
+    /* Promo banner gradient */
+    --portal-promo-gradient: linear-gradient(135deg, #EAF0FF 0%, #F5F8FF 100%);
+  }
+
+  /* Force light theme on desktop — disable dsm-dark toggle output */
+  .instructor-portal.dsm-dark,
+  .dsm-instructor.dsm-dark {
+    --dsm-bg: 220 20% 97%;
+    --dsm-page-bg: 0 0% 100%;
+    --background: 0 0% 100%;
+    --dsm-card: 220 14% 96%;
+    --dsm-text: 0 0% 4%;
+    --dsm-text-secondary: 220 9% 46%;
+    --dsm-border: 220 13% 91%;
+    --portal-surface: #FFFFFF;
+    --portal-surface-soft: #F7F8FA;
+    --portal-text: #0A0A0A;
+    --portal-text-secondary: #6B7280;
+    --portal-text-tertiary: #9CA3AF;
+    --portal-hairline: #E5E7EB;
+    --portal-accent-soft: #EEF0FF;
+    --portal-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  }
+
+  /* Sidebar (PortalShell uses shadcn Sidebar tokens) */
+  .instructor-portal [data-sidebar="sidebar"],
+  .admin-portal [data-sidebar="sidebar"],
+  .school-portal [data-sidebar="sidebar"] {
+    background: #F7F8FA;
+    border-right: 1px solid #E5E7EB;
+  }
+  .instructor-portal [data-sidebar="menu-button"][data-active="true"],
+  .admin-portal [data-sidebar="menu-button"][data-active="true"],
+  .school-portal [data-sidebar="menu-button"][data-active="true"] {
+    background: #FFFFFF;
+    color: #0A0A0A;
+    box-shadow: inset 3px 0 0 #00C8B8;
+    border-radius: 10px;
+  }
+  .instructor-portal [data-sidebar="group-label"],
+  .admin-portal [data-sidebar="group-label"],
+  .school-portal [data-sidebar="group-label"] {
+    color: #9CA3AF;
+    font-size: 12px;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+  }
+
+  /* Primary CTA buttons inside portals */
+  .instructor-portal .btn-primary,
+  .admin-portal .btn-primary,
+  .school-portal .btn-primary,
+  .instructor-portal button[data-variant="primary"],
+  .admin-portal button[data-variant="primary"],
+  .school-portal button[data-variant="primary"] {
+    background: #2D3FE7;
+    color: #FFFFFF;
+    border-radius: 10px;
+    padding: 12px 24px;
+    box-shadow: 0 1px 2px rgba(45, 63, 231, 0.18);
+  }
+  .instructor-portal .btn-primary:hover,
+  .admin-portal .btn-primary:hover,
+  .school-portal .btn-primary:hover,
+  .instructor-portal button[data-variant="primary"]:hover,
+  .admin-portal button[data-variant="primary"]:hover,
+  .school-portal button[data-variant="primary"]:hover {
+    background: #1F2DC9;
+  }
+
+  /* Soft tile / card defaults */
+  .instructor-portal .portal-card,
+  .admin-portal .portal-card,
+  .school-portal .portal-card {
+    background: #FFFFFF;
+    border-radius: 12px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    border: 1px solid #E5E7EB;
+  }
+  .instructor-portal .portal-card--soft,
+  .admin-portal .portal-card--soft,
+  .school-portal .portal-card--soft {
+    background: #F3F4F6;
+    border: none;
+    box-shadow: none;
+  }
+}
+
