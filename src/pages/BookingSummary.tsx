@@ -297,7 +297,7 @@ export default function BookingSummary() {
           allowed_lesson_lengths, buffer_minutes, cpd_certified, adi_code_of_practice,
           instructor_grade, welcome_video_url,
           deposit_enabled, deposit_amount, deposit_deadline_days,
-          cancellation_policy_text, booking_mode, is_active,
+          cancellation_policy_text, booking_mode, is_active, is_network_placeholder,
           cash_payments_enabled, klarna_enabled, clearpay_enabled,
           instant_bank_pay_enabled, school_skim_amount,
           weekend_surcharge_amount, bank_holiday_surcharge_amount,
@@ -546,8 +546,13 @@ export default function BookingSummary() {
     hasRehydratedRef.current = true;
   }, [instructorId, searchParams, setSearchParams, loadDraft]);
   
-  // Get booking mode - default to pupil_choice
-  const bookingMode = courseDetails?.instructor?.booking_mode || 'pupil_choice';
+  // Get booking mode - default to pupil_choice.
+  // Network placeholder (mock) instructors are always enquiry-only; real instructors
+  // (e.g. Martin B, Sarah Mitchell) keep their own booking_mode and remain bookable.
+  const isNetworkPlaceholder = !!(courseDetails?.instructor as any)?.is_network_placeholder;
+  const bookingMode = isNetworkPlaceholder
+    ? 'enquiry_only'
+    : (courseDetails?.instructor?.booking_mode || 'pupil_choice');
 
   // For auto_assign and instructor_assigns modes, we don't require slot selection
   const requiresSlotSelection = bookingMode === 'pupil_choice';
