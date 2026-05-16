@@ -51,6 +51,35 @@ serve(async (req) => {
       area_name: item.result?.admin_district || item.result?.admin_ward || null,
     }));
 
+    // Fallback: for any postcode that failed to resolve, try the outcode
+    // (district) centroid via postcodes.io /outcodes/{outcode}. This means a
+    // typo'd inward code (e.g. "WD17 3XX") still returns the district
+    // coordinates so the radius/placeholder search can proceed.
+    const outcodeRegex = /^([A-Z]{1,2}[0-9][A-Z0-9]?)/;
+    await Promise.all(
+      results.map(async (r) => {
+        if (r.latitude && r.longitude) return;
+        const m = r.postcode.match(outcodeRegex);
+        if (!m) return;
+        const outcode = m[1];
+        try {
+          const res = await fetch(`https://api.postcodes.io/outcodes/${outcode}`);
+          if (!res.ok) return;
+          const body = await res.json();
+          if (body?.result?.latitude && body?.result?.longitude) {
+            r.latitude = body.result.latitude;
+            r.longitude = body.result.longitude;
+            r.area_name = r.area_name
+              || (body.result.admin_district && body.result.admin_district[0])
+              || (body.result.admin_ward && body.result.admin_ward[0])
+              || null;
+          }
+        } catch (_e) {
+          // ignore, leave nulls
+        }
+      })
+    );
+
     return new Response(
       JSON.stringify({ results }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
