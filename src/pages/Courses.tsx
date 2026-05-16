@@ -1601,8 +1601,10 @@ export default function Courses() {
                             id="course-sort"
                             value={sortBy}
                             onChange={(e) => setSortBy(e.target.value as SortOption)}
-                            className="appearance-none rounded-md bg-white py-1.5 pl-3 pr-8 text-sm font-semibold focus:outline-none"
-                            style={{ border: "1px solid #d0d0d8", color: "#0A0A0A" }}
+                            onMouseEnter={(e) => (e.currentTarget.style.borderColor = "#2D3FE7")}
+                            onMouseLeave={(e) => (e.currentTarget.style.borderColor = "#E5E7EB")}
+                            className="appearance-none bg-white text-sm font-medium focus:outline-none transition-colors"
+                            style={{ border: "1px solid #E5E7EB", color: "#0A0A0A", padding: "10px 32px 10px 16px", borderRadius: 4 }}
                           >
                             <option value="nearest" disabled={!userLocation}>Nearest first</option>
                             <option value="soonest">Soonest</option>
@@ -1610,7 +1612,7 @@ export default function Courses() {
                           </select>
                           <ChevronDown
                             className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2"
-                            style={{ width: 14, height: 14, color: "#7a7a7a" }}
+                            style={{ width: 14, height: 14, color: "#9CA3AF" }}
                           />
                         </div>
                       </div>
