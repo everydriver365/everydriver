@@ -4,6 +4,7 @@ import { ChevronDown, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV_LINKS = [
+  { href: "/drive365", label: "Home" },
   { href: "/courses", label: "Courses", hasDropdown: true },
   { href: "/theory", label: "Theory practice" },
   { href: "/test-swap", label: "Test Swap" },
