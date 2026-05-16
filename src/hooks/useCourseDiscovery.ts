@@ -582,28 +582,50 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
     });
   }, [coursesForSelectedDate, userLocation, geoCache]);
 
-  const filteredCourses = coursesWithDistance
-    .filter((course) => {
-      if (transmission !== "all") {
-        const carType = course.instructor.car_type.toLowerCase();
-        if (transmission === "manual" && !carType.includes("manual") && carType !== "both") {
-          return false;
-        }
-        if (transmission === "automatic" && !carType.includes("automatic") && carType !== "both") {
-          return false;
-        }
-      }
+  const filteredCourses = useMemo(() => {
+    const searchedDistrict = extractPostcodeDistrict(searchedPostcode);
 
-      if (userLocation && course.distance !== undefined) {
-        if (course.distance > parseInt(radius)) {
-          return false;
-        }
-      }
-
+    const passesTransmission = (course: CourseWithInstructor) => {
+      if (transmission === "all") return true;
+      const carType = course.instructor.car_type.toLowerCase();
+      if (transmission === "manual" && !carType.includes("manual") && carType !== "both") return false;
+      if (transmission === "automatic" && !carType.includes("automatic") && carType !== "both") return false;
       return true;
-    })
-    .sort((a, b) => {
-      // Premium instructors always come first
+    };
+
+    // Split real vs placeholder so we can run different rules on each.
+    const realCourses: CourseWithInstructor[] = [];
+    const placeholderCourses: CourseWithInstructor[] = [];
+    for (const course of coursesWithDistance) {
+      if (!passesTransmission(course)) continue;
+      if (course.instructor.is_network_placeholder) {
+        placeholderCourses.push(course);
+      } else {
+        // Real instructors honour the radius filter as before.
+        if (userLocation && course.distance !== undefined && course.distance > parseInt(radius)) continue;
+        realCourses.push(course);
+      }
+    }
+
+    // Placeholders only ever appear when:
+    //   1. the user has searched a postcode,
+    //   2. their district matches the searched postcode's district, AND
+    //   3. there are zero real courses in the result set (fallback only).
+    const visiblePlaceholders =
+      userLocation && searchedDistrict && realCourses.length === 0
+        ? placeholderCourses.filter((c) => c.instructor.placeholder_district === searchedDistrict)
+        : [];
+
+    const combined = [...realCourses, ...visiblePlaceholders];
+
+    return combined.sort((a, b) => {
+      const aPlace = !!a.instructor.is_network_placeholder;
+      const bPlace = !!b.instructor.is_network_placeholder;
+      // Placeholders always sort to the bottom regardless of other rules.
+      if (aPlace && !bPlace) return 1;
+      if (!aPlace && bPlace) return -1;
+
+      // Premium instructors always come first amongst real instructors.
       if (a.isPremium && !b.isPremium) return -1;
       if (!a.isPremium && b.isPremium) return 1;
       if (a.isPremium && b.isPremium) {
@@ -614,8 +636,6 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
         case "soonest":
           return a.bookableDate.getTime() - b.bookableDate.getTime();
         case "price-low": {
-          // No hard-coded fallback: instructors without a configured hourly_rate
-          // are sorted to the end so we never invent a price.
           const rateA = a.instructor.hourly_rate;
           const rateB = b.instructor.hourly_rate;
           if (rateA == null && rateB == null) return 0;
@@ -631,6 +651,7 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
           return 0;
       }
     });
+  }, [coursesWithDistance, transmission, radius, userLocation, searchedPostcode, sortBy]);
 
   return {
     postcode,
