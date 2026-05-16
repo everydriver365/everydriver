@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { WaitlistDialog } from "./WaitlistDialog";
 import { useGoogleCalendarRefresh } from "@/hooks/useGoogleCalendarRefresh";
 import { TRAVEL_FALLBACK_MIN } from "@/lib/courseAvailability";
+import { isAllDayLikeEvent } from "@/lib/availabilityEngine";
 
 interface WorkingHour {
   day_of_week: number;
@@ -345,20 +346,14 @@ export function LessonScheduler({
         end_time: b.end_datetime,
       }));
 
-      // Filter out all-day / multi-day Google Calendar events. These are
-      // informational items (e.g. "Summer term", "Lotty : No College") that
+      // Filter out all-day / multi-day Google Calendar events via the unified
+      // engine rule (src/lib/availabilityEngine.ts -> isAllDayLikeEvent). These
+      // are informational items (e.g. "Summer term", "Lotty : No College") that
       // would otherwise wipe out every bookable slot for weeks at a time.
-      // Matches the rule in src/lib/courseAvailability.ts -> isAllDayLikeEvent.
       // Instructors block real days off via manual blocks, which remain blocking.
       const timedCalendarEvents = (calendarEvents || []).filter((e: any) => {
         try {
-          const s = new Date(e.start_time);
-          const ed = new Date(e.end_time);
-          const durMs = ed.getTime() - s.getTime();
-          if (durMs >= 23 * 60 * 60 * 1000) return false;
-          const startsAtMidnight = s.getHours() === 0 && s.getMinutes() === 0;
-          if (startsAtMidnight && durMs >= 12 * 60 * 60 * 1000) return false;
-          return true;
+          return !isAllDayLikeEvent(e.start_time, e.end_time);
         } catch {
           return false;
         }
