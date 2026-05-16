@@ -23,18 +23,18 @@ interface CourseTableListProps {
   courses: TableCourse[];
 }
 
-// Category bar colour by course length
+// Category bar colour by course length — harmonised palette
 const HOURS_COLOR: Record<number, string> = {
-  10: "#caee1f",
-  20: "#1d4ed8",
-  28: "#d92e3a", // Test in a Week
-  30: "#d92e3a",
-  40: "#6b46c1",
-  50: "#0a1936",
+  10: "#5DCAA5", // teal — starter
+  20: "#2D3FE7", // brand blue
+  28: "#F59E0B", // amber — Test in a Week
+  30: "#F59E0B", // amber — extended
+  40: "#7C3AED", // purple — premium
+  50: "#7C3AED",
 };
 
 function colorForHours(h: number) {
-  return HOURS_COLOR[h] || "#0a1936";
+  return HOURS_COLOR[h] || "#2D3FE7";
 }
 
 function transmissionLabel(carType?: string | null) {
@@ -62,7 +62,7 @@ export function CourseTableList({ courses }: CourseTableListProps) {
   return (
     <div
       className="overflow-hidden rounded-[10px] border bg-white"
-      style={{ borderColor: "#e8e8ee" }}
+      style={{ borderColor: "#EAF0FF" }}
     >
       {/* Column headers — desktop only */}
       <div
@@ -70,19 +70,19 @@ export function CourseTableList({ courses }: CourseTableListProps) {
         style={{
           gridTemplateColumns: "90px 1fr 130px 220px 100px",
           gap: "16px",
-          padding: "10px 18px",
-          background: "#fafaf7",
-          borderBottom: "1px solid #e8e8ee",
+          padding: "12px 18px",
+          background: "#FAFBFC",
+          borderBottom: "1px solid #F3F4F6",
         }}
       >
         {["Course", "Details", "Instructor", "Pay options", "Price"].map((h) => (
           <div
             key={h}
             style={{
-              fontSize: 10,
-              fontWeight: 700,
-              letterSpacing: "0.12em",
-              color: "#7a7a7a",
+              fontSize: 11,
+              fontWeight: 500,
+              letterSpacing: "0.08em",
+              color: "#9CA3AF",
               textTransform: "uppercase",
             }}
           >
@@ -113,9 +113,9 @@ export function CourseTableList({ courses }: CourseTableListProps) {
               }}
               className="cursor-pointer transition-colors"
               style={{
-                borderBottom: last ? "none" : "1px solid #f0f0f3",
+                borderBottom: last ? "none" : "1px solid #F3F4F6",
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = "#fafaf7")}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "#F9FAFB")}
               onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
             >
               {/* Desktop row */}
@@ -141,24 +141,28 @@ export function CourseTableList({ courses }: CourseTableListProps) {
                   <div>
                     <div
                       style={{
-                        fontSize: 18,
-                        fontWeight: 800,
-                        color: "#0a1936",
+                        fontSize: 22,
+                        fontWeight: 700,
+                        color: "#0A0A0A",
                         letterSpacing: "-0.02em",
                         lineHeight: 1,
                       }}
                     >
                       {c.hours}
-                      <span style={{ fontSize: 10, color: "#7a7a7a", marginLeft: 2, fontWeight: 700 }}>hr</span>
+                      <span style={{ fontSize: 13, color: "#4B5563", marginLeft: 2, fontWeight: 600 }}>hr</span>
                     </div>
                     {c.isPopular && (
                       <div
                         style={{
-                          fontSize: 9,
+                          display: "inline-block",
+                          fontSize: 10,
                           fontWeight: 700,
-                          color: "#d92e3a",
+                          color: "#2D3FE7",
+                          background: "#EAF0FF",
                           letterSpacing: "0.1em",
-                          marginTop: 3,
+                          padding: "2px 6px",
+                          borderRadius: 2,
+                          marginTop: 4,
                         }}
                       >
                         POPULAR
@@ -171,15 +175,15 @@ export function CourseTableList({ courses }: CourseTableListProps) {
                 <div style={{ minWidth: 0 }}>
                   <div
                     style={{
-                      fontSize: 13,
-                      fontWeight: 700,
-                      color: "#0a1936",
+                      fontSize: 14,
+                      fontWeight: 500,
+                      color: "#0A0A0A",
                       letterSpacing: "-0.01em",
                     }}
                   >
                     {courseTypeLabel(c)} · {transmissionLabel(c.instructor.car_type)}
                   </div>
-                  <div style={{ fontSize: 11, color: "#7a7a7a", marginTop: 2 }}>
+                  <div style={{ fontSize: 13, color: "#4B5563", marginTop: 2 }}>
                     {c.instructor.name ? `${c.instructor.name} · ` : ""}Starts {format(c.bookableDate, "EEE d MMM")}
                   </div>
                 </div>
@@ -188,9 +192,9 @@ export function CourseTableList({ courses }: CourseTableListProps) {
                 <div style={{ minWidth: 0 }}>
                   <div
                     style={{
-                      fontSize: 12,
-                      fontWeight: 700,
-                      color: "#0a1936",
+                      fontSize: 14,
+                      fontWeight: 500,
+                      color: "#0A0A0A",
                       letterSpacing: "-0.01em",
                       whiteSpace: "nowrap",
                       overflow: "hidden",
@@ -199,7 +203,7 @@ export function CourseTableList({ courses }: CourseTableListProps) {
                   >
                     {c.instructor.name || "Instructor"}
                   </div>
-                  <div style={{ fontSize: 11, color: "#7a7a7a", marginTop: 2 }}>
+                  <div style={{ fontSize: 13, color: "#4B5563", marginTop: 2 }}>
                     {typeof c.distance === "number" ? `${c.distance.toFixed(1)} mi` : "—"}
                   </div>
                 </div>
@@ -245,9 +249,9 @@ export function CourseTableList({ courses }: CourseTableListProps) {
                 <div className="flex flex-col items-end gap-1.5">
                   <div
                     style={{
-                      fontSize: 16,
-                      fontWeight: 800,
-                      color: "#0a1936",
+                      fontSize: 20,
+                      fontWeight: 700,
+                      color: "#0A0A0A",
                       letterSpacing: "-0.015em",
                       lineHeight: 1,
                     }}
@@ -259,17 +263,20 @@ export function CourseTableList({ courses }: CourseTableListProps) {
                       e.stopPropagation();
                       goTo(c);
                     }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = "#1F2DC9")}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = "#2D3FE7")}
                     style={{
-                      background: "#d92e3a",
+                      background: "#2D3FE7",
                       color: "white",
-                      fontSize: 11,
-                      fontWeight: 700,
-                      padding: "6px 10px",
-                      borderRadius: 6,
+                      fontSize: 13,
+                      fontWeight: 500,
+                      padding: "8px 18px",
+                      borderRadius: 2,
                       lineHeight: 1,
                       display: "inline-flex",
                       alignItems: "center",
                       gap: 4,
+                      transition: "background 0.15s",
                     }}
                   >
                     View

@@ -1285,30 +1285,31 @@ export default function Courses() {
               {/* Pass Promise card — list view only */}
               {isListMode && (
                 <div
-                  className="relative overflow-hidden rounded-xl p-4"
+                  className="relative overflow-hidden p-4"
                   style={{
-                    background: "linear-gradient(135deg, #0a1936 0%, #1a2f5c 100%)",
+                    background: "#2D3FE7",
+                    borderRadius: 4,
                   }}
                 >
                   <div
                     className="pointer-events-none absolute -right-6 -top-6 h-24 w-24"
                     style={{
                       background:
-                        "radial-gradient(circle, rgba(217,46,58,0.3) 0%, transparent 70%)",
+                        "radial-gradient(circle, rgba(255,255,255,0.18) 0%, transparent 70%)",
                     }}
                   />
                   <div className="relative flex items-center gap-3">
                     <div
                       className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md"
-                      style={{ background: "#d92e3a" }}
+                      style={{ background: "rgba(255,255,255,0.18)" }}
                     >
                       <ShieldCheck className="h-4 w-4 text-white" />
                     </div>
                     <div>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: "white" }}>
+                      <div style={{ fontSize: 16, fontWeight: 700, color: "white" }}>
                         Pass Promise
                       </div>
-                      <div style={{ fontSize: 11, color: "#9aa0b5", marginTop: 1 }}>
+                      <div style={{ fontSize: 13, color: "rgba(255,255,255,0.9)", marginTop: 2 }}>
                         Re-test on us if you don't pass.
                       </div>
                     </div>
@@ -1422,27 +1423,27 @@ export default function Courses() {
                 <div>
                   <div
                     style={{
-                      fontSize: 10,
-                      fontWeight: 700,
-                      letterSpacing: "0.18em",
-                      color: "#7a7a7a",
+                      fontSize: 12,
+                      fontWeight: 500,
+                      letterSpacing: "0.08em",
+                      color: "#9CA3AF",
                       textTransform: "uppercase",
                     }}
                   >
                     Courses near
                   </div>
-                  <div className="flex items-baseline gap-2">
+                  <div className="flex items-baseline gap-2 mt-1">
                     <span
                       style={{
-                        fontSize: 18,
-                        fontWeight: 800,
+                        fontSize: 28,
+                        fontWeight: 700,
                         color: "#0A0A0A",
                         letterSpacing: "-0.02em",
                       }}
                     >
                       {searchedAreaName || searchedPostcode}
                     </span>
-                    <span style={{ fontSize: 12, color: "#7a7a7a" }}>
+                    <span style={{ fontSize: 14, color: "#4B5563" }}>
                       {searchedPostcode} · {radius} mi
                     </span>
                   </div>
@@ -1450,8 +1451,8 @@ export default function Courses() {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={clearSearch}
-                    className="inline-flex items-center gap-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold transition-colors hover:bg-slate-50"
-                    style={{ border: "1px solid #d0d0d8", color: "#0A0A0A" }}
+                    className="inline-flex items-center gap-1.5 bg-white text-sm font-medium transition-colors hover:!border-[#2D3FE7]"
+                    style={{ border: "1px solid #E5E7EB", color: "#0A0A0A", padding: "10px 18px", borderRadius: 4 }}
                   >
                     <Edit2 className="h-3.5 w-3.5" />
                     Change
@@ -1600,8 +1601,10 @@ export default function Courses() {
                             id="course-sort"
                             value={sortBy}
                             onChange={(e) => setSortBy(e.target.value as SortOption)}
-                            className="appearance-none rounded-md bg-white py-1.5 pl-3 pr-8 text-sm font-semibold focus:outline-none"
-                            style={{ border: "1px solid #d0d0d8", color: "#0A0A0A" }}
+                            onMouseEnter={(e) => (e.currentTarget.style.borderColor = "#2D3FE7")}
+                            onMouseLeave={(e) => (e.currentTarget.style.borderColor = "#E5E7EB")}
+                            className="appearance-none bg-white text-sm font-medium focus:outline-none transition-colors"
+                            style={{ border: "1px solid #E5E7EB", color: "#0A0A0A", padding: "10px 32px 10px 16px", borderRadius: 4 }}
                           >
                             <option value="nearest" disabled={!userLocation}>Nearest first</option>
                             <option value="soonest">Soonest</option>
@@ -1609,7 +1612,7 @@ export default function Courses() {
                           </select>
                           <ChevronDown
                             className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2"
-                            style={{ width: 14, height: 14, color: "#7a7a7a" }}
+                            style={{ width: 14, height: 14, color: "#9CA3AF" }}
                           />
                         </div>
                       </div>
