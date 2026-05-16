@@ -803,10 +803,6 @@ export default function Courses() {
       const lastMonthOption = monthOptions[monthOptions.length - 1];
       const [lastYear, lastMonth] = lastMonthOption.value.split("-").map(Number);
       const rangeEnd = endOfMonth(new Date(lastYear, lastMonth - 1));
-      const fromYmd = format(firstMonth, "yyyy-MM-dd");
-      const toYmd = format(rangeEnd, "yyyy-MM-dd");
-      const fromIso = firstMonth.toISOString();
-      const toIso = new Date(rangeEnd.getFullYear(), rangeEnd.getMonth(), rangeEnd.getDate() + 1).toISOString();
 
       const loadedAvailabilitySources = await loadCourseAvailabilitySources(
         supabase as any,
