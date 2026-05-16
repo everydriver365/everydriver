@@ -541,7 +541,9 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
       if (isBefore(day, today)) return false;
       if (placeholdersOnly) return hasNetworkPlaceholderAvailabilityOn(day);
       return realInArea.some((instructor) =>
-        hasInstructorAvailabilityOn(instructor as InstructorLite, day, sources),
+        hasInstructorAvailabilityOn(instructor as InstructorLite, day, sources, {
+          candidatePickup: userLocation ?? undefined,
+        }),
       );
     });
   }, [selectedMonth, instructors, instructorsInArea, sources, userLocation]);
