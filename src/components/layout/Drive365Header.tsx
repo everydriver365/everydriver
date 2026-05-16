@@ -70,23 +70,13 @@ export function Drive365Header() {
       <div className="w-full bg-primary">
         <div className="mx-auto flex h-[76px] items-center px-[60px] max-lg:px-5">
           {/* Logo */}
-          <Link to="/" className="flex flex-col items-start shrink-0">
-            <span
-              className="text-white font-extrabold leading-none"
-              style={{ fontSize: "28px", letterSpacing: "-0.02em", fontFamily: "Inter, Helvetica, sans-serif" }}
-            >
-              Drive365
-            </span>
-            <div className="flex items-center gap-[2px] mt-[8px]">
-              <span className="block bg-[#d92e3a]" style={{ width: "26px", height: "3px" }} />
-              <span className="block bg-[#1d4ed8]" style={{ width: "30px", height: "3px" }} />
-            </div>
-            <span
-              className="hidden xl:block mt-[5px] text-primary-foreground/70 uppercase"
-              style={{ fontSize: "10px", letterSpacing: "0.22em" }}
-            >
-              Intensives · Semi-Intensives · Lessons
-            </span>
+          <Link to="/" className="flex items-center shrink-0" aria-label="Drive365 home">
+            <img
+              src={drive365Logo}
+              alt="Drive365"
+              className="h-12 w-auto block"
+              style={{ maxWidth: "200px" }}
+            />
           </Link>
 
           {/* Center nav (desktop) */}
