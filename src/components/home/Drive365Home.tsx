@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   ShieldCheck,
-  Search,
   Check,
   ChevronRight,
   ArrowLeftRight,
@@ -366,12 +365,6 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
                 Search, compare and book direct with independent, vetted instructors all over the UK.{" "}
                 <b>Book through Drive 365 for a range of exclusive benefits.</b>
               </p>
-              <button type="button" className="d365-cta" onClick={() => navigate("/courses")}>
-                <span>Search for an instructor</span>
-                <span className="d365-cta-icon" aria-hidden>
-                  <Search size={12} strokeWidth={2.4} />
-                </span>
-              </button>
             </div>
             <div className="d365-feat-row">
               <div className="d365-feat">
