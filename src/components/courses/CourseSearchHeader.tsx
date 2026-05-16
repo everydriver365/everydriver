@@ -27,12 +27,14 @@ const FILTER_OPTIONS: { id: CourseFilterId; label: string; icon?: typeof Zap }[]
 ];
 
 const tokens = {
-  navy: "#0F2044",
-  blue: "#1A52A0",
-  red: "#CC2229",
-  mid: "#5F6B7A",
+  navy: "#0A0A0A",
+  blue: "#2D3FE7",
+  blueHover: "#1F2DC9",
+  red: "#2D3FE7",
+  mid: "#0A0A0A",
   muted: "#9CA3AF",
-  border: "#DDE3ED",
+  border: "#EAF0FF",
+  pillBorder: "#E5E7EB",
 };
 
 export function CourseSearchHeader({
