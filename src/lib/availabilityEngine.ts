@@ -291,14 +291,36 @@ export function validateSlot(
   return { ok: true };
 }
 
-export function describeReason(reason: RejectReason): string {
+export function describeReason(
+  reason: RejectReason,
+  cause?: TaggedConflict,
+  padMin?: number,
+): string {
+  const range = cause ? `${fromMinutes(cause.start)}–${fromMinutes(cause.end)}` : null;
+  const label = cause?.label?.trim() || null;
+  const effPad = cause?.padOverrideMin != null ? cause.padOverrideMin : padMin;
+
+  // Friendly label fallback per conflict kind.
+  const what = label
+    ?? (cause?.kind === "block" ? "manual block"
+      : cause?.kind === "event" ? "calendar booking"
+      : "another booking");
+
   switch (reason) {
     case "past":          return "Slot is in the past.";
     case "time_of_day":   return "Outside the selected time of day.";
     case "outside_window":return "Outside instructor working hours.";
-    case "overlap_block": return "Conflicts with a manual block.";
-    case "overlap_event": return "Conflicts with a Google Calendar event.";
-    case "buffer_block":  return "Too close to a manual block (buffer time).";
-    case "buffer_event":  return "Too close to a Google Calendar event (buffer time).";
+    case "overlap_block":
+    case "overlap_event":
+      return range
+        ? `Overlaps with ${what} (${range}).`
+        : `Conflicts with ${what}.`;
+    case "buffer_block":
+    case "buffer_event": {
+      const padTxt = effPad != null && effPad > 0 ? ` — needs ${effPad} min gap` : "";
+      return range
+        ? `Too close to ${what} (${range})${padTxt}.`
+        : `Too close to ${what}${padTxt}.`;
+    }
   }
 }
