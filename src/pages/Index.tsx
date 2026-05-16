@@ -361,39 +361,6 @@ export default function Index() {
         </>}
       />
 
-      {/* Test Swap Banner */}
-      <section className="bg-[#0d2c5a]">
-        <div className="container max-w-7xl px-4 py-5">
-          <Link
-            to="/test-swap/browse"
-            aria-label="Need an earlier driving test? Find a swap match"
-            className="flex items-center justify-between gap-4 rounded-2xl bg-[#163a6e] px-6 py-5 hover:bg-[#1a437d] transition-colors"
-          >
-            <div className="flex items-center gap-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1A52A0]">
-                <Calendar className="h-5 w-5 text-white" />
-              </div>
-              <div>
-                <p className="text-sm font-bold text-white">Need an earlier driving test?</p>
-                <p className="text-xs text-white/70">Swap, don't wait. Find a swap match — free, safe and secure.</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-1 text-sm font-semibold text-white">
-              Find a swap <ChevronRight className="h-4 w-4" />
-            </div>
-          </Link>
-          <div className="mt-3 flex justify-center">
-            <Link
-              to="/test-swap"
-              className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium text-white/90 backdrop-blur-sm transition-colors hover:bg-white/20 hover:text-white"
-            >
-              <HelpCircle className="h-4 w-4" />
-              How test swapping works
-            </Link>
-          </div>
-        </div>
-      </section>
-
       {/* Feature Detail Modal */}
       <FeatureDetailModal
         feature={selectedFeature}
