@@ -13,6 +13,7 @@ import heroPlaceholderImg from "@/assets/hero-placeholder-v2.png";
 import intensiveCourseImg from "@/assets/drive365-intensive.jpeg";
 import weeklyCourseImg from "@/assets/course-weekly-lessons.jpg";
 import semiCourseImg from "@/assets/semi-intensive-card.jpg";
+import { PostcodeSearch } from "@/components/home/PostcodeSearch";
 
 const NAV_LINKS = [
   { label: "Find an instructor", href: "/instructors" },
@@ -367,6 +368,7 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
                 <br />
                 <b>Book through Drive 365 for a range of exclusive benefits when you book.</b>
               </p>
+              <PostcodeSearch />
             </div>
             <div className="d365-feat-row">
               <div className="d365-feat">

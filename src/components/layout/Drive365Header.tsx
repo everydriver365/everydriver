@@ -28,6 +28,7 @@ export function Drive365Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [coursesOpen, setCoursesOpen] = useState(false);
   const [promoVisible, setPromoVisible] = useState(true);
+  const [scrolled, setScrolled] = useState(false);
   const coursesRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -40,6 +41,13 @@ export function Drive365Header() {
     setMobileOpen(false);
     setCoursesOpen(false);
   }, [location.pathname]);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   useEffect(() => {
     if (!coursesOpen) return;
@@ -66,9 +74,15 @@ export function Drive365Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full">
-      {/* Main navy bar */}
-      <div className="w-full bg-primary">
-        <div className="mx-auto flex h-[76px] items-center px-[60px] max-lg:px-5">
+      {/* Main bar — navy on mobile, white on desktop */}
+      <div
+        className={cn(
+          "w-full bg-primary transition-shadow duration-200",
+          "lg:bg-white lg:border-b lg:border-[#EAF0FF]",
+          scrolled && "lg:shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
+        )}
+      >
+        <div className="mx-auto flex h-[76px] lg:h-[68px] items-center px-[60px] max-lg:px-5 lg:px-6">
           {/* Logo */}
           <Link to="/" className="flex items-center shrink-0" aria-label="Drive365 home">
             <img
@@ -81,63 +95,76 @@ export function Drive365Header() {
 
           {/* Center nav (desktop) */}
           <nav className="hidden lg:flex items-center gap-6 xl:gap-9 mx-auto">
-            {NAV_LINKS.map((link) =>
-              link.hasDropdown ? (
-                <div
-                  key={link.href}
-                  className="relative"
-                  ref={coursesRef}
-                >
-                  <button
-                    type="button"
-                    onClick={() => setCoursesOpen((v) => !v)}
-                    aria-haspopup="menu"
-                    aria-expanded={coursesOpen}
-                    className="flex items-center gap-1 text-white text-[15px] font-medium hover:text-accent transition-colors"
-                  >
-                    {link.label}
-                    <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", coursesOpen && "rotate-180")} />
-                  </button>
-                  {coursesOpen && (
-                    <div className="absolute left-0 top-full pt-3 z-50">
-                      <div className="bg-white rounded-lg shadow-xl py-2 min-w-[220px]">
-                        {COURSES_DROPDOWN.map((item) => (
-                          <Link
-                            key={item.href}
-                            to={item.href}
-                            onClick={() => setCoursesOpen(false)}
-                            className="block px-4 py-2 text-sm text-[#0a1936] hover:bg-[#1d4ed8]/10 hover:text-[#1d4ed8] transition-colors"
-                          >
-                            {item.label}
-                          </Link>
-                        ))}
+            {NAV_LINKS.map((link) => {
+              const isActive = location.pathname === link.href;
+              if (link.hasDropdown) {
+                return (
+                  <div key={link.href} className="relative" ref={coursesRef}>
+                    <button
+                      type="button"
+                      onClick={() => setCoursesOpen((v) => !v)}
+                      aria-haspopup="menu"
+                      aria-expanded={coursesOpen}
+                      className={cn(
+                        "relative flex items-center gap-1 text-[14px] font-medium transition-colors",
+                        "text-white lg:text-[#0A0A0A] hover:text-accent lg:hover:text-[#2D3FE7]"
+                      )}
+                    >
+                      {link.label}
+                      <ChevronDown
+                        className={cn(
+                          "h-3.5 w-3.5 transition-transform lg:text-[#9CA3AF]",
+                          coursesOpen && "rotate-180"
+                        )}
+                      />
+                    </button>
+                    {coursesOpen && (
+                      <div className="absolute left-0 top-full pt-3 z-50">
+                        <div className="bg-white rounded-lg shadow-xl py-2 min-w-[220px]">
+                          {COURSES_DROPDOWN.map((item) => (
+                            <Link
+                              key={item.href}
+                              to={item.href}
+                              onClick={() => setCoursesOpen(false)}
+                              className="block px-4 py-2 text-sm text-[#0a1936] hover:bg-[#2D3FE7]/10 hover:text-[#2D3FE7] transition-colors"
+                            >
+                              {item.label}
+                            </Link>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  )}
-                </div>
-              ) : (
+                    )}
+                  </div>
+                );
+              }
+              return (
                 <Link
                   key={link.href}
                   to={link.href}
-                  className="text-white text-[15px] font-medium hover:text-accent transition-colors"
+                  className={cn(
+                    "relative text-[14px] font-medium transition-colors",
+                    "text-white lg:text-[#0A0A0A] hover:text-accent lg:hover:text-[#2D3FE7]",
+                    isActive && "lg:!text-[#2D3FE7] lg:after:content-[''] lg:after:absolute lg:after:left-0 lg:after:right-0 lg:after:-bottom-[8px] lg:after:h-[2px] lg:after:bg-[#2D3FE7]"
+                  )}
                 >
                   {link.label}
                 </Link>
-              )
-            )}
+              );
+            })}
           </nav>
 
           {/* Right side (desktop) */}
           <div className="hidden lg:flex items-center gap-5 shrink-0">
-            <div className="text-[14px] font-medium text-primary-foreground/70">
-              <Link to="/pupil/login" className="hover:text-white transition-colors">
-                Pupil login
-              </Link>
-            </div>
+            <Link
+              to="/pupil/login"
+              className="text-[14px] font-medium text-[#0A0A0A] hover:text-[#2D3FE7] transition-colors"
+            >
+              Pupil login
+            </Link>
             <Link
               to="/courses"
-              className="inline-flex items-center justify-center bg-[#d92e3a] hover:bg-[#b8252f] text-white text-[14px] font-semibold transition-colors"
-              style={{ width: "120px", height: "40px", borderRadius: "20px" }}
+              className="inline-flex items-center justify-center bg-[#2D3FE7] hover:bg-[#1F2DC9] text-white text-[14px] font-medium transition-colors"
+              style={{ padding: "10px 20px", borderRadius: "2px", letterSpacing: "0.5px" }}
             >
               Find courses
             </Link>
