@@ -104,8 +104,6 @@ export async function findOptimalSlots(params: AutoScheduleParams): Promise<Slot
   };
 
   const slotIncrement = instructorRow.slot_increment_minutes ?? undefined;
-  const firstLessonBuffer = instructorRow.first_lesson_buffer_minutes ?? undefined;
-  const minNotice = instructorRow.min_notice_minutes ?? undefined;
   const buffer = instructorRow.buffer_minutes ?? 0;
 
   // Generate candidates day-by-day via the unified engine.
