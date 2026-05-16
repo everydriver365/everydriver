@@ -255,7 +255,7 @@ export function LessonScheduler({
       const maxDate = format(addDays(new Date(), bookingAdvanceDays), "yyyy-MM-dd");
       const fromIso = startOfDay(new Date()).toISOString();
       const toIso = addDays(startOfDay(new Date()), bookingAdvanceDays + 1).toISOString();
-      const [hoursRes, overridesRes, calendarRes, prefRes, lessonsRes] = await Promise.all([
+      const [hoursRes, overridesRes, calendarRes, prefRes, lessonsRes, manualBlocksRes] = await Promise.all([
         supabase
           .from("instructor_working_hours")
           .select("*")
@@ -281,12 +281,19 @@ export function LessonScheduler({
           p_from_date: today,
           p_to_date: maxDate,
         }),
+        // Public-safe RPC — instructor-set manual blocks (holidays, off-time).
+        supabase.rpc("get_public_instructor_manual_blocks", {
+          p_instructor_ids: [instructorId],
+          p_from_datetime: fromIso,
+          p_to_datetime: toIso,
+        }),
       ]);
 
       const hours = hoursRes.data;
       const overrides = overridesRes.data;
       const calendarEvents = calendarRes.data;
       const existingLessons = lessonsRes.data;
+      const manualBlocks = manualBlocksRes.data;
 
       setPreferEarliestSlot((prefRes.data as any)?.prefer_earliest_slot ?? false);
 
