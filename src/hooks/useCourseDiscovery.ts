@@ -430,17 +430,19 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
   };
 
   // Filter instructors by location when a postcode search is active.
-  // Placeholders are matched purely by postcode-district (no geocoding needed).
+  // Placeholders are matched purely by postcode-district (no geocoding needed),
+  // so they work even when full-postcode geocoding failed.
   const instructorsInArea = useMemo(() => {
-    if (!userLocation) return instructors;
+    const searchedDistrict = extractPostcodeDistrict(searchedPostcode);
+    if (!userLocation && !searchedDistrict) return instructors;
 
     const radiusMiles = parseInt(radius);
-    const searchedDistrict = extractPostcodeDistrict(searchedPostcode);
 
     return instructors.filter((instructor) => {
       if (instructor.is_network_placeholder) {
         return !!searchedDistrict && instructor.placeholder_district === searchedDistrict;
       }
+      if (!userLocation) return false;
       const instructorPostcode = instructor.home_postcode.replace(/\s+/g, "").toUpperCase();
       const instructorLocation = geoCache[instructorPostcode];
 
