@@ -887,8 +887,23 @@ export function LessonScheduler({
                     <div className="py-6 text-center space-y-3">
                       <Clock className="h-6 w-6 mx-auto text-[#D1D5DB]" />
                       <p className="text-[12px] text-[#6B7280]">
-                        No available slots for this date
+                        No {formatLengthShort(selectedDuration)} slots available on this date
                       </p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const next = findFirstBookableDate();
+                          if (next) {
+                            setViewMonth(startOfMonth(next));
+                            setSelectedDate(next);
+                          }
+                        }}
+                        className="gap-2"
+                      >
+                        <CalendarDays className="h-4 w-4" />
+                        Jump to next available date
+                      </Button>
                       {pupilId && (
                         <Button
                           variant="outline"
