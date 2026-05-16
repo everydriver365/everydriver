@@ -389,6 +389,18 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
                   <button type="button" className="d365-feat-btn">Read more</button>
                 </Link>
               </div>
+              <div className="d365-feat">
+                <img
+                  src={weeklyCourseImg}
+                  alt="Learner driver having a regular weekly driving lesson with a friendly instructor"
+                  onError={(e) => { (e.currentTarget as HTMLImageElement).style.visibility = "hidden"; }}
+                />
+                <h3>Weekly Lessons</h3>
+                <p>Briefly and concisely explain what you do for your audience.</p>
+                <Link to="/courses?type=weekly" style={{ marginTop: "auto" }}>
+                  <button type="button" className="d365-feat-btn">Read more</button>
+                </Link>
+              </div>
             </div>
             <div className="d365-spacer" aria-hidden />
           </div>
