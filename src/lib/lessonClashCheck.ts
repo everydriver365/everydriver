@@ -1,6 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { refreshGoogleCalendarForDate } from '@/lib/refreshGoogleCalendar';
+import { isAllDayLikeEvent } from '@/lib/availabilityEngine';
 
 export interface ClashSlot {
   name: string;
@@ -131,16 +132,16 @@ export async function checkLessonClash(args: CheckArgs): Promise<ClashResult> {
     return d.getHours() * 60 + d.getMinutes();
   };
 
-  // All busy events block — including all-day. We only use the holiday/leave
-  // regex as a hint for a friendlier label on the toast.
+  // Apply the unified Google all-day rule: multi-day / midnight-long events
+  // are informational only and do NOT block slots. Instructors block real
+  // days off via instructor_manual_blocks (handled as `blockSlots` below).
+  // This is the rule codified in availabilityEngine.isAllDayLikeEvent and is
+  // the same rule every other booking surface uses.
   const eventSlots: Slot[] = events
+    .filter((e: any) => !isAllDayLikeEvent(e.start_time, e.end_time))
     .map((e: any) => {
-      const dur = new Date(e.end_time).getTime() - new Date(e.start_time).getTime();
-      const isAllDay = dur >= 24 * 60 * 60 * 1000;
       const rawTitle = (e.title || '').trim();
-      const label = isAllDay
-        ? (ALL_DAY_BLOCKING.test(rawTitle) ? rawTitle : (rawTitle || 'Unavailable (all day)'))
-        : (rawTitle || 'Calendar event');
+      const label = rawTitle || 'Calendar event';
       return {
         start: tsToMin(e.start_time),
         end: tsToMin(e.end_time),
