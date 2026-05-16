@@ -511,9 +511,12 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
     const courses: CourseWithInstructor[] = [];
 
     for (const instructor of instructors) {
-      // Single source of truth: same resolver as calendar dots and the
-      // booking-time guard. Honours overrides, blocks, GCal, lessons, buffers.
-      if (!hasInstructorAvailabilityOn(instructor as InstructorLite, selectedDate, sources)) {
+      const isPlaceholder = !!instructor.is_network_placeholder;
+      // Placeholders are enquiry-only "network" cards — they have no working
+      // hours, calendar, or lessons, so the standard availability resolver
+      // would always reject them. We treat them as always available on the
+      // selected date and route the user through the enquiry flow.
+      if (!isPlaceholder && !hasInstructorAvailabilityOn(instructor as InstructorLite, selectedDate, sources)) {
         continue;
       }
 
