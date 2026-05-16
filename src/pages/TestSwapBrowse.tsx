@@ -266,7 +266,7 @@ export default function TestSwapBrowse() {
 
       <FindSwapNav onBack={() => navigate(-1)} />
 
-      <div className="mx-auto max-w-2xl">
+      <div className="mx-auto max-w-2xl bg-white">
         <FindSwapSearchCard
           postcode={postcode}
           setPostcode={setPostcode}
