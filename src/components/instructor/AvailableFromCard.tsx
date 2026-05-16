@@ -40,20 +40,6 @@ export function AvailableFromCard({ instructorId }: { instructorId: string }) {
   }, [instructorId]);
 
   const save = async (next: string | null) => {
-    // Guard: dates more than 14 days out hide every slot from pupils until then.
-    // This is the trap that caused "Ken D shows no availability" — confirm first.
-    if (next) {
-      const target = parseISO(next);
-      const daysOut = Math.round(
-        (target.getTime() - new Date().setHours(0, 0, 0, 0)) / 86400000,
-      );
-      if (daysOut > 14) {
-        const ok = window.confirm(
-          `Heads up: pupils won't see ANY availability until ${format(target, "EEE d MMM yyyy")} (${daysOut} days from now).\n\nUse "Time off" for short breaks instead.\n\nContinue?`,
-        );
-        if (!ok) return;
-      }
-    }
     setSaving(true);
     const { error } = await supabase
       .from("instructors")
