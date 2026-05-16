@@ -1471,3 +1471,21 @@ html.a11y-high-contrast [class*="border-"] {
   transition: transform .14s ease;
 }
 .settings-v2 .sv2-toggle.on::after { transform: translateX(14px); }
+
+/* ============================================================
+   Drive365 site-wide page background
+   Forces a consistent soft surface (#F2F4F8) across every public/
+   learner-facing page on Drive365 and EveryDriver hosts, on both
+   desktop and mobile. Scoped portals (instructor, pupil, school)
+   keep their own tokens via the :not() guards.
+   ============================================================ */
+body:not(:has(.instructor-portal)):not(:has(.pupil-portal)):not(:has(.school-portal)) {
+  background-color: #F2F4F8;
+}
+
+/* Override page-level wrappers that set their own inline background.
+   Inline styles win over normal CSS, so we use !important here. */
+body:not(:has(.instructor-portal)):not(:has(.pupil-portal)):not(:has(.school-portal)) .min-h-screen {
+  background-color: #F2F4F8 !important;
+  background-image: none !important;
+}
