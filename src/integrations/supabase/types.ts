@@ -19139,6 +19139,27 @@ export type Database = {
           notes: string
         }[]
       }
+      browse_public_test_swaps_by_postcode: {
+        Args: {
+          p_lat?: number
+          p_limit?: number
+          p_lng?: number
+          p_radius_mi?: number
+        }
+        Returns: {
+          created_at: string
+          current_centre_id: string
+          current_centre_name: string
+          current_test_date: string
+          current_test_time: string
+          distance_miles: number
+          earliest_new_date: string
+          first_name: string
+          id: string
+          latest_new_date: string
+          notes: string
+        }[]
+      }
       check_save_offer_eligibility: {
         Args: { p_instructor_id: string }
         Returns: boolean

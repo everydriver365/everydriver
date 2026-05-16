@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { format } from "date-fns";
+import { toast } from "sonner";
 import {
   ChevronLeft,
   Search as SearchIcon,
@@ -51,6 +52,7 @@ interface SwapRow {
   latest_new_date: string;
   notes: string | null;
   created_at: string;
+  distance_miles: number | null;
 }
 
 type SwapResult = {
@@ -96,11 +98,18 @@ const fmtTime = (time?: string | null) => {
 
 export default function TestSwapBrowse() {
   const navigate = useNavigate();
-  const [postcode, setPostcode] = useState("");
+  const [postcode, setPostcode] = useState(() => {
+    try {
+      return localStorage.getItem("test_swap_browse_postcode") ?? "";
+    } catch {
+      return "";
+    }
+  });
   const [radius, setRadius] = useState("10");
   const [results, setResults] = useState<SwapResultGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [savedSignupId, setSavedSignupId] = useState<string | null>(null);
+  const geocodeCache = useRef<Map<string, { lat: number; lng: number } | null>>(new Map());
 
   useEffect(() => {
     try {
@@ -112,14 +121,66 @@ export default function TestSwapBrowse() {
 
   const isAuthenticated = !!savedSignupId;
 
+  const geocodePostcode = async (
+    raw: string,
+  ): Promise<{ lat: number; lng: number } | null> => {
+    const key = raw.toUpperCase().replace(/\s+/g, "");
+    if (!key) return null;
+    if (geocodeCache.current.has(key)) return geocodeCache.current.get(key)!;
+    try {
+      const r = await fetch(
+        `https://api.postcodes.io/postcodes/${encodeURIComponent(key)}`,
+      );
+      if (!r.ok) {
+        geocodeCache.current.set(key, null);
+        return null;
+      }
+      const j = await r.json();
+      const lat = j?.result?.latitude;
+      const lng = j?.result?.longitude;
+      if (typeof lat !== "number" || typeof lng !== "number") {
+        geocodeCache.current.set(key, null);
+        return null;
+      }
+      const coords = { lat, lng };
+      geocodeCache.current.set(key, coords);
+      return coords;
+    } catch {
+      geocodeCache.current.set(key, null);
+      return null;
+    }
+  };
+
   const handleSearch = async () => {
     setLoading(true);
-    const { data, error } = await supabase.rpc("browse_public_test_swaps", {
-      p_centre_id: null,
-      p_from_date: null,
-      p_to_date: null,
-      p_limit: 200,
-    });
+
+    let coords: { lat: number; lng: number } | null = null;
+    const trimmed = postcode.trim();
+    if (trimmed.length > 0) {
+      coords = await geocodePostcode(trimmed);
+      if (!coords) {
+        toast.error("We couldn't find that postcode. Please check and try again.");
+        setResults([]);
+        setLoading(false);
+        return;
+      }
+      try {
+        localStorage.setItem("test_swap_browse_postcode", trimmed);
+      } catch {
+        /* ignore */
+      }
+    }
+
+    const radiusMi = coords ? parseInt(radius, 10) : null;
+    const { data, error } = await supabase.rpc(
+      "browse_public_test_swaps_by_postcode",
+      {
+        p_lat: coords?.lat ?? null,
+        p_lng: coords?.lng ?? null,
+        p_radius_mi: radiusMi,
+        p_limit: 200,
+      },
+    );
 
     if (error) {
       setResults([]);
@@ -129,9 +190,11 @@ export default function TestSwapBrowse() {
 
     const rows = (data as SwapRow[] | null) ?? [];
     const groupMap = new Map<string, SwapResult[]>();
+    const groupDistance = new Map<string, number>();
 
     for (const r of rows) {
       const centreName = r.current_centre_name ?? "Other";
+      const dist = r.distance_miles == null ? null : Number(r.distance_miles);
       const swap: SwapResult = {
         id: r.id,
         dateFormatted: fmtDateLong(r.current_test_date),
@@ -142,26 +205,38 @@ export default function TestSwapBrowse() {
         wantFrom: fmtDateShort(r.earliest_new_date),
         wantTo: fmtDateShort(r.latest_new_date),
         note: r.notes,
-        distanceMiles: null,
+        distanceMiles: dist == null ? null : dist.toFixed(1),
         locked: !isAuthenticated,
       };
       const arr = groupMap.get(centreName) ?? [];
       arr.push(swap);
       groupMap.set(centreName, arr);
+      if (dist != null) {
+        const prev = groupDistance.get(centreName);
+        if (prev == null || dist < prev) groupDistance.set(centreName, dist);
+      }
     }
 
     const groups: SwapResultGroup[] = Array.from(groupMap.entries())
-      .map(([centre, swaps]) => ({
-        centre,
-        isActive: false,
-        distanceMiles: null,
-        swaps: swaps.sort((a, b) => {
-          if (a.locked && !b.locked) return 1;
-          if (!a.locked && b.locked) return -1;
-          return (a.rawDate ?? "").localeCompare(b.rawDate ?? "");
-        }),
-      }))
+      .map(([centre, swaps]) => {
+        const gd = groupDistance.get(centre);
+        return {
+          centre,
+          isActive: false,
+          distanceMiles: gd == null ? null : gd.toFixed(1),
+          swaps: swaps.sort((a, b) => {
+            if (a.locked && !b.locked) return 1;
+            if (!a.locked && b.locked) return -1;
+            return (a.rawDate ?? "").localeCompare(b.rawDate ?? "");
+          }),
+        };
+      })
       .sort((a, b) => {
+        const ad = a.distanceMiles == null ? null : parseFloat(a.distanceMiles);
+        const bd = b.distanceMiles == null ? null : parseFloat(b.distanceMiles);
+        if (ad != null && bd != null && ad !== bd) return ad - bd;
+        if (ad != null && bd == null) return -1;
+        if (ad == null && bd != null) return 1;
         const aFirst = a.swaps[0]?.rawDate ?? "";
         const bFirst = b.swaps[0]?.rawDate ?? "";
         return aFirst.localeCompare(bFirst);
