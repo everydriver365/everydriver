@@ -20,6 +20,11 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   isAllDayLikeEvent,
   TRAVEL_FALLBACK_MIN,
+  resolveAvailability,
+  buildDayConflicts,
+  type TimeOfDay,
+  type Slot,
+  type RejectedSlot,
 } from "./availabilityEngine";
 
 export { TRAVEL_FALLBACK_MIN };
