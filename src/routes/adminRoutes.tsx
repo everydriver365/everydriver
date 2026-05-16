@@ -104,5 +104,9 @@ export const adminRoutes = (
       path="/admin/verifications"
       element={<ProtectedAdminRoute><AdminInstructorVerifications /></ProtectedAdminRoute>}
     />
+    <Route
+      path="/admin/availability-sync"
+      element={<ProtectedAdminRoute><AvailabilitySyncHealth /></ProtectedAdminRoute>}
+    />
   </>
 );
