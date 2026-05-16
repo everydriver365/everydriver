@@ -11,13 +11,14 @@
 // Rules codified here (and ONLY here):
 //   1. Working hours come from instructor_working_hours or availability_windows
 //   2. Date overrides win over weekly hours
-//   3. Conflicts = scheduled_lessons + manual_blocks + timed Google events
-//   4. Google events that are ALL-DAY or MULTI-DAY (>12h) are informational —
-//      they do NOT block slots. Instructors block real days off via manual
-//      blocks. This is the rule that was breaking Ken D's calendar.
-//   5. Buffer = instructor.buffer_minutes
-//   6. Travel padding = per-pupil travel_time_minutes (overrides buffer when
-//      larger) OR TRAVEL_FALLBACK_MIN
+//   3. **Google Calendar (mirrored to `instructor_calendar_events`) is the
+//      ONLY source of "instructor is busy".** `scheduled_lessons` is CRM /
+//      billing data and is intentionally NOT consulted. Every booking writes
+//      a Google event in the same flow — that event blocks the slot.
+//   4. `instructor_manual_blocks` are honoured as instructor-owned days off.
+//   5. Google events that are ALL-DAY or MULTI-DAY (>12h) are informational —
+//      they do NOT block slots.
+//   6. Buffer = instructor.buffer_minutes (no hidden travel padding)
 //   7. First-lesson-of-day rule: no leading buffer before the very first
 //      commitment of the day
 //
@@ -180,16 +181,16 @@ export function buildDayConflicts(
 ): TaggedConflict[] {
   const out: TaggedConflict[] = [];
 
-  for (const l of lessons) {
-    const startMin = toMinutes((l.start_time || "").slice(0, 5));
-    out.push({
-      start: startMin,
-      end: startMin + (l.duration_minutes || 60),
-      kind: "lesson",
-      label: l.label,
-      padOverrideMin: l.pupil_travel_min ?? undefined,
-    });
-  }
+  // ──────────────────────────────────────────────────────────────────────
+  // SOURCE-OF-TRUTH RULE (do NOT remove):
+  // Google Calendar (mirrored to `instructor_calendar_events`) is the ONLY
+  // source of "instructor is busy". `scheduled_lessons` is CRM/billing data
+  // and is intentionally NOT consulted here. Every booking writes a Google
+  // event in the same flow — that event is what blocks the slot.
+  // The `lessons` parameter is kept for backwards compatibility with the
+  // existing call sites but is deliberately ignored.
+  // ──────────────────────────────────────────────────────────────────────
+  void lessons;
 
   const clip = (sIso: string, eIso: string): Slot | null => {
     const sd = new Date(sIso);

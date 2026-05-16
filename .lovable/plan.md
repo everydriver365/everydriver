@@ -1,36 +1,76 @@
-I found the mismatch. The public search and the booking calendar are not using the same definition of “available”.
 
-What is happening:
-- Ken’s working window is real: 10:30–16:00.
-- The search page currently marks dates/courses available using a broad day-level check.
-- The booking calendar then applies stricter slot rules: Ken only allows 2h/3h lessons, plus his buffer/travel padding, plus scheduled lessons and calendar blocks.
-- On 2 June specifically, Ken already has multiple scheduled lessons around 10:30/11:00 in the database, so the booking calendar correctly has no bookable 2h slot.
-- The booking page also ignores the `date=` passed from the course card, so it can open on a month/date that doesn’t match the advertised date.
+## Goal
 
-Plan to fix it properly:
+Google Calendar (mirrored into `instructor_calendar_events`) becomes the **only** source of "instructor is busy". The `scheduled_lessons` table stays for CRM / billing / lesson history, but it is **never** read when computing availability or clashes.
 
-1. Make course search use exact bookable-slot logic
-   - Update the learner-facing course availability resolver so a course date only counts if the instructor has at least one real slot for the lesson lengths they allow.
-   - For Ken, that means 2h/3h availability, not just “at least 60 minutes free”.
-   - Keep existing conflict sources: scheduled lessons, manual blocks, Google Calendar busy events, buffers, and all-day informational-event filtering.
+Every booking already writes a Google event (we have `google_event_id` on every row). After this change, that Google event — not the DB row — is what blocks the slot.
 
-2. Make each course card validate the actual course/date pair
-   - Filter `coursesForSelectedDate` so a 10h/20h/30h course is only shown on dates where the first bookable lesson can actually be selected.
-   - Course counts in the sidebar calendar will use the same exact logic, so dates won’t show misleading course counts.
+## What changes
 
-3. Make the booking calendar honour the selected date from search
-   - Pass the `?date=yyyy-mm-dd` value from `BookingSummary` into `MobileBookingView` and then into `LessonScheduler`.
-   - `LessonScheduler` will open on that month and preselect that date if it still has slots.
-   - If that date has become unavailable, it will automatically jump to the next genuinely bookable date.
+### 1. Availability engine (`src/lib/availabilityEngine.ts`)
+- Stop accepting `lessons` as a conflict source. The signature `buildDayConflicts(dateStr, lessons, blocks, events)` becomes `buildDayConflicts(dateStr, blocks, events)`.
+- Conflict kinds reduce to `block` (manual day-off) and `event` (Google Calendar busy).
+- Per-pupil `travel_time_minutes` override no longer applies (there is no pupil context on a Google event). Only the instructor's `buffer_minutes` gates spacing.
+- All-day / >12h Google events stay informational (existing rule kept).
 
-4. Remove the weak “first working day” jump
-   - Replace the current `isDateAvailableCheck` month-jump logic, which only checks working hours, with the exact slot availability check.
-   - This prevents the calendar opening on June just because working hours exist when no valid pupil slot exists.
+### 2. Thin wrapper (`src/lib/availabilityCore.ts`)
+- Update re-exported `buildDayConflicts` signature to match.
+- Remove the `pupil_travel_min` type field.
 
-5. Add a clear no-slots state
-   - If a date is selected but has no valid slots, show a clear message and a “Next available date” action instead of leaving the learner staring at a blank/disabled calendar.
+### 3. Data fetchers — stop querying `scheduled_lessons` for availability
+Update every caller that builds conflicts from `scheduled_lessons` to drop that query and pass only `manual_blocks` + `calendar_events`:
+- `src/hooks/useRealGapSlots.ts`
+- `src/hooks/useAvailabilityData.ts`
+- `src/hooks/useGapSuggestions.ts`
+- `src/components/booking/LessonScheduler.tsx` (slot computation + month-jump check + initial-date check)
+- `src/pages/Courses.tsx` (`instructorMinSlotMinutes` resolver and `coursesForSelectedDate`)
+- `src/pages/everydriver/BookingSummary.tsx`
+- `src/components/booking/MobileBookingView.tsx`
+- `src/lib/courseAvailability.ts` (if it pulls lessons — verify)
+- `src/lib/lessonClashCheck.ts` (clash check now reads Google events only)
+- Any "fill gap / find slot / add lesson / reschedule" surface that currently joins `scheduled_lessons`.
 
-6. Verify against Ken
-   - Check that June dates with no 2h/3h slots no longer appear as bookable for Ken.
-   - Check that the course card date and booking calendar date match.
-   - Check that July dates with genuine free 2h/3h slots show selectable times.
+### 4. Server-side booking guard (`supabase/functions/create-booking/index.ts`)
+- Before writing the lesson, force a fresh Google fetch for the target day (call into `google-calendar-service.resyncRange` for that window) so the cache is current.
+- Then validate the requested slot against `instructor_calendar_events` + `instructor_manual_blocks` only — no `scheduled_lessons` read.
+- Continue creating the Google event and storing `google_event_id`.
+
+### 5. Freshness — on-demand Google refresh
+Booking surfaces already call `refreshGoogleCalendar` (60s TTL). Keep that. Also:
+- Call it on the **course search resolver** so search results reflect the latest Google state, not just the cron'd snapshot.
+- Call it again immediately before the booking-confirm POST (force=true) to close the race between "user opened the slot list" and "user clicked confirm".
+
+### 6. Backfill / dedupe
+Existing junk `scheduled_lessons` (e.g. Ken's 36 test rows) stop affecting availability the moment step 1–3 ships, even before deletion. We still recommend a one-off cleanup pass for hygiene, but it is no longer blocking.
+
+### 7. Docs / memory
+- Update `mem://features/booking/calendar-sync-reliability` and the GCal architecture memory to state: **Google Calendar (mirrored to `instructor_calendar_events`) is the sole source of busyness. `scheduled_lessons` is CRM data only.**
+- Update the engine header comment so future agents do not re-introduce `scheduled_lessons` as a conflict source.
+
+## Trade-offs to confirm
+
+1. **Latency between booking and slot lockout.** A booking writes the Google event in the same request as the DB row. If the Google API call fails (or is slow), the slot is **not** blocked for other learners until the next sync. Today the DB row blocks it instantly. Acceptable?
+2. **Per-pupil travel time disappears from the booking calendar** (no pupil identity on a Google event). The instructor's `buffer_minutes` is the only spacing rule. Acceptable, or should we keep travel time as an override when an `instructor_calendar_events` row carries our `google_event_id` and we can look the pupil back up?
+3. **Manual blocks (`instructor_manual_blocks`) stay** as a separate, instructor-owned "block this time" mechanism distinct from Google. Confirm — or should those also be pushed into Google and deleted from the DB?
+4. **Existing scheduled lessons in the DB without a matching Google event** (e.g. Ken's test rows, or any historical row where the Google push failed) will immediately appear bookable. Confirm that is the desired behaviour.
+
+## Files touched (approx.)
+
+```text
+src/lib/availabilityEngine.ts            (signature + conflict kinds)
+src/lib/availabilityCore.ts              (re-export shim)
+src/lib/lessonClashCheck.ts              (Google-only check)
+src/lib/courseAvailability.ts            (drop scheduled_lessons)
+src/hooks/useRealGapSlots.ts
+src/hooks/useAvailabilityData.ts
+src/hooks/useGapSuggestions.ts
+src/components/booking/LessonScheduler.tsx
+src/components/booking/MobileBookingView.tsx
+src/pages/Courses.tsx
+src/pages/everydriver/BookingSummary.tsx
+supabase/functions/create-booking/index.ts
+mem://features/booking/calendar-sync-reliability  (rule update)
+mem://constraints/google-calendar-source-of-truth (new constraint)
+```
+
+Please confirm the four trade-offs above (especially #1, #2 and #4) and I'll implement.
