@@ -322,7 +322,7 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
           alignItems: "center",
           justifyContent: "center",
           width: "100%",
-          marginTop: -10,
+          
         }}
       >
         {PROOF_STATS.map((stat, i) => (
