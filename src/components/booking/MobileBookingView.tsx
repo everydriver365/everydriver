@@ -825,6 +825,7 @@ export function MobileBookingView({
               bufferMinutes={instructor.buffer_minutes}
               instructorHomePostcode={instructor.home_postcode}
               pupilPostcode={differentPickup ? pickupPostcode : pupilPostcode}
+              initialDate={selectedDate ?? undefined}
               onSlotsChange={onSlotsChange}
             />
           </div>
