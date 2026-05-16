@@ -1,0 +1,1 @@
+UPDATE public.included_features SET is_active=true WHERE id='3fc41ec8-84a8-46e4-80af-2f835683ae2b';
