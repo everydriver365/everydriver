@@ -111,6 +111,10 @@ export function LessonScheduler({
   const [waitlistDialogOpen, setWaitlistDialogOpen] = useState(false);
   const [preferEarliestSlot, setPreferEarliestSlot] = useState(false);
   const [travelBufferMinutes, setTravelBufferMinutes] = useState<number | null>(null);
+  // Unified availability sources — used by computeDaySlots (the single
+  // engine-backed slot generator shared with /courses and create-booking).
+  const [sources, setSources] = useState<CourseAvailabilitySources | null>(null);
+  const [slotIncrementMinutes, setSlotIncrementMinutes] = useState<number>(30);
   
   // Base allowed lesson lengths from instructor settings
   const baseDurationOptions = useMemo(() => {
