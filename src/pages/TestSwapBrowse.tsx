@@ -333,7 +333,7 @@ function FindSwapNav({ onBack }: { onBack: () => void }) {
         <div className="min-w-0">
           <div
             className="text-[16px] font-bold leading-tight"
-            style={{ color: t.navy, letterSpacing: "-0.2px" }}
+            style={{ color: t.charcoal, letterSpacing: "-0.2px" }}
           >
             Find a swap
           </div>
