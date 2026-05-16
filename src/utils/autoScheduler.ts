@@ -22,6 +22,12 @@ interface AutoScheduleParams {
   courseType?: 'intensive' | 'semi-intensive' | 'weekly';
   startFromDate?: Date;
   preferEarliestSlot?: boolean;
+  /** Pupil pickup postcode (UK). When provided the scheduler geocodes it
+   *  once and feeds the resulting coords into the unified engine so candidate
+   *  slots respect inter-lesson travel time around existing bookings. */
+  pupilPostcode?: string;
+  /** Pre-geocoded pupil pickup coords. Takes precedence over `pupilPostcode`. */
+  candidatePickup?: { lat: number; lng: number } | null;
 }
 
 const TIME_RANGES = {
