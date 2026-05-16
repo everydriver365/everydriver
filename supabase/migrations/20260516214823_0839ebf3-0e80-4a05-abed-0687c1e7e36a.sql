@@ -1,0 +1,1 @@
+UPDATE public.instructors SET preferred_lesson_length = 60, allowed_lesson_lengths = ARRAY[60] WHERE id = 'c9843b58-6edb-4b97-8238-65d725e30aea';
