@@ -752,13 +752,27 @@ export default function Courses() {
     setLoading(true);
     try {
       const whitelabelSlug = getWhitelabelInstructorSlug();
-      const instructorsQuery = supabase.from("public_instructors").select("*").eq("is_active", true);
+      // Supabase/PostgREST defaults to 1000 rows. We have thousands of network
+      // placeholders + courses, so explicitly lift the cap to avoid silent
+      // truncation that hides whole districts from the results.
+      const instructorsQuery = supabase
+        .from("public_instructors")
+        .select("*")
+        .eq("is_active", true)
+        .range(0, 49999);
       if (whitelabelSlug) instructorsQuery.eq("app_slug", whitelabelSlug);
 
       const [instructorsRes, coursesRes, templatesRes] = await Promise.all([
         instructorsQuery,
-        supabase.from("instructor_courses").select("*").eq("is_active", true),
-        supabase.from("course_templates").select("course_hours, course_name, default_image_url, is_popular, features, is_intensive").eq("is_active", true),
+        supabase
+          .from("instructor_courses")
+          .select("*")
+          .eq("is_active", true)
+          .range(0, 49999),
+        supabase
+          .from("course_templates")
+          .select("course_hours, course_name, default_image_url, is_popular, features, is_intensive")
+          .eq("is_active", true),
       ]);
 
       if (instructorsRes.error) throw instructorsRes.error;
