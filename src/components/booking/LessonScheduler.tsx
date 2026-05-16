@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { WaitlistDialog } from "./WaitlistDialog";
 import { useGoogleCalendarRefresh } from "@/hooks/useGoogleCalendarRefresh";
+import { TRAVEL_FALLBACK_MIN } from "@/lib/courseAvailability";
 
 interface WorkingHour {
   day_of_week: number;
@@ -178,6 +179,21 @@ export function LessonScheduler({
     };
   }, [instructorId]);
 
+  // Re-fetch availability when the tab regains focus so a manual block,
+  // Google Calendar event, or lesson added in the last few seconds can't
+  // sneak past as a bookable slot.
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState === "visible") fetchAvailability();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", onVisible);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", onVisible);
+    };
+  }, [instructorId, bookingAdvanceDays]);
+
   // Navigate to the first available date's month when data loads
   useEffect(() => {
     if (!loading && workingHours.length > 0) {
@@ -254,7 +270,7 @@ export function LessonScheduler({
       const maxDate = format(addDays(new Date(), bookingAdvanceDays), "yyyy-MM-dd");
       const fromIso = startOfDay(new Date()).toISOString();
       const toIso = addDays(startOfDay(new Date()), bookingAdvanceDays + 1).toISOString();
-      const [hoursRes, overridesRes, calendarRes, prefRes, lessonsRes] = await Promise.all([
+      const [hoursRes, overridesRes, calendarRes, prefRes, lessonsRes, manualBlocksRes] = await Promise.all([
         supabase
           .from("instructor_working_hours")
           .select("*")
@@ -280,12 +296,19 @@ export function LessonScheduler({
           p_from_date: today,
           p_to_date: maxDate,
         }),
+        // Public-safe RPC — instructor-set manual blocks (holidays, off-time).
+        supabase.rpc("get_public_instructor_manual_blocks", {
+          p_instructor_ids: [instructorId],
+          p_from_datetime: fromIso,
+          p_to_datetime: toIso,
+        }),
       ]);
 
       const hours = hoursRes.data;
       const overrides = overridesRes.data;
       const calendarEvents = calendarRes.data;
       const existingLessons = lessonsRes.data;
+      const manualBlocks = manualBlocksRes.data;
 
       setPreferEarliestSlot((prefRes.data as any)?.prefer_earliest_slot ?? false);
 
@@ -317,12 +340,18 @@ export function LessonScheduler({
         return { start_time: startD.toISOString(), end_time: endD.toISOString() };
       });
 
+      const manualBlockEvents = (manualBlocks || []).map((b: any) => ({
+        start_time: b.start_datetime,
+        end_time: b.end_datetime,
+      }));
+
       setExternalEvents([
         ...(calendarEvents || []).map((e) => ({
           start_time: e.start_time,
           end_time: e.end_time,
         })),
         ...lessonEvents,
+        ...manualBlockEvents,
       ]);
     } catch (error) {
       console.error("Error fetching availability:", error);
@@ -396,7 +425,10 @@ export function LessonScheduler({
       const slotStartDateTime = new Date(`${dateStr}T${slotStart}:00`);
       const slotEndDateTime = new Date(`${dateStr}T${slotEnd}:00`);
 
-      const bufferMs = bufferMinutes * 60 * 1000;
+      // Match courseAvailability + booking-guard: pad each conflict by
+      // instructor buffer + travel fallback (or the live travel estimate if larger).
+      const padMinutes = bufferMinutes + Math.max(TRAVEL_FALLBACK_MIN, travelBufferMinutes ?? 0);
+      const bufferMs = padMinutes * 60 * 1000;
       return externalEvents.some((event) => {
         const eventStart = new Date(event.start_time);
         const eventEnd = new Date(event.end_time);
