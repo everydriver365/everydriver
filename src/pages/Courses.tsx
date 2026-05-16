@@ -755,6 +755,10 @@ export default function Courses() {
 
       const loadedInstructors = instructorsRes.data || [];
       const instructorIds = loadedInstructors.map((i: any) => i.id).filter(Boolean);
+      const realInstructorIds = loadedInstructors
+        .filter((i: any) => !i.is_network_placeholder)
+        .map((i: any) => i.id)
+        .filter(Boolean);
       const firstMonth = startOfDay(new Date());
       const lastMonthOption = monthOptions[monthOptions.length - 1];
       const [lastYear, lastMonth] = lastMonthOption.value.split("-").map(Number);
@@ -764,39 +768,39 @@ export default function Courses() {
       const fromIso = firstMonth.toISOString();
       const toIso = new Date(rangeEnd.getFullYear(), rangeEnd.getMonth(), rangeEnd.getDate() + 1).toISOString();
 
-      const [workingHoursRes, availabilityWindowsRes, overridesRes, lessonsRes, blocksRes, eventsRes] = instructorIds.length > 0
+      const [workingHoursRes, availabilityWindowsRes, overridesRes, lessonsRes, blocksRes, eventsRes] = realInstructorIds.length > 0
         ? await Promise.all([
             supabase
               .from("instructor_working_hours")
               .select("instructor_id, day_of_week, start_time, end_time, is_active")
-              .in("instructor_id", instructorIds),
+              .in("instructor_id", realInstructorIds),
             supabase
               .from("availability_windows")
               .select("instructor_id, day_of_week, start_time, end_time, is_active")
-              .in("instructor_id", instructorIds),
+              .in("instructor_id", realInstructorIds),
             supabase
               .from("instructor_date_overrides")
               .select("instructor_id, override_date, override_end_date, is_available, start_time, end_time")
-              .in("instructor_id", instructorIds)
+              .in("instructor_id", realInstructorIds)
               .gte("override_date", fromYmd)
               .lte("override_date", toYmd),
             supabase
               .from("scheduled_lessons")
               .select("instructor_id, lesson_date, start_time, duration_minutes, status")
-              .in("instructor_id", instructorIds)
+              .in("instructor_id", realInstructorIds)
               .gte("lesson_date", fromYmd)
               .lte("lesson_date", toYmd)
               .neq("status", "cancelled"),
             supabase
               .from("instructor_manual_blocks")
               .select("instructor_id, start_datetime, end_datetime")
-              .in("instructor_id", instructorIds)
+              .in("instructor_id", realInstructorIds)
               .gte("end_datetime", fromIso)
               .lte("start_datetime", toIso),
             supabase
               .from("instructor_calendar_events")
               .select("instructor_id, start_time, end_time, is_busy")
-              .in("instructor_id", instructorIds)
+              .in("instructor_id", realInstructorIds)
               .eq("is_busy", true)
               .gte("end_time", fromIso)
               .lte("start_time", toIso),
@@ -850,7 +854,10 @@ export default function Courses() {
       }
 
       // Geocode all instructor postcodes
-      const allPostcodes = (instructorsRes.data || []).map((i: any) => (i.home_postcode || "").replace(/\s+/g, "").toUpperCase()).filter(Boolean);
+      const allPostcodes = (instructorsRes.data || [])
+        .filter((i: any) => !i.is_network_placeholder)
+        .map((i: any) => (i.home_postcode || "").replace(/\s+/g, "").toUpperCase())
+        .filter(Boolean);
       await geocodePostcodes(allPostcodes);
 
       // Load postcode rate overrides for all visible instructors (single batched query)
