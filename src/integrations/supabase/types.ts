@@ -15932,6 +15932,7 @@ export type Database = {
           amount_due: number | null
           awaiting_initial_payment: boolean
           booking_status: string | null
+          calendar_sync_status: string
           cancellation_note: string | null
           cancellation_reason: string | null
           cancelled_at: string | null
@@ -15983,6 +15984,7 @@ export type Database = {
           amount_due?: number | null
           awaiting_initial_payment?: boolean
           booking_status?: string | null
+          calendar_sync_status?: string
           cancellation_note?: string | null
           cancellation_reason?: string | null
           cancelled_at?: string | null
@@ -16034,6 +16036,7 @@ export type Database = {
           amount_due?: number | null
           awaiting_initial_payment?: boolean
           booking_status?: string | null
+          calendar_sync_status?: string
           cancellation_note?: string | null
           cancellation_reason?: string | null
           cancelled_at?: string | null
