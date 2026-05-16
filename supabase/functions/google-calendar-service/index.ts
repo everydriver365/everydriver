@@ -14,6 +14,16 @@ interface JWTClaims {
   scope: string;
 }
 
+// Detects "blocking" all-day events (holidays, leave, sickness, etc.) by title.
+// Non-matching all-day events are treated as informational (is_busy=false)
+// so a stray all-day note doesn't wipe out the instructor's whole working day.
+const BLOCKING_TITLE_RE = /holiday|vacation|\bvac\b|\boff\b|leave|sick|away|closed|unavailable|annual leave|day off|out of office|\booo\b/i;
+function computeIsBusy(item: any, title: string | null): boolean {
+  const isAllDay = !item.start?.dateTime && !!item.start?.date;
+  if (!isAllDay) return true;
+  return BLOCKING_TITLE_RE.test(title || "");
+}
+
 // Base64url encode
 function base64urlEncode(data: Uint8Array): string {
   const base64 = btoa(String.fromCharCode(...data));
