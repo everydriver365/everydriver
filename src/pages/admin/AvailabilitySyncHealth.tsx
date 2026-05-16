@@ -23,6 +23,7 @@ import {
   mirrorAwToIwh,
   mirrorIwhToAw,
 } from "@/lib/syncWeeklyHours";
+import { ExportCalendarEngineButton } from "@/components/admin/ExportCalendarEngineButton";
 
 type Issue =
   | "drift_iwh_only"
@@ -322,10 +323,13 @@ export default function AvailabilitySyncHealth() {
               </p>
             </div>
           </div>
-          <Button variant="outline" size="sm" onClick={load} disabled={refreshing}>
-            <RefreshCw className={`w-4 h-4 mr-1 ${refreshing ? "animate-spin" : ""}`} />
-            Refresh
-          </Button>
+          <div className="flex items-center gap-2">
+            <ExportCalendarEngineButton />
+            <Button variant="outline" size="sm" onClick={load} disabled={refreshing}>
+              <RefreshCw className={`w-4 h-4 mr-1 ${refreshing ? "animate-spin" : ""}`} />
+              Refresh
+            </Button>
+          </div>
         </div>
 
         {/* Stats */}
