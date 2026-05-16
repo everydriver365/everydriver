@@ -432,11 +432,16 @@ export default function Courses() {
   }, [instructorCourses]);
 
   const instructorsInArea = useMemo(() => {
-    if (!userLocation) return instructors;
+    const searchedDistrict = extractPostcodeDistrict(searchedPostcode);
+    if (!userLocation && !searchedDistrict) return instructors;
 
     const radiusMiles = parseInt(radius);
 
     return instructors.filter((instructor) => {
+      if (instructor.is_network_placeholder) {
+        return !!searchedDistrict && instructor.placeholder_district === searchedDistrict;
+      }
+      if (!userLocation) return false;
       const instructorPostcode = instructor.home_postcode.replace(/\s+/g, "").toUpperCase();
       const cached = geoCache[instructorPostcode];
       const instructorLocation = cached
@@ -454,12 +459,12 @@ export default function Courses() {
 
       return distance <= radiusMiles;
     });
-  }, [instructors, userLocation, radius, geoCache]);
+  }, [instructors, userLocation, radius, geoCache, searchedPostcode]);
 
   const relevantInstructors = useMemo(() => {
-    const base = userLocation ? instructorsInArea : instructors;
+    const base = (userLocation || searchedPostcode) ? instructorsInArea : instructors;
     return base.filter((i) => instructorIdsWithCourses.has(i.id));
-  }, [instructors, instructorsInArea, instructorIdsWithCourses, userLocation]);
+  }, [instructors, instructorsInArea, instructorIdsWithCourses, userLocation, searchedPostcode]);
 
   // Get available dates for the selected month
   const availableDatesInMonth = useMemo(() => {
