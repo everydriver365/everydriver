@@ -290,90 +290,52 @@ export function LessonScheduler({
   const fetchAvailability = async () => {
     setLoading(true);
     try {
-      const today = format(new Date(), "yyyy-MM-dd");
-      const maxDate = format(addDays(new Date(), bookingAdvanceDays), "yyyy-MM-dd");
-      const fromIso = startOfDay(new Date()).toISOString();
-      const toIso = addDays(startOfDay(new Date()), bookingAdvanceDays + 1).toISOString();
-      // BUSYNESS SOURCE: Google Calendar + manual blocks only.
-      // scheduled_lessons is CRM data and must NEVER be consulted for availability.
-      const [hoursRes, overridesRes, calendarRes, prefRes, manualBlocksRes] = await Promise.all([
-        supabase
-          .from("instructor_working_hours")
-          .select("*")
-          .eq("instructor_id", instructorId),
-        supabase
-          .from("instructor_date_overrides")
-          .select("*")
-          .eq("instructor_id", instructorId)
-          .or(`override_end_date.gte.${today},override_end_date.is.null`)
-          .lte("override_date", maxDate),
-        (supabase as any).rpc("get_public_instructor_calendar_blocks", {
-          p_instructor_ids: [instructorId],
-          p_from_datetime: fromIso,
-          p_to_datetime: toIso,
-        }),
-        // Public-safe RPC — works for anonymous booking visitors.
+      const fromDate = new Date();
+      const toDate = addDays(fromDate, bookingAdvanceDays);
+
+      // Single shared loader — same RPCs used by /courses and create-booking
+      // so we cannot disagree on what counts as "busy".
+      const [src, prefRes, instrRes] = await Promise.all([
+        loadCourseAvailabilitySources(supabase, [instructorId], fromDate, toDate),
         supabase
           .rpc("get_public_instructor_booking_preferences", { p_instructor_id: instructorId })
           .maybeSingle(),
-        // Public-safe RPC — instructor-set manual blocks (holidays, off-time).
-        supabase.rpc("get_public_instructor_manual_blocks", {
-          p_instructor_ids: [instructorId],
-          p_from_datetime: fromIso,
-          p_to_datetime: toIso,
-        }),
+        supabase
+          .from("public_instructors")
+          .select("slot_increment_minutes")
+          .eq("id", instructorId)
+          .maybeSingle(),
       ]);
 
-      const hours = hoursRes.data;
-      const overrides = overridesRes.data;
-      const calendarEvents = calendarRes.data;
-      const manualBlocks = manualBlocksRes.data;
-
+      setSources(src);
       setPreferEarliestSlot((prefRes.data as any)?.prefer_earliest_slot ?? false);
+      const inc = (instrRes.data as any)?.slot_increment_minutes;
+      if (typeof inc === "number" && inc > 0) setSlotIncrementMinutes(inc);
 
+      // Mirror to the legacy state arrays so day-tile rendering and
+      // isDateAvailableCheck (which read these directly) keep working.
       setWorkingHours(
-        (hours || []).map((h) => ({
+        (src.workingHours || []).map((h) => ({
           day_of_week: h.day_of_week,
-          start_time: h.start_time.slice(0, 5),
-          end_time: h.end_time.slice(0, 5),
+          start_time: (h.start_time || "00:00").slice(0, 5),
+          end_time: (h.end_time || "00:00").slice(0, 5),
           is_active: h.is_active,
-        }))
+        })),
       );
-
       setDateOverrides(
-        (overrides || []).map((o) => ({
+        (src.overrides || []).map((o) => ({
           override_date: o.override_date,
-          override_end_date: o.override_end_date,
+          override_end_date: o.override_end_date ?? null,
           start_time: o.start_time?.slice(0, 5) || null,
           end_time: o.end_time?.slice(0, 5) || null,
           is_available: o.is_available,
-        }))
-      );
-
-      const manualBlockEvents = (manualBlocks || []).map((b: any) => ({
-        start_time: b.start_datetime,
-        end_time: b.end_datetime,
-      }));
-
-      // Filter out all-day / multi-day Google Calendar events via the unified
-      // engine rule (src/lib/availabilityEngine.ts -> isAllDayLikeEvent). These
-      // are informational items (e.g. "Summer term", "Lotty : No College") that
-      // would otherwise wipe out every bookable slot for weeks at a time.
-      // Instructors block real days off via manual blocks, which remain blocking.
-      const timedCalendarEvents = (calendarEvents || []).filter((e: any) => {
-        try {
-          return !isAllDayLikeEvent(e.start_time, e.end_time);
-        } catch {
-          return false;
-        }
-      });
-
-      setExternalEvents([
-        ...timedCalendarEvents.map((e: any) => ({
-          start_time: e.start_time,
-          end_time: e.end_time,
         })),
-        ...manualBlockEvents,
+      );
+      // Keep externalEvents in sync for any leftover consumers (e.g. callbacks
+      // that pre-existed the unified path). Filtering happens inside the engine.
+      setExternalEvents([
+        ...src.calendarEvents.map((e) => ({ start_time: e.start_time, end_time: e.end_time })),
+        ...src.manualBlocks.map((b) => ({ start_time: b.start_datetime, end_time: b.end_datetime })),
       ]);
     } catch (error) {
       console.error("Error fetching availability:", error);
