@@ -213,11 +213,13 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
   // Single source of truth: delegates to courseAvailability resolver, which
   // honours working hours, date overrides, manual blocks, scheduled lessons,
   // Google Calendar busy events, and instructor buffer + travel padding.
-  const isDateAvailable = useCallback((day: Date, instructorsList: Instructor[], src: CourseAvailabilitySources) => {
+  const isDateAvailable = useCallback((day: Date, instructorsList: Instructor[], src: CourseAvailabilitySources, candidatePickup?: { lat: number; lng: number } | null) => {
     const today = startOfDay(new Date());
     if (isBefore(day, today)) return false;
     return instructorsList.some((instructor) =>
-      hasInstructorAvailabilityOn(instructor as InstructorLite, day, src),
+      hasInstructorAvailabilityOn(instructor as InstructorLite, day, src, {
+        candidatePickup: candidatePickup ?? undefined,
+      }),
     );
   }, []);
 
@@ -506,7 +508,9 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
 
       for (const day of days) {
         const isAvailable = relevantInstructors.some((instructor) =>
-          hasInstructorAvailabilityOn(instructor as InstructorLite, day, sources),
+          hasInstructorAvailabilityOn(instructor as InstructorLite, day, sources, {
+            candidatePickup: userLocation ?? undefined,
+          }),
         );
         if (isAvailable) {
           results.push(day);
@@ -537,7 +541,9 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
       if (isBefore(day, today)) return false;
       if (placeholdersOnly) return hasNetworkPlaceholderAvailabilityOn(day);
       return realInArea.some((instructor) =>
-        hasInstructorAvailabilityOn(instructor as InstructorLite, day, sources),
+        hasInstructorAvailabilityOn(instructor as InstructorLite, day, sources, {
+          candidatePickup: userLocation ?? undefined,
+        }),
       );
     });
   }, [selectedMonth, instructors, instructorsInArea, sources, userLocation]);
@@ -571,7 +577,7 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
       // hours, calendar, or lessons, so the standard availability resolver
       // would always reject them. We treat them as always available on the
       // selected date and route the user through the enquiry flow.
-      if (!isPlaceholder && !hasInstructorAvailabilityOn(instructor as InstructorLite, selectedDate, sources)) {
+      if (!isPlaceholder && !hasInstructorAvailabilityOn(instructor as InstructorLite, selectedDate, sources, { candidatePickup: userLocation ?? undefined })) {
         continue;
       }
 
@@ -615,7 +621,7 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
     }
 
     return courses;
-  }, [selectedDate, instructors, instructorCourses, courseTemplates, sources, displayHours, courseTypeFilter, premiumPlacements]);
+  }, [selectedDate, instructors, instructorCourses, courseTemplates, sources, displayHours, courseTypeFilter, premiumPlacements, userLocation]);
 
   const coursesWithDistance = useMemo(() => {
     if (!userLocation) return coursesForSelectedDate;

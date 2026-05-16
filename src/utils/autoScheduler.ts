@@ -22,6 +22,12 @@ interface AutoScheduleParams {
   courseType?: 'intensive' | 'semi-intensive' | 'weekly';
   startFromDate?: Date;
   preferEarliestSlot?: boolean;
+  /** Pupil pickup postcode (UK). When provided the scheduler geocodes it
+   *  once and feeds the resulting coords into the unified engine so candidate
+   *  slots respect inter-lesson travel time around existing bookings. */
+  pupilPostcode?: string;
+  /** Pre-geocoded pupil pickup coords. Takes precedence over `pupilPostcode`. */
+  candidatePickup?: { lat: number; lng: number } | null;
 }
 
 const TIME_RANGES = {
@@ -77,6 +83,8 @@ export async function findOptimalSlots(params: AutoScheduleParams): Promise<Slot
     courseType = 'weekly',
     startFromDate = new Date(),
     preferEarliestSlot = false,
+    pupilPostcode,
+    candidatePickup: candidatePickupParam,
   } = params;
 
   const totalMinutesNeeded = totalHours * 60;
@@ -84,6 +92,18 @@ export async function findOptimalSlots(params: AutoScheduleParams): Promise<Slot
 
   const fromDate = new Date(startFromDate);
   const toDate = addDays(startFromDate, lookAheadDays);
+
+  // Geocode pupil postcode once (cached in travelTime module) so the unified
+  // engine can inject inter-lesson travel padding.
+  let candidatePickup: { lat: number; lng: number } | null = candidatePickupParam ?? null;
+  if (!candidatePickup && pupilPostcode) {
+    try {
+      const { geocodePostcode } = await import('@/lib/travelTime');
+      candidatePickup = await geocodePostcode(pupilPostcode);
+    } catch {
+      candidatePickup = null;
+    }
+  }
 
   // Load the instructor row + all shared availability sources via the unified loader.
   const [instructorRes, sources] = await Promise.all([
@@ -118,6 +138,7 @@ export async function findOptimalSlots(params: AutoScheduleParams): Promise<Slot
       durationMinutes: lessonLength,
       bufferMinutes: buffer,
       slotIncrementMinutes: slotIncrement,
+      candidatePickup: candidatePickup ?? undefined,
     });
 
     for (const slot of slots) {

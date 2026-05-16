@@ -405,10 +405,11 @@ export default function Courses() {
   // Google Calendar busy events + existing scheduled lessons + manual blocks).
   // Each instructor's check uses their own minimum lesson length so search
   // matches what the booking calendar can actually offer.
-  const isDateAvailable = useCallback((day: Date, instructorsList: Instructor[], src: CourseAvailabilitySources) => {
+  const isDateAvailable = useCallback((day: Date, instructorsList: Instructor[], src: CourseAvailabilitySources, candidatePickup?: { lat: number; lng: number } | null) => {
     return instructorsList.some((instructor) =>
       hasInstructorAvailabilityOn(instructor, day, src, {
         minFreeMinutes: instructor.is_network_placeholder ? undefined : instructorMinSlotMinutes(instructor),
+        candidatePickup: candidatePickup ?? undefined,
       }),
     );
   }, []);
@@ -508,6 +509,7 @@ export default function Courses() {
       return realInArea.some((instructor) =>
         hasInstructorAvailabilityOn(instructor, day, availabilitySources, {
           minFreeMinutes: instructorMinSlotMinutes(instructor),
+          candidatePickup: userLocation ?? undefined,
         })
       );
     });
@@ -520,7 +522,7 @@ export default function Courses() {
       const dateStr = format(day, "yyyy-MM-dd");
       let count = 0;
       for (const instructor of relevantInstructors) {
-        if (!instructor.is_network_placeholder && !hasInstructorAvailabilityOn(instructor, day, availabilitySources, { minFreeMinutes: instructorMinSlotMinutes(instructor) })) continue;
+        if (!instructor.is_network_placeholder && !hasInstructorAvailabilityOn(instructor, day, availabilitySources, { minFreeMinutes: instructorMinSlotMinutes(instructor), candidatePickup: userLocation ?? undefined })) continue;
         const offeredCourses = instructorCourses.filter((c) => c.instructor_id === instructor.id);
         for (const hours of DISPLAY_HOURS) {
           if (offeredCourses.find((c) => c.course_hours === hours)) count++;
@@ -529,14 +531,14 @@ export default function Courses() {
       counts[dateStr] = count;
     }
     return counts;
-  }, [availableDatesInMonth, relevantInstructors, instructorCourses, availabilitySources]);
+  }, [availableDatesInMonth, relevantInstructors, instructorCourses, availabilitySources, userLocation]);
 
   // Generate courses for the selected date
   const coursesForSelectedDate = useMemo(() => {
     if (!selectedDate) return [];
     const courses: CourseWithInstructor[] = [];
     for (const instructor of relevantInstructors) {
-      if (!instructor.is_network_placeholder && !hasInstructorAvailabilityOn(instructor, selectedDate, availabilitySources, { minFreeMinutes: instructorMinSlotMinutes(instructor) })) continue;
+      if (!instructor.is_network_placeholder && !hasInstructorAvailabilityOn(instructor, selectedDate, availabilitySources, { minFreeMinutes: instructorMinSlotMinutes(instructor), candidatePickup: userLocation ?? undefined })) continue;
       const offeredCourses = instructorCourses.filter((c) => c.instructor_id === instructor.id);
       for (const hours of DISPLAY_HOURS) {
         const courseData = offeredCourses.find((c) => c.course_hours === hours);
@@ -564,7 +566,7 @@ export default function Courses() {
       }
     }
     return courses;
-  }, [selectedDate, relevantInstructors, instructorCourses, courseTemplates, availabilitySources]);
+  }, [selectedDate, relevantInstructors, instructorCourses, courseTemplates, availabilitySources, userLocation]);
 
   // Geocode postcodes via edge function
   const geocodePostcodes = useCallback(async (postcodes: string[]): Promise<{ geoCache: GeoCache; areaCache: { [postcode: string]: string | null } }> => {
