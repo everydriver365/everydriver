@@ -1450,8 +1450,8 @@ export default function Courses() {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={clearSearch}
-                    className="inline-flex items-center gap-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold transition-colors hover:bg-slate-50"
-                    style={{ border: "1px solid #d0d0d8", color: "#0A0A0A" }}
+                    className="inline-flex items-center gap-1.5 bg-white text-sm font-medium transition-colors hover:!border-[#2D3FE7]"
+                    style={{ border: "1px solid #E5E7EB", color: "#0A0A0A", padding: "10px 18px", borderRadius: 4 }}
                   >
                     <Edit2 className="h-3.5 w-3.5" />
                     Change
