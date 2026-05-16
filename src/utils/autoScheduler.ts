@@ -114,10 +114,15 @@ export async function findOptimalSlots(params: AutoScheduleParams): Promise<Slot
   const totalMinutesNeeded = totalHours * 60;
   const lookAheadDays = courseType === 'intensive' ? 14 : courseType === 'semi-intensive' ? 30 : 60;
 
-  // Fetch all availability data
+  // Fetch all availability data.
+  // BUSYNESS SOURCE: Google Calendar (`get_public_instructor_calendar_blocks`) +
+  // manual blocks (`get_public_instructor_manual_blocks`) only.
+  // scheduled_lessons is CRM data and must NEVER be consulted for availability.
   const fromDate = formatDate(startFromDate);
   const toDate = formatDate(addDays(startFromDate, lookAheadDays));
-  const [workingHoursRes, overridesRes, lessonsRes] = await Promise.all([
+  const fromIso = new Date(`${fromDate}T00:00:00`).toISOString();
+  const toIso = new Date(`${toDate}T23:59:59`).toISOString();
+  const [workingHoursRes, overridesRes, calendarRes, manualBlocksRes] = await Promise.all([
     supabase
       .from('instructor_working_hours')
       .select('*')
@@ -128,21 +133,41 @@ export async function findOptimalSlots(params: AutoScheduleParams): Promise<Slot
       .eq('instructor_id', instructorId)
       .gte('override_date', fromDate)
       .lte('override_date', toDate),
-    // Public-safe RPC — works for anonymous booking visitors.
-    supabase.rpc('get_public_scheduled_lesson_blocks', {
+    (supabase as any).rpc('get_public_instructor_calendar_blocks', {
       p_instructor_ids: [instructorId],
-      p_from_date: fromDate,
-      p_to_date: toDate,
+      p_from_datetime: fromIso,
+      p_to_datetime: toIso,
+    }),
+    supabase.rpc('get_public_instructor_manual_blocks', {
+      p_instructor_ids: [instructorId],
+      p_from_datetime: fromIso,
+      p_to_datetime: toIso,
     }),
   ]);
 
   const workingHours = (workingHoursRes.data || []) as unknown as WorkingHours[];
   const overrides = (overridesRes.data || []) as unknown as DateOverride[];
-  const lessons = (lessonsRes.data || []) as unknown as ScheduledLesson[];
-  
-  // Initialize empty arrays for external events and manual blocks (may not exist in all schemas)
-  const externalEvents: ExternalEvent[] = [];
-  const manualBlocks: ManualBlock[] = [];
+
+  // Filter out all-day / multi-day Google Calendar events consistent with
+  // src/lib/availabilityEngine.ts (informational items like "Summer term").
+  const isAllDayLike = (startIso: string, endIso: string): boolean => {
+    const s = new Date(startIso);
+    const e = new Date(endIso);
+    const durMs = e.getTime() - s.getTime();
+    if (durMs >= 20 * 60 * 60 * 1000) return true;
+    const startsAtMidnight = s.getUTCHours() === 0 && s.getUTCMinutes() === 0;
+    const endsAtMidnight = e.getUTCHours() === 0 && e.getUTCMinutes() === 0;
+    return startsAtMidnight && endsAtMidnight && durMs >= 12 * 60 * 60 * 1000;
+  };
+
+  type RawBlock = { start_time?: string; end_time?: string; start_datetime?: string; end_datetime?: string; is_busy?: boolean };
+  const calendarBlocks: { start: Date; end: Date }[] = ((calendarRes.data || []) as RawBlock[])
+    .filter((e) => e.is_busy !== false)
+    .filter((e) => !isAllDayLike(e.start_time!, e.end_time!))
+    .map((e) => ({ start: new Date(e.start_time!), end: new Date(e.end_time!) }));
+  const manualBlockEvents: { start: Date; end: Date }[] = ((manualBlocksRes.data || []) as RawBlock[])
+    .map((b) => ({ start: new Date(b.start_datetime!), end: new Date(b.end_datetime!) }));
+  const allBusyBlocks = [...calendarBlocks, ...manualBlockEvents];
 
   // Generate all possible slots for each day
   const allCandidates: SlotCandidate[] = [];
@@ -155,7 +180,7 @@ export async function findOptimalSlots(params: AutoScheduleParams): Promise<Slot
 
     // Check for date override
     const override = overrides.find(o => o.override_date === dateStr);
-    
+
     let dayStart: number;
     let dayEnd: number;
 
@@ -170,30 +195,19 @@ export async function findOptimalSlots(params: AutoScheduleParams): Promise<Slot
       dayEnd = parseTime(hours.end_time);
     }
 
-    // Get blocked time slots for this day
+    // Build blocked intervals for this day from calendar + manual blocks
+    // (clip to the day in local time).
+    const dayStartLocal = new Date(date); dayStartLocal.setHours(0, 0, 0, 0);
+    const dayEndLocal = new Date(date); dayEndLocal.setHours(23, 59, 59, 999);
     const blockedSlots: { start: number; end: number }[] = [];
-
-    // Add existing lessons
-    lessons
-      .filter(l => l.lesson_date === dateStr)
-      .forEach(l => {
-        const start = parseTime(l.start_time);
-        blockedSlots.push({ start, end: start + l.duration_minutes });
-      });
-
-    // Add external events
-    externalEvents
-      .filter(e => e.event_date === dateStr)
-      .forEach(e => {
-        blockedSlots.push({ start: parseTime(e.start_time), end: parseTime(e.end_time) });
-      });
-
-    // Add manual blocks
-    manualBlocks
-      .filter(b => b.block_date === dateStr)
-      .forEach(b => {
-        blockedSlots.push({ start: parseTime(b.start_time), end: parseTime(b.end_time) });
-      });
+    for (const b of allBusyBlocks) {
+      if (b.end <= dayStartLocal || b.start >= dayEndLocal) continue;
+      const s = b.start < dayStartLocal ? dayStartLocal : b.start;
+      const e = b.end > dayEndLocal ? dayEndLocal : b.end;
+      const startMin = s.getHours() * 60 + s.getMinutes();
+      const endMin = (e.getHours() * 60 + e.getMinutes()) || 24 * 60;
+      blockedSlots.push({ start: startMin, end: endMin });
+    }
 
     // Sort blocked slots
     blockedSlots.sort((a, b) => a.start - b.start);
