@@ -18,6 +18,7 @@ const PaymentAudit = lazy(() => import("@/pages/admin/PaymentAudit"));
 const WebhookDeliveryLog = lazy(() => import("@/pages/admin/WebhookDeliveryLog"));
 const CustomDomainQueue = lazy(() => import("@/pages/admin/CustomDomainQueue"));
 const CourseImageOptimizer = lazy(() => import("@/pages/admin/CourseImageOptimizer"));
+const AdminInstructorVerifications = lazy(() => import("@/pages/admin/AdminInstructorVerifications"));
 
 export const adminRoutes = (
   <>
