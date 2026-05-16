@@ -388,7 +388,7 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
               </div>
               <div className="d365-feat">
                 <img
-                  src="https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?w=600&q=80"
+                  src={semiCourseImg}
                   alt="Happy learner driver with an L-plate enjoying a flexible semi-intensive driving lesson"
                   onError={(e) => { (e.currentTarget as HTMLImageElement).style.visibility = "hidden"; }}
                 />
