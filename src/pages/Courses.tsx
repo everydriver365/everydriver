@@ -53,6 +53,21 @@ interface Instructor {
   clearpay_enabled?: boolean | null;
   is_network_placeholder?: boolean | null;
   placeholder_district?: string | null;
+  allowed_lesson_lengths?: number[] | null;
+  preferred_lesson_length?: number | null;
+  buffer_minutes?: number | null;
+}
+
+// Smallest lesson the instructor will accept. The booking calendar refuses to
+// offer slots shorter than this, so course search must match that bar — otherwise
+// a date can advertise as "available" but produce a blank calendar at checkout.
+function instructorMinSlotMinutes(instructor: Instructor): number {
+  const allowed = (instructor.allowed_lesson_lengths || []).filter((n) => n > 0);
+  if (allowed.length > 0) return Math.min(...allowed);
+  if (instructor.preferred_lesson_length && instructor.preferred_lesson_length > 0) {
+    return instructor.preferred_lesson_length;
+  }
+  return 60;
 }
 
 // Extract UK postcode district (outcode), e.g. "WD17 3AA" -> "WD17".
