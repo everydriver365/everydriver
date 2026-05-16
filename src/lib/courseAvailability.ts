@@ -61,6 +61,7 @@ export interface InstructorLite {
   available_from?: string | null;
   /** Per-instructor configured buffer between lessons in minutes. */
   buffer_minutes?: number | null;
+  is_network_placeholder?: boolean | null;
 }
 
 export interface CourseAvailabilitySources {
@@ -75,6 +76,31 @@ export interface CourseAvailabilitySources {
 const DEFAULT_DAY_START = "08:00";
 const DEFAULT_DAY_END = "20:00";
 export const MIN_FREE_MINUTES = 60;
+
+const NETWORK_PLACEHOLDER_WEEKDAY_START_MIN = 8 * 60;
+const NETWORK_PLACEHOLDER_WEEKDAY_END_MIN = 19 * 60;
+const NETWORK_PLACEHOLDER_WEEKEND_START_MIN = 9 * 60;
+const NETWORK_PLACEHOLDER_WEEKEND_END_MIN = 12 * 60;
+
+export function hasNetworkPlaceholderAvailabilityOn(
+  day: Date,
+  minFreeMinutes: number = MIN_FREE_MINUTES,
+): boolean {
+  const today = startOfDay(new Date());
+  if (isBefore(day, today)) return false;
+
+  const jsDow = day.getDay();
+  const isWeekend = jsDow === 0 || jsDow === 6;
+  const start = isWeekend ? NETWORK_PLACEHOLDER_WEEKEND_START_MIN : NETWORK_PLACEHOLDER_WEEKDAY_START_MIN;
+  const end = isWeekend ? NETWORK_PLACEHOLDER_WEEKEND_END_MIN : NETWORK_PLACEHOLDER_WEEKDAY_END_MIN;
+
+  const dateStr = format(day, "yyyy-MM-dd");
+  const isToday = format(today, "yyyy-MM-dd") === dateStr;
+  const nowMin = isToday ? new Date().getHours() * 60 + new Date().getMinutes() : 0;
+  const effectiveStart = isToday ? Math.max(start, nowMin) : start;
+
+  return end - effectiveStart >= minFreeMinutes;
+}
 
 function timeToMin(t?: string | null): number | null {
   if (!t) return null;
@@ -276,6 +302,10 @@ export function hasInstructorAvailabilityOn(
   src: CourseAvailabilitySources,
   opts: { minFreeMinutes?: number; applyBuffers?: boolean } = {},
 ): boolean {
+  if (instructor.is_network_placeholder) {
+    return hasNetworkPlaceholderAvailabilityOn(day, opts.minFreeMinutes ?? MIN_FREE_MINUTES);
+  }
+
   const today = startOfDay(new Date());
   if (isBefore(day, today)) return false;
   if (instructor.available_from && isAfter(parseISO(instructor.available_from), day)) {
