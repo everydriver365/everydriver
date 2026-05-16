@@ -19,6 +19,7 @@ import { resolveHourlyRate, type PostcodeRateRule } from "@/lib/pricing/resolveH
 import { SEOHead } from "@/components/SEOHead";
 import {
   hasInstructorAvailabilityOn,
+  hasNetworkPlaceholderAvailabilityOn,
   type CourseAvailabilitySources,
   type WeeklyHourRow,
   type DateOverrideRow,
@@ -475,15 +476,15 @@ export default function Courses() {
 
     const allDays = eachDayOfInterval({ start: monthStart, end: monthEnd });
 
-    // Placeholders are enquiry-only — when the only matches in area are
-    // placeholders, treat every future day as available.
+    // Mock network instructors use fixed enquiry hours:
+    // Mon-Fri 08:00-19:00, Sat/Sun 09:00-12:00.
     const realInArea = relevantInstructors.filter((i) => !i.is_network_placeholder);
     const placeholdersOnly =
       !!(userLocation || searchedPostcode) && realInArea.length === 0 && relevantInstructors.length > 0;
 
     return allDays.filter((day) => {
       if (isBefore(day, today)) return false;
-      if (placeholdersOnly) return true;
+      if (placeholdersOnly) return hasNetworkPlaceholderAvailabilityOn(day);
       return realInArea.some((instructor) =>
         hasInstructorAvailabilityOn(instructor, day, availabilitySources)
       );
@@ -672,10 +673,16 @@ export default function Courses() {
         setSelectedMonth(firstAvailable.month);
         setSelectedDate(firstAvailable.date);
       } else if (hasPlaceholderNearby && !hasRealNearby) {
-        // Placeholder-only area: pick today so the enquiry cards render immediately.
-        const today = startOfDay(new Date());
-        setSelectedMonth(format(today, "yyyy-MM"));
-        setSelectedDate(today);
+        const placeholderAvailable = findFirstAvailableDate(
+          instructorsNearby.filter((i) => i.is_network_placeholder),
+          availabilitySources,
+        );
+        if (placeholderAvailable) {
+          setSelectedMonth(placeholderAvailable.month);
+          setSelectedDate(placeholderAvailable.date);
+        } else {
+          setSelectedDate(null);
+        }
       } else {
         setSelectedDate(null);
       }
