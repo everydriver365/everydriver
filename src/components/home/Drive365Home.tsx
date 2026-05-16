@@ -43,14 +43,14 @@ const COURSES = [
     priceUnit: null as string | null,
     ctaLabel: "View courses",
     ctaHref: "/courses?type=intensive",
-    ctaBg: "#0F2044",
+    ctaBg: "#191C2F",
     featured: false,
-    sceneBg: "#1A52A0",
+    sceneBg: "#3E57D9",
   },
   {
     id: "semi",
     badge: "Most popular",
-    badgeColor: "#1A52A0",
+    badgeColor: "#3E57D9",
     title: "Semi-Intensive",
     description:
       "The perfect balance of speed and flexibility. Ideal if you have some availability but need time to practise between sessions.",
@@ -59,7 +59,7 @@ const COURSES = [
     priceUnit: null as string | null,
     ctaLabel: "View courses",
     ctaHref: "/courses?type=semi-intensive",
-    ctaBg: "#1A52A0",
+    ctaBg: "#3E57D9",
     featured: true,
     sceneBg: "#3B6D11",
   },
@@ -75,7 +75,7 @@ const COURSES = [
     priceUnit: "/hour",
     ctaLabel: "View lessons",
     ctaHref: "/courses?type=weekly",
-    ctaBg: "#0F2044",
+    ctaBg: "#191C2F",
     featured: false,
     sceneBg: "#1D9E75",
   },
@@ -85,7 +85,7 @@ const WHY_ITEMS = [
   {
     icon: ShieldCheck,
     iconBg: "#E6F1FB",
-    iconColor: "#1A52A0",
+    iconColor: "#3E57D9",
     title: "Money back guarantee",
     body: "Pass first time or get your money back. Free retest included if you don't pass.",
   },
@@ -117,7 +117,7 @@ const REVIEWS = [
     text:
       '"Passed first time with Drive365. Ken was an incredible instructor — patient, thorough and always on time. The test swap feature saved me weeks of waiting too."',
     initials: "BF",
-    color: "#1A52A0",
+    color: "#3E57D9",
     name: "Berty F.",
     sub: "Eastleigh · Passed first time",
   },
@@ -149,7 +149,7 @@ const HeroCarIllustration = () => (
     <defs>
       <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
         <stop offset="0%" stopColor="#16306B" />
-        <stop offset="100%" stopColor="#0F2044" />
+        <stop offset="100%" stopColor="#191C2F" />
       </linearGradient>
       <linearGradient id="road" x1="0" y1="0" x2="0" y2="1">
         <stop offset="0%" stopColor="#1A2540" />
@@ -197,8 +197,8 @@ const HeroCarIllustration = () => (
     {/* Roof highlight */}
     <path d="M180 218 Q200 212 230 212 L290 212 Q318 215 330 230 L210 230 Z" fill="#F77784" opacity="0.7" />
     {/* Windows */}
-    <path d="M195 232 L218 218 L268 218 L286 232 Z" fill="#0F2044" />
-    <path d="M290 232 L286 218 L318 220 L328 232 Z" fill="#0F2044" />
+    <path d="M195 232 L218 218 L268 218 L286 232 Z" fill="#191C2F" />
+    <path d="M290 232 L286 218 L318 220 L328 232 Z" fill="#191C2F" />
     {/* L-plate */}
     <rect x="202" y="248" width="14" height="14" fill="#FFF" rx="1" />
     <text x="209" y="259" fontSize="11" fontWeight="700" fill="#E63946" textAnchor="middle">L</text>
@@ -222,7 +222,7 @@ const CourseCardImage: React.FC<{ courseId: string; badge: string; badgeColor: s
   <div
     style={{
       height: 180,
-      background: `linear-gradient(180deg, ${bg} 0%, #0F2044 100%)`,
+      background: `linear-gradient(180deg, ${bg} 0%, #191C2F 100%)`,
       position: "relative",
       overflow: "hidden",
     }}
@@ -251,13 +251,13 @@ const CourseCardImage: React.FC<{ courseId: string; badge: string; badgeColor: s
           <>
             <circle cx="300" cy="40" r="22" fill="#FBBF24" opacity="0.85" />
             <path d="M0 130 Q90 100 180 120 T360 110 L360 180 L0 180 Z" fill="#1D9E75" opacity="0.55" />
-            <path d="M0 150 Q120 130 240 145 T360 140 L360 180 L0 180 Z" fill="#0F2044" opacity="0.6" />
+            <path d="M0 150 Q120 130 240 145 T360 140 L360 180 L0 180 Z" fill="#191C2F" opacity="0.6" />
           </>
         ) : (
           <>
             <circle cx="290" cy="45" r="20" fill="#FDE68A" opacity="0.9" />
             <path d="M0 120 L60 80 L130 115 L210 70 L290 110 L360 90 L360 180 L0 180 Z" fill="#3B6D11" opacity="0.6" />
-            <path d="M0 145 L80 125 L170 140 L260 120 L360 135 L360 180 L0 180 Z" fill="#0F2044" opacity="0.6" />
+            <path d="M0 145 L80 125 L170 140 L260 120 L360 135 L360 180 L0 180 Z" fill="#191C2F" opacity="0.6" />
           </>
         )}
         {/* car */}
@@ -266,7 +266,7 @@ const CourseCardImage: React.FC<{ courseId: string; badge: string; badgeColor: s
             d="M0 30 Q5 10 25 8 L80 8 Q100 10 108 25 L120 25 Q125 25 125 31 L125 36 Q125 40 121 40 L110 40 Q108 48 100 48 Q92 48 90 40 L40 40 Q38 48 30 48 Q22 48 20 40 L8 40 Q4 40 4 36 L4 32 Q4 30 0 30 Z"
             fill="#E63946"
           />
-          <path d="M22 18 L40 10 L72 10 L88 18 Z" fill="#0F2044" />
+          <path d="M22 18 L40 10 L72 10 L88 18 Z" fill="#191C2F" />
           <rect x="28" y="28" width="9" height="9" fill="#FFF" rx="1" />
           <text x="32.5" y="35" fontSize="7" fontWeight="700" fill="#E63946" textAnchor="middle">L</text>
           <circle cx="22" cy="42" r="7" fill="#0A0A0A" />
@@ -313,14 +313,14 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
       {/* HomeHero */}
       <section
         style={{
-          background: "#0F2044",
+          background: "#191C2F",
           position: "relative",
           overflow: "hidden",
           padding: "64px 5% 0",
           width: "100%",
         }}
       >
-        <div style={{ position: "absolute", width: 600, height: 600, borderRadius: "50%", background: "#1A52A0", opacity: 0.07, top: -200, right: "10%", pointerEvents: "none" }} />
+        <div style={{ position: "absolute", width: 600, height: 600, borderRadius: "50%", background: "#3E57D9", opacity: 0.07, top: -200, right: "10%", pointerEvents: "none" }} />
         <div style={{ position: "absolute", width: 350, height: 350, borderRadius: "50%", background: "#1D9E75", opacity: 0.05, bottom: -100, left: "5%", pointerEvents: "none" }} />
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 48, alignItems: "flex-end", width: "100%", position: "relative", zIndex: 1 }}>
@@ -377,7 +377,7 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
                 placeholder="e.g. SO30 2TD"
                 value={postcode}
                 onChange={(e) => setPostcode(e.target.value.toUpperCase())}
-                style={{ border: "1px solid #E0E4EB", borderRadius: 8, padding: "10px 13px", fontSize: 14, color: "#0F2044", background: "#F8F9FA", outline: "none", width: "100%" }}
+                style={{ border: "1px solid #E0E4EB", borderRadius: 8, padding: "10px 13px", fontSize: 14, color: "#191C2F", background: "#F8F9FA", outline: "none", width: "100%" }}
               />
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 4, flex: "1 1 120px" }}>
@@ -385,7 +385,7 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
               <select
                 value={radius}
                 onChange={(e) => setRadius(e.target.value)}
-                style={{ border: "1px solid #E0E4EB", borderRadius: 8, padding: "10px 13px", fontSize: 14, color: "#0F2044", background: "#F8F9FA", outline: "none", width: "100%" }}
+                style={{ border: "1px solid #E0E4EB", borderRadius: 8, padding: "10px 13px", fontSize: 14, color: "#191C2F", background: "#F8F9FA", outline: "none", width: "100%" }}
               >
                 {["5 miles", "10 miles", "15 miles", "20 miles"].map((r) => <option key={r}>{r}</option>)}
               </select>
@@ -395,7 +395,7 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
               <select
                 value={transmission}
                 onChange={(e) => setTransmission(e.target.value)}
-                style={{ border: "1px solid #E0E4EB", borderRadius: 8, padding: "10px 13px", fontSize: 14, color: "#0F2044", background: "#F8F9FA", outline: "none", width: "100%" }}
+                style={{ border: "1px solid #E0E4EB", borderRadius: 8, padding: "10px 13px", fontSize: 14, color: "#191C2F", background: "#F8F9FA", outline: "none", width: "100%" }}
               >
                 {["Any", "Manual", "Automatic"].map((t) => <option key={t}>{t}</option>)}
               </select>
@@ -403,7 +403,7 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
             <button
               onClick={handleSearch}
               style={{
-                background: "#1A52A0",
+                background: "#3E57D9",
                 border: "none",
                 borderRadius: 10,
                 padding: "11px 26px",
@@ -450,7 +450,7 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
               borderRight: i < PROOF_STATS.length - 1 ? "0.5px solid #E0E4EB" : "none",
             }}
           >
-            <div style={{ fontSize: 22, fontWeight: 700, color: "#0F2044", letterSpacing: -0.5, lineHeight: 1 }}>
+            <div style={{ fontSize: 22, fontWeight: 700, color: "#191C2F", letterSpacing: -0.5, lineHeight: 1 }}>
               {stat.isStars ? "★★★★★" : stat.num}
             </div>
             <div style={{ fontSize: 11, color: "#5F6B7A", marginTop: 3 }}>{stat.label}</div>
@@ -460,10 +460,10 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
 
       {/* HomeCourses */}
       <section style={{ padding: "56px 5%", background: "#F0F2F5", width: "100%" }}>
-        <div style={{ fontSize: 11, fontWeight: 600, color: "#1A52A0", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 6 }}>
+        <div style={{ fontSize: 11, fontWeight: 600, color: "#3E57D9", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 6 }}>
           Learning paths
         </div>
-        <h2 style={{ fontSize: 32, fontWeight: 700, color: "#0F2044", letterSpacing: -0.5, marginBottom: 10 }}>
+        <h2 style={{ fontSize: 32, fontWeight: 700, color: "#191C2F", letterSpacing: -0.5, marginBottom: 10 }}>
           Choose your learning path
         </h2>
         <p style={{ fontSize: 15, color: "#5F6B7A", lineHeight: 1.6, maxWidth: 520, marginBottom: 36 }}>
@@ -477,19 +477,19 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
                 background: "#FFF",
                 borderRadius: 18,
                 overflow: "hidden",
-                border: course.featured ? "2px solid #1A52A0" : "1px solid #E0E4EB",
+                border: course.featured ? "2px solid #3E57D9" : "1px solid #E0E4EB",
                 display: "flex",
                 flexDirection: "column",
               }}
             >
               <CourseCardImage courseId={course.id} badge={course.badge} badgeColor={course.badgeColor} bg={course.sceneBg} />
               <div style={{ padding: 22, flex: 1, display: "flex", flexDirection: "column" }}>
-                <h3 style={{ fontSize: 18, fontWeight: 700, color: "#0F2044", marginBottom: 6 }}>{course.title}</h3>
+                <h3 style={{ fontSize: 18, fontWeight: 700, color: "#191C2F", marginBottom: 6 }}>{course.title}</h3>
                 <p style={{ fontSize: 13, color: "#5F6B7A", lineHeight: 1.6, marginBottom: 14 }}>{course.description}</p>
                 <div style={{ display: "flex", flexDirection: "column", gap: 5, marginBottom: 18 }}>
                   {course.features.map((f) => (
                     <div key={f} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#5F6B7A" }}>
-                      <Check size={11} color="#1A52A0" strokeWidth={1.8} />
+                      <Check size={11} color="#3E57D9" strokeWidth={1.8} />
                       {f}
                     </div>
                   ))}
@@ -497,7 +497,7 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
                 <div style={{ marginTop: "auto" }}>
                   <div style={{ fontSize: 11, color: "#5F6B7A", marginBottom: 1 }}>From</div>
                   <div>
-                    <span style={{ fontSize: 26, fontWeight: 700, color: "#0F2044", letterSpacing: -0.5 }}>{course.priceFrom}</span>
+                    <span style={{ fontSize: 26, fontWeight: 700, color: "#191C2F", letterSpacing: -0.5 }}>{course.priceFrom}</span>
                     {course.priceUnit && <span style={{ fontSize: 12, color: "#5F6B7A" }}>{course.priceUnit}</span>}
                   </div>
                 </div>
@@ -533,7 +533,7 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
       {/* HomeSwapBand */}
       <section
         style={{
-          background: "#0F2044",
+          background: "#191C2F",
           padding: "56px 5%",
           display: "flex",
           alignItems: "center",
@@ -544,7 +544,7 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
           flexWrap: "wrap",
         }}
       >
-        <div style={{ position: "absolute", width: 400, height: 400, borderRadius: "50%", background: "#1A52A0", opacity: 0.12, right: -120, top: -150, pointerEvents: "none" }} />
+        <div style={{ position: "absolute", width: 400, height: 400, borderRadius: "50%", background: "#3E57D9", opacity: 0.12, right: -120, top: -150, pointerEvents: "none" }} />
         <div style={{ flex: "1 1 360px", position: "relative", zIndex: 1 }}>
           <div style={{ fontSize: 11, fontWeight: 600, color: "#5DCAA5", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 10 }}>
             New — Free feature

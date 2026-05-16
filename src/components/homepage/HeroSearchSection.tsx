@@ -222,7 +222,7 @@ export function HeroSearchSection({
             <div className="flex items-center pr-2 pl-3 shrink-0">
               <button
                 type="submit"
-                className="flex items-center justify-center gap-2 h-[60px] lg:h-[68px] px-5 lg:px-7 bg-[#1d4ed8] hover:bg-[#1e40af] text-white font-bold text-sm lg:text-base rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#1d4ed8] focus:ring-offset-2 whitespace-nowrap"
+                className="flex items-center justify-center gap-2 h-[60px] lg:h-[68px] px-5 lg:px-7 bg-[#3E57D9] hover:bg-[#223058] text-white font-bold text-sm lg:text-base rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#3E57D9] focus:ring-offset-2 whitespace-nowrap"
                 aria-label="Search all instructors"
               >
                 <Search className="h-4 w-4 lg:h-5 lg:w-5" aria-hidden="true" />
@@ -307,7 +307,7 @@ export function HeroSearchSection({
             <div className="px-5 py-4">
               <button
                 type="submit"
-                className="flex items-center justify-center gap-2 w-full h-14 bg-[#1d4ed8] hover:bg-[#1e40af] text-white font-bold text-lg rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#1d4ed8] focus:ring-offset-2"
+                className="flex items-center justify-center gap-2 w-full h-14 bg-[#3E57D9] hover:bg-[#223058] text-white font-bold text-lg rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#3E57D9] focus:ring-offset-2"
                 aria-label="Search all instructors"
               >
                 <Search className="h-5 w-5" aria-hidden="true" />
