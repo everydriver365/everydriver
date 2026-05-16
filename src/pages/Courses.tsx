@@ -531,7 +531,7 @@ export default function Courses() {
       counts[dateStr] = count;
     }
     return counts;
-  }, [availableDatesInMonth, relevantInstructors, instructorCourses, availabilitySources]);
+  }, [availableDatesInMonth, relevantInstructors, instructorCourses, availabilitySources, userLocation]);
 
   // Generate courses for the selected date
   const coursesForSelectedDate = useMemo(() => {
