@@ -1,36 +1,54 @@
-## Why Ken is showing in May
+## Plain-English answer
 
-In the previous round I cleared Ken's `available_from` date as part of the "unblock him" fix — but that 1 June 2026 date was correct and intentional, not a mistake. With the date cleared, the booking engine has nothing stopping May slots from appearing.
+You don't need to learn the table names. Here's what's actually wrong: every place in the app that asks "what days does Ken work?" expects the answer to be saved using one set of day numbers (where Sunday = 0). Ken's record is saved using a **different numbering** (where Sunday = 7). So whenever the booking engine asks for Sunday, it gets nothing, and one of his rows (the stray "day 7") is junk the engine ignores.
 
-## Fix
+That alone shouldn't kill June — most of the codepaths *should* still find his weekdays. But Drive365 (the public course search) is more strict than the other pages, so it's the first surface where the mis-numbering becomes visible. We need to inspect it on the actual page to be 100% sure that's the root cause — there's a small chance Drive365 is also filtering on something else (instructor radius, course visibility, postcode coverage) that's hiding him independently.
 
-### 1. Restore Ken's data
-Set `available_from = 2026-06-01` back on his `instructors` row.
+## Plan
 
-After this the booking engine (`courseAvailability.ts` lines 303 + 446 and every other surface that respects `available_from`) will hide him from every pupil-facing page until 1 Jun 2026. The diagnostic panel we just shipped will display "Hidden until 1 Jun 2026" on his own Availability page so he can see exactly what's happening.
+### Step 1 — Confirm the actual Drive365 cause (read-only)
+Before changing anything else, inspect Drive365 with Ken in scope:
 
-### 2. Remove the 14-day warning
-Pupils can book up to 365 days in advance, so an instructor legitimately picking a date 1–12 months out is normal — Ken's case is exactly that. The popup confirmation we added in `AvailableFromCard.tsx` is noise.
+- Open the published `/courses` page (or course search) with Ken's instructor id in URL/postcode scope.
+- Capture what's rendered for his 5 courses for the June window — is it "no availability", is the card hidden entirely, or does it show a "first available" date that's wrong?
+- Check `useFeaturedCourses.findFirstAvailableDate` output for him: with today = 16 May and `available_from = 1 Jun 2026`, it should return Mon 1 Jun (his Monday hours match). If it returns `null`, that's the day-numbering bug confirmed for this surface. If it returns a date but the UI still says "no availability", a different filter is hiding him — likely course visibility, search radius, or the `public_instructors` view filtering on something.
 
-Remove the `daysOut > 14` confirmation block in `src/components/instructor/AvailableFromCard.tsx` (`save` function). Keep the date picker, the "Available now" / cleared state, and the toast. The diagnostic card already explains the consequence clearly.
+This step is essential so we don't "fix" the wrong thing.
 
-### 3. Soften the diagnostic copy
-In `src/components/instructor/AvailabilityDiagnostic.tsx`, the "future available_from" case is currently rendered as a red **error** with copy "Pupils won't see any slots until then. Clear it above if this was a mistake." That assumes it was an accident. Change to:
+### Step 2 — Fix Ken's data
+Rewrite his two weekly-hours tables into the conventions the rest of the codebase actually uses. End-state we want for Ken:
 
-- Status: `warn` (amber) instead of `error` (red)
-- Title: `Hidden until {date}` (unchanged)
-- Detail: `Pupils won't see any slots until {date} ({N days} away). This is fine if you're on a long break — clear the date above if you didn't mean to set it.`
-
-### Out of scope
-- The dual-write sync, the backfill, and the diagnostic panel framework all stay exactly as they are — they were the right fixes.
-- No changes to booking engine logic, mobile layouts, or other instructors.
-
-## Technical summary
-
-| Change | File / action |
+| Day | Working hours |
 |---|---|
-| Restore Ken | `UPDATE instructors SET available_from = '2026-06-01' WHERE id = <ken>` via supabase--insert |
-| Drop 14-day confirm | Edit `AvailableFromCard.tsx` `save()` — remove the `if (next) { … daysOut > 14 … }` block |
-| Re-tone diagnostic | Edit `AvailabilityDiagnostic.tsx` — switch the future-`available_from` branch from `status: "error"` to `status: "warn"` and update the detail string |
+| Mon | 10:30–16:00 |
+| Tue | 10:30–16:00 |
+| Wed | 10:30–16:00 |
+| Thu | 10:30–16:00 |
+| Fri | 10:30–16:00 |
+| Sat | 07:00–12:00 |
+| Sun | 07:00–12:00 |
 
-Verification: re-query `instructors.available_from` for Ken and re-run the next-14-days slot check — expect zero slots until 1 Jun, then his normal Mon–Fri 10:30–16:00 / Sat–Sun 07:00–12:00 pattern resuming.
+Do this via a one-off insert/update that deletes his existing rows in both tables and re-inserts them with the correct day numbers. Keep his `available_from = 2026-06-01` as-is.
+
+After the rewrite, re-verify by running the same Drive365 check from Step 1.
+
+### Step 3 — Catch this for everyone else
+The admin **Availability Sync Health** dashboard we just shipped only catches *drift* between the two tables — it does **not** flag when both tables are using the wrong numbering. Add a third check: any row in the weekly-hours tables whose day number is outside the expected range for that table → flag as **"Wrong day numbering"** with a one-click repair that rewrites the row using the correct convention (inferring the intended day from the working hours pattern).
+
+Then run that check across all 5,803 instructors so anyone else affected by the same bad backfill is fixed too.
+
+### Step 4 — Prevent it ever returning
+The dual-write helpers and the editors already enforce the correct convention going forward, but the bug came from an old backfill or manual write. Add a `CHECK` constraint to each weekly-hours table so the DB itself rejects rows outside the valid day range. New mis-numbered rows can never be inserted again.
+
+## Out of scope
+- Mobile layouts
+- Booking engine logic, scheduler clash rules
+- The legacy two-table design itself (separate refactor — every consumer in the codebase reads one or both directly; tracked separately)
+
+## Order of work
+1. Step 1 — Drive365 inspection (read-only, 5 min)
+2. Step 2 — Ken's data rewrite (1 min after Step 1 confirms)
+3. Step 3 — Convention check in the admin dashboard + bulk repair pass
+4. Step 4 — DB `CHECK` constraints
+
+Want me to start with Step 1 only, then come back with what I find before doing Steps 2–4? Or run 1 + 2 together, then 3 + 4 as a follow-up?

@@ -24,7 +24,7 @@ import {
   mirrorIwhToAw,
 } from "@/lib/syncWeeklyHours";
 
-type Issue = "drift_iwh_only" | "drift_aw_only" | "no_hours" | "future_from";
+type Issue = "drift_iwh_only" | "drift_aw_only" | "no_hours" | "future_from" | "bad_dow";
 
 interface InstructorRow {
   id: string;
@@ -42,15 +42,17 @@ interface Stats {
   drift: number;
   noHours: number;
   futureFrom: number;
+  badDow: number;
 }
 
-type Tab = "all_issues" | "drift" | "no_hours" | "future_from" | "healthy";
+type Tab = "all_issues" | "drift" | "bad_dow" | "no_hours" | "future_from" | "healthy";
 
 const ISSUE_LABELS: Record<Issue, { label: string; tone: "warn" | "error" | "info" }> = {
   drift_iwh_only: { label: "Drift: missing from availability_windows", tone: "warn" },
   drift_aw_only: { label: "Drift: missing from working_hours", tone: "warn" },
   no_hours: { label: "No working hours set", tone: "info" },
   future_from: { label: "Hidden by Available-from date", tone: "info" },
+  bad_dow: { label: "Wrong day numbering — hides days from booking", tone: "error" },
 };
 
 export default function AvailabilitySyncHealth() {
@@ -87,15 +89,27 @@ export default function AvailabilitySyncHealth() {
       if (iwhRes.error) throw iwhRes.error;
       if (awRes.error) throw awRes.error;
 
-      // Build per-instructor day sets, mapping iwh dow → aw dow for direct comparison.
+      // Build per-instructor day sets + flag rows with invalid day numbers.
+      // iwh expects 0=Sun..6=Sat; aw expects 1=Mon..7=Sun. A row outside the
+      // valid range is silently dropped by every consumer that does
+      // `w.day_of_week === date.getDay()`, hiding that day from booking.
       const iwhDays = new Map<string, Set<number>>();
+      const badDow = new Set<string>();
       for (const r of iwhRes.data ?? []) {
+        if (r.day_of_week < 0 || r.day_of_week > 6) {
+          badDow.add(r.instructor_id);
+          continue;
+        }
         const set = iwhDays.get(r.instructor_id) ?? new Set<number>();
         set.add(iwhDowToAwDow(r.day_of_week));
         iwhDays.set(r.instructor_id, set);
       }
       const awDays = new Map<string, Set<number>>();
       for (const r of awRes.data ?? []) {
+        if (r.day_of_week < 1 || r.day_of_week > 7) {
+          badDow.add(r.instructor_id);
+          continue;
+        }
         const set = awDays.get(r.instructor_id) ?? new Set<number>();
         set.add(r.day_of_week);
         awDays.set(r.instructor_id, set);
@@ -106,7 +120,9 @@ export default function AvailabilitySyncHealth() {
         const aw = awDays.get(inst.id) ?? new Set<number>();
         const issues: Issue[] = [];
 
-        if (iwh.size === 0 && aw.size === 0) {
+        if (badDow.has(inst.id)) issues.push("bad_dow");
+
+        if (iwh.size === 0 && aw.size === 0 && !badDow.has(inst.id)) {
           issues.push("no_hours");
         } else {
           // Drift: any day present in one table but missing from the other.
@@ -152,12 +168,13 @@ export default function AvailabilitySyncHealth() {
   }, [load]);
 
   const stats: Stats = useMemo(() => {
-    const s: Stats = { total: rows.length, healthy: 0, drift: 0, noHours: 0, futureFrom: 0 };
+    const s: Stats = { total: rows.length, healthy: 0, drift: 0, noHours: 0, futureFrom: 0, badDow: 0 };
     for (const r of rows) {
       const driftish = r.issues.includes("drift_iwh_only") || r.issues.includes("drift_aw_only");
       if (driftish) s.drift++;
       if (r.issues.includes("no_hours")) s.noHours++;
       if (r.issues.includes("future_from")) s.futureFrom++;
+      if (r.issues.includes("bad_dow")) s.badDow++;
       if (r.issues.length === 0) s.healthy++;
     }
     return s;
@@ -169,6 +186,7 @@ export default function AvailabilitySyncHealth() {
       // Tab filter
       if (tab === "healthy" && r.issues.length !== 0) return false;
       if (tab === "drift" && !r.issues.some((i) => i.startsWith("drift_"))) return false;
+      if (tab === "bad_dow" && !r.issues.includes("bad_dow")) return false;
       if (tab === "no_hours" && !r.issues.includes("no_hours")) return false;
       if (tab === "future_from" && !r.issues.includes("future_from")) return false;
       if (tab === "all_issues" && r.issues.length === 0) return false;
@@ -227,12 +245,18 @@ export default function AvailabilitySyncHealth() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
           <StatCard label="Total" value={stats.total} icon={<CalendarClock className="w-4 h-4" />} />
           <StatCard
             label="Healthy"
             value={stats.healthy}
             icon={<CheckCircle2 className="w-4 h-4 text-green-600" />}
+          />
+          <StatCard
+            label="Bad day numbering"
+            value={stats.badDow}
+            icon={<AlertTriangle className="w-4 h-4 text-red-600" />}
+            highlight={stats.badDow > 0}
           />
           <StatCard
             label="Drift"
@@ -266,6 +290,7 @@ export default function AvailabilitySyncHealth() {
             <Tabs value={tab} onValueChange={(v) => setTab(v as Tab)} className="mt-2">
               <TabsList>
                 <TabsTrigger value="all_issues">All issues ({stats.total - stats.healthy})</TabsTrigger>
+                <TabsTrigger value="bad_dow">Bad day numbering ({stats.badDow})</TabsTrigger>
                 <TabsTrigger value="drift">Drift ({stats.drift})</TabsTrigger>
                 <TabsTrigger value="no_hours">No hours ({stats.noHours})</TabsTrigger>
                 <TabsTrigger value="future_from">Future from ({stats.futureFrom})</TabsTrigger>
