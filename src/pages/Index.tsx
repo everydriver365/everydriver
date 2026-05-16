@@ -705,7 +705,7 @@ export default function Index() {
               },
               {
                 title: "Local Instructors",
-                description: "Find certified instructors near you by postcode.",
+                description: "Find certified instructors near you by postcode. Search and compare prices 24/7.",
                 image: localInstructorImg
               },
               {
