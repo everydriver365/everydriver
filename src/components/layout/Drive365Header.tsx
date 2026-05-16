@@ -107,7 +107,7 @@ export function Drive365Header() {
                       aria-expanded={coursesOpen}
                       className={cn(
                         "relative flex items-center gap-1 text-[14px] font-medium transition-colors",
-                        "text-white lg:text-[#0A0A0A] hover:text-accent lg:hover:text-[#2D3FE7]"
+                        "text-white lg:text-[#0A0A0A] hover:text-accent lg:hover:text-[#0F2044]"
                       )}
                     >
                       {link.label}
@@ -126,7 +126,7 @@ export function Drive365Header() {
                               key={item.href}
                               to={item.href}
                               onClick={() => setCoursesOpen(false)}
-                              className="block px-4 py-2 text-sm text-[#0a1936] hover:bg-[#2D3FE7]/10 hover:text-[#2D3FE7] transition-colors"
+                              className="block px-4 py-2 text-sm text-[#0a1936] hover:bg-[#0F2044]/10 hover:text-[#0F2044] transition-colors"
                             >
                               {item.label}
                             </Link>
@@ -143,8 +143,8 @@ export function Drive365Header() {
                   to={link.href}
                   className={cn(
                     "relative text-[14px] font-medium transition-colors",
-                    "text-white lg:text-[#0A0A0A] hover:text-accent lg:hover:text-[#2D3FE7]",
-                    isActive && "lg:!text-[#2D3FE7] lg:after:content-[''] lg:after:absolute lg:after:left-0 lg:after:right-0 lg:after:-bottom-[8px] lg:after:h-[2px] lg:after:bg-[#2D3FE7]"
+                    "text-white lg:text-[#0A0A0A] hover:text-accent lg:hover:text-[#0F2044]",
+                    isActive && "lg:!text-[#0F2044] lg:after:content-[''] lg:after:absolute lg:after:left-0 lg:after:right-0 lg:after:-bottom-[8px] lg:after:h-[2px] lg:after:bg-[#0F2044]"
                   )}
                 >
                   {link.label}
@@ -157,13 +157,13 @@ export function Drive365Header() {
           <div className="hidden lg:flex items-center gap-5 shrink-0">
             <Link
               to="/pupil/login"
-              className="text-[14px] font-medium text-[#0A0A0A] hover:text-[#2D3FE7] transition-colors"
+              className="text-[14px] font-medium text-[#0A0A0A] hover:text-[#0F2044] transition-colors"
             >
               Pupil login
             </Link>
             <Link
               to="/courses"
-              className="inline-flex items-center justify-center bg-[#2D3FE7] hover:bg-[#1F2DC9] text-white text-[14px] font-medium transition-colors"
+              className="inline-flex items-center justify-center bg-[#0F2044] hover:bg-[#1A3370] text-white text-[14px] font-medium transition-colors"
               style={{ padding: "10px 20px", borderRadius: "2px", letterSpacing: "0.5px" }}
             >
               Find courses

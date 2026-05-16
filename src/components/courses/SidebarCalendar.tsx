@@ -134,13 +134,13 @@ export function SidebarCalendar({
                   disabled={!day.isAvailable || day.isPast}
                   className={`relative flex h-12 w-full items-center justify-center rounded-md text-sm font-medium transition-all ${
                     isSelected
-                      ? "bg-[#2D3FE7] text-white shadow-md hover:bg-[#1F2DC9]"
+                      ? "bg-[#0F2044] text-white shadow-md hover:bg-[#1A3370]"
                       : day.isAvailable
                         ? "bg-[#EAF0FF] text-[#0A0A0A] hover:bg-[#D6DFFF]"
                         : day.isPast
                           ? "text-[#D1D5DB] cursor-not-allowed"
                           : "text-[#D1D5DB] cursor-not-allowed"
-                  } ${isToday && !isSelected ? "ring-1 ring-[#2D3FE7]/40" : ""}`}
+                  } ${isToday && !isSelected ? "ring-1 ring-[#0F2044]/40" : ""}`}
                 >
                   {format(day.date, "d")}
                 </button>
@@ -157,7 +157,7 @@ export function SidebarCalendar({
           <span>Available</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="h-3 w-3 rounded bg-[#2D3FE7]" />
+          <span className="h-3 w-3 rounded bg-[#0F2044]" />
           <span>Selected</span>
         </div>
       </div>

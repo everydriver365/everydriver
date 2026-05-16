@@ -26,7 +26,7 @@ interface CourseTableListProps {
 // Category bar colour by course length — harmonised palette
 const HOURS_COLOR: Record<number, string> = {
   10: "#5DCAA5", // teal — starter
-  20: "#2D3FE7", // brand blue
+  20: "#0F2044", // brand blue
   28: "#F59E0B", // amber — Test in a Week
   30: "#F59E0B", // amber — extended
   40: "#7C3AED", // purple — premium
@@ -34,7 +34,7 @@ const HOURS_COLOR: Record<number, string> = {
 };
 
 function colorForHours(h: number) {
-  return HOURS_COLOR[h] || "#2D3FE7";
+  return HOURS_COLOR[h] || "#0F2044";
 }
 
 function transmissionLabel(carType?: string | null) {
@@ -157,7 +157,7 @@ export function CourseTableList({ courses }: CourseTableListProps) {
                           display: "inline-block",
                           fontSize: 10,
                           fontWeight: 700,
-                          color: "#2D3FE7",
+                          color: "#0F2044",
                           background: "#EAF0FF",
                           letterSpacing: "0.1em",
                           padding: "2px 6px",
@@ -263,10 +263,10 @@ export function CourseTableList({ courses }: CourseTableListProps) {
                       e.stopPropagation();
                       goTo(c);
                     }}
-                    onMouseEnter={(e) => (e.currentTarget.style.background = "#1F2DC9")}
-                    onMouseLeave={(e) => (e.currentTarget.style.background = "#2D3FE7")}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = "#1A3370")}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = "#0F2044")}
                     style={{
-                      background: "#2D3FE7",
+                      background: "#0F2044",
                       color: "white",
                       fontSize: 13,
                       fontWeight: 500,

@@ -272,18 +272,18 @@ function SidebarCalendar({
                   disabled={!day.isAvailable || day.isPast}
                   className={`relative flex h-10 flex-col items-center justify-center rounded-md text-sm font-medium transition-all ${
                     isSelected
-                      ? "bg-[#2D3FE7] text-white shadow-md hover:bg-[#1F2DC9]"
+                      ? "bg-[#0F2044] text-white shadow-md hover:bg-[#1A3370]"
                       : day.isAvailable
                         ? "bg-[#EAF0FF] text-[#0A0A0A] hover:bg-[#D6DFFF]"
                         : day.isPast
                           ? "text-[#D1D5DB] cursor-not-allowed"
                           : "text-[#D1D5DB] cursor-not-allowed"
-                  } ${isToday && !isSelected ? "ring-1 ring-[#2D3FE7]/40" : ""}`}
+                  } ${isToday && !isSelected ? "ring-1 ring-[#0F2044]/40" : ""}`}
                 >
                   <span>{format(day.date, "d")}</span>
                   {!hideCounts && day.isAvailable && day.courseCount > 0 && (
                     <span className={`text-[9px] font-semibold leading-none ${
-                      isSelected ? "text-white/80" : "text-[#2D3FE7]"
+                      isSelected ? "text-white/80" : "text-[#0F2044]"
                     }`}>
                       {day.courseCount}
                     </span>
@@ -302,7 +302,7 @@ function SidebarCalendar({
           <span>Available</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="h-3 w-3 rounded bg-[#2D3FE7]" />
+          <span className="h-3 w-3 rounded bg-[#0F2044]" />
           <span>Selected</span>
         </div>
       </div>
@@ -1287,7 +1287,7 @@ export default function Courses() {
                 <div
                   className="relative overflow-hidden p-4"
                   style={{
-                    background: "#2D3FE7",
+                    background: "#0F2044",
                     borderRadius: 4,
                   }}
                 >
@@ -1451,7 +1451,7 @@ export default function Courses() {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={clearSearch}
-                    className="inline-flex items-center gap-1.5 bg-white text-sm font-medium transition-colors hover:!border-[#2D3FE7]"
+                    className="inline-flex items-center gap-1.5 bg-white text-sm font-medium transition-colors hover:!border-[#0F2044]"
                     style={{ border: "1px solid #E5E7EB", color: "#0A0A0A", padding: "10px 18px", borderRadius: 4 }}
                   >
                     <Edit2 className="h-3.5 w-3.5" />
@@ -1460,7 +1460,7 @@ export default function Courses() {
                   <button
                     onClick={() => setShowFilters((v) => !v)}
                     className="relative inline-flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-semibold text-white transition-colors hover:opacity-90"
-                    style={{ background: "#2D3FE7" }}
+                    style={{ background: "#0F2044" }}
                   >
                     <SlidersHorizontal className="h-3.5 w-3.5" />
                     Filters
@@ -1482,14 +1482,14 @@ export default function Courses() {
               <motion.div 
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mb-6 flex items-center justify-between rounded-xl border border-[#2D3FE7]/20 bg-[#EAF0FF] px-5 py-4"
+                className="mb-6 flex items-center justify-between rounded-xl border border-[#0F2044]/20 bg-[#EAF0FF] px-5 py-4"
               >
                 <div className="flex items-center gap-3">
                   <motion.div 
                     initial={{ scale: 1 }}
                     animate={{ scale: [1, 1.1, 1] }}
                     transition={{ duration: 0.6, delay: 0.3, times: [0, 0.5, 1] }}
-                    className="flex h-10 w-10 items-center justify-center rounded-full bg-[#2D3FE7] text-white shadow-md"
+                    className="flex h-10 w-10 items-center justify-center rounded-full bg-[#0F2044] text-white shadow-md"
                   >
                     <MapPin className="h-5 w-5" />
                   </motion.div>
@@ -1504,7 +1504,7 @@ export default function Courses() {
                   variant="outline" 
                   size="sm" 
                   onClick={clearSearch}
-                  className="gap-1.5 border-[#E5E7EB] bg-white text-[13px] text-[#0A0A0A] hover:!border-[#2D3FE7] hover:!bg-white"
+                  className="gap-1.5 border-[#E5E7EB] bg-white text-[13px] text-[#0A0A0A] hover:!border-[#0F2044] hover:!bg-white"
                 >
                   <X className="h-4 w-4" />
                   Clear
@@ -1544,7 +1544,7 @@ export default function Courses() {
                               onClick={() => setTransmission(opt.value)}
                               className="rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all"
                               style={{
-                                background: active ? "#2D3FE7" : "transparent",
+                                background: active ? "#0F2044" : "transparent",
                                 color: active ? "white" : "#0A0A0A",
                               }}
                             >
@@ -1563,7 +1563,7 @@ export default function Courses() {
                             onClick={() => setViewMode("list")}
                             className="flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold transition-all"
                             style={{
-                              background: viewMode === "list" ? "#2D3FE7" : "transparent",
+                              background: viewMode === "list" ? "#0F2044" : "transparent",
                               color: viewMode === "list" ? "white" : "#0A0A0A",
                             }}
                             aria-label="List view"
@@ -1575,7 +1575,7 @@ export default function Courses() {
                             onClick={() => setViewMode("grid")}
                             className="flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold transition-all"
                             style={{
-                              background: (viewMode as string) === "grid" ? "#2D3FE7" : "transparent",
+                              background: (viewMode as string) === "grid" ? "#0F2044" : "transparent",
                               color: (viewMode as string) === "grid" ? "white" : "#0A0A0A",
                             }}
                             aria-label="Grid view"
@@ -1601,7 +1601,7 @@ export default function Courses() {
                             id="course-sort"
                             value={sortBy}
                             onChange={(e) => setSortBy(e.target.value as SortOption)}
-                            onMouseEnter={(e) => (e.currentTarget.style.borderColor = "#2D3FE7")}
+                            onMouseEnter={(e) => (e.currentTarget.style.borderColor = "#0F2044")}
                             onMouseLeave={(e) => (e.currentTarget.style.borderColor = "#E5E7EB")}
                             className="appearance-none bg-white text-sm font-medium focus:outline-none transition-colors"
                             style={{ border: "1px solid #E5E7EB", color: "#0A0A0A", padding: "10px 32px 10px 16px", borderRadius: 4 }}

@@ -35,7 +35,7 @@ const COURSES = [
   {
     id: "intensive",
     badge: "Fast Track",
-    badgeColor: "#2D3FE7",
+    badgeColor: "#0F2044",
     title: "Intensive Courses",
     description:
       "Full immersion experience. Learn everything in concentrated sessions and pass your test in record time.",
@@ -44,7 +44,7 @@ const COURSES = [
     priceUnit: null as string | null,
     ctaLabel: "View courses",
     ctaHref: "/courses?type=intensive",
-    ctaBg: "#2D3FE7",
+    ctaBg: "#0F2044",
     featured: false,
     sceneBg: "#3E57D9",
   },
@@ -67,7 +67,7 @@ const COURSES = [
   {
     id: "weekly",
     badge: "Flexible",
-    badgeColor: "#2D3FE7",
+    badgeColor: "#0F2044",
     title: "Weekly Lessons",
     description:
       "Traditional approach for busy schedules. Build confidence gradually with regular weekly sessions at times that suit you.",
@@ -76,7 +76,7 @@ const COURSES = [
     priceUnit: "/hour",
     ctaLabel: "View lessons",
     ctaHref: "/courses?type=weekly",
-    ctaBg: "#2D3FE7",
+    ctaBg: "#0F2044",
     featured: false,
     sceneBg: "#1D9E75",
   },
@@ -323,8 +323,8 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
           .d365-welcome h1 { font-size: 44px; line-height: 1.05; font-weight: 800; color: #0A0A0A; text-transform: uppercase; letter-spacing: -0.5px; margin: 0 0 14px; font-family: Inter, "Helvetica Neue", system-ui, sans-serif; }
           .d365-welcome p { font-size: 15px; line-height: 1.55; color: #4B5563; margin: 0; }
           .d365-welcome p b { color: #0A0A0A; font-weight: 700; }
-          .d365-cta { width: 100%; background: #2D3FE7; color: #FFFFFF; border: none; border-radius: 2px; padding: 16px 20px; font-size: 14px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 10px; transition: background 120ms ease; font-family: inherit; }
-          .d365-cta:hover { background: #1F2DC9; }
+          .d365-cta { width: 100%; background: #0F2044; color: #FFFFFF; border: none; border-radius: 2px; padding: 16px 20px; font-size: 14px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 10px; transition: background 120ms ease; font-family: inherit; }
+          .d365-cta:hover { background: #1A3370; }
           .d365-cta-icon { width: 22px; height: 22px; border-radius: 999px; background: rgba(255,255,255,0.2); display: inline-flex; align-items: center; justify-content: center; }
           .d365-feat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
           .d365-feat { background: #EAF0FF; padding: 20px; border-radius: 4px; display: flex; flex-direction: column; gap: 12px; }
@@ -335,12 +335,12 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
           .d365-feat img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 4px; display: block; background: #9FD3E8; }
           .d365-feat h3 { font-size: 16px; font-weight: 800; color: #0A0A0A; text-transform: uppercase; letter-spacing: 0.02em; margin: 0; font-family: Inter, "Helvetica Neue", system-ui, sans-serif; }
           .d365-feat p { font-size: 14px; line-height: 1.5; color: #4B5563; margin: 0; }
-          .d365-feat-btn { width: 100%; background: #2D3FE7; color: #FFFFFF; border: none; border-radius: 2px; padding: 12px; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; cursor: pointer; font-family: inherit; transition: background 120ms ease; }
-          .d365-feat-btn:hover { background: #1F2DC9; }
+          .d365-feat-btn { width: 100%; background: #0F2044; color: #FFFFFF; border: none; border-radius: 2px; padding: 12px; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; cursor: pointer; font-family: inherit; transition: background 120ms ease; }
+          .d365-feat-btn:hover { background: #1A3370; }
           .d365-spacer { background: #EAF0FF; height: 40px; border-radius: 4px; width: 100%; }
           .d365-why-wrap { background: #FFFFFF; padding: 80px 24px 56px; display: flex; justify-content: center; }
           .d365-why { width: 100%; max-width: 1200px; display: grid; grid-template-columns: 30% 70%; align-items: start; }
-          .d365-why-left { padding-right: 32px; border-right: 1px solid #2D3FE7; }
+          .d365-why-left { padding-right: 32px; border-right: 1px solid #0F2044; }
           .d365-why-eyebrow { font-size: 12px; font-weight: 600; color: #9CA3AF; text-transform: uppercase; letter-spacing: 0.18em; margin-bottom: 12px; font-family: Inter, "Helvetica Neue", system-ui, sans-serif; }
           .d365-why-heading { font-size: 32px; font-weight: 800; color: #0A0A0A; text-transform: uppercase; letter-spacing: -0.5px; margin: 0; line-height: 1.1; font-family: Inter, "Helvetica Neue", system-ui, sans-serif; }
           .d365-why-right { padding-left: 32px; }
@@ -482,7 +482,7 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
                 background: "#FFF",
                 borderRadius: 18,
                 overflow: "hidden",
-                border: course.featured ? "2px solid #2D3FE7" : "1px solid #E9E5E8",
+                border: course.featured ? "2px solid #0F2044" : "1px solid #E9E5E8",
                 display: "flex",
                 flexDirection: "column",
               }}
@@ -494,7 +494,7 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
                 <div style={{ display: "flex", flexDirection: "column", gap: 5, marginBottom: 18 }}>
                   {course.features.map((f) => (
                     <div key={f} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#51567A" }}>
-                      <Check size={11} color="#2D3FE7" strokeWidth={1.8} />
+                      <Check size={11} color="#0F2044" strokeWidth={1.8} />
                       {f}
                     </div>
                   ))}
@@ -538,7 +538,7 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
       {/* HomeSwapBand */}
       <section
         style={{
-          background: "#2D3FE7",
+          background: "#0F2044",
           padding: "64px 80px",
           display: "flex",
           alignItems: "center",
@@ -566,7 +566,7 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
           <div style={{ display: "flex", gap: 16, marginTop: 24, flexWrap: "wrap" }}>
             <Link to="/test-swap">
               <button
-                style={{ background: "#FFFFFF", border: "none", borderRadius: 2, padding: "12px 24px", fontSize: 14, fontWeight: 500, color: "#2D3FE7", cursor: "pointer", whiteSpace: "nowrap", transition: "background 120ms ease" }}
+                style={{ background: "#FFFFFF", border: "none", borderRadius: 2, padding: "12px 24px", fontSize: 14, fontWeight: 500, color: "#0F2044", cursor: "pointer", whiteSpace: "nowrap", transition: "background 120ms ease" }}
                 onMouseEnter={(e) => (e.currentTarget.style.background = "#F9FAFB")}
                 onMouseLeave={(e) => (e.currentTarget.style.background = "#FFFFFF")}
               >
