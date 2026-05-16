@@ -308,6 +308,12 @@ Deno.serve(async (req) => {
         successCount++;
       } catch (err) {
         console.error(`Error processing queue item ${item.id}:`, err);
+        if (item.action === "syncLesson") {
+          await supabase
+            .from("scheduled_lessons")
+            .update({ calendar_sync_status: "failed" })
+            .eq("id", item.lesson_id);
+        }
         await supabase
           .from("calendar_sync_queue")
           .update({
