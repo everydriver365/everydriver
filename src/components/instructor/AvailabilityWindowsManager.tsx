@@ -35,6 +35,14 @@ export function AvailabilityWindowsManager({ instructorId }: { instructorId: str
     },
   });
 
+  const syncPartner = async () => {
+    try {
+      await mirrorAwToIwh(instructorId);
+    } catch (e) {
+      console.error("Failed to mirror availability_windows to instructor_working_hours", e);
+    }
+  };
+
   const addMutation = useMutation({
     mutationFn: async () => {
       const { error } = await supabase.from("availability_windows").insert({
@@ -45,6 +53,7 @@ export function AvailabilityWindowsManager({ instructorId }: { instructorId: str
         label: label || null,
       });
       if (error) throw error;
+      await syncPartner();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["availability-windows"] });
@@ -57,6 +66,7 @@ export function AvailabilityWindowsManager({ instructorId }: { instructorId: str
   const toggleMutation = useMutation({
     mutationFn: async ({ id, active }: { id: string; active: boolean }) => {
       await supabase.from("availability_windows").update({ is_active: active }).eq("id", id);
+      await syncPartner();
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["availability-windows"] }),
   });
@@ -64,6 +74,7 @@ export function AvailabilityWindowsManager({ instructorId }: { instructorId: str
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       await supabase.from("availability_windows").delete().eq("id", id);
+      await syncPartner();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["availability-windows"] });
