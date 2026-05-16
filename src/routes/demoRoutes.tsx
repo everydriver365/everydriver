@@ -43,6 +43,7 @@ const DemoNextUpRedesigns = lazy(() => import("@/pages/demo/DemoNextUpRedesigns"
 const DemoInstructorAppRedesigns = lazy(() => import("@/pages/demo/DemoInstructorAppRedesigns"));
 const DemoCourseResultsHorizontal = lazy(() => import("@/pages/demo/DemoCourseResultsHorizontal"));
 const DemoCourseResultsPremium = lazy(() => import("@/pages/demo/DemoCourseResultsPremium"));
+const DemoLearnersJourney = lazy(() => import("@/pages/demo/DemoLearnersJourney"));
 
 // Instructor portal demo routes
 const NextUpTileDemo = lazy(() => import("@/pages/instructor/NextUpTileDemo"));
