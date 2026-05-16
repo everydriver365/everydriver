@@ -52,6 +52,7 @@ interface SwapRow {
   latest_new_date: string;
   notes: string | null;
   created_at: string;
+  distance_miles: number | null;
 }
 
 type SwapResult = {
