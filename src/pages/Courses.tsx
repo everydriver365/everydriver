@@ -5,6 +5,7 @@ import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths,
 import { Button } from "@/components/ui/button";
 import { PostcodeAutocomplete } from "@/components/PostcodeAutocomplete";
 import { MainLayout } from "@/components/layout/MainLayout";
+import { CourseSearchHeader, type CourseFilterId } from "@/components/courses/CourseSearchHeader";
 import { DynamicCourseCard } from "@/components/DynamicCourseCard";
 import { CourseTableList } from "@/components/courses/CourseTableList";
 import { Edit2, SlidersHorizontal, ShieldCheck } from "lucide-react";
