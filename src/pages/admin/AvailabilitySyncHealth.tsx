@@ -231,6 +231,7 @@ export default function AvailabilitySyncHealth() {
       if (tab === "healthy" && r.issues.length !== 0) return false;
       if (tab === "drift" && !r.issues.some((i) => i.startsWith("drift_"))) return false;
       if (tab === "bad_dow" && !r.issues.includes("bad_dow")) return false;
+      if (tab === "gcal_wide_busy" && !r.issues.includes("gcal_wide_busy")) return false;
       if (tab === "no_hours" && !r.issues.includes("no_hours")) return false;
       if (tab === "future_from" && !r.issues.includes("future_from")) return false;
       if (tab === "all_issues" && r.issues.length === 0) return false;
@@ -335,6 +336,7 @@ export default function AvailabilitySyncHealth() {
               <TabsList>
                 <TabsTrigger value="all_issues">All issues ({stats.total - stats.healthy})</TabsTrigger>
                 <TabsTrigger value="bad_dow">Bad day numbering ({stats.badDow})</TabsTrigger>
+                <TabsTrigger value="gcal_wide_busy">GCal wide blocks ({stats.gcalWideBusy})</TabsTrigger>
                 <TabsTrigger value="drift">Drift ({stats.drift})</TabsTrigger>
                 <TabsTrigger value="no_hours">No hours ({stats.noHours})</TabsTrigger>
                 <TabsTrigger value="future_from">Future from ({stats.futureFrom})</TabsTrigger>
