@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { ChevronDown, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -27,6 +27,7 @@ export function Drive365Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [coursesOpen, setCoursesOpen] = useState(false);
   const [promoVisible, setPromoVisible] = useState(true);
+  const coursesRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (typeof window !== "undefined" && localStorage.getItem(PROMO_KEY) === "1") {
@@ -38,6 +39,24 @@ export function Drive365Header() {
     setMobileOpen(false);
     setCoursesOpen(false);
   }, [location.pathname]);
+
+  useEffect(() => {
+    if (!coursesOpen) return;
+    const onDown = (e: MouseEvent) => {
+      if (coursesRef.current && !coursesRef.current.contains(e.target as Node)) {
+        setCoursesOpen(false);
+      }
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setCoursesOpen(false);
+    };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [coursesOpen]);
 
   const dismissPromo = () => {
     setPromoVisible(false);
@@ -76,23 +95,26 @@ export function Drive365Header() {
                 <div
                   key={link.href}
                   className="relative"
-                  onMouseEnter={() => setCoursesOpen(true)}
-                  onMouseLeave={() => setCoursesOpen(false)}
+                  ref={coursesRef}
                 >
-                  <Link
-                    to={link.href}
+                  <button
+                    type="button"
+                    onClick={() => setCoursesOpen((v) => !v)}
+                    aria-haspopup="menu"
+                    aria-expanded={coursesOpen}
                     className="flex items-center gap-1 text-white text-[15px] font-medium hover:text-white/80 transition-colors"
                   >
                     {link.label}
-                    <ChevronDown className="h-3.5 w-3.5" />
-                  </Link>
+                    <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", coursesOpen && "rotate-180")} />
+                  </button>
                   {coursesOpen && (
-                    <div className="absolute left-0 top-full pt-3">
+                    <div className="absolute left-0 top-full pt-3 z-50">
                       <div className="bg-white rounded-lg shadow-xl py-2 min-w-[220px]">
                         {COURSES_DROPDOWN.map((item) => (
                           <Link
                             key={item.href}
                             to={item.href}
+                            onClick={() => setCoursesOpen(false)}
                             className="block px-4 py-2 text-sm text-[#0a1936] hover:bg-gray-50"
                           >
                             {item.label}
