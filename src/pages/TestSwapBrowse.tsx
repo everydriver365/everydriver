@@ -258,7 +258,7 @@ export default function TestSwapBrowse() {
   const postcodeSearched = postcode.trim().length > 0;
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: t.surface }}>
+    <div className="min-h-screen" style={{ backgroundColor: t.white }}>
       <SEOHead
         title="Find a driving test swap | Drive365"
         description="Search available driving test swaps by postcode. Find an earlier driving test near you."
