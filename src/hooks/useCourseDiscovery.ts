@@ -373,28 +373,30 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
         setSearchedPostcode(cleanPostcode);
         setSearchedAreaName(areaName || null);
         setSortBy(location ? "nearest" : "soonest");
-        
-        // Find instructors in the searched area using the full geoCache (includes previously geocoded instructor postcodes)
+
         const radiusMiles = parseInt(radius);
         const fullGeoCache = { ...geoCache, ...result.geoCache };
-        
-        const instructorsNearby = instructors.filter((instructor) => {
-          const instructorPostcode = instructor.home_postcode.replace(/\s+/g, "").toUpperCase();
-          const instructorLocation = fullGeoCache[instructorPostcode];
-          
-          if (!instructorLocation) return false;
-          
-          const distance = calculateDistance(
-            location.lat,
-            location.lng,
-            instructorLocation.lat,
-            instructorLocation.lng
-          );
-          
-          return distance <= radiusMiles;
-        });
 
-        // If instructors found in area, jump to their first available date
+        const instructorsNearby = location
+          ? instructors.filter((instructor) => {
+              if (instructor.is_network_placeholder) {
+                return instructor.placeholder_district === district;
+              }
+              const instructorPostcode = instructor.home_postcode.replace(/\s+/g, "").toUpperCase();
+              const instructorLocation = fullGeoCache[instructorPostcode];
+              if (!instructorLocation) return false;
+              const distance = calculateDistance(
+                location.lat,
+                location.lng,
+                instructorLocation.lat,
+                instructorLocation.lng,
+              );
+              return distance <= radiusMiles;
+            })
+          : instructors.filter(
+              (i) => i.is_network_placeholder && i.placeholder_district === district,
+            );
+
         if (instructorsNearby.length > 0) {
           const firstAvailable = findFirstAvailableDate(instructorsNearby, sources);
           if (firstAvailable) {
@@ -402,8 +404,8 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
             setSelectedDate(firstAvailable.date);
           }
         }
-        
-        toast({ title: "Location found!", description: `Showing courses near ${areaName || cleanPostcode}` });
+
+        toast({ title: "Location found!", description: `Showing courses near ${areaName || district}` });
       } else {
         toast({ title: "Postcode not found", description: "Please check your postcode", variant: "destructive" });
       }
