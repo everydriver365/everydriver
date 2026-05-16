@@ -598,6 +598,16 @@ Deno.serve(async (req) => {
           return m ? m[0] : null;
         };
         // Helper: pull video meeting URL from a Google event
+        // Detects "blocking" all-day events (holidays, leave, etc.) by title.
+        // Non-matching all-day events are treated as informational (is_busy=false)
+        // so they don't wipe out the instructor's whole working day.
+        const BLOCKING_TITLE_RE = /holiday|vacation|\bvac\b|\boff\b|leave|sick|away|closed|unavailable|annual leave|day off|out of office|\booo\b/i;
+        const computeIsBusy = (item: any, title: string | null): boolean => {
+          const isAllDay = !item.start?.dateTime && !!item.start?.date;
+          if (!isAllDay) return true;
+          return BLOCKING_TITLE_RE.test(title || "");
+        };
+
         const extractMeetingInfo = (item: any): { url: string | null; provider: string | null } => {
           const cd = item.conferenceData;
           if (cd?.entryPoints && Array.isArray(cd.entryPoints)) {
