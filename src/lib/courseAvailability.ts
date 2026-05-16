@@ -269,12 +269,113 @@ export function hasNetworkPlaceholderAvailabilityOn(
 }
 
 // ---------------------------------------------------------------------------
-// Public API
+// Public API — single unified day-level computation
 // ---------------------------------------------------------------------------
 
+export interface DayComputeOptions {
+  durationMinutes: number;
+  bufferMinutes: number;
+  /** When > bufferMinutes, the first slot of the day is pushed by this many
+   *  minutes (instructor travel-from-home buffer). Skipped if any real
+   *  conflict already exists earlier in the working window. */
+  firstLessonBufferMinutes?: number;
+  /** STEP_MINUTES override — typically `instructor.slot_increment_minutes`. */
+  slotIncrementMinutes?: number;
+  timeOfDay?: TimeOfDay;
+  minNoticeMinutes?: number;
+}
+
+export interface DayComputeResult {
+  /** Raw working windows for the day (e.g. split shifts). */
+  windows: { start: number; end: number }[];
+  /** All bookable slot start/end in minutes-since-midnight. */
+  slots: Slot[];
+  /** Rejected candidates with reason — for tooltips. */
+  rejected: RejectedSlot[];
+}
+
 /**
- * True when the instructor has at least MIN_FREE_MINUTES of bookable time on
- * `day` after removing conflicts.
+ * THE unified day-level slot computation. Every booking surface (public
+ * booking page, course discovery, auto-scheduler, instructor gap-fill,
+ * create-booking guard) calls this so they cannot disagree.
+ */
+export function computeDaySlots(
+  instructor: InstructorLite,
+  day: Date,
+  src: CourseAvailabilitySources,
+  opts: DayComputeOptions,
+): DayComputeResult {
+  const dateStr = format(day, "yyyy-MM-dd");
+  const today = startOfDay(new Date());
+  const isToday = format(today, "yyyy-MM-dd") === dateStr;
+
+  // Hard gates: past day, available_from
+  if (isBefore(day, today)) {
+    return { windows: [], slots: [], rejected: [] };
+  }
+  if (instructor.available_from && isAfter(parseISO(instructor.available_from), day)) {
+    return { windows: [], slots: [], rejected: [] };
+  }
+
+  const windows = resolveWindowsForDay(instructor, day, src);
+  if (windows.length === 0) {
+    return { windows: [], slots: [], rejected: [] };
+  }
+
+  // Build conflicts once (engine handles the per-conflict padding internally).
+  const conflicts = buildDayConflicts(
+    dateStr,
+    src.manualBlocks
+      .filter((b) => b.instructor_id === instructor.id)
+      .map((b) => ({ start_datetime: b.start_datetime, end_datetime: b.end_datetime })),
+    src.calendarEvents
+      .filter((e) => e.instructor_id === instructor.id)
+      .map((e) => ({ start_time: e.start_time, end_time: e.end_time, is_busy: e.is_busy ?? true })),
+  );
+
+  const buffer = Math.max(0, instructor.buffer_minutes ?? 0);
+  const firstLessonBuffer = Math.max(0, opts.firstLessonBufferMinutes ?? 0);
+
+  const allSlots: Slot[] = [];
+  const allRejected: RejectedSlot[] = [];
+
+  for (const win of windows) {
+    // First-lesson travel buffer: shift the start of the window IF
+    // (a) firstLessonBuffer is larger than the standard back-to-back buffer, AND
+    // (b) no real conflict ends before the shifted start (i.e. this would still
+    //     be the first lesson of the day).
+    let dayStartMin = win.start;
+    if (firstLessonBuffer > buffer) {
+      const candidateStart = win.start + (firstLessonBuffer - buffer);
+      const hasEarlierConflict = conflicts.some(
+        (c) => c.start < candidateStart && c.end > win.start,
+      );
+      if (!hasEarlierConflict) dayStartMin = candidateStart;
+    }
+
+    const result = resolveAvailability({
+      dateStr,
+      dayStartMin,
+      dayEndMin: win.end,
+      bufferMinutes: opts.bufferMinutes,
+      durationMinutes: opts.durationMinutes,
+      conflicts,
+      timeOfDay: opts.timeOfDay,
+      isToday,
+      anchorSkipMinutes: opts.slotIncrementMinutes,
+      minNoticeMinutes: opts.minNoticeMinutes,
+    });
+    allSlots.push(...result.slots);
+    allRejected.push(...result.rejected);
+  }
+
+  return { windows, slots: allSlots, rejected: allRejected };
+}
+
+/**
+ * Coarse day-level "is this instructor bookable at all on this day?" used by
+ * /courses discovery. Backed by the unified engine path so it cannot disagree
+ * with the booking page.
  */
 export function hasInstructorAvailabilityOn(
   instructor: InstructorLite,
@@ -286,28 +387,19 @@ export function hasInstructorAvailabilityOn(
     return hasNetworkPlaceholderAvailabilityOn(day, opts.minFreeMinutes ?? MIN_FREE_MINUTES);
   }
 
-  const today = startOfDay(new Date());
-  if (isBefore(day, today)) return false;
-  if (instructor.available_from && isAfter(parseISO(instructor.available_from), day)) return false;
-
-  const windows = resolveWindowsForDay(instructor, day, src);
-  if (windows.length === 0) return false;
-
+  const minFree = opts.minFreeMinutes ?? MIN_FREE_MINUTES;
   const applyBuffers = opts.applyBuffers !== false;
-  const pad = applyBuffers ? Math.max(0, instructor.buffer_minutes ?? 0) : 0;
 
-  const dateStr  = format(day, "yyyy-MM-dd");
-  const conflicts = getDayConflicts(instructor.id, dateStr, src, pad);
-  const free      = subtractConflicts(windows, conflicts);
+  // Use a slot duration of `minFree` so the engine's "fits inside window minus
+  // conflicts" check directly answers our question. Increment by STEP_MINUTES
+  // (engine default) — we only need ONE valid slot to return true.
+  const result = computeDaySlots(instructor, day, src, {
+    durationMinutes: minFree,
+    bufferMinutes: applyBuffers ? Math.max(0, instructor.buffer_minutes ?? 0) : 0,
+  });
+  return result.slots.length > 0;
+}
 
-  const isToday  = format(today, "yyyy-MM-dd") === dateStr;
-  const minFree  = opts.minFreeMinutes ?? MIN_FREE_MINUTES;
-  const nowMin   = isToday ? new Date().getHours() * 60 + new Date().getMinutes() : 0;
-
-  for (const span of free) {
-    const effectiveStart = isToday ? Math.max(span.start, nowMin) : span.start;
-    if (span.end - effectiveStart >= minFree) return true;
-  }
   return false;
 }
 
