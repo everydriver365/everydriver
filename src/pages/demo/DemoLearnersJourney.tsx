@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Heart, Star, ArrowRight, Quote, Sparkles, MapPin, Trophy } from "lucide-react";
+import { Heart, Star, ArrowRight, Quote, Sparkles, MapPin, Trophy, Play, CheckCircle2, Award, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
@@ -249,19 +249,220 @@ function VariantC() {
   );
 }
 
+/* ---------------- VARIANT D — Brutalist Poster ---------------- */
+function VariantD() {
+  return (
+    <section className="bg-amber-300 py-24 relative overflow-hidden">
+      <div className="absolute inset-0 opacity-[0.06]" style={{ backgroundImage: "radial-gradient(circle, #000 1px, transparent 1px)", backgroundSize: "18px 18px" }} />
+      <div className="container max-w-6xl relative">
+        <div className="border-[3px] border-black bg-white p-2 mb-12 inline-block rotate-[-1deg] shadow-[8px_8px_0_0_#000]">
+          <div className="border-[2px] border-black px-4 py-1.5 text-xs font-black uppercase tracking-widest">★ Real Learner Files ★</div>
+        </div>
+        <h2 className="font-black text-6xl md:text-8xl leading-[0.9] tracking-tighter mb-12 text-black">
+          EVERY<br />
+          <span className="bg-black text-amber-300 px-3 inline-block rotate-[-2deg]">LEARNER'S</span><br />
+          JOURNEY.
+        </h2>
+
+        <div className="grid md:grid-cols-3 gap-6">
+          {TESTIMONIALS.map((t, i) => (
+            <motion.div
+              key={t.name}
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.45, delay: i * 0.1 }}
+              viewport={{ once: true }}
+              className="bg-white border-[3px] border-black p-6 shadow-[8px_8px_0_0_#000] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[12px_12px_0_0_#000] transition-all"
+              style={{ transform: `rotate(${i === 1 ? 0 : i === 0 ? -1 : 1}deg)` }}
+            >
+              <div className="flex items-center justify-between mb-4 pb-3 border-b-[2px] border-black">
+                <div className="text-[10px] font-black uppercase tracking-widest">File #{String(i + 1).padStart(3, "0")}</div>
+                <div className="text-[10px] font-black uppercase">{t.weeks}</div>
+              </div>
+              <img src={t.img} alt={t.name} className="w-full h-44 object-cover border-[2px] border-black mb-4 grayscale contrast-125" />
+              <div className="flex gap-0.5 mb-3">
+                {[...Array(5)].map((_, s) => <Star key={s} className="h-4 w-4 fill-black text-black" />)}
+              </div>
+              <p className="text-sm font-bold leading-snug text-black mb-4">"{t.text}"</p>
+              <div className="text-xs font-black uppercase tracking-wider">— {t.name}, {t.course}</div>
+            </motion.div>
+          ))}
+        </div>
+
+        <div className="mt-12 flex flex-wrap items-stretch gap-0 border-[3px] border-black bg-white">
+          {STATS.map((s) => (
+            <div key={s.label} className="flex-1 min-w-[140px] p-6 border-r-[3px] border-black last:border-r-0">
+              <div className="text-4xl font-black text-black">{s.value}</div>
+              <div className="text-xs font-black uppercase tracking-widest mt-1">{s.label}</div>
+            </div>
+          ))}
+          <Link to="/courses" className="bg-black text-amber-300 px-8 py-6 font-black uppercase tracking-widest text-sm flex items-center gap-2 hover:bg-amber-300 hover:text-black transition-colors">
+            Start Now →
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ---------------- VARIANT E — Polaroid Wall ---------------- */
+function VariantE() {
+  const tilts = [-4, 3, -2];
+  return (
+    <section className="bg-gradient-to-b from-stone-100 to-stone-200 py-24 relative overflow-hidden">
+      <div className="absolute inset-0 opacity-30" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.9'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E\")" }} />
+      <div className="container max-w-6xl relative">
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center gap-2 text-amber-700 font-handwritten mb-3">
+            <Sparkles className="h-4 w-4" />
+            <span className="font-serif italic text-lg">from our learner scrapbook</span>
+          </div>
+          <h2 className="font-serif text-5xl md:text-7xl tracking-tight text-stone-800">
+            Every learner's
+            <span className="block italic text-amber-700">journey starts here</span>
+          </h2>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-8 md:gap-4 max-w-5xl mx-auto">
+          {TESTIMONIALS.map((t, i) => (
+            <motion.div
+              key={t.name}
+              initial={{ opacity: 0, y: 40, rotate: 0 }}
+              whileInView={{ opacity: 1, y: 0, rotate: tilts[i] }}
+              transition={{ duration: 0.6, delay: i * 0.15 }}
+              viewport={{ once: true }}
+              whileHover={{ rotate: 0, scale: 1.03 }}
+              className="bg-white p-4 pb-16 shadow-[0_15px_40px_-10px_rgba(0,0,0,0.3)] relative"
+            >
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-20 h-6 bg-amber-200/70 rotate-[-3deg] shadow-sm" />
+              <img src={t.img} alt={t.name} className="w-full aspect-square object-cover" />
+              <div className="absolute bottom-3 left-0 right-0 text-center px-4">
+                <div className="font-serif italic text-lg text-stone-800">"{t.text.split(".")[0]}."</div>
+                <div className="text-sm font-bold text-stone-700 mt-2">— {t.name}</div>
+                <div className="text-xs text-stone-500">{t.course} · {t.location}</div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        <div className="mt-20 text-center">
+          <div className="flex flex-wrap items-center justify-center gap-10 mb-8">
+            {STATS.map((s) => (
+              <div key={s.label}>
+                <div className="font-serif text-4xl italic text-amber-700">{s.value}</div>
+                <div className="text-xs uppercase tracking-wider text-stone-500 mt-1">{s.label}</div>
+              </div>
+            ))}
+          </div>
+          <Button size="lg" className="bg-stone-800 hover:bg-stone-900 text-amber-100 font-serif italic text-base px-8 rounded-none border-2 border-stone-800 shadow-[4px_4px_0_0_rgba(245,158,11,0.6)]" asChild>
+            <Link to="/courses">Add yours to the wall <ArrowRight className="h-4 w-4 ml-2" /></Link>
+          </Button>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ---------------- VARIANT F — Glass / Dark Premium ---------------- */
+function VariantF() {
+  return (
+    <section className="relative py-24 overflow-hidden bg-[#0B1220]">
+      {/* Aurora orbs */}
+      <div className="absolute top-10 left-1/4 w-[500px] h-[500px] bg-amber-500/20 rounded-full blur-[120px]" />
+      <div className="absolute bottom-10 right-1/4 w-[600px] h-[600px] bg-rose-500/15 rounded-full blur-[140px]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.04),transparent_60%)]" />
+
+      <div className="container max-w-6xl relative">
+        <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 backdrop-blur border border-white/10 text-xs text-white/80 mb-5">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            6,499 verified learner reviews
+          </div>
+          <h2 className="text-5xl md:text-7xl font-bold tracking-tight text-white leading-[1.05]">
+            Every learner's journey,
+            <span className="block bg-gradient-to-r from-amber-200 via-amber-400 to-rose-400 bg-clip-text text-transparent">illuminated.</span>
+          </h2>
+          <p className="text-white/60 mt-5 max-w-xl mx-auto">Hear from the people who started exactly where you are now.</p>
+        </motion.div>
+
+        <div className="grid md:grid-cols-3 gap-5">
+          {TESTIMONIALS.map((t, i) => (
+            <motion.div
+              key={t.name}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.55, delay: i * 0.12 }}
+              viewport={{ once: true }}
+              className="group relative rounded-3xl p-[1px] bg-gradient-to-br from-white/20 via-white/5 to-transparent hover:from-amber-300/50 hover:via-rose-300/30 transition-all"
+            >
+              <div className="rounded-3xl bg-white/[0.04] backdrop-blur-xl p-7 h-full border border-white/5">
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="relative">
+                    <img src={t.img} alt={t.name} className="h-14 w-14 rounded-full object-cover ring-2 ring-white/20" />
+                    <div className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-emerald-500 border-2 border-[#0B1220] flex items-center justify-center">
+                      <CheckCircle2 className="h-3 w-3 text-white" />
+                    </div>
+                  </div>
+                  <div>
+                    <div className="font-semibold text-white">{t.name}</div>
+                    <div className="text-xs text-white/50">{t.location}</div>
+                  </div>
+                  <div className="ml-auto text-right">
+                    <div className="text-[10px] uppercase tracking-wider text-white/40">Passed in</div>
+                    <div className="text-sm font-bold text-amber-300">{t.weeks}</div>
+                  </div>
+                </div>
+                <div className="flex gap-0.5 mb-3">
+                  {[...Array(5)].map((_, s) => <Star key={s} className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />)}
+                </div>
+                <p className="text-[15px] text-white/80 leading-relaxed">"{t.text}"</p>
+                <div className="mt-5 pt-4 border-t border-white/10 text-xs text-white/40 flex items-center gap-2">
+                  <Calendar className="h-3.5 w-3.5" /> {t.course}
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="mt-12 rounded-3xl bg-white/[0.04] backdrop-blur-xl border border-white/10 p-8 flex flex-wrap items-center justify-between gap-6"
+        >
+          <div className="flex flex-wrap gap-10">
+            {STATS.map((s) => (
+              <div key={s.label}>
+                <div className="text-3xl font-bold bg-gradient-to-br from-white to-white/60 bg-clip-text text-transparent">{s.value}</div>
+                <div className="text-xs uppercase tracking-wider text-white/50 mt-1">{s.label}</div>
+              </div>
+            ))}
+          </div>
+          <Button size="lg" className="bg-gradient-to-r from-amber-400 to-rose-400 hover:from-amber-300 hover:to-rose-300 text-zinc-900 font-bold gap-2 rounded-full shadow-[0_10px_40px_-10px_rgba(245,158,11,0.6)]" asChild>
+            <Link to="/courses">Start your journey <ArrowRight className="h-4 w-4" /></Link>
+          </Button>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
 /* ---------------- Demo page wrapper ---------------- */
 export default function DemoLearnersJourney() {
   const variants = [
-    { id: "A", title: "Editorial Magazine", desc: "Serif headlines, quote-led cards, dark stats footer. Confident & premium." },
-    { id: "B", title: "Cinematic Cards", desc: "Photo-forward tiles with pass-time badges, gradient glow, soft pastel canvas." },
-    { id: "C", title: "Journey Timeline", desc: "Step-by-step road with numbered stages, each tied to a learner story." },
+    { id: "A", title: "Editorial Magazine", desc: "Serif headlines, quote-led cards, dark stats footer.", accent: "amber" },
+    { id: "B", title: "Cinematic Cards", desc: "Photo-forward tiles with pass-time badges, gradient glow.", accent: "orange" },
+    { id: "C", title: "Journey Timeline", desc: "Step-by-step road with numbered stages.", accent: "rose" },
+    { id: "D", title: "Brutalist Poster", desc: "Hard edges, drop shadows, mono photos, file-card vibe.", accent: "amber" },
+    { id: "E", title: "Polaroid Wall", desc: "Tilted photo prints, handwritten serif, scrapbook texture.", accent: "stone" },
+    { id: "F", title: "Glass / Aurora", desc: "Dark premium glassmorphism with aurora glow and verified badges.", accent: "slate" },
   ];
   return (
     <main className="bg-zinc-50 min-h-screen">
       <div className="container max-w-6xl py-12">
         <Link to="/drive365" className="text-sm text-zinc-500 hover:text-zinc-900">← Back to Drive365</Link>
         <h1 className="text-3xl font-black mt-4">Every Learner's Journey — design directions</h1>
-        <p className="text-zinc-600 mt-2 max-w-2xl">Three full-fidelity redesigns of the testimonial section. Scroll through and tell me which letter to ship (A, B, or C).</p>
+        <p className="text-zinc-600 mt-2 max-w-2xl">Six full-fidelity redesigns of the testimonial section. Scroll through and tell me which letter to ship.</p>
         <div className="mt-6 grid md:grid-cols-3 gap-3">
           {variants.map(v => (
             <a key={v.id} href={`#variant-${v.id}`} className="rounded-xl bg-white border border-zinc-200 p-4 hover:border-amber-400 transition-colors">
@@ -284,6 +485,18 @@ export default function DemoLearnersJourney() {
       <div id="variant-C" className="border-t-4 border-rose-500">
         <div className="container max-w-6xl py-4 text-xs uppercase tracking-[0.25em] text-rose-600 font-bold">Variant C · Journey Timeline</div>
         <VariantC />
+      </div>
+      <div id="variant-D" className="border-t-4 border-yellow-500">
+        <div className="container max-w-6xl py-4 text-xs uppercase tracking-[0.25em] text-yellow-700 font-bold">Variant D · Brutalist Poster</div>
+        <VariantD />
+      </div>
+      <div id="variant-E" className="border-t-4 border-stone-500">
+        <div className="container max-w-6xl py-4 text-xs uppercase tracking-[0.25em] text-stone-700 font-bold">Variant E · Polaroid Wall</div>
+        <VariantE />
+      </div>
+      <div id="variant-F" className="border-t-4 border-slate-700">
+        <div className="container max-w-6xl py-4 text-xs uppercase tracking-[0.25em] text-slate-700 font-bold">Variant F · Glass / Aurora</div>
+        <VariantF />
       </div>
     </main>
   );
