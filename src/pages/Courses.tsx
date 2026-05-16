@@ -1496,24 +1496,6 @@ export default function Courses() {
               </div>
             ) : (
               <>
-                {showRadiusFallbackNotice && (
-                  <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-300/50 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
-                    <span>
-                      No instructors found within {radius} mi of {searchedAreaName || searchedPostcode}. Showing wider results.
-                    </span>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-8"
-                      onClick={() => {
-                        setRadius("50");
-                        setShowRadiusFallbackNotice(false);
-                      }}
-                    >
-                      Expand to 50 mi
-                    </Button>
-                  </div>
-                )}
                 {/* Selected date header */}
                 {isListMode ? (
                   <>
