@@ -66,9 +66,9 @@ export function AvailabilityDiagnostic({ instructorId }: { instructorId: string 
           (parseISO(availableFrom).getTime() - today.setHours(0, 0, 0, 0)) / 86400000,
         );
         setResult({
-          status: "error",
+          status: "warn",
           title: `Hidden until ${format(parseISO(availableFrom), "d MMM yyyy")}`,
-          detail: `Your "Available from" date is ${days} day${days === 1 ? "" : "s"} away. Pupils won't see any slots until then. Clear it above if this was a mistake.`,
+          detail: `Pupils won't see any slots until ${format(parseISO(availableFrom), "d MMM yyyy")} (${days} day${days === 1 ? "" : "s"} away). This is fine if you're on a long break — clear the date above if you didn't mean to set it.`,
         });
         setLoading(false);
         return;
