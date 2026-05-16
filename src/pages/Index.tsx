@@ -277,8 +277,8 @@ export default function Index() {
                     <div style={{ padding: 22, flex: 1, display: "flex", flexDirection: "column" }}>
                       <h3 style={{ fontSize: 16, fontWeight: 700, color: "#191C2F", marginBottom: 6 }}>{feature.title}</h3>
                       <p style={{ fontSize: 13, color: "#51567A", lineHeight: 1.6, marginBottom: 14 }}>{feature.description}</p>
-                      <div style={{ marginTop: "auto", display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 600, color: "#3E57D9" }}>
-                        Learn more <ChevronRight size={12} color="#3E57D9" strokeWidth={2.2} />
+                      <div style={{ marginTop: "auto", display: "flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 500, color: "#2D3FE7" }}>
+                        Learn more <ChevronRight size={12} color="#2D3FE7" strokeWidth={2.2} />
                       </div>
                     </div>
                   </motion.button>
