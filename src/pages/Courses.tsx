@@ -405,8 +405,14 @@ export default function Courses() {
 
   // Helper to check if a date has availability (uses shared resolver including
   // Google Calendar busy events + existing scheduled lessons + manual blocks).
+  // Each instructor's check uses their own minimum lesson length so search
+  // matches what the booking calendar can actually offer.
   const isDateAvailable = useCallback((day: Date, instructorsList: Instructor[], src: CourseAvailabilitySources) => {
-    return instructorsList.some((instructor) => hasInstructorAvailabilityOn(instructor, day, src));
+    return instructorsList.some((instructor) =>
+      hasInstructorAvailabilityOn(instructor, day, src, {
+        minFreeMinutes: instructor.is_network_placeholder ? undefined : instructorMinSlotMinutes(instructor),
+      }),
+    );
   }, []);
 
   // Find first available date across next 6 months
