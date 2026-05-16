@@ -275,18 +275,38 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      let instructorsQuery = supabase.from("public_instructors").select("*").eq("is_active", true);
-      if (instructorId) {
-        instructorsQuery = instructorsQuery.eq("id", instructorId);
-      }
-      let coursesQuery = supabase.from("instructor_courses").select("*").eq("is_active", true);
-      if (instructorId) {
-        coursesQuery = coursesQuery.eq("instructor_id", instructorId);
-      }
+      // PostgREST enforces a server-side max-rows of 1000. Paginate explicitly
+      // so districts with many network placeholders / courses aren't silently
+      // truncated.
+      const PAGE = 1000;
+      const fetchAll = async <T,>(
+        build: () => any,
+      ): Promise<{ data: T[]; error: any }> => {
+        const all: T[] = [];
+        let from = 0;
+        while (true) {
+          const { data, error } = await build().range(from, from + PAGE - 1);
+          if (error) return { data: all, error };
+          const rows = (data || []) as T[];
+          all.push(...rows);
+          if (rows.length < PAGE) break;
+          from += PAGE;
+          if (from > 100000) break;
+        }
+        return { data: all, error: null };
+      };
 
       const [instructorsRes, coursesRes, templatesRes, premiumRes] = await Promise.all([
-        instructorsQuery,
-        coursesQuery,
+        fetchAll<any>(() => {
+          let q = supabase.from("public_instructors").select("*").eq("is_active", true);
+          if (instructorId) q = q.eq("id", instructorId);
+          return q;
+        }),
+        fetchAll<any>(() => {
+          let q = supabase.from("instructor_courses").select("*").eq("is_active", true);
+          if (instructorId) q = q.eq("instructor_id", instructorId);
+          return q;
+        }),
         supabase.from("course_templates").select("course_hours, course_name, default_image_url, is_popular, is_intensive, features").eq("is_active", true),
         supabase.from("instructor_premium_placements").select("instructor_id, placement_type, priority_score, expires_at").eq("is_active", true),
       ]);
