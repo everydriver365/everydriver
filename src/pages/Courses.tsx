@@ -674,13 +674,27 @@ export default function Courses() {
         setSelectedMonth(firstAvailable.month);
         setSelectedDate(firstAvailable.date);
       } else if (hasPlaceholderNearby && !hasRealNearby) {
-        const placeholderAvailable = findFirstAvailableDate(
-          instructorsNearby.filter((i) => i.is_network_placeholder),
-          availabilitySources,
-        );
-        if (placeholderAvailable) {
-          setSelectedMonth(placeholderAvailable.month);
-          setSelectedDate(placeholderAvailable.date);
+        // Placeholders are enquiry-only and have no working_hours rows, so the
+        // standard availability resolver returns nothing. Pick the first date
+        // in the visible months where the placeholder enquiry window applies.
+        let picked: { date: Date; month: string } | null = null;
+        const today = startOfDay(new Date());
+        outer: for (const monthOption of monthOptions) {
+          const [yr, mo] = monthOption.value.split("-").map(Number);
+          const mStart = startOfMonth(new Date(yr, mo - 1));
+          const mEnd = endOfMonth(mStart);
+          if (isBefore(mEnd, today)) continue;
+          const searchStart = isAfter(mStart, today) ? mStart : today;
+          for (const day of eachDayOfInterval({ start: searchStart, end: mEnd })) {
+            if (hasNetworkPlaceholderAvailabilityOn(day)) {
+              picked = { date: day, month: monthOption.value };
+              break outer;
+            }
+          }
+        }
+        if (picked) {
+          setSelectedMonth(picked.month);
+          setSelectedDate(picked.date);
         } else {
           setSelectedDate(null);
         }

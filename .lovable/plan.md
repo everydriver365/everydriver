@@ -1,87 +1,33 @@
+## Problem
 
-## Goal
+Searching a postcode like `EH12 3XX` on `/drive365` (which routes to `/courses?postcode=…`) finds the two network-placeholder ("mock") instructors for district `EH12` and they do have active courses — but the grid renders empty.
 
-Apply the new premium light SaaS palette globally to the Drive365 public website by updating CSS design tokens only. No layout, content, route, form, or component structure changes.
+## Root cause
 
-## Why tokens (and not component edits)
+In `src/pages/Courses.tsx`, `handleSearch` (≈lines 650–689) handles three cases for picking the initial `selectedDate`:
 
-The Drive365 public site already consumes semantic tokens (`bg-background`, `text-foreground`, `bg-primary`, `border-border`, etc.) defined in `src/index.css` `:root`. Updating those tokens recolours every page, card, button, border, and text style in one place — exactly the user's intent ("only update the colour system… keep layout exactly as it is").
+1. Real instructors nearby → `findFirstAvailableDate(instructorsNearby, …)`
+2. Nothing nearby → expand radius / fall back to all instructors
+3. **Only placeholders nearby** → calls `findFirstAvailableDate(placeholders, availabilitySources)` again
 
-The instructor portal, DSM admin, accessible portal, and learner-app each have their own scoped token blocks (`.instructor-portal`, `.dsm-instructor`, `.accessible-portal`, `.learner-app`) that override `--background`, `--primary`, etc. inside their shells — so those portals will NOT be affected by changes to `:root`. This keeps the redesign correctly scoped to the Drive365 marketing/learner pages.
+Case 3 is broken: `findFirstAvailableDate` delegates to `hasInstructorAvailabilityOn`, which always returns `false` for `is_network_placeholder` rows (they have no `instructor_working_hours` etc.). So `selectedDate` is set to `null`, and `coursesForSelectedDate` short-circuits to `[]` — the user sees no instructors even though `instructorsInArea` correctly contains the two EH12 placeholders.
 
-## Files changed
+`availableDatesInMonth` (≈line 471) already handles this case correctly by switching to `hasNetworkPlaceholderAvailabilityOn` when `placeholdersOnly` is true; the bug is only in the initial date-selection inside `handleSearch`.
 
-Single file: **`src/index.css`** — the `:root` block (lines ~12–131) and the high-contrast override (line ~1310).
+## Fix
 
-No other files touched. No components, no pages, no routes.
+In the `else if (hasPlaceholderNearby && !hasRealNearby)` branch of `handleSearch`, pick the first date for which `hasNetworkPlaceholderAvailabilityOn(day)` returns true (typically today, otherwise the next weekday/weekend window) instead of calling `findFirstAvailableDate`. Set `selectedMonth` and `selectedDate` from that date.
 
-## Token mapping (hex → HSL)
+Also remove the now-unused real-instructor `findFirstAvailableDate` import path branching, and keep the existing toast/notice behaviour.
 
-Base surfaces / text:
-```
---background       240 9% 97%    /* #F6F6F8 page bg */
---card             0 0% 100%     /* #FFFFFF */
---popover          0 0% 100%
---foreground       230 31% 14%   /* #191C2F headings */
---card-foreground  230 31% 14%
---secondary        218 21% 24%   /* #2F3748 subheadings */
---muted            240 7% 95%    /* #F2F2F4 soft panel */
---muted-foreground 232 20% 40%   /* #51567A body text */
---border           312 7% 91%    /* #E9E5E8 */
---input            312 7% 91%
-```
+## Files to change
 
-Primary / accent:
-```
---primary             230 67% 55%   /* #3E57D9 CTA blue */
---primary-foreground  0 0% 100%
---ring                230 67% 55%
---accent              214 92% 97%   /* #EEF4FE very pale blue panel */
---accent-foreground   225 44% 24%   /* #223058 dark navy */
-```
+- `src/pages/Courses.tsx` — placeholder-only branch in `handleSearch` (≈676–686). Replace the `findFirstAvailableDate(placeholders, …)` call with a small loop over `monthOptions` that uses `hasNetworkPlaceholderAvailabilityOn(day)` to pick the first valid date, then set `selectedMonth`/`selectedDate`.
 
-Status:
-```
---success          142 71% 38%   /* green for passed/paid/included */
---warning          33 87% 67%    /* #F5B563 */
---destructive      0 75% 52%     /* #E02828 */
-```
-
-Brand-specific additions (new tokens used sparingly):
-```
---brand-navy       225 44% 24%   /* #223058 */
---brand-muted-icon 226 9% 69%    /* #A8ABB8 */
---brand-panel-soft 215 84% 92%   /* #DBE9FB */
---brand-panel-mid  215 86% 94%   /* #E2EDFC */
---brand-panel-pale 214 92% 97%   /* #EEF4FE */
---brand-purple     248 82% 69%   /* #7C6CF2 */
---brand-teal       185 79% 44%   /* #18B8C7 */
-```
-
-Nav / sidebar / hero gradients also retuned to the new palette (kept structure, only colour values change):
-- `--nav-background` → `225 44% 24%` (#223058 dark navy)
-- `--sidebar-*` aligned to new tokens
-- `--gradient-hero` from navy → primary blue (soft, not harsh)
-- Shadows softened (lighter alpha) for the "calm" iOS feel
-- `--radius` stays at current value (no layout shift)
-
-## What is NOT changed
-
-- No page structure or layout
-- No content, copy, hero/section ordering, images, or form fields
-- No route or component changes
-- Portals (`.instructor-portal`, `.dsm-instructor`, `.accessible-portal`, `.learner-app`) remain on their own scoped tokens — untouched
-- Tailwind config unchanged (it already references the CSS variables)
-- No new sections, no removed sections
-- Status colour semantics (green=success, amber=warning, red=destructive, blue=primary) unchanged
+No DB, RLS, or edge-function changes are required — the data and `public_instructors` view already expose the EH12 placeholders correctly.
 
 ## Verification
 
-After applying, spot-check these Drive365 routes in the preview:
-1. `/` (Drive365 learner homepage / Index)
-2. `/drive365/franchise` (FranchisePage)
-3. `/courses?postcode=WD171AA` (current route)
-4. `/about`, `/faqs`, `/contact`
-5. One instructor portal route (e.g. `/instructor`) — confirm it is **visually unchanged** (proves scoping is correct)
-
-Build will run automatically; no manual test commands needed.
+1. Visit `/drive365`, enter `EH12 3XX`, submit.
+2. Expect the two placeholder instructors (Daniel King, Ava Young) to appear as enquiry course cards for today's date.
+3. Re-test with a real-instructor postcode to confirm the normal path is unaffected.
