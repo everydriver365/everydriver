@@ -240,11 +240,13 @@ export function CourseSearchHeader({
                     key={opt.id}
                     type="button"
                     onClick={() => setActiveFilter?.(opt.id)}
-                    className="font-heading inline-flex items-center gap-[5px] rounded-full border px-[13px] py-[5px] text-[13px] font-medium transition-colors"
+                    className="font-heading inline-flex items-center gap-[5px] rounded-full border text-[13px] font-medium transition-colors hover:!border-[#2D3FE7] hover:!text-[#2D3FE7] data-[active=true]:hover:!text-white"
+                    data-active={isActive}
                     style={{
-                      borderColor: isActive ? tokens.blue : tokens.border,
+                      padding: "8px 16px",
+                      borderColor: isActive ? tokens.blue : tokens.pillBorder,
                       backgroundColor: isActive ? tokens.blue : "#FFF",
-                      color: isActive ? "#FFF" : tokens.mid,
+                      color: isActive ? "#FFF" : tokens.navy,
                     }}
                   >
                     {Icon && <Icon size={13} strokeWidth={2} />}
