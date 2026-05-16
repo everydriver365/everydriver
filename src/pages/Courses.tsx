@@ -671,6 +671,11 @@ export default function Courses() {
       if (firstAvailable) {
         setSelectedMonth(firstAvailable.month);
         setSelectedDate(firstAvailable.date);
+      } else if (hasPlaceholderNearby && !hasRealNearby) {
+        // Placeholder-only area: pick today so the enquiry cards render immediately.
+        const today = startOfDay(new Date());
+        setSelectedMonth(format(today, "yyyy-MM"));
+        setSelectedDate(today);
       } else {
         setSelectedDate(null);
       }
