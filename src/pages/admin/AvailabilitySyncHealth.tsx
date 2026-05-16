@@ -265,6 +265,45 @@ export default function AvailabilitySyncHealth() {
     }
   };
 
+  const clearWideBusy = async (row: InstructorRow) => {
+    setBusyId(row.id);
+    try {
+      // Flip all-day / multi-day GCal events for this instructor to
+      // informational (is_busy=false) so they no longer wipe out working hours.
+      // Matches the rule the sync now applies going forward.
+      const { data, error } = await supabase
+        .from("instructor_calendar_events")
+        .select("id, title, start_time, end_time")
+        .eq("instructor_id", row.id)
+        .eq("is_busy", true);
+      if (error) throw error;
+      const BLOCKING = /holiday|vacation|\bvac\b|\boff\b|leave|sick|away|closed|unavailable|annual leave|day off|out of office|\booo\b/i;
+      const targetIds = (data ?? [])
+        .filter((r: any) => {
+          const dur = new Date(r.end_time).getTime() - new Date(r.start_time).getTime();
+          if (dur < 20 * 60 * 60 * 1000) return false;
+          return !BLOCKING.test(r.title ?? "");
+        })
+        .map((r: any) => r.id);
+      if (targetIds.length === 0) {
+        toast.info("Nothing to clear");
+        return;
+      }
+      const { error: upErr } = await supabase
+        .from("instructor_calendar_events")
+        .update({ is_busy: false })
+        .in("id", targetIds);
+      if (upErr) throw upErr;
+      toast.success(`Cleared ${targetIds.length} wide block${targetIds.length === 1 ? "" : "s"} for ${row.name}`);
+      await load();
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e?.message ?? "Failed to clear");
+    } finally {
+      setBusyId(null);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
       <div className="max-w-6xl mx-auto space-y-6">
