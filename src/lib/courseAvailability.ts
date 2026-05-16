@@ -400,9 +400,6 @@ export function hasInstructorAvailabilityOn(
   return result.slots.length > 0;
 }
 
-  return false;
-}
-
 // ---------------------------------------------------------------------------
 // Data loader  (shared by browser and the create-booking edge function)
 // ---------------------------------------------------------------------------
