@@ -586,19 +586,28 @@ export default function Courses() {
     setIsSearching(true);
     try {
       const cleanPostcode = postcodeToSearch.replace(/\s+/g, "").toUpperCase();
-      const result = await geocodePostcodes([cleanPostcode]);
-      const location = result.geoCache[cleanPostcode];
-      const areaName = result.areaCache[cleanPostcode];
+      const district = extractPostcodeDistrict(cleanPostcode);
+      let result = await geocodePostcodes([cleanPostcode]);
+      let location = result.geoCache[cleanPostcode];
+      let areaName = result.areaCache[cleanPostcode];
 
-      if (!location) {
+      // Fallback: geocode the outcode so placeholder-only districts still work.
+      if (!location && district && district !== cleanPostcode) {
+        const districtResult = await geocodePostcodes([district]);
+        location = districtResult.geoCache[district] || null;
+        areaName = areaName || districtResult.areaCache[district] || null;
+        result = { geoCache: { ...result.geoCache, ...districtResult.geoCache }, areaCache: { ...result.areaCache, ...districtResult.areaCache } };
+      }
+
+      if (!location && !district) {
         toast({ title: "Postcode not found", description: "Please check your postcode", variant: "destructive" });
         return;
       }
 
-      setUserLocation(location);
+      if (location) setUserLocation(location); else setUserLocation(null);
       setSearchedPostcode(cleanPostcode);
       setSearchedAreaName(areaName || null);
-      setSortBy("nearest");
+      setSortBy(location ? "nearest" : "soonest");
       setSearchParams({ postcode: cleanPostcode });
 
       // Jump to the next available date for instructors in the searched area
