@@ -355,9 +355,7 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
               alt="Smiling young learner driver holding a steering wheel, ready to start lessons with Drive 365"
               onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
             />
-            <div className="d365-hero-badge" aria-label="Book now, pay later">
-              Book<br />Now Pay<br />Later
-            </div>
+            <img className="d365-hero-badge" src={freeRetestBadge} alt="Free re-test included" />
           </div>
           <div className="d365-hero-right">
             <div className="d365-welcome text-center">
