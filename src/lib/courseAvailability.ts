@@ -404,7 +404,7 @@ export async function loadCourseAvailabilitySources(
       p_from_date: fromStr,
       p_to_date: toStr,
     }),
-    client.rpc("get_public_instructor_calendar_blocks", {
+    (client as any).rpc("get_public_instructor_calendar_blocks", {
       p_instructor_ids: instructorIds,
       p_from_datetime: fromIso,
       p_to_datetime: toIso,
