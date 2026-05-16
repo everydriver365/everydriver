@@ -164,7 +164,6 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
     availabilityWindows: [],
     overrides: [],
     calendarEvents: [],
-    scheduledLessons: [],
     manualBlocks: [],
   });
   const [premiumPlacements, setPremiumPlacements] = useState<{ instructor_id: string; placement_type: string; priority_score: number }[]>([]);
