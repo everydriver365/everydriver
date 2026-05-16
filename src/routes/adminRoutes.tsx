@@ -19,6 +19,7 @@ const WebhookDeliveryLog = lazy(() => import("@/pages/admin/WebhookDeliveryLog")
 const CustomDomainQueue = lazy(() => import("@/pages/admin/CustomDomainQueue"));
 const CourseImageOptimizer = lazy(() => import("@/pages/admin/CourseImageOptimizer"));
 const AdminInstructorVerifications = lazy(() => import("@/pages/admin/AdminInstructorVerifications"));
+const AvailabilitySyncHealth = lazy(() => import("@/pages/admin/AvailabilitySyncHealth"));
 
 export const adminRoutes = (
   <>
@@ -102,6 +103,10 @@ export const adminRoutes = (
     <Route
       path="/admin/verifications"
       element={<ProtectedAdminRoute><AdminInstructorVerifications /></ProtectedAdminRoute>}
+    />
+    <Route
+      path="/admin/availability-sync"
+      element={<ProtectedAdminRoute><AvailabilitySyncHealth /></ProtectedAdminRoute>}
     />
   </>
 );
