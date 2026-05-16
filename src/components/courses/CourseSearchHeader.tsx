@@ -211,15 +211,15 @@ export function CourseSearchHeader({
             <button
               type="submit"
               disabled={isSearching}
-              className="flex flex-shrink-0 items-center justify-center gap-2 px-6 py-3 text-white transition-opacity hover:opacity-90 disabled:opacity-60"
-              style={{ backgroundColor: tokens.red }}
+              className="flex flex-shrink-0 items-center justify-center gap-2 text-white transition-colors hover:!bg-[#1F2DC9] disabled:opacity-60"
+              style={{ backgroundColor: tokens.red, padding: "14px 28px", borderRadius: 2 }}
             >
               {isSearching ? (
                 <Loader2 size={16} strokeWidth={2.2} className="animate-spin" />
               ) : (
                 <Search size={16} strokeWidth={2.2} />
               )}
-              <span className="font-heading text-sm font-bold">Search</span>
+              <span className="font-heading text-sm font-medium">Search</span>
             </button>
           </form>
 
