@@ -308,54 +308,55 @@ function VariantD() {
 /* ---------------- VARIANT E — Polaroid Wall ---------------- */
 function VariantE() {
   const tilts = [-4, 3, -2];
+  const poppins = { fontFamily: "'Poppins', sans-serif" } as const;
   return (
-    <section className="bg-gradient-to-b from-stone-100 to-stone-200 py-24 relative overflow-hidden">
+    <section style={poppins} className="bg-gradient-to-b from-stone-100 to-stone-200 py-14 relative overflow-hidden">
       <div className="absolute inset-0 opacity-30" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.9'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E\")" }} />
-      <div className="container max-w-6xl relative">
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 text-amber-700 font-handwritten mb-3">
-            <Sparkles className="h-4 w-4" />
-            <span className="font-serif italic text-lg">from our learner scrapbook</span>
+      <div className="container max-w-4xl relative">
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center gap-2 text-amber-700 mb-2">
+            <Sparkles className="h-3.5 w-3.5" />
+            <span className="italic text-sm font-medium">from our learner scrapbook</span>
           </div>
-          <h2 className="font-serif text-5xl md:text-7xl tracking-tight text-stone-800">
+          <h2 className="text-3xl md:text-4xl font-semibold tracking-tight text-stone-800">
             Every learner's
-            <span className="block italic text-amber-700">journey starts here</span>
+            <span className="block italic font-medium text-amber-700">journey starts here</span>
           </h2>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8 md:gap-4 max-w-5xl mx-auto">
+        <div className="grid md:grid-cols-3 gap-5 md:gap-3 max-w-3xl mx-auto">
           {TESTIMONIALS.map((t, i) => (
             <motion.div
               key={t.name}
-              initial={{ opacity: 0, y: 40, rotate: 0 }}
+              initial={{ opacity: 0, y: 24, rotate: 0 }}
               whileInView={{ opacity: 1, y: 0, rotate: tilts[i] }}
-              transition={{ duration: 0.6, delay: i * 0.15 }}
+              transition={{ duration: 0.5, delay: i * 0.12 }}
               viewport={{ once: true }}
               whileHover={{ rotate: 0, scale: 1.03 }}
-              className="bg-white p-4 pb-16 shadow-[0_15px_40px_-10px_rgba(0,0,0,0.3)] relative"
+              className="bg-white p-2.5 pb-10 shadow-[0_10px_24px_-8px_rgba(0,0,0,0.25)] relative"
             >
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-20 h-6 bg-amber-200/70 rotate-[-3deg] shadow-sm" />
+              <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-14 h-4 bg-amber-200/70 rotate-[-3deg] shadow-sm" />
               <img src={t.img} alt={t.name} className="w-full aspect-square object-cover" />
-              <div className="absolute bottom-3 left-0 right-0 text-center px-4">
-                <div className="font-serif italic text-lg text-stone-800">"{t.text.split(".")[0]}."</div>
-                <div className="text-sm font-bold text-stone-700 mt-2">— {t.name}</div>
-                <div className="text-xs text-stone-500">{t.course} · {t.location}</div>
+              <div className="absolute bottom-2 left-0 right-0 text-center px-3">
+                <div className="italic text-xs text-stone-800 leading-snug">"{t.text.split(".")[0]}."</div>
+                <div className="text-[11px] font-semibold text-stone-700 mt-1">— {t.name}</div>
+                <div className="text-[10px] text-stone-500">{t.course} · {t.location}</div>
               </div>
             </motion.div>
           ))}
         </div>
 
-        <div className="mt-20 text-center">
-          <div className="flex flex-wrap items-center justify-center gap-10 mb-8">
+        <div className="mt-10 text-center">
+          <div className="flex flex-wrap items-center justify-center gap-6 mb-5">
             {STATS.map((s) => (
               <div key={s.label}>
-                <div className="font-serif text-4xl italic text-amber-700">{s.value}</div>
-                <div className="text-xs uppercase tracking-wider text-stone-500 mt-1">{s.label}</div>
+                <div className="text-2xl font-semibold italic text-amber-700">{s.value}</div>
+                <div className="text-[10px] uppercase tracking-wider text-stone-500 mt-0.5">{s.label}</div>
               </div>
             ))}
           </div>
-          <Button size="lg" className="bg-stone-800 hover:bg-stone-900 text-amber-100 font-serif italic text-base px-8 rounded-none border-2 border-stone-800 shadow-[4px_4px_0_0_rgba(245,158,11,0.6)]" asChild>
-            <Link to="/courses">Add yours to the wall <ArrowRight className="h-4 w-4 ml-2" /></Link>
+          <Button className="bg-stone-800 hover:bg-stone-900 text-amber-100 italic text-sm px-6 rounded-none border-2 border-stone-800 shadow-[3px_3px_0_0_rgba(245,158,11,0.6)]" asChild>
+            <Link to="/courses">Add yours to the wall <ArrowRight className="h-3.5 w-3.5 ml-2" /></Link>
           </Button>
         </div>
       </div>
