@@ -111,6 +111,7 @@ export function LessonScheduler({
   const [waitlistDialogOpen, setWaitlistDialogOpen] = useState(false);
   const [preferEarliestSlot, setPreferEarliestSlot] = useState(false);
   const [travelBufferMinutes, setTravelBufferMinutes] = useState<number | null>(null);
+  const [candidatePickup, setCandidatePickup] = useState<{ lat: number; lng: number } | null>(null);
   // Unified availability sources — used by computeDaySlots (the single
   // engine-backed slot generator shared with /courses and create-booking).
   const [sources, setSources] = useState<CourseAvailabilitySources | null>(null);
