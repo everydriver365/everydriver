@@ -309,7 +309,114 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
 
   return (
     <div style={{ width: "100%", overflow: "hidden", background: "#F6F6F8" }}>
+      {/* Desktop-only styles for the new Drive 365 home hero & Why section. */}
+      <style>{`
+        @media (min-width: 768px) {
+          .d365-hero-wrap { background: #FFFFFF; padding: 56px 24px; display: flex; justify-content: center; }
+          .d365-hero { width: 100%; max-width: 1200px; display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: stretch; }
+          .d365-hero-photo { position: relative; background: #9FD3E8; border-radius: 4px; overflow: hidden; min-height: 540px; }
+          .d365-hero-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+          .d365-hero-badge { position: absolute; top: 24px; left: 24px; width: 110px; height: 110px; border-radius: 50%; background: #2D3FE7; color: #FFFFFF; display: flex; align-items: center; justify-content: center; text-align: center; font-weight: 800; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; line-height: 1.15; padding: 10px; transform: rotate(-10deg); box-shadow: 0 6px 20px rgba(45,63,231,0.25); }
+          .d365-hero-right { display: flex; flex-direction: column; gap: 16px; }
+          .d365-welcome { background: #EAF0FF; padding: 40px; border-radius: 4px; }
+          .d365-welcome h1 { font-size: 44px; line-height: 1.05; font-weight: 800; color: #0A0A0A; text-transform: uppercase; letter-spacing: -0.5px; margin: 0 0 18px; font-family: Inter, "Helvetica Neue", system-ui, sans-serif; }
+          .d365-welcome p { font-size: 15px; line-height: 1.55; color: #4B5563; margin: 0 0 24px; }
+          .d365-welcome p b { color: #0A0A0A; font-weight: 700; }
+          .d365-cta { width: 100%; background: #2D3FE7; color: #FFFFFF; border: none; border-radius: 2px; padding: 16px 20px; font-size: 14px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 10px; transition: background 120ms ease; font-family: inherit; }
+          .d365-cta:hover { background: #1F2DC9; }
+          .d365-cta-icon { width: 22px; height: 22px; border-radius: 999px; background: rgba(255,255,255,0.2); display: inline-flex; align-items: center; justify-content: center; }
+          .d365-feat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+          .d365-feat { background: #EAF0FF; padding: 20px; border-radius: 4px; display: flex; flex-direction: column; gap: 12px; }
+          .d365-feat img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 4px; display: block; background: #9FD3E8; }
+          .d365-feat h3 { font-size: 16px; font-weight: 800; color: #0A0A0A; text-transform: uppercase; letter-spacing: 0.02em; margin: 0; font-family: Inter, "Helvetica Neue", system-ui, sans-serif; }
+          .d365-feat p { font-size: 14px; line-height: 1.5; color: #4B5563; margin: 0; }
+          .d365-feat-btn { width: 100%; background: #2D3FE7; color: #FFFFFF; border: none; border-radius: 2px; padding: 12px; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; cursor: pointer; font-family: inherit; transition: background 120ms ease; }
+          .d365-feat-btn:hover { background: #1F2DC9; }
+          .d365-spacer { background: #EAF0FF; height: 40px; border-radius: 4px; width: 100%; }
+          .d365-why-wrap { background: #FFFFFF; padding: 80px 24px 56px; display: flex; justify-content: center; }
+          .d365-why { width: 100%; max-width: 1200px; display: grid; grid-template-columns: 30% 70%; align-items: start; }
+          .d365-why-left { padding-right: 32px; border-right: 1px solid #2D3FE7; }
+          .d365-why-eyebrow { font-size: 12px; font-weight: 600; color: #9CA3AF; text-transform: uppercase; letter-spacing: 0.18em; margin-bottom: 12px; font-family: Inter, "Helvetica Neue", system-ui, sans-serif; }
+          .d365-why-heading { font-size: 32px; font-weight: 800; color: #0A0A0A; text-transform: uppercase; letter-spacing: -0.5px; margin: 0; line-height: 1.1; font-family: Inter, "Helvetica Neue", system-ui, sans-serif; }
+          .d365-why-right { padding-left: 32px; }
+          .d365-why-right p { font-size: 16px; line-height: 1.6; color: #4B5563; margin: 0; }
+          .d365-why-right p b { color: #0A0A0A; font-weight: 700; }
+        }
+        @media (max-width: 767px) { .d365-hero-wrap, .d365-why-wrap { display: none; } }
+      `}</style>
 
+      {/* New Drive 365 hero (desktop only) */}
+      <section className="d365-hero-wrap" aria-label="Drive 365 welcome">
+        <div className="d365-hero">
+          <div className="d365-hero-photo">
+            <img
+              src="https://images.unsplash.com/photo-1590642916589-592bca10dfbf?w=800&q=80"
+              alt="Smiling young learner driver holding a steering wheel, ready to start lessons with Drive 365"
+              onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+            />
+            <div className="d365-hero-badge" aria-label="Book now, pay later">
+              Book<br />Now Pay<br />Later
+            </div>
+          </div>
+          <div className="d365-hero-right">
+            <div className="d365-welcome">
+              <h1>Welcome to Drive 365</h1>
+              <p>
+                Search, compare and book direct with independent, vetted instructors all over the UK.{" "}
+                <b>Book through Drive 365 for a range of exclusive benefits.</b>
+              </p>
+              <button type="button" className="d365-cta" onClick={() => navigate("/courses")}>
+                <span>Search for an instructor</span>
+                <span className="d365-cta-icon" aria-hidden>
+                  <Search size={12} strokeWidth={2.4} />
+                </span>
+              </button>
+            </div>
+            <div className="d365-feat-row">
+              <div className="d365-feat">
+                <img
+                  src="https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=600&q=80"
+                  alt="Focused learner driver concentrating on the road during an intensive driving course in the UK"
+                  onError={(e) => { (e.currentTarget as HTMLImageElement).style.visibility = "hidden"; }}
+                />
+                <h3>Intensive Courses</h3>
+                <p>Briefly and concisely explain what you do for your audience.</p>
+                <Link to="/courses?type=intensive" style={{ marginTop: "auto" }}>
+                  <button type="button" className="d365-feat-btn">Read more</button>
+                </Link>
+              </div>
+              <div className="d365-feat">
+                <img
+                  src="https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?w=600&q=80"
+                  alt="Happy learner driver with an L-plate enjoying a flexible semi-intensive driving lesson"
+                  onError={(e) => { (e.currentTarget as HTMLImageElement).style.visibility = "hidden"; }}
+                />
+                <h3>Semi Intensive Courses</h3>
+                <p>Briefly and concisely explain what you do for your audience.</p>
+                <Link to="/courses?type=semi-intensive" style={{ marginTop: "auto" }}>
+                  <button type="button" className="d365-feat-btn">Read more</button>
+                </Link>
+              </div>
+            </div>
+            <div className="d365-spacer" aria-hidden />
+          </div>
+        </div>
+      </section>
+
+      {/* Why Drive 365? */}
+      <section className="d365-why-wrap" aria-label="Why Drive 365">
+        <div className="d365-why">
+          <div className="d365-why-left">
+            <div className="d365-why-eyebrow">Drive 365</div>
+            <h2 className="d365-why-heading">Why Drive 365?</h2>
+          </div>
+          <div className="d365-why-right">
+            <p>
+              <b>Why book through Drive 365?</b> There are so many benefits when booking through Drive 365 that are not available when booking direct with an instructor.
+            </p>
+          </div>
+        </div>
+      </section>
 
       {/* HomeSocialProof */}
       <div
