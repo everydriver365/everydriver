@@ -599,30 +599,6 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
         </div>
       </section>
 
-      {/* HomeFooterCTA */}
-      <section style={{ background: "#1A52A0", padding: "64px 5%", textAlign: "center", width: "100%", position: "relative", overflow: "hidden" }}>
-        <div style={{ position: "absolute", width: 500, height: 500, borderRadius: "50%", background: "rgba(255,255,255,0.05)", top: -200, right: -100, pointerEvents: "none" }} />
-        <div style={{ position: "relative", zIndex: 1 }}>
-          <h2 style={{ fontSize: 34, fontWeight: 700, color: "#FFF", letterSpacing: -0.5, marginBottom: 10 }}>
-            Ready to start learning?
-          </h2>
-          <p style={{ fontSize: 15, color: "rgba(255,255,255,0.65)", marginBottom: 28, lineHeight: 1.6, maxWidth: 440, margin: "0 auto 28px" }}>
-            Find a DVSA-approved instructor near you and book your first lesson today.
-          </p>
-          <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
-            <Link to="/instructors">
-              <button style={{ background: "#FFF", border: "none", borderRadius: 9, padding: "13px 28px", fontSize: 14, fontWeight: 600, color: "#1A52A0", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 7 }}>
-                Search instructors <ChevronRight size={13} color="#1A52A0" strokeWidth={2.2} />
-              </button>
-            </Link>
-            <Link to="/courses">
-              <button style={{ background: "transparent", border: "2px solid rgba(255,255,255,0.3)", borderRadius: 9, padding: "13px 28px", fontSize: 14, fontWeight: 600, color: "#FFF", cursor: "pointer" }}>
-                Browse courses
-              </button>
-            </Link>
-          </div>
-        </div>
-      </section>
     </div>
   );
 }
