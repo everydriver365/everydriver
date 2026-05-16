@@ -18,32 +18,6 @@ import {
 } from "@/lib/courseAvailability";
 import { fromMinutes } from "@/lib/availabilityEngine";
 
-interface WorkingHour {
-  day_of_week: number;
-  start_time: string;
-  end_time: string;
-  is_active: boolean;
-}
-
-interface DateOverride {
-  override_date: string;
-  override_end_date: string | null;
-  start_time: string | null;
-  end_time: string | null;
-  is_available: boolean;
-}
-
-interface CalendarEvent {
-  start_time: string;
-  end_time: string;
-}
-
-interface ExistingLesson {
-  lesson_date: string;
-  start_time: string;
-  duration_minutes: number;
-}
-
 interface RescheduleLessonSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -55,13 +29,6 @@ interface RescheduleLessonSheetProps {
   durationMinutes: number;
   onRescheduled: () => void;
 }
-
-const TIME_SLOTS = Array.from({ length: 26 }, (_, i) => {
-  const hour = Math.floor(i / 2) + 7;
-  const minutes = i % 2 === 0 ? "00" : "30";
-  if (hour > 20) return null;
-  return `${hour.toString().padStart(2, "0")}:${minutes}`;
-}).filter(Boolean) as string[];
 
 const DAY_LABELS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 
