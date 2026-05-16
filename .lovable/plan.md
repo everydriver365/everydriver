@@ -1,64 +1,56 @@
-## Goal
+## Problem
 
-Bring `/courses` (Drive 365 search results page) into colour alignment with the new white home page. Desktop only. Course cards and overall layout stay exactly as-is.
+Across the booking flow we have three places that decide what slots to show / accept, and they don't all check the same things:
 
-The header is already the reusable `Drive365Header` (white on desktop) — no work needed there beyond visual confirmation.
+| Surface | Working hrs | Overrides | App diary (scheduled lessons) | Google Calendar busy | Manual blocks | Buffer | Travel time |
+|---|---|---|---|---|---|---|---|
+| Course list "available dates" (`useCourseDiscovery` → `hasInstructorAvailabilityOn`) | yes | yes | yes | yes | **yes** | yes | yes (fallback 10 min) |
+| Edge function booking guard (`validateBookingSlot`) | yes | yes | yes | yes | **yes** | yes | yes |
+| **Booking slot picker (`LessonScheduler.tsx`)** — what the pupil actually clicks | yes | yes | yes | yes | **NO** | yes | only on first slot of day |
 
-## Files to edit
+So an instructor can have a manual block (e.g. Ken D blocking 1 June from the instructor app), the courses page correctly hides the date, but if a pupil reaches the time-slot grid via another route they can still see and pick slots that don't really exist. The edge guard then rejects the booking, or — worse — the manual block was set after the slots were fetched and the booking sneaks through.
 
-1. `src/components/courses/CourseSearchHeader.tsx` — heading area, search bar, search button, filter pills
-2. `src/pages/Courses.tsx` — "Showing results for" banner, sort/view toggle row
-3. `src/components/courses/SidebarCalendar.tsx` — available/selected day colours and legend
+## Fix
 
-(Instructors Nearby panel already uses neutral white/card tokens — will spot-check and only adjust if it visibly clashes. Orange status dot stays.)
+Bring `LessonScheduler.tsx` in line with the shared availability resolver so it checks **all five** conflict sources with the same buffer + travel padding the courses page and the edge guard already use.
 
-## Token mapping (applied via inline styles to match existing pattern in these files)
+### 1. Load manual blocks in `fetchAvailability`
+Add a 6th parallel call to the public RPC we already use elsewhere:
 
-```text
-brand blue        #2D3FE7
-brand blue hover  #1F2DC9
-pale blue tint    #EAF0FF
-pale blue hover   #D6DFFF
-ink               #0A0A0A
-muted grey        #9CA3AF
-secondary text    #4B5563
-hairline border   #E5E7EB / #EAF0FF
+```ts
+supabase.rpc("get_public_instructor_manual_blocks", {
+  p_instructor_ids: [instructorId],
+  p_from_datetime: fromIso,
+  p_to_datetime: toIso,
+})
 ```
 
-## Changes
+Map each row into the same `{ start_time, end_time }` shape used for `externalEvents` and merge them alongside Google Calendar events + scheduled lessons. (Manual blocks aren't all-day so the existing 24h all-day filter leaves them in.)
 
-### 1. `CourseSearchHeader.tsx`
-- Update `tokens` object: `navy → #0A0A0A`, `blue → #2D3FE7`, `red → #2D3FE7`, `muted → #9CA3AF`, `border → #EAF0FF`. Leave `mid` for secondary text but replace usages on pills with `#0A0A0A`.
-- Eyebrow "Driving courses": colour `#9CA3AF`, keep small accent bar but recolour to `#2D3FE7`.
-- Title: colour `#0A0A0A`, size `32px`, weight `700`, `marginTop: 8px` from eyebrow.
-- Search button: background `#2D3FE7`, hover `#1F2DC9`, radius `2px`, padding `14px 28px`.
-- Filter pills:
-  - Active: bg `#2D3FE7`, text white.
-  - Inactive: bg white, border `#E5E7EB`, text `#0A0A0A`; hover border + text `#2D3FE7`.
-  - Padding `8px 16px`, radius `20px`.
+### 2. Use the same padding as the rest of the system
+Today `conflictsWithExternalEvents` pads only by `bufferMinutes`. The courses page and edge guard pad by `bufferMinutes + 10` (the `TRAVEL_FALLBACK_MIN` constant from `courseAvailability.ts`). Import that constant and add it to `bufferMs` so a slot can't butt up against a Google event/lesson/manual block without the travel allowance.
 
-### 2. `Courses.tsx`
-- "Showing results for" banner (≈ line 1484): change container to `bg-[#EAF0FF] border border-[#2D3FE7]/20`, drop emerald classes. Icon circle bg `#2D3FE7`. Label text `#4B5563`. Heading `#0A0A0A`. Clear button: white bg, `1px solid #E5E7EB`, text `#0A0A0A`, hover border `#2D3FE7`.
-- Sort/view toggle group (lines ~1529–1615): replace `#0a1936` active backgrounds with `#2D3FE7`, inactive text `#0A0A0A`, container border `#E5E7EB`. Applies to All/Manual/Automatic, List/Grid, and any other toggle using `#0a1936`.
-- Date heading (`format(selectedDate…)`): colour `#0A0A0A`, size `18px`, weight `700`. Subtitle "X courses available": `#4B5563`, `13px`.
-- Grep for any remaining `#0a1936`, `bg-emerald`, `text-emerald` within the desktop (non-mobile) branches of this page and swap to the new palette. Skip course-card components entirely.
+### 3. Apply travel time as a floor, not just for "first of day"
+Right now the travel buffer only blocks the very first slot of the day. Tighten the rule:
+- Keep the existing "first of day" travel-from-home check.
+- Also reject any slot whose start is within `travelBufferMinutes` of the previous conflict's end (already covered once #2 lands, since `TRAVEL_FALLBACK_MIN` is added on each side — but if `travelBufferMinutes` from `check-travel-buffer` is larger we should use the larger of the two).
 
-### 3. `SidebarCalendar.tsx`
-- Available days: replace `bg-emerald-500/20 text-emerald-700 hover:bg-emerald-500/30` with inline `background: #EAF0FF`, `color: #0A0A0A`, `hover: #D6DFFF`, radius `4px`.
-- Selected day: replace `bg-primary text-primary-foreground` with `background: #2D3FE7`, `color: #fff`.
-- Weekday header text colour `#9CA3AF`.
-- Legend swatches: "Available" → `#EAF0FF`, "Selected" → `#2D3FE7`, label text `#4B5563`.
+### 4. Re-fetch on focus / after booking
+Add a `visibilitychange` listener that calls `fetchAvailability()` again when the tab regains focus so a manual block added on the instructor's phone in the last 30 seconds doesn't get missed. (Cheap — one RPC round trip.)
 
-### 4. Instructors Nearby panel
-- Verify it already renders on a white card with neutral text. If a navy heading or accent is present, swap heading to `#0A0A0A` and any accent to `#2D3FE7`. Status dot stays `#F59E0B`.
+## Out of scope
 
-## Out of scope (explicitly untouched)
+- No DB / RLS / edge function changes — the public RPCs `get_public_instructor_calendar_blocks`, `get_public_scheduled_lesson_blocks`, `get_public_instructor_manual_blocks` already exist and return exactly the data we need.
+- No change to `useCourseDiscovery` or `validateBookingSlot` — those are already correct.
+- No styling changes.
 
-- Mobile breakpoints (anything inside `isMobile` branches / `lg:` overrides for small screens).
-- Course card components (`CourseRowCard`, `CourseGrid`, `MobileCourseCard`, `CourseTableList`) — ribbons, tags, pricing all stay.
-- Home page, instructor profile, booking flow, other routes.
-- `Drive365Header` (already done in a previous turn).
+## Files touched
+
+- `src/components/booking/LessonScheduler.tsx` (only file)
 
 ## Verification
 
-- After edits, load `/courses?postcode=SO302TD` in the preview at desktop width and confirm: white header, blue search button, blue active pills, pale-blue results banner, blue selected calendar day, pale-blue available days, no mint green or red remaining in the chrome.
+1. As Ken D, add a manual block on a future date in the instructor app.
+2. Open the same date in the pupil booking flow — every slot inside the block ± buffer ± 10 min travel must be hidden.
+3. Add a Google Calendar event mid-day — surrounding slots within buffer + travel must disappear.
+4. Existing scheduled lesson — same behaviour (already working, regression-check only).
