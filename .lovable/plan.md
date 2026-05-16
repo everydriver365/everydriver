@@ -1,20 +1,19 @@
 ## Plan
 
-Redesign `PostcodeAutocomplete` so the suggestions panel stays visible during lookups instead of disappearing.
+Fix the course search results so mock/network instructor cards appear for areas like `WD17` when there are no real instructor courses in range.
 
-### Behaviour changes
-1. Open the dropdown as soon as the user has typed at least 2 characters and the input is focused — not only after results arrive.
-2. While `isLoading` is true, render the dropdown with 3 skeleton rows (animated shimmer matching the suggestion row layout: pin icon + postcode line + area line).
-3. Keep the previously returned suggestions on screen while a new fetch is in flight; only swap them in once the new response lands. This avoids the empty flash between keystrokes.
-4. If the lookup completes with zero results, show a single muted “No matches for ‘WD17 3…’” row instead of closing the panel.
-5. Move the inline spinner from inside the input to the dropdown header (small `Searching…` label on the right) so the input itself stays clean.
-6. Preserve keyboard nav, outside-click close, geolocation button, and the `onSelect` flow exactly as today.
+### What I’ll change
 
-### Visual polish
-- Match the existing search-card tokens (`#DDE3ED` border, navy text, subtle shadow).
-- Skeleton rows use `bg-muted` with a soft pulse, same row height as a real suggestion (44px) so the panel doesn’t resize when results arrive.
-- Header strip inside the dropdown: 10px uppercase label (“Suggestions” / “Searching”) on the left, spinner + “Looking up…” on the right while loading.
+1. Update the active `/courses` page filtering logic to recognise postcode districts like `WD17`.
+2. Include `is_network_placeholder` instructors by matching `placeholder_district` to the searched postcode district.
+3. Treat placeholder instructors as enquiry-only and available on future dates, instead of requiring working-hours/calendar availability.
+4. Only show placeholder courses as fallback results when no real instructor courses are available for the searched area.
+5. Keep real instructor results, radius filtering, sorting, and existing cards unchanged.
 
-### Scope
-- Only `src/components/PostcodeAutocomplete.tsx` changes.
-- No edits to `CourseSearchHeader` or the search hook — the dropdown lives entirely inside the autocomplete component, so every consumer (courses page, homepage, mini-website, pupil portal, etc.) gets the fix automatically.
+### Files involved
+
+- `src/pages/Courses.tsx`
+
+### Why this is needed
+
+The reusable `useCourseDiscovery` hook already supports placeholder instructors, but the active `/courses` page has its own older search/result logic that only uses real geocoded instructors and availability. The database does contain WD17 placeholder instructors, but the page currently filters them out before rendering.
