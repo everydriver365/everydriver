@@ -134,13 +134,13 @@ export function SidebarCalendar({
                   disabled={!day.isAvailable || day.isPast}
                   className={`relative flex h-12 w-full items-center justify-center rounded-md text-sm font-medium transition-all ${
                     isSelected
-                      ? "bg-primary text-primary-foreground shadow-md"
+                      ? "bg-[#2D3FE7] text-white shadow-md hover:bg-[#1F2DC9]"
                       : day.isAvailable
-                        ? "bg-emerald-500/20 text-emerald-700 hover:bg-emerald-500/30 dark:text-emerald-400"
+                        ? "bg-[#EAF0FF] text-[#0A0A0A] hover:bg-[#D6DFFF]"
                         : day.isPast
-                          ? "text-muted-foreground/30 cursor-not-allowed"
-                          : "text-muted-foreground/50 cursor-not-allowed"
-                  } ${isToday && !isSelected ? "ring-1 ring-primary/40" : ""}`}
+                          ? "text-[#D1D5DB] cursor-not-allowed"
+                          : "text-[#D1D5DB] cursor-not-allowed"
+                  } ${isToday && !isSelected ? "ring-1 ring-[#2D3FE7]/40" : ""}`}
                 >
                   {format(day.date, "d")}
                 </button>
