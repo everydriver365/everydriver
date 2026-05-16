@@ -90,6 +90,7 @@ export function LessonScheduler({
   instructorHomePostcode,
   pupilPostcode,
   instructorFirstName,
+  initialDate,
   onSlotsChange,
   onConfirm,
 }: LessonSchedulerProps) {
