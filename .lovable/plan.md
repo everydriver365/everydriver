@@ -1,76 +1,143 @@
+# Synchronous Google Calendar Writes
 
-## Goal
+Make Google Calendar the *enforced* source of truth: every lesson that lands in the DB must also exist in the instructor's Google Calendar by the time the user sees a "success" response. If the Google API call fails, the lesson is removed and the user is told.
 
-Google Calendar (mirrored into `instructor_calendar_events`) becomes the **only** source of "instructor is busy". The `scheduled_lessons` table stays for CRM / billing / lesson history, but it is **never** read when computing availability or clashes.
+## Why this matters
 
-Every booking already writes a Google event (we have `google_event_id` on every row). After this change, that Google event — not the DB row — is what blocks the slot.
+Today every `scheduled_lessons` insert just enqueues a job into `calendar_sync_queue`, processed asynchronously by `process-calendar-queue` (cron + ad-hoc triggers). Because the availability engine now ignores `scheduled_lessons` and only looks at Google + manual blocks, the gap between the DB insert and the Google push leaves a slot briefly double-bookable. This plan closes that gap.
 
-## What changes
-
-### 1. Availability engine (`src/lib/availabilityEngine.ts`)
-- Stop accepting `lessons` as a conflict source. The signature `buildDayConflicts(dateStr, lessons, blocks, events)` becomes `buildDayConflicts(dateStr, blocks, events)`.
-- Conflict kinds reduce to `block` (manual day-off) and `event` (Google Calendar busy).
-- Per-pupil `travel_time_minutes` override no longer applies (there is no pupil context on a Google event). Only the instructor's `buffer_minutes` gates spacing.
-- All-day / >12h Google events stay informational (existing rule kept).
-
-### 2. Thin wrapper (`src/lib/availabilityCore.ts`)
-- Update re-exported `buildDayConflicts` signature to match.
-- Remove the `pupil_travel_min` type field.
-
-### 3. Data fetchers — stop querying `scheduled_lessons` for availability
-Update every caller that builds conflicts from `scheduled_lessons` to drop that query and pass only `manual_blocks` + `calendar_events`:
-- `src/hooks/useRealGapSlots.ts`
-- `src/hooks/useAvailabilityData.ts`
-- `src/hooks/useGapSuggestions.ts`
-- `src/components/booking/LessonScheduler.tsx` (slot computation + month-jump check + initial-date check)
-- `src/pages/Courses.tsx` (`instructorMinSlotMinutes` resolver and `coursesForSelectedDate`)
-- `src/pages/everydriver/BookingSummary.tsx`
-- `src/components/booking/MobileBookingView.tsx`
-- `src/lib/courseAvailability.ts` (if it pulls lessons — verify)
-- `src/lib/lessonClashCheck.ts` (clash check now reads Google events only)
-- Any "fill gap / find slot / add lesson / reschedule" surface that currently joins `scheduled_lessons`.
-
-### 4. Server-side booking guard (`supabase/functions/create-booking/index.ts`)
-- Before writing the lesson, force a fresh Google fetch for the target day (call into `google-calendar-service.resyncRange` for that window) so the cache is current.
-- Then validate the requested slot against `instructor_calendar_events` + `instructor_manual_blocks` only — no `scheduled_lessons` read.
-- Continue creating the Google event and storing `google_event_id`.
-
-### 5. Freshness — on-demand Google refresh
-Booking surfaces already call `refreshGoogleCalendar` (60s TTL). Keep that. Also:
-- Call it on the **course search resolver** so search results reflect the latest Google state, not just the cron'd snapshot.
-- Call it again immediately before the booking-confirm POST (force=true) to close the race between "user opened the slot list" and "user clicked confirm".
-
-### 6. Backfill / dedupe
-Existing junk `scheduled_lessons` (e.g. Ken's 36 test rows) stop affecting availability the moment step 1–3 ships, even before deletion. We still recommend a one-off cleanup pass for hygiene, but it is no longer blocking.
-
-### 7. Docs / memory
-- Update `mem://features/booking/calendar-sync-reliability` and the GCal architecture memory to state: **Google Calendar (mirrored to `instructor_calendar_events`) is the sole source of busyness. `scheduled_lessons` is CRM data only.**
-- Update the engine header comment so future agents do not re-introduce `scheduled_lessons` as a conflict source.
-
-## Trade-offs to confirm
-
-1. **Latency between booking and slot lockout.** A booking writes the Google event in the same request as the DB row. If the Google API call fails (or is slow), the slot is **not** blocked for other learners until the next sync. Today the DB row blocks it instantly. Acceptable?
-2. **Per-pupil travel time disappears from the booking calendar** (no pupil identity on a Google event). The instructor's `buffer_minutes` is the only spacing rule. Acceptable, or should we keep travel time as an override when an `instructor_calendar_events` row carries our `google_event_id` and we can look the pupil back up?
-3. **Manual blocks (`instructor_manual_blocks`) stay** as a separate, instructor-owned "block this time" mechanism distinct from Google. Confirm — or should those also be pushed into Google and deleted from the DB?
-4. **Existing scheduled lessons in the DB without a matching Google event** (e.g. Ken's test rows, or any historical row where the Google push failed) will immediately appear bookable. Confirm that is the desired behaviour.
-
-## Files touched (approx.)
+## Architecture
 
 ```text
-src/lib/availabilityEngine.ts            (signature + conflict kinds)
-src/lib/availabilityCore.ts              (re-export shim)
-src/lib/lessonClashCheck.ts              (Google-only check)
-src/lib/courseAvailability.ts            (drop scheduled_lessons)
-src/hooks/useRealGapSlots.ts
-src/hooks/useAvailabilityData.ts
-src/hooks/useGapSuggestions.ts
-src/components/booking/LessonScheduler.tsx
-src/components/booking/MobileBookingView.tsx
-src/pages/Courses.tsx
-src/pages/everydriver/BookingSummary.tsx
-supabase/functions/create-booking/index.ts
-mem://features/booking/calendar-sync-reliability  (rule update)
-mem://constraints/google-calendar-source-of-truth (new constraint)
+                ┌──────────────────────────────────────────────┐
+                │ _shared/googleCalendarSync.ts (new)          │
+                │   • generateJWT / getAccessToken             │
+                │   • createGoogleEvent / update / delete      │
+                │   • syncLessonNow(lessonId) → eventId|throws │
+                └──────────────────────────────────────────────┘
+                          ▲                ▲                ▲
+                          │                │                │
+        create-booking ───┤   confirm-bk ──┤   sync-lesson-now (new)
+        (£0 bookings)         (paid bookings)    (manual inserts)
+                          │
+                  process-calendar-queue (keeps existing fallback role)
 ```
 
-Please confirm the four trade-offs above (especially #1, #2 and #4) and I'll implement.
+Existing async queue stays in place as a safety net for retries and for any path we miss, but it is no longer the *primary* mechanism.
+
+## Changes
+
+### 1. Extract shared helper — `supabase/functions/_shared/googleCalendarSync.ts`
+
+Move the following out of `process-calendar-queue/index.ts` into a shared module:
+
+- `importPrivateKey`, `generateJWT`, `getAccessToken`
+- `createGoogleEvent`, `updateGoogleEvent`, `deleteGoogleEvent`
+- New high-level `syncLessonNow(supabase, lessonId)`:
+  1. Fetch lesson + pupil + instructor's `calendar_id` from `instructor_google_service_calendar`.
+  2. If no active calendar → return `{ skipped: true, reason: 'no-calendar' }` (don't fail — instructor hasn't connected Google).
+  3. Build event payload (same shape as today).
+  4. Re-fetch `google_event_id` for idempotency; update if present, else create.
+  5. Write `google_event_id` back to the lesson row.
+  6. Insert a corresponding row into `instructor_calendar_events` immediately so the availability engine sees it without waiting for the next pull-sync. Use `google_event_id` as the unique key (upsert).
+  7. Return `{ ok: true, eventId }` or throw on Google API failure.
+
+`process-calendar-queue` is refactored to import from this module — no behaviour change there.
+
+### 2. `create-booking` — synchronous push for £0 bookings
+
+Today the function inserts lessons with `awaiting_initial_payment = true` for any paid booking and lets `confirm-booking` flush the queue after payment. Only £0 ("Free") bookings sync immediately.
+
+Change: after the `lessonInserts` succeed, if `booking.totalPrice === 0`:
+
+- For each new lesson, call `syncLessonNow`.
+- If any throw, roll back: delete the new lesson rows (`scheduled_lessons` `.in('id', newIds)`), delete the pupil row, return `502` with `{ error: 'CALENDAR_SYNC_FAILED', message }`.
+- If all succeed, continue with the existing notification path.
+
+Paid bookings continue to defer to `confirm-booking` (cannot reject after payment is captured — see step 3).
+
+### 3. `confirm-booking` — synchronous push after payment
+
+Replace the current async `process-calendar-queue` trigger with synchronous `syncLessonNow` for every lesson belonging to the pupil:
+
+- After clearing `awaiting_initial_payment`, fetch the lesson IDs.
+- Call `syncLessonNow` for each, collect failures.
+- If any fail: do **not** delete the lessons (money was taken). Instead:
+  - Mark each failed lesson `calendar_sync_status = 'failed'` (new column, see step 6).
+  - Insert a row into `calendar_sync_queue` for the cron to retry.
+  - Send the instructor an in-app alert + email: "Booking succeeded but couldn't add to your Google Calendar — please check your connection."
+  - Return `{ success: true, calendarSyncFailed: true, lessonsFailed: [...] }` so the client can surface a soft warning.
+
+This means once payment is captured we never "reject" the booking, but we surface the problem loudly and the queue retries it.
+
+### 4. New edge function — `sync-lesson-now`
+
+Single-purpose endpoint for manual inserts initiated from the instructor portal:
+
+- `POST { lessonId }` → calls `syncLessonNow` → returns `{ ok, eventId }` or `502 { error }`.
+- Validates that the caller's `auth.uid()` maps (via `get_instructor_id_for_user`) to the lesson's `instructor_id`.
+
+### 5. Client-side manual insert callers
+
+For each of these, change the insert flow to: insert → call `sync-lesson-now` → on failure, delete the row and toast the error:
+
+- `src/components/instructor/AddLessonSheet.tsx`
+- `src/components/instructor/VoiceQuickAddLessonSheet.tsx`
+- `src/components/instructor/end-lesson/StepBookNext.tsx`
+- `src/components/course-planner/CoursePlannerForm.tsx`
+- `supabase/functions/ai-command-center/index.ts` (server-side, calls helper directly)
+- `src/hooks/useOfflineMutation.ts` — special case: queue locally if offline, retry sync when online; only delete the row if the eventual sync fails permanently. Existing offline UX preserved.
+
+Toast copy on failure (single source): *"Couldn't add lesson to your Google Calendar — the slot has been released. Check Settings → Integrations."*
+
+### 6. DB migration
+
+```sql
+ALTER TABLE public.scheduled_lessons
+  ADD COLUMN IF NOT EXISTS calendar_sync_status TEXT
+    DEFAULT 'pending' CHECK (calendar_sync_status IN ('pending','synced','failed','no-calendar'));
+
+CREATE INDEX IF NOT EXISTS idx_scheduled_lessons_sync_status
+  ON public.scheduled_lessons (calendar_sync_status)
+  WHERE calendar_sync_status IN ('pending','failed');
+```
+
+`syncLessonNow` writes this field on every attempt. The async queue path also updates it.
+
+### 7. Keep the existing DB trigger + queue
+
+The `AFTER INSERT/UPDATE/DELETE` trigger on `scheduled_lessons` that pushes into `calendar_sync_queue` stays. It now plays a fallback role: anything the synchronous path missed (race conditions, network blips, edge function cold-start failures) still gets reconciled within a minute by the cron.
+
+### 8. Memory update
+
+Update `mem://constraints/google-calendar-source-of-truth`: add that every write path (online booking, manual insert, AI command centre) now performs a synchronous Google push and rolls back the DB row if Google rejects.
+
+## Edge cases & decisions
+
+- **Instructor hasn't connected Google Calendar** → `syncLessonNow` returns `{ skipped: true, reason: 'no-calendar' }`. Lesson is kept (no Google means nothing to enforce against). `calendar_sync_status = 'no-calendar'`. Availability engine has no Google data for them anyway, so this is consistent.
+- **Google API 5xx / timeout (paid booking)** → money already taken; we keep the lesson, mark `calendar_sync_status = 'failed'`, enqueue retry, alert instructor. We do NOT auto-refund — that's a manual instructor decision.
+- **Google API 5xx / timeout (£0 booking or manual insert)** → roll back, return error.
+- **Bulk inserts (course planner: 20+ lessons)** → push in series with `Promise.allSettled` semantics: if any fail, roll back the whole batch and surface a list. Sequential not parallel, to stay under Google's 5 req/s per-user quota.
+- **Latency** → adds ~300-800ms per lesson to manual insert flow. Acceptable; user already waits for the DB round-trip. Course planner with 20 lessons ≈ 6-15s; we show a progress indicator.
+
+## Files touched
+
+- `supabase/functions/_shared/googleCalendarSync.ts` (new)
+- `supabase/functions/create-booking/index.ts`
+- `supabase/functions/confirm-booking/index.ts`
+- `supabase/functions/process-calendar-queue/index.ts` (refactor only)
+- `supabase/functions/sync-lesson-now/index.ts` (new)
+- `supabase/functions/ai-command-center/index.ts`
+- `src/components/instructor/AddLessonSheet.tsx`
+- `src/components/instructor/VoiceQuickAddLessonSheet.tsx`
+- `src/components/instructor/end-lesson/StepBookNext.tsx`
+- `src/components/course-planner/CoursePlannerForm.tsx`
+- `src/hooks/useOfflineMutation.ts`
+- One DB migration (sync status column)
+- `mem://constraints/google-calendar-source-of-truth`
+
+## Out of scope
+
+- Refund flows when payment succeeds but calendar fails — surfaced to instructor only.
+- Per-pupil travel time on Google events (still no pupil context on Google).
+- Pushing `instructor_manual_blocks` into Google (stays a local-only mechanism).
