@@ -113,9 +113,9 @@ export function CourseTableList({ courses }: CourseTableListProps) {
               }}
               className="cursor-pointer transition-colors"
               style={{
-                borderBottom: last ? "none" : "1px solid #f0f0f3",
+                borderBottom: last ? "none" : "1px solid #F3F4F6",
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = "#fafaf7")}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "#F9FAFB")}
               onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
             >
               {/* Desktop row */}
