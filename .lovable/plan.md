@@ -1,41 +1,68 @@
-## What changed
+# Redesign the "Example swap" panel
 
-The `/drive365` homepage used to render a long stack of marketing sections inline from `src/pages/Index.tsx`. At some point that page was collapsed down to a single `<Drive365Home />` component, which only ships 4 sections after the learning-path block:
+The current `TestSwapVisualDemo` (src/pages/TestSwap.tsx, ~lines 541–770) crams two learner cards side-by-side with a tiny arrow between them, then forces a 4-column step strip and a phone row underneath. On the current viewport and on phones it's cluttered, the 10–11px text is unreadable, the `↳ Gets:` line is easy to miss, and the section uses fixed `padding: "0 40px 48px"` which is too tight on small screens.
 
-1. Why Drive365
-2. Reviews
-3. Test Swap band
-4. Footer CTA
+## Goals
 
-The previous version had **10 additional sections** after "Choose Your Learning Path" that are no longer rendering.
+- Make the swap mechanic instantly readable: "Berty had A, Webb had B → they swap".
+- Work cleanly from 320px up to desktop without horizontal scroll or squished text.
+- Keep the same dark navy brand panel and existing surrounding sections untouched.
 
-## Sections to restore (in original order)
+## New layout
 
-After the existing "Choose your learning path" block, re-introduce:
+Stack vertically on mobile, side-by-side on `md:` and up. One unified card per learner showing **Before → After** with clear date pills, and a centered swap badge between them that rotates 90° on mobile.
 
-1. **Test Swap Banner** (dark band promoting the test-swap feature) — already partially present as "HomeSwapBand"; keep current styled version.
-2. **What's Included** — V14 Glass Tiles grid pulling from `useIncludedFeatures` + `FeatureDetailModal`.
-3. **Featured Courses** — dynamic course tiles from `useFeaturedCourses`.
-4. **From Nervous to Road Ready** — warm-organic story section.
-5. **Video Story** — full-bleed hero video using `welcome_video` / `video_thumbnail` site images, plus modal.
-6. **Latest News & Tips** — blog band fed by `useDVSANews` (`newsFeatured`, `newsArticle1/2`).
-7. **Stats** — band fed by `useHomepageStats`.
-8. **Features Bento Grid** — image-rich grid fed by `useHomepageFeatures` + `FeatureDetailModal`.
-9. **Testimonials Wall** — social-proof grid fed by `useHomepageTestimonials`.
-10. **CTA + Trust Badges + Franchise Banner** — final stack (mobile trust strip, franchise promo, desktop accreditations + payment logos).
+```text
+Mobile (<768px)                Desktop (≥768px)
+┌─────────────────────┐        ┌──────────┐  ⇄  ┌──────────┐
+│ BF  Berty F.        │        │ BF Berty │     │ JW Webb  │
+│ Before  Tue 24 Jun  │        │ Before…  │     │ Before…  │
+│         09:14       │        │ After…   │     │ After…   │
+│ After   Mon 16 Jun  │        └──────────┘     └──────────┘
+│         10:32 ✓     │
+├─────────────────────┤        ┌──────────────────────────┐
+│         ⇅           │        │ How it works  1 2 3 4    │
+├─────────────────────┤        └──────────────────────────┘
+│ JW  J. Webb         │        ┌──────────────────────────┐
+│ Before  Mon 16 Jun  │        │ ☎ DVSA 0300 200 1122 · 1 │
+│ After   Tue 24 Jun ✓│        └──────────────────────────┘
+└─────────────────────┘
+```
 
-The existing "Why Drive365", "Reviews", and "Footer CTA" inside `Drive365Home` overlap with #8/#9/#10 above. Plan: keep them for now and slot the restored sections **between the learning-path block and the existing "Why Drive365" block**, so nothing currently visible disappears. We can de-duplicate in a follow-up if you want.
+### Learner card
 
-## How
+- Avatar (40px) + name on top row, larger (15px name, 13px label).
+- Two rows inside the card: `Before` (muted, strikethrough) and `After` (green check, brighter text).
+- Date and time on their own line so nothing wraps awkwardly at narrow widths.
+- Use `rgba(255,255,255,0.06)` background, `rgba(255,255,255,0.1)` border, 14px radius — matches the surrounding dark panel.
 
-- Source of truth: the JSX is recoverable from git commit `9fead5a62` (`src/pages/Index.tsx`, lines ~589–1265).
-- Implementation:
-  - Add the missing imports (assets + hooks) back into `src/pages/Index.tsx`.
-  - Insert the 10 sections **after** `<Drive365Home />` (so they render below the learning-path block but above the page footer). This keeps `Drive365Home` untouched.
-  - Re-wire dynamic data via the existing hooks already in the project (`useIncludedFeatures`, `useFeaturedCourses`, `useDVSANews`, `useHomepageStats`, `useHomepageFeatures`, `useHomepageTestimonials`, `useSiteImages`, `useBookingUpsells`).
-  - Restore `FeatureDetailModal` + video `Dialog` state in `Index.tsx`.
-  - No DB or backend changes required — all hooks and tables already exist.
+### Swap badge
 
-## One question before I build
+- 44px circle with `ArrowLeftRight` icon.
+- Horizontal on `md:` (between the two cards), rotated 90° (`ArrowUpDown` visual) on mobile (between the stacked cards). A subtle pulse animation hints at the swap action.
 
-Do you want **all 10** restored, or only a subset? If "all", I will pull them straight back from the pre-collapse version and insert them under `<Drive365Home />`. If you only want some, tell me which numbers from the list above and I will restore just those.
+### "How it works" strip
+
+- On mobile, switch from 4 equal columns to a 2×2 grid so each step gets ~50% width and the 10px text becomes 12px.
+- On desktop, keep the single row but bump font sizes (step number 11px, label 12px) and add small connector dots between steps.
+
+### DVSA call row
+
+- Keep at the bottom but make the number tap-friendly: wrap in `<a href="tel:03002001122">`, increase to 16px, and add `min-height: 44px` for iOS tap target.
+
+### Section padding
+
+- Replace `padding: "0 40px 48px"` with responsive padding: `16px` on mobile, `40px` from `md:` up. Easiest: switch the outer `<section>` to Tailwind classes (`px-4 md:px-10 pb-12`) and keep the inner `<C>` container.
+
+## Implementation notes
+
+- Edit only `TestSwapVisualDemo` in `src/pages/TestSwap.tsx`. No other components, hooks, or data change.
+- The component currently mixes inline styles with the project's `<C>` container. Keep that pattern but introduce a small `useIsMobile()` check (already in `src/hooks/use-mobile.tsx`) to switch between the stacked and side-by-side variants — this avoids fighting the existing inline-style approach with Tailwind responsive classes mid-component.
+- Reuse the existing `learners` data array and the existing 4 step labels and DVSA copy verbatim — this is a visual restructure only, no copy changes.
+- Keep the decorative blurred circle in the top-right corner.
+
+## Out of scope
+
+- The real `SwapBoard` / `TestRequestList` cards (already mobile-friendly).
+- Surrounding hero, FAQ, and CTA sections on `/test-swap`.
+- Any data, routing, or business logic.
