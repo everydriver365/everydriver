@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Heart, Star, ArrowRight, Quote, Sparkles, MapPin, Trophy } from "lucide-react";
+import { Heart, Star, ArrowRight, Quote, Sparkles, MapPin, Trophy, Play, CheckCircle2, Award, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
