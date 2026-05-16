@@ -523,7 +523,7 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
   // Only triggers when the selected month is empty but a later month has dates.
   useEffect(() => {
     if (loading) return;
-    const relevantInstructors = userLocation ? instructorsInArea : instructors;
+    const relevantInstructors = (userLocation || searchedPostcode) ? instructorsInArea : instructors;
     if (relevantInstructors.length === 0) return;
     if (availableDatesInMonth.length > 0) return;
     if (nextAvailableDates.length === 0) return;
@@ -643,7 +643,7 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
     //   2. their district matches the searched postcode's district, AND
     //   3. there are zero real courses in the result set (fallback only).
     const visiblePlaceholders =
-      userLocation && searchedDistrict && realCourses.length === 0
+      searchedDistrict && realCourses.length === 0
         ? placeholderCourses.filter((c) => c.instructor.placeholder_district === searchedDistrict)
         : [];
 
