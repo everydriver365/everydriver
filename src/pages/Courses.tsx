@@ -1897,6 +1897,7 @@ export default function Courses() {
             )}
           </div>
         </div>
+        )}
       </section>
     </MainLayout>
   );
