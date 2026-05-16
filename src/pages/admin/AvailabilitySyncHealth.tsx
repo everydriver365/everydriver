@@ -24,7 +24,13 @@ import {
   mirrorIwhToAw,
 } from "@/lib/syncWeeklyHours";
 
-type Issue = "drift_iwh_only" | "drift_aw_only" | "no_hours" | "future_from" | "bad_dow";
+type Issue =
+  | "drift_iwh_only"
+  | "drift_aw_only"
+  | "no_hours"
+  | "future_from"
+  | "bad_dow"
+  | "gcal_wide_busy";
 
 interface InstructorRow {
   id: string;
@@ -33,6 +39,7 @@ interface InstructorRow {
   available_from: string | null;
   iwhCount: number;
   awCount: number;
+  wideBusyCount: number;
   issues: Issue[];
 }
 
@@ -43,9 +50,17 @@ interface Stats {
   noHours: number;
   futureFrom: number;
   badDow: number;
+  gcalWideBusy: number;
 }
 
-type Tab = "all_issues" | "drift" | "bad_dow" | "no_hours" | "future_from" | "healthy";
+type Tab =
+  | "all_issues"
+  | "drift"
+  | "bad_dow"
+  | "gcal_wide_busy"
+  | "no_hours"
+  | "future_from"
+  | "healthy";
 
 const ISSUE_LABELS: Record<Issue, { label: string; tone: "warn" | "error" | "info" }> = {
   drift_iwh_only: { label: "Drift: missing from availability_windows", tone: "warn" },
@@ -53,6 +68,7 @@ const ISSUE_LABELS: Record<Issue, { label: string; tone: "warn" | "error" | "inf
   no_hours: { label: "No working hours set", tone: "info" },
   future_from: { label: "Hidden by Available-from date", tone: "info" },
   bad_dow: { label: "Wrong day numbering — hides days from booking", tone: "error" },
+  gcal_wide_busy: { label: "GCal all-day event blocking working day", tone: "error" },
 };
 
 export default function AvailabilitySyncHealth() {
