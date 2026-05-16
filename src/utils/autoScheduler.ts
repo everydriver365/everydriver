@@ -117,9 +117,7 @@ export async function findOptimalSlots(params: AutoScheduleParams): Promise<Slot
     const { slots } = computeDaySlots(instructor, date, sources, {
       durationMinutes: lessonLength,
       bufferMinutes: buffer,
-      firstLessonBufferMinutes: firstLessonBuffer,
       slotIncrementMinutes: slotIncrement,
-      minNoticeMinutes: minNotice,
     });
 
     for (const slot of slots) {
