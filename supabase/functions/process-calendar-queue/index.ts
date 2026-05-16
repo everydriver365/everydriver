@@ -122,6 +122,10 @@ Deno.serve(async (req) => {
 
         if (!calendarConfig) {
           await supabase
+            .from("scheduled_lessons")
+            .update({ calendar_sync_status: "no-calendar" })
+            .eq("id", item.lesson_id);
+          await supabase
             .from("calendar_sync_queue")
             .update({ processed_at: new Date().toISOString(), error: "No calendar connected" })
             .eq("id", item.id);
@@ -209,16 +213,35 @@ Deno.serve(async (req) => {
             try {
               await updateGoogleEvent(accessToken, calendarId, googleEventId, eventDetails);
             } catch {
-              googleEventId = await createGoogleEvent(accessToken, calendarId, eventDetails);
+              const created = await createGoogleEvent(accessToken, calendarId, eventDetails);
+              googleEventId = created.id;
             }
           } else {
-            googleEventId = await createGoogleEvent(accessToken, calendarId, eventDetails);
+            const created = await createGoogleEvent(accessToken, calendarId, eventDetails);
+            googleEventId = created.id;
           }
 
           await supabase
             .from("scheduled_lessons")
-            .update({ google_event_id: googleEventId })
+            .update({ google_event_id: googleEventId, calendar_sync_status: "synced" })
             .eq("id", item.lesson_id);
+
+          // Mirror into instructor_calendar_events so the availability engine
+          // sees this slot as busy without waiting for the next pull-sync.
+          await supabase.from("instructor_calendar_events").upsert(
+            {
+              instructor_id: item.instructor_id,
+              external_event_id: googleEventId,
+              title: eventDetails.summary,
+              start_time: eventDetails.start,
+              end_time: eventDetails.end,
+              is_busy: true,
+              location: eventDetails.location ?? null,
+              description: eventDetails.description,
+              synced_at: new Date().toISOString(),
+            },
+            { onConflict: "instructor_id,external_event_id" }
+          );
 
           // Send WhatsApp lesson confirmation on first sync (new lesson) if pupil opted in
           const isNewLesson = !freshLesson?.google_event_id && !lesson.google_event_id;
