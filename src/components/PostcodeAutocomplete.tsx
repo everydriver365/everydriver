@@ -38,16 +38,19 @@ export function PostcodeAutocomplete({
   const [isLoading, setIsLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
+  const [hasFetched, setHasFetched] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const skipNextFetchRef = useRef(false);
   const [isLocating, setIsLocating] = useState(false);
 
-  // Fetch suggestions from edge function
+  // Fetch suggestions from edge function. Keeps any previous suggestions
+  // visible until the new response lands, so the dropdown never flashes empty.
   const fetchSuggestions = useCallback(async (query: string) => {
     if (query.length < 2) {
       setSuggestions([]);
+      setHasFetched(false);
       return;
     }
 
@@ -57,23 +60,23 @@ export function PostcodeAutocomplete({
         body: { query },
       });
 
-      console.log('Autocomplete response:', data);
       if (error) throw error;
-      
-      const parsedSuggestions = data?.suggestions || [];
-      console.log('Parsed suggestions:', parsedSuggestions);
+
+      const parsedSuggestions: PostcodeSuggestion[] = data?.suggestions || [];
       setSuggestions(parsedSuggestions);
-      setShowDropdown(parsedSuggestions.length > 0);
       setHighlightedIndex(-1);
+      setHasFetched(true);
     } catch (error) {
       console.error('Autocomplete error:', error);
       setSuggestions([]);
+      setHasFetched(true);
     } finally {
       setIsLoading(false);
     }
   }, []);
 
-  // Debounced input handler
+  // Debounced input handler. Opens the panel immediately on ≥2 chars so the
+  // user sees the loading state instead of a blank gap before results land.
   useEffect(() => {
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
@@ -85,11 +88,15 @@ export function PostcodeAutocomplete({
     }
 
     if (value.length >= 2) {
+      setShowDropdown(true);
+      setIsLoading(true);
       debounceRef.current = setTimeout(() => {
         fetchSuggestions(value);
       }, 200);
     } else {
       setSuggestions([]);
+      setHasFetched(false);
+      setIsLoading(false);
       setShowDropdown(false);
     }
 
@@ -144,6 +151,7 @@ export function PostcodeAutocomplete({
     onChange(suggestion.postcode);
     setShowDropdown(false);
     setSuggestions([]);
+    setHasFetched(false);
     onSelect?.(suggestion.postcode, suggestion.area_name);
   };
 
@@ -254,14 +262,11 @@ export function PostcodeAutocomplete({
             onChange={(e) => onChange(e.target.value.toUpperCase())}
             onKeyDown={handleKeyDown}
             onFocus={() => {
-              if (suggestions.length > 0) setShowDropdown(true);
+              if (value.length >= 2) setShowDropdown(true);
             }}
             className={cn(showInputIcon ? "pl-10" : "pl-3", inputClassName)}
             autoComplete="off"
           />
-          {isLoading && (
-            <Loader2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" />
-          )}
         </div>
         
         {/* Geolocation button */}
@@ -284,34 +289,70 @@ export function PostcodeAutocomplete({
         )}
       </div>
 
-      {/* Dropdown */}
-      {showDropdown && suggestions.length > 0 && (
-        <div className="absolute z-50 mt-1 w-full rounded-lg border bg-popover shadow-lg overflow-hidden">
-          <ul className="max-h-60 overflow-auto py-1">
-            {suggestions.map((suggestion, index) => (
-              <li
-                key={suggestion.postcode}
-                onClick={() => handleSelect(suggestion)}
-                onMouseEnter={() => setHighlightedIndex(index)}
-                className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 cursor-pointer transition-colors",
-                  highlightedIndex === index
-                    ? "bg-accent text-accent-foreground"
-                    : "hover:bg-muted"
-                )}
-              >
-                <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                <div className="flex flex-col min-w-0">
-                  <span className="font-semibold">{suggestion.postcode}</span>
-                  {suggestion.area_name && (
-                    <span className="text-sm text-muted-foreground truncate">
-                      {suggestion.area_name}
-                    </span>
+      {/* Dropdown — stays open during lookups so the user always sees state. */}
+      {showDropdown && value.length >= 2 && (
+        <div className="absolute z-50 mt-1 w-full overflow-hidden rounded-lg border bg-popover shadow-lg">
+          <div className="flex items-center justify-between border-b bg-muted/40 px-3 py-1.5">
+            <span className="text-[10px] font-semibold uppercase tracking-[0.6px] text-muted-foreground">
+              {isLoading ? "Searching" : suggestions.length > 0 ? "Suggestions" : "No matches"}
+            </span>
+            {isLoading && (
+              <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                <Loader2 className="h-3 w-3 animate-spin" />
+                Looking up…
+              </span>
+            )}
+          </div>
+
+          {isLoading && suggestions.length === 0 ? (
+            <ul className="py-1">
+              {[0, 1, 2].map((i) => (
+                <li
+                  key={i}
+                  className="flex items-center gap-3 px-3 py-2.5"
+                  style={{ height: 44 }}
+                >
+                  <div className="h-4 w-4 flex-shrink-0 animate-pulse rounded-sm bg-muted" />
+                  <div className="flex min-w-0 flex-1 flex-col gap-1">
+                    <div className="h-3 w-20 animate-pulse rounded bg-muted" />
+                    <div className="h-2.5 w-32 animate-pulse rounded bg-muted/70" />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : suggestions.length > 0 ? (
+            <ul className="max-h-60 overflow-auto py-1">
+              {suggestions.map((suggestion, index) => (
+                <li
+                  key={suggestion.postcode}
+                  onClick={() => handleSelect(suggestion)}
+                  onMouseEnter={() => setHighlightedIndex(index)}
+                  className={cn(
+                    "flex items-center gap-3 px-3 py-2.5 cursor-pointer transition-colors",
+                    highlightedIndex === index
+                      ? "bg-accent text-accent-foreground"
+                      : "hover:bg-muted"
                   )}
-                </div>
-              </li>
-            ))}
-          </ul>
+                  style={{ minHeight: 44 }}
+                >
+                  <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                  <div className="flex flex-col min-w-0">
+                    <span className="font-semibold">{suggestion.postcode}</span>
+                    {suggestion.area_name && (
+                      <span className="text-sm text-muted-foreground truncate">
+                        {suggestion.area_name}
+                      </span>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : hasFetched ? (
+            <div className="flex items-center gap-3 px-3 py-3 text-sm text-muted-foreground">
+              <MapPin className="h-4 w-4 flex-shrink-0" />
+              No matches for “{value}”
+            </div>
+          ) : null}
         </div>
       )}
     </div>

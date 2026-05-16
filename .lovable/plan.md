@@ -1,21 +1,20 @@
 ## Plan
 
-1. **Fix the search guard in `useCourseDiscovery`**
-   - Keep the current full-postcode geocoding path for valid postcodes.
-   - If geocoding returns no location, extract the postcode district/outcode from the typed value.
-   - If the outcode is valid, run the search anyway using the outcode as `searchedPostcode`, so matching placeholder instructors can appear.
-   - Only show “Postcode not found” when no valid UK outcode can be extracted.
+Redesign `PostcodeAutocomplete` so the suggestions panel stays visible during lookups instead of disappearing.
 
-2. **Make placeholder matching independent of full geocoding**
-   - Update the filtering logic so placeholder instructors can show when `searchedPostcode` exists, even if `userLocation` is unavailable.
-   - Keep real instructors radius-based and only include them when coordinates exist.
-   - Preserve the existing rule: placeholders only appear when there are no real instructor course results.
+### Behaviour changes
+1. Open the dropdown as soon as the user has typed at least 2 characters and the input is focused — not only after results arrive.
+2. While `isLoading` is true, render the dropdown with 3 skeleton rows (animated shimmer matching the suggestion row layout: pin icon + postcode line + area line).
+3. Keep the previously returned suggestions on screen while a new fetch is in flight; only swap them in once the new response lands. This avoids the empty flash between keystrokes.
+4. If the lookup completes with zero results, show a single muted “No matches for ‘WD17 3…’” row instead of closing the panel.
+5. Move the inline spinner from inside the input to the dropdown header (small `Searching…` label on the right) so the input itself stays clean.
+6. Preserve keyboard nav, outside-click close, geolocation button, and the `onSelect` flow exactly as today.
 
-3. **Validate the WD17 case**
-   - Test the deployed `geocode-postcode` function with `WD17 3XX`/`WD173XX`.
-   - Confirm the database has WD17 manual and automatic placeholder instructors with active courses.
-   - Verify the hook logic will produce enquiry-only WD17 fallback course cards rather than a not-found state.
+### Visual polish
+- Match the existing search-card tokens (`#DDE3ED` border, navy text, subtle shadow).
+- Skeleton rows use `bg-muted` with a soft pulse, same row height as a real suggestion (44px) so the panel doesn’t resize when results arrive.
+- Header strip inside the dropdown: 10px uppercase label (“Suggestions” / “Searching”) on the left, spinner + “Looking up…” on the right while loading.
 
-## Technical detail
-
-The backend function is already returning WD17 coordinates, and the database has WD17 placeholder instructors. The remaining issue is frontend state: several filters currently depend on `userLocation`, so if the browser/search path ever lacks coordinates, the placeholder fallback still gets blocked. The fix is to make postcode-district placeholders depend on `searchedPostcode`, not `userLocation`.
+### Scope
+- Only `src/components/PostcodeAutocomplete.tsx` changes.
+- No edits to `CourseSearchHeader` or the search hook — the dropdown lives entirely inside the autocomplete component, so every consumer (courses page, homepage, mini-website, pupil portal, etc.) gets the fix automatically.
