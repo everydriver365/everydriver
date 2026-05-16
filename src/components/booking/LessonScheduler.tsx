@@ -198,33 +198,43 @@ export function LessonScheduler({
     };
   }, [instructorId, bookingAdvanceDays]);
 
-  // Navigate to the first available date's month when data loads
-  useEffect(() => {
-    if (!loading && workingHours.length > 0) {
-      const today = startOfDay(new Date());
-      const maxDate = addDays(today, bookingAdvanceDays);
-      
-      // Find the first available date
-      let checkDate = today;
-      
-      // If availableFrom is set and in the future, start from there
-      if (availableFrom) {
-        const availableFromDate = parse(availableFrom, "yyyy-MM-dd", new Date());
-        if (isAfter(availableFromDate, today)) {
-          checkDate = availableFromDate;
-        }
-      }
-      
-      // Find first date with availability
-      while (isBefore(checkDate, maxDate) || isSameDay(checkDate, maxDate)) {
-        if (isDateAvailableCheck(checkDate)) {
-          setViewMonth(startOfMonth(checkDate));
-          break;
-        }
-        checkDate = addDays(checkDate, 1);
-      }
+  // Find the first date with at least one genuinely bookable slot — uses the
+  // same logic as the slot picker so search & calendar agree.
+  const findFirstBookableDate = useCallback((): Date | null => {
+    const today = startOfDay(new Date());
+    const maxDate = addDays(today, bookingAdvanceDays);
+    let checkDate = today;
+    if (availableFrom) {
+      const availableFromDate = parse(availableFrom, "yyyy-MM-dd", new Date());
+      if (isAfter(availableFromDate, today)) checkDate = availableFromDate;
     }
-  }, [loading, workingHours, availableFrom, bookingAdvanceDays]);
+    while (isBefore(checkDate, maxDate) || isSameDay(checkDate, maxDate)) {
+      if (isDateAvailable(checkDate)) return checkDate;
+      checkDate = addDays(checkDate, 1);
+    }
+    return null;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bookingAdvanceDays, availableFrom, workingHours, dateOverrides, externalEvents, selectedDuration, bufferMinutes, travelBufferMinutes]);
+
+  // On first data load, honour the date passed in from search if it still has
+  // slots; otherwise jump to the next genuinely bookable date.
+  const initialJumpDoneRef = useRef(false);
+  useEffect(() => {
+    if (loading || workingHours.length === 0 || initialJumpDoneRef.current) return;
+    if (initialDate && isDateAvailable(initialDate)) {
+      setViewMonth(startOfMonth(initialDate));
+      setSelectedDate(initialDate);
+      initialJumpDoneRef.current = true;
+      return;
+    }
+    const first = findFirstBookableDate();
+    if (first) {
+      setViewMonth(startOfMonth(first));
+      setSelectedDate(first);
+      initialJumpDoneRef.current = true;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, workingHours, externalEvents, selectedDuration]);
 
   // Helper to check date availability without depending on isDateAvailable (avoids circular deps)
   const isDateAvailableCheck = useCallback((date: Date) => {
