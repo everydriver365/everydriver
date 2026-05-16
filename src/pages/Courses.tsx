@@ -1213,6 +1213,21 @@ export default function Courses() {
 
       {/* Two Column Layout: Calendar + Courses */}
       <section className="container py-8">
+        {!searchedPostcode ? (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mx-auto max-w-md py-24 text-center"
+          >
+            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-muted">
+              <MapPin className="h-10 w-10 text-muted-foreground" />
+            </div>
+            <h2 className="text-2xl font-bold text-foreground">Enter your postcode</h2>
+            <p className="mt-3 text-muted-foreground">
+              Enter your postcode above to see available driving courses and instructors in your area.
+            </p>
+          </motion.div>
+        ) : (
         <div className="flex flex-col gap-8 lg:flex-row">
           {/* Left Column: Calendar + Instructors */}
           <div className="w-full lg:w-80 lg:flex-shrink-0">
@@ -1882,6 +1897,7 @@ export default function Courses() {
             )}
           </div>
         </div>
+        )}
       </section>
     </MainLayout>
   );
