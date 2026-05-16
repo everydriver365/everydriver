@@ -390,7 +390,7 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
                   <button type="button" className="d365-feat-btn">Read more</button>
                 </Link>
               </div>
-              <div className="d365-feat">
+              <div className="d365-feat d365-feat-full">
                 <img
                   src={weeklyCourseImg}
                   alt="Learner driver having a regular weekly driving lesson with a friendly instructor"
