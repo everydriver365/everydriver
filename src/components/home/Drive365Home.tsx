@@ -185,7 +185,7 @@ const HeroCarIllustration = () => (
     <rect x="0" y="240" width="520" height="80" fill="url(#road)" />
     {/* Road markings */}
     {Array.from({ length: 7 }).map((_, i) => (
-      <rect key={i} x={20 + i * 75} y={278} width="40" height="4" fill="#5DCAA5" opacity="0.7" />
+      <rect key={i} x={20 + i * 75} y={278} width="40" height="4" fill="#3E57D9" opacity="0.7" />
     ))}
     {/* Car shadow */}
     <ellipse cx="260" cy="270" rx="120" ry="8" fill="#000" opacity="0.4" />
@@ -308,7 +308,7 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
   };
 
   return (
-    <div style={{ width: "100%", overflow: "hidden", background: "#F0F2F5" }}>
+    <div style={{ width: "100%", overflow: "hidden", background: "#F6F6F8" }}>
 
       {/* HomeHero */}
       <section
@@ -327,7 +327,7 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
           <div>
             <h1 style={{ fontSize: 46, fontWeight: 700, color: "#FFF", lineHeight: 1.14, letterSpacing: -1.5, marginBottom: 16, whiteSpace: "pre-line" }}>
               {"Learn to drive\nwith "}
-              <span style={{ color: "#5DCAA5" }}>confidence</span>
+              <span style={{ color: "#3E57D9" }}>confidence</span>
             </h1>
             <p style={{ fontSize: 15, color: "rgba(255,255,255,0.6)", lineHeight: 1.7, marginBottom: 24, maxWidth: 440 }}>
               Money back if you pass first time. Free retest if you don't. Find an instructor near you today.
@@ -357,7 +357,7 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
       </section>
 
       {/* HomeSearchCard */}
-      <div style={{ background: "#F0F2F5", padding: "0 5%", width: "100%" }}>
+      <div style={{ background: "#F6F6F8", padding: "0 5%", width: "100%" }}>
         <div
           style={{
             background: "#FFF",
@@ -371,31 +371,31 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
         >
           <div style={{ display: "flex", gap: 12, alignItems: "flex-end", flexWrap: "wrap" }}>
             <div style={{ display: "flex", flexDirection: "column", gap: 4, flex: "2 1 200px" }}>
-              <label style={{ fontSize: 11, fontWeight: 500, color: "#5F6B7A" }}>Your postcode</label>
+              <label style={{ fontSize: 11, fontWeight: 500, color: "#51567A" }}>Your postcode</label>
               <input
                 type="text"
                 placeholder="e.g. SO30 2TD"
                 value={postcode}
                 onChange={(e) => setPostcode(e.target.value.toUpperCase())}
-                style={{ border: "1px solid #E0E4EB", borderRadius: 8, padding: "10px 13px", fontSize: 14, color: "#191C2F", background: "#F8F9FA", outline: "none", width: "100%" }}
+                style={{ border: "1px solid #E9E5E8", borderRadius: 8, padding: "10px 13px", fontSize: 14, color: "#191C2F", background: "#F8F9FA", outline: "none", width: "100%" }}
               />
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 4, flex: "1 1 120px" }}>
-              <label style={{ fontSize: 11, fontWeight: 500, color: "#5F6B7A" }}>Radius</label>
+              <label style={{ fontSize: 11, fontWeight: 500, color: "#51567A" }}>Radius</label>
               <select
                 value={radius}
                 onChange={(e) => setRadius(e.target.value)}
-                style={{ border: "1px solid #E0E4EB", borderRadius: 8, padding: "10px 13px", fontSize: 14, color: "#191C2F", background: "#F8F9FA", outline: "none", width: "100%" }}
+                style={{ border: "1px solid #E9E5E8", borderRadius: 8, padding: "10px 13px", fontSize: 14, color: "#191C2F", background: "#F8F9FA", outline: "none", width: "100%" }}
               >
                 {["5 miles", "10 miles", "15 miles", "20 miles"].map((r) => <option key={r}>{r}</option>)}
               </select>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 4, flex: "1 1 120px" }}>
-              <label style={{ fontSize: 11, fontWeight: 500, color: "#5F6B7A" }}>Transmission</label>
+              <label style={{ fontSize: 11, fontWeight: 500, color: "#51567A" }}>Transmission</label>
               <select
                 value={transmission}
                 onChange={(e) => setTransmission(e.target.value)}
-                style={{ border: "1px solid #E0E4EB", borderRadius: 8, padding: "10px 13px", fontSize: 14, color: "#191C2F", background: "#F8F9FA", outline: "none", width: "100%" }}
+                style={{ border: "1px solid #E9E5E8", borderRadius: 8, padding: "10px 13px", fontSize: 14, color: "#191C2F", background: "#F8F9FA", outline: "none", width: "100%" }}
               >
                 {["Any", "Manual", "Automatic"].map((t) => <option key={t}>{t}</option>)}
               </select>
@@ -430,8 +430,8 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
       <div
         style={{
           background: "#FFF",
-          borderTop: "0.5px solid #E0E4EB",
-          borderBottom: "0.5px solid #E0E4EB",
+          borderTop: "0.5px solid #E9E5E8",
+          borderBottom: "0.5px solid #E9E5E8",
           padding: "18px 5%",
           display: "flex",
           alignItems: "center",
@@ -447,26 +447,26 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
               flex: 1,
               textAlign: "center",
               padding: "0 20px",
-              borderRight: i < PROOF_STATS.length - 1 ? "0.5px solid #E0E4EB" : "none",
+              borderRight: i < PROOF_STATS.length - 1 ? "0.5px solid #E9E5E8" : "none",
             }}
           >
             <div style={{ fontSize: 22, fontWeight: 700, color: "#191C2F", letterSpacing: -0.5, lineHeight: 1 }}>
               {stat.isStars ? "★★★★★" : stat.num}
             </div>
-            <div style={{ fontSize: 11, color: "#5F6B7A", marginTop: 3 }}>{stat.label}</div>
+            <div style={{ fontSize: 11, color: "#51567A", marginTop: 3 }}>{stat.label}</div>
           </div>
         ))}
       </div>
 
       {/* HomeCourses */}
-      <section style={{ padding: "56px 5%", background: "#F0F2F5", width: "100%" }}>
+      <section style={{ padding: "56px 5%", background: "#F6F6F8", width: "100%" }}>
         <div style={{ fontSize: 11, fontWeight: 600, color: "#3E57D9", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 6 }}>
           Learning paths
         </div>
         <h2 style={{ fontSize: 32, fontWeight: 700, color: "#191C2F", letterSpacing: -0.5, marginBottom: 10 }}>
           Choose your learning path
         </h2>
-        <p style={{ fontSize: 15, color: "#5F6B7A", lineHeight: 1.6, maxWidth: 520, marginBottom: 36 }}>
+        <p style={{ fontSize: 15, color: "#51567A", lineHeight: 1.6, maxWidth: 520, marginBottom: 36 }}>
           Whether you want to pass quickly or learn at your own pace, we have the perfect course for you.
         </p>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px,1fr))", gap: 20 }}>
@@ -477,7 +477,7 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
                 background: "#FFF",
                 borderRadius: 18,
                 overflow: "hidden",
-                border: course.featured ? "2px solid #3E57D9" : "1px solid #E0E4EB",
+                border: course.featured ? "2px solid #3E57D9" : "1px solid #E9E5E8",
                 display: "flex",
                 flexDirection: "column",
               }}
@@ -485,20 +485,20 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
               <CourseCardImage courseId={course.id} badge={course.badge} badgeColor={course.badgeColor} bg={course.sceneBg} />
               <div style={{ padding: 22, flex: 1, display: "flex", flexDirection: "column" }}>
                 <h3 style={{ fontSize: 18, fontWeight: 700, color: "#191C2F", marginBottom: 6 }}>{course.title}</h3>
-                <p style={{ fontSize: 13, color: "#5F6B7A", lineHeight: 1.6, marginBottom: 14 }}>{course.description}</p>
+                <p style={{ fontSize: 13, color: "#51567A", lineHeight: 1.6, marginBottom: 14 }}>{course.description}</p>
                 <div style={{ display: "flex", flexDirection: "column", gap: 5, marginBottom: 18 }}>
                   {course.features.map((f) => (
-                    <div key={f} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#5F6B7A" }}>
+                    <div key={f} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#51567A" }}>
                       <Check size={11} color="#3E57D9" strokeWidth={1.8} />
                       {f}
                     </div>
                   ))}
                 </div>
                 <div style={{ marginTop: "auto" }}>
-                  <div style={{ fontSize: 11, color: "#5F6B7A", marginBottom: 1 }}>From</div>
+                  <div style={{ fontSize: 11, color: "#51567A", marginBottom: 1 }}>From</div>
                   <div>
                     <span style={{ fontSize: 26, fontWeight: 700, color: "#191C2F", letterSpacing: -0.5 }}>{course.priceFrom}</span>
-                    {course.priceUnit && <span style={{ fontSize: 12, color: "#5F6B7A" }}>{course.priceUnit}</span>}
+                    {course.priceUnit && <span style={{ fontSize: 12, color: "#51567A" }}>{course.priceUnit}</span>}
                   </div>
                 </div>
                 <Link to={course.ctaHref}>
@@ -546,7 +546,7 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
       >
         <div style={{ position: "absolute", width: 400, height: 400, borderRadius: "50%", background: "#3E57D9", opacity: 0.12, right: -120, top: -150, pointerEvents: "none" }} />
         <div style={{ flex: "1 1 360px", position: "relative", zIndex: 1 }}>
-          <div style={{ fontSize: 11, fontWeight: 600, color: "#5DCAA5", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 10 }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: "#3E57D9", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 10 }}>
             New — Free feature
           </div>
           <h2 style={{ fontSize: 32, fontWeight: 700, color: "#FFF", letterSpacing: -0.5, marginBottom: 10, whiteSpace: "pre-line" }}>
