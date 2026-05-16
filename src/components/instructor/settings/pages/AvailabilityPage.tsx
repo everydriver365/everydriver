@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { WorkingHoursEditor } from "@/components/admin/WorkingHoursEditor";
 import { useSettingsDirty } from "../SettingsDirtyContext";
 import { toast } from "@/hooks/use-toast";
+import { AvailabilityDiagnostic } from "@/components/instructor/AvailabilityDiagnostic";
 
 const LENGTHS = [60, 90, 120];
 
@@ -67,6 +68,7 @@ export function AvailabilityPage({ instructorId }: { instructorId: string }) {
 
   return (
     <>
+      <AvailabilityDiagnostic instructorId={instructorId} />
       <section className="sv2-card">
         <div style={{ marginBottom: 12 }}>
           <div className="sv2-section-title">Working hours</div>

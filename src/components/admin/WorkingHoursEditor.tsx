@@ -16,6 +16,7 @@ import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useOptionalSettingsDirty } from "@/components/instructor/settings/useOptionalSettingsDirty";
+import { mirrorIwhToAw } from "@/lib/syncWeeklyHours";
 
 // Availability presets
 const AVAILABILITY_PRESETS = [
@@ -193,6 +194,13 @@ export function WorkingHoursEditor({ instructorId }: WorkingHoursEditorProps) {
         .upsert(rows, { onConflict: "instructor_id,day_of_week" });
 
       if (error) throw error;
+      // Keep the legacy availability_windows table in sync so booking surfaces
+      // reading either source agree. See src/lib/syncWeeklyHours.ts.
+      try {
+        await mirrorIwhToAw(instructorId);
+      } catch (e) {
+        console.error("Failed to mirror working hours to availability_windows", e);
+      }
       await fetchData();
     } catch (error) {
       console.error("Error saving working hours:", error);

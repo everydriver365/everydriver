@@ -145,17 +145,25 @@ export async function saveWeeklyDay(
     .eq("day_of_week", dow);
   if (del.error) throw del.error;
 
-  if (!cfg.enabled || cfg.windows.length === 0) return;
+  if (cfg.enabled && cfg.windows.length > 0) {
+    const rows = cfg.windows.map((w) => ({
+      instructor_id: instructorId,
+      day_of_week: dow,
+      start_time: w.start.length === 5 ? `${w.start}:00` : w.start,
+      end_time: w.end.length === 5 ? `${w.end}:00` : w.end,
+      is_active: true,
+    }));
+    const ins = await supabase.from("availability_windows").insert(rows);
+    if (ins.error) throw ins.error;
+  }
 
-  const rows = cfg.windows.map((w) => ({
-    instructor_id: instructorId,
-    day_of_week: dow,
-    start_time: w.start.length === 5 ? `${w.start}:00` : w.start,
-    end_time: w.end.length === 5 ? `${w.end}:00` : w.end,
-    is_active: true,
-  }));
-  const ins = await supabase.from("availability_windows").insert(rows);
-  if (ins.error) throw ins.error;
+  // Mirror to instructor_working_hours so both tables stay in sync.
+  try {
+    const { mirrorAwToIwh } = await import("@/lib/syncWeeklyHours");
+    await mirrorAwToIwh(instructorId);
+  } catch (e) {
+    console.error("saveWeeklyDay: mirror failed", e);
+  }
 }
 
 export async function insertTimeOff(
