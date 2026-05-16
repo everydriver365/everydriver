@@ -196,7 +196,7 @@ serve(async (req) => {
         });
 
         if (!result.ok) {
-          conflicts.push({ date: slot.date, startTime: slot.startTime, reason: describeReason(result.reason) });
+          conflicts.push({ date: slot.date, startTime: slot.startTime, reason: describeReason(result.reason, result.cause, buffer) });
         }
       }
 
