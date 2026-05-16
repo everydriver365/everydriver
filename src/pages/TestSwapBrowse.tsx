@@ -282,7 +282,7 @@ export default function TestSwapBrowse() {
           </div>
         ) : results.length === 0 ? (
           <div className="flex flex-col items-center justify-center px-10 py-16 text-center">
-            <h2 className="mb-1.5 text-[15px] font-semibold" style={{ color: t.navy }}>
+            <h2 className="mb-1.5 text-[15px] font-semibold" style={{ color: t.charcoal }}>
               No swaps found
             </h2>
             <p className="text-[13px] leading-5" style={{ color: t.mid }}>
