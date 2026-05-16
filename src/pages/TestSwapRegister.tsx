@@ -1,14 +1,10 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { z } from "zod";
-import { ArrowLeft, CheckCircle2, Loader2 } from "lucide-react";
-import { MainLayout } from "@/components/layout/MainLayout";
+import { CheckCircle2, Loader2, Check } from "lucide-react";
 import { SEOHead } from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -16,6 +12,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  swap,
+  SwapRegisterHeader,
+  SwapRegisterHero,
+  SwapFormCard,
+  SectionHeader,
+  SwapField,
+  SwapInfoBox,
+  DateArrow,
+  SwapFormFooter,
+  swapInputClass,
+  swapInputStyle,
+} from "@/components/test-swap/register/SwapRegisterUI";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
