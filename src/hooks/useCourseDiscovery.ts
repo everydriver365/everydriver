@@ -465,7 +465,7 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
   // scheduled lessons, Google Calendar events, and buffer/travel padding.
   const nextAvailableDates = useMemo(() => {
     const today = startOfDay(new Date());
-    const relevantInstructors = userLocation ? instructorsInArea : instructors;
+    const relevantInstructors = (userLocation || searchedPostcode) ? instructorsInArea : instructors;
     if (relevantInstructors.length === 0) return [] as Date[];
 
     const results: Date[] = [];
@@ -500,14 +500,14 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
 
     const allDays = eachDayOfInterval({ start: monthStart, end: monthEnd });
 
-    const relevantInstructors = userLocation ? instructorsInArea : instructors;
+    const relevantInstructors = (userLocation || searchedPostcode) ? instructorsInArea : instructors;
 
     // If the only instructors in the searched area are network placeholders,
     // every future day is "available" (the pupil submits an enquiry rather
     // than booking a specific slot).
     const realInArea = relevantInstructors.filter((i) => !i.is_network_placeholder);
     const placeholdersOnly =
-      !!userLocation && realInArea.length === 0 && relevantInstructors.length > 0;
+      !!(userLocation || searchedPostcode) && realInArea.length === 0 && relevantInstructors.length > 0;
 
     return allDays.filter((day) => {
       if (isBefore(day, today)) return false;
