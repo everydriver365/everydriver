@@ -214,7 +214,7 @@ export default function Index() {
     <MainLayout>
       <SEOHead jsonLd={homepageJsonLd} />
       <Drive365Home
-        afterLearningPaths={
+        afterLearningPaths={<>
           <section style={{ padding: "56px 5%", background: "#F0F2F5", width: "100%" }}>
             <div style={{ fontSize: 11, fontWeight: 600, color: "#1A52A0", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 6 }}>
               What's included
@@ -286,7 +286,79 @@ export default function Index() {
               })}
             </div>
           </section>
-        }
+
+          {/* Featured Courses Section */}
+          <section className="bg-background py-16">
+            <div className="container">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                viewport={{ once: true }}
+                className="mb-8 flex items-center justify-between"
+              >
+                <div>
+                  <Badge className="mb-2 border-0 bg-primary text-primary-foreground">
+                    Available Now
+                  </Badge>
+                  <h2 className="text-2xl font-bold md:text-3xl">Featured Courses</h2>
+                </div>
+                <Link to="/courses">
+                  <Button variant="outline" className="hidden gap-2 sm:flex">
+                    View All Courses
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </Link>
+              </motion.div>
+
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {featuredLoading ? (
+                  <>
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="h-[340px] animate-pulse rounded-xl bg-muted" />
+                    ))}
+                  </>
+                ) : featuredCourses.length > 0 ? (
+                  featuredCourses.map((course, index) => (
+                    <motion.div
+                      key={`${course.instructor.id}-${course.hours}`}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5, delay: 0.1 + index * 0.05 }}
+                      viewport={{ once: true }}
+                    >
+                      <IOSCourseCard
+                        instructor={course.instructor}
+                        hours={course.hours}
+                        nextAvailable={course.bookableDate}
+                        courseImageUrl={course.courseImageUrl}
+                        isPopular={course.isPopular}
+                        availableFrom={course.availableFrom}
+                        features={course.features}
+                        isIntensive={course.isIntensive}
+                        discountedPrice={course.discountedPrice}
+                        customFeatures={course.customFeatures}
+                      />
+                    </motion.div>
+                  ))
+                ) : (
+                  <div className="col-span-full py-12 text-center">
+                    <p className="text-muted-foreground">No courses available at the moment. Check back soon!</p>
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-6 text-center sm:hidden">
+                <Link to="/courses">
+                  <Button className="gap-2">
+                    View All Courses
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </section>
+        </>}
       />
 
       {/* Test Swap Banner */}
@@ -329,77 +401,6 @@ export default function Index() {
         onClose={() => setFeatureModalOpen(false)}
       />
 
-      {/* Featured Courses Section */}
-      <section className="bg-background py-16">
-        <div className="container">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            viewport={{ once: true }}
-            className="mb-8 flex items-center justify-between"
-          >
-            <div>
-              <Badge className="mb-2 border-0 bg-primary text-primary-foreground">
-                Available Now
-              </Badge>
-              <h2 className="text-2xl font-bold md:text-3xl">Featured Courses</h2>
-            </div>
-            <Link to="/courses">
-              <Button variant="outline" className="hidden gap-2 sm:flex">
-                View All Courses
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
-          </motion.div>
-
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {featuredLoading ? (
-              <>
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-[340px] animate-pulse rounded-xl bg-muted" />
-                ))}
-              </>
-            ) : featuredCourses.length > 0 ? (
-              featuredCourses.map((course, index) => (
-                <motion.div
-                  key={`${course.instructor.id}-${course.hours}`}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.1 + index * 0.05 }}
-                  viewport={{ once: true }}
-                >
-                  <IOSCourseCard
-                    instructor={course.instructor}
-                    hours={course.hours}
-                    nextAvailable={course.bookableDate}
-                    courseImageUrl={course.courseImageUrl}
-                    isPopular={course.isPopular}
-                    availableFrom={course.availableFrom}
-                    features={course.features}
-                    isIntensive={course.isIntensive}
-                    discountedPrice={course.discountedPrice}
-                    customFeatures={course.customFeatures}
-                  />
-                </motion.div>
-              ))
-            ) : (
-              <div className="col-span-full py-12 text-center">
-                <p className="text-muted-foreground">No courses available at the moment. Check back soon!</p>
-              </div>
-            )}
-          </div>
-
-          <div className="mt-6 text-center sm:hidden">
-            <Link to="/courses">
-              <Button className="gap-2">
-                View All Courses
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
 
       {/* From Nervous to Road Ready Section — Warm Organic */}
       <section className="bg-gradient-to-b from-orange-50 via-amber-50/40 to-background py-20">
