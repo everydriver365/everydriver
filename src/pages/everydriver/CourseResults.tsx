@@ -87,9 +87,11 @@ export default function CourseResults({
         setTransmission={setTransmission}
         isSearching={isSearching}
         onSearch={handleSearch}
+        activeFilter={showTypeSwitcher ? (typeFromUrl as any) : undefined}
+        setActiveFilter={showTypeSwitcher ? ((v) => setType((v === "weekly" ? "all" : v) as CourseTypeFilter)) : undefined}
       />
 
-      {showTypeSwitcher && (
+      {false && showTypeSwitcher && (
         <div className="container pt-6">
           <div className="inline-flex rounded-full border bg-card p-1 shadow-sm">
             {(["all", "intensive", "semi-intensive"] as CourseTypeFilter[]).map((t) => {
