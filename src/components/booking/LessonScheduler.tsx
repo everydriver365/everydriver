@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { WaitlistDialog } from "./WaitlistDialog";
 import { useGoogleCalendarRefresh } from "@/hooks/useGoogleCalendarRefresh";
+import { TRAVEL_FALLBACK_MIN } from "@/lib/courseAvailability";
 
 interface WorkingHour {
   day_of_week: number;
