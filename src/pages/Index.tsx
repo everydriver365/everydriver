@@ -713,12 +713,6 @@ export default function Index() {
                 description: "Monitor your journey with detailed progress reports.",
                 image: getImage("feature_progress", featureTheoryFallback)
               },
-              {
-                title: "Theory Support",
-                description: "Free theory test prep with practice questions and mock tests.",
-                link: "/theory",
-                image: getImage("feature_theory", featureTheoryFallback)
-              },
             ].map((f, i) => {
               const content = (
                 <motion.div
