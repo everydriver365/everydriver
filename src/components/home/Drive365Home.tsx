@@ -318,9 +318,9 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
           .d365-hero-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
           .d365-hero-right { display: flex; flex-direction: column; gap: 16px; }
           .d365-hero-right { display: flex; flex-direction: column; gap: 16px; }
-          .d365-welcome { background: #EAF0FF; padding: 40px; border-radius: 4px; }
-          .d365-welcome h1 { font-size: 44px; line-height: 1.05; font-weight: 800; color: #0A0A0A; text-transform: uppercase; letter-spacing: -0.5px; margin: 0 0 18px; font-family: Inter, "Helvetica Neue", system-ui, sans-serif; }
-          .d365-welcome p { font-size: 15px; line-height: 1.55; color: #4B5563; margin: 0 0 24px; }
+          .d365-welcome { background: #EAF0FF; padding: 24px; border-radius: 4px; }
+          .d365-welcome h1 { font-size: 44px; line-height: 1.05; font-weight: 800; color: #0A0A0A; text-transform: uppercase; letter-spacing: -0.5px; margin: 0 0 14px; font-family: Inter, "Helvetica Neue", system-ui, sans-serif; }
+          .d365-welcome p { font-size: 15px; line-height: 1.55; color: #4B5563; margin: 0; }
           .d365-welcome p b { color: #0A0A0A; font-weight: 700; }
           .d365-cta { width: 100%; background: #2D3FE7; color: #FFFFFF; border: none; border-radius: 2px; padding: 16px 20px; font-size: 14px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 10px; transition: background 120ms ease; font-family: inherit; }
           .d365-cta:hover { background: #1F2DC9; }
