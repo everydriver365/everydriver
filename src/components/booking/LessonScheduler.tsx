@@ -325,12 +325,18 @@ export function LessonScheduler({
         return { start_time: startD.toISOString(), end_time: endD.toISOString() };
       });
 
+      const manualBlockEvents = (manualBlocks || []).map((b: any) => ({
+        start_time: b.start_datetime,
+        end_time: b.end_datetime,
+      }));
+
       setExternalEvents([
         ...(calendarEvents || []).map((e) => ({
           start_time: e.start_time,
           end_time: e.end_time,
         })),
         ...lessonEvents,
+        ...manualBlockEvents,
       ]);
     } catch (error) {
       console.error("Error fetching availability:", error);
