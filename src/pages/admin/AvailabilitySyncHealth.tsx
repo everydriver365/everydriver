@@ -168,12 +168,13 @@ export default function AvailabilitySyncHealth() {
   }, [load]);
 
   const stats: Stats = useMemo(() => {
-    const s: Stats = { total: rows.length, healthy: 0, drift: 0, noHours: 0, futureFrom: 0 };
+    const s: Stats = { total: rows.length, healthy: 0, drift: 0, noHours: 0, futureFrom: 0, badDow: 0 };
     for (const r of rows) {
       const driftish = r.issues.includes("drift_iwh_only") || r.issues.includes("drift_aw_only");
       if (driftish) s.drift++;
       if (r.issues.includes("no_hours")) s.noHours++;
       if (r.issues.includes("future_from")) s.futureFrom++;
+      if (r.issues.includes("bad_dow")) s.badDow++;
       if (r.issues.length === 0) s.healthy++;
     }
     return s;
@@ -185,6 +186,7 @@ export default function AvailabilitySyncHealth() {
       // Tab filter
       if (tab === "healthy" && r.issues.length !== 0) return false;
       if (tab === "drift" && !r.issues.some((i) => i.startsWith("drift_"))) return false;
+      if (tab === "bad_dow" && !r.issues.includes("bad_dow")) return false;
       if (tab === "no_hours" && !r.issues.includes("no_hours")) return false;
       if (tab === "future_from" && !r.issues.includes("future_from")) return false;
       if (tab === "all_issues" && r.issues.length === 0) return false;
