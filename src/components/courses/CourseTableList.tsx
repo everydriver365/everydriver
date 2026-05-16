@@ -141,24 +141,28 @@ export function CourseTableList({ courses }: CourseTableListProps) {
                   <div>
                     <div
                       style={{
-                        fontSize: 18,
-                        fontWeight: 800,
-                        color: "#0a1936",
+                        fontSize: 22,
+                        fontWeight: 700,
+                        color: "#0A0A0A",
                         letterSpacing: "-0.02em",
                         lineHeight: 1,
                       }}
                     >
                       {c.hours}
-                      <span style={{ fontSize: 10, color: "#7a7a7a", marginLeft: 2, fontWeight: 700 }}>hr</span>
+                      <span style={{ fontSize: 13, color: "#4B5563", marginLeft: 2, fontWeight: 600 }}>hr</span>
                     </div>
                     {c.isPopular && (
                       <div
                         style={{
-                          fontSize: 9,
+                          display: "inline-block",
+                          fontSize: 10,
                           fontWeight: 700,
-                          color: "#d92e3a",
+                          color: "#2D3FE7",
+                          background: "#EAF0FF",
                           letterSpacing: "0.1em",
-                          marginTop: 3,
+                          padding: "2px 6px",
+                          borderRadius: 2,
+                          marginTop: 4,
                         }}
                       >
                         POPULAR
@@ -171,15 +175,15 @@ export function CourseTableList({ courses }: CourseTableListProps) {
                 <div style={{ minWidth: 0 }}>
                   <div
                     style={{
-                      fontSize: 13,
-                      fontWeight: 700,
-                      color: "#0a1936",
+                      fontSize: 14,
+                      fontWeight: 500,
+                      color: "#0A0A0A",
                       letterSpacing: "-0.01em",
                     }}
                   >
                     {courseTypeLabel(c)} · {transmissionLabel(c.instructor.car_type)}
                   </div>
-                  <div style={{ fontSize: 11, color: "#7a7a7a", marginTop: 2 }}>
+                  <div style={{ fontSize: 13, color: "#4B5563", marginTop: 2 }}>
                     {c.instructor.name ? `${c.instructor.name} · ` : ""}Starts {format(c.bookableDate, "EEE d MMM")}
                   </div>
                 </div>
@@ -188,9 +192,9 @@ export function CourseTableList({ courses }: CourseTableListProps) {
                 <div style={{ minWidth: 0 }}>
                   <div
                     style={{
-                      fontSize: 12,
-                      fontWeight: 700,
-                      color: "#0a1936",
+                      fontSize: 14,
+                      fontWeight: 500,
+                      color: "#0A0A0A",
                       letterSpacing: "-0.01em",
                       whiteSpace: "nowrap",
                       overflow: "hidden",
@@ -199,7 +203,7 @@ export function CourseTableList({ courses }: CourseTableListProps) {
                   >
                     {c.instructor.name || "Instructor"}
                   </div>
-                  <div style={{ fontSize: 11, color: "#7a7a7a", marginTop: 2 }}>
+                  <div style={{ fontSize: 13, color: "#4B5563", marginTop: 2 }}>
                     {typeof c.distance === "number" ? `${c.distance.toFixed(1)} mi` : "—"}
                   </div>
                 </div>
