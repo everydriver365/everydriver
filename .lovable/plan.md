@@ -1,126 +1,113 @@
 
-# Unified Availability Engine
+# Community & Professionalism — Phase 1
 
-## Goal
+Two tightly-scoped additions that together transform the platform from a tool into a professional network.
 
-Replace the 6+ separate slot calculators with **one function** that every booking surface — and the server-side `create-booking` guard — calls. This ends the whack-a-mole where fixing one screen breaks another (Ken D being the latest example).
+---
 
-## The single source of truth
+## 1. Verified Professional Profile (trust layer)
 
-New file: `src/lib/availabilityEngine.ts`
+A badge stack on every instructor's mini-website and inside the portal — proves they're the real deal.
 
-Signature:
-```ts
-resolveAvailability({
-  instructorId, date, durationMinutes,
-  pupilId?, timeOfDay?, isCourseBooking?
-}) → { slots, rejected, diagnostics }
-```
+**Verifiable signals (pulled from existing data where possible):**
+- DVSA ADI grade (4/5/6) + ADI number — manual entry, locked once verified by admin
+- DBS check status + expiry — uploaded doc, admin-approved
+- Public liability & vehicle insurance — uploaded doc + expiry tracking with auto-reminders
+- CPD hours this year — auto-summed from CPD module
+- Pass rate (last 12 months) — already tracked
+- Years teaching — derived from `instructor.created_at` or manual
+- Specialisms (nervous learners, automatic, intensive, refresher, pass plus, fleet)
+- Languages spoken
+- Pupil rating (already tracked)
 
-It runs the same pipeline every time:
+**Display:**
+- New **"Verified Pro" badge** block on every mini-website (above the fold, next to instructor name)
+- Tap badge → expands a sheet showing all credentials with verification ticks
+- Inside instructor portal: new **Credentials** settings page with upload + expiry tracker
+- Admin portal: review queue for new uploads (approve/reject)
 
+**Why it matters:** Removes the #1 pupil objection ("is this person legit?") and gives instructors a moat over Gumtree/Facebook competitors.
+
+---
+
+## 2. ADI Community Hub (the network effect)
+
+A private, ADI-only space inside the instructor portal. Three tabs only — keep it focused.
+
+### Tab A — **Feed**
+- Threaded posts (text + optional image)
+- Categories: Tips & Tricks, Test Routes, DVSA News, Vehicles, Vent (private to ADIs)
+- Like, comment, save
+- Optional pseudonym toggle ("Posting as @adi_winchester" vs real name)
+
+### Tab B — **Swap Board**
+Practical, transactional — what ADIs actually need:
+- **Offer a pupil** (relocating, full diary, wrong gender match) → other ADIs in radius can claim
+- **Cover request** (illness, holiday) → nearby ADIs see and bid
+- **Vehicle swap** (mine's in for service, anyone free 9-1 Tuesday?)
+- Each post auto-tags location from instructor's `home_postcode` and shows distance
+- Acceptance creates a pre-filled handover with pupil contact, hours bought, syllabus progress
+
+### Tab C — **Leaderboards** (opt-in)
+- Regional pass-rate league (by postcode area)
+- Most-improved this month
+- Instructor of the Month (admin-curated, surfaces on Drive365 homepage)
+- Opt-out toggle in settings — never surfaced without consent
+
+---
+
+## 3. Light recognition layer (free wins)
+
+- "Founding Instructor" badge for everyone who joined before today's date — instant exclusivity
+- Public profile URL bumps to a polished `/adi/{slug}` route reusing existing mini-website shell
+- Verified Pro badge becomes shareable as a PNG ("I'm a Verified Pro on Drive365") for WhatsApp/Insta
+
+---
+
+## What we're explicitly **not** building yet
+
+- Full CPD course library (use existing CPD log; courses come in Phase 2)
+- Mentorship pairing (depth needed — Phase 2)
+- Pupil-side community (separate scope; high moderation cost)
+- Live events/ticketing (Phase 3)
+- Direct ADI-to-ADI messaging (use existing unified inbox)
+
+---
+
+## Technical sketch
+
+**New tables:**
 ```text
-1. Load working_hours for that weekday
-2. Load scheduled_lessons (app diary) for the date
-3. Load manual_blocks overlapping the date
-4. Load instructor_calendar_events (Google) for the date
-5. Filter Google events:
-     - timed event  → BLOCKS
-     - all-day      → IGNORED (informational)
-     - multi-day >12h → IGNORED (informational)
-6. Apply instructor.buffer_minutes
-7. Apply per-pupil travel_time_minutes (pupil_travel_min)
-8. Apply first-lesson-of-day rule (no leading buffer)
-9. Walk the day in 15-min steps, emit slots that fit duration
-10. Return { slots, rejected: [{ time, reason }] }
+instructor_credentials       — type, value, doc_url, status, verified_by, expires_at
+community_posts              — instructor_id, category, body, image_url, pseudonym, created_at
+community_comments           — post_id, instructor_id, body
+community_reactions          — post_id, instructor_id, kind
+swap_board_listings          — instructor_id, kind (pupil/cover/vehicle), payload jsonb,
+                               postcode_area, status, claimed_by, expires_at
+leaderboard_opt_in           — instructor_id, leaderboard_kind, opted_in
 ```
 
-## What gets deleted / migrated
+**RLS:** All community tables use `public.get_instructor_id_for_user(auth.uid())` per the project rule. Swap-board claims gated to verified instructors only (anti-spam).
 
-| File | Action |
-|---|---|
-| `src/lib/availabilityCore.ts` | Folded into engine |
-| `src/lib/courseAvailability.ts` | Folded into engine |
-| `src/lib/lessonClashCheck.ts` | Folded into engine |
-| `src/components/booking/LessonScheduler.tsx` | Delete local slot logic, call engine |
-| `src/hooks/useInstructorAvailabilitySearch.ts` | Call engine |
-| `src/hooks/useRealGapSlots.ts` | Call engine |
-| `src/pages/Courses.tsx` availability check | Call engine |
-| `supabase/functions/create-booking/index.ts` | Call engine (shared copy) before confirming |
+**Routes (desktop portal — mobile untouched per project rule):**
+- `/instructor/community` — Feed / Swap Board / Leaderboards tabs
+- `/instructor/settings/credentials` — Verified Pro upload + expiry tracker
+- `/admin/verifications` — review queue
+- Public: `/adi/{slug}` reuses existing mini-website shell with Verified Pro block
 
-## Server-side guard (critical)
+**Reuses:** existing CPD hooks, pass-rate calc, mini-website Polaroid shell, unified inbox, instructor `home_postcode` for distance, admin moderation patterns.
 
-The engine also runs inside `create-booking`. Even if a stale UI offers a slot, the server re-checks and rejects it with a clear reason. The UI and server can never disagree.
+**Notifications:** Reuse existing notification system — new types: `swap_board.match_nearby`, `credential.expiry_warning`, `community.reply_to_your_post`.
 
-Implementation: a small Deno-compatible copy of the engine lives in `supabase/functions/_shared/availabilityEngine.ts`, imported by `create-booking` and any other function that needs to validate a slot.
+**Design:** Desktop portal theme tokens (#2D3FE7 indigo, #00C8B8 teal accents), `--portal-*` cards, rounded-2xl. No new colors.
 
-## Google Calendar rules — codified
+---
 
-Written down once, applied everywhere:
+## Build order
 
-- **Timed event** → blocks that time window
-- **All-day event** (00:00–23:59 single day) → informational, does NOT block
-- **Multi-day event** (>12h duration or spans dates) → informational, does NOT block
-- **Manual block** in the app → always blocks
+1. **Verified Pro Profile** — credentials table, upload UI, admin review, badge on mini-website
+2. **Swap Board** — highest ROI tab, fills empty diaries
+3. **Feed** — categories + posting + moderation
+4. **Leaderboards** — opt-in, regional
 
-If an instructor wants an all-day Google event to block bookings, they add a manual block. This is predictable and matches how every other scheduler in the industry behaves.
-
-## Diagnostic mode
-
-The engine returns a `diagnostics` object the UI can render in a dev panel:
-
-```text
-Ken D · 2026-06-01 · 2h lesson
-Working hours: 09:00–18:00
-Conflicts:
-  ✓ Lesson 10:00–11:00 (app diary)       blocking
-  ✗ "Summer term" Apr–Jul (Google)        skipped: multi-day
-  ✗ "Lotty No College" 1–2 Jun (Google)   skipped: multi-day
-Buffer: 15 min · Travel: 10 min
-Slots offered: 12:15, 13:15, 14:15, 15:15, 16:00
-```
-
-This makes future debugging take seconds.
-
-## Verification before ship
-
-1. Run engine against Ken D (`c9843b58-…`) for 1 Jun, 7 Jun, plus the week he reported broken — confirm slots match what he expects.
-2. Run against 2 other live instructors with different buffer / travel settings.
-3. Confirm `create-booking` rejects a manually-crafted clashing payload.
-4. Confirm course booking, single-lesson booking, and Fill-Gaps all return identical slot lists for the same inputs.
-
-## What is explicitly NOT changing
-
-- Database schema (no migrations needed)
-- Google Calendar sync architecture (service account + DWD, per memory)
-- Mobile layouts
-- Payment flows
-- Buffer / travel time / first-lesson rules — same rules, just enforced in one place
-
-## Effort
-
-- Day 1: Build engine + diagnostic + edge function copy
-- Day 2: Migrate 6 surfaces to call it, delete old code
-- Day 3: Verify against Ken D + 2 other instructors, ship
-
-## Risk
-
-Low. The engine is a pure function over inputs you already query today. Old files stay in place until each caller is migrated, so rollback per-surface is trivial.
-
-## Files touched
-
-**Created**
-- `src/lib/availabilityEngine.ts`
-- `supabase/functions/_shared/availabilityEngine.ts`
-
-**Edited**
-- `src/components/booking/LessonScheduler.tsx`
-- `src/hooks/useInstructorAvailabilitySearch.ts`
-- `src/hooks/useRealGapSlots.ts`
-- `src/pages/Courses.tsx`
-- `supabase/functions/create-booking/index.ts`
-
-**Deleted (after migration)**
-- `src/lib/availabilityCore.ts`
-- `src/lib/courseAvailability.ts`
-- `src/lib/lessonClashCheck.ts`
+Each step is independently shippable. Want me to start with Step 1?

@@ -20,6 +20,7 @@ const IconPreviewPage = lazy(() => import("@/pages/instructor/IconPreviewPage"))
 const QuickActionsRedesignDemo = lazy(() => import("@/pages/instructor/QuickActionsRedesignDemo"));
 const UpcomingEventsRedesignDemo = lazy(() => import("@/pages/instructor/UpcomingEventsRedesignDemo"));
 const InstructorAccessibilitySettings = lazy(() => import("@/pages/instructor/InstructorAccessibilitySettings"));
+const InstructorVerificationPage = lazy(() => import("@/pages/instructor/InstructorVerificationPage"));
 const InstructorModules = lazy(() => import("@/pages/instructor-app/InstructorModules"));
 const InstructorMySite = lazy(() => import("@/pages/instructor-app/InstructorMySite"));
 const InstructorWebsiteEditor = lazy(() => import("@/pages/instructor-app/InstructorWebsiteEditor"));
@@ -179,6 +180,8 @@ export const instructorPortalRoutes = (
     <Route path="/instructor/settings/whatsapp" element={<InstructorWhatsAppSettings />} />
     <Route path="/instructor/settings/whatsapp/templates" element={<InstructorWhatsAppTemplates />} />
     <Route path="/instructor/settings/accessibility" element={<InstructorAccessibilitySettings />} />
+    <Route path="/instructor/settings/verification" element={<InstructorVerificationPage />} />
+    <Route path="/instructor/verification" element={<InstructorVerificationPage />} />
     {/* Unified Settings hub — keep last so it doesn't shadow specific routes above */}
     <Route path="/instructor/settings" element={<InstructorSettingsHub />} />
     <Route path="/instructor/settings/:categoryId" element={<InstructorSettingsHub />} />

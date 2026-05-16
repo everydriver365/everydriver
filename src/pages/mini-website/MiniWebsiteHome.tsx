@@ -11,6 +11,7 @@ import { LiveBookingPreviewModal } from "@/components/mini-website/LiveBookingPr
 import { TrackProgressPreviewModal } from "@/components/mini-website/TrackProgressPreviewModal";
 import { FeatureData } from "@/hooks/useHomepageFeatures";
 import { PupilAvatar } from "@/components/instructor/PupilAvatar";
+import { VerifiedProBadge } from "@/components/instructor/VerifiedProBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -205,9 +206,12 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
               transition={{ delay: 0.1 }}
               className="pt-1 sm:pt-4 flex-1"
             >
-              <Badge className="bg-green-100 text-green-800 border-0 text-[10px] sm:text-xs mb-2 sm:mb-3">
-                <Award className="h-3 w-3 mr-1" />Free Re-Test If You Fail
-              </Badge>
+              <div className="flex flex-wrap items-center gap-1.5 mb-2 sm:mb-3">
+                <Badge className="bg-green-100 text-green-800 border-0 text-[10px] sm:text-xs">
+                  <Award className="h-3 w-3 mr-1" />Free Re-Test If You Fail
+                </Badge>
+                <VerifiedProBadge instructorId={instructor.id} />
+              </div>
               <h1 className="text-xl sm:text-3xl lg:text-5xl font-extrabold leading-tight text-foreground">
                 {page?.hero_heading ? (
                   <>{page.hero_heading}</>
