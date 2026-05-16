@@ -1,14 +1,10 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { z } from "zod";
-import { ArrowLeft, CheckCircle2, Loader2 } from "lucide-react";
-import { MainLayout } from "@/components/layout/MainLayout";
+import { CheckCircle2, Loader2, Check } from "lucide-react";
 import { SEOHead } from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -16,6 +12,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  swap,
+  SwapRegisterHeader,
+  SwapRegisterHero,
+  SwapFormCard,
+  SectionHeader,
+  SwapField,
+  SwapInfoBox,
+  DateArrow,
+  SwapFormFooter,
+  swapInputClass,
+  swapInputStyle,
+} from "@/components/test-swap/register/SwapRegisterUI";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -205,30 +214,47 @@ export default function TestSwapRegister() {
     navigate(`/test-swap/matches/${newId}`);
   };
 
+  const backTo = isEdit && signupId ? `/test-swap/matches/${signupId}` : "/test-swap";
+  const backLabel = isEdit ? "Back to my matches" : "Back to test swap";
+
+  const heroTitle = isEdit ? "Edit your swap details" : "Register for a test swap";
+  const heroSubtitle = isEdit
+    ? "Update your test details or preferred date window. Changes take effect immediately."
+    : "Free and secure. Tell us your current test details and the dates you'd prefer — we'll match you with another learner.";
+
+  const canSubmit =
+    !!form.full_name &&
+    !!form.phone &&
+    !!form.email &&
+    !!form.earliest_new_date &&
+    !!form.latest_new_date &&
+    !!form.consent_given &&
+    (!form.has_test_booked ||
+      (!!form.current_centre_id && !!form.current_test_date && !!form.current_test_time));
+
   return (
-    <MainLayout>
+    <div className="min-h-screen" style={{ background: swap.surface }}>
       <SEOHead
         title={isEdit ? "Edit Your Test Swap Details | Drive365" : "Register for a Driving Test Swap | Drive365"}
         description="Join the free Drive365 test swap pool. Tell us your current DVSA test date and the dates you'd prefer — we'll match you with another learner."
       />
 
-      <section className="py-10 md:py-14">
-        <div className="container max-w-2xl">
-          <Link
-            to={isEdit && signupId ? `/test-swap/matches/${signupId}` : "/test-swap"}
-            className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-6"
-          >
-            <ArrowLeft className="h-4 w-4 mr-1" />
-            {isEdit ? "Back to my matches" : "Back to Test Swap"}
-          </Link>
+      <SwapRegisterHeader backTo={backTo} backLabel={backLabel} />
 
-          {done ? (
-            <div className="rounded-2xl border bg-card p-8 text-center">
-              <CheckCircle2 className="h-12 w-12 text-primary mx-auto mb-4" />
-              <h1 className="text-2xl font-bold mb-2">You're on the list</h1>
-              <p className="text-muted-foreground mb-6">
-                We'll email you as soon as we find a learner whose test date
-                matches what you're after. Keep an eye on your inbox.
+      <main className="max-w-2xl mx-auto pb-16">
+        {done ? (
+          <div className="px-4 md:px-6 pt-10">
+            <div
+              className="bg-white p-8 text-center"
+              style={{ border: `1px solid ${swap.border}`, borderRadius: 16 }}
+            >
+              <CheckCircle2 className="h-12 w-12 mx-auto mb-4" style={{ color: swap.blue }} />
+              <h1 className="text-2xl font-bold mb-2" style={{ color: swap.navy }}>
+                You're on the list
+              </h1>
+              <p className="mb-6" style={{ color: swap.mid }}>
+                We'll email you as soon as we find a learner whose test date matches what
+                you're after. Keep an eye on your inbox.
               </p>
               <div className="flex justify-center gap-3">
                 <Button onClick={() => navigate("/test-swap")} variant="outline">
@@ -237,92 +263,131 @@ export default function TestSwapRegister() {
                 <Button onClick={() => navigate("/drive365")}>Drive365 home</Button>
               </div>
             </div>
-          ) : loadingExisting ? (
-            <div className="flex items-center gap-2 text-muted-foreground py-12 justify-center">
-              <Loader2 className="h-4 w-4 animate-spin" /> Loading your details…
-            </div>
-          ) : (
-            <>
-              <h1 className="text-3xl md:text-4xl font-bold mb-2">
-                {isEdit ? "Edit your swap details" : "Register for a test swap"}
-              </h1>
-              <p className="text-muted-foreground mb-8">
-                {isEdit
-                  ? "Update your test details or preferred date window. Changes take effect immediately."
-                  : "Free and secure. Tell us your current test details and the dates you'd prefer, and we'll match you with another learner."}
-              </p>
+          </div>
+        ) : loadingExisting ? (
+          <div
+            className="flex items-center gap-2 py-16 justify-center"
+            style={{ color: swap.mid }}
+          >
+            <Loader2 className="h-4 w-4 animate-spin" /> Loading your details…
+          </div>
+        ) : (
+          <>
+            <SwapRegisterHero title={heroTitle} subtitle={heroSubtitle} />
 
-              <form
-                onSubmit={handleSubmit}
-                className="space-y-6 rounded-2xl border bg-card p-6 md:p-8"
-              >
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div>
-                    <Label htmlFor="full_name">Full name *</Label>
-                    <Input
-                      id="full_name"
-                      value={form.full_name}
-                      onChange={(e) => setField("full_name", e.target.value)}
-                      maxLength={100}
+            <form onSubmit={handleSubmit} className="px-4 md:px-6">
+              <SwapFormCard>
+                {/* ---------- Section 1: Contact ---------- */}
+                <div className="p-6">
+                  <SectionHeader
+                    n={1}
+                    color={swap.navy}
+                    title="Your contact details"
+                    subtitle="DVSA will call you on the number below — it must match the number on your DVSA booking"
+                  />
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <SwapField label="Full name" required htmlFor="full_name">
+                      <input
+                        id="full_name"
+                        className={swapInputClass}
+                        style={swapInputStyle}
+                        value={form.full_name}
+                        onChange={(e) => setField("full_name", e.target.value)}
+                        maxLength={100}
+                        placeholder="As it appears on your licence"
+                        required
+                      />
+                    </SwapField>
+                    <SwapField
+                      label="Mobile number"
                       required
-                    />
+                      htmlFor="phone"
+                      hint="Must match your DVSA booking"
+                    >
+                      <input
+                        id="phone"
+                        type="tel"
+                        className={swapInputClass}
+                        style={swapInputStyle}
+                        value={form.phone}
+                        onChange={(e) => setField("phone", e.target.value)}
+                        maxLength={30}
+                        placeholder="07700 900 000"
+                        required
+                      />
+                    </SwapField>
                   </div>
-                  <div>
-                    <Label htmlFor="phone">Mobile number *</Label>
-                    <Input
-                      id="phone"
-                      type="tel"
-                      value={form.phone}
-                      onChange={(e) => setField("phone", e.target.value)}
-                      maxLength={30}
-                      required
-                    />
-                  </div>
-                  <div className="md:col-span-2">
-                    <Label htmlFor="email">Email *</Label>
-                    <Input
+                  <SwapField label="Email address" required htmlFor="email" className="mt-3">
+                    <input
                       id="email"
                       type="email"
+                      className={swapInputClass}
+                      style={swapInputStyle}
                       value={form.email}
                       onChange={(e) => setField("email", e.target.value)}
                       maxLength={255}
+                      placeholder="you@example.com"
                       required
                       readOnly={isEdit}
                     />
                     {isEdit && (
-                      <p className="text-xs text-muted-foreground mt-1">
+                      <p className="text-[11px] mt-1.5" style={{ color: swap.muted }}>
                         Email can't be changed here — contact us if you need to update it.
                       </p>
                     )}
-                  </div>
+                  </SwapField>
                 </div>
 
-                <div className="border-t pt-6 space-y-4">
-                  <div className="flex items-start gap-2">
-                    <Checkbox
-                      id="has_test_booked"
-                      checked={form.has_test_booked}
-                      onCheckedChange={(c) =>
-                        setField("has_test_booked", c === true)
-                      }
-                    />
-                    <Label
-                      htmlFor="has_test_booked"
-                      className="text-sm font-normal leading-tight"
+                {/* ---------- Section 2: Current test ---------- */}
+                <div className="p-6">
+                  <SectionHeader
+                    n={2}
+                    color={swap.blue}
+                    title="Your current test"
+                    subtitle="The slot you want to swap away from"
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => setField("has_test_booked", !form.has_test_booked)}
+                    className="flex items-start gap-3 w-full text-left mb-4 p-3.5"
+                    style={{
+                      background: form.has_test_booked ? swap.blueLight : swap.surface,
+                      border: `1.5px solid ${form.has_test_booked ? swap.blue : swap.border}`,
+                      borderRadius: 10,
+                    }}
+                  >
+                    <span
+                      className="flex items-center justify-center flex-shrink-0 mt-0.5"
+                      style={{
+                        width: 20,
+                        height: 20,
+                        borderRadius: 5,
+                        background: form.has_test_booked ? swap.blue : swap.white,
+                        border: form.has_test_booked ? "none" : `1.5px solid ${swap.borderDark}`,
+                      }}
                     >
-                      I already have a test date booked and want to swap it
-                    </Label>
-                  </div>
+                      {form.has_test_booked && (
+                        <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />
+                      )}
+                    </span>
+                    <span className="text-[13px] leading-snug" style={{ color: swap.charcoal }}>
+                      I already have a test date booked and{" "}
+                      <span className="font-semibold">want to swap it</span>
+                    </span>
+                  </button>
 
                   {form.has_test_booked && (
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <div className="md:col-span-2">
-                        <Label>Current test centre *</Label>
+                    <div className="space-y-3">
+                      <SwapField label="Current test centre" required>
                         <Select
                           value={form.current_centre_id}
                           onValueChange={(v) => setField("current_centre_id", v)}
                         >
-                          <SelectTrigger>
+                          <SelectTrigger
+                            className={swapInputClass + " h-auto"}
+                            style={swapInputStyle}
+                          >
                             <SelectValue placeholder="Select your test centre" />
                           </SelectTrigger>
                           <SelectContent>
@@ -333,111 +398,102 @@ export default function TestSwapRegister() {
                             ))}
                           </SelectContent>
                         </Select>
-                      </div>
-                      <div>
-                        <Label htmlFor="current_test_date">Current test date *</Label>
-                        <Input
-                          id="current_test_date"
-                          type="date"
-                          value={form.current_test_date}
-                          onChange={(e) =>
-                            setField("current_test_date", e.target.value)
-                          }
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="current_test_time">Current test time *</Label>
-                        <Input
-                          id="current_test_time"
-                          type="time"
-                          value={form.current_test_time}
-                          onChange={(e) =>
-                            setField("current_test_time", e.target.value)
-                          }
-                        />
+                      </SwapField>
+                      <div className="grid gap-3 md:grid-cols-2">
+                        <SwapField label="Current test date" required htmlFor="current_test_date">
+                          <input
+                            id="current_test_date"
+                            type="date"
+                            className={swapInputClass}
+                            style={swapInputStyle}
+                            value={form.current_test_date}
+                            onChange={(e) => setField("current_test_date", e.target.value)}
+                          />
+                        </SwapField>
+                        <SwapField label="Current test time" required htmlFor="current_test_time">
+                          <input
+                            id="current_test_time"
+                            type="time"
+                            className={swapInputClass}
+                            style={swapInputStyle}
+                            value={form.current_test_time}
+                            onChange={(e) => setField("current_test_time", e.target.value)}
+                          />
+                        </SwapField>
                       </div>
                     </div>
                   )}
                 </div>
 
-                <div className="border-t pt-6">
-                  <h2 className="font-semibold mb-3">When would you like to test instead?</h2>
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div>
-                      <Label htmlFor="earliest_new_date">Earliest acceptable date *</Label>
-                      <Input
+                {/* ---------- Section 3: Preferred dates ---------- */}
+                <div className="p-6">
+                  <SectionHeader
+                    n={3}
+                    color={swap.red}
+                    title="When would you like instead?"
+                    subtitle="The date range you'd be happy to receive"
+                  />
+
+                  <SwapInfoBox>
+                    Your{" "}
+                    <span className="font-semibold">
+                      booking reference, payment and special requirements
+                    </span>{" "}
+                    all stay the same. Only your test date, time and centre will change.
+                  </SwapInfoBox>
+
+                  <div className="grid gap-3 md:grid-cols-[1fr_auto_1fr] md:items-end mb-3">
+                    <SwapField label="Earliest date" required htmlFor="earliest_new_date">
+                      <input
                         id="earliest_new_date"
                         type="date"
+                        className={swapInputClass}
+                        style={swapInputStyle}
                         value={form.earliest_new_date}
-                        onChange={(e) =>
-                          setField("earliest_new_date", e.target.value)
-                        }
+                        onChange={(e) => setField("earliest_new_date", e.target.value)}
                         required
                       />
-                    </div>
-                    <div>
-                      <Label htmlFor="latest_new_date">Latest acceptable date *</Label>
-                      <Input
+                    </SwapField>
+                    <DateArrow />
+                    <SwapField label="Latest date" required htmlFor="latest_new_date">
+                      <input
                         id="latest_new_date"
                         type="date"
+                        className={swapInputClass}
+                        style={swapInputStyle}
                         value={form.latest_new_date}
-                        onChange={(e) =>
-                          setField("latest_new_date", e.target.value)
-                        }
+                        onChange={(e) => setField("latest_new_date", e.target.value)}
                         required
                       />
-                    </div>
+                    </SwapField>
                   </div>
-                </div>
 
-                <div className="border-t pt-6">
-                  <Label htmlFor="notes">Anything else? (optional)</Label>
-                  <Textarea
-                    id="notes"
-                    rows={3}
-                    value={form.notes}
-                    onChange={(e) => setField("notes", e.target.value)}
-                    maxLength={1000}
-                    placeholder="Other test centres you'd accept, weekday vs weekend preference, etc."
-                  />
+                  <SwapField label="Anything else?" optional htmlFor="notes">
+                    <Textarea
+                      id="notes"
+                      rows={4}
+                      value={form.notes}
+                      onChange={(e) => setField("notes", e.target.value)}
+                      maxLength={1000}
+                      placeholder="Other centres you'd accept, weekday vs weekend, morning or afternoon preference..."
+                      className="rounded-[9px] border-[1.5px] text-sm bg-white"
+                      style={{ borderColor: swap.border, color: swap.charcoal, minHeight: 96 }}
+                    />
+                  </SwapField>
                 </div>
+              </SwapFormCard>
 
-                <div className="flex items-start gap-2 border-t pt-6">
-                  <Checkbox
-                    id="consent_given"
-                    checked={form.consent_given}
-                    onCheckedChange={(c) =>
-                      setField("consent_given", c === true)
-                    }
-                    required
-                  />
-                  <Label
-                    htmlFor="consent_given"
-                    className="text-sm font-normal leading-tight"
-                  >
-                    I agree to be contacted about potential swap matches and
-                    accept the{" "}
-                    <Link to="/privacy-policy" className="underline">
-                      privacy policy
-                    </Link>
-                    .
-                  </Label>
-                </div>
-
-                <Button
-                  type="submit"
-                  size="lg"
-                  className="w-full"
-                  disabled={submitting}
-                >
-                  {submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                  {isEdit ? "Save changes" : "Join the swap pool"}
-                </Button>
-              </form>
-            </>
-          )}
-        </div>
-      </section>
-    </MainLayout>
+              <SwapFormFooter
+                consentGiven={form.consent_given}
+                onConsentChange={(v) => setField("consent_given", v)}
+                canSubmit={canSubmit}
+                submitting={submitting}
+                submitLabel={isEdit ? "Save changes" : "Join the swap pool"}
+              />
+            </form>
+          </>
+        )}
+      </main>
+    </div>
   );
 }
