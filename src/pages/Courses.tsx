@@ -620,6 +620,12 @@ export default function Courses() {
       const instructorsNearby = instructors.filter((instructor) => {
         if (!instructorIds.has(instructor.id)) return false;
 
+        if (instructor.is_network_placeholder) {
+          return !!district && instructor.placeholder_district === district;
+        }
+
+        if (!location) return false;
+
         const instructorPostcode = instructor.home_postcode.replace(/\s+/g, "").toUpperCase();
         const cached = fullGeoCache[instructorPostcode];
         const instructorLocation = cached
@@ -637,6 +643,11 @@ export default function Courses() {
 
         return distance <= radiusMiles;
       });
+
+      // If only placeholders match, treat today as the first "available" date —
+      // they're enquiry-only so the standard availability resolver returns nothing.
+      const hasRealNearby = instructorsNearby.some((i) => !i.is_network_placeholder);
+      const hasPlaceholderNearby = instructorsNearby.some((i) => i.is_network_placeholder);
 
       let firstAvailable = findFirstAvailableDate(instructorsNearby, availabilitySources);
       let usedFallback = false;
