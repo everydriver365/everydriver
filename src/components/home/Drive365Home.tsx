@@ -529,35 +529,6 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
         </div>
       </section>
       {afterLearningPaths}
-      {/* HomeReviews */}
-      <section style={{ padding: "56px 5%", background: "#F0F2F5", width: "100%" }}>
-        <div style={{ fontSize: 11, fontWeight: 600, color: "#1A52A0", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 6 }}>
-          Reviews
-        </div>
-        <h2 style={{ fontSize: 32, fontWeight: 700, color: "#0F2044", letterSpacing: -0.5, marginBottom: 10 }}>
-          What our learners say
-        </h2>
-        <p style={{ fontSize: 15, color: "#5F6B7A", lineHeight: 1.6, marginBottom: 32 }}>
-          Over 3,200 five-star reviews from learners across the UK.
-        </p>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px,1fr))", gap: 16 }}>
-          {REVIEWS.map((rev) => (
-            <div key={rev.name} style={{ background: "#FFF", borderRadius: 14, padding: 20, border: "0.5px solid #E0E4EB" }}>
-              <div style={{ color: "#F59E0B", fontSize: 13, letterSpacing: 1, marginBottom: 10 }}>★★★★★</div>
-              <p style={{ fontSize: 13, color: "#3D4A5C", lineHeight: 1.65, marginBottom: 14 }}>{rev.text}</p>
-              <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-                <div style={{ width: 32, height: 32, borderRadius: "50%", background: rev.color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 600, color: "#FFF", flexShrink: 0 }}>
-                  {rev.initials}
-                </div>
-                <div>
-                  <div style={{ fontSize: 13, fontWeight: 500, color: "#0F2044" }}>{rev.name}</div>
-                  <div style={{ fontSize: 11, color: "#5F6B7A" }}>{rev.sub}</div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
 
       {/* HomeSwapBand */}
       <section
