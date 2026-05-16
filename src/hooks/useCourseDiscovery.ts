@@ -275,11 +275,21 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      let instructorsQuery = supabase.from("public_instructors").select("*").eq("is_active", true);
+      // Lift PostgREST's 1000-row default so districts with many placeholder
+      // instructors / courses don't get silently truncated.
+      let instructorsQuery = supabase
+        .from("public_instructors")
+        .select("*")
+        .eq("is_active", true)
+        .range(0, 49999);
       if (instructorId) {
         instructorsQuery = instructorsQuery.eq("id", instructorId);
       }
-      let coursesQuery = supabase.from("instructor_courses").select("*").eq("is_active", true);
+      let coursesQuery = supabase
+        .from("instructor_courses")
+        .select("*")
+        .eq("is_active", true)
+        .range(0, 49999);
       if (instructorId) {
         coursesQuery = coursesQuery.eq("instructor_id", instructorId);
       }
