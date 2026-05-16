@@ -102,7 +102,7 @@ export function useInstructorAvailabilitySearch(params: SearchParams) {
       const [instructorsRes, sources] = await Promise.all([
         supabase
           .from("public_instructors")
-          .select("id, name, car_type, home_postcode, available_from, buffer_minutes, slot_increment_minutes, is_network_placeholder")
+          .select("id, name, car_type, home_postcode, available_from, buffer_minutes")
           .in("id", targetIds),
         loadCourseAvailabilitySources(supabase, targetIds, fromDateObj, toDateObj),
       ]);
