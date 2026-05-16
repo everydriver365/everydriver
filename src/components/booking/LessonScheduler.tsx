@@ -179,6 +179,21 @@ export function LessonScheduler({
     };
   }, [instructorId]);
 
+  // Re-fetch availability when the tab regains focus so a manual block,
+  // Google Calendar event, or lesson added in the last few seconds can't
+  // sneak past as a bookable slot.
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState === "visible") fetchAvailability();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", onVisible);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", onVisible);
+    };
+  }, [instructorId, bookingAdvanceDays]);
+
   // Navigate to the first available date's month when data loads
   useEffect(() => {
     if (!loading && workingHours.length > 0) {
