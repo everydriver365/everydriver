@@ -245,12 +245,18 @@ export default function AvailabilitySyncHealth() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
           <StatCard label="Total" value={stats.total} icon={<CalendarClock className="w-4 h-4" />} />
           <StatCard
             label="Healthy"
             value={stats.healthy}
             icon={<CheckCircle2 className="w-4 h-4 text-green-600" />}
+          />
+          <StatCard
+            label="Bad day numbering"
+            value={stats.badDow}
+            icon={<AlertTriangle className="w-4 h-4 text-red-600" />}
+            highlight={stats.badDow > 0}
           />
           <StatCard
             label="Drift"
