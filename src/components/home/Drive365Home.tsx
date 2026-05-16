@@ -35,7 +35,7 @@ const COURSES = [
   {
     id: "intensive",
     badge: "Fast Track",
-    badgeColor: "#1D9E75",
+    badgeColor: "#2D3FE7",
     title: "Intensive Courses",
     description:
       "Full immersion experience. Learn everything in concentrated sessions and pass your test in record time.",
@@ -44,7 +44,7 @@ const COURSES = [
     priceUnit: null as string | null,
     ctaLabel: "View courses",
     ctaHref: "/courses?type=intensive",
-    ctaBg: "#191C2F",
+    ctaBg: "#2D3FE7",
     featured: false,
     sceneBg: "#3E57D9",
   },
@@ -67,7 +67,7 @@ const COURSES = [
   {
     id: "weekly",
     badge: "Flexible",
-    badgeColor: "#3B6D11",
+    badgeColor: "#2D3FE7",
     title: "Weekly Lessons",
     description:
       "Traditional approach for busy schedules. Build confidence gradually with regular weekly sessions at times that suit you.",
@@ -76,7 +76,7 @@ const COURSES = [
     priceUnit: "/hour",
     ctaLabel: "View lessons",
     ctaHref: "/courses?type=weekly",
-    ctaBg: "#191C2F",
+    ctaBg: "#2D3FE7",
     featured: false,
     sceneBg: "#1D9E75",
   },
@@ -285,7 +285,7 @@ const CourseCardImage: React.FC<{ courseId: string; badge: string; badgeColor: s
         fontSize: 11,
         fontWeight: 600,
         padding: "4px 10px",
-        borderRadius: 999,
+        borderRadius: 2,
         letterSpacing: 0.2,
       }}
     >
@@ -482,7 +482,7 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
                 background: "#FFF",
                 borderRadius: 18,
                 overflow: "hidden",
-                border: course.featured ? "2px solid #3E57D9" : "1px solid #E9E5E8",
+                border: course.featured ? "2px solid #2D3FE7" : "1px solid #E9E5E8",
                 display: "flex",
                 flexDirection: "column",
               }}
@@ -494,15 +494,15 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
                 <div style={{ display: "flex", flexDirection: "column", gap: 5, marginBottom: 18 }}>
                   {course.features.map((f) => (
                     <div key={f} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#51567A" }}>
-                      <Check size={11} color="#3E57D9" strokeWidth={1.8} />
+                      <Check size={11} color="#2D3FE7" strokeWidth={1.8} />
                       {f}
                     </div>
                   ))}
                 </div>
                 <div style={{ marginTop: "auto" }}>
-                  <div style={{ fontSize: 11, color: "#51567A", marginBottom: 1 }}>From</div>
+                  <div style={{ fontSize: 11, color: "#9CA3AF", marginBottom: 1 }}>From</div>
                   <div>
-                    <span style={{ fontSize: 26, fontWeight: 700, color: "#191C2F", letterSpacing: -0.5 }}>{course.priceFrom}</span>
+                    <span style={{ fontSize: 20, fontWeight: 700, color: "#0A0A0A", letterSpacing: -0.5 }}>{course.priceFrom}</span>
                     {course.priceUnit && <span style={{ fontSize: 12, color: "#51567A" }}>{course.priceUnit}</span>}
                   </div>
                 </div>
