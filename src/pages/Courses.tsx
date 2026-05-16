@@ -405,10 +405,11 @@ export default function Courses() {
   // Google Calendar busy events + existing scheduled lessons + manual blocks).
   // Each instructor's check uses their own minimum lesson length so search
   // matches what the booking calendar can actually offer.
-  const isDateAvailable = useCallback((day: Date, instructorsList: Instructor[], src: CourseAvailabilitySources) => {
+  const isDateAvailable = useCallback((day: Date, instructorsList: Instructor[], src: CourseAvailabilitySources, candidatePickup?: { lat: number; lng: number } | null) => {
     return instructorsList.some((instructor) =>
       hasInstructorAvailabilityOn(instructor, day, src, {
         minFreeMinutes: instructor.is_network_placeholder ? undefined : instructorMinSlotMinutes(instructor),
+        candidatePickup: candidatePickup ?? undefined,
       }),
     );
   }, []);
