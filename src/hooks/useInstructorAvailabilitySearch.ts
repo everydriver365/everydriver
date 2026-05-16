@@ -2,14 +2,16 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format, addDays, startOfDay } from "date-fns";
 import {
-  buildDayConflicts,
-  computeSlotResult,
   describeReason,
   fromMinutes,
-  toMinutes,
   type RejectReason,
   type TimeOfDay,
-} from "@/lib/availabilityCore";
+} from "@/lib/availabilityEngine";
+import {
+  loadCourseAvailabilitySources,
+  computeDaySlots,
+  type InstructorLite,
+} from "@/lib/courseAvailability";
 
 export type { TimeOfDay };
 
