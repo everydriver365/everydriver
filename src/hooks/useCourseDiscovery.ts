@@ -27,6 +27,18 @@ export interface Instructor {
   is_active: boolean;
   available_from: string | null;
   buffer_minutes?: number | null;
+  is_network_placeholder?: boolean | null;
+  placeholder_district?: string | null;
+  booking_mode?: string | null;
+}
+
+// Extract the UK postcode district (outcode) from any postcode string.
+// e.g. "WD17 3AA" -> "WD17", "sw1a 1aa" -> "SW1A".
+export function extractPostcodeDistrict(raw: string | null | undefined): string | null {
+  if (!raw) return null;
+  const cleaned = raw.replace(/\s+/g, "").toUpperCase();
+  const m = cleaned.match(/^([A-Z]{1,2}[0-9][A-Z0-9]?)/);
+  return m ? m[1] : null;
 }
 
 export interface InstructorCourse {
@@ -401,28 +413,33 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
     }
   };
 
-  // Filter instructors by location when a postcode search is active
+  // Filter instructors by location when a postcode search is active.
+  // Placeholders are matched purely by postcode-district (no geocoding needed).
   const instructorsInArea = useMemo(() => {
     if (!userLocation) return instructors;
-    
+
     const radiusMiles = parseInt(radius);
-    
+    const searchedDistrict = extractPostcodeDistrict(searchedPostcode);
+
     return instructors.filter((instructor) => {
+      if (instructor.is_network_placeholder) {
+        return !!searchedDistrict && instructor.placeholder_district === searchedDistrict;
+      }
       const instructorPostcode = instructor.home_postcode.replace(/\s+/g, "").toUpperCase();
       const instructorLocation = geoCache[instructorPostcode];
-      
+
       if (!instructorLocation) return false;
-      
+
       const distance = calculateDistance(
         userLocation.lat,
         userLocation.lng,
         instructorLocation.lat,
         instructorLocation.lng
       );
-      
+
       return distance <= radiusMiles;
     });
-  }, [instructors, userLocation, radius, geoCache]);
+  }, [instructors, userLocation, radius, geoCache, searchedPostcode]);
 
   // Upcoming available dates across the next ~6 months (cap 12 dates).
   // Delegates to hasInstructorAvailabilityOn so calendar dots match the
@@ -467,9 +484,17 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
 
     const relevantInstructors = userLocation ? instructorsInArea : instructors;
 
+    // If the only instructors in the searched area are network placeholders,
+    // every future day is "available" (the pupil submits an enquiry rather
+    // than booking a specific slot).
+    const realInArea = relevantInstructors.filter((i) => !i.is_network_placeholder);
+    const placeholdersOnly =
+      !!userLocation && realInArea.length === 0 && relevantInstructors.length > 0;
+
     return allDays.filter((day) => {
       if (isBefore(day, today)) return false;
-      return relevantInstructors.some((instructor) =>
+      if (placeholdersOnly) return true;
+      return realInArea.some((instructor) =>
         hasInstructorAvailabilityOn(instructor as InstructorLite, day, sources),
       );
     });
@@ -499,9 +524,12 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
     const courses: CourseWithInstructor[] = [];
 
     for (const instructor of instructors) {
-      // Single source of truth: same resolver as calendar dots and the
-      // booking-time guard. Honours overrides, blocks, GCal, lessons, buffers.
-      if (!hasInstructorAvailabilityOn(instructor as InstructorLite, selectedDate, sources)) {
+      const isPlaceholder = !!instructor.is_network_placeholder;
+      // Placeholders are enquiry-only "network" cards — they have no working
+      // hours, calendar, or lessons, so the standard availability resolver
+      // would always reject them. We treat them as always available on the
+      // selected date and route the user through the enquiry flow.
+      if (!isPlaceholder && !hasInstructorAvailabilityOn(instructor as InstructorLite, selectedDate, sources)) {
         continue;
       }
 
@@ -567,28 +595,50 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
     });
   }, [coursesForSelectedDate, userLocation, geoCache]);
 
-  const filteredCourses = coursesWithDistance
-    .filter((course) => {
-      if (transmission !== "all") {
-        const carType = course.instructor.car_type.toLowerCase();
-        if (transmission === "manual" && !carType.includes("manual") && carType !== "both") {
-          return false;
-        }
-        if (transmission === "automatic" && !carType.includes("automatic") && carType !== "both") {
-          return false;
-        }
-      }
+  const filteredCourses = useMemo(() => {
+    const searchedDistrict = extractPostcodeDistrict(searchedPostcode);
 
-      if (userLocation && course.distance !== undefined) {
-        if (course.distance > parseInt(radius)) {
-          return false;
-        }
-      }
-
+    const passesTransmission = (course: CourseWithInstructor) => {
+      if (transmission === "all") return true;
+      const carType = course.instructor.car_type.toLowerCase();
+      if (transmission === "manual" && !carType.includes("manual") && carType !== "both") return false;
+      if (transmission === "automatic" && !carType.includes("automatic") && carType !== "both") return false;
       return true;
-    })
-    .sort((a, b) => {
-      // Premium instructors always come first
+    };
+
+    // Split real vs placeholder so we can run different rules on each.
+    const realCourses: CourseWithInstructor[] = [];
+    const placeholderCourses: CourseWithInstructor[] = [];
+    for (const course of coursesWithDistance) {
+      if (!passesTransmission(course)) continue;
+      if (course.instructor.is_network_placeholder) {
+        placeholderCourses.push(course);
+      } else {
+        // Real instructors honour the radius filter as before.
+        if (userLocation && course.distance !== undefined && course.distance > parseInt(radius)) continue;
+        realCourses.push(course);
+      }
+    }
+
+    // Placeholders only ever appear when:
+    //   1. the user has searched a postcode,
+    //   2. their district matches the searched postcode's district, AND
+    //   3. there are zero real courses in the result set (fallback only).
+    const visiblePlaceholders =
+      userLocation && searchedDistrict && realCourses.length === 0
+        ? placeholderCourses.filter((c) => c.instructor.placeholder_district === searchedDistrict)
+        : [];
+
+    const combined = [...realCourses, ...visiblePlaceholders];
+
+    return combined.sort((a, b) => {
+      const aPlace = !!a.instructor.is_network_placeholder;
+      const bPlace = !!b.instructor.is_network_placeholder;
+      // Placeholders always sort to the bottom regardless of other rules.
+      if (aPlace && !bPlace) return 1;
+      if (!aPlace && bPlace) return -1;
+
+      // Premium instructors always come first amongst real instructors.
       if (a.isPremium && !b.isPremium) return -1;
       if (!a.isPremium && b.isPremium) return 1;
       if (a.isPremium && b.isPremium) {
@@ -599,8 +649,6 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
         case "soonest":
           return a.bookableDate.getTime() - b.bookableDate.getTime();
         case "price-low": {
-          // No hard-coded fallback: instructors without a configured hourly_rate
-          // are sorted to the end so we never invent a price.
           const rateA = a.instructor.hourly_rate;
           const rateB = b.instructor.hourly_rate;
           if (rateA == null && rateB == null) return 0;
@@ -616,6 +664,7 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
           return 0;
       }
     });
+  }, [coursesWithDistance, transmission, radius, userLocation, searchedPostcode, sortBy]);
 
   return {
     postcode,

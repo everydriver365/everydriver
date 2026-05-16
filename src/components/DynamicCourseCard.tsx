@@ -165,6 +165,12 @@ export function DynamicCourseCard({
               <span className="text-xs font-bold tracking-wide">Featured</span>
             </div>
           )}
+          {/* Network placeholder badge — enquiry-only fallback for postcodes with no real instructor yet */}
+          {(instructor as any).is_network_placeholder && (
+            <div className="absolute top-4 left-4 z-30 flex items-center gap-1 bg-slate-900/90 text-white px-2.5 py-1 rounded-md shadow-lg">
+              <span className="text-xs font-bold tracking-wide">Drive365 Network — Enquire</span>
+            </div>
+          )}
 
           {/* Hero Image — locked 4:3, smoothly clamped height across breakpoints */}
           <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted max-h-[clamp(14rem,31vw,21rem)]">

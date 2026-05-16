@@ -9149,6 +9149,7 @@ export type Database = {
           insurance_provider: string | null
           intake_questions_enabled: boolean | null
           is_active: boolean
+          is_network_placeholder: boolean
           is_online: boolean | null
           klarna_enabled: boolean | null
           last_active_at: string | null
@@ -9176,6 +9177,7 @@ export type Database = {
           payment_qr_url_pupil_pays: string | null
           personal_website_url: string | null
           phone: string | null
+          placeholder_district: string | null
           prefer_earliest_slot: boolean
           preferred_language: string | null
           preferred_lesson_length: number
@@ -9353,6 +9355,7 @@ export type Database = {
           insurance_provider?: string | null
           intake_questions_enabled?: boolean | null
           is_active?: boolean
+          is_network_placeholder?: boolean
           is_online?: boolean | null
           klarna_enabled?: boolean | null
           last_active_at?: string | null
@@ -9380,6 +9383,7 @@ export type Database = {
           payment_qr_url_pupil_pays?: string | null
           personal_website_url?: string | null
           phone?: string | null
+          placeholder_district?: string | null
           prefer_earliest_slot?: boolean
           preferred_language?: string | null
           preferred_lesson_length?: number
@@ -9557,6 +9561,7 @@ export type Database = {
           insurance_provider?: string | null
           intake_questions_enabled?: boolean | null
           is_active?: boolean
+          is_network_placeholder?: boolean
           is_online?: boolean | null
           klarna_enabled?: boolean | null
           last_active_at?: string | null
@@ -9584,6 +9589,7 @@ export type Database = {
           payment_qr_url_pupil_pays?: string | null
           personal_website_url?: string | null
           phone?: string | null
+          placeholder_district?: string | null
           prefer_earliest_slot?: boolean
           preferred_language?: string | null
           preferred_lesson_length?: number
@@ -18871,6 +18877,7 @@ export type Database = {
           instant_bank_pay_enabled: boolean | null
           instructor_grade: string | null
           is_active: boolean | null
+          is_network_placeholder: boolean | null
           klarna_enabled: boolean | null
           lat: number | null
           linkedin_url: string | null
@@ -18883,6 +18890,7 @@ export type Database = {
           odd_hours_surcharge_amount: number | null
           personal_website_url: string | null
           phone: string | null
+          placeholder_district: string | null
           preferred_lesson_length: number | null
           profile_image_url: string | null
           pupil_app_dark_mode: boolean | null
@@ -18947,6 +18955,7 @@ export type Database = {
           instant_bank_pay_enabled?: boolean | null
           instructor_grade?: string | null
           is_active?: boolean | null
+          is_network_placeholder?: boolean | null
           klarna_enabled?: boolean | null
           lat?: number | null
           linkedin_url?: string | null
@@ -18959,6 +18968,7 @@ export type Database = {
           odd_hours_surcharge_amount?: number | null
           personal_website_url?: string | null
           phone?: string | null
+          placeholder_district?: string | null
           preferred_lesson_length?: number | null
           profile_image_url?: string | null
           pupil_app_dark_mode?: boolean | null
@@ -19023,6 +19033,7 @@ export type Database = {
           instant_bank_pay_enabled?: boolean | null
           instructor_grade?: string | null
           is_active?: boolean | null
+          is_network_placeholder?: boolean | null
           klarna_enabled?: boolean | null
           lat?: number | null
           linkedin_url?: string | null
@@ -19035,6 +19046,7 @@ export type Database = {
           odd_hours_surcharge_amount?: number | null
           personal_website_url?: string | null
           phone?: string | null
+          placeholder_district?: string | null
           preferred_lesson_length?: number | null
           profile_image_url?: string | null
           pupil_app_dark_mode?: boolean | null
