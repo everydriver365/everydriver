@@ -573,7 +573,7 @@ function FindSwapResultCard({
           <div>
             <div
               className="text-[16px] font-bold leading-tight"
-              style={{ color: t.navy, letterSpacing: "-0.3px" }}
+              style={{ color: t.charcoal, letterSpacing: "-0.3px" }}
             >
               {swap.dateFormatted}
             </div>
