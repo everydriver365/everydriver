@@ -538,7 +538,7 @@ export default function Courses() {
     if (!selectedDate) return [];
     const courses: CourseWithInstructor[] = [];
     for (const instructor of relevantInstructors) {
-      if (!instructor.is_network_placeholder && !hasInstructorAvailabilityOn(instructor, selectedDate, availabilitySources)) continue;
+      if (!instructor.is_network_placeholder && !hasInstructorAvailabilityOn(instructor, selectedDate, availabilitySources, { minFreeMinutes: instructorMinSlotMinutes(instructor) })) continue;
       const offeredCourses = instructorCourses.filter((c) => c.instructor_id === instructor.id);
       for (const hours of DISPLAY_HOURS) {
         const courseData = offeredCourses.find((c) => c.course_hours === hours);
