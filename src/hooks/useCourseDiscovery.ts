@@ -479,9 +479,17 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
 
     const relevantInstructors = userLocation ? instructorsInArea : instructors;
 
+    // If the only instructors in the searched area are network placeholders,
+    // every future day is "available" (the pupil submits an enquiry rather
+    // than booking a specific slot).
+    const realInArea = relevantInstructors.filter((i) => !i.is_network_placeholder);
+    const placeholdersOnly =
+      !!userLocation && realInArea.length === 0 && relevantInstructors.length > 0;
+
     return allDays.filter((day) => {
       if (isBefore(day, today)) return false;
-      return relevantInstructors.some((instructor) =>
+      if (placeholdersOnly) return true;
+      return realInArea.some((instructor) =>
         hasInstructorAvailabilityOn(instructor as InstructorLite, day, sources),
       );
     });
