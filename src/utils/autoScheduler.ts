@@ -14,23 +14,6 @@ interface DateOverride {
   end_time?: string;
 }
 
-interface ScheduledLesson {
-  lesson_date: string;
-  start_time: string;
-  duration_minutes: number;
-}
-
-interface ExternalEvent {
-  event_date: string;
-  start_time: string;
-  end_time: string;
-}
-
-interface ManualBlock {
-  block_date: string;
-  start_time: string;
-  end_time: string;
-}
 
 interface SlotCandidate {
   date: string;
