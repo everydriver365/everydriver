@@ -409,7 +409,7 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
                 </div>
               </div>
             </div>
-            <div className="d365-spacer" aria-hidden />
+            
           </div>
         </div>
       </section>
