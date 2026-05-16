@@ -166,6 +166,17 @@ export function LessonScheduler({
     fetchTravelTime();
   }, [instructorHomePostcode, pupilPostcode]);
 
+  // Geocode pupil pickup postcode once so the engine can pad slots with
+  // realistic travel time between every existing booked lesson and this one.
+  useEffect(() => {
+    let cancelled = false;
+    if (!pupilPostcode) { setCandidatePickup(null); return; }
+    import("@/lib/travelTime").then(({ geocodePostcode }) =>
+      geocodePostcode(pupilPostcode).then((c) => { if (!cancelled) setCandidatePickup(c); })
+    );
+    return () => { cancelled = true; };
+  }, [pupilPostcode]);
+
   // Effective buffer for first-of-day slots: max(travel, buffer)
   const effectiveFirstSlotBuffer = useMemo(() => {
     return Math.max(travelBufferMinutes ?? 0, bufferMinutes);
