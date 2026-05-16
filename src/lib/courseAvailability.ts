@@ -62,6 +62,22 @@ export type ManualBlockRow = {
   end_datetime: string;
 };
 
+/**
+ * Coords-only view of a booked lesson — used ONLY for inter-lesson travel
+ * padding. Busyness still comes from the calendar event (rule 5); this row
+ * just supplies the location metadata that GCal doesn't carry.
+ */
+export type BookedLessonGeoRow = {
+  instructor_id: string;
+  lesson_date: string;   // yyyy-MM-dd
+  start_time: string;    // HH:mm[:ss]
+  duration_minutes: number;
+  pickup_lat: number | null;
+  pickup_lng: number | null;
+  dropoff_lat: number | null;
+  dropoff_lng: number | null;
+};
+
 export interface InstructorLite {
   id: string;
   available_from?: string | null;
@@ -75,6 +91,8 @@ export interface CourseAvailabilitySources {
   overrides: DateOverrideRow[];
   calendarEvents: CalendarEventRow[];
   manualBlocks: ManualBlockRow[];
+  /** Booked-lesson coords for travel-time padding. May be empty. */
+  bookedLessonGeo: BookedLessonGeoRow[];
 }
 
 // ---------------------------------------------------------------------------
