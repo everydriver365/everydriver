@@ -475,15 +475,20 @@ export default function Courses() {
 
     const allDays = eachDayOfInterval({ start: monthStart, end: monthEnd });
 
-    // For each day, check if any relevant instructor (in area + has courses) is available
+    // Placeholders are enquiry-only — when the only matches in area are
+    // placeholders, treat every future day as available.
+    const realInArea = relevantInstructors.filter((i) => !i.is_network_placeholder);
+    const placeholdersOnly =
+      !!(userLocation || searchedPostcode) && realInArea.length === 0 && relevantInstructors.length > 0;
+
     return allDays.filter((day) => {
       if (isBefore(day, today)) return false;
-
-      return relevantInstructors.some((instructor) =>
+      if (placeholdersOnly) return true;
+      return realInArea.some((instructor) =>
         hasInstructorAvailabilityOn(instructor, day, availabilitySources)
       );
     });
-  }, [selectedMonth, relevantInstructors, availabilitySources]);
+  }, [selectedMonth, relevantInstructors, availabilitySources, userLocation, searchedPostcode]);
 
   // Calculate course counts for each available date in the month
   const courseCountsInMonth = useMemo(() => {
