@@ -161,64 +161,9 @@ function getOverride(
   return null;
 }
 
-/** Clip an ISO interval to [dateStr] using LOCAL dates (browser context). */
-function clipToDay(startIso: string, endIso: string, dateStr: string): Window | null {
-  const sd = new Date(startIso);
-  const ed = new Date(endIso);
-  if (isNaN(sd.getTime()) || isNaN(ed.getTime())) return null;
-  const sStr = format(sd, "yyyy-MM-dd");
-  const eStr = format(ed, "yyyy-MM-dd");
-  if (sStr > dateStr || eStr < dateStr) return null;
-  const startMin = sStr === dateStr ? sd.getHours() * 60 + sd.getMinutes() : 0;
-  const endMin   = eStr === dateStr ? ed.getHours() * 60 + ed.getMinutes() : 24 * 60;
-  if (endMin <= startMin) return null;
-  return { start: startMin, end: endMin };
-}
+// (Conflict clipping / subtraction now handled inside availabilityEngine via
+//  buildDayConflicts + resolveAvailability — see computeDaySlots below.)
 
-function getDayConflicts(
-  instructorId: string,
-  dateStr: string,
-  src: CourseAvailabilitySources,
-  padMinutes = 0,
-): Window[] {
-  const conflicts: Window[] = [];
-  const pad = Math.max(0, padMinutes);
-
-  for (const b of src.manualBlocks) {
-    if (b.instructor_id !== instructorId) continue;
-    const c = clipToDay(b.start_datetime, b.end_datetime, dateStr);
-    if (c) conflicts.push({ start: c.start - pad, end: c.end + pad });
-  }
-
-  for (const ev of src.calendarEvents) {
-    if (ev.instructor_id !== instructorId) continue;
-    if (ev.is_busy === false) continue;
-    if (isAllDayLikeEvent(ev.start_time, ev.end_time)) continue;
-    const c = clipToDay(ev.start_time, ev.end_time, dateStr);
-    if (c) conflicts.push({ start: c.start - pad, end: c.end + pad });
-  }
-
-  return conflicts;
-}
-
-function subtractConflicts(windows: Window[], conflicts: Window[]): Window[] {
-  if (windows.length === 0 || conflicts.length === 0) return windows.map((w) => ({ ...w }));
-  const merged = mergeWindows(conflicts);
-  const free: Window[] = [];
-
-  for (const w of windows) {
-    let cur = w.start;
-    for (const c of merged) {
-      if (c.end <= cur || c.start >= w.end) { if (c.start >= w.end) break; continue; }
-      if (c.start > cur) free.push({ start: cur, end: Math.min(c.start, w.end) });
-      cur = Math.max(cur, c.end);
-      if (cur >= w.end) break;
-    }
-    if (cur < w.end) free.push({ start: cur, end: w.end });
-  }
-
-  return free.filter((s) => s.end - s.start > 0);
-}
 
 /** Resolve the working windows for one instructor on one day, honouring overrides. */
 function resolveWindowsForDay(
