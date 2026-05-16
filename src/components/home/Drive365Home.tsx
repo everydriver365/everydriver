@@ -328,6 +328,9 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
           .d365-feat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
           .d365-feat { background: #EAF0FF; padding: 20px; border-radius: 4px; display: flex; flex-direction: column; gap: 12px; }
           .d365-feat-full { grid-column: 1 / -1; }
+          .d365-feat-row-layout { flex-direction: row; align-items: stretch; gap: 16px; }
+          .d365-feat-row-layout .d365-feat-thumb { width: 140px; aspect-ratio: 1 / 1; flex: 0 0 140px; object-fit: cover; border-radius: 4px; display: block; background: #9FD3E8; }
+          .d365-feat-body { display: flex; flex-direction: column; gap: 8px; flex: 1; }
           .d365-feat img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 4px; display: block; background: #9FD3E8; }
           .d365-feat h3 { font-size: 16px; font-weight: 800; color: #0A0A0A; text-transform: uppercase; letter-spacing: 0.02em; margin: 0; font-family: Inter, "Helvetica Neue", system-ui, sans-serif; }
           .d365-feat p { font-size: 14px; line-height: 1.5; color: #4B5563; margin: 0; }
@@ -390,17 +393,20 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
                   <button type="button" className="d365-feat-btn">Read more</button>
                 </Link>
               </div>
-              <div className="d365-feat d365-feat-full">
+              <div className="d365-feat d365-feat-full d365-feat-row-layout">
                 <img
+                  className="d365-feat-thumb"
                   src={weeklyCourseImg}
                   alt="Learner driver having a regular weekly driving lesson with a friendly instructor"
                   onError={(e) => { (e.currentTarget as HTMLImageElement).style.visibility = "hidden"; }}
                 />
-                <h3>Weekly Lessons</h3>
-                <p>Briefly and concisely explain what you do for your audience.</p>
-                <Link to="/courses?type=weekly" style={{ marginTop: "auto" }}>
-                  <button type="button" className="d365-feat-btn">Read more</button>
-                </Link>
+                <div className="d365-feat-body">
+                  <h3>Weekly Lessons</h3>
+                  <p>Briefly and concisely explain what you do for your audience.</p>
+                  <Link to="/courses?type=weekly" style={{ marginTop: "auto" }}>
+                    <button type="button" className="d365-feat-btn">Read more</button>
+                  </Link>
+                </div>
               </div>
             </div>
             <div className="d365-spacer" aria-hidden />
