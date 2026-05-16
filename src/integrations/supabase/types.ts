@@ -15943,6 +15943,8 @@ export type Database = {
           clash_overridden: boolean
           created_at: string
           deleted_at: string | null
+          dropoff_lat: number | null
+          dropoff_lng: number | null
           dropoff_postcode: string | null
           duration_minutes: number
           eol_sent_at: string | null
@@ -15961,6 +15963,8 @@ export type Database = {
           payment_method: string | null
           payment_status: string
           payment_token: string | null
+          pickup_lat: number | null
+          pickup_lng: number | null
           pickup_location: string | null
           pickup_postcode: string | null
           pickup_what3words: string | null
@@ -15995,6 +15999,8 @@ export type Database = {
           clash_overridden?: boolean
           created_at?: string
           deleted_at?: string | null
+          dropoff_lat?: number | null
+          dropoff_lng?: number | null
           dropoff_postcode?: string | null
           duration_minutes?: number
           eol_sent_at?: string | null
@@ -16013,6 +16019,8 @@ export type Database = {
           payment_method?: string | null
           payment_status?: string
           payment_token?: string | null
+          pickup_lat?: number | null
+          pickup_lng?: number | null
           pickup_location?: string | null
           pickup_postcode?: string | null
           pickup_what3words?: string | null
@@ -16047,6 +16055,8 @@ export type Database = {
           clash_overridden?: boolean
           created_at?: string
           deleted_at?: string | null
+          dropoff_lat?: number | null
+          dropoff_lng?: number | null
           dropoff_postcode?: string | null
           duration_minutes?: number
           eol_sent_at?: string | null
@@ -16065,6 +16075,8 @@ export type Database = {
           payment_method?: string | null
           payment_status?: string
           payment_token?: string | null
+          pickup_lat?: number | null
+          pickup_lng?: number | null
           pickup_location?: string | null
           pickup_postcode?: string | null
           pickup_what3words?: string | null
