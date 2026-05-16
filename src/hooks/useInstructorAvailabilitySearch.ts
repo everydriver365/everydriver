@@ -101,7 +101,13 @@ export function useInstructorAvailabilitySearch(params: SearchParams) {
     queryFn: async (): Promise<AvailabilitySearchResult> => {
       const empty: AvailabilitySearchResult = {
         slots: [],
-        rejection: { total: 0, byReason: {}, padMin: 0, describe: (r) => describeReason(r) },
+        rejection: {
+          total: 0,
+          byReason: {},
+          padMin: 0,
+          describe: (r, cause, pad) => describeReason(r, cause, pad),
+          details: [],
+        },
       };
 
       const targetIds =
