@@ -213,7 +213,81 @@ export default function Index() {
   return (
     <MainLayout>
       <SEOHead jsonLd={homepageJsonLd} />
-      <Drive365Home />
+      <Drive365Home
+        afterLearningPaths={
+          <section style={{ padding: "56px 5%", background: "#F0F2F5", width: "100%" }}>
+            <div style={{ fontSize: 11, fontWeight: 600, color: "#1A52A0", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 6 }}>
+              What's included
+            </div>
+            <h2 style={{ fontSize: 32, fontWeight: 700, color: "#0F2044", letterSpacing: -0.5, marginBottom: 10 }}>
+              Everything you need to pass
+            </h2>
+            <p style={{ fontSize: 15, color: "#5F6B7A", lineHeight: 1.6, maxWidth: 520, marginBottom: 36 }}>
+              Every course comes with the tools, support and flexibility to get you test-ready — included for free.
+            </p>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px,1fr))", gap: 20 }}>
+              {includedFeatures.map((feature, index) => {
+                const IconComponent = feature.icon;
+                const featureImage = feature.image_url || (() => {
+                  switch(feature.title.toLowerCase()) {
+                    case 'theory test support': return featureTheory;
+                    case 'flexible payments': return featurePayments;
+                    case 'free cancellation': return featureCancellation;
+                    case 'free re-test': return featureRetest;
+                    case 'live availability': return featureAvailability;
+                    case 'theory test pro': return featureTheoryProImg;
+                    default: return null;
+                  }
+                })();
+
+                return (
+                  <motion.button
+                    key={feature.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: index * 0.04 }}
+                    viewport={{ once: true }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => openFeatureModal(feature)}
+                    style={{
+                      background: "#FFF",
+                      borderRadius: 18,
+                      overflow: "hidden",
+                      border: "1px solid #E0E4EB",
+                      display: "flex",
+                      flexDirection: "column",
+                      textAlign: "left",
+                      padding: 0,
+                      cursor: "pointer",
+                    }}
+                  >
+                    <div style={{ height: 180, overflow: "hidden", background: "#F0F2F5" }}>
+                      {featureImage ? (
+                        <img
+                          src={featureImage}
+                          alt={feature.title}
+                          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                        />
+                      ) : (
+                        <div style={{ height: "100%", width: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "#E8ECF2" }}>
+                          <IconComponent className="h-10 w-10 text-[#1A52A0] opacity-40" />
+                        </div>
+                      )}
+                    </div>
+                    <div style={{ padding: 22, flex: 1, display: "flex", flexDirection: "column" }}>
+                      <h3 style={{ fontSize: 16, fontWeight: 700, color: "#0F2044", marginBottom: 6 }}>{feature.title}</h3>
+                      <p style={{ fontSize: 13, color: "#5F6B7A", lineHeight: 1.6, marginBottom: 14 }}>{feature.description}</p>
+                      <div style={{ marginTop: "auto", display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 600, color: "#1A52A0" }}>
+                        Learn more <ChevronRight size={12} color="#1A52A0" strokeWidth={2.2} />
+                      </div>
+                    </div>
+                  </motion.button>
+                );
+              })}
+            </div>
+          </section>
+        }
+      />
 
       {/* Test Swap Banner */}
       <section className="bg-[#0d2c5a]">
@@ -245,79 +319,6 @@ export default function Index() {
               How test swapping works
             </Link>
           </div>
-        </div>
-      </section>
-
-      {/* What's Included Section — Drive365 style */}
-      <section style={{ padding: "56px 5%", background: "#F0F2F5", width: "100%" }}>
-        <div style={{ fontSize: 11, fontWeight: 600, color: "#1A52A0", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 6 }}>
-          What's included
-        </div>
-        <h2 style={{ fontSize: 32, fontWeight: 700, color: "#0F2044", letterSpacing: -0.5, marginBottom: 10 }}>
-          Everything you need to pass
-        </h2>
-        <p style={{ fontSize: 15, color: "#5F6B7A", lineHeight: 1.6, maxWidth: 520, marginBottom: 36 }}>
-          Every course comes with the tools, support and flexibility to get you test-ready — included for free.
-        </p>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px,1fr))", gap: 20 }}>
-          {includedFeatures.map((feature, index) => {
-            const IconComponent = feature.icon;
-            const featureImage = feature.image_url || (() => {
-              switch(feature.title.toLowerCase()) {
-                case 'theory test support': return featureTheory;
-                case 'flexible payments': return featurePayments;
-                case 'free cancellation': return featureCancellation;
-                case 'free re-test': return featureRetest;
-                case 'live availability': return featureAvailability;
-                case 'theory test pro': return featureTheoryProImg;
-                default: return null;
-              }
-            })();
-
-            return (
-              <motion.button
-                key={feature.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: index * 0.04 }}
-                viewport={{ once: true }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => openFeatureModal(feature)}
-                style={{
-                  background: "#FFF",
-                  borderRadius: 18,
-                  overflow: "hidden",
-                  border: "1px solid #E0E4EB",
-                  display: "flex",
-                  flexDirection: "column",
-                  textAlign: "left",
-                  padding: 0,
-                  cursor: "pointer",
-                }}
-              >
-                <div style={{ height: 180, overflow: "hidden", background: "#F0F2F5" }}>
-                  {featureImage ? (
-                    <img
-                      src={featureImage}
-                      alt={feature.title}
-                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                    />
-                  ) : (
-                    <div style={{ height: "100%", width: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "#E8ECF2" }}>
-                      <IconComponent className="h-10 w-10 text-[#1A52A0] opacity-40" />
-                    </div>
-                  )}
-                </div>
-                <div style={{ padding: 22, flex: 1, display: "flex", flexDirection: "column" }}>
-                  <h3 style={{ fontSize: 16, fontWeight: 700, color: "#0F2044", marginBottom: 6 }}>{feature.title}</h3>
-                  <p style={{ fontSize: 13, color: "#5F6B7A", lineHeight: 1.6, marginBottom: 14 }}>{feature.description}</p>
-                  <div style={{ marginTop: "auto", display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 600, color: "#1A52A0" }}>
-                    Learn more <ChevronRight size={12} color="#1A52A0" strokeWidth={2.2} />
-                  </div>
-                </div>
-              </motion.button>
-            );
-          })}
         </div>
       </section>
 

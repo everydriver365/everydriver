@@ -293,7 +293,7 @@ const CourseCardImage: React.FC<{ courseId: string; badge: string; badgeColor: s
   </div>
 );
 
-export default function Drive365Home() {
+export default function Drive365Home({ afterLearningPaths }: { afterLearningPaths?: React.ReactNode } = {}) {
   const navigate = useNavigate();
   const [postcode, setPostcode] = useState("");
   const [radius, setRadius] = useState("10 miles");
@@ -528,6 +528,7 @@ export default function Drive365Home() {
           ))}
         </div>
       </section>
+      {afterLearningPaths}
       {/* HomeReviews */}
       <section style={{ padding: "56px 5%", background: "#F0F2F5", width: "100%" }}>
         <div style={{ fontSize: 11, fontWeight: 600, color: "#1A52A0", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 6 }}>
