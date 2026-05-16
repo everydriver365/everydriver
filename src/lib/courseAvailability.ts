@@ -350,17 +350,53 @@ export function computeDaySlots(
   const allRejected: RejectedSlot[] = [];
 
   for (const win of windows) {
-    // First-lesson travel buffer: shift the start of the window IF
-    // (a) firstLessonBuffer is larger than the standard back-to-back buffer, AND
-    // (b) no real conflict ends before the shifted start (i.e. this would still
-    //     be the first lesson of the day).
     let dayStartMin = win.start;
+
+    // First-lesson travel buffer applies whenever the instructor has been
+    // idle long enough to be home — not only at the very start of the working
+    // window. We inject synthetic "travel from home" blocks at the start of
+    // every conflict-free gap whose length is ≥ firstLessonBuffer (i.e. long
+    // enough that the instructor would realistically have gone home and now
+    // needs the full travel time to return).
+    //
+    // Back-to-back lessons (short gaps < firstLessonBuffer) are unaffected
+    // and still use the standard `buffer_minutes` only.
     if (firstLessonBuffer > buffer) {
-      const candidateStart = win.start + (firstLessonBuffer - buffer);
-      const hasEarlierConflict = conflicts.some(
-        (c) => c.start < candidateStart && c.end > win.start,
-      );
-      if (!hasEarlierConflict) dayStartMin = candidateStart;
+      // Sort window-relevant conflicts and walk gaps.
+      const winConflicts = conflicts
+        .filter((c) => c.end > win.start && c.start < win.end)
+        .map((c) => ({ start: Math.max(c.start, win.start), end: Math.min(c.end, win.end) }))
+        .sort((a, b) => a.start - b.start);
+
+      // Build the sequence of gap-starts: window start, then every conflict end.
+      const gapStarts: number[] = [win.start, ...winConflicts.map((c) => c.end)];
+      // Corresponding gap-ends: next conflict start, or window end.
+      const gapEnds: number[] = [
+        ...winConflicts.map((c) => c.start),
+        win.end,
+      ];
+
+      for (let i = 0; i < gapStarts.length; i++) {
+        const gStart = gapStarts[i];
+        const gEnd = gapEnds[i];
+        if (gEnd - gStart < firstLessonBuffer) continue;
+
+        if (i === 0) {
+          // Very first gap of the day: shift the window start directly.
+          dayStartMin = Math.max(dayStartMin, gStart + firstLessonBuffer);
+        } else {
+          // Interior gap after a conflict: inject a synthetic "travel from
+          // home" block at the gap start. padOverrideMin:0 so the engine's
+          // own buffer padding isn't doubled on top of it.
+          conflicts.push({
+            start: gStart,
+            end: gStart + firstLessonBuffer,
+            kind: "event",
+            label: "Travel from home",
+            padOverrideMin: 0,
+          });
+        }
+      }
     }
 
     const result = resolveAvailability({
