@@ -102,7 +102,7 @@ export function CourseSearchHeader({
               e.preventDefault();
               handleSearch();
             }}
-            className="mb-3.5 flex flex-col overflow-hidden rounded-[10px] border-[1.5px] md:flex-row"
+            className="mb-3.5 flex flex-col rounded-[10px] border-[1.5px] md:flex-row"
             style={{ borderColor: tokens.border }}
           >
             {/* Postcode */}
