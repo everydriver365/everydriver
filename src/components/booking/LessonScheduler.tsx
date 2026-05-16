@@ -345,8 +345,27 @@ export function LessonScheduler({
         end_time: b.end_datetime,
       }));
 
+      // Filter out all-day / multi-day Google Calendar events. These are
+      // informational items (e.g. "Summer term", "Lotty : No College") that
+      // would otherwise wipe out every bookable slot for weeks at a time.
+      // Matches the rule in src/lib/courseAvailability.ts -> isAllDayLikeEvent.
+      // Instructors block real days off via manual blocks, which remain blocking.
+      const timedCalendarEvents = (calendarEvents || []).filter((e: any) => {
+        try {
+          const s = new Date(e.start_time);
+          const ed = new Date(e.end_time);
+          const durMs = ed.getTime() - s.getTime();
+          if (durMs >= 23 * 60 * 60 * 1000) return false;
+          const startsAtMidnight = s.getHours() === 0 && s.getMinutes() === 0;
+          if (startsAtMidnight && durMs >= 12 * 60 * 60 * 1000) return false;
+          return true;
+        } catch {
+          return false;
+        }
+      });
+
       setExternalEvents([
-        ...(calendarEvents || []).map((e) => ({
+        ...timedCalendarEvents.map((e: any) => ({
           start_time: e.start_time,
           end_time: e.end_time,
         })),
