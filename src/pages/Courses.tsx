@@ -322,7 +322,7 @@ export default function Courses() {
   const initialPriceRange = searchParams.get("priceRange") || "any";
   const [postcode, setPostcode] = useState(initialPostcode);
   const [radius, setRadius] = useState(initialRadius);
-  const [showRadiusFallbackNotice, setShowRadiusFallbackNotice] = useState(false);
+  
   const [showFilters, setShowFilters] = useState(false);
   const [transmission, setTransmission] = useState(initialTransmission);
   const [klarnaOnly, setKlarnaOnly] = useState(initialKlarna);
