@@ -13,6 +13,7 @@ import heroPlaceholderImg from "@/assets/hero-placeholder-v2.png";
 import intensiveCourseImg from "@/assets/drive365-intensive.jpeg";
 import weeklyCourseImg from "@/assets/course-weekly-lessons.jpg";
 import semiCourseImg from "@/assets/semi-intensive-card.jpg";
+import { PostcodeSearch } from "@/components/home/PostcodeSearch";
 
 const NAV_LINKS = [
   { label: "Find an instructor", href: "/instructors" },
