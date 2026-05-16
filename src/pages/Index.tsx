@@ -215,14 +215,14 @@ export default function Index() {
       <SEOHead jsonLd={homepageJsonLd} />
       <Drive365Home
         afterLearningPaths={<>
-          <section style={{ padding: "56px 5%", background: "#F0F2F5", width: "100%" }}>
-            <div style={{ fontSize: 11, fontWeight: 600, color: "#1A52A0", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 6 }}>
+          <section style={{ padding: "56px 5%", background: "#F6F6F8", width: "100%" }}>
+            <div style={{ fontSize: 11, fontWeight: 600, color: "#3E57D9", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 6 }}>
               What's included
             </div>
-            <h2 style={{ fontSize: 32, fontWeight: 700, color: "#0F2044", letterSpacing: -0.5, marginBottom: 10 }}>
+            <h2 style={{ fontSize: 32, fontWeight: 700, color: "#191C2F", letterSpacing: -0.5, marginBottom: 10 }}>
               Everything you need to pass
             </h2>
-            <p style={{ fontSize: 15, color: "#5F6B7A", lineHeight: 1.6, maxWidth: 520, marginBottom: 36 }}>
+            <p style={{ fontSize: 15, color: "#51567A", lineHeight: 1.6, maxWidth: 520, marginBottom: 36 }}>
               Every course comes with the tools, support and flexibility to get you test-ready — included for free.
             </p>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px,1fr))", gap: 20 }}>
@@ -253,7 +253,7 @@ export default function Index() {
                       background: "#FFF",
                       borderRadius: 18,
                       overflow: "hidden",
-                      border: "1px solid #E0E4EB",
+                      border: "1px solid #E9E5E8",
                       display: "flex",
                       flexDirection: "column",
                       textAlign: "left",
@@ -261,7 +261,7 @@ export default function Index() {
                       cursor: "pointer",
                     }}
                   >
-                    <div style={{ height: 180, overflow: "hidden", background: "#F0F2F5" }}>
+                    <div style={{ height: 180, overflow: "hidden", background: "#F6F6F8" }}>
                       {featureImage ? (
                         <img
                           src={featureImage}
@@ -269,16 +269,16 @@ export default function Index() {
                           style={{ width: "100%", height: "100%", objectFit: "cover" }}
                         />
                       ) : (
-                        <div style={{ height: "100%", width: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "#E8ECF2" }}>
-                          <IconComponent className="h-10 w-10 text-[#1A52A0] opacity-40" />
+                        <div style={{ height: "100%", width: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "#EEF4FE" }}>
+                          <IconComponent className="h-10 w-10 text-[#3E57D9] opacity-40" />
                         </div>
                       )}
                     </div>
                     <div style={{ padding: 22, flex: 1, display: "flex", flexDirection: "column" }}>
-                      <h3 style={{ fontSize: 16, fontWeight: 700, color: "#0F2044", marginBottom: 6 }}>{feature.title}</h3>
-                      <p style={{ fontSize: 13, color: "#5F6B7A", lineHeight: 1.6, marginBottom: 14 }}>{feature.description}</p>
-                      <div style={{ marginTop: "auto", display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 600, color: "#1A52A0" }}>
-                        Learn more <ChevronRight size={12} color="#1A52A0" strokeWidth={2.2} />
+                      <h3 style={{ fontSize: 16, fontWeight: 700, color: "#191C2F", marginBottom: 6 }}>{feature.title}</h3>
+                      <p style={{ fontSize: 13, color: "#51567A", lineHeight: 1.6, marginBottom: 14 }}>{feature.description}</p>
+                      <div style={{ marginTop: "auto", display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 600, color: "#3E57D9" }}>
+                        Learn more <ChevronRight size={12} color="#3E57D9" strokeWidth={2.2} />
                       </div>
                     </div>
                   </motion.button>
@@ -472,7 +472,7 @@ export default function Index() {
       </section>
 
       {/* Video Story Section — Drive365 Style */}
-      <section style={{ background: "#F0F2F5" }} className="py-20">
+      <section style={{ background: "#F6F6F8" }} className="py-20">
         <div className="container max-w-6xl">
           <div className="grid md:grid-cols-2 gap-10 lg:gap-16 items-center">
             {/* Left: Video preview card */}
@@ -487,7 +487,7 @@ export default function Index() {
               className="group relative w-full overflow-hidden text-left"
               style={{
                 borderRadius: 18,
-                border: "1px solid #E0E4EB",
+                border: "1px solid #E9E5E8",
                 background: "#fff",
                 boxShadow: "0 12px 32px rgba(15, 32, 68, 0.08)",
               }}
@@ -507,12 +507,12 @@ export default function Index() {
                       boxShadow: "0 8px 24px rgba(15, 32, 68, 0.25)",
                     }}
                   >
-                    <Play className="h-7 w-7 ml-1" style={{ color: "#1A52A0", fill: "#1A52A0" }} />
+                    <Play className="h-7 w-7 ml-1" style={{ color: "#3E57D9", fill: "#3E57D9" }} />
                   </div>
                 </div>
                 <div
                   className="absolute top-4 left-4 px-3 py-1.5 text-xs font-semibold uppercase tracking-wider rounded-full"
-                  style={{ background: "rgba(255,255,255,0.95)", color: "#1A52A0", letterSpacing: "0.08em" }}
+                  style={{ background: "rgba(255,255,255,0.95)", color: "#3E57D9", letterSpacing: "0.08em" }}
                 >
                   2 min watch
                 </div>
@@ -528,17 +528,17 @@ export default function Index() {
             >
               <div
                 className="text-xs font-semibold uppercase mb-3"
-                style={{ color: "#1A52A0", letterSpacing: "0.08em" }}
+                style={{ color: "#3E57D9", letterSpacing: "0.08em" }}
               >
                 Our Story
               </div>
               <h2
                 className="text-4xl md:text-5xl font-bold mb-5 leading-[1.1]"
-                style={{ color: "#0F2044", letterSpacing: -0.5 }}
+                style={{ color: "#191C2F", letterSpacing: -0.5 }}
               >
                 Watch how learners pass with confidence
               </h2>
-              <p className="text-base md:text-lg mb-7 leading-relaxed" style={{ color: "#4A5568" }}>
+              <p className="text-base md:text-lg mb-7 leading-relaxed" style={{ color: "#2F3748" }}>
                 Discover why thousands of learners trust us with their driving journey — from first lesson nerves to test day success.
               </p>
 
@@ -560,7 +560,7 @@ export default function Index() {
                       <Star key={s} className="h-4 w-4 fill-amber-400 text-amber-400" />
                     ))}
                   </div>
-                  <div className="text-xs font-medium" style={{ color: "#4A5568" }}>
+                  <div className="text-xs font-medium" style={{ color: "#2F3748" }}>
                     4.9 from 6,499 learner reviews
                   </div>
                 </div>
@@ -572,7 +572,7 @@ export default function Index() {
                 disabled={!welcomeVideoUrl}
                 className="inline-flex items-center gap-2 px-7 py-3.5 text-sm font-semibold transition-all hover:opacity-90 disabled:opacity-50"
                 style={{
-                  background: "#1A52A0",
+                  background: "#3E57D9",
                   color: "#fff",
                   borderRadius: 12,
                   boxShadow: "0 6px 16px rgba(26, 82, 160, 0.25)",
