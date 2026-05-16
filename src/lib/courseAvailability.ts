@@ -18,7 +18,6 @@
 import { format, isAfter, isBefore, parseISO, startOfDay, addDays } from "date-fns";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
-  isAllDayLikeEvent,
   TRAVEL_FALLBACK_MIN,
   resolveAvailability,
   buildDayConflicts,
