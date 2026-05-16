@@ -14,10 +14,11 @@
 
 import { format, isAfter, parseISO, startOfDay, isBefore, addDays } from "date-fns";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { isAllDayLikeEvent as engineIsAllDayLikeEvent, TRAVEL_FALLBACK_MIN as ENGINE_TRAVEL_FALLBACK_MIN } from "./availabilityEngine";
 
-// Default travel-time padding around any conflict, mirroring availabilityCore.
-// Always added on top of the instructor's configured buffer.
-export const TRAVEL_FALLBACK_MIN = 10;
+// Default travel-time padding around any conflict.
+// Re-exported from the unified engine so the value lives in exactly one place.
+export const TRAVEL_FALLBACK_MIN = ENGINE_TRAVEL_FALLBACK_MIN;
 
 export type WeeklyHourRow = {
   instructor_id: string;
@@ -186,17 +187,8 @@ function clipEventToDay(
 }
 
 function isAllDayLikeEvent(ev: CalendarEventRow): boolean {
-  try {
-    const s = new Date(ev.start_time);
-    const e = new Date(ev.end_time);
-    const durMs = e.getTime() - s.getTime();
-    if (durMs >= 23 * 60 * 60 * 1000) return true;
-    const startsAtMidnight = s.getHours() === 0 && s.getMinutes() === 0;
-    if (startsAtMidnight && durMs >= 12 * 60 * 60 * 1000) return true;
-    return false;
-  } catch {
-    return true;
-  }
+  // Delegates to the unified engine — same rule everywhere.
+  return engineIsAllDayLikeEvent(ev.start_time, ev.end_time);
 }
 
 /**
