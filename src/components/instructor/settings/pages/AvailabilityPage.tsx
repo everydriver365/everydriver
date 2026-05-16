@@ -68,6 +68,7 @@ export function AvailabilityPage({ instructorId }: { instructorId: string }) {
 
   return (
     <>
+      <AvailabilityDiagnostic instructorId={instructorId} />
       <section className="sv2-card">
         <div style={{ marginBottom: 12 }}>
           <div className="sv2-section-title">Working hours</div>
