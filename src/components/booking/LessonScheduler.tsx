@@ -252,6 +252,8 @@ export function LessonScheduler({
     try {
       const today = format(new Date(), "yyyy-MM-dd");
       const maxDate = format(addDays(new Date(), bookingAdvanceDays), "yyyy-MM-dd");
+      const fromIso = startOfDay(new Date()).toISOString();
+      const toIso = addDays(startOfDay(new Date()), bookingAdvanceDays + 1).toISOString();
       const [hoursRes, overridesRes, calendarRes, prefRes, lessonsRes] = await Promise.all([
         supabase
           .from("instructor_working_hours")
@@ -263,12 +265,11 @@ export function LessonScheduler({
           .eq("instructor_id", instructorId)
           .or(`override_end_date.gte.${today},override_end_date.is.null`)
           .lte("override_date", maxDate),
-        supabase
-          .from("instructor_calendar_events")
-          .select("start_time, end_time")
-          .eq("instructor_id", instructorId)
-          .eq("is_busy", true)
-          .gte("start_time", today),
+        supabase.rpc("get_public_instructor_calendar_blocks", {
+          p_instructor_ids: [instructorId],
+          p_from_datetime: fromIso,
+          p_to_datetime: toIso,
+        }),
         // Public-safe RPC — works for anonymous booking visitors.
         supabase
           .rpc("get_public_instructor_booking_preferences", { p_instructor_id: instructorId })
