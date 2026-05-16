@@ -363,10 +363,10 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
           <div className="d365-hero-right">
             <div className="d365-welcome text-center">
               <h1>Welcome to Drive 365</h1>
-              <p>
-                Search, compare and book direct with independent, vetted instructors all over the UK.{" "}
+              <p className="mx-0 py-0">
+                Search, compare and book direct with independent, instructors  in the UK.
                 <br />
-                <b>Book through Drive 365 for a range of exclusive benefits when you book.</b>
+                Book through Drive 365 for a range of exclusive benefits when you book.
               </p>
               <PostcodeSearch />
             </div>
