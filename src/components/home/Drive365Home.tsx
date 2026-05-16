@@ -293,7 +293,7 @@ const CourseCardImage: React.FC<{ courseId: string; badge: string; badgeColor: s
   </div>
 );
 
-export default function Drive365Home() {
+export default function Drive365Home({ afterLearningPaths }: { afterLearningPaths?: React.ReactNode } = {}) {
   const navigate = useNavigate();
   const [postcode, setPostcode] = useState("");
   const [radius, setRadius] = useState("10 miles");
