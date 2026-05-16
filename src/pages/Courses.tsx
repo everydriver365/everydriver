@@ -1285,30 +1285,31 @@ export default function Courses() {
               {/* Pass Promise card — list view only */}
               {isListMode && (
                 <div
-                  className="relative overflow-hidden rounded-xl p-4"
+                  className="relative overflow-hidden p-4"
                   style={{
-                    background: "linear-gradient(135deg, #0a1936 0%, #1a2f5c 100%)",
+                    background: "#2D3FE7",
+                    borderRadius: 4,
                   }}
                 >
                   <div
                     className="pointer-events-none absolute -right-6 -top-6 h-24 w-24"
                     style={{
                       background:
-                        "radial-gradient(circle, rgba(217,46,58,0.3) 0%, transparent 70%)",
+                        "radial-gradient(circle, rgba(255,255,255,0.18) 0%, transparent 70%)",
                     }}
                   />
                   <div className="relative flex items-center gap-3">
                     <div
                       className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md"
-                      style={{ background: "#d92e3a" }}
+                      style={{ background: "rgba(255,255,255,0.18)" }}
                     >
                       <ShieldCheck className="h-4 w-4 text-white" />
                     </div>
                     <div>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: "white" }}>
+                      <div style={{ fontSize: 16, fontWeight: 700, color: "white" }}>
                         Pass Promise
                       </div>
-                      <div style={{ fontSize: 11, color: "#9aa0b5", marginTop: 1 }}>
+                      <div style={{ fontSize: 13, color: "rgba(255,255,255,0.9)", marginTop: 2 }}>
                         Re-test on us if you don't pass.
                       </div>
                     </div>
