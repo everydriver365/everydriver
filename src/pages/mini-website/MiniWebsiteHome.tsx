@@ -11,6 +11,7 @@ import { LiveBookingPreviewModal } from "@/components/mini-website/LiveBookingPr
 import { TrackProgressPreviewModal } from "@/components/mini-website/TrackProgressPreviewModal";
 import { FeatureData } from "@/hooks/useHomepageFeatures";
 import { PupilAvatar } from "@/components/instructor/PupilAvatar";
+import { VerifiedProBadge } from "@/components/instructor/VerifiedProBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
