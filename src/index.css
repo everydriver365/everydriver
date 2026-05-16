@@ -25,7 +25,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 230 31% 14%;
 
-    --primary: 230 67% 55%;            /* #3E57D9 CTA blue */
+    --primary: 222 64% 16%;            /* #0F2044 deep navy (Test Swap hero) */
     --primary-foreground: 0 0% 100%;
 
     --secondary: 218 21% 24%;          /* #2F3748 subheadings */
@@ -42,7 +42,7 @@
 
     --border: 312 7% 91%;              /* #E9E5E8 */
     --input: 312 7% 91%;
-    --ring: 230 67% 55%;               /* #3E57D9 */
+    --ring: 222 64% 16%;               /* #0F2044 */
 
     --radius: 0.75rem;
 

@@ -28,9 +28,9 @@ const FILTER_OPTIONS: { id: CourseFilterId; label: string; icon?: typeof Zap }[]
 
 const tokens = {
   navy: "#0A0A0A",
-  blue: "#2D3FE7",
-  blueHover: "#1F2DC9",
-  red: "#2D3FE7",
+  blue: "#0F2044",
+  blueHover: "#1A3370",
+  red: "#0F2044",
   mid: "#0A0A0A",
   muted: "#9CA3AF",
   border: "#EAF0FF",
@@ -213,7 +213,7 @@ export function CourseSearchHeader({
             <button
               type="submit"
               disabled={isSearching}
-              className="flex flex-shrink-0 items-center justify-center gap-2 text-white transition-colors hover:!bg-[#1F2DC9] disabled:opacity-60"
+              className="flex flex-shrink-0 items-center justify-center gap-2 text-white transition-colors hover:!bg-[#1A3370] disabled:opacity-60"
               style={{ backgroundColor: tokens.red, padding: "14px 28px", borderRadius: 2 }}
             >
               {isSearching ? (
@@ -242,7 +242,7 @@ export function CourseSearchHeader({
                     key={opt.id}
                     type="button"
                     onClick={() => setActiveFilter?.(opt.id)}
-                    className="font-heading inline-flex items-center gap-[5px] rounded-full border text-[13px] font-medium transition-colors hover:!border-[#2D3FE7] hover:!text-[#2D3FE7] data-[active=true]:hover:!text-white"
+                    className="font-heading inline-flex items-center gap-[5px] rounded-full border text-[13px] font-medium transition-colors hover:!border-[#0F2044] hover:!text-[#0F2044] data-[active=true]:hover:!text-white"
                     data-active={isActive}
                     style={{
                       padding: "8px 16px",
