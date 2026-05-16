@@ -99,5 +99,9 @@ export const adminRoutes = (
       path="/admin/course-image-optimizer"
       element={<ProtectedAdminRoute><CourseImageOptimizer /></ProtectedAdminRoute>}
     />
+    <Route
+      path="/admin/verifications"
+      element={<ProtectedAdminRoute><AdminInstructorVerifications /></ProtectedAdminRoute>}
+    />
   </>
 );
