@@ -508,7 +508,9 @@ export default function Courses() {
       if (isBefore(day, today)) return false;
       if (placeholdersOnly) return hasNetworkPlaceholderAvailabilityOn(day);
       return realInArea.some((instructor) =>
-        hasInstructorAvailabilityOn(instructor, day, availabilitySources)
+        hasInstructorAvailabilityOn(instructor, day, availabilitySources, {
+          minFreeMinutes: instructorMinSlotMinutes(instructor),
+        })
       );
     });
   }, [selectedMonth, relevantInstructors, availabilitySources, userLocation, searchedPostcode]);
