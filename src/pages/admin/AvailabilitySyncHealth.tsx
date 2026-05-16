@@ -290,6 +290,7 @@ export default function AvailabilitySyncHealth() {
             <Tabs value={tab} onValueChange={(v) => setTab(v as Tab)} className="mt-2">
               <TabsList>
                 <TabsTrigger value="all_issues">All issues ({stats.total - stats.healthy})</TabsTrigger>
+                <TabsTrigger value="bad_dow">Bad day numbering ({stats.badDow})</TabsTrigger>
                 <TabsTrigger value="drift">Drift ({stats.drift})</TabsTrigger>
                 <TabsTrigger value="no_hours">No hours ({stats.noHours})</TabsTrigger>
                 <TabsTrigger value="future_from">Future from ({stats.futureFrom})</TabsTrigger>
