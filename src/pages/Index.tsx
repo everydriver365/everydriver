@@ -778,55 +778,6 @@ export default function Index() {
         </div>
       </section>
 
-      {/* Testimonials Section — Social Proof Wall */}
-      <section className="bg-gradient-to-b from-primary/5 via-accent/5 to-background py-24">
-        <div className="container">
-          <div className="text-center mb-10">
-            <div className="inline-flex items-center gap-3 mb-4">
-              <div className="flex -space-x-2">
-                <img src={testimonialSarah} alt="" className="h-11 w-11 rounded-full object-cover border-2 border-background" />
-                <img src={testimonialJames} alt="" className="h-11 w-11 rounded-full object-cover border-2 border-background" />
-                <img src={testimonialEmma} alt="" className="h-11 w-11 rounded-full object-cover border-2 border-background" />
-                <img src={testimonialSarahM} alt="" className="h-11 w-11 rounded-full object-cover border-2 border-background" />
-              </div>
-              <span className="text-sm text-muted-foreground">6,499+ happy drivers</span>
-            </div>
-            <motion.h2
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              viewport={{ once: true }}
-              className="text-3xl font-bold md:text-4xl"
-            >
-              Trusted by Thousands
-            </motion.h2>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            {testimonials.filter(t => !t.is_featured).slice(0, 6).map((testimonial, i) => (
-              <motion.div
-                key={testimonial.id}
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                transition={{ delay: i * 0.06 }}
-                viewport={{ once: true }}
-                className="rounded-xl bg-card border border-border p-4 hover:border-primary/30 transition-colors"
-              >
-                <div className="flex gap-0.5 mb-2">
-                  {Array.from({ length: 5 }).map((_, si) => (
-                    <Star key={si} className="h-3 w-3 fill-amber-400 text-amber-400" />
-                  ))}
-                </div>
-                <p className="text-xs text-foreground/70 leading-relaxed line-clamp-3">"{testimonial.content}"</p>
-                <p className="text-xs font-semibold mt-3">
-                  {testimonial.name}{" "}
-                  <span className="font-normal text-muted-foreground">· {testimonial.role}</span>
-                </p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* CTA Section — Bold Asymmetric */}
       <section className="py-24">
         <div className="container max-w-6xl">
