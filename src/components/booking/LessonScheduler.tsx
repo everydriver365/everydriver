@@ -265,7 +265,7 @@ export function LessonScheduler({
           .eq("instructor_id", instructorId)
           .or(`override_end_date.gte.${today},override_end_date.is.null`)
           .lte("override_date", maxDate),
-        supabase.rpc("get_public_instructor_calendar_blocks", {
+        (supabase as any).rpc("get_public_instructor_calendar_blocks", {
           p_instructor_ids: [instructorId],
           p_from_datetime: fromIso,
           p_to_datetime: toIso,
