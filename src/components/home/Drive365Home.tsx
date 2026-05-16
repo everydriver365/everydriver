@@ -316,7 +316,7 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
           .d365-hero { width: 100%; max-width: 1200px; display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: stretch; }
           .d365-hero-photo { position: relative; background: #9FD3E8; border-radius: 4px; overflow: hidden; min-height: 540px; }
           .d365-hero-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
-          .d365-hero-badge { position: absolute; top: 16px; left: 16px; width: 130px; height: auto; transform: rotate(-10deg); filter: drop-shadow(0 6px 14px rgba(0,0,0,0.15)); }
+          .d365-hero-right { display: flex; flex-direction: column; gap: 16px; }
           .d365-hero-right { display: flex; flex-direction: column; gap: 16px; }
           .d365-welcome { background: #EAF0FF; padding: 40px; border-radius: 4px; }
           .d365-welcome h1 { font-size: 44px; line-height: 1.05; font-weight: 800; color: #0A0A0A; text-transform: uppercase; letter-spacing: -0.5px; margin: 0 0 18px; font-family: Inter, "Helvetica Neue", system-ui, sans-serif; }
