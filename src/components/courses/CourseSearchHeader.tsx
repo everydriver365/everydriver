@@ -84,8 +84,8 @@ export function CourseSearchHeader({
 
         {/* Title */}
         <h1
-          className="font-heading mb-5 text-[28px] font-bold leading-tight tracking-[-0.5px]"
-          style={{ color: tokens.navy }}
+          className="font-heading mb-5 text-[32px] font-bold leading-tight tracking-[-0.5px]"
+          style={{ color: tokens.navy, marginTop: 8 }}
         >
           {title}
         </h1>
