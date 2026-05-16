@@ -10,72 +10,88 @@
 
 @layer base {
   :root {
-    --background: 220 10% 90%;
-    --foreground: 222 47% 11%;
+    /* ==========================================================
+       Drive365 premium light SaaS palette (global :root tokens).
+       Portals (.instructor-portal, .dsm-instructor, .accessible-portal,
+       .learner-app) override these in their own scoped blocks below
+       and are NOT affected by changes here.
+       ========================================================== */
+    --background: 240 9% 97%;          /* #F6F6F8 page bg */
+    --foreground: 230 31% 14%;         /* #191C2F headings */
 
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card: 0 0% 100%;                 /* #FFFFFF */
+    --card-foreground: 230 31% 14%;    /* #191C2F */
 
-    --popover: 214 31% 91%;
-    --popover-foreground: 222 47% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 230 31% 14%;
 
-    --primary: 230 61% 10%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 230 67% 55%;            /* #3E57D9 CTA blue */
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 230 50% 18%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 218 21% 24%;          /* #2F3748 subheadings */
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 215 20% 65%;
-    --muted-foreground: 222 47% 11%;
+    --muted: 240 7% 95%;               /* #F2F2F4 soft panel */
+    --muted-foreground: 232 20% 40%;   /* #51567A body text */
 
-    --accent: 210 40% 98%;
-    --accent-foreground: 215 19% 34%;
+    --accent: 214 92% 97%;             /* #EEF4FE very pale blue panel */
+    --accent-foreground: 225 44% 24%;  /* #223058 dark navy */
 
-    --destructive: 0 72% 50%;
-    --destructive-foreground: 0 85% 97%;
+    --destructive: 0 75% 52%;          /* #E02828 alert red */
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 212 26% 83%;
-    --input: 212 26% 83%;
-    --ring: 230 61% 10%;
+    --border: 312 7% 91%;              /* #E9E5E8 */
+    --input: 312 7% 91%;
+    --ring: 230 67% 55%;               /* #3E57D9 */
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
-    /* Custom tokens */
-    --success: 142 71% 45%;
+    /* Status tokens */
+    --success: 142 71% 38%;            /* included / paid / passed */
     --success-foreground: 0 0% 100%;
 
-    --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 100%;
+    --warning: 33 87% 67%;             /* #F5B563 */
+    --warning-foreground: 230 31% 14%;
 
-    --gradient-hero: linear-gradient(135deg, hsl(230 61% 7%) 0%, hsl(230 50% 18%) 100%);
-    --gradient-accent: linear-gradient(135deg, hsl(38 92% 50%) 0%, hsl(28 92% 55%) 100%);
-    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(210 40% 98%) 100%);
+    /* Drive365 brand-specific tokens (used sparingly) */
+    --brand-navy: 225 44% 24%;         /* #223058 */
+    --brand-muted-icon: 226 9% 69%;    /* #A8ABB8 */
+    --brand-panel-soft: 215 84% 92%;   /* #DBE9FB */
+    --brand-panel-mid: 215 86% 94%;    /* #E2EDFC */
+    --brand-panel-pale: 214 92% 97%;   /* #EEF4FE */
+    --brand-purple: 248 82% 69%;       /* #7C6CF2 */
+    --brand-teal: 185 79% 44%;         /* #18B8C7 */
 
-    --shadow-sm: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
-    --shadow-md: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 2px 4px -1px hsl(0 0% 0% / 0.1);
-    --shadow-lg: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 4px 6px -1px hsl(0 0% 0% / 0.1);
-    --shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 8px 10px -1px hsl(0 0% 0% / 0.1);
-    --shadow-accent: 0 10px 30px -10px hsl(38 92% 50% / 0.4);
+    --gradient-hero: linear-gradient(135deg, hsl(225 44% 24%) 0%, hsl(230 67% 55%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(230 67% 55%) 0%, hsl(248 82% 69%) 100%);
+    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(214 92% 97%) 100%);
 
-    --nav-background: 230 61% 10%;
+    /* Softer shadows for the calm iOS feel */
+    --shadow-sm: 0 1px 2px 0px hsl(230 31% 14% / 0.04);
+    --shadow-md: 0 4px 12px -2px hsl(230 31% 14% / 0.06), 0 2px 4px -1px hsl(230 31% 14% / 0.04);
+    --shadow-lg: 0 10px 24px -6px hsl(230 31% 14% / 0.08), 0 4px 8px -2px hsl(230 31% 14% / 0.04);
+    --shadow-xl: 0 20px 40px -12px hsl(230 31% 14% / 0.10);
+    --shadow-accent: 0 10px 30px -10px hsl(230 67% 55% / 0.30);
+
+    --nav-background: 225 44% 24%;     /* #223058 dark navy */
     --nav-foreground: 0 0% 100%;
 
-    --secondary-nav: 0 0% 97%;
-    --secondary-nav-foreground: 0 0% 20%;
+    --secondary-nav: 0 0% 100%;
+    --secondary-nav-foreground: 218 21% 24%;
 
-    --promo-banner: 142 71% 45%;
+    --promo-banner: 142 71% 38%;
     --promo-banner-foreground: 0 0% 100%;
 
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 222 47% 11%;
-    --sidebar-primary: 230 61% 10%;
-    --sidebar-primary-foreground: 210 40% 98%;
-    --sidebar-accent: 230 50% 18%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 212 26% 83%;
-    --sidebar-ring: 230 61% 10%;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 230 31% 14%;
+    --sidebar-primary: 230 67% 55%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 214 92% 97%;
+    --sidebar-accent-foreground: 225 44% 24%;
+    --sidebar-border: 312 7% 91%;
+    --sidebar-ring: 230 67% 55%;
 
-     --hero-background: 230 61% 10%;
+     --hero-background: 225 44% 24%;
 
      --chart-1: 198 93% 59%;
 
