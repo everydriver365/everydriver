@@ -10,7 +10,7 @@ import {
   User,
 } from "lucide-react";
 import heroLearnerImg from "@/assets/drive365-hero-learner.jpeg";
-import intensiveCourseImg from "@/assets/course-intensive-pass.jpg";
+import intensiveCourseImg from "@/assets/drive365-intensive.jpeg";
 import weeklyCourseImg from "@/assets/course-weekly-lessons.jpg";
 import semiCourseImg from "@/assets/course-semi-intensive.jpg";
 
@@ -375,7 +375,7 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
             <div className="d365-feat-row">
               <div className="d365-feat">
                 <img
-                  src="https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=600&q=80"
+                  src={intensiveCourseImg}
                   alt="Focused learner driver concentrating on the road during an intensive driving course in the UK"
                   onError={(e) => { (e.currentTarget as HTMLImageElement).style.visibility = "hidden"; }}
                 />
