@@ -62,7 +62,7 @@ export function CourseTableList({ courses }: CourseTableListProps) {
   return (
     <div
       className="overflow-hidden rounded-[10px] border bg-white"
-      style={{ borderColor: "#e8e8ee" }}
+      style={{ borderColor: "#EAF0FF" }}
     >
       {/* Column headers — desktop only */}
       <div
@@ -70,19 +70,19 @@ export function CourseTableList({ courses }: CourseTableListProps) {
         style={{
           gridTemplateColumns: "90px 1fr 130px 220px 100px",
           gap: "16px",
-          padding: "10px 18px",
-          background: "#fafaf7",
-          borderBottom: "1px solid #e8e8ee",
+          padding: "12px 18px",
+          background: "#FAFBFC",
+          borderBottom: "1px solid #F3F4F6",
         }}
       >
         {["Course", "Details", "Instructor", "Pay options", "Price"].map((h) => (
           <div
             key={h}
             style={{
-              fontSize: 10,
-              fontWeight: 700,
-              letterSpacing: "0.12em",
-              color: "#7a7a7a",
+              fontSize: 11,
+              fontWeight: 500,
+              letterSpacing: "0.08em",
+              color: "#9CA3AF",
               textTransform: "uppercase",
             }}
           >
