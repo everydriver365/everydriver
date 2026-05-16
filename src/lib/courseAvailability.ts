@@ -245,6 +245,11 @@ export interface DayComputeOptions {
   slotIncrementMinutes?: number;
   timeOfDay?: TimeOfDay;
   minNoticeMinutes?: number;
+  /** Coordinates of the candidate booking's pickup location. When provided
+   *  alongside `bookedLessonGeo`, the engine injects synthetic "travel"
+   *  conflicts around every existing booked lesson so a candidate slot cannot
+   *  start at a location the instructor can't realistically drive to in time. */
+  candidatePickup?: { lat: number; lng: number };
 }
 
 export interface DayComputeResult {
@@ -295,6 +300,48 @@ export function computeDaySlots(
       .map((e) => ({ start_time: e.start_time, end_time: e.end_time, is_busy: e.is_busy ?? true })),
   );
 
+  // Travel-time padding around existing booked lessons.
+  // Only adds conflicts when BOTH the booked lesson's pickup coords AND the
+  // candidate's pickup coords are known — otherwise we have no basis to
+  // estimate drive time and silently fall back to the standard buffer.
+  if (opts.candidatePickup && src.bookedLessonGeo?.length) {
+    const cand = opts.candidatePickup;
+    const dayLessons = src.bookedLessonGeo.filter(
+      (l) => l.instructor_id === instructor.id && l.lesson_date === dateStr,
+    );
+    for (const l of dayLessons) {
+      if (l.pickup_lat == null || l.pickup_lng == null) continue;
+      const startMin = parseHHMMtoMin(l.start_time);
+      const endMin = startMin + (l.duration_minutes ?? 0);
+      const pickup = { lat: Number(l.pickup_lat), lng: Number(l.pickup_lng) };
+      const dropoff =
+        l.dropoff_lat != null && l.dropoff_lng != null
+          ? { lat: Number(l.dropoff_lat), lng: Number(l.dropoff_lng) }
+          : pickup;
+
+      const travelIn = estimateDriveMinutes(cand, pickup);   // cand dropoff → lesson pickup
+      const travelOut = estimateDriveMinutes(dropoff, cand); // lesson dropoff → cand pickup
+      if (travelIn > 0) {
+        conflicts.push({
+          start: Math.max(0, startMin - travelIn),
+          end: startMin,
+          kind: "event",
+          label: "Travel from previous lesson",
+          padOverrideMin: 0,
+        });
+      }
+      if (travelOut > 0) {
+        conflicts.push({
+          start: endMin,
+          end: endMin + travelOut,
+          kind: "event",
+          label: "Travel to next lesson",
+          padOverrideMin: 0,
+        });
+      }
+    }
+  }
+
   const buffer = Math.max(0, instructor.buffer_minutes ?? 0);
   const firstLessonBuffer = Math.max(0, opts.firstLessonBufferMinutes ?? 0);
 
@@ -332,6 +379,11 @@ export function computeDaySlots(
   }
 
   return { windows, slots: allSlots, rejected: allRejected };
+}
+
+function parseHHMMtoMin(t: string): number {
+  const [h, m] = t.split(":").map((s) => parseInt(s, 10));
+  return (h || 0) * 60 + (m || 0);
 }
 
 /**
