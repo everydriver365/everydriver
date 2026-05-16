@@ -339,22 +339,24 @@ export default function BookingSummary() {
 
       // LIVE DATA ONLY — refuse to load if the instructor hasn't configured pricing
       // or core scheduling values. No magic fallbacks.
-      if (!instructor.hourly_rate || Number(instructor.hourly_rate) <= 0) {
+      // Network placeholders are enquiry-only — skip pricing/scheduling gates and
+      // let the enquiry_only branch render the contact form.
+      if (!instructor.is_network_placeholder && (!instructor.hourly_rate || Number(instructor.hourly_rate) <= 0)) {
         setLoadErrorReason("This instructor hasn't published an hourly rate yet, so this course can't be booked online. Please contact them directly.");
         setLoading(false);
         return;
       }
-      if (!instructor.preferred_lesson_length || Number(instructor.preferred_lesson_length) <= 0) {
+      if (!instructor.is_network_placeholder && (!instructor.preferred_lesson_length || Number(instructor.preferred_lesson_length) <= 0)) {
         setLoadErrorReason("This instructor hasn't configured a preferred lesson length yet, so this course can't be booked online.");
         setLoading(false);
         return;
       }
-      if (instructor.buffer_minutes === null || instructor.buffer_minutes === undefined) {
+      if (!instructor.is_network_placeholder && (instructor.buffer_minutes === null || instructor.buffer_minutes === undefined)) {
         setLoadErrorReason("This instructor hasn't configured their travel buffer yet, so this course can't be booked online.");
         setLoading(false);
         return;
       }
-      if (!instructor.booking_advance_days || Number(instructor.booking_advance_days) <= 0) {
+      if (!instructor.is_network_placeholder && (!instructor.booking_advance_days || Number(instructor.booking_advance_days) <= 0)) {
         setLoadErrorReason("This instructor hasn't set how far ahead pupils can book, so this course can't be booked online.");
         setLoading(false);
         return;
