@@ -20,6 +20,7 @@ import { SEOHead } from "@/components/SEOHead";
 import {
   hasInstructorAvailabilityOn,
   hasNetworkPlaceholderAvailabilityOn,
+  loadCourseAvailabilitySources,
   type CourseAvailabilitySources,
   type WeeklyHourRow,
   type DateOverrideRow,
@@ -807,73 +808,19 @@ export default function Courses() {
       const fromIso = firstMonth.toISOString();
       const toIso = new Date(rangeEnd.getFullYear(), rangeEnd.getMonth(), rangeEnd.getDate() + 1).toISOString();
 
-      const [workingHoursRes, availabilityWindowsRes, overridesRes, lessonsRes, blocksRes, eventsRes] = realInstructorIds.length > 0
-        ? await Promise.all([
-            supabase
-              .from("instructor_working_hours")
-              .select("instructor_id, day_of_week, start_time, end_time, is_active")
-              .in("instructor_id", realInstructorIds),
-            supabase
-              .from("availability_windows")
-              .select("instructor_id, day_of_week, start_time, end_time, is_active")
-              .in("instructor_id", realInstructorIds),
-            supabase
-              .from("instructor_date_overrides")
-              .select("instructor_id, override_date, override_end_date, is_available, start_time, end_time")
-              .in("instructor_id", realInstructorIds)
-              .gte("override_date", fromYmd)
-              .lte("override_date", toYmd),
-            supabase
-              .from("scheduled_lessons")
-              .select("instructor_id, lesson_date, start_time, duration_minutes, status")
-              .in("instructor_id", realInstructorIds)
-              .gte("lesson_date", fromYmd)
-              .lte("lesson_date", toYmd)
-              .neq("status", "cancelled"),
-            supabase
-              .from("instructor_manual_blocks")
-              .select("instructor_id, start_datetime, end_datetime")
-              .in("instructor_id", realInstructorIds)
-              .gte("end_datetime", fromIso)
-              .lte("start_datetime", toIso),
-            supabase
-              .from("instructor_calendar_events")
-              .select("instructor_id, start_time, end_time, is_busy")
-              .in("instructor_id", realInstructorIds)
-              .eq("is_busy", true)
-              .gte("end_time", fromIso)
-              .lte("start_time", toIso),
-          ])
-        : [
-            { data: [], error: null },
-            { data: [], error: null },
-            { data: [], error: null },
-            { data: [], error: null },
-            { data: [], error: null },
-            { data: [], error: null },
-          ];
+      const loadedAvailabilitySources = await loadCourseAvailabilitySources(
+        supabase as any,
+        realInstructorIds,
+        firstMonth,
+        rangeEnd,
+      );
 
-      if (workingHoursRes.error) throw workingHoursRes.error;
-      if (availabilityWindowsRes.error) throw availabilityWindowsRes.error;
-      if (overridesRes.error) throw overridesRes.error;
-      if (lessonsRes.error) throw lessonsRes.error;
-      if (blocksRes.error) throw blocksRes.error;
-      if (eventsRes.error) throw eventsRes.error;
-
-      const loadedWorkingHourRows = workingHoursRes.data || [];
-      const loadedAvailabilityWindowRows = availabilityWindowsRes.data || [];
-      const loadedOverrides = overridesRes.data || [];
-      const loadedCalendarEvents = eventsRes.data || [];
-      const loadedScheduledLessons = lessonsRes.data || [];
-      const loadedManualBlocks = blocksRes.data || [];
-      const loadedAvailabilitySources: CourseAvailabilitySources = {
-        workingHours: loadedWorkingHourRows,
-        availabilityWindows: loadedAvailabilityWindowRows,
-        overrides: loadedOverrides,
-        calendarEvents: loadedCalendarEvents,
-        scheduledLessons: loadedScheduledLessons,
-        manualBlocks: loadedManualBlocks,
-      };
+      const loadedWorkingHourRows = loadedAvailabilitySources.workingHours;
+      const loadedAvailabilityWindowRows = loadedAvailabilitySources.availabilityWindows;
+      const loadedOverrides = loadedAvailabilitySources.overrides;
+      const loadedCalendarEvents = loadedAvailabilitySources.calendarEvents;
+      const loadedScheduledLessons = loadedAvailabilitySources.scheduledLessons;
+      const loadedManualBlocks = loadedAvailabilitySources.manualBlocks;
 
       setInstructors(loadedInstructors);
       setInstructorCourses(coursesRes.data || []);
