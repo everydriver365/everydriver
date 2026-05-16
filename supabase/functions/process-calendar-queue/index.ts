@@ -1,12 +1,17 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendWhatsAppTemplate } from "../_shared/whatsapp-template.ts";
+import {
+  generateJWT,
+  getAccessToken,
+  createGoogleEvent,
+  updateGoogleEvent,
+  deleteGoogleEvent,
+} from "../_shared/googleCalendarSync.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
-
-const CALENDAR_API_BASE = "https://www.googleapis.com/calendar/v3";
 
 interface QueueItem {
   id: string;
@@ -27,180 +32,6 @@ interface LessonData {
   google_event_id?: string;
   status?: string;
   pupils?: { name: string; postcode?: string } | null;
-}
-
-// Base64url encode
-function base64urlEncode(data: Uint8Array): string {
-  const base64 = btoa(String.fromCharCode(...data));
-  return base64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
-}
-
-function stringToUint8Array(str: string): Uint8Array {
-  return new TextEncoder().encode(str);
-}
-
-async function importPrivateKey(rawPrivateKey: string): Promise<CryptoKey> {
-  let keyInput = rawPrivateKey?.trim() ?? "";
-
-  if (keyInput.startsWith("{") && keyInput.includes("private_key")) {
-    try {
-      const parsed = JSON.parse(keyInput) as { private_key?: string };
-      if (parsed.private_key) keyInput = parsed.private_key;
-    } catch { /* keep original */ }
-  }
-
-  const normalizedKey = keyInput
-    .replace(/\\n/g, "\n")
-    .replace(/\\r/g, "")
-    .replace(/^"|"$/g, "")
-    .trim();
-
-  let pemContents = normalizedKey
-    .replace(/-----BEGIN PRIVATE KEY-----/g, "")
-    .replace(/-----END PRIVATE KEY-----/g, "")
-    .replace(/-----BEGIN RSA PRIVATE KEY-----/g, "")
-    .replace(/-----END RSA PRIVATE KEY-----/g, "")
-    .replace(/\r?\n/g, "")
-    .replace(/\s/g, "")
-    .replace(/-/g, "+")
-    .replace(/_/g, "/")
-    .replace(/[^A-Za-z0-9+/=]/g, "")
-    .trim();
-
-  if (!pemContents) {
-    throw new Error("Google private key is empty or invalid");
-  }
-
-  pemContents = pemContents.replace(/=+$/g, "");
-  const paddedContents = pemContents + "=".repeat((4 - (pemContents.length % 4)) % 4);
-
-  const binaryDer = Uint8Array.from(atob(paddedContents), (c) => c.charCodeAt(0));
-
-  return await crypto.subtle.importKey(
-    "pkcs8",
-    binaryDer,
-    { name: "RSASSA-PKCS1-v1_5", hash: { name: "SHA-256" } },
-    false,
-    ["sign"]
-  );
-}
-
-async function generateJWT(serviceEmail: string, privateKey: string): Promise<string> {
-  const now = Math.floor(Date.now() / 1000);
-  const header = { alg: "RS256", typ: "JWT" };
-  const claims = {
-    iss: serviceEmail,
-    sub: serviceEmail,
-    aud: "https://oauth2.googleapis.com/token",
-    iat: now,
-    exp: now + 3600,
-    scope: "https://www.googleapis.com/auth/calendar",
-  };
-
-  const encodedHeader = base64urlEncode(stringToUint8Array(JSON.stringify(header)));
-  const encodedClaims = base64urlEncode(stringToUint8Array(JSON.stringify(claims)));
-  const signatureInput = `${encodedHeader}.${encodedClaims}`;
-
-  const key = await importPrivateKey(privateKey);
-  const signature = await crypto.subtle.sign(
-    { name: "RSASSA-PKCS1-v1_5" },
-    key,
-    stringToUint8Array(signatureInput).buffer as ArrayBuffer
-  );
-
-  return `${signatureInput}.${base64urlEncode(new Uint8Array(signature))}`;
-}
-
-async function getAccessToken(jwt: string): Promise<string> {
-  const response = await fetch("https://oauth2.googleapis.com/token", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({
-      grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
-      assertion: jwt,
-    }),
-  });
-
-  if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`Failed to get access token: ${error}`);
-  }
-
-  const data = await response.json();
-  return data.access_token;
-}
-
-async function createGoogleEvent(
-  accessToken: string,
-  calendarId: string,
-  event: { summary: string; description?: string; start: string; end: string; location?: string }
-): Promise<string> {
-  const response = await fetch(
-    `${CALENDAR_API_BASE}/calendars/${encodeURIComponent(calendarId)}/events`,
-    {
-      method: "POST",
-      headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        summary: event.summary,
-        description: event.description,
-        location: event.location,
-        start: { dateTime: event.start, timeZone: "Europe/London" },
-        end: { dateTime: event.end, timeZone: "Europe/London" },
-      }),
-    }
-  );
-
-  if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`Failed to create event: ${error}`);
-  }
-
-  const data = await response.json();
-  return data.id;
-}
-
-async function updateGoogleEvent(
-  accessToken: string,
-  calendarId: string,
-  eventId: string,
-  event: { summary?: string; description?: string; start?: string; end?: string; location?: string }
-): Promise<void> {
-  const updateData: Record<string, unknown> = {};
-  if (event.summary) updateData.summary = event.summary;
-  if (event.description) updateData.description = event.description;
-  if (event.location) updateData.location = event.location;
-  if (event.start) updateData.start = { dateTime: event.start, timeZone: "Europe/London" };
-  if (event.end) updateData.end = { dateTime: event.end, timeZone: "Europe/London" };
-
-  const response = await fetch(
-    `${CALENDAR_API_BASE}/calendars/${encodeURIComponent(calendarId)}/events/${eventId}`,
-    {
-      method: "PATCH",
-      headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
-      body: JSON.stringify(updateData),
-    }
-  );
-
-  if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`Failed to update event: ${error}`);
-  }
-}
-
-async function deleteGoogleEvent(
-  accessToken: string,
-  calendarId: string,
-  eventId: string
-): Promise<void> {
-  const response = await fetch(
-    `${CALENDAR_API_BASE}/calendars/${encodeURIComponent(calendarId)}/events/${eventId}`,
-    { method: "DELETE", headers: { Authorization: `Bearer ${accessToken}` } }
-  );
-
-  if (!response.ok && response.status !== 404) {
-    const error = await response.text();
-    throw new Error(`Failed to delete event: ${error}`);
-  }
 }
 
 Deno.serve(async (req) => {
@@ -291,6 +122,10 @@ Deno.serve(async (req) => {
 
         if (!calendarConfig) {
           await supabase
+            .from("scheduled_lessons")
+            .update({ calendar_sync_status: "no-calendar" })
+            .eq("id", item.lesson_id);
+          await supabase
             .from("calendar_sync_queue")
             .update({ processed_at: new Date().toISOString(), error: "No calendar connected" })
             .eq("id", item.id);
@@ -378,16 +213,35 @@ Deno.serve(async (req) => {
             try {
               await updateGoogleEvent(accessToken, calendarId, googleEventId, eventDetails);
             } catch {
-              googleEventId = await createGoogleEvent(accessToken, calendarId, eventDetails);
+              const created = await createGoogleEvent(accessToken, calendarId, eventDetails);
+              googleEventId = created.id;
             }
           } else {
-            googleEventId = await createGoogleEvent(accessToken, calendarId, eventDetails);
+            const created = await createGoogleEvent(accessToken, calendarId, eventDetails);
+            googleEventId = created.id;
           }
 
           await supabase
             .from("scheduled_lessons")
-            .update({ google_event_id: googleEventId })
+            .update({ google_event_id: googleEventId, calendar_sync_status: "synced" })
             .eq("id", item.lesson_id);
+
+          // Mirror into instructor_calendar_events so the availability engine
+          // sees this slot as busy without waiting for the next pull-sync.
+          await supabase.from("instructor_calendar_events").upsert(
+            {
+              instructor_id: item.instructor_id,
+              external_event_id: googleEventId,
+              title: eventDetails.summary,
+              start_time: eventDetails.start,
+              end_time: eventDetails.end,
+              is_busy: true,
+              location: eventDetails.location ?? null,
+              description: eventDetails.description,
+              synced_at: new Date().toISOString(),
+            },
+            { onConflict: "instructor_id,external_event_id" }
+          );
 
           // Send WhatsApp lesson confirmation on first sync (new lesson) if pupil opted in
           const isNewLesson = !freshLesson?.google_event_id && !lesson.google_event_id;
@@ -454,6 +308,12 @@ Deno.serve(async (req) => {
         successCount++;
       } catch (err) {
         console.error(`Error processing queue item ${item.id}:`, err);
+        if (item.action === "syncLesson") {
+          await supabase
+            .from("scheduled_lessons")
+            .update({ calendar_sync_status: "failed" })
+            .eq("id", item.lesson_id);
+        }
         await supabase
           .from("calendar_sync_queue")
           .update({

@@ -7,6 +7,7 @@ import {
   toMinutes as engineToMin,
   describeReason,
 } from "../_shared/availabilityEngine.ts";
+import { syncLessonNow } from "../_shared/googleCalendarSync.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -322,6 +323,40 @@ serve(async (req) => {
         );
       }
       lessons = lessonData || [];
+
+      // For £0 ("Free") bookings there is no payment step that would flush
+      // the calendar queue — push to Google synchronously and roll back the
+      // whole booking if Google rejects, so the slot never sits in the DB
+      // without also being on the instructor's Google Calendar.
+      if (!awaitingInitialPayment && lessons.length > 0) {
+        const failures: string[] = [];
+        for (const l of lessons) {
+          try {
+            await syncLessonNow(supabase, l.id);
+          } catch (syncErr) {
+            const msg = syncErr instanceof Error ? syncErr.message : "Unknown sync error";
+            console.error(`Calendar sync failed for new lesson ${l.id}:`, msg);
+            failures.push(msg);
+          }
+        }
+        if (failures.length > 0) {
+          // Roll back: delete the lessons and the pupil.
+          await supabase
+            .from("scheduled_lessons")
+            .delete()
+            .in("id", lessons.map((l: any) => l.id));
+          await supabase.from("pupils").delete().eq("id", pupil.id);
+          return new Response(
+            JSON.stringify({
+              error: "CALENDAR_SYNC_FAILED",
+              message:
+                "Couldn't add this booking to the instructor's Google Calendar. The slot has been released — please try again.",
+              details: failures,
+            }),
+            { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+      }
     }
 
     // 3. Save purchased upsells

@@ -5,6 +5,7 @@ import { format, addDays, parse, differenceInCalendarDays } from "date-fns";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { invalidateLessonQueries } from "@/lib/invalidateLessonQueries";
+import { syncLessonsOrRollback } from "@/lib/syncLessonsOrRollback";
 import { checkLessonClash, describeLessonClashError } from "@/lib/lessonClashCheck";
 
 import { titleCaseName } from "@/lib/titleCase";
@@ -696,15 +697,19 @@ export function StepBookNext({
         return;
       }
 
-      const { error } = await supabase.from("scheduled_lessons").insert({
-        instructor_id: instructorId,
-        pupil_id: pupilId,
-        lesson_date: slot.date,
-        start_time: slot.startTime,
-        duration_minutes: durationMinutes,
-        status: "scheduled",
-        lesson_type: "Standard",
-      });
+      const { data: inserted, error } = await supabase
+        .from("scheduled_lessons")
+        .insert({
+          instructor_id: instructorId,
+          pupil_id: pupilId,
+          lesson_date: slot.date,
+          start_time: slot.startTime,
+          duration_minutes: durationMinutes,
+          status: "scheduled",
+          lesson_type: "Standard",
+        })
+        .select("id")
+        .single();
       if (error) {
         const friendly = describeLessonClashError(error);
         if (friendly) {
@@ -714,6 +719,13 @@ export function StepBookNext({
           return;
         }
         throw error;
+      }
+      // Synchronous Google Calendar push — rolls back if Google rejects.
+      const syncResult = await syncLessonsOrRollback(inserted?.id ? [inserted.id] : []);
+      if (!syncResult.ok) {
+        await load();
+        setBooking(false);
+        return;
       }
       invalidateLessonQueries(queryClient);
       const dt = parse(slot.date, "yyyy-MM-dd", new Date());

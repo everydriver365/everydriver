@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.89.0";
+import { syncLessonNow } from "../_shared/googleCalendarSync.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -89,9 +90,13 @@ serve(async (req) => {
       console.error("Instructor notification error (non-fatal):", notifyError);
     }
 
-    // 2. Sync lessons to Google Calendar — clear the "awaiting initial payment"
-    //    hold on this pupil's lessons (payment has just succeeded), then flush
-    //    the queue so the events get pushed to Google Calendar.
+    // 2. Sync lessons to Google Calendar — payment has just succeeded, so
+    //    clear the "awaiting initial payment" hold and push every lesson to
+    //    Google synchronously. Money is already captured at this point, so a
+    //    Google failure does NOT roll back the booking; instead we mark the
+    //    failed lessons, enqueue a retry via the existing queue, and surface
+    //    a soft warning to the caller so the instructor can be alerted.
+    const calendarFailures: { lessonId: string; error: string }[] = [];
     try {
       const { error: clearErr } = await supabase
         .from("scheduled_lessons")
@@ -102,21 +107,46 @@ serve(async (req) => {
         console.error("Failed to clear awaiting_initial_payment flag:", clearErr);
       }
 
-      const syncResponse = await fetch(
-        `${supabaseUrl}/functions/v1/process-calendar-queue`,
-        {
+      for (const l of sortedLessons) {
+        try {
+          await syncLessonNow(supabase, l.id);
+        } catch (syncErr) {
+          const message = syncErr instanceof Error ? syncErr.message : "Unknown sync error";
+          console.error(`Calendar sync failed for lesson ${l.id}:`, message);
+          calendarFailures.push({ lessonId: l.id, error: message });
+          await supabase
+            .from("scheduled_lessons")
+            .update({ calendar_sync_status: "failed" })
+            .eq("id", l.id);
+          // Enqueue a retry so the cron picks it up.
+          await supabase
+            .from("calendar_sync_queue")
+            .insert({ instructor_id: instructorId, lesson_id: l.id, action: "syncLesson" });
+        }
+      }
+    } catch (calendarError) {
+      console.error("Calendar sync block error (non-fatal):", calendarError);
+    }
+
+    if (calendarFailures.length > 0) {
+      // Alert the instructor — non-fatal if this fails too.
+      try {
+        await fetch(`${supabaseUrl}/functions/v1/notify-instructor`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${supabaseServiceKey}`,
           },
-          body: JSON.stringify({}),
-        }
-      );
-      const syncResult = await syncResponse.json();
-      console.log("Calendar queue processed:", syncResult);
-    } catch (calendarError) {
-      console.error("Calendar sync error (non-fatal):", calendarError);
+          body: JSON.stringify({
+            instructorId,
+            type: "calendar_sync_failed",
+            pupilName: pupil.name,
+            message: `Booking confirmed for ${pupil.name} but ${calendarFailures.length} lesson${calendarFailures.length === 1 ? "" : "s"} couldn't be added to Google Calendar. We'll keep retrying — please check your Google connection in Settings → Integrations.`,
+          }),
+        });
+      } catch (alertErr) {
+        console.error("Calendar-failure alert error (non-fatal):", alertErr);
+      }
     }
 
     // 3. Send pupil welcome/onboarding email
@@ -208,7 +238,12 @@ serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ success: true, message: "Booking confirmed and notifications sent" }),
+      JSON.stringify({
+        success: true,
+        message: "Booking confirmed and notifications sent",
+        calendarSyncFailed: calendarFailures.length > 0,
+        lessonsFailed: calendarFailures.map((f) => f.lessonId),
+      }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {

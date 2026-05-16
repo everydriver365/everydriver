@@ -15,6 +15,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 import { invalidateLessonQueries } from '@/lib/invalidateLessonQueries';
+import { syncLessonsOrRollback } from '@/lib/syncLessonsOrRollback';
 import { checkLessonClash, describeLessonClashError } from '@/lib/lessonClashCheck';
 import { useGoogleCalendarRefresh } from '@/hooks/useGoogleCalendarRefresh';
 import { cn } from '@/lib/utils';
@@ -693,12 +694,21 @@ export function AddLessonSheet({
           }
         }
       }
-      const { error } = await supabase.from('scheduled_lessons').insert(lessons);
+      const { data: insertedRows, error } = await supabase
+        .from('scheduled_lessons')
+        .insert(lessons)
+        .select('id');
       if (error) {
         const friendly = describeLessonClashError(error);
         setLoading(false);
         if (friendly) return { ok: false, error: friendly };
         return { ok: false, error: 'Failed to schedule lesson' };
+      }
+      // Synchronous Google Calendar push — roll back the DB rows if Google rejects.
+      const syncResult = await syncLessonsOrRollback((insertedRows ?? []).map((r: any) => r.id));
+      if (!syncResult.ok) {
+        setLoading(false);
+        return { ok: false, error: 'Could not add to Google Calendar — slot released' };
       }
       toast.success(isDrivingTest ? 'Test scheduled!' : isRecurring ? `${weeks} lessons scheduled` : 'Lesson scheduled');
       handlePostSavePayment(selectedPupil);
@@ -758,12 +768,20 @@ export function AddLessonSheet({
           ...(isDrivingTest && selectedExaminer ? { examiner_id: selectedExaminer } : {}),
         });
       }
-      const { error: lessonError } = await supabase.from('scheduled_lessons').insert(lessons);
+      const { data: insertedRows, error: lessonError } = await supabase
+        .from('scheduled_lessons')
+        .insert(lessons)
+        .select('id');
       if (lessonError) {
         const friendly = describeLessonClashError(lessonError);
         setLoading(false);
         if (friendly) return { ok: false, error: friendly };
         return { ok: false, error: 'Failed to schedule lesson' };
+      }
+      const syncResult = await syncLessonsOrRollback((insertedRows ?? []).map((r: any) => r.id));
+      if (!syncResult.ok) {
+        setLoading(false);
+        return { ok: false, error: 'Could not add to Google Calendar — slot released' };
       }
       toast.success(isDrivingTest ? 'Pupil created & test scheduled!' : isRecurring ? `Pupil created & ${weeks} lessons scheduled` : 'Pupil created & lesson scheduled');
       handlePostSavePayment(newPupil.id);

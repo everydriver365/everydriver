@@ -230,19 +230,27 @@ Always be concise and helpful. Use British English.`;
           const endDate = new Date(startTime);
           endDate.setHours(endDate.getHours() + duration);
           
-          const { error } = await supabase.from("scheduled_lessons").insert({
+          const { data: inserted, error } = await supabase.from("scheduled_lessons").insert({
             instructor_id,
             pupil_id: pupil.id,
             start_time: startTime,
             end_time: endDate.toISOString(),
             status: "scheduled",
-          });
+          }).select("id").single();
           
           if (error) {
             resultText = `Failed to book: ${error.message}`;
           } else {
-            resultText = `✅ Booked ${duration}hr lesson with ${pupil.name} on ${new Date(startTime).toLocaleDateString("en-GB")} at ${args.time}`;
-            actionTaken = { type: "book_lesson", pupil: pupil.name, date: args.date, time: args.time };
+            // Synchronous Google Calendar push — roll back if Google rejects.
+            try {
+              const { syncLessonNow } = await import("../_shared/googleCalendarSync.ts");
+              await syncLessonNow(supabase, inserted!.id as string);
+              resultText = `✅ Booked ${duration}hr lesson with ${pupil.name} on ${new Date(startTime).toLocaleDateString("en-GB")} at ${args.time}`;
+              actionTaken = { type: "book_lesson", pupil: pupil.name, date: args.date, time: args.time };
+            } catch (syncErr) {
+              await supabase.from("scheduled_lessons").delete().eq("id", inserted!.id);
+              resultText = `Couldn't add to Google Calendar — slot released. ${syncErr instanceof Error ? syncErr.message : ""}`;
+            }
           }
           break;
         }

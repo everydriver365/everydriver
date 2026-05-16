@@ -25,6 +25,7 @@ import { toast } from "sonner";
 import { checkLessonClash } from "@/lib/lessonClashCheck";
 import { useQueryClient } from "@tanstack/react-query";
 import { invalidateLessonQueries } from "@/lib/invalidateLessonQueries";
+import { syncLessonsOrRollback } from "@/lib/syncLessonsOrRollback";
 import { cn } from "@/lib/utils";
 
 type DayKey = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
@@ -259,8 +260,17 @@ export function CoursePlannerForm({
         notes: testCentreName ? `Course Plan · Test at ${testCentreName}` : "Course Plan",
       }));
 
-      const { error: lessonError } = await supabase.from("scheduled_lessons").insert(lessons);
+      const { data: insertedRows, error: lessonError } = await supabase
+        .from("scheduled_lessons")
+        .insert(lessons)
+        .select("id");
       if (lessonError) throw lessonError;
+      // Synchronous Google Calendar push — rolls back any rows Google rejects.
+      const syncResult = await syncLessonsOrRollback((insertedRows ?? []).map((r: any) => r.id));
+      if (!syncResult.ok) {
+        // Roll back the proposal record too if we couldn't fully sync.
+        throw new Error("Course plan partially failed to sync to Google Calendar — released the affected slots.");
+      }
       invalidateLessonQueries(queryClient);
 
       await supabase.from("course_proposals").insert({
