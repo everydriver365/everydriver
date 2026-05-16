@@ -445,6 +445,7 @@ export function LessonScheduler({
       bufferMinutes,
       firstLessonBufferMinutes: firstLessonBuffer,
       slotIncrementMinutes,
+      candidatePickup: candidatePickup ?? undefined,
     });
 
     void dateStr; // (retained name for clarity)
