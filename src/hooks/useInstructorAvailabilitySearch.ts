@@ -136,6 +136,7 @@ export function useInstructorAvailabilitySearch(params: SearchParams) {
 
       const results: AvailableSlot[] = [];
       const byReason: Partial<Record<RejectReason, number>> = {};
+      const details: RejectedSlotDetail[] = [];
       let totalRejected = 0;
 
       for (const inst of instructors) {
@@ -166,6 +167,17 @@ export function useInstructorAvailabilitySearch(params: SearchParams) {
           for (const r of rejected) {
             byReason[r.reason] = (byReason[r.reason] || 0) + 1;
             totalRejected += 1;
+            if (details.length < 200) {
+              details.push({
+                instructorId: instId,
+                instructorName: instName,
+                date: dateStr,
+                startTime: fromMinutes(r.start),
+                endTime: fromMinutes(r.end),
+                reason: r.reason,
+                description: describeReason(r.reason, r.cause, buffer),
+              });
+            }
           }
 
           for (const slot of free) {
@@ -194,7 +206,8 @@ export function useInstructorAvailabilitySearch(params: SearchParams) {
           total: totalRejected,
           byReason,
           padMin: 0,
-          describe: (r) => describeReason(r),
+          describe: (r, cause, pad) => describeReason(r, cause, pad),
+          details,
         },
       };
     },
