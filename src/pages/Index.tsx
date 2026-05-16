@@ -749,7 +749,7 @@ export default function Index() {
           <h2 className="text-2xl md:text-3xl font-bold">Are You a Driving Instructor?</h2>
           <p className="text-primary-foreground/80 max-w-2xl mx-auto">
             Join the Drive365 franchise — free private healthcare, £50 bonus every time a pupil passes,
-            and the best tech platform in the business. From just £99/week.
+            and the best tech platform in the business. From just £25/week.
           </p>
           <Button size="lg" variant="secondary" className="text-base px-8" asChild>
             <Link to="/drive365/franchise">
