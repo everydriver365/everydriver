@@ -32,7 +32,7 @@ export function InstructorSaaSLayout({ children }: InstructorSaaSLayoutProps) {
     <div className="flex min-h-screen flex-col">
       {/* Header - Clean white */}
       <header className="sticky top-0 z-50 w-full">
-        <div style={{ backgroundColor: "#09507f" }}>
+        <div style={{ backgroundColor: "#0F2044" }}>
         <nav className="px-4 max-w-7xl mx-auto flex h-16 items-center justify-between relative">
           <Link to="/instructor-app" className="hidden md:flex items-center gap-2">
             <img src={logo} alt="DSM" className="h-10" />
@@ -60,7 +60,7 @@ export function InstructorSaaSLayout({ children }: InstructorSaaSLayoutProps) {
             <Button variant="ghost" className="text-nav-foreground/80 hover:text-nav-foreground hover:bg-nav-foreground/10" asChild>
               <Link to="/instructor-app/login">Log in</Link>
             </Button>
-            <Button className="bg-[#09507f] hover:bg-[#063a5c] text-white" asChild>
+            <Button className="bg-[#0F2044] hover:bg-[#1A3370] text-white" asChild>
               <Link to="/instructor-app/signup">Get Started Free</Link>
             </Button>
           </div>

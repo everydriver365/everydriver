@@ -59,10 +59,10 @@ export default function InstructorMarketing() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.08 }}
-                className="bg-card border border-border rounded-xl p-6 hover:border-[#09507f]/50 transition-colors"
+                className="bg-card border border-border rounded-xl p-6 hover:border-[#0F2044]/50 transition-colors"
               >
-                <div className="w-12 h-12 bg-[#09507f]/10 rounded-lg flex items-center justify-center mb-4">
-                  <f.icon className="w-6 h-6 text-[#09507f]" />
+                <div className="w-12 h-12 bg-[#0F2044]/10 rounded-lg flex items-center justify-center mb-4">
+                  <f.icon className="w-6 h-6 text-[#0F2044]" />
                 </div>
                 <h3 className="font-semibold text-foreground mb-2">{f.title}</h3>
                 <p className="text-sm text-muted-foreground">{f.description}</p>
@@ -86,7 +86,7 @@ export default function InstructorMarketing() {
             <p className="text-muted-foreground mb-6 max-w-lg mx-auto">
               Explore all 50+ features and see exactly what each plan includes — from diary management to dashcam and telematics.
             </p>
-            <Button size="lg" className="bg-[#09507f] hover:bg-[#09507f]/90 text-white" asChild>
+            <Button size="lg" className="bg-[#0F2044] hover:bg-[#0F2044]/90 text-white" asChild>
               <Link to="/compare">
                 Compare Plans & Features
                 <ArrowRight className="ml-2 h-4 w-4" />

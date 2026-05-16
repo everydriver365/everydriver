@@ -13,7 +13,7 @@ export function InstructorMarketingBottomNav() {
   const location = useLocation();
 
   return (
-    <nav style={{ backgroundColor: "#09507f" }} className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10 md:hidden">
+    <nav style={{ backgroundColor: "#0F2044" }} className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10 md:hidden">
       <div className="flex items-center justify-around h-16 px-1">
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
@@ -36,7 +36,7 @@ export function InstructorMarketingBottomNav() {
           );
         })}
       </div>
-      <div style={{ backgroundColor: "#09507f" }} className="h-safe-area-inset-bottom" />
+      <div style={{ backgroundColor: "#0F2044" }} className="h-safe-area-inset-bottom" />
     </nav>
   );
 }
