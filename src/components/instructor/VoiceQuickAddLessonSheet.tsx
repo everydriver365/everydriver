@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { invalidateLessonQueries } from "@/lib/invalidateLessonQueries";
+import { syncLessonsOrRollback } from "@/lib/syncLessonsOrRollback";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { checkLessonClash } from "@/lib/lessonClashCheck";
@@ -154,18 +155,28 @@ export function VoiceQuickAddLessonSheet({
         return;
       }
 
-      const { error } = await supabase.from("scheduled_lessons").insert({
-        instructor_id: instructorId,
-        pupil_id: matchedPupilId,
-        lesson_date: draft.lesson_date,
-        start_time: `${startTime}:00`,
-        duration_minutes: durationMinutes,
-        pickup_location: draft.location || matchedPupil?.address || null,
-        pickup_postcode: matchedPupil?.postcode || null,
-        notes: draft.notes || null,
-        status: "scheduled",
-      });
+      const { data: inserted, error } = await supabase
+        .from("scheduled_lessons")
+        .insert({
+          instructor_id: instructorId,
+          pupil_id: matchedPupilId,
+          lesson_date: draft.lesson_date,
+          start_time: `${startTime}:00`,
+          duration_minutes: durationMinutes,
+          pickup_location: draft.location || matchedPupil?.address || null,
+          pickup_postcode: matchedPupil?.postcode || null,
+          notes: draft.notes || null,
+          status: "scheduled",
+        })
+        .select("id")
+        .single();
       if (error) throw error;
+      // Synchronous Google Calendar push — rolls back if Google rejects.
+      const syncResult = await syncLessonsOrRollback(inserted?.id ? [inserted.id] : []);
+      if (!syncResult.ok) {
+        setSaving(false);
+        return;
+      }
       invalidateLessonQueries(queryClient);
       toast.success("Lesson added");
       onCreated?.();
