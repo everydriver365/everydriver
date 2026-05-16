@@ -57,16 +57,20 @@ export const inTimeOfDay = engineInTimeOfDay;
 
 export function buildDayConflicts(
   dateStr: string,
-  lessons: { start_time: string; duration_minutes: number; pupil_travel_min?: number | null }[],
+  // Legacy 4-arg signature. The `lessons` parameter is intentionally ignored —
+  // every booking writes a Google Calendar event, so the calendar is the
+  // source of truth for "instructor is busy" (see availabilityEngine.ts rule 5).
+  _lessons: { start_time: string; duration_minutes: number; pupil_travel_min?: number | null }[],
   blocks: { start_datetime: string; end_datetime: string }[],
   events: { start_time: string; end_time: string }[],
 ): TaggedConflict[] {
-  // Legacy callers don't filter all-day Google events upstream — engine does.
-  return engineBuildDayConflicts(dateStr, lessons, blocks, events);
+  return engineBuildDayConflicts(dateStr, blocks, events);
 }
 
-export function describeReason(reason: RejectReason, padMin: number): string {
-  return engineDescribeReason(reason, padMin);
+export function describeReason(reason: RejectReason, _padMin?: number): string {
+  // Legacy 2-arg signature; engine now takes only the reason.
+  void _padMin;
+  return engineDescribeReason(reason);
 }
 
 export function computeFreeSlots(input: DayInputs): CoreSlot[] {
@@ -92,17 +96,14 @@ export function classifyConflict(
   c: TaggedConflict,
   padMin: number,
 ): RejectReason | null {
-  // Re-classify via the engine by single-slot probe.
   const effectivePad = c.padOverrideMin != null ? c.padOverrideMin + ENGINE_TRAVEL_FALLBACK_MIN : padMin;
   const direct = slotStart < c.end && slotEnd > c.start;
   const padded = slotStart < c.end + effectivePad && slotEnd > c.start - effectivePad;
   if (!padded) return null;
   if (direct) {
-    if (c.kind === "lesson") return "overlap_lesson";
     if (c.kind === "block") return "overlap_block";
     return "overlap_event";
   }
-  if (c.kind === "lesson") return "buffer_lesson";
   if (c.kind === "block") return "buffer_block";
   return "buffer_event";
 }

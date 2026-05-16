@@ -25,7 +25,6 @@ import {
   type WeeklyHourRow,
   type DateOverrideRow,
   type CalendarEventRow,
-  type ScheduledLessonRow,
   type ManualBlockRow,
 } from "@/lib/courseAvailability";
 
@@ -386,7 +385,6 @@ export default function Courses() {
   const [availabilityWindowRows, setAvailabilityWindowRows] = useState<WeeklyHourRow[]>([]);
   const [overrideRows, setOverrideRows] = useState<DateOverrideRow[]>([]);
   const [calendarEvents, setCalendarEvents] = useState<CalendarEventRow[]>([]);
-  const [scheduledLessons, setScheduledLessons] = useState<ScheduledLessonRow[]>([]);
   const [manualBlocks, setManualBlocks] = useState<ManualBlockRow[]>([]);
 
   const availabilitySources: CourseAvailabilitySources = useMemo(() => ({
@@ -394,9 +392,8 @@ export default function Courses() {
     availabilityWindows: availabilityWindowRows,
     overrides: overrideRows,
     calendarEvents,
-    scheduledLessons,
     manualBlocks,
-  }), [workingHourRows, availabilityWindowRows, overrideRows, calendarEvents, scheduledLessons, manualBlocks]);
+  }), [workingHourRows, availabilityWindowRows, overrideRows, calendarEvents, manualBlocks]);
 
   const monthOptions = useMemo(() => getMonthOptions(), []);
   
@@ -838,7 +835,6 @@ export default function Courses() {
       const loadedAvailabilityWindowRows = loadedAvailabilitySources.availabilityWindows;
       const loadedOverrides = loadedAvailabilitySources.overrides;
       const loadedCalendarEvents = loadedAvailabilitySources.calendarEvents;
-      const loadedScheduledLessons = loadedAvailabilitySources.scheduledLessons;
       const loadedManualBlocks = loadedAvailabilitySources.manualBlocks;
 
       setInstructors(loadedInstructors);
@@ -848,7 +844,6 @@ export default function Courses() {
       setAvailabilityWindowRows(loadedAvailabilityWindowRows);
       setOverrideRows(loadedOverrides);
       setCalendarEvents(loadedCalendarEvents);
-      setScheduledLessons(loadedScheduledLessons);
       setManualBlocks(loadedManualBlocks);
 
       // Auto-advance to first available date
