@@ -49,6 +49,16 @@ interface Instructor {
   school_skim_amount?: number | null;
   klarna_enabled?: boolean | null;
   clearpay_enabled?: boolean | null;
+  is_network_placeholder?: boolean | null;
+  placeholder_district?: string | null;
+}
+
+// Extract UK postcode district (outcode), e.g. "WD17 3AA" -> "WD17".
+function extractPostcodeDistrict(raw: string | null | undefined): string | null {
+  if (!raw) return null;
+  const cleaned = raw.replace(/\s+/g, "").toUpperCase();
+  const m = cleaned.match(/^([A-Z]{1,2}[0-9][A-Z0-9]?)/);
+  return m ? m[1] : null;
 }
 
 interface InstructorCourse {
