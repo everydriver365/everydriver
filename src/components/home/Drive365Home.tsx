@@ -327,6 +327,7 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
           .d365-cta-icon { width: 22px; height: 22px; border-radius: 999px; background: rgba(255,255,255,0.2); display: inline-flex; align-items: center; justify-content: center; }
           .d365-feat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
           .d365-feat { background: #EAF0FF; padding: 20px; border-radius: 4px; display: flex; flex-direction: column; gap: 12px; }
+          .d365-feat-full { grid-column: 1 / -1; }
           .d365-feat img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 4px; display: block; background: #9FD3E8; }
           .d365-feat h3 { font-size: 16px; font-weight: 800; color: #0A0A0A; text-transform: uppercase; letter-spacing: 0.02em; margin: 0; font-family: Inter, "Helvetica Neue", system-ui, sans-serif; }
           .d365-feat p { font-size: 14px; line-height: 1.5; color: #4B5563; margin: 0; }
@@ -389,7 +390,7 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
                   <button type="button" className="d365-feat-btn">Read more</button>
                 </Link>
               </div>
-              <div className="d365-feat">
+              <div className="d365-feat d365-feat-full">
                 <img
                   src={weeklyCourseImg}
                   alt="Learner driver having a regular weekly driving lesson with a friendly instructor"
