@@ -1,87 +1,126 @@
-## What is actually wrong
 
-Ken D is now showing no slots because the scheduler is treating long/all-day Google Calendar entries as hard busy time. His diary contains entries like:
+# Unified Availability Engine
 
-- `Summer term` from 13 Apr to 23 Jul
-- `Lotty : No College` spanning 1–2 Jun
+## Goal
 
-Those are all-day/informational calendar items, but the current slot picker blocks them as if Ken is physically unavailable for the whole period. That wipes out every slot. Previous fixes also patched different surfaces separately, so one change fixes one screen and breaks another.
+Replace the 6+ separate slot calculators with **one function** that every booking surface — and the server-side `create-booking` guard — calls. This ends the whack-a-mole where fixing one screen breaks another (Ken D being the latest example).
 
-## Proposed solution: rebuild the diary logic into one engine
+## The single source of truth
 
-### 1. Create one shared availability engine
-Build a single resolver used by every booking surface:
+New file: `src/lib/availabilityEngine.ts`
 
-- Public course list available dates
-- Public/pupil slot picker
-- Instructor “find slot” / gap tools
-- Server-side booking validation
+Signature:
+```ts
+resolveAvailability({
+  instructorId, date, durationMinutes,
+  pupilId?, timeOfDay?, isCourseBooking?
+}) → { slots, rejected, diagnostics }
+```
 
-It will resolve slots from the same ordered inputs every time:
+It runs the same pipeline every time:
 
-1. Instructor working hours / date overrides
-2. App diary lessons
-3. Manual blocks
-4. Timed Google Calendar busy events
-5. Instructor buffer
-6. Travel time/fallback
+```text
+1. Load working_hours for that weekday
+2. Load scheduled_lessons (app diary) for the date
+3. Load manual_blocks overlapping the date
+4. Load instructor_calendar_events (Google) for the date
+5. Filter Google events:
+     - timed event  → BLOCKS
+     - all-day      → IGNORED (informational)
+     - multi-day >12h → IGNORED (informational)
+6. Apply instructor.buffer_minutes
+7. Apply per-pupil travel_time_minutes (pupil_travel_min)
+8. Apply first-lesson-of-day rule (no leading buffer)
+9. Walk the day in 15-min steps, emit slots that fit duration
+10. Return { slots, rejected: [{ time, reason }] }
+```
 
-No screen should calculate slots itself anymore.
+## What gets deleted / migrated
 
-### 2. Define Google Calendar rules clearly
-Use consistent rules instead of guessing per component:
+| File | Action |
+|---|---|
+| `src/lib/availabilityCore.ts` | Folded into engine |
+| `src/lib/courseAvailability.ts` | Folded into engine |
+| `src/lib/lessonClashCheck.ts` | Folded into engine |
+| `src/components/booking/LessonScheduler.tsx` | Delete local slot logic, call engine |
+| `src/hooks/useInstructorAvailabilitySearch.ts` | Call engine |
+| `src/hooks/useRealGapSlots.ts` | Call engine |
+| `src/pages/Courses.tsx` availability check | Call engine |
+| `supabase/functions/create-booking/index.ts` | Call engine (shared copy) before confirming |
 
-- Timed Google events block slots.
-- Multi-day/all-day calendar events do **not** block learner slots by default.
-- Manual blocks remain the correct way for instructors to block full days/holidays.
-- Optional later enhancement: allow specific all-day Google titles like “holiday”, “leave”, “unavailable” to block the day, but I would not add this now because it risks false blocking again.
+## Server-side guard (critical)
 
-### 3. Replace `LessonScheduler` slot generation
-Refactor `LessonScheduler.tsx` so it only:
+The engine also runs inside `create-booking`. Even if a stale UI offers a slot, the server re-checks and rejects it with a clear reason. The UI and server can never disagree.
 
-- Loads availability sources
-- Calls the shared engine
-- Renders the slots returned
+Implementation: a small Deno-compatible copy of the engine lives in `supabase/functions/_shared/availabilityEngine.ts`, imported by `create-booking` and any other function that needs to validate a slot.
 
-Remove its local custom conflict logic, especially the current all-day blocking behaviour.
+## Google Calendar rules — codified
 
-### 4. Strengthen the booking guard
-Update `create-booking` so payment-time validation uses the same conflict rules as the shared engine:
+Written down once, applied everywhere:
 
-- It must reject app diary clashes.
-- It must reject manual blocks.
-- It must reject timed Google Calendar clashes.
-- It must ignore informational all-day/multi-day Google events.
-- It must use the same buffer/travel padding as the UI.
+- **Timed event** → blocks that time window
+- **All-day event** (00:00–23:59 single day) → informational, does NOT block
+- **Multi-day event** (>12h duration or spans dates) → informational, does NOT block
+- **Manual block** in the app → always blocks
 
-This prevents “shown but rejected” and “not shown but should be available” mismatches.
+If an instructor wants an all-day Google event to block bookings, they add a manual block. This is predictable and matches how every other scheduler in the industry behaves.
 
-### 5. Add a slot diagnostic helper
-Add a small internal diagnostic function/helper for a given instructor/date/duration that reports:
+## Diagnostic mode
 
-- Working window
-- Conflicts used
-- Slots accepted
-- Slots rejected and why
+The engine returns a `diagnostics` object the UI can render in a dev panel:
 
-This will make future diary issues debuggable instead of guessing.
+```text
+Ken D · 2026-06-01 · 2h lesson
+Working hours: 09:00–18:00
+Conflicts:
+  ✓ Lesson 10:00–11:00 (app diary)       blocking
+  ✗ "Summer term" Apr–Jul (Google)        skipped: multi-day
+  ✗ "Lotty No College" 1–2 Jun (Google)   skipped: multi-day
+Buffer: 15 min · Travel: 10 min
+Slots offered: 12:15, 13:15, 14:15, 15:15, 16:00
+```
 
-### 6. Verify against Ken D before finishing
-Use Ken D’s live data as the test case:
+This makes future debugging take seconds.
 
-- 1 Jun should remain blocked by actual timed events/lesson conflicts.
-- Other days should show slots where working hours have real free time.
-- Long events like `Summer term` must not erase the entire calendar.
-- Duplicate lessons/events should not create false availability.
+## Verification before ship
 
-## Files expected to change
+1. Run engine against Ken D (`c9843b58-…`) for 1 Jun, 7 Jun, plus the week he reported broken — confirm slots match what he expects.
+2. Run against 2 other live instructors with different buffer / travel settings.
+3. Confirm `create-booking` rejects a manually-crafted clashing payload.
+4. Confirm course booking, single-lesson booking, and Fill-Gaps all return identical slot lists for the same inputs.
 
-- `src/lib/courseAvailability.ts`
-- `src/lib/availabilityCore.ts` or a new focused shared engine file
+## What is explicitly NOT changing
+
+- Database schema (no migrations needed)
+- Google Calendar sync architecture (service account + DWD, per memory)
+- Mobile layouts
+- Payment flows
+- Buffer / travel time / first-lesson rules — same rules, just enforced in one place
+
+## Effort
+
+- Day 1: Build engine + diagnostic + edge function copy
+- Day 2: Migrate 6 surfaces to call it, delete old code
+- Day 3: Verify against Ken D + 2 other instructors, ship
+
+## Risk
+
+Low. The engine is a pure function over inputs you already query today. Old files stay in place until each caller is migrated, so rollback per-surface is trivial.
+
+## Files touched
+
+**Created**
+- `src/lib/availabilityEngine.ts`
+- `supabase/functions/_shared/availabilityEngine.ts`
+
+**Edited**
 - `src/components/booking/LessonScheduler.tsx`
 - `src/hooks/useInstructorAvailabilitySearch.ts`
+- `src/hooks/useRealGapSlots.ts`
+- `src/pages/Courses.tsx`
 - `supabase/functions/create-booking/index.ts`
 
-## Result
-
-After this, the app will have one diary truth source instead of several inconsistent slot calculators, so fixing one surface should not break another.
+**Deleted (after migration)**
+- `src/lib/availabilityCore.ts`
+- `src/lib/courseAvailability.ts`
+- `src/lib/lessonClashCheck.ts`
