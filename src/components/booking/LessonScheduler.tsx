@@ -396,112 +396,47 @@ export function LessonScheduler({
     return getAvailableTimeSlots(date).length > 0;
   };
 
-  const getAvailableTimeSlots = (date: Date) => {
-    const availability = getAvailabilityForDate(date);
-    if (!availability) return [];
+  // Unified slot generator — calls the engine via computeDaySlots, the SAME
+  // path used by /courses discovery and the create-booking server guard.
+  // Pupil-selected (not-yet-submitted) slots are folded into manual_blocks so
+  // they block each other without going to the database.
+  const getAvailableTimeSlots = (date: Date): string[] => {
+    if (!sources) return [];
 
-    const { startTime, endTime } = availability;
-    const slots: string[] = [];
     const dateStr = format(date, "yyyy-MM-dd");
+    const selectedAsBlocks = selectedSlots
+      .filter((s) => isSameDay(s.date, date))
+      .map((s) => ({
+        instructor_id: instructorId,
+        start_datetime: `${format(s.date, "yyyy-MM-dd")}T${s.startTime}:00`,
+        end_datetime: `${format(s.date, "yyyy-MM-dd")}T${s.endTime}:00`,
+      }));
 
-    // Helper to check if a slot conflicts with external calendar events
-    const conflictsWithExternalEvents = (slotStart: string, slotEnd: string) => {
-      const slotStartDateTime = new Date(`${dateStr}T${slotStart}:00`);
-      const slotEndDateTime = new Date(`${dateStr}T${slotEnd}:00`);
-
-      // Match courseAvailability + booking-guard: pad each conflict by
-      // instructor buffer + travel fallback (or the live travel estimate if larger).
-      const padMinutes = bufferMinutes + Math.max(TRAVEL_FALLBACK_MIN, travelBufferMinutes ?? 0);
-      const bufferMs = padMinutes * 60 * 1000;
-      return externalEvents.some((event) => {
-        const eventStart = new Date(event.start_time);
-        const eventEnd = new Date(event.end_time);
-
-        // All-day events are still blocking — instructors mark themselves
-        // unavailable that way (holidays, off-days, all-day appointments).
-        // Expand conflict zone by buffer.
-        const bufferedStart = new Date(eventStart.getTime() - bufferMs);
-        const bufferedEnd = new Date(eventEnd.getTime() + bufferMs);
-
-        return (
-          (slotStartDateTime >= bufferedStart && slotStartDateTime < bufferedEnd) ||
-          (slotEndDateTime > bufferedStart && slotEndDateTime <= bufferedEnd) ||
-          (slotStartDateTime < bufferedStart && slotEndDateTime > bufferedStart)
-        );
-      });
+    const srcWithSelected: CourseAvailabilitySources = {
+      ...sources,
+      manualBlocks: [...sources.manualBlocks, ...selectedAsBlocks],
     };
 
-    const now = new Date();
-    const isToday = isSameDay(date, now);
+    const instructor: InstructorLite = {
+      id: instructorId,
+      available_from: availableFrom ?? null,
+      buffer_minutes: bufferMinutes,
+      is_network_placeholder: false,
+    };
 
-    // Determine the earliest existing event/lesson on this day to check if slot is "first of day"
-    const daySelectedSlots = selectedSlots
-      .filter(s => isSameDay(s.date, date))
-      .map(s => s.startTime)
-      .sort();
-    const dayExternalStarts = externalEvents
-      .filter(e => {
-        const evDate = new Date(e.start_time);
-        const evEnd = new Date(e.end_time);
-        if (evEnd.getTime() - evDate.getTime() >= 24 * 60 * 60 * 1000) return false;
-        return format(evDate, "yyyy-MM-dd") === dateStr;
-      })
-      .map(e => format(new Date(e.start_time), "HH:mm"))
-      .sort();
-    const hasExistingEvents = daySelectedSlots.length > 0 || dayExternalStarts.length > 0;
+    // First-lesson travel buffer applies when the pupil postcode lookup
+    // produced a travel estimate larger than the back-to-back buffer.
+    const firstLessonBuffer = Math.max(travelBufferMinutes ?? 0, TRAVEL_FALLBACK_MIN);
 
-    // The earliest time the instructor can start if coming from home
-    const travelAdjustedStart = effectiveFirstSlotBuffer > 0
-      ? addMinutesToTime(startTime, effectiveFirstSlotBuffer)
-      : startTime;
+    const { slots } = computeDaySlots(instructor, date, srcWithSelected, {
+      durationMinutes: selectedDuration,
+      bufferMinutes,
+      firstLessonBufferMinutes: firstLessonBuffer,
+      slotIncrementMinutes,
+    });
 
-    for (const time of TIME_SLOTS) {
-      if (time >= startTime && time < endTime) {
-        // Check if there's enough time for the selected lesson duration
-        const slotEnd = addMinutesToTime(time, selectedDuration);
-        if (slotEnd <= endTime) {
-          // Skip slots in the past for today
-          if (isToday) {
-            const slotDateTime = new Date(`${dateStr}T${time}:00`);
-            if (slotDateTime <= now) {
-              continue;
-            }
-          }
-
-          // For first-of-day slots, apply travel buffer: slot must start after travelAdjustedStart
-          // A slot is "first of day" if no existing events precede it
-          const isFirstOfDay = !hasExistingEvents || (
-            daySelectedSlots.every(s => s >= time) && dayExternalStarts.every(s => s >= time)
-          );
-          if (isFirstOfDay && effectiveFirstSlotBuffer > bufferMinutes && time < travelAdjustedStart) {
-            continue;
-          }
-
-          // Check if slot conflicts with already selected slots (with buffer)
-          const conflictsWithSelected = selectedSlots.some(
-            (s) => {
-              if (!isSameDay(s.date, date)) return false;
-              const bufferedStart = addMinutesToTime(s.startTime, -bufferMinutes);
-              const bufferedEnd = addMinutesToTime(s.endTime, bufferMinutes);
-              return (
-                (time >= bufferedStart && time < bufferedEnd) ||
-                (slotEnd > bufferedStart && slotEnd <= bufferedEnd) ||
-                (time < bufferedStart && slotEnd > bufferedStart)
-              );
-            }
-          );
-          
-          // Check if slot conflicts with external calendar events
-          const conflictsWithExternal = conflictsWithExternalEvents(time, slotEnd);
-          
-          if (!conflictsWithSelected && !conflictsWithExternal) {
-            slots.push(time);
-          }
-        }
-      }
-    }
-
-    return slots;
+    void dateStr; // (retained name for clarity)
+    return slots.map((s) => fromMinutes(s.start));
   };
 
   const addMinutesToTime = (time: string, minutes: number) => {
