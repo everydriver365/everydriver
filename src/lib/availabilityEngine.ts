@@ -160,14 +160,14 @@ export function buildDayConflicts(
   };
 
   for (const b of blocks) {
-    const c = clipUTC(b.start_datetime, b.end_datetime);
+    const c = clipLondon(b.start_datetime, b.end_datetime);
     if (c) out.push({ ...c, kind: "block", label: b.label });
   }
 
   for (const e of events) {
     if (e.is_busy === false) continue;
     if (isAllDayLikeEvent(e.start_time, e.end_time)) continue;
-    const c = clipUTC(e.start_time, e.end_time);
+    const c = clipLondon(e.start_time, e.end_time);
     if (c) out.push({ ...c, kind: "event", label: e.label, padOverrideMin: e.padOverrideMin });
   }
 
