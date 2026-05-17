@@ -329,17 +329,26 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
           .d365-cta { width: 100%; background: #0F2044; color: #FFFFFF; border: none; border-radius: 2px; padding: 16px 20px; font-size: 14px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 10px; transition: background 120ms ease; font-family: inherit; }
           .d365-cta:hover { background: #1A3370; }
           .d365-cta-icon { width: 22px; height: 22px; border-radius: 999px; background: rgba(255,255,255,0.2); display: inline-flex; align-items: center; justify-content: center; }
-          .d365-feat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-          .d365-feat { background: #EAF0FF; padding: 20px; border-radius: 4px; display: flex; flex-direction: column; gap: 12px; }
+          .d365-feat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: stretch; }
+          .d365-feat { background: #EAF0FF; padding: 20px; border-radius: 4px; display: flex; flex-direction: column; justify-content: space-between; gap: 12px; height: 100%; }
+          .d365-feat > h3 { margin-top: 0; }
+          .d365-feat > p { flex: 1; }
           .d365-feat-full { grid-column: 1 / -1; }
-          .d365-feat-row-layout { flex-direction: row; align-items: stretch; gap: 16px; }
+          .d365-feat-row-layout { flex-direction: row; align-items: stretch; gap: 16px; justify-content: flex-start; }
           .d365-feat-row-layout .d365-feat-thumb { width: 140px; aspect-ratio: 1 / 1; flex: 0 0 140px; object-fit: cover; border-radius: 4px; display: block; background: #9FD3E8; }
-          .d365-feat-body { display: flex; flex-direction: column; gap: 8px; flex: 1; }
+          .d365-feat-body { display: flex; flex-direction: column; justify-content: space-between; gap: 8px; flex: 1; }
+          .d365-feat-body > p { flex: 1; }
           .d365-feat img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 4px; display: block; background: #9FD3E8; }
           .d365-feat h3 { font-size: 16px; font-weight: 800; color: #0A0A0A; text-transform: uppercase; letter-spacing: 0.02em; margin: 0; font-family: Inter, "Helvetica Neue", system-ui, sans-serif; }
           .d365-feat p { font-size: 14px; line-height: 1.5; color: #4B5563; margin: 0; }
-          .d365-feat-btn { width: 100%; background: #0F2044; color: #FFFFFF; border: none; border-radius: 2px; padding: 12px; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; cursor: pointer; font-family: inherit; transition: background 120ms ease; }
+          .d365-feat-btn { width: 100%; height: 34px; background: #0F2044; color: #FFFFFF; border: none; border-radius: 2px; padding: 0 12px; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; cursor: pointer; font-family: inherit; transition: background 120ms ease; display: flex; align-items: center; justify-content: center; margin-top: 0; }
           .d365-feat-btn:hover { background: #1A3370; }
+          .d365-feat-btn--red { background: #D12E2E; }
+          .d365-feat-btn--red:hover { background: #B02020; }
+          .d365-feat-btn--blue { background: #1A6FD4; }
+          .d365-feat-btn--blue:hover { background: #1558A8; }
+          .d365-feat-btn--dark { background: #0A0E27; }
+          .d365-feat-btn--dark:hover { background: #1A1F3D; }
           .d365-spacer { background: #EAF0FF; height: 40px; border-radius: 4px; width: 100%; }
           .d365-why-wrap { background: #FFFFFF; padding: 80px 24px 56px; display: flex; justify-content: center; }
           .d365-why { width: 100%; max-width: 1200px; display: grid; grid-template-columns: 30% 70%; align-items: start; }
@@ -382,8 +391,8 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
                 />
                 <h3>Intensive Courses</h3>
                 <p>Briefly and concisely explain what you do for your audience.</p>
-                <Link to="/courses?type=intensive" style={{ marginTop: "auto" }}>
-                  <button type="button" className="d365-feat-btn">Read more</button>
+                <Link to="/courses?type=intensive">
+                  <button type="button" className="d365-feat-btn d365-feat-btn--red">Read more</button>
                 </Link>
               </div>
               <div className="d365-feat">
@@ -394,8 +403,8 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
                 />
                 <h3>Semi Intensive Courses</h3>
                 <p>Briefly and concisely explain what you do for your audience.</p>
-                <Link to="/courses?type=semi-intensive" style={{ marginTop: "auto" }}>
-                  <button type="button" className="d365-feat-btn">Read more</button>
+                <Link to="/courses?type=semi-intensive">
+                  <button type="button" className="d365-feat-btn d365-feat-btn--blue">Read more</button>
                 </Link>
               </div>
               <div className="d365-feat d365-feat-full d365-feat-row-layout">
@@ -408,8 +417,8 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
                 <div className="d365-feat-body">
                   <h3>Weekly Lessons</h3>
                   <p>Briefly and concisely explain what you do for your audience.</p>
-                  <Link to="/courses?type=weekly" style={{ marginTop: "auto" }}>
-                    <button type="button" className="d365-feat-btn">Read more</button>
+                  <Link to="/courses?type=weekly">
+                    <button type="button" className="d365-feat-btn d365-feat-btn--dark">Read more</button>
                   </Link>
                 </div>
               </div>

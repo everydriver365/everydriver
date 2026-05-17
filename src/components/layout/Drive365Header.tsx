@@ -163,7 +163,7 @@ export function Drive365Header() {
             </Link>
             <Link
               to="/courses"
-              className="inline-flex items-center justify-center bg-[#0F2044] hover:bg-[#1A3370] text-white text-[14px] font-medium transition-colors"
+              className="inline-flex items-center justify-center bg-[#1A6FD4] hover:bg-[#1558A8] text-white text-[14px] font-medium transition-colors"
               style={{ padding: "10px 20px", borderRadius: "2px", letterSpacing: "0.5px" }}
             >
               Find courses
