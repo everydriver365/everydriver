@@ -1,32 +1,26 @@
 ## Goal
-Make every Drive365 marketing page use the same white `Drive365Header` currently used by `/courses`, instead of the legacy navy `Header`.
+Create a mock pupil **Dave Kebab** assigned to instructor **Ken D**, with a working pupil-portal login:
+- Email: `lrsp@dufosse.co.uk`
+- Password: `Topsydog1&`
 
-## Change
-Single edit in `src/components/layout/MainLayout.tsx`: replace the `useDrive365Header` route-allowlist logic so the white `Drive365Header` is the default for the learner-app surface, and the legacy `Header` is no longer rendered there.
+## Approach
+Use the existing `pupil-email-auth` edge function (action: `register`) — it's the same path used by the public pupil signup flow, so it:
+1. Creates the auth user with the given password
+2. Inserts a `pupils` row linked to the chosen instructor
+3. Wires up the `user_roles` entry as `pupil`
 
-```ts
-// before
-const DRIVE365_HEADER_ROUTES = ["/courses"];
-const useDrive365Header = DRIVE365_HEADER_ROUTES.some(...);
-{useDrive365Header ? <Drive365Header /> : <Header />}
+This keeps the account behaviourally identical to a real registration (no DB drift, no orphan rows).
 
-// after
-<Drive365Header />
-```
+### Steps
+1. Invoke `pupil-email-auth` with:
+   - `action: "register"`
+   - `email: "lrsp@dufosse.co.uk"`
+   - `password: "Topsydog1&"`
+   - `name: "Dave Kebab"`
+   - `instructorId: "c9843b58-6edb-4b97-8238-65d725e30aea"` (Ken D)
+2. Verify the new `pupils` row exists and the auth user can sign in.
+3. Confirm the pupil portal URL: `/p/ken-d` (Ken D's `app_slug`).
 
-This automatically updates every page that wraps itself in `MainLayout`, including:
-- `/drive365`, `/drive365/franchise/*`
-- `/theory`, `/about`, `/faqs`, `/help`, `/test-swap`, `/intensives`, `/semi-intensive`
-- `/franchise` and `/franchise/*` (healthcare, bonus, technology, whats-included)
-- `/reviews`, `/news`, `/news/*`
-- `/courses` (unchanged behaviour)
-
-No per-page edits needed — they all already use `MainLayout`.
-
-## Out of scope
-- EveryDriver (`/everydriver/*`) pages, whitelabel domains, instructor SaaS marketing, mini-sites, and pupil/admin portals all use different layouts and are not Drive365 surfaces.
-- Mobile layout is unchanged — `Drive365Header` has its own responsive behaviour.
-- `Header.tsx` stays in the repo (still imported by `MainLayout` types and possibly other surfaces); only its usage inside `MainLayout` is removed.
-
-## Verification
-After the change, navigate to `/drive365/franchise`, `/theory`, `/about`, `/test-swap`, `/courses` and confirm the same white Drive365 nav appears on all.
+### Notes
+- This writes to the live DB (real auth user + real pupil row). Per the Demo Data rule, mock pupils normally use Demo Mode, but here you've explicitly asked for a working login — so a real account is required. If you'd prefer it flagged for easy cleanup later, I can add `[MOCK]` to the notes field.
+- No schema changes, no code changes — pure data setup via existing function.
