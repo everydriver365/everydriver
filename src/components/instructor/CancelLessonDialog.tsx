@@ -132,6 +132,15 @@ export function CancelLessonDialog({
 
       if (lessonError) throw lessonError;
 
+      // Synchronously remove the Google Calendar event so the slot is freed
+      // immediately. The DB trigger also enqueues a deleteLesson as a safety
+      // net in case this invoke fails.
+      try {
+        await supabase.functions.invoke("sync-lesson-now", { body: { lessonId } });
+      } catch (syncErr) {
+        console.error("CancelLessonDialog: sync-lesson-now failed", syncErr);
+      }
+
       if (chargeAmount > 0) {
         const newBalance = pupilBalance - chargeAmount;
         const { error: balanceError } = await supabase

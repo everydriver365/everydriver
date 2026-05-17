@@ -198,7 +198,7 @@ export async function syncLessonNow(
     .select(
       "id, instructor_id, lesson_date, start_time, duration_minutes, lesson_type, " +
       "pickup_location, pickup_postcode, notes, status, awaiting_initial_payment, " +
-      "google_event_id, pupils:pupil_id(name)",
+      "google_event_id, deleted_at, pupils:pupil_id(name)",
     )
     .eq("id", lessonId)
     .maybeSingle();
@@ -213,11 +213,16 @@ export async function syncLessonNow(
     notes: string | null; status: string | null;
     awaiting_initial_payment: boolean | null;
     google_event_id: string | null;
+    deleted_at: string | null;
     pupils: { name: string } | null;
   };
 
-  if (lesson.awaiting_initial_payment) return { ok: false, skipped: true, reason: "awaiting-payment" };
-  if (lesson.status === "cancelled" && !lesson.google_event_id) {
+  const isRemoved = lesson.status === "cancelled" || lesson.deleted_at != null;
+
+  if (lesson.awaiting_initial_payment && !isRemoved) {
+    return { ok: false, skipped: true, reason: "awaiting-payment" };
+  }
+  if (isRemoved && !lesson.google_event_id) {
     return { ok: false, skipped: true, reason: "cancelled-no-event" };
   }
 
@@ -240,8 +245,8 @@ export async function syncLessonNow(
   const calendarId   = cal.calendar_id as string;
   const accessToken  = await getServiceAccountAccessToken();
 
-  // ── 3. Handle cancellation → delete ────────────────────────────────────
-  if (lesson.status === "cancelled" && lesson.google_event_id) {
+  // ── 3. Handle cancellation / soft-delete → delete on Google ────────────
+  if (isRemoved && lesson.google_event_id) {
     await deleteGoogleEvent(accessToken, calendarId, lesson.google_event_id);
     await supabase
       .from("scheduled_lessons")

@@ -1299,6 +1299,7 @@ Deno.serve(async (req) => {
               cancellation_reason: "Event deleted in Google Calendar",
               calendar_sync_status: "deleted-from-google",
               google_event_id: null,
+              deleted_at: new Date().toISOString(),
             })
             .eq("instructor_id", instructorId)
             .in("google_event_id", removedIds);
