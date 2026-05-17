@@ -259,7 +259,7 @@ export default function Index() {
                     }}
                   >
                     {img && (
-                      <img src={img} alt={feature.title} style={{ width: "100%", height: 130, objectFit: "cover", display: "block" }} />
+                      <img src={img} alt={feature.title} style={{ width: "100%", aspectRatio: "16/10", objectFit: "cover", display: "block" }} />
                     )}
                     <div style={{ padding: 12, flex: 1, display: "flex", flexDirection: "column", gap: 4 }}>
                       <span style={{
@@ -296,7 +296,7 @@ export default function Index() {
                     }}
                   >
                     {img && (
-                      <img src={img} alt={feature.title} style={{ width: "100%", height: 100, objectFit: "cover", display: "block" }} />
+                      <img src={img} alt={feature.title} style={{ width: "100%", aspectRatio: "16/10", objectFit: "cover", display: "block" }} />
                     )}
                     <div style={{ padding: 12, flex: 1, display: "flex", flexDirection: "column", gap: 4 }}>
                       <span style={{
