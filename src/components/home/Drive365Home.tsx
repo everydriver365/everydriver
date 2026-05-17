@@ -425,7 +425,7 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  justifyContent: "center",
+                  justifyContent: "flex-start",
                   gap: 8,
                   marginTop: 8,
                 }}
