@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Facebook, Twitter, Mail, Phone, MapPin } from "lucide-react";
+import { Twitter, Mail, Phone, MapPin } from "lucide-react";
 import { useRouteLogo } from "@/hooks/useRouteLogo";
 import { getWhitelabelConfig } from "@/lib/whitelabel";
 import { getAreasForHost, areaToSlug } from "@/lib/whitelabelAreas";
@@ -60,15 +60,6 @@ export function Footer() {
               <p style={{ color: "rgba(255,255,255,0.55)", fontSize: 10, lineHeight: 1.5, marginTop: 10, marginBottom: 12 }}>
                 Professional driving instruction to help you pass your test with confidence.
               </p>
-              <div style={{ display: "flex", gap: 8 }}>
-                {[Facebook].map((Icon, i) => (
-                  <a key={i} href="#" style={{ width: 28, height: 28, borderRadius: 4, background: "rgba(255,255,255,0.08)", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "#fff" }}
-                    onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.15)")}
-                    onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.08)")}>
-                    <Icon style={{ width: 11, height: 11 }} />
-                  </a>
-                ))}
-              </div>
             </div>
             <div>
               <h3 style={{ color: "#fff", fontSize: 11, fontWeight: 700, marginBottom: 10 }}>Quick Links</h3>
@@ -158,14 +149,6 @@ export function Footer() {
             <p className="text-sm text-primary-foreground/70">
               Professional driving instruction to help you pass your test with confidence.
             </p>
-            <div className="flex gap-4">
-              <a href="#" className="text-primary-foreground/70 transition-colors hover:text-accent">
-                <Facebook className="h-5 w-5" />
-              </a>
-              <a href="#" className="text-primary-foreground/70 transition-colors hover:text-accent">
-                <Twitter className="h-5 w-5" />
-              </a>
-            </div>
           </div>
 
           {/* Quick Links */}
