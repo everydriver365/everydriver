@@ -392,11 +392,6 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
           </div>
           <div className="d365-hero-right">
             <div className="d365-welcome text-center">
-              <img
-                src={drive365Logo}
-                alt="Drive365"
-                style={{ maxHeight: 28, width: "auto", objectFit: "contain", marginBottom: 10 }}
-              />
               <h1>Welcome to Drive 365</h1>
               <p className="mx-0 py-0">
                 Search, compare and book direct with independent, instructors  in the UK.
