@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, ChevronDown } from "lucide-react";
 import { PostcodeAutocomplete } from "@/components/PostcodeAutocomplete";
+import { useTypewriter } from "@/hooks/useTypewriter";
 import klarnaClearpayPills from "@/assets/klarna-clearpay-pills.png";
 
 const RADIUS_OPTIONS = [
