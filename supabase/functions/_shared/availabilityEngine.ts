@@ -90,6 +90,26 @@ export function inTimeOfDay(startMin: number, tod: TimeOfDay = "any"): boolean {
   return true;
 }
 
+// Cached formatter — extracts wall-clock date + time parts in Europe/London,
+// honouring BST/GMT transitions. Works identically in Node, browser, and Deno.
+const LONDON_PARTS_FMT = new Intl.DateTimeFormat("en-GB", {
+  timeZone: "Europe/London",
+  year: "numeric", month: "2-digit", day: "2-digit",
+  hour: "2-digit", minute: "2-digit", hour12: false,
+});
+
+export function toLondonParts(d: Date): { date: string; hour: number; minute: number } {
+  const parts = LONDON_PARTS_FMT.formatToParts(d);
+  const get = (t: string) => parts.find((p) => p.type === t)?.value ?? "00";
+  const year = get("year");
+  const month = get("month");
+  const day = get("day");
+  let hour = parseInt(get("hour"), 10);
+  if (hour === 24) hour = 0;
+  const minute = parseInt(get("minute"), 10);
+  return { date: `${year}-${month}-${day}`, hour, minute };
+}
+
 export function buildDayConflicts(
   dateStr: string,
   blocks: Array<{ start_datetime: string; end_datetime: string; label?: string }>,
@@ -97,29 +117,30 @@ export function buildDayConflicts(
 ): TaggedConflict[] {
   const out: TaggedConflict[] = [];
 
-  const pad2 = (n: number) => n.toString().padStart(2, "0");
-  const clipUTC = (sIso: string, eIso: string): Slot | null => {
+  // Clip to **Europe/London local minutes-of-day** — working-hours strings
+  // ("09:00") are local clock minutes, so conflicts must match.
+  const clipLondon = (sIso: string, eIso: string): Slot | null => {
     const sd = new Date(sIso);
     const ed = new Date(eIso);
     if (isNaN(sd.getTime()) || isNaN(ed.getTime())) return null;
-    const sStr = `${sd.getUTCFullYear()}-${pad2(sd.getUTCMonth() + 1)}-${pad2(sd.getUTCDate())}`;
-    const eStr = `${ed.getUTCFullYear()}-${pad2(ed.getUTCMonth() + 1)}-${pad2(ed.getUTCDate())}`;
-    if (sStr > dateStr || eStr < dateStr) return null;
-    const startMin = sStr === dateStr ? sd.getUTCHours() * 60 + sd.getUTCMinutes() : 0;
-    const endMin   = eStr === dateStr ? ed.getUTCHours() * 60 + ed.getUTCMinutes() : 24 * 60;
+    const sP = toLondonParts(sd);
+    const eP = toLondonParts(ed);
+    if (sP.date > dateStr || eP.date < dateStr) return null;
+    const startMin = sP.date === dateStr ? sP.hour * 60 + sP.minute : 0;
+    const endMin   = eP.date === dateStr ? eP.hour * 60 + eP.minute : 24 * 60;
     if (endMin <= startMin) return null;
     return { start: startMin, end: endMin };
   };
 
   for (const b of blocks) {
-    const c = clipUTC(b.start_datetime, b.end_datetime);
+    const c = clipLondon(b.start_datetime, b.end_datetime);
     if (c) out.push({ ...c, kind: "block", label: b.label });
   }
 
   for (const e of events) {
     if (e.is_busy === false) continue;
     if (isAllDayLikeEvent(e.start_time, e.end_time)) continue;
-    const c = clipUTC(e.start_time, e.end_time);
+    const c = clipLondon(e.start_time, e.end_time);
     if (c) out.push({ ...c, kind: "event", label: e.label, padOverrideMin: e.padOverrideMin });
   }
 
