@@ -16,6 +16,7 @@ import semiCourseImg from "@/assets/semi-intensive-card.jpg";
 import logoKlarna from "@/assets/logo-klarna.png";
 import logoClearpay from "@/assets/logo-clearpay.webp";
 import drive365Logo from "@/assets/drive365-logo.png";
+import bookNowPayLaterBadge from "@/assets/book-now-pay-later-badge.png";
 import { PostcodeSearch } from "@/components/home/PostcodeSearch";
 
 const NAV_LINKS = [
@@ -369,38 +370,20 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
       <section className="d365-hero-wrap" aria-label="Drive 365 welcome">
         <div className="d365-hero">
           <div className="d365-hero-photo">
-            <div
+            <img
+              src={bookNowPayLaterBadge}
+              alt="Book Now Pay Later"
               style={{
                 position: "absolute",
                 top: 16,
                 left: 16,
                 width: 72,
                 height: 72,
-                borderRadius: "50%",
-                background: "#D12E2E",
-                boxShadow: "0 3px 12px rgba(209,46,46,0.4)",
                 transform: "rotate(-12deg)",
                 zIndex: 10,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                padding: 8,
+                objectFit: "contain",
               }}
-            >
-              <span
-                style={{
-                  color: "#FFFFFF",
-                  fontSize: 9,
-                  fontWeight: 800,
-                  textTransform: "uppercase",
-                  textAlign: "center",
-                  lineHeight: 1.3,
-                  letterSpacing: "0.3px",
-                }}
-              >
-                Book Now<br />Pay<br />Later
-              </span>
-            </div>
+            />
             <img
               src={heroPlaceholderImg}
               alt="Smiling young learner driver holding a steering wheel, ready to start lessons with Drive 365"
