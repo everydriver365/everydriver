@@ -44,6 +44,8 @@ export function Footer() {
   const contactArea = whitelabel?.address ?? "Covering all UK postcodes";
   const copyrightName = whitelabel?.brandName ?? "Drive365";
   const wlAreas = whitelabel ? getAreasForHost(whitelabel.host) : [];
+  const { pathname } = useLocation();
+  const isDrive365Home = pathname === "/drive365" || pathname === "/drive365/";
 
   return (
     <footer className="relative border-t bg-primary text-primary-foreground overflow-hidden">
