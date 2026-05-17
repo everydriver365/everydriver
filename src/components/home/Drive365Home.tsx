@@ -391,8 +391,8 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
                 />
                 <h3>Intensive Courses</h3>
                 <p>Briefly and concisely explain what you do for your audience.</p>
-                <Link to="/courses?type=intensive" style={{ marginTop: "auto" }}>
-                  <button type="button" className="d365-feat-btn">Read more</button>
+                <Link to="/courses?type=intensive">
+                  <button type="button" className="d365-feat-btn d365-feat-btn--red">Read more</button>
                 </Link>
               </div>
               <div className="d365-feat">
@@ -403,8 +403,8 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
                 />
                 <h3>Semi Intensive Courses</h3>
                 <p>Briefly and concisely explain what you do for your audience.</p>
-                <Link to="/courses?type=semi-intensive" style={{ marginTop: "auto" }}>
-                  <button type="button" className="d365-feat-btn">Read more</button>
+                <Link to="/courses?type=semi-intensive">
+                  <button type="button" className="d365-feat-btn d365-feat-btn--blue">Read more</button>
                 </Link>
               </div>
               <div className="d365-feat d365-feat-full d365-feat-row-layout">
@@ -417,8 +417,8 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
                 <div className="d365-feat-body">
                   <h3>Weekly Lessons</h3>
                   <p>Briefly and concisely explain what you do for your audience.</p>
-                  <Link to="/courses?type=weekly" style={{ marginTop: "auto" }}>
-                    <button type="button" className="d365-feat-btn">Read more</button>
+                  <Link to="/courses?type=weekly">
+                    <button type="button" className="d365-feat-btn d365-feat-btn--dark">Read more</button>
                   </Link>
                 </div>
               </div>
