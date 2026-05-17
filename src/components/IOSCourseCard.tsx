@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { MapPin, Clock, User, PoundSterling, Car, Zap, TrendingUp, Star, CheckCircle } from "lucide-react";
+import { MapPin, Clock, User, Car, Zap, TrendingUp, Star, CheckCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
