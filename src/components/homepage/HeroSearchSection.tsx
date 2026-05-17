@@ -161,7 +161,7 @@ export function HeroSearchSection({
               </label>
               <div className="relative">
                 {postcode === "" && (
-                  <span className="absolute inset-0 flex items-center text-[15px] lg:text-base text-[#9CA3AF] pointer-events-none select-none">
+                  <span className="absolute inset-0 flex items-center text-[15px] lg:text-base text-[#9CA3AF] pointer-events-none select-none z-10">
                     {typewriterText}
                     <span className="ml-0.5 inline-block w-[1.5px] h-[1em] bg-[#9CA3AF] animate-pulse" />
                   </span>
