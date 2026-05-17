@@ -95,6 +95,7 @@ export function MobileHomepage() {
 
   return (
     <div className="learner-app min-h-screen bg-background">
+      <MobileStickySearch />
       {/* Header - Hamburger + Logo + Location */}
       <div className="px-4 flex items-center justify-between sticky top-0 z-50 bg-primary h-16">
         <div className="flex items-center gap-1">
