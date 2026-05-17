@@ -19,23 +19,14 @@ function generateResetCode(): string {
   return code;
 }
 
-// Find existing auth.users row by email
+// Find existing auth.users row by email via a secure RPC (added in migration).
 async function findAuthUserByEmail(admin: any, email: string): Promise<string | null> {
-  // listUsers does not support filter by email; we paginate small batches.
-  // For perf we use the undocumented filter via getUserByEmail-like rpc:
-  // Fallback: query auth.users via service role using SQL.
   const { data, error } = await admin.rpc("get_auth_user_id_by_email", { p_email: email });
-  if (!error && data) return data as string;
-  // Fallback to listUsers scan (capped)
-  let page = 1;
-  while (page <= 5) {
-    const { data: list } = await admin.auth.admin.listUsers({ page, perPage: 200 });
-    const found = list?.users?.find((u: any) => (u.email || "").toLowerCase() === email);
-    if (found) return found.id;
-    if (!list?.users?.length || list.users.length < 200) break;
-    page++;
+  if (error) {
+    console.error("get_auth_user_id_by_email error:", error);
+    return null;
   }
-  return null;
+  return (data as string) || null;
 }
 
 serve(async (req) => {
