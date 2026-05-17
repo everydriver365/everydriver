@@ -188,7 +188,7 @@ export function Footer() {
           <div>
             <h3 className="mb-4 font-semibold">Portals</h3>
             <ul className="space-y-2 text-sm text-primary-foreground/70">
-              <li><Link to="/drive365" className="hover:text-accent">Drive365 Learners</Link></li>
+              <li><Link to="/drive365" className="hover:text-accent">Drive365</Link></li>
               <li><Link to="/pupil/login" className="hover:text-accent">Pupil Portal</Link></li>
               <li><Link to="/instructor-app/login" className="hover:text-accent">Instructor Portal</Link></li>
               <li><Link to="/admin/login" className="hover:text-accent">Admin Portal</Link></li>
