@@ -34,6 +34,7 @@ export function PostcodeAutocomplete({
   showGeolocation = true,
   showInputIcon = true,
   enableDictation = true,
+  prefixElement,
 }: PostcodeAutocompleteProps) {
   const [suggestions, setSuggestions] = useState<PostcodeSuggestion[]>([]);
   const [isLoading, setIsLoading] = useState(false);
