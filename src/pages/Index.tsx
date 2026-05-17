@@ -995,8 +995,116 @@ export default function Index() {
         </div>
       </section>
 
-      {/* Features Section — Bento Grid with Images */}
-      <section className="bg-background py-24">
+      {/* Features Section — Desktop DSM redesign */}
+      <section className="hidden md:block" style={{ background: "#F9FAFB", padding: "36px 32px", borderRadius: 8, border: "1px solid #E5E7EB" }}>
+        <div className="container max-w-6xl">
+          <div className="text-center" style={{ marginBottom: 28 }}>
+            <div
+              style={{
+                display: "inline-block",
+                background: "#1A6FD4",
+                color: "#FFFFFF",
+                fontSize: 10,
+                fontWeight: 700,
+                letterSpacing: "0.5px",
+                padding: "5px 14px",
+                borderRadius: 20,
+                marginBottom: 12,
+              }}
+            >
+              All-in-One Platform
+            </div>
+            <h2 style={{ color: "#0A0E27", fontSize: 24, fontWeight: 800, letterSpacing: "-0.5px", marginBottom: 6 }}>
+              Everything You Need to <span style={{ color: "#D12E2E" }}>Learn to Drive</span>
+            </h2>
+            <p style={{ color: "#6B7280", fontSize: 12, lineHeight: 1.5, maxWidth: 480, margin: "0 auto" }}>
+              Our platform connects learners, instructors, and parents in one seamless experience.
+            </p>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14 }}>
+            {[
+              {
+                title: "Parent Portal",
+                tag: "For Parents",
+                tagBg: "#FEE2E2",
+                tagColor: "#D12E2E",
+                bar: "#D12E2E",
+                description: "Stay informed with lesson updates and payment visibility.",
+                link: "/parent",
+                image: getImage("feature_parent_portal", referFriends)
+              },
+              {
+                title: "Local Instructors",
+                tag: "For Learners",
+                tagBg: "#DBEAFE",
+                tagColor: "#1A6FD4",
+                bar: "#1A6FD4",
+                description: "Find certified instructors near you by postcode. Search and compare prices 24/7.",
+                image: localInstructorImg
+              },
+              {
+                title: "Track Progress",
+                tag: "For Everyone",
+                tagBg: "#F3F4F6",
+                tagColor: "#0A0E27",
+                bar: "#0A0E27",
+                description: "Monitor your journey with detailed progress reports.",
+                image: getImage("feature_progress", featureTheoryFallback)
+              },
+            ].map((f, i) => {
+              const card = (
+                <div
+                  key={i}
+                  style={{
+                    background: "#FFFFFF",
+                    border: "1px solid #E5E7EB",
+                    borderRadius: 6,
+                    overflow: "hidden",
+                    display: "flex",
+                    flexDirection: "column",
+                  }}
+                >
+                  <img
+                    src={f.image}
+                    alt={f.title}
+                    style={{ width: "100%", height: 150, objectFit: "cover", display: "block" }}
+                  />
+                  <div style={{ padding: 14, flex: 1, display: "flex", flexDirection: "column" }}>
+                    <div
+                      style={{
+                        display: "inline-block",
+                        background: f.tagBg,
+                        color: f.tagColor,
+                        fontSize: 9,
+                        fontWeight: 700,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.5px",
+                        padding: "3px 8px",
+                        borderRadius: 2,
+                        marginBottom: 6,
+                      }}
+                    >
+                      {f.tag}
+                    </div>
+                    <div style={{ color: "#0A0E27", fontSize: 13, fontWeight: 700, marginBottom: 4 }}>
+                      {f.title}
+                    </div>
+                    <p style={{ color: "#4B5563", fontSize: 11, lineHeight: 1.5, margin: 0 }}>
+                      {f.description}
+                    </p>
+                  </div>
+                  <div style={{ height: 4, background: f.bar, width: "100%" }} />
+                </div>
+              );
+              return f.link ? <Link key={i} to={f.link}>{card}</Link> : <div key={i}>{card}</div>;
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section — Mobile (unchanged) */}
+      <section className="md:hidden bg-background py-24">
         <div className="container max-w-6xl">
           <div className="text-center mb-12">
             <Badge className="mb-4 bg-primary text-primary-foreground border-0">All-in-One Platform</Badge>
@@ -1008,7 +1116,7 @@ export default function Index() {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             {[
               {
                 title: "Parent Portal",
