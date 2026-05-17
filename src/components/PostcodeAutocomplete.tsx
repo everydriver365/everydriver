@@ -21,6 +21,7 @@ interface PostcodeAutocompleteProps {
   showGeolocation?: boolean;
   showInputIcon?: boolean;
   enableDictation?: boolean;
+  prefixElement?: React.ReactNode;
 }
 
 export function PostcodeAutocomplete({
