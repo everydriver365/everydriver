@@ -9,8 +9,6 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import PupilRegister from "@/components/pupil/PupilRegister";
@@ -275,48 +273,6 @@ export default function PupilLogin() {
       </div>
     );
   }
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex">
-      {/* Left Panel - Branding (hidden on mobile) */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/20 to-transparent" />
-        
-        <div className="relative z-10 flex flex-col justify-between p-12 w-full">
-          <div className="flex items-center gap-3">
-            <img src={drive365Logo} alt="Drive365" className="h-12" />
-          </div>
-          
-          <div className="max-w-md">
-            <h1 className="text-4xl font-bold text-white mb-6">
-              Your driving journey starts here
-            </h1>
-            <p className="text-lg text-slate-300 mb-8">
-              Track your progress, view upcoming lessons, and stay connected 
-              with your instructor - all in one place.
-            </p>
-            
-            <div className="space-y-4">
-              {[
-                { icon: Users, text: "Connected with your instructor" },
-                { icon: Shield, text: "Track your lesson progress" },
-                { icon: Award, text: "Road to your driving licence" },
-              ].map((item, i) => (
-                <div key={i} className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-emerald-500/20 rounded-lg flex items-center justify-center">
-                    <item.icon className="w-4 h-4 text-emerald-400" />
-                  </div>
-                  <span className="text-slate-300">{item.text}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-          
-          <p className="text-sm text-slate-500">
-            © {new Date().getFullYear()} Drive365. All rights reserved.
-          </p>
-        </div>
-      </div>
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex">
@@ -688,3 +644,4 @@ export default function PupilLogin() {
       </div>
     </div>
   );
+}
