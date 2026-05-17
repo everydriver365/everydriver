@@ -217,13 +217,13 @@ export default function Index() {
       <Drive365Home
         afterLearningPaths={<>
           <section style={{ padding: "56px 5%", background: "#F6F6F8", width: "100%" }}>
-            <div style={{ fontSize: 11, fontWeight: 600, color: "#3E57D9", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 6 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "#1A6FD4", letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: 6 }}>
               What's included
             </div>
-            <h2 style={{ fontSize: 32, fontWeight: 700, color: "#191C2F", letterSpacing: -0.5, marginBottom: 10 }}>
+            <h2 style={{ fontSize: 26, fontWeight: 700, color: "#0A0E27", letterSpacing: -0.5, marginBottom: 10 }}>
               Everything you need to pass
             </h2>
-            <p style={{ fontSize: 15, color: "#51567A", lineHeight: 1.6, maxWidth: 520, marginBottom: 36 }}>
+            <p style={{ fontSize: 13, color: "#4B5563", lineHeight: 1.6, maxWidth: 520, marginBottom: 36 }}>
               Every course comes with the tools, support and flexibility to get you test-ready — included for free.
             </p>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px,1fr))", gap: 20 }}>
@@ -231,15 +231,83 @@ export default function Index() {
                 const IconComponent = feature.icon;
                 const featureImage = feature.image_url || (() => {
                   switch(feature.title.toLowerCase()) {
-                    case 'theory test support': return featureTheory;
+                    case 'free theory test': return featureTheory;
                     case 'flexible payments': return featurePayments;
-                    case 'free cancellation': return featureCancellation;
+                    case 'free test swapping': return featureCancellation;
                     case 'free re-test': return featureRetest;
-                    case 'live availability': return featureAvailability;
                     case 'theory test pro': return featureTheoryProImg;
                     default: return null;
                   }
                 })();
+
+                const styles = (() => {
+                  switch (feature.title) {
+                    case "Free Theory Test":
+                      return {
+                        border: "1px solid #FECACA",
+                        hoverBorder: "#D12E2E",
+                        hoverShadow: "0 8px 24px rgba(209,46,46,0.15)",
+                        bodyBg: "#FEE2E2",
+                        titleColor: "#D12E2E",
+                        descColor: "#4B5563",
+                        linkColor: "#D12E2E",
+                      };
+                    case "Flexible Payments":
+                      return {
+                        border: "1px solid #BFDBFE",
+                        hoverBorder: "#1A6FD4",
+                        hoverShadow: "0 8px 24px rgba(26,111,212,0.15)",
+                        bodyBg: "#DBEAFE",
+                        titleColor: "#1A6FD4",
+                        descColor: "#4B5563",
+                        linkColor: "#1A6FD4",
+                      };
+                    case "Free Test Swapping":
+                      return {
+                        border: "1px solid #1A1F3D",
+                        hoverBorder: "#1A6FD4",
+                        hoverShadow: "0 8px 24px rgba(10,14,39,0.25)",
+                        bodyBg: "#0A0E27",
+                        titleColor: "#FFFFFF",
+                        descColor: "rgba(255,255,255,0.7)",
+                        linkColor: "#1A6FD4",
+                        isDark: true,
+                        showFreeBadge: true,
+                      };
+                    case "FREE Re-Test":
+                      return {
+                        border: "1px solid #E5E7EB",
+                        hoverBorder: "#0A0E27",
+                        hoverShadow: "0 8px 24px rgba(10,14,39,0.1)",
+                        bodyBg: "#F3F4F6",
+                        titleColor: "#0A0E27",
+                        descColor: "#4B5563",
+                        linkColor: "#0A0E27",
+                      };
+                    case "Theory Test Pro":
+                      return {
+                        border: "1px solid #BFDBFE",
+                        hoverBorder: "#1A6FD4",
+                        hoverShadow: "0 8px 24px rgba(26,111,212,0.12)",
+                        bodyBg: "#EFF6FF",
+                        titleColor: "#1A6FD4",
+                        descColor: "#4B5563",
+                        linkColor: "#1A6FD4",
+                      };
+                    default:
+                      return {
+                        border: "1px solid #E9E5E8",
+                        hoverBorder: "#0F2044",
+                        hoverShadow: "0 4px 12px rgba(0,0,0,0.08)",
+                        bodyBg: "#FFF",
+                        titleColor: "#191C2F",
+                        descColor: "#51567A",
+                        linkColor: "#0F2044",
+                      };
+                  }
+                })();
+
+                const isHovered = hoveredFeature === feature.id;
 
                 return (
                   <motion.button
@@ -250,19 +318,24 @@ export default function Index() {
                     viewport={{ once: true }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => openFeatureModal(feature)}
+                    onMouseEnter={() => setHoveredFeature(feature.id)}
+                    onMouseLeave={() => setHoveredFeature(null)}
                     style={{
                       background: "#FFF",
-                      borderRadius: 18,
+                      borderRadius: 8,
                       overflow: "hidden",
-                      border: "1px solid #E9E5E8",
+                      border: isHovered ? `1px solid ${styles.hoverBorder}` : styles.border,
+                      boxShadow: isHovered ? styles.hoverShadow : undefined,
+                      transform: isHovered ? "translateY(-2px)" : undefined,
                       display: "flex",
                       flexDirection: "column",
                       textAlign: "left",
                       padding: 0,
                       cursor: "pointer",
+                      transition: "border-color 200ms ease, box-shadow 200ms ease, transform 200ms ease",
                     }}
                   >
-                    <div style={{ height: 180, overflow: "hidden", background: "#F6F6F8" }}>
+                    <div style={{ height: 180, overflow: "hidden", background: "#F6F6F8", position: "relative" }}>
                       {featureImage ? (
                         <img
                           src={featureImage}
@@ -274,12 +347,29 @@ export default function Index() {
                           <IconComponent className="h-10 w-10 text-[#3E57D9] opacity-40" />
                         </div>
                       )}
+                      {(styles as any).showFreeBadge && (
+                        <div style={{
+                          position: "absolute",
+                          top: 12,
+                          left: 12,
+                          background: "#D12E2E",
+                          color: "#FFF",
+                          fontSize: 9,
+                          fontWeight: 700,
+                          textTransform: "uppercase",
+                          padding: "3px 8px",
+                          borderRadius: 2,
+                          letterSpacing: "0.05em",
+                        }}>
+                          FREE
+                        </div>
+                      )}
                     </div>
-                    <div style={{ padding: 22, flex: 1, display: "flex", flexDirection: "column" }}>
-                      <h3 style={{ fontSize: 16, fontWeight: 700, color: "#191C2F", marginBottom: 6 }}>{feature.title}</h3>
-                      <p style={{ fontSize: 13, color: "#51567A", lineHeight: 1.6, marginBottom: 14 }}>{feature.description}</p>
-                      <div style={{ marginTop: "auto", display: "flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 500, color: "#0F2044" }}>
-                        Learn more <ChevronRight size={12} color="#0F2044" strokeWidth={2.2} />
+                    <div style={{ padding: 22, flex: 1, display: "flex", flexDirection: "column", background: styles.bodyBg }}>
+                      <h3 style={{ fontSize: 13, fontWeight: 700, color: styles.titleColor, marginBottom: 6 }}>{feature.title}</h3>
+                      <p style={{ fontSize: 11, color: styles.descColor, lineHeight: 1.6, marginBottom: 14 }}>{feature.description}</p>
+                      <div style={{ marginTop: "auto", display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 700, color: styles.linkColor }}>
+                        Learn more <ChevronRight size={12} color={styles.linkColor} strokeWidth={2.2} />
                       </div>
                     </div>
                   </motion.button>
