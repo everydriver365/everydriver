@@ -784,8 +784,144 @@ export default function Index() {
         </div>
       </section>
 
-      {/* Video Story Section — Drive365 Style */}
-      <section style={{ background: "#F6F6F8" }} className="py-20">
+      {/* Video Story Section — Drive365 Style (Desktop) */}
+      <section className="hidden md:block" style={{ background: "#F9FAFB", borderRadius: 8, border: "1px solid #E5E7EB", padding: "24px 28px", marginBottom: 40 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, alignItems: "center" }}>
+          {/* Left: Video thumbnail */}
+          <div className="relative" style={{ borderRadius: 6, overflow: "hidden", height: 180 }}>
+            <img src={videoThumbnailImg} alt="Watch our story" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            <button
+              type="button"
+              onClick={() => welcomeVideoUrl && setVideoModalOpen(true)}
+              disabled={!welcomeVideoUrl}
+              style={{
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                width: 44,
+                height: 44,
+                borderRadius: "50%",
+                background: "#D12E2E",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: welcomeVideoUrl ? "pointer" : "default",
+                transition: "transform 150ms, background 150ms",
+                border: "none",
+                padding: 0,
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "#B02020"; e.currentTarget.style.transform = "translate(-50%, -50%) scale(1.08)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "#D12E2E"; e.currentTarget.style.transform = "translate(-50%, -50%)"; }}
+            >
+              <span style={{
+                width: 0,
+                height: 0,
+                borderStyle: "solid",
+                borderWidth: "7px 0 7px 12px",
+                borderColor: "transparent transparent transparent #fff",
+                display: "inline-block",
+                marginLeft: 2,
+              }} />
+            </button>
+            <div style={{
+              position: "absolute",
+              top: 10,
+              left: 10,
+              background: "#FFFFFF",
+              color: "#0A0E27",
+              fontSize: 9,
+              fontWeight: 700,
+              textTransform: "uppercase",
+              letterSpacing: "0.5px",
+              padding: "3px 10px",
+              borderRadius: 20,
+            }}>2 MIN WATCH</div>
+          </div>
+
+          {/* Right: Content */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <div style={{ color: "#1A6FD4", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1.5px" }}>OUR STORY</div>
+            <h2 style={{ color: "#0A0E27", fontSize: 20, fontWeight: 800, lineHeight: 1.2, letterSpacing: "-0.5px", margin: 0 }}>
+              Watch how learners pass with <span style={{ color: "#D12E2E" }}>confidence</span>
+            </h2>
+            <p style={{ color: "#4B5563", fontSize: 11, lineHeight: 1.5, margin: 0 }}>
+              Discover why thousands of learners trust us with their driving journey — from first lesson nerves to test day success.
+            </p>
+
+            {/* Social proof */}
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{ display: "flex" }}>
+                {[testimonialSarahFallback, testimonialJamesFallback, testimonialEmmaFallback].map((src, i) => (
+                  <img
+                    key={i}
+                    src={src}
+                    alt="Learner"
+                    style={{
+                      width: 24,
+                      height: 24,
+                      borderRadius: "50%",
+                      objectFit: "cover",
+                      border: "2px solid #fff",
+                      marginLeft: i > 0 ? -6 : 0,
+                    }}
+                  />
+                ))}
+              </div>
+              <div style={{ color: "#F59E0B", fontSize: 10, letterSpacing: "1px" }}>★★★★★</div>
+              <div style={{ color: "#4B5563", fontSize: 10 }}>
+                <span style={{ color: "#0A0E27", fontWeight: 700 }}>4.9</span> from 6,499 learner reviews
+              </div>
+            </div>
+
+            {/* CTAs */}
+            <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+              <button
+                type="button"
+                onClick={() => welcomeVideoUrl && setVideoModalOpen(true)}
+                disabled={!welcomeVideoUrl}
+                style={{
+                  background: "#D12E2E",
+                  color: "#fff",
+                  fontSize: 11,
+                  fontWeight: 700,
+                  padding: "10px 18px",
+                  borderRadius: 2,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 7,
+                  border: "none",
+                  cursor: welcomeVideoUrl ? "pointer" : "default",
+                  transition: "background 150ms",
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "#B02020")}
+                onMouseLeave={(e) => (e.currentTarget.style.background = "#D12E2E")}
+              >
+                <span style={{
+                  width: 0,
+                  height: 0,
+                  borderStyle: "solid",
+                  borderWidth: "4px 0 4px 8px",
+                  borderColor: "transparent transparent transparent #fff",
+                  display: "inline-block",
+                }} />
+                Play Video
+              </button>
+              <Link
+                to="/courses"
+                style={{ color: "#1A6FD4", fontSize: 11, fontWeight: 600, padding: "10px 0", textDecoration: "none", transition: "color 150ms" }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = "#1558A8"; e.currentTarget.style.textDecoration = "underline"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = "#1A6FD4"; e.currentTarget.style.textDecoration = "none"; }}
+              >
+                Find an Instructor →
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Video Story Section — Drive365 Style (Mobile) */}
+      <section style={{ background: "#F6F6F8" }} className="md:hidden py-20">
         <div className="container max-w-6xl">
           <div className="grid md:grid-cols-2 gap-10 lg:gap-16 items-center">
             {/* Left: Video preview card */}
