@@ -508,12 +508,38 @@ export async function loadCourseAvailabilitySources(
     }),
   ]);
 
+  const calendarEvents = (ceRes.data as CalendarEventRow[]) ?? [];
+  const bookedLessonGeo = (lgRes.data as BookedLessonGeoRow[]) ?? [];
+
+  // Belt-and-braces safety net: every booked lesson is ALSO injected as a
+  // synthetic busy calendar event. The unified rule remains "Google Calendar
+  // is the source of busyness" — these synthetic rows simply guarantee that a
+  // missing or lagging GCal mirror can never cause a double-booking. If the
+  // real GCal event already exists it will just overlap and merge inside
+  // `buildDayConflicts` / `resolveAvailability` (no double-padding, no
+  // double-blocking — overlapping conflicts are unioned).
+  const syntheticLessonEvents: CalendarEventRow[] = [];
+  for (const row of bookedLessonGeo) {
+    if (!row.lesson_date || !row.start_time || !row.duration_minutes) continue;
+    // `${date}T${time}` with no Z is parsed in LOCAL time, which matches how
+    // the engine reads `start_time` (via new Date().getHours()).
+    const startLocal = new Date(`${row.lesson_date}T${row.start_time}`);
+    if (Number.isNaN(startLocal.getTime())) continue;
+    const endLocal = new Date(startLocal.getTime() + row.duration_minutes * 60_000);
+    syntheticLessonEvents.push({
+      instructor_id: row.instructor_id,
+      start_time: startLocal.toISOString(),
+      end_time: endLocal.toISOString(),
+      is_busy: true,
+    });
+  }
+
   return {
     workingHours:       (whRes.data  as WeeklyHourRow[])      ?? [],
     availabilityWindows:(awRes.data  as WeeklyHourRow[])      ?? [],
     overrides:          (ovRes.data  as DateOverrideRow[])    ?? [],
     manualBlocks:       (mbRes.data  as ManualBlockRow[])     ?? [],
-    calendarEvents:     (ceRes.data  as CalendarEventRow[])   ?? [],
-    bookedLessonGeo:    (lgRes.data  as BookedLessonGeoRow[]) ?? [],
+    calendarEvents:     [...calendarEvents, ...syntheticLessonEvents],
+    bookedLessonGeo,
   };
 }
