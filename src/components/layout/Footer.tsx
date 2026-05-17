@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Facebook, Instagram, Twitter, Mail, Phone, MapPin } from "lucide-react";
 import { useRouteLogo } from "@/hooks/useRouteLogo";
 import { getWhitelabelConfig } from "@/lib/whitelabel";
@@ -44,9 +44,104 @@ export function Footer() {
   const contactArea = whitelabel?.address ?? "Covering all UK postcodes";
   const copyrightName = whitelabel?.brandName ?? "Drive365";
   const wlAreas = whitelabel ? getAreasForHost(whitelabel.host) : [];
+  const { pathname } = useLocation();
+  const isDrive365Home = pathname === "/drive365" || pathname === "/drive365/";
 
   return (
-    <footer className="relative border-t bg-primary text-primary-foreground overflow-hidden">
+    <>
+      {isDrive365Home && (
+        <footer className="hidden md:block bg-[#0A0E27] overflow-hidden">
+          <div style={{ padding: "28px 32px", display: "grid", gridTemplateColumns: "1.4fr 1fr 1fr 1fr", gap: "32px" }}>
+            <div>
+              <Link to={homeLink} className="inline-flex items-center gap-1" aria-label={logoAlt}>
+                <span style={{ background: "#D12E2E", color: "#fff", fontWeight: 800, fontSize: 14, padding: "4px 8px", borderRadius: 3, letterSpacing: 0.5 }}>DRIVE</span>
+                <span style={{ background: "#1A6FD4", color: "#fff", fontWeight: 800, fontSize: 14, padding: "4px 8px", borderRadius: 3, letterSpacing: 0.5 }}>365</span>
+              </Link>
+              <p style={{ color: "rgba(255,255,255,0.55)", fontSize: 10, lineHeight: 1.5, marginTop: 10, marginBottom: 12 }}>
+                Professional driving instruction to help you pass your test with confidence.
+              </p>
+              <div style={{ display: "flex", gap: 8 }}>
+                {[Facebook, Instagram, Twitter].map((Icon, i) => (
+                  <a key={i} href="#" style={{ width: 28, height: 28, borderRadius: 4, background: "rgba(255,255,255,0.08)", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "#fff" }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.15)")}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.08)")}>
+                    <Icon style={{ width: 11, height: 11 }} />
+                  </a>
+                ))}
+              </div>
+            </div>
+            <div>
+              <h3 style={{ color: "#fff", fontSize: 11, fontWeight: 700, marginBottom: 10 }}>Quick Links</h3>
+              <ul style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {[
+                  { to: "/courses", label: "Find Courses" },
+                  { to: "/test-swap", label: "Test Swap" },
+                  { to: "/about", label: "About Us" },
+                  { to: "/pricing", label: "Pricing" },
+                  { to: "/faq", label: "FAQ" },
+                ].map((l) => (
+                  <li key={l.to}>
+                    <Link to={l.to} style={{ color: "rgba(255,255,255,0.55)", fontSize: 10 }}
+                      onMouseEnter={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.9)")}
+                      onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.55)")}>{l.label}</Link>
+                  </li>
+                ))}
+                <li><Link to="/instructor-app/login" style={{ color: "#1A6FD4", fontSize: 10, fontWeight: 700 }}>EveryDriver for Instructors</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h3 style={{ color: "#fff", fontSize: 11, fontWeight: 700, marginBottom: 10 }}>Portals</h3>
+              <ul style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {[
+                  { to: "/drive365", label: "Drive365 Learners" },
+                  { to: "/pupil/login", label: "Pupil Portal" },
+                  { to: "/instructor-app/login", label: "Instructor Portal" },
+                  { to: "/admin/login", label: "Admin Portal" },
+                ].map((l) => (
+                  <li key={l.label}>
+                    <Link to={l.to} style={{ color: "rgba(255,255,255,0.55)", fontSize: 10 }}
+                      onMouseEnter={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.9)")}
+                      onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.55)")}>{l.label}</Link>
+                  </li>
+                ))}
+                <li><Link to="/accessible" style={{ color: "#1A6FD4", fontSize: 10, fontWeight: 700 }}>Drive for all</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h3 style={{ color: "#fff", fontSize: 11, fontWeight: 700, marginBottom: 10 }}>Contact Us</h3>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                <Phone style={{ width: 11, height: 11, color: "rgba(255,255,255,0.4)" }} />
+                <a href={`tel:${contactPhone.replace(/\s/g, "")}`} style={{ color: "rgba(255,255,255,0.55)", fontSize: 10 }}>{contactPhone}</a>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                <Mail style={{ width: 11, height: 11, color: "rgba(255,255,255,0.4)" }} />
+                <a href={`mailto:${contactEmail}`} style={{ color: "rgba(255,255,255,0.55)", fontSize: 10 }}>{contactEmail}</a>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <MapPin style={{ width: 11, height: 11, color: "rgba(255,255,255,0.4)" }} />
+                <span style={{ color: "rgba(255,255,255,0.55)", fontSize: 10 }}>{contactArea}</span>
+              </div>
+            </div>
+          </div>
+          <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }} />
+          <div style={{ background: "#FFFFFF", padding: "12px 32px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <span style={{ color: "#9CA3AF", fontSize: 10 }}>© {new Date().getFullYear()} {copyrightName}. All rights reserved.</span>
+            <div style={{ display: "flex", gap: 16 }}>
+              {[
+                { to: "/privacy-policy", label: "Privacy Policy" },
+                { to: "/terms-of-service", label: "Terms of Use" },
+                { to: "/cookie-policy", label: "Cookie Policy" },
+              ].map((l) => (
+                <Link key={l.to} to={l.to} style={{ color: "#9CA3AF", fontSize: 10 }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = "#0A0E27")}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = "#9CA3AF")}>{l.label}</Link>
+              ))}
+            </div>
+          </div>
+        </footer>
+      )}
+
+      <footer className={`relative border-t bg-primary text-primary-foreground overflow-hidden ${isDrive365Home ? "md:hidden" : ""}`}>
       {/* Tyre track decoration - hidden on small screens */}
       <div className="hidden sm:block">
         <TyreTrackPattern />
@@ -150,5 +245,6 @@ export function Footer() {
         </div>
       </div>
     </footer>
+    </>
   );
 }
