@@ -46,10 +46,10 @@ export function PostcodeSearch() {
           style={{
             flex: "1 1 70%",
             background: "#FFFFFF",
-            border: focused ? "2px solid #0F2044" : "1px solid #0F2044",
+            border: focused ? "2px solid #1A6FD4" : "1.5px solid #1A6FD4",
             borderRight: "none",
             borderRadius: "2px 0 0 2px",
-            padding: focused ? "13px 15px" : "14px 16px",
+            padding: focused ? "13px 15px" : "13.5px 15.5px",
             height: 48,
             fontSize: 14,
             color: "#0A0A0A",
@@ -63,7 +63,7 @@ export function PostcodeSearch() {
           onClick={submit}
           style={{
             flex: "0 0 30%",
-            background: "#0F2044",
+            background: "#0A0E27",
             color: "#FFFFFF",
             border: "none",
             borderRadius: "0 2px 2px 0",
@@ -81,8 +81,8 @@ export function PostcodeSearch() {
             fontFamily: "inherit",
             transition: "background 120ms ease",
           }}
-          onMouseEnter={(e) => (e.currentTarget.style.background = "#1A3370")}
-          onMouseLeave={(e) => (e.currentTarget.style.background = "#0F2044")}
+          onMouseEnter={(e) => (e.currentTarget.style.background = "#1A1F3D")}
+          onMouseLeave={(e) => (e.currentTarget.style.background = "#0A0E27")}
         >
           SEARCH
           <Search size={14} color="#FFFFFF" strokeWidth={2.5} />
