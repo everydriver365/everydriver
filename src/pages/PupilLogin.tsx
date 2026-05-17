@@ -279,20 +279,6 @@ export default function PupilLogin() {
           className="bg-white rounded-[28px] overflow-hidden"
           style={{ boxShadow: "0 20px 60px rgba(15,23,42,0.08)" }}
         >
-          {/* Illustration */}
-          <div className="relative h-40 sm:h-44 overflow-hidden bg-gradient-to-b from-[#EAF1FF] to-white">
-            <img
-              src={learnerHero}
-              alt="Learner driver"
-              className="absolute inset-0 w-full h-full object-cover opacity-90"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-white via-white/30 to-transparent" />
-            {/* L-plate */}
-            <div className="absolute top-3 right-3 w-9 h-9 rounded-md bg-white shadow-md flex items-center justify-center border border-slate-100">
-              <span className="text-[#E11D48] font-black text-xl leading-none">L</span>
-            </div>
-          </div>
-
           {/* Heading */}
           <div className="px-6 pt-5 pb-2 text-center">
             <h1 className="text-[22px] font-bold text-slate-900 tracking-tight">Pupil Portal</h1>
