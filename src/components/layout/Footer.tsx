@@ -93,7 +93,7 @@ export function Footer() {
               <h3 style={{ color: "#fff", fontSize: 11, fontWeight: 700, marginBottom: 10 }}>Portals</h3>
               <ul style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                 {[
-                  { to: "/drive365", label: "Drive365 Learners" },
+                  { to: "/drive365", label: "Drive365" },
                   { to: "/pupil/login", label: "Pupil Portal" },
                   { to: "/instructor-app/login", label: "Instructor Portal" },
                   { to: "/admin/login", label: "Admin Portal" },
