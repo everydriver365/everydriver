@@ -11,6 +11,7 @@ const BookingSummary = lazy(() => import("@/pages/BookingSummary"));
 const BookingConfirmation = lazy(() => import("@/pages/BookingConfirmation"));
 const PupilPortal = lazy(() => import("@/pages/PupilPortal"));
 const PupilLogin = lazy(() => import("@/pages/PupilLogin"));
+const Drive365Login = lazy(() => import("@/pages/Drive365Login"));
 const BrandedPupilPortal = lazy(() => import("@/pages/BrandedPupilPortal"));
 const Theory = lazy(() => import("@/pages/Theory"));
 const FAQs = lazy(() => import("@/pages/FAQs"));
