@@ -180,17 +180,6 @@ export function HeroSearchSection({
                     ) : null
                   }
                 />
-                  value={postcode}
-                  onChange={setPostcode}
-                  onSelect={(pc) => setPostcode(pc)}
-                  placeholder=""
-                  className="w-full"
-                  inputClassName={`h-7 lg:h-8 border-0 bg-transparent p-0 text-[15px] lg:text-base font-normal focus-visible:ring-0 focus-visible:ring-offset-0 ${
-                    postcodeError ? "text-[#CC2229] placeholder:text-[#CC2229]" : "text-black"
-                  }`}
-                  showGeolocation={false}
-                  showInputIcon={false}
-                />
               </div>
               {postcodeError && (
                 <span className="absolute -bottom-5 left-7 text-xs text-[#CC2229]">
