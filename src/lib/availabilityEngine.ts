@@ -141,17 +141,20 @@ export function buildDayConflicts(
 ): TaggedConflict[] {
   const out: TaggedConflict[] = [];
 
-  const clipUTC = (sIso: string, eIso: string): Slot | null => {
+  // Clip an event/block to the target day in **Europe/London local time**.
+  // Working-hours strings ("09:00") are local clock minutes, so conflicts
+  // MUST also be expressed in local clock minutes — comparing UTC minutes
+  // against local clock minutes silently offsets everything by 60 mins in BST
+  // and was the cause of busy Google events appearing free during summer.
+  const clipLondon = (sIso: string, eIso: string): Slot | null => {
     const sd = new Date(sIso);
     const ed = new Date(eIso);
     if (isNaN(sd.getTime()) || isNaN(ed.getTime())) return null;
-    // Use UTC date strings for day comparison so server (UTC) == browser.
-    const pad2 = (n: number) => n.toString().padStart(2, "0");
-    const sStr = `${sd.getUTCFullYear()}-${pad2(sd.getUTCMonth() + 1)}-${pad2(sd.getUTCDate())}`;
-    const eStr = `${ed.getUTCFullYear()}-${pad2(ed.getUTCMonth() + 1)}-${pad2(ed.getUTCDate())}`;
-    if (sStr > dateStr || eStr < dateStr) return null;
-    const startMin = sStr === dateStr ? sd.getUTCHours() * 60 + sd.getUTCMinutes() : 0;
-    const endMin   = eStr === dateStr ? ed.getUTCHours() * 60 + ed.getUTCMinutes() : 24 * 60;
+    const sP = toLondonParts(sd);
+    const eP = toLondonParts(ed);
+    if (sP.date > dateStr || eP.date < dateStr) return null;
+    const startMin = sP.date === dateStr ? sP.hour * 60 + sP.minute : 0;
+    const endMin   = eP.date === dateStr ? eP.hour * 60 + eP.minute : 24 * 60;
     if (endMin <= startMin) return null;
     return { start: startMin, end: endMin };
   };
