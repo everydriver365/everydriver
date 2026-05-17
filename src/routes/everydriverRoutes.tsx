@@ -98,6 +98,7 @@ export const everydriverRoutes = (
     <Route path="/pupil" element={<PupilPortal />} />
     <Route path="/pupil/login" element={<PupilLogin />} />
     <Route path="/pupil/login/:instructorSlug" element={<PupilLogin />} />
+    <Route path="/drive365/login" element={<Drive365Login />} />
     <Route path="/p/:slug" element={<BrandedPupilPortal />} />
     <Route path="/pupil/install" element={<InstallPupil />} />
     <Route path="/reset-password" element={<ResetPassword />} />
