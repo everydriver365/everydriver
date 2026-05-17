@@ -47,6 +47,7 @@ const GoogleApiDisclosure = lazy(() => import("@/pages/GoogleApiDisclosure"));
 const DataDeletion = lazy(() => import("@/pages/DataDeletion"));
 const PupilPortal = lazy(() => import("@/pages/PupilPortal"));
 const PupilLogin = lazy(() => import("@/pages/PupilLogin"));
+const Drive365Login = lazy(() => import("@/pages/Drive365Login"));
 const BrandedPupilPortal = lazy(() => import("@/pages/BrandedPupilPortal"));
 const ResetPassword = lazy(() => import("@/pages/ResetPassword"));
 const RoleRedirectPage = lazy(() => import("@/components/auth/RoleRedirect").then(m => ({ default: m.RoleRedirect })));
