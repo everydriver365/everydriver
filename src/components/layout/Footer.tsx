@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Facebook, Instagram, Twitter, Mail, Phone, MapPin } from "lucide-react";
+import { Facebook, Twitter, Mail, Phone, MapPin } from "lucide-react";
 import { useRouteLogo } from "@/hooks/useRouteLogo";
 import { getWhitelabelConfig } from "@/lib/whitelabel";
 import { getAreasForHost, areaToSlug } from "@/lib/whitelabelAreas";
@@ -61,7 +61,7 @@ export function Footer() {
                 Professional driving instruction to help you pass your test with confidence.
               </p>
               <div style={{ display: "flex", gap: 8 }}>
-                {[Facebook, Instagram].map((Icon, i) => (
+                {[Facebook].map((Icon, i) => (
                   <a key={i} href="#" style={{ width: 28, height: 28, borderRadius: 4, background: "rgba(255,255,255,0.08)", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "#fff" }}
                     onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.15)")}
                     onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.08)")}>
@@ -161,9 +161,6 @@ export function Footer() {
             <div className="flex gap-4">
               <a href="#" className="text-primary-foreground/70 transition-colors hover:text-accent">
                 <Facebook className="h-5 w-5" />
-              </a>
-              <a href="#" className="text-primary-foreground/70 transition-colors hover:text-accent">
-                <Instagram className="h-5 w-5" />
               </a>
               <a href="#" className="text-primary-foreground/70 transition-colors hover:text-accent">
                 <Twitter className="h-5 w-5" />
