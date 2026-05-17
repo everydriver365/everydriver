@@ -914,8 +914,8 @@ export default function Index() {
         </DialogContent>
       </Dialog>
 
-      {/* Latest News & Tips — Warm Blog */}
-      <section className="bg-gradient-to-b from-orange-50 to-background py-20">
+      {/* Latest News & Tips — Mobile (unchanged) */}
+      <section className="md:hidden bg-gradient-to-b from-orange-50 to-background py-20">
         <div className="container max-w-5xl">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} viewport={{ once: true }} className="text-center mb-12">
             <div className="h-12 w-12 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-4">
@@ -926,64 +926,35 @@ export default function Index() {
           </motion.div>
 
           {newsLoading ? (
-            <div className="grid md:grid-cols-3 gap-8">
+            <div className="grid gap-8">
               {[1, 2, 3].map(i => (
                 <div key={i} className="h-72 animate-pulse rounded-2xl bg-muted" />
               ))}
             </div>
           ) : dvsaNews.length > 0 ? (
-            <div className="grid md:grid-cols-3 gap-8">
+            <div className="grid gap-8">
               {dvsaNews.slice(0, 3).map((article, i) => (
-                <motion.div
-                  key={article.slug || article.link}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: i * 0.15 }}
-                  viewport={{ once: true }}
-                >
-                  <Link to={`/news/${article.slug}`} className="group block">
-                    <div className="rounded-2xl overflow-hidden shadow-md mb-4">
-                      <img
-                        src={article.imageUrl || (i === 0 ? newsFeatured : i === 1 ? newsArticle1 : newsArticle2)}
-                        alt={article.title}
-                        className="h-44 w-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                    </div>
-                    <Badge className="bg-amber-100 text-amber-700 border-0 text-xs hover:bg-amber-100 mb-2">
-                      {article.category || "DVSA News"}
-                    </Badge>
-                    <h3 className="font-bold text-lg mb-1 group-hover:text-amber-600 transition-colors">
-                      {article.title}
-                    </h3>
-                    <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
-                      {article.description}
-                    </p>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <Clock className="h-3 w-3" />
-                      {article.pubDate ? new Date(article.pubDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : ''} • 3 min read
-                    </div>
-                  </Link>
-                </motion.div>
-              ))}
-            </div>
-          ) : (
-            <div className="grid md:grid-cols-3 gap-8">
-              {[
-                { title: "Latest DVSA News & Updates", desc: "Stay up to date with the latest driving test news.", img: newsFeatured },
-                { title: "Tips for New Learners", desc: "Expert advice to get you started on your journey.", img: newsArticle1 },
-                { title: "Check Back for More", desc: "We regularly publish new articles and tips.", img: newsArticle2 },
-              ].map((article, i) => (
-                <motion.div key={i} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: i * 0.15 }} viewport={{ once: true }} className="group">
+                <Link key={article.slug || article.link} to={`/news/${article.slug}`} className="group block">
                   <div className="rounded-2xl overflow-hidden shadow-md mb-4">
-                    <img src={article.img} alt={article.title} className="h-44 w-full object-cover" />
+                    <img
+                      src={article.imageUrl || (i === 0 ? newsFeatured : i === 1 ? newsArticle1 : newsArticle2)}
+                      alt={article.title}
+                      className="h-44 w-full object-cover"
+                    />
                   </div>
-                  <Badge className="bg-amber-100 text-amber-700 border-0 text-xs hover:bg-amber-100 mb-2">DVSA News</Badge>
+                  <Badge className="bg-amber-100 text-amber-700 border-0 text-xs hover:bg-amber-100 mb-2">
+                    {article.category || "DVSA News"}
+                  </Badge>
                   <h3 className="font-bold text-lg mb-1">{article.title}</h3>
-                  <p className="text-sm text-muted-foreground">{article.desc}</p>
-                </motion.div>
+                  <p className="text-sm text-muted-foreground line-clamp-2 mb-2">{article.description}</p>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Clock className="h-3 w-3" />
+                    {article.pubDate ? new Date(article.pubDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : ''} • 3 min read
+                  </div>
+                </Link>
               ))}
             </div>
-          )}
+          ) : null}
 
           <div className="text-center mt-10">
             <Link to="/news">
@@ -992,6 +963,134 @@ export default function Index() {
               </Button>
             </Link>
           </div>
+        </div>
+      </section>
+
+      {/* Latest News & Tips — Desktop DSM redesign */}
+      <section className="hidden md:block" style={{ background: "#FFFFFF", borderRadius: 8, border: "1px solid #E5E7EB", padding: "28px 32px" }}>
+        <div className="container max-w-5xl" style={{ padding: 0 }}>
+          {/* Header */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
+            <div>
+              <div style={{ color: "#1A6FD4", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1.5px", marginBottom: 3 }}>
+                LATEST FROM DRIVE 365
+              </div>
+              <div style={{ color: "#0A0E27", fontSize: 20, fontWeight: 800, letterSpacing: "-0.5px" }}>
+                News & Tips
+              </div>
+            </div>
+            <Link
+              to="/news"
+              className="d365-news-cta"
+              style={{
+                background: "transparent",
+                border: "1px solid #E5E7EB",
+                color: "#0A0E27",
+                fontSize: 11,
+                fontWeight: 600,
+                padding: "7px 14px",
+                borderRadius: 2,
+                textDecoration: "none",
+                display: "inline-block",
+                transition: "all 150ms ease",
+              }}
+            >
+              View All Articles →
+            </Link>
+            <style>{`.d365-news-cta:hover{border-color:#1A6FD4 !important;color:#1A6FD4 !important;}`}</style>
+          </div>
+
+          {(() => {
+            const fallbackImgs = [newsFeatured, newsArticle1, newsArticle2];
+            const fallbackArticles = [
+              { title: "Latest DVSA News & Updates", description: "Stay up to date with the latest driving test news.", imageUrl: newsFeatured, slug: "", link: "/news", pubDate: "", category: "DVSA News" },
+              { title: "Tips for New Learners", description: "Expert advice to get you started on your journey.", imageUrl: newsArticle1, slug: "", link: "/news", pubDate: "", category: "DVSA News" },
+              { title: "Check Back for More", description: "We regularly publish new articles and tips.", imageUrl: newsArticle2, slug: "", link: "/news", pubDate: "", category: "DVSA News" },
+            ];
+            const articles = (dvsaNews.length > 0 ? dvsaNews.slice(0, 3) : fallbackArticles).map((a, i) => ({
+              ...a,
+              imageUrl: a.imageUrl || fallbackImgs[i],
+            }));
+            const formatDate = (d?: string) => d ? new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+
+            if (newsLoading) {
+              return (
+                <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 12 }}>
+                  <div style={{ height: 320, background: "#F3F4F6", borderRadius: 6 }} />
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                    <div style={{ height: 100, background: "#F3F4F6", borderRadius: 6 }} />
+                    <div style={{ height: 100, background: "#F3F4F6", borderRadius: 6 }} />
+                  </div>
+                </div>
+              );
+            }
+
+            const [featured, ...sidebar] = articles;
+            const sidebarColors = [
+              { stripe: "#1A6FD4", tagBg: "#DBEAFE", tagColor: "#1A6FD4" },
+              { stripe: "#0A0E27", tagBg: "#F3F4F6", tagColor: "#0A0E27" },
+            ];
+
+            return (
+              <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 12 }}>
+                {/* Featured */}
+                <Link
+                  to={featured.slug ? `/news/${featured.slug}` : "/news"}
+                  style={{ textDecoration: "none", display: "block" }}
+                >
+                  <article style={{ background: "#F9FAFB", border: "1px solid #E5E7EB", borderRadius: 6, overflow: "hidden", display: "flex", flexDirection: "column", height: "100%" }}>
+                    <img src={featured.imageUrl} alt={featured.title} style={{ width: "100%", height: 160, objectFit: "cover", display: "block" }} />
+                    <div style={{ padding: 14, flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>
+                      <div style={{ display: "inline-block", background: "#FEE2E2", color: "#D12E2E", fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", padding: "2px 7px", borderRadius: 2, alignSelf: "flex-start" }}>
+                        {featured.category || "Driving News"}
+                      </div>
+                      <h3 style={{ color: "#0A0E27", fontSize: 13, fontWeight: 800, lineHeight: 1.35, margin: 0, flex: 1 }}>
+                        {featured.title}
+                      </h3>
+                      <p style={{ color: "#4B5563", fontSize: 10, lineHeight: 1.5, margin: 0, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                        {featured.description}
+                      </p>
+                      <div style={{ display: "flex", alignItems: "center", gap: 4, color: "#9CA3AF", fontSize: 10 }}>
+                        <Clock style={{ width: 10, height: 10 }} />
+                        {formatDate(featured.pubDate)}{featured.pubDate ? " • " : ""}3 min read
+                      </div>
+                    </div>
+                    <div style={{ height: 3, background: "#D12E2E", width: "100%" }} />
+                  </article>
+                </Link>
+
+                {/* Sidebar */}
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  {sidebar.map((article, idx) => {
+                    const c = sidebarColors[idx];
+                    return (
+                      <Link
+                        key={article.slug || article.link || idx}
+                        to={article.slug ? `/news/${article.slug}` : "/news"}
+                        style={{ textDecoration: "none", display: "block" }}
+                      >
+                        <article style={{ background: "#F9FAFB", border: "1px solid #E5E7EB", borderRadius: 6, overflow: "hidden", display: "grid", gridTemplateColumns: "90px 1fr" }}>
+                          <img src={article.imageUrl} alt={article.title} style={{ width: "100%", height: "100%", minHeight: 80, objectFit: "cover", display: "block" }} />
+                          <div style={{ padding: "10px 12px", borderLeft: `3px solid ${c.stripe}`, display: "flex", flexDirection: "column", gap: 4 }}>
+                            <div style={{ display: "inline-block", background: c.tagBg, color: c.tagColor, fontSize: 8, fontWeight: 700, textTransform: "uppercase", padding: "2px 6px", borderRadius: 2, alignSelf: "flex-start" }}>
+                              {article.category || "Tips"}
+                            </div>
+                            <h3 style={{ color: "#0A0E27", fontSize: 11, fontWeight: 700, lineHeight: 1.3, margin: 0 }}>
+                              {article.title}
+                            </h3>
+                            <div style={{ display: "flex", alignItems: "center", gap: 4, color: "#9CA3AF", fontSize: 9 }}>
+                              <Clock style={{ width: 9, height: 9 }} />
+                              {formatDate(article.pubDate)}{article.pubDate ? " • " : ""}3 min read
+                            </div>
+                          </div>
+                        </article>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })()}
         </div>
       </section>
 
