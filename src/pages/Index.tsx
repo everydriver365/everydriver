@@ -451,7 +451,8 @@ export default function Index() {
           </section>
 
           {/* Testimonials Section — Social Proof Wall */}
-          <section className="bg-gradient-to-b from-primary/5 via-accent/5 to-background py-24">
+          {/* Mobile (unchanged) */}
+          <section className="md:hidden bg-gradient-to-b from-primary/5 via-accent/5 to-background py-24">
             <div className="container">
               <div className="text-center mb-10">
                 <div className="inline-flex items-center gap-3 mb-4">
@@ -463,26 +464,11 @@ export default function Index() {
                   </div>
                   <span className="text-sm text-muted-foreground">6,499+ happy drivers</span>
                 </div>
-                <motion.h2
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5 }}
-                  viewport={{ once: true }}
-                  className="text-3xl font-bold md:text-4xl"
-                >
-                  Trusted by Thousands
-                </motion.h2>
+                <h2 className="text-3xl font-bold">Trusted by Thousands</h2>
               </div>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {testimonials.filter(t => !t.is_featured).slice(0, 6).map((testimonial, i) => (
-                  <motion.div
-                    key={testimonial.id}
-                    initial={{ opacity: 0 }}
-                    whileInView={{ opacity: 1 }}
-                    transition={{ delay: i * 0.06 }}
-                    viewport={{ once: true }}
-                    className="rounded-xl bg-card border border-border p-4 hover:border-primary/30 transition-colors"
-                  >
+              <div className="grid grid-cols-2 gap-3">
+                {testimonials.filter(t => !t.is_featured).slice(0, 6).map((testimonial) => (
+                  <div key={testimonial.id} className="rounded-xl bg-card border border-border p-4">
                     <div className="flex gap-0.5 mb-2">
                       {Array.from({ length: 5 }).map((_, si) => (
                         <Star key={si} className="h-3 w-3 fill-amber-400 text-amber-400" />
@@ -493,10 +479,121 @@ export default function Index() {
                       {testimonial.name}{" "}
                       <span className="font-normal text-muted-foreground">· {testimonial.role}</span>
                     </p>
-                  </motion.div>
+                  </div>
                 ))}
               </div>
             </div>
+          </section>
+
+          {/* Desktop — DSM redesign */}
+          <section className="hidden md:block" style={{ background: "#FFFFFF", padding: "28px 32px" }}>
+            <div className="container">
+              <div className="text-center" style={{ marginBottom: 20 }}>
+                <div className="inline-flex items-center gap-3 mb-3">
+                  <div className="flex" style={{ marginRight: 0 }}>
+                    {[testimonialSarah, testimonialJames, testimonialEmma, testimonialSarahM].map((src, i) => (
+                      <img
+                        key={i}
+                        src={src}
+                        alt=""
+                        style={{
+                          width: 24,
+                          height: 24,
+                          borderRadius: "50%",
+                          objectFit: "cover",
+                          border: "2px solid #FFFFFF",
+                          marginLeft: i === 0 ? 0 : -6,
+                        }}
+                      />
+                    ))}
+                  </div>
+                  <span style={{ color: "#0A0E27", fontSize: 12, fontWeight: 600 }}>6,499+ happy drivers</span>
+                </div>
+                <h2 style={{ color: "#0A0E27", fontSize: 22, fontWeight: 800, letterSpacing: "-0.5px" }}>
+                  Trusted by Thousands
+                </h2>
+              </div>
+
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(3, 1fr)",
+                  gap: 0,
+                  border: "1px solid #F3F4F6",
+                  borderRadius: 6,
+                  overflow: "hidden",
+                  background: "#FFFFFF",
+                }}
+              >
+                {(() => {
+                  const items = testimonials.filter(t => !t.is_featured).slice(0, 3);
+                  const accents = ["#D12E2E", "#1A6FD4", "#0A0E27"];
+                  return items.map((t, i) => (
+                    <div
+                      key={t.id}
+                      style={{
+                        padding: "16px 18px",
+                        borderRight: i < items.length - 1 ? "1px solid #F3F4F6" : "none",
+                        background: "#FFFFFF",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 6,
+                      }}
+                    >
+                      <div style={{ color: accents[i], fontSize: 32, fontWeight: 800, lineHeight: 1 }}>"</div>
+                      <div style={{ width: 24, height: 2, background: accents[i], borderRadius: 2 }} />
+                      <p style={{ color: "#4B5563", fontSize: 11, lineHeight: 1.6, margin: 0 }}>
+                        {t.content}
+                      </p>
+                      <p style={{ fontSize: 11, margin: 0 }}>
+                        <span style={{ color: "#0A0E27", fontWeight: 700 }}>{t.name}</span>
+                        <span style={{ color: "#6B7280", fontWeight: 400 }}> · {t.role}</span>
+                      </p>
+                    </div>
+                  ));
+                })()}
+              </div>
+
+              <div
+                style={{
+                  marginTop: 14,
+                  background: "#0A0E27",
+                  borderRadius: 6,
+                  padding: "14px 20px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                <div>
+                  <div style={{ color: "#FFFFFF", fontSize: 13, fontWeight: 700 }}>
+                    Join 6,499+ happy drivers
+                  </div>
+                  <div style={{ color: "rgba(255,255,255,0.55)", fontSize: 11, marginTop: 2 }}>
+                    Rated 4.9★ from thousands of verified reviews
+                  </div>
+                </div>
+                <Link
+                  to="/instructors"
+                  className="d365-find-instructor-btn"
+                  style={{
+                    background: "#1A6FD4",
+                    color: "#FFFFFF",
+                    textTransform: "uppercase",
+                    fontSize: 11,
+                    fontWeight: 700,
+                    letterSpacing: "0.5px",
+                    padding: "9px 18px",
+                    borderRadius: 2,
+                    textDecoration: "none",
+                    display: "inline-block",
+                  }}
+                >
+                  Find an Instructor
+                </Link>
+              </div>
+            </div>
+            <style>{`.d365-find-instructor-btn:hover{background:#1558A8 !important;}`}</style>
           </section>
         </>}
       />
