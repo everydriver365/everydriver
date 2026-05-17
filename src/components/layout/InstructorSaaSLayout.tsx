@@ -123,6 +123,9 @@ export function InstructorSaaSLayout({ children }: InstructorSaaSLayoutProps) {
           )}
         </AnimatePresence>
       </div>
+      <div className="hidden md:block">
+        <PromoBanner />
+      </div>
       </header>
 
       {/* Main Content */}
