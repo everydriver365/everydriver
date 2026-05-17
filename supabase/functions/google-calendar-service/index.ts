@@ -1284,6 +1284,25 @@ Deno.serve(async (req) => {
             .eq("instructor_id", instructorId)
             .in("external_event_id", removedIds);
           if (delErr) console.error("resyncRange delete error:", delErr);
+
+          // Also soft-cancel any scheduled_lessons whose Google event was
+          // deleted upstream. Without this, the CRM row stays "scheduled"
+          // forever and (until the safety-net was removed) could falsely
+          // block public availability. We mark cancelled + clear the now-dead
+          // google_event_id so subsequent syncs don't try to update it.
+          const { error: slErr } = await supabase
+            .from("scheduled_lessons")
+            .update({
+              status: "cancelled",
+              cancelled_at: new Date().toISOString(),
+              cancelled_by: "google_calendar_sync",
+              cancellation_reason: "Event deleted in Google Calendar",
+              calendar_sync_status: "deleted-from-google",
+              google_event_id: null,
+            })
+            .eq("instructor_id", instructorId)
+            .in("google_event_id", removedIds);
+          if (slErr) console.error("resyncRange scheduled_lessons cancel error:", slErr);
         }
 
         // Upsert all fresh events (covers added + updates)
