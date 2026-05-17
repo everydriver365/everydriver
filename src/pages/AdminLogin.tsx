@@ -481,7 +481,7 @@ export default function AdminLogin() {
           {/* Portal Links Footer */}
           <div className="mt-8 text-center text-xs text-slate-500 space-y-2">
             <div className="flex flex-wrap items-center justify-center gap-3">
-              <Link to="/drive365" className="hover:text-slate-300 transition-colors">Drive365 Learners</Link>
+              <Link to="/drive365" className="hover:text-slate-300 transition-colors">Drive365</Link>
               <span>·</span>
               <Link to="/pupil/login" className="hover:text-slate-300 transition-colors">Pupil Portal</Link>
               <span>·</span>

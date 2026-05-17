@@ -569,7 +569,7 @@ export default function InstructorLogin() {
         {/* Portal Links Footer */}
         <div className="mt-8 text-center text-xs text-white/40 space-y-2">
           <div className="flex flex-wrap items-center justify-center gap-3">
-            <Link to="/drive365" className="hover:text-white/70 transition-colors">Drive365 Learners</Link>
+            <Link to="/drive365" className="hover:text-white/70 transition-colors">Drive365</Link>
             <span>·</span>
             <Link to="/pupil/login" className="hover:text-white/70 transition-colors">Pupil Portal</Link>
             <span>·</span>
