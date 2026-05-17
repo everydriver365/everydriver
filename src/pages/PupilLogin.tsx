@@ -318,14 +318,56 @@ export default function PupilLogin() {
         </div>
       </div>
 
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex">
+      {/* Left Panel - Branding (hidden on mobile) */}
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/20 to-transparent" />
+        
+        <div className="relative z-10 flex flex-col justify-between p-12 w-full">
+          <div className="flex items-center gap-3">
+            <img src={drive365Logo} alt="Drive365" className="h-12" />
+          </div>
+          
+          <div className="max-w-md">
+            <h1 className="text-4xl font-bold text-white mb-6">
+              Your driving journey starts here
+            </h1>
+            <p className="text-lg text-slate-300 mb-8">
+              Track your progress, view upcoming lessons, and stay connected 
+              with your instructor - all in one place.
+            </p>
+            
+            <div className="space-y-4">
+              {[
+                { icon: Users, text: "Connected with your instructor" },
+                { icon: Shield, text: "Track your lesson progress" },
+                { icon: Award, text: "Road to your driving licence" },
+              ].map((item, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-emerald-500/20 rounded-lg flex items-center justify-center">
+                    <item.icon className="w-4 h-4 text-emerald-400" />
+                  </div>
+                  <span className="text-slate-300">{item.text}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          <p className="text-sm text-slate-500">
+            © {new Date().getFullYear()} Drive365. All rights reserved.
+          </p>
+        </div>
+      </div>
+
       {/* Right Panel - Login Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-8">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-8 bg-slate-50">
         <div className="w-full max-w-md">
           {/* Mobile Logo */}
           <motion.div 
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="lg:hidden flex items-center justify-center mb-8"
+            className="lg:hidden flex items-center justify-center mb-6"
           >
             <img src={drive365Logo} alt="Drive365" className="h-10" />
           </motion.div>
@@ -335,31 +377,31 @@ export default function PupilLogin() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
           >
-            <Card className="bg-white/5 backdrop-blur border-white/10">
+            <Card className="bg-white border-slate-200 shadow-xl shadow-slate-200/50">
               <CardHeader className="text-center pb-2">
-                <CardTitle className="text-2xl text-white">Pupil Portal</CardTitle>
-                <p className="text-slate-400 text-sm mt-1">
+                <CardTitle className="text-2xl text-slate-900">Pupil Portal</CardTitle>
+                <p className="text-slate-500 text-sm mt-1">
                   Sign in or register your account
                 </p>
               </CardHeader>
               <CardContent>
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                  <TabsList className="grid w-full grid-cols-2 mb-4 bg-white/10">
-                    <TabsTrigger value="login" className="data-[state=active]:bg-emerald-500 data-[state=active]:text-white text-slate-300">Sign In</TabsTrigger>
-                    <TabsTrigger value="register" className="data-[state=active]:bg-emerald-500 data-[state=active]:text-white text-slate-300">Register</TabsTrigger>
+                  <TabsList className="grid w-full grid-cols-2 mb-4 bg-slate-100">
+                    <TabsTrigger value="login" className="data-[state=active]:bg-emerald-500 data-[state=active]:text-white text-slate-600">Sign In</TabsTrigger>
+                    <TabsTrigger value="register" className="data-[state=active]:bg-emerald-500 data-[state=active]:text-white text-slate-600">Register</TabsTrigger>
                   </TabsList>
 
                   <div className="mb-4 space-y-3">
                     <GoogleSignInButton
                       redirectTo={`${window.location.origin}/auth/redirect?portal=pupil`}
-                      className="w-full bg-white hover:bg-white/90 text-slate-900 border-slate-300"
+                      className="w-full bg-white hover:bg-slate-50 text-slate-900 border-slate-300"
                     />
                     <div className="relative">
                       <div className="absolute inset-0 flex items-center">
-                        <div className="w-full border-t border-white/10" />
+                        <div className="w-full border-t border-slate-200" />
                       </div>
                       <div className="relative flex justify-center text-xs">
-                        <span className="px-2 bg-transparent text-slate-400">OR</span>
+                        <span className="px-2 bg-white text-slate-400">OR</span>
                       </div>
                     </div>
                   </div>
@@ -380,9 +422,9 @@ export default function PupilLogin() {
                         >
                           <div className="space-y-3">
                             <div className="space-y-2">
-                              <Label htmlFor="email" className="text-sm font-medium text-slate-300">Email</Label>
+                              <Label htmlFor="email" className="text-sm font-medium text-slate-700">Email</Label>
                               <div className="relative">
-                                <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+                                <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                                 <Input
                                   id="email"
                                   name="email"
@@ -394,7 +436,7 @@ export default function PupilLogin() {
                                   placeholder="your@email.com"
                                   value={email}
                                   onChange={(e) => setEmail(e.target.value)}
-                                  className="pl-10 h-12 bg-white/10 border-white/20 text-white placeholder:text-slate-500"
+                                  className="pl-10 h-12 bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus-visible:ring-emerald-500 focus-visible:ring-offset-0"
                                   autoComplete="username"
                                   autoFocus
                                 />
@@ -402,17 +444,17 @@ export default function PupilLogin() {
                             </div>
                             <div className="space-y-2">
                               <div className="flex items-center justify-between">
-                                <Label htmlFor="password" className="text-sm font-medium text-slate-300">Password</Label>
+                                <Label htmlFor="password" className="text-sm font-medium text-slate-700">Password</Label>
                                 <button
                                   type="button"
                                   onClick={() => setLoginView("forgot")}
-                                  className="text-xs text-emerald-400 hover:text-emerald-300 transition-colors"
+                                  className="text-xs text-emerald-600 hover:text-emerald-700 transition-colors font-medium"
                                 >
                                   Forgot password?
                                 </button>
                               </div>
                               <div className="relative">
-                                <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+                                <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                                 <Input
                                   id="password"
                                   name="password"
@@ -420,7 +462,7 @@ export default function PupilLogin() {
                                   placeholder="••••••••"
                                   value={password}
                                   onChange={(e) => setPassword(e.target.value)}
-                                  className="pl-10 h-12 bg-white/10 border-white/20 text-white placeholder:text-slate-500"
+                                  className="pl-10 h-12 bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus-visible:ring-emerald-500 focus-visible:ring-offset-0"
                                   autoComplete="current-password"
                                 />
                               </div>
@@ -435,11 +477,11 @@ export default function PupilLogin() {
                               id="remember"
                               checked={rememberMe}
                               onCheckedChange={(checked) => setRememberMe(checked as boolean)}
-                              className="border-white/20 data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500"
+                              className="border-slate-300 data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500"
                             />
                             <label
                               htmlFor="remember"
-                              className="text-sm font-medium leading-none text-slate-300"
+                              className="text-sm font-medium leading-none text-slate-600"
                             >
                               Remember me on this device
                             </label>
@@ -467,7 +509,7 @@ export default function PupilLogin() {
                             <Button
                               type="button"
                               variant="outline"
-                              className="w-full h-12 text-base bg-white/5 border-white/20 text-white hover:bg-white/10"
+                              className="w-full h-12 text-base bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
                               onClick={handleFaceIdLogin}
                               disabled={loading}
                             >
@@ -487,13 +529,13 @@ export default function PupilLogin() {
                           className="space-y-4"
                         >
                           <div className="text-center mb-2">
-                            <h3 className="text-lg font-semibold text-white">Reset Password</h3>
-                            <p className="text-sm text-slate-400">We'll send a 6-digit code to your email</p>
+                            <h3 className="text-lg font-semibold text-slate-900">Reset Password</h3>
+                            <p className="text-sm text-slate-500">We'll send a 6-digit code to your email</p>
                           </div>
                           <div className="space-y-2">
-                            <Label className="text-sm font-medium text-slate-300">Email</Label>
+                            <Label className="text-sm font-medium text-slate-700">Email</Label>
                             <div className="relative">
-                              <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+                              <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                               <Input
                                 name="email"
                                 type="email"
@@ -505,7 +547,7 @@ export default function PupilLogin() {
                                 placeholder="your@email.com"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="pl-10 h-12 bg-white/10 border-white/20 text-white placeholder:text-slate-500"
+                                className="pl-10 h-12 bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus-visible:ring-emerald-500 focus-visible:ring-offset-0"
                               />
                             </div>
                           </div>
@@ -520,7 +562,7 @@ export default function PupilLogin() {
                           <Button
                             type="button"
                             variant="ghost"
-                            className="w-full text-slate-400 hover:text-white"
+                            className="w-full text-slate-500 hover:text-slate-900"
                             onClick={() => setLoginView("login")}
                           >
                             Back to sign in
@@ -537,25 +579,25 @@ export default function PupilLogin() {
                           className="space-y-4"
                         >
                           <div className="text-center mb-2">
-                            <h3 className="text-lg font-semibold text-white">Enter Reset Code</h3>
-                            <p className="text-sm text-slate-400">Check your email for the 6-digit code</p>
+                            <h3 className="text-lg font-semibold text-slate-900">Enter Reset Code</h3>
+                            <p className="text-sm text-slate-500">Check your email for the 6-digit code</p>
                           </div>
                           <div className="space-y-3">
                             <div className="space-y-2">
-                              <Label className="text-sm font-medium text-slate-300">Reset Code</Label>
+                              <Label className="text-sm font-medium text-slate-700">Reset Code</Label>
                               <Input
                                 type="text"
                                 placeholder="000000"
                                 value={resetCode}
                                 onChange={(e) => setResetCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                                className="h-12 bg-white/10 border-white/20 text-white text-center text-xl tracking-[0.5em] placeholder:text-slate-500 placeholder:tracking-[0.5em]"
+                                className="h-12 bg-slate-50 border-slate-200 text-slate-900 text-center text-xl tracking-[0.5em] placeholder:text-slate-400 placeholder:tracking-[0.5em] focus-visible:ring-emerald-500 focus-visible:ring-offset-0"
                                 maxLength={6}
                               />
                             </div>
                             <div className="space-y-2">
-                              <Label className="text-sm font-medium text-slate-300">New Password</Label>
+                              <Label className="text-sm font-medium text-slate-700">New Password</Label>
                               <div className="relative">
-                                <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+                                <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                                 <Input
                                   name="new-password"
                                   type="password"
@@ -563,14 +605,14 @@ export default function PupilLogin() {
                                   placeholder="••••••••"
                                   value={newPassword}
                                   onChange={(e) => setNewPassword(e.target.value)}
-                                  className="pl-10 h-12 bg-white/10 border-white/20 text-white placeholder:text-slate-500"
+                                  className="pl-10 h-12 bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus-visible:ring-emerald-500 focus-visible:ring-offset-0"
                                 />
                               </div>
                             </div>
                             <div className="space-y-2">
-                              <Label className="text-sm font-medium text-slate-300">Confirm Password</Label>
+                              <Label className="text-sm font-medium text-slate-700">Confirm Password</Label>
                               <div className="relative">
-                                <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+                                <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                                 <Input
                                   name="confirm-password"
                                   type="password"
@@ -578,7 +620,7 @@ export default function PupilLogin() {
                                   placeholder="••••••••"
                                   value={confirmPassword}
                                   onChange={(e) => setConfirmPassword(e.target.value)}
-                                  className="pl-10 h-12 bg-white/10 border-white/20 text-white placeholder:text-slate-500"
+                                  className="pl-10 h-12 bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus-visible:ring-emerald-500 focus-visible:ring-offset-0"
                                 />
                               </div>
                             </div>
@@ -595,7 +637,7 @@ export default function PupilLogin() {
                             <Button
                               type="button"
                               variant="ghost"
-                              className="flex-1 text-slate-400 hover:text-white"
+                              className="flex-1 text-slate-500 hover:text-slate-900"
                               onClick={() => setLoginView("forgot")}
                             >
                               Resend code
@@ -603,7 +645,7 @@ export default function PupilLogin() {
                             <Button
                               type="button"
                               variant="ghost"
-                              className="flex-1 text-slate-400 hover:text-white"
+                              className="flex-1 text-slate-500 hover:text-slate-900"
                               onClick={() => setLoginView("login")}
                             >
                               Back to sign in
@@ -624,7 +666,7 @@ export default function PupilLogin() {
 
                 <p className="mt-6 text-center text-xs text-slate-500">
                   Having trouble? Contact your instructor directly or email{" "}
-                  <a href="mailto:support@everydriver.co.uk" className="text-emerald-400 hover:text-emerald-300">
+                  <a href="mailto:support@everydriver.co.uk" className="text-emerald-600 hover:text-emerald-700 font-medium">
                     support@everydriver.co.uk
                   </a>
                 </p>
@@ -633,17 +675,16 @@ export default function PupilLogin() {
           </motion.div>
 
           {/* Portal Links Footer */}
-          <div className="mt-8 text-center text-xs text-slate-500 space-y-2">
+          <div className="mt-8 text-center text-xs text-slate-400 space-y-2">
             <div className="flex flex-wrap items-center justify-center gap-3">
-              <Link to="/drive365" className="hover:text-slate-300 transition-colors">Drive365</Link>
+              <Link to="/drive365" className="hover:text-slate-600 transition-colors">Drive365</Link>
               <span>·</span>
-              <Link to="/instructor-app" className="hover:text-slate-300 transition-colors">Instructor Home</Link>
+              <Link to="/instructor-app" className="hover:text-slate-600 transition-colors">Instructor Home</Link>
               <span>·</span>
-              <Link to="/instructor-app/login" className="hover:text-slate-300 transition-colors">Instructor Login</Link>
+              <Link to="/instructor-app/login" className="hover:text-slate-600 transition-colors">Instructor Login</Link>
             </div>
           </div>
         </div>
       </div>
     </div>
   );
-}
