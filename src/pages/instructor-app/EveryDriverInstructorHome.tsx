@@ -227,7 +227,7 @@ export default function EveryDriverInstructorHome() {
               </Link>
               <span className="text-gray-300">|</span>
               <Link to="/drive365" className="hover:text-foreground transition-colors text-primary font-medium">
-                Drive365 Learners
+                Drive365
               </Link>
               <Link to="/pupil/login" className="hover:text-foreground transition-colors">
                 Pupil Portal
