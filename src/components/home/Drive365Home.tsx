@@ -550,8 +550,96 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
       </section>
       {afterLearningPaths}
 
-      {/* HomeSwapBand */}
-      <section
+      {/* HomeSwapBand — Desktop compact DSM banner */}
+      <section className="hidden md:block" style={{ padding: "28px 0" }}>
+        <div
+          className="container"
+          style={{
+            background: "#0A0E27",
+            borderRadius: 8,
+            padding: "16px 24px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 20,
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 14, flexShrink: 0 }}>
+            <div
+              style={{
+                background: "#D12E2E",
+                color: "#FFFFFF",
+                fontSize: 9,
+                fontWeight: 800,
+                textTransform: "uppercase",
+                letterSpacing: "1px",
+                padding: "4px 10px",
+                borderRadius: 2,
+                flexShrink: 0,
+                whiteSpace: "nowrap",
+              }}
+            >
+              FREE
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              <div style={{ color: "#FFFFFF", fontSize: 14, fontWeight: 700 }}>
+                Can't wait months for your test? Swap it.
+              </div>
+              <div style={{ color: "rgba(255,255,255,0.55)", fontSize: 11, lineHeight: 1.5 }}>
+                Swap your driving test date with another learner — completely free. Drive365 matches you, DVSA completes the swap. Your booking reference never changes.
+              </div>
+            </div>
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+            <Link to="/test-swap">
+              <button
+                className="d365-swap-primary"
+                style={{
+                  background: "#1A6FD4",
+                  color: "#FFFFFF",
+                  fontSize: 11,
+                  fontWeight: 700,
+                  padding: "8px 16px",
+                  borderRadius: 2,
+                  border: "none",
+                  cursor: "pointer",
+                  whiteSpace: "nowrap",
+                  transition: "background 150ms ease",
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "#1558A8")}
+                onMouseLeave={(e) => (e.currentTarget.style.background = "#1A6FD4")}
+              >
+                Find a swap match →
+              </button>
+            </Link>
+            <Link to="/test-swap#how-it-works">
+              <button
+                className="d365-swap-secondary"
+                style={{
+                  background: "transparent",
+                  border: "1px solid rgba(255,255,255,0.25)",
+                  color: "#FFFFFF",
+                  fontSize: 11,
+                  fontWeight: 500,
+                  padding: "8px 16px",
+                  borderRadius: 2,
+                  cursor: "pointer",
+                  whiteSpace: "nowrap",
+                  transition: "border-color 150ms ease",
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.5)")}
+                onMouseLeave={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.25)")}
+              >
+                How it works
+              </button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* HomeSwapBand — Mobile (unchanged) */}
+      <section className="md:hidden"
         style={{
           background: "#0F2044",
           padding: "64px 80px",
