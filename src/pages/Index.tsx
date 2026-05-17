@@ -84,6 +84,7 @@ export default function Index() {
   const [selectedFeature, setSelectedFeature] = useState<FeatureData | null>(null);
   const [featureModalOpen, setFeatureModalOpen] = useState(false);
   const [videoModalOpen, setVideoModalOpen] = useState(false);
+  const [hoveredFeature, setHoveredFeature] = useState<string | null>(null);
   const { getImage, getAlt } = useSiteImages();
   const whitelabelSlug = getWhitelabelConfig()?.instructorSlug ?? null;
   // null = waiting to resolve, undefined = not whitelabel (show all), string = scope
