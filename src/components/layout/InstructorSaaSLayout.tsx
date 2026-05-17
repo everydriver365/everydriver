@@ -6,6 +6,7 @@ import { useState } from "react";
 import logo from "@/assets/dsm-logo.png";
 import { Footer } from "./Footer";
 import { InstructorMarketingBottomNav } from "./InstructorMarketingBottomNav";
+import { PromoBanner } from "./PromoBanner";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageToggle } from "@/components/LanguageToggle";
 
@@ -121,6 +122,9 @@ export function InstructorSaaSLayout({ children }: InstructorSaaSLayoutProps) {
             </motion.div>
           )}
         </AnimatePresence>
+      </div>
+      <div className="hidden md:block">
+        <PromoBanner />
       </div>
       </header>
 
