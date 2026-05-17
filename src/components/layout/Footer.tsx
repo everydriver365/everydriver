@@ -54,9 +54,8 @@ export function Footer() {
         <footer className="hidden md:block bg-[#0A0E27] overflow-hidden">
           <div style={{ padding: "28px 32px", display: "grid", gridTemplateColumns: "1.4fr 1fr 1fr 1fr", gap: "32px" }}>
             <div>
-              <Link to={homeLink} className="inline-flex items-center gap-1" aria-label={logoAlt}>
-                <span style={{ background: "#D12E2E", color: "#fff", fontWeight: 800, fontSize: 14, padding: "4px 8px", borderRadius: 3, letterSpacing: 0.5 }}>DRIVE</span>
-                <span style={{ background: "#1A6FD4", color: "#fff", fontWeight: 800, fontSize: 14, padding: "4px 8px", borderRadius: 3, letterSpacing: 0.5 }}>365</span>
+              <Link to={homeLink} className="inline-flex items-center gap-1" aria-label="DSM">
+                <img src={dsmLogo} alt="DSM" style={{ height: 28 }} />
               </Link>
               <p style={{ color: "rgba(255,255,255,0.55)", fontSize: 10, lineHeight: 1.5, marginTop: 10, marginBottom: 12 }}>
                 Professional driving instruction to help you pass your test with confidence.
