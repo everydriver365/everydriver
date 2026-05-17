@@ -19392,6 +19392,7 @@ export type Database = {
         Args: { p_source: string }
         Returns: string
       }
+      get_auth_user_id_by_email: { Args: { p_email: string }; Returns: string }
       get_instructor_id_for_user: {
         Args: { p_user_id: string }
         Returns: string
