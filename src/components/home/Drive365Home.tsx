@@ -15,7 +15,7 @@ import weeklyCourseImg from "@/assets/course-weekly-lessons.jpg";
 import semiCourseImg from "@/assets/semi-intensive-card.png";
 import logoKlarna from "@/assets/logo-klarna.png";
 import logoClearpay from "@/assets/logo-clearpay.webp";
-import drive365Logo from "@/assets/drive365-logo.png";
+
 import bookNowPayLaterBadge from "@/assets/book-now-pay-later-badge.png";
 import { PostcodeSearch } from "@/components/home/PostcodeSearch";
 
