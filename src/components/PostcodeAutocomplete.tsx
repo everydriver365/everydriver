@@ -21,6 +21,7 @@ interface PostcodeAutocompleteProps {
   showGeolocation?: boolean;
   showInputIcon?: boolean;
   enableDictation?: boolean;
+  prefixElement?: React.ReactNode;
 }
 
 export function PostcodeAutocomplete({
@@ -33,6 +34,7 @@ export function PostcodeAutocomplete({
   showGeolocation = true,
   showInputIcon = true,
   enableDictation = true,
+  prefixElement,
 }: PostcodeAutocompleteProps) {
   const [suggestions, setSuggestions] = useState<PostcodeSuggestion[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -250,6 +252,7 @@ export function PostcodeAutocomplete({
     <div ref={wrapperRef} className={cn("relative", className)}>
       <div className="relative flex gap-2">
         <div className="relative flex-1">
+          {prefixElement}
           {showInputIcon && (
             <MapPin className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground pointer-events-none z-10" />
           )}
