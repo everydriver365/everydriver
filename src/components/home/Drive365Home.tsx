@@ -468,13 +468,13 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
 
       {/* HomeCourses */}
       <section style={{ padding: "56px 5%", background: "#F6F6F8", width: "100%" }}>
-        <div style={{ fontSize: 11, fontWeight: 600, color: "#3E57D9", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 6 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: "#1A6FD4", letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: 6 }}>
           Learning paths
         </div>
-        <h2 style={{ fontSize: 32, fontWeight: 700, color: "#191C2F", letterSpacing: -0.5, marginBottom: 10 }}>
+        <h2 style={{ fontSize: 32, fontWeight: 700, color: "#0A0E27", letterSpacing: -0.5, marginBottom: 10 }}>
           Choose your learning path
         </h2>
-        <p style={{ fontSize: 15, color: "#51567A", lineHeight: 1.6, maxWidth: 520, marginBottom: 36 }}>
+        <p style={{ fontSize: 14, color: "#4B5563", lineHeight: 1.5, maxWidth: 520, marginBottom: 36 }}>
           Whether you want to pass quickly or learn at your own pace, we have the perfect course for you.
         </p>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px,1fr))", gap: 20 }}>
@@ -482,56 +482,59 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
             <div
               key={course.id}
               style={{
-                background: "#FFF",
-                borderRadius: 18,
+                background: "#FFFFFF",
+                borderRadius: 6,
                 overflow: "hidden",
-                border: course.featured ? "2px solid #0F2044" : "1px solid #E9E5E8",
+                border: course.featured ? "2px solid #1A6FD4" : "1px solid #E5E7EB",
+                boxShadow: course.featured ? "0 4px 24px rgba(26,111,212,0.14)" : undefined,
                 display: "flex",
                 flexDirection: "column",
               }}
             >
               <CourseCardImage courseId={course.id} badge={course.badge} badgeColor={course.badgeColor} bg={course.sceneBg} />
-              <div style={{ padding: 22, flex: 1, display: "flex", flexDirection: "column" }}>
-                <h3 style={{ fontSize: 18, fontWeight: 700, color: "#191C2F", marginBottom: 6 }}>{course.title}</h3>
-                <p style={{ fontSize: 13, color: "#51567A", lineHeight: 1.6, marginBottom: 14 }}>{course.description}</p>
+              <div style={{ padding: "22px 22px 0", flex: 1, display: "flex", flexDirection: "column" }}>
+                <h3 style={{ fontSize: 17, fontWeight: 700, color: "#0A0E27", marginBottom: 6 }}>{course.title}</h3>
+                <p style={{ fontSize: 13, color: "#4B5563", lineHeight: 1.5, marginBottom: 14 }}>{course.description}</p>
                 <div style={{ display: "flex", flexDirection: "column", gap: 5, marginBottom: 18 }}>
                   {course.features.map((f) => (
-                    <div key={f} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#51567A" }}>
-                      <Check size={11} color="#0F2044" strokeWidth={1.8} />
+                    <div key={f} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "#4B5563" }}>
+                      <Check size={11} color="#1A6FD4" strokeWidth={2} />
                       {f}
                     </div>
                   ))}
                 </div>
-                <div style={{ marginTop: "auto" }}>
+                <div style={{ marginTop: "auto", borderTop: "1px solid #F3F4F6", paddingTop: 14, paddingBottom: 16 }}>
                   <div style={{ fontSize: 11, color: "#9CA3AF", marginBottom: 1 }}>From</div>
                   <div>
-                    <span style={{ fontSize: 20, fontWeight: 700, color: "#0A0A0A", letterSpacing: -0.5 }}>{course.priceFrom}</span>
-                    {course.priceUnit && <span style={{ fontSize: 12, color: "#51567A" }}>{course.priceUnit}</span>}
+                    <span style={{ fontSize: 22, fontWeight: 700, color: "#0A0E27", letterSpacing: -0.5 }}>{course.priceFrom}</span>
+                    {course.priceUnit && <span style={{ fontSize: 13, fontWeight: 400, color: "#4B5563" }}>{course.priceUnit}</span>}
                   </div>
                 </div>
-                <Link to={course.ctaHref}>
-                  <button
-                    style={{
-                      width: "100%",
-                      border: "none",
-                      borderRadius: 10,
-                      padding: 12,
-                      fontSize: 14,
-                      fontWeight: 600,
-                      background: course.ctaBg,
-                      color: "#FFF",
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      gap: 6,
-                      marginTop: 16,
-                    }}
-                  >
-                    {course.ctaLabel} <ChevronRight size={12} color="#FFF" strokeWidth={2.2} />
-                  </button>
-                </Link>
               </div>
+              <Link to={course.ctaHref} style={{ display: "block" }}>
+                <button
+                  style={{
+                    width: "100%",
+                    border: "none",
+                    borderRadius: "0 0 4px 4px",
+                    padding: 14,
+                    fontSize: 14,
+                    fontWeight: 500,
+                    background: course.ctaBg,
+                    color: "#FFF",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 6,
+                    transition: "background 120ms ease",
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = course.ctaHoverBg)}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = course.ctaBg)}
+                >
+                  {course.ctaLabel} <ChevronRight size={14} color="#FFF" strokeWidth={2.2} />
+                </button>
+              </Link>
             </div>
           ))}
         </div>
