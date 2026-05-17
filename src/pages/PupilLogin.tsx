@@ -3,7 +3,7 @@ import { useNavigate, Link, useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mail, Loader2, ArrowRight, Lock, ScanFace, Eye, EyeOff, User, UserPlus, LifeBuoy } from "lucide-react";
 import dsmLogo from "@/assets/dsm-logo.png";
-import learnerHero from "@/assets/drive365-hero-learner.webp";
+
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
