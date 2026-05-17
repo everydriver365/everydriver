@@ -462,33 +462,6 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
                   </Link>
               </div>
             </div>
-            {/* Payment logo strip — desktop only, below Weekly Lessons card */}
-            <div
-              style={{
-                background: "#FFFFFF",
-                border: "1px solid #E5E7EB",
-                borderRadius: 6,
-                padding: "8px 14px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 10,
-              }}
-            >
-              <span style={{ color: "#9CA3AF", fontSize: 9, fontWeight: 500, whiteSpace: "nowrap" }}>
-                Book now, pay later with
-              </span>
-              <img
-                src={logoKlarna}
-                alt="Klarna"
-                style={{ maxHeight: 18, width: "auto", objectFit: "contain" }}
-              />
-              <img
-                src={logoClearpay}
-                alt="Clearpay"
-                style={{ maxHeight: 18, width: "auto", objectFit: "contain" }}
-              />
-            </div>
           </div>
             
           </div>
