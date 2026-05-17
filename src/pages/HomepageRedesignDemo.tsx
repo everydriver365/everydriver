@@ -6,7 +6,7 @@ import {
   Play, ChevronRight, Quote, Smartphone, Monitor, Zap, Clock, CreditCard, Megaphone,
   MapPin, Video, Building2
 } from "lucide-react";
-import { InstructorSaaSLayout } from "@/components/layout/InstructorSaaSLayout";
+import { MainLayout } from "@/components/layout/MainLayout";
 import featuresHeroImg from "@/assets/features/features-hero.png";
 import diaryAppImg from "@/assets/features/diary-app.png";
 import paymentsImg from "@/assets/features/pupil-making-payment.png";
@@ -25,7 +25,7 @@ import { CrossfadeImages } from "@/components/ui/CrossfadeImages";
 
 export default function HomepageRedesignDemo() {
   return (
-    <InstructorSaaSLayout>
+    <MainLayout>
       {/* ─── HERO ─── */}
       <section className="relative bg-background py-16 md:py-24 lg:py-32 overflow-hidden">
         <div className="absolute inset-0 opacity-[0.03]" style={{
@@ -577,6 +577,6 @@ export default function HomepageRedesignDemo() {
           </div>
         </div>
       </section>
-    </InstructorSaaSLayout>
+    </MainLayout>
   );
 }
