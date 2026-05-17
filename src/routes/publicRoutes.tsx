@@ -11,6 +11,7 @@ const BookingSummary = lazy(() => import("@/pages/BookingSummary"));
 const BookingConfirmation = lazy(() => import("@/pages/BookingConfirmation"));
 const PupilPortal = lazy(() => import("@/pages/PupilPortal"));
 const PupilLogin = lazy(() => import("@/pages/PupilLogin"));
+const Drive365Login = lazy(() => import("@/pages/Drive365Login"));
 const BrandedPupilPortal = lazy(() => import("@/pages/BrandedPupilPortal"));
 const Theory = lazy(() => import("@/pages/Theory"));
 const FAQs = lazy(() => import("@/pages/FAQs"));
@@ -122,6 +123,7 @@ export const publicRoutes = (
     <Route path="/pupil" element={<PupilPortal />} />
     <Route path="/pupil/login" element={<PupilLogin />} />
     <Route path="/pupil/login/:instructorSlug" element={<PupilLogin />} />
+    <Route path="/drive365/login" element={<Drive365Login />} />
     <Route path="/p/:slug" element={<BrandedPupilPortal />} />
     <Route path="/theory" element={<Theory />} />
     <Route path="/faqs" element={<FAQs />} />
