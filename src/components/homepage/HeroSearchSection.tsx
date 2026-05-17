@@ -37,6 +37,14 @@ export function HeroSearchSection({
   const [radius, setRadius] = useState("10");
   const [transmission, setTransmission] = useState("all");
   const [postcodeError, setPostcodeError] = useState(false);
+  const [isInputFocused, setIsInputFocused] = useState(false);
+
+  const typewriterText = useTypewriter({
+    phrases: ["Enter your postcode...", "e.g. SO30 2TD", "Find your local instructor..."],
+    typingSpeed: 80,
+    deletingSpeed: 40,
+    pauseBetween: 2000,
+  });
 
   const radiusRef = useRef<HTMLSelectElement>(null);
   const transmissionRef = useRef<HTMLSelectElement>(null);
