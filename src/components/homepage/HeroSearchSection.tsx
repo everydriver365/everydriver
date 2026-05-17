@@ -262,17 +262,25 @@ export function HeroSearchSection({
               <label className="block text-sm font-bold text-black mb-1">
                 Postcode<span className="text-[#CC2229] ml-0.5">*</span>
               </label>
-              <PostcodeAutocomplete
-                value={postcode}
-                onChange={setPostcode}
-                onSelect={(pc) => setPostcode(pc)}
-                placeholder="e.g. SO30 2TD"
-                className="w-full"
-                inputClassName={`h-8 border-0 bg-transparent p-0 text-lg font-normal focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-[#9CA3AF] ${
-                  postcodeError ? "text-[#CC2229] placeholder:text-[#CC2229]" : "text-black"
-                }`}
-                showGeolocation={false}
-              />
+              <div className="relative">
+                {postcode === "" && (
+                  <span className="absolute inset-0 flex items-center text-lg text-[#9CA3AF] pointer-events-none select-none">
+                    {typewriterText}
+                    <span className="ml-0.5 inline-block w-[1.5px] h-[1em] bg-[#9CA3AF] animate-pulse" />
+                  </span>
+                )}
+                <PostcodeAutocomplete
+                  value={postcode}
+                  onChange={setPostcode}
+                  onSelect={(pc) => setPostcode(pc)}
+                  placeholder=""
+                  className="w-full"
+                  inputClassName={`h-8 border-0 bg-transparent p-0 text-lg font-normal focus-visible:ring-0 focus-visible:ring-offset-0 ${
+                    postcodeError ? "text-[#CC2229] placeholder:text-[#CC2229]" : "text-black"
+                  }`}
+                  showGeolocation={false}
+                />
+              </div>
               {postcodeError && (
                 <span className="text-xs text-[#CC2229] mt-1 block">
                   Please enter a postcode
