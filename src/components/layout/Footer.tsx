@@ -61,7 +61,7 @@ export function Footer() {
                 Professional driving instruction to help you pass your test with confidence.
               </p>
               <div style={{ display: "flex", gap: 8 }}>
-                {[Facebook, Instagram, Twitter].map((Icon, i) => (
+                {[Facebook, Instagram].map((Icon, i) => (
                   <a key={i} href="#" style={{ width: 28, height: 28, borderRadius: 4, background: "rgba(255,255,255,0.08)", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "#fff" }}
                     onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.15)")}
                     onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.08)")}>
