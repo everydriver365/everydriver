@@ -3,6 +3,7 @@ import { Facebook, Instagram, Twitter, Mail, Phone, MapPin } from "lucide-react"
 import { useRouteLogo } from "@/hooks/useRouteLogo";
 import { getWhitelabelConfig } from "@/lib/whitelabel";
 import { getAreasForHost, areaToSlug } from "@/lib/whitelabelAreas";
+import dsmLogo from "@/assets/dsm-logo.png";
 
 // Decorative tyre track SVG pattern
 function TyreTrackPattern() {
