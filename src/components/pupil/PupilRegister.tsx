@@ -118,7 +118,7 @@ export default function PupilRegister({ instructorId, instructorName }: PupilReg
     <form onSubmit={handleRegister} className="space-y-4">
       <div className="space-y-3">
         {instructorName && (
-          <div className="rounded-lg bg-emerald-500/10 border border-emerald-500/20 px-4 py-3 text-sm text-emerald-300 text-center">
+          <div className="rounded-lg bg-emerald-50 border border-emerald-200 px-4 py-3 text-sm text-emerald-700 text-center">
             Registering with <span className="font-semibold">{instructorName}</span>
           </div>
         )}
@@ -130,7 +130,7 @@ export default function PupilRegister({ instructorId, instructorName }: PupilReg
                 variant="outline"
                 role="combobox"
                 aria-expanded={comboboxOpen}
-                className="w-full h-12 justify-between bg-white/10 border-white/20 text-white hover:bg-white/20 hover:text-white"
+                className="w-full h-12 justify-between bg-white border-slate-200 text-slate-900 hover:bg-slate-50 hover:text-slate-900"
               >
                 {selectedInstructorId
                   ? instructors.find((i) => i.id === selectedInstructorId)?.name
@@ -172,47 +172,47 @@ export default function PupilRegister({ instructorId, instructorName }: PupilReg
         )}
 
         <div className="relative">
-          <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+          <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <Input
             type="text"
             placeholder="Full name"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="pl-10 h-12 bg-white/10 border-white/20 text-white placeholder:text-slate-500"
+            className="pl-10 h-12 bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus-visible:ring-emerald-500 focus-visible:ring-offset-0"
             autoComplete="name"
             autoFocus={!!instructorId}
           />
         </div>
         <div className="relative">
-          <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+          <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <Input
             type="email"
             placeholder="your@email.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="pl-10 h-12 bg-white/10 border-white/20 text-white placeholder:text-slate-500"
+            className="pl-10 h-12 bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus-visible:ring-emerald-500 focus-visible:ring-offset-0"
             autoComplete="email"
           />
         </div>
         <div className="relative">
-          <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+          <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <Input
             type="password"
             placeholder="Password (min 6 characters)"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="pl-10 h-12 bg-white/10 border-white/20 text-white placeholder:text-slate-500"
+            className="pl-10 h-12 bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus-visible:ring-emerald-500 focus-visible:ring-offset-0"
             autoComplete="new-password"
           />
         </div>
         <div className="relative">
-          <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+          <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <Input
             type="password"
             placeholder="Confirm password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            className="pl-10 h-12 bg-white/10 border-white/20 text-white placeholder:text-slate-500"
+            className="pl-10 h-12 bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus-visible:ring-emerald-500 focus-visible:ring-offset-0"
             autoComplete="new-password"
           />
         </div>
