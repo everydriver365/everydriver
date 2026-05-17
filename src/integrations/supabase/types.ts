@@ -14829,6 +14829,7 @@ export type Database = {
         Row: {
           account_balance: number | null
           address: string | null
+          auth_user_id: string | null
           balance_due_date: string | null
           best_driving_score: number | null
           checklist_completed_at: string | null
@@ -14925,6 +14926,7 @@ export type Database = {
         Insert: {
           account_balance?: number | null
           address?: string | null
+          auth_user_id?: string | null
           balance_due_date?: string | null
           best_driving_score?: number | null
           checklist_completed_at?: string | null
@@ -15021,6 +15023,7 @@ export type Database = {
         Update: {
           account_balance?: number | null
           address?: string | null
+          auth_user_id?: string | null
           balance_due_date?: string | null
           best_driving_score?: number | null
           checklist_completed_at?: string | null
@@ -19389,6 +19392,7 @@ export type Database = {
         Args: { p_source: string }
         Returns: string
       }
+      get_auth_user_id_by_email: { Args: { p_email: string }; Returns: string }
       get_instructor_id_for_user: {
         Args: { p_user_id: string }
         Returns: string

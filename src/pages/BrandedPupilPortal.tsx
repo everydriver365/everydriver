@@ -225,7 +225,7 @@ export default function BrandedPupilPortal() {
 
   const fetchInstructor = async () => {
     if (!slug) return;
-    
+
     try {
       const { data, error } = await supabase
         .from("instructors")
@@ -244,23 +244,19 @@ export default function BrandedPupilPortal() {
       }
 
       setInstructor(data);
-      
-      const storedPupilId = sessionStorage.getItem(`pupil_${data.id}`);
-      if (storedPupilId) {
-        fetchPupil(storedPupilId);
-      } else {
-        const verifiedEmail = sessionStorage.getItem("pupil_email_verified");
-        if (verifiedEmail) {
-          const { data: pupilData } = await supabase
-            .from("pupils")
-            .select("id")
-            .eq("instructor_id", data.id)
-            .eq("email", verifiedEmail)
-            .single();
-          if (pupilData) {
-            sessionStorage.setItem(`pupil_${data.id}`, pupilData.id);
-            fetchPupil(pupilData.id);
-          }
+
+      // Look up the pupil from the active Supabase Auth session
+      const { data: sessionData } = await supabase.auth.getSession();
+      const authUserId = sessionData.session?.user?.id;
+      if (authUserId) {
+        const { data: pupilRow } = await supabase
+          .from("pupils")
+          .select("id")
+          .eq("auth_user_id", authUserId)
+          .eq("instructor_id", data.id)
+          .maybeSingle();
+        if (pupilRow?.id) {
+          fetchPupil(pupilRow.id);
         }
       }
     } catch (error) {
@@ -283,10 +279,12 @@ export default function BrandedPupilPortal() {
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     if (instructor) {
       sessionStorage.removeItem(`pupil_${instructor.id}`);
     }
+    sessionStorage.removeItem("pupil_email_verified");
     setPupil(null);
     setActiveSection('home');
   };
