@@ -104,7 +104,7 @@ export function Footer() {
                       onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.55)")}>{l.label}</Link>
                   </li>
                 ))}
-                <li><Link to="/accessible" style={{ color: "#1A6FD4", fontSize: 10, fontWeight: 700 }}>Drive for all</Link></li>
+                
               </ul>
             </div>
             <div>
@@ -192,7 +192,7 @@ export function Footer() {
               <li><Link to="/pupil/login" className="hover:text-accent">Pupil Portal</Link></li>
               <li><Link to="/instructor-app/login" className="hover:text-accent">Instructor Portal</Link></li>
               <li><Link to="/admin/login" className="hover:text-accent">Admin Portal</Link></li>
-              <li><Link to="/accessible" className="hover:text-accent text-accent font-medium">Drive for all</Link></li>
+              
             </ul>
           </div>
 
