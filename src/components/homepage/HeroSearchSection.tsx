@@ -160,18 +160,26 @@ export function HeroSearchSection({
               <label className="text-[13px] font-bold text-black leading-tight">
                 Postcode<span className="text-[#CC2229] ml-0.5">*</span>
               </label>
-              <PostcodeAutocomplete
-                value={postcode}
-                onChange={setPostcode}
-                onSelect={(pc) => setPostcode(pc)}
-                placeholder="e.g. SO30 2TD"
-                className="w-full"
-                inputClassName={`h-7 lg:h-8 border-0 bg-transparent p-0 text-[15px] lg:text-base font-normal focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-[#9CA3AF] ${
-                  postcodeError ? "text-[#CC2229] placeholder:text-[#CC2229]" : "text-black"
-                }`}
-                showGeolocation={false}
-                showInputIcon={false}
-              />
+              <div className="relative">
+                {postcode === "" && !isInputFocused && (
+                  <span className="absolute inset-0 flex items-center text-[15px] lg:text-base text-[#9CA3AF] pointer-events-none select-none">
+                    {typewriterText}
+                    <span className="ml-0.5 inline-block w-[1.5px] h-[1em] bg-[#9CA3AF] animate-pulse" />
+                  </span>
+                )}
+                <PostcodeAutocomplete
+                  value={postcode}
+                  onChange={setPostcode}
+                  onSelect={(pc) => setPostcode(pc)}
+                  placeholder=""
+                  className="w-full"
+                  inputClassName={`h-7 lg:h-8 border-0 bg-transparent p-0 text-[15px] lg:text-base font-normal focus-visible:ring-0 focus-visible:ring-offset-0 ${
+                    postcodeError ? "text-[#CC2229] placeholder:text-[#CC2229]" : "text-black"
+                  }`}
+                  showGeolocation={false}
+                  showInputIcon={false}
+                />
+              </div>
               {postcodeError && (
                 <span className="absolute -bottom-5 left-7 text-xs text-[#CC2229]">
                   Please enter a postcode
