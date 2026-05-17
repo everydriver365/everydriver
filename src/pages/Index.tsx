@@ -606,8 +606,8 @@ export default function Index() {
       />
 
 
-      {/* From Nervous to Road Ready Section — Warm Organic */}
-      <section className="bg-gradient-to-b from-orange-50 via-amber-50/40 to-background py-20">
+      {/* From Nervous to Road Ready Section — Warm Organic (Mobile unchanged) */}
+      <section className="md:hidden bg-gradient-to-b from-orange-50 via-amber-50/40 to-background py-20">
         <div className="container max-w-5xl">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} viewport={{ once: true }} className="text-center mb-14">
             <div className="flex justify-center mb-4">
@@ -656,6 +656,131 @@ export default function Index() {
               <Link to="/courses">Start Your Journey <ArrowRight className="h-4 w-4" /></Link>
             </Button>
           </motion.div>
+        </div>
+      </section>
+
+      {/* Every Learner's Journey — Desktop DSM redesign */}
+      <section className="hidden md:block" style={{ background: "#EFF6FF", padding: "36px 40px", borderRadius: 8 }}>
+        <div className="container max-w-5xl">
+          {/* Header */}
+          <div className="text-center" style={{ marginBottom: 28 }}>
+            <div style={{ color: "#1A6FD4", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1.5px", marginBottom: 8 }}>
+              LEARNER STORIES
+            </div>
+            <h2 style={{ color: "#0A0E27", fontSize: 24, fontWeight: 800, letterSpacing: "-0.5px", margin: 0 }}>
+              Every Learner's Journey <span style={{ color: "#D12E2E" }}>Starts Here</span>
+            </h2>
+            <p style={{ color: "#6B7280", fontSize: 12, marginTop: 4 }}>
+              From first lesson nerves to passing-day celebrations
+            </p>
+          </div>
+
+          {/* Three review cards */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(3, 1fr)",
+              gap: 14,
+              marginBottom: 20,
+            }}
+          >
+            {[
+              { name: "Sarah M.", course: "5-Day Intensive", img: testimonialSarahM, text: "The intensive course was exactly what I needed. My instructor was patient and really focused on my weak points.", border: "#D12E2E", avatarBg: "#FEE2E2" },
+              { name: "Emily R.", course: "Semi-Intensive", img: testimonialEmily, text: "I went from being terrified of roundabouts to navigating them with ease. Best decision I ever made.", border: "#1A6FD4", avatarBg: "#DBEAFE" },
+              { name: "Priya T.", course: "10-Day Course", img: testimonialPriya, text: "Working full-time made it hard to learn, but the flexible scheduling meant I could fit lessons around my job.", border: "#0A0E27", avatarBg: "#F3F4F6" },
+            ].map((t) => (
+              <div
+                key={t.name}
+                style={{
+                  background: "#FFFFFF",
+                  border: "1px solid #E5E7EB",
+                  borderLeft: `4px solid ${t.border}`,
+                  borderRadius: 6,
+                  padding: 16,
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: 12,
+                }}
+              >
+                <img
+                  src={t.img}
+                  alt={t.name}
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: "50%",
+                    objectFit: "cover",
+                    background: t.avatarBg,
+                    flexShrink: 0,
+                  }}
+                />
+                <div style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 0 }}>
+                  <div style={{ display: "flex", gap: 1 }}>
+                    {[...Array(5)].map((_, s) => (
+                      <Star key={s} style={{ width: 9, height: 9, color: "#F59E0B", fill: "#F59E0B" }} />
+                    ))}
+                  </div>
+                  <p style={{ color: "#4B5563", fontSize: 10, fontStyle: "italic", lineHeight: 1.5, margin: 0 }}>
+                    "{t.text}"
+                  </p>
+                  <p style={{ margin: 0, marginTop: 2 }}>
+                    <span style={{ color: "#0A0E27", fontSize: 11, fontWeight: 700 }}>{t.name}</span>
+                    <span style={{ color: "#6B7280", fontSize: 10, fontWeight: 400 }}> · {t.course}</span>
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Stats bar */}
+          <div
+            style={{
+              background: "#FFFFFF",
+              border: "1px solid #BFDBFE",
+              borderRadius: 6,
+              padding: "16px 24px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
+              {(() => {
+                const statColors = ["#D12E2E", "#1A6FD4", "#0A0E27"];
+                const statItems = stats.slice(0, 3);
+                return statItems.map((stat, i) => (
+                  <div key={i} style={{ display: "flex", alignItems: "center" }}>
+                    <div style={{ textAlign: "center", padding: "0 24px" }}>
+                      <div style={{ color: statColors[i], fontSize: 20, fontWeight: 800 }}>{stat.value}</div>
+                      <div style={{ color: "#6B7280", fontSize: 10, marginTop: 2 }}>{stat.label}</div>
+                    </div>
+                    {i < statItems.length - 1 && (
+                      <div style={{ width: 1, height: 32, background: "#E5E7EB", flexShrink: 0 }} />
+                    )}
+                  </div>
+                ));
+              })()}
+            </div>
+            <Link
+              to="/instructors"
+              className="d365-start-journey-btn"
+              style={{
+                background: "#1A6FD4",
+                color: "#FFFFFF",
+                fontSize: 12,
+                fontWeight: 700,
+                padding: "10px 22px",
+                borderRadius: 2,
+                textDecoration: "none",
+                display: "inline-block",
+                whiteSpace: "nowrap",
+                transition: "background 150ms ease",
+              }}
+            >
+              Start Your Journey →
+            </Link>
+          </div>
+          <style>{`.d365-start-journey-btn:hover{background:#1558A8 !important;}`}</style>
         </div>
       </section>
 
