@@ -23,6 +23,7 @@ import weeklyLessonsIcon from "@/assets/weekly-lessons-icon.jpg";
 import referFriendsImage from "@/assets/refer-friends.png";
 import testswapBanner from "@/assets/testswap-banner.png";
 import { useDomainBranding } from "@/hooks/useDomainBranding";
+import { MobileStickySearch } from "@/components/homepage/MobileStickySearch";
 
 export function MobileHomepage() {
   const [postcode, setPostcode] = useState("");
@@ -95,6 +96,7 @@ export function MobileHomepage() {
 
   return (
     <div className="learner-app min-h-screen bg-background">
+      <MobileStickySearch />
       {/* Header - Hamburger + Logo + Location */}
       <div className="px-4 flex items-center justify-between sticky top-0 z-50 bg-primary h-16">
         <div className="flex items-center gap-1">

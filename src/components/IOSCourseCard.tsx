@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { MapPin, Clock, User, PoundSterling, Car, Zap, TrendingUp, Star, CheckCircle } from "lucide-react";
+import { MapPin, Clock, User, Car, Zap, TrendingUp, Star, CheckCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -80,6 +80,11 @@ export function IOSCourseCard({
     ? availableFromDate
     : null;
 
+  const daysUntil = displayDate
+    ? Math.ceil((displayDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+    : null;
+  const isAvailableSoon = daysUntil !== null && daysUntil >= 0 && daysUntil <= 7;
+
   const dayNumber = displayDate ? format(displayDate, "d") : "TBC";
   const monthName = displayDate ? format(displayDate, "MMM").toUpperCase() : "";
   const fullDateDisplay = displayDate ? format(displayDate, "d MMM") : "TBC";
@@ -116,6 +121,15 @@ export function IOSCourseCard({
             />
 
             <div className="absolute top-3 left-3 z-20 flex flex-wrap gap-1.5">
+              {isAvailableSoon && (
+                <Badge className="border-0 bg-emerald-500 text-white shadow-md">
+                  <span className="relative flex h-1.5 w-1.5 mr-1.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-white" />
+                  </span>
+                  {daysUntil === 0 ? "Available today" : daysUntil! <= 1 ? "Available tomorrow" : "Available this week"}
+                </Badge>
+              )}
               {isPopular && <Badge className="border-0 bg-emerald-500 text-white">Popular</Badge>}
               {showIntensiveBadge && (
                 <Badge className={`border-0 text-white ${isIntensive ? "bg-primary" : "bg-amber-500"}`}>
@@ -179,16 +193,22 @@ export function IOSCourseCard({
                 </span>
               </div>
 
-              <div className="flex items-center gap-2 text-foreground">
-                <PoundSterling className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+              <div className="flex items-baseline gap-2 pt-1">
                 {hasDiscount ? (
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm line-through text-muted-foreground">£{totalPrice.toFixed(2)}</span>
-                    <span className="text-sm font-bold text-red-600">£{finalPrice.toFixed(2)}</span>
-                  </div>
+                  <>
+                    <span className="text-2xl font-extrabold text-foreground leading-none">
+                      £{finalPrice.toFixed(0)}
+                    </span>
+                    <span className="text-sm line-through text-muted-foreground">£{totalPrice.toFixed(0)}</span>
+                  </>
                 ) : (
-                  <span className="text-sm font-semibold">£{totalPrice.toFixed(2)}</span>
+                  <span className="text-2xl font-extrabold text-foreground leading-none">
+                    £{totalPrice.toFixed(0)}
+                  </span>
                 )}
+                <span className="text-xs text-muted-foreground">
+                  · from £{hourlyRate}/hr
+                </span>
               </div>
 
               <CompactPaymentBadges
