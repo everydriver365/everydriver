@@ -849,6 +849,7 @@ export default function Courses() {
       setOverrideRows(loadedOverrides);
       setCalendarEvents(loadedCalendarEvents);
       setManualBlocks(loadedManualBlocks);
+      setBookedLessonGeo(loadedAvailabilitySources.bookedLessonGeo || []);
 
       // Auto-advance to first available date
       const firstAvailable = findFirstAvailableDate(loadedInstructors, loadedAvailabilitySources);
