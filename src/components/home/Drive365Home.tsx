@@ -421,6 +421,29 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
                 Book through Drive 365 for a range of exclusive benefits when you book.
               </p>
               <PostcodeSearch />
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                  marginTop: 8,
+                }}
+              >
+                <span style={{ color: "#9CA3AF", fontSize: 9, fontWeight: 500, whiteSpace: "nowrap" }}>
+                  Book now, pay later with
+                </span>
+                <img
+                  src={logoKlarna}
+                  alt="Klarna"
+                  style={{ maxHeight: 16, width: "auto", objectFit: "contain" }}
+                />
+                <img
+                  src={logoClearpay}
+                  alt="Clearpay"
+                  style={{ maxHeight: 16, width: "auto", objectFit: "contain" }}
+                />
+              </div>
             </div>
             <div className="d365-feat-row">
               <div className="d365-feat">
