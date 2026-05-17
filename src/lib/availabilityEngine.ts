@@ -112,6 +112,26 @@ export function isAllDayLikeEvent(startIso: string, endIso: string): boolean {
   }
 }
 
+// Cached formatter — extracts wall-clock date + time parts in Europe/London,
+// honouring BST/GMT transitions. Works identically in Node, browser, and Deno.
+const LONDON_PARTS_FMT = new Intl.DateTimeFormat("en-GB", {
+  timeZone: "Europe/London",
+  year: "numeric", month: "2-digit", day: "2-digit",
+  hour: "2-digit", minute: "2-digit", hour12: false,
+});
+
+export function toLondonParts(d: Date): { date: string; hour: number; minute: number } {
+  const parts = LONDON_PARTS_FMT.formatToParts(d);
+  const get = (t: string) => parts.find((p) => p.type === t)?.value ?? "00";
+  const year = get("year");
+  const month = get("month");
+  const day = get("day");
+  let hour = parseInt(get("hour"), 10);
+  if (hour === 24) hour = 0; // some runtimes report "24" for midnight
+  const minute = parseInt(get("minute"), 10);
+  return { date: `${year}-${month}-${day}`, hour, minute };
+}
+
 export function inTimeOfDay(startMin: number, tod: TimeOfDay = "any"): boolean {
   if (tod === "any")       return true;
   if (tod === "morning")   return startMin >= 6 * 60 && startMin < 12 * 60;
