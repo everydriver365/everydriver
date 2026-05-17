@@ -122,11 +122,17 @@ export default function PupilLogin() {
         return false;
       }
 
-      sessionStorage.setItem("pupil_email_verified", loginEmail);
-      if (data.instructorId) {
-        sessionStorage.setItem(`pupil_${data.instructorId}`, data.pupilId);
+      // Establish a real Supabase Auth session
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: loginEmail,
+        password: loginPassword,
+      });
+      if (signInError) {
+        toast.error(signInError.message || "Could not sign you in. Please try again.");
+        setAutoLoggingIn(false);
+        return false;
       }
-      
+
       persistRememberMe(rememberMe);
       if (rememberMe || localStorage.getItem("pupil_remembered_email")) {
         localStorage.setItem("pupil_remembered_email", loginEmail);
