@@ -160,13 +160,26 @@ export function HeroSearchSection({
                 Postcode<span className="text-[#CC2229] ml-0.5">*</span>
               </label>
               <div className="relative">
-                {postcode === "" && (
-                  <span className="absolute inset-0 flex items-center text-[15px] lg:text-base text-[#9CA3AF] pointer-events-none select-none z-10" style={{ backgroundColor: 'rgba(255,0,0,0.1)' }}>
-                    {typewriterText || "DEBUG_EMPTY"}
-                    <span className="ml-0.5 inline-block w-[1.5px] h-[1em] bg-[#9CA3AF] animate-pulse" />
-                  </span>
-                )}
                 <PostcodeAutocomplete
+                  value={postcode}
+                  onChange={setPostcode}
+                  onSelect={(pc) => setPostcode(pc)}
+                  placeholder=""
+                  className="w-full"
+                  inputClassName={`h-7 lg:h-8 border-0 bg-transparent p-0 text-[15px] lg:text-base font-normal focus-visible:ring-0 focus-visible:ring-offset-0 ${
+                    postcodeError ? "text-[#CC2229] placeholder:text-[#CC2229]" : "text-black"
+                  }`}
+                  showGeolocation={false}
+                  showInputIcon={false}
+                  prefixElement={
+                    postcode === "" ? (
+                      <span className="absolute inset-0 flex items-center text-[15px] lg:text-base text-[#9CA3AF] pointer-events-none select-none z-10">
+                        {typewriterText}
+                        <span className="ml-0.5 inline-block w-[1.5px] h-[1em] bg-[#9CA3AF] animate-pulse" />
+                      </span>
+                    ) : null
+                  }
+                />
                   value={postcode}
                   onChange={setPostcode}
                   onSelect={(pc) => setPostcode(pc)}
