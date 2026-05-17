@@ -10,13 +10,14 @@
 //   3. After subtracting manual blocks and Google Calendar busy events the
 //      remaining free time inside the window is ≥ MIN_FREE_MINUTES.
 //
-// Busyness sources (in priority order):
-//   - instructor_calendar_events (Google Calendar mirror) + instructor_manual_blocks
-//     are the primary source — "calendar wins".
-//   - Active scheduled_lessons are ALSO injected as synthetic busy events via
-//     get_public_instructor_lesson_geo, so the engine cannot offer a slot that
-//     overlaps an existing booking even if the Google mirror is missing/lagging.
-//     Overlapping conflicts simply merge inside buildDayConflicts (no double-pad).
+// Busyness sources (ONLY):
+//   - instructor_calendar_events (Google Calendar mirror) + instructor_manual_blocks.
+//   - scheduled_lessons is CRM data and is NEVER consulted for "is the
+//     instructor busy?". It can drift from Google (events deleted in Google,
+//     unpaid bookings, stale junk rows) — using it as a busy source caused
+//     real outages (e.g. Ken D 18 June 2026: 8 stale rows blocked a fully
+//     free day). Lesson geo is used ONLY for optional travel-time padding
+//     around lessons that ARE present in the Google mirror.
 
 import { format, isAfter, isBefore, parseISO, startOfDay, addDays } from "date-fns";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -514,35 +515,18 @@ export async function loadCourseAvailabilitySources(
   const calendarEvents = (ceRes.data as CalendarEventRow[]) ?? [];
   const bookedLessonGeo = (lgRes.data as BookedLessonGeoRow[]) ?? [];
 
-  // Belt-and-braces safety net: every booked lesson is ALSO injected as a
-  // synthetic busy calendar event. The unified rule remains "Google Calendar
-  // is the source of busyness" — these synthetic rows simply guarantee that a
-  // missing or lagging GCal mirror can never cause a double-booking. If the
-  // real GCal event already exists it will just overlap and merge inside
-  // `buildDayConflicts` / `resolveAvailability` (no double-padding, no
-  // double-blocking — overlapping conflicts are unioned).
-  const syntheticLessonEvents: CalendarEventRow[] = [];
-  for (const row of bookedLessonGeo) {
-    if (!row.lesson_date || !row.start_time || !row.duration_minutes) continue;
-    // `${date}T${time}` with no Z is parsed in LOCAL time, which matches how
-    // the engine reads `start_time` (via new Date().getHours()).
-    const startLocal = new Date(`${row.lesson_date}T${row.start_time}`);
-    if (Number.isNaN(startLocal.getTime())) continue;
-    const endLocal = new Date(startLocal.getTime() + row.duration_minutes * 60_000);
-    syntheticLessonEvents.push({
-      instructor_id: row.instructor_id,
-      start_time: startLocal.toISOString(),
-      end_time: endLocal.toISOString(),
-      is_busy: true,
-    });
-  }
+  // NOTE: scheduled_lessons rows are deliberately NOT injected as synthetic
+  // busy events. Google Calendar mirror + manual blocks are the sole source of
+  // busyness. `bookedLessonGeo` is kept ONLY so the engine can pad candidate
+  // slots with realistic travel time around lessons that are also present in
+  // the live Google mirror.
 
   return {
     workingHours:       (whRes.data  as WeeklyHourRow[])      ?? [],
     availabilityWindows:(awRes.data  as WeeklyHourRow[])      ?? [],
     overrides:          (ovRes.data  as DateOverrideRow[])    ?? [],
     manualBlocks:       (mbRes.data  as ManualBlockRow[])     ?? [],
-    calendarEvents:     [...calendarEvents, ...syntheticLessonEvents],
+    calendarEvents,
     bookedLessonGeo,
   };
 }
