@@ -1180,30 +1180,83 @@ export default function Index() {
         </div>
       </section>
 
-      {/* Desktop Trust Badges - V9 Stacked Compact Design */}
-      <section className="hidden md:block bg-card border-y border-border py-6">
-        <div className="container max-w-3xl space-y-4">
-          <div className="flex items-center justify-center gap-8">
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-              <img src={logoAdiCode} alt="ADI Code of Practice" className="h-9 object-contain" />
+      {/* Desktop Trust Badges — DSM Redesign */}
+      <section className="hidden md:block" style={{ background: "#FFFFFF", borderRadius: 8, border: "1px solid #E5E7EB", overflow: "hidden" }}>
+        {/* Top row — Accreditations */}
+        <div
+          style={{
+            padding: "14px 32px",
+            borderBottom: "1px solid #F3F4F6",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 32,
+          }}
+        >
+          {[
+            { logo: logoAdiCode, alt: "ADI Code of Practice", tick: "#D12E2E" },
+            { logo: logoMsa, alt: "MSA GB - For all driver trainers", tick: "#1A6FD4" },
+            { logo: logoCpd, alt: "Continuing Professional Development", tick: "#0A0E27" },
+          ].map((item, i, arr) => (
+            <div key={item.alt} style={{ display: "flex", alignItems: "center", gap: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <div
+                  style={{
+                    width: 18,
+                    height: 18,
+                    borderRadius: "50%",
+                    background: item.tick,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                    color: "#FFFFFF",
+                    fontSize: 10,
+                    fontWeight: 700,
+                    lineHeight: 1,
+                  }}
+                >
+                  ✓
+                </div>
+                <img src={item.logo} alt={item.alt} style={{ maxHeight: 32, width: "auto", objectFit: "contain", display: "block" }} />
+              </div>
+              {i < arr.length - 1 && (
+                <div style={{ width: 1, height: 28, background: "#F3F4F6", marginLeft: 32, flexShrink: 0 }} />
+              )}
             </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-              <img src={logoMsa} alt="MSA GB - For all driver trainers" className="h-9 object-contain" />
+          ))}
+        </div>
+
+        {/* Bottom row — Payments */}
+        <div
+          style={{
+            padding: "12px 32px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 16,
+          }}
+        >
+          <span style={{ color: "#9CA3AF", fontSize: 11, fontWeight: 500 }}>Pay with</span>
+          {[
+            { src: logoCardPayments, alt: "Visa, MasterCard, Maestro, JCB" },
+            { src: logoKlarna, alt: "Klarna" },
+            { src: logoClearpay, alt: "Clearpay" },
+          ].map((logo) => (
+            <div
+              key={logo.alt}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                background: "#F9FAFB",
+                border: "1px solid #E5E7EB",
+                borderRadius: 4,
+                padding: "4px 10px",
+              }}
+            >
+              <img src={logo.src} alt={logo.alt} style={{ maxHeight: 20, width: "auto", objectFit: "contain", display: "block" }} />
             </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-              <img src={logoCpd} alt="Continuing Professional Development" className="h-9 object-contain" />
-            </div>
-          </div>
-          <div className="h-px bg-border w-full" />
-          <div className="flex items-center justify-center gap-6">
-            <span className="text-sm text-muted-foreground">Pay with</span>
-            <img src={logoCardPayments} alt="Visa, MasterCard, Maestro, JCB" className="h-6 object-contain" />
-            <img src={logoKlarna} alt="Klarna" className="h-6 object-contain rounded" />
-            <img src={logoClearpay} alt="Clearpay" className="h-6 object-contain rounded" />
-          </div>
+          ))}
         </div>
       </section>
 
