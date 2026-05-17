@@ -10,10 +10,13 @@
 //   3. After subtracting manual blocks and Google Calendar busy events the
 //      remaining free time inside the window is ≥ MIN_FREE_MINUTES.
 //
-// Note: scheduled_lessons are NOT subtracted — every booking writes a Google
-// Calendar event (rule 5 of the engine), so the calendar already reflects
-// those lessons in instructor_calendar_events.
-// =============================================================================
+// Busyness sources (in priority order):
+//   - instructor_calendar_events (Google Calendar mirror) + instructor_manual_blocks
+//     are the primary source — "calendar wins".
+//   - Active scheduled_lessons are ALSO injected as synthetic busy events via
+//     get_public_instructor_lesson_geo, so the engine cannot offer a slot that
+//     overlaps an existing booking even if the Google mirror is missing/lagging.
+//     Overlapping conflicts simply merge inside buildDayConflicts (no double-pad).
 
 import { format, isAfter, isBefore, parseISO, startOfDay, addDays } from "date-fns";
 import type { SupabaseClient } from "@supabase/supabase-js";

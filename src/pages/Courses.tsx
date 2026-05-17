@@ -386,6 +386,7 @@ export default function Courses() {
   const [overrideRows, setOverrideRows] = useState<DateOverrideRow[]>([]);
   const [calendarEvents, setCalendarEvents] = useState<CalendarEventRow[]>([]);
   const [manualBlocks, setManualBlocks] = useState<ManualBlockRow[]>([]);
+  const [bookedLessonGeo, setBookedLessonGeo] = useState<CourseAvailabilitySources["bookedLessonGeo"]>([]);
 
   const availabilitySources: CourseAvailabilitySources = useMemo(() => ({
     workingHours: workingHourRows,
@@ -393,8 +394,8 @@ export default function Courses() {
     overrides: overrideRows,
     calendarEvents,
     manualBlocks,
-    bookedLessonGeo: [],
-  }), [workingHourRows, availabilityWindowRows, overrideRows, calendarEvents, manualBlocks]);
+    bookedLessonGeo,
+  }), [workingHourRows, availabilityWindowRows, overrideRows, calendarEvents, manualBlocks, bookedLessonGeo]);
 
   const monthOptions = useMemo(() => getMonthOptions(), []);
   
@@ -848,6 +849,7 @@ export default function Courses() {
       setOverrideRows(loadedOverrides);
       setCalendarEvents(loadedCalendarEvents);
       setManualBlocks(loadedManualBlocks);
+      setBookedLessonGeo(loadedAvailabilitySources.bookedLessonGeo || []);
 
       // Auto-advance to first available date
       const firstAvailable = findFirstAvailableDate(loadedInstructors, loadedAvailabilitySources);
