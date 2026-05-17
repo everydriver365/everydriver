@@ -1,6 +1,7 @@
 import { useState, KeyboardEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search } from "lucide-react";
+import { useTypewriter } from "@/hooks/useTypewriter";
 
 const UK_POSTCODE_RE = /^[A-Z]{1,2}[0-9][A-Z0-9]? ?[0-9][A-Z]{2}$/;
 
@@ -9,6 +10,17 @@ export function PostcodeSearch() {
   const [value, setValue] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [focused, setFocused] = useState(false);
+  const placeholderText = useTypewriter({
+    phrases: [
+      "Enter your postcode (e.g. SW1A 1AA)",
+      "Find driving instructors near you",
+      "Compare prices in your area",
+      "Book your first lesson today",
+    ],
+    typingSpeed: 70,
+    deletingSpeed: 35,
+    pauseBetween: 1800,
+  });
 
   const submit = () => {
     const v = value.trim().toUpperCase();
@@ -41,7 +53,7 @@ export function PostcodeSearch() {
           onKeyDown={onKey}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
-          placeholder="Enter your postcode (e.g. SW1A 1AA)"
+          placeholder={focused || value ? "Enter your postcode (e.g. SW1A 1AA)" : placeholderText}
           aria-label="Postcode"
           style={{
             flex: "1 1 70%",
