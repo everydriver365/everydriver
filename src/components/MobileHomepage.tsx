@@ -23,6 +23,7 @@ import weeklyLessonsIcon from "@/assets/weekly-lessons-icon.jpg";
 import referFriendsImage from "@/assets/refer-friends.png";
 import testswapBanner from "@/assets/testswap-banner.png";
 import { useDomainBranding } from "@/hooks/useDomainBranding";
+import { MobileStickySearch } from "@/components/homepage/MobileStickySearch";
 
 export function MobileHomepage() {
   const [postcode, setPostcode] = useState("");
