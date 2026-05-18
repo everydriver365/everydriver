@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   LayoutDashboard, Calendar, Users, ClipboardCheck,
   Award, Repeat2, Search, CreditCard, Receipt, Clock,
@@ -20,6 +20,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useModules } from "@/context/ModulesContext";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 interface NavItem { label: string; to: string; icon: React.ElementType; badge?: string; moduleId?: string; }
 interface NavSection { label: string; items: NavItem[]; }
@@ -151,6 +152,7 @@ export function DashboardSidebar({ collapsed, onToggle, userInitials, userName, 
   let brandColour: string | null = null;
   let brandFont: string | null = null;
   let profileImage: string | null = null;
+  let instructorId: string | null = null;
   try {
     const { instructor } = useInstructorAuth();
     if (instructor?.logo_url) instructorLogo = instructor.logo_url;
@@ -158,6 +160,7 @@ export function DashboardSidebar({ collapsed, onToggle, userInitials, userName, 
     if (instructor?.brand_colour) brandColour = instructor.brand_colour;
     if ((instructor as any)?.website_font) brandFont = (instructor as any).website_font;
     if ((instructor as any)?.profile_image_url) profileImage = (instructor as any).profile_image_url;
+    if (instructor?.id) instructorId = instructor.id;
   } catch {}
 
   const visibleSections = SECTIONS.map(s => ({
@@ -199,19 +202,55 @@ export function DashboardSidebar({ collapsed, onToggle, userInitials, userName, 
     });
   };
 
-  // Pinned items — persisted to localStorage by item.to (route).
+  // Pinned items — synced to DB (primary) with localStorage fallback.
   const PINNED_KEY = "dsm.dashboard.sidebar.pinned";
   const [pinned, setPinned] = useState<string[]>([]);
+
+  // Load: DB first, then localStorage fallback.
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(PINNED_KEY);
-      if (saved) setPinned(JSON.parse(saved));
-    } catch {}
-  }, []);
+    let cancelled = false;
+    const load = async () => {
+      let dbPinned: string[] | null = null;
+      if (instructorId) {
+        try {
+          const { data } = await supabase
+            .from("instructors")
+            .select("sidebar_pinned")
+            .eq("id", instructorId)
+            .single();
+          if (data?.sidebar_pinned && Array.isArray(data.sidebar_pinned)) {
+            dbPinned = data.sidebar_pinned as string[];
+          }
+        } catch {}
+      }
+      if (!cancelled) {
+        if (dbPinned) {
+          setPinned(dbPinned);
+        } else {
+          try {
+            const saved = localStorage.getItem(PINNED_KEY);
+            if (saved) setPinned(JSON.parse(saved));
+          } catch {}
+        }
+      }
+    };
+    load();
+    return () => { cancelled = true; };
+  }, [instructorId]);
+
+  const savePinned = useCallback(async (next: string[]) => {
+    try { localStorage.setItem(PINNED_KEY, JSON.stringify(next)); } catch {}
+    if (instructorId) {
+      try {
+        await supabase.from("instructors").update({ sidebar_pinned: next }).eq("id", instructorId);
+      } catch {}
+    }
+  }, [instructorId]);
+
   const togglePin = (to: string) => {
     setPinned((prev) => {
       const next = prev.includes(to) ? prev.filter((t) => t !== to) : [...prev, to];
-      try { localStorage.setItem(PINNED_KEY, JSON.stringify(next)); } catch {}
+      savePinned(next);
       return next;
     });
   };
@@ -221,7 +260,7 @@ export function DashboardSidebar({ collapsed, onToggle, userInitials, userName, 
       const next = [...prev];
       const [moved] = next.splice(from, 1);
       next.splice(to, 0, moved);
-      try { localStorage.setItem(PINNED_KEY, JSON.stringify(next)); } catch {}
+      savePinned(next);
       return next;
     });
   };
