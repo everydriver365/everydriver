@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
-import { Loader2, Sparkles, Pencil, CheckCircle2 } from "lucide-react";
+import { Loader2, Sparkles, Pencil, CheckCircle2, Plus, Wand2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { friendlyDbError } from "@/lib/supabaseError";
 import { CourseOfferDialog } from "@/components/courses/CourseOfferDialog";
 import { computeOfferStatus } from "@/lib/courseOffer";
+import { BespokeCourseDialog, type BespokeCourse } from "@/components/instructor/BespokeCourseDialog";
 
 interface InstructorCourse {
   id: string;
@@ -18,6 +19,7 @@ interface InstructorCourse {
   offer_starts_at: string | null;
   offer_ends_at: string | null;
   discounted_price: number | null;
+  is_bespoke?: boolean | null;
 }
 
 interface CourseTemplate {
@@ -47,10 +49,28 @@ const T = {
   surface: "#F2F4F8",
   white: "#FFFFFF",
   border: "#DDE3ED",
+  purple: "#6E3FD9",
+  purpleLight: "#F1ECFB",
 };
 
 const COURSE_SELECT =
-  "id, course_hours, course_name, course_image_url, is_active, offer_active, offer_label, offer_percent_off, offer_starts_at, offer_ends_at, discounted_price";
+  "id, course_hours, course_name, course_image_url, is_active, offer_active, offer_label, offer_percent_off, offer_starts_at, offer_ends_at, discounted_price, is_bespoke";
+
+const BESPOKE_SELECT =
+  "id, instructor_id, course_name, short_description, course_hours, duration_days, is_intensive, is_active, is_bespoke, price_mode, flat_price, hourly_rate_override, available_weekdays, available_from, available_to";
+
+const WEEKDAY_LABEL = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+function summariseWeekdays(days: number[] | null | undefined): string {
+  if (!days || days.length === 0) return "Any day";
+  if (days.length === 7) return "Any day";
+  const sorted = [...days].sort();
+  const weekdays = [1, 2, 3, 4, 5];
+  const weekend = [0, 6];
+  if (sorted.length === 5 && weekdays.every((d) => sorted.includes(d))) return "Weekdays";
+  if (sorted.length === 2 && weekend.every((d) => sorted.includes(d))) return "Weekends";
+  return sorted.map((d) => WEEKDAY_LABEL[d]).join(", ");
+}
 
 function HoursBadge({ hours }: { hours: number | null }) {
   return (
