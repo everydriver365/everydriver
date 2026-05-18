@@ -330,14 +330,45 @@ export function DashboardSidebar({ collapsed, onToggle, userInitials, userName, 
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto" style={{ padding: "0 8px 12px" }}>
         {(() => {
-          const renderItem = (item: NavItem, opts: { isPinned: boolean }) => {
+          const renderItem = (item: NavItem, opts: { isPinned: boolean; pinIndex?: number }) => {
             const Icon = item.icon;
             const active = item.to === "/instructor"
               ? pathname === "/instructor"
               : pathname === item.to || pathname.startsWith(item.to + "/");
             const isPinnedNow = pinned.includes(item.to);
+            const isDragging = opts.isPinned && dragIndex === opts.pinIndex;
+            const isDragOver = opts.isPinned && dragOverIndex === opts.pinIndex && dragIndex !== opts.pinIndex;
             return (
-              <li key={`${opts.isPinned ? "pin-" : ""}${item.label}-${item.to}`}>
+              <li
+                key={`${opts.isPinned ? "pin-" : ""}${item.label}-${item.to}`}
+                draggable={opts.isPinned && !collapsed}
+                onDragStart={opts.isPinned ? (e) => {
+                  setDragIndex(opts.pinIndex ?? null);
+                  e.dataTransfer.effectAllowed = "move";
+                  try { e.dataTransfer.setData("text/plain", String(opts.pinIndex)); } catch {}
+                } : undefined}
+                onDragOver={opts.isPinned ? (e) => {
+                  e.preventDefault();
+                  e.dataTransfer.dropEffect = "move";
+                  if (dragOverIndex !== opts.pinIndex) setDragOverIndex(opts.pinIndex ?? null);
+                } : undefined}
+                onDragLeave={opts.isPinned ? () => {
+                  if (dragOverIndex === opts.pinIndex) setDragOverIndex(null);
+                } : undefined}
+                onDrop={opts.isPinned ? (e) => {
+                  e.preventDefault();
+                  if (dragIndex != null && opts.pinIndex != null) reorderPinned(dragIndex, opts.pinIndex);
+                  setDragIndex(null);
+                  setDragOverIndex(null);
+                } : undefined}
+                onDragEnd={opts.isPinned ? () => { setDragIndex(null); setDragOverIndex(null); } : undefined}
+                style={{
+                  opacity: isDragging ? 0.4 : 1,
+                  borderTop: isDragOver && (dragIndex ?? 0) > (opts.pinIndex ?? 0) ? "2px solid var(--d2-indigo)" : "2px solid transparent",
+                  borderBottom: isDragOver && (dragIndex ?? 0) < (opts.pinIndex ?? 0) ? "2px solid var(--d2-indigo)" : "2px solid transparent",
+                  cursor: opts.isPinned && !collapsed ? "grab" : undefined,
+                }}
+              >
                 <div className="relative group">
                   <Link
                     to={item.to}
