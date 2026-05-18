@@ -280,9 +280,23 @@ export function PupilPaymentModal({
             disabled={processing || paymentAmount <= 0}
           />
 
+          {/* Pay by Card — Square */}
+          <div className="space-y-2">
+            <Label>Pay by card</Label>
+            <SquarePaymentForm
+              amount={effectiveTotal}
+              pupilId={pupilId}
+              instructorId={instructorId}
+              customerName={pupilName}
+              customerEmail={pupilEmail || undefined}
+              customerPhone={pupilPhone || undefined}
+              onPaid={() => onOpenChange(false)}
+            />
+          </div>
+
           {/* Payment Gateway Options */}
           <div className="space-y-2">
-            <Label>Or choose a payment method</Label>
+            <Label>Or pay in instalments</Label>
             <div className="grid gap-2">
               {gateways.map((gateway) => (
                 <Card
