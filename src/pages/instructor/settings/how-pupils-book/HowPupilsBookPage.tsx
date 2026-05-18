@@ -67,6 +67,43 @@ export default function HowPupilsBookPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<BespokeCourse | null>(null);
 
+  const loadCourses = useCallback(async (iid: string, rate: number | null) => {
+    const [coursesRes, templatesRes] = await Promise.all([
+      supabase.from("instructor_courses").select(COURSE_SELECT).eq("instructor_id", iid),
+      supabase.from("course_templates").select("course_hours, is_intensive").eq("is_active", true),
+    ]);
+    if (coursesRes.error) throw coursesRes.error;
+
+    const tplByHours = new Map<number, TemplateRow>();
+    (templatesRes.data || []).forEach((t) => tplByHours.set(t.course_hours, t));
+
+    const raw = (coursesRes.data || []) as InstructorCourseRow[];
+    setRawCourses(raw);
+
+    const rows = raw
+      .map((c, idx) => {
+        const intensive = c.is_bespoke
+          ? !!c.is_intensive
+          : !!tplByHours.get(c.course_hours)?.is_intensive;
+        return {
+          id: c.id,
+          name: c.course_name,
+          hours: c.course_hours,
+          type: classifyType(c.course_hours, intensive),
+          transmission: null,
+          price: priceFor(c, rate),
+          priceSubLabel: null,
+          visible: c.is_active,
+          hasOffer: !!c.offer_active,
+          order: c.display_order ?? idx,
+        } as CourseRow;
+      })
+      .sort((a, b) => a.order - b.order)
+      .map((c, i) => ({ ...c, order: i }));
+
+    setCourses(rows);
+  }, []);
+
   useEffect(() => {
     (async () => {
       setLoading(true);
@@ -78,39 +115,11 @@ export default function HowPupilsBookPage() {
         if (!iid) { setError("Instructor profile not found"); return; }
         setInstructorId(iid);
 
-        const [coursesRes, templatesRes, instructorRes] = await Promise.all([
-          supabase.from("instructor_courses").select(COURSE_SELECT).eq("instructor_id", iid),
-          supabase.from("course_templates").select("course_hours, is_intensive").eq("is_active", true),
-          supabase.from("instructors").select("hourly_rate").eq("id", iid).maybeSingle(),
-        ]);
-        if (coursesRes.error) throw coursesRes.error;
+        const instructorRes = await supabase.from("instructors").select("hourly_rate").eq("id", iid).maybeSingle();
+        const rate = instructorRes.data?.hourly_rate ?? null;
+        setHourlyRate(rate);
 
-        const hourlyRate = instructorRes.data?.hourly_rate ?? null;
-        const tplByHours = new Map<number, TemplateRow>();
-        (templatesRes.data || []).forEach((t) => tplByHours.set(t.course_hours, t));
-
-        const rows = ((coursesRes.data || []) as InstructorCourseRow[])
-          .map((c, idx) => {
-            const intensive = c.is_bespoke
-              ? !!c.is_intensive
-              : !!tplByHours.get(c.course_hours)?.is_intensive;
-            return {
-              id: c.id,
-              name: c.course_name,
-              hours: c.course_hours,
-              type: classifyType(c.course_hours, intensive),
-              transmission: null,
-              price: priceFor(c, hourlyRate),
-              priceSubLabel: null,
-              visible: c.is_active,
-              hasOffer: !!c.offer_active,
-              order: c.display_order ?? idx,
-            } as CourseRow;
-          })
-          .sort((a, b) => a.order - b.order)
-          .map((c, i) => ({ ...c, order: i }));
-
-        setCourses(rows);
+        await loadCourses(iid, rate);
       } catch (e: any) {
         console.error(e);
         setError(friendlyDbError(e, { table: "instructor_courses", operation: "select" }));
@@ -118,7 +127,7 @@ export default function HowPupilsBookPage() {
         setLoading(false);
       }
     })();
-  }, []);
+  }, [loadCourses]);
 
   const activeCount = useMemo(() => courses.filter((c) => c.visible).length, [courses]);
 
