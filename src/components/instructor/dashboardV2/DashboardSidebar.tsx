@@ -215,6 +215,18 @@ export function DashboardSidebar({ collapsed, onToggle, userInitials, userName, 
       return next;
     });
   };
+  const reorderPinned = (from: number, to: number) => {
+    if (from === to || from < 0 || to < 0) return;
+    setPinned((prev) => {
+      const next = [...prev];
+      const [moved] = next.splice(from, 1);
+      next.splice(to, 0, moved);
+      try { localStorage.setItem(PINNED_KEY, JSON.stringify(next)); } catch {}
+      return next;
+    });
+  };
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const allItems = visibleSections.flatMap((s) => s.items);
   const pinnedItems = pinned
     .map((to) => allItems.find((i) => i.to === to))
