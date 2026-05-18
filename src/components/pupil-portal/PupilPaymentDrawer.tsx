@@ -379,17 +379,13 @@ export function PupilPaymentDrawer({
                 <div className="flex-1 h-px bg-border" />
               </div>
 
-              {/* Pay by Card — primary */}
+              {/* Pay by Card — primary (Square) */}
               <Button
-                onClick={() => handlePayment("npi")}
+                onClick={() => setStage("card")}
                 className="w-full h-12 rounded-xl text-base font-semibold"
                 disabled={processing}
               >
-                {selectedGateway === "npi" && processing ? (
-                  <Loader2 className="h-5 w-5 animate-spin mr-2" />
-                ) : (
-                  <CreditCard className="h-5 w-5 mr-2" />
-                )}
+                <CreditCard className="h-5 w-5 mr-2" />
                 Pay by Card
               </Button>
 
