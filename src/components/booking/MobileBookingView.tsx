@@ -348,7 +348,7 @@ export function MobileBookingView({
   }>({ preferredTimes: [], notes: '' });
   
   // For auto_assign and instructor_assigns modes, skip the scheduling step entirely
-  const requiresSlotSelection = bookingMode === 'pupil_choice';
+  const requiresSlotSelection = bookingMode === 'pupil_choice' || bookingMode === 'first_lesson_only';
   const isScheduleComplete = requiresSlotSelection ? isFullyScheduled : true;
   
   // Determine current step - only 2 steps for non-pupil_choice modes
