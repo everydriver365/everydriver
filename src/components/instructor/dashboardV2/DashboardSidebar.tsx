@@ -1,19 +1,19 @@
 import { Link, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import {
-  LayoutDashboard, Calendar, Inbox, Users, ClipboardCheck,
+  LayoutDashboard, Calendar, Users, ClipboardCheck,
   Award, Repeat2, Search, CreditCard, Receipt, Clock,
-  BarChart3, Globe, Palette, Link2, TrendingUp, User, Wallet, Boxes,
-  Plug, LogOut, PanelLeftClose, PanelLeft, ChevronRight,
+  BarChart3, Globe, TrendingUp, Wallet,
+  LogOut, PanelLeftClose, PanelLeft, ChevronRight,
   NotebookPen, BookOpenCheck, GraduationCap, ListChecks, UserPlus2,
   MapPin, Map, Gauge, Navigation, Video, Route, Fuel, Car,
-  Mic, Banknote, Coins, Star, Share2, Zap, MoreHorizontal, CalendarSearch,
-  StickyNote, CheckSquare, Pencil, FileText, FolderLock, FileCheck2, ShieldCheck,
-  ClipboardList, Sunrise, Sunset, ClipboardCheck as ClipboardCheck2, Layers, Workflow, Sparkles,
-  GitBranch, MessageCircleQuestion, DoorOpen, ShoppingCart, Trophy, BadgeCheck,
+  Mic, Banknote, Coins, Star, Share2, CalendarSearch,
+  StickyNote, CheckSquare, Pencil, FileText, FolderLock, FileCheck2,
+  ClipboardList, Sunrise, Sunset, ClipboardCheck as ClipboardCheck2, Layers, Sparkles,
+  MessageCircleQuestion, DoorOpen, ShoppingCart, Trophy, BadgeCheck,
   Crosshair, LayoutGrid, Eye, Camera, UsersRound, Building2,
-  Download, MailPlus, LifeBuoy, MessagesSquare, Hash, HelpCircle, RefreshCw,
-  Database as DatabaseIcon, Heart, Activity, Accessibility,
+  MailPlus, LifeBuoy, MessagesSquare, Hash, HelpCircle, RefreshCw,
+  Heart, Activity, Settings as SettingsIcon,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
