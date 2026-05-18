@@ -61,7 +61,8 @@ export function PupilPortalSchedule({
   brandColour, 
   darkMode,
   instructorPhone,
-  initialShowBooking = false
+  initialShowBooking = false,
+  onViewHistory,
 }: PupilPortalScheduleProps) {
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [rescheduleDialogOpen, setRescheduleDialogOpen] = useState(false);
