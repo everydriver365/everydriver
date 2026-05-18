@@ -178,10 +178,8 @@ export function PupilPaymentModal({
   };
 
   const gateways: { id: PaymentGateway; name: string; description: string; icon: string }[] = [
-    { id: "npi", name: "Pay by Card", description: "Visa, Mastercard, Amex", icon: "💳" },
     { id: "clearpay", name: "Clearpay", description: `4 payments of £${(paymentAmount / 4).toFixed(2)}`, icon: "🔄" },
     { id: "klarna", name: "Klarna", description: `3 payments of £${(paymentAmount / 3).toFixed(2)}`, icon: "💜" },
-    { id: "elavon", name: "Secure Card", description: "Alternative card payment", icon: "🔒" },
   ];
 
   return (
