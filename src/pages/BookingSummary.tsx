@@ -1930,6 +1930,13 @@ export default function BookingSummary() {
             transition={{ delay: 0.25 }}
             className="mb-6"
           >
+            {isFirstLessonOnlyMode && (
+              <div className="mb-4 rounded-2xl border border-violet-200 dark:border-violet-800 bg-violet-50 dark:bg-violet-950/30 p-4">
+                <p className="text-sm text-violet-900 dark:text-violet-100">
+                  <strong>Just pick your first lesson.</strong> {courseDetails?.instructor?.name?.split(" ")[0] || "Your instructor"} will arrange the rest of the lessons with you directly after your first session.
+                </p>
+              </div>
+            )}
             {unavailableSlots.length > 0 && (
               <div className="mb-4 rounded-2xl border border-destructive/30 bg-destructive/5 p-4">
                 <div className="flex items-start gap-3">
