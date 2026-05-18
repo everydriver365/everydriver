@@ -270,7 +270,6 @@ export default function HowPupilsBookPage() {
             onSaved={async () => { if (instructorId) await loadCourses(instructorId, hourlyRate); }}
             onDeleted={async () => { if (instructorId) await loadCourses(instructorId, hourlyRate); }}
           />
-          />
         )}
       </div>
     </InstructorPortalLayout>
