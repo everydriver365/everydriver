@@ -49,7 +49,7 @@ interface DaySlot {
 
 interface InstructorRow {
   id: string;
-  full_name: string | null;
+  name: string | null;
   available_from: string | null;
   buffer_minutes: number | null;
   slot_increment_minutes: number | null;
