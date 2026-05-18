@@ -184,6 +184,7 @@ export const instructorPortalRoutes = (
     <Route path="/instructor/settings/verification" element={<InstructorVerificationPage />} />
     <Route path="/instructor/verification" element={<InstructorVerificationPage />} />
     {/* Unified Settings hub — keep last so it doesn't shadow specific routes above */}
+    <Route path="/instructor/settings/how-pupils-book" element={<HowPupilsBookPage />} />
     <Route path="/instructor/settings" element={<InstructorSettingsHub />} />
     <Route path="/instructor/settings/:categoryId" element={<InstructorSettingsHub />} />
     <Route path="/instructor/notifications" element={<InstructorNotifications />} />
