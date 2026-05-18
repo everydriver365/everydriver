@@ -53,6 +53,7 @@ export function PupilPaymentModal({
   const [feeEnabled, setFeeEnabled] = useState(true);
   const [nextLessonCost, setNextLessonCost] = useState<number | null>(null);
   const isMobile = useIsMobile();
+  const isNativeWrapper = useIsNativeWrapper();
 
   const amountOwed = Math.abs(accountBalance);
   const paymentAmount = parseFloat(amount) || 0;
