@@ -376,6 +376,24 @@ export function PupilPortalGaps({ pupilId, instructorId }: PupilPortalGapsProps)
         </p>
       </div>
 
+      {/* Future-availability notice */}
+      {instructor?.available_from &&
+        startDate.getTime() > startOfDay(new Date()).getTime() && (
+          <div
+            style={{
+              backgroundColor: t.amberLight,
+              borderBottom: `1px solid ${t.border}`,
+              padding: "10px 16px",
+            }}
+          >
+            <p style={{ fontSize: 12, fontWeight: 500, color: t.amberText, margin: 0 }}>
+              {instructorName} starts taking bookings on{" "}
+              {format(parseISO(instructor.available_from), "EEEE d MMMM yyyy")}.
+              Showing the first 14 days from then.
+            </p>
+          </div>
+        )}
+
       {/* Duration chips */}
       <div
         style={{
