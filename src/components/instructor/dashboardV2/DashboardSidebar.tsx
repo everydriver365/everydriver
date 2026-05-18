@@ -41,6 +41,10 @@ const SECTIONS: NavSection[] = [
     { label: "Test Swap", to: "/instructor/test-requests", icon: Repeat2, moduleId: "testswap" },
     { label: "Standards Check", to: "/instructor/standards-check", icon: GraduationCap },
     { label: "CPD", to: "/instructor/cpd", icon: Award },
+    { label: "Working hours", to: "/instructor/settings/working-hours", icon: Clock },
+    { label: "Rates & coverage", to: "/instructor/settings/rates-coverage", icon: MapPin },
+    { label: "How pupils book", to: "/instructor/settings/how-pupils-book", icon: BookOpenCheck },
+    { label: "Discounts & packages", to: "/instructor/settings/discounts-packages", icon: Tag },
   ]},
   { label: "Vehicle & Tracking", items: [
     { label: "Live Tracking", to: "/instructor/tracking", icon: MapPin, moduleId: "telematics" },
@@ -57,9 +61,11 @@ const SECTIONS: NavSection[] = [
     { label: "Dashcam gallery", to: "/instructor/dashcam", icon: Camera, moduleId: "dashcam" },
     { label: "Nearby instructors", to: "/instructor/nearby-friends", icon: UsersRound },
     { label: "Locations", to: "/instructor/locations", icon: Building2 },
+    { label: "Vehicle & credentials", to: "/instructor/settings/credentials", icon: ShieldCheck },
   ]},
   { label: "Telephone", items: [
     { label: "Telephone Calls and Answering", to: "/instructor/famulor", icon: Mic },
+    { label: "Phone & AI", to: "/instructor/settings/phone-ai", icon: Phone },
   ]},
   { label: "Business", items: [
     { label: "Take Payment", to: "/instructor/take-payment", icon: Banknote, moduleId: "payments" },
@@ -70,10 +76,13 @@ const SECTIONS: NavSection[] = [
     { label: "Reports", to: "/instructor/reports", icon: BarChart3, moduleId: "reports" },
     { label: "Reviews", to: "/instructor/reviews", icon: Star },
     { label: "Referrals", to: "/instructor/referrals", icon: Share2 },
+    { label: "Payments & fees", to: "/instructor/settings/payments", icon: CreditCard },
     { label: "Plan & Billing", to: "/instructor/settings/plan-billing", icon: Wallet },
   ]},
   { label: "Website", items: [
     { label: "My Site", to: "/website/my-site", icon: Globe, moduleId: "website" },
+    { label: "Mini-site & pages", to: "/instructor/settings/mini-site", icon: FileText },
+    { label: "Branding & theme", to: "/instructor/settings/branding", icon: Palette },
   ]},
   { label: "Productivity", items: [
     { label: "Notes", to: "/instructor/notes", icon: StickyNote },
@@ -102,6 +111,8 @@ const SECTIONS: NavSection[] = [
     { label: "Performance", to: "/instructor/performance", icon: Trophy },
     { label: "Certifications", to: "/instructor/certifications", icon: BadgeCheck },
     { label: "Reports hub", to: "/instructor/reports-hub", icon: BarChart3 },
+    { label: "Notifications", to: "/instructor/settings/notifications", icon: Bell },
+    { label: "Messaging", to: "/instructor/settings/messaging", icon: MessageCircle },
   ]},
   { label: "Support", items: [
     { label: "Send reminder", to: "/instructor/send-reminder", icon: MailPlus },
@@ -112,9 +123,14 @@ const SECTIONS: NavSection[] = [
     { label: "Platform updates", to: "/instructor/platform-updates", icon: RefreshCw },
     { label: "Wellbeing", to: "/instructor/wellbeing", icon: Heart },
     { label: "Health", to: "/instructor/health", icon: Activity },
+    { label: "Help & close account", to: "/instructor/settings/help-close", icon: HelpCircle },
   ]},
-  { label: "Settings", items: [
-    { label: "All settings", to: "/instructor/settings", icon: SettingsIcon },
+  { label: "Account", items: [
+    { label: "Profile", to: "/instructor/settings/profile", icon: User },
+    { label: "Login & security", to: "/instructor/settings/login-security", icon: Lock },
+    { label: "Appearance & layout", to: "/instructor/settings/appearance-layout", icon: LayoutDashboard },
+    { label: "Data, terms & policies", to: "/instructor/settings/data-privacy", icon: Database },
+    { label: "Lab features", to: "/instructor/settings/lab-features", icon: Sparkles },
   ]},
 ];
 
