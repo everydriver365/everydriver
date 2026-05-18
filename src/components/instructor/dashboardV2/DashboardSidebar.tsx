@@ -50,6 +50,12 @@ const SECTIONS: NavSection[] = [
     { label: "Mileage", to: "/instructor/mileage", icon: Car },
     { label: "Fuel", to: "/instructor/fuel", icon: Fuel },
     { label: "Saved Routes", to: "/instructor/routes", icon: Route, moduleId: "telematics" },
+    { label: "Find my car", to: "/instructor/find-my-car", icon: Crosshair, moduleId: "telematics" },
+    { label: "Fleet dashboard", to: "/instructor/fleet-dashboard", icon: LayoutGrid, moduleId: "telematics" },
+    { label: "Overspeed history", to: "/instructor/overspeed-history", icon: Eye, moduleId: "telematics" },
+    { label: "Dashcam gallery", to: "/instructor/dashcam", icon: Camera, moduleId: "dashcam" },
+    { label: "Nearby instructors", to: "/instructor/nearby-friends", icon: UsersRound },
+    { label: "Locations", to: "/instructor/locations", icon: Building2 },
   ]},
   { label: "Telephone", items: [
     { label: "Telephone Calls and Answering", to: "/instructor/famulor", icon: Mic },
@@ -63,18 +69,10 @@ const SECTIONS: NavSection[] = [
     { label: "Reports", to: "/instructor/reports", icon: BarChart3, moduleId: "reports" },
     { label: "Reviews", to: "/instructor/reviews", icon: Star },
     { label: "Referrals", to: "/instructor/referrals", icon: Share2 },
-    { label: "Automations", to: "/instructor/automations", icon: Zap },
+    { label: "Plan & Billing", to: "/instructor/settings/plan-billing", icon: Wallet },
   ]},
   { label: "Website", items: [
     { label: "My Site", to: "/website/my-site", icon: Globe, moduleId: "website" },
-    { label: "Branding", to: "/instructor/branding", icon: Palette, moduleId: "website" },
-    { label: "Domain", to: "/instructor/domains", icon: Link2, moduleId: "website" },
-  ]},
-  { label: "Settings", items: [
-    { label: "Profile", to: "/instructor/profile", icon: User },
-    { label: "Plan & Billing", to: "/instructor/billing", icon: Wallet },
-    { label: "Modules", to: "/instructor/modules", icon: Boxes },
-    { label: "Integrations", to: "/instructor/integrations", icon: Plug },
   ]},
   { label: "Productivity", items: [
     { label: "Notes", to: "/instructor/notes", icon: StickyNote },
@@ -93,8 +91,6 @@ const SECTIONS: NavSection[] = [
     { label: "Outstanding tasks", to: "/instructor/outstanding-tasks", icon: ListChecks },
     { label: "Weekly report", to: "/instructor/weekly-report", icon: BarChart3 },
     { label: "Clock in/out", to: "/instructor/clock-in-out", icon: Clock },
-    { label: "Bulk operations", to: "/instructor/bulk-operations", icon: Workflow },
-    { label: "Workflows", to: "/instructor/workflows", icon: GitBranch },
     { label: "AI command", to: "/instructor/ai-command", icon: Sparkles },
   ]},
   { label: "People & Growth", items: [
@@ -106,30 +102,18 @@ const SECTIONS: NavSection[] = [
     { label: "Certifications", to: "/instructor/certifications", icon: BadgeCheck },
     { label: "Reports hub", to: "/instructor/reports-hub", icon: BarChart3 },
   ]},
-  { label: "Vehicle Extras", items: [
-    { label: "Find my car", to: "/instructor/find-my-car", icon: Crosshair, moduleId: "telematics" },
-    { label: "Fleet dashboard", to: "/instructor/fleet-dashboard", icon: LayoutGrid, moduleId: "telematics" },
-    { label: "Overspeed history", to: "/instructor/overspeed-history", icon: Eye, moduleId: "telematics" },
-    { label: "Dashcam gallery", to: "/instructor/dashcam", icon: Camera, moduleId: "dashcam" },
-    { label: "Nearby instructors", to: "/instructor/nearby-friends", icon: UsersRound },
-    { label: "Locations", to: "/instructor/locations", icon: Building2 },
-  ]},
-  { label: "Website Extras", items: [
-    { label: "Mini-site settings", to: "/instructor/mini-website-settings", icon: Globe, moduleId: "website" },
-    { label: "Website add-ons", to: "/instructor/website-addons", icon: Plug, moduleId: "website" },
-  ]},
-  { label: "Support & Utilities", items: [
-    { label: "Install app", to: "/instructor/install", icon: Download },
+  { label: "Support", items: [
     { label: "Send reminder", to: "/instructor/send-reminder", icon: MailPlus },
     { label: "Contact us", to: "/instructor/contact", icon: LifeBuoy },
     { label: "Admin chat", to: "/instructor/admin-chat", icon: MessagesSquare },
     { label: "Team channels", to: "/instructor/team-channels", icon: Hash },
     { label: "FAQs", to: "/instructor/faqs", icon: HelpCircle },
     { label: "Platform updates", to: "/instructor/platform-updates", icon: RefreshCw },
-    { label: "Data import", to: "/instructor/data-import", icon: DatabaseIcon },
     { label: "Wellbeing", to: "/instructor/wellbeing", icon: Heart },
     { label: "Health", to: "/instructor/health", icon: Activity },
-    { label: "Accessibility", to: "/instructor/accessibility", icon: Accessibility },
+  ]},
+  { label: "Settings", items: [
+    { label: "All settings", to: "/instructor/settings", icon: SettingsIcon },
   ]},
 ];
 
