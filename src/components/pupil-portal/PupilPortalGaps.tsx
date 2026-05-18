@@ -266,14 +266,9 @@ export function PupilPortalGaps({
 
   return (
     <div className="px-4 space-y-4">
-      <div>
-        <h2 className="text-lg font-bold" style={{ color: "var(--brand-text)" }}>
-          Book a Lesson
-        </h2>
-        <p className="text-sm" style={{ color: "var(--brand-muted)" }}>
-          Choose a lesson length, then pick a time that suits you.
-        </p>
-      </div>
+      <p className="text-sm" style={{ color: "var(--brand-muted)" }}>
+        Choose a lesson length, then pick a time that suits you.
+      </p>
 
       {/* Duration chips */}
       <div className="flex flex-wrap gap-2">
