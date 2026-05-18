@@ -1,10 +1,11 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { SIDEBAR_SECTIONS } from "@/config/settingsSections";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { useSettingsStatus } from "@/hooks/useSettingsStatus";
 import { SidebarNavItem } from "./SidebarNavItem";
 import { DynamicIcon } from "./DynamicIcon";
 import { getInitials } from "@/lib/formatJobOffer";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Props {
   activeSection: string;
@@ -15,14 +16,91 @@ export function SettingsSidebar({ activeSection, onSelect }: Props) {
   const [query, setQuery] = useState("");
   const { instructor, signOut } = useInstructorAuth();
   const { completionFlags, waitingCount } = useSettingsStatus();
+  const instructorId = instructor?.id ?? null;
+
+  // Persisted section order (DB primary, localStorage fallback)
+  const ORDER_KEY = "dsm.settings.sidebar.sectionOrder";
+  const [order, setOrder] = useState<string[]>(() => SIDEBAR_SECTIONS.map(s => s.id));
+
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      let dbOrder: string[] | null = null;
+      if (instructorId) {
+        try {
+          const { data } = await supabase
+            .from("instructors")
+            .select("settings_sidebar_order")
+            .eq("id", instructorId)
+            .single();
+          const arr = (data as { settings_sidebar_order?: unknown } | null)?.settings_sidebar_order;
+          if (Array.isArray(arr) && arr.length > 0) dbOrder = arr as string[];
+        } catch {}
+      }
+      if (cancelled) return;
+      let next: string[] | null = dbOrder;
+      if (!next) {
+        try {
+          const saved = localStorage.getItem(ORDER_KEY);
+          if (saved) {
+            const parsed = JSON.parse(saved);
+            if (Array.isArray(parsed)) next = parsed as string[];
+          }
+        } catch {}
+      }
+      if (next) {
+        const known = SIDEBAR_SECTIONS.map(s => s.id);
+        const valid = next.filter(id => known.includes(id));
+        const missing = known.filter(id => !valid.includes(id));
+        setOrder([...valid, ...missing]);
+      }
+    };
+    load();
+    return () => { cancelled = true; };
+  }, [instructorId]);
+
+  const saveOrder = useCallback(async (next: string[]) => {
+    try { localStorage.setItem(ORDER_KEY, JSON.stringify(next)); } catch {}
+    if (instructorId) {
+      try {
+        await supabase.from("instructors").update({ settings_sidebar_order: next }).eq("id", instructorId);
+      } catch {}
+    }
+  }, [instructorId]);
+
+  const orderedSections = useMemo(() => {
+    const byId = new Map(SIDEBAR_SECTIONS.map(s => [s.id, s]));
+    return order.map(id => byId.get(id)).filter((s): s is typeof SIDEBAR_SECTIONS[number] => Boolean(s));
+  }, [order]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return SIDEBAR_SECTIONS;
-    return SIDEBAR_SECTIONS
+    if (!q) return orderedSections;
+    return orderedSections
       .map(s => ({ ...s, items: s.items.filter(i => i.label.toLowerCase().includes(q)) }))
       .filter(s => s.items.length > 0);
-  }, [query]);
+  }, [query, orderedSections]);
+
+  const [dragId, setDragId] = useState<string | null>(null);
+  const [dragOverId, setDragOverId] = useState<string | null>(null);
+  const isReorderable = query.trim().length === 0;
+
+  const handleDrop = (targetId: string) => {
+    if (!dragId || dragId === targetId) {
+      setDragId(null); setDragOverId(null); return;
+    }
+    setOrder(prev => {
+      const next = [...prev];
+      const from = next.indexOf(dragId);
+      const to = next.indexOf(targetId);
+      if (from < 0 || to < 0) return prev;
+      const [moved] = next.splice(from, 1);
+      next.splice(to, 0, moved);
+      saveOrder(next);
+      return next;
+    });
+    setDragId(null); setDragOverId(null);
+  };
 
   const photoUrl = (instructor as { profile_image_url?: string | null } | null)?.profile_image_url ?? null;
   const initials = getInitials(instructor?.name ?? null);
@@ -108,29 +186,65 @@ export function SettingsSidebar({ activeSection, onSelect }: Props) {
 
       {/* Nav sections */}
       <div style={{ flex: 1, overflowY: "auto" }}>
-        {filtered.map(section => (
-          <div key={section.id} style={{ padding: "10px 0 4px" }}>
+        {filtered.map(section => {
+          const isDragging = dragId === section.id;
+          const isOver = dragOverId === section.id && dragId !== section.id;
+          return (
             <div
+              key={section.id}
+              draggable={isReorderable}
+              onDragStart={isReorderable ? (e) => {
+                setDragId(section.id);
+                e.dataTransfer.effectAllowed = "move";
+                try { e.dataTransfer.setData("text/plain", section.id); } catch {}
+              } : undefined}
+              onDragOver={isReorderable ? (e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = "move";
+                if (dragOverId !== section.id) setDragOverId(section.id);
+              } : undefined}
+              onDragLeave={isReorderable ? () => {
+                if (dragOverId === section.id) setDragOverId(null);
+              } : undefined}
+              onDrop={isReorderable ? (e) => { e.preventDefault(); handleDrop(section.id); } : undefined}
+              onDragEnd={isReorderable ? () => { setDragId(null); setDragOverId(null); } : undefined}
               style={{
-                fontSize: 10, fontWeight: 700, color: "#C4C9D4",
-                letterSpacing: "0.07em", textTransform: "uppercase",
-                padding: "0 16px 5px",
+                padding: "10px 0 4px",
+                opacity: isDragging ? 0.4 : 1,
+                background: isOver ? "#F2F4F8" : "transparent",
+                borderTop: isOver ? "2px solid #1A52A0" : "2px solid transparent",
+                borderBottom: "2px solid transparent",
+                transition: "background 120ms",
               }}
             >
-              {section.label}
+              <div
+                style={{
+                  fontSize: 10, fontWeight: 700, color: "#C4C9D4",
+                  letterSpacing: "0.07em", textTransform: "uppercase",
+                  padding: "0 16px 5px",
+                  cursor: isReorderable ? "grab" : "default",
+                  display: "flex", alignItems: "center", gap: 6,
+                }}
+                title={isReorderable ? "Drag to reorder" : undefined}
+              >
+                {isReorderable && (
+                  <DynamicIcon name="grip-vertical" color="#C4C9D4" size={10} />
+                )}
+                {section.label}
+              </div>
+              {section.items.map(item => (
+                <SidebarNavItem
+                  key={item.id}
+                  item={item}
+                  isActive={activeSection === item.id}
+                  onClick={onSelect}
+                  completionFlags={completionFlags}
+                  waitingCount={waitingCount}
+                />
+              ))}
             </div>
-            {section.items.map(item => (
-              <SidebarNavItem
-                key={item.id}
-                item={item}
-                isActive={activeSection === item.id}
-                onClick={onSelect}
-                completionFlags={completionFlags}
-                waitingCount={waitingCount}
-              />
-            ))}
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Footer */}
