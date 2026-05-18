@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft, Menu, LogOut, User } from "lucide-react";
-import drive365Logo from "@/assets/drive365-logo.png";
+import drive365Logo from "@/assets/drive365-logo-white.png";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -63,7 +63,7 @@ export function PupilMobileHeader({
               <img
                 src={drive365Logo}
                 alt="Drive365"
-                className="h-7 object-contain brightness-0 invert"
+                className="h-8 object-contain"
               />
             )}
           </div>
