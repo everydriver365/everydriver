@@ -37,6 +37,12 @@ interface RecentPayment {
   recorded_at: string;
 }
 
+interface NextLessonCost {
+  cost: number;
+  date: string;
+  durationMinutes: number;
+}
+
 export function PupilPaymentDrawer({
   open,
   onOpenChange,
