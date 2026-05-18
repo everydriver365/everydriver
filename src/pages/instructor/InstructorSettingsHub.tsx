@@ -21,10 +21,10 @@ export default function InstructorSettingsHub() {
   const isMobile = useIsMobile();
   const { instructor } = useInstructorAuth();
 
-  if (!isMobile && instructor?.id) {
+  if (!isMobile) {
     return (
       <InstructorPortalLayout>
-        <SettingsShellV3 instructorId={instructor.id} />
+        <SettingsShellV3 instructorId={instructor?.id ?? ""} />
       </InstructorPortalLayout>
     );
   }
