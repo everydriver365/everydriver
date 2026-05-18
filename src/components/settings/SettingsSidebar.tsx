@@ -186,29 +186,65 @@ export function SettingsSidebar({ activeSection, onSelect }: Props) {
 
       {/* Nav sections */}
       <div style={{ flex: 1, overflowY: "auto" }}>
-        {filtered.map(section => (
-          <div key={section.id} style={{ padding: "10px 0 4px" }}>
+        {filtered.map(section => {
+          const isDragging = dragId === section.id;
+          const isOver = dragOverId === section.id && dragId !== section.id;
+          return (
             <div
+              key={section.id}
+              draggable={isReorderable}
+              onDragStart={isReorderable ? (e) => {
+                setDragId(section.id);
+                e.dataTransfer.effectAllowed = "move";
+                try { e.dataTransfer.setData("text/plain", section.id); } catch {}
+              } : undefined}
+              onDragOver={isReorderable ? (e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = "move";
+                if (dragOverId !== section.id) setDragOverId(section.id);
+              } : undefined}
+              onDragLeave={isReorderable ? () => {
+                if (dragOverId === section.id) setDragOverId(null);
+              } : undefined}
+              onDrop={isReorderable ? (e) => { e.preventDefault(); handleDrop(section.id); } : undefined}
+              onDragEnd={isReorderable ? () => { setDragId(null); setDragOverId(null); } : undefined}
               style={{
-                fontSize: 10, fontWeight: 700, color: "#C4C9D4",
-                letterSpacing: "0.07em", textTransform: "uppercase",
-                padding: "0 16px 5px",
+                padding: "10px 0 4px",
+                opacity: isDragging ? 0.4 : 1,
+                background: isOver ? "#F2F4F8" : "transparent",
+                borderTop: isOver ? "2px solid #1A52A0" : "2px solid transparent",
+                borderBottom: "2px solid transparent",
+                transition: "background 120ms",
               }}
             >
-              {section.label}
+              <div
+                style={{
+                  fontSize: 10, fontWeight: 700, color: "#C4C9D4",
+                  letterSpacing: "0.07em", textTransform: "uppercase",
+                  padding: "0 16px 5px",
+                  cursor: isReorderable ? "grab" : "default",
+                  display: "flex", alignItems: "center", gap: 6,
+                }}
+                title={isReorderable ? "Drag to reorder" : undefined}
+              >
+                {isReorderable && (
+                  <DynamicIcon name="grip-vertical" color="#C4C9D4" size={10} />
+                )}
+                {section.label}
+              </div>
+              {section.items.map(item => (
+                <SidebarNavItem
+                  key={item.id}
+                  item={item}
+                  isActive={activeSection === item.id}
+                  onClick={onSelect}
+                  completionFlags={completionFlags}
+                  waitingCount={waitingCount}
+                />
+              ))}
             </div>
-            {section.items.map(item => (
-              <SidebarNavItem
-                key={item.id}
-                item={item}
-                isActive={activeSection === item.id}
-                onClick={onSelect}
-                completionFlags={completionFlags}
-                waitingCount={waitingCount}
-              />
-            ))}
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Footer */}
