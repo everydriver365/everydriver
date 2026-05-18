@@ -152,7 +152,7 @@ export function PupilPaymentDrawer({
           pupilId,
           instructorId,
           amount: paymentAmount,
-          adminFee: hasFee ? adminFee : 0,
+          adminFee: effectiveAdminFee,
           gateway,
           customerName: pupilName,
           customerEmail: pupilEmail || undefined,
