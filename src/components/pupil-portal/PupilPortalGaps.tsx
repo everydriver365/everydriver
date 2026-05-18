@@ -128,15 +128,16 @@ export function PupilPortalGaps({ pupilId, instructorId }: PupilPortalGapsProps)
   const [slots, setSlots] = useState<DaySlot[]>([]);
   const [activeFilter, setActiveFilter] = useState<FilterId>("week");
 
+  // Window start = max(today, instructor.available_from). We don't know this
+  // until the instructor row loads, so the source fetch is sequential.
+  const [startDate, setStartDate] = useState<Date>(() => startOfDay(new Date()));
+
   useEffect(() => {
     let cancelled = false;
     (async () => {
       setLoading(true);
       try {
-        const fromDate = startOfDay(new Date());
-        const toDate = addDays(fromDate, 14);
-
-        const [instrRes, pupilRes, src] = await Promise.all([
+        const [instrRes, pupilRes] = await Promise.all([
           supabase
             .from("instructors")
             .select(
@@ -145,7 +146,6 @@ export function PupilPortalGaps({ pupilId, instructorId }: PupilPortalGapsProps)
             .eq("id", instructorId)
             .maybeSingle(),
           supabase.from("pupils").select("address, postcode").eq("id", pupilId).maybeSingle(),
-          loadCourseAvailabilitySources(supabase, [instructorId], fromDate, toDate),
         ]);
 
         if (cancelled) return;
@@ -164,11 +164,20 @@ export function PupilPortalGaps({ pupilId, instructorId }: PupilPortalGapsProps)
         setPupilAddress({ address: pAddr, postcode: pPc });
 
         if (pPc) {
-          const coords = await geocodePostcode(pPc);
-          if (!cancelled) setPupilPickup(coords);
+          geocodePostcode(pPc).then((coords) => {
+            if (!cancelled) setPupilPickup(coords);
+          });
         }
 
-        setSources(src);
+        // Start window at max(today, available_from), span 14 days.
+        const today = startOfDay(new Date());
+        const fromAv = instrRow?.available_from ? parseISO(instrRow.available_from) : today;
+        const fromDate = fromAv > today ? startOfDay(fromAv) : today;
+        const toDate = addDays(fromDate, 14);
+        setStartDate(fromDate);
+
+        const src = await loadCourseAvailabilitySources(supabase, [instructorId], fromDate, toDate);
+        if (!cancelled) setSources(src);
       } catch (err) {
         console.error("Error loading availability sources:", err);
       } finally {
@@ -191,7 +200,7 @@ export function PupilPortalGaps({ pupilId, instructorId }: PupilPortalGapsProps)
       buffer_minutes: instructor.buffer_minutes ?? 0,
       is_network_placeholder: instructor.is_network_placeholder ?? false,
     };
-    const fromDate = startOfDay(new Date());
+    const fromDate = startDate;
     const slotIncrement = instructor.slot_increment_minutes ?? 60;
     const buffer = instructor.buffer_minutes ?? 0;
     const out: DaySlot[] = [];
@@ -217,7 +226,7 @@ export function PupilPortalGaps({ pupilId, instructorId }: PupilPortalGapsProps)
       }
     }
     setSlots(out);
-  }, [instructor, sources, durationMinutes, pupilPickup]);
+  }, [instructor, sources, durationMinutes, pupilPickup, startDate]);
 
   const handleBookSlot = async (slot: DaySlot) => {
     if (bookedIds.has(slot.id)) return;
@@ -288,7 +297,7 @@ export function PupilPortalGaps({ pupilId, instructorId }: PupilPortalGapsProps)
 
   // Build day groups for the next 14 days (always include empty days).
   const groups: DayGroup[] = useMemo(() => {
-    const fromDate = startOfDay(new Date());
+    const fromDate = startDate;
     const byDate = new Map<string, DaySlot[]>();
     for (const s of filteredSlots) {
       if (!byDate.has(s.date)) byDate.set(s.date, []);
@@ -309,7 +318,7 @@ export function PupilPortalGaps({ pupilId, instructorId }: PupilPortalGapsProps)
       });
     }
     return out;
-  }, [filteredSlots]);
+  }, [filteredSlots, startDate]);
 
   const instructorName = instructor?.name ?? "your instructor";
 
@@ -366,6 +375,24 @@ export function PupilPortalGaps({ pupilId, instructorId }: PupilPortalGapsProps)
           {durationLabel(durationMinutes)}
         </p>
       </div>
+
+      {/* Future-availability notice */}
+      {instructor?.available_from &&
+        startDate.getTime() > startOfDay(new Date()).getTime() && (
+          <div
+            style={{
+              backgroundColor: t.amberLight,
+              borderBottom: `1px solid ${t.border}`,
+              padding: "10px 16px",
+            }}
+          >
+            <p style={{ fontSize: 12, fontWeight: 500, color: t.amberText, margin: 0 }}>
+              {instructorName} starts taking bookings on{" "}
+              {format(parseISO(instructor.available_from), "EEEE d MMMM yyyy")}.
+              Showing the first 14 days from then.
+            </p>
+          </div>
+        )}
 
       {/* Duration chips */}
       <div
