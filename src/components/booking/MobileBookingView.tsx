@@ -240,7 +240,7 @@ export function MobileBookingView({
 }: MobileBookingViewProps) {
   const navigate = useNavigate();
   const brandColour = instructor.brand_colour || "#1e3a5f";
-  const bookingMode = instructor.booking_mode || 'pupil_choice';
+  const bookingMode: string = instructor.booking_mode || 'pupil_choice';
   const paymentRef = useRef<HTMLDivElement>(null);
   
   // Wallet processing state
