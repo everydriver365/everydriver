@@ -1,14 +1,16 @@
-import { useState, useEffect } from "react";
-import { CreditCard, Clock, PoundSterling, ExternalLink, Share2, Copy, Check } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { format, parseISO } from "date-fns";
 import { PupilPaymentModal } from "./PupilPaymentModal";
 import { getActivePaymentQrUrl } from "@/lib/getActivePaymentQrUrl";
-import { EmptyState } from "@/components/ui/EmptyState";
 import { useToast } from "@/hooks/use-toast";
+import { PaymentsNav } from "./payments/PaymentsNav";
+import { BalanceHero } from "./payments/BalanceHero";
+import { PaymentsSearchRow } from "./payments/PaymentsSearchRow";
+import { PaymentsResultsBar } from "./payments/PaymentsResultsBar";
+import { PaymentsHistoryCard, type UIPayment } from "./payments/PaymentsHistoryCard";
+import { PayNowCard } from "./payments/PayNowCard";
+import { paymentsTokens as t } from "./payments/tokens";
 
 interface PupilPortalPaymentsProps {
   pupilId: string;
@@ -27,6 +29,9 @@ interface PupilPortalPaymentsProps {
   paymentQrUrlInstructorPays?: string | null;
   paymentLinkBaseUrl?: string | null;
   commissionPayer?: string | null;
+  instructorName?: string;
+  instructorCentre?: string | null;
+  onBack?: () => void;
 }
 
 interface PaymentRecord {
@@ -37,28 +42,29 @@ interface PaymentRecord {
   notes: string | null;
 }
 
-export function PupilPortalPayments({ 
-  pupilId, 
+export function PupilPortalPayments({
+  pupilId,
   instructorId,
   instructorSlug = "",
-  brandColour, 
-  darkMode,
   accountBalance,
-  prepaidHours,
   pupilName = "Pupil",
   pupilEmail,
   pupilPhone,
-  onBalanceUpdate,
   paymentQrUrl,
   paymentQrUrlPupilPays,
   paymentQrUrlInstructorPays,
   paymentLinkBaseUrl,
   commissionPayer,
+  brandColour,
+  instructorName,
+  instructorCentre,
+  onBack,
 }: PupilPortalPaymentsProps) {
   const [payments, setPayments] = useState<PaymentRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [query, setQuery] = useState("");
   const { toast } = useToast();
 
   const activePaymentUrl = getActivePaymentQrUrl({
@@ -69,156 +75,137 @@ export function PupilPortalPayments({
   });
 
   useEffect(() => {
-    fetchPayments();
-  }, [pupilId]);
+    const fetchPayments = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("payment_history")
+          .select("id, amount, recorded_at, payment_method, notes")
+          .eq("pupil_id", pupilId)
+          .eq("instructor_id", instructorId)
+          .order("recorded_at", { ascending: false })
+          .limit(20);
 
-  const fetchPayments = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("payment_history")
-        .select("id, amount, recorded_at, payment_method, notes")
-        .eq("pupil_id", pupilId)
-        .eq("instructor_id", instructorId)
-        .order("recorded_at", { ascending: false })
-        .limit(20);
-
-      if (!error && data) {
-        setPayments(data);
+        if (!error && data) setPayments(data);
+      } catch (err) {
+        console.error("Error fetching payments:", err);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error("Error fetching payments:", error);
-    } finally {
-      setLoading(false);
+    };
+    fetchPayments();
+  }, [pupilId, instructorId]);
+
+  const uiPayments: UIPayment[] = useMemo(
+    () =>
+      payments.map((p) => ({
+        id: p.id,
+        description: p.notes || "Lesson payment",
+        dateFormatted: format(parseISO(p.recorded_at), "EEE d MMM yyyy"),
+        amount: Number(p.amount) || 0,
+        status: "paid" as const,
+      })),
+    [payments],
+  );
+
+  const filtered = useMemo(
+    () =>
+      uiPayments.filter((p) =>
+        p.description.toLowerCase().includes(query.toLowerCase()),
+      ),
+    [uiPayments, query],
+  );
+
+  const balance = accountBalance ?? 0;
+  const payUrl = paymentLinkBaseUrl || activePaymentUrl;
+
+  const handlePayNow = () => {
+    if (payUrl) {
+      window.open(payUrl, "_blank", "noopener");
+    } else {
+      setPaymentModalOpen(true);
     }
   };
 
-  const formatDate = (dateStr: string) => {
-    return format(parseISO(dateStr), 'd MMM yyyy');
-  };
-
-  const handleShareLink = async () => {
-    if (!activePaymentUrl) return;
+  const handleShare = async () => {
+    if (!payUrl) {
+      toast({ title: "No payment link available" });
+      return;
+    }
     if (navigator.share) {
       try {
-        await navigator.share({ title: "Payment Link", url: activePaymentUrl });
+        await navigator.share({ title: "Payment Link", url: payUrl });
       } catch {
-        // User cancelled share
+        /* user cancelled */
       }
     } else {
-      await navigator.clipboard.writeText(activePaymentUrl);
+      await navigator.clipboard.writeText(payUrl);
       setCopied(true);
       toast({ title: "Link copied to clipboard" });
       setTimeout(() => setCopied(false), 2000);
     }
   };
 
-  const balance = accountBalance || 0;
-  const hasCredit = balance > 0;
-  const hasDebt = balance < 0;
+  const handleExport = () => {
+    if (filtered.length === 0) {
+      toast({ title: "No payments to export" });
+      return;
+    }
+    const header = ["Date", "Description", "Amount", "Status"];
+    const rows = filtered.map((p) => [
+      p.dateFormatted,
+      `"${p.description.replace(/"/g, '""')}"`,
+      p.amount.toFixed(2),
+      p.status,
+    ]);
+    const csv = [header.join(","), ...rows.map((r) => r.join(","))].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `payments-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleFilter = () => {
+    toast({ title: "Filters coming soon" });
+  };
+
+  const handleBack = () => {
+    if (onBack) onBack();
+    else if (typeof window !== "undefined" && window.history.length > 1) window.history.back();
+  };
 
   return (
-    <div className="px-4 space-y-6">
-      {/* Balance Card */}
-      <Card 
-        style={{ 
-          backgroundColor: brandColour || '#1e3a5f',
-          borderColor: 'transparent'
+    <div style={{ backgroundColor: t.surface, minHeight: "100vh" }}>
+      <PaymentsNav
+        instructorName={instructorName || "Your instructor"}
+        centre={instructorCentre}
+        onBack={handleBack}
+      />
+      <BalanceHero balance={balance} />
+
+      <div
+        style={{
+          padding: 16,
+          paddingBottom: 48,
+          display: "flex",
+          flexDirection: "column",
+          gap: 14,
         }}
       >
-        <CardContent className="p-6 text-white">
-          <div className="flex items-center gap-2 mb-4">
-            <PoundSterling className="h-5 w-5 text-white/80" />
-            <span className="text-white/80 text-sm font-medium">Account Balance</span>
-          </div>
-          
-          <div className="text-center mb-4">
-            <div className={`text-4xl font-bold ${hasDebt ? 'text-red-300' : ''}`}>
-              {hasDebt ? '-' : ''}£{Math.abs(balance).toFixed(2)}
-            </div>
-            <div className="text-white/70 text-sm mt-1">
-              {hasCredit && 'Credit on account'}
-              {hasDebt && 'Amount owed'}
-              {balance === 0 && 'All balanced'}
-            </div>
-          </div>
+        <PaymentsSearchRow
+          query={query}
+          onChangeQuery={setQuery}
+          onFilter={handleFilter}
+        />
+        <PaymentsResultsBar count={filtered.length} onExport={handleExport} />
+        <PaymentsHistoryCard payments={filtered} loading={loading} />
+        <PayNowCard onPayNow={handlePayNow} onShare={handleShare} copied={copied} />
+      </div>
 
-          {(prepaidHours || 0) > 0 && (
-            <div className="bg-white/10 rounded-lg p-3 text-center">
-              <div className="flex items-center justify-center gap-2">
-                <Clock className="h-4 w-4" />
-                <span>{prepaidHours} prepaid hours remaining</span>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Pay Now Button - uses payment link URL */}
-      {(paymentLinkBaseUrl || activePaymentUrl) && (
-        <Card style={{ backgroundColor: 'var(--brand-card)', borderColor: 'var(--brand-border)' }}>
-          <CardContent className="p-4 space-y-3">
-            <p className="text-sm font-medium" style={{ color: 'var(--brand-text)' }}>
-              Pay securely online
-            </p>
-            <div className="flex gap-2">
-              <Button 
-                className="flex-1"
-                style={{ backgroundColor: brandColour || '#1e3a5f', color: '#ffffff' }}
-                onClick={() => {
-                  const url = paymentLinkBaseUrl || activePaymentUrl;
-                  if (url) window.open(url, '_blank', 'noopener');
-                }}
-              >
-                <ExternalLink className="h-4 w-4 mr-2" />
-                Pay Now
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => {
-                  const url = paymentLinkBaseUrl || activePaymentUrl;
-                  if (!url) return;
-                  if (navigator.share) {
-                    navigator.share({ title: "Payment Link", url }).catch(() => {});
-                  } else {
-                    navigator.clipboard.writeText(url);
-                    setCopied(true);
-                    toast({ title: "Link copied to clipboard" });
-                    setTimeout(() => setCopied(false), 2000);
-                  }
-                }}
-                title="Share payment link"
-              >
-                {copied ? <Check className="h-4 w-4" /> : <Share2 className="h-4 w-4" />}
-              </Button>
-            </div>
-            <p className="text-xs" style={{ color: 'var(--brand-muted)' }}>
-              Share this link with a parent or guardian to pay on your behalf
-            </p>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Make Payment CTA (existing modal-based) */}
-      {hasDebt && !activePaymentUrl && (
-        <Card style={{ backgroundColor: 'var(--brand-card)', borderColor: 'var(--brand-border)' }}>
-          <CardContent className="p-4">
-            <p className="text-sm mb-3" style={{ color: 'var(--brand-text)' }}>
-              Pay your balance securely online
-            </p>
-            <Button 
-              className="w-full"
-              style={{ backgroundColor: brandColour || '#1e3a5f', color: '#ffffff' }}
-              onClick={() => setPaymentModalOpen(true)}
-            >
-              <CreditCard className="h-4 w-4 mr-2" />
-              Make Payment
-            </Button>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Payment Modal */}
       <PupilPaymentModal
         open={paymentModalOpen}
         onOpenChange={setPaymentModalOpen}
@@ -232,69 +219,6 @@ export function PupilPortalPayments({
         brandColour={brandColour}
         commissionPayer={commissionPayer}
       />
-
-      {/* Payment History */}
-      <div>
-        <h2 className="text-lg font-bold mb-3" style={{ color: 'var(--brand-text)' }}>
-          Payment History
-        </h2>
-
-        {loading ? (
-          <div className="space-y-3">
-            {[1, 2, 3].map(i => (
-              <Card key={i} style={{ backgroundColor: 'var(--brand-card)', borderColor: 'var(--brand-border)' }}>
-                <CardContent className="p-4">
-                  <div className="animate-pulse flex justify-between">
-                    <div className="h-4 bg-muted rounded w-1/3"></div>
-                    <div className="h-4 bg-muted rounded w-1/4"></div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : payments.length === 0 ? (
-          <EmptyState
-            icon={CreditCard}
-            title="No payments yet"
-            description="Your payment history will appear here once transactions are recorded"
-            compact
-          />
-        ) : (
-          <div className="space-y-2">
-            {payments.map((payment) => (
-              <Card 
-                key={payment.id}
-                style={{ backgroundColor: 'var(--brand-card)', borderColor: 'var(--brand-border)' }}
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium" style={{ color: 'var(--brand-text)' }}>
-                        £{payment.amount.toFixed(2)}
-                      </div>
-                      <div className="text-xs" style={{ color: 'var(--brand-muted)' }}>
-                        {formatDate(payment.recorded_at)}
-                        {payment.payment_method && ` • ${payment.payment_method}`}
-                      </div>
-                    </div>
-                    <Badge 
-                      variant="outline"
-                      className="bg-green-500/10 text-green-600 border-green-200"
-                    >
-                      Paid
-                    </Badge>
-                  </div>
-                  {payment.notes && (
-                    <p className="text-xs mt-2" style={{ color: 'var(--brand-muted)' }}>
-                      {payment.notes}
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
-      </div>
     </div>
   );
 }
