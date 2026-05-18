@@ -138,7 +138,7 @@ export default function Drive365Login() {
           style={{ border: "52px solid rgba(26,82,160,0.18)" }}
         />
 
-        <img src={drive365Logo} alt="Drive365" className="h-10 object-contain relative z-10 brightness-0 invert" />
+        <img src={drive365Logo} alt="Drive365" className="h-12 object-contain relative z-10 self-start" />
 
         <div className="relative z-10">
           <div className="flex items-center gap-[7px] mb-[18px]">
