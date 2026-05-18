@@ -458,6 +458,7 @@ export default function BrandedPupilPortal() {
                     </CollapsibleTrigger>
                     <CollapsibleContent className="space-y-4">
                       <PupilWidgetGrid
+                        pupilId={pupil.id}
                         pupil={{
                           lessons_completed: pupil.lessons_completed,
                           progress: pupil.progress,
