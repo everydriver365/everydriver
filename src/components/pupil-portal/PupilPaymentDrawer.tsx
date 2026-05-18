@@ -246,11 +246,14 @@ export function PupilPaymentDrawer({
                   <Input
                     id="drawer-amount"
                     type="number"
+                    inputMode="decimal"
                     step="0.01"
                     min="1"
                     max={amountOwed > 0 ? amountOwed : 1000}
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
+                    onFocus={(e) => e.target.select()}
+                    onClick={(e) => (e.target as HTMLInputElement).select()}
                     className="pl-9 text-2xl font-bold h-14 rounded-xl text-center"
                     disabled={processing}
                   />
