@@ -75,7 +75,7 @@ const instructorSchema = z.object({
   adi_code_of_practice: z.boolean().optional(),
   instructor_grade: z.string().optional(),
   // Booking mode
-  booking_mode: z.enum(["pupil_choice", "auto_assign", "instructor_assigns", "enquiry_only"]).optional(),
+  booking_mode: z.enum(["pupil_choice", "auto_assign", "instructor_assigns", "first_lesson_only", "enquiry_only"]).optional(),
 });
 
 type InstructorFormData = z.infer<typeof instructorSchema>;
@@ -113,7 +113,7 @@ interface InstructorFormProps {
     adi_code_of_practice?: boolean;
     instructor_grade?: string;
     app_slug?: string;
-    booking_mode?: "pupil_choice" | "auto_assign" | "instructor_assigns" | "enquiry_only";
+    booking_mode?: "pupil_choice" | "auto_assign" | "instructor_assigns" | "first_lesson_only" | "enquiry_only";
   }>;
 }
 
