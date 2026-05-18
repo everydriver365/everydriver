@@ -447,6 +447,32 @@ export function PupilPaymentDrawer({
                 <span>Payments are processed securely. Your card details are never stored.</span>
               </div>
             </div>
+          ) : (
+            <div className="px-5 pb-8 space-y-4 overflow-auto">
+              <div className="flex items-center gap-3 pt-1">
+                <button
+                  onClick={() => setStage("method")}
+                  className="p-1 -ml-1 text-muted-foreground hover:text-foreground transition-colors"
+                  disabled={processing}
+                >
+                  <ArrowLeft className="h-5 w-5" />
+                </button>
+                <div className="flex-1">
+                  <h2 className="text-[17px] font-semibold text-foreground">Pay £{effectiveTotal.toFixed(2)}</h2>
+                  <p className="text-xs text-muted-foreground">Enter card details</p>
+                </div>
+              </div>
+              <SquarePaymentForm
+                amount={effectiveTotal}
+                pupilId={pupilId}
+                instructorId={instructorId}
+                customerName={pupilName}
+                customerEmail={pupilEmail || undefined}
+                customerPhone={pupilPhone || undefined}
+                onPaid={() => handleOpenChange(false)}
+                onCancel={() => setStage("method")}
+              />
+            </div>
           )}
         </DrawerPrimitive.Content>
       </DrawerPrimitive.Portal>
