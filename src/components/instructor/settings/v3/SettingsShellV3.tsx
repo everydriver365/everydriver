@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState, KeyboardEvent } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ChevronRight, Search } from "lucide-react";
+import { ChevronRight, Search, ArrowLeft } from "lucide-react";
 import { SettingsDirtyProvider } from "@/components/instructor/settings/SettingsDirtyContext";
 import { SettingsSaveBar } from "@/components/instructor/settings/SettingsSaveBar";
 import { AREA_GROUPS, useAreaSections, LEGACY_ID_MAP, ALL_ITEM_IDS, type AreaItem, type AreaGroup } from "./areas";
@@ -10,36 +10,51 @@ interface Props {
 }
 
 /**
- * Desktop Settings shell — single sidebar (6 grouped areas) + detail pane
- * with a hero summary card and a stack of section cards. URL is
- * /instructor/settings/:itemId.
+ * Desktop Settings — single centered column.
+ * - No inner sidebar (kills the dual-rail "messy" layout).
+ * - /instructor/settings           → grid landing with search.
+ * - /instructor/settings/:itemId   → breadcrumb + back link + ItemDetail.
  */
 export function SettingsShellV3({ instructorId: _ }: Props) {
-  const navigate = useNavigate();
   const { categoryId } = useParams<{ categoryId?: string }>();
-  const [search, setSearch] = useState("");
 
-  // Resolve current item — fall back through legacy map, then default to "profile".
-  const requested = categoryId ?? "profile";
-  const itemId = ALL_ITEM_IDS.has(requested)
-    ? requested
-    : (LEGACY_ID_MAP[requested] ?? "profile");
+  const resolvedId = categoryId
+    ? (ALL_ITEM_IDS.has(categoryId) ? categoryId : LEGACY_ID_MAP[categoryId])
+    : undefined;
 
   const { activeItem, activeGroup } = useMemo<{ activeItem?: AreaItem; activeGroup?: AreaGroup }>(() => {
+    if (!resolvedId) return {};
     for (const g of AREA_GROUPS) {
-      const found = g.items.find(i => i.id === itemId);
+      const found = g.items.find(i => i.id === resolvedId);
       if (found) return { activeItem: found, activeGroup: g };
     }
     return {};
-  }, [itemId]);
+  }, [resolvedId]);
 
-  // Keep the URL in sync with the resolved V3 id so the breadcrumb (and
-  // sidebar active state) always reflects the real item/group.
-  useEffect(() => {
-    if (categoryId && categoryId !== itemId) {
-      navigate(`/instructor/settings/${itemId}`, { replace: true });
-    }
-  }, [categoryId, itemId, navigate]);
+  return (
+    <SettingsDirtyProvider>
+      <div
+        className="instructor-portal w-full"
+        style={{ background: "var(--d2-bg, #F4F7F6)", minHeight: "calc(100vh - 56px)" }}
+      >
+        <div className="max-w-[960px] mx-auto px-4 sm:px-6 py-6 pb-24">
+          {activeItem ? (
+            <DetailView item={activeItem} group={activeGroup} />
+          ) : (
+            <SettingsLanding />
+          )}
+        </div>
+        <SettingsSaveBar />
+      </div>
+    </SettingsDirtyProvider>
+  );
+}
+
+/* ---------- Landing ---------- */
+
+function SettingsLanding() {
+  const navigate = useNavigate();
+  const [search, setSearch] = useState("");
 
   const filteredGroups = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -49,176 +64,159 @@ export function SettingsShellV3({ instructorId: _ }: Props) {
         ...g,
         items: g.items.filter(i =>
           i.label.toLowerCase().includes(q) ||
-          i.description.toLowerCase().includes(q),
+          i.description.toLowerCase().includes(q) ||
+          (i.title ?? "").toLowerCase().includes(q),
         ),
       }))
       .filter(g => g.items.length > 0);
   }, [search]);
 
-  return (
-    <SettingsDirtyProvider>
-      <div
-        className="instructor-portal flex w-full"
-        style={{ background: "var(--d2-bg, #F4F7F6)", minHeight: "calc(100vh - 56px)" }}
-      >
-        {/* Sidebar */}
-        <aside
-          className="shrink-0 border-r"
-          style={{
-            width: 260,
-            borderColor: "hsl(var(--border) / 0.5)",
-            background: "var(--card, #fff)",
-            position: "sticky",
-            top: 56,
-            alignSelf: "flex-start",
-            maxHeight: "calc(100vh - 56px)",
-            overflowY: "auto",
-          }}
-        >
-          <div className="p-4">
-            <h2 className="text-base font-semibold mb-3">Settings</h2>
-            <div className="relative mb-3">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-              <input
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                placeholder="Search settings"
-                className="w-full pl-8 pr-2 py-1.5 text-[13px] rounded-xl border bg-background focus:outline-none focus:ring-2"
-                style={{ borderColor: "hsl(var(--border) / 0.6)" }}
-              />
-            </div>
+  const flatMatches = useMemo(
+    () => filteredGroups.flatMap(g => g.items),
+    [filteredGroups],
+  );
 
-            {filteredGroups.map(group => (
-              <div key={group.id} className="mb-4">
-                <div
-                  className="px-2 mb-1.5"
-                  style={{
-                    fontSize: 10,
-                    letterSpacing: "0.08em",
-                    fontWeight: 700,
-                    textTransform: "uppercase",
-                    color: "hsl(var(--muted-foreground))",
-                  }}
-                >
-                  {group.label}
-                </div>
-                <ul className="flex flex-col gap-0.5">
-                  {group.items.map(item => {
-                    const Icon = item.icon;
-                    const isActive = activeItem?.id === item.id;
-                    return (
-                      <li key={item.id}>
-                        <button
-                          type="button"
-                          onClick={() => navigate(`/instructor/settings/${item.id}`)}
-                          className="w-full flex items-center gap-2 text-left transition-colors"
+  const onSearchKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && flatMatches.length === 1) {
+      navigate(`/instructor/settings/${flatMatches[0].id}`);
+    }
+  };
+
+  return (
+    <>
+      <header className="mb-5">
+        <h1 className="text-2xl font-semibold leading-tight">Settings</h1>
+        <p className="text-sm text-muted-foreground mt-1">
+          Manage your profile, teaching setup, payments, communication and more.
+        </p>
+      </header>
+
+      <div className="relative mb-6">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <input
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          onKeyDown={onSearchKeyDown}
+          placeholder="Search settings"
+          className="w-full pl-9 pr-3 py-2.5 text-sm rounded-xl border bg-card focus:outline-none focus:ring-2 focus:ring-[#2D3FE7]/30"
+          style={{ borderColor: "hsl(var(--border) / 0.6)" }}
+        />
+      </div>
+
+      {filteredGroups.length === 0 ? (
+        <div className="rounded-2xl border bg-card p-8 text-center text-sm text-muted-foreground"
+             style={{ borderColor: "hsl(var(--border) / 0.5)" }}>
+          No settings match "{search}".
+        </div>
+      ) : (
+        <div className="space-y-7">
+          {filteredGroups.map(group => (
+            <section key={group.id}>
+              <div
+                className="px-1 mb-2"
+                style={{
+                  fontSize: 11,
+                  letterSpacing: "0.08em",
+                  fontWeight: 700,
+                  textTransform: "uppercase",
+                  color: "hsl(var(--muted-foreground))",
+                }}
+              >
+                {group.label}
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {group.items.map(item => {
+                  const Icon = item.icon;
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => navigate(`/instructor/settings/${item.id}`)}
+                      className="group text-left rounded-2xl border bg-card p-4 transition-all hover:shadow-sm hover:-translate-y-px"
+                      style={{ borderColor: "hsl(var(--border) / 0.5)" }}
+                    >
+                      <div className="flex items-start gap-3">
+                        <span
+                          className="inline-flex items-center justify-center rounded-xl shrink-0"
                           style={{
-                            padding: "7px 10px",
-                            borderRadius: 12,
-                            fontSize: 13,
-                            fontWeight: isActive ? 600 : 500,
-                            color: isActive ? "#2B7BC8" : "hsl(var(--foreground))",
-                            background: isActive ? "#2B7BC81A" : "transparent",
-                            position: "relative",
+                            width: 36, height: 36,
+                            backgroundColor: item.iconBg, color: item.iconColor,
                           }}
                         >
-                          {isActive && (
-                            <span
-                              aria-hidden
-                              style={{
-                                position: "absolute",
-                                left: 0, top: 6, bottom: 6, width: 3,
-                                borderRadius: 999,
-                                background: "#2B7BC8",
-                              }}
-                            />
-                          )}
-                          <Icon className="h-4 w-4 shrink-0" />
-                          <span className="truncate">{item.label}</span>
-                        </button>
-                      </li>
-                    );
-                  })}
-                </ul>
+                          <Icon className="h-4.5 w-4.5" style={{ width: 18, height: 18 }} />
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="text-sm font-semibold truncate">{item.label}</div>
+                            <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 transition-transform group-hover:translate-x-0.5" />
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
+                            {item.description}
+                          </p>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
-            ))}
-          </div>
-        </aside>
+            </section>
+          ))}
+        </div>
+      )}
+    </>
+  );
+}
 
-        {/* Detail pane */}
-        <main className="flex-1 min-w-0">
-          <div className="max-w-[880px] mx-auto px-0 sm:px-6 py-6 pb-24">
-            <nav aria-label="Breadcrumb" className="mb-3">
-              <ol className="flex items-center flex-wrap gap-1 text-[13px] text-muted-foreground">
-                <li>
-                  <button
-                    type="button"
-                    onClick={() => { navigate("/instructor"); window.scrollTo({ top: 0 }); }}
-                    className="hover:text-foreground hover:underline underline-offset-2 transition-colors"
-                  >
-                    Dashboard
-                  </button>
-                </li>
-                <li aria-hidden><ChevronRight className="h-3.5 w-3.5" /></li>
-                <li>
-                  <button
-                    type="button"
-                    onClick={() => { navigate("/instructor/settings/profile"); window.scrollTo({ top: 0 }); }}
-                    className="hover:text-foreground hover:underline underline-offset-2 transition-colors"
-                  >
-                    Settings
-                  </button>
-                </li>
-                {activeGroup && (
-                  <>
-                    <li aria-hidden><ChevronRight className="h-3.5 w-3.5" /></li>
-                    <li>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const first = activeGroup.items[0];
-                          if (first) {
-                            navigate(`/instructor/settings/${first.id}`);
-                            window.scrollTo({ top: 0 });
-                          }
-                        }}
-                        className="hover:text-foreground hover:underline underline-offset-2 transition-colors"
-                      >
-                        {activeGroup.label}
-                      </button>
-                    </li>
-                  </>
-                )}
-                {activeItem && (
-                  <>
-                    <li aria-hidden><ChevronRight className="h-3.5 w-3.5" /></li>
-                    <li aria-current="page">
-                      <button
-                        type="button"
-                        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-                        className="text-foreground font-medium hover:underline underline-offset-2"
-                      >
-                        {activeItem.label}
-                      </button>
-                    </li>
-                  </>
-                )}
-              </ol>
-            </nav>
+/* ---------- Detail ---------- */
 
-            {activeItem ? (
-              <ItemDetail item={activeItem} />
-            ) : (
-              <div className="py-12 text-center text-sm text-muted-foreground">
-                Settings page not found.
-              </div>
-            )}
-          </div>
-        </main>
+function DetailView({ item, group }: { item: AreaItem; group?: AreaGroup }) {
+  const navigate = useNavigate();
 
-        <SettingsSaveBar />
-      </div>
-    </SettingsDirtyProvider>
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => navigate("/instructor/settings")}
+        className="inline-flex items-center gap-1.5 text-[13px] text-muted-foreground hover:text-foreground mb-3 transition-colors"
+      >
+        <ArrowLeft className="h-3.5 w-3.5" />
+        All settings
+      </button>
+
+      <nav aria-label="Breadcrumb" className="mb-3">
+        <ol className="flex items-center flex-wrap gap-1 text-[13px] text-muted-foreground">
+          <li>
+            <button
+              type="button"
+              onClick={() => navigate("/instructor")}
+              className="hover:text-foreground hover:underline underline-offset-2 transition-colors"
+            >
+              Dashboard
+            </button>
+          </li>
+          <li aria-hidden><ChevronRight className="h-3.5 w-3.5" /></li>
+          <li>
+            <button
+              type="button"
+              onClick={() => navigate("/instructor/settings")}
+              className="hover:text-foreground hover:underline underline-offset-2 transition-colors"
+            >
+              Settings
+            </button>
+          </li>
+          {group && (
+            <>
+              <li aria-hidden><ChevronRight className="h-3.5 w-3.5" /></li>
+              <li className="text-muted-foreground">{group.label}</li>
+            </>
+          )}
+          <li aria-hidden><ChevronRight className="h-3.5 w-3.5" /></li>
+          <li aria-current="page" className="text-foreground font-medium">{item.label}</li>
+        </ol>
+      </nav>
+
+      <ItemDetail item={item} />
+    </>
   );
 }
 
@@ -228,7 +226,6 @@ function ItemDetail({ item }: { item: AreaItem }) {
 
   return (
     <>
-      {/* Hero summary card */}
       <section
         className="rounded-2xl border p-5 mb-4 bg-card"
         style={{ borderColor: "hsl(var(--border) / 0.5)" }}
@@ -251,7 +248,6 @@ function ItemDetail({ item }: { item: AreaItem }) {
         {item.hero && <div className="mt-4">{item.hero()}</div>}
       </section>
 
-      {/* Sections */}
       <div className="space-y-4">
         {sections.length === 0 ? (
           <div className="rounded-2xl border bg-card p-8 text-center text-sm text-muted-foreground"
