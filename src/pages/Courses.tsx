@@ -1324,6 +1324,92 @@ export default function Courses() {
                 hideCounts={isListMode}
               />
 
+              {/* Desktop-only refinement filters (under the calendar) */}
+              <div className="hidden lg:block rounded-xl border bg-card p-4 shadow-sm space-y-5">
+                <h3 className="text-sm font-semibold">Refine results</h3>
+
+                <div>
+                  <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">Transmission</div>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {[{ value: "all", label: "Any" }, { value: "manual", label: "Manual" }, { value: "automatic", label: "Auto" }].map((opt) => (
+                      <button
+                        key={opt.value}
+                        onClick={() => setTransmission(opt.value)}
+                        className={`text-xs h-8 rounded-md border transition-colors ${transmission === opt.value ? "border-primary bg-primary text-primary-foreground" : "border-input bg-background hover:bg-muted"}`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">Lesson times</div>
+                  <div className="space-y-1.5">
+                    {[{ value: "all" as const, label: "Anytime" }, { value: "daytime" as const, label: "Daytime (08:00–17:00)" }, { value: "evenings_weekends" as const, label: "Evenings & weekends" }].map((opt) => (
+                      <button
+                        key={opt.value}
+                        onClick={() => setLessonTimes(opt.value)}
+                        className={`w-full text-left text-xs h-8 px-3 rounded-md border transition-colors ${lessonTimes === opt.value ? "border-primary bg-primary text-primary-foreground" : "border-input bg-background hover:bg-muted"}`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {filterOptionPool.skills.length > 0 && (
+                  <div>
+                    <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">Instructor skills</div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {filterOptionPool.skills.map((skill) => {
+                        const active = selectedSkills.includes(skill);
+                        const pretty = skill.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+                        return (
+                          <button
+                            key={skill}
+                            onClick={() => setSelectedSkills((prev) => active ? prev.filter((s) => s !== skill) : [...prev, skill])}
+                            className={`text-xs h-7 px-2.5 rounded-full border transition-colors ${active ? "border-primary bg-primary text-primary-foreground" : "border-input bg-background hover:bg-muted"}`}
+                          >
+                            {pretty}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {filterOptionPool.languages.length > 0 && (
+                  <div>
+                    <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">Languages</div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {filterOptionPool.languages.map((lang) => {
+                        const active = selectedLanguages.includes(lang);
+                        const pretty = lang.length <= 3 ? lang.toUpperCase() : lang.charAt(0).toUpperCase() + lang.slice(1);
+                        return (
+                          <button
+                            key={lang}
+                            onClick={() => setSelectedLanguages((prev) => active ? prev.filter((l) => l !== lang) : [...prev, lang])}
+                            className={`text-xs h-7 px-2.5 rounded-full border transition-colors ${active ? "border-primary bg-primary text-primary-foreground" : "border-input bg-background hover:bg-muted"}`}
+                          >
+                            {pretty}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {(transmission !== "all" || lessonTimes !== "all" || selectedSkills.length > 0 || selectedLanguages.length > 0) && (
+                  <button
+                    onClick={() => { setTransmission("all"); setLessonTimes("all"); setSelectedSkills([]); setSelectedLanguages([]); }}
+                    className="text-xs text-primary hover:underline"
+                  >
+                    Clear refinements
+                  </button>
+                )}
+              </div>
+
               {/* Pass Promise card — list view only */}
               {isListMode && (
                 <div
