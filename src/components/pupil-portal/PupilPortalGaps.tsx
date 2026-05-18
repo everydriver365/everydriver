@@ -150,7 +150,7 @@ export function PupilPortalGaps({ pupilId, instructorId }: PupilPortalGapsProps)
 
         if (cancelled) return;
 
-        const instrRow = (instrRes.data as InstructorRow | null) ?? null;
+        const instrRow = (instrRes.data as unknown as InstructorRow | null) ?? null;
         setInstructor(instrRow);
 
         const defaultDur =
