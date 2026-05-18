@@ -21,25 +21,7 @@ import { toast } from "sonner";
 import { setRememberMe as persistRememberMe } from "@/lib/sessionPersistence";
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 import { cn } from "@/lib/utils";
-
-const DSMLogo = ({ size = "md" }: { size?: "sm" | "md" | "lg" }) => {
-  const cls =
-    size === "sm"
-      ? { text: "text-[12px]", px: "px-[7px]", py: "py-[3px]" }
-      : size === "lg"
-      ? { text: "text-[18px]", px: "px-[11px]", py: "py-[5px]" }
-      : { text: "text-[14px]", px: "px-[9px]", py: "py-[4px]" };
-  return (
-    <div className="inline-flex items-center select-none">
-      <div className={cn("bg-[#CC2229] rounded-l-[4px]", cls.px, cls.py)}>
-        <span className={cn("font-extrabold text-white tracking-[0.5px]", cls.text)}>DRIVE</span>
-      </div>
-      <div className={cn("bg-[#1A52A0] rounded-r-[4px]", cls.px, cls.py)}>
-        <span className={cn("font-extrabold text-white tracking-[0.3px]", cls.text)}>365</span>
-      </div>
-    </div>
-  );
-};
+import drive365Logo from "@/assets/drive365-logo.png";
 
 const FIELD =
   "h-[50px] rounded-[9px] bg-[#F9FAFB] border-[1.5px] border-[#E8EDF6] text-[#0F2044] placeholder:text-[#C4C9D4] focus-visible:ring-2 focus-visible:ring-[#1A52A0]/15 focus-visible:border-[#1A52A0] focus-visible:ring-offset-0 text-[14px]";
@@ -154,7 +136,7 @@ export default function Drive365Login() {
           style={{ border: "48px solid #E8EDF6" }}
         />
 
-        <DSMLogo size="md" />
+        <img src={drive365Logo} alt="Drive365" className="h-10 object-contain" />
 
         <div className="relative z-10">
           <div className="flex items-center gap-[7px] mb-[18px]">
@@ -205,7 +187,7 @@ export default function Drive365Login() {
           transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
           className="w-full max-w-[390px]"
         >
-          <DSMLogo size="sm" />
+          <img src={drive365Logo} alt="Drive365" className="h-8 object-contain" />
           <div className="h-7" />
 
           <h2 className="text-[22px] font-bold text-[#0F2044] tracking-[-0.4px] mb-[5px]">
