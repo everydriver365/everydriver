@@ -56,7 +56,8 @@ import {
   Satellite,
   Coffee,
   BookOpen,
-  Gift
+  Gift,
+  User
 } from "lucide-react";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { Button } from "@/components/ui/button";
