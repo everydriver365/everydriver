@@ -1,5 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { useEffect, useState, useCallback } from "react";
+import { toast } from "sonner";
 import {
   LayoutDashboard, Calendar, Users, ClipboardCheck,
   Award, Repeat2, Search, CreditCard, Receipt, Clock,
@@ -243,7 +244,10 @@ export function DashboardSidebar({ collapsed, onToggle, userInitials, userName, 
     if (instructorId) {
       try {
         await supabase.from("instructors").update({ sidebar_pinned: next }).eq("id", instructorId);
+        toast.success("Favorites order saved");
       } catch {}
+    } else {
+      toast.success("Favorites order saved");
     }
   }, [instructorId]);
 
