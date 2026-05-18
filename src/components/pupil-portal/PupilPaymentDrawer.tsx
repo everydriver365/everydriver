@@ -67,6 +67,7 @@ export function PupilPaymentDrawer({
   const [recentPayments, setRecentPayments] = useState<RecentPayment[]>([]);
   const [nextLesson, setNextLesson] = useState<NextLessonCost | null>(null);
   const [feeEnabled, setFeeEnabled] = useState(true);
+  const isNativeWrapper = useIsNativeWrapper();
 
   const amountOwed = Math.abs(accountBalance);
   const paymentAmount = parseFloat(amount) || 0;
