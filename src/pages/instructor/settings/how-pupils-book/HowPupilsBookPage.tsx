@@ -19,6 +19,11 @@ interface InstructorCourseRow {
   id: string;
   course_hours: number;
   course_name: string;
+  short_description: string | null;
+  duration_days: number | null;
+  available_weekdays: number[] | null;
+  available_from: string | null;
+  available_to: string | null;
   is_active: boolean;
   offer_active: boolean | null;
   discounted_price: number | null;
