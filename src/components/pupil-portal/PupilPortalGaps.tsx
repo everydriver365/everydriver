@@ -226,7 +226,7 @@ export function PupilPortalGaps({ pupilId, instructorId }: PupilPortalGapsProps)
       }
     }
     setSlots(out);
-  }, [instructor, sources, durationMinutes, pupilPickup]);
+  }, [instructor, sources, durationMinutes, pupilPickup, startDate]);
 
   const handleBookSlot = async (slot: DaySlot) => {
     if (bookedIds.has(slot.id)) return;
