@@ -318,7 +318,7 @@ export function PupilPortalGaps({ pupilId, instructorId }: PupilPortalGapsProps)
       });
     }
     return out;
-  }, [filteredSlots]);
+  }, [filteredSlots, startDate]);
 
   const instructorName = instructor?.name ?? "your instructor";
 
