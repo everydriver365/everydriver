@@ -8,7 +8,14 @@ import {
   NotebookPen, BookOpenCheck, GraduationCap, ListChecks, UserPlus2,
   MapPin, Map, Gauge, Navigation, Video, Route, Fuel, Car,
   Mic, Banknote, Coins, Star, Share2, Zap, MoreHorizontal, CalendarSearch,
+  StickyNote, CheckSquare, Pencil, FileText, FolderLock, FileCheck2, ShieldCheck,
+  ClipboardList, Sunrise, Sunset, ClipboardCheck as ClipboardCheck2, Layers, Workflow, Sparkles,
+  GitBranch, MessageCircleQuestion, DoorOpen, ShoppingCart, Trophy, BadgeCheck,
+  Crosshair, LayoutGrid, Eye, Camera, UsersRound, Building2,
+  Download, MailPlus, LifeBuoy, MessagesSquare, Hash, HelpCircle, RefreshCw,
+  Database as DatabaseIcon, Heart, Activity, Accessibility,
 } from "lucide-react";
+
 import { cn } from "@/lib/utils";
 import { useModules } from "@/context/ModulesContext";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
