@@ -55,6 +55,11 @@ interface Instructor {
   allowed_lesson_lengths?: number[] | null;
   preferred_lesson_length?: number | null;
   buffer_minutes?: number | null;
+  preferred_language?: string | null;
+  special_skills?: string | null;
+  additional_certifications?: string[] | null;
+  adaptations?: string[] | null;
+  bsl_signing?: boolean | null;
 }
 
 // Smallest lesson the instructor will accept. The booking calendar refuses to
@@ -344,6 +349,9 @@ export default function Courses() {
   const [clearpayOnly, setClearpayOnly] = useState(initialClearpay);
   const [courseType, setCourseType] = useState(initialCourseType);
   const [priceRange, setPriceRange] = useState(initialPriceRange);
+  const [lessonTimes, setLessonTimes] = useState<"all" | "daytime" | "evenings_weekends">("all");
+  const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+  const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState<SortOption>("soonest");
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
@@ -967,6 +975,48 @@ export default function Courses() {
         }
       }
 
+      // Lesson times filter (uses instructor working hours; placeholders bypass)
+      if (lessonTimes !== "all" && !isPlaceholder) {
+        const rows = workingHourRows.filter(
+          (r) => r.instructor_id === course.instructor.id && r.is_active !== false,
+        );
+        const matches = rows.some((r) => {
+          const start = r.start_time || "00:00";
+          const end = r.end_time || "00:00";
+          const startMin = parseInt(start.slice(0, 2)) * 60 + parseInt(start.slice(3, 5) || "0");
+          const endMin = parseInt(end.slice(0, 2)) * 60 + parseInt(end.slice(3, 5) || "0");
+          if (lessonTimes === "daytime") {
+            // Mon-Fri (1-5) with overlap of 08:00-17:00
+            return r.day_of_week >= 1 && r.day_of_week <= 5 && startMin < 17 * 60 && endMin > 8 * 60;
+          }
+          // evenings_weekends: weekend day OR weekday ending after 17:00
+          const isWeekend = r.day_of_week === 0 || r.day_of_week === 6;
+          return isWeekend || endMin > 17 * 60;
+        });
+        if (!matches) return false;
+      }
+
+      // Instructor skills filter (matches additional_certifications or special_skills)
+      if (selectedSkills.length > 0) {
+        const haystack = [
+          ...(course.instructor.additional_certifications || []),
+          ...((course.instructor.special_skills || "")
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean)),
+        ]
+          .join(" | ")
+          .toLowerCase();
+        const matched = selectedSkills.every((skill) => haystack.includes(skill.toLowerCase()));
+        if (!matched) return false;
+      }
+
+      // Languages filter
+      if (selectedLanguages.length > 0) {
+        const lang = (course.instructor.preferred_language || "").toLowerCase();
+        if (!selectedLanguages.map((l) => l.toLowerCase()).includes(lang)) return false;
+      }
+
       return true;
     });
 
@@ -1033,6 +1083,29 @@ export default function Courses() {
   }, [coursesWithDistance]);
 
 
+  // Build dynamic skill/language option lists from the instructors currently
+  // visible in the area (so we never offer a filter that has zero matches).
+  const filterOptionPool = useMemo(() => {
+    const base = relevantInstructors.filter((i) => !i.is_network_placeholder);
+    const skills = new Set<string>();
+    const languages = new Set<string>();
+    for (const i of base) {
+      for (const cert of i.additional_certifications || []) {
+        if (cert && cert.trim()) skills.add(cert.trim());
+      }
+      for (const s of (i.special_skills || "").split(",")) {
+        const v = s.trim();
+        if (v) skills.add(v);
+      }
+      const lang = (i.preferred_language || "").trim();
+      if (lang) languages.add(lang);
+    }
+    return {
+      skills: Array.from(skills).sort((a, b) => a.localeCompare(b)),
+      languages: Array.from(languages).sort((a, b) => a.localeCompare(b)),
+    };
+  }, [relevantInstructors]);
+
   // Active filter count (for the Filters button badge)
   const activeFilterCount =
     (transmission !== "all" ? 1 : 0) +
@@ -1040,7 +1113,10 @@ export default function Courses() {
     (clearpayOnly ? 1 : 0) +
     (courseType !== "all" ? 1 : 0) +
     (priceRange !== "any" ? 1 : 0) +
-    (selectedInstructorId ? 1 : 0);
+    (selectedInstructorId ? 1 : 0) +
+    (lessonTimes !== "all" ? 1 : 0) +
+    (selectedSkills.length > 0 ? 1 : 0) +
+    (selectedLanguages.length > 0 ? 1 : 0);
 
   const isListMode = viewMode === "list";
 
@@ -1247,6 +1323,92 @@ export default function Courses() {
                 monthOptions={monthOptions}
                 hideCounts={isListMode}
               />
+
+              {/* Desktop-only refinement filters (under the calendar) */}
+              <div className="hidden lg:block rounded-xl border bg-card p-4 shadow-sm space-y-5">
+                <h3 className="text-sm font-semibold">Refine results</h3>
+
+                <div>
+                  <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">Transmission</div>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {[{ value: "all", label: "Any" }, { value: "manual", label: "Manual" }, { value: "automatic", label: "Auto" }].map((opt) => (
+                      <button
+                        key={opt.value}
+                        onClick={() => setTransmission(opt.value)}
+                        className={`text-xs h-8 rounded-md border transition-colors ${transmission === opt.value ? "border-primary bg-primary text-primary-foreground" : "border-input bg-background hover:bg-muted"}`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">Lesson times</div>
+                  <div className="space-y-1.5">
+                    {[{ value: "all" as const, label: "Anytime" }, { value: "daytime" as const, label: "Daytime (08:00–17:00)" }, { value: "evenings_weekends" as const, label: "Evenings & weekends" }].map((opt) => (
+                      <button
+                        key={opt.value}
+                        onClick={() => setLessonTimes(opt.value)}
+                        className={`w-full text-left text-xs h-8 px-3 rounded-md border transition-colors ${lessonTimes === opt.value ? "border-primary bg-primary text-primary-foreground" : "border-input bg-background hover:bg-muted"}`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {filterOptionPool.skills.length > 0 && (
+                  <div>
+                    <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">Instructor skills</div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {filterOptionPool.skills.map((skill) => {
+                        const active = selectedSkills.includes(skill);
+                        const pretty = skill.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+                        return (
+                          <button
+                            key={skill}
+                            onClick={() => setSelectedSkills((prev) => active ? prev.filter((s) => s !== skill) : [...prev, skill])}
+                            className={`text-xs h-7 px-2.5 rounded-full border transition-colors ${active ? "border-primary bg-primary text-primary-foreground" : "border-input bg-background hover:bg-muted"}`}
+                          >
+                            {pretty}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {filterOptionPool.languages.length > 0 && (
+                  <div>
+                    <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">Languages</div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {filterOptionPool.languages.map((lang) => {
+                        const active = selectedLanguages.includes(lang);
+                        const pretty = lang.length <= 3 ? lang.toUpperCase() : lang.charAt(0).toUpperCase() + lang.slice(1);
+                        return (
+                          <button
+                            key={lang}
+                            onClick={() => setSelectedLanguages((prev) => active ? prev.filter((l) => l !== lang) : [...prev, lang])}
+                            className={`text-xs h-7 px-2.5 rounded-full border transition-colors ${active ? "border-primary bg-primary text-primary-foreground" : "border-input bg-background hover:bg-muted"}`}
+                          >
+                            {pretty}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {(transmission !== "all" || lessonTimes !== "all" || selectedSkills.length > 0 || selectedLanguages.length > 0) && (
+                  <button
+                    onClick={() => { setTransmission("all"); setLessonTimes("all"); setSelectedSkills([]); setSelectedLanguages([]); }}
+                    className="text-xs text-primary hover:underline"
+                  >
+                    Clear refinements
+                  </button>
+                )}
+              </div>
 
               {/* Pass Promise card — list view only */}
               {isListMode && (

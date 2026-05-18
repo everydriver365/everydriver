@@ -19033,6 +19033,8 @@ export type Database = {
       }
       public_instructors: {
         Row: {
+          adaptations: string[] | null
+          additional_certifications: string[] | null
           adi_code_of_practice: boolean | null
           allowed_lesson_lengths: number[] | null
           app_slug: string | null
@@ -19042,6 +19044,7 @@ export type Database = {
           booking_advance_days: number | null
           booking_mode: string | null
           brand_colour: string | null
+          bsl_signing: boolean | null
           buffer_minutes: number | null
           business_name: string | null
           cancellation_charge_percent: number | null
@@ -19089,6 +19092,7 @@ export type Database = {
           personal_website_url: string | null
           phone: string | null
           placeholder_district: string | null
+          preferred_language: string | null
           preferred_lesson_length: number | null
           profile_image_url: string | null
           pupil_app_dark_mode: boolean | null
@@ -19111,6 +19115,8 @@ export type Database = {
           welcome_video_url: string | null
         }
         Insert: {
+          adaptations?: string[] | null
+          additional_certifications?: string[] | null
           adi_code_of_practice?: boolean | null
           allowed_lesson_lengths?: number[] | null
           app_slug?: string | null
@@ -19120,6 +19126,7 @@ export type Database = {
           booking_advance_days?: number | null
           booking_mode?: string | null
           brand_colour?: string | null
+          bsl_signing?: boolean | null
           buffer_minutes?: number | null
           business_name?: string | null
           cancellation_charge_percent?: number | null
@@ -19167,6 +19174,7 @@ export type Database = {
           personal_website_url?: string | null
           phone?: string | null
           placeholder_district?: string | null
+          preferred_language?: string | null
           preferred_lesson_length?: number | null
           profile_image_url?: string | null
           pupil_app_dark_mode?: boolean | null
@@ -19189,6 +19197,8 @@ export type Database = {
           welcome_video_url?: string | null
         }
         Update: {
+          adaptations?: string[] | null
+          additional_certifications?: string[] | null
           adi_code_of_practice?: boolean | null
           allowed_lesson_lengths?: number[] | null
           app_slug?: string | null
@@ -19198,6 +19208,7 @@ export type Database = {
           booking_advance_days?: number | null
           booking_mode?: string | null
           brand_colour?: string | null
+          bsl_signing?: boolean | null
           buffer_minutes?: number | null
           business_name?: string | null
           cancellation_charge_percent?: number | null
@@ -19245,6 +19256,7 @@ export type Database = {
           personal_website_url?: string | null
           phone?: string | null
           placeholder_district?: string | null
+          preferred_language?: string | null
           preferred_lesson_length?: number | null
           profile_image_url?: string | null
           pupil_app_dark_mode?: boolean | null
