@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 import { toast } from "@/hooks/use-toast";
 import { InstructorCard } from "@/components/instructor/InstructorCard";
@@ -411,9 +412,17 @@ export default function BrandedPupilPortal() {
                 <PullToRefresh onRefresh={async () => { await fetchPupil(pupil.id); }}>
                 <div className="p-4 space-y-4">
                   {/* iOS Greeting */}
-                  <div className="pt-1">
-                    <p className="text-xs text-muted-foreground">Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'}</p>
-                    <h1 className="text-xl font-bold text-foreground">Hi {pupil.name.split(' ')[0]} 👋</h1>
+                  <div className="flex items-center gap-3 pt-1">
+                    <Avatar className="h-11 w-11 border-2 border-border">
+                      <AvatarImage src={pupil.profile_image_url || undefined} />
+                      <AvatarFallback className="bg-primary text-primary-foreground font-bold text-sm">
+                        {pupil.name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'}</p>
+                      <h1 className="text-xl font-bold text-foreground">Hi {pupil.name.split(' ')[0]} 👋</h1>
+                    </div>
                   </div>
 
                   {/* ═══ ZONE 1: RIGHT NOW ═══ */}
