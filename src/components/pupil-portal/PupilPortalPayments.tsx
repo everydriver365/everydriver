@@ -118,11 +118,7 @@ export function PupilPortalPayments({
   const payUrl = paymentLinkBaseUrl || activePaymentUrl;
 
   const handlePayNow = () => {
-    if (payUrl) {
-      window.open(payUrl, "_blank", "noopener");
-    } else {
-      setPaymentModalOpen(true);
-    }
+    setPaymentModalOpen(true);
   };
 
   const handleShare = async () => {
