@@ -87,6 +87,21 @@ export function BookingModeSelector({ instructorId, currentMode, onModeChange }:
         </div>
 
         <div className={`flex items-start space-x-3 p-3 rounded-2xl border transition-colors ${
+          mode === 'first_lesson_only' ? 'border-primary bg-primary/5' : 'border-border hover:bg-muted/50'
+        }`}>
+          <RadioGroupItem value="first_lesson_only" id="first_lesson_only" className="mt-1" />
+          <Label htmlFor="first_lesson_only" className="flex-1 cursor-pointer">
+            <div className="flex items-center gap-2 font-medium">
+              <CalendarClock className="h-4 w-4 text-violet-500" />
+              First Lesson Only
+            </div>
+            <p className="text-sm text-muted-foreground mt-1">
+              Pupils book only their first lesson online. You arrange the rest of the lessons with them directly.
+            </p>
+          </Label>
+        </div>
+
+        <div className={`flex items-start space-x-3 p-3 rounded-2xl border transition-colors ${
           mode === 'enquiry_only' ? 'border-primary bg-primary/5' : 'border-border hover:bg-muted/50'
         }`}>
           <RadioGroupItem value="enquiry_only" id="enquiry_only" className="mt-1" />
