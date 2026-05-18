@@ -432,7 +432,14 @@ export default function BookingSummary() {
   }, []);
 
   const scheduledHours = selectedSlots.reduce((acc, slot) => acc + slot.duration / 60, 0);
-  const isFullyScheduled = scheduledHours >= hours;
+  // For first_lesson_only mode, only require the first lesson to be scheduled
+  const isFirstLessonOnlyMode = (courseDetails?.instructor?.booking_mode === 'first_lesson_only');
+  const requiredScheduledHours = isFirstLessonOnlyMode
+    ? ((courseDetails?.instructor?.preferred_lesson_length || 120) / 60)
+    : hours;
+  const isFullyScheduled = isFirstLessonOnlyMode
+    ? selectedSlots.length >= 1
+    : scheduledHours >= hours;
   const isPupilDetailsComplete = !!(pupilName.trim() && pupilEmail.trim() && pupilPhone.trim() && pupilAddress.trim() && pupilPostcode.trim());
 
   // Build a slot payload with the price snapshot (per-hour rate including
