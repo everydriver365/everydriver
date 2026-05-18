@@ -1,0 +1,2 @@
+ALTER TABLE public.instructors ADD COLUMN sidebar_critical JSONB DEFAULT '[]'::jsonb;
+COMMENT ON COLUMN public.instructors.sidebar_critical IS 'Ordered list of route paths shown in the desktop sidebar Critical section';
