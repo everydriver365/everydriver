@@ -10,6 +10,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { SquareWalletButtons } from "@/components/payments/SquareWalletButtons";
 import { SquarePaymentForm } from "@/components/payments/SquarePaymentForm";
+import { PayInSafariButton } from "@/components/payments/PayInSafariButton";
+import { useIsNativeWrapper } from "@/hooks/useIsNativeWrapper";
 import { PupilPaymentDrawer } from "./PupilPaymentDrawer";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAdminFee } from "@/hooks/useAdminFee";
@@ -51,6 +53,7 @@ export function PupilPaymentModal({
   const [feeEnabled, setFeeEnabled] = useState(true);
   const [nextLessonCost, setNextLessonCost] = useState<number | null>(null);
   const isMobile = useIsMobile();
+  const isNativeWrapper = useIsNativeWrapper();
 
   const amountOwed = Math.abs(accountBalance);
   const paymentAmount = parseFloat(amount) || 0;
@@ -272,30 +275,47 @@ export function PupilPaymentModal({
             hasFee={hasFee && feeEnabled}
           />
 
-          {/* Apple Pay / Google Pay Express Checkout */}
-          <SquareWalletButtons
-            amount={effectiveTotal}
-            pupilId={pupilId}
-            instructorId={instructorId}
-            customerName={pupilName}
-            customerEmail={pupilEmail}
-            onProcessing={setProcessing}
-            disabled={processing || paymentAmount <= 0}
-          />
-
-          {/* Pay by Card — Square */}
-          <div className="space-y-2">
-            <Label>Pay by card</Label>
-            <SquarePaymentForm
+          {isNativeWrapper ? (
+            /* Inside Despia / WKWebView — Apple Pay JS API isn't available,
+               so route through Safari via a hosted Square checkout link. */
+            <PayInSafariButton
               amount={effectiveTotal}
               pupilId={pupilId}
+              pupilName={pupilName}
+              pupilEmail={pupilEmail}
+              pupilPhone={pupilPhone}
               instructorId={instructorId}
-              customerName={pupilName}
-              customerEmail={pupilEmail || undefined}
-              customerPhone={pupilPhone || undefined}
-              onPaid={() => onOpenChange(false)}
+              instructorSlug={instructorSlug}
+              disabled={processing || paymentAmount <= 0}
             />
-          </div>
+          ) : (
+            <>
+              {/* Apple Pay / Google Pay Express Checkout */}
+              <SquareWalletButtons
+                amount={effectiveTotal}
+                pupilId={pupilId}
+                instructorId={instructorId}
+                customerName={pupilName}
+                customerEmail={pupilEmail}
+                onProcessing={setProcessing}
+                disabled={processing || paymentAmount <= 0}
+              />
+
+              {/* Pay by Card — Square */}
+              <div className="space-y-2">
+                <Label>Pay by card</Label>
+                <SquarePaymentForm
+                  amount={effectiveTotal}
+                  pupilId={pupilId}
+                  instructorId={instructorId}
+                  customerName={pupilName}
+                  customerEmail={pupilEmail || undefined}
+                  customerPhone={pupilPhone || undefined}
+                  onPaid={() => onOpenChange(false)}
+                />
+              </div>
+            </>
+          )}
 
           {/* Payment Gateway Options */}
           <div className="space-y-2">

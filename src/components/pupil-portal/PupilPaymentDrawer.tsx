@@ -9,6 +9,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { SquareWalletButtons } from "@/components/payments/SquareWalletButtons";
 import { SquarePaymentForm } from "@/components/payments/SquarePaymentForm";
+import { PayInSafariButton } from "@/components/payments/PayInSafariButton";
+import { useIsNativeWrapper } from "@/hooks/useIsNativeWrapper";
 import { useAdminFee } from "@/hooks/useAdminFee";
 import { useInstructorTierConfig } from "@/hooks/useInstructorTierConfig";
 import { AdminFeeBreakdown } from "@/components/payments/AdminFeeBreakdown";
@@ -65,6 +67,7 @@ export function PupilPaymentDrawer({
   const [recentPayments, setRecentPayments] = useState<RecentPayment[]>([]);
   const [nextLesson, setNextLesson] = useState<NextLessonCost | null>(null);
   const [feeEnabled, setFeeEnabled] = useState(true);
+  const isNativeWrapper = useIsNativeWrapper();
 
   const amountOwed = Math.abs(accountBalance);
   const paymentAmount = parseFloat(amount) || 0;
@@ -361,36 +364,56 @@ export function PupilPaymentDrawer({
                 </div>
               </div>
 
-              {/* Express Checkout — Apple Pay / Google Pay */}
-              <div className="space-y-2">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Express checkout</p>
-                <SquareWalletButtons
-                  amount={effectiveTotal}
-                  pupilId={pupilId}
-                  instructorId={instructorId}
-                  customerName={pupilName}
-                  customerEmail={pupilEmail}
-                  onProcessing={setProcessing}
-                  disabled={processing || paymentAmount <= 0}
-                />
-              </div>
+              {isNativeWrapper ? (
+                /* Inside Despia / WKWebView — Apple Pay JS API isn't available,
+                   so route through Safari via a hosted Square checkout link. */
+                <div className="space-y-2">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Express checkout</p>
+                  <PayInSafariButton
+                    amount={effectiveTotal}
+                    pupilId={pupilId}
+                    pupilName={pupilName}
+                    pupilEmail={pupilEmail}
+                    pupilPhone={pupilPhone}
+                    instructorId={instructorId}
+                    instructorSlug={instructorSlug}
+                    disabled={processing || paymentAmount <= 0}
+                  />
+                </div>
+              ) : (
+                <>
+                  {/* Express Checkout — Apple Pay / Google Pay */}
+                  <div className="space-y-2">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Express checkout</p>
+                    <SquareWalletButtons
+                      amount={effectiveTotal}
+                      pupilId={pupilId}
+                      instructorId={instructorId}
+                      customerName={pupilName}
+                      customerEmail={pupilEmail}
+                      onProcessing={setProcessing}
+                      disabled={processing || paymentAmount <= 0}
+                    />
+                  </div>
 
-              {/* Divider */}
-              <div className="flex items-center gap-3">
-                <div className="flex-1 h-px bg-border" />
-                <span className="text-xs text-muted-foreground">or</span>
-                <div className="flex-1 h-px bg-border" />
-              </div>
+                  {/* Divider */}
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 h-px bg-border" />
+                    <span className="text-xs text-muted-foreground">or</span>
+                    <div className="flex-1 h-px bg-border" />
+                  </div>
 
-              {/* Pay by Card — primary (Square) */}
-              <Button
-                onClick={() => setStage("card")}
-                className="w-full h-12 rounded-xl text-base font-semibold"
-                disabled={processing}
-              >
-                <CreditCard className="h-5 w-5 mr-2" />
-                Pay by Card
-              </Button>
+                  {/* Pay by Card — primary (Square) */}
+                  <Button
+                    onClick={() => setStage("card")}
+                    className="w-full h-12 rounded-xl text-base font-semibold"
+                    disabled={processing}
+                  >
+                    <CreditCard className="h-5 w-5 mr-2" />
+                    Pay by Card
+                  </Button>
+                </>
+              )}
 
               {/* BNPL expandable */}
               <div className="rounded-xl border bg-card">
