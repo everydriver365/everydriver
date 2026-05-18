@@ -1,8 +1,10 @@
 import { motion } from "framer-motion";
 import { Car, Clock, CreditCard, TrendingUp, BookOpen, Target, Calendar, Award } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { usePupilBookedCourse } from "@/hooks/usePupilBookedCourse";
 
 interface WidgetProps {
+  pupilId: string;
   pupil: {
     lessons_completed: number | null;
     progress: number | null;
