@@ -84,11 +84,16 @@ export const AREA_GROUPS: AreaGroup[] = [
     id: "money", label: "Bookings & money",
     items: [
       {
+        id: "my-courses", label: "My Courses",
+        title: "My Courses", description: "Toggle, price and reorder the lesson types pupils can book.",
+        icon: BookOpen, iconBg: "#E6F1FB", iconColor: "#1A52A0",
+        pulls: [G("bookings", "courses")],
+      },
+      {
         id: "how-pupils-book", label: "How pupils book",
-        title: "How pupils book", description: "Booking mode, courses, deposits and intake questions.",
+        title: "How pupils book", description: "Booking mode, deposits and intake questions.",
         icon: ShoppingBag, iconBg: "#FEF3C7", iconColor: "#92400E",
         pulls: [
-          G("bookings", "courses"),
           G("bookings", "booking-mode"),
           G("bookings", "deposits"),
           G("bookings", "intake"),
