@@ -152,6 +152,7 @@ export function DashboardSidebar({ collapsed, onToggle, userInitials, userName, 
   let brandColour: string | null = null;
   let brandFont: string | null = null;
   let profileImage: string | null = null;
+  let instructorId: string | null = null;
   try {
     const { instructor } = useInstructorAuth();
     if (instructor?.logo_url) instructorLogo = instructor.logo_url;
@@ -159,6 +160,7 @@ export function DashboardSidebar({ collapsed, onToggle, userInitials, userName, 
     if (instructor?.brand_colour) brandColour = instructor.brand_colour;
     if ((instructor as any)?.website_font) brandFont = (instructor as any).website_font;
     if ((instructor as any)?.profile_image_url) profileImage = (instructor as any).profile_image_url;
+    if (instructor?.id) instructorId = instructor.id;
   } catch {}
 
   const visibleSections = SECTIONS.map(s => ({
