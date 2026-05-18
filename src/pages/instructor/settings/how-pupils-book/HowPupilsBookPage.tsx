@@ -188,7 +188,7 @@ export default function HowPupilsBookPage() {
           subtitle="Choose the courses, prices and rules pupils see when booking with you."
           actions={
             <>
-              <AddButton onPress={() => navigate("/instructor/settings/how-pupils-book/add-course")} />
+              <AddButton onPress={() => { setEditing(null); setDialogOpen(true); }} />
               <SaveButton isDirty={isDirty} saving={saving} onPress={handleSave} />
             </>
           }
