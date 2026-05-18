@@ -212,7 +212,7 @@ export function Drive365Header() {
                 </Link>
               ))}
               <div className="h-px bg-white/10 my-2" />
-              <Link to="/pupil/login" className="text-primary-foreground/70 text-sm py-2">
+              <Link to="/drive365/login" className="text-primary-foreground/70 text-sm py-2">
                 Pupil login
               </Link>
             </div>
