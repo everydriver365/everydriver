@@ -538,7 +538,13 @@ export default function BookingSummary() {
   }, []);
 
   const scheduledHours = selectedSlots.reduce((acc, slot) => acc + slot.duration / 60, 0);
-  const isFullyScheduled = scheduledHours >= hours;
+  const isFirstLessonOnlyMode = (courseDetails?.instructor?.booking_mode === 'first_lesson_only');
+  const requiredScheduledHours = isFirstLessonOnlyMode
+    ? ((courseDetails?.instructor?.preferred_lesson_length || 120) / 60)
+    : hours;
+  const isFullyScheduled = isFirstLessonOnlyMode
+    ? selectedSlots.length >= 1
+    : scheduledHours >= hours;
   const isPupilDetailsComplete = !!(pupilName.trim() && pupilEmail.trim() && pupilPhone.trim() && pupilAddress.trim() && pupilPostcode.trim());
 
   // Build a slot payload with the price snapshot (per-hour rate including
@@ -570,7 +576,7 @@ export default function BookingSummary() {
   const bookingMode = courseDetails?.instructor?.booking_mode || 'pupil_choice';
   
   // For auto_assign and instructor_assigns modes, we don't require slot selection
-  const requiresSlotSelection = bookingMode === 'pupil_choice';
+  const requiresSlotSelection = bookingMode === 'pupil_choice' || bookingMode === 'first_lesson_only';
   const canSubmit = isPupilDetailsComplete && (requiresSlotSelection ? isFullyScheduled : true) && !isSubmitting && unavailableSlots.length === 0;
 
   // Auto-show card form when canSubmit becomes true
@@ -1934,6 +1940,13 @@ export default function BookingSummary() {
             transition={{ delay: 0.25 }}
             className="mb-6"
           >
+            {isFirstLessonOnlyMode && (
+              <div className="mb-4 rounded-2xl border border-violet-200 dark:border-violet-800 bg-violet-50 dark:bg-violet-950/30 p-4">
+                <p className="text-sm text-violet-900 dark:text-violet-100">
+                  <strong>Just pick your first lesson.</strong> {courseDetails?.instructor?.name?.split(" ")[0] || "Your instructor"} will arrange the rest of the lessons with you directly after your first session.
+                </p>
+              </div>
+            )}
             {unavailableSlots.length > 0 && (
               <div className="mb-4 rounded-2xl border border-destructive/30 bg-destructive/5 p-4">
                 <div className="flex items-start gap-3">
@@ -1972,7 +1985,7 @@ export default function BookingSummary() {
             )}
             <LessonScheduler
               instructorId={instructor.id}
-              totalHours={hours}
+              totalHours={requiredScheduledHours}
               maxLessonLength={instructor.preferred_lesson_length}
               bookingAdvanceDays={instructor.booking_advance_days}
               availableFrom={instructor.available_from}

@@ -240,7 +240,7 @@ export function MobileBookingView({
 }: MobileBookingViewProps) {
   const navigate = useNavigate();
   const brandColour = instructor.brand_colour || "#1e3a5f";
-  const bookingMode = instructor.booking_mode || 'pupil_choice';
+  const bookingMode: string = instructor.booking_mode || 'pupil_choice';
   const paymentRef = useRef<HTMLDivElement>(null);
   
   // Wallet processing state
@@ -348,7 +348,7 @@ export function MobileBookingView({
   }>({ preferredTimes: [], notes: '' });
   
   // For auto_assign and instructor_assigns modes, skip the scheduling step entirely
-  const requiresSlotSelection = bookingMode === 'pupil_choice';
+  const requiresSlotSelection = bookingMode === 'pupil_choice' || bookingMode === 'first_lesson_only';
   const isScheduleComplete = requiresSlotSelection ? isFullyScheduled : true;
   
   // Determine current step - only 2 steps for non-pupil_choice modes
@@ -797,10 +797,17 @@ export function MobileBookingView({
         </div>
       )}
 
-      {/* Step 2: Schedule - Only show for pupil_choice mode */}
+      {/* Step 2: Schedule - Only show for pupil_choice / first_lesson_only mode */}
       {requiresSlotSelection && (
         <div className="px-4 pb-4">
           <div className="rounded-xl border bg-card p-4">
+            {bookingMode === 'first_lesson_only' && (
+              <div className="mb-3 rounded-xl border border-violet-200 dark:border-violet-800 bg-violet-50 dark:bg-violet-950/30 p-3">
+                <p className="text-xs text-violet-900 dark:text-violet-100">
+                  <strong>Just pick your first lesson.</strong> {instructor.name?.split(" ")[0] || "Your instructor"} will arrange the rest of the lessons with you directly.
+                </p>
+              </div>
+            )}
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-semibold flex items-center gap-2">
                 <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
@@ -808,16 +815,18 @@ export function MobileBookingView({
                 }`}>
                   {isScheduleComplete ? <CheckCircle className="h-3.5 w-3.5" /> : '2'}
                 </div>
-                Select Lesson Slots
+                {bookingMode === 'first_lesson_only' ? 'Select First Lesson' : 'Select Lesson Slots'}
               </h2>
-              <Badge variant={isFullyScheduled ? "default" : "secondary"} className={isFullyScheduled ? "bg-emerald-500" : ""}>
-                {scheduledHours}/{hours}h
-              </Badge>
+              {bookingMode !== 'first_lesson_only' && (
+                <Badge variant={isFullyScheduled ? "default" : "secondary"} className={isFullyScheduled ? "bg-emerald-500" : ""}>
+                  {scheduledHours}/{hours}h
+                </Badge>
+              )}
             </div>
             
             <LessonScheduler
               instructorId={instructor.id}
-              totalHours={hours}
+              totalHours={bookingMode === 'first_lesson_only' ? (instructor.preferred_lesson_length / 60) : hours}
               maxLessonLength={instructor.preferred_lesson_length}
               bookingAdvanceDays={instructor.booking_advance_days}
               availableFrom={instructor.available_from}

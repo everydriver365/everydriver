@@ -2,7 +2,7 @@ import { useState } from "react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Calendar, Sparkles, UserCog, Mail, Loader2 } from "lucide-react";
+import { Calendar, Sparkles, UserCog, Mail, Loader2, CalendarClock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -82,6 +82,21 @@ export function BookingModeSelector({ instructorId, currentMode, onModeChange }:
             </div>
             <p className="text-sm text-muted-foreground mt-1">
               Pupils submit a booking request, you manually schedule their lessons later
+            </p>
+          </Label>
+        </div>
+
+        <div className={`flex items-start space-x-3 p-3 rounded-2xl border transition-colors ${
+          mode === 'first_lesson_only' ? 'border-primary bg-primary/5' : 'border-border hover:bg-muted/50'
+        }`}>
+          <RadioGroupItem value="first_lesson_only" id="first_lesson_only" className="mt-1" />
+          <Label htmlFor="first_lesson_only" className="flex-1 cursor-pointer">
+            <div className="flex items-center gap-2 font-medium">
+              <CalendarClock className="h-4 w-4 text-violet-500" />
+              First Lesson Only
+            </div>
+            <p className="text-sm text-muted-foreground mt-1">
+              Pupils book only their first lesson online. You arrange the rest of the lessons with them directly.
             </p>
           </Label>
         </div>

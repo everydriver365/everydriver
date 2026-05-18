@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/select";
 import { 
   Calendar, Sparkles, UserCog, CheckCircle, AlertCircle, 
-  Loader2, User, Phone, Mail, RefreshCw, Pencil
+  Loader2, User, Phone, Mail, RefreshCw, Pencil, CalendarClock
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -181,12 +181,14 @@ export function BookingModeOverview() {
     auto_assign: instructors.filter(i => i.booking_mode === "auto_assign").length,
     instructor_assigns: instructors.filter(i => i.booking_mode === "instructor_assigns").length,
     enquiry_only: instructors.filter(i => i.booking_mode === "enquiry_only").length,
+    first_lesson_only: instructors.filter(i => i.booking_mode === "first_lesson_only").length,
   };
 
   const getModeIcon = (mode: string | null) => {
     switch (mode) {
       case "auto_assign": return <Sparkles className="h-4 w-4 text-amber-500" />;
       case "instructor_assigns": return <UserCog className="h-4 w-4 text-emerald-500" />;
+      case "first_lesson_only": return <CalendarClock className="h-4 w-4 text-violet-500" />;
       case "enquiry_only": return <Mail className="h-4 w-4" style={{ color: '#2B7BC8' }} />;
       default: return <Calendar className="h-4 w-4 text-primary" />;
     }
@@ -196,6 +198,7 @@ export function BookingModeOverview() {
     switch (mode) {
       case "auto_assign": return "Auto-Assign";
       case "instructor_assigns": return "Instructor Assigns";
+      case "first_lesson_only": return "First Lesson Only";
       case "enquiry_only": return "Enquiry Only";
       default: return "Pupil Choice";
     }
@@ -427,6 +430,12 @@ export function BookingModeOverview() {
                               <div className="flex items-center gap-2">
                                 <UserCog className="h-4 w-4 text-emerald-500" />
                                 Instructor Assigns
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="first_lesson_only">
+                              <div className="flex items-center gap-2">
+                                <CalendarClock className="h-4 w-4 text-violet-500" />
+                                First Lesson Only
                               </div>
                             </SelectItem>
                             <SelectItem value="enquiry_only">
