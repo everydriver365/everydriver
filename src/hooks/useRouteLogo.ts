@@ -31,14 +31,22 @@ const DRIVE365_ROUTE_PREFIXES = [
   "/health-benefits",
 ];
 
+function isDsmHost(): boolean {
+  if (typeof window === "undefined") return false;
+  const host = window.location.hostname.toLowerCase().replace(/^www\./, "");
+  return host === "drivingschoolmanager.co.uk";
+}
+
 export function useRouteLogo() {
   const { pathname } = useLocation();
 
   return useMemo(() => {
     const whitelabel = getWhitelabelConfig();
-    const isDrive365Route = DRIVE365_ROUTE_PREFIXES.some((prefix) =>
-      pathname.startsWith(prefix)
-    ) || pathname === "/";
+    const onDsmHost = isDsmHost();
+    const isDrive365Route = !onDsmHost && (
+      DRIVE365_ROUTE_PREFIXES.some((prefix) => pathname.startsWith(prefix)) ||
+      pathname === "/"
+    );
 
     if (whitelabel) {
       return {
