@@ -1,28 +1,59 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Mail, Lock, Loader2, ArrowRight, ShieldCheck, Sparkles } from "lucide-react";
-import drive365Logo from "@/assets/drive365-logo.png";
-import { Button } from "@/components/ui/button";
+import {
+  Mail,
+  Loader2,
+  ChevronRight,
+  Eye,
+  EyeOff,
+  Check,
+  CheckCircle2,
+  ScanFace,
+  Calendar,
+  ArrowLeftRight,
+  ShieldCheck,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { setRememberMe as persistRememberMe } from "@/lib/sessionPersistence";
+import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
+import { cn } from "@/lib/utils";
+
+const DSMLogo = ({ size = "md" }: { size?: "sm" | "md" | "lg" }) => {
+  const cls =
+    size === "sm"
+      ? { text: "text-[12px]", px: "px-[7px]", py: "py-[3px]" }
+      : size === "lg"
+      ? { text: "text-[18px]", px: "px-[11px]", py: "py-[5px]" }
+      : { text: "text-[14px]", px: "px-[9px]", py: "py-[4px]" };
+  return (
+    <div className="inline-flex items-center select-none">
+      <div className={cn("bg-[#CC2229] rounded-l-[4px]", cls.px, cls.py)}>
+        <span className={cn("font-extrabold text-white tracking-[0.5px]", cls.text)}>DRIVE</span>
+      </div>
+      <div className={cn("bg-[#1A52A0] rounded-r-[4px]", cls.px, cls.py)}>
+        <span className={cn("font-extrabold text-white tracking-[0.3px]", cls.text)}>365</span>
+      </div>
+    </div>
+  );
+};
+
+const FIELD =
+  "h-[50px] rounded-[9px] bg-[#F9FAFB] border-[1.5px] border-[#E8EDF6] text-[#0F2044] placeholder:text-[#C4C9D4] focus-visible:ring-2 focus-visible:ring-[#1A52A0]/15 focus-visible:border-[#1A52A0] focus-visible:ring-offset-0 text-[14px]";
 
 export default function Drive365Login() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [showSplash, setShowSplash] = useState(true);
-
-  useEffect(() => {
-    const t = setTimeout(() => setShowSplash(false), 1400);
-    return () => clearTimeout(t);
-  }, []);
+  const [faceIdAvailable, setFaceIdAvailable] = useState(false);
+  const [faceIdLoading, setFaceIdLoading] = useState(false);
+  const [faceIdSuccess, setFaceIdSuccess] = useState(false);
 
   useEffect(() => {
     const remembered = localStorage.getItem("pupil_remembered_email");
@@ -32,208 +63,303 @@ export default function Drive365Login() {
     }
   }, []);
 
+  useEffect(() => {
+    if ((window as any).PasswordCredential) setFaceIdAvailable(true);
+  }, []);
+
+  const performLogin = async (loginEmail: string, loginPassword: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke("pupil-email-auth", {
+        body: { action: "login", email: loginEmail, password: loginPassword },
+      });
+      if (error || data?.error) {
+        toast.error(data?.error || "Could not sign you in. Please try again.");
+        return false;
+      }
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: loginEmail,
+        password: loginPassword,
+      });
+      if (signInError) {
+        toast.error(signInError.message);
+        return false;
+      }
+      persistRememberMe(rememberMe);
+      if (rememberMe || localStorage.getItem("pupil_remembered_email")) {
+        localStorage.setItem("pupil_remembered_email", loginEmail);
+      }
+      if ((window as any).PasswordCredential) {
+        try {
+          const CredCtor = (window as any).PasswordCredential;
+          const cred = new CredCtor({ id: loginEmail, password: loginPassword, name: data.pupilName });
+          await navigator.credentials.store(cred);
+        } catch {}
+      }
+      const firstName = data.pupilName?.split(" ")[0] || "";
+      toast.success(`Welcome back, ${firstName}!`);
+      navigate(`/p/${data.instructorSlug}`);
+      return true;
+    } catch {
+      toast.error("Something went wrong. Please try again.");
+      return false;
+    }
+  };
+
   const handleLogin = async (e?: React.FormEvent) => {
     e?.preventDefault();
     if (!email.trim()) return toast.error("Please enter your email");
     if (!password) return toast.error("Please enter your password");
-
     setLoading(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("pupil-email-auth", {
-        body: { action: "login", email: email.trim(), password },
-      });
-      if (error || data?.error) {
-        toast.error(data?.error || "Could not sign you in. Please try again.");
-        setLoading(false);
-        return;
-      }
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
-        password,
-      });
-      if (signInError) {
-        toast.error(signInError.message);
-        setLoading(false);
-        return;
-      }
-      persistRememberMe(rememberMe);
-      if (rememberMe) localStorage.setItem("pupil_remembered_email", email.trim());
+    await performLogin(email.trim(), password);
+    setLoading(false);
+  };
 
-      const firstName = data.pupilName?.split(" ")[0] || "";
-      toast.success(`Welcome back, ${firstName}!`);
-      navigate(`/p/${data.instructorSlug}`);
+  const handleFaceIdLogin = async () => {
+    if (!(window as any).PasswordCredential) return;
+    setFaceIdLoading(true);
+    try {
+      const credential = await navigator.credentials.get({ password: true, mediation: "required" } as any);
+      if (credential && (credential as any).type === "password") {
+        const pwCred = credential as any;
+        setFaceIdSuccess(true);
+        setEmail(pwCred.id);
+        await performLogin(pwCred.id, pwCred.password || "");
+      }
     } catch {
-      toast.error("Something went wrong. Please try again.");
-      setLoading(false);
+      toast.error("Biometric login cancelled or not available");
+    } finally {
+      setFaceIdLoading(false);
+      setTimeout(() => setFaceIdSuccess(false), 800);
     }
   };
 
-  if (showSplash) {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden bg-[#0F172A]">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_#2D3FE7_0%,_transparent_55%),radial-gradient(ellipse_at_bottom_right,_#00C8B8_0%,_transparent_50%)] opacity-80" />
-        <motion.div
-          initial={{ opacity: 0, scale: 0.85 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-          className="relative z-10 flex flex-col items-center gap-4"
-        >
-          <img src={drive365Logo} alt="Drive365" className="h-20 w-auto drop-shadow-2xl" />
-          <Loader2 className="h-6 w-6 text-white/70 animate-spin" />
-        </motion.div>
-      </div>
-    );
-  }
+  const canSubmit = email.trim().length > 0 && password.length > 0;
+
+  const features = [
+    { Icon: Calendar, bg: "#E6F1FB", stroke: "#1A52A0", title: "Book & manage lessons", sub: "Upcoming lessons, hours & notes" },
+    { Icon: ArrowLeftRight, bg: "#E6F1FB", stroke: "#1A52A0", title: "Free test swap service", sub: "Earlier dates, at no cost" },
+    { Icon: ShieldCheck, bg: "#FBEAEA", stroke: "#CC2229", title: "Free retest guarantee", sub: "Money back if you pass first time" },
+  ];
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-[#0F172A]">
-      {/* Brand gradient backdrop */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_#2D3FE7_0%,_transparent_55%),radial-gradient(ellipse_at_bottom_right,_#00C8B8_0%,_transparent_50%)] opacity-90" />
-      <div className="absolute inset-0 bg-[linear-gradient(180deg,_rgba(15,23,42,0.2)_0%,_rgba(15,23,42,0.85)_100%)]" />
+    <div className="min-h-screen w-full bg-white flex flex-col md:flex-row">
+      {/* LEFT PANEL */}
+      <aside className="hidden md:flex flex-col justify-between relative overflow-hidden flex-1 border-r border-[#E8EDF6] bg-[#F2F4F8] p-11">
+        <div className="absolute top-0 left-0 right-0 h-1 flex">
+          <div className="flex-1 bg-[#CC2229]" />
+          <div className="flex-1 bg-[#1A52A0]" />
+        </div>
+        <div
+          className="pointer-events-none absolute -bottom-[100px] -right-[100px] w-[280px] h-[280px] rounded-full"
+          style={{ border: "48px solid #E8EDF6" }}
+        />
 
-      <div className="relative z-10 flex min-h-screen flex-col">
-        {/* Top brand bar */}
-        <header className="flex items-center justify-between px-5 py-5 md:px-10">
-          <a href="https://drive365.co.uk" className="flex items-center gap-2">
-            <img src={drive365Logo} alt="Drive365" className="h-9 w-auto" />
-          </a>
-          <a
-            href="https://drive365.co.uk"
-            className="text-xs font-medium text-white/70 hover:text-white transition"
-          >
-            drive365.co.uk →
-          </a>
-        </header>
+        <DSMLogo size="md" />
 
-        <main className="flex-1 flex items-center justify-center px-5 pb-10">
-          <div className="grid w-full max-w-5xl gap-10 lg:grid-cols-2 lg:items-center">
-            {/* Brand panel */}
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="hidden lg:flex flex-col gap-6 text-white"
-            >
-              <span className="inline-flex items-center gap-2 self-start rounded-full bg-white/10 px-3 py-1 text-xs font-medium backdrop-blur">
-                <Sparkles className="h-3.5 w-3.5 text-[#00C8B8]" /> Drive365 · Pupil Portal
-              </span>
-              <h1 className="text-4xl xl:text-5xl font-semibold leading-tight tracking-tight">
-                Your driving journey,{" "}
-                <span className="bg-gradient-to-r from-[#4F5BFF] to-[#00C8B8] bg-clip-text text-transparent">
-                  beautifully organised.
-                </span>
-              </h1>
-              <p className="text-white/70 text-base max-w-md">
-                Book lessons, track progress, pay your instructor and pass faster — all in one place.
-              </p>
-              <div className="flex items-center gap-2 text-sm text-white/60">
-                <ShieldCheck className="h-4 w-4 text-[#00C8B8]" />
-                Secure sign-in · UK based · DVSA aligned
-              </div>
-            </motion.div>
-
-            {/* Login card */}
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.05 }}
-              className="mx-auto w-full max-w-md"
-            >
-              <div className="rounded-3xl bg-white/95 backdrop-blur-xl shadow-2xl shadow-[#2D3FE7]/20 p-7 md:p-8 border border-white/40">
-                <div className="flex flex-col items-center text-center mb-6 lg:hidden">
-                  <img src={drive365Logo} alt="Drive365" className="h-12 w-auto mb-3" />
-                </div>
-                <h2 className="text-2xl font-semibold text-slate-900 tracking-tight">
-                  Sign in to Drive365
-                </h2>
-                <p className="text-sm text-slate-500 mt-1 mb-6">
-                  Enter your email and password to continue.
-                </p>
-
-                <form onSubmit={handleLogin} className="space-y-4">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="email" className="text-slate-700 text-sm">Email</Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                      <Input
-                        id="email"
-                        type="email"
-                        autoComplete="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="you@example.com"
-                        className="h-12 pl-10 bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus-visible:ring-[#2D3FE7]"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label htmlFor="password" className="text-slate-700 text-sm">Password</Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                      <Input
-                        id="password"
-                        type="password"
-                        autoComplete="current-password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="••••••••"
-                        className="h-12 pl-10 bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus-visible:ring-[#2D3FE7]"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between text-sm">
-                    <label className="flex items-center gap-2 text-slate-600 cursor-pointer">
-                      <Checkbox
-                        checked={rememberMe}
-                        onCheckedChange={(v) => setRememberMe(!!v)}
-                      />
-                      Remember me
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => navigate("/pupil/login")}
-                      className="text-[#2D3FE7] hover:underline font-medium"
-                    >
-                      Forgot password?
-                    </button>
-                  </div>
-
-                  <Button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full h-12 text-base font-medium bg-gradient-to-r from-[#2D3FE7] to-[#00C8B8] hover:opacity-95 text-white shadow-lg shadow-[#2D3FE7]/30"
-                  >
-                    {loading ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <>
-                        Sign in <ArrowRight className="ml-2 h-4 w-4" />
-                      </>
-                    )}
-                  </Button>
-                </form>
-
-                <p className="text-center text-xs text-slate-500 mt-6">
-                  Don't have an account?{" "}
-                  <button
-                    onClick={() => navigate("/pupil/login")}
-                    className="text-[#2D3FE7] font-medium hover:underline"
-                  >
-                    Register
-                  </button>
-                </p>
-              </div>
-
-              <p className="text-center text-xs text-white/50 mt-5">
-                © {new Date().getFullYear()} Drive365 · Powered by EveryDriver
-              </p>
-            </motion.div>
+        <div className="relative z-10">
+          <div className="flex items-center gap-[7px] mb-[18px]">
+            <div className="w-4 h-[2px] bg-[#1A52A0] rounded-sm" />
+            <span className="text-[11px] font-semibold text-[#9CA3AF] tracking-[0.8px] uppercase">
+              Pupil panel
+            </span>
           </div>
-        </main>
-      </div>
+          <h1 className="text-[36px] font-bold text-[#0F2044] leading-[42px] tracking-[-0.8px] mb-3">
+            Your driving<br />journey,<br />
+            <span className="text-[#CC2229] italic">all in one place.</span>
+          </h1>
+          <p className="text-[14px] font-light text-[#6B7280] leading-6 mb-8 max-w-[310px]">
+            Book lessons, track your progress, pay your instructor and pass faster — all from one dashboard.
+          </p>
+
+          <div className="space-y-[10px] max-w-[360px]">
+            {features.map((f) => (
+              <div
+                key={f.title}
+                className="flex items-start gap-3 bg-white rounded-[10px] border border-[#E8EDF6] p-3"
+              >
+                <div
+                  className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+                  style={{ backgroundColor: f.bg }}
+                >
+                  <f.Icon className="w-[18px] h-[18px]" style={{ color: f.stroke }} />
+                </div>
+                <div>
+                  <p className="text-[13px] font-semibold text-[#0F2044]">{f.title}</p>
+                  <p className="text-[11px] font-light text-[#9CA3AF] mt-0.5">{f.sub}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <p className="text-[11px] font-light text-[#C4C9D4] relative z-10">
+          © {new Date().getFullYear()} Drive365 Ltd · DVSA approved
+        </p>
+      </aside>
+
+      {/* RIGHT PANEL */}
+      <main className="flex-1 flex justify-center items-start md:items-center bg-white px-5 py-10 md:p-12">
+        <motion.div
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+          className="w-full max-w-[390px]"
+        >
+          <DSMLogo size="sm" />
+          <div className="h-7" />
+
+          <h2 className="text-[22px] font-bold text-[#0F2044] tracking-[-0.4px] mb-[5px]">
+            Welcome back
+          </h2>
+          <p className="text-[13px] font-light text-[#9CA3AF] leading-5 mb-[26px]">
+            Sign in to your Drive365 account to continue.
+          </p>
+
+          <form onSubmit={handleLogin}>
+            <div className="mb-[14px]">
+              <Label htmlFor="email" className="text-[10px] font-bold text-[#6B7280] tracking-[0.6px] uppercase mb-[7px] block">
+                Email address
+              </Label>
+              <div className="relative">
+                <Input
+                  id="email" type="email"
+                  inputMode="email" autoCapitalize="none" autoCorrect="off" spellCheck={false}
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className={cn(FIELD, "pr-11")}
+                  autoComplete="username"
+                />
+                <Mail className="absolute right-[13px] top-1/2 -translate-y-1/2 h-4 w-4 text-[#C4C9D4]" />
+              </div>
+            </div>
+
+            <div className="mb-[14px]">
+              <Label htmlFor="password" className="text-[10px] font-bold text-[#6B7280] tracking-[0.6px] uppercase mb-[7px] block">
+                Password
+              </Label>
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className={cn(FIELD, "pr-11")}
+                  autoComplete="current-password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  className="absolute right-[13px] top-1/2 -translate-y-1/2 text-[#C4C9D4] hover:text-[#6B7280]"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between mb-5">
+              <button
+                type="button"
+                onClick={() => setRememberMe((p) => !p)}
+                className="flex items-center gap-2"
+              >
+                <span
+                  className={cn(
+                    "w-[19px] h-[19px] rounded-[5px] border-[1.5px] flex items-center justify-center transition-colors",
+                    rememberMe ? "bg-[#1A52A0] border-[#1A52A0]" : "bg-white border-[#DDE3ED]"
+                  )}
+                >
+                  {rememberMe && <Check className="h-[10px] w-[10px] text-white" strokeWidth={3} />}
+                </span>
+                <span className="text-[13px] font-normal text-[#6B7280]">Remember me</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate("/pupil/login")}
+                className="text-[13px] font-medium text-[#1A52A0] hover:text-[#0F2044]"
+              >
+                Forgot password?
+              </button>
+            </div>
+
+            <motion.button
+              type="submit"
+              whileTap={{ scale: 0.98 }}
+              disabled={!canSubmit || loading}
+              style={{ opacity: canSubmit && !loading ? 1 : 0.5 }}
+              className="w-full h-12 rounded-[9px] bg-[#CC2229] hover:bg-[#A81E24] text-white text-[15px] font-semibold flex items-center justify-center gap-2 transition-colors mb-[10px] disabled:cursor-not-allowed"
+            >
+              {loading ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                <>
+                  Sign in
+                  <ChevronRight className="h-[15px] w-[15px]" strokeWidth={2.2} />
+                </>
+              )}
+            </motion.button>
+
+            {faceIdAvailable && (
+              <button
+                type="button"
+                onClick={handleFaceIdLogin}
+                disabled={faceIdLoading || loading}
+                className={cn(
+                  "w-full rounded-[9px] bg-[#F2F4F8] border-[1.5px] py-[12px] flex items-center justify-center gap-[9px] mb-6 transition-colors",
+                  faceIdSuccess ? "border-[#1D9E75]" : faceIdLoading ? "border-[#1A52A0]" : "border-[#E8EDF6] hover:border-[#DDE3ED]"
+                )}
+              >
+                {faceIdSuccess ? (
+                  <CheckCircle2 className="h-[22px] w-[22px] text-[#1D9E75]" />
+                ) : (
+                  <ScanFace className="h-[22px] w-[22px]" style={{ color: faceIdLoading ? "#1A52A0" : "#374151" }} />
+                )}
+                <span
+                  className="text-[14px] font-medium"
+                  style={{ color: faceIdSuccess ? "#085041" : faceIdLoading ? "#1A52A0" : "#374151" }}
+                >
+                  {faceIdSuccess ? "Recognised — signing in" : faceIdLoading ? "Scanning…" : "Sign in with Face ID"}
+                </span>
+              </button>
+            )}
+
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex-1 h-px bg-[#F0F2F5]" />
+              <span className="text-[11px] font-medium text-[#C4C9D4] uppercase tracking-wider">
+                or continue with
+              </span>
+              <div className="flex-1 h-px bg-[#F0F2F5]" />
+            </div>
+
+            <div className="mb-[22px]">
+              <GoogleSignInButton
+                redirectTo={`${window.location.origin}/auth/redirect?portal=pupil`}
+                className="w-full h-[44px] rounded-[9px] bg-[#F9FAFB] hover:bg-white border-[1.5px] border-[#E8EDF6] text-[#374151] text-[13px] font-medium"
+                label="Continue with Google"
+              />
+            </div>
+
+            <div className="text-center">
+              <span className="text-[13px] font-light text-[#9CA3AF]">
+                Don't have an account?{" "}
+                <button
+                  type="button"
+                  onClick={() => navigate("/pupil/login")}
+                  className="font-semibold text-[#CC2229] hover:text-[#A81E24]"
+                >
+                  Register for free
+                </button>
+              </span>
+            </div>
+          </form>
+
+          <p className="mt-8 text-center text-[11px] font-light text-[#C4C9D4] md:hidden">
+            © {new Date().getFullYear()} Drive365 Ltd · DVSA approved
+          </p>
+        </motion.div>
+      </main>
     </div>
   );
 }
