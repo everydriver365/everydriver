@@ -19,7 +19,6 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   Calendar as CalendarIcon,
-  Clock as ClockIcon,
   Check as CheckIcon,
   ChevronLeft as ChevronLeftIcon,
   SlidersHorizontal as SlidersIcon,
@@ -522,47 +521,53 @@ export function PupilPortalGaps({ pupilId, instructorId }: PupilPortalGapsProps)
       </div>
 
       {/* Day list */}
-      <div style={{ padding: 16, paddingBottom: 40 }}>
+      <div style={{ padding: 14, paddingBottom: 48 }}>
         {groups.map((group) => {
           const accent = getAccentColour(group);
           return (
-            <div key={group.date} style={{ marginBottom: 14 }}>
+            <div key={group.date} style={{ marginBottom: 12 }}>
               {/* Day header */}
               <div
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  gap: 8,
-                  marginBottom: 10,
+                  gap: 7,
+                  marginBottom: 8,
                   padding: "0 2px",
                 }}
               >
                 <CalendarIcon
-                  size={14}
+                  size={13}
                   color={group.hasSlots ? t.blue : t.muted}
                   strokeWidth={1.8}
                 />
-                <div style={{ flex: 1 }}>
-                  <div
-                    style={{
-                      fontSize: 13,
-                      fontWeight: 700,
-                      color: group.hasSlots ? t.navy : t.muted,
-                      lineHeight: 1.2,
-                    }}
-                  >
-                    {group.dayName}
-                  </div>
-                  <div style={{ fontSize: 11, fontWeight: 400, color: t.muted, marginTop: 1 }}>
-                    {group.dateFormatted}
-                  </div>
-                </div>
+                <span
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 700,
+                    color: group.hasSlots ? t.navy : t.muted,
+                    fontFamily: POPPINS,
+                  }}
+                >
+                  {group.dayName}
+                </span>
+                <span
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 300,
+                    color: t.muted,
+                    fontFamily: POPPINS,
+                  }}
+                >
+                  {group.dateFormatted}
+                </span>
                 {group.hasSlots ? (
                   <div
                     style={{
+                      marginLeft: "auto",
                       backgroundColor: group.isLimited ? t.amberLight : t.blueLight,
                       borderRadius: 20,
-                      padding: "2px 9px",
+                      padding: "3px 9px",
                     }}
                   >
                     <span
@@ -570,6 +575,7 @@ export function PupilPortalGaps({ pupilId, instructorId }: PupilPortalGapsProps)
                         fontSize: 10,
                         fontWeight: 600,
                         color: group.isLimited ? t.amberText : t.blue,
+                        fontFamily: POPPINS,
                       }}
                     >
                       {group.isLimited
@@ -578,8 +584,19 @@ export function PupilPortalGaps({ pupilId, instructorId }: PupilPortalGapsProps)
                     </span>
                   </div>
                 ) : (
-                  <div style={{ backgroundColor: t.greyChip, borderRadius: 20, padding: "2px 9px" }}>
-                    <span style={{ fontSize: 10, fontWeight: 600, color: t.muted }}>No slots</span>
+                  <div
+                    style={{
+                      marginLeft: "auto",
+                      backgroundColor: t.greyChip,
+                      borderRadius: 20,
+                      padding: "3px 9px",
+                    }}
+                  >
+                    <span
+                      style={{ fontSize: 10, fontWeight: 600, color: t.muted, fontFamily: POPPINS }}
+                    >
+                      No slots
+                    </span>
                   </div>
                 )}
               </div>
@@ -588,11 +605,11 @@ export function PupilPortalGaps({ pupilId, instructorId }: PupilPortalGapsProps)
               <div
                 style={{
                   backgroundColor: t.white,
-                  borderRadius: 14,
+                  borderRadius: 13,
                   border: `1px solid ${t.border}`,
                   overflow: "hidden",
                   opacity: group.hasSlots ? 1 : 0.6,
-                  boxShadow: "0 1px 6px rgba(15,32,68,0.05)",
+                  boxShadow: "0 1px 4px rgba(15,32,68,0.05)",
                 }}
               >
                 <div style={{ height: 3, backgroundColor: accent }} />
@@ -609,11 +626,10 @@ export function PupilPortalGaps({ pupilId, instructorId }: PupilPortalGapsProps)
                           display: "flex",
                           alignItems: "center",
                           gap: 10,
-                          padding: 14,
+                          padding: "13px 14px",
                           borderBottom: isLast ? "none" : `1px solid ${t.surface}`,
                         }}
                       >
-                        <ClockIcon size={14} color={t.muted} strokeWidth={1.8} />
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div
                             style={{
@@ -622,6 +638,7 @@ export function PupilPortalGaps({ pupilId, instructorId }: PupilPortalGapsProps)
                               color: t.navy,
                               letterSpacing: -0.2,
                               marginBottom: 2,
+                              fontFamily: POPPINS,
                             }}
                           >
                             {formatTime(slot.startTime)} – {formatTime(slot.endTime)}
@@ -629,13 +646,20 @@ export function PupilPortalGaps({ pupilId, instructorId }: PupilPortalGapsProps)
                           <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
                             <div
                               style={{
-                                width: 6,
-                                height: 6,
-                                borderRadius: 3,
+                                width: 5,
+                                height: 5,
+                                borderRadius: 2.5,
                                 backgroundColor: group.isLimited ? t.amber : t.green,
                               }}
                             />
-                            <span style={{ fontSize: 11, fontWeight: 400, color: t.muted }}>
+                            <span
+                              style={{
+                                fontSize: 11,
+                                fontWeight: 400,
+                                color: t.muted,
+                                fontFamily: POPPINS,
+                              }}
+                            >
                               {group.isLimited ? "Only 1 slot left" : "Available"}
                             </span>
                           </div>
@@ -648,7 +672,14 @@ export function PupilPortalGaps({ pupilId, instructorId }: PupilPortalGapsProps)
                             flexShrink: 0,
                           }}
                         >
-                          <span style={{ fontSize: 11, fontWeight: 500, color: t.mid }}>
+                          <span
+                            style={{
+                              fontSize: 11,
+                              fontWeight: 500,
+                              color: t.muted,
+                              fontFamily: POPPINS,
+                            }}
+                          >
                             {durationLabel(durationMinutes)}
                           </span>
                         </div>
@@ -658,24 +689,30 @@ export function PupilPortalGaps({ pupilId, instructorId }: PupilPortalGapsProps)
                           disabled={isBooking || isBooked}
                           style={{
                             backgroundColor: isBooked ? t.green : t.blue,
-                            borderRadius: 9,
-                            padding: "9px 16px",
+                            borderRadius: 8,
+                            padding: "8px 14px",
                             display: "flex",
                             alignItems: "center",
-                            gap: 5,
+                            gap: 4,
                             flexShrink: 0,
                             border: "none",
                             cursor: isBooking || isBooked ? "default" : "pointer",
                             fontFamily: POPPINS,
-                            minHeight: 36,
                           }}
                         >
                           {isBooking ? (
-                            <Loader2 size={12} color={t.white} className="animate-spin" />
+                            <Loader2 size={10} color={t.white} className="animate-spin" />
                           ) : (
-                            <CheckIcon size={11} color={t.white} strokeWidth={2.5} />
+                            <CheckIcon size={10} color={t.white} strokeWidth={2.5} />
                           )}
-                          <span style={{ fontSize: 13, fontWeight: 600, color: t.white }}>
+                          <span
+                            style={{
+                              fontSize: 13,
+                              fontWeight: 600,
+                              color: t.white,
+                              fontFamily: POPPINS,
+                            }}
+                          >
                             {isBooked ? "Booked" : "Book"}
                           </span>
                         </button>
@@ -684,7 +721,9 @@ export function PupilPortalGaps({ pupilId, instructorId }: PupilPortalGapsProps)
                   })
                 ) : (
                   <div style={{ padding: 16, textAlign: "center" }}>
-                    <span style={{ fontSize: 13, fontWeight: 300, color: t.muted }}>
+                    <span
+                      style={{ fontSize: 13, fontWeight: 300, color: t.muted, fontFamily: POPPINS }}
+                    >
                       No availability on this day
                     </span>
                   </div>
@@ -697,3 +736,4 @@ export function PupilPortalGaps({ pupilId, instructorId }: PupilPortalGapsProps)
     </div>
   );
 }
+
