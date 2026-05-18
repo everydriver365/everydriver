@@ -576,7 +576,7 @@ export default function BookingSummary() {
   const bookingMode = courseDetails?.instructor?.booking_mode || 'pupil_choice';
   
   // For auto_assign and instructor_assigns modes, we don't require slot selection
-  const requiresSlotSelection = bookingMode === 'pupil_choice';
+  const requiresSlotSelection = bookingMode === 'pupil_choice' || bookingMode === 'first_lesson_only';
   const canSubmit = isPupilDetailsComplete && (requiresSlotSelection ? isFullyScheduled : true) && !isSubmitting && unavailableSlots.length === 0;
 
   // Auto-show card form when canSubmit becomes true
