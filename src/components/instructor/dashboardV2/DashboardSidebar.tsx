@@ -14,6 +14,7 @@ import {
   Crosshair, LayoutGrid, Eye, Camera, UsersRound, Building2,
   MailPlus, LifeBuoy, MessagesSquare, Hash, HelpCircle, RefreshCw,
   Heart, Activity, Settings as SettingsIcon, Pin, PinOff,
+  User, Lock, Bell, MessageCircle, Palette, Database, Phone, Tag, ShieldCheck,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
