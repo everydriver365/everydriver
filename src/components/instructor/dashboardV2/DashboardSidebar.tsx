@@ -13,7 +13,7 @@ import {
   MessageCircleQuestion, DoorOpen, ShoppingCart, Trophy, BadgeCheck,
   Crosshair, LayoutGrid, Eye, Camera, UsersRound, Building2,
   MailPlus, LifeBuoy, MessagesSquare, Hash, HelpCircle, RefreshCw,
-  Heart, Activity, Settings as SettingsIcon,
+  Heart, Activity, Settings as SettingsIcon, Pin, PinOff,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
