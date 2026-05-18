@@ -414,7 +414,6 @@ export function PupilPaymentDrawer({
                   </Button>
                 </>
               )}
-              </Button>
 
               {/* BNPL expandable */}
               <div className="rounded-xl border bg-card">
