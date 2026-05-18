@@ -114,9 +114,11 @@ export function PupilWidgetGrid({ pupilId, pupil, brandColour, onNavigate }: Wid
               </div>
             </div>
             <div className="flex-1">
-              <div className="text-sm font-semibold text-foreground">Weekly Goal</div>
+              <div className="text-sm font-semibold text-foreground">Test Readiness</div>
               <div className="text-xs text-muted-foreground mt-0.5">
-                {lessonsThisWeek} of {weeklyTarget} lessons this week
+                {bookedCourse && courseTotal > 0
+                  ? `${lessonsOfCourseTaken} of ${courseTotal} course lessons taken`
+                  : `${lessonsCompleted} ${lessonsCompleted === 1 ? "lesson" : "lessons"} taken`}
               </div>
               <div className="mt-2 h-1.5 bg-muted rounded-full overflow-hidden">
                 <motion.div
