@@ -458,7 +458,7 @@ export function DashboardSidebar({ collapsed, onToggle, userInitials, userName, 
                     </div>
                   )}
                   <ul className="space-y-0.5">
-                    {pinnedItems.map((item) => renderItem(item, { isPinned: true }))}
+                    {pinnedItems.map((item, idx) => renderItem(item, { isPinned: true, pinIndex: idx }))}
                   </ul>
                 </div>
               )}
