@@ -347,6 +347,7 @@ export default function BrandedPupilPortal() {
         onToggleDarkMode={toggleDarkMode}
         onLogout={pupil ? handleLogout : undefined}
         onAvatarClick={() => setDetailsOpen(true)}
+        onNavigate={pupil ? (section) => setActiveSection(section as ActiveSection) : undefined}
       />
 
       <main className="pb-20">
@@ -677,13 +678,6 @@ export default function BrandedPupilPortal() {
         )}
       </main>
 
-      {/* Floating Quick Actions */}
-      {pupil && activeSection === 'home' && (
-        <PupilQuickActions
-          onNavigate={(section) => setActiveSection(section as ActiveSection)}
-          brandColour={drive365Blue}
-        />
-      )}
 
       {/* Bottom Nav */}
       {pupil && (

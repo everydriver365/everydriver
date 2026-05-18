@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft, Menu, LogOut, User } from "lucide-react";
+import { ChevronLeft, Menu, LogOut, User, CalendarPlus, CreditCard, MessageSquare } from "lucide-react";
 import drive365Logo from "@/assets/drive365-logo-white.png";
 import {
   DropdownMenu,
@@ -22,6 +22,7 @@ interface PupilMobileHeaderProps {
   onToggleDarkMode?: () => void;
   onLogout?: () => void;
   onAvatarClick?: () => void;
+  onNavigate?: (section: string) => void;
 }
 
 export function PupilMobileHeader({
@@ -30,6 +31,7 @@ export function PupilMobileHeader({
   title,
   onLogout,
   onAvatarClick,
+  onNavigate,
 }: PupilMobileHeaderProps) {
   const navigate = useNavigate();
   const bgColor = brandColour || "hsl(var(--primary))";
@@ -86,6 +88,23 @@ export function PupilMobileHeader({
                   <User className="mr-2 h-4 w-4" />
                   Profile
                 </DropdownMenuItem>
+              )}
+              {onNavigate && (
+                <>
+                  <DropdownMenuItem onClick={() => onNavigate("book")}>
+                    <CalendarPlus className="mr-2 h-4 w-4" />
+                    Book
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onNavigate("payments")}>
+                    <CreditCard className="mr-2 h-4 w-4" />
+                    Pay
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onNavigate("messages")}>
+                    <MessageSquare className="mr-2 h-4 w-4" />
+                    Message
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                </>
               )}
               {onLogout && (
                 <DropdownMenuItem onClick={onLogout}>
