@@ -128,15 +128,16 @@ export function PupilPortalGaps({ pupilId, instructorId }: PupilPortalGapsProps)
   const [slots, setSlots] = useState<DaySlot[]>([]);
   const [activeFilter, setActiveFilter] = useState<FilterId>("week");
 
+  // Window start = max(today, instructor.available_from). We don't know this
+  // until the instructor row loads, so the source fetch is sequential.
+  const [startDate, setStartDate] = useState<Date>(() => startOfDay(new Date()));
+
   useEffect(() => {
     let cancelled = false;
     (async () => {
       setLoading(true);
       try {
-        const fromDate = startOfDay(new Date());
-        const toDate = addDays(fromDate, 14);
-
-        const [instrRes, pupilRes, src] = await Promise.all([
+        const [instrRes, pupilRes] = await Promise.all([
           supabase
             .from("instructors")
             .select(
@@ -145,7 +146,6 @@ export function PupilPortalGaps({ pupilId, instructorId }: PupilPortalGapsProps)
             .eq("id", instructorId)
             .maybeSingle(),
           supabase.from("pupils").select("address, postcode").eq("id", pupilId).maybeSingle(),
-          loadCourseAvailabilitySources(supabase, [instructorId], fromDate, toDate),
         ]);
 
         if (cancelled) return;
@@ -164,11 +164,20 @@ export function PupilPortalGaps({ pupilId, instructorId }: PupilPortalGapsProps)
         setPupilAddress({ address: pAddr, postcode: pPc });
 
         if (pPc) {
-          const coords = await geocodePostcode(pPc);
-          if (!cancelled) setPupilPickup(coords);
+          geocodePostcode(pPc).then((coords) => {
+            if (!cancelled) setPupilPickup(coords);
+          });
         }
 
-        setSources(src);
+        // Start window at max(today, available_from), span 14 days.
+        const today = startOfDay(new Date());
+        const fromAv = instrRow?.available_from ? parseISO(instrRow.available_from) : today;
+        const fromDate = fromAv > today ? startOfDay(fromAv) : today;
+        const toDate = addDays(fromDate, 14);
+        setStartDate(fromDate);
+
+        const src = await loadCourseAvailabilitySources(supabase, [instructorId], fromDate, toDate);
+        if (!cancelled) setSources(src);
       } catch (err) {
         console.error("Error loading availability sources:", err);
       } finally {
