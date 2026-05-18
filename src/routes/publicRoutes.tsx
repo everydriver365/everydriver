@@ -124,6 +124,7 @@ export const publicRoutes = (
     <Route path="/pupil/login" element={<PupilLogin />} />
     <Route path="/pupil/login/:instructorSlug" element={<PupilLogin />} />
     <Route path="/drive365/login" element={<Drive365Login />} />
+    <Route path="/login" element={<PupilLogin />} />
     <Route path="/p/:slug" element={<BrandedPupilPortal />} />
     <Route path="/theory" element={<Theory />} />
     <Route path="/faqs" element={<FAQs />} />
