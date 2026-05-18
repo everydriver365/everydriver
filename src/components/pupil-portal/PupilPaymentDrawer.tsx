@@ -353,7 +353,7 @@ export function PupilPaymentDrawer({
                 className="w-full h-12 rounded-xl text-base font-semibold"
                 disabled={paymentAmount <= 0}
               >
-                Continue — £{totalCharge.toFixed(2)}
+                Continue — £{effectiveTotal.toFixed(2)}
                 <ChevronRight className="h-5 w-5 ml-1" />
               </Button>
             </div>
@@ -369,7 +369,7 @@ export function PupilPaymentDrawer({
                   <ArrowLeft className="h-5 w-5" />
                 </button>
                 <div className="flex-1">
-                  <h2 className="text-[17px] font-semibold text-foreground">Pay £{totalCharge.toFixed(2)}</h2>
+                  <h2 className="text-[17px] font-semibold text-foreground">Pay £{effectiveTotal.toFixed(2)}</h2>
                   <p className="text-xs text-muted-foreground">Choose payment method</p>
                 </div>
               </div>
@@ -378,7 +378,7 @@ export function PupilPaymentDrawer({
               <div className="space-y-2">
                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Express checkout</p>
                 <SquareWalletButtons
-                  amount={totalCharge}
+                  amount={effectiveTotal}
                   pupilId={pupilId}
                   instructorId={instructorId}
                   customerName={pupilName}
