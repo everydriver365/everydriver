@@ -356,57 +356,7 @@ export function PupilPortalSchedule({
   );
 }
 
-// Legacy split kept for the cancel-dialog block below
-function __unused_legacyRender() {
-  return null as any;
-}
-const __unused_marker = (
-  <></>
-);
-/* The original return block continues below for the Dialog component which we
-   already render above. Remove the duplicated tail. */
-function __legacy_tail_stub() {
-      {/* Cancel Dialog */}
-      <Dialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-destructive" />
-              Cancel Lesson?
-            </DialogTitle>
-            <DialogDescription>
-              Are you sure you want to cancel your lesson on{' '}
-              {selectedLesson && format(parseISO(selectedLesson.lesson_date), 'EEE, d MMM')} at{' '}
-              {selectedLesson && formatTime(selectedLesson.start_time)}?
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-2">
-            <label className="text-sm font-medium">Reason (optional)</label>
-            <Textarea
-              placeholder="Why are you cancelling?"
-              value={cancelReason}
-              onChange={(e) => setCancelReason(e.target.value)}
-              className="mt-1"
-              maxLength={500}
-            />
-          </div>
-          <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setCancelDialogOpen(false)}>
-              Keep Lesson
-            </Button>
-            <Button 
-              variant="destructive" 
-              onClick={confirmCancel}
-              disabled={cancelling}
-            >
-              {cancelling ? "Cancelling..." : "Yes, Cancel"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
-  );
-}
+
 
 // Internal reschedule calendar component
 function RescheduleBookingCalendar({
