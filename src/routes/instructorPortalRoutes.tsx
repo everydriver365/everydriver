@@ -14,6 +14,7 @@ const InstructorEventDetails = lazy(() => import("@/pages/InstructorEventDetails
 const InstructorDiary = lazy(() => import("@/pages/InstructorDiary"));
 
 const InstructorSettingsHub = lazy(() => import("@/pages/instructor/InstructorSettingsHub"));
+const HowPupilsBookPage = lazy(() => import("@/pages/instructor/settings/how-pupils-book/HowPupilsBookPage"));
 const InstructorNotifications = lazy(() => import("@/pages/InstructorNotifications"));
 const InstallInstructor = lazy(() => import("@/pages/InstallInstructor"));
 const IconPreviewPage = lazy(() => import("@/pages/instructor/IconPreviewPage"));
@@ -183,6 +184,7 @@ export const instructorPortalRoutes = (
     <Route path="/instructor/settings/verification" element={<InstructorVerificationPage />} />
     <Route path="/instructor/verification" element={<InstructorVerificationPage />} />
     {/* Unified Settings hub — keep last so it doesn't shadow specific routes above */}
+    <Route path="/instructor/settings/how-pupils-book" element={<HowPupilsBookPage />} />
     <Route path="/instructor/settings" element={<InstructorSettingsHub />} />
     <Route path="/instructor/settings/:categoryId" element={<InstructorSettingsHub />} />
     <Route path="/instructor/notifications" element={<InstructorNotifications />} />
