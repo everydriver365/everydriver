@@ -977,6 +977,14 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
 
                   <DrawerSectionLabel>Account</DrawerSectionLabel>
                   <DrawerRow
+                    icon={User}
+                    label="Pupil login"
+                    onClick={() => {
+                      window.open("/pupil/login", "_blank");
+                      setIsMobileMenuOpen(false);
+                    }}
+                  />
+                  <DrawerRow
                     icon={LogOut}
                     label="Sign out"
                     destructive
