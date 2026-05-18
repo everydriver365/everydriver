@@ -200,7 +200,7 @@ export function PupilPortalGaps({ pupilId, instructorId }: PupilPortalGapsProps)
       buffer_minutes: instructor.buffer_minutes ?? 0,
       is_network_placeholder: instructor.is_network_placeholder ?? false,
     };
-    const fromDate = startOfDay(new Date());
+    const fromDate = startDate;
     const slotIncrement = instructor.slot_increment_minutes ?? 60;
     const buffer = instructor.buffer_minutes ?? 0;
     const out: DaySlot[] = [];
