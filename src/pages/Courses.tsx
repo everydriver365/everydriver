@@ -1083,6 +1083,29 @@ export default function Courses() {
   }, [coursesWithDistance]);
 
 
+  // Build dynamic skill/language option lists from the instructors currently
+  // visible in the area (so we never offer a filter that has zero matches).
+  const filterOptionPool = useMemo(() => {
+    const base = relevantInstructors.filter((i) => !i.is_network_placeholder);
+    const skills = new Set<string>();
+    const languages = new Set<string>();
+    for (const i of base) {
+      for (const cert of i.additional_certifications || []) {
+        if (cert && cert.trim()) skills.add(cert.trim());
+      }
+      for (const s of (i.special_skills || "").split(",")) {
+        const v = s.trim();
+        if (v) skills.add(v);
+      }
+      const lang = (i.preferred_language || "").trim();
+      if (lang) languages.add(lang);
+    }
+    return {
+      skills: Array.from(skills).sort((a, b) => a.localeCompare(b)),
+      languages: Array.from(languages).sort((a, b) => a.localeCompare(b)),
+    };
+  }, [relevantInstructors]);
+
   // Active filter count (for the Filters button badge)
   const activeFilterCount =
     (transmission !== "all" ? 1 : 0) +
@@ -1090,7 +1113,10 @@ export default function Courses() {
     (clearpayOnly ? 1 : 0) +
     (courseType !== "all" ? 1 : 0) +
     (priceRange !== "any" ? 1 : 0) +
-    (selectedInstructorId ? 1 : 0);
+    (selectedInstructorId ? 1 : 0) +
+    (lessonTimes !== "all" ? 1 : 0) +
+    (selectedSkills.length > 0 ? 1 : 0) +
+    (selectedLanguages.length > 0 ? 1 : 0);
 
   const isListMode = viewMode === "list";
 
