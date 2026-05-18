@@ -975,6 +975,48 @@ export default function Courses() {
         }
       }
 
+      // Lesson times filter (uses instructor working hours; placeholders bypass)
+      if (lessonTimes !== "all" && !isPlaceholder) {
+        const rows = workingHourRows.filter(
+          (r) => r.instructor_id === course.instructor.id && r.is_active !== false,
+        );
+        const matches = rows.some((r) => {
+          const start = r.start_time || "00:00";
+          const end = r.end_time || "00:00";
+          const startMin = parseInt(start.slice(0, 2)) * 60 + parseInt(start.slice(3, 5) || "0");
+          const endMin = parseInt(end.slice(0, 2)) * 60 + parseInt(end.slice(3, 5) || "0");
+          if (lessonTimes === "daytime") {
+            // Mon-Fri (1-5) with overlap of 08:00-17:00
+            return r.day_of_week >= 1 && r.day_of_week <= 5 && startMin < 17 * 60 && endMin > 8 * 60;
+          }
+          // evenings_weekends: weekend day OR weekday ending after 17:00
+          const isWeekend = r.day_of_week === 0 || r.day_of_week === 6;
+          return isWeekend || endMin > 17 * 60;
+        });
+        if (!matches) return false;
+      }
+
+      // Instructor skills filter (matches additional_certifications or special_skills)
+      if (selectedSkills.length > 0) {
+        const haystack = [
+          ...(course.instructor.additional_certifications || []),
+          ...((course.instructor.special_skills || "")
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean)),
+        ]
+          .join(" | ")
+          .toLowerCase();
+        const matched = selectedSkills.every((skill) => haystack.includes(skill.toLowerCase()));
+        if (!matched) return false;
+      }
+
+      // Languages filter
+      if (selectedLanguages.length > 0) {
+        const lang = (course.instructor.preferred_language || "").toLowerCase();
+        if (!selectedLanguages.map((l) => l.toLowerCase()).includes(lang)) return false;
+      }
+
       return true;
     });
 
