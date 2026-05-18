@@ -1,41 +1,82 @@
 ## Goal
+On the desktop instructor dashboard sidebar, clicking **More tools** currently navigates to `/instructor/menu` (a separate page). Change it to behave like the other section headers (Overview, Teaching, Business, Website…) — clicking expands an inline list of items in place.
 
-Make Apple Pay work for pupils using the app inside the Despia wrapper, without migrating off Despia or touching Capacitor/Xcode.
+The expanded list should contain **everything that isn't already shown elsewhere in the sidebar**, organised into clear sub‑groups so it doesn't feel like a dumping ground.
 
-## Why the current setup can't show Apple Pay
+## Scope
+- File: `src/components/instructor/dashboardV2/DashboardSidebar.tsx` only.
+- Desktop sidebar only. Mobile menu and `/instructor/menu` route untouched (per the project rule against unsolicited mobile changes).
+- No backend, no route changes, no data changes.
 
-- Apple Pay on web relies on `ApplePaySession`, a JS API Apple only exposes inside **real Safari**.
-- Despia (like TestFlight/Capacitor) hosts the app inside **WKWebView**, where `ApplePaySession` does not exist.
-- Square's Web Payments SDK therefore correctly hides the Apple Pay button — there is no code fix inside the WebView that can bring it back.
+## Proposed structure
+Remove the single `{ label: "More tools", to: "/instructor/menu" }` entry from the **Settings** section, and add new collapsible sections at the bottom of the sidebar that mirror how other groups already expand/collapse:
 
-## Approach: hop out to Safari just for payment
+```text
+PRODUCTIVITY
+  Notes                /instructor/notes
+  Todos                /instructor/todos
+  Doodlepad            /instructor/doodlepad
+  Plans                /instructor/plans
+  Checklists           /instructor/checklists
+  Resources            /instructor/resources
+  Document templates   /instructor/document-templates
+  Document vault       /instructor/document-vault
+  Waivers              /instructor/waivers
 
-When a pupil taps **Pay Now** *and* we detect we're inside a native wrapper (Despia, Capacitor, etc.), we open the existing Square checkout page in the system browser instead of in the in-app modal. Apple Pay appears because it's now real Safari. After paying, the pupil returns to the app and their balance updates as usual via the existing webhook.
+DAILY OPS
+  Daily manifest       /instructor/daily-manifest
+  End-of-day report    /instructor/eod-report
+  Outstanding tasks    /instructor/outstanding-tasks
+  Weekly report        /instructor/weekly-report
+  Clock in/out         /instructor/clock-in-out
+  Bulk operations      /instructor/bulk-operations
+  Workflows            /instructor/workflows
+  AI command           /instructor/ai-command
 
-For pupils using the normal web app or PWA in Safari, **nothing changes** — they keep the in-app modal with Apple Pay/card/Google Pay exactly as today.
+PEOPLE & GROWTH
+  Pipeline             /instructor/pipeline
+  Enquiries            /instructor/enquiries
+  Waiting room         /instructor/waiting-room
+  Abandoned checkouts  /instructor/abandoned-checkouts
+  Performance          /instructor/performance
+  Certifications       /instructor/certifications
+  Reports hub          /instructor/reports-hub
 
-## What changes in the UI
+VEHICLE EXTRAS  (only when telematics module active)
+  Find my car          /instructor/find-my-car
+  Fleet dashboard      /instructor/fleet-dashboard
+  Overspeed history    /instructor/overspeed-history
+  Dashcam gallery      /instructor/dashcam
+  Nearby instructors   /instructor/nearby-friends
+  Locations            /instructor/locations
 
-- Pupil portal **Pay Now** button (`PupilPaymentModal` / `PupilPaymentDrawer` entry points):
-  - If `useIsNativeWrapper()` is true → open the hosted payment URL via `window.open(url, '_blank')` (Despia and iOS WKWebView hand this to Safari/SFSafariViewController).
-  - Otherwise → keep the existing in-app modal flow.
-- Add a small one-line hint under the button when in the wrapper: *"Opens in Safari so you can use Apple Pay."*
-- No change to the instructor "Take Payment" sheet — that's a separate flow.
+WEBSITE EXTRAS
+  Mini-site settings   /instructor/mini-website-settings
+  Website add-ons      /instructor/website-addons
 
-## What does NOT change
+SUPPORT & UTILITIES
+  Install app          /instructor/install
+  Send reminder        /instructor/send-reminder
+  Contact us           /instructor/contact
+  Admin chat           /instructor/admin-chat
+  Team channels        /instructor/team-channels
+  FAQs                 /instructor/faqs
+  Platform updates     /instructor/platform-updates
+  Data import          /instructor/data-import
+  Wellbeing            /instructor/wellbeing
+  Health               /instructor/health
+  Accessibility        /instructor/accessibility
+```
 
-- No new dependencies, no Capacitor install, no Xcode work, no Despia rebuild required (Despia already allows external links to open in Safari).
-- Square account, webhooks, fee logic, `payment_history`, balance updates, RLS — all untouched.
-- Web/PWA pupils keep the current in-app Apple Pay experience.
+Each new group uses the same collapsible pattern as existing sections (chevron header, persisted in `dsm.dashboard.sidebar.openGroups`, all closed by default so the sidebar stays compact). Item icons reuse Lucide icons already imported (or add a small set: `StickyNote`, `Inbox`, `Wrench`, etc.).
 
-## Technical notes
-
-- Reuse existing `useIsNativeWrapper()` hook (already detects Despia, Capacitor, iOS WKWebView, Android WebView).
-- The hosted URL is the same Square checkout link the app already generates (`paymentLinkBaseUrl` / `getActivePaymentQrUrl`). If a per-amount link is needed, we'll generate it through the existing `square-create-payment-link` edge function before opening Safari.
-- On return from Safari, the pupil lands back in the app. The existing realtime balance subscription refreshes `account_balance` automatically — no deep-link handling required.
+## Implementation notes
+- Add the new sections to the `SECTIONS` array in `DashboardSidebar.tsx`.
+- Remove the existing `More tools` row from the Settings group.
+- Keep `/instructor/menu` route intact (still works if linked from anywhere else).
+- All new groups respect the existing `moduleId` filter, so e.g. Vehicle Extras only render when telematics is on.
+- No changes to `DashboardTopBar` title map needed (existing pages already have their own titles).
 
 ## Out of scope
-
-- Native Apple Pay sheet *inside* the wrapped app (would require leaving Despia for Capacitor + Square iOS SDK).
-- Any change to instructor-side payment collection.
-- Any change to non-Square gateways.
+- Mobile menu, `/instructor/menu` page, route changes, renaming pages, or moving sections between the existing groups.
+- Inline panels / modal renderers — items still navigate to their existing pages, the change is purely making **More tools** an expandable inline group instead of a link.

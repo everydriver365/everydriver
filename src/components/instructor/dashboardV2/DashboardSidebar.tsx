@@ -8,7 +8,14 @@ import {
   NotebookPen, BookOpenCheck, GraduationCap, ListChecks, UserPlus2,
   MapPin, Map, Gauge, Navigation, Video, Route, Fuel, Car,
   Mic, Banknote, Coins, Star, Share2, Zap, MoreHorizontal, CalendarSearch,
+  StickyNote, CheckSquare, Pencil, FileText, FolderLock, FileCheck2, ShieldCheck,
+  ClipboardList, Sunrise, Sunset, ClipboardCheck as ClipboardCheck2, Layers, Workflow, Sparkles,
+  GitBranch, MessageCircleQuestion, DoorOpen, ShoppingCart, Trophy, BadgeCheck,
+  Crosshair, LayoutGrid, Eye, Camera, UsersRound, Building2,
+  Download, MailPlus, LifeBuoy, MessagesSquare, Hash, HelpCircle, RefreshCw,
+  Database as DatabaseIcon, Heart, Activity, Accessibility,
 } from "lucide-react";
+
 import { cn } from "@/lib/utils";
 import { useModules } from "@/context/ModulesContext";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
@@ -68,9 +75,64 @@ const SECTIONS: NavSection[] = [
     { label: "Plan & Billing", to: "/instructor/billing", icon: Wallet },
     { label: "Modules", to: "/instructor/modules", icon: Boxes },
     { label: "Integrations", to: "/instructor/integrations", icon: Plug },
-    { label: "More tools", to: "/instructor/menu", icon: MoreHorizontal },
+  ]},
+  { label: "Productivity", items: [
+    { label: "Notes", to: "/instructor/notes", icon: StickyNote },
+    { label: "Todos", to: "/instructor/todos", icon: CheckSquare },
+    { label: "Doodlepad", to: "/instructor/doodlepad", icon: Pencil },
+    { label: "Plans", to: "/instructor/plans", icon: ClipboardList },
+    { label: "Checklists", to: "/instructor/checklists", icon: ClipboardCheck2 },
+    { label: "Resources", to: "/instructor/resources", icon: Layers },
+    { label: "Document templates", to: "/instructor/document-templates", icon: FileText },
+    { label: "Document vault", to: "/instructor/document-vault", icon: FolderLock },
+    { label: "Waivers", to: "/instructor/waivers", icon: FileCheck2 },
+  ]},
+  { label: "Daily Ops", items: [
+    { label: "Daily manifest", to: "/instructor/daily-manifest", icon: Sunrise },
+    { label: "End-of-day report", to: "/instructor/eod-report", icon: Sunset },
+    { label: "Outstanding tasks", to: "/instructor/outstanding-tasks", icon: ListChecks },
+    { label: "Weekly report", to: "/instructor/weekly-report", icon: BarChart3 },
+    { label: "Clock in/out", to: "/instructor/clock-in-out", icon: Clock },
+    { label: "Bulk operations", to: "/instructor/bulk-operations", icon: Workflow },
+    { label: "Workflows", to: "/instructor/workflows", icon: GitBranch },
+    { label: "AI command", to: "/instructor/ai-command", icon: Sparkles },
+  ]},
+  { label: "People & Growth", items: [
+    { label: "Pipeline", to: "/instructor/pipeline", icon: TrendingUp },
+    { label: "Enquiries", to: "/instructor/enquiries", icon: MessageCircleQuestion },
+    { label: "Waiting room", to: "/instructor/waiting-room", icon: DoorOpen },
+    { label: "Abandoned checkouts", to: "/instructor/abandoned-checkouts", icon: ShoppingCart },
+    { label: "Performance", to: "/instructor/performance", icon: Trophy },
+    { label: "Certifications", to: "/instructor/certifications", icon: BadgeCheck },
+    { label: "Reports hub", to: "/instructor/reports-hub", icon: BarChart3 },
+  ]},
+  { label: "Vehicle Extras", items: [
+    { label: "Find my car", to: "/instructor/find-my-car", icon: Crosshair, moduleId: "telematics" },
+    { label: "Fleet dashboard", to: "/instructor/fleet-dashboard", icon: LayoutGrid, moduleId: "telematics" },
+    { label: "Overspeed history", to: "/instructor/overspeed-history", icon: Eye, moduleId: "telematics" },
+    { label: "Dashcam gallery", to: "/instructor/dashcam", icon: Camera, moduleId: "dashcam" },
+    { label: "Nearby instructors", to: "/instructor/nearby-friends", icon: UsersRound },
+    { label: "Locations", to: "/instructor/locations", icon: Building2 },
+  ]},
+  { label: "Website Extras", items: [
+    { label: "Mini-site settings", to: "/instructor/mini-website-settings", icon: Globe, moduleId: "website" },
+    { label: "Website add-ons", to: "/instructor/website-addons", icon: Plug, moduleId: "website" },
+  ]},
+  { label: "Support & Utilities", items: [
+    { label: "Install app", to: "/instructor/install", icon: Download },
+    { label: "Send reminder", to: "/instructor/send-reminder", icon: MailPlus },
+    { label: "Contact us", to: "/instructor/contact", icon: LifeBuoy },
+    { label: "Admin chat", to: "/instructor/admin-chat", icon: MessagesSquare },
+    { label: "Team channels", to: "/instructor/team-channels", icon: Hash },
+    { label: "FAQs", to: "/instructor/faqs", icon: HelpCircle },
+    { label: "Platform updates", to: "/instructor/platform-updates", icon: RefreshCw },
+    { label: "Data import", to: "/instructor/data-import", icon: DatabaseIcon },
+    { label: "Wellbeing", to: "/instructor/wellbeing", icon: Heart },
+    { label: "Health", to: "/instructor/health", icon: Activity },
+    { label: "Accessibility", to: "/instructor/accessibility", icon: Accessibility },
   ]},
 ];
+
 
 interface Props {
   collapsed: boolean;
