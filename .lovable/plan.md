@@ -1,39 +1,69 @@
-## Problem
+# Dissolve the "All settings" sidebar entry
 
-`/instructor/settings` renders two stacked left rails — the main dashboard sidebar AND a second 260px Settings sidebar inside `SettingsShellV3`. At 932px viewport this leaves a cramped right pane and feels noisy/messy.
+Right now the DashboardSidebar ends with a lone **Settings → All settings** section that just opens `/instructor/settings`. From there, the user picks one of 17 areas (Profile, Working hours, Rates, Payments, Branding, Lab features, etc.). One extra hop for every settings action.
 
-## Fix — single-pane Settings, no inner sidebar
+Plan: drop the **Settings** section and pin each settings area as a direct link inside the existing category that fits it best. The `/instructor/settings` hub keeps working — sidebar entries deep-link to `/instructor/settings/:areaId` so the existing detail view still renders.
 
-Rework `src/components/instructor/settings/v3/SettingsShellV3.tsx` only. No route, no `areas.tsx`, no dashboard sidebar changes.
+## What changes
 
-**Landing (`/instructor/settings`)**
-- Remove the `<aside>`. Single centered column (max ~960px), generous padding.
-- Header: "Settings" title + one-line subtitle + a single search input below.
-- Body: each of the 6 area groups rendered as a section:
-  - Small uppercase group label (You, Teaching, Bookings & Money, etc.)
-  - Responsive card grid (1 col mobile, 2 cols ≥640px, 3 cols ≥1024px) of item cards: colored icon tile, label, one-line description, chevron. Click → `/instructor/settings/:itemId`.
-- Search filters cards live across all groups. Empty groups hidden. If exactly one card matches and user presses Enter, navigate to it.
+Only `src/components/instructor/dashboardV2/DashboardSidebar.tsx`. No other files touched. The settings page itself, routes, and `areas.tsx` are unchanged.
 
-**Detail (`/instructor/settings/:itemId`)**
-- Also no inner sidebar — same single centered column.
-- Top row: "← All settings" link (navigates back to `/instructor/settings`).
-- Keep existing breadcrumb (Dashboard › Settings › Group › Item).
-- Keep existing hero summary card + section cards (`ItemDetail` unchanged internally).
+## Where each settings area lands
 
-**Routing tweak**
-- `categoryId` undefined → render `<SettingsLanding />`.
-- `categoryId` present → resolve via `ALL_ITEM_IDS` / `LEGACY_ID_MAP` and render `<ItemDetail />`. Drop the current "default to profile" fallback so the landing page actually shows when no item is selected.
+```text
+Overview
+  (unchanged)
 
-**Preserved**
-- `SettingsDirtyProvider` + `SettingsSaveBar` wrap both modes.
-- All existing item content, icons, descriptions, hero renderers, sections.
-- Mobile flow (`SettingsLayout` in `InstructorSettingsHub`) untouched per project rule.
+Teaching
+  + Working hours        /instructor/settings/working-hours
+  + Rates & coverage     /instructor/settings/rates-coverage
+  + How pupils book      /instructor/settings/how-pupils-book
+  + Discounts & packages /instructor/settings/discounts-packages
+  + Lesson types         /instructor/settings/lessons     (if present)
+
+Vehicle & Tracking
+  + Vehicle & credentials /instructor/settings/credentials
+
+Telephone
+  + Phone & AI            /instructor/settings/phone-ai
+
+Business
+  + Payments & fees       /instructor/settings/payments
+  (Plan & Billing already lives here — leave it)
+
+Website
+  + Mini-site & pages     /instructor/settings/mini-site
+  + Branding & theme      /instructor/settings/branding
+
+People & Growth
+  + Messaging             /instructor/settings/messaging
+  + Notifications         /instructor/settings/notifications
+
+Support
+  + Help & close account  /instructor/settings/help-close
+
+Account  ← new bottom section replacing "Settings"
+  + Profile                /instructor/settings/profile
+  + Login & security       /instructor/settings/login-security
+  + Appearance & layout    /instructor/settings/appearance-layout
+  + Data, terms & policies /instructor/settings/data-privacy
+  + Lab features           /instructor/settings/lab-features
+```
+
+Rationale for the new **Account** bucket: profile / security / appearance / data / lab don't belong to any one workflow category above. They are personal/account‑level. Folding them into Overview or Support would be misleading. A short "Account" group at the bottom keeps the sidebar coherent and still kills the "click All settings, then click again" double‑hop.
+
+If you'd rather not have an Account section at all, the alternative is to put Profile + Login & security under **Overview**, push Appearance & Data into **Support**, and drop Lab features. Tell me if you want that variant.
+
+## Technical notes
+
+- Icons: pick from `lucide-react` imports already in the file (`User`, `Lock`/`Shield`, `Bell`, `MessageCircle`, `Palette`, `Megaphone`, `Database`, `Sparkles`, `Wallet`, `Clock`, `MapPin`, `CreditCard`, `Phone`, `Globe`, `BookOpen`, `Tag`). Add any missing ones to the existing `lucide-react` import line — no new dependency.
+- Active state: the existing matcher uses `pathname === item.to || pathname.startsWith(item.to + "/")`, so deep-linked `/instructor/settings/:id` items will highlight correctly without any extra logic.
+- `DEFAULT_OPEN` stays as `{ Overview, Teaching, Business }` so the sidebar doesn't suddenly explode on first load.
+- The pin-to-top mechanism keeps working unchanged — users can pin "Rates & coverage" if they live there.
+- The existing `/instructor/settings` route still works for users who land there from other links (Account hub card, redirects, etc.). The hub is just no longer the only way in.
 
 ## Out of scope
-- Renaming groups/items, removing settings, restructuring `areas.tsx`.
-- Any mobile layout change.
-- Dashboard sidebar (already flattened to a single Settings link).
 
-## Files
-
-- `src/components/instructor/settings/v3/SettingsShellV3.tsx` — remove `<aside>`, add `SettingsLanding` subcomponent, branch on `categoryId`, add back link in detail mode.
+- Mobile layouts (per project rule).
+- `/instructor/settings` page itself — no edits to `SettingsShellV3` or `areas.tsx`.
+- `AccountHub` "All settings" card on `/instructor/account` — different surface, leave for a follow-up.
