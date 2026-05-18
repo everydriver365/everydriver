@@ -17,6 +17,15 @@ vi.mock("@/components/instructor/settings/v3/areas", async (importOriginal) => {
   return { ...actual, useAreaSections: () => [] };
 });
 
+vi.mock("@/context/InstructorAuthContext", () => ({
+  useInstructorAuth: () => ({
+    instructor: { id: "test-instructor", name: "Test", email: "t@t.io" },
+    refreshInstructor: () => {},
+    loading: false,
+  }),
+  InstructorAuthProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
 import { SettingsShellV3 } from "../SettingsShellV3";
 import { AREA_GROUPS, LEGACY_ID_MAP, ALL_ITEM_IDS } from "../areas";
 
