@@ -220,14 +220,22 @@ export function PupilPaymentDrawer({
           {stage === "amount" ? (
             <div className="px-5 pb-8 space-y-5">
               {/* Header */}
-              <div className="text-center pt-1">
+              <div className="flex items-center justify-between pt-1">
+                <div className="w-8" />
                 <h2 className="text-[17px] font-semibold text-foreground">Make a Payment</h2>
-                {amountOwed > 0 && (
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Balance owed: <span className="font-semibold text-destructive">£{amountOwed.toFixed(2)}</span>
-                  </p>
-                )}
+                <button
+                  onClick={() => handleOpenChange(false)}
+                  className="p-1 text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label="Close"
+                >
+                  <X className="h-5 w-5" />
+                </button>
               </div>
+              {amountOwed > 0 && (
+                <p className="text-sm text-muted-foreground text-center -mt-3">
+                  Balance owed: <span className="font-semibold text-destructive">£{amountOwed.toFixed(2)}</span>
+                </p>
+              )}
 
               {/* Amount display */}
               <div className="space-y-2">
