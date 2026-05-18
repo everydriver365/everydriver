@@ -55,6 +55,11 @@ interface Instructor {
   allowed_lesson_lengths?: number[] | null;
   preferred_lesson_length?: number | null;
   buffer_minutes?: number | null;
+  preferred_language?: string | null;
+  special_skills?: string | null;
+  additional_certifications?: string[] | null;
+  adaptations?: string[] | null;
+  bsl_signing?: boolean | null;
 }
 
 // Smallest lesson the instructor will accept. The booking calendar refuses to
