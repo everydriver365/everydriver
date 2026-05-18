@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { t } from "../tokens";
+import { t } from "./tokens";
 
 export function SettingField({ label, children }: { label: string; children: ReactNode }) {
   return (
