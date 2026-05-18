@@ -1,42 +1,72 @@
-## Problem
+# Settings audit & fix — all portals
 
-Clicking "How pupils book" in the Critical sidebar goes to `/instructor/settings/how-pupils-book` and renders a "complete mess" — actually the Profile panel.
+## Goal
+Every settings entry-point (sidebar item, tile, deep link) must:
+1. Land on the correct panel (no fallback to Profile / blank / "mess"),
+2. Persist edits (Save button works, dirty-bar appears where applicable, toast confirms, value re-reads after refresh),
+3. Behave identically on desktop and mobile.
 
-Why: there are two settings pages in the codebase:
+Plus: wire up the Admin and School settings panels that exist but are mis-linked or non-saving.
 
-- `src/pages/instructor/SettingsPage.tsx` — old V2 shell. Its `ALL_SETTING_IDS` only knows ids like `profile, hours, how-book, vehicle, rates, payment-methods…`.
-- `src/pages/instructor/InstructorSettingsHub.tsx` — new V3 shell (`SettingsShellV3`). Its `AREA_GROUPS` use ids like `how-pupils-book, working-hours, credentials, rates-coverage, payments, discounts-packages, mini-site, branding, plan-billing, phone-ai, data-privacy…` and it also has a `LEGACY_ID_MAP` to translate the old ids.
+## Phase 1 — Inventory (read-only sweep)
+Build one checklist per portal capturing: link → expected panel → actual panel → save behavior → mobile parity.
 
-The route `/instructor/settings/:categoryId` in `src/routes/instructorPortalRoutes.tsx` currently lazy-loads `SettingsPage` (the V2 shell). So when the sidebar (and the seeded Critical defaults) link to V3 slugs like `how-pupils-book`, V2 doesn't recognise them, silently falls back to `"profile"`, and the user sees Profile rendered under a "How pupils book" link.
+**Instructor (V3 hub at `/instructor/settings/*`)** — 17 area items already mapped in `areas.tsx`:
+You: profile, login-security · Teaching: credentials, working-hours, rates-coverage · Money: how-pupils-book, payments, discounts-packages · Comms: notifications, phone-ai, messaging · Website: mini-site, branding · System: appearance-layout, plan-billing, data-privacy, help-close, lab-features.
+Plus dedicated routes outside the hub: `/instructor/settings/gps`, `/instructor/settings/whatsapp`, `/instructor/settings/gps-tracking`.
 
-This is not just "How pupils book" — the same fallback silently breaks: `working-hours`, `rates-coverage`, `credentials`, `discounts-packages`, `payments`, `phone-ai`, `mini-site`, `branding`, `plan-billing`, `data-privacy`, `appearance-layout`, `help-close`, `lab-features`, `login-security`, `messaging`. All of these currently land on Profile.
+**Admin (`/admin` single-page with `activeSection` switch)** — settings-flavored sections: `site-settings`, `commission-settings`, `rewards-config`, `pwa-apps`, `admin-notes`, `trackers`, `calendar-sync`, plus all `*-audit` pages already on real routes.
 
-## Fix
+**School (`/school/dashboard` single-page with `activeSection`)** — settings-flavored sections: `profile`, `branding`, `booking-page(s)`, `notifications`, `payment-gateways`, `bnpl`, `franchise-fees`, `subscription`, `website`, `compliance`, `discount-codes`, `ai-voice`.
 
-Point the settings routes at the V3 hub, which is the page the sidebar was already written for and which already handles legacy ids.
+**Pupil (Drive365)** — no `/pupil/settings/*` route exists today. Pupil preferences live inline in the pupil app. Verify the in-app "Profile / Account / Notifications" sections save correctly; do not add new routes.
 
-### Changes
+## Phase 2 — Fixes
+Group fixes into categories and apply per portal:
 
-1. `src/routes/instructorPortalRoutes.tsx`
-   - Change the lazy import from `@/pages/instructor/SettingsPage` to `@/pages/instructor/InstructorSettingsHub` (keep the same `InstructorSettingsHub` variable name).
-   - Leave the two route entries (`/instructor/settings` and `/instructor/settings/:categoryId`) as-is.
+### A. Routing
+- For each broken link found in Phase 1, repoint to the canonical slug (extend `LEGACY_ID_MAP` if external sources still use the old slug, or update the source).
+- Ensure mobile sidebar/menu uses the same slug list as desktop (single source of truth → `InstructorPortalLayout` items array already unified last loop; verify mobile drawer & quick-tiles consume it).
+- For Admin/School: if a sidebar item maps to a `case` that's missing or rendering the wrong component, fix the switch in `AdminPortal.tsx` / `SchoolPortal.tsx`.
 
-2. No other code changes. `SettingsShellV3` already:
-   - Reads `:categoryId` and resolves it via `ALL_ITEM_IDS` or `LEGACY_ID_MAP`.
-   - Renders the matching area item ("How pupils book" → bookings/courses, booking-mode, deposits, intake).
-   - Falls back gracefully if the slug is unknown.
+### B. Save behavior
+Standard contract for every editor:
+- Uses `useOptionalSettingsDirty` (instructor V3) **or** has its own visible Save button (Admin/School/Pupil).
+- `save()` writes to DB, awaits success, shows success toast, clears dirty state, re-reads to confirm.
+- Error path shows error toast; dirty state is preserved.
 
-3. Mobile is unchanged — `InstructorSettingsHub` already renders the existing `SettingsLayout` drill-down on mobile, matching the project rule of not altering mobile layouts.
+Pass through every editor component and confirm or add the missing pieces. Common gaps to look for:
+- `setDirty` called on change but `register` never called (Save bar never fires).
+- Local `useState` not seeded from query data → "Save" persists stale values.
+- `onClick={save}` not `onClick={() => void save()}` causing unhandled promise.
+- Missing `onSuccess` invalidation → UI keeps old value until refresh.
 
-### Out of scope
+### C. Mobile parity
+- For each instructor area, open the same slug at 390×844 and confirm the editor renders (not the landing grid), the Save bar is reachable above the bottom nav, and inputs aren't clipped.
+- Admin/School portal layouts already responsive — confirm the section switch fires from the mobile drawer.
 
-- Not renaming any sidebar links.
-- Not editing `SettingsPage.tsx` (left in place; can be removed in a later cleanup once we confirm nothing else imports it).
-- No DB/migration changes; the seeded Critical defaults already use the V3 slugs.
+### D. Runtime
+- Fix the current "Rendered more hooks than during the previous render" error surfacing in preview (likely in one of the settings panels touched last loop). Locate via stack and stabilize hook order.
 
-### Verification
+## Phase 3 — Verification
+Drive a scripted browser pass:
+- Desktop 1366×768 and mobile 390×844.
+- For each entry: navigate → edit one field → save → reload → confirm persisted.
+- Capture pass/fail in a final report posted in chat.
 
-After the change:
-- `/instructor/settings/how-pupils-book` shows the "How pupils book" hero + Courses / Booking mode / Deposits / Intake sections.
-- `/instructor/settings/working-hours`, `/rates-coverage`, `/credentials`, `/payments`, `/discounts-packages`, `/mini-site`, `/branding`, `/plan-billing`, `/data-privacy` all resolve to their correct V3 area items instead of falling back to Profile.
-- `/instructor/settings/hours` (legacy) still resolves via `LEGACY_ID_MAP` if anything still links to it.
+## Technical details
+- Source of truth for instructor area slugs: `src/components/instructor/settings/v3/areas.tsx` + `categories.tsx`. Don't fork.
+- Legacy slug compatibility: keep `LEGACY_ID_MAP` + `<Navigate>` redirects in `InstructorSettingsHub`.
+- Admin/School portal switches: `src/pages/AdminPortal.tsx` ~lines 819+, `src/pages/SchoolPortal.tsx` ~lines 90–172. Each `case` must render the matching manager component; add missing imports.
+- Dirty bar: `SettingsDirtyContext` + `SettingsSaveBar` (instructor only). Admin/School editors keep their own per-form Save buttons — do not retrofit dirty bar there.
+- All DB writes go through existing hooks/services; no schema changes expected in this sweep.
+- Respect memory rules: LIVE DATA ONLY (no fallbacks), Service Fee naming, payment-gateway allowlist, mobile layout untouched unless a bug forces it.
+
+## Out of scope
+- New settings pages or redesigns.
+- Pupil portal settings routing (none exists today; only verify inline editors save).
+- Schema migrations.
+
+## Deliverable
+- Working Save on every settings panel across the 4 portals at desktop + mobile.
+- Final chat report: table of `portal · panel · status` (✅ / fixed / N/A).
