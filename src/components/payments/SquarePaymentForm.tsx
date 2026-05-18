@@ -348,13 +348,11 @@ export function SquarePaymentForm({
         )
       )}
 
-      {/* Google Pay */}
-      {googlePayAvailable && (
-        <div
-          ref={googlePayContainerRef}
-          className={`min-h-[48px] [&>div]:!w-full ${paying ? "opacity-50 pointer-events-none" : ""}`}
-        />
-      )}
+      {/* Google Pay container — always mounted so ref is available during init */}
+      <div
+        ref={googlePayContainerRef}
+        className={`${googlePayAvailable ? "min-h-[48px]" : "hidden"} [&>div]:!w-full ${paying ? "opacity-50 pointer-events-none" : ""}`}
+      />
 
       {/* Divider */}
       {hasWalletButtons && (
@@ -368,35 +366,33 @@ export function SquarePaymentForm({
         </div>
       )}
 
-      {/* Square Card Form */}
-      {loading ? (
+      {/* Square Card Form — container always mounted so ref is available during init */}
+      {loading && (
         <div className="w-full h-12 flex items-center justify-center">
           <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
         </div>
-      ) : (
-        <>
-          <div ref={cardContainerRef} className="min-h-[44px]" />
-
-          <Button
-            onClick={handleCardPay}
-            disabled={paying || !cardReady}
-            className="w-full h-12 text-base font-semibold"
-            size="lg"
-          >
-            {paying ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Processing…
-              </>
-            ) : (
-              <>
-                <Lock className="mr-2 h-4 w-4" />
-                <CreditCard className="mr-2 h-4 w-4" />
-                Pay {amountLabel}
-              </>
-            )}
-          </Button>
-        </>
+      )}
+      <div ref={cardContainerRef} className={loading ? "hidden" : "min-h-[44px]"} />
+      {!loading && (
+        <Button
+          onClick={handleCardPay}
+          disabled={paying || !cardReady}
+          className="w-full h-12 text-base font-semibold"
+          size="lg"
+        >
+          {paying ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Processing…
+            </>
+          ) : (
+            <>
+              <Lock className="mr-2 h-4 w-4" />
+              <CreditCard className="mr-2 h-4 w-4" />
+              Pay {amountLabel}
+            </>
+          )}
+        </Button>
       )}
 
       {/* Security Notice */}
