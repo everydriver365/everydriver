@@ -1,82 +1,105 @@
-## Goal
-On the desktop instructor dashboard sidebar, clicking **More tools** currently navigates to `/instructor/menu` (a separate page). Change it to behave like the other section headers (Overview, Teaching, Business, Website…) — clicking expands an inline list of items in place.
+# Reorganise Instructor Desktop Settings
 
-The expanded list should contain **everything that isn't already shown elsewhere in the sidebar**, organised into clear sub‑groups so it doesn't feel like a dumping ground.
-
-## Scope
-- File: `src/components/instructor/dashboardV2/DashboardSidebar.tsx` only.
-- Desktop sidebar only. Mobile menu and `/instructor/menu` route untouched (per the project rule against unsolicited mobile changes).
-- No backend, no route changes, no data changes.
+Today the sidebar "Settings" group only contains 4 items (Profile, Plan & Billing, Modules, Integrations). Everything else config-shaped is scattered across other groups (Branding, Domain, Mini-site settings, Website add-ons, Automations, Workflows, Accessibility, Data import, Install app). This makes "where do I change X?" a hunting game.
 
 ## Proposed structure
-Remove the single `{ label: "More tools", to: "/instructor/menu" }` entry from the **Settings** section, and add new collapsible sections at the bottom of the sidebar that mirror how other groups already expand/collapse:
+
+A single **Settings hub** at `/instructor/settings` with a left rail of 6 categories. Each category is a single scrollable page with grouped cards — same pattern Apple/Linear use. The sidebar keeps only one "Settings" entry; everything else lives inside the hub.
+
+### 1. Account
+- Profile (name, photo, contact)
+- Login & security (password, 2FA, sessions)
+- Notifications (email, SMS, push, WhatsApp)
+- Language & region (units already locked to Imperial, timezone)
+- Accessibility (font size, contrast, reduced motion)
+
+### 2. Business
+- Plan & Billing (subscription tier, invoices, payment method)
+- Modules (toggle features on/off)
+- Tax & company details (VAT, UTR, MTD)
+- Service area (radius, locations)
+- Working hours & buffers (lesson buffer, travel time, gap rules)
+
+### 3. Payments
+- Payment methods accepted (Klarna, Clearpay, Square, GoCardless, SumUp toggles)
+- Service Fee split (instructor/pupil %, the 2.0%+25p vs 1.5%+25p tier)
+- Payout settings (Square account, GoCardless mandate)
+- Refund & cancellation policy
+- Pricing & packages
+
+### 4. Pupils & Lessons
+- Booking rules (notice period, max advance, deposit)
+- Lesson types & durations
+- Waivers & required documents
+- Auto-reminders & follow-ups
+- Test prep defaults
+
+### 5. Website & Brand
+- My site (live/draft)
+- Branding (colours, logo)
+- Domain
+- Mini-site settings
+- Website add-ons
+- SEO basics
+
+### 6. Integrations & Automation
+- Integrations (Google Calendar, WhatsApp, Famulor, etc.)
+- Automations
+- Workflows
+- AI command defaults
+- Data import / export
+- Install app (PWA / native)
+- Developer (API keys, webhooks) — if applicable
+
+## Sidebar change
+
+Replace the current "Settings" expandable group with a **single top-level "Settings" link** that opens the hub. Move these existing items into the hub (remove from their current sidebar groups):
+
+- From Website group: Branding, Domain
+- From Website Extras: Mini-site settings, Website add-ons
+- From Business: Automations
+- From Daily Ops: Workflows, AI command
+- From Support & Utilities: Install app, Data import, Accessibility
+
+Items that are daily workflows (not settings) stay where they are: Take Payment, Reports, Pipeline, Reviews, Referrals, etc.
+
+## Hub page layout
 
 ```text
-PRODUCTIVITY
-  Notes                /instructor/notes
-  Todos                /instructor/todos
-  Doodlepad            /instructor/doodlepad
-  Plans                /instructor/plans
-  Checklists           /instructor/checklists
-  Resources            /instructor/resources
-  Document templates   /instructor/document-templates
-  Document vault       /instructor/document-vault
-  Waivers              /instructor/waivers
-
-DAILY OPS
-  Daily manifest       /instructor/daily-manifest
-  End-of-day report    /instructor/eod-report
-  Outstanding tasks    /instructor/outstanding-tasks
-  Weekly report        /instructor/weekly-report
-  Clock in/out         /instructor/clock-in-out
-  Bulk operations      /instructor/bulk-operations
-  Workflows            /instructor/workflows
-  AI command           /instructor/ai-command
-
-PEOPLE & GROWTH
-  Pipeline             /instructor/pipeline
-  Enquiries            /instructor/enquiries
-  Waiting room         /instructor/waiting-room
-  Abandoned checkouts  /instructor/abandoned-checkouts
-  Performance          /instructor/performance
-  Certifications       /instructor/certifications
-  Reports hub          /instructor/reports-hub
-
-VEHICLE EXTRAS  (only when telematics module active)
-  Find my car          /instructor/find-my-car
-  Fleet dashboard      /instructor/fleet-dashboard
-  Overspeed history    /instructor/overspeed-history
-  Dashcam gallery      /instructor/dashcam
-  Nearby instructors   /instructor/nearby-friends
-  Locations            /instructor/locations
-
-WEBSITE EXTRAS
-  Mini-site settings   /instructor/mini-website-settings
-  Website add-ons      /instructor/website-addons
-
-SUPPORT & UTILITIES
-  Install app          /instructor/install
-  Send reminder        /instructor/send-reminder
-  Contact us           /instructor/contact
-  Admin chat           /instructor/admin-chat
-  Team channels        /instructor/team-channels
-  FAQs                 /instructor/faqs
-  Platform updates     /instructor/platform-updates
-  Data import          /instructor/data-import
-  Wellbeing            /instructor/wellbeing
-  Health               /instructor/health
-  Accessibility        /instructor/accessibility
++--------------------------------------------------------+
+| Settings                                    [Search]   |
++----------------+---------------------------------------+
+| Account        |  Account                              |
+| Business       |  ┌─ Profile ──────────────────────┐   |
+| Payments       |  │ Name, photo, contact           │   |
+| Pupils         |  └────────────────────────────────┘   |
+| Website        |  ┌─ Notifications ────────────────┐   |
+| Integrations   |  │ Email / SMS / Push toggles     │   |
+|                |  └────────────────────────────────┘   |
++----------------+---------------------------------------+
 ```
 
-Each new group uses the same collapsible pattern as existing sections (chevron header, persisted in `dsm.dashboard.sidebar.openGroups`, all closed by default so the sidebar stays compact). Item icons reuse Lucide icons already imported (or add a small set: `StickyNote`, `Inbox`, `Wrench`, etc.).
+- Left rail: 6 categories, sticky, active state.
+- Right pane: stacked cards per sub-area, each card edits inline (no extra navigation hops).
+- Global search at top filters cards across all categories.
+- Deep-linkable: `/instructor/settings/payments#service-fee` jumps and highlights.
 
-## Implementation notes
-- Add the new sections to the `SECTIONS` array in `DashboardSidebar.tsx`.
-- Remove the existing `More tools` row from the Settings group.
-- Keep `/instructor/menu` route intact (still works if linked from anywhere else).
-- All new groups respect the existing `moduleId` filter, so e.g. Vehicle Extras only render when telematics is on.
-- No changes to `DashboardTopBar` title map needed (existing pages already have their own titles).
+## Why this works
 
-## Out of scope
-- Mobile menu, `/instructor/menu` page, route changes, renaming pages, or moving sections between the existing groups.
-- Inline panels / modal renderers — items still navigate to their existing pages, the change is purely making **More tools** an expandable inline group instead of a link.
+- **One mental model**: "If it changes how the app behaves for me, it's in Settings." Daily work stays in the sidebar.
+- **Cuts sidebar noise**: removes ~9 items, makes the rest scannable.
+- **Discoverable**: search across all settings means users stop asking support "where do I change X?".
+- **Matches what instructors already know**: iOS/macOS Settings, Stripe Dashboard, Linear all use this rail+cards pattern.
+
+## Out of scope for this plan
+
+- Building the actual setting pages that don't exist yet (e.g. dedicated "Login & security" page) — initial implementation can link to existing pages and consolidate later.
+- Mobile settings (per project rule: no mobile changes unless explicitly asked).
+- Renaming any underlying routes.
+
+## Technical notes
+
+- New route: `/instructor/settings` with nested `:category` param, lazy-loaded.
+- Sidebar: drop the "Settings" expandable group, add single `{ label: "Settings", to: "/instructor/settings", icon: Settings }` near the bottom.
+- Existing pages keep their routes for backwards compatibility — the hub renders them inside the right pane via a registry map, or links out if they're heavy standalone pages.
+- Search uses a flat index of `{ category, card, keywords, anchor }` defined alongside the registry.
