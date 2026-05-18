@@ -17,7 +17,14 @@
 // =============================================================================
 
 import { useEffect, useMemo, useState } from "react";
-import { Calendar as CalendarIcon, Clock as ClockIcon, Check as CheckIcon, Loader2 } from "lucide-react";
+import {
+  Calendar as CalendarIcon,
+  Clock as ClockIcon,
+  Check as CheckIcon,
+  ChevronLeft as ChevronLeftIcon,
+  SlidersHorizontal as SlidersIcon,
+  Loader2,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { format, addDays, parseISO, startOfDay } from "date-fns";
 import { toast } from "@/hooks/use-toast";
@@ -334,46 +341,60 @@ export function PupilPortalGaps({ pupilId, instructorId }: PupilPortalGapsProps)
 
   return (
     <div style={{ backgroundColor: t.surface, fontFamily: POPPINS }} className="min-h-full">
-      {/* Header */}
+      {/* Nav */}
       <div
         style={{
-          backgroundColor: t.white,
-          borderBottom: `1px solid ${t.border}`,
-          padding: "20px 20px 16px",
+          backgroundColor: t.navy,
+          padding: "14px 20px 20px",
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
-          <div style={{ width: 14, height: 2, backgroundColor: t.blue, borderRadius: 1 }} />
-          <span
-            style={{
-              fontSize: 11,
-              fontWeight: 600,
-              color: t.blue,
-              letterSpacing: 0.7,
-              textTransform: "uppercase",
-            }}
-          >
-            Available slots
-          </span>
-        </div>
-        <h1
+        <button
+          type="button"
+          onClick={() => window.history.back()}
+          aria-label="Back"
           style={{
-            fontSize: 22,
-            fontWeight: 700,
-            color: t.navy,
-            letterSpacing: -0.4,
-            marginBottom: 4,
-            lineHeight: 1.2,
+            width: 34,
+            height: 34,
+            borderRadius: 17,
+            backgroundColor: "rgba(255,255,255,0.1)",
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            border: "none",
+            cursor: "pointer",
+            padding: 0,
           }}
         >
-          Pick your slot
-        </h1>
-        <p style={{ fontSize: 13, fontWeight: 300, color: t.muted, lineHeight: "20px", margin: 0 }}>
-          Lessons with{" "}
-          <span style={{ fontWeight: 500, color: t.mid }}>{instructorName}</span>
-          {" · "}
-          {durationLabel(durationMinutes)}
-        </p>
+          <ChevronLeftIcon size={15} color="#FFF" strokeWidth={2.2} />
+        </button>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div
+            style={{
+              fontSize: 17,
+              fontWeight: 700,
+              color: "#FFF",
+              letterSpacing: -0.3,
+              fontFamily: POPPINS,
+              lineHeight: 1.2,
+            }}
+          >
+            Book a Lesson
+          </div>
+          <div
+            style={{
+              fontSize: 12,
+              fontWeight: 300,
+              color: "rgba(255,255,255,0.45)",
+              marginTop: 2,
+              fontFamily: POPPINS,
+            }}
+          >
+            Pick a duration and slot
+          </div>
+        </div>
       </div>
 
       {/* Future-availability notice */}
@@ -386,7 +407,7 @@ export function PupilPortalGaps({ pupilId, instructorId }: PupilPortalGapsProps)
               padding: "10px 16px",
             }}
           >
-            <p style={{ fontSize: 12, fontWeight: 500, color: t.amberText, margin: 0 }}>
+            <p style={{ fontSize: 12, fontWeight: 500, color: t.amberText, margin: 0, fontFamily: POPPINS }}>
               {instructorName} starts taking bookings on{" "}
               {format(parseISO(instructor.available_from), "EEEE d MMMM yyyy")}.
               Showing the first 14 days from then.
@@ -394,84 +415,109 @@ export function PupilPortalGaps({ pupilId, instructorId }: PupilPortalGapsProps)
           </div>
         )}
 
-      {/* Duration chips */}
+      {/* Duration selector */}
       <div
         style={{
           backgroundColor: t.white,
-          borderBottom: `1px solid ${t.border}`,
-          padding: "10px 16px",
-          display: "flex",
-          gap: 6,
-          overflowX: "auto",
-          WebkitOverflowScrolling: "touch",
-        }}
-      >
-        {durationOptions.map((d) => {
-          const active = d === durationMinutes;
-          return (
-            <button
-              key={d}
-              type="button"
-              onClick={() => setDurationMinutes(d)}
-              style={{
-                border: `1px solid ${active ? t.navy : t.border}`,
-                borderRadius: 20,
-                padding: "5px 12px",
-                backgroundColor: active ? t.navy : t.white,
-                color: active ? t.white : t.mid,
-                fontSize: 11,
-                fontWeight: 500,
-                whiteSpace: "nowrap",
-                fontFamily: POPPINS,
-                cursor: "pointer",
-              }}
-            >
-              {d % 60 === 0 ? `${d / 60} hr${d / 60 !== 1 ? "s" : ""}` : `${d} min`}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Filter strip */}
-      <div
-        style={{
-          backgroundColor: t.white,
-          borderBottom: `1px solid ${t.border}`,
+          borderBottomWidth: 1,
+          borderBottomStyle: "solid",
+          borderBottomColor: t.border,
+          padding: "16px 20px",
         }}
       >
         <div
           style={{
-            display: "flex",
-            gap: 6,
-            padding: "12px 16px",
-            overflowX: "auto",
-            WebkitOverflowScrolling: "touch",
+            fontSize: 10,
+            fontWeight: 700,
+            color: t.muted,
+            letterSpacing: 0.7,
+            textTransform: "uppercase",
+            marginBottom: 10,
+            fontFamily: POPPINS,
           }}
         >
-          {FILTERS.map((f) => {
-            const active = activeFilter === f.id;
+          Duration
+        </div>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {durationOptions.map((d) => {
+            const active = d === durationMinutes;
+            const label =
+              d % 60 === 0 ? `${d / 60} hr${d / 60 !== 1 ? "s" : ""}` : `${d} min`;
             return (
               <button
-                key={f.id}
+                key={d}
                 type="button"
-                onClick={() => setActiveFilter(f.id)}
+                onClick={() => setDurationMinutes(d)}
                 style={{
-                  border: `1px solid ${active ? t.navy : t.border}`,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                  borderWidth: 1.5,
+                  borderStyle: "solid",
+                  borderColor: active ? t.navy : t.border,
                   borderRadius: 20,
-                  padding: "5px 12px",
+                  padding: "7px 18px",
                   backgroundColor: active ? t.navy : t.white,
-                  color: active ? t.white : t.mid,
-                  fontSize: 11,
-                  fontWeight: 500,
-                  whiteSpace: "nowrap",
-                  fontFamily: POPPINS,
                   cursor: "pointer",
+                  fontFamily: POPPINS,
                 }}
               >
-                {f.label}
+                <span
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 500,
+                    color: active ? t.white : t.mid,
+                    fontFamily: POPPINS,
+                  }}
+                >
+                  {label}
+                </span>
               </button>
             );
           })}
+        </div>
+      </div>
+
+      {/* Results bar */}
+      <div
+        style={{
+          backgroundColor: t.surface,
+          padding: "10px 20px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <div
+          style={{
+            fontSize: 12,
+            fontWeight: 500,
+            color: t.muted,
+            fontFamily: POPPINS,
+          }}
+        >
+          <span style={{ fontWeight: 700, color: t.navy, fontFamily: POPPINS }}>
+            {filteredSlots.length} slot{filteredSlots.length !== 1 ? "s" : ""}
+          </span>
+          {" "}this week
+        </div>
+        <div
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 4,
+            borderWidth: 1,
+            borderStyle: "solid",
+            borderColor: t.border,
+            borderRadius: 20,
+            padding: "4px 10px",
+            backgroundColor: t.white,
+          }}
+        >
+          <SlidersIcon size={11} color={t.mid} strokeWidth={1.8} />
+          <span style={{ fontSize: 11, fontWeight: 500, color: t.mid, fontFamily: POPPINS }}>
+            Soonest first
+          </span>
         </div>
       </div>
 
