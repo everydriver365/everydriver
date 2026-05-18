@@ -28,27 +28,26 @@ export function useSettingsStatus() {
     let cancelled = false;
 
     (async () => {
-      const [vehicleRes, hoursRes, waitRes] = await Promise.all([
-        supabase
-          .from("instructors")
-          .select("vehicle_make, vehicle_model, adi_badge_number")
-          .eq("id", instructorId)
-          .maybeSingle(),
-        supabase
-          .from("instructor_working_hours")
-          .select("id", { count: "exact", head: true })
-          .eq("instructor_id", instructorId),
-        supabase
-          .from("waiting_list")
-          .select("id", { count: "exact", head: true })
-          .eq("instructor_id", instructorId)
-          .is("removed_at", null),
-      ]);
+      const vehicleRes = await supabase
+        .from("instructors")
+        .select("car_make, car_model, adi_badge_number")
+        .eq("id", instructorId)
+        .maybeSingle();
+
+      const hoursRes = await supabase
+        .from("instructor_working_hours")
+        .select("id", { count: "exact", head: true })
+        .eq("instructor_id", instructorId);
+
+      const waitRes = await supabase
+        .from("lesson_waitlist")
+        .select("id", { count: "exact", head: true })
+        .eq("instructor_id", instructorId);
 
       if (cancelled) return;
 
       const v = vehicleRes.data;
-      const vehicleOk = Boolean(v?.vehicle_make && v?.vehicle_model && v?.adi_badge_number);
+      const vehicleOk = Boolean(v?.car_make && v?.car_model && v?.adi_badge_number);
       const hoursOk = (hoursRes.count ?? 0) > 0;
 
       setCompletionFlags({ vehicle: vehicleOk, hours: hoursOk });
