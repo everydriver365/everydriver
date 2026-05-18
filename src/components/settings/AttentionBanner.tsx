@@ -41,7 +41,7 @@ export function AttentionBanner({ completionFlags }: { completionFlags: Completi
         ))}
       </p>
       <Link
-        to="/instructor/settings/vehicle"
+        to="/instructor/settings/credentials"
         style={{
           fontSize: 13, fontWeight: 700, color: "#F59E0B",
           cursor: "pointer", whiteSpace: "nowrap", textDecoration: "none",
