@@ -471,43 +471,64 @@ export function DashboardSidebar({ collapsed, onToggle, userInitials, userName, 
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto" style={{ padding: "0 8px 12px" }}>
         {(() => {
-          const renderItem = (item: NavItem, opts: { isPinned: boolean; pinIndex?: number }) => {
+          const renderItem = (
+            item: NavItem,
+            opts: { isPinned?: boolean; pinIndex?: number; isCritical?: boolean; critIndex?: number },
+          ) => {
             const Icon = item.icon;
             const active = item.to === "/instructor"
               ? pathname === "/instructor"
               : pathname === item.to || pathname.startsWith(item.to + "/");
             const isPinnedNow = pinned.includes(item.to);
-            const isDragging = opts.isPinned && dragIndex === opts.pinIndex;
-            const isDragOver = opts.isPinned && dragOverIndex === opts.pinIndex && dragIndex !== opts.pinIndex;
+            const isCriticalNow = critical.includes(item.to);
+            const draggable = !collapsed && (opts.isPinned || opts.isCritical);
+            const isDragging =
+              (opts.isPinned && dragIndex === opts.pinIndex) ||
+              (opts.isCritical && critDragIndex === opts.critIndex);
+            const isDragOver =
+              (opts.isPinned && dragOverIndex === opts.pinIndex && dragIndex !== opts.pinIndex) ||
+              (opts.isCritical && critDragOverIndex === opts.critIndex && critDragIndex !== opts.critIndex);
+            const dragOverDir = opts.isPinned
+              ? (dragIndex ?? 0) > (opts.pinIndex ?? 0) ? "above" : "below"
+              : (critDragIndex ?? 0) > (opts.critIndex ?? 0) ? "above" : "below";
+
+            const rightPad = collapsed ? "0" : opts.isCritical ? "0 24px 0 10px" : "0 48px 0 10px";
+
             return (
               <li
-                key={`${opts.isPinned ? "pin-" : ""}${item.label}-${item.to}`}
-                draggable={opts.isPinned && !collapsed}
-                onDragStart={opts.isPinned ? (e) => {
-                  setDragIndex(opts.pinIndex ?? null);
+                key={`${opts.isPinned ? "pin-" : opts.isCritical ? "crit-" : ""}${item.label}-${item.to}`}
+                draggable={draggable}
+                onDragStart={draggable ? (e) => {
+                  if (opts.isPinned) setDragIndex(opts.pinIndex ?? null);
+                  if (opts.isCritical) setCritDragIndex(opts.critIndex ?? null);
                   e.dataTransfer.effectAllowed = "move";
-                  try { e.dataTransfer.setData("text/plain", String(opts.pinIndex)); } catch {}
                 } : undefined}
-                onDragOver={opts.isPinned ? (e) => {
+                onDragOver={draggable ? (e) => {
                   e.preventDefault();
                   e.dataTransfer.dropEffect = "move";
-                  if (dragOverIndex !== opts.pinIndex) setDragOverIndex(opts.pinIndex ?? null);
+                  if (opts.isPinned && dragOverIndex !== opts.pinIndex) setDragOverIndex(opts.pinIndex ?? null);
+                  if (opts.isCritical && critDragOverIndex !== opts.critIndex) setCritDragOverIndex(opts.critIndex ?? null);
                 } : undefined}
-                onDragLeave={opts.isPinned ? () => {
-                  if (dragOverIndex === opts.pinIndex) setDragOverIndex(null);
+                onDragLeave={draggable ? () => {
+                  if (opts.isPinned && dragOverIndex === opts.pinIndex) setDragOverIndex(null);
+                  if (opts.isCritical && critDragOverIndex === opts.critIndex) setCritDragOverIndex(null);
                 } : undefined}
-                onDrop={opts.isPinned ? (e) => {
+                onDrop={draggable ? (e) => {
                   e.preventDefault();
-                  if (dragIndex != null && opts.pinIndex != null) reorderPinned(dragIndex, opts.pinIndex);
-                  setDragIndex(null);
-                  setDragOverIndex(null);
+                  if (opts.isPinned && dragIndex != null && opts.pinIndex != null) reorderPinned(dragIndex, opts.pinIndex);
+                  if (opts.isCritical && critDragIndex != null && opts.critIndex != null) reorderCritical(critDragIndex, opts.critIndex);
+                  setDragIndex(null); setDragOverIndex(null);
+                  setCritDragIndex(null); setCritDragOverIndex(null);
                 } : undefined}
-                onDragEnd={opts.isPinned ? () => { setDragIndex(null); setDragOverIndex(null); } : undefined}
+                onDragEnd={draggable ? () => {
+                  setDragIndex(null); setDragOverIndex(null);
+                  setCritDragIndex(null); setCritDragOverIndex(null);
+                } : undefined}
                 style={{
                   opacity: isDragging ? 0.4 : 1,
-                  borderTop: isDragOver && (dragIndex ?? 0) > (opts.pinIndex ?? 0) ? "2px solid var(--d2-indigo)" : "2px solid transparent",
-                  borderBottom: isDragOver && (dragIndex ?? 0) < (opts.pinIndex ?? 0) ? "2px solid var(--d2-indigo)" : "2px solid transparent",
-                  cursor: opts.isPinned && !collapsed ? "grab" : undefined,
+                  borderTop: isDragOver && dragOverDir === "above" ? "2px solid var(--d2-indigo)" : "2px solid transparent",
+                  borderBottom: isDragOver && dragOverDir === "below" ? "2px solid var(--d2-indigo)" : "2px solid transparent",
+                  cursor: draggable ? "grab" : undefined,
                 }}
               >
                 <div className="relative group">
@@ -518,7 +539,7 @@ export function DashboardSidebar({ collapsed, onToggle, userInitials, userName, 
                     className={cn("relative flex items-center gap-2 rounded-md transition-colors")}
                     style={{
                       height: 32,
-                      padding: collapsed ? "0" : "0 28px 0 10px",
+                      padding: rightPad,
                       justifyContent: collapsed ? "center" : "flex-start",
                       background: active ? "var(--d2-indigo)" : "transparent",
                       color: active ? "#FFFFFF" : "var(--d2-text-2)",
@@ -555,16 +576,13 @@ export function DashboardSidebar({ collapsed, onToggle, userInitials, userName, 
                       </span>
                     )}
                   </Link>
-                  {!collapsed && (
+                  {!collapsed && opts.isCritical && (
                     <button
                       type="button"
-                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); togglePin(item.to); }}
-                      title={isPinnedNow ? "Unpin from top" : "Pin to top"}
-                      aria-label={isPinnedNow ? "Unpin from top" : "Pin to top"}
-                      className={cn(
-                        "absolute top-1/2 -translate-y-1/2 rounded p-1 transition-opacity",
-                        isPinnedNow ? "opacity-100" : "opacity-0 group-hover:opacity-100 focus:opacity-100"
-                      )}
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleCritical(item.to); }}
+                      title="Remove from Critical"
+                      aria-label="Remove from Critical"
+                      className="absolute top-1/2 -translate-y-1/2 rounded p-1 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity"
                       style={{
                         right: 4,
                         color: active ? "rgba(255,255,255,0.85)" : "var(--d2-text-3)",
@@ -573,8 +591,50 @@ export function DashboardSidebar({ collapsed, onToggle, userInitials, userName, 
                       onMouseEnter={(e) => (e.currentTarget.style.background = active ? "rgba(255,255,255,0.15)" : "var(--d2-hover)")}
                       onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                     >
-                      {isPinnedNow ? <PinOff size={11} strokeWidth={2} /> : <Pin size={11} strokeWidth={2} />}
+                      <PinOff size={11} strokeWidth={2} />
                     </button>
+                  )}
+                  {!collapsed && !opts.isCritical && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleCritical(item.to); }}
+                        title={isCriticalNow ? "Remove from Critical" : "Add to Critical"}
+                        aria-label={isCriticalNow ? "Remove from Critical" : "Add to Critical"}
+                        className={cn(
+                          "absolute top-1/2 -translate-y-1/2 rounded p-1 transition-opacity",
+                          isCriticalNow ? "opacity-100" : "opacity-0 group-hover:opacity-100 focus:opacity-100",
+                        )}
+                        style={{
+                          right: 24,
+                          color: isCriticalNow ? "#DC2626" : (active ? "rgba(255,255,255,0.85)" : "var(--d2-text-3)"),
+                          background: "transparent",
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = active ? "rgba(255,255,255,0.15)" : "var(--d2-hover)")}
+                        onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                      >
+                        <Star size={11} strokeWidth={2} fill={isCriticalNow ? "#DC2626" : "none"} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); togglePin(item.to); }}
+                        title={isPinnedNow ? "Unpin from top" : "Pin to top"}
+                        aria-label={isPinnedNow ? "Unpin from top" : "Pin to top"}
+                        className={cn(
+                          "absolute top-1/2 -translate-y-1/2 rounded p-1 transition-opacity",
+                          isPinnedNow ? "opacity-100" : "opacity-0 group-hover:opacity-100 focus:opacity-100",
+                        )}
+                        style={{
+                          right: 4,
+                          color: active ? "rgba(255,255,255,0.85)" : "var(--d2-text-3)",
+                          background: "transparent",
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = active ? "rgba(255,255,255,0.15)" : "var(--d2-hover)")}
+                        onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                      >
+                        {isPinnedNow ? <PinOff size={11} strokeWidth={2} /> : <Pin size={11} strokeWidth={2} />}
+                      </button>
+                    </>
                   )}
                 </div>
               </li>
