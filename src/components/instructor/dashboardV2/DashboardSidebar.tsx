@@ -244,7 +244,10 @@ export function DashboardSidebar({ collapsed, onToggle, userInitials, userName, 
     if (instructorId) {
       try {
         await supabase.from("instructors").update({ sidebar_pinned: next }).eq("id", instructorId);
+        toast.success("Favorites order saved");
       } catch {}
+    } else {
+      toast.success("Favorites order saved");
     }
   }, [instructorId]);
 
