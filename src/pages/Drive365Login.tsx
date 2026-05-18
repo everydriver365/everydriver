@@ -118,63 +118,65 @@ export default function Drive365Login() {
   const canSubmit = email.trim().length > 0 && password.length > 0;
 
   const features = [
-    { Icon: Calendar, bg: "#E6F1FB", stroke: "#1A52A0", title: "Book & manage lessons", sub: "Upcoming lessons, hours & notes" },
-    { Icon: ArrowLeftRight, bg: "#E6F1FB", stroke: "#1A52A0", title: "Free test swap service", sub: "Earlier dates, at no cost" },
-    { Icon: ShieldCheck, bg: "#FBEAEA", stroke: "#CC2229", title: "Free retest guarantee", sub: "Money back if you pass first time" },
+    { Icon: Calendar, bg: "rgba(26,82,160,0.3)", title: "Book & manage lessons", sub: "Hours, notes & upcoming lessons" },
+    { Icon: ArrowLeftRight, bg: "rgba(26,82,160,0.3)", title: "Free test swap service", sub: "Earlier dates, at no cost" },
+    { Icon: ShieldCheck, bg: "rgba(204,34,41,0.3)", title: "Free retest guarantee", sub: "Money back if you pass first time" },
   ];
 
   return (
     <div className="min-h-screen w-full bg-white flex flex-col md:flex-row">
       {/* LEFT PANEL */}
-      <aside className="hidden md:flex flex-col justify-between relative overflow-hidden flex-1 border-r border-[#E8EDF6] bg-[#F2F4F8] p-11">
-        <div className="absolute top-0 left-0 right-0 h-1 flex">
+      <aside className="hidden md:flex flex-col justify-between relative overflow-hidden flex-1 bg-[#0F2044] p-11">
+        {/* Vertical red+blue stripe */}
+        <div className="absolute top-0 left-0 bottom-0 w-[6px] flex flex-col">
           <div className="flex-1 bg-[#CC2229]" />
           <div className="flex-1 bg-[#1A52A0]" />
         </div>
+        {/* Decorative circle */}
         <div
-          className="pointer-events-none absolute -bottom-[100px] -right-[100px] w-[280px] h-[280px] rounded-full"
-          style={{ border: "48px solid #E8EDF6" }}
+          className="pointer-events-none absolute -bottom-[80px] -right-[80px] w-[260px] h-[260px] rounded-full"
+          style={{ border: "52px solid rgba(26,82,160,0.18)" }}
         />
 
-        <img src={drive365Logo} alt="Drive365" className="h-10 object-contain" />
+        <img src={drive365Logo} alt="Drive365" className="h-10 object-contain relative z-10 brightness-0 invert" />
 
         <div className="relative z-10">
           <div className="flex items-center gap-[7px] mb-[18px]">
-            <div className="w-4 h-[2px] bg-[#1A52A0] rounded-sm" />
-            <span className="text-[11px] font-semibold text-[#9CA3AF] tracking-[0.8px] uppercase">
+            <div className="w-4 h-[2px] bg-[#CC2229] rounded-sm" />
+            <span className="text-[11px] font-semibold text-white/40 tracking-[0.9px] uppercase">
               Pupil panel
             </span>
           </div>
-          <h1 className="text-[36px] font-bold text-[#0F2044] leading-[42px] tracking-[-0.8px] mb-3">
+          <h1 className="text-[36px] font-bold text-white leading-[42px] tracking-[-0.8px] mb-3">
             Your driving<br />journey,<br />
             <span className="text-[#CC2229] italic">all in one place.</span>
           </h1>
-          <p className="text-[14px] font-light text-[#6B7280] leading-6 mb-8 max-w-[310px]">
-            Book lessons, track your progress, pay your instructor and pass faster — all from one dashboard.
+          <p className="text-[14px] font-light text-white/50 leading-6 mb-8 max-w-[300px]">
+            Book lessons, track your progress, pay your instructor and pass faster.
           </p>
 
           <div className="space-y-[10px] max-w-[360px]">
             {features.map((f) => (
               <div
                 key={f.title}
-                className="flex items-start gap-3 bg-white rounded-[10px] border border-[#E8EDF6] p-3"
+                className="flex items-center gap-3 bg-white/[0.06] rounded-[10px] border border-white/[0.08] p-3"
               >
                 <div
                   className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
                   style={{ backgroundColor: f.bg }}
                 >
-                  <f.Icon className="w-[18px] h-[18px]" style={{ color: f.stroke }} />
+                  <f.Icon className="w-[15px] h-[15px] text-white/85" strokeWidth={1.8} />
                 </div>
                 <div>
-                  <p className="text-[13px] font-semibold text-[#0F2044]">{f.title}</p>
-                  <p className="text-[11px] font-light text-[#9CA3AF] mt-0.5">{f.sub}</p>
+                  <p className="text-[13px] font-semibold text-white">{f.title}</p>
+                  <p className="text-[11px] font-light text-white/40 mt-0.5">{f.sub}</p>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        <p className="text-[11px] font-light text-[#C4C9D4] relative z-10">
+        <p className="text-[11px] font-light text-white/20 relative z-10">
           © {new Date().getFullYear()} Drive365 Ltd · DVSA approved
         </p>
       </aside>
