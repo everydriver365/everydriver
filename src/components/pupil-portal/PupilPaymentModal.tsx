@@ -30,7 +30,7 @@ interface PupilPaymentModalProps {
   commissionPayer?: string | null;
 }
 
-type PaymentGateway = "npi" | "clearpay" | "klarna" | "elavon";
+type PaymentGateway = "clearpay" | "klarna";
 
 export function PupilPaymentModal({
   open,
