@@ -1968,7 +1968,7 @@ export default function BookingSummary() {
             )}
             <LessonScheduler
               instructorId={instructor.id}
-              totalHours={hours}
+              totalHours={requiredScheduledHours}
               maxLessonLength={instructor.preferred_lesson_length}
               bookingAdvanceDays={instructor.booking_advance_days}
               availableFrom={instructor.available_from}
