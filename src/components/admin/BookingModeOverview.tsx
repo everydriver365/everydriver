@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/select";
 import { 
   Calendar, Sparkles, UserCog, CheckCircle, AlertCircle, 
-  Loader2, User, Phone, Mail, RefreshCw, Pencil
+  Loader2, User, Phone, Mail, RefreshCw, Pencil, CalendarClock
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
