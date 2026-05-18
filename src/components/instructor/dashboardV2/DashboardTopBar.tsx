@@ -55,10 +55,16 @@ export function DashboardTopBar({ userInitials, notificationCount = 0, onAskED, 
   const { resolvedTheme, setTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
   const { pathname } = useLocation();
+  const navigate = useNavigate();
   const currentLabel =
     PAGE_LABELS[pathname] ||
     Object.entries(PAGE_LABELS).find(([key]) => key !== "/instructor" && pathname.startsWith(key + "/"))?.[1] ||
     "Dashboard";
+  const showBack = pathname !== "/instructor";
+  const handleBack = () => {
+    if (window.history.length > 1) navigate(-1);
+    else navigate("/instructor");
+  };
 
   return (
     <header
@@ -71,6 +77,26 @@ export function DashboardTopBar({ userInitials, notificationCount = 0, onAskED, 
         boxShadow: "0 1px 2px rgba(15, 23, 42, 0.04)",
       }}
     >
+      {showBack && (
+        <button
+          onClick={handleBack}
+          className="flex items-center gap-1 rounded-md transition-colors mr-2"
+          style={{
+            height: 30, padding: "0 8px 0 6px",
+            color: "var(--d2-text-2)",
+            fontSize: 12, fontWeight: 500,
+            border: "0.5px solid var(--d2-border)",
+            background: "var(--d2-surface)",
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = "var(--d2-hover)")}
+          onMouseLeave={(e) => (e.currentTarget.style.background = "var(--d2-surface)")}
+          aria-label="Back"
+        >
+          <ArrowLeft size={14} />
+          Back
+        </button>
+      )}
+
       {/* Breadcrumb */}
       <nav className="flex items-center gap-1.5" style={{ fontSize: 13 }}>
         <span style={{ color: "var(--d2-text-3)" }}>Instructor</span>
