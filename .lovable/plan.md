@@ -1,68 +1,41 @@
-## Goal
+## Scope
 
-Make the pupil portal **Book** screen (hamburger → Book) show the same slots the instructor would see in their own diary, by reusing the unified availability engine (`computeDaySlots` + `loadCourseAvailabilitySources`) that already powers the public booking page, /courses, the auto-scheduler, the instructor gap-fill, and the create-booking guard.
+Drive365 mobile pupil site only (`BrandedPupilPortal` → `activeSection === 'payments'`). Pure visual redesign of `src/components/pupil-portal/PupilPortalPayments.tsx`. No API, navigation, payment, or balance logic changes.
 
-This removes a hand-rolled, partial implementation in `src/components/pupil-portal/PupilPortalGaps.tsx` and replaces it with the canonical engine.
+## Files
 
-## What's wrong today
+**Edit**
+- `src/components/pupil-portal/PupilPortalPayments.tsx` — replace render layer; keep `fetchPayments`, `PupilPaymentModal`, `getActivePaymentQrUrl`, share/copy handlers, props contract.
+- `src/pages/BrandedPupilPortal.tsx` (payments block, lines ~518–536) — remove the outer `SubPageHeader` and the `px-4 pt-4` wrapper so the new screen owns its own navy nav + hero. Keep `PupilPaymentFeed` rendered above (instructor-side feed, unrelated to redesign) OR move it below the history card — confirm in question.
 
-`PupilPortalGaps` rolls its own slot maths:
+**Create** (web-adapted from the RN spec, plain `div`/Tailwind + inline styles, Poppins via existing font stack)
+- `src/components/pupil-portal/payments/tokens.ts`
+- `src/components/pupil-portal/payments/PaymentsNav.tsx`
+- `src/components/pupil-portal/payments/BalanceHero.tsx`
+- `src/components/pupil-portal/payments/PaymentsSearchRow.tsx`
+- `src/components/pupil-portal/payments/PaymentsResultsBar.tsx`
+- `src/components/pupil-portal/payments/PaymentsHistoryCard.tsx` (+ `PaymentsEmptyState`, `PaymentRow` co-located or split)
+- `src/components/pupil-portal/payments/PayNowCard.tsx`
 
-- Treats `scheduled_lessons` as a busy source — **violates** the project rule that Google Calendar + `instructor_manual_blocks` are the only sources of busy.
-- Does **not** read `instructor_manual_blocks` at all (manual blocks won't hide slots).
-- No buffer between lessons and no first-lesson-of-day instructor travel buffer.
-- No travel-time padding around existing lessons even when pickup coords are known.
-- Uses browser-local `getHours()` / `getDay()` instead of Europe/London clipping.
-- Skips all-day Google Calendar events ≥ 24h, so holiday blocks don't block the day.
-- Hardcodes a 60-minute duration for both the gap minimum and the booking insert — ignores pupil's preferred lesson length, instructor `slot_increment_minutes`, and smart "no orphan gap" filtering.
-- No `available_from`, min-notice, or `is_network_placeholder` gating.
+## Behaviour mapping
 
-## Plan
+- **Balance**: use existing `accountBalance` prop. Spec sign convention is inverted vs current DB (spec: `balance > 0` = owed). Current code treats `balance < 0` as debt. I'll keep the **existing project convention** (`< 0` = owed, `> 0` = credit, `0` = balanced) and map labels accordingly so live data stays correct. Pill colours follow the spec's three states.
+- **Payments list**: `payment_history` rows are all completed → status `'paid'`. `description` = `notes || "Lesson payment"`, `dateFormatted` = `format(recorded_at, 'EEE d MMM yyyy')`.
+- **Search**: client-side filter on description (case-insensitive).
+- **Export CSV**: generate from filtered rows client-side (Blob + `<a download>`); no new endpoint.
+- **Filter button**: no existing `PaymentsFilter` route — render as inert placeholder (toast "Filters coming soon") to avoid dead nav.
+- **Voice mic**: no existing voice handler — render as inert (focuses input) to keep visual parity.
+- **Pay Now**: opens `paymentLinkBaseUrl || activePaymentUrl` in new tab (existing behaviour). If neither URL exists, fall back to opening `PupilPaymentModal` (existing flow).
+- **Share**: keeps existing `navigator.share` / clipboard fallback + toast.
+- **Prepaid hours**: spec omits this. Keep it as a compact line under the balance pill to avoid losing live info, unless you want it dropped.
 
-### 1. Rewrite `PupilPortalGaps` to use the engine
+## Notes
 
-In `src/components/pupil-portal/PupilPortalGaps.tsx`:
+- Route `/p/:slug` already renders the mobile pupil portal; no routing changes.
+- No new libraries. Icons from `lucide-react` (already used). `format` from `date-fns` (already used).
+- Will not touch `PupilPaymentFeed`, `PupilPaymentModal`, or any other payment component.
 
-- Fetch the instructor row (`id, available_from, buffer_minutes, slot_increment_minutes, first_lesson_buffer_minutes, is_network_placeholder, default_lesson_duration_minutes`).
-- Fetch the pupil row (pickup postcode → lat/lng via existing `postcodes.io` helper, and preferred lesson duration if stored on the pupil).
-- Call `loadCourseAvailabilitySources({ instructorIds: [instructorId], from, to })` to get the canonical bundle of working hours, manual blocks, calendar events and booked-lesson geo.
-- For each of the next 14 days call `computeDaySlots(instructor, day, src, { durationMinutes, bufferMinutes, firstLessonBufferMinutes, slotIncrementMinutes: instructor.slot_increment_minutes, minNoticeMinutes, candidatePickup })`.
-- Render the returned `slots[]` grouped by day. Show an empty state when no slots ("No availability in the next 14 days — try again later").
-- Keep the existing `checkLessonClash` pre-insert guard before writing the booking; this is still required as a race-condition belt-and-braces.
+## Open questions
 
-### 2. Duration selection
-
-- Default to the instructor's `default_lesson_duration_minutes` (already used by the public booking page).
-- Add a simple duration chip row (60 / 90 / 120 min, only those ≤ instructor max). No new business logic — same options the public booking page exposes.
-- Pass the chosen duration into `computeDaySlots` and into the booking insert so the pupil books the exact slot they see.
-
-### 3. Booking write
-
-Keep the booking insert in `scheduled_lessons` (no change to schema). After insert, rely on the existing `sync-lesson-now` trigger to push the new lesson into Google Calendar — that's already the single source of truth for downstream availability, so the next render of the screen will hide the slot.
-
-### 4. UI
-
-Visual changes are minimal — keep the existing card list, brand colour, and bottom-sheet confirm. Only the data underneath changes. No mobile layout edits beyond what's needed to show duration chips.
-
-### 5. Cleanup
-
-- Delete the dead local `WorkingHours` / `ScheduledLesson` interfaces and the bespoke `calculateAvailableSlots` function.
-- Add a top-of-file comment pointing at `courseAvailability.ts` so the next developer doesn't re-roll their own version.
-
-## Out of scope
-
-- No changes to the engine itself.
-- No changes to the bottom nav, hamburger menu, or any other pupil portal section.
-- No changes to payment, notifications, or the lesson-sync pipeline.
-- No schema migrations.
-
-## Files touched
-
-- `src/components/pupil-portal/PupilPortalGaps.tsx` — rewritten to use `computeDaySlots` + `loadCourseAvailabilitySources`.
-
-## Verification
-
-- Open `/p/ken-d` → hamburger → Book. Confirm slots match what shows in the instructor's own diary for Ken.
-- Add a manual block in the instructor portal → reload pupil Book → that window disappears.
-- Add a Google Calendar event → reload → that window disappears.
-- Book a slot as the pupil → it disappears from subsequent loads (because the lesson-sync trigger writes it into `instructor_calendar_events`).
+1. Keep `PupilPaymentFeed` above the new nav (current behaviour) or remove it from the payments section entirely so the redesign is the only thing on screen?
+2. Keep the "prepaid hours remaining" line (live data) or drop it to match the spec exactly?

@@ -1,0 +1,25 @@
+export const paymentsTokens = {
+  navy: '#0F2044',
+  blue: '#1A52A0',
+  blueLight: '#E6F1FB',
+  red: '#CC2229',
+  redDark: '#A81E24',
+  green: '#1D9E75',
+  greenLight: 'rgba(29,158,117,0.2)',
+  greenBorder: 'rgba(29,158,117,0.3)',
+  amber: '#F59E0B',
+  amberLight: '#FEF3C7',
+  redLight: 'rgba(204,34,41,0.2)',
+  redBorder: 'rgba(204,34,41,0.3)',
+  redIconBg: '#FBEAEA',
+  greenIconBg: '#E1F5EE',
+  mid: '#6B7280',
+  muted: '#9CA3AF',
+  placeholder: '#C4C9D4',
+  surface: '#F2F4F8',
+  white: '#FFFFFF',
+  border: '#DDE3ED',
+  divider: '#F2F4F8',
+} as const;
+
+export const poppins = "'Poppins', system-ui, -apple-system, sans-serif";
