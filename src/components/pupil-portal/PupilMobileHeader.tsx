@@ -1,7 +1,6 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft, ChevronDown, Moon, Sun, Settings, LogOut } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ChevronLeft, Menu, LogOut, User } from "lucide-react";
+import drive365Logo from "@/assets/drive365-logo.png";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,25 +25,14 @@ interface PupilMobileHeaderProps {
 }
 
 export function PupilMobileHeader({
-  pupilName,
-  pupilImageUrl,
-  instructorName,
-  instructorLogoUrl,
   brandColour,
   showBackButton = false,
   title,
-  darkMode = false,
-  onToggleDarkMode,
   onLogout,
   onAvatarClick,
 }: PupilMobileHeaderProps) {
   const navigate = useNavigate();
   const bgColor = brandColour || "hsl(var(--primary))";
-
-  const getInitials = (name?: string) => {
-    if (!name) return "?";
-    return name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
-  };
 
   return (
     <div className="sticky top-0 z-50">
@@ -57,89 +45,58 @@ export function PupilMobileHeader({
         <div className="absolute -bottom-8 -left-8 w-32 h-32 rounded-full bg-white/[0.03]" />
 
         <div className="relative flex items-center justify-between px-4 py-3">
-          {/* Left: Back button OR Avatar + Info */}
+          {/* Left: Back button OR Drive365 logo */}
           <div className="flex items-center gap-3">
             {showBackButton ? (
-              <button
-                onClick={() => navigate(-1)}
-                className="h-8 w-8 rounded-full bg-white/15 flex items-center justify-center"
-              >
-                <ChevronLeft className="h-5 w-5" />
-              </button>
-            ) : pupilName ? (
-              <button onClick={onAvatarClick} className="flex items-center gap-3">
-                <Avatar className="h-9 w-9 border-2 border-white/30">
-                  <AvatarImage src={pupilImageUrl || undefined} />
-                  <AvatarFallback className="bg-white/20 text-white text-xs font-bold">
-                    {getInitials(pupilName)}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="text-left">
-                  <p className="text-sm font-semibold leading-tight line-clamp-1">{pupilName}</p>
-                  {instructorName && (
-                    <p className="text-[11px] text-white/70">{instructorName}</p>
-                  )}
-                </div>
-                <ChevronDown className="h-4 w-4 text-white/60" />
-              </button>
-            ) : (
-              <div className="flex items-center gap-3">
-                {instructorLogoUrl ? (
-                  <img
-                    src={instructorLogoUrl}
-                    alt={instructorName || ""}
-                    className="h-10 w-10 object-contain rounded-lg bg-white/10 p-1"
-                  />
-                ) : (
-                  <div className="h-10 w-10 rounded-lg bg-white/20 flex items-center justify-center font-bold text-lg">
-                    {getInitials(instructorName)}
-                  </div>
+              <>
+                <button
+                  onClick={() => navigate(-1)}
+                  className="h-8 w-8 rounded-full bg-white/15 flex items-center justify-center"
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </button>
+                {title && (
+                  <p className="text-sm font-semibold leading-tight">{title}</p>
                 )}
-                <div>
-                  <p className="text-sm font-bold line-clamp-1">{instructorName || "Pupil Portal"}</p>
-                  <p className="text-[11px] text-white/70">Pupil Portal</p>
-                </div>
+              </>
+            ) : (
+              <div className="h-9 rounded-md bg-white/95 px-2 flex items-center">
+                <img
+                  src={drive365Logo}
+                  alt="Drive365"
+                  className="h-7 object-contain"
+                />
               </div>
-            )}
-            {showBackButton && title && (
-              <p className="text-sm font-semibold leading-tight">{title}</p>
             )}
           </div>
 
-          {/* Right: Action buttons */}
-          <div className="flex items-center gap-1">
-            {onToggleDarkMode && (
+          {/* Right: Hamburger menu */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
               <button
-                onClick={onToggleDarkMode}
-                className="h-8 w-8 rounded-full bg-white/15 flex items-center justify-center"
+                className="h-9 w-9 rounded-full bg-white/15 flex items-center justify-center"
+                aria-label="Open menu"
               >
-                {darkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                <Menu className="h-5 w-5" />
               </button>
-            )}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="h-8 w-8 rounded-full bg-white/15 flex items-center justify-center">
-                  <Settings className="h-4 w-4" />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Settings</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                {onToggleDarkMode && (
-                  <DropdownMenuItem onClick={onToggleDarkMode}>
-                    {darkMode ? <Sun className="mr-2 h-4 w-4" /> : <Moon className="mr-2 h-4 w-4" />}
-                    {darkMode ? "Light Mode" : "Dark Mode"}
-                  </DropdownMenuItem>
-                )}
-                {onLogout && (
-                  <DropdownMenuItem onClick={onLogout}>
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Sign Out
-                  </DropdownMenuItem>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Menu</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {onAvatarClick && (
+                <DropdownMenuItem onClick={onAvatarClick}>
+                  <User className="mr-2 h-4 w-4" />
+                  Profile
+                </DropdownMenuItem>
+              )}
+              {onLogout && (
+                <DropdownMenuItem onClick={onLogout}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Sign Out
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </div>
