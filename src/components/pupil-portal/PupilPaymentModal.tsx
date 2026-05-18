@@ -222,50 +222,72 @@ export function PupilPaymentModal({
           </div>
 
           {/* Quick Amount Buttons */}
-          {amountOwed > 0 && (
-            <div className="flex gap-2">
+          {(amountOwed > 0 || nextLessonCost) && (
+            <div className="flex gap-2 flex-wrap">
+              {amountOwed > 0 && (
+                <Button
+                  variant={Math.abs(paymentAmount - amountOwed) < 0.005 ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setAmount(amountOwed.toFixed(2))}
+                  disabled={processing}
+                >
+                  Balance owed · £{amountOwed.toFixed(2)}
+                </Button>
+              )}
+              {nextLessonCost && (
+                <Button
+                  variant={Math.abs(paymentAmount - nextLessonCost) < 0.005 ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setAmount(nextLessonCost.toFixed(2))}
+                  disabled={processing}
+                >
+                  Next lesson · £{nextLessonCost.toFixed(2)}
+                </Button>
+              )}
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
-                onClick={() => setAmount(amountOwed.toFixed(2))}
+                onClick={() => setAmount("")}
                 disabled={processing}
               >
-                Pay Full Balance
+                Custom
               </Button>
-              {amountOwed > 50 && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setAmount("50.00")}
-                  disabled={processing}
-                >
-                  £50
-                </Button>
-              )}
-              {amountOwed > 100 && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setAmount("100.00")}
-                  disabled={processing}
-                >
-                  £100
-                </Button>
-              )}
             </div>
+          )}
+
+          {/* Service Fee toggle */}
+          {hasFee && (
+            <button
+              type="button"
+              onClick={() => setFeeEnabled((v) => !v)}
+              disabled={processing}
+              className={`w-full flex items-center justify-between px-4 py-3 rounded-lg border transition-colors text-left ${
+                feeEnabled ? "bg-primary/5 border-primary/30" : "bg-card border-border"
+              }`}
+            >
+              <div>
+                <div className="text-sm font-medium text-foreground">Add Service Fee</div>
+                <div className="text-xs text-muted-foreground">
+                  {feeEnabled ? `+£${adminFee.toFixed(2)} added to your payment` : "Skip the card processing fee"}
+                </div>
+              </div>
+              <div className={`relative w-10 h-6 rounded-full transition-colors shrink-0 ${feeEnabled ? "bg-primary" : "bg-muted"}`}>
+                <div className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${feeEnabled ? "translate-x-[18px]" : "translate-x-0.5"}`} />
+              </div>
+            </button>
           )}
 
           {/* Admin Fee Breakdown */}
           <AdminFeeBreakdown
             baseAmount={paymentAmount}
-            adminFee={adminFee}
-            totalCharge={totalCharge}
-            hasFee={hasFee}
+            adminFee={effectiveAdminFee}
+            totalCharge={effectiveTotal}
+            hasFee={hasFee && feeEnabled}
           />
 
           {/* Apple Pay / Google Pay Express Checkout */}
           <SquareWalletButtons
-            amount={totalCharge}
+            amount={effectiveTotal}
             pupilId={pupilId}
             instructorId={instructorId}
             customerName={pupilName}
