@@ -27,15 +27,18 @@ interface Widget {
   isNegative?: boolean;
 }
 
-export function PupilWidgetGrid({ pupil, brandColour, onNavigate }: WidgetProps) {
+export function PupilWidgetGrid({ pupilId, pupil, brandColour, onNavigate }: WidgetProps) {
   const balance = pupil.account_balance || 0;
   const hours = Math.round((pupil.lessons_completed || 0) * 1.5);
   const progress = pupil.progress || 0;
+  const lessonsCompleted = pupil.lessons_completed || 0;
 
-  // Activity ring
-  const weeklyTarget = 2;
-  const lessonsThisWeek = Math.min(pupil.lessons_completed || 0, weeklyTarget);
-  const ringProgress = Math.min((lessonsThisWeek / weeklyTarget) * 100, 100);
+  const { data: bookedCourse } = usePupilBookedCourse(pupilId);
+  const courseTotal = bookedCourse?.totalLessons ?? 0;
+  const lessonsOfCourseTaken = bookedCourse ? Math.min(lessonsCompleted, courseTotal) : 0;
+  const ringProgress = bookedCourse && courseTotal > 0
+    ? Math.min((lessonsOfCourseTaken / courseTotal) * 100, 100)
+    : 0;
 
   const widgets: Widget[] = [
     {
