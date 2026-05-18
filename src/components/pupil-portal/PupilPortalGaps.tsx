@@ -297,7 +297,7 @@ export function PupilPortalGaps({ pupilId, instructorId }: PupilPortalGapsProps)
 
   // Build day groups for the next 14 days (always include empty days).
   const groups: DayGroup[] = useMemo(() => {
-    const fromDate = startOfDay(new Date());
+    const fromDate = startDate;
     const byDate = new Map<string, DaySlot[]>();
     for (const s of filteredSlots) {
       if (!byDate.has(s.date)) byDate.set(s.date, []);
