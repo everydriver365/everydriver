@@ -349,6 +349,9 @@ export default function Courses() {
   const [clearpayOnly, setClearpayOnly] = useState(initialClearpay);
   const [courseType, setCourseType] = useState(initialCourseType);
   const [priceRange, setPriceRange] = useState(initialPriceRange);
+  const [lessonTimes, setLessonTimes] = useState<"all" | "daytime" | "evenings_weekends">("all");
+  const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+  const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState<SortOption>("soonest");
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
