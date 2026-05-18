@@ -182,6 +182,27 @@ export function DashboardSidebar({ collapsed, onToggle, userInitials, userName, 
     });
   };
 
+  // Pinned items — persisted to localStorage by item.to (route).
+  const PINNED_KEY = "dsm.dashboard.sidebar.pinned";
+  const [pinned, setPinned] = useState<string[]>([]);
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(PINNED_KEY);
+      if (saved) setPinned(JSON.parse(saved));
+    } catch {}
+  }, []);
+  const togglePin = (to: string) => {
+    setPinned((prev) => {
+      const next = prev.includes(to) ? prev.filter((t) => t !== to) : [...prev, to];
+      try { localStorage.setItem(PINNED_KEY, JSON.stringify(next)); } catch {}
+      return next;
+    });
+  };
+  const allItems = visibleSections.flatMap((s) => s.items);
+  const pinnedItems = pinned
+    .map((to) => allItems.find((i) => i.to === to))
+    .filter((i): i is NavItem => Boolean(i));
+
   // Convert brand colour to a soft tint for active background.
   const brandTint = brandColour ? `${brandColour}1A` : null; // ~10% alpha
 
