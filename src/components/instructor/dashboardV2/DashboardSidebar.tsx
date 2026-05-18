@@ -300,100 +300,153 @@ export function DashboardSidebar({ collapsed, onToggle, userInitials, userName, 
 
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto" style={{ padding: "0 8px 12px" }}>
-        {visibleSections.map((section) => {
-          const isOpen = collapsed ? true : (openGroups[section.label] ?? false);
-          return (
-            <div key={section.label} style={{ marginBottom: 8 }}>
-              {!collapsed && (
-                <button
-                  type="button"
-                  onClick={() => toggleGroup(section.label)}
-                  className="flex items-center w-full rounded-md transition-colors"
-                  style={{
-                    fontSize: 10, fontWeight: 600, letterSpacing: "0.6px",
-                    color: "var(--d2-text-3)", textTransform: "uppercase",
-                    padding: "6px 8px",
-                    background: "transparent",
-                    border: "none",
-                    cursor: "pointer",
-                  }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = "var(--d2-hover)")}
-                  onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-                  aria-expanded={isOpen}
-                >
-                  <ChevronRight
-                    size={10}
-                    strokeWidth={2.5}
+        {(() => {
+          const renderItem = (item: NavItem, opts: { isPinned: boolean }) => {
+            const Icon = item.icon;
+            const active = item.to === "/instructor"
+              ? pathname === "/instructor"
+              : pathname === item.to || pathname.startsWith(item.to + "/");
+            const isPinnedNow = pinned.includes(item.to);
+            return (
+              <li key={`${opts.isPinned ? "pin-" : ""}${item.label}-${item.to}`}>
+                <div className="relative group">
+                  <Link
+                    to={item.to}
+                    title={collapsed ? item.label : undefined}
+                    aria-current={active ? "page" : undefined}
+                    className={cn("relative flex items-center gap-2 rounded-md transition-colors")}
                     style={{
-                      marginRight: 4,
-                      transition: "transform 150ms ease-out",
-                      transform: isOpen ? "rotate(90deg)" : "rotate(0deg)",
+                      height: 32,
+                      padding: collapsed ? "0" : "0 28px 0 10px",
+                      justifyContent: collapsed ? "center" : "flex-start",
+                      background: active ? "var(--d2-indigo)" : "transparent",
+                      color: active ? "#FFFFFF" : "var(--d2-text-2)",
+                      fontSize: 12,
+                      fontWeight: 500,
+                      boxShadow: active ? "0 1px 2px rgba(15,23,42,0.08), 0 1px 3px rgba(15,23,42,0.06)" : "none",
+                      transition: "background 150ms ease-out, color 150ms ease-out, box-shadow 150ms ease-out",
                     }}
-                  />
-                  <span className="flex-1 text-left">{section.label}</span>
-                </button>
+                    onMouseEnter={(e) => {
+                      if (!active) {
+                        e.currentTarget.style.background = "var(--d2-hover)";
+                        e.currentTarget.style.color = "var(--d2-text-1)";
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!active) {
+                        e.currentTarget.style.background = "transparent";
+                        e.currentTarget.style.color = "var(--d2-text-2)";
+                      }
+                    }}
+                  >
+                    <Icon size={14} strokeWidth={active ? 2.25 : 1.75} style={{ color: active ? "#FFFFFF" : undefined }} />
+                    {!collapsed && <span className="truncate flex-1">{item.label}</span>}
+                    {!collapsed && item.badge && (
+                      <span
+                        style={{
+                          background: active ? "rgba(255,255,255,0.22)" : "#FEE2E2",
+                          color: active ? "#FFFFFF" : "#B91C1C",
+                          fontSize: 10, fontWeight: 600,
+                          padding: "1px 6px", borderRadius: 999,
+                        }}
+                      >
+                        {item.badge}
+                      </span>
+                    )}
+                  </Link>
+                  {!collapsed && (
+                    <button
+                      type="button"
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); togglePin(item.to); }}
+                      title={isPinnedNow ? "Unpin from top" : "Pin to top"}
+                      aria-label={isPinnedNow ? "Unpin from top" : "Pin to top"}
+                      className={cn(
+                        "absolute top-1/2 -translate-y-1/2 rounded p-1 transition-opacity",
+                        isPinnedNow ? "opacity-100" : "opacity-0 group-hover:opacity-100 focus:opacity-100"
+                      )}
+                      style={{
+                        right: 4,
+                        color: active ? "rgba(255,255,255,0.85)" : "var(--d2-text-3)",
+                        background: "transparent",
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = active ? "rgba(255,255,255,0.15)" : "var(--d2-hover)")}
+                      onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                    >
+                      {isPinnedNow ? <PinOff size={11} strokeWidth={2} /> : <Pin size={11} strokeWidth={2} />}
+                    </button>
+                  )}
+                </div>
+              </li>
+            );
+          };
+
+          return (
+            <>
+              {pinnedItems.length > 0 && (
+                <div style={{ marginBottom: 8 }}>
+                  {!collapsed && (
+                    <div
+                      className="flex items-center"
+                      style={{
+                        fontSize: 10, fontWeight: 600, letterSpacing: "0.6px",
+                        color: "var(--d2-text-3)", textTransform: "uppercase",
+                        padding: "6px 8px",
+                      }}
+                    >
+                      <Pin size={10} strokeWidth={2.5} style={{ marginRight: 6 }} />
+                      <span>Pinned</span>
+                    </div>
+                  )}
+                  <ul className="space-y-0.5">
+                    {pinnedItems.map((item) => renderItem(item, { isPinned: true }))}
+                  </ul>
+                </div>
               )}
-              {isOpen && (
-                <ul className="space-y-0.5">
-                  {section.items.map((item) => {
-                    const Icon = item.icon;
-                    const active = item.to === "/instructor"
-                      ? pathname === "/instructor"
-                      : pathname === item.to || pathname.startsWith(item.to + "/");
-                    return (
-                      <li key={item.label}>
-                        <Link
-                          to={item.to}
-                          title={collapsed ? item.label : undefined}
-                          aria-current={active ? "page" : undefined}
-                          className={cn("relative flex items-center gap-2 rounded-md transition-colors group")}
+
+              {visibleSections.map((section) => {
+                const isOpen = collapsed ? true : (openGroups[section.label] ?? false);
+                return (
+                  <div key={section.label} style={{ marginBottom: 8 }}>
+                    {!collapsed && (
+                      <button
+                        type="button"
+                        onClick={() => toggleGroup(section.label)}
+                        className="flex items-center w-full rounded-md transition-colors"
+                        style={{
+                          fontSize: 10, fontWeight: 600, letterSpacing: "0.6px",
+                          color: "var(--d2-text-3)", textTransform: "uppercase",
+                          padding: "6px 8px",
+                          background: "transparent",
+                          border: "none",
+                          cursor: "pointer",
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = "var(--d2-hover)")}
+                        onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                        aria-expanded={isOpen}
+                      >
+                        <ChevronRight
+                          size={10}
+                          strokeWidth={2.5}
                           style={{
-                            height: 32,
-                            padding: collapsed ? "0" : "0 8px 0 10px",
-                            justifyContent: collapsed ? "center" : "flex-start",
-                            background: active ? "var(--d2-indigo)" : "transparent",
-                            color: active ? "#FFFFFF" : "var(--d2-text-2)",
-                            fontSize: 12,
-                            fontWeight: 500,
-                            boxShadow: active ? "0 1px 2px rgba(15,23,42,0.08), 0 1px 3px rgba(15,23,42,0.06)" : "none",
-                            transition: "background 150ms ease-out, color 150ms ease-out, box-shadow 150ms ease-out",
+                            marginRight: 4,
+                            transition: "transform 150ms ease-out",
+                            transform: isOpen ? "rotate(90deg)" : "rotate(0deg)",
                           }}
-                          onMouseEnter={(e) => {
-                            if (!active) {
-                              e.currentTarget.style.background = "var(--d2-hover)";
-                              e.currentTarget.style.color = "var(--d2-text-1)";
-                            }
-                          }}
-                          onMouseLeave={(e) => {
-                            if (!active) {
-                              e.currentTarget.style.background = "transparent";
-                              e.currentTarget.style.color = "var(--d2-text-2)";
-                            }
-                          }}
-                        >
-                          <Icon size={14} strokeWidth={active ? 2.25 : 1.75} style={{ color: active ? "#FFFFFF" : undefined }} />
-                          {!collapsed && <span className="truncate flex-1">{item.label}</span>}
-                          {!collapsed && item.badge && (
-                            <span
-                              style={{
-                                background: active ? "rgba(255,255,255,0.22)" : "#FEE2E2",
-                                color: active ? "#FFFFFF" : "#B91C1C",
-                                fontSize: 10, fontWeight: 600,
-                                padding: "1px 6px", borderRadius: 999,
-                              }}
-                            >
-                              {item.badge}
-                            </span>
-                          )}
-                        </Link>
-                      </li>
-                    );
-                  })}
-                </ul>
-              )}
-            </div>
+                        />
+                        <span className="flex-1 text-left">{section.label}</span>
+                      </button>
+                    )}
+                    {isOpen && (
+                      <ul className="space-y-0.5">
+                        {section.items.map((item) => renderItem(item, { isPinned: false }))}
+                      </ul>
+                    )}
+                  </div>
+                );
+              })}
+            </>
           );
-        })}
+        })()}
       </nav>
 
       {/* Sign out */}
