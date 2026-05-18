@@ -1,0 +1,16 @@
+export const t = {
+  navy: '#0F2044',
+  blue: '#1A52A0',
+  blueLight: '#E6F1FB',
+  blueSurface: '#E8EDF6',
+  red: '#CC2229',
+  redLight: '#FBEAEA',
+  green: '#1D9E75',
+  mid: '#6B7280',
+  muted: '#9CA3AF',
+  placeholder: '#C4C9D4',
+  surface: '#F2F4F8',
+  white: '#FFFFFF',
+  border: '#DDE3ED',
+  divider: '#F2F4F8',
+} as const;

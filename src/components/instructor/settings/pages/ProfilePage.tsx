@@ -1,7 +1,15 @@
 import { ProfileBasicsEditor } from "@/components/instructor/ProfileBasicsEditor";
 import { InstructorDetailsEditor } from "@/components/instructor/InstructorDetailsEditor";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { ProfileSettingsDesktop } from "../profile-v2/ProfileSettingsDesktop";
 
 export function ProfilePage({ instructorId }: { instructorId: string }) {
+  const isMobile = useIsMobile();
+
+  if (!isMobile) {
+    return <ProfileSettingsDesktop instructorId={instructorId} />;
+  }
+
   return (
     <>
       <section className="sv2-card">
