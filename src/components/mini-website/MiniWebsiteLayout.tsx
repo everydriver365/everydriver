@@ -318,6 +318,11 @@ export function MiniWebsiteLayout({ instructor, children, footerOverrides, pageT
 
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-500">
             <p>© {new Date().getFullYear()} {instructor.name}. All rights reserved.</p>
+            <p className="mt-2">
+              <Link to="/drive365/login" className="hover:text-white transition-colors underline-offset-2 hover:underline">
+                Pupil Sign In
+              </Link>
+            </p>
             <p className="mt-1">
               Powered by{" "}
               <Link to={`/i/${instructor.app_slug}`} className="hover:text-white transition-colors">
