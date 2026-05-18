@@ -28,8 +28,8 @@ interface PupilPaymentDrawerProps {
   commissionPayer?: string | null;
 }
 
-type PaymentGateway = "npi" | "clearpay" | "klarna";
-type Stage = "amount" | "method";
+type PaymentGateway = "clearpay" | "klarna";
+type Stage = "amount" | "method" | "card";
 
 interface RecentPayment {
   id: string;
