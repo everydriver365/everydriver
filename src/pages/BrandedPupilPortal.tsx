@@ -510,6 +510,7 @@ export default function BrandedPupilPortal() {
                   pupilId={pupil.id} instructorId={instructor.id} brandColour={drive365Blue}
                   darkMode={instructor.pupil_app_dark_mode} instructorPhone={instructor.phone}
                   initialShowBooking={bookingRequested}
+                  onViewHistory={() => setActiveSection('history' as ActiveSection)}
                 />
               </motion.div>
             )}
