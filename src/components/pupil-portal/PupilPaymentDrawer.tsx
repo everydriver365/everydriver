@@ -87,6 +87,37 @@ export function PupilPaymentDrawer({
     }
   }, [open, pupilId]);
 
+  // Fetch next upcoming lesson cost
+  useEffect(() => {
+    if (!open || !pupilId) return;
+    const today = format(new Date(), "yyyy-MM-dd");
+    supabase
+      .from("scheduled_lessons")
+      .select("id, lesson_date, start_time, duration_minutes, amount_due, price_per_hour, status")
+      .eq("pupil_id", pupilId)
+      .gte("lesson_date", today)
+      .neq("status", "cancelled")
+      .neq("status", "completed")
+      .order("lesson_date", { ascending: true })
+      .order("start_time", { ascending: true })
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!data) { setNextLesson(null); return; }
+        const dur = Number(data.duration_minutes) || 0;
+        const due = data.amount_due != null ? Number(data.amount_due) : null;
+        const pph = data.price_per_hour != null ? Number(data.price_per_hour) : null;
+        const cost = due != null && due > 0
+          ? due
+          : (pph != null && pph > 0 && dur > 0 ? (pph * dur) / 60 : 0);
+        if (cost > 0) {
+          setNextLesson({ cost, date: data.lesson_date, durationMinutes: dur });
+        } else {
+          setNextLesson(null);
+        }
+      });
+  }, [open, pupilId]);
+
   const handleOpenChange = (isOpen: boolean) => {
     if (!isOpen) {
       setStage("amount");
