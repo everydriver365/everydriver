@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { SquareWalletButtons } from "@/components/payments/SquareWalletButtons";
+import { SquarePaymentForm } from "@/components/payments/SquarePaymentForm";
 import { PupilPaymentDrawer } from "./PupilPaymentDrawer";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAdminFee } from "@/hooks/useAdminFee";
@@ -29,7 +30,7 @@ interface PupilPaymentModalProps {
   commissionPayer?: string | null;
 }
 
-type PaymentGateway = "npi" | "clearpay" | "klarna" | "elavon";
+type PaymentGateway = "clearpay" | "klarna";
 
 export function PupilPaymentModal({
   open,
@@ -177,10 +178,8 @@ export function PupilPaymentModal({
   };
 
   const gateways: { id: PaymentGateway; name: string; description: string; icon: string }[] = [
-    { id: "npi", name: "Pay by Card", description: "Visa, Mastercard, Amex", icon: "💳" },
     { id: "clearpay", name: "Clearpay", description: `4 payments of £${(paymentAmount / 4).toFixed(2)}`, icon: "🔄" },
     { id: "klarna", name: "Klarna", description: `3 payments of £${(paymentAmount / 3).toFixed(2)}`, icon: "💜" },
-    { id: "elavon", name: "Secure Card", description: "Alternative card payment", icon: "🔒" },
   ];
 
   return (
@@ -281,9 +280,23 @@ export function PupilPaymentModal({
             disabled={processing || paymentAmount <= 0}
           />
 
+          {/* Pay by Card — Square */}
+          <div className="space-y-2">
+            <Label>Pay by card</Label>
+            <SquarePaymentForm
+              amount={effectiveTotal}
+              pupilId={pupilId}
+              instructorId={instructorId}
+              customerName={pupilName}
+              customerEmail={pupilEmail || undefined}
+              customerPhone={pupilPhone || undefined}
+              onPaid={() => onOpenChange(false)}
+            />
+          </div>
+
           {/* Payment Gateway Options */}
           <div className="space-y-2">
-            <Label>Or choose a payment method</Label>
+            <Label>Or pay in instalments</Label>
             <div className="grid gap-2">
               {gateways.map((gateway) => (
                 <Card

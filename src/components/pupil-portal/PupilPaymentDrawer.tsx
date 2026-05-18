@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { SquareWalletButtons } from "@/components/payments/SquareWalletButtons";
+import { SquarePaymentForm } from "@/components/payments/SquarePaymentForm";
 import { useAdminFee } from "@/hooks/useAdminFee";
 import { useInstructorTierConfig } from "@/hooks/useInstructorTierConfig";
 import { AdminFeeBreakdown } from "@/components/payments/AdminFeeBreakdown";
@@ -27,8 +28,8 @@ interface PupilPaymentDrawerProps {
   commissionPayer?: string | null;
 }
 
-type PaymentGateway = "npi" | "clearpay" | "klarna";
-type Stage = "amount" | "method";
+type PaymentGateway = "clearpay" | "klarna";
+type Stage = "amount" | "method" | "card";
 
 interface RecentPayment {
   id: string;
@@ -340,7 +341,7 @@ export function PupilPaymentDrawer({
                 <ChevronRight className="h-5 w-5 ml-1" />
               </Button>
             </div>
-          ) : (
+          ) : stage === "method" ? (
             <div className="px-5 pb-8 space-y-4 overflow-auto">
               {/* Header with back */}
               <div className="flex items-center gap-3 pt-1">
@@ -378,17 +379,13 @@ export function PupilPaymentDrawer({
                 <div className="flex-1 h-px bg-border" />
               </div>
 
-              {/* Pay by Card — primary */}
+              {/* Pay by Card — primary (Square) */}
               <Button
-                onClick={() => handlePayment("npi")}
+                onClick={() => setStage("card")}
                 className="w-full h-12 rounded-xl text-base font-semibold"
                 disabled={processing}
               >
-                {selectedGateway === "npi" && processing ? (
-                  <Loader2 className="h-5 w-5 animate-spin mr-2" />
-                ) : (
-                  <CreditCard className="h-5 w-5 mr-2" />
-                )}
+                <CreditCard className="h-5 w-5 mr-2" />
                 Pay by Card
               </Button>
 
@@ -449,6 +446,32 @@ export function PupilPaymentDrawer({
                 <Shield className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-500 shrink-0" />
                 <span>Payments are processed securely. Your card details are never stored.</span>
               </div>
+            </div>
+          ) : (
+            <div className="px-5 pb-8 space-y-4 overflow-auto">
+              <div className="flex items-center gap-3 pt-1">
+                <button
+                  onClick={() => setStage("method")}
+                  className="p-1 -ml-1 text-muted-foreground hover:text-foreground transition-colors"
+                  disabled={processing}
+                >
+                  <ArrowLeft className="h-5 w-5" />
+                </button>
+                <div className="flex-1">
+                  <h2 className="text-[17px] font-semibold text-foreground">Pay £{effectiveTotal.toFixed(2)}</h2>
+                  <p className="text-xs text-muted-foreground">Enter card details</p>
+                </div>
+              </div>
+              <SquarePaymentForm
+                amount={effectiveTotal}
+                pupilId={pupilId}
+                instructorId={instructorId}
+                customerName={pupilName}
+                customerEmail={pupilEmail || undefined}
+                customerPhone={pupilPhone || undefined}
+                onPaid={() => handleOpenChange(false)}
+                onCancel={() => setStage("method")}
+              />
             </div>
           )}
         </DrawerPrimitive.Content>
