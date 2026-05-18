@@ -10,6 +10,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { SquareWalletButtons } from "@/components/payments/SquareWalletButtons";
 import { SquarePaymentForm } from "@/components/payments/SquarePaymentForm";
+import { PayInSafariButton } from "@/components/payments/PayInSafariButton";
+import { useIsNativeWrapper } from "@/hooks/useIsNativeWrapper";
 import { PupilPaymentDrawer } from "./PupilPaymentDrawer";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAdminFee } from "@/hooks/useAdminFee";
