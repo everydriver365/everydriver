@@ -191,6 +191,10 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
                     Take Payment
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => window.open("/pupil/login", "_blank")}>
+                    <User className="mr-2 h-4 w-4" />
+                    Pupil Login
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleLogout}>
                     <LogOut className="mr-2 h-4 w-4" />
                     Sign Out
