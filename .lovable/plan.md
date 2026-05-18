@@ -1,105 +1,39 @@
-# Reorganise Instructor Desktop Settings
+## Problem
 
-Today the sidebar "Settings" group only contains 4 items (Profile, Plan & Billing, Modules, Integrations). Everything else config-shaped is scattered across other groups (Branding, Domain, Mini-site settings, Website add-ons, Automations, Workflows, Accessibility, Data import, Install app). This makes "where do I change X?" a hunting game.
+`/instructor/settings` renders two stacked left rails — the main dashboard sidebar AND a second 260px Settings sidebar inside `SettingsShellV3`. At 932px viewport this leaves a cramped right pane and feels noisy/messy.
 
-## Proposed structure
+## Fix — single-pane Settings, no inner sidebar
 
-A single **Settings hub** at `/instructor/settings` with a left rail of 6 categories. Each category is a single scrollable page with grouped cards — same pattern Apple/Linear use. The sidebar keeps only one "Settings" entry; everything else lives inside the hub.
+Rework `src/components/instructor/settings/v3/SettingsShellV3.tsx` only. No route, no `areas.tsx`, no dashboard sidebar changes.
 
-### 1. Account
-- Profile (name, photo, contact)
-- Login & security (password, 2FA, sessions)
-- Notifications (email, SMS, push, WhatsApp)
-- Language & region (units already locked to Imperial, timezone)
-- Accessibility (font size, contrast, reduced motion)
+**Landing (`/instructor/settings`)**
+- Remove the `<aside>`. Single centered column (max ~960px), generous padding.
+- Header: "Settings" title + one-line subtitle + a single search input below.
+- Body: each of the 6 area groups rendered as a section:
+  - Small uppercase group label (You, Teaching, Bookings & Money, etc.)
+  - Responsive card grid (1 col mobile, 2 cols ≥640px, 3 cols ≥1024px) of item cards: colored icon tile, label, one-line description, chevron. Click → `/instructor/settings/:itemId`.
+- Search filters cards live across all groups. Empty groups hidden. If exactly one card matches and user presses Enter, navigate to it.
 
-### 2. Business
-- Plan & Billing (subscription tier, invoices, payment method)
-- Modules (toggle features on/off)
-- Tax & company details (VAT, UTR, MTD)
-- Service area (radius, locations)
-- Working hours & buffers (lesson buffer, travel time, gap rules)
+**Detail (`/instructor/settings/:itemId`)**
+- Also no inner sidebar — same single centered column.
+- Top row: "← All settings" link (navigates back to `/instructor/settings`).
+- Keep existing breadcrumb (Dashboard › Settings › Group › Item).
+- Keep existing hero summary card + section cards (`ItemDetail` unchanged internally).
 
-### 3. Payments
-- Payment methods accepted (Klarna, Clearpay, Square, GoCardless, SumUp toggles)
-- Service Fee split (instructor/pupil %, the 2.0%+25p vs 1.5%+25p tier)
-- Payout settings (Square account, GoCardless mandate)
-- Refund & cancellation policy
-- Pricing & packages
+**Routing tweak**
+- `categoryId` undefined → render `<SettingsLanding />`.
+- `categoryId` present → resolve via `ALL_ITEM_IDS` / `LEGACY_ID_MAP` and render `<ItemDetail />`. Drop the current "default to profile" fallback so the landing page actually shows when no item is selected.
 
-### 4. Pupils & Lessons
-- Booking rules (notice period, max advance, deposit)
-- Lesson types & durations
-- Waivers & required documents
-- Auto-reminders & follow-ups
-- Test prep defaults
+**Preserved**
+- `SettingsDirtyProvider` + `SettingsSaveBar` wrap both modes.
+- All existing item content, icons, descriptions, hero renderers, sections.
+- Mobile flow (`SettingsLayout` in `InstructorSettingsHub`) untouched per project rule.
 
-### 5. Website & Brand
-- My site (live/draft)
-- Branding (colours, logo)
-- Domain
-- Mini-site settings
-- Website add-ons
-- SEO basics
+## Out of scope
+- Renaming groups/items, removing settings, restructuring `areas.tsx`.
+- Any mobile layout change.
+- Dashboard sidebar (already flattened to a single Settings link).
 
-### 6. Integrations & Automation
-- Integrations (Google Calendar, WhatsApp, Famulor, etc.)
-- Automations
-- Workflows
-- AI command defaults
-- Data import / export
-- Install app (PWA / native)
-- Developer (API keys, webhooks) — if applicable
+## Files
 
-## Sidebar change
-
-Replace the current "Settings" expandable group with a **single top-level "Settings" link** that opens the hub. Move these existing items into the hub (remove from their current sidebar groups):
-
-- From Website group: Branding, Domain
-- From Website Extras: Mini-site settings, Website add-ons
-- From Business: Automations
-- From Daily Ops: Workflows, AI command
-- From Support & Utilities: Install app, Data import, Accessibility
-
-Items that are daily workflows (not settings) stay where they are: Take Payment, Reports, Pipeline, Reviews, Referrals, etc.
-
-## Hub page layout
-
-```text
-+--------------------------------------------------------+
-| Settings                                    [Search]   |
-+----------------+---------------------------------------+
-| Account        |  Account                              |
-| Business       |  ┌─ Profile ──────────────────────┐   |
-| Payments       |  │ Name, photo, contact           │   |
-| Pupils         |  └────────────────────────────────┘   |
-| Website        |  ┌─ Notifications ────────────────┐   |
-| Integrations   |  │ Email / SMS / Push toggles     │   |
-|                |  └────────────────────────────────┘   |
-+----------------+---------------------------------------+
-```
-
-- Left rail: 6 categories, sticky, active state.
-- Right pane: stacked cards per sub-area, each card edits inline (no extra navigation hops).
-- Global search at top filters cards across all categories.
-- Deep-linkable: `/instructor/settings/payments#service-fee` jumps and highlights.
-
-## Why this works
-
-- **One mental model**: "If it changes how the app behaves for me, it's in Settings." Daily work stays in the sidebar.
-- **Cuts sidebar noise**: removes ~9 items, makes the rest scannable.
-- **Discoverable**: search across all settings means users stop asking support "where do I change X?".
-- **Matches what instructors already know**: iOS/macOS Settings, Stripe Dashboard, Linear all use this rail+cards pattern.
-
-## Out of scope for this plan
-
-- Building the actual setting pages that don't exist yet (e.g. dedicated "Login & security" page) — initial implementation can link to existing pages and consolidate later.
-- Mobile settings (per project rule: no mobile changes unless explicitly asked).
-- Renaming any underlying routes.
-
-## Technical notes
-
-- New route: `/instructor/settings` with nested `:category` param, lazy-loaded.
-- Sidebar: drop the "Settings" expandable group, add single `{ label: "Settings", to: "/instructor/settings", icon: Settings }` near the bottom.
-- Existing pages keep their routes for backwards compatibility — the hub renders them inside the right pane via a registry map, or links out if they're heavy standalone pages.
-- Search uses a flat index of `{ category, card, keywords, anchor }` defined alongside the registry.
+- `src/components/instructor/settings/v3/SettingsShellV3.tsx` — remove `<aside>`, add `SettingsLanding` subcomponent, branch on `categoryId`, add back link in detail mode.
