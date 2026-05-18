@@ -249,54 +249,81 @@ export function PupilPaymentDrawer({
               </div>
 
               {/* Quick-select chips */}
-              {amountOwed > 0 && (
+              {(amountOwed > 0 || nextLesson) && (
                 <div className="flex gap-2 flex-wrap">
+                  {amountOwed > 0 && (
+                    <button
+                      onClick={() => setAmount(amountOwed.toFixed(2))}
+                      className={cn(
+                        "px-3.5 py-2 rounded-full text-xs font-medium transition-colors",
+                        Math.abs(paymentAmount - amountOwed) < 0.005
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                      )}
+                    >
+                      Balance owed · £{amountOwed.toFixed(2)}
+                    </button>
+                  )}
+                  {nextLesson && (
+                    <button
+                      onClick={() => setAmount(nextLesson.cost.toFixed(2))}
+                      className={cn(
+                        "px-3.5 py-2 rounded-full text-xs font-medium transition-colors",
+                        Math.abs(paymentAmount - nextLesson.cost) < 0.005
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                      )}
+                    >
+                      Next lesson · £{nextLesson.cost.toFixed(2)}
+                    </button>
+                  )}
                   <button
-                    onClick={() => setAmount(amountOwed.toFixed(2))}
+                    onClick={() => setAmount("")}
+                    className="px-3.5 py-2 rounded-full text-xs font-medium bg-secondary/60 text-secondary-foreground hover:bg-secondary"
+                  >
+                    Custom
+                  </button>
+                </div>
+              )}
+
+              {/* Service Fee toggle */}
+              {hasFee && (
+                <button
+                  type="button"
+                  onClick={() => setFeeEnabled((v) => !v)}
+                  className={cn(
+                    "w-full flex items-center justify-between px-4 py-3 rounded-xl border transition-colors text-left",
+                    feeEnabled ? "bg-primary/5 border-primary/30" : "bg-card border-border"
+                  )}
+                >
+                  <div>
+                    <div className="text-sm font-medium text-foreground">Add Service Fee</div>
+                    <div className="text-xs text-muted-foreground">
+                      {feeEnabled ? `+£${adminFee.toFixed(2)} added to your payment` : "Skip the card processing fee"}
+                    </div>
+                  </div>
+                  <div
                     className={cn(
-                      "px-4 py-2 rounded-full text-sm font-medium transition-colors",
-                      parseFloat(amount) === amountOwed
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                      "relative w-10 h-6 rounded-full transition-colors shrink-0",
+                      feeEnabled ? "bg-primary" : "bg-muted"
                     )}
                   >
-                    Full Balance
-                  </button>
-                  {amountOwed > 50 && (
-                    <button
-                      onClick={() => setAmount("50.00")}
+                    <div
                       className={cn(
-                        "px-4 py-2 rounded-full text-sm font-medium transition-colors",
-                        amount === "50.00"
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                        "absolute top-0.5 h-5 w-5 rounded-full bg-white transition-transform shadow",
+                        feeEnabled ? "translate-x-[18px]" : "translate-x-0.5"
                       )}
-                    >
-                      £50
-                    </button>
-                  )}
-                  {amountOwed > 100 && (
-                    <button
-                      onClick={() => setAmount("100.00")}
-                      className={cn(
-                        "px-4 py-2 rounded-full text-sm font-medium transition-colors",
-                        amount === "100.00"
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
-                      )}
-                    >
-                      £100
-                    </button>
-                  )}
-                </div>
+                    />
+                  </div>
+                </button>
               )}
 
               {/* Fee breakdown */}
               <AdminFeeBreakdown
                 baseAmount={paymentAmount}
-                adminFee={adminFee}
-                totalCharge={totalCharge}
-                hasFee={hasFee}
+                adminFee={effectiveAdminFee}
+                totalCharge={effectiveTotal}
+                hasFee={hasFee && feeEnabled}
               />
 
               {/* Recent Payments */}
