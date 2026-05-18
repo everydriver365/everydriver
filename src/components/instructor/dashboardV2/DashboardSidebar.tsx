@@ -643,6 +643,32 @@ export function DashboardSidebar({ collapsed, onToggle, userInitials, userName, 
 
           return (
             <>
+              {criticalLoaded && criticalItems.length > 0 && (
+                <div style={{ marginBottom: 8 }}>
+                  {!collapsed && (
+                    <div
+                      className="flex items-center"
+                      style={{
+                        fontSize: 10, fontWeight: 700, letterSpacing: "0.6px",
+                        color: "#DC2626", textTransform: "uppercase",
+                        padding: "6px 8px",
+                      }}
+                    >
+                      <span
+                        style={{
+                          width: 6, height: 6, borderRadius: "50%",
+                          background: "#DC2626", marginRight: 6, display: "inline-block",
+                        }}
+                      />
+                      <span>Critical</span>
+                    </div>
+                  )}
+                  <ul className="space-y-0.5">
+                    {criticalItems.map((item, idx) => renderItem(item, { isCritical: true, critIndex: idx }))}
+                  </ul>
+                </div>
+              )}
+
               {pinnedItems.length > 0 && (
                 <div style={{ marginBottom: 8 }}>
                   {!collapsed && (
