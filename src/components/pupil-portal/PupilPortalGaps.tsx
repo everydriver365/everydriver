@@ -17,7 +17,14 @@
 // =============================================================================
 
 import { useEffect, useMemo, useState } from "react";
-import { Calendar as CalendarIcon, Clock as ClockIcon, Check as CheckIcon, Loader2 } from "lucide-react";
+import {
+  Calendar as CalendarIcon,
+  Clock as ClockIcon,
+  Check as CheckIcon,
+  ChevronLeft as ChevronLeftIcon,
+  SlidersHorizontal as SlidersIcon,
+  Loader2,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { format, addDays, parseISO, startOfDay } from "date-fns";
 import { toast } from "@/hooks/use-toast";
