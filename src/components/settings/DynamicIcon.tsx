@@ -2,6 +2,7 @@ import {
   User, Lock, MessageSquare, ShieldCheck, Clock, MapPin, Calendar,
   Users, XCircle, List, CreditCard, ArrowUpDown, FileText,
   ArrowLeftRight, Info, Shield, Search, LogOut, TriangleAlert,
+  GripVertical,
   type LucideProps,
 } from "lucide-react";
 
@@ -25,6 +26,7 @@ const MAP: Record<string, React.ComponentType<LucideProps>> = {
   search: Search,
   "log-out": LogOut,
   "triangle-alert": TriangleAlert,
+  "grip-vertical": GripVertical,
 };
 
 export function DynamicIcon({
