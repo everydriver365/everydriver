@@ -1,5 +1,6 @@
-import { Bell, Moon, Sun, Sparkles, Search, ChevronRight } from "lucide-react";
-import { useLocation } from "react-router-dom";
+import { Bell, Moon, Sun, Sparkles, Search, ChevronRight, ArrowLeft } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
+
 import { useTheme } from "@/context/ThemeContext";
 
 const PAGE_LABELS: Record<string, string> = {
