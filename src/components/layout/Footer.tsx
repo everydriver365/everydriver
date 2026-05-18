@@ -85,7 +85,7 @@ export function Footer() {
               <ul style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                 {[
                   { to: "/drive365", label: "Drive365" },
-                  { to: "/pupil/login", label: "Pupil Portal" },
+                  { to: "/drive365/login", label: "Pupil Sign In" },
                   { to: "/instructor-app/login", label: "Instructor Portal" },
                   { to: "/admin/login", label: "Admin Portal" },
                 ].map((l) => (
@@ -169,7 +169,7 @@ export function Footer() {
             <h3 className="mb-4 font-semibold">Portals</h3>
             <ul className="space-y-2 text-sm text-primary-foreground/70">
               <li><Link to="/drive365" className="hover:text-accent">Drive365</Link></li>
-              <li><Link to="/pupil/login" className="hover:text-accent">Pupil Portal</Link></li>
+              <li><Link to="/drive365/login" className="hover:text-accent">Pupil Sign In</Link></li>
               <li><Link to="/instructor-app/login" className="hover:text-accent">Instructor Portal</Link></li>
               <li><Link to="/admin/login" className="hover:text-accent">Admin Portal</Link></li>
               
@@ -219,6 +219,8 @@ export function Footer() {
             <a href="/privacy-policy" className="hover:text-accent">Privacy Policy</a>
             <span>|</span>
             <Link to="/terms-of-service" className="hover:text-accent">Terms of Service</Link>
+            <span>|</span>
+            <Link to="/drive365/login" className="hover:text-accent">Pupil Sign In</Link>
             <span>|</span>
             <Link to="/instructor-app/login" className="hover:text-accent">Instructor login</Link>
           </div>

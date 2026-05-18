@@ -126,7 +126,7 @@ export default function PupilPortal() {
     return () => { supabase.removeChannel(channel); };
   }, [pupilId]);
 
-  if (!pupilId) return <Navigate to="/pupil/login" replace />;
+  if (!pupilId) return <Navigate to="/drive365/login" replace />;
 
   if (loading) {
     return (

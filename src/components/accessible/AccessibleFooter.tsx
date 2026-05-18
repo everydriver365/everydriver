@@ -22,6 +22,7 @@ export function AccessibleFooter() {
               <li><Link to="/accessible/forum" className="acc-footer-link">Forum</Link></li>
               <li><Link to="/accessible/garages" className="acc-footer-link">Garages</Link></li>
               <li><Link to="/accessible/trackers" className="acc-footer-link">Trackers</Link></li>
+              <li><Link to="/drive365/login" className="acc-footer-link">Pupil Sign In</Link></li>
             </ul>
           </div>
 

@@ -159,7 +159,7 @@ export function Drive365Header() {
           {/* Right side (desktop) */}
           <div className="hidden lg:flex items-center gap-5 shrink-0">
             <Link
-              to="/pupil/login"
+              to="/drive365/login"
               className="text-[14px] font-medium text-[#0A0A0A] hover:text-[#0F2044] transition-colors"
             >
               Pupil login
@@ -212,7 +212,7 @@ export function Drive365Header() {
                 </Link>
               ))}
               <div className="h-px bg-white/10 my-2" />
-              <Link to="/pupil/login" className="text-primary-foreground/70 text-sm py-2">
+              <Link to="/drive365/login" className="text-primary-foreground/70 text-sm py-2">
                 Pupil login
               </Link>
             </div>

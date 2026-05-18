@@ -202,7 +202,7 @@ export function Header() {
                     Instructor Login
                   </Link>
                   <Link
-                    to="/pupil/login"
+                    to="/drive365/login"
                     onClick={() => setIsMobileMenuOpen(false)}
                     className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground flex items-center gap-2"
                   >
