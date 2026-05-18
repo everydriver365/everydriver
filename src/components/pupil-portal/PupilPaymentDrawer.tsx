@@ -341,7 +341,7 @@ export function PupilPaymentDrawer({
                 <ChevronRight className="h-5 w-5 ml-1" />
               </Button>
             </div>
-          ) : (
+          ) : stage === "method" ? (
             <div className="px-5 pb-8 space-y-4 overflow-auto">
               {/* Header with back */}
               <div className="flex items-center gap-3 pt-1">
