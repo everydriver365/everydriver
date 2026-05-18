@@ -84,7 +84,7 @@ export function GPSConnectionChecklist({
               variant="outline" 
               size="sm" 
               className="mt-3 w-full border-amber-400 dark:border-amber-600 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900"
-              onClick={() => navigate("/instructor/settings/gps-tracking")}
+              onClick={() => navigate("/instructor/settings/gps")}
             >
               <ExternalLink className="h-4 w-4 mr-2" />
               View Setup Instructions
