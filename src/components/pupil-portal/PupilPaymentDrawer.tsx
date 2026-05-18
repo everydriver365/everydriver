@@ -37,6 +37,12 @@ interface RecentPayment {
   recorded_at: string;
 }
 
+interface NextLessonCost {
+  cost: number;
+  date: string;
+  durationMinutes: number;
+}
+
 export function PupilPaymentDrawer({
   open,
   onOpenChange,
@@ -56,12 +62,16 @@ export function PupilPaymentDrawer({
   const [selectedGateway, setSelectedGateway] = useState<PaymentGateway | null>(null);
   const [bnplExpanded, setBnplExpanded] = useState(false);
   const [recentPayments, setRecentPayments] = useState<RecentPayment[]>([]);
+  const [nextLesson, setNextLesson] = useState<NextLessonCost | null>(null);
+  const [feeEnabled, setFeeEnabled] = useState(true);
 
   const amountOwed = Math.abs(accountBalance);
   const paymentAmount = parseFloat(amount) || 0;
   const tierConfig = useInstructorTierConfig(instructorId);
   const splitPercent = commissionPayer === "instructor" ? 0 : commissionPayer === "split" ? 50 : 100;
   const { adminFee, totalCharge, hasFee } = useAdminFee(paymentAmount, splitPercent, tierConfig);
+  const effectiveAdminFee = hasFee && feeEnabled ? adminFee : 0;
+  const effectiveTotal = paymentAmount + effectiveAdminFee;
 
   // Fetch recent payments when drawer opens
   useEffect(() => {
@@ -75,6 +85,37 @@ export function PupilPaymentDrawer({
         .limit(3)
         .then(({ data }) => setRecentPayments(data || []));
     }
+  }, [open, pupilId]);
+
+  // Fetch next upcoming lesson cost
+  useEffect(() => {
+    if (!open || !pupilId) return;
+    const today = format(new Date(), "yyyy-MM-dd");
+    supabase
+      .from("scheduled_lessons")
+      .select("id, lesson_date, start_time, duration_minutes, amount_due, price_per_hour, status")
+      .eq("pupil_id", pupilId)
+      .gte("lesson_date", today)
+      .neq("status", "cancelled")
+      .neq("status", "completed")
+      .order("lesson_date", { ascending: true })
+      .order("start_time", { ascending: true })
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!data) { setNextLesson(null); return; }
+        const dur = Number(data.duration_minutes) || 0;
+        const due = data.amount_due != null ? Number(data.amount_due) : null;
+        const pph = data.price_per_hour != null ? Number(data.price_per_hour) : null;
+        const cost = due != null && due > 0
+          ? due
+          : (pph != null && pph > 0 && dur > 0 ? (pph * dur) / 60 : 0);
+        if (cost > 0) {
+          setNextLesson({ cost, date: data.lesson_date, durationMinutes: dur });
+        } else {
+          setNextLesson(null);
+        }
+      });
   }, [open, pupilId]);
 
   const handleOpenChange = (isOpen: boolean) => {
@@ -111,7 +152,7 @@ export function PupilPaymentDrawer({
           pupilId,
           instructorId,
           amount: paymentAmount,
-          adminFee: hasFee ? adminFee : 0,
+          adminFee: effectiveAdminFee,
           gateway,
           customerName: pupilName,
           customerEmail: pupilEmail || undefined,
@@ -208,54 +249,81 @@ export function PupilPaymentDrawer({
               </div>
 
               {/* Quick-select chips */}
-              {amountOwed > 0 && (
+              {(amountOwed > 0 || nextLesson) && (
                 <div className="flex gap-2 flex-wrap">
+                  {amountOwed > 0 && (
+                    <button
+                      onClick={() => setAmount(amountOwed.toFixed(2))}
+                      className={cn(
+                        "px-3.5 py-2 rounded-full text-xs font-medium transition-colors",
+                        Math.abs(paymentAmount - amountOwed) < 0.005
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                      )}
+                    >
+                      Balance owed · £{amountOwed.toFixed(2)}
+                    </button>
+                  )}
+                  {nextLesson && (
+                    <button
+                      onClick={() => setAmount(nextLesson.cost.toFixed(2))}
+                      className={cn(
+                        "px-3.5 py-2 rounded-full text-xs font-medium transition-colors",
+                        Math.abs(paymentAmount - nextLesson.cost) < 0.005
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                      )}
+                    >
+                      Next lesson · £{nextLesson.cost.toFixed(2)}
+                    </button>
+                  )}
                   <button
-                    onClick={() => setAmount(amountOwed.toFixed(2))}
+                    onClick={() => setAmount("")}
+                    className="px-3.5 py-2 rounded-full text-xs font-medium bg-secondary/60 text-secondary-foreground hover:bg-secondary"
+                  >
+                    Custom
+                  </button>
+                </div>
+              )}
+
+              {/* Service Fee toggle */}
+              {hasFee && (
+                <button
+                  type="button"
+                  onClick={() => setFeeEnabled((v) => !v)}
+                  className={cn(
+                    "w-full flex items-center justify-between px-4 py-3 rounded-xl border transition-colors text-left",
+                    feeEnabled ? "bg-primary/5 border-primary/30" : "bg-card border-border"
+                  )}
+                >
+                  <div>
+                    <div className="text-sm font-medium text-foreground">Add Service Fee</div>
+                    <div className="text-xs text-muted-foreground">
+                      {feeEnabled ? `+£${adminFee.toFixed(2)} added to your payment` : "Skip the card processing fee"}
+                    </div>
+                  </div>
+                  <div
                     className={cn(
-                      "px-4 py-2 rounded-full text-sm font-medium transition-colors",
-                      parseFloat(amount) === amountOwed
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                      "relative w-10 h-6 rounded-full transition-colors shrink-0",
+                      feeEnabled ? "bg-primary" : "bg-muted"
                     )}
                   >
-                    Full Balance
-                  </button>
-                  {amountOwed > 50 && (
-                    <button
-                      onClick={() => setAmount("50.00")}
+                    <div
                       className={cn(
-                        "px-4 py-2 rounded-full text-sm font-medium transition-colors",
-                        amount === "50.00"
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                        "absolute top-0.5 h-5 w-5 rounded-full bg-white transition-transform shadow",
+                        feeEnabled ? "translate-x-[18px]" : "translate-x-0.5"
                       )}
-                    >
-                      £50
-                    </button>
-                  )}
-                  {amountOwed > 100 && (
-                    <button
-                      onClick={() => setAmount("100.00")}
-                      className={cn(
-                        "px-4 py-2 rounded-full text-sm font-medium transition-colors",
-                        amount === "100.00"
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
-                      )}
-                    >
-                      £100
-                    </button>
-                  )}
-                </div>
+                    />
+                  </div>
+                </button>
               )}
 
               {/* Fee breakdown */}
               <AdminFeeBreakdown
                 baseAmount={paymentAmount}
-                adminFee={adminFee}
-                totalCharge={totalCharge}
-                hasFee={hasFee}
+                adminFee={effectiveAdminFee}
+                totalCharge={effectiveTotal}
+                hasFee={hasFee && feeEnabled}
               />
 
               {/* Recent Payments */}
@@ -285,7 +353,7 @@ export function PupilPaymentDrawer({
                 className="w-full h-12 rounded-xl text-base font-semibold"
                 disabled={paymentAmount <= 0}
               >
-                Continue — £{totalCharge.toFixed(2)}
+                Continue — £{effectiveTotal.toFixed(2)}
                 <ChevronRight className="h-5 w-5 ml-1" />
               </Button>
             </div>
@@ -301,7 +369,7 @@ export function PupilPaymentDrawer({
                   <ArrowLeft className="h-5 w-5" />
                 </button>
                 <div className="flex-1">
-                  <h2 className="text-[17px] font-semibold text-foreground">Pay £{totalCharge.toFixed(2)}</h2>
+                  <h2 className="text-[17px] font-semibold text-foreground">Pay £{effectiveTotal.toFixed(2)}</h2>
                   <p className="text-xs text-muted-foreground">Choose payment method</p>
                 </div>
               </div>
@@ -310,7 +378,7 @@ export function PupilPaymentDrawer({
               <div className="space-y-2">
                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Express checkout</p>
                 <SquareWalletButtons
-                  amount={totalCharge}
+                  amount={effectiveTotal}
                   pupilId={pupilId}
                   instructorId={instructorId}
                   customerName={pupilName}
