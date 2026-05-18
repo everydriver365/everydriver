@@ -63,7 +63,7 @@ export function PupilMobileHeader({
               <img
                 src={drive365Logo}
                 alt="Drive365"
-                className="h-7 object-contain brightness-0 invert"
+                className="h-8 object-contain"
               />
             )}
           </div>
