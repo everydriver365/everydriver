@@ -294,36 +294,11 @@ export function PupilPaymentDrawer({
                 </div>
               )}
 
-              {/* Service Fee toggle */}
-              {hasFee && (
-                <button
-                  type="button"
-                  onClick={() => setFeeEnabled((v) => !v)}
-                  className={cn(
-                    "w-full flex items-center justify-between px-4 py-3 rounded-xl border transition-colors text-left",
-                    feeEnabled ? "bg-primary/5 border-primary/30" : "bg-card border-border"
-                  )}
-                >
-                  <div>
-                    <div className="text-sm font-medium text-foreground">Add Service Fee</div>
-                    <div className="text-xs text-muted-foreground">
-                      {feeEnabled ? `+£${adminFee.toFixed(2)} added to your payment` : "Skip the card processing fee"}
-                    </div>
-                  </div>
-                  <div
-                    className={cn(
-                      "relative w-10 h-6 rounded-full transition-colors shrink-0",
-                      feeEnabled ? "bg-primary" : "bg-muted"
-                    )}
-                  >
-                    <div
-                      className={cn(
-                        "absolute top-0.5 h-5 w-5 rounded-full bg-white transition-transform shadow",
-                        feeEnabled ? "translate-x-[18px]" : "translate-x-0.5"
-                      )}
-                    />
-                  </div>
-                </button>
+              {/* Service Fee toggle — hidden from pupils; fee always applies */}
+              {hasFee && feeEnabled && (
+                <div className="text-xs text-muted-foreground px-1">
+                  Service fee of £{adminFee.toFixed(2)} included
+                </div>
               )}
 
               {/* Fee breakdown */}
