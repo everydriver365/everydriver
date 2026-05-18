@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft, Menu, LogOut, User } from "lucide-react";
-import drive365Logo from "@/assets/drive365-logo.png";
+import drive365Logo from "@/assets/drive365-logo-white.png";
 import {
   DropdownMenu,
   DropdownMenuContent,
