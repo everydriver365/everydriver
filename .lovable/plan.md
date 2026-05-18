@@ -1,42 +1,42 @@
-## Add "Critical" section to instructor desktop sidebar
+## Problem
 
-A new fixed-position section at the very top of `DashboardSidebar`, above Favorites and all category groups. Editable per instructor, persisted to DB + localStorage (same pattern as `sidebar_pinned`).
+Clicking "How pupils book" in the Critical sidebar goes to `/instructor/settings/how-pupils-book` and renders a "complete mess" — actually the Profile panel.
 
-### Default items
+Why: there are two settings pages in the codebase:
 
-Seeded once per instructor (first load only) with these routes:
+- `src/pages/instructor/SettingsPage.tsx` — old V2 shell. Its `ALL_SETTING_IDS` only knows ids like `profile, hours, how-book, vehicle, rates, payment-methods…`.
+- `src/pages/instructor/InstructorSettingsHub.tsx` — new V3 shell (`SettingsShellV3`). Its `AREA_GROUPS` use ids like `how-pupils-book, working-hours, credentials, rates-coverage, payments, discounts-packages, mini-site, branding, plan-billing, phone-ai, data-privacy…` and it also has a `LEGACY_ID_MAP` to translate the old ids.
 
-1. Profile → `/instructor/settings/profile`
-2. Schedule → `/instructor/schedule`
-3. Availability (Working hours) → `/instructor/settings/working-hours`
-4. Booking Flow (How pupils book) → `/instructor/settings/how-pupils-book`
-5. Pupils → `/instructor/pupils`
-6. Payments → `/instructor/pay`
-7. Discounts → `/instructor/settings/discounts-packages`
-8. Tests (Driving Tests) → `/instructor/test-results`
+The route `/instructor/settings/:categoryId` in `src/routes/instructorPortalRoutes.tsx` currently lazy-loads `SettingsPage` (the V2 shell). So when the sidebar (and the seeded Critical defaults) link to V3 slugs like `how-pupils-book`, V2 doesn't recognise them, silently falls back to `"profile"`, and the user sees Profile rendered under a "How pupils book" link.
 
-### Behaviour
+This is not just "How pupils book" — the same fallback silently breaks: `working-hours`, `rates-coverage`, `credentials`, `discounts-packages`, `payments`, `phone-ai`, `mini-site`, `branding`, `plan-billing`, `data-privacy`, `appearance-layout`, `help-close`, `lab-features`, `login-security`, `messaging`. All of these currently land on Profile.
 
-- **Layout**: rendered above the existing "Pinned" block, with its own uppercase "CRITICAL" header (red accent dot to differentiate from grey "Pinned").
-- **Reorder**: drag-and-drop within the Critical list, same HTML5 DnD as Favorites, with the existing "order saved" toast.
-- **Add**: same pin button on every sidebar item — long-press or right-click on the pin shows a small menu "Add to Critical / Add to Favorites". Simplest: keep the pin icon for Favorites and add a small star icon (only visible on hover) that adds the item to Critical. Clicking the star on an item already in Critical removes it.
-- **Remove**: hovering a Critical row shows an "x" on the right.
-- **Hide section**: if the instructor empties Critical, the whole section disappears (no empty state).
+## Fix
 
-### Persistence
+Point the settings routes at the V3 hub, which is the page the sidebar was already written for and which already handles legacy ids.
 
-- New JSONB column `instructors.sidebar_critical` (array of route paths).
-- On first load for an instructor whose column is empty / null, seed with the 8 defaults above and write back. After that, only respect what's in the DB (so removals stick).
-- localStorage mirror under `dsm.dashboard.sidebar.critical` as offline fallback (matches Favorites pattern).
-- Updates write to both, then `toast.success("Critical order saved")` on drag-reorder.
+### Changes
 
-### Files touched
+1. `src/routes/instructorPortalRoutes.tsx`
+   - Change the lazy import from `@/pages/instructor/SettingsPage` to `@/pages/instructor/InstructorSettingsHub` (keep the same `InstructorSettingsHub` variable name).
+   - Leave the two route entries (`/instructor/settings` and `/instructor/settings/:categoryId`) as-is.
 
-- `supabase/migrations/<new>` — add `sidebar_critical jsonb default '[]'`.
-- `src/components/instructor/dashboardV2/DashboardSidebar.tsx` — add state, load/save hooks, star toggle button, Critical render block above the Pinned block, drag handlers (reuse the existing pattern).
+2. No other code changes. `SettingsShellV3` already:
+   - Reads `:categoryId` and resolves it via `ALL_ITEM_IDS` or `LEGACY_ID_MAP`.
+   - Renders the matching area item ("How pupils book" → bookings/courses, booking-mode, deposits, intake).
+   - Falls back gracefully if the slug is unknown.
+
+3. Mobile is unchanged — `InstructorSettingsHub` already renders the existing `SettingsLayout` drill-down on mobile, matching the project rule of not altering mobile layouts.
 
 ### Out of scope
 
-- Mobile sidebar (per project rule: no mobile changes unless asked).
-- Settings sidebar (separate component).
-- No change to the existing Favorites / pin behaviour or its toast.
+- Not renaming any sidebar links.
+- Not editing `SettingsPage.tsx` (left in place; can be removed in a later cleanup once we confirm nothing else imports it).
+- No DB/migration changes; the seeded Critical defaults already use the V3 slugs.
+
+### Verification
+
+After the change:
+- `/instructor/settings/how-pupils-book` shows the "How pupils book" hero + Courses / Booking mode / Deposits / Intake sections.
+- `/instructor/settings/working-hours`, `/rates-coverage`, `/credentials`, `/payments`, `/discounts-packages`, `/mini-site`, `/branding`, `/plan-billing`, `/data-privacy` all resolve to their correct V3 area items instead of falling back to Profile.
+- `/instructor/settings/hours` (legacy) still resolves via `LEGACY_ID_MAP` if anything still links to it.
