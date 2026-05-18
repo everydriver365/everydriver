@@ -13,7 +13,7 @@ const InstructorSchedule = lazy(() => import("@/pages/instructor-app/InstructorS
 const InstructorEventDetails = lazy(() => import("@/pages/InstructorEventDetails"));
 const InstructorDiary = lazy(() => import("@/pages/InstructorDiary"));
 
-const InstructorSettingsHub = lazy(() => import("@/pages/instructor/SettingsPage"));
+const InstructorSettingsHub = lazy(() => import("@/pages/instructor/InstructorSettingsHub"));
 const InstructorNotifications = lazy(() => import("@/pages/InstructorNotifications"));
 const InstallInstructor = lazy(() => import("@/pages/InstallInstructor"));
 const IconPreviewPage = lazy(() => import("@/pages/instructor/IconPreviewPage"));
