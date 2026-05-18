@@ -1,12 +1,35 @@
-import { useState, useEffect } from "react";
+// =============================================================================
+// PupilPortalGaps.tsx — pupil-facing "Book a Lesson" screen.
+//
+// Slot computation is delegated to the unified availability engine
+// (`computeDaySlots` + `loadCourseAvailabilitySources` in
+// `src/lib/courseAvailability.ts`) — the same engine used by the public
+// booking page, /courses discovery, the auto-scheduler, the instructor
+// gap-fill view, and the create-booking guard. This guarantees the pupil
+// sees exactly what the instructor sees in their own diary.
+//
+// Busyness sources: Google Calendar mirror (`instructor_calendar_events`)
+// + `instructor_manual_blocks` ONLY. `scheduled_lessons` is CRM data and is
+// NEVER consulted for availability (see mem://constraints/google-calendar-source-of-truth).
+// =============================================================================
+
+import { useEffect, useState } from "react";
 import { Calendar, Clock, Check, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { format, addDays, parseISO, isBefore, isAfter, startOfDay } from "date-fns";
+import { format, addDays, parseISO, startOfDay } from "date-fns";
 import { toast } from "@/hooks/use-toast";
 import { checkLessonClash, describeLessonClashError } from "@/lib/lessonClashCheck";
+import {
+  computeDaySlots,
+  loadCourseAvailabilitySources,
+  type InstructorLite,
+  type CourseAvailabilitySources,
+} from "@/lib/courseAvailability";
+import { fromMinutes } from "@/lib/availabilityEngine";
+import { geocodePostcode } from "@/lib/travelTime";
+import { cn } from "@/lib/utils";
 
 interface PupilPortalGapsProps {
   pupilId: string;
@@ -15,182 +38,154 @@ interface PupilPortalGapsProps {
   darkMode: boolean;
 }
 
-interface TimeSlot {
+interface DaySlot {
   date: string;
+  startMin: number;
+  endMin: number;
   startTime: string;
   endTime: string;
-  duration: number;
 }
 
-interface WorkingHours {
-  day_of_week: number;
-  start_time: string;
-  end_time: string;
-  is_active: boolean;
+interface InstructorRow {
+  id: string;
+  available_from: string | null;
+  buffer_minutes: number | null;
+  slot_increment_minutes: number | null;
+  is_network_placeholder: boolean | null;
+  preferred_lesson_length: number | null;
+  allowed_lesson_lengths: number[] | null;
 }
 
-interface ScheduledLesson {
-  lesson_date: string;
-  start_time: string;
-  duration_minutes: number;
-}
+const FALLBACK_DURATIONS = [60, 90, 120];
 
-export function PupilPortalGaps({ 
-  pupilId, 
-  instructorId, 
-  brandColour, 
-  darkMode 
+export function PupilPortalGaps({
+  pupilId,
+  instructorId,
+  brandColour,
 }: PupilPortalGapsProps) {
-  const [availableSlots, setAvailableSlots] = useState<TimeSlot[]>([]);
   const [loading, setLoading] = useState(true);
   const [booking, setBooking] = useState<string | null>(null);
+  const [instructor, setInstructor] = useState<InstructorRow | null>(null);
+  const [pupilPickup, setPupilPickup] = useState<{ lat: number; lng: number } | null>(null);
+  const [pupilAddress, setPupilAddress] = useState<{ address: string; postcode: string }>({ address: "", postcode: "" });
+  const [sources, setSources] = useState<CourseAvailabilitySources | null>(null);
+  const [durationMinutes, setDurationMinutes] = useState<number>(60);
+  const [slots, setSlots] = useState<DaySlot[]>([]);
 
+  // Load instructor settings + pupil pickup + availability sources once.
   useEffect(() => {
-    calculateAvailableSlots();
-  }, [instructorId]);
+    let cancelled = false;
 
-  const calculateAvailableSlots = async () => {
-    try {
-      // Fetch working hours
-      const { data: workingHours } = await supabase
-        .from("instructor_working_hours")
-        .select("day_of_week, start_time, end_time, is_active")
-        .eq("instructor_id", instructorId)
-        .eq("is_active", true);
+    (async () => {
+      setLoading(true);
+      try {
+        const fromDate = startOfDay(new Date());
+        const toDate = addDays(fromDate, 14);
 
-      if (!workingHours || workingHours.length === 0) {
-        setLoading(false);
-        return;
+        const [instrRes, pupilRes, src] = await Promise.all([
+          supabase
+            .from("instructors")
+            .select(
+              "id, available_from, buffer_minutes, slot_increment_minutes, is_network_placeholder, preferred_lesson_length, allowed_lesson_lengths",
+            )
+            .eq("id", instructorId)
+            .maybeSingle(),
+          supabase
+            .from("pupils")
+            .select("address, postcode")
+            .eq("id", pupilId)
+            .maybeSingle(),
+          loadCourseAvailabilitySources(supabase, [instructorId], fromDate, toDate),
+        ]);
+
+        if (cancelled) return;
+
+        const instrRow = (instrRes.data as InstructorRow | null) ?? null;
+        setInstructor(instrRow);
+
+        const defaultDur =
+          instrRow?.preferred_lesson_length && instrRow.preferred_lesson_length > 0
+            ? instrRow.preferred_lesson_length
+            : 60;
+        setDurationMinutes(defaultDur);
+
+        const pAddr = (pupilRes.data?.address as string | null) ?? "";
+        const pPc = (pupilRes.data?.postcode as string | null) ?? "";
+        setPupilAddress({ address: pAddr, postcode: pPc });
+
+        if (pPc) {
+          const coords = await geocodePostcode(pPc);
+          if (!cancelled) setPupilPickup(coords);
+        }
+
+        setSources(src);
+      } catch (err) {
+        console.error("Error loading availability sources:", err);
+      } finally {
+        if (!cancelled) setLoading(false);
       }
+    })();
 
-      // Fetch existing lessons for next 14 days
-      const today = format(new Date(), 'yyyy-MM-dd');
-      const twoWeeksLater = format(addDays(new Date(), 14), 'yyyy-MM-dd');
+    return () => {
+      cancelled = true;
+    };
+  }, [instructorId, pupilId]);
 
-      const [{ data: existingLessons }, { data: calendarEvents }] = await Promise.all([
-        supabase
-          .from("scheduled_lessons")
-          .select("lesson_date, start_time, duration_minutes")
-          .eq("instructor_id", instructorId)
-          .neq("status", "cancelled")
-          .gte("lesson_date", today)
-          .lte("lesson_date", twoWeeksLater),
-        supabase
-          .from("instructor_calendar_events")
-          .select("start_time, end_time")
-          .eq("instructor_id", instructorId)
-          .eq("is_busy", true)
-          .gte("end_time", `${today}T00:00:00`)
-          .lte("start_time", `${twoWeeksLater}T23:59:59`)
-      ]);
+  // Recompute slots whenever instructor/sources/duration/pickup change.
+  useEffect(() => {
+    if (!instructor || !sources) {
+      setSlots([]);
+      return;
+    }
 
-      // Parse calendar events into per-day busy blocks (ignoring all-day events)
-      const calendarBusyByDate: Record<string, { start: number; end: number }[]> = {};
-      (calendarEvents || []).forEach(ev => {
-        const evStart = new Date(ev.start_time);
-        const evEnd = new Date(ev.end_time);
-        // Skip all-day events (span >= 24 hours)
-        if (evEnd.getTime() - evStart.getTime() >= 24 * 60 * 60 * 1000) return;
-        const evDateStr = format(evStart, 'yyyy-MM-dd');
-        if (!calendarBusyByDate[evDateStr]) calendarBusyByDate[evDateStr] = [];
-        calendarBusyByDate[evDateStr].push({
-          start: evStart.getHours() * 60 + evStart.getMinutes(),
-          end: evEnd.getHours() * 60 + evEnd.getMinutes()
-        });
+    const instructorLite: InstructorLite = {
+      id: instructor.id,
+      available_from: instructor.available_from,
+      buffer_minutes: instructor.buffer_minutes ?? 0,
+      is_network_placeholder: instructor.is_network_placeholder ?? false,
+    };
+
+    const fromDate = startOfDay(new Date());
+    const slotIncrement = instructor.slot_increment_minutes ?? 60;
+    const buffer = instructor.buffer_minutes ?? 0;
+
+    const out: DaySlot[] = [];
+    for (let i = 0; i <= 14; i++) {
+      const day = addDays(fromDate, i);
+      const dateStr = format(day, "yyyy-MM-dd");
+
+      const { slots: daySlots } = computeDaySlots(instructorLite, day, sources, {
+        durationMinutes,
+        bufferMinutes: buffer,
+        slotIncrementMinutes: slotIncrement,
+        candidatePickup: pupilPickup ?? undefined,
       });
 
-      // Calculate available slots
-      const slots: TimeSlot[] = [];
-      
-      for (let i = 1; i <= 14; i++) {
-        const date = addDays(new Date(), i);
-        const dayOfWeek = date.getDay();
-        const dateStr = format(date, 'yyyy-MM-dd');
-
-        // Find working hours for this day
-        const dayHours = workingHours.find(wh => wh.day_of_week === dayOfWeek);
-        if (!dayHours) continue;
-
-        // Parse working hours
-        const [startHour, startMin] = dayHours.start_time.split(':').map(Number);
-        const [endHour, endMin] = dayHours.end_time.split(':').map(Number);
-        const workStart = startHour * 60 + startMin;
-        const workEnd = endHour * 60 + endMin;
-
-        // Get lessons for this day
-        const dayLessons = (existingLessons || [])
-          .filter(l => l.lesson_date === dateStr)
-          .map(l => {
-            const [h, m] = l.start_time.split(':').map(Number);
-            return {
-              start: h * 60 + m,
-              end: h * 60 + m + l.duration_minutes
-            };
-          })
-          .sort((a, b) => a.start - b.start);
-
-        // Merge lesson blocks with calendar busy blocks
-        const calBusy = (calendarBusyByDate[dateStr] || []).map(b => ({ start: b.start, end: b.end }));
-        const allBusy = [...dayLessons, ...calBusy].sort((a, b) => a.start - b.start);
-
-        // Find gaps
-        let currentTime = workStart;
-        
-        for (const block of allBusy) {
-          if (block.start > currentTime) {
-            const gapDuration = block.start - currentTime;
-            if (gapDuration >= 60) {
-              slots.push({
-                date: dateStr,
-                startTime: `${Math.floor(currentTime / 60).toString().padStart(2, '0')}:${(currentTime % 60).toString().padStart(2, '0')}`,
-                endTime: `${Math.floor(block.start / 60).toString().padStart(2, '0')}:${(block.start % 60).toString().padStart(2, '0')}`,
-                duration: gapDuration
-              });
-            }
-          }
-          currentTime = Math.max(currentTime, block.end);
-        }
-
-        // Check for gap after last block
-        if (currentTime < workEnd) {
-          const gapDuration = workEnd - currentTime;
-          if (gapDuration >= 60) {
-            slots.push({
-              date: dateStr,
-              startTime: `${Math.floor(currentTime / 60).toString().padStart(2, '0')}:${(currentTime % 60).toString().padStart(2, '0')}`,
-              endTime: `${Math.floor(workEnd / 60).toString().padStart(2, '0')}:${(workEnd % 60).toString().padStart(2, '0')}`,
-              duration: gapDuration
-            });
-          }
-        }
+      for (const s of daySlots) {
+        out.push({
+          date: dateStr,
+          startMin: s.start,
+          endMin: s.end,
+          startTime: fromMinutes(s.start),
+          endTime: fromMinutes(s.end),
+        });
       }
-
-      setAvailableSlots(slots.slice(0, 20)); // Limit to 20 slots
-    } catch (error) {
-      console.error("Error calculating slots:", error);
-    } finally {
-      setLoading(false);
     }
-  };
 
-  const handleBookSlot = async (slot: TimeSlot) => {
+    setSlots(out);
+  }, [instructor, sources, durationMinutes, pupilPickup]);
+
+  const handleBookSlot = async (slot: DaySlot) => {
     const slotKey = `${slot.date}-${slot.startTime}`;
     setBooking(slotKey);
 
     try {
-      // Get pupil details for pickup location
-      const { data: pupilData } = await supabase
-        .from("pupils")
-        .select("address, postcode")
-        .eq("id", pupilId)
-        .single();
-
-      // Pre-check for a clash before inserting.
+      // Pre-check for a clash before inserting (race-condition guard).
       const clash = await checkLessonClash({
         instructorId,
         date: slot.date,
         startTime: slot.startTime,
-        durationMinutes: 60,
+        durationMinutes,
       });
       if (clash.hardOverlap) {
         toast({
@@ -198,28 +193,22 @@ export function PupilPortalGaps({
           description: clash.message ?? "That slot is already booked. Please pick another time.",
           variant: "destructive",
         });
-        // Drop it from the visible list so the pupil can pick another.
-        setAvailableSlots(prev => prev.filter(s =>
-          !(s.date === slot.date && s.startTime === slot.startTime)
-        ));
+        setSlots((prev) => prev.filter((s) => !(s.date === slot.date && s.startTime === slot.startTime)));
         return;
       }
 
-      // Create the booking (1 hour lesson at slot start)
-      const { error } = await supabase
-        .from("scheduled_lessons")
-        .insert({
-          instructor_id: instructorId,
-          pupil_id: pupilId,
-          lesson_date: slot.date,
-          start_time: slot.startTime,
-          duration_minutes: 60,
-          pickup_location: pupilData?.address || '',
-          pickup_postcode: pupilData?.postcode || '',
-          lesson_type: 'Standard Lesson',
-          status: 'confirmed',
-          payment_status: 'not_paid'
-        });
+      const { error } = await supabase.from("scheduled_lessons").insert({
+        instructor_id: instructorId,
+        pupil_id: pupilId,
+        lesson_date: slot.date,
+        start_time: slot.startTime,
+        duration_minutes: durationMinutes,
+        pickup_location: pupilAddress.address || "",
+        pickup_postcode: pupilAddress.postcode || "",
+        lesson_type: "Standard Lesson",
+        status: "confirmed",
+        payment_status: "not_paid",
+      });
 
       if (error) {
         const friendly = describeLessonClashError(error);
@@ -231,13 +220,11 @@ export function PupilPortalGaps({
       }
 
       toast({ title: "Lesson booked!", description: "Your instructor will confirm shortly" });
-      
-      // Remove the slot from available
-      setAvailableSlots(prev => prev.filter(s => 
-        !(s.date === slot.date && s.startTime === slot.startTime)
-      ));
-    } catch (error) {
-      console.error("Error booking slot:", error);
+      // Optimistic: drop the slot. The `sync-lesson-now` trigger will mirror
+      // the booking into `instructor_calendar_events` so future loads hide it.
+      setSlots((prev) => prev.filter((s) => !(s.date === slot.date && s.startTime === slot.startTime)));
+    } catch (err) {
+      console.error("Error booking slot:", err);
       toast({ title: "Error", description: "Failed to book lesson", variant: "destructive" });
     } finally {
       setBooking(null);
@@ -252,30 +239,18 @@ export function PupilPortalGaps({
     return `${displayHour}:${minutes}${ampm}`;
   };
 
+  // Duration chips: prefer instructor.allowed_lesson_lengths, fallback to common set.
+  const durationOptions =
+    instructor?.allowed_lesson_lengths && instructor.allowed_lesson_lengths.length > 0
+      ? [...instructor.allowed_lesson_lengths].sort((a, b) => a - b)
+      : FALLBACK_DURATIONS;
+
   if (loading) {
     return (
       <div className="px-4">
-        <Card style={{ backgroundColor: 'var(--brand-card)', borderColor: 'var(--brand-border)' }}>
+        <Card style={{ backgroundColor: "var(--brand-card)", borderColor: "var(--brand-border)" }}>
           <CardContent className="p-6 flex justify-center">
-            <Loader2 className="h-6 w-6 animate-spin" style={{ color: 'var(--brand-muted)' }} />
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  if (availableSlots.length === 0) {
-    return (
-      <div className="px-4">
-        <Card style={{ backgroundColor: 'var(--brand-card)', borderColor: 'var(--brand-border)' }}>
-          <CardContent className="p-6 text-center">
-            <Calendar className="h-10 w-10 mx-auto mb-3" style={{ color: 'var(--brand-muted)' }} />
-            <p className="font-medium" style={{ color: 'var(--brand-text)' }}>
-              No Available Slots
-            </p>
-            <p className="text-sm mt-1" style={{ color: 'var(--brand-muted)' }}>
-              Contact your instructor for availability
-            </p>
+            <Loader2 className="h-6 w-6 animate-spin" style={{ color: "var(--brand-muted)" }} />
           </CardContent>
         </Card>
       </div>
@@ -283,88 +258,129 @@ export function PupilPortalGaps({
   }
 
   // Group slots by date
-  const slotsByDate = availableSlots.reduce((acc, slot) => {
+  const slotsByDate = slots.reduce((acc, slot) => {
     if (!acc[slot.date]) acc[slot.date] = [];
     acc[slot.date].push(slot);
     return acc;
-  }, {} as Record<string, TimeSlot[]>);
+  }, {} as Record<string, DaySlot[]>);
 
   return (
     <div className="px-4 space-y-4">
-      <h2 className="text-lg font-bold" style={{ color: 'var(--brand-text)' }}>
-        Available Slots
-      </h2>
-      <p className="text-sm" style={{ color: 'var(--brand-muted)' }}>
-        Book an available slot for a 1-hour lesson
-      </p>
+      <div>
+        <h2 className="text-lg font-bold" style={{ color: "var(--brand-text)" }}>
+          Book a Lesson
+        </h2>
+        <p className="text-sm" style={{ color: "var(--brand-muted)" }}>
+          Choose a lesson length, then pick a time that suits you.
+        </p>
+      </div>
 
-      {Object.entries(slotsByDate).map(([date, slots]) => (
-        <Card 
-          key={date}
-          style={{ backgroundColor: 'var(--brand-card)', borderColor: 'var(--brand-border)' }}
-        >
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base flex items-center gap-2" style={{ color: 'var(--brand-text)' }}>
-              <Calendar className="h-4 w-4" style={{ color: brandColour || '#1e3a5f' }} />
-              {format(parseISO(date), 'EEEE, d MMMM')}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="space-y-2">
-              {slots.map((slot, idx) => {
-                const slotKey = `${slot.date}-${slot.startTime}`;
-                const isBooking = booking === slotKey;
+      {/* Duration chips */}
+      <div className="flex flex-wrap gap-2">
+        {durationOptions.map((d) => {
+          const active = d === durationMinutes;
+          return (
+            <button
+              key={d}
+              type="button"
+              onClick={() => setDurationMinutes(d)}
+              className={cn(
+                "px-3 py-1.5 rounded-full text-sm font-medium border transition-colors",
+                "min-h-[36px]",
+              )}
+              style={{
+                backgroundColor: active ? brandColour || "#1e3a5f" : "transparent",
+                color: active ? "#ffffff" : "var(--brand-text)",
+                borderColor: active ? brandColour || "#1e3a5f" : "var(--brand-border)",
+              }}
+            >
+              {d % 60 === 0 ? `${d / 60}h` : `${d}m`}
+            </button>
+          );
+        })}
+      </div>
 
-                return (
-                  <div 
-                    key={idx}
-                    className="flex items-center justify-between rounded-lg border p-3"
-                    style={{ borderColor: 'var(--brand-border)' }}
-                  >
-                    <div className="flex items-center gap-3">
-                      <Clock className="h-4 w-4" style={{ color: 'var(--brand-muted)' }} />
-                      <div>
-                        <div className="font-medium" style={{ color: 'var(--brand-text)' }}>
-                          {formatTime(slot.startTime)} - {formatTime(slot.endTime)}
-                        </div>
-                        <div className="text-xs" style={{ color: 'var(--brand-muted)' }}>
-                          {Math.floor(slot.duration / 60)}h {slot.duration % 60 > 0 ? `${slot.duration % 60}m` : ''} available
-                        </div>
-                      </div>
-                    </div>
-                    <Button
-                      size="sm"
-                      disabled={isBooking}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleBookSlot(slot);
-                      }}
-                      onTouchEnd={(e) => {
-                        e.preventDefault();
-                        if (!isBooking) {
-                          handleBookSlot(slot);
-                        }
-                      }}
-                      className="min-h-[44px] touch-manipulation active:scale-95 transition-transform"
-                      style={{ backgroundColor: brandColour || '#1e3a5f', color: '#ffffff' }}
-                    >
-                      {isBooking ? (
-                        <Loader2 className="h-4 w-4 animate-spin pointer-events-none" />
-                      ) : (
-                        <>
-                          <Check className="h-4 w-4 mr-1 pointer-events-none" />
-                          Book
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                );
-              })}
-            </div>
+      {Object.keys(slotsByDate).length === 0 ? (
+        <Card style={{ backgroundColor: "var(--brand-card)", borderColor: "var(--brand-border)" }}>
+          <CardContent className="p-6 text-center">
+            <Calendar className="h-10 w-10 mx-auto mb-3" style={{ color: "var(--brand-muted)" }} />
+            <p className="font-medium" style={{ color: "var(--brand-text)" }}>
+              No availability in the next 14 days
+            </p>
+            <p className="text-sm mt-1" style={{ color: "var(--brand-muted)" }}>
+              Try a different lesson length, or contact your instructor.
+            </p>
           </CardContent>
         </Card>
-      ))}
+      ) : (
+        Object.entries(slotsByDate).map(([date, daySlots]) => (
+          <Card
+            key={date}
+            style={{ backgroundColor: "var(--brand-card)", borderColor: "var(--brand-border)" }}
+          >
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base flex items-center gap-2" style={{ color: "var(--brand-text)" }}>
+                <Calendar className="h-4 w-4" style={{ color: brandColour || "#1e3a5f" }} />
+                {format(parseISO(date), "EEEE, d MMMM")}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="space-y-2">
+                {daySlots.map((slot) => {
+                  const slotKey = `${slot.date}-${slot.startTime}`;
+                  const isBooking = booking === slotKey;
+
+                  return (
+                    <div
+                      key={slotKey}
+                      className="flex items-center justify-between rounded-lg border p-3"
+                      style={{ borderColor: "var(--brand-border)" }}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Clock className="h-4 w-4" style={{ color: "var(--brand-muted)" }} />
+                        <div>
+                          <div className="font-medium" style={{ color: "var(--brand-text)" }}>
+                            {formatTime(slot.startTime)} - {formatTime(slot.endTime)}
+                          </div>
+                          <div className="text-xs" style={{ color: "var(--brand-muted)" }}>
+                            {durationMinutes % 60 === 0
+                              ? `${durationMinutes / 60}h lesson`
+                              : `${durationMinutes}m lesson`}
+                          </div>
+                        </div>
+                      </div>
+                      <Button
+                        size="sm"
+                        disabled={isBooking}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleBookSlot(slot);
+                        }}
+                        onTouchEnd={(e) => {
+                          e.preventDefault();
+                          if (!isBooking) handleBookSlot(slot);
+                        }}
+                        className="min-h-[44px] touch-manipulation active:scale-95 transition-transform"
+                        style={{ backgroundColor: brandColour || "#1e3a5f", color: "#ffffff" }}
+                      >
+                        {isBooking ? (
+                          <Loader2 className="h-4 w-4 animate-spin pointer-events-none" />
+                        ) : (
+                          <>
+                            <Check className="h-4 w-4 mr-1 pointer-events-none" />
+                            Book
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        ))
+      )}
     </div>
   );
 }
