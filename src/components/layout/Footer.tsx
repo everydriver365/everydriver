@@ -220,6 +220,8 @@ export function Footer() {
             <span>|</span>
             <Link to="/terms-of-service" className="hover:text-accent">Terms of Service</Link>
             <span>|</span>
+            <Link to="/drive365/login" className="hover:text-accent">Pupil Sign In</Link>
+            <span>|</span>
             <Link to="/instructor-app/login" className="hover:text-accent">Instructor login</Link>
           </div>
         </div>
