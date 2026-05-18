@@ -85,7 +85,7 @@ export function Footer() {
               <ul style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                 {[
                   { to: "/drive365", label: "Drive365" },
-                  { to: "/pupil/login", label: "Pupil Portal" },
+                  { to: "/drive365/login", label: "Pupil Sign In" },
                   { to: "/instructor-app/login", label: "Instructor Portal" },
                   { to: "/admin/login", label: "Admin Portal" },
                 ].map((l) => (
