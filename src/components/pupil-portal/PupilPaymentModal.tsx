@@ -47,6 +47,8 @@ export function PupilPaymentModal({
   const [amount, setAmount] = useState<string>(Math.abs(accountBalance).toFixed(2));
   const [selectedGateway, setSelectedGateway] = useState<PaymentGateway | null>(null);
   const [processing, setProcessing] = useState(false);
+  const [feeEnabled, setFeeEnabled] = useState(true);
+  const [nextLessonCost, setNextLessonCost] = useState<number | null>(null);
   const isMobile = useIsMobile();
 
   const amountOwed = Math.abs(accountBalance);
@@ -55,6 +57,34 @@ export function PupilPaymentModal({
   const tierConfig = useInstructorTierConfig(instructorId);
   const splitPercent = commissionPayer === "instructor" ? 0 : commissionPayer === "split" ? 50 : 100;
   const { adminFee, totalCharge, hasFee } = useAdminFee(paymentAmount, splitPercent, tierConfig);
+  const effectiveAdminFee = hasFee && feeEnabled ? adminFee : 0;
+  const effectiveTotal = paymentAmount + effectiveAdminFee;
+
+  useEffect(() => {
+    if (!open || !pupilId) return;
+    const today = format(new Date(), "yyyy-MM-dd");
+    supabase
+      .from("scheduled_lessons")
+      .select("duration_minutes, amount_due, price_per_hour, status, lesson_date, start_time")
+      .eq("pupil_id", pupilId)
+      .gte("lesson_date", today)
+      .neq("status", "cancelled")
+      .neq("status", "completed")
+      .order("lesson_date", { ascending: true })
+      .order("start_time", { ascending: true })
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!data) { setNextLessonCost(null); return; }
+        const dur = Number(data.duration_minutes) || 0;
+        const due = data.amount_due != null ? Number(data.amount_due) : null;
+        const pph = data.price_per_hour != null ? Number(data.price_per_hour) : null;
+        const cost = due != null && due > 0
+          ? due
+          : (pph != null && pph > 0 && dur > 0 ? (pph * dur) / 60 : 0);
+        setNextLessonCost(cost > 0 ? cost : null);
+      });
+  }, [open, pupilId]);
 
   // On mobile, render the drawer instead
   if (isMobile) {
