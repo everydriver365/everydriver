@@ -56,7 +56,8 @@ import {
   Satellite,
   Coffee,
   BookOpen,
-  Gift
+  Gift,
+  User
 } from "lucide-react";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { Button } from "@/components/ui/button";
@@ -976,6 +977,14 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                   ))}
 
                   <DrawerSectionLabel>Account</DrawerSectionLabel>
+                  <DrawerRow
+                    icon={User}
+                    label="Pupil login"
+                    onClick={() => {
+                      window.open("/pupil/login", "_blank");
+                      setIsMobileMenuOpen(false);
+                    }}
+                  />
                   <DrawerRow
                     icon={LogOut}
                     label="Sign out"
