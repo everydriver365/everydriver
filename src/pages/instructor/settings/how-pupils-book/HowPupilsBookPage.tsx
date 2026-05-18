@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -10,14 +10,20 @@ import {
 } from "@/components/settings/courses/PageChrome";
 import { CoursesSection } from "@/components/settings/courses/CoursesSection";
 import { tokens, type CourseRow } from "@/components/settings/courses/tokens";
+import { BespokeCourseDialog, type BespokeCourse } from "@/components/instructor/BespokeCourseDialog";
 
 const COURSE_SELECT =
-  "id, course_hours, course_name, is_active, offer_active, discounted_price, is_bespoke, is_intensive, price_mode, flat_price, hourly_rate_override, display_order, created_at";
+  "id, course_hours, course_name, short_description, duration_days, available_weekdays, available_from, available_to, is_active, offer_active, discounted_price, is_bespoke, is_intensive, price_mode, flat_price, hourly_rate_override, display_order, created_at";
 
 interface InstructorCourseRow {
   id: string;
   course_hours: number;
   course_name: string;
+  short_description: string | null;
+  duration_days: number | null;
+  available_weekdays: number[] | null;
+  available_from: string | null;
+  available_to: string | null;
   is_active: boolean;
   offer_active: boolean | null;
   discounted_price: number | null;
@@ -56,11 +62,52 @@ function priceFor(c: InstructorCourseRow, hourlyRate: number | null): number | n
 export default function HowPupilsBookPage() {
   const navigate = useNavigate();
   const [instructorId, setInstructorId] = useState<string | null>(null);
+  const [hourlyRate, setHourlyRate] = useState<number | null>(null);
+  const [rawCourses, setRawCourses] = useState<InstructorCourseRow[]>([]);
   const [courses, setCourses] = useState<CourseRow[]>([]);
   const [isDirty, setIsDirty] = useState(false);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editing, setEditing] = useState<BespokeCourse | null>(null);
+
+  const loadCourses = useCallback(async (iid: string, rate: number | null) => {
+    const [coursesRes, templatesRes] = await Promise.all([
+      supabase.from("instructor_courses").select(COURSE_SELECT).eq("instructor_id", iid),
+      supabase.from("course_templates").select("course_hours, is_intensive").eq("is_active", true),
+    ]);
+    if (coursesRes.error) throw coursesRes.error;
+
+    const tplByHours = new Map<number, TemplateRow>();
+    (templatesRes.data || []).forEach((t) => tplByHours.set(t.course_hours, t));
+
+    const raw = (coursesRes.data || []) as InstructorCourseRow[];
+    setRawCourses(raw);
+
+    const rows = raw
+      .map((c, idx) => {
+        const intensive = c.is_bespoke
+          ? !!c.is_intensive
+          : !!tplByHours.get(c.course_hours)?.is_intensive;
+        return {
+          id: c.id,
+          name: c.course_name,
+          hours: c.course_hours,
+          type: classifyType(c.course_hours, intensive),
+          transmission: null,
+          price: priceFor(c, rate),
+          priceSubLabel: null,
+          visible: c.is_active,
+          hasOffer: !!c.offer_active,
+          order: c.display_order ?? idx,
+        } as CourseRow;
+      })
+      .sort((a, b) => a.order - b.order)
+      .map((c, i) => ({ ...c, order: i }));
+
+    setCourses(rows);
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -73,39 +120,11 @@ export default function HowPupilsBookPage() {
         if (!iid) { setError("Instructor profile not found"); return; }
         setInstructorId(iid);
 
-        const [coursesRes, templatesRes, instructorRes] = await Promise.all([
-          supabase.from("instructor_courses").select(COURSE_SELECT).eq("instructor_id", iid),
-          supabase.from("course_templates").select("course_hours, is_intensive").eq("is_active", true),
-          supabase.from("instructors").select("hourly_rate").eq("id", iid).maybeSingle(),
-        ]);
-        if (coursesRes.error) throw coursesRes.error;
+        const instructorRes = await supabase.from("instructors").select("hourly_rate").eq("id", iid).maybeSingle();
+        const rate = instructorRes.data?.hourly_rate ?? null;
+        setHourlyRate(rate);
 
-        const hourlyRate = instructorRes.data?.hourly_rate ?? null;
-        const tplByHours = new Map<number, TemplateRow>();
-        (templatesRes.data || []).forEach((t) => tplByHours.set(t.course_hours, t));
-
-        const rows = ((coursesRes.data || []) as InstructorCourseRow[])
-          .map((c, idx) => {
-            const intensive = c.is_bespoke
-              ? !!c.is_intensive
-              : !!tplByHours.get(c.course_hours)?.is_intensive;
-            return {
-              id: c.id,
-              name: c.course_name,
-              hours: c.course_hours,
-              type: classifyType(c.course_hours, intensive),
-              transmission: null,
-              price: priceFor(c, hourlyRate),
-              priceSubLabel: null,
-              visible: c.is_active,
-              hasOffer: !!c.offer_active,
-              order: c.display_order ?? idx,
-            } as CourseRow;
-          })
-          .sort((a, b) => a.order - b.order)
-          .map((c, i) => ({ ...c, order: i }));
-
-        setCourses(rows);
+        await loadCourses(iid, rate);
       } catch (e: any) {
         console.error(e);
         setError(friendlyDbError(e, { table: "instructor_courses", operation: "select" }));
@@ -113,7 +132,7 @@ export default function HowPupilsBookPage() {
         setLoading(false);
       }
     })();
-  }, []);
+  }, [loadCourses]);
 
   const activeCount = useMemo(() => courses.filter((c) => c.visible).length, [courses]);
 
@@ -169,7 +188,7 @@ export default function HowPupilsBookPage() {
           subtitle="Choose the courses, prices and rules pupils see when booking with you."
           actions={
             <>
-              <AddButton onPress={() => navigate("/instructor/settings/how-pupils-book/add-course")} />
+              <AddButton onPress={() => { setEditing(null); setDialogOpen(true); }} />
               <SaveButton isDirty={isDirty} saving={saving} onPress={handleSave} />
             </>
           }
@@ -194,8 +213,62 @@ export default function HowPupilsBookPage() {
             activeCount={activeCount}
             onToggle={handleToggle}
             onReorder={handleReorder}
-            onEdit={(id) => navigate(`/instructor/settings/how-pupils-book/edit-course/${id}`)}
-            onOffer={(id) => navigate(`/instructor/settings/how-pupils-book/edit-course/${id}?tab=offer`)}
+            onEdit={(id) => {
+              const raw = rawCourses.find((c) => c.id === id);
+              if (!raw || !instructorId) return;
+              setEditing({
+                id: raw.id,
+                instructor_id: instructorId,
+                course_name: raw.course_name,
+                short_description: raw.short_description,
+                course_hours: raw.course_hours,
+                duration_days: raw.duration_days,
+                is_intensive: !!raw.is_intensive,
+                is_active: raw.is_active,
+                is_bespoke: !!raw.is_bespoke,
+                price_mode: (raw.price_mode as "flat" | "hourly" | "template") ?? "template",
+                flat_price: raw.flat_price,
+                hourly_rate_override: raw.hourly_rate_override,
+                available_weekdays: raw.available_weekdays,
+                available_from: raw.available_from,
+                available_to: raw.available_to,
+              });
+              setDialogOpen(true);
+            }}
+            onOffer={(id) => { /* offer flow: open edit for now */
+              const raw = rawCourses.find((c) => c.id === id);
+              if (!raw || !instructorId) return;
+              setEditing({
+                id: raw.id,
+                instructor_id: instructorId,
+                course_name: raw.course_name,
+                short_description: raw.short_description,
+                course_hours: raw.course_hours,
+                duration_days: raw.duration_days,
+                is_intensive: !!raw.is_intensive,
+                is_active: raw.is_active,
+                is_bespoke: !!raw.is_bespoke,
+                price_mode: (raw.price_mode as "flat" | "hourly" | "template") ?? "template",
+                flat_price: raw.flat_price,
+                hourly_rate_override: raw.hourly_rate_override,
+                available_weekdays: raw.available_weekdays,
+                available_from: raw.available_from,
+                available_to: raw.available_to,
+              });
+              setDialogOpen(true);
+            }}
+          />
+        )}
+
+        {instructorId && (
+          <BespokeCourseDialog
+            open={dialogOpen}
+            onOpenChange={setDialogOpen}
+            instructorId={instructorId}
+            hourlyRate={hourlyRate}
+            initial={editing}
+            onSaved={async () => { if (instructorId) await loadCourses(instructorId, hourlyRate); }}
+            onDeleted={async () => { if (instructorId) await loadCourses(instructorId, hourlyRate); }}
           />
         )}
       </div>
