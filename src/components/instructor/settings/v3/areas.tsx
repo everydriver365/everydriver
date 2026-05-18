@@ -3,7 +3,7 @@ import {
   User, ShieldCheck, GraduationCap, Calendar, MapPin,
   ShoppingBag, CreditCard, Tag, Bell, Phone, MessageCircle,
   Globe, Palette, LayoutDashboard, Wallet, Database, HelpCircle,
-  Sparkles,
+  Sparkles, BookOpen,
   type LucideIcon,
 } from "lucide-react";
 import { useSettingsCategories } from "@/components/instructor/settings/categories";
