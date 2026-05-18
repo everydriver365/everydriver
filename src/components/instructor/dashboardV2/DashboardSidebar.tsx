@@ -202,19 +202,55 @@ export function DashboardSidebar({ collapsed, onToggle, userInitials, userName, 
     });
   };
 
-  // Pinned items — persisted to localStorage by item.to (route).
+  // Pinned items — synced to DB (primary) with localStorage fallback.
   const PINNED_KEY = "dsm.dashboard.sidebar.pinned";
   const [pinned, setPinned] = useState<string[]>([]);
+
+  // Load: DB first, then localStorage fallback.
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(PINNED_KEY);
-      if (saved) setPinned(JSON.parse(saved));
-    } catch {}
-  }, []);
+    let cancelled = false;
+    const load = async () => {
+      let dbPinned: string[] | null = null;
+      if (instructorId) {
+        try {
+          const { data } = await supabase
+            .from("instructors")
+            .select("sidebar_pinned")
+            .eq("id", instructorId)
+            .single();
+          if (data?.sidebar_pinned && Array.isArray(data.sidebar_pinned)) {
+            dbPinned = data.sidebar_pinned as string[];
+          }
+        } catch {}
+      }
+      if (!cancelled) {
+        if (dbPinned) {
+          setPinned(dbPinned);
+        } else {
+          try {
+            const saved = localStorage.getItem(PINNED_KEY);
+            if (saved) setPinned(JSON.parse(saved));
+          } catch {}
+        }
+      }
+    };
+    load();
+    return () => { cancelled = true; };
+  }, [instructorId]);
+
+  const savePinned = useCallback(async (next: string[]) => {
+    try { localStorage.setItem(PINNED_KEY, JSON.stringify(next)); } catch {}
+    if (instructorId) {
+      try {
+        await supabase.from("instructors").update({ sidebar_pinned: next }).eq("id", instructorId);
+      } catch {}
+    }
+  }, [instructorId]);
+
   const togglePin = (to: string) => {
     setPinned((prev) => {
       const next = prev.includes(to) ? prev.filter((t) => t !== to) : [...prev, to];
-      try { localStorage.setItem(PINNED_KEY, JSON.stringify(next)); } catch {}
+      savePinned(next);
       return next;
     });
   };
@@ -224,7 +260,7 @@ export function DashboardSidebar({ collapsed, onToggle, userInitials, userName, 
       const next = [...prev];
       const [moved] = next.splice(from, 1);
       next.splice(to, 0, moved);
-      try { localStorage.setItem(PINNED_KEY, JSON.stringify(next)); } catch {}
+      savePinned(next);
       return next;
     });
   };
