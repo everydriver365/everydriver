@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
-import { Loader2, Sparkles, Pencil, CheckCircle2 } from "lucide-react";
+import { Loader2, Sparkles, Pencil, CheckCircle2, Plus, Wand2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { friendlyDbError } from "@/lib/supabaseError";
 import { CourseOfferDialog } from "@/components/courses/CourseOfferDialog";
 import { computeOfferStatus } from "@/lib/courseOffer";
+import { BespokeCourseDialog, type BespokeCourse } from "@/components/instructor/BespokeCourseDialog";
 
 interface InstructorCourse {
   id: string;
@@ -18,6 +19,7 @@ interface InstructorCourse {
   offer_starts_at: string | null;
   offer_ends_at: string | null;
   discounted_price: number | null;
+  is_bespoke?: boolean | null;
 }
 
 interface CourseTemplate {
@@ -47,10 +49,28 @@ const T = {
   surface: "#F2F4F8",
   white: "#FFFFFF",
   border: "#DDE3ED",
+  purple: "#6E3FD9",
+  purpleLight: "#F1ECFB",
 };
 
 const COURSE_SELECT =
-  "id, course_hours, course_name, course_image_url, is_active, offer_active, offer_label, offer_percent_off, offer_starts_at, offer_ends_at, discounted_price";
+  "id, course_hours, course_name, course_image_url, is_active, offer_active, offer_label, offer_percent_off, offer_starts_at, offer_ends_at, discounted_price, is_bespoke";
+
+const BESPOKE_SELECT =
+  "id, instructor_id, course_name, short_description, course_hours, duration_days, is_intensive, is_active, is_bespoke, price_mode, flat_price, hourly_rate_override, available_weekdays, available_from, available_to";
+
+const WEEKDAY_LABEL = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+function summariseWeekdays(days: number[] | null | undefined): string {
+  if (!days || days.length === 0) return "Any day";
+  if (days.length === 7) return "Any day";
+  const sorted = [...days].sort();
+  const weekdays = [1, 2, 3, 4, 5];
+  const weekend = [0, 6];
+  if (sorted.length === 5 && weekdays.every((d) => sorted.includes(d))) return "Weekdays";
+  if (sorted.length === 2 && weekend.every((d) => sorted.includes(d))) return "Weekends";
+  return sorted.map((d) => WEEKDAY_LABEL[d]).join(", ");
+}
 
 function HoursBadge({ hours }: { hours: number | null }) {
   return (
@@ -151,18 +171,23 @@ function DragHandle() {
 
 export function InstructorCoursesManager({ instructorId }: InstructorCoursesManagerProps) {
   const [courses, setCourses] = useState<InstructorCourse[]>([]);
+  const [bespoke, setBespoke] = useState<BespokeCourse[]>([]);
   const [templates, setTemplates] = useState<CourseTemplate[]>([]);
   const [hourlyRate, setHourlyRate] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [pendingHours, setPendingHours] = useState<number | null>(null);
+  const [pendingBespokeId, setPendingBespokeId] = useState<string | null>(null);
   const [offerCourseId, setOfferCourseId] = useState<string | null>(null);
+  const [bespokeDialogOpen, setBespokeDialogOpen] = useState(false);
+  const [editingBespoke, setEditingBespoke] = useState<BespokeCourse | null>(null);
 
   useEffect(() => {
     (async () => {
       setLoading(true);
       try {
-        const [coursesRes, templatesRes, instructorRes] = await Promise.all([
-          supabase.from("instructor_courses").select(COURSE_SELECT).eq("instructor_id", instructorId),
+        const [coursesRes, bespokeRes, templatesRes, instructorRes] = await Promise.all([
+          supabase.from("instructor_courses").select(COURSE_SELECT).eq("instructor_id", instructorId).eq("is_bespoke", false),
+          supabase.from("instructor_courses").select(BESPOKE_SELECT).eq("instructor_id", instructorId).eq("is_bespoke", true).order("created_at"),
           supabase
             .from("course_templates")
             .select("id, course_hours, course_name, short_description, default_image_url, is_intensive")
@@ -173,6 +198,7 @@ export function InstructorCoursesManager({ instructorId }: InstructorCoursesMana
 
         if (coursesRes.error) throw coursesRes.error;
         setCourses((coursesRes.data || []) as InstructorCourse[]);
+        setBespoke((bespokeRes.data || []) as unknown as BespokeCourse[]);
         setTemplates(templatesRes.data || []);
         setHourlyRate(instructorRes.data?.hourly_rate ?? null);
       } catch (error) {
@@ -183,6 +209,21 @@ export function InstructorCoursesManager({ instructorId }: InstructorCoursesMana
       }
     })();
   }, [instructorId]);
+
+  const handleBespokeToggle = async (course: BespokeCourse, nextActive: boolean) => {
+    setPendingBespokeId(course.id);
+    setBespoke((prev) => prev.map((c) => (c.id === course.id ? { ...c, is_active: nextActive } : c)));
+    try {
+      const { error } = await supabase.from("instructor_courses").update({ is_active: nextActive }).eq("id", course.id);
+      if (error) throw error;
+    } catch (e: any) {
+      setBespoke((prev) => prev.map((c) => (c.id === course.id ? { ...c, is_active: !nextActive } : c)));
+      toast.error(friendlyDbError(e, { table: "instructor_courses", operation: "update" }));
+    } finally {
+      setPendingBespokeId(null);
+    }
+  };
+
 
   const handleToggle = async (template: CourseTemplate, nextActive: boolean) => {
     setPendingHours(template.course_hours);
@@ -435,6 +476,126 @@ export function InstructorCoursesManager({ instructorId }: InstructorCoursesMana
           );
         })}
       </div>
+
+      {/* Bespoke courses */}
+      <div style={{ marginTop: 24 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <Wand2 size={16} style={{ color: T.purple }} />
+            <span style={{ fontSize: 14, fontWeight: 600, color: T.navy }}>Your bespoke courses</span>
+            <span style={{ fontSize: 12, color: T.muted }}>({bespoke.length})</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => { setEditingBespoke(null); setBespokeDialogOpen(true); }}
+            style={{
+              display: "inline-flex", alignItems: "center", gap: 6,
+              padding: "8px 14px", borderRadius: 8,
+              border: `1.5px solid ${T.purple}`, background: T.purpleLight,
+              color: T.purple, fontSize: 13, fontWeight: 600, cursor: "pointer",
+              fontFamily: "inherit",
+            }}
+          >
+            <Plus size={14} /> Design a course
+          </button>
+        </div>
+
+        {bespoke.length === 0 ? (
+          <div style={{
+            padding: 16, borderRadius: 12, background: T.purpleLight,
+            border: `1px dashed ${T.purple}`, color: T.navy, fontSize: 13, lineHeight: 1.5,
+          }}>
+            Create your own course with a custom number of hours, available days and price — perfect for refresher packages, intensives or test-prep bundles.
+          </div>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {bespoke.map((c) => {
+              const isOn = c.is_active;
+              const isPending = pendingBespokeId === c.id;
+              const price = c.price_mode === "flat"
+                ? (c.flat_price ?? 0)
+                : Math.round((c.hourly_rate_override ?? hourlyRate ?? 0) * c.course_hours);
+              const accent = !isOn ? T.border : c.is_intensive ? T.red : T.purple;
+              return (
+                <div key={c.id} style={{
+                  position: "relative", borderRadius: 12, background: T.white,
+                  border: `1px solid ${T.border}`, overflow: "hidden", opacity: isOn ? 1 : 0.6,
+                }}>
+                  <div style={{ height: 3, background: accent }} />
+                  <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 18px" }}>
+                    <DragHandle />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                        <span style={{ fontSize: 14, fontWeight: 600, color: T.navy }}>{c.course_name}</span>
+                        <HoursBadge hours={c.course_hours} />
+                        <TypeBadge intensive={c.is_intensive} />
+                        <span style={{
+                          display: "inline-flex", alignItems: "center", height: 22,
+                          padding: "0 8px", borderRadius: 6,
+                          background: T.purpleLight, color: T.purple,
+                          fontSize: 11, fontWeight: 600,
+                        }}>Bespoke</span>
+                      </div>
+                      <div style={{ marginTop: 4, fontSize: 12, color: T.mid, display: "flex", gap: 10, flexWrap: "wrap" }}>
+                        <span>{summariseWeekdays(c.available_weekdays)}</span>
+                        {c.duration_days ? <span>• {c.duration_days} day{c.duration_days !== 1 ? "s" : ""}</span> : null}
+                        {c.available_from || c.available_to ? (
+                          <span>• {c.available_from ?? "now"} → {c.available_to ?? "open"}</span>
+                        ) : null}
+                      </div>
+                    </div>
+                    {price > 0 && (
+                      <div style={{ textAlign: "right", flexShrink: 0 }}>
+                        <div style={{ fontSize: 15, fontWeight: 700, color: T.navy }}>£{price.toLocaleString()}</div>
+                        <div style={{ fontSize: 11, color: T.muted }}>
+                          {c.price_mode === "flat" ? "flat" : `£${c.hourly_rate_override ?? hourlyRate ?? 0}/h`}
+                        </div>
+                      </div>
+                    )}
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+                      {isPending && <Loader2 size={14} className="animate-spin" style={{ color: T.muted }} />}
+                      <button
+                        type="button"
+                        aria-label="Edit bespoke course"
+                        onClick={() => { setEditingBespoke(c); setBespokeDialogOpen(true); }}
+                        style={{
+                          width: 32, height: 32, borderRadius: 7,
+                          border: `1.5px solid ${T.border}`, background: T.white,
+                          color: T.muted, display: "inline-flex",
+                          alignItems: "center", justifyContent: "center", cursor: "pointer",
+                        }}
+                      >
+                        <Pencil size={14} />
+                      </button>
+                      <CourseToggle
+                        value={isOn}
+                        disabled={isPending}
+                        onChange={(v) => handleBespokeToggle(c, v)}
+                      />
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      <BespokeCourseDialog
+        open={bespokeDialogOpen}
+        onOpenChange={setBespokeDialogOpen}
+        instructorId={instructorId}
+        hourlyRate={hourlyRate}
+        initial={editingBespoke}
+        onSaved={(saved) => {
+          setBespoke((prev) => {
+            const exists = prev.some((c) => c.id === saved.id);
+            return exists ? prev.map((c) => (c.id === saved.id ? saved : c)) : [...prev, saved];
+          });
+        }}
+        onDeleted={(id) => setBespoke((prev) => prev.filter((c) => c.id !== id))}
+      />
+
 
       {offerCourseId && (() => {
         const c = courses.find((x) => x.id === offerCourseId);
