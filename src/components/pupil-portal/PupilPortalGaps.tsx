@@ -140,7 +140,7 @@ export function PupilPortalGaps({ pupilId, instructorId }: PupilPortalGapsProps)
           supabase
             .from("instructors")
             .select(
-              "id, full_name, available_from, buffer_minutes, slot_increment_minutes, is_network_placeholder, preferred_lesson_length, allowed_lesson_lengths",
+              "id, name, available_from, buffer_minutes, slot_increment_minutes, is_network_placeholder, preferred_lesson_length, allowed_lesson_lengths",
             )
             .eq("id", instructorId)
             .maybeSingle(),
@@ -311,7 +311,7 @@ export function PupilPortalGaps({ pupilId, instructorId }: PupilPortalGapsProps)
     return out;
   }, [filteredSlots]);
 
-  const instructorName = instructor?.full_name ?? "your instructor";
+  const instructorName = instructor?.name ?? "your instructor";
 
   if (loading) {
     return (
