@@ -57,11 +57,15 @@ function priceFor(c: InstructorCourseRow, hourlyRate: number | null): number | n
 export default function HowPupilsBookPage() {
   const navigate = useNavigate();
   const [instructorId, setInstructorId] = useState<string | null>(null);
+  const [hourlyRate, setHourlyRate] = useState<number | null>(null);
+  const [rawCourses, setRawCourses] = useState<InstructorCourseRow[]>([]);
   const [courses, setCourses] = useState<CourseRow[]>([]);
   const [isDirty, setIsDirty] = useState(false);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editing, setEditing] = useState<BespokeCourse | null>(null);
 
   useEffect(() => {
     (async () => {
