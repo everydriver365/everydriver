@@ -171,18 +171,23 @@ function DragHandle() {
 
 export function InstructorCoursesManager({ instructorId }: InstructorCoursesManagerProps) {
   const [courses, setCourses] = useState<InstructorCourse[]>([]);
+  const [bespoke, setBespoke] = useState<BespokeCourse[]>([]);
   const [templates, setTemplates] = useState<CourseTemplate[]>([]);
   const [hourlyRate, setHourlyRate] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [pendingHours, setPendingHours] = useState<number | null>(null);
+  const [pendingBespokeId, setPendingBespokeId] = useState<string | null>(null);
   const [offerCourseId, setOfferCourseId] = useState<string | null>(null);
+  const [bespokeDialogOpen, setBespokeDialogOpen] = useState(false);
+  const [editingBespoke, setEditingBespoke] = useState<BespokeCourse | null>(null);
 
   useEffect(() => {
     (async () => {
       setLoading(true);
       try {
-        const [coursesRes, templatesRes, instructorRes] = await Promise.all([
-          supabase.from("instructor_courses").select(COURSE_SELECT).eq("instructor_id", instructorId),
+        const [coursesRes, bespokeRes, templatesRes, instructorRes] = await Promise.all([
+          supabase.from("instructor_courses").select(COURSE_SELECT).eq("instructor_id", instructorId).eq("is_bespoke", false),
+          supabase.from("instructor_courses").select(BESPOKE_SELECT).eq("instructor_id", instructorId).eq("is_bespoke", true).order("created_at"),
           supabase
             .from("course_templates")
             .select("id, course_hours, course_name, short_description, default_image_url, is_intensive")
@@ -193,6 +198,7 @@ export function InstructorCoursesManager({ instructorId }: InstructorCoursesMana
 
         if (coursesRes.error) throw coursesRes.error;
         setCourses((coursesRes.data || []) as InstructorCourse[]);
+        setBespoke((bespokeRes.data || []) as unknown as BespokeCourse[]);
         setTemplates(templatesRes.data || []);
         setHourlyRate(instructorRes.data?.hourly_rate ?? null);
       } catch (error) {
@@ -203,6 +209,21 @@ export function InstructorCoursesManager({ instructorId }: InstructorCoursesMana
       }
     })();
   }, [instructorId]);
+
+  const handleBespokeToggle = async (course: BespokeCourse, nextActive: boolean) => {
+    setPendingBespokeId(course.id);
+    setBespoke((prev) => prev.map((c) => (c.id === course.id ? { ...c, is_active: nextActive } : c)));
+    try {
+      const { error } = await supabase.from("instructor_courses").update({ is_active: nextActive }).eq("id", course.id);
+      if (error) throw error;
+    } catch (e: any) {
+      setBespoke((prev) => prev.map((c) => (c.id === course.id ? { ...c, is_active: !nextActive } : c)));
+      toast.error(friendlyDbError(e, { table: "instructor_courses", operation: "update" }));
+    } finally {
+      setPendingBespokeId(null);
+    }
+  };
+
 
   const handleToggle = async (template: CourseTemplate, nextActive: boolean) => {
     setPendingHours(template.course_hours);
