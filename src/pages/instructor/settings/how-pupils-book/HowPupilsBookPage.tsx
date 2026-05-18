@@ -213,8 +213,63 @@ export default function HowPupilsBookPage() {
             activeCount={activeCount}
             onToggle={handleToggle}
             onReorder={handleReorder}
-            onEdit={(id) => navigate(`/instructor/settings/how-pupils-book/edit-course/${id}`)}
-            onOffer={(id) => navigate(`/instructor/settings/how-pupils-book/edit-course/${id}?tab=offer`)}
+            onEdit={(id) => {
+              const raw = rawCourses.find((c) => c.id === id);
+              if (!raw || !instructorId) return;
+              setEditing({
+                id: raw.id,
+                instructor_id: instructorId,
+                course_name: raw.course_name,
+                short_description: raw.short_description,
+                course_hours: raw.course_hours,
+                duration_days: raw.duration_days,
+                is_intensive: !!raw.is_intensive,
+                is_active: raw.is_active,
+                is_bespoke: !!raw.is_bespoke,
+                price_mode: (raw.price_mode as "flat" | "hourly" | "template") ?? "template",
+                flat_price: raw.flat_price,
+                hourly_rate_override: raw.hourly_rate_override,
+                available_weekdays: raw.available_weekdays,
+                available_from: raw.available_from,
+                available_to: raw.available_to,
+              });
+              setDialogOpen(true);
+            }}
+            onOffer={(id) => { /* offer flow: open edit for now */
+              const raw = rawCourses.find((c) => c.id === id);
+              if (!raw || !instructorId) return;
+              setEditing({
+                id: raw.id,
+                instructor_id: instructorId,
+                course_name: raw.course_name,
+                short_description: raw.short_description,
+                course_hours: raw.course_hours,
+                duration_days: raw.duration_days,
+                is_intensive: !!raw.is_intensive,
+                is_active: raw.is_active,
+                is_bespoke: !!raw.is_bespoke,
+                price_mode: (raw.price_mode as "flat" | "hourly" | "template") ?? "template",
+                flat_price: raw.flat_price,
+                hourly_rate_override: raw.hourly_rate_override,
+                available_weekdays: raw.available_weekdays,
+                available_from: raw.available_from,
+                available_to: raw.available_to,
+              });
+              setDialogOpen(true);
+            }}
+          />
+        )}
+
+        {instructorId && (
+          <BespokeCourseDialog
+            open={dialogOpen}
+            onOpenChange={setDialogOpen}
+            instructorId={instructorId}
+            hourlyRate={hourlyRate}
+            initial={editing}
+            onSaved={async () => { if (instructorId) await loadCourses(instructorId, hourlyRate); }}
+            onDeleted={async () => { if (instructorId) await loadCourses(instructorId, hourlyRate); }}
+          />
           />
         )}
       </div>
