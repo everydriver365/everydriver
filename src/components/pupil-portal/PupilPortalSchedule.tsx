@@ -11,8 +11,13 @@ import { format, parseISO, isBefore, startOfDay, addHours, isAfter } from "date-
 import { toast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import SelfBookingCalendar from "./SelfBookingCalendar";
-import { CancellationPolicyCard } from "./CancellationPolicyCard";
 import { checkLessonClash, describeLessonClashError } from "@/lib/lessonClashCheck";
+import { BookNewLessonButton } from "./lessons/BookNewLessonButton";
+import { CancellationPolicy } from "./lessons/CancellationPolicy";
+import { UpcomingLessonsSection } from "./lessons/UpcomingLessonsSection";
+import { LessonHistorySection } from "./lessons/LessonHistorySection";
+import type { LessonHistoryItem } from "./lessons/LessonHistoryRow";
+import { usePupilLessonHistory } from "@/hooks/usePupilLessonHistory";
 
 interface PupilPortalScheduleProps {
   pupilId: string;
@@ -21,6 +26,7 @@ interface PupilPortalScheduleProps {
   darkMode: boolean;
   instructorPhone: string | null;
   initialShowBooking?: boolean;
+  onViewHistory?: () => void;
 }
 
 interface ScheduledLesson {
