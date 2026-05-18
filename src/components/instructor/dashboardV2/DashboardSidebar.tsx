@@ -270,8 +270,106 @@ export function DashboardSidebar({ collapsed, onToggle, userInitials, userName, 
   };
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+
+  // Critical items — fixed at the top of the sidebar, editable per instructor.
+  const CRITICAL_KEY = "dsm.dashboard.sidebar.critical";
+  const DEFAULT_CRITICAL: string[] = [
+    "/instructor/settings/profile",
+    "/instructor/schedule",
+    "/instructor/settings/working-hours",
+    "/instructor/settings/how-pupils-book",
+    "/instructor/pupils",
+    "/instructor/pay",
+    "/instructor/settings/discounts-packages",
+    "/instructor/test-results",
+  ];
+  const [critical, setCritical] = useState<string[]>([]);
+  const [criticalLoaded, setCriticalLoaded] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      let dbCritical: string[] | null = null;
+      let dbRowExists = false;
+      if (instructorId) {
+        try {
+          const { data } = await supabase
+            .from("instructors")
+            .select("sidebar_critical")
+            .eq("id", instructorId)
+            .single();
+          if (data) {
+            dbRowExists = true;
+            const arr = (data as { sidebar_critical?: unknown }).sidebar_critical;
+            if (Array.isArray(arr)) dbCritical = arr as string[];
+          }
+        } catch {}
+      }
+      if (cancelled) return;
+      if (dbCritical && dbCritical.length > 0) {
+        setCritical(dbCritical);
+      } else if (dbRowExists && dbCritical && dbCritical.length === 0) {
+        // Existing row with empty list — first-time seed.
+        setCritical(DEFAULT_CRITICAL);
+        try { localStorage.setItem(CRITICAL_KEY, JSON.stringify(DEFAULT_CRITICAL)); } catch {}
+        try {
+          await supabase.from("instructors").update({ sidebar_critical: DEFAULT_CRITICAL }).eq("id", instructorId!);
+        } catch {}
+      } else {
+        try {
+          const saved = localStorage.getItem(CRITICAL_KEY);
+          if (saved) {
+            const parsed = JSON.parse(saved);
+            if (Array.isArray(parsed)) setCritical(parsed as string[]);
+            else setCritical(DEFAULT_CRITICAL);
+          } else {
+            setCritical(DEFAULT_CRITICAL);
+          }
+        } catch { setCritical(DEFAULT_CRITICAL); }
+      }
+      setCriticalLoaded(true);
+    };
+    load();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [instructorId]);
+
+  const saveCritical = useCallback(async (next: string[]) => {
+    try { localStorage.setItem(CRITICAL_KEY, JSON.stringify(next)); } catch {}
+    if (instructorId) {
+      try {
+        await supabase.from("instructors").update({ sidebar_critical: next }).eq("id", instructorId);
+      } catch {}
+    }
+  }, [instructorId]);
+
+  const toggleCritical = (to: string) => {
+    setCritical((prev) => {
+      const next = prev.includes(to) ? prev.filter((t) => t !== to) : [...prev, to];
+      saveCritical(next);
+      toast.success(prev.includes(to) ? "Removed from Critical" : "Added to Critical");
+      return next;
+    });
+  };
+  const reorderCritical = (from: number, to: number) => {
+    if (from === to || from < 0 || to < 0) return;
+    setCritical((prev) => {
+      const next = [...prev];
+      const [moved] = next.splice(from, 1);
+      next.splice(to, 0, moved);
+      saveCritical(next);
+      toast.success("Critical order saved");
+      return next;
+    });
+  };
+  const [critDragIndex, setCritDragIndex] = useState<number | null>(null);
+  const [critDragOverIndex, setCritDragOverIndex] = useState<number | null>(null);
+
   const allItems = visibleSections.flatMap((s) => s.items);
   const pinnedItems = pinned
+    .map((to) => allItems.find((i) => i.to === to))
+    .filter((i): i is NavItem => Boolean(i));
+  const criticalItems = critical
     .map((to) => allItems.find((i) => i.to === to))
     .filter((i): i is NavItem => Boolean(i));
 
