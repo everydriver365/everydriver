@@ -9345,6 +9345,7 @@ export type Database = {
           school_skim_amount: number | null
           school_skim_percentage: number | null
           secondary_colour: string | null
+          settings_sidebar_order: Json | null
           sidebar_pinned: Json | null
           slot_increment_minutes: number
           special_skills: string | null
@@ -9554,6 +9555,7 @@ export type Database = {
           school_skim_amount?: number | null
           school_skim_percentage?: number | null
           secondary_colour?: string | null
+          settings_sidebar_order?: Json | null
           sidebar_pinned?: Json | null
           slot_increment_minutes?: number
           special_skills?: string | null
@@ -9763,6 +9765,7 @@ export type Database = {
           school_skim_amount?: number | null
           school_skim_percentage?: number | null
           secondary_colour?: string | null
+          settings_sidebar_order?: Json | null
           sidebar_pinned?: Json | null
           slot_increment_minutes?: number
           special_skills?: string | null
