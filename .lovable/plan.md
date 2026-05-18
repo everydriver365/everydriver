@@ -1,69 +1,42 @@
-# Dissolve the "All settings" sidebar entry
+## Add "Critical" section to instructor desktop sidebar
 
-Right now the DashboardSidebar ends with a lone **Settings → All settings** section that just opens `/instructor/settings`. From there, the user picks one of 17 areas (Profile, Working hours, Rates, Payments, Branding, Lab features, etc.). One extra hop for every settings action.
+A new fixed-position section at the very top of `DashboardSidebar`, above Favorites and all category groups. Editable per instructor, persisted to DB + localStorage (same pattern as `sidebar_pinned`).
 
-Plan: drop the **Settings** section and pin each settings area as a direct link inside the existing category that fits it best. The `/instructor/settings` hub keeps working — sidebar entries deep-link to `/instructor/settings/:areaId` so the existing detail view still renders.
+### Default items
 
-## What changes
+Seeded once per instructor (first load only) with these routes:
 
-Only `src/components/instructor/dashboardV2/DashboardSidebar.tsx`. No other files touched. The settings page itself, routes, and `areas.tsx` are unchanged.
+1. Profile → `/instructor/settings/profile`
+2. Schedule → `/instructor/schedule`
+3. Availability (Working hours) → `/instructor/settings/working-hours`
+4. Booking Flow (How pupils book) → `/instructor/settings/how-pupils-book`
+5. Pupils → `/instructor/pupils`
+6. Payments → `/instructor/pay`
+7. Discounts → `/instructor/settings/discounts-packages`
+8. Tests (Driving Tests) → `/instructor/test-results`
 
-## Where each settings area lands
+### Behaviour
 
-```text
-Overview
-  (unchanged)
+- **Layout**: rendered above the existing "Pinned" block, with its own uppercase "CRITICAL" header (red accent dot to differentiate from grey "Pinned").
+- **Reorder**: drag-and-drop within the Critical list, same HTML5 DnD as Favorites, with the existing "order saved" toast.
+- **Add**: same pin button on every sidebar item — long-press or right-click on the pin shows a small menu "Add to Critical / Add to Favorites". Simplest: keep the pin icon for Favorites and add a small star icon (only visible on hover) that adds the item to Critical. Clicking the star on an item already in Critical removes it.
+- **Remove**: hovering a Critical row shows an "x" on the right.
+- **Hide section**: if the instructor empties Critical, the whole section disappears (no empty state).
 
-Teaching
-  + Working hours        /instructor/settings/working-hours
-  + Rates & coverage     /instructor/settings/rates-coverage
-  + How pupils book      /instructor/settings/how-pupils-book
-  + Discounts & packages /instructor/settings/discounts-packages
-  + Lesson types         /instructor/settings/lessons     (if present)
+### Persistence
 
-Vehicle & Tracking
-  + Vehicle & credentials /instructor/settings/credentials
+- New JSONB column `instructors.sidebar_critical` (array of route paths).
+- On first load for an instructor whose column is empty / null, seed with the 8 defaults above and write back. After that, only respect what's in the DB (so removals stick).
+- localStorage mirror under `dsm.dashboard.sidebar.critical` as offline fallback (matches Favorites pattern).
+- Updates write to both, then `toast.success("Critical order saved")` on drag-reorder.
 
-Telephone
-  + Phone & AI            /instructor/settings/phone-ai
+### Files touched
 
-Business
-  + Payments & fees       /instructor/settings/payments
-  (Plan & Billing already lives here — leave it)
+- `supabase/migrations/<new>` — add `sidebar_critical jsonb default '[]'`.
+- `src/components/instructor/dashboardV2/DashboardSidebar.tsx` — add state, load/save hooks, star toggle button, Critical render block above the Pinned block, drag handlers (reuse the existing pattern).
 
-Website
-  + Mini-site & pages     /instructor/settings/mini-site
-  + Branding & theme      /instructor/settings/branding
+### Out of scope
 
-People & Growth
-  + Messaging             /instructor/settings/messaging
-  + Notifications         /instructor/settings/notifications
-
-Support
-  + Help & close account  /instructor/settings/help-close
-
-Account  ← new bottom section replacing "Settings"
-  + Profile                /instructor/settings/profile
-  + Login & security       /instructor/settings/login-security
-  + Appearance & layout    /instructor/settings/appearance-layout
-  + Data, terms & policies /instructor/settings/data-privacy
-  + Lab features           /instructor/settings/lab-features
-```
-
-Rationale for the new **Account** bucket: profile / security / appearance / data / lab don't belong to any one workflow category above. They are personal/account‑level. Folding them into Overview or Support would be misleading. A short "Account" group at the bottom keeps the sidebar coherent and still kills the "click All settings, then click again" double‑hop.
-
-If you'd rather not have an Account section at all, the alternative is to put Profile + Login & security under **Overview**, push Appearance & Data into **Support**, and drop Lab features. Tell me if you want that variant.
-
-## Technical notes
-
-- Icons: pick from `lucide-react` imports already in the file (`User`, `Lock`/`Shield`, `Bell`, `MessageCircle`, `Palette`, `Megaphone`, `Database`, `Sparkles`, `Wallet`, `Clock`, `MapPin`, `CreditCard`, `Phone`, `Globe`, `BookOpen`, `Tag`). Add any missing ones to the existing `lucide-react` import line — no new dependency.
-- Active state: the existing matcher uses `pathname === item.to || pathname.startsWith(item.to + "/")`, so deep-linked `/instructor/settings/:id` items will highlight correctly without any extra logic.
-- `DEFAULT_OPEN` stays as `{ Overview, Teaching, Business }` so the sidebar doesn't suddenly explode on first load.
-- The pin-to-top mechanism keeps working unchanged — users can pin "Rates & coverage" if they live there.
-- The existing `/instructor/settings` route still works for users who land there from other links (Account hub card, redirects, etc.). The hub is just no longer the only way in.
-
-## Out of scope
-
-- Mobile layouts (per project rule).
-- `/instructor/settings` page itself — no edits to `SettingsShellV3` or `areas.tsx`.
-- `AccountHub` "All settings" card on `/instructor/account` — different surface, leave for a follow-up.
+- Mobile sidebar (per project rule: no mobile changes unless asked).
+- Settings sidebar (separate component).
+- No change to the existing Favorites / pin behaviour or its toast.
