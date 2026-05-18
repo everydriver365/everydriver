@@ -517,21 +517,20 @@ export default function BrandedPupilPortal() {
 
             {activeSection === 'payments' && (
               <motion.div key="payments" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-                <SubPageHeader title="Payments" onBack={handleBack} />
-                <PupilPaymentFeed pupilId={pupil.id} brandColour={drive365Blue} currentBalance={pupil.account_balance} />
-                <div className="px-4 pt-4">
-                  <PupilPortalPayments 
-                    pupilId={pupil.id} instructorId={instructor.id} instructorSlug={slug}
-                    brandColour={drive365Blue} darkMode={instructor.pupil_app_dark_mode}
-                    accountBalance={pupil.account_balance} prepaidHours={pupil.prepaid_hours}
-                    pupilName={pupil.name} pupilEmail={pupil.email} pupilPhone={pupil.phone}
-                    onBalanceUpdate={() => fetchPupil(pupil.id)} paymentQrUrl={instructor.payment_qr_url}
-                    paymentQrUrlPupilPays={instructor.payment_qr_url_pupil_pays}
-                    paymentQrUrlInstructorPays={instructor.payment_qr_url_instructor_pays}
-                    paymentLinkBaseUrl={instructor.payment_link_base_url}
-                    commissionPayer={instructor.commission_payer}
-                  />
-                </div>
+                <PupilPortalPayments 
+                  pupilId={pupil.id} instructorId={instructor.id} instructorSlug={slug}
+                  brandColour={drive365Blue} darkMode={instructor.pupil_app_dark_mode}
+                  accountBalance={pupil.account_balance} prepaidHours={pupil.prepaid_hours}
+                  pupilName={pupil.name} pupilEmail={pupil.email} pupilPhone={pupil.phone}
+                  onBalanceUpdate={() => fetchPupil(pupil.id)} paymentQrUrl={instructor.payment_qr_url}
+                  paymentQrUrlPupilPays={instructor.payment_qr_url_pupil_pays}
+                  paymentQrUrlInstructorPays={instructor.payment_qr_url_instructor_pays}
+                  paymentLinkBaseUrl={instructor.payment_link_base_url}
+                  commissionPayer={instructor.commission_payer}
+                  instructorName={instructor.name}
+                  instructorCentre={(instructor as any).test_centre || (instructor as any).area || null}
+                  onBack={handleBack}
+                />
               </motion.div>
             )}
 
