@@ -6,7 +6,7 @@ import {
   Play, ChevronRight, Quote, Smartphone, Monitor, Zap, Clock, CreditCard, Megaphone,
   MapPin, Video, Building2
 } from "lucide-react";
-import { MainLayout } from "@/components/layout/MainLayout";
+import { InstructorSaaSLayout } from "@/components/layout/InstructorSaaSLayout";
 import featuresHeroImg from "@/assets/features/features-hero.png";
 import diaryAppImg from "@/assets/features/diary-app.png";
 import paymentsImg from "@/assets/features/pupil-making-payment.png";
