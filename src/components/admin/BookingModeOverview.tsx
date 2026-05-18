@@ -181,12 +181,14 @@ export function BookingModeOverview() {
     auto_assign: instructors.filter(i => i.booking_mode === "auto_assign").length,
     instructor_assigns: instructors.filter(i => i.booking_mode === "instructor_assigns").length,
     enquiry_only: instructors.filter(i => i.booking_mode === "enquiry_only").length,
+    first_lesson_only: instructors.filter(i => i.booking_mode === "first_lesson_only").length,
   };
 
   const getModeIcon = (mode: string | null) => {
     switch (mode) {
       case "auto_assign": return <Sparkles className="h-4 w-4 text-amber-500" />;
       case "instructor_assigns": return <UserCog className="h-4 w-4 text-emerald-500" />;
+      case "first_lesson_only": return <CalendarClock className="h-4 w-4 text-violet-500" />;
       case "enquiry_only": return <Mail className="h-4 w-4" style={{ color: '#2B7BC8' }} />;
       default: return <Calendar className="h-4 w-4 text-primary" />;
     }
@@ -196,6 +198,7 @@ export function BookingModeOverview() {
     switch (mode) {
       case "auto_assign": return "Auto-Assign";
       case "instructor_assigns": return "Instructor Assigns";
+      case "first_lesson_only": return "First Lesson Only";
       case "enquiry_only": return "Enquiry Only";
       default: return "Pupil Choice";
     }
