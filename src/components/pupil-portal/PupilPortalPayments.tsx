@@ -179,11 +179,6 @@ export function PupilPortalPayments({
 
   return (
     <div style={{ backgroundColor: t.surface, minHeight: "100vh" }}>
-      <PaymentsNav
-        instructorName={instructorName || "Your instructor"}
-        centre={instructorCentre}
-        onBack={handleBack}
-      />
       <BalanceHero balance={balance} />
 
       <div
