@@ -6598,52 +6598,85 @@ export type Database = {
       }
       instructor_courses: {
         Row: {
+          available_from: string | null
+          available_to: string | null
+          available_weekdays: number[] | null
           course_hours: number
           course_image_url: string | null
           course_name: string
           created_at: string
           custom_features: string[] | null
           discounted_price: number | null
+          display_order: number | null
+          duration_days: number | null
+          flat_price: number | null
+          hourly_rate_override: number | null
           id: string
           instructor_id: string
           is_active: boolean
+          is_bespoke: boolean
+          is_intensive: boolean
           offer_active: boolean
           offer_ends_at: string | null
           offer_label: string | null
           offer_percent_off: number | null
           offer_starts_at: string | null
+          price_mode: string
+          short_description: string | null
         }
         Insert: {
+          available_from?: string | null
+          available_to?: string | null
+          available_weekdays?: number[] | null
           course_hours: number
           course_image_url?: string | null
           course_name: string
           created_at?: string
           custom_features?: string[] | null
           discounted_price?: number | null
+          display_order?: number | null
+          duration_days?: number | null
+          flat_price?: number | null
+          hourly_rate_override?: number | null
           id?: string
           instructor_id: string
           is_active?: boolean
+          is_bespoke?: boolean
+          is_intensive?: boolean
           offer_active?: boolean
           offer_ends_at?: string | null
           offer_label?: string | null
           offer_percent_off?: number | null
           offer_starts_at?: string | null
+          price_mode?: string
+          short_description?: string | null
         }
         Update: {
+          available_from?: string | null
+          available_to?: string | null
+          available_weekdays?: number[] | null
           course_hours?: number
           course_image_url?: string | null
           course_name?: string
           created_at?: string
           custom_features?: string[] | null
           discounted_price?: number | null
+          display_order?: number | null
+          duration_days?: number | null
+          flat_price?: number | null
+          hourly_rate_override?: number | null
           id?: string
           instructor_id?: string
           is_active?: boolean
+          is_bespoke?: boolean
+          is_intensive?: boolean
           offer_active?: boolean
           offer_ends_at?: string | null
           offer_label?: string | null
           offer_percent_off?: number | null
           offer_starts_at?: string | null
+          price_mode?: string
+          short_description?: string | null
         }
         Relationships: [
           {
