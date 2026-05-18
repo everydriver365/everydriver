@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { CreditCard, ChevronRight, ChevronDown, Shield, Loader2, ArrowLeft, History } from "lucide-react";
+import { CreditCard, ChevronRight, ChevronDown, Shield, Loader2, ArrowLeft, History, X } from "lucide-react";
 import { Drawer as DrawerPrimitive } from "vaul";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
