@@ -577,6 +577,6 @@ export default function HomepageRedesignDemo() {
           </div>
         </div>
       </section>
-    </MainLayout>
+    </InstructorSaaSLayout>
   );
 }
