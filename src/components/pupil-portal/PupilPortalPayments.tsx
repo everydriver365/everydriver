@@ -4,7 +4,6 @@ import { format, parseISO } from "date-fns";
 import { PupilPaymentModal } from "./PupilPaymentModal";
 import { getActivePaymentQrUrl } from "@/lib/getActivePaymentQrUrl";
 import { useToast } from "@/hooks/use-toast";
-import { PaymentsNav } from "./payments/PaymentsNav";
 import { BalanceHero } from "./payments/BalanceHero";
 import { PaymentsSearchRow } from "./payments/PaymentsSearchRow";
 import { PaymentsResultsBar } from "./payments/PaymentsResultsBar";
