@@ -947,7 +947,19 @@ export default function InstructorPupilsDesktop() {
                   <div style={{ fontFamily: "var(--d2-mono)", color: "var(--d2-text-2)", fontVariantNumeric: "tabular-nums" }}>
                     {p.hoursLeft}h
                   </div>
-                  <div style={{ color: "var(--d2-text-2)" }}>{p.lastLesson}</div>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setHistoryPupil({ id: p.id, name: p.name }); }}
+                    title="View lesson history"
+                    style={{
+                      color: "var(--d2-text-2)", textAlign: "left",
+                      textDecoration: "underline", textDecorationColor: "transparent",
+                      textUnderlineOffset: 2, transition: "text-decoration-color 120ms",
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.textDecorationColor = "#4F46E5"; e.currentTarget.style.color = "#4F46E5"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.textDecorationColor = "transparent"; e.currentTarget.style.color = "var(--d2-text-2)"; }}
+                  >
+                    {p.lastLesson}
+                  </button>
                   <div
                     style={{
                       color: !p.nextLesson ? "var(--d2-text-3)" : isTomorrow && selected ? "#4338CA" : isTomorrow ? "#4F46E5" : "var(--d2-text-1)",
