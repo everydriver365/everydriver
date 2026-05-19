@@ -376,6 +376,7 @@ function DesktopDashboardV2(props: DesktopDashboardV2Props) {
           instructorName={instructorData?.name}
           instructorId={instructorId}
           pupils={pupils}
+          onPaymentReceived={refreshDashboard}
         />
 
         <Dialog open={availabilityModalOpen} onOpenChange={setAvailabilityModalOpen}>
