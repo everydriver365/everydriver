@@ -310,7 +310,7 @@ function DvsaStandardsCard({ standardsCheck }: { standardsCheck: { result: strin
   const hasResults = !!standardsCheck;
 
   return (
-    <div style={{ backgroundColor: t.white, borderRadius: 12, border: `1px solid ${t.border}`, overflow: "hidden" }}>
+    <div style={{ backgroundColor: t.white, borderRadius: 12, border: `1px solid ${t.border}`, overflow: "hidden", width: "100%" }}>
       <div style={{ padding: "8px 12px", borderBottom: `1px solid ${t.divider}`, display: "flex", alignItems: "center", gap: 7 }}>
         <ShieldCheck size={14} color={t.muted} />
         <span style={{ fontSize: 11, fontWeight: 700, color: t.navy, textTransform: "uppercase", letterSpacing: "0.05em", flex: 1 }}>
