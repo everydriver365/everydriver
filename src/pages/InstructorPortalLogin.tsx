@@ -7,7 +7,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { toast } from "sonner";
-import { Loader2, AlertCircle, Eye, EyeOff, Share, Plus, Download, X, Fingerprint, ArrowRight, Shield, Lock, Award, Car } from "lucide-react";
+import { Loader2, AlertCircle, Eye, EyeOff, Share, Plus, Download, X, Fingerprint, ArrowRight, Shield, Lock, Award, Car, Mail, Check, ChevronRight, CheckCircle2, ScanFace } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { z } from "zod";
 import {
