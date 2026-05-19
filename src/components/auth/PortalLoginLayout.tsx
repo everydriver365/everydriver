@@ -81,12 +81,21 @@ const TRUST_ITEMS: { Icon: LucideIcon; label: string }[] = [
  */
 export function PortalLoginLayout({
   leftBrand, leftBrandCaption, leftTag, leftHeadline, leftSub, leftFeatures, leftFooter,
-  cardBrand, cardTag, cardTitle, cardSubtitle, children, footer,
+  cardBrand, cardTag, cardTitle, cardSubtitle, children, footer, mobileHero,
 }: Props) {
   const t = portalTokens;
   return (
     <div style={{ minHeight: "100vh", fontFamily: "Poppins, system-ui, sans-serif", background: t.surface }}>
-      <div className="md:grid md:grid-cols-2" style={{ minHeight: "100vh" }}>
+      {mobileHero && (
+        <MobileLoginHero
+          heroSrc={mobileHero.heroSrc}
+          logoSrc={mobileHero.logoSrc}
+          logoAlt={mobileHero.logoAlt}
+          title={mobileHero.title}
+          subtitle={mobileHero.subtitle}
+        />
+      )}
+      <div className="md:grid md:grid-cols-2" style={{ minHeight: mobileHero ? undefined : "100vh" }}>
         {/* LEFT PANEL */}
         <div
           className="hidden md:flex"
