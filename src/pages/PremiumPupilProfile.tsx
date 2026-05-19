@@ -21,6 +21,7 @@ import { PupilNoteSheet } from "@/components/instructor/PupilNoteSheet";
 import { AddLessonSheet } from "@/components/instructor/AddLessonSheet";
 import { LessonHistory } from "@/components/instructor/LessonHistory";
 import { PupilPaymentHistory } from "@/components/instructor/PupilPaymentHistory";
+import { PupilPaymentsManager } from "@/components/instructor/PupilPaymentsManager";
 import { PupilRateEditor } from "@/components/instructor/PupilRateEditor";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -1990,7 +1991,18 @@ export default function PremiumPupilProfile() {
           <DialogHeader>
             <DialogTitle>{pupil.name} — Payments</DialogTitle>
           </DialogHeader>
-          <PupilPaymentHistory pupilId={pupil.id} pupilName={pupil.name} />
+          {instructorId && (
+            <PupilPaymentsManager
+              pupilId={pupil.id}
+              pupilName={pupil.name}
+              pupilPhone={pupil.phone}
+              pupilEmail={pupil.email}
+              instructorId={instructorId}
+              instructorName={instructor?.name || ""}
+              currentBalance={balance}
+              onChanged={() => queryClient.invalidateQueries({ queryKey: ["pupil-profile", pupil.id, instructorId] })}
+            />
+          )}
         </DialogContent>
       </Dialog>
     </InstructorPortalLayout>
