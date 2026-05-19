@@ -38,6 +38,8 @@ interface TakePaymentModalProps {
   instructorName?: string;
   instructorId?: string;
   pupils: Pupil[];
+  /** Fired when a payment is actually received (realtime insert or manual confirm). */
+  onPaymentReceived?: () => void;
 }
 
 export function TakePaymentModal({
@@ -49,6 +51,7 @@ export function TakePaymentModal({
   instructorName = "Your Instructor",
   instructorId,
   pupils,
+  onPaymentReceived,
 }: TakePaymentModalProps) {
   const [view, setView] = useState<View>("qr");
   const [selectedPupilId, setSelectedPupilId] = useState("");
