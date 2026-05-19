@@ -384,22 +384,25 @@ export default function PupilLogin() {
 
 
       {/* RIGHT PANEL */}
-      <main className="flex-1 flex justify-center items-start md:items-center bg-white px-5 py-10 md:p-12">
+      <main className="flex-1 flex justify-center items-start md:items-center bg-white px-5 pt-2 pb-10 md:p-12">
         <motion.div
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
           className="w-full max-w-[390px]"
         >
-          <DSMLogo size="sm" />
-          <div className="h-7" />
+          <div className="hidden md:block">
+            <DSMLogo size="sm" />
+            <div className="h-7" />
 
-          <h2 className="text-[22px] font-bold text-[#0F2044] tracking-[-0.4px] mb-[5px]">
-            Welcome back
-          </h2>
-          <p className="text-[13px] font-light text-[#9CA3AF] leading-5 mb-[26px]">
-            Sign in to your Drive365 account to continue.
-          </p>
+            <h2 className="text-[22px] font-bold text-[#0F2044] tracking-[-0.4px] mb-[5px]">
+              Welcome back
+            </h2>
+            <p className="text-[13px] font-light text-[#9CA3AF] leading-5 mb-[26px]">
+              Sign in to your Drive365 account to continue.
+            </p>
+          </div>
+
 
           {/* Segmented control: Sign In / Register */}
           <div className="relative h-12 rounded-[12px] bg-[#F2F4F8] p-1 mb-5 flex">
