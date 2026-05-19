@@ -13,6 +13,7 @@ import {
   portalInputFocus,
   portalInputBlur,
 } from "@/components/auth/PortalLoginLayout";
+import { DarkMobileAuthForm } from "@/components/auth/DarkMobileAuthForm";
 import dsmLogo from "@/assets/dsm-logo.png";
 import schoolHero from "@/assets/drive365-hero-test-centre.jpg";
 
