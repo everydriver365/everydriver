@@ -3,10 +3,14 @@ import { render, screen, waitFor } from "@testing-library/react";
 import { createSupabaseMock } from "@/test/supabaseMock";
 
 const mock = createSupabaseMock();
+(globalThis as any).__sb = mock.supabase;
 
-vi.mock("@/integrations/supabase/client", () => ({ supabase: mock.supabase }));
+vi.mock("@/integrations/supabase/client", () => ({
+  get supabase() {
+    return (globalThis as any).__sb;
+  },
+}));
 
-// Heavy children — not relevant to data-wiring assertions
 vi.mock("@/components/pupil-portal/PupilSyllabusView", () => ({
   PupilSyllabusView: () => <div data-testid="syllabus-view" />,
 }));
@@ -39,11 +43,10 @@ describe("PupilPortalProgress — lesson hours wiring", () => {
     mock.reset();
   });
 
-  it("sums only real duration_minutes (no |60| fabrication) and uses pupils.prepaid_hours as target", async () => {
+  it("sums only real duration_minutes (no fabricated 60) and uses pupils.prepaid_hours as target", async () => {
     mock.setTable("lesson_history", [
       { pupil_id: "pupil-1", duration_minutes: 60, skills_practiced: [] },
       { pupil_id: "pupil-1", duration_minutes: 90, skills_practiced: [] },
-      // duration_minutes missing — the screen MUST NOT invent 60 mins here
       { pupil_id: "pupil-1", duration_minutes: null, skills_practiced: [] },
     ]);
     mock.setTable("pupil_syllabus_progress", []);
@@ -53,12 +56,11 @@ describe("PupilPortalProgress — lesson hours wiring", () => {
       <PupilPortalProgress pupilId="pupil-1" brandColour="#0F2044" darkMode={false} />,
     );
 
-    // 60 + 90 = 150 mins = 2.5h — the null row must contribute 0
+    // 60 + 90 = 150 mins = 2.5h — the null row must NOT add 60 minutes
     await waitFor(() =>
       expect(screen.getByTestId("readiness")).toHaveTextContent("2.5"),
     );
 
-    // Hours tracker uses the real prepaid_hours target, not a hardcoded 40
     const tracker = await screen.findByTestId("hours-tracker");
     expect(tracker).toHaveTextContent("2.5/20");
   });
