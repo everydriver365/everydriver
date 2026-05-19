@@ -1427,6 +1427,28 @@ export default function InstructorPupilsDesktop() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Lesson history dialog */}
+      <LessonHistoryDialog
+        pupil={historyPupil}
+        onClose={() => setHistoryPupil(null)}
+        onAddLesson={() => setAddLessonOpen(true)}
+      />
+
+      {/* Add lesson sheet */}
+      {instructor?.id && historyPupil && (
+        <AddLessonSheet
+          open={addLessonOpen}
+          onOpenChange={setAddLessonOpen}
+          instructorId={instructor.id}
+          onSuccess={() => {
+            setAddLessonOpen(false);
+            queryClient.invalidateQueries({ queryKey: ["pupil-lesson-history", historyPupil.id] });
+            setReloadTick(t => t + 1);
+            toast.success("Lesson added");
+          }}
+        />
+      )}
     </DashboardShell>
   );
 }
