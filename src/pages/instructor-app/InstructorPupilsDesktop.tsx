@@ -29,6 +29,7 @@ import { AddPupilSheet } from "@/components/instructor/pupils/AddPupilSheet";
 import { ImportPupilsCsvDialog } from "@/components/instructor/pupils/ImportPupilsCsvDialog";
 import { ArchivedPupilsDialog } from "@/components/instructor/pupils/ArchivedPupilsDialog";
 import { AddLessonSheet } from "@/components/instructor/AddLessonSheet";
+import { PupilPaymentsManager } from "@/components/instructor/PupilPaymentsManager";
 import { usePupilLessonHistory } from "@/hooks/usePupilLessonHistory";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -1942,58 +1943,26 @@ function ProgressTab({ pupilId }: { pupilId: string }) {
 }
 
 function PaymentsTab({ pupil }: { pupil: Pupil }) {
-  const [rows, setRows] = useState<Array<{ id: string; date: string; method: string; amount: number }>>([]);
-  const [totalPaid, setTotalPaid] = useState(0);
-  const [loading, setLoading] = useState(true);
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      setLoading(true);
-      const { data } = await supabase
-        .from("payment_history")
-        .select("id, amount, payment_method, recorded_at")
-        .eq("pupil_id", pupil.id)
-        .is("deleted_at", null)
-        .order("recorded_at", { ascending: false })
-        .limit(10);
-      if (cancelled) return;
-      const list = (data || []).map((r: any) => ({
-        id: r.id,
-        date: r.recorded_at,
-        method: r.payment_method || "—",
-        amount: Number(r.amount) || 0,
-      }));
-      setRows(list);
-      setTotalPaid(list.reduce((s, r) => s + r.amount, 0));
-      setLoading(false);
-    })();
-    return () => { cancelled = true; };
-  }, [pupil.id]);
-
-  const fmt = (iso: string) => new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
-
+  const { instructor } = useInstructorAuth();
+  const [refreshKey, setRefreshKey] = useState(0);
+  if (!instructor?.id) {
+    return <div style={{ fontSize: 11, color: "var(--d2-text-3)" }}>Loading…</div>;
+  }
   return (
-    <div className="flex flex-col" style={{ gap: 10 }}>
-      <div className="grid grid-cols-2" style={{ gap: 6 }}>
-        <StatCard label="Total paid" value={`£${totalPaid.toFixed(2)}`} mono />
-        <StatCard label="Outstanding" value={`£${pupil.balance.toFixed(2)}`} mono />
-      </div>
-      {loading ? (
-        <div style={{ fontSize: 11, color: "var(--d2-text-3)" }}>Loading…</div>
-      ) : rows.length === 0 ? (
-        <div style={{ fontSize: 11, color: "var(--d2-text-3)" }}>No payments recorded yet.</div>
-      ) : rows.map((r, i) => (
-        <div key={r.id} className="flex items-center justify-between" style={{ padding: "6px 0", borderBottom: i === rows.length - 1 ? "none" : "0.5px solid var(--d2-border)" }}>
-          <div>
-            <div style={{ fontSize: 11, textTransform: "capitalize" }}>{r.method.replace(/_/g, " ")}</div>
-            <div style={{ fontSize: 9, color: "var(--d2-text-3)" }}>{fmt(r.date)}</div>
-          </div>
-          <div style={{ fontSize: 11, fontFamily: "var(--d2-mono)", fontVariantNumeric: "tabular-nums" }}>£{r.amount.toFixed(2)}</div>
-        </div>
-      ))}
-    </div>
+    <PupilPaymentsManager
+      key={refreshKey}
+      pupilId={pupil.id}
+      pupilName={pupil.name}
+      pupilPhone={pupil.phone || null}
+      pupilEmail={pupil.email || null}
+      instructorId={instructor.id}
+      instructorName={(instructor as any).full_name || (instructor as any).name || "Your instructor"}
+      currentBalance={pupil.balance}
+      onChanged={() => setRefreshKey((k) => k + 1)}
+    />
   );
 }
+
 
 function NotesTab({ pupilId }: { pupilId: string }) {
   const [rows, setRows] = useState<Array<{ id: string; created_at: string; content: string; title: string | null }>>([]);
