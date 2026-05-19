@@ -458,6 +458,7 @@ export default function BrandedPupilPortal() {
 
                   {/* Test Countdown */}
                   <TestCountdownCard pupilId={pupil.id} brandColour={drive365Blue} />
+                  <PupilTestStatusCard pupilId={pupil.id} brandColour={drive365Blue} />
 
                   {/* ═══ ZONE 2: YOUR STATS (collapsible) ═══ */}
                   <Collapsible open={statsOpen} onOpenChange={setStatsOpen}>
