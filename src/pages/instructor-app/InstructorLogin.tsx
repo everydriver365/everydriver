@@ -225,7 +225,7 @@ export default function InstructorLogin() {
           <div style={{ position: "absolute", bottom: -80, right: -80, width: 260, height: 260, borderRadius: "50%", background: "rgba(204,34,41,0.07)", pointerEvents: "none" }} />
 
           <div style={{ position: "relative", zIndex: 1 }}>
-            <DSM365Logo size="lg" />
+            <DSMLogoImg height={36} />
             <p style={{ fontSize: 11, fontWeight: 300, color: "rgba(255,255,255,0.35)", marginTop: 7, letterSpacing: "0.04em" }}>
               Driving School Manager
             </p>
