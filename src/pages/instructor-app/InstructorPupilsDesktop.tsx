@@ -209,6 +209,7 @@ export default function InstructorPupilsDesktop() {
     theory_passed: false, theory_pass_date: "",
     test_booked: false, test_centre_id: "", test_centre_label: "",
     test_date: "", test_time: "", duration: "", custom_hourly_rate: "",
+    source: "", intensive_hours_paid: "", intensive_course_payout: "",
   });
   const [addErrors, setAddErrors] = useState<{ email?: string; postcode?: string; phone?: string }>({});
   const [addSaving, setAddSaving] = useState(false);
@@ -284,6 +285,11 @@ export default function InstructorPupilsDesktop() {
       test_date: addForm.test_booked ? (addForm.test_date || null) : null,
       test_time: addForm.test_booked ? (addForm.test_time || null) : null,
       custom_hourly_rate: rateNum && !isNaN(rateNum) ? rateNum : null,
+      source: addForm.source || null,
+      intensive_hours_paid: addForm.source === "national_intensive" && addForm.intensive_hours_paid
+        ? parseFloat(addForm.intensive_hours_paid) : null,
+      intensive_course_payout: addForm.source === "national_intensive" && addForm.intensive_course_payout
+        ? parseFloat(addForm.intensive_course_payout) : null,
     });
     setAddSaving(false);
     if (error) { toast.error(`Could not add pupil: ${error.message}`); return; }
@@ -299,6 +305,7 @@ export default function InstructorPupilsDesktop() {
       theory_passed: false, theory_pass_date: "",
       test_booked: false, test_centre_id: "", test_centre_label: "",
       test_date: "", test_time: "", duration: "", custom_hourly_rate: "",
+      source: "", intensive_hours_paid: "", intensive_course_payout: "",
     });
     setAddErrors({});
     setAddOpen(false);

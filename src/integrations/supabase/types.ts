@@ -14904,6 +14904,8 @@ export type Database = {
           harsh_brake_events_total: number | null
           id: string
           instructor_id: string
+          intensive_course_payout: number | null
+          intensive_hours_paid: number | null
           last_trip_at: string | null
           lessons_completed: number | null
           licence_photo_back_url: string | null
@@ -14941,6 +14943,7 @@ export type Database = {
           reward_points: number | null
           scheduling_status: string | null
           sex: string | null
+          source: string | null
           special_needs: string | null
           speeding_events_total: number | null
           status: string
@@ -15001,6 +15004,8 @@ export type Database = {
           harsh_brake_events_total?: number | null
           id?: string
           instructor_id: string
+          intensive_course_payout?: number | null
+          intensive_hours_paid?: number | null
           last_trip_at?: string | null
           lessons_completed?: number | null
           licence_photo_back_url?: string | null
@@ -15038,6 +15043,7 @@ export type Database = {
           reward_points?: number | null
           scheduling_status?: string | null
           sex?: string | null
+          source?: string | null
           special_needs?: string | null
           speeding_events_total?: number | null
           status?: string
@@ -15098,6 +15104,8 @@ export type Database = {
           harsh_brake_events_total?: number | null
           id?: string
           instructor_id?: string
+          intensive_course_payout?: number | null
+          intensive_hours_paid?: number | null
           last_trip_at?: string | null
           lessons_completed?: number | null
           licence_photo_back_url?: string | null
@@ -15135,6 +15143,7 @@ export type Database = {
           reward_points?: number | null
           scheduling_status?: string | null
           sex?: string | null
+          source?: string | null
           special_needs?: string | null
           speeding_events_total?: number | null
           status?: string

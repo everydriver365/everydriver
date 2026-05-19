@@ -85,7 +85,22 @@ export interface AddPupilFormState {
   test_time?: string;
   duration?: string;
   custom_hourly_rate?: string;
+  // Lead source
+  source?: string;
+  intensive_hours_paid?: string;
+  intensive_course_payout?: string;
 }
+
+export const PUPIL_SOURCE_OPTIONS: { value: string; label: string }[] = [
+  { value: "referral", label: "Referral" },
+  { value: "national_intensive", label: "National Intensive" },
+  { value: "online", label: "Online" },
+  { value: "walk_in", label: "Walk-in / Local" },
+  { value: "social_media", label: "Social media" },
+  { value: "school", label: "Driving school" },
+  { value: "returning", label: "Returning pupil" },
+  { value: "other", label: "Other" },
+];
 
 interface AddPupilSheetProps {
   open: boolean;
@@ -615,6 +630,55 @@ export function AddPupilSheet({
       </section>
 
       <section>
+        <SectionLabel>Lead source</SectionLabel>
+        <SectionCard>
+          <Row label="Source">
+            <Select
+              value={form.source || ""}
+              onValueChange={(val) => setForm({ ...form, source: val })}
+            >
+              <SelectTrigger
+                className="border-0 bg-transparent shadow-none h-auto p-0 gap-1 justify-end text-[15px] focus:ring-0 focus:ring-offset-0"
+                style={{ color: form.source ? TEXT_PRIMARY : TEXT_TERTIARY }}
+              >
+                <SelectValue placeholder="Select" />
+              </SelectTrigger>
+              <SelectContent>
+                {PUPIL_SOURCE_OPTIONS.map((o) => (
+                  <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Row>
+          {form.source === "national_intensive" && (
+            <>
+              <RowDivider />
+              <Row label="Hours paid">
+                <RowInput
+                  type="number"
+                  inputMode="decimal"
+                  value={form.intensive_hours_paid || ""}
+                  onChange={(e) => setForm({ ...form, intensive_hours_paid: e.target.value })}
+                  placeholder="e.g. 40"
+                />
+              </Row>
+              <RowDivider />
+              <Row label="Course pays">
+                <RowInput
+                  type="number"
+                  inputMode="decimal"
+                  value={form.intensive_course_payout || ""}
+                  onChange={(e) => setForm({ ...form, intensive_course_payout: e.target.value })}
+                  placeholder="£ amount"
+                />
+              </Row>
+            </>
+          )}
+        </SectionCard>
+      </section>
+
+
+      <section>
         <SectionLabel>Address</SectionLabel>
         <SectionCard>
           <Row label="Address" required invalid={addressInvalid} stacked>
@@ -988,7 +1052,47 @@ export function AddPupilSheet({
             )}
           </DSection>
 
+          {/* Section 1b: Lead source */}
+          <DSection icon={UsersIcon} label="Lead source">
+            <div className="mb-3">
+              <DFieldLabel label="Where did this pupil come from?" />
+              <DSelect
+                value={form.source || ""}
+                placeholder="Select source"
+                onChange={(v) => updateForm({ source: v })}
+                options={PUPIL_SOURCE_OPTIONS}
+              />
+            </div>
+            {form.source === "national_intensive" && (
+              <div className="flex gap-3">
+                <div className="flex-1">
+                  <DFieldLabel label="Hours paid for" />
+                  <DTextInput
+                    type="number"
+                    value={form.intensive_hours_paid || ""}
+                    onChange={(v) => updateForm({ intensive_hours_paid: v })}
+                    placeholder="e.g. 40"
+                    isConditional
+                    suffix={<span style={{ fontSize: 12, color: D_GREEN, marginLeft: 4 }}>hrs</span>}
+                  />
+                </div>
+                <div className="flex-1">
+                  <DFieldLabel label="Course pays" />
+                  <DTextInput
+                    type="number"
+                    value={form.intensive_course_payout || ""}
+                    onChange={(v) => updateForm({ intensive_course_payout: v })}
+                    placeholder="0.00"
+                    isConditional
+                    prefix={<span style={{ fontSize: 13, color: D_GREEN, marginRight: 4 }}>£</span>}
+                  />
+                </div>
+              </div>
+            )}
+          </DSection>
+
           {/* Section 2: Address */}
+
           <DSection icon={MapPin} label="Address">
             <div className="mb-3">
               <DFieldLabel
