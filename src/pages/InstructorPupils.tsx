@@ -407,6 +407,10 @@ export default function InstructorPupils() {
       const rateNum = addForm.custom_hourly_rate
         ? parseFloat(addForm.custom_hourly_rate)
         : null;
+      const intensiveHours = addForm.source === "national_intensive" && addForm.intensive_hours_paid
+        ? parseFloat(addForm.intensive_hours_paid) : null;
+      const intensivePayout = addForm.source === "national_intensive" && addForm.intensive_course_payout
+        ? parseFloat(addForm.intensive_course_payout) : null;
 
       const { data, error } = await supabase.from("pupils").insert({
         instructor_id: instructorId,
@@ -434,6 +438,9 @@ export default function InstructorPupils() {
         test_date: addForm.test_booked ? (addForm.test_date || null) : null,
         test_time: addForm.test_booked ? (addForm.test_time || null) : null,
         custom_hourly_rate: rateNum && !isNaN(rateNum) ? rateNum : null,
+        source: addForm.source || null,
+        intensive_hours_paid: intensiveHours && !isNaN(intensiveHours) ? intensiveHours : null,
+        intensive_course_payout: intensivePayout && !isNaN(intensivePayout) ? intensivePayout : null,
       }).select();
 
       if (error) {
