@@ -17680,6 +17680,61 @@ export type Database = {
         }
         Relationships: []
       }
+      test_reminders_log: {
+        Row: {
+          days_before: number
+          id: string
+          instructor_id: string
+          pupil_id: string
+          sent_at: string
+          sent_via: string
+          test_date: string
+          test_type: string
+        }
+        Insert: {
+          days_before: number
+          id?: string
+          instructor_id: string
+          pupil_id: string
+          sent_at?: string
+          sent_via: string
+          test_date: string
+          test_type: string
+        }
+        Update: {
+          days_before?: number
+          id?: string
+          instructor_id?: string
+          pupil_id?: string
+          sent_at?: string
+          sent_via?: string
+          test_date?: string
+          test_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "test_reminders_log_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "test_reminders_log_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "test_reminders_log_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       test_requests: {
         Row: {
           created_at: string
