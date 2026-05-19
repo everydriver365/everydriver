@@ -1,35 +1,37 @@
-## Why Add Lesson is failing
+## Goal
+Make per-channel eligibility crystal clear in the preview so the user can see, before sending, exactly which channels each pupil will / won't receive on and why.
 
-The Confirm Booking dialog returns *"Could not add to Google Calendar — slot released, no booking made"* whenever the synchronous Google push throws (timeout, token race, transient 5xx). The lesson row is inserted successfully, then deleted by `syncLessonsOrRollback`. The instructor's calendar is otherwise healthy (632 events synced a minute earlier), so the rollback is discarding good bookings.
+## Changes (UI only, `SendAllRemindersDialog.tsx`)
 
-## Fix — save and retry instead of rolling back
+### 1. Add per-channel status chips to each pupil row
+Replace the single "Receiving on: …" / "missing …" text with a row of chips — one chip per **selected** channel — showing one of three states:
 
-1. **`src/lib/syncLessonsOrRollback.ts`**
-   - On Google failure, do **not** delete the lesson rows. Instead update them with `calendar_sync_status = 'pending'` so the existing `process-calendar-queue` cron retries them.
-   - Toast (amber, non-blocking): *"Lesson saved. We'll keep trying to add it to your Google Calendar in the background."*
-   - Return `{ ok: true, deferred: true }` so callers proceed as success.
+- **Ready** (green): channel will send. Icon + label.
+- **Missing contact** (amber): channel selected but pupil has no phone/email. Tooltip: "No phone on file" / "No email on file".
+- **Not selected**: hidden (only show chips for currently selected channels).
 
-2. **`src/components/instructor/AddLessonSheet.tsx`** (lines ~707–712 and ~781–785)
-   - Remove the "slot released" early return.
-   - On a deferred sync, still show the success toast, close the sheet, call `onSuccess`, invalidate queries.
+Each chip uses the channel icon + label + a small status dot, so the user can scan the list and instantly see gaps.
 
-3. **`src/components/course-planner/CoursePlannerForm.tsx`** and **`src/components/instructor/VoiceQuickAddLessonSheet.tsx`**
-   - Same call-site change so course planner and the voice quick-add behave identically.
+### 2. Restructure the Preview block by channel
+Currently the preview shows one message per pupil. Change to:
 
-4. **No edge-function or DB changes.** `process-calendar-queue` already picks up `pending`/`failed` rows on its cron schedule.
+```text
+Sarah Jones · £45.00
+  ✓ Text       "Hi Sarah, friendly reminder…"
+  ✓ WhatsApp   "Hi Sarah, friendly reminder…"
+  ✗ Email      Skipped — no email on file
+```
 
-5. **Quiet fix:** `src/components/instructor/payments/SendAllRemindersDialog.tsx` still references `emptyChannelLabel` (removed in the previous refactor) and crashes the reminders dialog. Drop the stray reference.
+For each selected pupil, list **every selected channel** with either the final formatted message (Email shows subject + body; SMS/WhatsApp/In-app show the short text) or a clear "Skipped — reason" line in muted rose. This makes ineligibility visible inside the preview itself, not just in the list above.
 
-## Why this is safe
+### 3. Add a compact summary line above the preview
+`X messages will send · Y skipped (Z missing email, W missing phone)` so the user sees the totals at a glance before clicking Send.
 
-The availability engine consults Google Calendar + `instructor_manual_blocks` for busyness — not `scheduled_lessons` — so a briefly-unsynced lesson can theoretically let the engine offer that slot. But:
-- The cron retry usually syncs within seconds.
-- The instructor sees an explicit "still syncing" toast.
-- Losing the booking entirely (current behaviour) is strictly worse than a short retry window.
+### 4. Keep the fully-ineligible pupil rows (already shown) but tighten the copy
+"Skipped on all channels — no phone or email on file" (clearer than the current join).
 
-## Files touched
-- `src/lib/syncLessonsOrRollback.ts`
-- `src/components/instructor/AddLessonSheet.tsx`
-- `src/components/course-planner/CoursePlannerForm.tsx`
-- `src/components/instructor/VoiceQuickAddLessonSheet.tsx`
-- `src/components/instructor/payments/SendAllRemindersDialog.tsx`
+## Technical notes
+- Extract a `buildMessage(p, ch, fromName)` helper returning `{ subject?, body }` and reuse it in both `sendOne` and the preview (removes the duplicated template string at lines 145 & 369).
+- Add a `channelStatusFor(p, ch)` helper returning `'ready' | 'missing-phone' | 'missing-email'`.
+- No backend, schema, or business-logic changes. Send flow, eligibility rules, and `followup_log` insert stay identical.
+- Uses existing semantic tokens (`text-emerald-700`, `text-rose-700`, `text-muted-foreground`, `bg-muted/30`, `border-primary/30`) — no new colors.
