@@ -72,7 +72,7 @@ export function PupilPaymentsManager({
 
   const notifyChanged = () => {
     invalidatePaymentQueries({ pupilId, instructorId });
-    notifyChanged();
+    onChanged?.();
   };
 
   const addCharge = async () => {
