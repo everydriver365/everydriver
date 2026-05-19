@@ -32,7 +32,7 @@ export default function SchoolInstructorDetailView({ instructorId, onBack }: Pro
     const [instrRes, pupilsRes, lessonsRes, paymentsRes, testsRes] = await Promise.all([
       supabase.from("instructors").select("*").eq("id", instructorId).single(),
       supabase.from("pupils").select("id, name, email, phone, course_status, total_hours, created_at").eq("instructor_id", instructorId).is("deleted_at", null).order("created_at", { ascending: false }).limit(100),
-      supabase.from("scheduled_lessons").select("id, pupil_id, start_time, end_time, status, pupils(name)").eq("instructor_id", instructorId).order("start_time", { ascending: false }).limit(50),
+      supabase.from("scheduled_lessons").select("id, pupil_id, lesson_date, start_time, duration_minutes, status, pupils(name)").eq("instructor_id", instructorId).order("lesson_date", { ascending: false }).limit(50),
       supabase.from("payment_history").select("id, amount, payment_method, created_at, notes, pupils(name)").eq("instructor_id", instructorId).order("created_at", { ascending: false }).limit(50),
       supabase.from("driving_test_results").select("*").eq("instructor_id", instructorId).order("test_date", { ascending: false }).limit(50),
     ]);
