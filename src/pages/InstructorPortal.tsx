@@ -148,6 +148,7 @@ export default function InstructorPortal() {
         .from("pupils")
         .select("id, name, lessons_completed, next_lesson, progress, account_balance, phone, email")
         .eq("instructor_id", instructorId)
+        .is("deleted_at", null)
         .order("name", { ascending: true });
 
       if (error) throw error;
