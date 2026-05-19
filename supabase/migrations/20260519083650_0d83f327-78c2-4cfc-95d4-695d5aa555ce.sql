@@ -1,0 +1,1 @@
+ALTER TABLE public.pupils ADD COLUMN IF NOT EXISTS intensive_pupil_payment numeric(10,2);
