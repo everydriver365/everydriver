@@ -40,7 +40,12 @@ export function PupilMobileHeader({
     <div className="sticky top-0 z-50">
       <div
         className="relative overflow-hidden text-white"
-        style={{ backgroundColor: bgColor }}
+        style={{
+          backgroundColor: bgColor,
+          paddingTop: "env(safe-area-inset-top)",
+          borderBottomLeftRadius: 28,
+          borderBottomRightRadius: 28,
+        }}
       >
         {/* Decorative circles */}
         <div className="absolute -top-6 -right-6 w-28 h-28 rounded-full bg-white/5" />
