@@ -1156,9 +1156,9 @@ export default function InstructorPupilsDesktop() {
       <AlertDialog open={!!deleteTarget} onOpenChange={(o) => { if (!o) setDeleteTarget(null); }}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete pupil?</AlertDialogTitle>
+            <AlertDialogTitle>Archive pupil?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will remove <strong>{deleteTarget?.name}</strong> from your active pupils. Lesson history is preserved and the pupil can be restored by support.
+              <strong>{deleteTarget?.name}</strong> will be moved to your Archived list. Lesson history, payments and notes are preserved — you can restore them at any time from the Archived button at the top of the page.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
