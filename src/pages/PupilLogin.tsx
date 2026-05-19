@@ -307,7 +307,15 @@ export default function PupilLogin() {
 
   return (
     <div className="min-h-screen w-full bg-white flex flex-col md:flex-row">
+      <MobileLoginHero
+        heroSrc={pupilHero}
+        logoSrc={drive365Logo}
+        logoAlt="Drive365 Pupil"
+        title={slugInstructorName ? `Sign in to ${slugInstructorName}` : "Welcome back"}
+        subtitle="Sign in to manage lessons, track progress and pay your instructor."
+      />
       {/* LEFT PANEL — tablet/desktop only */}
+
       <aside
         className="hidden md:flex flex-col justify-between relative overflow-hidden flex-1 p-11"
         style={{ backgroundColor: "#0F2044" }}
