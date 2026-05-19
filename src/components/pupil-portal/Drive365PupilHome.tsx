@@ -270,8 +270,8 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug, onNavigat
         {/* 2. Greeting */}
         <div className="flex items-center gap-3 mb-3">
           <Avatar style={{ width: 52, height: 52 }} className="border-2" >
-            <AvatarImage src={pupil.profile_image_url || undefined} />
-            <AvatarFallback style={{ background: NAVY, color: "#fff", fontWeight: 700 }}>
+            <AvatarImage src={pupil.profile_image_url || undefined} alt={pupil.name} />
+            <AvatarFallback style={{ background: NAVY, color: "#fff", fontWeight: 700, fontSize: 22 }}>
               {firstName.slice(0, 1).toUpperCase()}
             </AvatarFallback>
           </Avatar>
