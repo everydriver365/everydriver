@@ -1991,7 +1991,18 @@ export default function PremiumPupilProfile() {
           <DialogHeader>
             <DialogTitle>{pupil.name} — Payments</DialogTitle>
           </DialogHeader>
-          <PupilPaymentHistory pupilId={pupil.id} pupilName={pupil.name} />
+          {instructorId && (
+            <PupilPaymentsManager
+              pupilId={pupil.id}
+              pupilName={pupil.name}
+              pupilPhone={pupil.phone}
+              pupilEmail={pupil.email}
+              instructorId={instructorId}
+              instructorName={instructor?.name || ""}
+              currentBalance={balance}
+              onChanged={() => queryClient.invalidateQueries({ queryKey: ["pupil-profile", pupil.id, instructorId] })}
+            />
+          )}
         </DialogContent>
       </Dialog>
     </InstructorPortalLayout>
