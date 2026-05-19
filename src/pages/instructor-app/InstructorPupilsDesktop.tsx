@@ -841,6 +841,7 @@ export default function InstructorPupilsDesktop() {
               <SortHeader label="Hours left" k="lessonsLeft" sortKey={sortKey} sortDir={sortDir} onClick={toggleSort} />
               <SortHeader label="Last lesson" k="lastLesson" sortKey={sortKey} sortDir={sortDir} onClick={toggleSort} />
               <SortHeader label="Next lesson" k="nextLesson" sortKey={sortKey} sortDir={sortDir} onClick={toggleSort} />
+              <div>Tests</div>
               <SortHeader label="Balance" k="balance" sortKey={sortKey} sortDir={sortDir} onClick={toggleSort} align="right" />
               <div>Status</div>
               <div></div>
