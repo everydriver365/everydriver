@@ -333,14 +333,8 @@ export default function PupilLogin() {
 
           {/* Brand */}
           <div className="flex flex-col items-center">
-            <div className="inline-flex h-[44px] rounded-[8px] overflow-hidden" aria-label="Drive365">
-              <div className="flex items-center px-3 bg-white border-2 border-[#CC2229] border-r-0 rounded-l-[8px]">
-                <span className="text-[#CC2229] font-extrabold tracking-[1px] text-[15px] leading-none">DRIVE</span>
-              </div>
-              <div className="flex items-center px-3 bg-[#0F2044] border-2 border-[#2D7BE8] border-l-0 rounded-r-[8px]">
-                <span className="text-white font-extrabold tracking-[1px] text-[15px] leading-none">365</span>
-              </div>
-            </div>
+            <img src={drive365Logo} alt="Drive365" className="h-11 object-contain" />
+
             <h1
               className="pl-m-welcome text-white font-bold mt-7"
               style={{ fontSize: 26, letterSpacing: "-0.6px", lineHeight: 1.1 }}
