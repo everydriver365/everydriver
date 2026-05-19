@@ -14,6 +14,8 @@ interface Props {
   footer?: ReactNode;
   /** Optional className extension for the root. */
   className?: string;
+  /** Tailwind breakpoint at which the shell hides (desktop takes over). Default "md". */
+  hideAt?: "md" | "lg";
 }
 
 /**
