@@ -55,6 +55,10 @@ interface Pupil {
   totalHours: number;
   testDate?: string;
   pickupAddress?: string;
+  theoryPassed?: boolean | null;
+  theoryDate?: string | null;
+  drivingPassed?: boolean | null;
+  drivingTestDate?: string | null;
 }
 
 const palette: Record<AvatarColor, { bg: string; text: string }> = {
