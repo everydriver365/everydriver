@@ -228,6 +228,109 @@ function Row({ icon: Icon, label, value }: { icon: any; label: string; value?: R
   );
 }
 
+/** Inline-editable row. Click to edit, Enter to save, Esc to cancel. */
+function EditableRow({
+  icon: Icon, label, value, placeholder, type = "text", options, onSave,
+}: {
+  icon: any;
+  label: string;
+  value: string | null | undefined;
+  placeholder?: string;
+  type?: "text" | "email" | "tel" | "date" | "select";
+  options?: { value: string; label: string }[];
+  onSave: (next: string | null) => Promise<void> | void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState<string>(value ?? "");
+  const [saving, setSaving] = useState(false);
+  useEffect(() => { if (!editing) setDraft(value ?? ""); }, [value, editing]);
+
+  const commit = async () => {
+    setSaving(true);
+    try {
+      const trimmed = draft.trim();
+      await onSave(trimmed === "" ? null : trimmed);
+      setEditing(false);
+    } finally { setSaving(false); }
+  };
+
+  const hasValue = value != null && value !== "";
+  const display = hasValue ? (value as string) : (placeholder ?? "Add");
+
+  return (
+    <div style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "10px 0" }}>
+      <div style={{ width: 32, height: 32, borderRadius: 16, background: C.surface, display: "flex", alignItems: "center", justifyContent: "center", color: C.muted, flexShrink: 0 }}>
+        <Icon size={15} />
+      </div>
+      <div style={{ minWidth: 0, flex: 1 }}>
+        <div style={{ fontFamily: FONT, fontSize: 11, color: C.muted, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.4px" }}>{label}</div>
+        {editing ? (
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4 }}>
+            {type === "select" ? (
+              <select
+                autoFocus
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                style={{
+                  flex: 1, fontFamily: FONT, fontSize: 14, padding: "6px 8px",
+                  border: `1px solid ${C.hairline}`, borderRadius: 8, outline: "none",
+                  background: C.card, color: C.text,
+                }}
+              >
+                <option value="">—</option>
+                {options?.map((o) => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
+                ))}
+              </select>
+            ) : (
+              <input
+                autoFocus
+                type={type}
+                value={draft}
+                placeholder={placeholder}
+                onChange={(e) => setDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") commit();
+                  if (e.key === "Escape") setEditing(false);
+                }}
+                style={{
+                  flex: 1, fontFamily: FONT, fontSize: 14, padding: "6px 8px",
+                  border: `1px solid ${C.hairline}`, borderRadius: 8, outline: "none",
+                  background: C.card, color: C.text,
+                }}
+              />
+            )}
+            <button onClick={commit} disabled={saving}
+              style={{ background: "transparent", border: "none", color: C.green, cursor: "pointer", padding: 4 }}>
+              <Check size={18} />
+            </button>
+            <button onClick={() => setEditing(false)}
+              style={{ background: "transparent", border: "none", color: C.muted, cursor: "pointer", padding: 4 }}>
+              <X size={18} />
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => { setDraft(value ?? ""); setEditing(true); }}
+            title="Click to edit"
+            style={{
+              background: "transparent", border: "none", padding: 0, marginTop: 2,
+              cursor: "pointer", textAlign: "left",
+              fontFamily: FONT, fontSize: 15,
+              color: hasValue ? C.text : C.subtle,
+              fontWeight: 500, wordBreak: "break-word",
+              display: "inline-flex", alignItems: "center", gap: 6,
+            }}
+          >
+            <span>{display}</span>
+            <Edit3 size={12} color={C.subtle} style={{ opacity: 0.6 }} />
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 /* ──────────────────────────── data hooks (live) ──────────────────────────── */
 function usePupil(pupilId: string | undefined, instructorId: string | undefined) {
   return useQuery({
@@ -1000,20 +1103,106 @@ export default function PremiumPupilProfile() {
     </button>
   );
 
+  // Generic field updater for the pupil row.
+  const updatePupilField = async (patch: Record<string, any>, successMsg = "Updated") => {
+    if (!pupil?.id) return;
+    const { error } = await supabase.from("pupils").update(patch).eq("id", pupil.id);
+    if (error) { console.error(error); toast.error("Failed to update"); throw error; }
+    toast.success(successMsg);
+    await queryClient.invalidateQueries({ queryKey: ["pupil-profile", pupil.id, instructorId] });
+  };
+
   const DetailsCard = (
     <Card>
-      <div style={{ fontFamily: FONT, fontSize: 17, color: C.text, fontWeight: 600, letterSpacing: "-0.01em", marginBottom: 6 }}>
-        Pupil details
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+        <div style={{ fontFamily: FONT, fontSize: 17, color: C.text, fontWeight: 600, letterSpacing: "-0.01em" }}>
+          Pupil details
+        </div>
+        <div style={{ fontFamily: FONT, fontSize: 11, color: C.subtle }}>
+          Click any field to edit
+        </div>
       </div>
-      <Row icon={User} label="Date of birth" value={pupil.date_of_birth ? format(parseISO(pupil.date_of_birth), "d MMM yyyy") : null} />
-      <Row icon={Mail} label="Email" value={pupil.email} />
-      <Row icon={MapPin} label="Address" value={[pupil.address, pupil.postcode].filter(Boolean).join(", ") || null} />
-      <Row icon={Phone} label="Emergency contact" value={
-        pupil.emergency_contact_name || pupil.emergency_contact_phone
-          ? `${pupil.emergency_contact_name || ""}${pupil.emergency_contact_phone ? ` · ${pupil.emergency_contact_phone}` : ""}`.trim()
-          : null
-      } />
-      <Row icon={GraduationCap} label="Course" value={pupil.course_type} />
+      <EditableRow
+        icon={User} label="Name" value={pupil.name} placeholder="Full name"
+        onSave={(v) => updatePupilField({ name: v ?? "" }, "Name updated")}
+      />
+      <EditableRow
+        icon={User} label="Date of birth"
+        value={pupil.date_of_birth ?? null} type="date" placeholder="YYYY-MM-DD"
+        onSave={(v) => updatePupilField({ date_of_birth: v }, "Date of birth updated")}
+      />
+      <EditableRow
+        icon={Mail} label="Email" value={pupil.email ?? null} type="email" placeholder="name@example.com"
+        onSave={(v) => updatePupilField({ email: v }, "Email updated")}
+      />
+      <EditableRow
+        icon={Phone} label="Phone" value={pupil.phone ?? null} type="tel" placeholder="07XXX XXXXXX"
+        onSave={(v) => updatePupilField({ phone: v }, "Phone updated")}
+      />
+      <EditableRow
+        icon={MapPin} label="Address" value={pupil.address ?? null} placeholder="Street address"
+        onSave={(v) => updatePupilField({ address: v }, "Address updated")}
+      />
+      <EditableRow
+        icon={MapPin} label="Postcode" value={pupil.postcode ?? null} placeholder="Postcode"
+        onSave={(v) => updatePupilField({ postcode: v ? v.toUpperCase() : v }, "Postcode updated")}
+      />
+      <EditableRow
+        icon={User} label="Emergency contact name"
+        value={(pupil as any).emergency_contact_name ?? null} placeholder="Name"
+        onSave={(v) => updatePupilField({ emergency_contact_name: v }, "Emergency contact updated")}
+      />
+      <EditableRow
+        icon={Phone} label="Emergency contact phone"
+        value={(pupil as any).emergency_contact_phone ?? null} type="tel" placeholder="07XXX XXXXXX"
+        onSave={(v) => updatePupilField({ emergency_contact_phone: v }, "Emergency contact updated")}
+      />
+      <EditableRow
+        icon={GraduationCap} label="Course type" value={pupil.course_type ?? null} placeholder="e.g. Manual / Automatic"
+        type="select"
+        options={[
+          { value: "manual", label: "Manual" },
+          { value: "automatic", label: "Automatic" },
+          { value: "intensive", label: "Intensive" },
+          { value: "refresher", label: "Refresher" },
+        ]}
+        onSave={(v) => updatePupilField({ course_type: v }, "Course updated")}
+      />
+      <EditableRow
+        icon={User} label="Status" value={(pupil.status as string) ?? "active"}
+        type="select"
+        options={[
+          { value: "active", label: "Active" },
+          { value: "on_hold", label: "On hold" },
+          { value: "passed", label: "Passed" },
+          { value: "inactive", label: "Inactive" },
+          { value: "cancelled", label: "Cancelled" },
+        ]}
+        onSave={(v) => updatePupilField({ status: v ?? "active" }, "Status updated")}
+      />
+      <EditableRow
+        icon={Clock} label="Test date" value={pupil.test_date ?? null} type="date"
+        onSave={(v) => updatePupilField({ test_date: v }, "Test date updated")}
+      />
+      <EditableRow
+        icon={Clock} label="Test time" value={(pupil as any).test_time ?? null} placeholder="HH:MM"
+        onSave={(v) => updatePupilField({ test_time: v }, "Test time updated")}
+      />
+      <EditableRow
+        icon={GraduationCap} label="Progress %"
+        value={pupil.progress != null ? String(pupil.progress) : null}
+        placeholder="0–100"
+        onSave={(v) => {
+          if (v == null) return updatePupilField({ progress: null }, "Progress updated");
+          const n = Math.max(0, Math.min(100, Math.round(Number(v))));
+          if (!Number.isFinite(n)) { toast.error("Enter 0–100"); return; }
+          return updatePupilField({ progress: n }, "Progress updated");
+        }}
+      />
+      <EditableRow
+        icon={FileText} label="Notes" value={pupil.notes ?? null} placeholder="Add a note"
+        onSave={(v) => updatePupilField({ notes: v }, "Notes updated")}
+      />
     </Card>
   );
 
