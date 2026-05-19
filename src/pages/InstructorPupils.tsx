@@ -718,7 +718,7 @@ export default function InstructorPupils() {
             <SearchInput
               value={searchQuery}
               onChange={setSearchQuery}
-              placeholder="Search name, phone, location..."
+              placeholder="Search name, phone, postcode..."
             />
           </div>
 
