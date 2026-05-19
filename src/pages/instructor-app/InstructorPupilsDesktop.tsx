@@ -1146,6 +1146,7 @@ export default function InstructorPupilsDesktop() {
                     <SelectItem value="card">Card</SelectItem>
                     <SelectItem value="bank_transfer">Bank transfer</SelectItem>
                     <SelectItem value="send_link">Send payment link</SelectItem>
+                    <SelectItem value="national_intensive">National Intensive</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
