@@ -192,22 +192,23 @@ export default function Drive365Login() {
       </aside>
 
       {/* RIGHT PANEL */}
-      <main className="flex-1 flex justify-center items-start md:items-center bg-white px-5 py-10 md:p-12">
+      <main className="flex-1 flex justify-center items-start md:items-center bg-white px-5 pt-2 pb-10 md:p-12">
         <motion.div
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
           className="w-full max-w-[390px]"
         >
-          <img src={drive365Logo} alt="Drive365" className="h-8 object-contain" />
-          <div className="h-7" />
+          <img src={drive365Logo} alt="Drive365" className="hidden md:block h-8 object-contain" />
+          <div className="hidden md:block h-7" />
 
-          <h2 className="text-[22px] font-bold text-[#0F2044] tracking-[-0.4px] mb-[5px]">
+          <h2 className="hidden md:block text-[22px] font-bold text-[#0F2044] tracking-[-0.4px] mb-[5px]">
             Welcome back
           </h2>
-          <p className="text-[13px] font-light text-[#9CA3AF] leading-5 mb-[26px]">
+          <p className="hidden md:block text-[13px] font-light text-[#9CA3AF] leading-5 mb-[26px]">
             Sign in to your Drive365 account to continue.
           </p>
+
 
           <form onSubmit={handleLogin}>
             <div className="mb-[14px]">
