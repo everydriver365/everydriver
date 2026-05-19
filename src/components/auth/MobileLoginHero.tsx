@@ -34,7 +34,7 @@ export function MobileLoginHero({
   return (
     <div className="md:hidden bg-white">
       {/* Top bar: back chevron + centred logo */}
-      <div className="relative flex items-center justify-center px-4 pt-4 pb-3">
+      <div className="relative flex items-center justify-center px-4 pt-3 pb-2">
         {showBack && (
           <button
             type="button"
@@ -48,8 +48,8 @@ export function MobileLoginHero({
         <img src={logoSrc} alt={logoAlt} className={`${logoClassName} object-contain`} />
       </div>
 
-      {/* Hero photo */}
-      <div className="w-full aspect-[16/11] overflow-hidden bg-slate-100">
+      {/* Hero photo — compact so form fits above the fold */}
+      <div className="w-full aspect-[16/7] overflow-hidden bg-slate-100">
         <img
           src={heroSrc}
           alt=""
@@ -59,11 +59,11 @@ export function MobileLoginHero({
       </div>
 
       {/* Title + subtitle */}
-      <div className="px-6 pt-7 pb-5 text-center bg-white">
-        <h1 className="text-[20px] font-semibold text-slate-900 tracking-tight">
+      <div className="px-5 pt-4 pb-3 text-center bg-white">
+        <h1 className="text-[18px] font-semibold text-slate-900 tracking-tight">
           {title}
         </h1>
-        <p className="mt-2 text-[14px] leading-[1.45] text-slate-500 max-w-[320px] mx-auto">
+        <p className="mt-1.5 text-[13px] leading-[1.4] text-slate-500 max-w-[300px] mx-auto">
           {subtitle}
         </p>
       </div>
