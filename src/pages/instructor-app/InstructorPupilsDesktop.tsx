@@ -1744,12 +1744,23 @@ function OverviewTab({ pupil, onStatus }: { pupil: Pupil; onStatus: (id: string,
 
   const fmtDate = (iso: string) => new Date(iso + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 
+  const testLabel = (passed?: boolean | null, date?: string | null) => {
+    if (passed === true) return date ? `Passed · ${fmtDate(date)}` : "Passed";
+    if (passed === false) return date ? `Not passed · ${fmtDate(date)}` : "Not passed";
+    if (date) {
+      const isFuture = new Date(date) >= new Date(new Date().toDateString());
+      return `${isFuture ? "Booked" : "Taken"} · ${fmtDate(date)}`;
+    }
+    return "Not set";
+  };
+
   return (
     <div className="flex flex-col" style={{ gap: 12 }}>
       <div className="grid grid-cols-2" style={{ gap: 6 }}>
         <StatCard label="Hours left" value={`${pupil.hoursLeft}h`} mono />
         <StatCard label="Total hours" value={`${pupil.totalHours}h`} mono />
-        <StatCard label="Test date" value={pupil.testDate ? fmtDate(pupil.testDate) : "—"} />
+        <StatCard label="Theory" value={testLabel(pupil.theoryPassed, pupil.theoryDate)} />
+        <StatCard label="Driving test" value={testLabel(pupil.drivingPassed, pupil.drivingTestDate ?? pupil.testDate)} />
         <StatCard label="Balance" value={`£${pupil.balance.toFixed(2)}`} mono />
       </div>
 
