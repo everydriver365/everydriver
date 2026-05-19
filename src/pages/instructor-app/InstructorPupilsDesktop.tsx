@@ -1742,7 +1742,7 @@ function PanelContent({
       </div>
 
       {tab === "overview" && <OverviewTab pupil={pupil} onStatus={onStatus} />}
-      {tab === "lessons" && <PlaceholderTab text="Full chronological lesson list goes here." />}
+      {tab === "lessons" && <LessonsTab pupilId={pupil.id} />}
       {tab === "progress" && <ProgressTab pupilId={pupil.id} />}
       {tab === "payments" && <PaymentsTab pupil={pupil} />}
       {tab === "notes" && <NotesTab pupilId={pupil.id} />}
