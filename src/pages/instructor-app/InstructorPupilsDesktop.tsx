@@ -285,6 +285,11 @@ export default function InstructorPupilsDesktop() {
       test_date: addForm.test_booked ? (addForm.test_date || null) : null,
       test_time: addForm.test_booked ? (addForm.test_time || null) : null,
       custom_hourly_rate: rateNum && !isNaN(rateNum) ? rateNum : null,
+      source: addForm.source || null,
+      intensive_hours_paid: addForm.source === "national_intensive" && addForm.intensive_hours_paid
+        ? parseFloat(addForm.intensive_hours_paid) : null,
+      intensive_course_payout: addForm.source === "national_intensive" && addForm.intensive_course_payout
+        ? parseFloat(addForm.intensive_course_payout) : null,
     });
     setAddSaving(false);
     if (error) { toast.error(`Could not add pupil: ${error.message}`); return; }
