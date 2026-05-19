@@ -488,13 +488,30 @@ export function AddPupilSheet({
   const desktopName = `${(form.first_name || "").trim()} ${(form.last_name || "").trim()}`.trim();
   const effectiveName = isMobile ? form.name : desktopName || form.name;
 
+  const isNationalIntensive = form.source === "national_intensive";
+
   const isValid =
     effectiveName.trim().length > 0 &&
     form.address.trim().length > 0 &&
-    form.postcode.trim().length > 0;
+    form.postcode.trim().length > 0 &&
+    (!isNationalIntensive || (
+      String(form.intensive_hours_paid || "").trim().length > 0 &&
+      String(form.intensive_course_payout || "").trim().length > 0 &&
+      !isNaN(parseFloat(String(form.intensive_hours_paid || ""))) &&
+      !isNaN(parseFloat(String(form.intensive_course_payout || "")))
+    ));
+
   const nameInvalid = submitted && !effectiveName.trim();
   const addressInvalid = submitted && !form.address.trim();
   const postcodeInvalid = submitted && !form.postcode.trim();
+  const intensiveHoursInvalid = submitted && isNationalIntensive && (
+    !String(form.intensive_hours_paid || "").trim() ||
+    isNaN(parseFloat(String(form.intensive_hours_paid || "")))
+  );
+  const intensivePayoutInvalid = submitted && isNationalIntensive && (
+    !String(form.intensive_course_payout || "").trim() ||
+    isNaN(parseFloat(String(form.intensive_course_payout || "")))
+  );
 
   const handleSave = () => {
     setSubmitted(true);
@@ -653,7 +670,7 @@ export function AddPupilSheet({
           {form.source === "national_intensive" && (
             <>
               <RowDivider />
-              <Row label="Hours paid">
+              <Row label="Hours paid" required invalid={intensiveHoursInvalid}>
                 <RowInput
                   type="number"
                   inputMode="decimal"
@@ -663,7 +680,7 @@ export function AddPupilSheet({
                 />
               </Row>
               <RowDivider />
-              <Row label="Course pays">
+              <Row label="Course pays" required invalid={intensivePayoutInvalid}>
                 <RowInput
                   type="number"
                   inputMode="decimal"
@@ -673,6 +690,13 @@ export function AddPupilSheet({
                 />
               </Row>
             </>
+          )}
+          {(intensiveHoursInvalid || intensivePayoutInvalid) && (
+            <div className="px-4 py-2 bg-red-50">
+              <p className="text-xs text-red-600">
+                Please enter valid numeric values for hours paid and course payout
+              </p>
+            </div>
           )}
         </SectionCard>
       </section>
@@ -1075,6 +1099,11 @@ export function AddPupilSheet({
                     isConditional
                     suffix={<span style={{ fontSize: 12, color: D_GREEN, marginLeft: 4 }}>hrs</span>}
                   />
+                  {intensiveHoursInvalid && (
+                    <div style={{ fontSize: 11, color: "#DC2626", marginTop: 6 }}>
+                      Please enter a valid number of hours
+                    </div>
+                  )}
                 </div>
                 <div className="flex-1">
                   <DFieldLabel label="Course pays" />
@@ -1086,6 +1115,11 @@ export function AddPupilSheet({
                     isConditional
                     prefix={<span style={{ fontSize: 13, color: D_GREEN, marginRight: 4 }}>£</span>}
                   />
+                  {intensivePayoutInvalid && (
+                    <div style={{ fontSize: 11, color: "#DC2626", marginTop: 6 }}>
+                      Please enter a valid payout amount
+                    </div>
+                  )}
                 </div>
               </div>
             )}

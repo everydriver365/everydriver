@@ -213,7 +213,13 @@ export default function InstructorPupilsDesktop() {
     test_date: "", test_time: "", duration: "", custom_hourly_rate: "",
     source: "", intensive_hours_paid: "", intensive_course_payout: "",
   });
-  const [addErrors, setAddErrors] = useState<{ email?: string; postcode?: string; phone?: string }>({});
+  const [addErrors, setAddErrors] = useState<{
+    email?: string;
+    postcode?: string;
+    phone?: string;
+    intensive_hours_paid?: string;
+    intensive_course_payout?: string;
+  }>({});
   const [addSaving, setAddSaving] = useState(false);
   const [addLookingW3W, setAddLookingW3W] = useState(false);
 
@@ -223,10 +229,16 @@ export default function InstructorPupilsDesktop() {
   const UK_PHONE_RE = /^(?:\+?44|0)\s?\d(?:[\s-]?\d){8,9}$/;
 
   const validateAddForm = (f: typeof addForm) => {
-    const errs: { email?: string; postcode?: string; phone?: string } = {};
+    const errs: { email?: string; postcode?: string; phone?: string; intensive_hours_paid?: string; intensive_course_payout?: string } = {};
     if (f.email.trim() && !EMAIL_RE.test(f.email.trim())) errs.email = "Enter a valid email address";
     if (f.postcode.trim() && !UK_POSTCODE_RE.test(f.postcode.trim())) errs.postcode = "Enter a valid UK postcode (e.g. SO22 4AB)";
     if (f.phone.trim() && !UK_PHONE_RE.test(f.phone.trim())) errs.phone = "Enter a valid UK phone number";
+    if (f.source === "national_intensive") {
+      if (!String(f.intensive_hours_paid || "").trim()) errs.intensive_hours_paid = "Hours paid is required for National Intensive";
+      else if (isNaN(parseFloat(String(f.intensive_hours_paid)))) errs.intensive_hours_paid = "Please enter a valid number";
+      if (!String(f.intensive_course_payout || "").trim()) errs.intensive_course_payout = "Course payout is required for National Intensive";
+      else if (isNaN(parseFloat(String(f.intensive_course_payout)))) errs.intensive_course_payout = "Please enter a valid amount";
+    }
     return errs;
   };
 
@@ -250,6 +262,7 @@ export default function InstructorPupilsDesktop() {
     const errs = validateAddForm(addForm);
     setAddErrors(errs);
     if (Object.keys(errs).length) return;
+
     const anyName = addForm.name.trim() || (addForm.first_name || "").trim() || (addForm.last_name || "").trim();
     if (!anyName && !addForm.phone.trim() && !addForm.email.trim() && !addForm.address.trim()) {
       toast.error("Add at least a name or contact detail");
