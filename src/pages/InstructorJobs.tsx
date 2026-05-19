@@ -105,6 +105,36 @@ export default function InstructorJobs() {
     }
   }, [jobs, profile?.home_postcode, fetchDistances]);
 
+  // Fetch instructor radius + working hours for compatibility scoring
+  useEffect(() => {
+    if (!instructorId) return;
+    (async () => {
+      const [radiusRes, hoursRes] = await Promise.all([
+        supabase.from("instructors").select("radius_miles").eq("id", instructorId).maybeSingle(),
+        supabase
+          .from("instructor_working_hours")
+          .select("day_of_week, start_time, end_time, is_active")
+          .eq("instructor_id", instructorId),
+      ]);
+      if (radiusRes.data?.radius_miles != null) setRadiusMi(Number(radiusRes.data.radius_miles));
+      if (hoursRes.data) setWorkingHours(hoursRes.data as WorkingHourRow[]);
+    })();
+  }, [instructorId]);
+
+  // Compute compatibility for each visible job
+  const compatibilityByJob = useMemo<Record<string, CompatibilityResult>>(() => {
+    const map: Record<string, CompatibilityResult> = {};
+    for (const job of jobs) {
+      map[job.id] = computeJobCompatibility({
+        distanceMi: jobDistances[job.id] ?? null,
+        radiusMi,
+        preferredTiming: job.preferred_timing,
+        workingHours,
+      });
+    }
+    return map;
+  }, [jobs, jobDistances, radiusMi, workingHours]);
+
   const fetchJobs = async () => {
     try {
       const { data, error } = await supabase
