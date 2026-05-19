@@ -122,17 +122,30 @@ export function TheoryMockTest({ pupilId, instructorId, onComplete }: TheoryMock
 
   const saveResult = async () => {
     if (!pupilId) return;
+    if (!instructorId) {
+      console.warn("[TheoryMockTest] Missing instructorId — skipping score save");
+      return;
+    }
     try {
-      await (supabase.from("theory_mock_results" as any) as any).insert({
+      const { error } = await supabase.from("theory_mock_scores").insert({
         pupil_id: pupilId,
+        instructor_id: instructorId,
         score,
         total_questions: questions.length,
-        passed,
-        time_taken_seconds: MOCK_TIME_SECONDS - timeRemaining,
-        category_breakdown: categoryResults,
+        test_type: "full_mock",
+        source: "mock_test",
+        test_date: new Date().toISOString().slice(0, 10),
+        notes: JSON.stringify({
+          time_taken_seconds: MOCK_TIME_SECONDS - timeRemaining,
+          category_breakdown: categoryResults,
+          passed,
+        }),
       });
+      if (error) throw error;
+      toast.success("Mock score saved");
     } catch (error) {
-      console.error("Failed to save result:", error);
+      console.error("Failed to save mock score:", error);
+      toast.error("Could not save your mock score");
     }
   };
 
