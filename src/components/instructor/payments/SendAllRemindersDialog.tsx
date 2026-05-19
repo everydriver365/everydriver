@@ -225,14 +225,6 @@ export function SendAllRemindersDialog({
     [eligible, selected, channels],
   );
 
-  const emptyChannelLabel = (() => {
-    const fields = Array.from(channels).map(c => CHANNEL_META[c].field).filter(Boolean) as string[];
-    if (fields.length === 0) return "contact details"; // only in-app, shouldn't happen since in-app needs none
-    const uniq = Array.from(new Set(fields));
-    if (uniq.includes("phone") && uniq.includes("email")) return "phone or email";
-    return uniq[0] === "phone" ? "phone number" : "email address";
-  })();
-
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!sending) onOpenChange(v); }}>
       <DialogContent className="max-w-lg">
