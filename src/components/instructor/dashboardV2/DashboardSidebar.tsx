@@ -385,8 +385,8 @@ export function DashboardSidebar({ collapsed, onToggle, userInitials, userName, 
   const navyBg          = "#0F2044";
   const navyActiveBg    = "rgba(26,82,160,0.25)";
   const navyHoverBg     = "rgba(255,255,255,0.06)";
-  const navyText        = "rgba(255,255,255,0.45)";
-  const navyTextActive  = "#FFFFFF";
+  const navyText        = "rgba(255,255,255,0.90)";
+  const navyTextActive  = "#FACC15";
   const navyLabel       = "rgba(255,255,255,0.22)";
   const navyBorder      = "rgba(255,255,255,0.08)";
   const navyAccentRed   = "#CC2229";
