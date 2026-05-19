@@ -503,6 +503,11 @@ export default function InstructorPupilsDesktop() {
     setReloadTick(t => t + 1);
   };
 
+  // ---- Lesson history dialog ----
+  const [historyPupil, setHistoryPupil] = useState<{ id: string; name: string } | null>(null);
+  const [addLessonOpen, setAddLessonOpen] = useState(false);
+  const queryClient = useQueryClient();
+
 
   useEffect(() => {
     const instructorId = instructor?.id;
