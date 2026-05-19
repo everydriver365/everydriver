@@ -655,7 +655,7 @@ export function AddLessonSheet({
       const weeks = isRecurring ? parseInt(recurrenceWeeks) : 1;
       const testNotes = buildDrivingTestNotes();
       const selectedPupilObj = pupils.find(p => p.id === selectedPupil);
-      const isNationalIntensive = selectedPupilObj?.source === 'national_intensive';
+      const isNationalIntensive = selectedPupilObj?.source === 'national_intensive' || paymentMethod === 'national_intensive';
       const lessons = [];
       const dateStrs: string[] = [];
       for (let i = 0; i < weeks; i++) {
@@ -741,6 +741,7 @@ export function AddLessonSheet({
         .select('id').single();
       if (pupilError) throw pupilError;
       const durationMinutes = parseFloat(lessonDuration) * 60;
+      const isNewNationalIntensive = paymentMethod === 'national_intensive';
       const weeks = isRecurring ? parseInt(recurrenceWeeks) : 1;
       const testNotes = buildDrivingTestNotes();
       const addr = [newPupilAddress, newPupilPostcode].filter(Boolean).join(', ');
@@ -760,16 +761,17 @@ export function AddLessonSheet({
           instructor_id: instructorId, pupil_id: newPupil.id,
           lesson_date: dateStr, start_time: lessonStartTime,
           duration_minutes: durationMinutes, pickup_location: addr || null,
-          status: 'scheduled', payment_status: paymentMethod === 'cash' ? 'cash' : 'not_paid',
-          payment_method: paymentMethod,
+          status: 'scheduled',
+          payment_status: isNewNationalIntensive ? 'prepaid' : (paymentMethod === 'cash' ? 'cash' : 'not_paid'),
+          payment_method: isNewNationalIntensive ? 'prepaid' : paymentMethod,
           lesson_type: lessonType,
           recurrence_rule: isRecurring ? `WEEKLY;COUNT=${weeks}` : null,
           planned_competencies: plannedCompetencies.length > 0 ? plannedCompetencies : null,
           notes: testNotes,
           clash_overridden: overrideBuffer && isHardOverlap,
-          price_per_hour: hourlyRate || null,
-          surcharge_amount: Math.round(mod.totalAmount * hours * 100) / 100,
-          amount_due: Math.round(mod.finalRate * hours * 100) / 100,
+          price_per_hour: isNewNationalIntensive ? 0 : (hourlyRate || null),
+          surcharge_amount: isNewNationalIntensive ? 0 : Math.round(mod.totalAmount * hours * 100) / 100,
+          amount_due: isNewNationalIntensive ? 0 : Math.round(mod.finalRate * hours * 100) / 100,
           ...(isDrivingTest && selectedTestCentre ? { test_centre_id: selectedTestCentre } : {}),
           ...(isDrivingTest && selectedExaminer ? { examiner_id: selectedExaminer } : {}),
         });
@@ -1501,6 +1503,7 @@ export function AddLessonSheet({
                 <SelectItem value="cash">Cash</SelectItem>
                 <SelectItem value="card">Card</SelectItem>
                 <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
+                <SelectItem value="national_intensive">National Intensive</SelectItem>
                 <SelectItem value="send_link">Send Payment Link</SelectItem>
                 <SelectItem value="take_payment">Take Payment Now (QR)</SelectItem>
               </SelectContent>
