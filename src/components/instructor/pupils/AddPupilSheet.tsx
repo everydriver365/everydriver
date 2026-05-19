@@ -670,7 +670,7 @@ export function AddPupilSheet({
           {form.source === "national_intensive" && (
             <>
               <RowDivider />
-              <Row label="Hours paid">
+              <Row label="Hours paid" required invalid={intensiveHoursInvalid}>
                 <RowInput
                   type="number"
                   inputMode="decimal"
@@ -680,7 +680,7 @@ export function AddPupilSheet({
                 />
               </Row>
               <RowDivider />
-              <Row label="Course pays">
+              <Row label="Course pays" required invalid={intensivePayoutInvalid}>
                 <RowInput
                   type="number"
                   inputMode="decimal"
@@ -690,6 +690,13 @@ export function AddPupilSheet({
                 />
               </Row>
             </>
+          )}
+          {(intensiveHoursInvalid || intensivePayoutInvalid) && (
+            <div className="px-4 py-2 bg-red-50">
+              <p className="text-xs text-red-600">
+                Please enter valid numeric values for hours paid and course payout
+              </p>
+            </div>
           )}
         </SectionCard>
       </section>
