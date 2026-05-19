@@ -1152,7 +1152,7 @@ export default function InstructorPupilsDesktop() {
                       fontWeight: p.balance > 0 ? 500 : 400,
                     }}
                   >
-                    £{p.balance.toFixed(2)}
+                    {p.balance > 0 ? `-£${p.balance.toFixed(2)}` : `£${p.balance.toFixed(2)}`}
                   </div>
                   <div><StatusPill status={p.status} /></div>
                   <Popover>
