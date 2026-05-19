@@ -92,6 +92,14 @@ export default function InstructorLogin() {
   const [searchParams] = useSearchParams();
   const showVerifyBanner = searchParams.get("verify") === "1";
 
+  // Clear any local error/reset banners when a Supabase email link reroutes
+  // into the app on iOS / Android.
+  useClearOnDeepLink(() => {
+    setError("");
+    setResetSent(false);
+    setResetSentTo("");
+  });
+
   useEffect(() => {
     const prefill = searchParams.get("email");
     if (prefill && !email) setEmail(prefill);
