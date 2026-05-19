@@ -465,7 +465,7 @@ export default function InstructorPupilsDesktop() {
       try {
         const { data: pupilRows, error } = await supabase
           .from("pupils")
-          .select("id, name, phone, email, account_balance, course_status, created_at, address, postcode, notes, lessons_completed, prepaid_hours, custom_hourly_rate, test_date")
+          .select("id, name, phone, email, account_balance, course_status, created_at, address, postcode, notes, lessons_completed, prepaid_hours, custom_hourly_rate, test_date, source, intensive_hours_paid")
           .eq("instructor_id", instructorId)
           .is("deleted_at", null)
           .order("created_at", { ascending: false });
@@ -530,7 +530,9 @@ export default function InstructorPupilsDesktop() {
             notes: p.notes || undefined,
             initials,
             avatarColor,
-            hoursLeft: Number(p.prepaid_hours ?? 0),
+            hoursLeft: p.source === "national_intensive"
+              ? Math.max(0, Number(p.intensive_hours_paid ?? 0) - (hoursByPupil.get(p.id) || 0))
+              : Number(p.prepaid_hours ?? 0),
             lessonsLeft: Number(p.lessons_completed ?? 0),
             lastLesson: formatLastLesson(lastDays),
             lastLessonDays: lastDays,
