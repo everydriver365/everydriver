@@ -1,48 +1,39 @@
 ## Goal
-On the instructor portal home dashboard (`/instructor`, desktop), split the middle column of the main grid so a new **Next Lesson** tile sits above a reduced-height **DVSA Standards Check** tile.
+Persist every pupil mock theory test attempt to the existing `theory_mock_scores` table so scores show up in `TheoryMockScoreLogger`, the Drive365 home Theory tile, and the Test Readiness ring — replacing the current broken write to the non-existent `theory_mock_results` table.
 
-## Where
-`src/components/instructor/dashboardV3/HybridDashboard.tsx` — the 3-column grid at ~line 583:
-
-```text
-[ Schedule ] [ DVSA Standards ] [ Earnings ]
-```
-
-Becomes:
-
-```text
-                ┌────────────────┐
-[ Schedule ]    │  Next Lesson   │   [ Earnings ]
-                ├────────────────┤
-                │ DVSA Standards │ ← reduced ~50% height
-                └────────────────┘
-```
+## Current state
+- `src/components/pupil-portal/TheoryMockTest.tsx` line 122 `saveResult` inserts into `theory_mock_results` cast as `any`. That table doesn't exist → inserts silently fail and nothing is shown in the portal.
+- The real table `theory_mock_scores` already exists with columns: `pupil_id`, `instructor_id` (required), `score`, `total_questions`, `test_type`, `source`, `test_date`, `notes`. It's already read by `TheoryMockScoreLogger.tsx` and `Drive365PupilHome.tsx`.
+- `TheoryMockTest` is rendered from `BrandedPupilPortal.tsx` line 494 with only `pupilId`; `instructor.id` is in scope on that page but not passed in.
 
 ## Changes
 
-1. **New `NextLessonCard` component** in the same file (matches existing `DvsaStandardsCard` / `EarningsCard` style: white bg, 12px radius, navy header chip).
-   - Data source: existing `useNextLessonDetails(instructorId)` hook (already in project).
-   - Shows: pupil name + avatar initial, lesson date/time (e.g. "Today 14:00" / "Tomorrow 09:30"), duration, pickup postcode, status pill.
-   - Empty state: "No upcoming lessons" with a "Schedule one →" link to `/instructor/diary`.
-   - Click the card → navigate to the lesson detail / diary.
-   - Loading: shimmer placeholder consistent with iOS Consistency memory.
+1. **`src/components/pupil-portal/TheoryMockTest.tsx`**
+   - Add `instructorId?: string` to `TheoryMockTestProps`.
+   - Rewrite `saveResult` to insert into `theory_mock_scores` with:
+     - `pupil_id`, `instructor_id`
+     - `score`, `total_questions: questions.length`
+     - `test_type: 'full_mock'` (matches the enum used by `TheoryMockScoreLogger`)
+     - `source: 'mock_test'`
+     - `test_date: format(new Date(), 'yyyy-MM-dd')`
+     - `notes`: JSON string of `categoryResults` + `time_taken_seconds` (preserves the category breakdown we currently capture).
+   - Guard: only insert when both `pupilId` and `instructorId` are present and `questions.length > 0`. If `instructorId` is missing, log a console warning and skip — no fabricated fallback (per project Live-Data rule).
+   - Toast on success/failure; remove `as any` casts and the dead `theory_mock_results` reference.
 
-2. **Reduce DVSA Standards card height by ~half**:
-   - Header padding `11px 14px` → `8px 12px`.
-   - Body padding `16px 14px` → `10px 12px`; empty-state padding `28px 16px` → `14px 12px`.
-   - Drop the description paragraph in the empty state; keep icon + "Log a result" button on a single compact row.
-   - Result value font `20px` → `16px`; date font unchanged.
+2. **`src/pages/BrandedPupilPortal.tsx`** (line ~494)
+   - Pass `instructorId={instructor.id}` to `<TheoryMockTest ... />`.
 
-3. **Grid restructure** at line 583:
-   - Wrap Next Lesson + DVSA in a vertical flex (`display: flex; flexDirection: column; gap: 10`) so they share one column.
-   - Keep the outer grid `1fr 1fr 280px` unchanged.
+3. **Test** — `src/components/pupil-portal/__tests__/TheoryMockTest.test.tsx`
+   - Using the existing `src/test/supabaseMock.ts`, render `TheoryMockTest` with a pupilId + instructorId, force the results screen, and assert the mock recorded an `insert` to `theory_mock_scores` with the expected payload shape.
 
-## Live data rules
-- Use `useNextLessonDetails` (or equivalent query already in the codebase) — no hard-coded fallbacks (per Core memory).
-- Time formatting: Europe/London via existing `toLondonParts` helpers.
-- Imperial: not relevant here (no distances rendered).
+## Verification
+- Manual: run a mock test on `/p/<slug>` → finish → confirm:
+  - new row in `theory_mock_scores` via `supabase--read_query`.
+  - `TheoryMockScoreLogger` updates with the new score and chart bar.
+  - Drive365 Home Theory tile shows "✓ Passed · {date}" or the latest %.
+- Automated: `bunx vitest run src/components/pupil-portal/__tests__/TheoryMockTest.test.tsx`.
 
 ## Out of scope
-- Mobile dashboard layout (per Mobile update policy).
-- Any backend/schema changes.
-- Restyling Schedule or Earnings cards.
+- No schema or RLS changes (table + policies already exist).
+- No UI changes to the mock test screens or the home tile.
+- Streak/XP wiring untouched.
