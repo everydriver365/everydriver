@@ -96,24 +96,37 @@ function QuickActionRow({ items }: { items: QA[] }) {
 }
 
 // ---------------- StatsRow ----------------
-type StatDef = { label: string; value: string; sub: string; pct: number; bar: string };
+type StatDef = { label: string; value: string; sub: string; pct: number; bar: string; href?: string; hasData?: boolean; extra?: string };
 function StatsRow({ stats }: { stats: StatDef[] }) {
   return (
     <div style={{ display: "grid", gridTemplateColumns: "repeat(6,1fr)", gap: 8, marginBottom: 14 }}>
-      {stats.map((s) => (
-        <div key={s.label} style={{ backgroundColor: t.white, border: `1px solid ${t.border}`, borderRadius: 10, padding: "12px 14px" }}>
-          <div style={{ fontSize: 10, fontWeight: 600, color: t.muted, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 5 }}>
-            {s.label}
+      {stats.map((s) => {
+        const inner = (
+          <div style={{ backgroundColor: t.white, border: `1px solid ${t.border}`, borderRadius: 10, padding: "12px 14px", height: "100%", cursor: s.href ? "pointer" : "default", position: "relative" }}>
+            <div style={{ fontSize: 10, fontWeight: 600, color: t.muted, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 5 }}>
+              {s.label}
+            </div>
+            <div style={{ fontSize: 22, fontWeight: 700, color: t.navy, letterSpacing: -0.5, lineHeight: 1, marginBottom: 2 }}>
+              {s.value}
+            </div>
+            <div style={{ fontSize: 10, color: t.muted, fontWeight: 300 }}>{s.sub}</div>
+            {s.extra && (
+              <div style={{ fontSize: 9, color: t.mid, fontWeight: 500, marginTop: 2 }}>{s.extra}</div>
+            )}
+            <div style={{ height: 3, borderRadius: 2, backgroundColor: t.surface, marginTop: 8, overflow: "hidden" }}>
+              <div style={{ height: "100%", borderRadius: 2, backgroundColor: s.bar, width: `${Math.min(100, Math.max(0, s.pct))}%`, transition: "width 0.4s ease" }} />
+            </div>
+            {s.href && s.hasData && (
+              <div style={{ fontSize: 10, fontWeight: 600, color: t.blue, marginTop: 6 }}>View →</div>
+            )}
           </div>
-          <div style={{ fontSize: 22, fontWeight: 700, color: t.navy, letterSpacing: -0.5, lineHeight: 1, marginBottom: 2 }}>
-            {s.value}
-          </div>
-          <div style={{ fontSize: 10, color: t.muted, fontWeight: 300 }}>{s.sub}</div>
-          <div style={{ height: 3, borderRadius: 2, backgroundColor: t.surface, marginTop: 8, overflow: "hidden" }}>
-            <div style={{ height: "100%", borderRadius: 2, backgroundColor: s.bar, width: `${Math.min(100, Math.max(0, s.pct))}%`, transition: "width 0.4s ease" }} />
-          </div>
-        </div>
-      ))}
+        );
+        return s.href ? (
+          <Link key={s.label} to={s.href} style={{ textDecoration: "none" }}>{inner}</Link>
+        ) : (
+          <div key={s.label}>{inner}</div>
+        );
+      })}
     </div>
   );
 }
