@@ -322,7 +322,7 @@ export function TakePaymentModal({
                       <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
                       New Amount
                     </Button>
-                    <Button size="sm" onClick={() => setView("received")}>
+                    <Button size="sm" onClick={() => { setView("received"); onPaymentReceived?.(); }}>
                       <Check className="h-3.5 w-3.5 mr-1.5" />
                       Payment Done
                     </Button>
