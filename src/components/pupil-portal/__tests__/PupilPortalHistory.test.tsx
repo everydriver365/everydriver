@@ -2,14 +2,14 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import { createSupabaseMock } from "@/test/supabaseMock";
 
-const { mock } = vi.hoisted(() => {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { createSupabaseMock } = require("@/test/supabaseMock");
-  return { mock: createSupabaseMock() };
-});
+const mock = createSupabaseMock();
+(globalThis as any).__sb = mock.supabase;
 
-vi.mock("@/integrations/supabase/client", () => ({ supabase: mock.supabase }));
-
+vi.mock("@/integrations/supabase/client", () => ({
+  get supabase() {
+    return (globalThis as any).__sb;
+  },
+}));
 
 import { PupilPortalHistory } from "@/components/pupil-portal/PupilPortalHistory";
 
@@ -40,7 +40,6 @@ describe("PupilPortalHistory — live lesson data wiring", () => {
         rating: 4,
         skills_practiced: ["Parallel park"],
       },
-      // Different pupil — must not leak into the rendered results
       {
         id: "l3",
         pupil_id: "other-pupil",
@@ -57,21 +56,18 @@ describe("PupilPortalHistory — live lesson data wiring", () => {
       <PupilPortalHistory pupilId="pupil-1" brandColour="#0F2044" darkMode={false} />,
     );
 
-    // Lesson notes (real DB row content)
     await waitFor(() =>
       expect(screen.getByText("Roundabouts in town centre")).toBeInTheDocument(),
     );
 
-    // Skills come straight from DB
     expect(screen.getByText("Roundabouts")).toBeInTheDocument();
     expect(screen.getByText("Parallel park")).toBeInTheDocument();
 
-    // Stats: 2 lessons, 2.5h total (60 + 90 mins), avg rating 4.5
+    // Stats: 2 lessons, 2.5h total, avg rating 4.5
     expect(screen.getByText("2")).toBeInTheDocument();
     expect(screen.getByText("2.5h")).toBeInTheDocument();
     expect(screen.getByText("4.5")).toBeInTheDocument();
 
-    // Other pupil's lesson must not render
     expect(screen.queryByText("Should not appear")).not.toBeInTheDocument();
   });
 
@@ -86,7 +82,6 @@ describe("PupilPortalHistory — live lesson data wiring", () => {
       expect(screen.getByText(/No lesson history yet/i)).toBeInTheDocument(),
     );
 
-    // No fabricated totals / ratings should appear
     expect(screen.queryByText("2.5h")).not.toBeInTheDocument();
   });
 });
