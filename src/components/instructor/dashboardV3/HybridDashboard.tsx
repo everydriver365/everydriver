@@ -445,7 +445,7 @@ export function HybridDashboard({ instructorId, instructorName, pupils, todaysLe
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 280px", gap: 10, marginBottom: 14 }}>
         <ScheduleCard instructorId={instructorId} />
-        <DvsaStandardsCard />
+        <DvsaStandardsCard standardsCheck={stats2?.standardsCheck ?? null} />
         <EarningsCard
           balance={positiveBalance}
           outstanding={outstandingTotal}
