@@ -356,17 +356,18 @@ export default function InstructorPortalLogin() {
       {/* Right Panel - Login Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-8">
         <div className="w-full max-w-md">
-          {/* Mobile Logo */}
+          {/* Mobile Logo (replaced on mobile by hero header above) */}
           <motion.div 
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="lg:hidden flex items-center justify-center gap-3 mb-8"
+            className="hidden items-center justify-center gap-3 mb-8"
           >
             <div className="w-10 h-10 bg-emerald-500 rounded-lg flex items-center justify-center">
               <Car className="w-6 h-6 text-white" />
             </div>
             <span className="text-xl font-bold text-white">EveryDriver</span>
           </motion.div>
+
           
           <motion.div
             initial={{ opacity: 0, y: 20 }}
