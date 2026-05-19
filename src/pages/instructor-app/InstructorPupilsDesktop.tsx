@@ -1002,7 +1002,7 @@ export default function InstructorPupilsDesktop() {
                   {loadingPupils ? "Loading pupils…" : pupils.length === 0 ? "No pupils yet — add your first pupil to get started." : "No pupils match these filters"}
                 </div>
                 {!loadingPupils && pupils.length > 0 && (
-                  <button onClick={() => { setSearch(""); setFilter("all"); }} style={{ fontSize: 12, color: "#4F46E5", fontWeight: 500 }}>
+                  <button onClick={() => { setSearch(""); setFilter("all"); setTheoryFilter("all"); setDrivingFilter("all"); }} style={{ fontSize: 12, color: "#4F46E5", fontWeight: 500 }}>
                     Clear filters
                   </button>
                 )}
