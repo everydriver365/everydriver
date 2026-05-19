@@ -154,26 +154,30 @@ export function PortalLoginLayout({
         </div>
 
         {/* RIGHT PANEL */}
-        <div style={{ backgroundColor: t.surface, display: "flex", alignItems: "center", justifyContent: "center", padding: 48 }}>
+        <div
+          className={mobileHero ? "px-5 pt-2 pb-8 md:p-12" : "p-12"}
+          style={{ backgroundColor: t.surface, display: "flex", alignItems: mobileHero ? "flex-start" : "center", justifyContent: "center" }}
+        >
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.35 }}
-            style={{ width: "100%", maxWidth: 420, background: t.white, borderRadius: 18, border: `1px solid ${t.border}`, padding: "36px 40px", boxShadow: "0 4px 24px rgba(15,32,68,0.06)" }}
+            className={mobileHero ? "w-full max-w-[420px] md:bg-white md:border md:border-[#DDE3ED] md:shadow-[0_4px_24px_rgba(15,32,68,0.06)] md:rounded-[18px] md:p-9" : "w-full max-w-[420px] bg-white border border-[#DDE3ED] shadow-[0_4px_24px_rgba(15,32,68,0.06)] rounded-[18px] p-9"}
           >
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 26 }}>
+            <div className={mobileHero ? "hidden md:flex" : "flex"} style={{ alignItems: "center", gap: 10, marginBottom: 26 }}>
               {cardBrand}
               {cardTag && (
                 <span style={{ fontSize: 11, fontWeight: 500, color: t.muted, letterSpacing: "0.03em" }}>{cardTag}</span>
               )}
             </div>
 
-            <h2 style={{ fontSize: 22, fontWeight: 700, color: t.navy, letterSpacing: -0.4, marginBottom: 5 }}>
+            <h2 className={mobileHero ? "hidden md:block" : ""} style={{ fontSize: 22, fontWeight: 700, color: t.navy, letterSpacing: -0.4, marginBottom: 5 }}>
               {cardTitle}
             </h2>
-            <p style={{ fontSize: 13, fontWeight: 300, color: t.muted, marginBottom: 22, lineHeight: 1.6 }}>
+            <p className={mobileHero ? "hidden md:block" : ""} style={{ fontSize: 13, fontWeight: 300, color: t.muted, marginBottom: 22, lineHeight: 1.6 }}>
               {cardSubtitle}
             </p>
+
 
             {children}
 
