@@ -274,7 +274,7 @@ export default function InstructorLogin() {
             style={{ width: "100%", maxWidth: 420, background: t.white, borderRadius: 18, border: `1px solid ${t.border}`, padding: "36px 40px", boxShadow: "0 4px 24px rgba(15,32,68,0.06)" }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 26 }}>
-              <DSM365Logo size="sm" />
+              <DSMLogoImg height={22} />
               <span style={{ fontSize: 11, fontWeight: 500, color: t.muted, letterSpacing: "0.03em" }}>Instructor portal</span>
             </div>
 
