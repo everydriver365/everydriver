@@ -231,7 +231,14 @@ export function EditPupilSheet({
     if (!pupil || !instructorId || !canSave) return;
     setSaving(true);
     try {
-      const cleaned = {
+      const toNumOrNull = (v: any) => {
+        const s = String(v ?? "").trim();
+        if (!s) return null;
+        const n = parseFloat(s);
+        return isNaN(n) ? null : n;
+      };
+      const isIntensive = form.source === "national_intensive";
+      const cleaned: any = {
         name: titleCaseName(form.name),
         email: form.email?.trim() || null,
         phone: form.phone ? formatPhoneNumber(form.phone) : null,
@@ -245,6 +252,16 @@ export function EditPupilSheet({
         parent_name: form.parent_name ? titleCaseName(form.parent_name) : null,
         date_of_birth: form.date_of_birth || null,
         profile_image_url: form.profile_image_url,
+        // Newly editable fields
+        sex: form.sex || null,
+        transmission_type: form.transmission_type || null,
+        previous_experience: form.previous_experience?.trim() || null,
+        special_needs: form.special_needs?.trim() || null,
+        payment_method: form.payment_method || "tbc",
+        source: form.source || null,
+        intensive_hours_paid: isIntensive ? toNumOrNull(form.intensive_hours_paid) : null,
+        intensive_course_payout: isIntensive ? toNumOrNull(form.intensive_course_payout) : null,
+        intensive_pupil_payment: isIntensive ? toNumOrNull(form.intensive_pupil_payment) : null,
       };
 
       const { error } = await supabase
