@@ -46,6 +46,7 @@ interface Props {
 export function JobOfferCard({
   offer,
   distanceMi,
+  compatibility,
   onExpand,
   onAccept,
   onDecline,
@@ -58,6 +59,7 @@ export function JobOfferCard({
   const postcode = formatUkPostcode(offer.postcode);
   const distanceLabel = formatDistanceMiles(distanceMi ?? null);
   const timing = formatTiming(offer.preferred_timing);
+  const compatColors = compatibility ? compatibilityColors(compatibility.level) : null;
 
   const stop = (e: MouseEvent) => {
     e.stopPropagation();
