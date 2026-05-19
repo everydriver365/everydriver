@@ -659,6 +659,16 @@ export default function InstructorPupilsDesktop() {
                 <Upload size={12} /> Import CSV
               </button>
               <button
+                onClick={() => setArchivedOpen(true)}
+                style={{
+                  fontSize: 11, padding: "6px 10px", borderRadius: 8,
+                  border: "0.5px solid var(--d2-border)", background: "#fff",
+                  color: "var(--d2-text-2)", display: "inline-flex", alignItems: "center", gap: 6,
+                }}
+              >
+                <Archive size={12} /> Archived
+              </button>
+              <button
                 onClick={() => setAddOpen(true)}
                 style={{
                   fontSize: 11, padding: "6px 10px", borderRadius: 8,
@@ -670,6 +680,7 @@ export default function InstructorPupilsDesktop() {
               </button>
             </div>
           </div>
+
 
           {/* Search + chips */}
           <div className="flex items-center" style={{ gap: 12 }}>
