@@ -312,7 +312,7 @@ export default function PupilLogin() {
     <>
       {showMobileNewLogin && (
         <div
-          className="md:hidden fixed inset-0 bg-[#2D7BE8] text-white flex flex-col overflow-hidden z-40"
+          className="md:hidden fixed inset-0 bg-[#0F2044] text-white flex flex-col overflow-hidden z-40"
           style={{
             paddingTop: "calc(env(safe-area-inset-top) + 40px)",
             paddingBottom: "calc(env(safe-area-inset-bottom) + 20px)",
@@ -333,14 +333,8 @@ export default function PupilLogin() {
 
           {/* Brand */}
           <div className="flex flex-col items-center">
-            <div className="inline-flex h-[44px] rounded-[8px] overflow-hidden" aria-label="Drive365">
-              <div className="flex items-center px-3 bg-white border-2 border-[#CC2229] border-r-0 rounded-l-[8px]">
-                <span className="text-[#CC2229] font-extrabold tracking-[1px] text-[15px] leading-none">DRIVE</span>
-              </div>
-              <div className="flex items-center px-3 bg-[#0F2044] border-2 border-[#2D7BE8] border-l-0 rounded-r-[8px]">
-                <span className="text-white font-extrabold tracking-[1px] text-[15px] leading-none">365</span>
-              </div>
-            </div>
+            <img src={drive365Logo} alt="Drive365" className="h-11 object-contain" />
+
             <h1
               className="pl-m-welcome text-white font-bold mt-7"
               style={{ fontSize: 26, letterSpacing: "-0.6px", lineHeight: 1.1 }}
@@ -409,7 +403,7 @@ export default function PupilLogin() {
                   )}
                   style={{ border: "1.5px solid rgba(255,255,255,0.9)" }}
                 >
-                  {rememberMe && <Check className="h-3 w-3 text-[#2D7BE8]" strokeWidth={3.5} />}
+                  {rememberMe && <Check className="h-3 w-3 text-[#0F2044]" strokeWidth={3.5} />}
                 </span>
                 <span className="text-[13px] font-medium text-white">Remember me</span>
               </button>
@@ -427,7 +421,7 @@ export default function PupilLogin() {
               whileTap={{ scale: 0.985, opacity: 0.85 }}
               disabled={!canSubmit || loading}
               style={{ opacity: canSubmit && !loading ? 1 : 0.6 }}
-              className="w-full rounded-[12px] bg-white text-[#2D7BE8] font-bold disabled:cursor-not-allowed"
+              className="w-full rounded-[12px] bg-white text-[#0F2044] font-bold disabled:cursor-not-allowed"
             >
               <span className="py-4 text-[15px] flex items-center justify-center gap-2">
                 {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Sign in"}
