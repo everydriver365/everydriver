@@ -260,7 +260,7 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug, onNavigat
 
   // Readiness ring math
   const R = 32, C = 2 * Math.PI * R;
-  const ringOffset = C - (readinessPct / 100) * C;
+  const ringOffset = readinessPct !== null ? C - (readinessPct / 100) * C : C;
 
   return (
     <div style={{ background: SURFACE, minHeight: "100%", paddingBottom: 24 }}>
