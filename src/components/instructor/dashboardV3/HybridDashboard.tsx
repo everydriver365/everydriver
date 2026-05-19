@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import {
   TriangleAlert, Clock, Users, CreditCard, User as UserIcon,
-  Calendar, ShieldCheck, AwardIcon as AwardOff, BarChart3,
+  Calendar, ShieldCheck, AwardIcon, BarChart3,
   ListChecks, Repeat2, TrendingUp, BookOpenCheck, Award,
   FileText, Search, Settings, Banknote,
 } from "lucide-react";
