@@ -35,6 +35,7 @@ import {
   isBiometricAvailable,
   getBiometricCredentials,
   saveBiometricCredentials,
+  clearBiometricCredentials,
   getBiometryLabel,
 } from "@/lib/biometricAuth";
 
