@@ -39,11 +39,12 @@ export function useNextLessonDetails(instructorId: string | undefined) {
       // moment its start time passes.
       const { data: todayLessons } = await supabase
         .from("scheduled_lessons")
-        .select(`id, lesson_date, start_time, duration_minutes, pickup_location, pickup_postcode, pickup_what3words, notes, check_in_status, status, pupils!inner (id, name, phone, profile_image_url, postcode, address, pickup_address, pickup_postcode, what3words, account_balance, prepaid_hours)`)
+        .select(`id, lesson_date, start_time, duration_minutes, pickup_location, pickup_postcode, pickup_what3words, notes, check_in_status, status, pupils!inner (id, name, phone, profile_image_url, postcode, address, pickup_address, pickup_postcode, what3words, account_balance, prepaid_hours, deleted_at)`)
         .eq("instructor_id", instructorId)
         .eq("lesson_date", today)
         .neq("status", "cancelled")
         .neq("status", "completed")
+        .is("pupils.deleted_at", null)
         .order("start_time", { ascending: true });
 
       const todayLesson = (todayLessons || []).find((l: any) => {
@@ -56,10 +57,11 @@ export function useNextLessonDetails(instructorId: string | undefined) {
       if (!lesson) {
         const { data: futureLesson } = await supabase
           .from("scheduled_lessons")
-          .select(`id, lesson_date, start_time, duration_minutes, pickup_location, pickup_postcode, pickup_what3words, notes, check_in_status, status, pupils!inner (id, name, phone, profile_image_url, postcode, address, pickup_address, pickup_postcode, what3words, account_balance, prepaid_hours)`)
+          .select(`id, lesson_date, start_time, duration_minutes, pickup_location, pickup_postcode, pickup_what3words, notes, check_in_status, status, pupils!inner (id, name, phone, profile_image_url, postcode, address, pickup_address, pickup_postcode, what3words, account_balance, prepaid_hours, deleted_at)`)
           .eq("instructor_id", instructorId)
           .gt("lesson_date", today)
           .neq("status", "cancelled")
+          .is("pupils.deleted_at", null)
           .order("lesson_date", { ascending: true })
           .order("start_time", { ascending: true })
           .limit(1)
