@@ -542,9 +542,23 @@ export function HybridDashboard({ instructorId, instructorName, pupils, todaysLe
       {hasAlert && (
         <AlertBanner
           message={`£${outstandingTotal.toFixed(0)} outstanding across ${owing.length} pupil${owing.length !== 1 ? "s" : ""}.`}
-          link={{ href: "/instructor/pay", label: "Chase now" }}
+          link={{ label: "Chase now" }}
+          onAction={() => setChaseOpen(true)}
         />
       )}
+
+      <SendAllRemindersDialog
+        open={chaseOpen}
+        onOpenChange={setChaseOpen}
+        outstanding={owing.map((p) => ({
+          id: p.id,
+          name: p.name,
+          amount: Math.abs(p.account_balance ?? 0),
+        }))}
+        allPupils={pupilContacts}
+        instructorId={instructorId}
+        instructorName={instructorName ?? undefined}
+      />
 
       <QuickActionRow items={quickActions} />
       <StatsRow stats={stats} />
