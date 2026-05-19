@@ -22,6 +22,8 @@ import { setRememberMe as persistRememberMe } from "@/lib/sessionPersistence";
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 import { cn } from "@/lib/utils";
 import drive365Logo from "@/assets/drive365-logo.png";
+import pupilHero from "@/assets/drive365-hero-learner.webp";
+import { MobileLoginHero } from "@/components/auth/MobileLoginHero";
 
 const FIELD =
   "h-[50px] rounded-[9px] bg-[#F9FAFB] border-[1.5px] border-[#E8EDF6] text-[#0F2044] placeholder:text-[#C4C9D4] focus-visible:ring-2 focus-visible:ring-[#1A52A0]/15 focus-visible:border-[#1A52A0] focus-visible:ring-offset-0 text-[14px]";
