@@ -13,6 +13,7 @@ import {
   portalInputFocus,
   portalInputBlur,
 } from "@/components/auth/PortalLoginLayout";
+import { DarkMobileAuthForm } from "@/components/auth/DarkMobileAuthForm";
 import dsmLogo from "@/assets/dsm-logo.png";
 import schoolHero from "@/assets/drive365-hero-test-centre.jpg";
 
@@ -69,7 +70,33 @@ export default function SchoolLogin() {
     }
   };
 
+  const title = isForgot ? "Reset password" : "Welcome back";
+  const subtitle = isForgot
+    ? "Enter your email and we'll send you a reset link."
+    : "Sign in to manage your driving school.";
+
   return (
+    <>
+      <DarkMobileAuthForm
+        logoSrc={dsmLogo}
+        logoAlt="School Manager"
+        title={title}
+        subtitle={subtitle}
+        email={email}
+        setEmail={setEmail}
+        password={password}
+        setPassword={setPassword}
+        showPassword={showPw}
+        setShowPassword={setShowPw}
+        rememberMe={rememberMe}
+        setRememberMe={setRememberMeState}
+        isForgot={isForgot}
+        onForgotToggle={(v) => setView(v ? "forgot" : "login")}
+        loading={loading}
+        onSubmit={isForgot ? handleForgot : handleSubmit}
+      />
+
+      <div className="hidden md:block">
     <PortalLoginLayout
       leftBrand={<SchoolMark color={t.white} size={20} />}
       leftBrandCaption="Multi-instructor management"
@@ -211,5 +238,7 @@ export default function SchoolLogin() {
         </div>
       </form>
     </PortalLoginLayout>
+      </div>
+    </>
   );
 }
