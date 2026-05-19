@@ -22,10 +22,11 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Pencil, Trash2, Upload } from "lucide-react";
+import { Pencil, Trash2, Upload, Archive } from "lucide-react";
 import { buildPupilUpdatePayload } from "./pupilEditPayload";
 import { AddPupilSheet } from "@/components/instructor/pupils/AddPupilSheet";
 import { ImportPupilsCsvDialog } from "@/components/instructor/pupils/ImportPupilsCsvDialog";
+import { ArchivedPupilsDialog } from "@/components/instructor/pupils/ArchivedPupilsDialog";
 
 // ----------------------------- Types & data -----------------------------
 type Status = "active" | "at-risk" | "test-ready" | "paused" | "archived";
@@ -197,6 +198,7 @@ export default function InstructorPupilsDesktop() {
   const [reloadTick, setReloadTick] = useState(0);
   const [addOpen, setAddOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
+  const [archivedOpen, setArchivedOpen] = useState(false);
   const [addForm, setAddForm] = useState<any>({
     name: "", phone: "", email: "", address: "", postcode: "", what3words: "",
     date_of_birth: "", sex: "", previous_experience_hours: "", transmission_type: "",
@@ -657,6 +659,16 @@ export default function InstructorPupilsDesktop() {
                 <Upload size={12} /> Import CSV
               </button>
               <button
+                onClick={() => setArchivedOpen(true)}
+                style={{
+                  fontSize: 11, padding: "6px 10px", borderRadius: 8,
+                  border: "0.5px solid var(--d2-border)", background: "#fff",
+                  color: "var(--d2-text-2)", display: "inline-flex", alignItems: "center", gap: 6,
+                }}
+              >
+                <Archive size={12} /> Archived
+              </button>
+              <button
                 onClick={() => setAddOpen(true)}
                 style={{
                   fontSize: 11, padding: "6px 10px", borderRadius: 8,
@@ -668,6 +680,7 @@ export default function InstructorPupilsDesktop() {
               </button>
             </div>
           </div>
+
 
           {/* Search + chips */}
           <div className="flex items-center" style={{ gap: 12 }}>
@@ -964,6 +977,14 @@ export default function InstructorPupilsDesktop() {
         onImported={() => setReloadTick(t => t + 1)}
       />
 
+      <ArchivedPupilsDialog
+        open={archivedOpen}
+        onOpenChange={setArchivedOpen}
+        instructorId={instructor?.id}
+        onChanged={() => setReloadTick(t => t + 1)}
+      />
+
+
       <Dialog open={editOpen} onOpenChange={(o) => { setEditOpen(o); if (!o) setEditTargetId(null); }}>
         <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
@@ -1135,9 +1156,9 @@ export default function InstructorPupilsDesktop() {
       <AlertDialog open={!!deleteTarget} onOpenChange={(o) => { if (!o) setDeleteTarget(null); }}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete pupil?</AlertDialogTitle>
+            <AlertDialogTitle>Archive pupil?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will remove <strong>{deleteTarget?.name}</strong> from your active pupils. Lesson history is preserved and the pupil can be restored by support.
+              <strong>{deleteTarget?.name}</strong> will be moved to your Archived list. Lesson history, payments and notes are preserved — you can restore them at any time from the Archived button at the top of the page.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
