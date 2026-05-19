@@ -1370,8 +1370,16 @@ function PanelContent({
   return (
     <div className="flex flex-col" style={{ gap: 16, height: "100%" }}>
       <div className="flex items-center justify-between">
-        <button onClick={onClose} style={{ fontSize: 11, color: "var(--d2-text-3)", display: "inline-flex", alignItems: "center", gap: 4 }}>
-          <X size={12} /> Close
+        <button
+          onClick={onClose}
+          style={{
+            fontSize: 13, color: "var(--d2-text-1)", fontWeight: 500,
+            display: "inline-flex", alignItems: "center", gap: 6,
+            padding: "6px 10px", borderRadius: 8,
+            border: "0.5px solid var(--d2-border)", background: "#fff",
+          }}
+        >
+          <ArrowLeft size={14} /> Back
         </button>
         <div className="flex items-center gap-1">
           <button onClick={onPrev} style={panelArrowStyle}><ChevronLeft size={12} /></button>
