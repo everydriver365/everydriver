@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import {
-  Search, Plus, Download, Phone, MessageSquare, X,
+  Search, Plus, Download, Phone, MessageSquare, X, ArrowLeft,
   ChevronLeft, ChevronRight, MoreVertical, ChevronDown, Loader2,
 } from "lucide-react";
 import { DashboardShell } from "@/components/instructor/dashboardV2/DashboardShell";
@@ -965,41 +965,43 @@ export default function InstructorPupilsDesktop() {
           </div>
         </div>
 
-        {/* Slide-over panel */}
+        {/* Full-screen profile overlay */}
         <AnimatePresence>
           {openPupil && (
             <motion.div
               key="panel"
-              initial={{ x: 380, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: 380, opacity: 0 }}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 12 }}
               transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
               style={{
-                width: 360, flexShrink: 0,
+                position: "fixed",
+                inset: 0,
                 background: "#fff",
-                borderLeft: "0.5px solid var(--d2-border)",
-                boxShadow: "-4px 0 12px -8px rgba(15,23,42,0.08)",
-                marginLeft: 16, padding: 16,
-                alignSelf: "stretch",
+                zIndex: 60,
+                overflowY: "auto",
+                padding: "24px 32px",
               }}
             >
-              <PanelContent
-                pupil={openPupil}
-                tab={tab}
-                setTab={setTab}
-                onClose={() => setOpenId(null)}
-                onPrev={() => {
-                  const idx = filtered.findIndex(p => p.id === openPupil.id);
-                  const prev = filtered[Math.max(idx - 1, 0)];
-                  if (prev) setOpenId(prev.id);
-                }}
-                onNext={() => {
-                  const idx = filtered.findIndex(p => p.id === openPupil.id);
-                  const next = filtered[Math.min(idx + 1, filtered.length - 1)];
-                  if (next) setOpenId(next.id);
-                }}
-                onStatus={setStatus}
-              />
+              <div style={{ maxWidth: 960, margin: "0 auto" }}>
+                <PanelContent
+                  pupil={openPupil}
+                  tab={tab}
+                  setTab={setTab}
+                  onClose={() => setOpenId(null)}
+                  onPrev={() => {
+                    const idx = filtered.findIndex(p => p.id === openPupil.id);
+                    const prev = filtered[Math.max(idx - 1, 0)];
+                    if (prev) setOpenId(prev.id);
+                  }}
+                  onNext={() => {
+                    const idx = filtered.findIndex(p => p.id === openPupil.id);
+                    const next = filtered[Math.min(idx + 1, filtered.length - 1)];
+                    if (next) setOpenId(next.id);
+                  }}
+                  onStatus={setStatus}
+                />
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -1368,8 +1370,16 @@ function PanelContent({
   return (
     <div className="flex flex-col" style={{ gap: 16, height: "100%" }}>
       <div className="flex items-center justify-between">
-        <button onClick={onClose} style={{ fontSize: 11, color: "var(--d2-text-3)", display: "inline-flex", alignItems: "center", gap: 4 }}>
-          <X size={12} /> Close
+        <button
+          onClick={onClose}
+          style={{
+            fontSize: 13, color: "var(--d2-text-1)", fontWeight: 500,
+            display: "inline-flex", alignItems: "center", gap: 6,
+            padding: "6px 10px", borderRadius: 8,
+            border: "0.5px solid var(--d2-border)", background: "#fff",
+          }}
+        >
+          <ArrowLeft size={14} /> Back
         </button>
         <div className="flex items-center gap-1">
           <button onClick={onPrev} style={panelArrowStyle}><ChevronLeft size={12} /></button>
