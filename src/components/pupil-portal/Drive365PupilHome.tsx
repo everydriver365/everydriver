@@ -214,11 +214,11 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug, onNavigat
   const transmission = instructorCar?.car_type as string | null | undefined;
 
   // Test Readiness — only compute when we have real signals
-  const hasReadinessSignal = lessonsTaken > 0 || mockScore !== null;
+  const hasReadinessSignal = lessonsTaken > 0 || mockScorePct !== null;
   const lessonsFactor = totalHours && totalHours > 0
     ? Math.min(100, (lessonsTaken / totalHours) * 100)
     : 0;
-  const mockFactor = mockScore ?? 0;
+  const mockFactor = mockScorePct ?? 0;
   const readinessPct = hasReadinessSignal
     ? Math.round(lessonsFactor * 0.6 + mockFactor * 0.4)
     : null;
