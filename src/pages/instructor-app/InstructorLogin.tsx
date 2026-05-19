@@ -20,6 +20,7 @@ import { isEmailNotConfirmedError, resendSignupConfirmation } from "@/lib/emailC
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 import { MobileLoginHero } from "@/components/auth/MobileLoginHero";
 import { DarkMobileAuthForm } from "@/components/auth/DarkMobileAuthForm";
+import { useClearOnDeepLink } from "@/hooks/useClearOnDeepLink";
 import instructorHero from "@/assets/every-instructor-hero.webp";
 
 const loginSchema = z.object({
@@ -90,6 +91,14 @@ export default function InstructorLogin() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const showVerifyBanner = searchParams.get("verify") === "1";
+
+  // Clear any local error/reset banners when a Supabase email link reroutes
+  // into the app on iOS / Android.
+  useClearOnDeepLink(() => {
+    setError("");
+    setResetSent(false);
+    setResetSentTo("");
+  });
 
   useEffect(() => {
     const prefill = searchParams.get("email");

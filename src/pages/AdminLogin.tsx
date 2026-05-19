@@ -23,6 +23,7 @@ import { DarkMobileAuthForm } from "@/components/auth/DarkMobileAuthForm";
 import everydriverLogo from "@/assets/ed-white-logo.png";
 import dsmLogo from "@/assets/dsm-logo.png";
 import adminHero from "@/assets/drive365-hero-driver.webp";
+import { useClearOnDeepLink } from "@/hooks/useClearOnDeepLink";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -66,6 +67,8 @@ export default function AdminLogin() {
   const [rememberMe, setRememberMeState] = useState(getRememberMe());
   const { signIn, isAdmin, user } = useAdminAuth();
   const navigate = useNavigate();
+
+  useClearOnDeepLink(() => { setError(""); setSuccess(""); });
 
   useState(() => {
     const hashParams = new URLSearchParams(window.location.hash.substring(1));
