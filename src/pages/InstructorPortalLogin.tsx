@@ -22,6 +22,9 @@ import { isEmailNotConfirmedError, resendSignupConfirmation } from "@/lib/emailC
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 import { SignInEnvironmentHint } from "@/components/auth/SignInEnvironmentHint";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { MobileLoginHero } from "@/components/auth/MobileLoginHero";
+import dsmLogo from "@/assets/dsm-logo.png";
+import instructorHero from "@/assets/every-instructor-hero.webp";
 
 const loginSchema = z.object({
   email: z.string().trim().email("Please enter a valid email address").max(255),
