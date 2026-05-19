@@ -379,6 +379,7 @@ export default function InstructorPupilsDesktop() {
     source: "", intensive_hours_paid: "", intensive_course_payout: "", intensive_pupil_payment: "",
     theory_test_date: "", theory_test_passed: "" as "" | "pass" | "fail",
     test_date: "", test_passed: "" as "" | "pass" | "fail",
+  };
   const [editForm, setEditForm] = useState(emptyEditForm);
   const [editErrors, setEditErrors] = useState<{ name?: string; email?: string; postcode?: string; phone?: string }>({});
   const [editSaving, setEditSaving] = useState(false);
