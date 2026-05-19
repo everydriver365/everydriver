@@ -913,6 +913,13 @@ export default function InstructorPupilsDesktop() {
         setIsLookingUpW3W={setAddLookingW3W}
       />
 
+      <ImportPupilsCsvDialog
+        open={importOpen}
+        onOpenChange={setImportOpen}
+        instructorId={instructor?.id || ""}
+        onImported={() => setReloadTick(t => t + 1)}
+      />
+
       <Dialog open={editOpen} onOpenChange={(o) => { setEditOpen(o); if (!o) setEditTargetId(null); }}>
         <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
