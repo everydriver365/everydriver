@@ -211,7 +211,7 @@ function DvsaStandardsCard() {
       </div>
       {!hasResults && (
         <div style={{ padding: "28px 16px", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: 7 }}>
-          <AwardOff size={28} color={t.placeholder} />
+          <AwardIcon size={28} color={t.placeholder} />
           <p style={{ fontSize: 11, color: t.muted, lineHeight: 1.5, maxWidth: 220 }}>
             No driving test results logged yet. Log your first DVSA standards check to track your performance.
           </p>
