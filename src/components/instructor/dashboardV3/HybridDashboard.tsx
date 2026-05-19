@@ -398,7 +398,7 @@ function FunctionTilesGrid({ tiles }: { tiles: Tile[] }) {
 // ============================================================
 // Main hybrid dashboard
 // ============================================================
-export function HybridDashboard({ instructorId, instructorName, pupils, todaysLessonCount }: Props) {
+export function HybridDashboard({ instructorId, instructorName, pupils, todaysLessonCount, onAddLesson, onAddPupil, onTakePayment }: Props) {
   const firstName = (instructorName?.split(" ")[0]) || "there";
   const today = format(new Date(), "EEEE d MMMM yyyy");
   const greeting = getGreeting();
