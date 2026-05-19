@@ -228,6 +228,109 @@ function Row({ icon: Icon, label, value }: { icon: any; label: string; value?: R
   );
 }
 
+/** Inline-editable row. Click to edit, Enter to save, Esc to cancel. */
+function EditableRow({
+  icon: Icon, label, value, placeholder, type = "text", options, onSave,
+}: {
+  icon: any;
+  label: string;
+  value: string | null | undefined;
+  placeholder?: string;
+  type?: "text" | "email" | "tel" | "date" | "select";
+  options?: { value: string; label: string }[];
+  onSave: (next: string | null) => Promise<void> | void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState<string>(value ?? "");
+  const [saving, setSaving] = useState(false);
+  useEffect(() => { if (!editing) setDraft(value ?? ""); }, [value, editing]);
+
+  const commit = async () => {
+    setSaving(true);
+    try {
+      const trimmed = draft.trim();
+      await onSave(trimmed === "" ? null : trimmed);
+      setEditing(false);
+    } finally { setSaving(false); }
+  };
+
+  const hasValue = value != null && value !== "";
+  const display = hasValue ? (value as string) : (placeholder ?? "Add");
+
+  return (
+    <div style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "10px 0" }}>
+      <div style={{ width: 32, height: 32, borderRadius: 16, background: C.surface, display: "flex", alignItems: "center", justifyContent: "center", color: C.muted, flexShrink: 0 }}>
+        <Icon size={15} />
+      </div>
+      <div style={{ minWidth: 0, flex: 1 }}>
+        <div style={{ fontFamily: FONT, fontSize: 11, color: C.muted, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.4px" }}>{label}</div>
+        {editing ? (
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4 }}>
+            {type === "select" ? (
+              <select
+                autoFocus
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                style={{
+                  flex: 1, fontFamily: FONT, fontSize: 14, padding: "6px 8px",
+                  border: `1px solid ${C.hairline}`, borderRadius: 8, outline: "none",
+                  background: C.card, color: C.text,
+                }}
+              >
+                <option value="">—</option>
+                {options?.map((o) => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
+                ))}
+              </select>
+            ) : (
+              <input
+                autoFocus
+                type={type}
+                value={draft}
+                placeholder={placeholder}
+                onChange={(e) => setDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") commit();
+                  if (e.key === "Escape") setEditing(false);
+                }}
+                style={{
+                  flex: 1, fontFamily: FONT, fontSize: 14, padding: "6px 8px",
+                  border: `1px solid ${C.hairline}`, borderRadius: 8, outline: "none",
+                  background: C.card, color: C.text,
+                }}
+              />
+            )}
+            <button onClick={commit} disabled={saving}
+              style={{ background: "transparent", border: "none", color: C.green, cursor: "pointer", padding: 4 }}>
+              <Check size={18} />
+            </button>
+            <button onClick={() => setEditing(false)}
+              style={{ background: "transparent", border: "none", color: C.muted, cursor: "pointer", padding: 4 }}>
+              <X size={18} />
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => { setDraft(value ?? ""); setEditing(true); }}
+            title="Click to edit"
+            style={{
+              background: "transparent", border: "none", padding: 0, marginTop: 2,
+              cursor: "pointer", textAlign: "left",
+              fontFamily: FONT, fontSize: 15,
+              color: hasValue ? C.text : C.subtle,
+              fontWeight: 500, wordBreak: "break-word",
+              display: "inline-flex", alignItems: "center", gap: 6,
+            }}
+          >
+            <span>{display}</span>
+            <Edit3 size={12} color={C.subtle} style={{ opacity: 0.6 }} />
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 /* ──────────────────────────── data hooks (live) ──────────────────────────── */
 function usePupil(pupilId: string | undefined, instructorId: string | undefined) {
   return useQuery({
