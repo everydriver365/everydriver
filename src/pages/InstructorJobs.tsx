@@ -331,6 +331,7 @@ export default function InstructorJobs() {
                   key={job.id}
                   offer={job}
                   distanceMi={jobDistances[job.id] ?? null}
+                  compatibility={compatibilityByJob[job.id]}
                   onExpand={() => setSelectedJob(job)}
                   onAccept={() => handleAcceptJob(job)}
                   onDecline={() => handleDeclineJob(job)}
@@ -345,6 +346,7 @@ export default function InstructorJobs() {
         <JobOfferDetailSheet
           job={selectedJob}
           distanceMi={selectedJob ? jobDistances[selectedJob.id] ?? null : null}
+          compatibility={selectedJob ? compatibilityByJob[selectedJob.id] : undefined}
           hourlyRate={profile?.hourly_rate ?? 40}
           processing={processing}
           onClose={() => setSelectedJob(null)}
