@@ -772,6 +772,27 @@ export default function InstructorPupils() {
                 </button>
               );
             })}
+            {(searchQuery || activeTab !== "all") && (
+              <button
+                type="button"
+                onClick={() => { setSearchQuery(""); setActiveTab("all"); }}
+                className="shrink-0 transition-all"
+                style={{
+                  padding: "5px 12px",
+                  borderRadius: 20,
+                  background: "transparent",
+                  border: "0.5px solid rgba(26,82,160,0.25)",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 4,
+                  cursor: "pointer",
+                  whiteSpace: "nowrap",
+                  fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif',
+                }}
+              >
+                <span style={{ fontSize: 11, fontWeight: 600, color: "#3D55A1" }}>Clear</span>
+              </button>
+            )}
           </div>
         </div>
 
