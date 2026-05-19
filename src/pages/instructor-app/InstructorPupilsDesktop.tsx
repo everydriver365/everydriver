@@ -43,6 +43,7 @@ interface Pupil {
   notes?: string;
   initials: string;
   avatarColor: AvatarColor;
+  hoursLeft: number;
   lessonsLeft: number;
   lastLesson: string;
   lastLessonDays: number;
