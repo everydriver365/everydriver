@@ -11,6 +11,7 @@ import { t } from "./tokens";
 import { useDayLessons } from "@/hooks/useDayLessons";
 import { useDailyEarnings } from "@/hooks/useDailyEarnings";
 import { useInstructorLiveStats } from "@/hooks/useInstructorLiveStats";
+import { useInstructorDashboardStats } from "@/hooks/useInstructorDashboardStats";
 
 interface Pupil {
   id: string;
