@@ -35,11 +35,13 @@ export function MobilePortalLoginShell({
   children,
   footer,
   className,
+  hideAt = "md",
 }: Props) {
   return (
     <div
       className={cn(
-        "md:hidden fixed inset-0 bg-[#0F2044] text-white flex flex-col overflow-y-auto z-40",
+        hideAt === "lg" ? "lg:hidden" : "md:hidden",
+        "fixed inset-0 bg-[#0F2044] text-white flex flex-col overflow-y-auto z-40",
         className,
       )}
       style={{
