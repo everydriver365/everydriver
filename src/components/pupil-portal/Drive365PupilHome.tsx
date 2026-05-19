@@ -139,19 +139,34 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug, onNavigat
     staleTime: 60_000,
   });
 
-  // Tests + transmission
+  // Tests
   const { data: pupilExtras } = useQuery({
     queryKey: ["d365-pupil-extras", pupil.id],
     queryFn: async () => {
       const { data } = await supabase
         .from("pupils")
-        .select("theory_test_date, theory_test_passed, test_date, test_passed, transmission, test_centre")
+        .select("theory_test_date, theory_test_passed, test_date, test_passed")
         .eq("id", pupil.id)
         .maybeSingle();
       return data as any;
     },
     staleTime: 60_000,
   });
+
+  // Transmission from instructor's car_type
+  const { data: instructorCar } = useQuery({
+    queryKey: ["d365-instructor-car", instructor.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("instructors")
+        .select("car_type")
+        .eq("id", instructor.id)
+        .maybeSingle();
+      return data as any;
+    },
+    staleTime: 5 * 60_000,
+  });
+
 
   // Mock score for readiness
   const { data: mockScore } = useQuery({
