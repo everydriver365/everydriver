@@ -20,6 +20,7 @@ export function PupilPortalProgress({ pupilId, brandColour, darkMode }: PupilPor
   const [loading, setLoading] = useState(true);
   const [hasSyllabusProgress, setHasSyllabusProgress] = useState(false);
   const [totalHoursCompleted, setTotalHoursCompleted] = useState(0);
+  const [prepaidHours, setPrepaidHours] = useState<number | null>(null);
 
   useEffect(() => {
     fetchProgress();
@@ -27,15 +28,29 @@ export function PupilPortalProgress({ pupilId, brandColour, darkMode }: PupilPor
 
   const fetchProgress = async () => {
     try {
-      // Calculate hours from lesson_history
+      // Calculate hours from lesson_history — sum only real durations, never fabricate
       const { data: hoursData } = await supabase
         .from("lesson_history")
         .select("duration_minutes")
         .eq("pupil_id", pupilId);
       if (hoursData) {
-        const totalMins = hoursData.reduce((s, l) => s + (l.duration_minutes || 60), 0);
+        const totalMins = hoursData.reduce(
+          (s, l) => s + (typeof l.duration_minutes === "number" ? l.duration_minutes : 0),
+          0,
+        );
         setTotalHoursCompleted(Math.round((totalMins / 60) * 10) / 10);
       }
+
+      // Pull prepaid_hours from the pupil record so we don't hardcode a target
+      const { data: pupilRow } = await supabase
+        .from("pupils")
+        .select("prepaid_hours")
+        .eq("id", pupilId)
+        .maybeSingle();
+      setPrepaidHours(
+        pupilRow && typeof pupilRow.prepaid_hours === "number" ? pupilRow.prepaid_hours : null,
+      );
+
 
       // First check if pupil has syllabus progress
       const { data: syllabusData, error: syllabusError } = await supabase
