@@ -410,7 +410,7 @@ export default function InstructorPupilsDesktop() {
       try {
         const { data: pupilRows, error } = await supabase
           .from("pupils")
-          .select("id, name, phone, account_balance, course_status, created_at, address, postcode, lessons_completed")
+          .select("id, name, phone, email, account_balance, course_status, created_at, address, postcode, notes, lessons_completed")
           .eq("instructor_id", instructorId)
           .is("deleted_at", null)
           .order("created_at", { ascending: false });
