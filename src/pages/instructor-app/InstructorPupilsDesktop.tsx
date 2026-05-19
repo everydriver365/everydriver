@@ -26,6 +26,7 @@ import { Pencil, Trash2, Upload } from "lucide-react";
 import { buildPupilUpdatePayload } from "./pupilEditPayload";
 import { AddPupilSheet } from "@/components/instructor/pupils/AddPupilSheet";
 import { ImportPupilsCsvDialog } from "@/components/instructor/pupils/ImportPupilsCsvDialog";
+import { ArchivedPupilsDialog } from "@/components/instructor/pupils/ArchivedPupilsDialog";
 
 // ----------------------------- Types & data -----------------------------
 type Status = "active" | "at-risk" | "test-ready" | "paused" | "archived";
