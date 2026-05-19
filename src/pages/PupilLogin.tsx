@@ -221,18 +221,15 @@ export default function PupilLogin() {
   };
 
   const handleFaceIdLogin = async () => {
-    if (!(window as any).PasswordCredential) return;
     setFaceIdLoading(true);
     try {
-      const credential = await navigator.credentials.get({
-        password: true,
-        mediation: "required",
-      } as any);
-      if (credential && credential.type === "password") {
-        const pwCred = credential as any;
+      const creds = await getBiometricCredentials("pupil", "Sign in to your pupil portal");
+      if (creds?.email && creds?.password) {
         setFaceIdSuccess(true);
-        setEmail(pwCred.id);
-        await performLogin(pwCred.id, pwCred.password || "");
+        setEmail(creds.email);
+        await performLogin(creds.email, creds.password);
+      } else {
+        toast.error("No saved sign-in found. Sign in with your password once to enable Face ID.");
       }
     } catch {
       toast.error("Biometric login cancelled or not available");
