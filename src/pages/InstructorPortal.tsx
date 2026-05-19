@@ -41,6 +41,8 @@ import { PDIBanner } from "@/components/instructor/PDIBanner";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useInstructorLiveStats } from "@/hooks/useInstructorLiveStats";
+import { useQueryClient } from "@tanstack/react-query";
+import { invalidateInstructorDashboard } from "@/lib/dashboardInvalidate";
 import { cn } from "@/lib/utils";
 import { getActivePaymentQrUrl } from "@/lib/getActivePaymentQrUrl";
 
