@@ -467,6 +467,10 @@ export default function InstructorPupilsDesktop() {
       intensive_hours_paid: isNI ? toNumOrNull(editForm.intensive_hours_paid) : null,
       intensive_course_payout: isNI ? toNumOrNull(editForm.intensive_course_payout) : null,
       intensive_pupil_payment: isNI ? toNumOrNull(editForm.intensive_pupil_payment) : null,
+      theory_test_date: editForm.theory_test_date || null,
+      theory_test_passed: editForm.theory_test_passed === "pass" ? true : editForm.theory_test_passed === "fail" ? false : null,
+      test_date: editForm.test_date || null,
+      test_passed: editForm.test_passed === "pass" ? true : editForm.test_passed === "fail" ? false : null,
     };
     const { error } = await supabase.from("pupils").update(payload).eq("id", editTargetId);
     setEditSaving(false);
