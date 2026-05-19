@@ -920,6 +920,17 @@ export default function InstructorPupils() {
         setIsLookingUpW3W={setIsLookingUpW3W}
       />
 
+      <ImportPupilsCsvDialog
+        open={isImportOpen}
+        onOpenChange={setIsImportOpen}
+        instructorId={instructorId || ""}
+        onImported={() => {
+          fetchPupils();
+          invalidateInstructorDashboard(queryClient, instructorId);
+        }}
+      />
+
+
       {/* Post-Add Payment Action Dialog */}
       <Dialog open={showPostAddPayment} onOpenChange={setShowPostAddPayment}>
         <DialogContent className="max-w-sm">
