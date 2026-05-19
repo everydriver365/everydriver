@@ -5,7 +5,7 @@ import {
   TriangleAlert, Clock, Users, CreditCard, User as UserIcon,
   Calendar, ShieldCheck, AwardIcon, BarChart3,
   ListChecks, Repeat2, TrendingUp, BookOpenCheck, Award,
-  FileText, Search, Settings, Banknote,
+  FileText, Search, Settings, Banknote, Plus,
 } from "lucide-react";
 import { t } from "./tokens";
 import { useDayLessons } from "@/hooks/useDayLessons";
