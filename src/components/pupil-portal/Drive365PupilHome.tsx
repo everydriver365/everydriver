@@ -200,20 +200,26 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug, onNavigat
   });
 
   const firstName = (pupil.name || "").split(" ")[0] || "there";
-  const lessonsTaken = pupil.lessons_completed || 0;
-  const totalHours = pupil.prepaid_hours ?? Math.max(lessonsTaken, 40);
-  const lessonProgressPct = Math.min(100, totalHours > 0 ? (lessonsTaken / totalHours) * 100 : 0);
+  const lessonsTaken = pupil.lessons_completed ?? 0;
+  const totalHours = pupil.prepaid_hours; // may be null — surface, don't invent
+  const lessonProgressPct =
+    totalHours && totalHours > 0 ? Math.min(100, (lessonsTaken / totalHours) * 100) : 0;
 
-  const balance = pupil.account_balance || 0;
+  const balance = pupil.account_balance ?? 0;
   const isOwed = balance < 0;
   const isCredit = balance > 0;
 
-  const transmission = (instructorCar?.car_type || "Manual") as string;
+  const transmission = instructorCar?.car_type as string | null | undefined;
 
-  // Test Readiness percent
-  const lessonsFactor = Math.min(100, (lessonsTaken / 40) * 100);
+  // Test Readiness — only compute when we have real signals
+  const hasReadinessSignal = lessonsTaken > 0 || mockScore !== null;
+  const lessonsFactor = totalHours && totalHours > 0
+    ? Math.min(100, (lessonsTaken / totalHours) * 100)
+    : 0;
   const mockFactor = mockScore ?? 0;
-  const readinessPct = Math.round(lessonsFactor * 0.6 + mockFactor * 0.4);
+  const readinessPct = hasReadinessSignal
+    ? Math.round(lessonsFactor * 0.6 + mockFactor * 0.4)
+    : null;
 
   // Driving test countdown
   const dt = pupilExtras?.test_date as string | null | undefined;
@@ -254,7 +260,7 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug, onNavigat
 
   // Readiness ring math
   const R = 32, C = 2 * Math.PI * R;
-  const ringOffset = C - (readinessPct / 100) * C;
+  const ringOffset = readinessPct !== null ? C - (readinessPct / 100) * C : C;
 
   return (
     <div style={{ background: SURFACE, minHeight: "100%", paddingBottom: 24 }}>
@@ -292,12 +298,14 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug, onNavigat
               <button onClick={onEditProfile} className="p-2" aria-label="Edit profile">
                 <Pencil size={16} color={MUTED} />
               </button>
-              <span
-                className="text-[11px] font-semibold ml-1 px-2.5 py-1 rounded-full"
-                style={{ background: "#EEF0F3", color: NAVY }}
-              >
-                {transmission}
-              </span>
+              {transmission && (
+                <span
+                  className="text-[11px] font-semibold ml-1 px-2.5 py-1 rounded-full"
+                  style={{ background: "#EEF0F3", color: NAVY }}
+                >
+                  {transmission}
+                </span>
+              )}
             </div>
           </Card>
         </div>
@@ -309,7 +317,11 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug, onNavigat
             <span className="text-[15px] font-bold" style={{ color: TEXT }}>Lessons</span>
           </div>
           <div className="text-[13px] mb-2" style={{ color: MUTED }}>
-            <span style={{ color: TEXT, fontWeight: 600 }}>{lessonsTaken} hrs</span> of {totalHours} hrs taken
+            {totalHours && totalHours > 0 ? (
+              <><span style={{ color: TEXT, fontWeight: 600 }}>{lessonsTaken} hrs</span> of {totalHours} hrs taken</>
+            ) : (
+              <><span style={{ color: TEXT, fontWeight: 600 }}>{lessonsTaken} hrs</span> taken · add a plan to track progress</>
+            )}
           </div>
           <div style={{ height: 8, borderRadius: 4, background: "#EEF0F3", overflow: "hidden" }}>
             <div style={{ width: `${lessonProgressPct}%`, height: "100%", background: RED, borderRadius: 4 }} />
@@ -484,7 +496,9 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug, onNavigat
                       />
                     </svg>
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <span className="text-[18px] font-bold" style={{ color: TEXT }}>{readinessPct}%</span>
+                      <span className="text-[18px] font-bold" style={{ color: TEXT }}>
+                        {readinessPct !== null ? `${readinessPct}%` : "—"}
+                      </span>
                       <span className="text-[9px] font-semibold tracking-wider" style={{ color: MUTED }}>READY</span>
                     </div>
                   </div>
