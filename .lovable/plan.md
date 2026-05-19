@@ -1,37 +1,48 @@
 ## Goal
-Make per-channel eligibility crystal clear in the preview so the user can see, before sending, exactly which channels each pupil will / won't receive on and why.
+On the instructor portal home dashboard (`/instructor`, desktop), split the middle column of the main grid so a new **Next Lesson** tile sits above a reduced-height **DVSA Standards Check** tile.
 
-## Changes (UI only, `SendAllRemindersDialog.tsx`)
-
-### 1. Add per-channel status chips to each pupil row
-Replace the single "Receiving on: …" / "missing …" text with a row of chips — one chip per **selected** channel — showing one of three states:
-
-- **Ready** (green): channel will send. Icon + label.
-- **Missing contact** (amber): channel selected but pupil has no phone/email. Tooltip: "No phone on file" / "No email on file".
-- **Not selected**: hidden (only show chips for currently selected channels).
-
-Each chip uses the channel icon + label + a small status dot, so the user can scan the list and instantly see gaps.
-
-### 2. Restructure the Preview block by channel
-Currently the preview shows one message per pupil. Change to:
+## Where
+`src/components/instructor/dashboardV3/HybridDashboard.tsx` — the 3-column grid at ~line 583:
 
 ```text
-Sarah Jones · £45.00
-  ✓ Text       "Hi Sarah, friendly reminder…"
-  ✓ WhatsApp   "Hi Sarah, friendly reminder…"
-  ✗ Email      Skipped — no email on file
+[ Schedule ] [ DVSA Standards ] [ Earnings ]
 ```
 
-For each selected pupil, list **every selected channel** with either the final formatted message (Email shows subject + body; SMS/WhatsApp/In-app show the short text) or a clear "Skipped — reason" line in muted rose. This makes ineligibility visible inside the preview itself, not just in the list above.
+Becomes:
 
-### 3. Add a compact summary line above the preview
-`X messages will send · Y skipped (Z missing email, W missing phone)` so the user sees the totals at a glance before clicking Send.
+```text
+                ┌────────────────┐
+[ Schedule ]    │  Next Lesson   │   [ Earnings ]
+                ├────────────────┤
+                │ DVSA Standards │ ← reduced ~50% height
+                └────────────────┘
+```
 
-### 4. Keep the fully-ineligible pupil rows (already shown) but tighten the copy
-"Skipped on all channels — no phone or email on file" (clearer than the current join).
+## Changes
 
-## Technical notes
-- Extract a `buildMessage(p, ch, fromName)` helper returning `{ subject?, body }` and reuse it in both `sendOne` and the preview (removes the duplicated template string at lines 145 & 369).
-- Add a `channelStatusFor(p, ch)` helper returning `'ready' | 'missing-phone' | 'missing-email'`.
-- No backend, schema, or business-logic changes. Send flow, eligibility rules, and `followup_log` insert stay identical.
-- Uses existing semantic tokens (`text-emerald-700`, `text-rose-700`, `text-muted-foreground`, `bg-muted/30`, `border-primary/30`) — no new colors.
+1. **New `NextLessonCard` component** in the same file (matches existing `DvsaStandardsCard` / `EarningsCard` style: white bg, 12px radius, navy header chip).
+   - Data source: existing `useNextLessonDetails(instructorId)` hook (already in project).
+   - Shows: pupil name + avatar initial, lesson date/time (e.g. "Today 14:00" / "Tomorrow 09:30"), duration, pickup postcode, status pill.
+   - Empty state: "No upcoming lessons" with a "Schedule one →" link to `/instructor/diary`.
+   - Click the card → navigate to the lesson detail / diary.
+   - Loading: shimmer placeholder consistent with iOS Consistency memory.
+
+2. **Reduce DVSA Standards card height by ~half**:
+   - Header padding `11px 14px` → `8px 12px`.
+   - Body padding `16px 14px` → `10px 12px`; empty-state padding `28px 16px` → `14px 12px`.
+   - Drop the description paragraph in the empty state; keep icon + "Log a result" button on a single compact row.
+   - Result value font `20px` → `16px`; date font unchanged.
+
+3. **Grid restructure** at line 583:
+   - Wrap Next Lesson + DVSA in a vertical flex (`display: flex; flexDirection: column; gap: 10`) so they share one column.
+   - Keep the outer grid `1fr 1fr 280px` unchanged.
+
+## Live data rules
+- Use `useNextLessonDetails` (or equivalent query already in the codebase) — no hard-coded fallbacks (per Core memory).
+- Time formatting: Europe/London via existing `toLondonParts` helpers.
+- Imperial: not relevant here (no distances rendered).
+
+## Out of scope
+- Mobile dashboard layout (per Mobile update policy).
+- Any backend/schema changes.
+- Restyling Schedule or Earnings cards.
