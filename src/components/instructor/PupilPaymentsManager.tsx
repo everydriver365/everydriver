@@ -55,7 +55,7 @@ export function PupilPaymentsManager({
   const [loading, setLoading] = useState(true);
   const [editId, setEditId] = useState<string | null>(null);
   const [editAmount, setEditAmount] = useState("");
-  const [editMethod, setEditMethod] = useState("cash");
+  const [editMethod, setEditMethod] = useState("Cash");
   const [editNotes, setEditNotes] = useState("");
   const [editDate, setEditDate] = useState("");
   const [saving, setSaving] = useState(false);
