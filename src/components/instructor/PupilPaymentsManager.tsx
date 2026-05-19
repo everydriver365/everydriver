@@ -293,8 +293,7 @@ export function PupilPaymentsManager({
           </DropdownMenuTrigger>
           <ChannelMenu kind="link" />
         </DropdownMenu>
-        <Button size="sm" variant="ghost" className="gap-1.5 ml-auto"
-          onClick={() => { navigator.clipboard.writeText(paymentLink()); toast.success("Link copied"); }}>
+        <Button size="sm" variant="ghost" className="gap-1.5 ml-auto" onClick={copyLink}>
           <Link2 className="h-4 w-4" /> Copy link
         </Button>
       </div>
