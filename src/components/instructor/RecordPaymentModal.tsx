@@ -200,6 +200,12 @@ export function RecordPaymentModal({
     }
     setSaving(true);
     try {
+      // Map UI keys → canonical labels accepted by validate_payment_method trigger
+      const methodLabel =
+        paymentMethod === "cash" ? "Cash"
+        : paymentMethod === "card" ? "Square"
+        : "Bank Transfer";
+
       // 1. Insert payment_history row (with optional lesson link)
       const { error: historyError } = await (supabase as any)
         .from("payment_history")
@@ -207,7 +213,7 @@ export function RecordPaymentModal({
           pupil_id: pupilId,
           instructor_id: instructorId,
           amount: parsedAmount,
-          payment_method: paymentMethod,
+          payment_method: methodLabel,
           notes: notes.trim() || null,
           lesson_id: lessonId,
         });
