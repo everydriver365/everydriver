@@ -376,28 +376,46 @@ export function DashboardSidebar({ collapsed, onToggle, userInitials, userName, 
     .map((to) => allItems.find((i) => i.to === to))
     .filter((i): i is NavItem => Boolean(i));
 
-  // Convert brand colour to a soft tint for active background.
-  const brandTint = brandColour ? `${brandColour}1A` : null; // ~10% alpha
+  const brandTint = brandColour ? `${brandColour}1A` : null;
 
-  const brandStyle: React.CSSProperties = brandColour
-    ? ({
-        ["--d2-indigo" as any]: brandColour,
-        ["--d2-indigo-bg" as any]: brandTint,
-      } as React.CSSProperties)
-    : {};
+  // ---- Navy theme (DSM hybrid dashboard) ----
+
+  // Inline overrides so we don't have to fork the whole file. CSS vars get
+  // remapped on the <aside> so descendants pick them up automatically.
+  const navyBg          = "#0F2044";
+  const navyActiveBg    = "rgba(26,82,160,0.25)";
+  const navyHoverBg     = "rgba(255,255,255,0.06)";
+  const navyText        = "rgba(255,255,255,0.45)";
+  const navyTextActive  = "#FFFFFF";
+  const navyLabel       = "rgba(255,255,255,0.22)";
+  const navyBorder      = "rgba(255,255,255,0.08)";
+  const navyAccentRed   = "#CC2229";
+
+  const brandStyle: React.CSSProperties = {
+    ["--d2-surface" as any]: navyBg,
+    ["--d2-surface-soft" as any]: navyBg,
+    ["--d2-border" as any]: navyBorder,
+    ["--d2-hover" as any]: navyHoverBg,
+    ["--d2-text-1" as any]: navyTextActive,
+    ["--d2-text-2" as any]: navyText,
+    ["--d2-text-3" as any]: navyLabel,
+    ["--d2-indigo" as any]: brandColour ?? "#1A52A0",
+    ["--d2-indigo-bg" as any]: brandTint ?? "rgba(26,82,160,0.18)",
+  };
 
   return (
     <aside
       className="flex flex-col h-screen sticky top-0 z-30"
       style={{
-        width: collapsed ? 64 : 260,
-        background: "var(--d2-surface)",
-        borderRight: "0.5px solid var(--d2-border)",
+        width: collapsed ? 48 : 210,
+        background: navyBg,
+        borderRight: `0.5px solid ${navyBorder}`,
         transition: "width 200ms ease-out",
         fontFamily: brandFont ? `${brandFont}, Inter, system-ui, sans-serif` : undefined,
         ...brandStyle,
       }}
     >
+
       {/* Brand */}
       <div className="flex items-center justify-between" style={{ padding: "16px 12px" }}>
         <Link to="/instructor" className="flex items-center gap-2 min-w-0">
@@ -539,32 +557,34 @@ export function DashboardSidebar({ collapsed, onToggle, userInitials, userName, 
                     to={item.to}
                     title={collapsed ? item.label : undefined}
                     aria-current={active ? "page" : undefined}
-                    className={cn("relative flex items-center gap-2 rounded-md transition-colors")}
+                    className={cn("relative flex items-center gap-2 transition-colors")}
                     style={{
                       height: 32,
                       padding: rightPad,
                       justifyContent: collapsed ? "center" : "flex-start",
-                      background: active ? "var(--d2-indigo)" : "transparent",
-                      color: active ? "#FFFFFF" : "var(--d2-text-2)",
+                      background: active ? navyActiveBg : "transparent",
+                      color: active ? navyTextActive : navyText,
                       fontSize: 12,
                       fontWeight: 500,
-                      boxShadow: active ? "0 1px 2px rgba(15,23,42,0.08), 0 1px 3px rgba(15,23,42,0.06)" : "none",
-                      transition: "background 150ms ease-out, color 150ms ease-out, box-shadow 150ms ease-out",
+                      borderLeft: active ? `3px solid ${navyAccentRed}` : "3px solid transparent",
+                      borderRadius: 0,
+                      transition: "background 150ms ease-out, color 150ms ease-out",
                     }}
                     onMouseEnter={(e) => {
                       if (!active) {
-                        e.currentTarget.style.background = "var(--d2-hover)";
-                        e.currentTarget.style.color = "var(--d2-text-1)";
+                        e.currentTarget.style.background = navyHoverBg;
+                        e.currentTarget.style.color = navyTextActive;
                       }
                     }}
                     onMouseLeave={(e) => {
                       if (!active) {
                         e.currentTarget.style.background = "transparent";
-                        e.currentTarget.style.color = "var(--d2-text-2)";
+                        e.currentTarget.style.color = navyText;
                       }
                     }}
                   >
-                    <Icon size={14} strokeWidth={active ? 2.25 : 1.75} style={{ color: active ? "#FFFFFF" : undefined }} />
+                    <Icon size={14} strokeWidth={active ? 2.25 : 1.75} style={{ color: active ? navyTextActive : "currentColor" }} />
+
                     {!collapsed && <span className="truncate flex-1">{item.label}</span>}
                     {!collapsed && item.badge && (
                       <span
