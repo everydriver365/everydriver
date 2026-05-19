@@ -500,6 +500,7 @@ export function DashboardSidebar({ collapsed, onToggle, userInitials, userName, 
             const active = item.to === "/instructor"
               ? pathname === "/instructor"
               : pathname === item.to || pathname.startsWith(item.to + "/");
+            if (item.label === "Dashboard") console.log("Dashboard active:", active, "pathname:", pathname, "item.to:", item.to);
             const isPinnedNow = pinned.includes(item.to);
             const isCriticalNow = critical.includes(item.to);
             const draggable = !collapsed && (opts.isPinned || opts.isCritical);
