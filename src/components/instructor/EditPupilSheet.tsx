@@ -659,6 +659,204 @@ export function EditPupilSheet({
               </InputShell>
             </div>
 
+            {/* Lead source */}
+            <div
+              style={{
+                marginTop: 8,
+                paddingTop: 16,
+                borderTop: `0.5px solid ${C.hairline}`,
+              }}
+            >
+              <Eyebrow>Lead source</Eyebrow>
+              <InputShell focused={focused === "source"}>
+                <select
+                  style={{ ...baseInputStyle, fontSize: 14, appearance: "none" }}
+                  value={form.source || ""}
+                  onChange={(e) => setForm({ ...form, source: e.target.value })}
+                  onFocus={() => setFocused("source")}
+                  onBlur={() => setFocused(null)}
+                >
+                  <option value="">Select source…</option>
+                  {PUPIL_SOURCE_OPTIONS.map((o) => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
+                </select>
+              </InputShell>
+
+              {form.source === "national_intensive" && (
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                    gap: 8,
+                    marginTop: 12,
+                  }}
+                >
+                  <div>
+                    <Eyebrow>Hours paid</Eyebrow>
+                    <InputShell focused={focused === "ihp"}>
+                      <input
+                        style={{ ...baseInputStyle, fontSize: 14 }}
+                        type="number"
+                        inputMode="decimal"
+                        value={form.intensive_hours_paid ?? ""}
+                        onChange={(e) => setForm({ ...form, intensive_hours_paid: e.target.value })}
+                        onFocus={() => setFocused("ihp")}
+                        onBlur={() => setFocused(null)}
+                        placeholder="e.g. 40"
+                      />
+                    </InputShell>
+                  </div>
+                  <div>
+                    <Eyebrow>NI pays you</Eyebrow>
+                    <InputShell focused={focused === "icp"}>
+                      <input
+                        style={{ ...baseInputStyle, fontSize: 14 }}
+                        type="number"
+                        inputMode="decimal"
+                        value={form.intensive_course_payout ?? ""}
+                        onChange={(e) => setForm({ ...form, intensive_course_payout: e.target.value })}
+                        onFocus={() => setFocused("icp")}
+                        onBlur={() => setFocused(null)}
+                        placeholder="£ amount"
+                      />
+                    </InputShell>
+                  </div>
+                  <div style={{ gridColumn: "1 / -1" }}>
+                    <Eyebrow>Pupil pays you (optional)</Eyebrow>
+                    <InputShell focused={focused === "ipp"}>
+                      <input
+                        style={{ ...baseInputStyle, fontSize: 14 }}
+                        type="number"
+                        inputMode="decimal"
+                        value={form.intensive_pupil_payment ?? ""}
+                        onChange={(e) => setForm({ ...form, intensive_pupil_payment: e.target.value })}
+                        onFocus={() => setFocused("ipp")}
+                        onBlur={() => setFocused(null)}
+                        placeholder="£ amount"
+                      />
+                    </InputShell>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Payment method */}
+            <div
+              style={{
+                marginTop: 8,
+                paddingTop: 16,
+                borderTop: `0.5px solid ${C.hairline}`,
+              }}
+            >
+              <Eyebrow>Payment method</Eyebrow>
+              <InputShell focused={focused === "payment_method"}>
+                <select
+                  style={{ ...baseInputStyle, fontSize: 14, appearance: "none" }}
+                  value={form.payment_method || "tbc"}
+                  onChange={(e) => setForm({ ...form, payment_method: e.target.value })}
+                  onFocus={() => setFocused("payment_method")}
+                  onBlur={() => setFocused(null)}
+                >
+                  <option value="tbc">TBC — decide later</option>
+                  <option value="cash">Cash</option>
+                  <option value="card">Card</option>
+                  <option value="bank_transfer">Bank transfer</option>
+                  <option value="send_link">Send payment link</option>
+                  <option value="take_payment">Take payment now (QR)</option>
+                  <option value="national_intensive">National Intensive</option>
+                </select>
+              </InputShell>
+            </div>
+
+            {/* Additional details */}
+            <div
+              style={{
+                marginTop: 8,
+                paddingTop: 16,
+                borderTop: `0.5px solid ${C.hairline}`,
+              }}
+            >
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                  gap: 8,
+                }}
+              >
+                <div>
+                  <Eyebrow>Sex</Eyebrow>
+                  <InputShell focused={focused === "sex"}>
+                    <select
+                      style={{ ...baseInputStyle, fontSize: 14, appearance: "none" }}
+                      value={form.sex || ""}
+                      onChange={(e) => setForm({ ...form, sex: e.target.value })}
+                      onFocus={() => setFocused("sex")}
+                      onBlur={() => setFocused(null)}
+                    >
+                      <option value="">Not set</option>
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                      <option value="other">Other</option>
+                      <option value="prefer_not_to_say">Prefer not to say</option>
+                    </select>
+                  </InputShell>
+                </div>
+                <div>
+                  <Eyebrow>Transmission</Eyebrow>
+                  <InputShell focused={focused === "transmission_type"}>
+                    <select
+                      style={{ ...baseInputStyle, fontSize: 14, appearance: "none" }}
+                      value={form.transmission_type || ""}
+                      onChange={(e) => setForm({ ...form, transmission_type: e.target.value })}
+                      onFocus={() => setFocused("transmission_type")}
+                      onBlur={() => setFocused(null)}
+                    >
+                      <option value="">Not set</option>
+                      <option value="manual">Manual</option>
+                      <option value="automatic">Automatic</option>
+                    </select>
+                  </InputShell>
+                </div>
+              </div>
+
+              <div style={{ marginTop: 12 }}>
+                <Eyebrow>Previous experience</Eyebrow>
+                <InputShell focused={focused === "previous_experience"}>
+                  <input
+                    style={{ ...baseInputStyle, fontSize: 14 }}
+                    value={form.previous_experience || ""}
+                    onChange={(e) => setForm({ ...form, previous_experience: e.target.value })}
+                    onFocus={() => setFocused("previous_experience")}
+                    onBlur={() => setFocused(null)}
+                    placeholder="e.g. 10 hours"
+                  />
+                </InputShell>
+              </div>
+
+              <div style={{ marginTop: 12 }}>
+                <Eyebrow>Special needs / accessibility</Eyebrow>
+                <InputShell focused={focused === "special_needs"}>
+                  <textarea
+                    style={{
+                      ...baseInputStyle,
+                      fontSize: 14,
+                      minHeight: 60,
+                      resize: "vertical",
+                      fontWeight: 400,
+                    }}
+                    value={form.special_needs || ""}
+                    onChange={(e) => setForm({ ...form, special_needs: e.target.value })}
+                    onFocus={() => setFocused("special_needs")}
+                    onBlur={() => setFocused(null)}
+                    placeholder="Anything the instructor should know"
+                  />
+                </InputShell>
+              </div>
+            </div>
+
+
+
             {/* Parent / Guardian (preserved) */}
             <div
               style={{
