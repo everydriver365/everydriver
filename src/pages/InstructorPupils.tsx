@@ -60,6 +60,7 @@ import { LessonHistory } from "@/components/instructor/LessonHistory";
 import { PupilListSkeleton } from "@/components/ui/skeletons/PupilListSkeleton";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { AddPupilSheet } from "@/components/instructor/pupils/AddPupilSheet";
+import { ImportPupilsCsvDialog } from "@/components/instructor/pupils/ImportPupilsCsvDialog";
 import { PupilSplitPane } from "@/components/instructor/PupilSplitPane";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
@@ -155,6 +156,7 @@ export default function InstructorPupils() {
   const [expandedPupilId, setExpandedPupilId] = useState<string | null>(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [isImportOpen, setIsImportOpen] = useState(false);
   const [isScheduleOpen, setIsScheduleOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isDrivingReportOpen, setIsDrivingReportOpen] = useState(false);
@@ -672,24 +674,43 @@ export default function InstructorPupils() {
               {stats.active} active · {stats.passed} passed · {lessonsToday} lessons today
             </p>
           </div>
-          <button
-            type="button"
-            onClick={() => setIsAddOpen(true)}
-            style={{
-              background: "#3D55A1",
-              borderRadius: 20,
-              padding: "7px 14px",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 5,
-              border: "none",
-              cursor: "pointer",
-            }}
-          >
-            <Plus size={11} color="#FFF" strokeWidth={2.2} />
-            <span style={{ fontSize: 12, fontWeight: 700, color: "#FFF" }}>Add</span>
-          </button>
+          <div style={{ display: "flex", gap: 6 }}>
+            <button
+              type="button"
+              onClick={() => setIsImportOpen(true)}
+              style={{
+                background: "#FFF",
+                border: "0.5px solid rgba(26,82,160,0.25)",
+                borderRadius: 20,
+                padding: "7px 12px",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 5,
+                cursor: "pointer",
+              }}
+            >
+              <span style={{ fontSize: 12, fontWeight: 700, color: "#3D55A1" }}>Import CSV</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsAddOpen(true)}
+              style={{
+                background: "#3D55A1",
+                borderRadius: 20,
+                padding: "7px 14px",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 5,
+                border: "none",
+                cursor: "pointer",
+              }}
+            >
+              <Plus size={11} color="#FFF" strokeWidth={2.2} />
+              <span style={{ fontSize: 12, fontWeight: 700, color: "#FFF" }}>Add</span>
+            </button>
+          </div>
         </div>
+
 
         <div style={{ padding: "14px 15px 0" }}>
           {/* Search */}
@@ -898,6 +919,17 @@ export default function InstructorPupils() {
         isLookingUpW3W={isLookingUpW3W}
         setIsLookingUpW3W={setIsLookingUpW3W}
       />
+
+      <ImportPupilsCsvDialog
+        open={isImportOpen}
+        onOpenChange={setIsImportOpen}
+        instructorId={instructorId || ""}
+        onImported={() => {
+          fetchPupils();
+          invalidateInstructorDashboard(queryClient, instructorId);
+        }}
+      />
+
 
       {/* Post-Add Payment Action Dialog */}
       <Dialog open={showPostAddPayment} onOpenChange={setShowPostAddPayment}>

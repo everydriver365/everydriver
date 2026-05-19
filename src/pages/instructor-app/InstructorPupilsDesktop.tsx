@@ -22,9 +22,10 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, Upload } from "lucide-react";
 import { buildPupilUpdatePayload } from "./pupilEditPayload";
 import { AddPupilSheet } from "@/components/instructor/pupils/AddPupilSheet";
+import { ImportPupilsCsvDialog } from "@/components/instructor/pupils/ImportPupilsCsvDialog";
 
 // ----------------------------- Types & data -----------------------------
 type Status = "active" | "at-risk" | "test-ready" | "paused" | "archived";
@@ -191,6 +192,7 @@ export default function InstructorPupilsDesktop() {
   const [tab, setTab] = useState<"overview" | "lessons" | "progress" | "payments" | "notes">("overview");
   const [reloadTick, setReloadTick] = useState(0);
   const [addOpen, setAddOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   const [addForm, setAddForm] = useState<any>({
     name: "", phone: "", email: "", address: "", postcode: "", what3words: "",
     date_of_birth: "", sex: "", previous_experience_hours: "", transmission_type: "",
@@ -625,6 +627,16 @@ export default function InstructorPupilsDesktop() {
                 <Download size={12} /> Export
               </button>
               <button
+                onClick={() => setImportOpen(true)}
+                style={{
+                  fontSize: 11, padding: "6px 10px", borderRadius: 8,
+                  border: "0.5px solid var(--d2-border)", background: "#fff",
+                  color: "var(--d2-text-2)", display: "inline-flex", alignItems: "center", gap: 6,
+                }}
+              >
+                <Upload size={12} /> Import CSV
+              </button>
+              <button
                 onClick={() => setAddOpen(true)}
                 style={{
                   fontSize: 11, padding: "6px 10px", borderRadius: 8,
@@ -899,6 +911,13 @@ export default function InstructorPupilsDesktop() {
         onSave={handleAddPupil}
         isLookingUpW3W={addLookingW3W}
         setIsLookingUpW3W={setAddLookingW3W}
+      />
+
+      <ImportPupilsCsvDialog
+        open={importOpen}
+        onOpenChange={setImportOpen}
+        instructorId={instructor?.id || ""}
+        onImported={() => setReloadTick(t => t + 1)}
       />
 
       <Dialog open={editOpen} onOpenChange={(o) => { setEditOpen(o); if (!o) setEditTargetId(null); }}>
