@@ -391,10 +391,10 @@ export function PupilPaymentsManager({
                 ) : (
                   <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0">
-                      <div className="font-semibold text-sm text-foreground">
-                        £{Number(p.amount).toFixed(2)}
+                      <div className={`font-semibold text-sm ${Number(p.amount) < 0 ? "text-destructive" : "text-foreground"}`}>
+                        {Number(p.amount) < 0 ? "−" : ""}£{Math.abs(Number(p.amount)).toFixed(2)}
                         <span className="ml-2 text-xs text-muted-foreground font-normal">
-                          {formatMethod(p.payment_method)}
+                          {Number(p.amount) < 0 ? "Charge" : formatMethod(p.payment_method)}
                         </span>
                       </div>
                       <div className="text-xs text-muted-foreground">
