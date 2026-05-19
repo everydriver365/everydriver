@@ -380,14 +380,9 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug, onNavigat
                 <div className="flex-1 min-w-0 pr-12">
                   <div className="text-[13px] font-semibold" style={{ color: TEXT }}>Driving Test</div>
                   {dt ? (
-                    <>
-                      {pupilExtras?.test_centre && (
-                        <div className="text-[11px] truncate" style={{ color: MUTED }}>{pupilExtras.test_centre}</div>
-                      )}
-                      <div className="text-[11px]" style={{ color: MUTED }}>
-                        {format(parseISO(dt), "d MMM")}
-                      </div>
-                    </>
+                    <div className="text-[11px]" style={{ color: MUTED }}>
+                      {format(parseISO(dt), "d MMM")}
+                    </div>
                   ) : (
                     <div className="text-[11px]" style={{ color: MUTED }}>Not booked</div>
                   )}
