@@ -35,6 +35,10 @@ interface Pupil {
   id: string;
   name: string;
   phone: string;
+  email?: string;
+  postcode?: string;
+  address?: string;
+  notes?: string;
   initials: string;
   avatarColor: AvatarColor;
   lessonsLeft: number;
