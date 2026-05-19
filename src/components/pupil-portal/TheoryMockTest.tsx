@@ -11,6 +11,7 @@ import { toast } from "sonner";
 
 interface TheoryMockTestProps {
   pupilId?: string;
+  instructorId?: string;
   onComplete?: () => void;
 }
 
