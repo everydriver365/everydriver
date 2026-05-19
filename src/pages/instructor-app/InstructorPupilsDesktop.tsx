@@ -548,6 +548,10 @@ export default function InstructorPupilsDesktop() {
             totalHours: Math.round((hoursByPupil.get(p.id) || 0) * 10) / 10,
             testDate: p.test_date || undefined,
             pickupAddress: p.address || p.postcode || undefined,
+            theoryPassed: p.theory_test_passed ?? null,
+            theoryDate: p.theory_test_date ?? null,
+            drivingPassed: p.test_passed ?? null,
+            drivingTestDate: p.test_date ?? null,
           };
         });
 
