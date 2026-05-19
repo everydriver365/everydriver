@@ -421,6 +421,7 @@ export default function InstructorPupils() {
         parent_phone: addForm.parent_phone || null,
         parent_name: addForm.parent_name || null,
         date_of_birth: addForm.date_of_birth || null,
+        sex: addForm.sex || null,
         payment_method: addForm.payment_method || 'tbc',
         lessons_completed: hoursNum && !isNaN(hoursNum) ? hoursNum : 0,
         progress: 0,
