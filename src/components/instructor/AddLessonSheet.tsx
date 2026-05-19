@@ -43,6 +43,7 @@ interface Pupil {
   phone: string | null;
   address: string | null;
   postcode: string | null;
+  source: string | null;
 }
 
 interface TestCentre {
@@ -314,7 +315,7 @@ export function AddLessonSheet({
     setLoadingPupils(true);
     const { data, error } = await supabase
       .from('pupils')
-      .select('id, name, phone, address, postcode')
+      .select('id, name, phone, address, postcode, source')
       .eq('instructor_id', instructorId)
       .is('deleted_at', null)
       .order('name');
@@ -383,10 +384,11 @@ export function AddLessonSheet({
         const [lessonsRes, eventsRes] = await Promise.all([
           supabase
             .from('scheduled_lessons')
-            .select('start_time, duration_minutes, pupil_id, pickup_location, dropoff_location, pupils(name, postcode, address)')
+            .select('start_time, duration_minutes, pupil_id, pickup_location, dropoff_location, pupils!inner(name, postcode, address, deleted_at)')
             .eq('instructor_id', instructorId)
             .eq('lesson_date', dateStr)
             .neq('status', 'cancelled')
+            .is('pupils.deleted_at', null)
             .order('start_time'),
           supabase
             .from('instructor_calendar_events')
@@ -652,6 +654,8 @@ export function AddLessonSheet({
       const durationMinutes = parseFloat(lessonDuration) * 60;
       const weeks = isRecurring ? parseInt(recurrenceWeeks) : 1;
       const testNotes = buildDrivingTestNotes();
+      const selectedPupilObj = pupils.find(p => p.id === selectedPupil);
+      const isNationalIntensive = selectedPupilObj?.source === 'national_intensive';
       const lessons = [];
       const dateStrs: string[] = [];
       for (let i = 0; i < weeks; i++) {
@@ -670,16 +674,17 @@ export function AddLessonSheet({
           instructor_id: instructorId, pupil_id: selectedPupil,
           lesson_date: dateStr, start_time: lessonStartTime,
           duration_minutes: durationMinutes, pickup_location: pickupAddress || null,
-          status: 'scheduled', payment_status: paymentMethod === 'cash' ? 'cash' : 'not_paid', 
-          payment_method: paymentMethod,
+          status: 'scheduled',
+          payment_status: isNationalIntensive ? 'prepaid' : (paymentMethod === 'cash' ? 'cash' : 'not_paid'),
+          payment_method: isNationalIntensive ? 'prepaid' : paymentMethod,
           lesson_type: lessonType,
           recurrence_rule: isRecurring ? `WEEKLY;COUNT=${weeks}` : null,
           planned_competencies: plannedCompetencies.length > 0 ? plannedCompetencies : null,
           notes: testNotes,
           clash_overridden: overrideBuffer && isHardOverlap,
-          price_per_hour: hourlyRate || null,
-          surcharge_amount: Math.round(mod.totalAmount * hours * 100) / 100,
-          amount_due: Math.round(mod.finalRate * hours * 100) / 100,
+          price_per_hour: isNationalIntensive ? 0 : (hourlyRate || null),
+          surcharge_amount: isNationalIntensive ? 0 : Math.round(mod.totalAmount * hours * 100) / 100,
+          amount_due: isNationalIntensive ? 0 : Math.round(mod.finalRate * hours * 100) / 100,
           ...(isDrivingTest && selectedTestCentre ? { test_centre_id: selectedTestCentre } : {}),
           ...(isDrivingTest && selectedExaminer ? { examiner_id: selectedExaminer } : {}),
         });
