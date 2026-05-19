@@ -1103,20 +1103,106 @@ export default function PremiumPupilProfile() {
     </button>
   );
 
+  // Generic field updater for the pupil row.
+  const updatePupilField = async (patch: Record<string, any>, successMsg = "Updated") => {
+    if (!pupil?.id) return;
+    const { error } = await supabase.from("pupils").update(patch).eq("id", pupil.id);
+    if (error) { console.error(error); toast.error("Failed to update"); throw error; }
+    toast.success(successMsg);
+    await queryClient.invalidateQueries({ queryKey: ["pupil-profile", pupil.id, instructorId] });
+  };
+
   const DetailsCard = (
     <Card>
-      <div style={{ fontFamily: FONT, fontSize: 17, color: C.text, fontWeight: 600, letterSpacing: "-0.01em", marginBottom: 6 }}>
-        Pupil details
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+        <div style={{ fontFamily: FONT, fontSize: 17, color: C.text, fontWeight: 600, letterSpacing: "-0.01em" }}>
+          Pupil details
+        </div>
+        <div style={{ fontFamily: FONT, fontSize: 11, color: C.subtle }}>
+          Click any field to edit
+        </div>
       </div>
-      <Row icon={User} label="Date of birth" value={pupil.date_of_birth ? format(parseISO(pupil.date_of_birth), "d MMM yyyy") : null} />
-      <Row icon={Mail} label="Email" value={pupil.email} />
-      <Row icon={MapPin} label="Address" value={[pupil.address, pupil.postcode].filter(Boolean).join(", ") || null} />
-      <Row icon={Phone} label="Emergency contact" value={
-        pupil.emergency_contact_name || pupil.emergency_contact_phone
-          ? `${pupil.emergency_contact_name || ""}${pupil.emergency_contact_phone ? ` · ${pupil.emergency_contact_phone}` : ""}`.trim()
-          : null
-      } />
-      <Row icon={GraduationCap} label="Course" value={pupil.course_type} />
+      <EditableRow
+        icon={User} label="Name" value={pupil.name} placeholder="Full name"
+        onSave={(v) => updatePupilField({ name: v ?? "" }, "Name updated")}
+      />
+      <EditableRow
+        icon={User} label="Date of birth"
+        value={pupil.date_of_birth ?? null} type="date" placeholder="YYYY-MM-DD"
+        onSave={(v) => updatePupilField({ date_of_birth: v }, "Date of birth updated")}
+      />
+      <EditableRow
+        icon={Mail} label="Email" value={pupil.email ?? null} type="email" placeholder="name@example.com"
+        onSave={(v) => updatePupilField({ email: v }, "Email updated")}
+      />
+      <EditableRow
+        icon={Phone} label="Phone" value={pupil.phone ?? null} type="tel" placeholder="07XXX XXXXXX"
+        onSave={(v) => updatePupilField({ phone: v }, "Phone updated")}
+      />
+      <EditableRow
+        icon={MapPin} label="Address" value={pupil.address ?? null} placeholder="Street address"
+        onSave={(v) => updatePupilField({ address: v }, "Address updated")}
+      />
+      <EditableRow
+        icon={MapPin} label="Postcode" value={pupil.postcode ?? null} placeholder="Postcode"
+        onSave={(v) => updatePupilField({ postcode: v ? v.toUpperCase() : v }, "Postcode updated")}
+      />
+      <EditableRow
+        icon={User} label="Emergency contact name"
+        value={(pupil as any).emergency_contact_name ?? null} placeholder="Name"
+        onSave={(v) => updatePupilField({ emergency_contact_name: v }, "Emergency contact updated")}
+      />
+      <EditableRow
+        icon={Phone} label="Emergency contact phone"
+        value={(pupil as any).emergency_contact_phone ?? null} type="tel" placeholder="07XXX XXXXXX"
+        onSave={(v) => updatePupilField({ emergency_contact_phone: v }, "Emergency contact updated")}
+      />
+      <EditableRow
+        icon={GraduationCap} label="Course type" value={pupil.course_type ?? null} placeholder="e.g. Manual / Automatic"
+        type="select"
+        options={[
+          { value: "manual", label: "Manual" },
+          { value: "automatic", label: "Automatic" },
+          { value: "intensive", label: "Intensive" },
+          { value: "refresher", label: "Refresher" },
+        ]}
+        onSave={(v) => updatePupilField({ course_type: v }, "Course updated")}
+      />
+      <EditableRow
+        icon={User} label="Status" value={(pupil.status as string) ?? "active"}
+        type="select"
+        options={[
+          { value: "active", label: "Active" },
+          { value: "on_hold", label: "On hold" },
+          { value: "passed", label: "Passed" },
+          { value: "inactive", label: "Inactive" },
+          { value: "cancelled", label: "Cancelled" },
+        ]}
+        onSave={(v) => updatePupilField({ status: v ?? "active" }, "Status updated")}
+      />
+      <EditableRow
+        icon={Clock} label="Test date" value={pupil.test_date ?? null} type="date"
+        onSave={(v) => updatePupilField({ test_date: v }, "Test date updated")}
+      />
+      <EditableRow
+        icon={Clock} label="Test time" value={(pupil as any).test_time ?? null} placeholder="HH:MM"
+        onSave={(v) => updatePupilField({ test_time: v }, "Test time updated")}
+      />
+      <EditableRow
+        icon={GraduationCap} label="Progress %"
+        value={pupil.progress != null ? String(pupil.progress) : null}
+        placeholder="0–100"
+        onSave={(v) => {
+          if (v == null) return updatePupilField({ progress: null }, "Progress updated");
+          const n = Math.max(0, Math.min(100, Math.round(Number(v))));
+          if (!Number.isFinite(n)) { toast.error("Enter 0–100"); return; }
+          return updatePupilField({ progress: n }, "Progress updated");
+        }}
+      />
+      <EditableRow
+        icon={FileText} label="Notes" value={pupil.notes ?? null} placeholder="Add a note"
+        onSave={(v) => updatePupilField({ notes: v }, "Notes updated")}
+      />
     </Card>
   );
 
