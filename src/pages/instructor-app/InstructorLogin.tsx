@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import dsmLogo from "@/assets/dsm-logo.png";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { toast } from "sonner";
@@ -39,23 +40,8 @@ const t = {
   border: "#DDE3ED",
 };
 
-function DSM365Logo({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
-  const scales = {
-    sm: { fontSize: 12, padH: 7, padV: 3, radius: 4 },
-    md: { fontSize: 14, padH: 9, padV: 4, radius: 4 },
-    lg: { fontSize: 20, padH: 12, padV: 6, radius: 5 },
-  } as const;
-  const s = scales[size];
-  return (
-    <div style={{ display: "flex", alignItems: "center" }}>
-      <div style={{ background: t.red, padding: `${s.padV}px ${s.padH}px`, borderRadius: `${s.radius}px 0 0 ${s.radius}px` }}>
-        <span style={{ fontSize: s.fontSize, fontWeight: 800, color: t.white, letterSpacing: 1, fontFamily: "Poppins, system-ui, sans-serif" }}>DSM</span>
-      </div>
-      <div style={{ background: t.blue, padding: `${s.padV}px ${s.padH}px`, borderRadius: `0 ${s.radius}px ${s.radius}px 0` }}>
-        <span style={{ fontSize: s.fontSize, fontWeight: 800, color: t.white, letterSpacing: 0.5, fontFamily: "Poppins, system-ui, sans-serif" }}>365</span>
-      </div>
-    </div>
-  );
+function DSMLogoImg({ height = 28 }: { height?: number }) {
+  return <img src={dsmLogo} alt="DSM — Driving School Manager" style={{ height, width: "auto" }} />;
 }
 
 function FaceIdIcon({ scanning }: { scanning: boolean }) {
@@ -239,7 +225,7 @@ export default function InstructorLogin() {
           <div style={{ position: "absolute", bottom: -80, right: -80, width: 260, height: 260, borderRadius: "50%", background: "rgba(204,34,41,0.07)", pointerEvents: "none" }} />
 
           <div style={{ position: "relative", zIndex: 1 }}>
-            <DSM365Logo size="lg" />
+            <DSMLogoImg height={36} />
             <p style={{ fontSize: 11, fontWeight: 300, color: "rgba(255,255,255,0.35)", marginTop: 7, letterSpacing: "0.04em" }}>
               Driving School Manager
             </p>
@@ -288,7 +274,7 @@ export default function InstructorLogin() {
             style={{ width: "100%", maxWidth: 420, background: t.white, borderRadius: 18, border: `1px solid ${t.border}`, padding: "36px 40px", boxShadow: "0 4px 24px rgba(15,32,68,0.06)" }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 26 }}>
-              <DSM365Logo size="sm" />
+              <DSMLogoImg height={22} />
               <span style={{ fontSize: 11, fontWeight: 500, color: t.muted, letterSpacing: "0.03em" }}>Instructor portal</span>
             </div>
 
