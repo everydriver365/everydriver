@@ -42,7 +42,10 @@ import {
   Route,
   AlertCircle,
   Share2,
-  Gauge
+  Gauge,
+  Bell,
+  CreditCard,
+  PlusCircle
 } from "lucide-react";
 import { PupilTrackingHistory } from "@/components/instructor/PupilTrackingHistory";
 import { PupilPaymentHistory } from "@/components/instructor/PupilPaymentHistory";
