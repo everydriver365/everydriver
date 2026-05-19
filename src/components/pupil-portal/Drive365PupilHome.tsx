@@ -200,20 +200,26 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug, onNavigat
   });
 
   const firstName = (pupil.name || "").split(" ")[0] || "there";
-  const lessonsTaken = pupil.lessons_completed || 0;
-  const totalHours = pupil.prepaid_hours ?? Math.max(lessonsTaken, 40);
-  const lessonProgressPct = Math.min(100, totalHours > 0 ? (lessonsTaken / totalHours) * 100 : 0);
+  const lessonsTaken = pupil.lessons_completed ?? 0;
+  const totalHours = pupil.prepaid_hours; // may be null — surface, don't invent
+  const lessonProgressPct =
+    totalHours && totalHours > 0 ? Math.min(100, (lessonsTaken / totalHours) * 100) : 0;
 
-  const balance = pupil.account_balance || 0;
+  const balance = pupil.account_balance ?? 0;
   const isOwed = balance < 0;
   const isCredit = balance > 0;
 
-  const transmission = (instructorCar?.car_type || "Manual") as string;
+  const transmission = instructorCar?.car_type as string | null | undefined;
 
-  // Test Readiness percent
-  const lessonsFactor = Math.min(100, (lessonsTaken / 40) * 100);
+  // Test Readiness — only compute when we have real signals
+  const hasReadinessSignal = lessonsTaken > 0 || mockScore !== null;
+  const lessonsFactor = totalHours && totalHours > 0
+    ? Math.min(100, (lessonsTaken / totalHours) * 100)
+    : 0;
   const mockFactor = mockScore ?? 0;
-  const readinessPct = Math.round(lessonsFactor * 0.6 + mockFactor * 0.4);
+  const readinessPct = hasReadinessSignal
+    ? Math.round(lessonsFactor * 0.6 + mockFactor * 0.4)
+    : null;
 
   // Driving test countdown
   const dt = pupilExtras?.test_date as string | null | undefined;
