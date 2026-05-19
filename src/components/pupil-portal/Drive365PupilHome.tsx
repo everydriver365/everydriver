@@ -520,25 +520,30 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug, onNavigat
                       />
                     </svg>
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <span className="text-[18px] font-bold" style={{ color: TEXT }}>
+                      <span style={{ color: TEXT, fontSize: 19, fontWeight: 800, lineHeight: 1 }}>
                         {readinessPct !== null ? `${readinessPct}%` : "—"}
                       </span>
-                      <span className="text-[9px] font-semibold tracking-wider" style={{ color: MUTED }}>READY</span>
+                      <span
+                        className="uppercase"
+                        style={{ color: MUTED, fontSize: 8, fontWeight: 700, letterSpacing: "0.12em", marginTop: 2 }}
+                      >
+                        Ready
+                      </span>
                     </div>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-[15px] font-bold" style={{ color: TEXT }}>Test Readiness</div>
-                    <div className="text-[12px]" style={{ color: MUTED }}>Based on lessons & mock results</div>
-                    <div className="flex gap-3 mt-2">
+                    <div style={{ color: TEXT, fontSize: 17, fontWeight: 700 }}>Test Readiness</div>
+                    <div style={{ color: MUTED, fontSize: 13 }}>Based on lessons & mock results</div>
+                    <div className="flex gap-4 mt-2">
                       <div>
                         <div className="text-[14px] font-bold" style={{ color: TEXT }}>{lessonsTaken}</div>
-                        <div className="text-[10px]" style={{ color: MUTED }}>Lessons</div>
+                        <div className="text-[10px] uppercase tracking-wider" style={{ color: MUTED, fontWeight: 600 }}>Lessons</div>
                       </div>
                       <div>
                         <div className="text-[14px] font-bold" style={{ color: TEXT }}>
-                          {mockScore !== null ? `${mockScore}%` : "—"}
+                          {mockScoreData ? `${mockScoreData.score}/${mockScoreData.total}` : "—"}
                         </div>
-                        <div className="text-[10px]" style={{ color: MUTED }}>Mock score</div>
+                        <div className="text-[10px] uppercase tracking-wider" style={{ color: MUTED, fontWeight: 600 }}>Mock score</div>
                       </div>
                     </div>
                   </div>
