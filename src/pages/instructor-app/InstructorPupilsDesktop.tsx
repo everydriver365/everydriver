@@ -627,6 +627,16 @@ export default function InstructorPupilsDesktop() {
                 <Download size={12} /> Export
               </button>
               <button
+                onClick={() => setImportOpen(true)}
+                style={{
+                  fontSize: 11, padding: "6px 10px", borderRadius: 8,
+                  border: "0.5px solid var(--d2-border)", background: "#fff",
+                  color: "var(--d2-text-2)", display: "inline-flex", alignItems: "center", gap: 6,
+                }}
+              >
+                <Upload size={12} /> Import CSV
+              </button>
+              <button
                 onClick={() => setAddOpen(true)}
                 style={{
                   fontSize: 11, padding: "6px 10px", borderRadius: 8,
