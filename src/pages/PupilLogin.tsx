@@ -28,6 +28,9 @@ import PupilRegister from "@/components/pupil/PupilRegister";
 import { setRememberMe as persistRememberMe } from "@/lib/sessionPersistence";
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 import { cn } from "@/lib/utils";
+import drive365Logo from "@/assets/drive365-logo.png";
+import pupilHero from "@/assets/drive365-hero-learner.webp";
+import { MobileLoginHero } from "@/components/auth/MobileLoginHero";
 
 type LoginView = "login" | "forgot" | "reset-code" | "new-password";
 
@@ -304,7 +307,15 @@ export default function PupilLogin() {
 
   return (
     <div className="min-h-screen w-full bg-white flex flex-col md:flex-row">
+      <MobileLoginHero
+        heroSrc={pupilHero}
+        logoSrc={drive365Logo}
+        logoAlt="Drive365 Pupil"
+        title={slugInstructorName ? `Sign in to ${slugInstructorName}` : "Welcome back"}
+        subtitle="Sign in to manage lessons, track progress and pay your instructor."
+      />
       {/* LEFT PANEL — tablet/desktop only */}
+
       <aside
         className="hidden md:flex flex-col justify-between relative overflow-hidden flex-1 p-11"
         style={{ backgroundColor: "#0F2044" }}
@@ -373,22 +384,25 @@ export default function PupilLogin() {
 
 
       {/* RIGHT PANEL */}
-      <main className="flex-1 flex justify-center items-start md:items-center bg-white px-5 py-10 md:p-12">
+      <main className="flex-1 flex justify-center items-start md:items-center bg-white px-5 pt-2 pb-10 md:p-12">
         <motion.div
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
           className="w-full max-w-[390px]"
         >
-          <DSMLogo size="sm" />
-          <div className="h-7" />
+          <div className="hidden md:block">
+            <DSMLogo size="sm" />
+            <div className="h-7" />
 
-          <h2 className="text-[22px] font-bold text-[#0F2044] tracking-[-0.4px] mb-[5px]">
-            Welcome back
-          </h2>
-          <p className="text-[13px] font-light text-[#9CA3AF] leading-5 mb-[26px]">
-            Sign in to your Drive365 account to continue.
-          </p>
+            <h2 className="text-[22px] font-bold text-[#0F2044] tracking-[-0.4px] mb-[5px]">
+              Welcome back
+            </h2>
+            <p className="text-[13px] font-light text-[#9CA3AF] leading-5 mb-[26px]">
+              Sign in to your Drive365 account to continue.
+            </p>
+          </div>
+
 
           {/* Segmented control: Sign In / Register */}
           <div className="relative h-12 rounded-[12px] bg-[#F2F4F8] p-1 mb-5 flex">

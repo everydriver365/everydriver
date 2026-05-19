@@ -19,6 +19,8 @@ import {
   portalInputFocus,
   portalInputBlur,
 } from "@/components/auth/PortalLoginLayout";
+import dsmLogo from "@/assets/dsm-logo.png";
+import adminHero from "@/assets/drive365-hero-driver.webp";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -175,8 +177,16 @@ export default function AdminLogin() {
           <Link to="/school/login" style={{ color: t.mid, textDecoration: "none" }}>School</Link>
         </div>
       }
+      mobileHero={{
+        heroSrc: adminHero,
+        logoSrc: dsmLogo,
+        logoAlt: "EveryDriver Admin",
+        title,
+        subtitle,
+      }}
     >
       <form onSubmit={handleSubmit} name="admin-login" method="post" action="#">
+
         <AnimatePresence>
           {error && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} style={{ overflow: "hidden", marginBottom: 14 }}>

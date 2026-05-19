@@ -22,6 +22,8 @@ import { setRememberMe as persistRememberMe } from "@/lib/sessionPersistence";
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 import { cn } from "@/lib/utils";
 import drive365Logo from "@/assets/drive365-logo.png";
+import pupilHero from "@/assets/drive365-hero-learner.webp";
+import { MobileLoginHero } from "@/components/auth/MobileLoginHero";
 
 const FIELD =
   "h-[50px] rounded-[9px] bg-[#F9FAFB] border-[1.5px] border-[#E8EDF6] text-[#0F2044] placeholder:text-[#C4C9D4] focus-visible:ring-2 focus-visible:ring-[#1A52A0]/15 focus-visible:border-[#1A52A0] focus-visible:ring-offset-0 text-[14px]";
@@ -125,8 +127,16 @@ export default function Drive365Login() {
 
   return (
     <div className="min-h-screen w-full bg-white flex flex-col md:flex-row">
+      <MobileLoginHero
+        heroSrc={pupilHero}
+        logoSrc={drive365Logo}
+        logoAlt="Drive365"
+        title="Welcome back"
+        subtitle="Sign in to your Drive365 account to book lessons, track progress and pay your instructor."
+      />
       {/* LEFT PANEL */}
       <aside className="hidden md:flex flex-col justify-between relative overflow-hidden flex-1 bg-[#0F2044] p-11">
+
         {/* Vertical red+blue stripe */}
         <div className="absolute top-0 left-0 bottom-0 w-[6px] flex flex-col">
           <div className="flex-1 bg-[#CC2229]" />
@@ -182,22 +192,23 @@ export default function Drive365Login() {
       </aside>
 
       {/* RIGHT PANEL */}
-      <main className="flex-1 flex justify-center items-start md:items-center bg-white px-5 py-10 md:p-12">
+      <main className="flex-1 flex justify-center items-start md:items-center bg-white px-5 pt-2 pb-10 md:p-12">
         <motion.div
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
           className="w-full max-w-[390px]"
         >
-          <img src={drive365Logo} alt="Drive365" className="h-8 object-contain" />
-          <div className="h-7" />
+          <img src={drive365Logo} alt="Drive365" className="hidden md:block h-8 object-contain" />
+          <div className="hidden md:block h-7" />
 
-          <h2 className="text-[22px] font-bold text-[#0F2044] tracking-[-0.4px] mb-[5px]">
+          <h2 className="hidden md:block text-[22px] font-bold text-[#0F2044] tracking-[-0.4px] mb-[5px]">
             Welcome back
           </h2>
-          <p className="text-[13px] font-light text-[#9CA3AF] leading-5 mb-[26px]">
+          <p className="hidden md:block text-[13px] font-light text-[#9CA3AF] leading-5 mb-[26px]">
             Sign in to your Drive365 account to continue.
           </p>
+
 
           <form onSubmit={handleLogin}>
             <div className="mb-[14px]">

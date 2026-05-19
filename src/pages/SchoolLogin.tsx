@@ -13,6 +13,8 @@ import {
   portalInputFocus,
   portalInputBlur,
 } from "@/components/auth/PortalLoginLayout";
+import dsmLogo from "@/assets/dsm-logo.png";
+import schoolHero from "@/assets/drive365-hero-test-centre.jpg";
 
 type View = "login" | "forgot";
 
@@ -86,6 +88,15 @@ export default function SchoolLogin() {
       cardSubtitle={isForgot
         ? "Enter your email and we'll send you a reset link."
         : "Sign in to manage your driving school."}
+      mobileHero={{
+        heroSrc: schoolHero,
+        logoSrc: dsmLogo,
+        logoAlt: "School Manager",
+        title: isForgot ? "Reset password" : "Welcome back",
+        subtitle: isForgot
+          ? "Enter your email and we'll send you a reset link."
+          : "Sign in to manage your driving school.",
+      }}
     >
       <form onSubmit={isForgot ? handleForgot : handleSubmit} name={isForgot ? "school-forgot" : "school-login"} method="post" action="#">
         {/* Email */}

@@ -22,6 +22,9 @@ import { isEmailNotConfirmedError, resendSignupConfirmation } from "@/lib/emailC
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 import { SignInEnvironmentHint } from "@/components/auth/SignInEnvironmentHint";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { MobileLoginHero } from "@/components/auth/MobileLoginHero";
+import dsmLogo from "@/assets/dsm-logo.png";
+import instructorHero from "@/assets/every-instructor-hero.webp";
 
 const loginSchema = z.object({
   email: z.string().trim().email("Please enter a valid email address").max(255),
@@ -218,8 +221,23 @@ export default function InstructorPortalLogin() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col lg:flex-row">
+      <div className="lg:hidden">
+        <MobileLoginHero
+          heroSrc={instructorHero}
+          logoSrc={dsmLogo}
+          logoAlt="Driving School Manager"
+          title={isForgotPassword ? "Reset password" : "Welcome back"}
+          subtitle={
+            isForgotPassword
+              ? "Enter your email to receive a reset link."
+              : "Sign in to manage your pupils, lessons and payments."
+          }
+        />
+      </div>
+
       {/* Install to Home Screen Banner */}
+
       <AnimatePresence>
         {showInstallPrompt && !isInstalled && (
           <motion.div
@@ -338,17 +356,18 @@ export default function InstructorPortalLogin() {
       {/* Right Panel - Login Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-8">
         <div className="w-full max-w-md">
-          {/* Mobile Logo */}
+          {/* Mobile Logo (replaced on mobile by hero header above) */}
           <motion.div 
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="lg:hidden flex items-center justify-center gap-3 mb-8"
+            className="hidden items-center justify-center gap-3 mb-8"
           >
             <div className="w-10 h-10 bg-emerald-500 rounded-lg flex items-center justify-center">
               <Car className="w-6 h-6 text-white" />
             </div>
             <span className="text-xl font-bold text-white">EveryDriver</span>
           </motion.div>
+
           
           <motion.div
             initial={{ opacity: 0, y: 20 }}

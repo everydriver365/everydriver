@@ -18,6 +18,8 @@ import {
 import { setRememberMe, getRememberMe } from "@/lib/sessionPersistence";
 import { isEmailNotConfirmedError, resendSignupConfirmation } from "@/lib/emailConfirmation";
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
+import { MobileLoginHero } from "@/components/auth/MobileLoginHero";
+import instructorHero from "@/assets/every-instructor-hero.webp";
 
 const loginSchema = z.object({
   email: z.string().trim().email("Please enter a valid email address").max(255),
@@ -207,7 +209,21 @@ export default function InstructorLogin() {
   return (
     <div style={{ minHeight: "100vh", fontFamily: "Poppins, system-ui, sans-serif", background: t.surface }}>
       <style>{`@keyframes dsm365-faceid-scan { 0%,100% { opacity: 0.15 } 50% { opacity: 1 } }`}</style>
+      <MobileLoginHero
+        heroSrc={instructorHero}
+        logoSrc={dsmLogo}
+        logoAlt="Driving School Manager"
+        title={isForgotPassword ? (resetSent ? "Check your email" : "Reset password") : "Welcome back"}
+        subtitle={
+          isForgotPassword
+            ? resetSent
+              ? `We've sent a reset link to ${resetSentTo}`
+              : "Enter your email and we'll send you a reset link."
+            : "Sign in to your Driving School Manager account."
+        }
+      />
       <div className="md:grid md:grid-cols-2" style={{ minHeight: "100vh" }}>
+
 
         {/* LeftPanel — hidden on mobile */}
         <div
@@ -266,28 +282,29 @@ export default function InstructorLogin() {
         </div>
 
         {/* RightPanel */}
-        <div style={{ backgroundColor: t.surface, display: "flex", alignItems: "center", justifyContent: "center", padding: 48 }}>
+        <div className="px-5 pt-2 pb-8 md:p-12" style={{ backgroundColor: t.surface, display: "flex", alignItems: "flex-start", justifyContent: "center" }}>
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.35 }}
-            style={{ width: "100%", maxWidth: 420, background: t.white, borderRadius: 18, border: `1px solid ${t.border}`, padding: "36px 40px", boxShadow: "0 4px 24px rgba(15,32,68,0.06)" }}
+            className="w-full max-w-[420px] md:bg-white md:border md:border-[#DDE3ED] md:shadow-[0_4px_24px_rgba(15,32,68,0.06)] md:rounded-[18px] md:p-9"
           >
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 26 }}>
+            <div className="hidden md:flex" style={{ alignItems: "center", gap: 10, marginBottom: 26 }}>
               <DSMLogoImg height={22} />
               <span style={{ fontSize: 11, fontWeight: 500, color: t.muted, letterSpacing: "0.03em" }}>Instructor portal</span>
             </div>
 
-            <h2 style={{ fontSize: 22, fontWeight: 700, color: t.navy, letterSpacing: -0.4, marginBottom: 5 }}>
+            <h2 className="hidden md:block" style={{ fontSize: 22, fontWeight: 700, color: t.navy, letterSpacing: -0.4, marginBottom: 5 }}>
               {isForgotPassword ? (resetSent ? "Check your email" : "Reset password") : "Welcome back"}
             </h2>
-            <p style={{ fontSize: 13, fontWeight: 300, color: t.muted, marginBottom: 22, lineHeight: 1.6 }}>
+            <p className="hidden md:block" style={{ fontSize: 13, fontWeight: 300, color: t.muted, marginBottom: 22, lineHeight: 1.6 }}>
               {isForgotPassword
                 ? resetSent
                   ? `We've sent a reset link to ${resetSentTo}`
                   : "Enter your email and we'll send you a reset link."
                 : "Sign in to your Driving School Manager account."}
             </p>
+
 
             {showVerifyBanner && !error && !isForgotPassword && (
               <div style={{ padding: "10px 12px", borderRadius: 9, background: "#FEF3C7", border: "1px solid #FCD34D", color: "#92400E", fontSize: 12, marginBottom: 14, display: "flex", gap: 8 }}>
