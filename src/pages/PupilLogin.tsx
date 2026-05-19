@@ -964,6 +964,7 @@ export default function PupilLogin() {
           </p>
         </motion.div>
       </main>
-    </div>
+      </div>
+    </>
   );
 }
