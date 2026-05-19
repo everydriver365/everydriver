@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Mail, MessageSquare, AlertCircle, Check, Loader2 } from "lucide-react";
+import { Mail, MessageSquare, AlertCircle, Check, Loader2, MessageCircle, Send } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
@@ -17,7 +17,14 @@ type PupilContact = {
   account_balance: number | null;
 };
 
-type Channel = "sms" | "email";
+type Channel = "sms" | "email" | "whatsapp" | "in_app";
+
+const CHANNEL_META: Record<Channel, { label: string; Icon: any; field: "phone" | "email" | null }> = {
+  email:    { label: "Email",    Icon: Mail,          field: "email" },
+  sms:      { label: "Text",     Icon: MessageSquare, field: "phone" },
+  whatsapp: { label: "WhatsApp", Icon: MessageCircle, field: "phone" },
+  in_app:   { label: "In-app",   Icon: Send,          field: null   },
+};
 
 const gbp = (n: number) =>
   new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP" }).format(n);
@@ -32,7 +39,7 @@ export function SendAllRemindersDialog({
   instructorId?: string;
   instructorName?: string;
 }) {
-  const [channel] = useState<Channel>("sms");
+  const [channel, setChannel] = useState<Channel>("sms");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [sending, setSending] = useState(false);
   const [progress, setProgress] = useState<{ done: number; total: number; failures: string[] } | null>(null);
@@ -54,14 +61,14 @@ export function SendAllRemindersDialog({
     });
   }, [outstanding, allPupils]);
 
-  const eligible = useMemo(
-    () => candidates.filter(c => (channel === "sms" ? !!c.phone : !!c.email)),
-    [candidates, channel],
-  );
-  const ineligible = useMemo(
-    () => candidates.filter(c => !(channel === "sms" ? !!c.phone : !!c.email)),
-    [candidates, channel],
-  );
+  const hasContact = (c: typeof candidates[number]) => {
+    const field = CHANNEL_META[channel].field;
+    if (!field) return true; // in_app needs no external contact
+    return !!c[field];
+  };
+
+  const eligible   = useMemo(() => candidates.filter(hasContact),  [candidates, channel]);
+  const ineligible = useMemo(() => candidates.filter(c => !hasContact(c)), [candidates, channel]);
 
   // Reset selection when dialog opens or channel changes
   useEffect(() => {
@@ -84,6 +91,39 @@ export function SendAllRemindersDialog({
       return next;
     });
 
+  const sendInApp = async (pupilId: string, content: string) => {
+    if (!instructorId) throw new Error("Missing instructor");
+    // Upsert conversation
+    const { data: existing } = await supabase
+      .from("conversations")
+      .select("id")
+      .eq("instructor_id", instructorId)
+      .eq("pupil_id", pupilId)
+      .maybeSingle();
+    let convId = existing?.id;
+    if (!convId) {
+      const { data: created, error } = await supabase
+        .from("conversations")
+        .insert({ instructor_id: instructorId, pupil_id: pupilId, last_message_preview: content, last_message_at: new Date().toISOString() })
+        .select("id")
+        .single();
+      if (error) throw error;
+      convId = created.id;
+    } else {
+      await supabase
+        .from("conversations")
+        .update({ last_message_preview: content, last_message_at: new Date().toISOString() })
+        .eq("id", convId);
+    }
+    const { error: msgErr } = await supabase.from("messages").insert({
+      conversation_id: convId,
+      sender_type: "instructor",
+      sender_id: instructorId,
+      content,
+    });
+    if (msgErr) throw msgErr;
+  };
+
   const send = async () => {
     if (!instructorId) { toast.error("Not signed in"); return; }
     const list = eligible.filter(c => selected.has(c.id));
@@ -99,15 +139,17 @@ export function SendAllRemindersDialog({
         const amount = p.amount.toFixed(2);
         const firstName = p.name.split(" ")[0];
         const fromName = instructorName || "your instructor";
+        const shortMsg = `Hi ${firstName}, friendly reminder from ${fromName} — you have an outstanding balance of £${amount}. Thank you!`;
 
         if (channel === "sms") {
           await supabase.functions.invoke("send-sms", {
-            body: {
-              to: p.phone,
-              message: `Hi ${firstName}, friendly reminder from ${fromName} — you have an outstanding balance of £${amount}. Thank you!`,
-            },
+            body: { to: p.phone, message: shortMsg },
           });
-        } else {
+        } else if (channel === "whatsapp") {
+          await supabase.functions.invoke("send-whatsapp", {
+            body: { to: p.phone, message: shortMsg },
+          });
+        } else if (channel === "email") {
           await supabase.functions.invoke("send-email", {
             body: {
               to: p.email,
@@ -115,6 +157,8 @@ export function SendAllRemindersDialog({
               html: `<p>Hi ${firstName},</p><p>Friendly reminder: you have an outstanding balance of <strong>£${amount}</strong> with ${fromName}.</p><p>Thank you!</p>`,
             },
           });
+        } else if (channel === "in_app") {
+          await sendInApp(p.id, shortMsg);
         }
 
         await supabase.from("followup_log").insert({
@@ -146,17 +190,40 @@ export function SendAllRemindersDialog({
     .filter(c => selected.has(c.id))
     .reduce((s, c) => s + c.amount, 0);
 
+  const channelField = CHANNEL_META[channel].field;
+  const channelLabel = CHANNEL_META[channel].label;
+
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!sending) onOpenChange(v); }}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>Send payment reminders</DialogTitle>
           <DialogDescription>
-            Review pupils with outstanding balances. Reminders log to your followup history.
+            Choose how to reach pupils with outstanding balances. Reminders log to your followup history.
           </DialogDescription>
         </DialogHeader>
 
-        {/* SMS-only reminders */}
+        {/* Channel picker */}
+        <div className="grid grid-cols-4 gap-1.5 rounded-md bg-muted/40 p-1">
+          {(Object.keys(CHANNEL_META) as Channel[]).map((c) => {
+            const m = CHANNEL_META[c];
+            const active = channel === c;
+            return (
+              <button
+                key={c}
+                type="button"
+                disabled={sending}
+                onClick={() => setChannel(c)}
+                className={`flex items-center justify-center gap-1.5 rounded-sm px-2 py-1.5 text-xs font-medium transition ${
+                  active ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <m.Icon className="h-3.5 w-3.5" />
+                {m.label}
+              </button>
+            );
+          })}
+        </div>
 
         {/* Select-all */}
         {eligible.length > 0 && (
@@ -174,13 +241,14 @@ export function SendAllRemindersDialog({
             <div className="text-center py-6 text-sm text-muted-foreground">
               {candidates.length === 0
                 ? "No outstanding balances."
-                : `No pupils have a ${channel === "sms" ? "phone number" : "email address"} on file.`}
+                : `No pupils have a ${channelField === "phone" ? "phone number" : "email address"} on file.`}
             </div>
           )}
           {eligible.map((p) => {
             const checked = selected.has(p.id);
             const overdue = p.daysOverdue !== undefined && p.daysOverdue > 0;
             const sent = progress && progress.done > 0 && !progress.failures.includes(p.name);
+            const contactLine = channelField === "phone" ? p.phone : channelField === "email" ? p.email : "In-app conversation";
             return (
               <label
                 key={p.id}
@@ -194,7 +262,7 @@ export function SendAllRemindersDialog({
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-medium truncate">{p.name}</div>
                   <div className="text-[11px] text-muted-foreground truncate">
-                    {channel === "sms" ? p.phone : p.email}
+                    {contactLine}
                     {overdue && <span className="text-rose-600 ml-1">· {p.daysOverdue}d overdue</span>}
                   </div>
                 </div>
@@ -213,11 +281,11 @@ export function SendAllRemindersDialog({
         </div>
 
         {/* Ineligible footnote */}
-        {ineligible.length > 0 && (
+        {ineligible.length > 0 && channelField && (
           <div className="flex items-start gap-2 text-[11px] text-muted-foreground bg-muted/50 rounded-md p-2">
             <AlertCircle className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" />
             <span>
-              {ineligible.length} pupil{ineligible.length === 1 ? "" : "s"} skipped — no {channel === "sms" ? "phone number" : "email"} on file:
+              {ineligible.length} pupil{ineligible.length === 1 ? "" : "s"} skipped — no {channelField === "phone" ? "phone number" : "email"} on file:
               {" "}{ineligible.slice(0, 3).map(p => p.name).join(", ")}
               {ineligible.length > 3 && ` +${ineligible.length - 3} more`}
             </span>
@@ -238,7 +306,7 @@ export function SendAllRemindersDialog({
           <Button onClick={send} disabled={sending || selected.size === 0}>
             {sending
               ? `Sending… (${progress?.done ?? 0}/${progress?.total ?? 0})`
-              : `Send ${selected.size} ${channel === "sms" ? "SMS" : "email"}${selected.size === 1 ? "" : "s"}`}
+              : `Send ${selected.size} ${channelLabel}${selected.size === 1 ? "" : "s"}`}
           </Button>
         </DialogFooter>
       </DialogContent>
