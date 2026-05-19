@@ -391,7 +391,7 @@ export default function InstructorPupilsDesktop() {
     const hoursNum = hours ? parseInt(hours, 10) : null;
     const rateNum = addForm.custom_hourly_rate ? parseFloat(addForm.custom_hourly_rate) : null;
     setAddSaving(true);
-    const { error } = await supabase.from("pupils").insert({
+    const { data: insertedRows, error } = await supabase.from("pupils").insert({
       instructor_id: instructorId,
       name: composedName || "Unnamed pupil",
       phone: addForm.phone.trim() || null,
