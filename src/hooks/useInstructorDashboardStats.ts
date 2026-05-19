@@ -115,10 +115,13 @@ async function fetchStats(instructorId: string): Promise<InstructorDashboardStat
       ? { result: instructor.standards_check_result, at: instructor.standards_check_at }
       : null;
 
+  const testRows = (testsBookedRes.data ?? []) as { test_date: string }[];
+  const nextTestDate = testRows.length > 0 ? testRows[0].test_date : null;
+
   return {
     lessonsThisMonth: lessonsBookedRes.count ?? 0,
     cancelledThisMonth: cancelledRes.count ?? 0,
-    testsBooked: testsBookedRes.count ?? 0,
+    testsBooked: testRows.length,
     passRatePct,
     passRateSampleSize: sampleSize,
     waitingListCount: waitlistRes.count ?? 0,
@@ -128,6 +131,7 @@ async function fetchStats(instructorId: string): Promise<InstructorDashboardStat
     cpdTarget: instructor?.cpd_year_target != null ? Number(instructor.cpd_year_target) : null,
     invoicesUnpaid: invoicesRes.count ?? 0,
     standardsCheck,
+    nextTestDate,
   };
 }
 
