@@ -221,8 +221,22 @@ export default function InstructorPortalLogin() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex">
+    <div className="min-h-screen bg-white lg:bg-gradient-to-br lg:from-slate-900 lg:via-slate-800 lg:to-slate-900 flex flex-col lg:flex-row">
+      <div className="lg:hidden">
+        <MobileLoginHero
+          heroSrc={instructorHero}
+          logoSrc={dsmLogo}
+          logoAlt="Driving School Manager"
+          title={isForgotPassword ? "Reset password" : "Welcome back"}
+          subtitle={
+            isForgotPassword
+              ? "Enter your email to receive a reset link."
+              : "Sign in to manage your pupils, lessons and payments."
+          }
+        />
+      </div>
       {/* Install to Home Screen Banner */}
+
       <AnimatePresence>
         {showInstallPrompt && !isInstalled && (
           <motion.div
