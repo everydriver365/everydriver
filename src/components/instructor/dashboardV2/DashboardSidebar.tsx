@@ -376,7 +376,10 @@ export function DashboardSidebar({ collapsed, onToggle, userInitials, userName, 
     .map((to) => allItems.find((i) => i.to === to))
     .filter((i): i is NavItem => Boolean(i));
 
+  const brandTint = brandColour ? `${brandColour}1A` : null;
+
   // ---- Navy theme (DSM hybrid dashboard) ----
+
   // Inline overrides so we don't have to fork the whole file. CSS vars get
   // remapped on the <aside> so descendants pick them up automatically.
   const navyBg          = "#0F2044";
