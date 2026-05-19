@@ -68,6 +68,8 @@ export default function AdminLogin() {
   const { signIn, isAdmin, user } = useAdminAuth();
   const navigate = useNavigate();
 
+  useClearOnDeepLink(() => { setError(""); setSuccess(""); });
+
   useState(() => {
     const hashParams = new URLSearchParams(window.location.hash.substring(1));
     if (hashParams.get("type") === "recovery") setViewMode("reset");
