@@ -21,6 +21,7 @@ import { PupilNoteSheet } from "@/components/instructor/PupilNoteSheet";
 import { AddLessonSheet } from "@/components/instructor/AddLessonSheet";
 import { LessonHistory } from "@/components/instructor/LessonHistory";
 import { PupilPaymentHistory } from "@/components/instructor/PupilPaymentHistory";
+import { PupilPaymentsManager } from "@/components/instructor/PupilPaymentsManager";
 import { PupilRateEditor } from "@/components/instructor/PupilRateEditor";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
