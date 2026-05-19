@@ -298,12 +298,14 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug, onNavigat
               <button onClick={onEditProfile} className="p-2" aria-label="Edit profile">
                 <Pencil size={16} color={MUTED} />
               </button>
-              <span
-                className="text-[11px] font-semibold ml-1 px-2.5 py-1 rounded-full"
-                style={{ background: "#EEF0F3", color: NAVY }}
-              >
-                {transmission}
-              </span>
+              {transmission && (
+                <span
+                  className="text-[11px] font-semibold ml-1 px-2.5 py-1 rounded-full"
+                  style={{ background: "#EEF0F3", color: NAVY }}
+                >
+                  {transmission}
+                </span>
+              )}
             </div>
           </Card>
         </div>
