@@ -283,9 +283,13 @@ function EarningsCard({ balance, outstanding, outstandingPct, monthTarget, hours
       </div>
       <div style={{ padding: "10px 14px", borderBottom: `1px solid ${t.divider}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div style={{ fontSize: 11, color: t.muted }}>Month target</div>
-        <div style={{ fontSize: 13, fontWeight: 700, color: t.navy }}>
-          {monthTarget != null ? `£${monthTarget.toLocaleString()}` : "—"}
-        </div>
+        {monthTarget != null ? (
+          <div style={{ fontSize: 13, fontWeight: 700, color: t.navy }}>£{monthTarget.toLocaleString()}</div>
+        ) : (
+          <Link to="/instructor/settings" style={{ fontSize: 11, fontWeight: 600, color: t.blue, textDecoration: "none" }}>
+            Set target →
+          </Link>
+        )}
       </div>
       <div style={{ padding: "10px 14px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div style={{ fontSize: 11, color: t.muted }}>Hours taught</div>
