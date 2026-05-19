@@ -349,68 +349,13 @@ function DesktopDashboardV2(props: DesktopDashboardV2Props) {
           />
         }
       >
-        <div className="flex flex-col" style={{ gap: 24 }}>
-          <StatusStrip />
+        <HybridDashboard
+          instructorId={instructorId}
+          instructorName={instructorData?.name}
+          pupils={pupils}
+          todaysLessonCount={isDemoMode ? demoStats.todayLessonCount : todaysLessonCount}
+        />
 
-          <GreetingBlock
-            greeting={getGreeting()}
-            name={firstName}
-            subtitle={subtitle}
-            isActive={!!authInstructor?.is_active}
-            onToggle={onVisibilityToggle}
-            disabled={updatingVisibility}
-          />
-
-          {/* Stat cards */}
-          <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(4, minmax(0, 1fr))" }}>
-            <StatCardV2
-              label="Today"
-              value={isDemoMode ? demoStats.todayLessonCount : todaysLessonCount}
-              data={todaySeries}
-              onClick={() => navigate("/instructor/schedule")}
-            />
-            <StatCardV2
-              label="This Month"
-              value={statsLoading ? "—" : `£${(isDemoMode ? demoStats.monthEarnings : monthEarnings).toLocaleString()}`}
-              data={dailySeries}
-              color="#10B981"
-              onClick={() => navigate("/instructor/pay")}
-            />
-            <StatCardV2
-              label="Active Pupils"
-              value={isDemoMode ? demoStats.activePupils : pupils.length}
-              onClick={() => navigate("/instructor/pupils")}
-            />
-            <StatCardV2
-              label="This Week"
-              value={statsLoading ? "—" : `${isDemoMode ? demoStats.hoursThisWeek : hoursThisWeek}h`}
-              onClick={() => navigate("/instructor/schedule")}
-            />
-          </div>
-
-          <PerformanceMetricsRow
-            instructorId={instructorId}
-            activePupilCount={isDemoMode ? demoStats.activePupils : pupils.length}
-          />
-
-          {/* Schedule + Money */}
-          <div className="grid gap-3" style={{ gridTemplateColumns: "1.6fr 1fr" }}>
-            <TodaySchedulePanel
-              instructorId={instructorId}
-              todayCount={todaysLessonCount}
-              onAddLesson={() => setAddLessonOpen(true)}
-            />
-            <MoneyStack
-              monthEarnings={isDemoMode ? demoStats.monthEarnings : monthEarnings}
-              paymentsCount={0}
-              outstanding={outstandingTotal}
-              outstandingCount={owing.length}
-            />
-          </div>
-
-          <DvsaIndicatorsPanel instructorId={instructorId} />
-          <RetentionAlertsPanel instructorId={instructorId} />
-        </div>
 
         <WhatsNewModal portalType="instructor" userId={instructorId} />
 
