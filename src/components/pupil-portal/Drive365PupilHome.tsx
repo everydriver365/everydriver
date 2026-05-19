@@ -208,7 +208,7 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug, onNavigat
   const isOwed = balance < 0;
   const isCredit = balance > 0;
 
-  const transmission = (pupilExtras?.transmission || "Manual") as string;
+  const transmission = (instructorCar?.car_type || "Manual") as string;
 
   // Test Readiness percent
   const lessonsFactor = Math.min(100, (lessonsTaken / 40) * 100);
