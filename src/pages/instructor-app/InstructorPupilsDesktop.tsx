@@ -24,6 +24,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Pencil, Trash2, Upload, Archive } from "lucide-react";
 import { buildPupilUpdatePayload } from "./pupilEditPayload";
+import { PUPIL_SOURCE_OPTIONS } from "@/components/instructor/pupils/AddPupilSheet";
 import { AddPupilSheet } from "@/components/instructor/pupils/AddPupilSheet";
 import { ImportPupilsCsvDialog } from "@/components/instructor/pupils/ImportPupilsCsvDialog";
 import { ArchivedPupilsDialog } from "@/components/instructor/pupils/ArchivedPupilsDialog";
@@ -337,6 +338,9 @@ export default function InstructorPupilsDesktop() {
     address: "", what3words: "", date_of_birth: "", sex: "",
     previous_experience_hours: "", transmission_type: "",
     special_needs: "", notes: "", payment_method: "tbc",
+    parent_name: "", parent_phone: "",
+    custom_hourly_rate: "", custom_rate_90min: "", custom_rate_120min: "",
+    source: "", intensive_hours_paid: "", intensive_course_payout: "", intensive_pupil_payment: "",
   };
   const [editForm, setEditForm] = useState(emptyEditForm);
   const [editErrors, setEditErrors] = useState<{ name?: string; email?: string; postcode?: string; phone?: string }>({});
@@ -361,7 +365,7 @@ export default function InstructorPupilsDesktop() {
     setEditForm(emptyEditForm);
     const { data } = await supabase
       .from("pupils")
-      .select("name, phone, email, postcode, address, what3words, date_of_birth, sex, previous_experience, transmission_type, special_needs, notes, payment_method")
+      .select("name, phone, email, postcode, address, what3words, date_of_birth, sex, previous_experience, transmission_type, special_needs, notes, payment_method, parent_name, parent_phone, custom_hourly_rate, custom_rate_90min, custom_rate_120min, source, intensive_hours_paid, intensive_course_payout, intensive_pupil_payment")
       .eq("id", id)
       .maybeSingle();
     if (data) {
@@ -380,6 +384,15 @@ export default function InstructorPupilsDesktop() {
         special_needs: d.special_needs || "",
         notes: d.notes || "",
         payment_method: d.payment_method || "tbc",
+        parent_name: d.parent_name || "",
+        parent_phone: d.parent_phone || "",
+        custom_hourly_rate: d.custom_hourly_rate != null ? String(d.custom_hourly_rate) : "",
+        custom_rate_90min: d.custom_rate_90min != null ? String(d.custom_rate_90min) : "",
+        custom_rate_120min: d.custom_rate_120min != null ? String(d.custom_rate_120min) : "",
+        source: d.source || "",
+        intensive_hours_paid: d.intensive_hours_paid != null ? String(d.intensive_hours_paid) : "",
+        intensive_course_payout: d.intensive_course_payout != null ? String(d.intensive_course_payout) : "",
+        intensive_pupil_payment: d.intensive_pupil_payment != null ? String(d.intensive_pupil_payment) : "",
       });
     }
   };
@@ -395,7 +408,24 @@ export default function InstructorPupilsDesktop() {
     setEditErrors(errs);
     if (Object.keys(errs).length) return;
     setEditSaving(true);
-    const payload = buildPupilUpdatePayload(editForm);
+    const basePayload = buildPupilUpdatePayload(editForm);
+    const toNumOrNull = (v: string) => {
+      const t = (v || "").trim(); if (!t) return null;
+      const n = parseFloat(t); return isNaN(n) ? null : n;
+    };
+    const isNI = editForm.source === "national_intensive";
+    const payload: any = {
+      ...basePayload,
+      parent_name: editForm.parent_name.trim() || null,
+      parent_phone: editForm.parent_phone.trim() || null,
+      custom_hourly_rate: toNumOrNull(editForm.custom_hourly_rate),
+      custom_rate_90min: toNumOrNull(editForm.custom_rate_90min),
+      custom_rate_120min: toNumOrNull(editForm.custom_rate_120min),
+      source: editForm.source || null,
+      intensive_hours_paid: isNI ? toNumOrNull(editForm.intensive_hours_paid) : null,
+      intensive_course_payout: isNI ? toNumOrNull(editForm.intensive_course_payout) : null,
+      intensive_pupil_payment: isNI ? toNumOrNull(editForm.intensive_pupil_payment) : null,
+    };
     const { error } = await supabase.from("pupils").update(payload).eq("id", editTargetId);
     setEditSaving(false);
     if (error) { toast.error(`Could not save: ${error.message}`); return; }
@@ -1151,6 +1181,96 @@ export default function InstructorPupilsDesktop() {
                 </Select>
               </div>
             </section>
+
+            {/* Lesson rates */}
+            <section className="space-y-3">
+              <h4 className="text-[11px] font-semibold tracking-wider uppercase text-muted-foreground">Lesson rates (override)</h4>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="space-y-1">
+                  <Label htmlFor="edit-rate-60">1 hour (£)</Label>
+                  <Input id="edit-rate-60" type="number" min={0} step="0.01"
+                    value={editForm.custom_hourly_rate}
+                    onChange={e => setEditForm(f => ({ ...f, custom_hourly_rate: e.target.value }))}
+                    placeholder="e.g. 38" />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="edit-rate-90">1.5 hour (£)</Label>
+                  <Input id="edit-rate-90" type="number" min={0} step="0.01"
+                    value={editForm.custom_rate_90min}
+                    onChange={e => setEditForm(f => ({ ...f, custom_rate_90min: e.target.value }))}
+                    placeholder="e.g. 57" />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="edit-rate-120">2 hour (£)</Label>
+                  <Input id="edit-rate-120" type="number" min={0} step="0.01"
+                    value={editForm.custom_rate_120min}
+                    onChange={e => setEditForm(f => ({ ...f, custom_rate_120min: e.target.value }))}
+                    placeholder="e.g. 76" />
+                </div>
+              </div>
+              <p className="text-[11px] text-muted-foreground">Leave blank to use your default hourly rate.</p>
+            </section>
+
+            {/* Parent / guardian */}
+            <section className="space-y-3">
+              <h4 className="text-[11px] font-semibold tracking-wider uppercase text-muted-foreground">Parent / guardian</h4>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label htmlFor="edit-parent-name">Parent name</Label>
+                  <Input id="edit-parent-name" value={editForm.parent_name}
+                    onChange={e => setEditForm(f => ({ ...f, parent_name: e.target.value }))} />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="edit-parent-phone">Parent phone</Label>
+                  <Input id="edit-parent-phone" value={editForm.parent_phone}
+                    onChange={e => setEditForm(f => ({ ...f, parent_phone: e.target.value }))}
+                    placeholder="07XXX XXXXXX" />
+                </div>
+              </div>
+            </section>
+
+            {/* Lead source */}
+            <section className="space-y-3">
+              <h4 className="text-[11px] font-semibold tracking-wider uppercase text-muted-foreground">Lead source</h4>
+              <div className="space-y-1">
+                <Label htmlFor="edit-source">Source</Label>
+                <Select value={editForm.source || "__none"} onValueChange={v => setEditForm(f => ({ ...f, source: v === "__none" ? "" : v }))}>
+                  <SelectTrigger id="edit-source"><SelectValue placeholder="Select" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none">— None —</SelectItem>
+                    {PUPIL_SOURCE_OPTIONS.map(o => (
+                      <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              {editForm.source === "national_intensive" && (
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="space-y-1">
+                    <Label htmlFor="edit-ni-hours">Hours paid</Label>
+                    <Input id="edit-ni-hours" type="number" min={0} step="0.5"
+                      value={editForm.intensive_hours_paid}
+                      onChange={e => setEditForm(f => ({ ...f, intensive_hours_paid: e.target.value }))}
+                      placeholder="e.g. 40" />
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="edit-ni-payout">NI pays you (£)</Label>
+                    <Input id="edit-ni-payout" type="number" min={0} step="0.01"
+                      value={editForm.intensive_course_payout}
+                      onChange={e => setEditForm(f => ({ ...f, intensive_course_payout: e.target.value }))}
+                      placeholder="£ amount" />
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="edit-ni-pupil">Pupil pays you (£)</Label>
+                    <Input id="edit-ni-pupil" type="number" min={0} step="0.01"
+                      value={editForm.intensive_pupil_payment}
+                      onChange={e => setEditForm(f => ({ ...f, intensive_pupil_payment: e.target.value }))}
+                      placeholder="£ amount" />
+                  </div>
+                </div>
+              )}
+            </section>
+
 
             {/* Comments */}
             <section className="space-y-3">
