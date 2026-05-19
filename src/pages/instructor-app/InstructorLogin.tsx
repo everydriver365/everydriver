@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import dsmLogo from "@/assets/dsm-logo.png";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { toast } from "sonner";
