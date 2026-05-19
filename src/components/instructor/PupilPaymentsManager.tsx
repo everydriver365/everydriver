@@ -11,6 +11,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { RecordPaymentModal } from "./RecordPaymentModal";
+import { usePaymentInvalidation } from "@/hooks/usePaymentInvalidation";
 
 interface PaymentRow {
   id: string;
@@ -32,16 +33,20 @@ interface Props {
   onChanged?: () => void;
 }
 
+// Canonical labels — must match the `validate_payment_method` trigger on payment_history
 const METHODS = [
-  { value: "cash", label: "Cash" },
-  { value: "card", label: "Card" },
-  { value: "bank_transfer", label: "Transfer" },
-  { value: "apple_pay", label: "Apple Pay" },
-  { value: "google_pay", label: "Google Pay" },
+  { value: "Cash", label: "Cash" },
+  { value: "Square", label: "Card" },
+  { value: "Bank Transfer", label: "Bank Transfer" },
+  { value: "Klarna", label: "Klarna" },
+  { value: "Clearpay", label: "Clearpay" },
+  { value: "SumUp", label: "SumUp" },
+  { value: "GoCardless Bank Pay", label: "Bank Pay" },
+  { value: "GoCardless Direct Debit", label: "Direct Debit" },
 ];
 
 const formatMethod = (m: string) =>
-  METHODS.find((x) => x.value === m?.toLowerCase())?.label || m || "Payment";
+  METHODS.find((x) => x.value === m)?.label || m || "Payment";
 
 export function PupilPaymentsManager({
   pupilId, pupilName, pupilPhone, pupilEmail,
@@ -51,7 +56,7 @@ export function PupilPaymentsManager({
   const [loading, setLoading] = useState(true);
   const [editId, setEditId] = useState<string | null>(null);
   const [editAmount, setEditAmount] = useState("");
-  const [editMethod, setEditMethod] = useState("cash");
+  const [editMethod, setEditMethod] = useState("Cash");
   const [editNotes, setEditNotes] = useState("");
   const [editDate, setEditDate] = useState("");
   const [saving, setSaving] = useState(false);
@@ -61,8 +66,14 @@ export function PupilPaymentsManager({
   const [chargeAmount, setChargeAmount] = useState("");
   const [chargeNote, setChargeNote] = useState("");
   const [chargeSaving, setChargeSaving] = useState(false);
+  const { invalidatePaymentQueries } = usePaymentInvalidation();
 
   const hasContact = !!(pupilEmail || pupilPhone);
+
+  const notifyChanged = () => {
+    invalidatePaymentQueries({ pupilId, instructorId });
+    onChanged?.();
+  };
 
   const addCharge = async () => {
     const amt = parseFloat(chargeAmount);
@@ -78,7 +89,7 @@ export function PupilPaymentsManager({
         pupil_id: pupilId,
         instructor_id: instructorId,
         amount: -amt,
-        payment_method: "charge",
+        payment_method: "Lesson Charge",
         notes: chargeNote.trim() || "Amount owed",
         recorded_at: new Date().toISOString(),
       });
@@ -87,7 +98,7 @@ export function PupilPaymentsManager({
       setChargeAmount("");
       setChargeNote("");
       await fetchRows();
-      onChanged?.();
+      notifyChanged();
     } catch (e: any) {
       console.error(e); toast.error(e?.message || "Failed to add charge");
     } finally { setChargeSaving(false); }
@@ -114,7 +125,7 @@ export function PupilPaymentsManager({
   const startEdit = (p: PaymentRow) => {
     setEditId(p.id);
     setEditAmount(String(p.amount));
-    setEditMethod(p.payment_method || "cash");
+    setEditMethod(p.payment_method || "Cash");
     setEditNotes(p.notes || "");
     setEditDate(p.recorded_at.slice(0, 16));
   };
@@ -141,7 +152,7 @@ export function PupilPaymentsManager({
       toast.success("Payment updated");
       setEditId(null);
       await fetchRows();
-      onChanged?.();
+      notifyChanged();
     } catch (e: any) {
       console.error(e); toast.error(e?.message || "Failed to update payment");
     } finally { setSaving(false); }
@@ -160,7 +171,7 @@ export function PupilPaymentsManager({
       if (balErr) throw balErr;
       toast.success("Payment deleted");
       await fetchRows();
-      onChanged?.();
+      notifyChanged();
     } catch (e: any) {
       console.error(e); toast.error(e?.message || "Failed to delete");
     } finally { setSaving(false); }
@@ -456,7 +467,7 @@ export function PupilPaymentsManager({
         pupilName={pupilName}
         instructorId={instructorId}
         currentBalance={currentBalance}
-        onPaymentRecorded={() => { fetchRows(); onChanged?.(); }}
+        onPaymentRecorded={() => { fetchRows(); notifyChanged(); }}
       />
     </div>
   );

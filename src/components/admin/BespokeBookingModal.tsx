@@ -224,7 +224,7 @@ export function BespokeBookingModal({ open, onOpenChange, prefill }: BespokeBook
               instructor_id: selectedInstructorId,
               pupil_id: pupil.id,
               amount: values.totalCost,
-              payment_method: paymentMethod === "cash" ? "cash" : "bank_transfer",
+              payment_method: paymentMethod === "cash" ? "Cash" : "Bank Transfer",
               notes: `Bespoke: ${values.courseTitle} (${values.courseHours}hrs)`,
             });
           if (paymentError) throw paymentError;
