@@ -194,10 +194,9 @@ function ScheduleCard({ instructorId }: { instructorId: string }) {
 }
 
 // ---------------- DvsaStandardsCard ----------------
-function DvsaStandardsCard() {
+function DvsaStandardsCard({ standardsCheck }: { standardsCheck: { result: string; at: string } | null }) {
   const navigate = useNavigate();
-  // TODO: bind to a useDvsaResults() hook when one is added. For now: empty state.
-  const hasResults = false;
+  const hasResults = !!standardsCheck;
 
   return (
     <div style={{ backgroundColor: t.white, borderRadius: 12, border: `1px solid ${t.border}`, overflow: "hidden" }}>
@@ -207,10 +206,22 @@ function DvsaStandardsCard() {
           DVSA standards check
         </span>
         <Link to="/instructor/standards-check" style={{ fontSize: 11, fontWeight: 500, color: t.blue, textDecoration: "none" }}>
-          Log result →
+          {hasResults ? "View →" : "Log result →"}
         </Link>
       </div>
-      {!hasResults && (
+      {hasResults ? (
+        <div style={{ padding: "16px 14px", display: "flex", flexDirection: "column", gap: 6 }}>
+          <div style={{ fontSize: 10, fontWeight: 600, color: t.muted, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+            Latest result
+          </div>
+          <div style={{ fontSize: 20, fontWeight: 700, color: t.navy, letterSpacing: -0.3 }}>
+            {standardsCheck!.result}
+          </div>
+          <div style={{ fontSize: 11, color: t.muted }}>
+            {format(new Date(standardsCheck!.at), "d MMM yyyy")}
+          </div>
+        </div>
+      ) : (
         <div style={{ padding: "28px 16px", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: 7 }}>
           <AwardIcon size={28} color={t.placeholder} />
           <p style={{ fontSize: 11, color: t.muted, lineHeight: 1.5, maxWidth: 220 }}>
