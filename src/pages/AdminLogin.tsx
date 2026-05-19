@@ -19,6 +19,8 @@ import {
   portalInputFocus,
   portalInputBlur,
 } from "@/components/auth/PortalLoginLayout";
+import dsmLogo from "@/assets/dsm-logo.png";
+import adminHero from "@/assets/drive365-hero-driver.webp";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
