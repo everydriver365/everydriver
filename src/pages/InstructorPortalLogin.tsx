@@ -236,6 +236,7 @@ export default function InstructorPortalLogin() {
     <div className="min-h-screen bg-white lg:bg-gradient-to-br lg:from-slate-900 lg:via-slate-800 lg:to-slate-900 flex flex-col lg:flex-row">
       {/* ============== MOBILE-ONLY — shared dark-navy shell ============== */}
       <MobilePortalLoginShell
+        hideAt="lg"
         logoSrc={dsmLogo}
         logoAlt="DSM"
         logoHeightPx={42}
