@@ -826,8 +826,8 @@ export default function PremiumPupilProfile() {
           View all
         </button>
       </div>
-      <div style={{ display: "flex", gap: 10 }}>
-        <div style={{ flex: 1 }}>
+      <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+        <div style={{ flex: 1, minWidth: 100 }}>
           <div style={{ fontFamily: FONT, fontSize: 11, color: C.muted, textTransform: "uppercase", letterSpacing: "0.3px", fontWeight: 500 }}>
             Balance
           </div>
@@ -874,7 +874,55 @@ export default function PremiumPupilProfile() {
             {hasDebt ? "Outstanding" : "In credit"}
           </div>
         </div>
-        <div style={{ flex: 1 }}>
+        <div style={{ flex: 1, minWidth: 100 }}>
+          <div style={{ fontFamily: FONT, fontSize: 11, color: C.muted, textTransform: "uppercase", letterSpacing: "0.3px", fontWeight: 500 }}>
+            Amount due
+          </div>
+          {editAmountDue ? (
+            <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4 }}>
+              <span style={{ fontFamily: FONT, fontSize: 18, color: C.text }}>£</span>
+              <input
+                autoFocus
+                type="number"
+                step="0.01"
+                min="0"
+                value={amountDueDraft}
+                onChange={(e) => setAmountDueDraft(e.target.value)}
+                style={{
+                  width: 90, fontFamily: FONT, fontSize: 18, fontWeight: 600,
+                  border: `1px solid ${C.hairline}`, borderRadius: 8, padding: "4px 8px",
+                  fontVariantNumeric: "tabular-nums", outline: "none",
+                }}
+              />
+              <button onClick={saveAmountDue} disabled={savingField === "amountDue"}
+                style={{ background: "transparent", border: "none", color: C.green, cursor: "pointer", padding: 4 }}>
+                <Check size={18} />
+              </button>
+              <button onClick={() => setEditAmountDue(false)}
+                style={{ background: "transparent", border: "none", color: C.muted, cursor: "pointer", padding: 4 }}>
+                <X size={18} />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => { setAmountDueDraft(String(amountDue)); setEditAmountDue(true); }}
+              title="Tap to edit"
+              style={{
+                background: "transparent", border: "none", padding: 0, cursor: "pointer",
+                textAlign: "left", marginTop: 2,
+                fontFamily: FONT, fontSize: 22, fontWeight: 700,
+                color: amountDue > 0 ? C.red : C.green,
+                fontVariantNumeric: "tabular-nums",
+              }}
+            >
+              £{amountDue.toFixed(2)}
+            </button>
+          )}
+          <div style={{ fontFamily: FONT, fontSize: 11, color: C.muted, marginTop: 2 }}>
+            {amountDue > 0 ? "Outstanding payment" : "Nothing due"}
+          </div>
+        </div>
+        <div style={{ flex: 1, minWidth: 100 }}>
           <div style={{ fontFamily: FONT, fontSize: 11, color: C.muted, textTransform: "uppercase", letterSpacing: "0.3px", fontWeight: 500 }}>
             Prepaid hours
           </div>
