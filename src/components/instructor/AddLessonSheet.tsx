@@ -388,6 +388,7 @@ export function AddLessonSheet({
             .eq('instructor_id', instructorId)
             .eq('lesson_date', dateStr)
             .neq('status', 'cancelled')
+            .is('deleted_at', null)
             .is('pupils.deleted_at', null)
             .order('start_time'),
           supabase
