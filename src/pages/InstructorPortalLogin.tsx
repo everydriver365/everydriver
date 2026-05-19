@@ -72,6 +72,8 @@ export default function InstructorPortalLogin() {
   const { signIn, resetPassword } = useInstructorAuth();
   const navigate = useNavigate();
 
+  useClearOnDeepLink(() => setError(""));
+
   useEffect(() => {
     const checkInstallState = () => {
       const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent);
