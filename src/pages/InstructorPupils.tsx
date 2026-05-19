@@ -399,6 +399,27 @@ export default function InstructorPupils() {
       toast.error("Please fill in name, address and postcode");
       return;
     }
+
+    // Validate National Intensive fields
+    if (addForm.source === "national_intensive") {
+      if (!String(addForm.intensive_hours_paid || "").trim()) {
+        toast.error("Hours paid is required for National Intensive pupils");
+        return;
+      }
+      if (isNaN(parseFloat(String(addForm.intensive_hours_paid)))) {
+        toast.error("Please enter a valid number for hours paid");
+        return;
+      }
+      if (!String(addForm.intensive_course_payout || "").trim()) {
+        toast.error("Course payout is required for National Intensive pupils");
+        return;
+      }
+      if (isNaN(parseFloat(String(addForm.intensive_course_payout)))) {
+        toast.error("Please enter a valid amount for course payout");
+        return;
+      }
+    }
+
     setSaving(true);
     try {
       console.log("Adding pupil for instructor:", instructorId);

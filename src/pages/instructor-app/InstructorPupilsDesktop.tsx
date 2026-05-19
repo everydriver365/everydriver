@@ -248,8 +248,25 @@ export default function InstructorPupilsDesktop() {
     const instructorId = instructor?.id;
     if (!instructorId) { toast.error("Not signed in"); return; }
     const errs = validateAddForm(addForm);
+
+    // Validate National Intensive fields
+    if (addForm.source === "national_intensive") {
+      if (!String(addForm.intensive_hours_paid || "").trim()) {
+        errs.email = errs.email; // preserve existing
+        (errs as any).intensive_hours_paid = "Hours paid is required for National Intensive";
+      } else if (isNaN(parseFloat(String(addForm.intensive_hours_paid)))) {
+        (errs as any).intensive_hours_paid = "Please enter a valid number";
+      }
+      if (!String(addForm.intensive_course_payout || "").trim()) {
+        (errs as any).intensive_course_payout = "Course payout is required for National Intensive";
+      } else if (isNaN(parseFloat(String(addForm.intensive_course_payout)))) {
+        (errs as any).intensive_course_payout = "Please enter a valid amount";
+      }
+    }
+
     setAddErrors(errs);
     if (Object.keys(errs).length) return;
+
     const anyName = addForm.name.trim() || (addForm.first_name || "").trim() || (addForm.last_name || "").trim();
     if (!anyName && !addForm.phone.trim() && !addForm.email.trim() && !addForm.address.trim()) {
       toast.error("Add at least a name or contact detail");

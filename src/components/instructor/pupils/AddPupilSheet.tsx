@@ -1099,6 +1099,11 @@ export function AddPupilSheet({
                     isConditional
                     suffix={<span style={{ fontSize: 12, color: D_GREEN, marginLeft: 4 }}>hrs</span>}
                   />
+                  {intensiveHoursInvalid && (
+                    <div style={{ fontSize: 11, color: "#DC2626", marginTop: 6 }}>
+                      Please enter a valid number of hours
+                    </div>
+                  )}
                 </div>
                 <div className="flex-1">
                   <DFieldLabel label="Course pays" />
@@ -1110,6 +1115,11 @@ export function AddPupilSheet({
                     isConditional
                     prefix={<span style={{ fontSize: 13, color: D_GREEN, marginRight: 4 }}>£</span>}
                   />
+                  {intensivePayoutInvalid && (
+                    <div style={{ fontSize: 11, color: "#DC2626", marginTop: 6 }}>
+                      Please enter a valid payout amount
+                    </div>
+                  )}
                 </div>
               </div>
             )}
