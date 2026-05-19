@@ -1,56 +1,35 @@
-## Problem
+## Why Add Lesson is failing
 
-Every manual lesson booking fails with the toast **"Couldn't add lesson to your Google Calendar — the slot has been released."**
+The Confirm Booking dialog returns *"Could not add to Google Calendar — slot released, no booking made"* whenever the synchronous Google push throws (timeout, token race, transient 5xx). The lesson row is inserted successfully, then deleted by `syncLessonsOrRollback`. The instructor's calendar is otherwise healthy (632 events synced a minute earlier), so the rollback is discarding good bookings.
 
-The `sync-lesson-now` edge function returns:
+## Fix — save and retry instead of rolling back
 
-```
-403 { "error": "Forbidden: caller is not an instructor" }
-```
+1. **`src/lib/syncLessonsOrRollback.ts`**
+   - On Google failure, do **not** delete the lesson rows. Instead update them with `calendar_sync_status = 'pending'` so the existing `process-calendar-queue` cron retries them.
+   - Toast (amber, non-blocking): *"Lesson saved. We'll keep trying to add it to your Google Calendar in the background."*
+   - Return `{ ok: true, deferred: true }` so callers proceed as success.
 
-…even though the booking instructor clearly is an instructor (they're logged into `/instructor`).
+2. **`src/components/instructor/AddLessonSheet.tsx`** (lines ~707–712 and ~781–785)
+   - Remove the "slot released" early return.
+   - On a deferred sync, still show the success toast, close the sheet, call `onSuccess`, invalidate queries.
 
-`syncLessonsOrRollback` then deletes the freshly inserted `scheduled_lessons` row, which is what produces the "slot has been released" message.
+3. **`src/components/course-planner/CoursePlannerForm.tsx`** and **`src/components/instructor/VoiceQuickAddLessonSheet.tsx`**
+   - Same call-site change so course planner and the voice quick-add behave identically.
 
-## Root cause
+4. **No edge-function or DB changes.** `process-calendar-queue` already picks up `pending`/`failed` rows on its cron schedule.
 
-`sync-lesson-now/index.ts` calls the RPC with the wrong argument name:
+5. **Quiet fix:** `src/components/instructor/payments/SendAllRemindersDialog.tsx` still references `emptyChannelLabel` (removed in the previous refactor) and crashes the reminders dialog. Drop the stray reference.
 
-```ts
-await supabase.rpc("get_instructor_id_for_user", { _user_id: userId });
-```
+## Why this is safe
 
-The actual function signature in the database is:
+The availability engine consults Google Calendar + `instructor_manual_blocks` for busyness — not `scheduled_lessons` — so a briefly-unsynced lesson can theoretically let the engine offer that slot. But:
+- The cron retry usually syncs within seconds.
+- The instructor sees an explicit "still syncing" toast.
+- Losing the booking entirely (current behaviour) is strictly worse than a short retry window.
 
-```
-get_instructor_id_for_user(p_user_id uuid) -> uuid
-```
-
-Because `_user_id` doesn't match `p_user_id`, Postgres receives `p_user_id = NULL`, the RPC returns `NULL`, and the guard fires the 403. The sister function `record-payment/index.ts` already uses the correct `{ p_user_id: userId }`.
-
-## Fix
-
-One-line change in `supabase/functions/sync-lesson-now/index.ts` (line 63):
-
-```diff
-- const { data: instructorRow } = await supabase.rpc("get_instructor_id_for_user", {
--   _user_id: userId,
-- });
-+ const { data: instructorRow } = await supabase.rpc("get_instructor_id_for_user", {
-+   p_user_id: userId,
-+ });
-```
-
-No DB migration, no client changes, no other files affected.
-
-## Verification
-
-1. Redeploy (automatic on edit).
-2. From `/instructor`, open Add Lesson → pick pupil/date/time → Book.
-3. Expect: lesson appears in the schedule, no error toast, and the corresponding event shows up on the connected Google Calendar.
-4. Sanity check the edge function logs — should return `200 { ok: true, eventId: "..." }`.
-
-## Out of scope
-
-- No changes to availability logic, Google Calendar service-account setup, or rollback behaviour.
-- Mobile layouts untouched.
+## Files touched
+- `src/lib/syncLessonsOrRollback.ts`
+- `src/components/instructor/AddLessonSheet.tsx`
+- `src/components/course-planner/CoursePlannerForm.tsx`
+- `src/components/instructor/VoiceQuickAddLessonSheet.tsx`
+- `src/components/instructor/payments/SendAllRemindersDialog.tsx`
