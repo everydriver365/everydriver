@@ -60,6 +60,7 @@ import { LessonHistory } from "@/components/instructor/LessonHistory";
 import { PupilListSkeleton } from "@/components/ui/skeletons/PupilListSkeleton";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { AddPupilSheet } from "@/components/instructor/pupils/AddPupilSheet";
+import { ImportPupilsCsvDialog } from "@/components/instructor/pupils/ImportPupilsCsvDialog";
 import { PupilSplitPane } from "@/components/instructor/PupilSplitPane";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
