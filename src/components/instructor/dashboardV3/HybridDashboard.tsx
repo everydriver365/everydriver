@@ -11,6 +11,7 @@ import { t } from "./tokens";
 import { useDayLessons } from "@/hooks/useDayLessons";
 import { useDailyEarnings } from "@/hooks/useDailyEarnings";
 import { useInstructorLiveStats } from "@/hooks/useInstructorLiveStats";
+import { useInstructorDashboardStats } from "@/hooks/useInstructorDashboardStats";
 
 interface Pupil {
   id: string;
@@ -193,10 +194,9 @@ function ScheduleCard({ instructorId }: { instructorId: string }) {
 }
 
 // ---------------- DvsaStandardsCard ----------------
-function DvsaStandardsCard() {
+function DvsaStandardsCard({ standardsCheck }: { standardsCheck: { result: string; at: string } | null }) {
   const navigate = useNavigate();
-  // TODO: bind to a useDvsaResults() hook when one is added. For now: empty state.
-  const hasResults = false;
+  const hasResults = !!standardsCheck;
 
   return (
     <div style={{ backgroundColor: t.white, borderRadius: 12, border: `1px solid ${t.border}`, overflow: "hidden" }}>
@@ -206,10 +206,22 @@ function DvsaStandardsCard() {
           DVSA standards check
         </span>
         <Link to="/instructor/standards-check" style={{ fontSize: 11, fontWeight: 500, color: t.blue, textDecoration: "none" }}>
-          Log result →
+          {hasResults ? "View →" : "Log result →"}
         </Link>
       </div>
-      {!hasResults && (
+      {hasResults ? (
+        <div style={{ padding: "16px 14px", display: "flex", flexDirection: "column", gap: 6 }}>
+          <div style={{ fontSize: 10, fontWeight: 600, color: t.muted, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+            Latest result
+          </div>
+          <div style={{ fontSize: 20, fontWeight: 700, color: t.navy, letterSpacing: -0.3 }}>
+            {standardsCheck!.result}
+          </div>
+          <div style={{ fontSize: 11, color: t.muted }}>
+            {format(new Date(standardsCheck!.at), "d MMM yyyy")}
+          </div>
+        </div>
+      ) : (
         <div style={{ padding: "28px 16px", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: 7 }}>
           <AwardIcon size={28} color={t.placeholder} />
           <p style={{ fontSize: 11, color: t.muted, lineHeight: 1.5, maxWidth: 220 }}>
@@ -271,9 +283,13 @@ function EarningsCard({ balance, outstanding, outstandingPct, monthTarget, hours
       </div>
       <div style={{ padding: "10px 14px", borderBottom: `1px solid ${t.divider}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div style={{ fontSize: 11, color: t.muted }}>Month target</div>
-        <div style={{ fontSize: 13, fontWeight: 700, color: t.navy }}>
-          {monthTarget != null ? `£${monthTarget.toLocaleString()}` : "—"}
-        </div>
+        {monthTarget != null ? (
+          <div style={{ fontSize: 13, fontWeight: 700, color: t.navy }}>£{monthTarget.toLocaleString()}</div>
+        ) : (
+          <Link to="/instructor/settings" style={{ fontSize: 11, fontWeight: 600, color: t.blue, textDecoration: "none" }}>
+            Set target →
+          </Link>
+        )}
       </div>
       <div style={{ padding: "10px 14px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div style={{ fontSize: 11, color: t.muted }}>Hours taught</div>
@@ -326,6 +342,7 @@ export function HybridDashboard({ instructorId, instructorName, pupils, todaysLe
 
   const { hoursThisWeek, monthEarnings } = useInstructorLiveStats(instructorId);
   const { data: earningsData } = useDailyEarnings(instructorId);
+  const { data: stats2 } = useInstructorDashboardStats(instructorId);
 
   const owing = pupils.filter((p) => (p.account_balance ?? 0) < 0);
   const outstandingTotal = owing.reduce((sum, p) => sum + Math.abs(p.account_balance ?? 0), 0);
@@ -358,34 +375,32 @@ export function HybridDashboard({ instructorId, instructorName, pupils, todaysLe
     },
     {
       label: "Lessons booked",
-      // TODO: bind to a real lessons-booked-this-week / target hook when available
-      value: "—",
-      sub: "Needs data source",
-      pct: 0,
+      value: stats2 ? String(stats2.lessonsThisMonth) : "—",
+      sub: "This month",
+      pct: stats2 && stats2.lessonsThisMonth > 0 ? Math.min(100, stats2.lessonsThisMonth * 2) : 0,
       bar: t.blue,
     },
     {
       label: "Pass rate",
-      // TODO: bind to DVSA results hook
-      value: "—",
-      sub: "Needs data source",
-      pct: 0,
+      value: stats2?.passRatePct != null ? `${stats2.passRatePct}%` : "—",
+      sub: stats2 && stats2.passRateSampleSize > 0
+        ? `${stats2.passRateSampleSize} test${stats2.passRateSampleSize !== 1 ? "s" : ""} · 12 mo`
+        : "No results yet",
+      pct: stats2?.passRatePct ?? 0,
       bar: t.red,
     },
     {
       label: "Tests booked",
-      // TODO: bind to upcoming-tests hook
-      value: "—",
-      sub: "Needs data source",
-      pct: 0,
+      value: stats2 ? String(stats2.testsBooked) : "—",
+      sub: "Upcoming",
+      pct: stats2 && stats2.testsBooked > 0 ? Math.min(100, stats2.testsBooked * 10) : 0,
       bar: t.amber,
     },
     {
       label: "Cancelled",
-      // TODO: bind to cancellations hook
-      value: "—",
-      sub: "Needs data source",
-      pct: 0,
+      value: stats2 ? String(stats2.cancelledThisMonth) : "—",
+      sub: "This month",
+      pct: stats2 && stats2.cancelledThisMonth > 0 ? Math.min(100, stats2.cancelledThisMonth * 5) : 0,
       bar: t.red,
     },
   ];
@@ -394,16 +409,16 @@ export function HybridDashboard({ instructorId, instructorName, pupils, todaysLe
   const tiles: Tile[] = [
     { label: "Schedule",     Icon: Calendar,      iconBg: t.blueLight,   iconColor: t.blue,  accent: t.blue,  stat: `${todaysLessonCount} today`,           href: "/instructor/schedule" },
     { label: "Pupils",       Icon: Users,         iconBg: t.blueLight,   iconColor: t.blue,  accent: t.blue,  stat: `${pupils.length} active`,              href: "/instructor/pupils" },
-    { label: "Waiting list", Icon: ListChecks,    iconBg: t.blueLight,   iconColor: t.blue,  accent: t.blue,  stat: "—",                                    href: "/instructor/waiting-list" },
+    { label: "Waiting list", Icon: ListChecks,    iconBg: t.blueLight,   iconColor: t.blue,  accent: t.blue,  stat: stats2 ? `${stats2.waitingListCount} waiting` : "—", href: "/instructor/waiting-list" },
     { label: "Payments",     Icon: CreditCard,    iconBg: t.greenLight,  iconColor: t.green, accent: t.green, stat: `£${outstandingTotal.toFixed(0)} due`,  href: "/instructor/pay" },
-    { label: "Test swap",    Icon: Repeat2,       iconBg: t.redLight,    iconColor: t.red,   accent: t.red,   stat: "—",                                    href: "/instructor/test-requests" },
-    { label: "Progress",     Icon: TrendingUp,    iconBg: t.blueLight,   iconColor: t.blue,  accent: t.blue,  stat: "—",                                    href: "/instructor/pupils" },
-    { label: "Courses",      Icon: BookOpenCheck, iconBg: t.blueLight,   iconColor: t.blue,  accent: t.blue,  stat: "—",                                    href: "/instructor/course-planner" },
-    { label: "CPD log",      Icon: Award,         iconBg: t.blueSurface, iconColor: t.navy,  accent: t.navy,  stat: "—",                                    href: "/instructor/cpd" },
-    { label: "Invoices",     Icon: FileText,      iconBg: t.greenLight,  iconColor: t.green, accent: t.green, stat: "—",                                    href: "/instructor/pay" },
-    { label: "Find a slot",  Icon: Search,        iconBg: t.blueLight,   iconColor: t.blue,  accent: t.blue,  stat: "—",                                    href: "/instructor/find-appointment" },
-    { label: "Settings",     Icon: Settings,      iconBg: t.blueSurface, iconColor: t.navy,  accent: t.navy,  stat: "—",                                    href: "/instructor/settings" },
-    { label: "DVSA check",   Icon: ShieldCheck,   iconBg: t.amberLight,  iconColor: t.amber, accent: t.amber, stat: "—",                                    href: "/instructor/standards-check" },
+    { label: "Test swap",    Icon: Repeat2,       iconBg: t.redLight,    iconColor: t.red,   accent: t.red,   stat: stats2 ? `${stats2.testSwapOpenCount} open` : "—", href: "/instructor/test-requests" },
+    { label: "Progress",     Icon: TrendingUp,    iconBg: t.blueLight,   iconColor: t.blue,  accent: t.blue,  stat: "Open",                                 href: "/instructor/pupils" },
+    { label: "Courses",      Icon: BookOpenCheck, iconBg: t.blueLight,   iconColor: t.blue,  accent: t.blue,  stat: stats2 ? `${stats2.coursesCount} active` : "—", href: "/instructor/course-planner" },
+    { label: "CPD log",      Icon: Award,         iconBg: t.blueSurface, iconColor: t.navy,  accent: t.navy,  stat: stats2 ? (stats2.cpdTarget != null ? `${stats2.cpdThisYear} / ${stats2.cpdTarget}` : `${stats2.cpdThisYear} this year`) : "—", href: "/instructor/cpd" },
+    { label: "Invoices",     Icon: FileText,      iconBg: t.greenLight,  iconColor: t.green, accent: t.green, stat: stats2 ? `${stats2.invoicesUnpaid} unpaid` : "—", href: "/instructor/pay" },
+    { label: "Find a slot",  Icon: Search,        iconBg: t.blueLight,   iconColor: t.blue,  accent: t.blue,  stat: "Open",                                 href: "/instructor/find-appointment" },
+    { label: "Settings",     Icon: Settings,      iconBg: t.blueSurface, iconColor: t.navy,  accent: t.navy,  stat: "Open",                                 href: "/instructor/settings" },
+    { label: "DVSA check",   Icon: ShieldCheck,   iconBg: t.amberLight,  iconColor: t.amber, accent: t.amber, stat: stats2?.standardsCheck?.result ?? "—",  href: "/instructor/standards-check" },
   ];
 
   // TODO: derive hasAlert from real signals (overdue payments, expired docs, etc.)
@@ -430,7 +445,7 @@ export function HybridDashboard({ instructorId, instructorName, pupils, todaysLe
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 280px", gap: 10, marginBottom: 14 }}>
         <ScheduleCard instructorId={instructorId} />
-        <DvsaStandardsCard />
+        <DvsaStandardsCard standardsCheck={stats2?.standardsCheck ?? null} />
         <EarningsCard
           balance={positiveBalance}
           outstanding={outstandingTotal}

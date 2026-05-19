@@ -1,32 +1,87 @@
-# Fix: Profile page crashes with React error #310
+## Goal
 
-## Root cause
+Replace every `"—" / "Needs data source"` placeholder on `/instructor` (`HybridDashboard`) with a live DB query, while keeping the **LIVE DATA ONLY** rule — if a metric has zero rows, show `0` (or empty state), never invent values.
 
-`src/components/layout/InstructorPortalLayout.tsx` calls `useCombinedNotificationCount(instructor?.id)` at **line 1150**, but the component has two early returns before it:
+## What's already wired (no change)
 
-- Line 624: `if (loading) return (...)`
-- Line 641: `if (isMobile) return (...)`
+Pupils count · Payments this month · Outstanding · Account balance · Hours taught · Schedule (Today/Tomorrow/+3) · Outstanding alert banner.
 
-When `loading` flips `true → false` or `isMobile` toggles, the number of hooks called between renders changes. React throws **error #310 — "Rendered more hooks than during the previous render."**
+## What this plan wires
 
-The component-level stack in the console confirms this — `useCombinedNotificationCount` is the hook that "appears" on the desktop render after the previous render didn't reach it.
+### 1. Stats row (top 6 tiles)
 
-This is unrelated to the new Profile v2 work — it's a pre-existing bug in the shared layout that surfaces on `/instructor/settings/profile` because of the loading → loaded transition for that page.
+| Tile | Source | Query |
+|---|---|---|
+| Lessons booked | `scheduled_lessons` | this-month count where `status != 'cancelled'` |
+| Cancelled | `scheduled_lessons` | this-month count where `status = 'cancelled'` |
+| Tests booked | `test_requests` | count where `test_date >= today` and `status` not in (`cancelled`,`completed`) |
+| Pass rate | `driving_test_results` | last 12 months: `passed / total * 100`, exclude `is_mock=true` |
 
-## Change
+All return `0` / `—` cleanly when no rows. No `??` fallbacks on live values.
 
-Move the `useCombinedNotificationCount` call up next to the other top-level hooks in `InstructorPortalLayout` (around line ~263, alongside `usePendingJobsCount()`), so it runs unconditionally on every render regardless of the `loading` / `isMobile` branches. The variable `notificationTotal` already used on line 1176 stays as-is.
+### 2. DVSA Standards Check card
 
-No behavior change for users — same data, same prop passed to `DashboardShell`. Just hook order made stable.
+Replace hardcoded `hasResults = false` with a query of `instructor_standards_check` for the current instructor. If rows exist → show latest result + date + a "View all" link. If none → keep current empty state + CTA.
 
-## Files
+### 3. Earnings → Month target
 
-- edit `src/components/layout/InstructorPortalLayout.tsx`
-  - remove line 1150 `const { total: notificationTotal } = useCombinedNotificationCount(instructor?.id);`
-  - re-add the same line up in the top hook block (after `const pendingCount = usePendingJobsCount();` on line 263)
+Currently hardcoded `null`. The `instructors` table has no monthly target column. Two options handled in code:
+- If a target exists in `instructors` (none today) → show it.
+- Otherwise → render a small inline **"Set target →"** link pointing to `/instructor/settings/plan-billing` (or the closest existing settings page), per the live-data rule (no invented number).
 
-## Verification
+No new migration in this plan — we'll surface the empty state. If you later want a real saved target, that's a follow-up migration adding `instructors.monthly_earnings_target numeric`.
 
-- Reload `/instructor/settings/profile` on desktop — page renders without the error boundary.
-- Resize across the 768px breakpoint — no crash.
-- Notification bell badge still updates.
+### 4. Function tile stats (12 tiles)
+
+| Tile | Source |
+|---|---|
+| Schedule | already wired (`todaysLessonCount today`) |
+| Pupils | already wired |
+| Waiting list | `lesson_waitlist` count for instructor |
+| Payments | already wired (`£X due`) |
+| Test swap | `test_swap_offers` open count for instructor |
+| Progress | leave as link only (no single meaningful number) — show `—` and label "Open" |
+| Courses | `instructor_courses` active count |
+| CPD log | `cpd_log_entries` count this year (or `X / target` if `cpd_year_target` set) |
+| Invoices | `invoices` unpaid count for instructor |
+| Find a slot | leave as link only — `—` / "Open" |
+| Settings | leave as link only — `—` / "Open" |
+| DVSA check | reuse standards-check query: latest result label or `—` |
+
+Tiles that are pure navigation (Progress / Find a slot / Settings) get the substat removed rather than showing a misleading "—".
+
+## Technical approach
+
+Add a single hook `useInstructorDashboardStats(instructorId)` in `src/hooks/` that runs the new queries in parallel via `useQuery` + `Promise.all`, cached 2 min (matches `useInstructorPeriodStats`). Returns:
+
+```ts
+{
+  lessonsThisMonth: number;
+  cancelledThisMonth: number;
+  testsBooked: number;
+  passRatePct: number | null;        // null when zero results
+  passRateSampleSize: number;
+  waitingListCount: number;
+  testSwapOpenCount: number;
+  coursesCount: number;
+  cpdThisYear: number;
+  cpdTarget: number | null;
+  invoicesUnpaid: number;
+  latestStandardsCheck: { date: string; result: string } | null;
+  loading: boolean;
+}
+```
+
+All queries filter by `instructor_id = instructorId` (RLS-friendly).
+
+Edit `src/components/instructor/dashboardV3/HybridDashboard.tsx`:
+- Call the new hook.
+- Replace each `value: "—"` with the live value (or keep `—` only where the tile has no meaningful number).
+- Update DVSA card to render latest result when present.
+- Update Earnings "Month target" to show "Set target →" link instead of hardcoded `—`.
+
+## Out of scope (will not touch)
+
+- Mobile layouts (per memory rule).
+- Adding new DB columns (e.g. monthly earnings target) — surface empty state instead, follow-up if you want persistence.
+- Right rail, quick actions, schedule card — already wired.
