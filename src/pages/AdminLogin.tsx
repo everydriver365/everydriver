@@ -19,6 +19,8 @@ import {
   portalInputFocus,
   portalInputBlur,
 } from "@/components/auth/PortalLoginLayout";
+import { DarkMobileAuthForm } from "@/components/auth/DarkMobileAuthForm";
+import everydriverLogo from "@/assets/ed-white-logo.png";
 import dsmLogo from "@/assets/dsm-logo.png";
 import adminHero from "@/assets/drive365-hero-driver.webp";
 
