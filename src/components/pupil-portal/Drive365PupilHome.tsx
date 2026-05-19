@@ -145,7 +145,7 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug, onNavigat
     queryFn: async () => {
       const { data } = await supabase
         .from("pupils")
-        .select("theory_test_date, theory_test_passed, test_date, test_passed")
+        .select("theory_test_date, theory_test_passed, test_date, test_time, test_passed, test_centres:test_centre_id(name)")
         .eq("id", pupil.id)
         .maybeSingle();
       return data as any;
@@ -168,8 +168,8 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug, onNavigat
   });
 
 
-  // Mock score for readiness
-  const { data: mockScore } = useQuery({
+  // Mock score for readiness — keep raw score/total for "X/50" display
+  const { data: mockScoreData } = useQuery({
     queryKey: ["d365-mock-score", pupil.id],
     queryFn: async () => {
       const { data } = await (supabase.from("theory_mock_scores") as any)
@@ -178,13 +178,15 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug, onNavigat
         .order("created_at", { ascending: false })
         .limit(1);
       if (data && data[0]) {
-        const s = data[0];
-        return Math.round((s.score / Math.max(1, s.total_questions)) * 100);
+        return { score: data[0].score as number, total: data[0].total_questions as number };
       }
       return null;
     },
     staleTime: 60_000,
   });
+  const mockScorePct = mockScoreData
+    ? Math.round((mockScoreData.score / Math.max(1, mockScoreData.total)) * 100)
+    : null;
 
   // Referral data
   const { data: referral } = useQuery({
