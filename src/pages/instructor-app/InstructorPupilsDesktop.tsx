@@ -403,7 +403,7 @@ export default function InstructorPupilsDesktop() {
     setEditForm(emptyEditForm);
     const { data } = await supabase
       .from("pupils")
-      .select("name, phone, email, postcode, address, what3words, date_of_birth, sex, previous_experience, transmission_type, special_needs, notes, payment_method, parent_name, parent_phone, custom_hourly_rate, custom_rate_90min, custom_rate_120min, source, intensive_hours_paid, intensive_course_payout, intensive_pupil_payment")
+      .select("name, phone, email, postcode, address, what3words, date_of_birth, sex, previous_experience, transmission_type, special_needs, notes, payment_method, parent_name, parent_phone, custom_hourly_rate, custom_rate_90min, custom_rate_120min, source, intensive_hours_paid, intensive_course_payout, intensive_pupil_payment, theory_test_date, theory_test_passed, test_date, test_passed")
       .eq("id", id)
       .maybeSingle();
     if (data) {
