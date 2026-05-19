@@ -12,6 +12,7 @@ import { useDayLessons } from "@/hooks/useDayLessons";
 import { useDailyEarnings } from "@/hooks/useDailyEarnings";
 import { useInstructorLiveStats } from "@/hooks/useInstructorLiveStats";
 import { useInstructorDashboardStats } from "@/hooks/useInstructorDashboardStats";
+import { MultiDayScheduleView } from "@/components/instructor/MultiDayScheduleView";
 
 interface Pupil {
   id: string;
