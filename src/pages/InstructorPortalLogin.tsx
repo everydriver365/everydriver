@@ -247,8 +247,8 @@ export default function InstructorPortalLogin() {
               <button
                 type="button"
                 onClick={() => {
-                  const btn = document.getElementById('hidden-instructor-google-btn') as HTMLButtonElement | null;
-                  btn?.click();
+                  const wrap = document.getElementById('mobile-google-oauth-wrap');
+                  wrap?.querySelector<HTMLButtonElement>('button')?.click();
                 }}
                 className="w-full flex items-center justify-center gap-[10px] active:opacity-80 transition-opacity"
                 style={{ padding: 13, marginBottom: 10, backgroundColor: '#F2F4F8', border: '1.5px solid #C4C9D4', borderRadius: 10 }}
