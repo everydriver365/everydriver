@@ -31,6 +31,12 @@ import { cn } from "@/lib/utils";
 import drive365Logo from "@/assets/drive365-logo.png";
 import pupilHero from "@/assets/drive365-hero-learner.webp";
 import { MobileLoginHero } from "@/components/auth/MobileLoginHero";
+import {
+  isBiometricAvailable,
+  getBiometricCredentials,
+  saveBiometricCredentials,
+  getBiometryLabel,
+} from "@/lib/biometricAuth";
 
 type LoginView = "login" | "forgot" | "reset-code" | "new-password";
 
