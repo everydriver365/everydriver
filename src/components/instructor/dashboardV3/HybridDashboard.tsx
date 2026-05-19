@@ -51,7 +51,12 @@ function Greeting({ name, greeting, date }: { name: string; greeting: string; da
 }
 
 // ---------------- AlertBanner ----------------
-function AlertBanner({ message, link }: { message: string; link?: { href: string; label: string } }) {
+function AlertBanner({ message, link, onAction }: { message: string; link?: { href?: string; label: string; onClick?: () => void }; onAction?: () => void }) {
+  const actionStyle: React.CSSProperties = {
+    marginLeft: "auto", fontSize: 11, fontWeight: 700, color: t.amber,
+    background: "transparent", border: "none", padding: 0, cursor: "pointer",
+    textDecoration: "none", whiteSpace: "nowrap",
+  };
   return (
     <div style={{
       backgroundColor: t.amberLight, border: "1px solid #FDE68A", borderRadius: 9,
@@ -61,9 +66,11 @@ function AlertBanner({ message, link }: { message: string; link?: { href: string
       <TriangleAlert size={14} color={t.amber} />
       <span>{message}</span>
       {link && (
-        <Link to={link.href} style={{ marginLeft: "auto", fontSize: 11, fontWeight: 700, color: t.amber, textDecoration: "none", whiteSpace: "nowrap" }}>
-          {link.label} →
-        </Link>
+        onAction ? (
+          <button type="button" onClick={onAction} style={actionStyle}>{link.label} →</button>
+        ) : link.href ? (
+          <Link to={link.href} style={actionStyle as any}>{link.label} →</Link>
+        ) : null
       )}
     </div>
   );
