@@ -447,7 +447,7 @@ export default function PupilLogin() {
                   <ScanFace className="h-[22px] w-[22px] text-white" strokeWidth={1.8} />
                 )}
                 <span className="text-white text-[14px] font-semibold">
-                  {faceIdSuccess ? "Recognised — signing in" : faceIdLoading ? "Scanning…" : "Sign in with Face ID"}
+                  {faceIdSuccess ? "Recognised — signing in" : faceIdLoading ? "Scanning…" : `Sign in with ${biometryLabel}`}
                 </span>
               </button>
             )}
