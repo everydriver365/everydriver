@@ -816,6 +816,19 @@ export function AddLessonSheet({
           const saveDisabled = loading || (!!conflictWarning && !overrideBuffer);
           const onSavePress = () => {
             if (saveDisabled) return;
+            // Pre-validate before opening confirm dialog so we don't trap the user there
+            if (!lessonDate) {
+              toast.error('Please pick a date for the lesson');
+              return;
+            }
+            if (tab === 'existing' && !selectedPupil) {
+              toast.error('Please select a pupil');
+              return;
+            }
+            if (tab === 'new' && !newPupilName.trim()) {
+              toast.error('Please enter the new pupil’s name');
+              return;
+            }
             setBookingError(null);
             setConfirmOpen(true);
           };
