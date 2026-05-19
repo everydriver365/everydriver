@@ -711,6 +711,16 @@ export default function InstructorPupilsDesktop() {
   const filtered = useMemo(() => {
     let list = pupils;
     if (filter !== "all") list = list.filter(p => p.status === filter);
+    if (theoryFilter !== "all") {
+      if (theoryFilter === "passed") list = list.filter(p => p.theoryPassed === true);
+      else if (theoryFilter === "failed") list = list.filter(p => p.theoryPassed === false);
+      else if (theoryFilter === "booked") list = list.filter(p => p.theoryPassed === null && !!p.theoryDate);
+    }
+    if (drivingFilter !== "all") {
+      if (drivingFilter === "passed") list = list.filter(p => p.drivingPassed === true);
+      else if (drivingFilter === "failed") list = list.filter(p => p.drivingPassed === false);
+      else if (drivingFilter === "booked") list = list.filter(p => p.drivingPassed === null && !!p.drivingTestDate);
+    }
     if (debounced) {
       const q = debounced;
       list = list.filter(p =>
