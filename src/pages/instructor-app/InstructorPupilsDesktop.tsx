@@ -530,7 +530,8 @@ export default function InstructorPupilsDesktop() {
             notes: p.notes || undefined,
             initials,
             avatarColor,
-            lessonsLeft: balanceNum < 0 ? 0 : Math.max(0, Math.floor(balanceNum / 35)),
+            hoursLeft: Number(p.prepaid_hours ?? 0),
+            lessonsLeft: Number(p.lessons_completed ?? 0),
             lastLesson: formatLastLesson(lastDays),
             lastLessonDays: lastDays,
             nextLesson: next.label,
@@ -539,6 +540,7 @@ export default function InstructorPupilsDesktop() {
             status,
             since,
             totalHours: Math.round((hoursByPupil.get(p.id) || 0) * 10) / 10,
+            testDate: p.test_date || undefined,
             pickupAddress: p.address || p.postcode || undefined,
           };
         });
