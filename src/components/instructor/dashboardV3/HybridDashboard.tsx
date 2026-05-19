@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import {
@@ -12,6 +12,8 @@ import { useDayLessons } from "@/hooks/useDayLessons";
 import { useDailyEarnings } from "@/hooks/useDailyEarnings";
 import { useInstructorLiveStats } from "@/hooks/useInstructorLiveStats";
 import { useInstructorDashboardStats } from "@/hooks/useInstructorDashboardStats";
+import { supabase } from "@/integrations/supabase/client";
+import { SendAllRemindersDialog } from "@/components/instructor/payments/SendAllRemindersDialog";
 
 interface Pupil {
   id: string;
