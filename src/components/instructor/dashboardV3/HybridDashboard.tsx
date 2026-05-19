@@ -443,8 +443,7 @@ export function HybridDashboard({ instructorId, instructorName, pupils, todaysLe
       <QuickActionRow items={quickActions} />
       <StatsRow stats={stats} />
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 280px", gap: 10, marginBottom: 14 }}>
-        <ScheduleCard instructorId={instructorId} />
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 280px", gap: 10, marginBottom: 14 }}>
         <DvsaStandardsCard standardsCheck={stats2?.standardsCheck ?? null} />
         <EarningsCard
           balance={positiveBalance}
@@ -453,6 +452,27 @@ export function HybridDashboard({ instructorId, instructorName, pupils, todaysLe
           monthTarget={null /* TODO: bind to monthly goal hook */}
           hoursTaught={hoursThisWeek}
         />
+      </div>
+
+      <div
+        style={{
+          background: t.card,
+          border: `1px solid ${t.border}`,
+          borderRadius: 16,
+          padding: "14px 6px 6px",
+          marginBottom: 14,
+          boxShadow: "0 1px 2px rgba(15,23,42,0.04)",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 14px 8px" }}>
+          <div style={{ fontSize: 13, fontWeight: 600, color: t.text }}>Schedule</div>
+          <Link to="/instructor/schedule" style={{ fontSize: 11, fontWeight: 500, color: t.blue, textDecoration: "none" }}>
+            Open full schedule →
+          </Link>
+        </div>
+        <div style={{ maxHeight: 640, overflowY: "auto" }}>
+          <MultiDayScheduleView instructorId={instructorId} />
+        </div>
       </div>
 
       <FunctionTilesGrid tiles={tiles} />
