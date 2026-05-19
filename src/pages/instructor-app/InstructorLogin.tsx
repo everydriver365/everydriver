@@ -40,23 +40,8 @@ const t = {
   border: "#DDE3ED",
 };
 
-function DSM365Logo({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
-  const scales = {
-    sm: { fontSize: 12, padH: 7, padV: 3, radius: 4 },
-    md: { fontSize: 14, padH: 9, padV: 4, radius: 4 },
-    lg: { fontSize: 20, padH: 12, padV: 6, radius: 5 },
-  } as const;
-  const s = scales[size];
-  return (
-    <div style={{ display: "flex", alignItems: "center" }}>
-      <div style={{ background: t.red, padding: `${s.padV}px ${s.padH}px`, borderRadius: `${s.radius}px 0 0 ${s.radius}px` }}>
-        <span style={{ fontSize: s.fontSize, fontWeight: 800, color: t.white, letterSpacing: 1, fontFamily: "Poppins, system-ui, sans-serif" }}>DSM</span>
-      </div>
-      <div style={{ background: t.blue, padding: `${s.padV}px ${s.padH}px`, borderRadius: `0 ${s.radius}px ${s.radius}px 0` }}>
-        <span style={{ fontSize: s.fontSize, fontWeight: 800, color: t.white, letterSpacing: 0.5, fontFamily: "Poppins, system-ui, sans-serif" }}>365</span>
-      </div>
-    </div>
-  );
+function DSMLogoImg({ height = 28 }: { height?: number }) {
+  return <img src={dsmLogo} alt="DSM — Driving School Manager" style={{ height, width: "auto" }} />;
 }
 
 function FaceIdIcon({ scanning }: { scanning: boolean }) {
