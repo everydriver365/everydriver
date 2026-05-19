@@ -457,7 +457,7 @@ export function HybridDashboard({ instructorId, instructorName, pupils, todaysLe
 
       <div
         style={{
-          background: t.card,
+          background: t.white,
           border: `1px solid ${t.border}`,
           borderRadius: 16,
           padding: "14px 6px 6px",
@@ -466,7 +466,7 @@ export function HybridDashboard({ instructorId, instructorName, pupils, todaysLe
         }}
       >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 14px 8px" }}>
-          <div style={{ fontSize: 13, fontWeight: 600, color: t.text }}>Schedule</div>
+          <div style={{ fontSize: 13, fontWeight: 600, color: t.navy }}>Schedule</div>
           <Link to="/instructor/schedule" style={{ fontSize: 11, fontWeight: 500, color: t.blue, textDecoration: "none" }}>
             Open full schedule →
           </Link>
