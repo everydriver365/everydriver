@@ -283,7 +283,20 @@ export function PupilPaymentsManager({
   return (
     <div className="space-y-4">
       {/* Action bar */}
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap items-center gap-2">
+        <div
+          className="text-sm font-semibold font-mono"
+          style={{
+            color: currentBalance < 0 ? "#BE123C" : "#15803D",
+            fontVariantNumeric: "tabular-nums",
+          }}
+        >
+          {currentBalance < 0
+            ? `-£${Math.abs(currentBalance).toFixed(2)}`
+            : `£${currentBalance.toFixed(2)}`}
+          <span className="ml-1 text-xs font-normal" style={{ color: "var(--muted-foreground)" }}>Balance</span>
+        </div>
+        <div className="w-px h-5 bg-border mx-1" />
         <Button size="sm" onClick={() => setRecordOpen(true)} className="gap-1.5">
           <Plus className="h-4 w-4" /> Record payment
         </Button>
