@@ -698,7 +698,7 @@ export default function InstructorPupilsDesktop() {
     return () => clearTimeout(t);
   }, [search]);
 
-  useEffect(() => { setPage(1); }, [debounced, filter]);
+  useEffect(() => { setPage(1); }, [debounced, filter, theoryFilter, drivingFilter]);
 
   const counts = useMemo(() => ({
     all: pupils.length,
