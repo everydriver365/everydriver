@@ -235,9 +235,12 @@ export function PupilPaymentsManager({
         <Button size="sm" onClick={() => setRecordOpen(true)} className="gap-1.5">
           <Plus className="h-4 w-4" /> Record payment
         </Button>
+        <Button size="sm" variant="outline" onClick={() => setChargeOpen((v) => !v)} className="gap-1.5">
+          <Minus className="h-4 w-4" /> Add amount owed
+        </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button size="sm" variant="outline" className="gap-1.5" disabled={!!sending}>
+            <Button size="sm" variant="outline" className="gap-1.5" disabled={!!sending || !hasContact}>
               {sending?.startsWith("reminder") ? <Loader2 className="h-4 w-4 animate-spin" /> : <Bell className="h-4 w-4" />}
               Send reminder
             </Button>
@@ -246,7 +249,7 @@ export function PupilPaymentsManager({
         </DropdownMenu>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button size="sm" variant="outline" className="gap-1.5" disabled={!!sending}>
+            <Button size="sm" variant="outline" className="gap-1.5" disabled={!!sending || !hasContact}>
               {sending?.startsWith("link") ? <Loader2 className="h-4 w-4 animate-spin" /> : <Link2 className="h-4 w-4" />}
               Send payment link
             </Button>
@@ -258,6 +261,52 @@ export function PupilPaymentsManager({
           <Link2 className="h-4 w-4" /> Copy link
         </Button>
       </div>
+
+      {!hasContact && (
+        <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-900 p-2.5">
+          <AlertCircle className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
+          <p className="text-xs text-amber-900 dark:text-amber-200">
+            Add an email or phone to {pupilName}'s profile to send reminders or payment links. You can still <strong>Copy link</strong> and share it manually.
+          </p>
+        </div>
+      )}
+
+      {chargeOpen && (
+        <div className="rounded-2xl border border-border bg-card p-3 space-y-2">
+          <div className="text-sm font-medium">Add an amount owed</div>
+          <div className="grid grid-cols-2 gap-2">
+            <label className="text-xs text-muted-foreground">
+              Amount (£)
+              <input
+                type="number" step="0.01" min="0" autoFocus
+                value={chargeAmount}
+                onChange={(e) => setChargeAmount(e.target.value)}
+                placeholder="0.00"
+                className="w-full mt-1 border border-border rounded-md px-2 py-1 text-sm bg-background"
+              />
+            </label>
+            <label className="text-xs text-muted-foreground">
+              Reason (optional)
+              <input
+                type="text"
+                value={chargeNote}
+                onChange={(e) => setChargeNote(e.target.value)}
+                placeholder="e.g. Cancellation fee"
+                className="w-full mt-1 border border-border rounded-md px-2 py-1 text-sm bg-background"
+              />
+            </label>
+          </div>
+          <div className="flex gap-2 justify-end">
+            <Button size="sm" variant="ghost" onClick={() => { setChargeOpen(false); setChargeAmount(""); setChargeNote(""); }} disabled={chargeSaving}>
+              Cancel
+            </Button>
+            <Button size="sm" onClick={addCharge} disabled={chargeSaving || !chargeAmount}>
+              {chargeSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />} Add charge
+            </Button>
+          </div>
+        </div>
+      )}
+
 
       {/* History */}
       <div className="rounded-2xl border border-border bg-card">
