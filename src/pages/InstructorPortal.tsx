@@ -276,6 +276,7 @@ import { DvsaIndicatorsPanel } from "@/components/instructor/dashboardV2/DvsaInd
 import { PerformanceMetricsRow } from "@/components/instructor/dashboardV2/PerformanceMetricsRow";
 import { RightRail } from "@/components/instructor/dashboardV2/RightRail";
 import { AddLessonSheet } from "@/components/instructor/AddLessonSheet";
+import { HybridDashboard } from "@/components/instructor/dashboardV3/HybridDashboard";
 import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
 import { useDailyEarnings } from "@/hooks/useDailyEarnings";
 import { RealtimeHubProvider } from "@/hooks/useRealtimeHub";
