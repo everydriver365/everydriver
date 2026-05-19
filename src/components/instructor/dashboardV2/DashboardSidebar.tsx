@@ -383,7 +383,7 @@ export function DashboardSidebar({ collapsed, onToggle, userInitials, userName, 
   // Inline overrides so we don't have to fork the whole file. CSS vars get
   // remapped on the <aside> so descendants pick them up automatically.
   const navyBg          = "#0F2044";
-  const navyActiveBg    = "rgba(26,82,160,0.25)";
+  const navyActiveBg    = "rgba(59,130,246,0.35)";
   const navyHoverBg     = "rgba(255,255,255,0.06)";
   const navyText        = "rgba(255,255,255,0.90)";
   const navyTextActive  = "#FACC15";
