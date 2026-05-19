@@ -300,7 +300,12 @@ function EarningsCard({ balance, outstanding, outstandingPct, monthTarget, hours
 }
 
 // ---------------- FunctionTilesGrid ----------------
-type Tile = { label: string; Icon: any; iconBg: string; iconColor: string; accent: string; stat: string; href: string };
+type Tile = {
+  label: string; Icon: any; iconBg: string; iconColor: string; accent: string;
+  stat: string; href: string;
+  miniList?: { time: string; name: string; colour?: string }[];
+  miniEmpty?: string;
+};
 function FunctionTilesGrid({ tiles }: { tiles: Tile[] }) {
   return (
     <div>
@@ -323,7 +328,40 @@ function FunctionTilesGrid({ tiles }: { tiles: Tile[] }) {
                 <tile.Icon size={15} color={tile.iconColor} strokeWidth={1.8} />
               </div>
               <div style={{ fontSize: 11, fontWeight: 600, color: t.navy }}>{tile.label}</div>
-              <div style={{ fontSize: 10, fontWeight: 500, color: t.muted }}>{tile.stat}</div>
+              {tile.miniList ? (
+                tile.miniList.length === 0 ? (
+                  <div style={{ fontSize: 10, fontWeight: 500, color: t.muted }}>
+                    {tile.miniEmpty ?? tile.stat}
+                  </div>
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 3, marginTop: 1 }}>
+                    {tile.miniList.slice(0, 3).map((row, i) => (
+                      <div key={i} style={{ display: "flex", alignItems: "center", gap: 5, minWidth: 0 }}>
+                        <span style={{ fontSize: 9, fontWeight: 700, color: t.navy, width: 30, flexShrink: 0 }}>
+                          {row.time}
+                        </span>
+                        <span style={{
+                          width: 4, height: 4, borderRadius: "50%",
+                          backgroundColor: row.colour ?? tile.accent, flexShrink: 0,
+                        }} />
+                        <span style={{
+                          fontSize: 10, color: t.mid, whiteSpace: "nowrap",
+                          overflow: "hidden", textOverflow: "ellipsis", minWidth: 0,
+                        }}>
+                          {row.name}
+                        </span>
+                      </div>
+                    ))}
+                    {tile.miniList.length > 3 && (
+                      <div style={{ fontSize: 9, color: t.muted, fontWeight: 500 }}>
+                        +{tile.miniList.length - 3} more
+                      </div>
+                    )}
+                  </div>
+                )
+              ) : (
+                <div style={{ fontSize: 10, fontWeight: 500, color: t.muted }}>{tile.stat}</div>
+              )}
             </div>
           </Link>
         ))}
