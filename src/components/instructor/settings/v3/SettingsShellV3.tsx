@@ -174,40 +174,23 @@ function DetailView({ item, group }: { item: AreaItem; group?: AreaGroup }) {
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => navigate("/instructor/settings")}
-        className="inline-flex items-center gap-1.5 text-[13px] text-muted-foreground hover:text-foreground mb-3 transition-colors"
-      >
-        <ArrowLeft className="h-3.5 w-3.5" />
-        All settings
-      </button>
-
-      <nav aria-label="Breadcrumb" className="mb-3">
+      <nav aria-label="Breadcrumb" className="mb-4">
         <ol className="flex items-center flex-wrap gap-1 text-[13px] text-muted-foreground">
           <li>
             <button
               type="button"
-              onClick={() => navigate("/instructor")}
-              className="hover:text-foreground hover:underline underline-offset-2 transition-colors"
-            >
-              Dashboard
-            </button>
-          </li>
-          <li aria-hidden><ChevronRight className="h-3.5 w-3.5" /></li>
-          <li>
-            <button
-              type="button"
               onClick={() => navigate("/instructor/settings")}
-              className="hover:text-foreground hover:underline underline-offset-2 transition-colors"
+              aria-label="Back to all settings"
+              className="inline-flex items-center gap-1 -ml-1 px-1.5 py-0.5 rounded-md hover:bg-muted hover:text-foreground transition-colors"
             >
-              Settings
+              <ArrowLeft className="h-3.5 w-3.5" />
+              <span>Settings</span>
             </button>
           </li>
           {group && (
             <>
               <li aria-hidden><ChevronRight className="h-3.5 w-3.5" /></li>
-              <li className="text-muted-foreground">{group.label}</li>
+              <li>{group.label}</li>
             </>
           )}
           <li aria-hidden><ChevronRight className="h-3.5 w-3.5" /></li>
