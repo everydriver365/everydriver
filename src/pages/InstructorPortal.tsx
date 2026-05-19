@@ -312,6 +312,8 @@ function DesktopDashboardV2(props: DesktopDashboardV2Props) {
   } = props;
 
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const refreshDashboard = () => invalidateInstructorDashboard(queryClient, instructorId);
   const [addLessonOpen, setAddLessonOpen] = useState(false);
   const { total: notificationCount } = useCombinedNotificationCount(instructorId);
   const { data: earnings } = useDailyEarnings(instructorId);
