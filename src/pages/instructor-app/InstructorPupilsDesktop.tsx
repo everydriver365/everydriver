@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import {
-  Search, Plus, Download, Phone, MessageSquare, X,
+  Search, Plus, Download, Phone, MessageSquare, X, ArrowLeft,
   ChevronLeft, ChevronRight, MoreVertical, ChevronDown, Loader2,
 } from "lucide-react";
 import { DashboardShell } from "@/components/instructor/dashboardV2/DashboardShell";
