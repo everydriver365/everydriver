@@ -2,9 +2,14 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import { createSupabaseMock } from "@/test/supabaseMock";
 
-const mock = createSupabaseMock();
+const { mock } = vi.hoisted(() => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { createSupabaseMock } = require("@/test/supabaseMock");
+  return { mock: createSupabaseMock() };
+});
 
 vi.mock("@/integrations/supabase/client", () => ({ supabase: mock.supabase }));
+
 
 import { PupilPortalHistory } from "@/components/pupil-portal/PupilPortalHistory";
 
