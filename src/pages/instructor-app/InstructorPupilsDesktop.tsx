@@ -1327,6 +1327,49 @@ export default function InstructorPupilsDesktop() {
             </section>
 
 
+            {/* Tests */}
+            <section className="space-y-3">
+              <h4 className="text-[11px] font-semibold tracking-wider uppercase text-muted-foreground">Tests</h4>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label htmlFor="edit-theory-date">Theory test date</Label>
+                  <Input id="edit-theory-date" type="date"
+                    value={editForm.theory_test_date}
+                    onChange={e => setEditForm(f => ({ ...f, theory_test_date: e.target.value }))} />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="edit-theory-result">Theory result</Label>
+                  <Select value={editForm.theory_test_passed || "__none"}
+                    onValueChange={v => setEditForm(f => ({ ...f, theory_test_passed: v === "__none" ? "" : v as any }))}>
+                    <SelectTrigger id="edit-theory-result"><SelectValue placeholder="Not set" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none">Not set / booked</SelectItem>
+                      <SelectItem value="pass">Passed</SelectItem>
+                      <SelectItem value="fail">Not passed</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="edit-driving-date">Driving test date</Label>
+                  <Input id="edit-driving-date" type="date"
+                    value={editForm.test_date}
+                    onChange={e => setEditForm(f => ({ ...f, test_date: e.target.value }))} />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="edit-driving-result">Driving test result</Label>
+                  <Select value={editForm.test_passed || "__none"}
+                    onValueChange={v => setEditForm(f => ({ ...f, test_passed: v === "__none" ? "" : v as any }))}>
+                    <SelectTrigger id="edit-driving-result"><SelectValue placeholder="Not set" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none">Not set / booked</SelectItem>
+                      <SelectItem value="pass">Passed</SelectItem>
+                      <SelectItem value="fail">Not passed</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </section>
+
             {/* Comments */}
             <section className="space-y-3">
               <h4 className="text-[11px] font-semibold tracking-wider uppercase text-muted-foreground">Comments</h4>
