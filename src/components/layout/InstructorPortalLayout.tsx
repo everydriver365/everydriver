@@ -261,6 +261,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
   const todayOverview = useTodayOverview(instructor?.id).data;
   const activePupilsCount = useActivePupilsCount(instructor?.id).data ?? 0;
   const pendingCount = usePendingJobsCount();
+  const { total: notificationTotal } = useCombinedNotificationCount(instructor?.id);
 
   const handleCompleteLessonAlert = (lesson: OverdueLesson) => {
     dismissLessonAlert(lesson.id);
@@ -1147,7 +1148,6 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
     .slice(0, 2)
     .join("")
     .toUpperCase();
-  const { total: notificationTotal } = useCombinedNotificationCount(instructor?.id);
 
   return (
     <RealtimeHubProvider instructorId={instructor?.id}>
