@@ -493,6 +493,9 @@ export default function InstructorPupils() {
         test_time: "",
         duration: "",
         custom_hourly_rate: "",
+        source: "",
+        intensive_hours_paid: "",
+        intensive_course_payout: "",
       });
       fetchPupils();
     } catch (error: any) {
