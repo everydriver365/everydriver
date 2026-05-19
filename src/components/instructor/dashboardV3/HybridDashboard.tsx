@@ -274,7 +274,7 @@ function NextLessonCard({ instructorId }: { instructorId: string }) {
   return (
     <div
       onClick={() => navigate(`/instructor/diary?lessonId=${next.lessonId}`)}
-      style={{ backgroundColor: t.white, borderRadius: 12, border: `1px solid ${t.border}`, overflow: "hidden", cursor: "pointer" }}
+      style={{ backgroundColor: t.white, borderRadius: 12, border: `1px solid ${t.border}`, overflow: "hidden", cursor: "pointer", width: "100%" }}
     >
       <div style={headerStyle}>
         <CarFront size={14} color={t.muted} />
