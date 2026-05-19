@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { format, parseISO } from "date-fns";
 import {
   Bell, Link2, Plus, Mail, MessageSquare, MessageCircle,
-  Trash2, Check, X, Edit3, Loader2, History, PoundSterling,
+  Trash2, Check, X, Edit3, Loader2, History, PoundSterling, AlertCircle, Minus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
