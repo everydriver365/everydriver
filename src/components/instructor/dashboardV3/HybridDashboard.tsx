@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import {
@@ -12,6 +12,8 @@ import { useDayLessons } from "@/hooks/useDayLessons";
 import { useDailyEarnings } from "@/hooks/useDailyEarnings";
 import { useInstructorLiveStats } from "@/hooks/useInstructorLiveStats";
 import { useInstructorDashboardStats } from "@/hooks/useInstructorDashboardStats";
+import { supabase } from "@/integrations/supabase/client";
+import { SendAllRemindersDialog } from "@/components/instructor/payments/SendAllRemindersDialog";
 
 interface Pupil {
   id: string;
@@ -49,7 +51,12 @@ function Greeting({ name, greeting, date }: { name: string; greeting: string; da
 }
 
 // ---------------- AlertBanner ----------------
-function AlertBanner({ message, link }: { message: string; link?: { href: string; label: string } }) {
+function AlertBanner({ message, link, onAction }: { message: string; link?: { href?: string; label: string; onClick?: () => void }; onAction?: () => void }) {
+  const actionStyle: React.CSSProperties = {
+    marginLeft: "auto", fontSize: 11, fontWeight: 700, color: t.amber,
+    background: "transparent", border: "none", padding: 0, cursor: "pointer",
+    textDecoration: "none", whiteSpace: "nowrap",
+  };
   return (
     <div style={{
       backgroundColor: t.amberLight, border: "1px solid #FDE68A", borderRadius: 9,
@@ -59,9 +66,11 @@ function AlertBanner({ message, link }: { message: string; link?: { href: string
       <TriangleAlert size={14} color={t.amber} />
       <span>{message}</span>
       {link && (
-        <Link to={link.href} style={{ marginLeft: "auto", fontSize: 11, fontWeight: 700, color: t.amber, textDecoration: "none", whiteSpace: "nowrap" }}>
-          {link.label} →
-        </Link>
+        onAction ? (
+          <button type="button" onClick={onAction} style={actionStyle}>{link.label} →</button>
+        ) : link.href ? (
+          <Link to={link.href} style={actionStyle as any}>{link.label} →</Link>
+        ) : null
       )}
     </div>
   );
@@ -431,6 +440,23 @@ export function HybridDashboard({ instructorId, instructorName, pupils, todaysLe
   // Treat sum of positive balances as the "account balance" total
   const positiveBalance = pupils.reduce((sum, p) => sum + Math.max(0, p.account_balance ?? 0), 0);
 
+  // Chase-now dialog
+  const [chaseOpen, setChaseOpen] = useState(false);
+  const [pupilContacts, setPupilContacts] = useState<Array<{ id: string; name: string; phone: string | null; email: string | null; account_balance: number | null }>>([]);
+  useEffect(() => {
+    if (!chaseOpen || !instructorId || owing.length === 0) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("pupils")
+        .select("id, name, phone, email, account_balance")
+        .eq("instructor_id", instructorId)
+        .in("id", owing.map((p) => p.id));
+      if (!cancelled && data) setPupilContacts(data as any);
+    })();
+    return () => { cancelled = true; };
+  }, [chaseOpen, instructorId, owing.map((p) => p.id).join(",")]);
+
   // Quick actions
   const quickActions: QA[] = [
     { label: "Availability", Icon: Clock,       iconBg: t.blueLight, iconColor: t.blue,  sub: "Manage your diary",                                href: "/instructor/schedule" },
@@ -533,9 +559,23 @@ export function HybridDashboard({ instructorId, instructorName, pupils, todaysLe
       {hasAlert && (
         <AlertBanner
           message={`£${outstandingTotal.toFixed(0)} outstanding across ${owing.length} pupil${owing.length !== 1 ? "s" : ""}.`}
-          link={{ href: "/instructor/pay", label: "Chase now" }}
+          link={{ label: "Chase now" }}
+          onAction={() => setChaseOpen(true)}
         />
       )}
+
+      <SendAllRemindersDialog
+        open={chaseOpen}
+        onOpenChange={setChaseOpen}
+        outstanding={owing.map((p) => ({
+          id: p.id,
+          name: p.name,
+          amount: Math.abs(p.account_balance ?? 0),
+        }))}
+        allPupils={pupilContacts}
+        instructorId={instructorId}
+        instructorName={instructorName ?? undefined}
+      />
 
       <QuickActionRow items={quickActions} />
       <StatsRow stats={stats} />
