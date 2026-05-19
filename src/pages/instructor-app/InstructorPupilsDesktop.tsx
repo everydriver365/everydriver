@@ -29,6 +29,7 @@ import { AddPupilSheet } from "@/components/instructor/pupils/AddPupilSheet";
 import { ImportPupilsCsvDialog } from "@/components/instructor/pupils/ImportPupilsCsvDialog";
 import { ArchivedPupilsDialog } from "@/components/instructor/pupils/ArchivedPupilsDialog";
 import { AddLessonSheet } from "@/components/instructor/AddLessonSheet";
+import { PupilPaymentsManager } from "@/components/instructor/PupilPaymentsManager";
 import { usePupilLessonHistory } from "@/hooks/usePupilLessonHistory";
 import { useQueryClient } from "@tanstack/react-query";
 
