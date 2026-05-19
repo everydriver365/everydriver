@@ -72,6 +72,7 @@ import { SwapChecklistNeedsAttentionBanner } from "@/components/pupil-portal/Swa
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 import { ChevronDown } from "lucide-react";
+import { Drive365PupilHome } from "@/components/pupil-portal/Drive365PupilHome";
 
 interface InstructorBranding {
   id: string;
