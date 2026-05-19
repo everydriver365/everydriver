@@ -158,8 +158,8 @@ export default function AdminLogin() {
     <>
       {/* ============== MOBILE-ONLY — shared dark navy shell ============== */}
       <DarkMobileAuthForm
-        logoSrc={everydriverLogo}
-        logoAlt="EveryDriver Admin"
+        logoSrc={dsmLogo}
+        logoAlt="Driving School Manager"
         title={title}
         subtitle={subtitle}
         email={email}
