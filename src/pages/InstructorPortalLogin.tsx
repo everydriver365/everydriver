@@ -221,20 +221,216 @@ export default function InstructorPortalLogin() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col lg:flex-row">
-      <div className="lg:hidden">
-        <MobileLoginHero
-          heroSrc={instructorHero}
-          logoSrc={dsmLogo}
-          logoAlt="Driving School Manager"
-          title={isForgotPassword ? "Reset password" : "Welcome back"}
-          subtitle={
-            isForgotPassword
-              ? "Enter your email to receive a reset link."
-              : "Sign in to manage your pupils, lessons and payments."
-          }
-        />
+    <div className="min-h-screen bg-white lg:bg-gradient-to-br lg:from-slate-900 lg:via-slate-800 lg:to-slate-900 flex flex-col lg:flex-row">
+      {/* ============== MOBILE-ONLY REDESIGNED LOGIN ============== */}
+      <div className="lg:hidden min-h-screen w-full bg-white flex flex-col" style={{ fontFamily: 'Poppins, system-ui, sans-serif' }}>
+        {/* Logo */}
+        <div className="bg-white flex items-center justify-center" style={{ paddingTop: 28, paddingBottom: 20 }}>
+          <img src={dsmLogo} alt="DSM365" style={{ width: 120, height: 40, objectFit: 'contain' }} />
+        </div>
+
+        {/* Card */}
+        <div className="flex-1 bg-white" style={{ paddingLeft: 28, paddingRight: 28, paddingBottom: 36 }}>
+          <h1 className="text-center" style={{ fontSize: 22, fontWeight: 700, color: '#0F2044', letterSpacing: -0.5, marginBottom: 22 }}>
+            {isForgotPassword ? "Reset password" : "Sign In"}
+          </h1>
+
+          {error && (
+            <div className="flex items-start gap-2 rounded-[10px] border px-3 py-2 mb-3" style={{ borderColor: '#F3C7C9', backgroundColor: '#FDECEE', color: '#A81E24' }}>
+              <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+              <p style={{ fontSize: 12, fontWeight: 500 }}>{error}</p>
+            </div>
+          )}
+
+          {!isForgotPassword && (
+            <>
+              <button
+                type="button"
+                onClick={() => {
+                  const btn = document.getElementById('hidden-instructor-google-btn') as HTMLButtonElement | null;
+                  btn?.click();
+                }}
+                className="w-full flex items-center justify-center gap-[10px] active:opacity-80 transition-opacity"
+                style={{ padding: 13, marginBottom: 10, backgroundColor: '#F2F4F8', border: '1.5px solid #C4C9D4', borderRadius: 10 }}
+              >
+                <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
+                  <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.4 29.3 35.5 24 35.5c-6.4 0-11.5-5.1-11.5-11.5S17.6 12.5 24 12.5c2.9 0 5.6 1.1 7.7 2.9l5.7-5.7C33.9 6.2 29.2 4.5 24 4.5 13.2 4.5 4.5 13.2 4.5 24S13.2 43.5 24 43.5 43.5 34.8 43.5 24c0-1.2-.1-2.3-.3-3.5z"/>
+                  <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 16 19 12.5 24 12.5c2.9 0 5.6 1.1 7.7 2.9l5.7-5.7C33.9 6.2 29.2 4.5 24 4.5 16.3 4.5 9.7 8.9 6.3 14.7z"/>
+                  <path fill="#4CAF50" d="M24 43.5c5.1 0 9.8-1.7 13.4-4.6l-6.2-5.1c-2 1.4-4.5 2.3-7.2 2.3-5.3 0-9.7-3.1-11.3-7.4l-6.5 5C9.6 39 16.2 43.5 24 43.5z"/>
+                  <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.2-4.1 5.6l6.2 5.1c.4-.3 6.6-4.8 6.6-14.7 0-1.2-.1-2.3-.3-3.5z"/>
+                </svg>
+                <span style={{ fontSize: 14, fontWeight: 600, color: '#111827' }}>Continue with Google</span>
+              </button>
+
+              {biometricAvailable && (
+                <button
+                  type="button"
+                  onClick={handleBiometricLogin}
+                  disabled={biometricLoading || loading}
+                  className="w-full flex items-center justify-center gap-[10px] active:opacity-80 transition-opacity disabled:opacity-70"
+                  style={{ padding: 13, marginBottom: 20, backgroundColor: '#0F2044', borderRadius: 10 }}
+                >
+                  {biometricLoading
+                    ? <Loader2 className="h-5 w-5 animate-spin" color="#FFFFFF" />
+                    : <ScanFace className="h-5 w-5" color="#FFFFFF" strokeWidth={1.8} />}
+                  <span style={{ fontSize: 14, fontWeight: 600, color: '#FFFFFF' }}>
+                    {biometricLoading ? 'Scanning…' : 'Sign in with Face ID'}
+                  </span>
+                </button>
+              )}
+
+              <div className="flex items-center gap-[10px]" style={{ marginBottom: 18, marginTop: biometricAvailable ? 0 : 10 }}>
+                <div className="flex-1" style={{ height: 1, backgroundColor: '#E8EDF6' }} />
+                <span style={{ fontSize: 10, fontWeight: 700, color: '#C4C9D4', letterSpacing: 0.7 }}>OR USE EMAIL</span>
+                <div className="flex-1" style={{ height: 1, backgroundColor: '#E8EDF6' }} />
+              </div>
+            </>
+          )}
+
+          <form onSubmit={handleSubmit}>
+            <div style={{ marginBottom: 12 }}>
+              <label style={{ fontSize: 10, fontWeight: 700, color: '#374151', letterSpacing: 0.7, textTransform: 'uppercase', marginBottom: 6, display: 'block' }}>
+                Email address
+              </label>
+              <div className="relative">
+                <input
+                  type="email"
+                  inputMode="email"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  autoComplete="username"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  className="w-full focus:outline-none"
+                  style={{
+                    border: '1.5px solid #DDE3ED', borderRadius: 10,
+                    padding: '12px 42px 12px 14px', fontSize: 14,
+                    color: '#0F2044', backgroundColor: '#FFFFFF',
+                  }}
+                  onFocus={(e) => (e.currentTarget.style.borderColor = '#1A52A0')}
+                  onBlur={(e) => (e.currentTarget.style.borderColor = '#DDE3ED')}
+                  required
+                />
+                <Mail className="absolute right-[13px] top-1/2 -translate-y-1/2" size={15} color="#C4C9D4" strokeWidth={1.7} />
+              </div>
+            </div>
+
+            {!isForgotPassword && (
+              <div style={{ marginBottom: 0 }}>
+                <label style={{ fontSize: 10, fontWeight: 700, color: '#374151', letterSpacing: 0.7, textTransform: 'uppercase', marginBottom: 6, display: 'block' }}>
+                  Password
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    autoComplete="current-password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Enter your password"
+                    className="w-full focus:outline-none"
+                    style={{
+                      border: '1.5px solid #DDE3ED', borderRadius: 10,
+                      padding: '12px 42px 12px 14px', fontSize: 14,
+                      color: '#0F2044', backgroundColor: '#FFFFFF',
+                    }}
+                    onFocus={(e) => (e.currentTarget.style.borderColor = '#1A52A0')}
+                    onBlur={(e) => (e.currentTarget.style.borderColor = '#DDE3ED')}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(p => !p)}
+                    className="absolute right-[13px] top-1/2 -translate-y-1/2"
+                    tabIndex={-1}
+                  >
+                    {showPassword
+                      ? <EyeOff size={15} color="#C4C9D4" strokeWidth={1.7} />
+                      : <Eye size={15} color="#C4C9D4" strokeWidth={1.7} />}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {!isForgotPassword && (
+              <div className="flex items-center justify-between" style={{ marginTop: 4, marginBottom: 20 }}>
+                <button type="button" onClick={() => setRememberMeState(p => !p)} className="flex items-center gap-2">
+                  <span
+                    className="flex items-center justify-center"
+                    style={{
+                      width: 18, height: 18, borderRadius: 5,
+                      border: `1.5px solid ${rememberMe ? '#1A52A0' : '#DDE3ED'}`,
+                      backgroundColor: rememberMe ? '#1A52A0' : '#FFFFFF',
+                    }}
+                  >
+                    {rememberMe && <Check size={10} color="#FFFFFF" strokeWidth={2.5} />}
+                  </span>
+                  <span style={{ fontSize: 12, fontWeight: 500, color: '#374151' }}>Remember me</span>
+                </button>
+                <button type="button" onClick={() => setIsForgotPassword(true)} style={{ fontSize: 12, fontWeight: 600, color: '#1A52A0' }}>
+                  Forgot password?
+                </button>
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading || biometricLoading || (!isForgotPassword && (!email.trim() || !password))}
+              className="w-full flex items-center justify-center gap-2 transition-opacity"
+              style={{
+                padding: 14, marginBottom: 18,
+                backgroundColor: '#CC2229', borderRadius: 10,
+                opacity: loading || biometricLoading || (!isForgotPassword && (!email.trim() || !password)) ? 0.45 : 1,
+              }}
+            >
+              {loading
+                ? <Loader2 className="h-5 w-5 animate-spin" color="#FFFFFF" />
+                : (
+                  <>
+                    <span style={{ fontSize: 15, fontWeight: 700, color: '#FFFFFF' }}>
+                      {isForgotPassword ? 'Send reset link' : 'Sign in'}
+                    </span>
+                    <ChevronRight size={15} color="#FFFFFF" strokeWidth={2.2} />
+                  </>
+                )}
+            </button>
+          </form>
+
+          {isForgotPassword && (
+            <button
+              type="button"
+              onClick={() => setIsForgotPassword(false)}
+              className="w-full text-center"
+              style={{ fontSize: 13, fontWeight: 500, color: '#6B7280', marginBottom: 12 }}
+            >
+              Back to sign in
+            </button>
+          )}
+
+          {!isForgotPassword && (
+            <div className="text-center">
+              <span style={{ fontSize: 13, fontWeight: 300, color: '#6B7280' }}>
+                Don't have an account?{' '}
+                <Link to="/instructor-app/signup" style={{ fontWeight: 700, color: '#1A52A0' }}>
+                  Request access
+                </Link>
+              </span>
+            </div>
+          )}
+
+          {/* Hidden real Google button to reuse OAuth handler */}
+          <div className="hidden">
+            <GoogleSignInButton redirectTo={`${window.location.origin}/auth/redirect?portal=instructor`} />
+            <button id="hidden-instructor-google-btn" type="button" onClick={() => {
+              const realBtn = document.querySelector<HTMLButtonElement>('.hidden button[type="button"]:not(#hidden-instructor-google-btn)');
+              realBtn?.click();
+            }} />
+          </div>
+        </div>
       </div>
+      {/* ============== END MOBILE-ONLY ============== */}
+
 
       {/* Install to Home Screen Banner */}
 
