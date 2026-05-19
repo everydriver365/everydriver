@@ -127,8 +127,16 @@ export default function Drive365Login() {
 
   return (
     <div className="min-h-screen w-full bg-white flex flex-col md:flex-row">
+      <MobileLoginHero
+        heroSrc={pupilHero}
+        logoSrc={drive365Logo}
+        logoAlt="Drive365"
+        title="Welcome back"
+        subtitle="Sign in to your Drive365 account to book lessons, track progress and pay your instructor."
+      />
       {/* LEFT PANEL */}
       <aside className="hidden md:flex flex-col justify-between relative overflow-hidden flex-1 bg-[#0F2044] p-11">
+
         {/* Vertical red+blue stripe */}
         <div className="absolute top-0 left-0 bottom-0 w-[6px] flex flex-col">
           <div className="flex-1 bg-[#CC2229]" />
