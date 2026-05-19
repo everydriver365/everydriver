@@ -173,7 +173,7 @@ export default function AdminLogin() {
         isForgot={viewMode === "forgot"}
         onForgotToggle={(v) => { setViewMode(v ? "forgot" : "login"); setError(""); setSuccess(""); }}
         loading={loading}
-        error={error || success}
+        error={error}
         onSubmit={handleSubmit}
         onGoogleClick={() => {
           const wrap = document.getElementById("mobile-admin-google");
