@@ -496,7 +496,9 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug, onNavigat
                       />
                     </svg>
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <span className="text-[18px] font-bold" style={{ color: TEXT }}>{readinessPct}%</span>
+                      <span className="text-[18px] font-bold" style={{ color: TEXT }}>
+                        {readinessPct !== null ? `${readinessPct}%` : "—"}
+                      </span>
                       <span className="text-[9px] font-semibold tracking-wider" style={{ color: MUTED }}>READY</span>
                     </div>
                   </div>
