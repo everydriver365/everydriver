@@ -797,11 +797,8 @@ export default function InstructorPupilsDesktop() {
                   <span style={{ fontWeight: 500 }}>{selectedIds.size} pupil{selectedIds.size > 1 ? "s" : ""} selected</span>
                   <button onClick={() => setSelectedIds(new Set())} style={{ color: "#6366F1", fontSize: 11 }}>Clear</button>
                 </div>
-                <div className="flex items-center gap-3" style={{ fontSize: 11 }}>
-                  <button onClick={() => toast("Reminders sent")}>Send reminder</button>
-                  <button onClick={() => toast("Marked inactive")}>Mark inactive</button>
-                  <button onClick={() => toast("Exporting…")}>Export</button>
-                  <button style={{ color: "#BE123C" }} onClick={() => toast("Deleted (demo)")}>Delete</button>
+                <div className="flex items-center gap-3" style={{ fontSize: 11, color: "var(--d2-text-3)" }}>
+                  <span>Bulk actions coming soon</span>
                 </div>
               </motion.div>
             )}
