@@ -278,40 +278,73 @@ export function SendAllRemindersDialog({
           </div>
         )}
 
-        {/* Pupil list */}
+        {/* Pupil list — all candidates with per-channel eligibility */}
         <div className="max-h-[280px] overflow-y-auto -mx-1 px-1">
-          {eligible.length === 0 && (
+          {candidates.length === 0 && (
             <div className="text-center py-6 text-sm text-muted-foreground">
-              {candidates.length === 0
-                ? "No outstanding balances."
-                : `No pupils have a ${emptyChannelLabel} on file for the selected channels.`}
+              No outstanding balances.
             </div>
           )}
-          {eligible.map((p) => {
+          {candidates.map((p) => {
             const checked = selected.has(p.id);
             const overdue = p.daysOverdue !== undefined && p.daysOverdue > 0;
-            const pupilChannels = eligibleChannelsFor(p);
+            const pupilEligibleChs = eligibleChannelsFor(p);
+            const isEligible = pupilEligibleChs.length > 0;
+
+            // Missing: selected channels this pupil can't receive + why
+            const missingChs = Array.from(channels).filter(
+              (ch) => !pupilEligibleChs.includes(ch)
+            );
+            const missingFields = Array.from(
+              new Set(
+                missingChs
+                  .map((ch) => CHANNEL_META[ch].field)
+                  .filter(Boolean) as string[]
+              )
+            );
+
             return (
               <label
                 key={p.id}
-                className="flex items-center gap-3 py-2 px-1 border-b last:border-0 cursor-pointer hover:bg-muted/30 rounded-sm"
+                className={`flex items-center gap-3 py-2 px-1 border-b last:border-0 rounded-sm ${
+                  isEligible ? "cursor-pointer hover:bg-muted/30" : "opacity-60 cursor-not-allowed"
+                }`}
               >
-                <Checkbox
-                  checked={checked}
-                  onCheckedChange={() => toggleOne(p.id)}
-                  disabled={sending}
-                />
+                {isEligible ? (
+                  <Checkbox
+                    checked={checked}
+                    onCheckedChange={() => toggleOne(p.id)}
+                    disabled={sending}
+                  />
+                ) : (
+                  <div className="h-4 w-4 flex-shrink-0" />
+                )}
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium truncate">{p.name}</div>
-                  <div className="text-[11px] text-muted-foreground truncate flex items-center gap-1.5">
-                    {pupilChannels.map((ch) => {
-                      const M = CHANNEL_META[ch].Icon;
-                      return <M key={ch} className="h-3 w-3 inline" />;
-                    })}
-                    <span className="truncate">
-                      {pupilChannels.map(ch => CHANNEL_META[ch].label).join(" · ")}
-                      {overdue && <span className="text-rose-600 ml-1">· {p.daysOverdue}d overdue</span>}
-                    </span>
+                  <div className="flex items-center gap-1.5">
+                    <div className="text-sm font-medium truncate">{p.name}</div>
+                    {overdue && (
+                      <span className="text-[10px] font-semibold text-rose-600 bg-rose-50 px-1.5 py-0.5 rounded-full">
+                        {p.daysOverdue}d overdue
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-[11px] truncate mt-0.5">
+                    {isEligible ? (
+                      <span className="text-emerald-700 flex items-center gap-1 flex-wrap">
+                        <Check className="h-3 w-3 inline" />
+                        Receiving on: {pupilEligibleChs.map((ch) => CHANNEL_META[ch].label).join(" · ")}
+                      </span>
+                    ) : (
+                      <span className="text-rose-700">
+                        Skipped — no {missingFields.join(" or ")} on file
+                      </span>
+                    )}
+                    {isEligible && missingChs.length > 0 && (
+                      <span className="text-muted-foreground ml-1">
+                        · missing {missingFields.join(" / ")} for{" "}
+                        {missingChs.map((ch) => CHANNEL_META[ch].label).join(" · ")}
+                      </span>
+                    )}
                   </div>
                 </div>
                 <div className="text-sm font-medium tabular-nums">{gbp(p.amount)}</div>
@@ -319,7 +352,7 @@ export function SendAllRemindersDialog({
                   <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
                 )}
                 {!sending && progress && checked && (
-                  progress.failures.some(f => f.startsWith(p.name + " ("))
+                  progress.failures.some((f) => f.startsWith(p.name + " ("))
                     ? <AlertCircle className="h-3.5 w-3.5 text-rose-600" />
                     : <Check className="h-3.5 w-3.5 text-emerald-600" />
                 )}
