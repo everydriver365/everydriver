@@ -83,6 +83,35 @@ const childDetailSegments = [
   { value: "payments", label: "Payments" },
 ];
 
+function TestStatusRow({ label, date, passed }: { label: string; date: string | null; passed: boolean | null }) {
+  const fmt = (d: string) => format(parseISO(d), "EEE d MMM yyyy");
+  const isFuture = date ? parseISO(date) >= new Date(new Date().toDateString()) : false;
+  let badgeText = "Not set";
+  let badgeBg = "transparent";
+  let badgeFg = "var(--muted-foreground)";
+  let Icon = Circle;
+
+  if (passed === true) { badgeText = "Passed"; badgeBg = "#DCFCE7"; badgeFg = "#15803D"; Icon = CheckCircle2; }
+  else if (passed === false) { badgeText = "Not passed"; badgeBg = "#FEE2E2"; badgeFg = "#B91C1C"; Icon = XCircle; }
+  else if (date) {
+    if (isFuture) { badgeText = "Booked"; badgeBg = "#DBEAFE"; badgeFg = "#1D4ED8"; Icon = Calendar; }
+    else { badgeText = "Awaiting result"; badgeBg = "#FEF3C7"; badgeFg = "#92400E"; Icon = Calendar; }
+  }
+
+  return (
+    <div className="flex items-center justify-between rounded-2xl border border-border bg-card px-4 py-3">
+      <div>
+        <div className="text-xs font-medium text-foreground">{label} test</div>
+        {date && <div className="text-[11px] text-muted-foreground mt-0.5">{fmt(date)}</div>}
+      </div>
+      <div className="flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-semibold" style={{ backgroundColor: badgeBg, color: badgeFg }}>
+        <Icon className="h-3 w-3" />
+        {badgeText}
+      </div>
+    </div>
+  );
+}
+
 export default function ParentPortal() {
   const [parentPhone, setParentPhone] = useState("");
   const [otp, setOtp] = useState("");
