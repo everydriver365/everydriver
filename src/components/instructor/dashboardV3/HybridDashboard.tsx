@@ -235,7 +235,7 @@ function NextLessonCard({ instructorId }: { instructorId: string }) {
 
   if (isLoading) {
     return (
-      <div style={{ backgroundColor: t.white, borderRadius: 12, border: `1px solid ${t.border}`, overflow: "hidden" }}>
+      <div style={{ backgroundColor: t.white, borderRadius: 12, border: `1px solid ${t.border}`, overflow: "hidden", width: "100%" }}>
         <div style={headerStyle}>
           <CarFront size={14} color={t.muted} />
           <span style={labelStyle}>Next lesson</span>
