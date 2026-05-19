@@ -100,7 +100,10 @@ export function usePupilLessonHistory(
       completed.sort(sortDesc);
       cancelled.sort(sortDesc);
 
-      return [...upcoming, ...completed, ...cancelled];
+      return includeUpcoming
+        ? [...upcoming, ...completed, ...cancelled]
+        : [...completed, ...cancelled];
+
     },
     enabled: !!pupilId,
     staleTime: 60_000,
