@@ -32,16 +32,20 @@ interface Props {
   onChanged?: () => void;
 }
 
+// Canonical labels — must match the `validate_payment_method` trigger on payment_history
 const METHODS = [
-  { value: "cash", label: "Cash" },
-  { value: "card", label: "Card" },
-  { value: "bank_transfer", label: "Transfer" },
-  { value: "apple_pay", label: "Apple Pay" },
-  { value: "google_pay", label: "Google Pay" },
+  { value: "Cash", label: "Cash" },
+  { value: "Square", label: "Card" },
+  { value: "Bank Transfer", label: "Bank Transfer" },
+  { value: "Klarna", label: "Klarna" },
+  { value: "Clearpay", label: "Clearpay" },
+  { value: "SumUp", label: "SumUp" },
+  { value: "GoCardless Bank Pay", label: "Bank Pay" },
+  { value: "GoCardless Direct Debit", label: "Direct Debit" },
 ];
 
 const formatMethod = (m: string) =>
-  METHODS.find((x) => x.value === m?.toLowerCase())?.label || m || "Payment";
+  METHODS.find((x) => x.value === m)?.label || m || "Payment";
 
 export function PupilPaymentsManager({
   pupilId, pupilName, pupilPhone, pupilEmail,
