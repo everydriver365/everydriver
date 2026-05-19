@@ -888,7 +888,7 @@ export default function InstructorPupilsDesktop() {
                     </div>
                   </div>
                   <div style={{ fontFamily: "var(--d2-mono)", color: "var(--d2-text-2)", fontVariantNumeric: "tabular-nums" }}>
-                    {p.lessonsLeft}
+                    {p.hoursLeft}h
                   </div>
                   <div style={{ color: "var(--d2-text-2)" }}>{p.lastLesson}</div>
                   <div
