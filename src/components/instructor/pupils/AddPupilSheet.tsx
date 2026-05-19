@@ -488,13 +488,30 @@ export function AddPupilSheet({
   const desktopName = `${(form.first_name || "").trim()} ${(form.last_name || "").trim()}`.trim();
   const effectiveName = isMobile ? form.name : desktopName || form.name;
 
+  const isNationalIntensive = form.source === "national_intensive";
+
   const isValid =
     effectiveName.trim().length > 0 &&
     form.address.trim().length > 0 &&
-    form.postcode.trim().length > 0;
+    form.postcode.trim().length > 0 &&
+    (!isNationalIntensive || (
+      String(form.intensive_hours_paid || "").trim().length > 0 &&
+      String(form.intensive_course_payout || "").trim().length > 0 &&
+      !isNaN(parseFloat(String(form.intensive_hours_paid || ""))) &&
+      !isNaN(parseFloat(String(form.intensive_course_payout || "")))
+    ));
+
   const nameInvalid = submitted && !effectiveName.trim();
   const addressInvalid = submitted && !form.address.trim();
   const postcodeInvalid = submitted && !form.postcode.trim();
+  const intensiveHoursInvalid = submitted && isNationalIntensive && (
+    !String(form.intensive_hours_paid || "").trim() ||
+    isNaN(parseFloat(String(form.intensive_hours_paid || "")))
+  );
+  const intensivePayoutInvalid = submitted && isNationalIntensive && (
+    !String(form.intensive_course_payout || "").trim() ||
+    isNaN(parseFloat(String(form.intensive_course_payout || "")))
+  );
 
   const handleSave = () => {
     setSubmitted(true);
