@@ -43,6 +43,7 @@ interface Pupil {
   phone: string | null;
   address: string | null;
   postcode: string | null;
+  source: string | null;
 }
 
 interface TestCentre {
