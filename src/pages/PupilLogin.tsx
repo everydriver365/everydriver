@@ -312,7 +312,7 @@ export default function PupilLogin() {
     <>
       {showMobileNewLogin && (
         <div
-          className="md:hidden fixed inset-0 bg-[#2D7BE8] text-white flex flex-col overflow-hidden z-40"
+          className="md:hidden fixed inset-0 bg-[#0F2044] text-white flex flex-col overflow-hidden z-40"
           style={{
             paddingTop: "calc(env(safe-area-inset-top) + 40px)",
             paddingBottom: "calc(env(safe-area-inset-bottom) + 20px)",
