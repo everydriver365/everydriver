@@ -22,7 +22,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Pencil, Trash2, Upload } from "lucide-react";
+import { Pencil, Trash2, Upload, Archive } from "lucide-react";
 import { buildPupilUpdatePayload } from "./pupilEditPayload";
 import { AddPupilSheet } from "@/components/instructor/pupils/AddPupilSheet";
 import { ImportPupilsCsvDialog } from "@/components/instructor/pupils/ImportPupilsCsvDialog";
