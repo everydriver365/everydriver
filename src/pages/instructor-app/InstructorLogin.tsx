@@ -624,5 +624,6 @@ export default function InstructorLogin() {
         </div>
       </div>
     </div>
+    </>
   );
 }
