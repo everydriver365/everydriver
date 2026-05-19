@@ -102,34 +102,38 @@ export default function PupilLogin() {
     fetchInstructor();
   }, [instructorSlug]);
 
+  const [biometryLabel, setBiometryLabel] = useState<string>("Face ID");
+
   useEffect(() => {
-    if ((window as any).PasswordCredential) {
-      setFaceIdAvailable(true);
-    }
+    let cancelled = false;
+    (async () => {
+      const [available, label] = await Promise.all([
+        isBiometricAvailable("pupil"),
+        getBiometryLabel(),
+      ]);
+      if (cancelled) return;
+      setFaceIdAvailable(available);
+      setBiometryLabel(label);
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
     const tryAutoLogin = async () => {
-      if (!(window as any).PasswordCredential) return;
       const remembered = localStorage.getItem("pupil_remembered_email");
       if (!remembered) return;
-
       try {
-        const credential = await navigator.credentials.get({
-          password: true,
-          mediation: "optional",
-        } as any);
-
-        if (credential && credential.type === "password") {
-          const pwCred = credential as any;
+        const creds = await getBiometricCredentials("pupil", "Sign in to your pupil portal");
+        if (creds?.email && creds?.password) {
           setAutoLoggingIn(true);
-          await performLogin(pwCred.id, pwCred.password || "");
+          await performLogin(creds.email, creds.password);
         }
       } catch {
         // Silently fail
       }
     };
-
     tryAutoLogin();
   }, []);
 
