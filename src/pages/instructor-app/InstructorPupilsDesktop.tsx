@@ -557,6 +557,49 @@ export default function InstructorPupilsDesktop() {
     if (error) { toast.error(`Could not save: ${error.message}`); return; }
     toast.success("Pupil updated");
     setEditErrors({});
+
+    // Suggest Test Swap when a future driving test date was entered and no result yet
+    const newTestDate = payload.test_date as string | null;
+    const newPassed = payload.test_passed as boolean | null;
+    const instructorId = instructor?.id;
+    const pupilId = editTargetId;
+    const pupilName = editForm.name?.trim() || "this pupil";
+    if (instructorId && pupilId && newTestDate && newPassed === null) {
+      const inFuture = new Date(newTestDate) >= new Date(new Date().toDateString());
+      if (inFuture) {
+        const { data: existing } = await supabase
+          .from("pupil_swap_profile")
+          .select("opted_in")
+          .eq("pupil_id", pupilId)
+          .maybeSingle();
+        if (!existing || !existing.opted_in) {
+          toast(`Add ${pupilName} to Test Swap?`, {
+            description: "Get notified when an earlier slot becomes available.",
+            duration: 12000,
+            action: {
+              label: "Add to Swap",
+              onClick: async () => {
+                const { error: upErr } = await supabase.from("pupil_swap_profile").upsert({
+                  pupil_id: pupilId,
+                  instructor_id: instructorId,
+                  opted_in: true,
+                  email_notifications: true,
+                  sms_notifications: false,
+                  test_date: newTestDate,
+                  test_time: (payload as any).test_time ?? null,
+                  preference: "earlier",
+                  consent_given: true,
+                  consent_timestamp: new Date().toISOString(),
+                }, { onConflict: "pupil_id" });
+                if (upErr) toast.error(`Couldn't add to Test Swap: ${upErr.message}`);
+                else toast.success(`${pupilName} added to Test Swap`);
+              },
+            },
+          });
+        }
+      }
+    }
+
     setEditOpen(false);
     setEditTargetId(null);
     setReloadTick(t => t + 1);
