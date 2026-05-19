@@ -294,7 +294,7 @@ export default function InstructorPupilsDesktop() {
       parent_phone: addForm.parent_phone || null,
       parent_name: addForm.parent_name || null,
       pickup_address: addForm.has_different_pickup ? (addForm.pickup_address || null) : null,
-      lessons_completed: hoursNum && !isNaN(hoursNum) ? hoursNum : 0,
+      lessons_completed: 0,
       theory_test_passed: !!addForm.theory_passed,
       theory_test_date: addForm.theory_passed ? (addForm.theory_pass_date || null) : null,
       test_centre_id: addForm.test_booked ? (addForm.test_centre_id || null) : null,
