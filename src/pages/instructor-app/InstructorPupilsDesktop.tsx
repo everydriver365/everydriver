@@ -744,7 +744,7 @@ export default function InstructorPupilsDesktop() {
       });
     }
     return list;
-  }, [pupils, filter, debounced, sortKey, sortDir]);
+  }, [pupils, filter, debounced, sortKey, sortDir, theoryFilter, drivingFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const visiblePage = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
