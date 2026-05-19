@@ -19,6 +19,7 @@ import { setRememberMe, getRememberMe } from "@/lib/sessionPersistence";
 import { isEmailNotConfirmedError, resendSignupConfirmation } from "@/lib/emailConfirmation";
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 import { MobileLoginHero } from "@/components/auth/MobileLoginHero";
+import { DarkMobileAuthForm } from "@/components/auth/DarkMobileAuthForm";
 import instructorHero from "@/assets/every-instructor-hero.webp";
 
 const loginSchema = z.object({
@@ -207,7 +208,40 @@ export default function InstructorLogin() {
   ];
 
   return (
-    <div style={{ minHeight: "100vh", fontFamily: "Poppins, system-ui, sans-serif", background: t.surface }}>
+    <>
+      {/* ============== MOBILE-ONLY — shared dark-navy shell (matches pupil login) ============== */}
+      <DarkMobileAuthForm
+        logoSrc={dsmLogo}
+        logoAlt="Driving School Manager"
+        title={isForgotPassword ? "Reset password" : "Welcome back"}
+        subtitle={
+          isForgotPassword
+            ? resetSent
+              ? `We've sent a reset link to ${resetSentTo}`
+              : "Enter your email and we'll send you a reset link."
+            : "Sign in to your Driving School Manager account."
+        }
+        email={email}
+        setEmail={setEmail}
+        password={password}
+        setPassword={setPassword}
+        showPassword={showPw}
+        setShowPassword={setShowPw}
+        rememberMe={rememberMe}
+        setRememberMe={setRememberMeState}
+        isForgot={isForgotPassword}
+        onForgotToggle={(v) => { setIsForgotPassword(v); setError(""); }}
+        loading={loading}
+        error={error}
+        onSubmit={handleSignIn}
+        signUpHref="/instructor-app/signup"
+        signUpLabel="Don't have an account?"
+        biometricAvailable={biometricAvailable && !isForgotPassword}
+        biometricLoading={faceIdState === "scanning"}
+        onBiometric={handleBiometricLogin}
+      />
+
+    <div className="hidden md:block" style={{ minHeight: "100vh", fontFamily: "Poppins, system-ui, sans-serif", background: t.surface }}>
       <style>{`@keyframes dsm365-faceid-scan { 0%,100% { opacity: 0.15 } 50% { opacity: 1 } }`}</style>
       <MobileLoginHero
         heroSrc={instructorHero}
@@ -223,6 +257,7 @@ export default function InstructorLogin() {
         }
       />
       <div className="md:grid md:grid-cols-2" style={{ minHeight: "100vh" }}>
+
 
 
         {/* LeftPanel — hidden on mobile */}
@@ -589,5 +624,6 @@ export default function InstructorLogin() {
         </div>
       </div>
     </div>
+    </>
   );
 }
