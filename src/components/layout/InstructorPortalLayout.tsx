@@ -1148,7 +1148,6 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
     .slice(0, 2)
     .join("")
     .toUpperCase();
-  const { total: notificationTotal } = useCombinedNotificationCount(instructor?.id);
 
   return (
     <RealtimeHubProvider instructorId={instructor?.id}>
