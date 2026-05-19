@@ -655,7 +655,7 @@ export function AddLessonSheet({
       const weeks = isRecurring ? parseInt(recurrenceWeeks) : 1;
       const testNotes = buildDrivingTestNotes();
       const selectedPupilObj = pupils.find(p => p.id === selectedPupil);
-      const isNationalIntensive = selectedPupilObj?.source === 'national_intensive';
+      const isNationalIntensive = selectedPupilObj?.source === 'national_intensive' || paymentMethod === 'national_intensive';
       const lessons = [];
       const dateStrs: string[] = [];
       for (let i = 0; i < weeks; i++) {
