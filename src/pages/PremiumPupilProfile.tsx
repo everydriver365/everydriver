@@ -805,13 +805,45 @@ export default function PremiumPupilProfile() {
           <div style={{ fontFamily: FONT, fontSize: 11, color: C.muted, textTransform: "uppercase", letterSpacing: "0.3px", fontWeight: 500 }}>
             Balance
           </div>
-          <div style={{
-            fontFamily: FONT, fontSize: 22, fontWeight: 700,
-            color: hasDebt ? C.red : C.green, marginTop: 2,
-            fontVariantNumeric: "tabular-nums",
-          }}>
-            £{Math.abs(balance).toFixed(2)}
-          </div>
+          {editBalance ? (
+            <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4 }}>
+              <span style={{ fontFamily: FONT, fontSize: 18, color: C.text }}>£</span>
+              <input
+                autoFocus
+                type="number"
+                step="0.01"
+                value={balanceDraft}
+                onChange={(e) => setBalanceDraft(e.target.value)}
+                style={{
+                  width: 90, fontFamily: FONT, fontSize: 18, fontWeight: 600,
+                  border: `1px solid ${C.hairline}`, borderRadius: 8, padding: "4px 8px",
+                  fontVariantNumeric: "tabular-nums", outline: "none",
+                }}
+              />
+              <button onClick={saveBalance} disabled={savingField === "balance"}
+                style={{ background: "transparent", border: "none", color: C.green, cursor: "pointer", padding: 4 }}>
+                <Check size={18} />
+              </button>
+              <button onClick={() => setEditBalance(false)}
+                style={{ background: "transparent", border: "none", color: C.muted, cursor: "pointer", padding: 4 }}>
+                <X size={18} />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => { setBalanceDraft(String(balance)); setEditBalance(true); }}
+              title="Tap to edit"
+              style={{
+                background: "transparent", border: "none", padding: 0, cursor: "pointer",
+                textAlign: "left", marginTop: 2,
+                fontFamily: FONT, fontSize: 22, fontWeight: 700,
+                color: hasDebt ? C.red : C.green,
+                fontVariantNumeric: "tabular-nums",
+              }}
+            >
+              £{Math.abs(balance).toFixed(2)}
+            </button>
+          )}
           <div style={{ fontFamily: FONT, fontSize: 11, color: C.muted, marginTop: 2 }}>
             {hasDebt ? "Outstanding" : "In credit"}
           </div>
@@ -820,12 +852,44 @@ export default function PremiumPupilProfile() {
           <div style={{ fontFamily: FONT, fontSize: 11, color: C.muted, textTransform: "uppercase", letterSpacing: "0.3px", fontWeight: 500 }}>
             Prepaid hours
           </div>
-          <div style={{
-            fontFamily: FONT, fontSize: 22, fontWeight: 700, color: C.text, marginTop: 2,
-            fontVariantNumeric: "tabular-nums",
-          }}>
-            {(pupil.prepaid_hours ?? 0).toFixed(1)}
-          </div>
+          {editHours ? (
+            <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4 }}>
+              <input
+                autoFocus
+                type="number"
+                step="0.5"
+                min="0"
+                value={hoursDraft}
+                onChange={(e) => setHoursDraft(e.target.value)}
+                style={{
+                  width: 80, fontFamily: FONT, fontSize: 18, fontWeight: 600,
+                  border: `1px solid ${C.hairline}`, borderRadius: 8, padding: "4px 8px",
+                  fontVariantNumeric: "tabular-nums", outline: "none",
+                }}
+              />
+              <button onClick={saveHours} disabled={savingField === "hours"}
+                style={{ background: "transparent", border: "none", color: C.green, cursor: "pointer", padding: 4 }}>
+                <Check size={18} />
+              </button>
+              <button onClick={() => setEditHours(false)}
+                style={{ background: "transparent", border: "none", color: C.muted, cursor: "pointer", padding: 4 }}>
+                <X size={18} />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => { setHoursDraft(String(pupil.prepaid_hours ?? 0)); setEditHours(true); }}
+              title="Tap to edit"
+              style={{
+                background: "transparent", border: "none", padding: 0, cursor: "pointer",
+                textAlign: "left", marginTop: 2,
+                fontFamily: FONT, fontSize: 22, fontWeight: 700, color: C.text,
+                fontVariantNumeric: "tabular-nums",
+              }}
+            >
+              {(pupil.prepaid_hours ?? 0).toFixed(1)}
+            </button>
+          )}
           {pupil.payment_type && (
             <div style={{ fontFamily: FONT, fontSize: 11, color: C.muted, marginTop: 2, textTransform: "capitalize" }}>
               {String(pupil.payment_type).replace(/_/g, " ")}
