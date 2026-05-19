@@ -25,6 +25,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Pencil, Trash2 } from "lucide-react";
 import { buildPupilUpdatePayload } from "./pupilEditPayload";
 import { AddPupilSheet } from "@/components/instructor/pupils/AddPupilSheet";
+import { ImportPupilsCsvDialog } from "@/components/instructor/pupils/ImportPupilsCsvDialog";
 
 // ----------------------------- Types & data -----------------------------
 type Status = "active" | "at-risk" | "test-ready" | "paused" | "archived";
