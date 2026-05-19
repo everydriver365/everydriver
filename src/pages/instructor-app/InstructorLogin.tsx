@@ -18,6 +18,8 @@ import {
 import { setRememberMe, getRememberMe } from "@/lib/sessionPersistence";
 import { isEmailNotConfirmedError, resendSignupConfirmation } from "@/lib/emailConfirmation";
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
+import { MobileLoginHero } from "@/components/auth/MobileLoginHero";
+import instructorHero from "@/assets/every-instructor-hero.webp";
 
 const loginSchema = z.object({
   email: z.string().trim().email("Please enter a valid email address").max(255),
