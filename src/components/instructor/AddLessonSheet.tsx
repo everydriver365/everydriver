@@ -315,7 +315,7 @@ export function AddLessonSheet({
     setLoadingPupils(true);
     const { data, error } = await supabase
       .from('pupils')
-      .select('id, name, phone, address, postcode')
+      .select('id, name, phone, address, postcode, source')
       .eq('instructor_id', instructorId)
       .is('deleted_at', null)
       .order('name');
