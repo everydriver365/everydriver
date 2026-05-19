@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { motion } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
 import { Lock, ShieldCheck, Clock } from "lucide-react";
+import { MobileLoginHero } from "./MobileLoginHero";
 
 export const portalTokens = {
   navy: "#0F2044",
