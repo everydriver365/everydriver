@@ -666,6 +666,19 @@ export function DashboardSidebar({ collapsed, onToggle, userInitials, userName, 
 
           return (
             <>
+              {/* Dashboard — always at top */}
+              {(() => {
+                const dbItem = allItems.find((i) => i.to === "/instructor");
+                if (!dbItem) return null;
+                return (
+                  <div style={{ marginBottom: 8 }}>
+                    <ul className="space-y-0.5">
+                      {renderItem(dbItem, { isPinned: false })}
+                    </ul>
+                  </div>
+                );
+              })()}
+
               {criticalLoaded && criticalItems.length > 0 && (
                 <div style={{ marginBottom: 8 }}>
                   {!collapsed && (
