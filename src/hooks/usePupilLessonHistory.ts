@@ -20,10 +20,16 @@ export interface PupilLessonHistoryEntry {
   pickup_location?: string | null;
 }
 
-export function usePupilLessonHistory(pupilId: string | null | undefined, limit = 100) {
+export function usePupilLessonHistory(
+  pupilId: string | null | undefined,
+  limit = 100,
+  options: { includeUpcoming?: boolean } = {},
+) {
+  const includeUpcoming = options.includeUpcoming ?? false;
   return useQuery({
-    queryKey: ["pupil-lesson-history", pupilId, limit],
+    queryKey: ["pupil-lesson-history", pupilId, limit, includeUpcoming],
     queryFn: async (): Promise<PupilLessonHistoryEntry[]> => {
+
       if (!pupilId) return [];
       const today = new Date().toISOString().slice(0, 10);
 
