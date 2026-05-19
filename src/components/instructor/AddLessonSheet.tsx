@@ -384,7 +384,7 @@ export function AddLessonSheet({
         const [lessonsRes, eventsRes] = await Promise.all([
           supabase
             .from('scheduled_lessons')
-            .select('start_time, duration_minutes, pupil_id, pickup_location, dropoff_location, pupils!inner(name, postcode, address, deleted_at)')
+            .select('start_time, duration_minutes, pupil_id, pickup_location, dropoff_postcode, pupils!inner(name, postcode, address, deleted_at)')
             .eq('instructor_id', instructorId)
             .eq('lesson_date', dateStr)
             .neq('status', 'cancelled')
