@@ -381,6 +381,12 @@ export function HybridDashboard({ instructorId, instructorName, pupils, todaysLe
   const { hoursThisWeek, monthEarnings } = useInstructorLiveStats(instructorId);
   const { data: earningsData } = useDailyEarnings(instructorId);
   const { data: stats2 } = useInstructorDashboardStats(instructorId);
+  const { data: todayLessons = [] } = useDayLessons(instructorId, new Date());
+  const scheduleMini = todayLessons.map((l) => ({
+    time: l.startTime?.slice(0, 5) ?? "",
+    name: l.pupilName,
+    colour: l.googleEventId ? t.amber : t.blue,
+  }));
 
   const owing = pupils.filter((p) => (p.account_balance ?? 0) < 0);
   const outstandingTotal = owing.reduce((sum, p) => sum + Math.abs(p.account_balance ?? 0), 0);
