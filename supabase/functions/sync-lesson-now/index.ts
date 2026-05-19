@@ -60,7 +60,7 @@ serve(async (req) => {
 
     // Resolve caller's instructor id and verify it owns this lesson.
     const { data: instructorRow } = await supabase.rpc("get_instructor_id_for_user", {
-      _user_id: userId,
+      p_user_id: userId,
     });
     const callerInstructorId = instructorRow as string | null;
     if (!callerInstructorId) {
