@@ -13,6 +13,8 @@ import {
   portalInputFocus,
   portalInputBlur,
 } from "@/components/auth/PortalLoginLayout";
+import dsmLogo from "@/assets/dsm-logo.png";
+import schoolHero from "@/assets/drive365-hero-test-centre.jpg";
 
 type View = "login" | "forgot";
 
