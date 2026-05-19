@@ -445,6 +445,30 @@ export default function PremiumPupilProfile() {
     } finally { setSavingField(null); }
   };
 
+  const amountDue = Math.max(0, -balance);
+
+  const saveAmountDue = async () => {
+    if (!pupil) return;
+    const next = parseFloat(amountDueDraft);
+    if (isNaN(next) || next < 0) { toast.error("Enter a valid number"); return; }
+    const newBalance = -next;
+    const delta = Math.round((newBalance - balance) * 100) / 100;
+    if (delta === 0) { setEditAmountDue(false); return; }
+    setSavingField("amountDue");
+    try {
+      const { error } = await supabase.rpc("increment_pupil_balance", {
+        p_pupil_id: pupil.id,
+        p_amount: delta,
+      });
+      if (error) throw error;
+      toast.success("Amount due updated");
+      setEditAmountDue(false);
+      queryClient.invalidateQueries({ queryKey: ["pupil-profile", pupil.id, instructorId] });
+    } catch (e) {
+      console.error(e); toast.error("Failed to update amount due");
+    } finally { setSavingField(null); }
+  };
+
   const progressPct = useMemo(() => {
     const v = pupil?.progress;
     if (typeof v !== "number") return null;
