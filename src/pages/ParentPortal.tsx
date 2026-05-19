@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Users, Calendar, CreditCard, Clock, Bell, Phone, LogOut, Star, 
-  MessageSquare, ChevronRight, Loader2, CheckCircle2, Car, TrendingUp, Shield, MapPin,
-  Wallet, Send
+  MessageSquare, ChevronRight, Loader2, CheckCircle2, XCircle, Car, GraduationCap, Circle,
+  TrendingUp, Shield, MapPin, Wallet, Send
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -49,6 +49,9 @@ interface Child {
   next_lesson_date: string | null;
   next_lesson_time: string | null;
   test_date: string | null;
+  test_passed: boolean | null;
+  theory_test_date: string | null;
+  theory_test_passed: boolean | null;
 }
 
 interface Activity {
@@ -79,6 +82,35 @@ const childDetailSegments = [
   { value: "progress", label: "Progress" },
   { value: "payments", label: "Payments" },
 ];
+
+function TestStatusRow({ label, date, passed }: { label: string; date: string | null; passed: boolean | null }) {
+  const fmt = (d: string) => format(parseISO(d), "EEE d MMM yyyy");
+  const isFuture = date ? parseISO(date) >= new Date(new Date().toDateString()) : false;
+  let badgeText = "Not set";
+  let badgeBg = "transparent";
+  let badgeFg = "var(--muted-foreground)";
+  let Icon = Circle;
+
+  if (passed === true) { badgeText = "Passed"; badgeBg = "#DCFCE7"; badgeFg = "#15803D"; Icon = CheckCircle2; }
+  else if (passed === false) { badgeText = "Not passed"; badgeBg = "#FEE2E2"; badgeFg = "#B91C1C"; Icon = XCircle; }
+  else if (date) {
+    if (isFuture) { badgeText = "Booked"; badgeBg = "#DBEAFE"; badgeFg = "#1D4ED8"; Icon = Calendar; }
+    else { badgeText = "Awaiting result"; badgeBg = "#FEF3C7"; badgeFg = "#92400E"; Icon = Calendar; }
+  }
+
+  return (
+    <div className="flex items-center justify-between rounded-2xl border border-border bg-card px-4 py-3">
+      <div>
+        <div className="text-xs font-medium text-foreground">{label} test</div>
+        {date && <div className="text-[11px] text-muted-foreground mt-0.5">{fmt(date)}</div>}
+      </div>
+      <div className="flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-semibold" style={{ backgroundColor: badgeBg, color: badgeFg }}>
+        <Icon className="h-3 w-3" />
+        {badgeText}
+      </div>
+    </div>
+  );
+}
 
 export default function ParentPortal() {
   const [parentPhone, setParentPhone] = useState("");
@@ -148,10 +180,10 @@ export default function ParentPortal() {
   const fetchChildrenData = async (phone: string) => {
     try {
       const cleanPhone = phone.replace(/\s+/g, "");
-      const { data: pupils, error: pupilsError } = await supabase
-        .from("pupils")
-        .select("id, name, lessons_completed, progress, account_balance, prepaid_hours, test_date, instructor_id")
-        .or(`parent_phone.ilike.%${cleanPhone.slice(-9)}`);
+        const { data: pupils, error: pupilsError } = await supabase
+          .from("pupils")
+          .select("id, name, lessons_completed, progress, account_balance, prepaid_hours, test_date, test_passed, theory_test_date, theory_test_passed, instructor_id")
+          .or(`parent_phone.ilike.%${cleanPhone.slice(-9)}`);
 
       if (pupilsError) throw pupilsError;
       if (!pupils || pupils.length === 0) { setChildren([]); return; }
@@ -188,7 +220,10 @@ export default function ParentPortal() {
           account_balance: p.account_balance || 0, prepaid_hours: p.prepaid_hours || 0,
           next_lesson_date: nextLessonMap.get(p.id)?.date || null,
           next_lesson_time: nextLessonMap.get(p.id)?.time || null,
-          test_date: p.test_date
+          test_date: p.test_date,
+          test_passed: p.test_passed,
+          theory_test_date: p.theory_test_date,
+          theory_test_passed: p.theory_test_passed,
         };
       });
 
@@ -467,20 +502,22 @@ export default function ParentPortal() {
                   </div>
                 )}
 
-                {/* Test Date */}
-                {selectedChild.test_date && (
-                  <div className="rounded-2xl p-3 text-white text-xs" style={{ background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.85))' }}>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1.5">
-                        <Calendar className="h-3.5 w-3.5 text-white/80" />
-                        <span className="text-white/80">Test: {format(parseISO(selectedChild.test_date), 'd MMM yyyy')}</span>
-                      </div>
-                      <span className="font-bold text-sm">
-                        {Math.max(0, Math.ceil((new Date(selectedChild.test_date).getTime() - Date.now()) / 86400000))} days
-                      </span>
-                    </div>
-                  </div>
-                )}
+                {/* Tests */}
+                <div className="space-y-2">
+                  <h3 className="text-sm font-bold text-foreground flex items-center gap-1.5">
+                    <GraduationCap className="h-4 w-4 text-primary" /> Tests
+                  </h3>
+                  <TestStatusRow
+                    label="Theory"
+                    date={selectedChild.theory_test_date}
+                    passed={selectedChild.theory_test_passed}
+                  />
+                  <TestStatusRow
+                    label="Driving"
+                    date={selectedChild.test_date}
+                    passed={selectedChild.test_passed}
+                  />
+                </div>
 
                 {/* Chat */}
                 <div id="parent-chat-section">
