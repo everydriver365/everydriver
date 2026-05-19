@@ -308,6 +308,8 @@ type Tile = {
   stat: string; href: string;
   miniList?: { time: string; name: string; colour?: string }[];
   miniEmpty?: string;
+  onAdd?: () => void;
+  addLabel?: string;
 };
 function FunctionTilesGrid({ tiles }: { tiles: Tile[] }) {
   return (
@@ -322,8 +324,28 @@ function FunctionTilesGrid({ tiles }: { tiles: Tile[] }) {
             <div style={{
               backgroundColor: t.white, border: `1px solid ${t.border}`, borderRadius: 10,
               padding: 12, cursor: "pointer", display: "flex", flexDirection: "column", gap: 7,
+              position: "relative",
             }}>
+              {tile.onAdd && (
+                <button
+                  type="button"
+                  aria-label={tile.addLabel ?? `Add ${tile.label}`}
+                  title={tile.addLabel ?? `Add ${tile.label}`}
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); tile.onAdd?.(); }}
+                  style={{
+                    position: "absolute", top: 8, right: 8,
+                    width: 22, height: 22, borderRadius: 6,
+                    backgroundColor: tile.iconBg, color: tile.iconColor,
+                    border: "none", cursor: "pointer",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    padding: 0,
+                  }}
+                >
+                  <Plus size={13} strokeWidth={2.2} />
+                </button>
+              )}
               <div style={{ height: 2, borderRadius: 1, backgroundColor: tile.accent, width: 24 }} />
+
               <div style={{
                 width: 30, height: 30, borderRadius: 8, backgroundColor: tile.iconBg,
                 display: "flex", alignItems: "center", justifyContent: "center",
