@@ -1470,12 +1470,39 @@ function StatCard({ label, value, mono }: { label: string; value: string; mono?:
 }
 
 function OverviewTab({ pupil, onStatus }: { pupil: Pupil; onStatus: (id: string, s: Status) => void }) {
+  const [recent, setRecent] = useState<Array<{ id: string; date: string; mins: number; topic: string | null }>>([]);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      const today = new Date().toISOString().slice(0, 10);
+      const { data } = await supabase
+        .from("scheduled_lessons")
+        .select("id, lesson_date, duration_minutes, lesson_focus, status")
+        .eq("pupil_id", pupil.id)
+        .lt("lesson_date", today)
+        .neq("status", "cancelled")
+        .is("deleted_at", null)
+        .order("lesson_date", { ascending: false })
+        .limit(5);
+      if (cancelled) return;
+      setRecent((data || []).map((l: any) => ({
+        id: l.id, date: l.lesson_date, mins: Number(l.duration_minutes) || 0, topic: l.lesson_focus || null,
+      })));
+      setLoading(false);
+    })();
+    return () => { cancelled = true; };
+  }, [pupil.id]);
+
+  const fmtDate = (iso: string) => new Date(iso + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+
   return (
     <div className="flex flex-col" style={{ gap: 12 }}>
       <div className="grid grid-cols-2" style={{ gap: 6 }}>
-        <StatCard label="Lessons left" value={String(pupil.lessonsLeft)} mono />
+        <StatCard label="Hours left" value={`${pupil.hoursLeft}h`} mono />
         <StatCard label="Total hours" value={`${pupil.totalHours}h`} mono />
-        <StatCard label="Test date" value={pupil.testDate || "—"} />
+        <StatCard label="Test date" value={pupil.testDate ? fmtDate(pupil.testDate) : "—"} />
         <StatCard label="Balance" value={`£${pupil.balance.toFixed(2)}`} mono />
       </div>
 
@@ -1489,30 +1516,25 @@ function OverviewTab({ pupil, onStatus }: { pupil: Pupil; onStatus: (id: string,
                 <div style={{ fontSize: 10, color: "#4338CA", opacity: 0.85, marginTop: 2 }}>{pupil.pickupAddress}</div>
               )}
             </div>
-            <button style={{ fontSize: 10, color: "#4F46E5", fontWeight: 500 }}>Edit ›</button>
           </div>
         </div>
       )}
 
       <div>
         <div style={{ fontSize: 11, fontWeight: 500, color: "var(--d2-text-1)", marginBottom: 4 }}>Recent lessons</div>
-        {[
-          { type: "Manoeuvres practice", date: "21 Apr", duration: "2h", amount: "£68.00" },
-          { type: "Mock test", date: "15 Apr", duration: "1.5h", amount: "£51.00" },
-          { type: "Roundabouts", date: "8 Apr", duration: "2h", amount: "£68.00" },
-          { type: "Junctions", date: "1 Apr", duration: "2h", amount: "£68.00" },
-        ].map((l, i) => (
+        {loading ? (
+          <div style={{ fontSize: 11, color: "var(--d2-text-3)", padding: "8px 0" }}>Loading…</div>
+        ) : recent.length === 0 ? (
+          <div style={{ fontSize: 11, color: "var(--d2-text-3)", padding: "8px 0" }}>No lessons yet.</div>
+        ) : recent.map((l, i) => (
           <div
-            key={i}
+            key={l.id}
             className="flex items-center justify-between"
-            style={{ padding: "6px 0", borderBottom: i === 3 ? "none" : "0.5px solid var(--d2-border)" }}
+            style={{ padding: "6px 0", borderBottom: i === recent.length - 1 ? "none" : "0.5px solid var(--d2-border)" }}
           >
             <div>
-              <div style={{ fontSize: 11, color: "var(--d2-text-1)" }}>{l.type}</div>
-              <div style={{ fontSize: 9, color: "var(--d2-text-3)" }}>{l.date} · {l.duration}</div>
-            </div>
-            <div style={{ fontSize: 11, fontFamily: "var(--d2-mono)", color: "var(--d2-text-2)", fontVariantNumeric: "tabular-nums" }}>
-              {l.amount}
+              <div style={{ fontSize: 11, color: "var(--d2-text-1)" }}>{l.topic || "Lesson"}</div>
+              <div style={{ fontSize: 9, color: "var(--d2-text-3)" }}>{fmtDate(l.date)} · {(l.mins / 60).toFixed(l.mins % 60 ? 1 : 0)}h</div>
             </div>
           </div>
         ))}
@@ -1534,22 +1556,44 @@ function OverviewTab({ pupil, onStatus }: { pupil: Pupil; onStatus: (id: string,
   );
 }
 
-function ProgressTab() {
-  const topics = [
-    { name: "Junctions", pct: 88 },
-    { name: "Roundabouts", pct: 72 },
-    { name: "Manoeuvres", pct: 64 },
-    { name: "Motorways", pct: 41 },
-    { name: "Independent driving", pct: 78 },
-  ];
-  const overall = Math.round(topics.reduce((s, t) => s + t.pct, 0) / topics.length);
+function ProgressTab({ pupilId }: { pupilId: string }) {
+  const [rows, setRows] = useState<Array<{ name: string; pct: number }>>([]);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      const { data } = await supabase
+        .from("pupil_syllabus_progress")
+        .select("competency_id, level")
+        .eq("pupil_id", pupilId);
+      if (cancelled) return;
+      const { DVSA_SYLLABUS } = await import("@/constants/dvsaSyllabus");
+      const byId = new Map((data || []).map((r: any) => [r.competency_id, Number(r.level) || 0]));
+      const out = DVSA_SYLLABUS
+        .filter(c => byId.has(c.id))
+        .map(c => ({ name: c.name, pct: Math.min(100, Math.max(0, (byId.get(c.id) as number) * 20)) }));
+      setRows(out);
+      setLoading(false);
+    })();
+    return () => { cancelled = true; };
+  }, [pupilId]);
+
+  const overall = rows.length ? Math.round(rows.reduce((s, t) => s + t.pct, 0) / rows.length) : 0;
+
   return (
     <div className="flex flex-col" style={{ gap: 10 }}>
       <div style={{ background: "#F8FAFC", borderRadius: 6, padding: 10 }}>
         <div style={{ fontSize: 9, color: "var(--d2-text-3)", textTransform: "uppercase", letterSpacing: "0.4px" }}>Test ready</div>
-        <div style={{ fontFamily: "var(--d2-mono)", fontSize: 18, fontWeight: 500, color: "var(--d2-text-1)" }}>{overall}%</div>
+        <div style={{ fontFamily: "var(--d2-mono)", fontSize: 18, fontWeight: 500, color: "var(--d2-text-1)" }}>
+          {rows.length ? `${overall}%` : "—"}
+        </div>
       </div>
-      {topics.map(t => (
+      {loading ? (
+        <div style={{ fontSize: 11, color: "var(--d2-text-3)" }}>Loading…</div>
+      ) : rows.length === 0 ? (
+        <div style={{ fontSize: 11, color: "var(--d2-text-3)" }}>No syllabus progress recorded yet.</div>
+      ) : rows.map(t => (
         <div key={t.name}>
           <div className="flex items-center justify-between" style={{ marginBottom: 4 }}>
             <div style={{ fontSize: 11, color: "var(--d2-text-1)" }}>{t.name}</div>
@@ -1565,58 +1609,133 @@ function ProgressTab() {
 }
 
 function PaymentsTab({ pupil }: { pupil: Pupil }) {
+  const [rows, setRows] = useState<Array<{ id: string; date: string; method: string; amount: number }>>([]);
+  const [totalPaid, setTotalPaid] = useState(0);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      const { data } = await supabase
+        .from("payment_history")
+        .select("id, amount, payment_method, recorded_at")
+        .eq("pupil_id", pupil.id)
+        .is("deleted_at", null)
+        .order("recorded_at", { ascending: false })
+        .limit(10);
+      if (cancelled) return;
+      const list = (data || []).map((r: any) => ({
+        id: r.id,
+        date: r.recorded_at,
+        method: r.payment_method || "—",
+        amount: Number(r.amount) || 0,
+      }));
+      setRows(list);
+      setTotalPaid(list.reduce((s, r) => s + r.amount, 0));
+      setLoading(false);
+    })();
+    return () => { cancelled = true; };
+  }, [pupil.id]);
+
+  const fmt = (iso: string) => new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+
   return (
     <div className="flex flex-col" style={{ gap: 10 }}>
       <div className="grid grid-cols-2" style={{ gap: 6 }}>
-        <StatCard label="Total paid" value="£612.00" mono />
+        <StatCard label="Total paid" value={`£${totalPaid.toFixed(2)}`} mono />
         <StatCard label="Outstanding" value={`£${pupil.balance.toFixed(2)}`} mono />
       </div>
-      {[
-        { date: "21 Apr", method: "Card", amount: "£68.00" },
-        { date: "8 Apr", method: "Bank", amount: "£136.00" },
-        { date: "21 Mar", method: "Card", amount: "£204.00" },
-      ].map((r, i) => (
-        <div key={i} className="flex items-center justify-between" style={{ padding: "6px 0", borderBottom: i === 2 ? "none" : "0.5px solid var(--d2-border)" }}>
+      {loading ? (
+        <div style={{ fontSize: 11, color: "var(--d2-text-3)" }}>Loading…</div>
+      ) : rows.length === 0 ? (
+        <div style={{ fontSize: 11, color: "var(--d2-text-3)" }}>No payments recorded yet.</div>
+      ) : rows.map((r, i) => (
+        <div key={r.id} className="flex items-center justify-between" style={{ padding: "6px 0", borderBottom: i === rows.length - 1 ? "none" : "0.5px solid var(--d2-border)" }}>
           <div>
-            <div style={{ fontSize: 11 }}>{r.method}</div>
-            <div style={{ fontSize: 9, color: "var(--d2-text-3)" }}>{r.date}</div>
+            <div style={{ fontSize: 11, textTransform: "capitalize" }}>{r.method.replace(/_/g, " ")}</div>
+            <div style={{ fontSize: 9, color: "var(--d2-text-3)" }}>{fmt(r.date)}</div>
           </div>
-          <div style={{ fontSize: 11, fontFamily: "var(--d2-mono)", fontVariantNumeric: "tabular-nums" }}>{r.amount}</div>
+          <div style={{ fontSize: 11, fontFamily: "var(--d2-mono)", fontVariantNumeric: "tabular-nums" }}>£{r.amount.toFixed(2)}</div>
         </div>
       ))}
-      <button
-        style={{
-          fontSize: 11, padding: "6px 10px", borderRadius: 6,
-          background: "#4F46E5", color: "#fff", fontWeight: 500, alignSelf: "flex-start",
-        }}
-      >
-        Take payment
-      </button>
     </div>
   );
 }
 
-function NotesTab() {
+function NotesTab({ pupilId }: { pupilId: string }) {
+  const [rows, setRows] = useState<Array<{ id: string; created_at: string; content: string; title: string | null }>>([]);
+  const [draft, setDraft] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  const load = async () => {
+    const { data } = await supabase
+      .from("notes")
+      .select("id, content, title, created_at")
+      .eq("owner_type", "pupil")
+      .eq("owner_id", pupilId)
+      .is("deleted_at", null)
+      .order("created_at", { ascending: false })
+      .limit(20);
+    setRows((data || []) as any);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => { setLoading(true); await load(); if (cancelled) return; })();
+    return () => { cancelled = true; };
+  }, [pupilId]);
+
+  const submit = async () => {
+    const text = draft.trim();
+    if (!text) return;
+    setSaving(true);
+    const { error } = await supabase.from("notes").insert({
+      owner_type: "pupil", owner_id: pupilId, content: text, title: null,
+    });
+    setSaving(false);
+    if (error) { toast.error(`Could not save note: ${error.message}`); return; }
+    setDraft("");
+    load();
+  };
+
+  const fmt = (iso: string) => new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+
   return (
     <div className="flex flex-col" style={{ gap: 10 }}>
-      {[
-        { d: "21 Apr", n: "Working well on bay parking. Confidence on roundabouts improving." },
-        { d: "8 Apr", n: "Slight hesitation at busy junctions — practice next session." },
-      ].map((x, i) => (
-        <div key={i} style={{ padding: 8, background: "#F8FAFC", borderRadius: 6 }}>
-          <div style={{ fontSize: 9, color: "var(--d2-text-3)", letterSpacing: "0.4px", textTransform: "uppercase" }}>{x.d}</div>
-          <div style={{ fontSize: 11, color: "var(--d2-text-1)", marginTop: 2 }}>{x.n}</div>
+      {loading ? (
+        <div style={{ fontSize: 11, color: "var(--d2-text-3)" }}>Loading…</div>
+      ) : rows.length === 0 ? (
+        <div style={{ fontSize: 11, color: "var(--d2-text-3)" }}>No notes yet.</div>
+      ) : rows.map(x => (
+        <div key={x.id} style={{ padding: 8, background: "#F8FAFC", borderRadius: 6 }}>
+          <div style={{ fontSize: 9, color: "var(--d2-text-3)", letterSpacing: "0.4px", textTransform: "uppercase" }}>{fmt(x.created_at)}</div>
+          <div style={{ fontSize: 11, color: "var(--d2-text-1)", marginTop: 2, whiteSpace: "pre-wrap" }}>{x.content}</div>
         </div>
       ))}
       <textarea
         placeholder="Add a note…"
         rows={3}
+        value={draft}
+        onChange={e => setDraft(e.target.value)}
         style={{
           fontSize: 11, padding: 8, borderRadius: 6,
           border: "0.5px solid var(--d2-border)", background: "#fff",
           color: "var(--d2-text-1)", resize: "none", outline: "none",
         }}
       />
+      <button
+        onClick={submit}
+        disabled={saving || !draft.trim()}
+        style={{
+          fontSize: 11, padding: "6px 10px", borderRadius: 6,
+          background: "#4F46E5", color: "#fff", fontWeight: 500, alignSelf: "flex-start",
+          opacity: saving || !draft.trim() ? 0.5 : 1,
+        }}
+      >
+        {saving ? "Saving…" : "Add note"}
+      </button>
     </div>
   );
 }
