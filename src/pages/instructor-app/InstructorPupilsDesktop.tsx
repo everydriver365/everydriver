@@ -1152,7 +1152,7 @@ export default function InstructorPupilsDesktop() {
                       fontWeight: p.balance > 0 ? 500 : 400,
                     }}
                   >
-                    £{p.balance.toFixed(2)}
+                    {p.balance > 0 ? `-£${p.balance.toFixed(2)}` : `£${p.balance.toFixed(2)}`}
                   </div>
                   <div><StatusPill status={p.status} /></div>
                   <Popover>
@@ -1837,7 +1837,7 @@ function OverviewTab({ pupil, onStatus }: { pupil: Pupil; onStatus: (id: string,
         <StatCard label="Total hours" value={`${pupil.totalHours}h`} mono />
         <StatCard label="Theory" value={testLabel(pupil.theoryPassed, pupil.theoryDate)} />
         <StatCard label="Driving test" value={testLabel(pupil.drivingPassed, pupil.drivingTestDate ?? pupil.testDate)} />
-        <StatCard label="Balance" value={`£${pupil.balance.toFixed(2)}`} mono />
+        <StatCard label="Balance" value={pupil.balance > 0 ? `-£${pupil.balance.toFixed(2)}` : `£${pupil.balance.toFixed(2)}`} mono />
       </div>
 
       {pupil.nextLesson && (
