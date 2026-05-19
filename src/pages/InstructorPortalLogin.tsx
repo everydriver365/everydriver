@@ -221,7 +221,7 @@ export default function InstructorPortalLogin() {
   };
 
   return (
-    <div className="min-h-screen bg-white lg:bg-gradient-to-br lg:from-slate-900 lg:via-slate-800 lg:to-slate-900 flex flex-col lg:flex-row">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col lg:flex-row">
       <div className="lg:hidden">
         <MobileLoginHero
           heroSrc={instructorHero}
@@ -235,6 +235,7 @@ export default function InstructorPortalLogin() {
           }
         />
       </div>
+
       {/* Install to Home Screen Banner */}
 
       <AnimatePresence>
