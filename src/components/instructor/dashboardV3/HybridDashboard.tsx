@@ -5,7 +5,7 @@ import {
   TriangleAlert, Clock, Users, CreditCard, User as UserIcon,
   Calendar, ShieldCheck, AwardIcon, BarChart3,
   ListChecks, Repeat2, TrendingUp, BookOpenCheck, Award,
-  FileText, Search, Settings, Banknote,
+  FileText, Search, Settings, Banknote, Plus,
 } from "lucide-react";
 import { t } from "./tokens";
 import { useDayLessons } from "@/hooks/useDayLessons";
@@ -24,6 +24,9 @@ interface Props {
   instructorName?: string | null;
   pupils: Pupil[];
   todaysLessonCount: number;
+  onAddLesson?: () => void;
+  onAddPupil?: () => void;
+  onTakePayment?: () => void;
 }
 
 function getGreeting() {
@@ -305,6 +308,8 @@ type Tile = {
   stat: string; href: string;
   miniList?: { time: string; name: string; colour?: string }[];
   miniEmpty?: string;
+  onAdd?: () => void;
+  addLabel?: string;
 };
 function FunctionTilesGrid({ tiles }: { tiles: Tile[] }) {
   return (
@@ -319,8 +324,28 @@ function FunctionTilesGrid({ tiles }: { tiles: Tile[] }) {
             <div style={{
               backgroundColor: t.white, border: `1px solid ${t.border}`, borderRadius: 10,
               padding: 12, cursor: "pointer", display: "flex", flexDirection: "column", gap: 7,
+              position: "relative",
             }}>
+              {tile.onAdd && (
+                <button
+                  type="button"
+                  aria-label={tile.addLabel ?? `Add ${tile.label}`}
+                  title={tile.addLabel ?? `Add ${tile.label}`}
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); tile.onAdd?.(); }}
+                  style={{
+                    position: "absolute", top: 8, right: 8,
+                    width: 22, height: 22, borderRadius: 6,
+                    backgroundColor: tile.iconBg, color: tile.iconColor,
+                    border: "none", cursor: "pointer",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    padding: 0,
+                  }}
+                >
+                  <Plus size={13} strokeWidth={2.2} />
+                </button>
+              )}
               <div style={{ height: 2, borderRadius: 1, backgroundColor: tile.accent, width: 24 }} />
+
               <div style={{
                 width: 30, height: 30, borderRadius: 8, backgroundColor: tile.iconBg,
                 display: "flex", alignItems: "center", justifyContent: "center",
@@ -373,7 +398,7 @@ function FunctionTilesGrid({ tiles }: { tiles: Tile[] }) {
 // ============================================================
 // Main hybrid dashboard
 // ============================================================
-export function HybridDashboard({ instructorId, instructorName, pupils, todaysLessonCount }: Props) {
+export function HybridDashboard({ instructorId, instructorName, pupils, todaysLessonCount, onAddLesson, onAddPupil, onTakePayment }: Props) {
   const firstName = (instructorName?.split(" ")[0]) || "there";
   const today = format(new Date(), "EEEE d MMMM yyyy");
   const greeting = getGreeting();
@@ -451,10 +476,10 @@ export function HybridDashboard({ instructorId, instructorName, pupils, todaysLe
 
   // Function tiles — labels/stats wired where possible, '—' otherwise
   const tiles: Tile[] = [
-    { label: "Schedule",     Icon: Calendar,      iconBg: t.blueLight,   iconColor: t.blue,  accent: t.blue,  stat: `${todaysLessonCount} today`,           href: "/instructor/schedule", miniList: scheduleMini, miniEmpty: "No lessons today" },
-    { label: "Pupils",       Icon: Users,         iconBg: t.blueLight,   iconColor: t.blue,  accent: t.blue,  stat: `${pupils.length} active`,              href: "/instructor/pupils" },
+    { label: "Schedule",     Icon: Calendar,      iconBg: t.blueLight,   iconColor: t.blue,  accent: t.blue,  stat: `${todaysLessonCount} today`,           href: "/instructor/schedule", miniList: scheduleMini, miniEmpty: "No lessons today", onAdd: onAddLesson, addLabel: "Add lesson" },
+    { label: "Pupils",       Icon: Users,         iconBg: t.blueLight,   iconColor: t.blue,  accent: t.blue,  stat: `${pupils.length} active`,              href: "/instructor/pupils", onAdd: onAddPupil, addLabel: "Add pupil" },
     { label: "Waiting list", Icon: ListChecks,    iconBg: t.blueLight,   iconColor: t.blue,  accent: t.blue,  stat: stats2 ? `${stats2.waitingListCount} waiting` : "—", href: "/instructor/waiting-list" },
-    { label: "Payments",     Icon: CreditCard,    iconBg: t.greenLight,  iconColor: t.green, accent: t.green, stat: `£${outstandingTotal.toFixed(0)} due`,  href: "/instructor/pay" },
+    { label: "Payments",     Icon: CreditCard,    iconBg: t.greenLight,  iconColor: t.green, accent: t.green, stat: `£${outstandingTotal.toFixed(0)} due`,  href: "/instructor/pay", onAdd: onTakePayment, addLabel: "Take payment" },
     { label: "Test swap",    Icon: Repeat2,       iconBg: t.redLight,    iconColor: t.red,   accent: t.red,   stat: stats2 ? `${stats2.testSwapOpenCount} open` : "—", href: "/instructor/test-requests" },
     { label: "Progress",     Icon: TrendingUp,    iconBg: t.blueLight,   iconColor: t.blue,  accent: t.blue,  stat: "Open",                                 href: "/instructor/pupils" },
     { label: "Courses",      Icon: BookOpenCheck, iconBg: t.blueLight,   iconColor: t.blue,  accent: t.blue,  stat: stats2 ? `${stats2.coursesCount} active` : "—", href: "/instructor/course-planner" },

@@ -355,6 +355,9 @@ function DesktopDashboardV2(props: DesktopDashboardV2Props) {
           instructorName={instructorData?.name}
           pupils={pupils}
           todaysLessonCount={isDemoMode ? demoStats.todayLessonCount : todaysLessonCount}
+          onAddLesson={() => setAddLessonOpen(true)}
+          onAddPupil={() => navigate("/instructor/pupils", { state: { openAddPupil: true } })}
+          onTakePayment={() => setPaymentModalOpen(true)}
         />
 
 
