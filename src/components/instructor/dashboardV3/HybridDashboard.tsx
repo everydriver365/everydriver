@@ -5,13 +5,14 @@ import {
   TriangleAlert, Clock, Users, CreditCard, User as UserIcon,
   Calendar, ShieldCheck, AwardIcon, BarChart3,
   ListChecks, Repeat2, TrendingUp, BookOpenCheck, Award,
-  FileText, Search, Settings, Banknote, Plus,
+  FileText, Search, Settings, Banknote, Plus, CarFront, MapPin,
 } from "lucide-react";
 import { t } from "./tokens";
 import { useDayLessons } from "@/hooks/useDayLessons";
 import { useDailyEarnings } from "@/hooks/useDailyEarnings";
 import { useInstructorLiveStats } from "@/hooks/useInstructorLiveStats";
 import { useInstructorDashboardStats } from "@/hooks/useInstructorDashboardStats";
+import { useNextLessonDetails } from "@/hooks/useNextLessonDetails";
 import { supabase } from "@/integrations/supabase/client";
 import { SendAllRemindersDialog } from "@/components/instructor/payments/SendAllRemindersDialog";
 
