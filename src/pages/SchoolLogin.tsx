@@ -238,5 +238,7 @@ export default function SchoolLogin() {
         </div>
       </form>
     </PortalLoginLayout>
+      </div>
+    </>
   );
 }
