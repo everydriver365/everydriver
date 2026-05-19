@@ -75,6 +75,37 @@ const colorOrder: AvatarColor[] = ["coral", "blue", "green", "pink", "purple", "
 
 // Real pupils are loaded from Supabase in the page component below.
 
+function TestBadge({ label, passed, date }: { label: string; passed?: boolean | null; date?: string | null }) {
+  let bg = "#F1F5F9", fg = "#64748B", title = `${label}: not set`;
+  if (passed === true) { bg = "#DCFCE7"; fg = "#15803D"; title = `${label}: passed${date ? ` ${date}` : ""}`; }
+  else if (passed === false) { bg = "#FEE2E2"; fg = "#B91C1C"; title = `${label}: not passed${date ? ` ${date}` : ""}`; }
+  else if (date) {
+    const isFuture = new Date(date) >= new Date(new Date().toDateString());
+    if (isFuture) { bg = "#DBEAFE"; fg = "#1D4ED8"; title = `${label}: booked ${date}`; }
+    else { bg = "#FEF3C7"; fg = "#92400E"; title = `${label}: taken ${date} — result pending`; }
+  }
+  return (
+    <span title={title} style={{
+      display: "inline-flex", alignItems: "center", justifyContent: "center",
+      minWidth: 18, height: 16, padding: "0 5px", borderRadius: 4,
+      background: bg, color: fg, fontSize: 9, fontWeight: 600, lineHeight: 1,
+    }}>{label}</span>
+  );
+}
+
+function TestStatusCell({ theoryPassed, theoryDate, drivingPassed, drivingDate }: {
+  theoryPassed?: boolean | null; theoryDate?: string | null;
+  drivingPassed?: boolean | null; drivingDate?: string | null;
+}) {
+  return (
+    <div style={{ display: "flex", gap: 4 }}>
+      <TestBadge label="T" passed={theoryPassed} date={theoryDate} />
+      <TestBadge label="D" passed={drivingPassed} date={drivingDate} />
+    </div>
+  );
+}
+
+
 function deriveAvatar(name: string, idx: number): { initials: string; avatarColor: AvatarColor } {
   const initials = name.split(" ").map(s => s[0]).filter(Boolean).join("").slice(0, 2).toUpperCase() || "?";
   const avatarColor = colorOrder[idx % colorOrder.length];
