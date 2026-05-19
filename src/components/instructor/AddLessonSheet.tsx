@@ -1659,20 +1659,33 @@ export function AddLessonSheet({
               <Row label="Pupil" value={pupilLabel} />
               {isDrivingTest ? (
                 <Row label="Type" value="Driving test" />
-              ) : (
-                <>
-                  {surchargeTotal > 0 && (
+              ) : (() => {
+                const selectedPupilObj = pupils.find(p => p.id === selectedPupil);
+                const isNationalIntensive = paymentMethod === 'national_intensive' || (tab === 'existing' && selectedPupilObj?.source === 'national_intensive');
+                if (isNationalIntensive) {
+                  return (
                     <>
-                      <Row label="Base price" value={`£${basePrice.toFixed(2)}`} />
-                      <Row label="Surcharges" value={`£${surchargeTotal.toFixed(2)}`} />
+                      <Row label="Type" value="National Intensive" />
+                      <Row label="Duration" value={`${hours} hour${hours === 1 ? '' : 's'}`} />
                     </>
-                  )}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', padding: '12px 0 4px' }}>
-                    <span style={{ fontSize: 14, fontWeight: 600, color: '#000' }}>Total</span>
-                    <span style={{ fontSize: 18, fontWeight: 600, color: '#2B7BC8' }}>£{total.toFixed(2)}</span>
-                  </div>
-                </>
-              )}
+                  );
+                }
+                return (
+                  <>
+                    {surchargeTotal > 0 && (
+                      <>
+                        <Row label="Base price" value={`£${basePrice.toFixed(2)}`} />
+                        <Row label="Surcharges" value={`£${surchargeTotal.toFixed(2)}`} />
+                      </>
+                    )}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', padding: '12px 0 4px' }}>
+                      <span style={{ fontSize: 14, fontWeight: 600, color: '#000' }}>Total</span>
+                      <span style={{ fontSize: 18, fontWeight: 600, color: '#2B7BC8' }}>£{total.toFixed(2)}</span>
+                    </div>
+                  </>
+                );
+              })()}
+
             </div>
           );
         })()}
