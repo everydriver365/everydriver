@@ -62,6 +62,7 @@ import { PassShareCard } from "@/components/pupil-portal/PassShareCard";
 import { PupilCertificates } from "@/components/pupil-portal/PupilCertificates";
 import { SubPageHeader } from "@/components/pupil-portal/SubPageHeader";
 import { TestCountdownCard } from "@/components/pupil-portal/TestCountdownCard";
+import { PupilTestStatusCard } from "@/components/pupil-portal/PupilTestStatusCard";
 import { PupilQuickActions } from "@/components/pupil-portal/PupilQuickActions";
 import { GroupedNavMenu } from "@/components/pupil-portal/GroupedNavMenu";
 import { SwapSettingsPanel } from "@/components/pupil-portal/SwapSettingsPanel";
@@ -457,6 +458,7 @@ export default function BrandedPupilPortal() {
 
                   {/* Test Countdown */}
                   <TestCountdownCard pupilId={pupil.id} brandColour={drive365Blue} />
+                  <PupilTestStatusCard pupilId={pupil.id} brandColour={drive365Blue} />
 
                   {/* ═══ ZONE 2: YOUR STATS (collapsible) ═══ */}
                   <Collapsible open={statsOpen} onOpenChange={setStatsOpen}>
