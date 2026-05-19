@@ -24,6 +24,9 @@ interface Props {
   instructorName?: string | null;
   pupils: Pupil[];
   todaysLessonCount: number;
+  onAddLesson?: () => void;
+  onAddPupil?: () => void;
+  onTakePayment?: () => void;
 }
 
 function getGreeting() {
