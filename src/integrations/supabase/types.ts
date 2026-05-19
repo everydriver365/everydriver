@@ -14906,6 +14906,7 @@ export type Database = {
           instructor_id: string
           intensive_course_payout: number | null
           intensive_hours_paid: number | null
+          intensive_pupil_payment: number | null
           last_trip_at: string | null
           lessons_completed: number | null
           licence_photo_back_url: string | null
@@ -15006,6 +15007,7 @@ export type Database = {
           instructor_id: string
           intensive_course_payout?: number | null
           intensive_hours_paid?: number | null
+          intensive_pupil_payment?: number | null
           last_trip_at?: string | null
           lessons_completed?: number | null
           licence_photo_back_url?: string | null
@@ -15106,6 +15108,7 @@ export type Database = {
           instructor_id?: string
           intensive_course_payout?: number | null
           intensive_hours_paid?: number | null
+          intensive_pupil_payment?: number | null
           last_trip_at?: string | null
           lessons_completed?: number | null
           licence_photo_back_url?: string | null

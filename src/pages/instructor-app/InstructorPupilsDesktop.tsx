@@ -211,7 +211,7 @@ export default function InstructorPupilsDesktop() {
     theory_passed: false, theory_pass_date: "",
     test_booked: false, test_centre_id: "", test_centre_label: "",
     test_date: "", test_time: "", duration: "", custom_hourly_rate: "",
-    source: "", intensive_hours_paid: "", intensive_course_payout: "",
+    source: "", intensive_hours_paid: "", intensive_course_payout: "", intensive_pupil_payment: "",
   });
   const [addErrors, setAddErrors] = useState<{
     email?: string;
@@ -305,6 +305,8 @@ export default function InstructorPupilsDesktop() {
         ? parseFloat(addForm.intensive_hours_paid) : null,
       intensive_course_payout: addForm.source === "national_intensive" && addForm.intensive_course_payout
         ? parseFloat(addForm.intensive_course_payout) : null,
+      intensive_pupil_payment: addForm.source === "national_intensive" && addForm.intensive_pupil_payment
+        ? parseFloat(addForm.intensive_pupil_payment) : null,
     });
     setAddSaving(false);
     if (error) { toast.error(`Could not add pupil: ${error.message}`); return; }
@@ -320,7 +322,7 @@ export default function InstructorPupilsDesktop() {
       theory_passed: false, theory_pass_date: "",
       test_booked: false, test_centre_id: "", test_centre_label: "",
       test_date: "", test_time: "", duration: "", custom_hourly_rate: "",
-      source: "", intensive_hours_paid: "", intensive_course_payout: "",
+      source: "", intensive_hours_paid: "", intensive_course_payout: "", intensive_pupil_payment: "",
     });
     setAddErrors({});
     setAddOpen(false);
