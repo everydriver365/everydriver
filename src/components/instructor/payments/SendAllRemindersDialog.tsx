@@ -25,6 +25,7 @@ const CHANNEL_META: Record<Channel, { label: string; Icon: any; field: "phone" |
   whatsapp: { label: "WhatsApp", Icon: MessageCircle, field: "phone" },
   in_app:   { label: "In-app",   Icon: Send,          field: null   },
 };
+const ALL_CHANNELS: Channel[] = ["email", "sms", "whatsapp", "in_app"];
 
 const gbp = (n: number) =>
   new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP" }).format(n);
@@ -39,7 +40,7 @@ export function SendAllRemindersDialog({
   instructorId?: string;
   instructorName?: string;
 }) {
-  const [channel, setChannel] = useState<Channel>("sms");
+  const [channels, setChannels] = useState<Set<Channel>>(new Set(["sms"]));
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [sending, setSending] = useState(false);
   const [progress, setProgress] = useState<{ done: number; total: number; failures: string[] } | null>(null);
@@ -61,23 +62,26 @@ export function SendAllRemindersDialog({
     });
   }, [outstanding, allPupils]);
 
-  const hasContact = (c: typeof candidates[number]) => {
-    const field = CHANNEL_META[channel].field;
-    if (!field) return true; // in_app needs no external contact
-    return !!c[field];
-  };
+  // For each candidate, list channels they can receive on (given selected channels)
+  const eligibleChannelsFor = (c: typeof candidates[number]): Channel[] =>
+    Array.from(channels).filter((ch) => {
+      const f = CHANNEL_META[ch].field;
+      if (!f) return true;
+      return !!c[f];
+    });
 
-  const eligible   = useMemo(() => candidates.filter(hasContact),  [candidates, channel]);
-  const ineligible = useMemo(() => candidates.filter(c => !hasContact(c)), [candidates, channel]);
+  // Pupil is eligible if at least one selected channel can reach them
+  const eligible   = useMemo(() => candidates.filter(c => eligibleChannelsFor(c).length > 0), [candidates, channels]);
+  const ineligible = useMemo(() => candidates.filter(c => eligibleChannelsFor(c).length === 0), [candidates, channels]);
 
-  // Reset selection when dialog opens or channel changes
+  // Reset selection when dialog opens or channels change
   useEffect(() => {
     if (open) {
       setSelected(new Set(eligible.map(c => c.id)));
       setProgress(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, channel]);
+  }, [open, Array.from(channels).sort().join(",")]);
 
   const allChecked = eligible.length > 0 && selected.size === eligible.length;
   const toggleAll = () => {
@@ -90,10 +94,17 @@ export function SendAllRemindersDialog({
       if (next.has(id)) next.delete(id); else next.add(id);
       return next;
     });
+  const toggleChannel = (c: Channel) =>
+    setChannels(prev => {
+      const next = new Set(prev);
+      if (next.has(c)) {
+        if (next.size > 1) next.delete(c); // keep at least one selected
+      } else next.add(c);
+      return next;
+    });
 
   const sendInApp = async (pupilId: string, content: string) => {
     if (!instructorId) throw new Error("Missing instructor");
-    // Upsert conversation
     const { data: existing } = await supabase
       .from("conversations")
       .select("id")
@@ -124,65 +135,82 @@ export function SendAllRemindersDialog({
     if (msgErr) throw msgErr;
   };
 
+  const sendOne = async (
+    p: typeof candidates[number],
+    ch: Channel,
+    fromName: string,
+  ) => {
+    const amount = p.amount.toFixed(2);
+    const firstName = p.name.split(" ")[0];
+    const shortMsg = `Hi ${firstName}, friendly reminder from ${fromName} — you have an outstanding balance of £${amount}. Thank you!`;
+
+    if (ch === "sms") {
+      await supabase.functions.invoke("send-sms", { body: { to: p.phone, message: shortMsg } });
+    } else if (ch === "whatsapp") {
+      await supabase.functions.invoke("send-whatsapp", { body: { to: p.phone, message: shortMsg } });
+    } else if (ch === "email") {
+      await supabase.functions.invoke("send-email", {
+        body: {
+          to: p.email,
+          subject: `Payment reminder — £${amount} outstanding`,
+          html: `<p>Hi ${firstName},</p><p>Friendly reminder: you have an outstanding balance of <strong>£${amount}</strong> with ${fromName}.</p><p>Thank you!</p>`,
+        },
+      });
+    } else if (ch === "in_app") {
+      await sendInApp(p.id, shortMsg);
+    }
+
+    await supabase.from("followup_log").insert({
+      instructor_id: instructorId!,
+      pupil_id: p.id,
+      channel: ch,
+      trigger_type: "manual_chase_bulk",
+      message_content: `Payment reminder for £${amount}`,
+    });
+  };
+
   const send = async () => {
     if (!instructorId) { toast.error("Not signed in"); return; }
+    if (channels.size === 0) { toast.error("Pick at least one channel"); return; }
     const list = eligible.filter(c => selected.has(c.id));
     if (list.length === 0) { toast.error("Select at least one pupil"); return; }
 
+    // Build per-pupil send tasks across all eligible channels
+    const tasks = list.flatMap((p) =>
+      eligibleChannelsFor(p).map((ch) => ({ p, ch }))
+    );
+
     setSending(true);
-    setProgress({ done: 0, total: list.length, failures: [] });
+    setProgress({ done: 0, total: tasks.length, failures: [] });
     const failures: string[] = [];
+    const failureKeys = new Set<string>();
     let done = 0;
+    const fromName = instructorName || "your instructor";
 
-    for (const p of list) {
+    for (const { p, ch } of tasks) {
       try {
-        const amount = p.amount.toFixed(2);
-        const firstName = p.name.split(" ")[0];
-        const fromName = instructorName || "your instructor";
-        const shortMsg = `Hi ${firstName}, friendly reminder from ${fromName} — you have an outstanding balance of £${amount}. Thank you!`;
-
-        if (channel === "sms") {
-          await supabase.functions.invoke("send-sms", {
-            body: { to: p.phone, message: shortMsg },
-          });
-        } else if (channel === "whatsapp") {
-          await supabase.functions.invoke("send-whatsapp", {
-            body: { to: p.phone, message: shortMsg },
-          });
-        } else if (channel === "email") {
-          await supabase.functions.invoke("send-email", {
-            body: {
-              to: p.email,
-              subject: `Payment reminder — £${amount} outstanding`,
-              html: `<p>Hi ${firstName},</p><p>Friendly reminder: you have an outstanding balance of <strong>£${amount}</strong> with ${fromName}.</p><p>Thank you!</p>`,
-            },
-          });
-        } else if (channel === "in_app") {
-          await sendInApp(p.id, shortMsg);
-        }
-
-        await supabase.from("followup_log").insert({
-          instructor_id: instructorId,
-          pupil_id: p.id,
-          channel,
-          trigger_type: "manual_chase_bulk",
-          message_content: `Payment reminder for £${amount}`,
-        });
+        await sendOne(p, ch, fromName);
       } catch (e: any) {
-        console.error("Reminder failed for", p.name, e);
-        failures.push(p.name);
+        console.error(`Reminder failed for ${p.name} via ${ch}`, e);
+        const label = `${p.name} (${CHANNEL_META[ch].label})`;
+        failures.push(label);
+        failureKeys.add(`${p.id}:${ch}`);
       } finally {
         done += 1;
-        setProgress({ done, total: list.length, failures: [...failures] });
+        setProgress({ done, total: tasks.length, failures: [...failures] });
       }
     }
 
     setSending(false);
+    const pupilCount = list.length;
+    const channelCount = channels.size;
     if (failures.length === 0) {
-      toast.success(`Reminders sent to ${list.length} pupil${list.length === 1 ? "" : "s"}`);
+      toast.success(
+        `Sent ${tasks.length} reminder${tasks.length === 1 ? "" : "s"} to ${pupilCount} pupil${pupilCount === 1 ? "" : "s"} across ${channelCount} channel${channelCount === 1 ? "" : "s"}`
+      );
       onOpenChange(false);
     } else {
-      toast.warning(`Sent ${list.length - failures.length} of ${list.length}. ${failures.length} failed.`);
+      toast.warning(`Sent ${tasks.length - failures.length} of ${tasks.length}. ${failures.length} failed.`);
     }
   };
 
@@ -190,8 +218,20 @@ export function SendAllRemindersDialog({
     .filter(c => selected.has(c.id))
     .reduce((s, c) => s + c.amount, 0);
 
-  const channelField = CHANNEL_META[channel].field;
-  const channelLabel = CHANNEL_META[channel].label;
+  // Estimate number of sends across selected pupils + channels
+  const totalSends = useMemo(
+    () => eligible.filter(c => selected.has(c.id))
+      .reduce((sum, c) => sum + eligibleChannelsFor(c).length, 0),
+    [eligible, selected, channels],
+  );
+
+  const emptyChannelLabel = (() => {
+    const fields = Array.from(channels).map(c => CHANNEL_META[c].field).filter(Boolean) as string[];
+    if (fields.length === 0) return "contact details"; // only in-app, shouldn't happen since in-app needs none
+    const uniq = Array.from(new Set(fields));
+    if (uniq.includes("phone") && uniq.includes("email")) return "phone or email";
+    return uniq[0] === "phone" ? "phone number" : "email address";
+  })();
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!sending) onOpenChange(v); }}>
@@ -199,23 +239,26 @@ export function SendAllRemindersDialog({
         <DialogHeader>
           <DialogTitle>Send payment reminders</DialogTitle>
           <DialogDescription>
-            Choose how to reach pupils with outstanding balances. Reminders log to your followup history.
+            Pick one or more channels. Each pupil receives the reminder on every selected channel they have a contact for.
           </DialogDescription>
         </DialogHeader>
 
-        {/* Channel picker */}
+        {/* Channel picker (multi-select) */}
         <div className="grid grid-cols-4 gap-1.5 rounded-md bg-muted/40 p-1">
-          {(Object.keys(CHANNEL_META) as Channel[]).map((c) => {
+          {ALL_CHANNELS.map((c) => {
             const m = CHANNEL_META[c];
-            const active = channel === c;
+            const active = channels.has(c);
             return (
               <button
                 key={c}
                 type="button"
                 disabled={sending}
-                onClick={() => setChannel(c)}
-                className={`flex items-center justify-center gap-1.5 rounded-sm px-2 py-1.5 text-xs font-medium transition ${
-                  active ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                onClick={() => toggleChannel(c)}
+                aria-pressed={active}
+                className={`flex items-center justify-center gap-1.5 rounded-sm px-2 py-1.5 text-xs font-medium transition border ${
+                  active
+                    ? "bg-background shadow-sm text-foreground border-primary/40"
+                    : "text-muted-foreground hover:text-foreground border-transparent"
                 }`}
               >
                 <m.Icon className="h-3.5 w-3.5" />
@@ -230,7 +273,7 @@ export function SendAllRemindersDialog({
           <div className="flex items-center justify-between text-xs">
             <label className="flex items-center gap-2 cursor-pointer">
               <Checkbox checked={allChecked} onCheckedChange={toggleAll} disabled={sending} />
-              <span>{selected.size} of {eligible.length} selected · {gbp(totalAmount)}</span>
+              <span>{selected.size} of {eligible.length} selected · {gbp(totalAmount)} · {totalSends} send{totalSends === 1 ? "" : "s"}</span>
             </label>
           </div>
         )}
@@ -241,14 +284,13 @@ export function SendAllRemindersDialog({
             <div className="text-center py-6 text-sm text-muted-foreground">
               {candidates.length === 0
                 ? "No outstanding balances."
-                : `No pupils have a ${channelField === "phone" ? "phone number" : "email address"} on file.`}
+                : `No pupils have a ${emptyChannelLabel} on file for the selected channels.`}
             </div>
           )}
           {eligible.map((p) => {
             const checked = selected.has(p.id);
             const overdue = p.daysOverdue !== undefined && p.daysOverdue > 0;
-            const sent = progress && progress.done > 0 && !progress.failures.includes(p.name);
-            const contactLine = channelField === "phone" ? p.phone : channelField === "email" ? p.email : "In-app conversation";
+            const pupilChannels = eligibleChannelsFor(p);
             return (
               <label
                 key={p.id}
@@ -261,9 +303,15 @@ export function SendAllRemindersDialog({
                 />
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-medium truncate">{p.name}</div>
-                  <div className="text-[11px] text-muted-foreground truncate">
-                    {contactLine}
-                    {overdue && <span className="text-rose-600 ml-1">· {p.daysOverdue}d overdue</span>}
+                  <div className="text-[11px] text-muted-foreground truncate flex items-center gap-1.5">
+                    {pupilChannels.map((ch) => {
+                      const M = CHANNEL_META[ch].Icon;
+                      return <M key={ch} className="h-3 w-3 inline" />;
+                    })}
+                    <span className="truncate">
+                      {pupilChannels.map(ch => CHANNEL_META[ch].label).join(" · ")}
+                      {overdue && <span className="text-rose-600 ml-1">· {p.daysOverdue}d overdue</span>}
+                    </span>
                   </div>
                 </div>
                 <div className="text-sm font-medium tabular-nums">{gbp(p.amount)}</div>
@@ -271,7 +319,7 @@ export function SendAllRemindersDialog({
                   <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
                 )}
                 {!sending && progress && checked && (
-                  progress.failures.includes(p.name)
+                  progress.failures.some(f => f.startsWith(p.name + " ("))
                     ? <AlertCircle className="h-3.5 w-3.5 text-rose-600" />
                     : <Check className="h-3.5 w-3.5 text-emerald-600" />
                 )}
@@ -281,11 +329,11 @@ export function SendAllRemindersDialog({
         </div>
 
         {/* Ineligible footnote */}
-        {ineligible.length > 0 && channelField && (
+        {ineligible.length > 0 && (
           <div className="flex items-start gap-2 text-[11px] text-muted-foreground bg-muted/50 rounded-md p-2">
             <AlertCircle className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" />
             <span>
-              {ineligible.length} pupil{ineligible.length === 1 ? "" : "s"} skipped — no {channelField === "phone" ? "phone number" : "email"} on file:
+              {ineligible.length} pupil{ineligible.length === 1 ? "" : "s"} skipped — no {emptyChannelLabel} on file:
               {" "}{ineligible.slice(0, 3).map(p => p.name).join(", ")}
               {ineligible.length > 3 && ` +${ineligible.length - 3} more`}
             </span>
@@ -303,10 +351,10 @@ export function SendAllRemindersDialog({
           <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={sending}>
             Cancel
           </Button>
-          <Button onClick={send} disabled={sending || selected.size === 0}>
+          <Button onClick={send} disabled={sending || selected.size === 0 || totalSends === 0}>
             {sending
               ? `Sending… (${progress?.done ?? 0}/${progress?.total ?? 0})`
-              : `Send ${selected.size} ${channelLabel}${selected.size === 1 ? "" : "s"}`}
+              : `Send ${totalSends} reminder${totalSends === 1 ? "" : "s"}`}
           </Button>
         </DialogFooter>
       </DialogContent>
