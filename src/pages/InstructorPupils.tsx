@@ -448,6 +448,7 @@ export default function InstructorPupils() {
       }
       
       toast.success("Pupil added successfully");
+      invalidateInstructorDashboard(queryClient, instructorId);
       setIsAddOpen(false);
       setAddForm({
         name: "",
