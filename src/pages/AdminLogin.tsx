@@ -155,6 +155,39 @@ export default function AdminLogin() {
     "Sign in to the EveryDriver admin console.";
 
   return (
+    <>
+      {/* ============== MOBILE-ONLY — shared dark navy shell ============== */}
+      <DarkMobileAuthForm
+        logoSrc={everydriverLogo}
+        logoAlt="EveryDriver Admin"
+        title={title}
+        subtitle={subtitle}
+        email={email}
+        setEmail={setEmail}
+        password={password}
+        setPassword={setPassword}
+        showPassword={showPw}
+        setShowPassword={setShowPw}
+        rememberMe={rememberMe}
+        setRememberMe={setRememberMeState}
+        isForgot={viewMode === "forgot"}
+        onForgotToggle={(v) => { setViewMode(v ? "forgot" : "login"); setError(""); setSuccess(""); }}
+        loading={loading}
+        error={error || success}
+        onSubmit={handleSubmit}
+        onGoogleClick={() => {
+          const wrap = document.getElementById("mobile-admin-google");
+          wrap?.querySelector<HTMLButtonElement>("button")?.click();
+        }}
+        hiddenSlot={
+          <div id="mobile-admin-google" style={{ position: "absolute", width: 0, height: 0, overflow: "hidden", opacity: 0, pointerEvents: "none" }} aria-hidden="true">
+            <GoogleSignInButton redirectTo={`${window.location.origin}/auth/redirect?portal=admin`} />
+          </div>
+        }
+      />
+
+      {/* ============== DESKTOP / TABLET ============== */}
+      <div className="hidden md:block">
     <PortalLoginLayout
       leftBrand={<EveryDriverMark size={20} />}
       leftBrandCaption="Platform control centre"
