@@ -674,24 +674,43 @@ export default function InstructorPupils() {
               {stats.active} active · {stats.passed} passed · {lessonsToday} lessons today
             </p>
           </div>
-          <button
-            type="button"
-            onClick={() => setIsAddOpen(true)}
-            style={{
-              background: "#3D55A1",
-              borderRadius: 20,
-              padding: "7px 14px",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 5,
-              border: "none",
-              cursor: "pointer",
-            }}
-          >
-            <Plus size={11} color="#FFF" strokeWidth={2.2} />
-            <span style={{ fontSize: 12, fontWeight: 700, color: "#FFF" }}>Add</span>
-          </button>
+          <div style={{ display: "flex", gap: 6 }}>
+            <button
+              type="button"
+              onClick={() => setIsImportOpen(true)}
+              style={{
+                background: "#FFF",
+                border: "0.5px solid rgba(26,82,160,0.25)",
+                borderRadius: 20,
+                padding: "7px 12px",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 5,
+                cursor: "pointer",
+              }}
+            >
+              <span style={{ fontSize: 12, fontWeight: 700, color: "#3D55A1" }}>Import CSV</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsAddOpen(true)}
+              style={{
+                background: "#3D55A1",
+                borderRadius: 20,
+                padding: "7px 14px",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 5,
+                border: "none",
+                cursor: "pointer",
+              }}
+            >
+              <Plus size={11} color="#FFF" strokeWidth={2.2} />
+              <span style={{ fontSize: 12, fontWeight: 700, color: "#FFF" }}>Add</span>
+            </button>
+          </div>
         </div>
+
 
         <div style={{ padding: "14px 15px 0" }}>
           {/* Search */}
