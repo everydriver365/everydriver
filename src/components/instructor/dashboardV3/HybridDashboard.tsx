@@ -447,6 +447,8 @@ export function HybridDashboard({ instructorId, instructorName, pupils, todaysLe
       sub: `${owing.length} owe money`,
       pct: pupils.length ? Math.min(100, pupils.length * 4) : 0,
       bar: t.blue,
+      href: "/instructor/pupils",
+      hasData: pupils.length > 0,
     },
     {
       label: "Payments",
@@ -454,6 +456,8 @@ export function HybridDashboard({ instructorId, instructorName, pupils, todaysLe
       sub: "This month",
       pct: monthEarnings > 0 ? 100 : 0,
       bar: t.green,
+      href: "/instructor/pay",
+      hasData: monthEarnings > 0,
     },
     {
       label: "Lessons booked",
@@ -461,6 +465,8 @@ export function HybridDashboard({ instructorId, instructorName, pupils, todaysLe
       sub: "This month",
       pct: stats2 && stats2.lessonsThisMonth > 0 ? Math.min(100, stats2.lessonsThisMonth * 2) : 0,
       bar: t.blue,
+      href: "/instructor/schedule",
+      hasData: !!stats2 && stats2.lessonsThisMonth > 0,
     },
     {
       label: "Pass rate",
@@ -470,13 +476,20 @@ export function HybridDashboard({ instructorId, instructorName, pupils, todaysLe
         : "No results yet",
       pct: stats2?.passRatePct ?? 0,
       bar: t.red,
+      href: "/instructor/test-requests",
+      hasData: !!stats2 && stats2.passRateSampleSize > 0,
     },
     {
       label: "Tests booked",
       value: stats2 ? String(stats2.testsBooked) : "—",
-      sub: "Upcoming",
+      sub: stats2 && stats2.testsBooked > 0 ? "Upcoming" : "None upcoming",
       pct: stats2 && stats2.testsBooked > 0 ? Math.min(100, stats2.testsBooked * 10) : 0,
       bar: t.amber,
+      href: "/instructor/test-requests",
+      hasData: !!stats2 && stats2.testsBooked > 0,
+      extra: stats2?.nextTestDate
+        ? `Next: ${format(new Date(stats2.nextTestDate), "EEE d MMM")}`
+        : undefined,
     },
     {
       label: "Cancelled",
@@ -484,6 +497,8 @@ export function HybridDashboard({ instructorId, instructorName, pupils, todaysLe
       sub: "This month",
       pct: stats2 && stats2.cancelledThisMonth > 0 ? Math.min(100, stats2.cancelledThisMonth * 5) : 0,
       bar: t.red,
+      href: "/instructor/schedule",
+      hasData: !!stats2 && stats2.cancelledThisMonth > 0,
     },
   ];
 
