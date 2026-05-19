@@ -19,6 +19,10 @@ import {
   formatDistanceMiles,
   toSentenceCase,
 } from "@/lib/formatJobOffer";
+import {
+  compatibilityColors,
+  type CompatibilityResult,
+} from "@/lib/jobOfferCompatibility";
 
 export interface JobOfferCardOffer {
   id: string;
@@ -32,6 +36,7 @@ export interface JobOfferCardOffer {
 interface Props {
   offer: JobOfferCardOffer;
   distanceMi: number | null | undefined;
+  compatibility?: CompatibilityResult;
   onExpand: () => void;
   onAccept: () => void | Promise<void>;
   onDecline: () => void | Promise<void>;
