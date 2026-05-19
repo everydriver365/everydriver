@@ -72,7 +72,7 @@ export function PupilPaymentsManager({
 
   const notifyChanged = () => {
     invalidatePaymentQueries({ pupilId, instructorId });
-    notifyChanged()();
+    notifyChanged();
   };
 
   const addCharge = async () => {
@@ -98,7 +98,7 @@ export function PupilPaymentsManager({
       setChargeAmount("");
       setChargeNote("");
       await fetchRows();
-      notifyChanged()();
+      notifyChanged();
     } catch (e: any) {
       console.error(e); toast.error(e?.message || "Failed to add charge");
     } finally { setChargeSaving(false); }
@@ -152,7 +152,7 @@ export function PupilPaymentsManager({
       toast.success("Payment updated");
       setEditId(null);
       await fetchRows();
-      notifyChanged()();
+      notifyChanged();
     } catch (e: any) {
       console.error(e); toast.error(e?.message || "Failed to update payment");
     } finally { setSaving(false); }
@@ -171,7 +171,7 @@ export function PupilPaymentsManager({
       if (balErr) throw balErr;
       toast.success("Payment deleted");
       await fetchRows();
-      notifyChanged()();
+      notifyChanged();
     } catch (e: any) {
       console.error(e); toast.error(e?.message || "Failed to delete");
     } finally { setSaving(false); }
@@ -467,7 +467,7 @@ export function PupilPaymentsManager({
         pupilName={pupilName}
         instructorId={instructorId}
         currentBalance={currentBalance}
-        onPaymentRecorded={() => { fetchRows(); notifyChanged()(); }}
+        onPaymentRecorded={() => { fetchRows(); notifyChanged(); }}
       />
     </div>
   );
