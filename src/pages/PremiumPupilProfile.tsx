@@ -394,10 +394,54 @@ export default function PremiumPupilProfile() {
   const [addLessonOpen, setAddLessonOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [paymentsOpen, setPaymentsOpen] = useState(false);
+  const [editBalance, setEditBalance] = useState(false);
+  const [balanceDraft, setBalanceDraft] = useState("");
+  const [editHours, setEditHours] = useState(false);
+  const [hoursDraft, setHoursDraft] = useState("");
+  const [savingField, setSavingField] = useState<null | "balance" | "hours">(null);
 
   const status = (pupil?.status as string) || "active";
   const balance = pupil?.account_balance ?? 0;
   const hasDebt = balance < 0;
+
+  const saveBalance = async () => {
+    if (!pupil) return;
+    const next = parseFloat(balanceDraft);
+    if (isNaN(next)) { toast.error("Enter a valid number"); return; }
+    const delta = Math.round((next - balance) * 100) / 100;
+    if (delta === 0) { setEditBalance(false); return; }
+    setSavingField("balance");
+    try {
+      const { error } = await supabase.rpc("increment_pupil_balance", {
+        p_pupil_id: pupil.id,
+        p_amount: delta,
+      });
+      if (error) throw error;
+      toast.success("Balance updated");
+      setEditBalance(false);
+      queryClient.invalidateQueries({ queryKey: ["pupil-profile", pupil.id, instructorId] });
+    } catch (e) {
+      console.error(e); toast.error("Failed to update balance");
+    } finally { setSavingField(null); }
+  };
+
+  const saveHours = async () => {
+    if (!pupil) return;
+    const next = parseFloat(hoursDraft);
+    if (isNaN(next) || next < 0) { toast.error("Enter a valid number"); return; }
+    setSavingField("hours");
+    try {
+      const { error } = await supabase.from("pupils")
+        .update({ prepaid_hours: next })
+        .eq("id", pupil.id);
+      if (error) throw error;
+      toast.success("Prepaid hours updated");
+      setEditHours(false);
+      queryClient.invalidateQueries({ queryKey: ["pupil-profile", pupil.id, instructorId] });
+    } catch (e) {
+      console.error(e); toast.error("Failed to update hours");
+    } finally { setSavingField(null); }
+  };
 
   const progressPct = useMemo(() => {
     const v = pupil?.progress;
