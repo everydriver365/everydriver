@@ -89,6 +89,7 @@ export interface AddPupilFormState {
   source?: string;
   intensive_hours_paid?: string;
   intensive_course_payout?: string;
+  intensive_pupil_payment?: string;
 }
 
 export const PUPIL_SOURCE_OPTIONS: { value: string; label: string }[] = [
