@@ -590,7 +590,7 @@ export default function InstructorPupilsDesktop() {
     if (sortKey) {
       list = [...list].sort((a, b) => {
         let av: number = 0, bv: number = 0;
-        if (sortKey === "lessonsLeft") { av = a.lessonsLeft; bv = b.lessonsLeft; }
+        if (sortKey === "lessonsLeft") { av = a.hoursLeft; bv = b.hoursLeft; }
         else if (sortKey === "lastLesson") { av = a.lastLessonDays; bv = b.lastLessonDays; }
         else if (sortKey === "nextLesson") { av = a.nextLessonRank || -1; bv = b.nextLessonRank || -1; return (bv - av) * dir; }
         else if (sortKey === "balance") { av = a.balance; bv = b.balance; }
