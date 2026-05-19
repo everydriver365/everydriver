@@ -491,7 +491,7 @@ export default function BrandedPupilPortal() {
                 <PupilPortalTheory brandColour={drive365Blue} darkMode={instructor.pupil_app_dark_mode} />
                 <div className="px-4 pb-4 space-y-4">
                   <TheoryStreakTracker pupilId={pupil.id} brandColour={drive365Blue} />
-                  <TheoryMockTest pupilId={pupil.id} />
+                  <TheoryMockTest pupilId={pupil.id} instructorId={instructor.id} />
                   <TheoryProgressChart pupilId={pupil.id} instructorId={instructor.id} brandColour={drive365Blue} />
                   <TheoryMockScoreLogger pupilId={pupil.id} instructorId={instructor.id} />
                 </div>
