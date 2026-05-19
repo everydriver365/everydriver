@@ -421,7 +421,7 @@ export default function PupilLogin() {
               whileTap={{ scale: 0.985, opacity: 0.85 }}
               disabled={!canSubmit || loading}
               style={{ opacity: canSubmit && !loading ? 1 : 0.6 }}
-              className="w-full rounded-[12px] bg-white text-[#2D7BE8] font-bold disabled:cursor-not-allowed"
+              className="w-full rounded-[12px] bg-white text-[#0F2044] font-bold disabled:cursor-not-allowed"
             >
               <span className="py-4 text-[15px] flex items-center justify-center gap-2">
                 {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Sign in"}
