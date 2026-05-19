@@ -188,18 +188,10 @@ export default function PupilLogin() {
         localStorage.setItem("pupil_remembered_email", loginEmail);
       }
 
-      if ((window as any).PasswordCredential) {
-        try {
-          const CredCtor = (window as any).PasswordCredential;
-          const cred = new CredCtor({
-            id: loginEmail,
-            password: loginPassword,
-            name: data.pupilName,
-          });
-          await navigator.credentials.store(cred);
-        } catch {
-          // Continue
-        }
+      try {
+        await saveBiometricCredentials("pupil", loginEmail, loginPassword);
+      } catch {
+        // Continue — biometric save is best-effort
       }
 
       const firstName = data.pupilName?.split(" ")[0] || "";
