@@ -166,12 +166,15 @@ export function PupilPortalProgress({ pupilId, brandColour, darkMode }: PupilPor
         brandColour={brandColour}
       />
 
-      {/* Hours Tracker */}
-      <HoursTracker
-        hoursCompleted={totalHoursCompleted}
-        estimatedTotal={40}
-        brandColour={brandColour}
-      />
+      {/* Hours Tracker — only when instructor has set a prepaid hours target */}
+      {prepaidHours !== null && prepaidHours > 0 && (
+        <HoursTracker
+          hoursCompleted={totalHoursCompleted}
+          estimatedTotal={prepaidHours}
+          brandColour={brandColour}
+        />
+      )}
+
 
       {/* Lesson Timeline */}
       <PupilProgressTimeline
