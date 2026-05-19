@@ -550,7 +550,7 @@ export default function InstructorPortalLogin() {
       </div>
 
       {/* Right Panel - Login Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-8">
+      <div className="hidden lg:flex w-full lg:w-1/2 items-center justify-center p-6 sm:p-8">
         <div className="w-full max-w-md">
           {/* Mobile Logo (replaced on mobile by hero header above) */}
           <motion.div 
