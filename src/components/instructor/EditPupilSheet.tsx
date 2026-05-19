@@ -3,10 +3,12 @@ import { Camera, Mic, Search, Loader2, X, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutocomplete";
 import { UserAvatar } from "@/components/instructor/UserAvatar";
 import { PupilPackageCard } from "@/components/instructor/PupilPackageCard";
 import { PupilRateEditor } from "@/components/instructor/PupilRateEditor";
+import { PUPIL_SOURCE_OPTIONS } from "@/components/instructor/pupils/AddPupilSheet";
 import { titleCaseName } from "@/lib/titleCase";
 import { formatPhoneNumber } from "@/lib/formatPhoneNumber";
 import {
