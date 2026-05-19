@@ -675,10 +675,20 @@ export default function InstructorPupilsDesktop() {
               <input
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                placeholder="Search by name or phone"
+                placeholder="Search name, phone, postcode..."
                 className="flex-1 bg-transparent outline-none"
                 style={{ fontSize: 12 }}
               />
+              {search && (
+                <button
+                  type="button"
+                  aria-label="Clear search"
+                  onClick={() => setSearch("")}
+                  style={{ background: "none", border: "none", padding: 0, cursor: "pointer", display: "flex" }}
+                >
+                  <X size={13} color="var(--d2-text-3)" />
+                </button>
+              )}
             </div>
             <div className="flex items-center" style={{ gap: 5 }}>
               <Chip active={filter === "all"} label="All" count={counts.all} onClick={() => setFilter("all")} />
@@ -686,6 +696,20 @@ export default function InstructorPupilsDesktop() {
               <Chip active={filter === "paused"} label="Paused" count={counts.paused} onClick={() => setFilter("paused")} />
               <Chip active={filter === "at-risk"} label="At risk" count={counts["at-risk"]} dot="#F59E0B" onClick={() => setFilter("at-risk")} />
               <Chip active={filter === "test-ready"} label="Test-ready" count={counts["test-ready"]} onClick={() => setFilter("test-ready")} />
+              {(search || filter !== "all") && (
+                <button
+                  type="button"
+                  onClick={() => { setSearch(""); setFilter("all"); }}
+                  style={{
+                    fontSize: 11, padding: "5px 10px", borderRadius: 8,
+                    border: "0.5px solid var(--d2-border)", background: "#fff",
+                    color: "var(--d2-text-2)", fontWeight: 500,
+                    cursor: "pointer",
+                  }}
+                >
+                  Clear
+                </button>
+              )}
             </div>
           </div>
 
