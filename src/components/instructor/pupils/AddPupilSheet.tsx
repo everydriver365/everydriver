@@ -630,6 +630,55 @@ export function AddPupilSheet({
       </section>
 
       <section>
+        <SectionLabel>Lead source</SectionLabel>
+        <SectionCard>
+          <Row label="Source">
+            <Select
+              value={form.source || ""}
+              onValueChange={(val) => setForm({ ...form, source: val })}
+            >
+              <SelectTrigger
+                className="border-0 bg-transparent shadow-none h-auto p-0 gap-1 justify-end text-[15px] focus:ring-0 focus:ring-offset-0"
+                style={{ color: form.source ? TEXT_PRIMARY : TEXT_TERTIARY }}
+              >
+                <SelectValue placeholder="Select" />
+              </SelectTrigger>
+              <SelectContent>
+                {PUPIL_SOURCE_OPTIONS.map((o) => (
+                  <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Row>
+          {form.source === "national_intensive" && (
+            <>
+              <RowDivider />
+              <Row label="Hours paid">
+                <RowInput
+                  type="number"
+                  inputMode="decimal"
+                  value={form.intensive_hours_paid || ""}
+                  onChange={(e) => setForm({ ...form, intensive_hours_paid: e.target.value })}
+                  placeholder="e.g. 40"
+                />
+              </Row>
+              <RowDivider />
+              <Row label="Course pays">
+                <RowInput
+                  type="number"
+                  inputMode="decimal"
+                  value={form.intensive_course_payout || ""}
+                  onChange={(e) => setForm({ ...form, intensive_course_payout: e.target.value })}
+                  placeholder="£ amount"
+                />
+              </Row>
+            </>
+          )}
+        </SectionCard>
+      </section>
+
+
+      <section>
         <SectionLabel>Address</SectionLabel>
         <SectionCard>
           <Row label="Address" required invalid={addressInvalid} stacked>
