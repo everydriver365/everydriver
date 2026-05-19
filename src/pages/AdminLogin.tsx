@@ -439,5 +439,7 @@ export default function AdminLogin() {
         </div>
       </form>
     </PortalLoginLayout>
+      </div>
+    </>
   );
 }
