@@ -75,6 +75,7 @@ interface Props {
 export function JobOfferDetailSheet({
   job,
   distanceMi,
+  compatibility,
   hourlyRate,
   processing,
   onClose,
