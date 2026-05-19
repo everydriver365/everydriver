@@ -198,6 +198,7 @@ export default function InstructorPupilsDesktop() {
   const [reloadTick, setReloadTick] = useState(0);
   const [addOpen, setAddOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
+  const [archivedOpen, setArchivedOpen] = useState(false);
   const [addForm, setAddForm] = useState<any>({
     name: "", phone: "", email: "", address: "", postcode: "", what3words: "",
     date_of_birth: "", sex: "", previous_experience_hours: "", transmission_type: "",
