@@ -303,6 +303,8 @@ export default function InstructorPupilsDesktop() {
   const [search, setSearch] = useState("");
   const [debounced, setDebounced] = useState("");
   const [filter, setFilter] = useState<FilterKey>("all");
+  const [theoryFilter, setTheoryFilter] = useState<"all" | "passed" | "failed" | "booked">("all");
+  const [drivingFilter, setDrivingFilter] = useState<"all" | "passed" | "failed" | "booked">("all");
   const [sortKey, setSortKey] = useState<SortKey>("nextLesson");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [page, setPage] = useState(1);
@@ -696,7 +698,7 @@ export default function InstructorPupilsDesktop() {
     return () => clearTimeout(t);
   }, [search]);
 
-  useEffect(() => { setPage(1); }, [debounced, filter]);
+  useEffect(() => { setPage(1); }, [debounced, filter, theoryFilter, drivingFilter]);
 
   const counts = useMemo(() => ({
     all: pupils.length,
@@ -709,6 +711,16 @@ export default function InstructorPupilsDesktop() {
   const filtered = useMemo(() => {
     let list = pupils;
     if (filter !== "all") list = list.filter(p => p.status === filter);
+    if (theoryFilter !== "all") {
+      if (theoryFilter === "passed") list = list.filter(p => p.theoryPassed === true);
+      else if (theoryFilter === "failed") list = list.filter(p => p.theoryPassed === false);
+      else if (theoryFilter === "booked") list = list.filter(p => p.theoryPassed === null && !!p.theoryDate);
+    }
+    if (drivingFilter !== "all") {
+      if (drivingFilter === "passed") list = list.filter(p => p.drivingPassed === true);
+      else if (drivingFilter === "failed") list = list.filter(p => p.drivingPassed === false);
+      else if (drivingFilter === "booked") list = list.filter(p => p.drivingPassed === null && !!p.drivingTestDate);
+    }
     if (debounced) {
       const q = debounced;
       list = list.filter(p =>
@@ -732,7 +744,7 @@ export default function InstructorPupilsDesktop() {
       });
     }
     return list;
-  }, [pupils, filter, debounced, sortKey, sortDir]);
+  }, [pupils, filter, debounced, sortKey, sortDir, theoryFilter, drivingFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const visiblePage = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -898,10 +910,10 @@ export default function InstructorPupilsDesktop() {
               <Chip active={filter === "paused"} label="Paused" count={counts.paused} onClick={() => setFilter("paused")} />
               <Chip active={filter === "at-risk"} label="At risk" count={counts["at-risk"]} dot="#F59E0B" onClick={() => setFilter("at-risk")} />
               <Chip active={filter === "test-ready"} label="Test-ready" count={counts["test-ready"]} onClick={() => setFilter("test-ready")} />
-              {(search || filter !== "all") && (
+              {(search || filter !== "all" || theoryFilter !== "all" || drivingFilter !== "all") && (
                 <button
                   type="button"
-                  onClick={() => { setSearch(""); setFilter("all"); }}
+                  onClick={() => { setSearch(""); setFilter("all"); setTheoryFilter("all"); setDrivingFilter("all"); }}
                   style={{
                     fontSize: 11, padding: "5px 10px", borderRadius: 8,
                     border: "0.5px solid var(--d2-border)", background: "#fff",
@@ -912,6 +924,18 @@ export default function InstructorPupilsDesktop() {
                   Clear
                 </button>
               )}
+            </div>
+            <div className="flex items-center" style={{ gap: 5 }}>
+              <span style={{ fontSize: 10, color: "var(--d2-text-3)", textTransform: "uppercase", letterSpacing: "0.5px", marginRight: 4 }}>Theory</span>
+              <Chip active={theoryFilter === "all"} label="All" onClick={() => setTheoryFilter("all")} />
+              <Chip active={theoryFilter === "passed"} label="Passed" onClick={() => setTheoryFilter("passed")} />
+              <Chip active={theoryFilter === "failed"} label="Not passed" onClick={() => setTheoryFilter("failed")} />
+              <Chip active={theoryFilter === "booked"} label="Booked" onClick={() => setTheoryFilter("booked")} />
+              <span style={{ fontSize: 10, color: "var(--d2-text-3)", textTransform: "uppercase", letterSpacing: "0.5px", marginLeft: 8, marginRight: 4 }}>Driving</span>
+              <Chip active={drivingFilter === "all"} label="All" onClick={() => setDrivingFilter("all")} />
+              <Chip active={drivingFilter === "passed"} label="Passed" onClick={() => setDrivingFilter("passed")} />
+              <Chip active={drivingFilter === "failed"} label="Not passed" onClick={() => setDrivingFilter("failed")} />
+              <Chip active={drivingFilter === "booked"} label="Booked" onClick={() => setDrivingFilter("booked")} />
             </div>
           </div>
 
@@ -978,7 +1002,7 @@ export default function InstructorPupilsDesktop() {
                   {loadingPupils ? "Loading pupils…" : pupils.length === 0 ? "No pupils yet — add your first pupil to get started." : "No pupils match these filters"}
                 </div>
                 {!loadingPupils && pupils.length > 0 && (
-                  <button onClick={() => { setSearch(""); setFilter("all"); }} style={{ fontSize: 12, color: "#4F46E5", fontWeight: 500 }}>
+                  <button onClick={() => { setSearch(""); setFilter("all"); setTheoryFilter("all"); setDrivingFilter("all"); }} style={{ fontSize: 12, color: "#4F46E5", fontWeight: 500 }}>
                     Clear filters
                   </button>
                 )}
