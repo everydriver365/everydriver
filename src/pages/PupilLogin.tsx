@@ -188,10 +188,19 @@ export default function PupilLogin() {
         localStorage.setItem("pupil_remembered_email", loginEmail);
       }
 
-      try {
-        await saveBiometricCredentials("pupil", loginEmail, loginPassword);
-      } catch {
-        // Continue — biometric save is best-effort
+      if (rememberMe) {
+        try {
+          await saveBiometricCredentials("pupil", loginEmail, loginPassword);
+        } catch {
+          // Continue — biometric save is best-effort
+        }
+      } else {
+        // User opted out of remember me — make sure no stale credentials linger.
+        try {
+          await clearBiometricCredentials("pupil");
+        } catch {
+          // ignore
+        }
       }
 
       const firstName = data.pupilName?.split(" ")[0] || "";
