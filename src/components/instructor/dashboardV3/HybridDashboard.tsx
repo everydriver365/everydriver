@@ -440,6 +440,23 @@ export function HybridDashboard({ instructorId, instructorName, pupils, todaysLe
   // Treat sum of positive balances as the "account balance" total
   const positiveBalance = pupils.reduce((sum, p) => sum + Math.max(0, p.account_balance ?? 0), 0);
 
+  // Chase-now dialog
+  const [chaseOpen, setChaseOpen] = useState(false);
+  const [pupilContacts, setPupilContacts] = useState<Array<{ id: string; name: string; phone: string | null; email: string | null; account_balance: number | null }>>([]);
+  useEffect(() => {
+    if (!chaseOpen || !instructorId || owing.length === 0) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("pupils")
+        .select("id, name, phone, email, account_balance")
+        .eq("instructor_id", instructorId)
+        .in("id", owing.map((p) => p.id));
+      if (!cancelled && data) setPupilContacts(data as any);
+    })();
+    return () => { cancelled = true; };
+  }, [chaseOpen, instructorId, owing.map((p) => p.id).join(",")]);
+
   // Quick actions
   const quickActions: QA[] = [
     { label: "Availability", Icon: Clock,       iconBg: t.blueLight, iconColor: t.blue,  sub: "Manage your diary",                                href: "/instructor/schedule" },
