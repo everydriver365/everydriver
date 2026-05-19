@@ -303,6 +303,8 @@ export default function InstructorPupilsDesktop() {
   const [search, setSearch] = useState("");
   const [debounced, setDebounced] = useState("");
   const [filter, setFilter] = useState<FilterKey>("all");
+  const [theoryFilter, setTheoryFilter] = useState<"all" | "passed" | "failed" | "booked">("all");
+  const [drivingFilter, setDrivingFilter] = useState<"all" | "passed" | "failed" | "booked">("all");
   const [sortKey, setSortKey] = useState<SortKey>("nextLesson");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [page, setPage] = useState(1);
