@@ -235,7 +235,7 @@ function NextLessonCard({ instructorId }: { instructorId: string }) {
 
   if (isLoading) {
     return (
-      <div style={{ backgroundColor: t.white, borderRadius: 12, border: `1px solid ${t.border}`, overflow: "hidden" }}>
+      <div style={{ backgroundColor: t.white, borderRadius: 12, border: `1px solid ${t.border}`, overflow: "hidden", width: "100%" }}>
         <div style={headerStyle}>
           <CarFront size={14} color={t.muted} />
           <span style={labelStyle}>Next lesson</span>
@@ -247,7 +247,7 @@ function NextLessonCard({ instructorId }: { instructorId: string }) {
 
   if (!next) {
     return (
-      <div style={{ backgroundColor: t.white, borderRadius: 12, border: `1px solid ${t.border}`, overflow: "hidden" }}>
+      <div style={{ backgroundColor: t.white, borderRadius: 12, border: `1px solid ${t.border}`, overflow: "hidden", width: "100%" }}>
         <div style={headerStyle}>
           <CarFront size={14} color={t.muted} />
           <span style={labelStyle}>Next lesson</span>
@@ -274,7 +274,7 @@ function NextLessonCard({ instructorId }: { instructorId: string }) {
   return (
     <div
       onClick={() => navigate(`/instructor/diary?lessonId=${next.lessonId}`)}
-      style={{ backgroundColor: t.white, borderRadius: 12, border: `1px solid ${t.border}`, overflow: "hidden", cursor: "pointer" }}
+      style={{ backgroundColor: t.white, borderRadius: 12, border: `1px solid ${t.border}`, overflow: "hidden", cursor: "pointer", width: "100%" }}
     >
       <div style={headerStyle}>
         <CarFront size={14} color={t.muted} />
@@ -310,7 +310,7 @@ function DvsaStandardsCard({ standardsCheck }: { standardsCheck: { result: strin
   const hasResults = !!standardsCheck;
 
   return (
-    <div style={{ backgroundColor: t.white, borderRadius: 12, border: `1px solid ${t.border}`, overflow: "hidden" }}>
+    <div style={{ backgroundColor: t.white, borderRadius: 12, border: `1px solid ${t.border}`, overflow: "hidden", width: "100%" }}>
       <div style={{ padding: "8px 12px", borderBottom: `1px solid ${t.divider}`, display: "flex", alignItems: "center", gap: 7 }}>
         <ShieldCheck size={14} color={t.muted} />
         <span style={{ fontSize: 11, fontWeight: 700, color: t.navy, textTransform: "uppercase", letterSpacing: "0.05em", flex: 1 }}>
@@ -662,11 +662,15 @@ export function HybridDashboard({ instructorId, instructorName, pupils, todaysLe
       <QuickActionRow items={quickActions} />
       <StatsRow stats={stats} />
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 280px", gap: 10, marginBottom: 14, alignItems: "start" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 280px", gap: 10, marginBottom: 14, alignItems: "stretch" }}>
         <ScheduleCard instructorId={instructorId} />
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          <NextLessonCard instructorId={instructorId} />
-          <DvsaStandardsCard standardsCheck={stats2?.standardsCheck ?? null} />
+          <div style={{ flex: 1, display: "flex", minHeight: 0 }}>
+            <NextLessonCard instructorId={instructorId} />
+          </div>
+          <div style={{ flex: 1, display: "flex", minHeight: 0 }}>
+            <DvsaStandardsCard standardsCheck={stats2?.standardsCheck ?? null} />
+          </div>
         </div>
         <EarningsCard
           balance={positiveBalance}
