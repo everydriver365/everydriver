@@ -519,9 +519,14 @@ export default function InstructorPupilsDesktop() {
     let list = pupils;
     if (filter !== "all") list = list.filter(p => p.status === filter);
     if (debounced) {
+      const q = debounced;
       list = list.filter(p =>
-        p.name.toLowerCase().includes(debounced) ||
-        p.phone.replace(/\s/g, "").includes(debounced.replace(/\s/g, ""))
+        p.name.toLowerCase().includes(q) ||
+        p.phone.replace(/\s/g, "").includes(q.replace(/\s/g, "")) ||
+        (p.postcode || "").toLowerCase().includes(q) ||
+        (p.address || "").toLowerCase().includes(q) ||
+        (p.email || "").toLowerCase().includes(q) ||
+        (p.notes || "").toLowerCase().includes(q)
       );
     }
     const dir = sortDir === "asc" ? 1 : -1;
