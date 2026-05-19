@@ -85,7 +85,22 @@ export interface AddPupilFormState {
   test_time?: string;
   duration?: string;
   custom_hourly_rate?: string;
+  // Lead source
+  source?: string;
+  intensive_hours_paid?: string;
+  intensive_course_payout?: string;
 }
+
+export const PUPIL_SOURCE_OPTIONS: { value: string; label: string }[] = [
+  { value: "referral", label: "Referral" },
+  { value: "national_intensive", label: "National Intensive" },
+  { value: "online", label: "Online" },
+  { value: "walk_in", label: "Walk-in / Local" },
+  { value: "social_media", label: "Social media" },
+  { value: "school", label: "Driving school" },
+  { value: "returning", label: "Returning pupil" },
+  { value: "other", label: "Other" },
+];
 
 interface AddPupilSheetProps {
   open: boolean;
