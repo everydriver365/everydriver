@@ -403,7 +403,7 @@ export default function PupilLogin() {
                   )}
                   style={{ border: "1.5px solid rgba(255,255,255,0.9)" }}
                 >
-                  {rememberMe && <Check className="h-3 w-3 text-[#2D7BE8]" strokeWidth={3.5} />}
+                  {rememberMe && <Check className="h-3 w-3 text-[#0F2044]" strokeWidth={3.5} />}
                 </span>
                 <span className="text-[13px] font-medium text-white">Remember me</span>
               </button>
