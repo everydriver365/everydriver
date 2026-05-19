@@ -35,6 +35,10 @@ interface Pupil {
   id: string;
   name: string;
   phone: string;
+  email?: string;
+  postcode?: string;
+  address?: string;
+  notes?: string;
   initials: string;
   avatarColor: AvatarColor;
   lessonsLeft: number;
@@ -406,7 +410,7 @@ export default function InstructorPupilsDesktop() {
       try {
         const { data: pupilRows, error } = await supabase
           .from("pupils")
-          .select("id, name, phone, account_balance, course_status, created_at, address, postcode, lessons_completed")
+          .select("id, name, phone, email, account_balance, course_status, created_at, address, postcode, notes, lessons_completed")
           .eq("instructor_id", instructorId)
           .is("deleted_at", null)
           .order("created_at", { ascending: false });
@@ -465,6 +469,10 @@ export default function InstructorPupilsDesktop() {
             id: p.id,
             name: p.name || "Pupil",
             phone: p.phone || "",
+            email: p.email || undefined,
+            postcode: p.postcode || undefined,
+            address: p.address || undefined,
+            notes: p.notes || undefined,
             initials,
             avatarColor,
             lessonsLeft: balanceNum < 0 ? 0 : Math.max(0, Math.floor(balanceNum / 35)),
@@ -511,9 +519,14 @@ export default function InstructorPupilsDesktop() {
     let list = pupils;
     if (filter !== "all") list = list.filter(p => p.status === filter);
     if (debounced) {
+      const q = debounced;
       list = list.filter(p =>
-        p.name.toLowerCase().includes(debounced) ||
-        p.phone.replace(/\s/g, "").includes(debounced.replace(/\s/g, ""))
+        p.name.toLowerCase().includes(q) ||
+        p.phone.replace(/\s/g, "").includes(q.replace(/\s/g, "")) ||
+        (p.postcode || "").toLowerCase().includes(q) ||
+        (p.address || "").toLowerCase().includes(q) ||
+        (p.email || "").toLowerCase().includes(q) ||
+        (p.notes || "").toLowerCase().includes(q)
       );
     }
     const dir = sortDir === "asc" ? 1 : -1;
@@ -662,10 +675,20 @@ export default function InstructorPupilsDesktop() {
               <input
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                placeholder="Search by name or phone"
+                placeholder="Search name, phone, postcode..."
                 className="flex-1 bg-transparent outline-none"
                 style={{ fontSize: 12 }}
               />
+              {search && (
+                <button
+                  type="button"
+                  aria-label="Clear search"
+                  onClick={() => setSearch("")}
+                  style={{ background: "none", border: "none", padding: 0, cursor: "pointer", display: "flex" }}
+                >
+                  <X size={13} color="var(--d2-text-3)" />
+                </button>
+              )}
             </div>
             <div className="flex items-center" style={{ gap: 5 }}>
               <Chip active={filter === "all"} label="All" count={counts.all} onClick={() => setFilter("all")} />
@@ -673,6 +696,20 @@ export default function InstructorPupilsDesktop() {
               <Chip active={filter === "paused"} label="Paused" count={counts.paused} onClick={() => setFilter("paused")} />
               <Chip active={filter === "at-risk"} label="At risk" count={counts["at-risk"]} dot="#F59E0B" onClick={() => setFilter("at-risk")} />
               <Chip active={filter === "test-ready"} label="Test-ready" count={counts["test-ready"]} onClick={() => setFilter("test-ready")} />
+              {(search || filter !== "all") && (
+                <button
+                  type="button"
+                  onClick={() => { setSearch(""); setFilter("all"); }}
+                  style={{
+                    fontSize: 11, padding: "5px 10px", borderRadius: 8,
+                    border: "0.5px solid var(--d2-border)", background: "#fff",
+                    color: "var(--d2-text-2)", fontWeight: 500,
+                    cursor: "pointer",
+                  }}
+                >
+                  Clear
+                </button>
+              )}
             </div>
           </div>
 
