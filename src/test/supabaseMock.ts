@@ -1,14 +1,6 @@
 /**
- * Lightweight chainable mock for `@/integrations/supabase/client`.
- *
- * Usage:
- *   const { supabase, setTable } = createSupabaseMock();
- *   setTable("payment_history", [{ id: "1", amount: 50, ... }]);
- *   vi.mock("@/integrations/supabase/client", () => ({ supabase }));
- *
- * Supports the subset of the query builder used by the pupil portal screens:
- *   from(table).select(...).eq(...).order(...).limit(...).maybeSingle()/single()
- * Returns a thenable so `await` works at any chain point.
+ * Hoisted Supabase mock — must be safe to call from inside `vi.hoisted` so that
+ * the returned `supabase` instance is available when `vi.mock` runs.
  */
 
 type Row = Record<string, any>;
@@ -35,8 +27,7 @@ export function createSupabaseMock(): SupabaseMockHandle {
 
   const buildBuilder = (table: string) => {
     const filters: Record<string, any> = {};
-    const callRecord = { table, filters };
-    calls.push(callRecord);
+    calls.push({ table, filters });
 
     const apply = (): Row[] => {
       const rows = tables.get(table) ?? [];
@@ -83,7 +74,9 @@ export function createSupabaseMock(): SupabaseMockHandle {
     auth: {
       getUser: async () => ({ data: { user: null }, error: null }),
       getSession: async () => ({ data: { session: null }, error: null }),
-      onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
+      onAuthStateChange: () => ({
+        data: { subscription: { unsubscribe: () => {} } },
+      }),
     },
     storage: {
       from: () => ({
