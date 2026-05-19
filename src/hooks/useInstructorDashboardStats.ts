@@ -54,10 +54,11 @@ async function fetchStats(instructorId: string): Promise<InstructorDashboardStat
       .eq("status", "cancelled"),
     supabase
       .from("test_requests")
-      .select("id", { count: "exact", head: true })
+      .select("test_date")
       .eq("instructor_id", instructorId)
       .gte("test_date", today)
-      .not("status", "in", "(cancelled,completed)"),
+      .not("status", "in", "(cancelled,completed)")
+      .order("test_date", { ascending: true }),
     supabase
       .from("driving_test_results")
       .select("result, is_mock, test_date")
