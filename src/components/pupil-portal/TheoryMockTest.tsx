@@ -28,7 +28,7 @@ function shuffleArray<T>(arr: T[]): T[] {
   return copy;
 }
 
-export function TheoryMockTest({ pupilId, onComplete }: TheoryMockTestProps) {
+export function TheoryMockTest({ pupilId, instructorId, onComplete }: TheoryMockTestProps) {
   const [mode, setMode] = useState<"intro" | "test" | "results">("intro");
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
