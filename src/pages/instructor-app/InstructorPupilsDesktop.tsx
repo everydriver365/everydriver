@@ -977,6 +977,14 @@ export default function InstructorPupilsDesktop() {
         onImported={() => setReloadTick(t => t + 1)}
       />
 
+      <ArchivedPupilsDialog
+        open={archivedOpen}
+        onOpenChange={setArchivedOpen}
+        instructorId={instructor?.id}
+        onChanged={() => setReloadTick(t => t + 1)}
+      />
+
+
       <Dialog open={editOpen} onOpenChange={(o) => { setEditOpen(o); if (!o) setEditTargetId(null); }}>
         <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
