@@ -35,6 +35,14 @@ import { ParentPushBanner } from "@/components/parent/ParentPushBanner";
 import { ParentPaymentTopUp } from "@/components/parent/ParentPaymentTopUp";
 import { ParentWelcomeTour } from "@/components/parent/ParentWelcomeTour";
 import { ParentDashboardSkeleton } from "@/components/ui/skeletons/ParentDashboardSkeleton";
+import {
+  MobilePortalLoginShell,
+  darkPortalInputClass,
+  darkPortalInputStyle,
+  darkPortalLabelClass,
+  darkPortalPrimaryBtnClass,
+} from "@/components/auth/MobilePortalLoginShell";
+import drive365Logo from "@/assets/drive365-logo.png";
 
 interface Child {
   id: string;
