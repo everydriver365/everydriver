@@ -328,6 +328,38 @@ export function SendAllRemindersDialog({
           })}
         </div>
 
+        {/* Personalized preview */}
+        {selected.size > 0 && !sending && (
+          <div className="rounded-md border bg-muted/30 p-3">
+            <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+              Preview ({selected.size} pupil{selected.size === 1 ? "" : "s"})
+            </div>
+            <div className="max-h-[160px] overflow-y-auto space-y-2">
+              {eligible
+                .filter(c => selected.has(c.id))
+                .map((p) => {
+                  const firstName = p.name.split(" ")[0];
+                  const amount = p.amount.toFixed(2);
+                  const fromName = instructorName || "your instructor";
+                  const message = `Hi ${firstName}, friendly reminder from ${fromName} — you have an outstanding balance of £${amount}. Thank you!`;
+                  const pupilChs = eligibleChannelsFor(p);
+                  return (
+                    <div key={p.id} className="text-xs leading-relaxed">
+                      <div className="flex items-center gap-1.5 mb-0.5">
+                        <span className="font-medium text-foreground">{p.name}</span>
+                        <span className="text-muted-foreground">·</span>
+                        <span className="text-muted-foreground">{pupilChs.map(ch => CHANNEL_META[ch].label).join(" · ")}</span>
+                      </div>
+                      <div className="pl-2.5 border-l-2 border-primary/30 text-muted-foreground italic">
+                        “{message}”
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+          </div>
+        )}
+
         {/* Ineligible footnote */}
         {ineligible.length > 0 && (
           <div className="flex items-start gap-2 text-[11px] text-muted-foreground bg-muted/50 rounded-md p-2">
