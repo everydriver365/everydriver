@@ -39,6 +39,10 @@ import {
   formatLongDate,
   formatDistanceMiles,
 } from "@/lib/formatJobOffer";
+import {
+  compatibilityColors,
+  type CompatibilityResult,
+} from "@/lib/jobOfferCompatibility";
 
 export interface JobOfferDetailJob {
   id: string;
@@ -60,6 +64,7 @@ export interface JobOfferDetailJob {
 interface Props {
   job: JobOfferDetailJob | null;
   distanceMi: number | null | undefined;
+  compatibility?: CompatibilityResult;
   hourlyRate: number;
   processing: boolean;
   onClose: () => void;
