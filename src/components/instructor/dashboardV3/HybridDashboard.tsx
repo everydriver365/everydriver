@@ -476,10 +476,10 @@ export function HybridDashboard({ instructorId, instructorName, pupils, todaysLe
 
   // Function tiles — labels/stats wired where possible, '—' otherwise
   const tiles: Tile[] = [
-    { label: "Schedule",     Icon: Calendar,      iconBg: t.blueLight,   iconColor: t.blue,  accent: t.blue,  stat: `${todaysLessonCount} today`,           href: "/instructor/schedule", miniList: scheduleMini, miniEmpty: "No lessons today" },
-    { label: "Pupils",       Icon: Users,         iconBg: t.blueLight,   iconColor: t.blue,  accent: t.blue,  stat: `${pupils.length} active`,              href: "/instructor/pupils" },
+    { label: "Schedule",     Icon: Calendar,      iconBg: t.blueLight,   iconColor: t.blue,  accent: t.blue,  stat: `${todaysLessonCount} today`,           href: "/instructor/schedule", miniList: scheduleMini, miniEmpty: "No lessons today", onAdd: onAddLesson, addLabel: "Add lesson" },
+    { label: "Pupils",       Icon: Users,         iconBg: t.blueLight,   iconColor: t.blue,  accent: t.blue,  stat: `${pupils.length} active`,              href: "/instructor/pupils", onAdd: onAddPupil, addLabel: "Add pupil" },
     { label: "Waiting list", Icon: ListChecks,    iconBg: t.blueLight,   iconColor: t.blue,  accent: t.blue,  stat: stats2 ? `${stats2.waitingListCount} waiting` : "—", href: "/instructor/waiting-list" },
-    { label: "Payments",     Icon: CreditCard,    iconBg: t.greenLight,  iconColor: t.green, accent: t.green, stat: `£${outstandingTotal.toFixed(0)} due`,  href: "/instructor/pay" },
+    { label: "Payments",     Icon: CreditCard,    iconBg: t.greenLight,  iconColor: t.green, accent: t.green, stat: `£${outstandingTotal.toFixed(0)} due`,  href: "/instructor/pay", onAdd: onTakePayment, addLabel: "Take payment" },
     { label: "Test swap",    Icon: Repeat2,       iconBg: t.redLight,    iconColor: t.red,   accent: t.red,   stat: stats2 ? `${stats2.testSwapOpenCount} open` : "—", href: "/instructor/test-requests" },
     { label: "Progress",     Icon: TrendingUp,    iconBg: t.blueLight,   iconColor: t.blue,  accent: t.blue,  stat: "Open",                                 href: "/instructor/pupils" },
     { label: "Courses",      Icon: BookOpenCheck, iconBg: t.blueLight,   iconColor: t.blue,  accent: t.blue,  stat: stats2 ? `${stats2.coursesCount} active` : "—", href: "/instructor/course-planner" },
