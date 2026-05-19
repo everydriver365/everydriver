@@ -57,6 +57,41 @@ export function PupilPaymentsManager({
   const [saving, setSaving] = useState(false);
   const [recordOpen, setRecordOpen] = useState(false);
   const [sending, setSending] = useState<string | null>(null);
+  const [chargeOpen, setChargeOpen] = useState(false);
+  const [chargeAmount, setChargeAmount] = useState("");
+  const [chargeNote, setChargeNote] = useState("");
+  const [chargeSaving, setChargeSaving] = useState(false);
+
+  const hasContact = !!(pupilEmail || pupilPhone);
+
+  const addCharge = async () => {
+    const amt = parseFloat(chargeAmount);
+    if (isNaN(amt) || amt <= 0) { toast.error("Enter a valid amount"); return; }
+    setChargeSaving(true);
+    try {
+      const { error } = await supabase.rpc("increment_pupil_balance", {
+        p_pupil_id: pupilId, p_amount: -amt,
+      });
+      if (error) throw error;
+      // Also log as a negative payment_history row so it shows in the audit trail
+      await supabase.from("payment_history").insert({
+        pupil_id: pupilId,
+        instructor_id: instructorId,
+        amount: -amt,
+        payment_method: "charge",
+        notes: chargeNote.trim() || "Amount owed",
+        recorded_at: new Date().toISOString(),
+      });
+      toast.success(`£${amt.toFixed(2)} added to amount owed`);
+      setChargeOpen(false);
+      setChargeAmount("");
+      setChargeNote("");
+      await fetchRows();
+      onChanged?.();
+    } catch (e: any) {
+      console.error(e); toast.error(e?.message || "Failed to add charge");
+    } finally { setChargeSaving(false); }
+  };
 
   const outstanding = currentBalance < 0 ? Math.abs(currentBalance) : 0;
 
