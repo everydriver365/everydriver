@@ -66,8 +66,14 @@ export function PupilPaymentsManager({
   const [chargeAmount, setChargeAmount] = useState("");
   const [chargeNote, setChargeNote] = useState("");
   const [chargeSaving, setChargeSaving] = useState(false);
+  const { invalidatePaymentQueries } = usePaymentInvalidation();
 
   const hasContact = !!(pupilEmail || pupilPhone);
+
+  const notifyChanged = () => {
+    invalidatePaymentQueries({ pupilId, instructorId });
+    onChanged?.();
+  };
 
   const addCharge = async () => {
     const amt = parseFloat(chargeAmount);
