@@ -31,6 +31,12 @@ import { cn } from "@/lib/utils";
 import drive365Logo from "@/assets/drive365-logo.png";
 import pupilHero from "@/assets/drive365-hero-learner.webp";
 import { MobileLoginHero } from "@/components/auth/MobileLoginHero";
+import {
+  isBiometricAvailable,
+  getBiometricCredentials,
+  saveBiometricCredentials,
+  getBiometryLabel,
+} from "@/lib/biometricAuth";
 
 type LoginView = "login" | "forgot" | "reset-code" | "new-password";
 
@@ -96,34 +102,38 @@ export default function PupilLogin() {
     fetchInstructor();
   }, [instructorSlug]);
 
+  const [biometryLabel, setBiometryLabel] = useState<string>("Face ID");
+
   useEffect(() => {
-    if ((window as any).PasswordCredential) {
-      setFaceIdAvailable(true);
-    }
+    let cancelled = false;
+    (async () => {
+      const [available, label] = await Promise.all([
+        isBiometricAvailable("pupil"),
+        getBiometryLabel(),
+      ]);
+      if (cancelled) return;
+      setFaceIdAvailable(available);
+      setBiometryLabel(label);
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
     const tryAutoLogin = async () => {
-      if (!(window as any).PasswordCredential) return;
       const remembered = localStorage.getItem("pupil_remembered_email");
       if (!remembered) return;
-
       try {
-        const credential = await navigator.credentials.get({
-          password: true,
-          mediation: "optional",
-        } as any);
-
-        if (credential && credential.type === "password") {
-          const pwCred = credential as any;
+        const creds = await getBiometricCredentials("pupil", "Sign in to your pupil portal");
+        if (creds?.email && creds?.password) {
           setAutoLoggingIn(true);
-          await performLogin(pwCred.id, pwCred.password || "");
+          await performLogin(creds.email, creds.password);
         }
       } catch {
         // Silently fail
       }
     };
-
     tryAutoLogin();
   }, []);
 
@@ -178,18 +188,10 @@ export default function PupilLogin() {
         localStorage.setItem("pupil_remembered_email", loginEmail);
       }
 
-      if ((window as any).PasswordCredential) {
-        try {
-          const CredCtor = (window as any).PasswordCredential;
-          const cred = new CredCtor({
-            id: loginEmail,
-            password: loginPassword,
-            name: data.pupilName,
-          });
-          await navigator.credentials.store(cred);
-        } catch {
-          // Continue
-        }
+      try {
+        await saveBiometricCredentials("pupil", loginEmail, loginPassword);
+      } catch {
+        // Continue — biometric save is best-effort
       }
 
       const firstName = data.pupilName?.split(" ")[0] || "";
@@ -219,18 +221,15 @@ export default function PupilLogin() {
   };
 
   const handleFaceIdLogin = async () => {
-    if (!(window as any).PasswordCredential) return;
     setFaceIdLoading(true);
     try {
-      const credential = await navigator.credentials.get({
-        password: true,
-        mediation: "required",
-      } as any);
-      if (credential && credential.type === "password") {
-        const pwCred = credential as any;
+      const creds = await getBiometricCredentials("pupil", "Sign in to your pupil portal");
+      if (creds?.email && creds?.password) {
         setFaceIdSuccess(true);
-        setEmail(pwCred.id);
-        await performLogin(pwCred.id, pwCred.password || "");
+        setEmail(creds.email);
+        await performLogin(creds.email, creds.password);
+      } else {
+        toast.error("No saved sign-in found. Sign in with your password once to enable Face ID.");
       }
     } catch {
       toast.error("Biometric login cancelled or not available");
@@ -448,7 +447,7 @@ export default function PupilLogin() {
                   <ScanFace className="h-[22px] w-[22px] text-white" strokeWidth={1.8} />
                 )}
                 <span className="text-white text-[14px] font-semibold">
-                  {faceIdSuccess ? "Recognised — signing in" : faceIdLoading ? "Scanning…" : "Sign in with Face ID"}
+                  {faceIdSuccess ? "Recognised — signing in" : faceIdLoading ? "Scanning…" : `Sign in with ${biometryLabel}`}
                 </span>
               </button>
             )}
