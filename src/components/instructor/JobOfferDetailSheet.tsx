@@ -297,7 +297,47 @@ export function JobOfferDetailSheet({
                 />
               </div>
 
+              {/* Compatibility card */}
+              {compatibility && compatibility.level !== "unknown" && (() => {
+                const c = compatibilityColors(compatibility.level);
+                return (
+                  <div
+                    style={{
+                      background: "#FFFFFF",
+                      border: "0.5px solid #E5E5EA",
+                      borderRadius: 12,
+                      padding: 14,
+                    }}
+                  >
+                    <div className="flex items-center" style={{ justifyContent: "space-between", marginBottom: 10 }}>
+                      <EyebrowLabel>Match for you</EyebrowLabel>
+                      <span
+                        style={{
+                          background: c.bg,
+                          color: c.fg,
+                          borderRadius: 999,
+                          padding: "4px 10px",
+                          fontSize: 11,
+                          fontWeight: 600,
+                          lineHeight: 1.2,
+                        }}
+                      >
+                        {compatibility.label}
+                      </span>
+                    </div>
+                    <ul style={{ margin: 0, paddingLeft: 16, display: "flex", flexDirection: "column", gap: 4 }}>
+                      {compatibility.reasons.map((r, i) => (
+                        <li key={i} style={{ fontSize: 13, color: "#3C3C43", lineHeight: 1.4 }}>
+                          {r}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                );
+              })()}
+
               {/* Location card */}
+
               <div
                 style={{
                   background: "#FFFFFF",
