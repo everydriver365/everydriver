@@ -1052,7 +1052,47 @@ export function AddPupilSheet({
             )}
           </DSection>
 
+          {/* Section 1b: Lead source */}
+          <DSection icon={UsersIcon} label="Lead source">
+            <div className="mb-3">
+              <DFieldLabel label="Where did this pupil come from?" />
+              <DSelect
+                value={form.source || ""}
+                placeholder="Select source"
+                onChange={(v) => updateForm({ source: v })}
+                options={PUPIL_SOURCE_OPTIONS}
+              />
+            </div>
+            {form.source === "national_intensive" && (
+              <div className="flex gap-3">
+                <div className="flex-1">
+                  <DFieldLabel label="Hours paid for" />
+                  <DTextInput
+                    type="number"
+                    value={form.intensive_hours_paid || ""}
+                    onChange={(v) => updateForm({ intensive_hours_paid: v })}
+                    placeholder="e.g. 40"
+                    isConditional
+                    suffix={<span style={{ fontSize: 12, color: D_GREEN, marginLeft: 4 }}>hrs</span>}
+                  />
+                </div>
+                <div className="flex-1">
+                  <DFieldLabel label="Course pays" />
+                  <DTextInput
+                    type="number"
+                    value={form.intensive_course_payout || ""}
+                    onChange={(v) => updateForm({ intensive_course_payout: v })}
+                    placeholder="0.00"
+                    isConditional
+                    prefix={<span style={{ fontSize: 13, color: D_GREEN, marginRight: 4 }}>£</span>}
+                  />
+                </div>
+              </div>
+            )}
+          </DSection>
+
           {/* Section 2: Address */}
+
           <DSection icon={MapPin} label="Address">
             <div className="mb-3">
               <DFieldLabel
