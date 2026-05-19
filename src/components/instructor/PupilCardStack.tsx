@@ -730,172 +730,288 @@ export function PupilCardStack({
             : "0 1px 2px rgba(0,0,0,0.03)",
         }}
       >
-        {/* Overdue corner ribbon */}
-        {isOverdue && (
-          <div
-            aria-label="Payment overdue"
-            style={{
-              position: "absolute",
-              top: 0,
-              right: 0,
-              width: 60,
-              height: 60,
-              overflow: "hidden",
-              pointerEvents: "none",
-              zIndex: 5,
-            }}
-          >
-            <div
-              style={{
-                position: "absolute",
-                transform: "rotate(45deg)",
-                background: "#C8434F",
-                color: "#FFFFFF",
-                fontSize: 8,
-                fontWeight: 500,
-                letterSpacing: 0.3,
-                textAlign: "center",
-                lineHeight: "16px",
-                width: 88,
-                top: 12,
-                right: -28,
-                fontFamily: "Inter, sans-serif",
-              }}
-            >
-              OVERDUE
-            </div>
-          </div>
-        )}
-        {/* Collapsed Card — premium tile system */}
+        {/* Collapsed Card — DSM mobile reskin */}
         <motion.button
           onClick={handleCardClick}
           whileTap={{ scale: 0.98, opacity: 0.94 }}
           transition={{ duration: 0.18, ease: [0.4, 0, 0.2, 1] }}
           className="w-full text-left"
-          style={{ padding: 16, fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif', background: "transparent", border: "none", display: "flex", flexDirection: "column", gap: 12 }}
+          style={{
+            padding: 0,
+            fontFamily: 'Poppins, -apple-system, BlinkMacSystemFont, "SF Pro Text", Inter, sans-serif',
+            background: "transparent",
+            border: "none",
+            display: "block",
+          }}
         >
-          {/* Top row: avatar + identity + balance */}
-          <div className="flex items-center w-full" style={{ gap: 14 }}>
-            <div className="relative shrink-0" style={{ width: 48, height: 48 }}>
-              {pupil.profile_image_url ? (
-                <img
-                  src={pupil.profile_image_url}
-                  alt={titleCaseName(pupil.name)}
-                  style={{ width: 48, height: 48, borderRadius: "50%", objectFit: "cover", display: "block" }}
-                />
-              ) : (
-                <div
-                  style={{
-                    width: 48, height: 48, borderRadius: "50%",
-                    background: avatarBg, color: "#FFFFFF",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    fontSize: 16, fontWeight: 500, letterSpacing: "0.02em",
-                  }}
-                  aria-label={titleCaseName(pupil.name)}
-                >
-                  {getInitials(pupil.name)}
-                </div>
-              )}
-              {statusDotColor && (
-                <span aria-hidden="true" style={{ position: "absolute", bottom: 0, right: 0, width: 12, height: 12, borderRadius: "50%", background: statusDotColor, border: "2px solid #FFFFFF", boxSizing: "border-box" }} />
-              )}
-            </div>
+          {(() => {
+            const courseKey = (pupil.course_type || "").toLowerCase();
+            const isAutomatic = courseKey.includes("auto");
+            const courseLabel = isAutomatic ? "Automatic" : "Manual";
+            const coursePill = isAutomatic
+              ? { bg: "#E1F5EE", fg: "#085041" }
+              : { bg: "#E6F1FB", fg: "#1A52A0" };
 
-            {(() => {
-              const courseKey = (pupil.course_type || "").toLowerCase();
-              const isAutomatic = courseKey.includes("auto");
-              const courseLabel = isAutomatic ? "Automatic" : "Manual";
-              const coursePill = { bg: isAutomatic ? "#F0EAFB" : "#E8F1FB", fg: isAutomatic ? "#7C3AED" : "#2B7BC8" };
-
-              let nextLine: string | null = null;
-              if (lessonSummary?.date && lessonSummary.type === "next") {
+            let nextLine: string | null = null;
+            if (lessonSummary?.date && lessonSummary.type === "next") {
+              try {
                 const d = parseISO(lessonSummary.date);
-                nextLine = `Next: ${format(d, "yyyy-MM-dd 'at' HH:mm")}`;
-              } else if (pupil.next_lesson) {
-                try {
-                  const d = parseISO(pupil.next_lesson);
-                  nextLine = `Next: ${format(d, "yyyy-MM-dd 'at' HH:mm")}`;
-                } catch {}
-              }
+                nextLine = `Next: ${format(d, "d MMM 'at' HH:mm")}`;
+              } catch {}
+            } else if (pupil.next_lesson) {
+              try {
+                const d = parseISO(pupil.next_lesson);
+                nextLine = `Next: ${format(d, "d MMM 'at' HH:mm")}`;
+              } catch {}
+            }
 
-              return (
-                <div className="flex-1 min-w-0" style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                  <div className="flex items-center" style={{ gap: 8, minWidth: 0 }}>
-                    <h3 className="truncate" style={{ fontSize: 16, fontWeight: 600, color: "#000000", letterSpacing: "-0.2px", lineHeight: 1.25, margin: 0, minWidth: 0 }}>
+            const lessonsDone = pupil.lessons_completed || 0;
+
+            // Payment status mapping derived from existing balance state
+            const paymentStatus: "overdue" | "credit" | "clear" = hasDebt
+              ? "overdue"
+              : hasCredit
+                ? "credit"
+                : "clear";
+            const pillConfig =
+              paymentStatus === "overdue"
+                ? { bg: "#FBEAEA", text: "#CC2229", label: "OVERDUE", Icon: AlertCircle }
+                : paymentStatus === "credit"
+                  ? { bg: "#E6F1FB", text: "#1A52A0", label: "CREDIT", Icon: PlusCircle }
+                  : { bg: "#E1F5EE", text: "#1D9E75", label: "ALL CLEAR", Icon: CheckCircle2 };
+
+            const amountColour = hasDebt ? "#CC2229" : hasCredit ? "#1A52A0" : "#1D9E75";
+            const amountAbs = Math.abs(balance);
+            const amountDisplay = hasDebt
+              ? `−£${amountAbs.toLocaleString("en-GB", { minimumFractionDigits: 0 })}`
+              : `£${amountAbs.toLocaleString("en-GB", { minimumFractionDigits: 0 })}`;
+
+            // Progress
+            const progressPctRaw = pupil.progress;
+            const hasProgress = typeof progressPctRaw === "number";
+            const progressPct = Math.max(0, Math.min(100, progressPctRaw ?? 0));
+            const progressColour =
+              progressPct >= 80 ? "#F59E0B" : progressPct >= 40 ? "#1D9E75" : "#1A52A0";
+
+            // Test badge
+            let testBadge: string | null = null;
+            if (pupil.test_date) {
+              try {
+                testBadge = `Test ${format(parseISO(pupil.test_date), "d MMM")}`;
+              } catch {}
+            }
+
+            return (
+              <>
+                {/* Top row */}
+                <div
+                  className="flex items-center"
+                  style={{ padding: "14px 14px 10px", gap: 12 }}
+                >
+                  {/* Avatar with status dot */}
+                  <div className="relative shrink-0" style={{ width: 44, height: 44 }}>
+                    {pupil.profile_image_url ? (
+                      <img
+                        src={pupil.profile_image_url}
+                        alt={titleCaseName(pupil.name)}
+                        style={{ width: 44, height: 44, borderRadius: 22, objectFit: "cover", display: "block" }}
+                      />
+                    ) : (
+                      <div
+                        style={{
+                          width: 44, height: 44, borderRadius: 22,
+                          background: avatarBg, color: "#FFFFFF",
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          fontSize: 13, fontWeight: 700, letterSpacing: "0.02em",
+                          fontFamily: "Poppins, sans-serif",
+                        }}
+                        aria-label={titleCaseName(pupil.name)}
+                      >
+                        {getInitials(pupil.name)}
+                      </div>
+                    )}
+                    <span
+                      aria-hidden="true"
+                      style={{
+                        position: "absolute", bottom: 1, right: 1,
+                        width: 9, height: 9, borderRadius: 5,
+                        background: statusDotColor === "#3B8B3B" ? "#1D9E75" : (statusDotColor || "#C4C9D4"),
+                        border: "2px solid #FFFFFF", boxSizing: "content-box",
+                      }}
+                    />
+                  </div>
+
+                  {/* Name + badges */}
+                  <div className="flex-1 min-w-0">
+                    <div
+                      className="truncate"
+                      style={{
+                        fontSize: 14, fontWeight: 600, color: "#0F2044",
+                        marginBottom: 4, fontFamily: "Poppins, sans-serif",
+                        lineHeight: 1.25,
+                      }}
+                    >
                       {titleCaseName(pupil.name)}
-                    </h3>
-                    <span style={{ background: coursePill.bg, color: coursePill.fg, fontSize: 10.5, fontWeight: 600, letterSpacing: "0.2px", padding: "2px 7px", borderRadius: 999, lineHeight: 1.3, flexShrink: 0 }}>
-                      {courseLabel}
+                    </div>
+                    <div className="flex items-center" style={{ gap: 6, flexWrap: "wrap" }}>
+                      <span
+                        style={{
+                          background: coursePill.bg, color: coursePill.fg,
+                          borderRadius: 5, padding: "2px 8px",
+                          fontSize: 10, fontWeight: 600, fontFamily: "Poppins, sans-serif",
+                          lineHeight: 1.3,
+                        }}
+                      >
+                        {courseLabel}
+                      </span>
+                      {testBadge && (
+                        <span
+                          style={{
+                            background: "#FEF3C7", color: "#92400E",
+                            borderRadius: 5, padding: "2px 8px",
+                            fontSize: 10, fontWeight: 600, fontFamily: "Poppins, sans-serif",
+                            lineHeight: 1.3,
+                          }}
+                        >
+                          {testBadge}
+                        </span>
+                      )}
+                      {lessonsDone > 0 && (
+                        <span style={{ fontSize: 11, color: "#9CA3AF", fontFamily: "Poppins, sans-serif" }}>
+                          Lesson {lessonsDone}
+                        </span>
+                      )}
+                    </div>
+                    {nameSuffix && (
+                      <div
+                        className="truncate"
+                        style={{ marginTop: 4, fontSize: 11, color: "#9CA3AF", fontFamily: "Poppins, sans-serif" }}
+                      >
+                        {nameSuffix}
+                      </div>
+                    )}
+                    {nextLine && (
+                      <div
+                        className="flex items-center truncate"
+                        style={{ marginTop: 4, gap: 4, fontSize: 11, color: "#6B7280", fontFamily: "Poppins, sans-serif", fontVariantNumeric: "tabular-nums" }}
+                      >
+                        <Calendar size={10} strokeWidth={2} color="#9CA3AF" />
+                        <span className="truncate">{nextLine}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Amount + status pill */}
+                  <div className="shrink-0 flex flex-col items-end" style={{ gap: 3 }}>
+                    <span
+                      style={{
+                        fontSize: 16, fontWeight: 700, letterSpacing: "-0.3px",
+                        color: amountColour, fontFamily: "Poppins, sans-serif",
+                        fontVariantNumeric: "tabular-nums", lineHeight: 1.1,
+                      }}
+                    >
+                      {amountDisplay}
+                    </span>
+                    <span
+                      className="inline-flex items-center"
+                      style={{
+                        gap: 3, background: pillConfig.bg,
+                        borderRadius: 4, padding: "2px 7px",
+                      }}
+                    >
+                      <pillConfig.Icon size={9} strokeWidth={2.2} color={pillConfig.text} />
+                      <span style={{ fontSize: 10, fontWeight: 700, color: pillConfig.text, fontFamily: "Poppins, sans-serif", lineHeight: 1.2 }}>
+                        {pillConfig.label}
+                      </span>
                     </span>
                   </div>
-                  {nameSuffix && (
-                    <div className="truncate" style={{ fontSize: 12.5, color: "#8E8E93", fontWeight: 400, lineHeight: 1.3 }}>
-                      {nameSuffix}
-                    </div>
-                  )}
-                  {nextLine && (
-                    <div className="flex items-center" style={{ gap: 6, fontSize: 13, color: "#6E6E73", lineHeight: 1.3, fontVariantNumeric: "tabular-nums" }}>
-                      <Calendar size={12} strokeWidth={1.8} color="#8E8E93" />
-                      <span className="truncate">{nextLine}</span>
-                    </div>
-                  )}
                 </div>
-              );
-            })()}
 
-            <div className="shrink-0 flex flex-col items-end" style={{ gap: 2 }}>
-              <span style={{ fontSize: 18, fontWeight: 700, color: hasDebt ? "#E5394A" : hasCredit ? "#2EA84F" : "#000000", fontVariantNumeric: "tabular-nums", lineHeight: 1.1 }}>
-                {hasDebt ? "−" : ""}£{Math.abs(balance).toFixed(0)}
-              </span>
-              <span style={{ fontSize: 11, color: "#8E8E93", fontWeight: 500 }}>
-                {hasDebt ? "Owes" : hasCredit ? "Credit" : "Settled"}
-              </span>
-              {hasDebt && (
-                <div className="flex items-center" style={{ gap: 8, marginTop: 4 }}>
+                {/* Divider */}
+                <div style={{ height: 1, background: "#F2F4F8", marginLeft: 16, marginRight: 16 }} />
+
+                {/* Actions row */}
+                <div
+                  className="flex items-center"
+                  style={{ gap: 8, padding: "10px 16px 12px" }}
+                >
+                  {hasDebt && (
+                    <button
+                      type="button"
+                      onClick={handleSendReminder}
+                      style={{
+                        flex: 1,
+                        display: "inline-flex", alignItems: "center", justifyContent: "center",
+                        gap: 5, background: "#FEF3C7", color: "#92400E",
+                        borderRadius: 8, padding: "7px 12px",
+                        fontSize: 12, fontWeight: 600, fontFamily: "Poppins, sans-serif",
+                        border: "none", cursor: "pointer",
+                      }}
+                    >
+                      <Bell size={12} strokeWidth={2} />
+                      Remind
+                    </button>
+                  )}
+                  {hasDebt && (
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); setShowPayLinkSheet(true); }}
+                      style={{
+                        flex: 1,
+                        display: "inline-flex", alignItems: "center", justifyContent: "center",
+                        gap: 5, background: "#CC2229", color: "#FFFFFF",
+                        borderRadius: 8, padding: "7px 12px",
+                        fontSize: 12, fontWeight: 600, fontFamily: "Poppins, sans-serif",
+                        border: "none", cursor: "pointer",
+                      }}
+                    >
+                      <CreditCard size={12} strokeWidth={2} />
+                      Pay link
+                    </button>
+                  )}
                   <button
                     type="button"
-                    onClick={handleSendReminder}
-                    style={{ fontSize: 11, fontWeight: 600, color: "#C8434F", textDecoration: "underline", background: "transparent", border: "none", padding: 0, cursor: "pointer" }}
+                    onClick={(e) => { e.stopPropagation(); handleCardClick(); }}
+                    style={{
+                      flex: hasDebt ? 0 : 1,
+                      display: "inline-flex", alignItems: "center", justifyContent: "center",
+                      gap: 5, background: "#F2F4F8", color: "#374151",
+                      borderRadius: 8, padding: "7px 14px",
+                      fontSize: 12, fontWeight: 600, fontFamily: "Poppins, sans-serif",
+                      border: "none", cursor: "pointer",
+                    }}
                   >
-                    Remind
-                  </button>
-                  <span style={{ fontSize: 11, color: "#D1D1D6" }}>·</span>
-                  <button
-                    type="button"
-                    onClick={(e) => { e.stopPropagation(); setShowPayLinkSheet(true); }}
-                    style={{ fontSize: 11, fontWeight: 600, color: "#2B7BC8", textDecoration: "underline", background: "transparent", border: "none", padding: 0, cursor: "pointer" }}
-                  >
-                    Pay link
+                    View
                   </button>
                 </div>
-              )}
-            </div>
-          </div>
 
-          {/* Progress row */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            <div className="flex items-center justify-between">
-              <span style={{ fontSize: 12, color: "#6E6E73", fontWeight: 500 }}>Progress</span>
-              <span style={{ fontSize: 13, fontWeight: 600, color: "#2B7BC8", fontVariantNumeric: "tabular-nums" }}>
-                {pupil.progress ?? 0}%
-              </span>
-            </div>
-            <div style={{ height: 6, background: "#EEF0F3", borderRadius: 999, overflow: "hidden" }}>
-              <div style={{ height: "100%", width: `${Math.max(0, Math.min(100, pupil.progress ?? 0))}%`, background: "#2B7BC8", borderRadius: 999, transition: "width 0.4s ease" }} />
-            </div>
-          </div>
-
-          {/* Test date row */}
-          {pupil.test_date && (
-            <div className="flex items-center" style={{ gap: 6, fontSize: 12.5, color: "#B8801F", fontWeight: 600, fontVariantNumeric: "tabular-nums" }}>
-              <span aria-hidden style={{ fontSize: 13 }}>🚩</span>
-              <span className="truncate">
-                Test: {format(parseISO(pupil.test_date), "d MMM yyyy")}
-                {pupil.test_time ? ` · ${pupil.test_time.slice(0, 5)}` : ""}
-                {pupil.test_centre?.name ? ` · ${pupil.test_centre.name}` : ""}
-              </span>
-            </div>
-          )}
+                {/* Progress row */}
+                {hasProgress && (
+                  <div style={{ padding: "0 16px 14px" }}>
+                    <div className="flex items-center justify-between" style={{ marginBottom: 5 }}>
+                      <span style={{ fontSize: 11, color: "#9CA3AF", fontFamily: "Poppins, sans-serif" }}>
+                        Lesson progress
+                      </span>
+                      <span style={{ fontSize: 11, fontWeight: 600, color: "#0F2044", fontFamily: "Poppins, sans-serif", fontVariantNumeric: "tabular-nums" }}>
+                        {progressPct}%
+                      </span>
+                    </div>
+                    <div style={{ height: 4, background: "#F2F4F8", borderRadius: 2, overflow: "hidden" }}>
+                      <div
+                        style={{
+                          height: "100%",
+                          width: `${progressPct}%`,
+                          background: progressColour,
+                          borderRadius: 2,
+                          transition: "width 0.4s ease",
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
+              </>
+            );
+          })()}
         </motion.button>
 
         {/* Subtle divider */}
