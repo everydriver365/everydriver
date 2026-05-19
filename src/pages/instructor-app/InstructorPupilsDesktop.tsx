@@ -1182,6 +1182,96 @@ export default function InstructorPupilsDesktop() {
               </div>
             </section>
 
+            {/* Lesson rates */}
+            <section className="space-y-3">
+              <h4 className="text-[11px] font-semibold tracking-wider uppercase text-muted-foreground">Lesson rates (override)</h4>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="space-y-1">
+                  <Label htmlFor="edit-rate-60">1 hour (£)</Label>
+                  <Input id="edit-rate-60" type="number" min={0} step="0.01"
+                    value={editForm.custom_hourly_rate}
+                    onChange={e => setEditForm(f => ({ ...f, custom_hourly_rate: e.target.value }))}
+                    placeholder="e.g. 38" />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="edit-rate-90">1.5 hour (£)</Label>
+                  <Input id="edit-rate-90" type="number" min={0} step="0.01"
+                    value={editForm.custom_rate_90min}
+                    onChange={e => setEditForm(f => ({ ...f, custom_rate_90min: e.target.value }))}
+                    placeholder="e.g. 57" />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="edit-rate-120">2 hour (£)</Label>
+                  <Input id="edit-rate-120" type="number" min={0} step="0.01"
+                    value={editForm.custom_rate_120min}
+                    onChange={e => setEditForm(f => ({ ...f, custom_rate_120min: e.target.value }))}
+                    placeholder="e.g. 76" />
+                </div>
+              </div>
+              <p className="text-[11px] text-muted-foreground">Leave blank to use your default hourly rate.</p>
+            </section>
+
+            {/* Parent / guardian */}
+            <section className="space-y-3">
+              <h4 className="text-[11px] font-semibold tracking-wider uppercase text-muted-foreground">Parent / guardian</h4>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label htmlFor="edit-parent-name">Parent name</Label>
+                  <Input id="edit-parent-name" value={editForm.parent_name}
+                    onChange={e => setEditForm(f => ({ ...f, parent_name: e.target.value }))} />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="edit-parent-phone">Parent phone</Label>
+                  <Input id="edit-parent-phone" value={editForm.parent_phone}
+                    onChange={e => setEditForm(f => ({ ...f, parent_phone: e.target.value }))}
+                    placeholder="07XXX XXXXXX" />
+                </div>
+              </div>
+            </section>
+
+            {/* Lead source */}
+            <section className="space-y-3">
+              <h4 className="text-[11px] font-semibold tracking-wider uppercase text-muted-foreground">Lead source</h4>
+              <div className="space-y-1">
+                <Label htmlFor="edit-source">Source</Label>
+                <Select value={editForm.source || "__none"} onValueChange={v => setEditForm(f => ({ ...f, source: v === "__none" ? "" : v }))}>
+                  <SelectTrigger id="edit-source"><SelectValue placeholder="Select" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none">— None —</SelectItem>
+                    {PUPIL_SOURCE_OPTIONS.map(o => (
+                      <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              {editForm.source === "national_intensive" && (
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="space-y-1">
+                    <Label htmlFor="edit-ni-hours">Hours paid</Label>
+                    <Input id="edit-ni-hours" type="number" min={0} step="0.5"
+                      value={editForm.intensive_hours_paid}
+                      onChange={e => setEditForm(f => ({ ...f, intensive_hours_paid: e.target.value }))}
+                      placeholder="e.g. 40" />
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="edit-ni-payout">NI pays you (£)</Label>
+                    <Input id="edit-ni-payout" type="number" min={0} step="0.01"
+                      value={editForm.intensive_course_payout}
+                      onChange={e => setEditForm(f => ({ ...f, intensive_course_payout: e.target.value }))}
+                      placeholder="£ amount" />
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="edit-ni-pupil">Pupil pays you (£)</Label>
+                    <Input id="edit-ni-pupil" type="number" min={0} step="0.01"
+                      value={editForm.intensive_pupil_payment}
+                      onChange={e => setEditForm(f => ({ ...f, intensive_pupil_payment: e.target.value }))}
+                      placeholder="£ amount" />
+                  </div>
+                </div>
+              )}
+            </section>
+
+
             {/* Comments */}
             <section className="space-y-3">
               <h4 className="text-[11px] font-semibold tracking-wider uppercase text-muted-foreground">Comments</h4>
