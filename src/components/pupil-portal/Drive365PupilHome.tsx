@@ -145,7 +145,7 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug, onNavigat
     queryFn: async () => {
       const { data } = await supabase
         .from("pupils")
-        .select("theory_test_date, theory_test_passed, test_date, test_passed")
+        .select("theory_test_date, theory_test_passed, test_date, test_time, test_passed, test_centres:test_centre_id(name)")
         .eq("id", pupil.id)
         .maybeSingle();
       return data as any;
@@ -168,8 +168,8 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug, onNavigat
   });
 
 
-  // Mock score for readiness
-  const { data: mockScore } = useQuery({
+  // Mock score for readiness — keep raw score/total for "X/50" display
+  const { data: mockScoreData } = useQuery({
     queryKey: ["d365-mock-score", pupil.id],
     queryFn: async () => {
       const { data } = await (supabase.from("theory_mock_scores") as any)
@@ -178,13 +178,15 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug, onNavigat
         .order("created_at", { ascending: false })
         .limit(1);
       if (data && data[0]) {
-        const s = data[0];
-        return Math.round((s.score / Math.max(1, s.total_questions)) * 100);
+        return { score: data[0].score as number, total: data[0].total_questions as number };
       }
       return null;
     },
     staleTime: 60_000,
   });
+  const mockScorePct = mockScoreData
+    ? Math.round((mockScoreData.score / Math.max(1, mockScoreData.total)) * 100)
+    : null;
 
   // Referral data
   const { data: referral } = useQuery({
@@ -212,11 +214,11 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug, onNavigat
   const transmission = instructorCar?.car_type as string | null | undefined;
 
   // Test Readiness — only compute when we have real signals
-  const hasReadinessSignal = lessonsTaken > 0 || mockScore !== null;
+  const hasReadinessSignal = lessonsTaken > 0 || mockScorePct !== null;
   const lessonsFactor = totalHours && totalHours > 0
     ? Math.min(100, (lessonsTaken / totalHours) * 100)
     : 0;
-  const mockFactor = mockScore ?? 0;
+  const mockFactor = mockScorePct ?? 0;
   const readinessPct = hasReadinessSignal
     ? Math.round(lessonsFactor * 0.6 + mockFactor * 0.4)
     : null;
@@ -268,8 +270,8 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug, onNavigat
         {/* 2. Greeting */}
         <div className="flex items-center gap-3 mb-3">
           <Avatar style={{ width: 52, height: 52 }} className="border-2" >
-            <AvatarImage src={pupil.profile_image_url || undefined} />
-            <AvatarFallback style={{ background: NAVY, color: "#fff", fontWeight: 700 }}>
+            <AvatarImage src={pupil.profile_image_url || undefined} alt={pupil.name} />
+            <AvatarFallback style={{ background: NAVY, color: "#fff", fontWeight: 700, fontSize: 22 }}>
               {firstName.slice(0, 1).toUpperCase()}
             </AvatarFallback>
           </Avatar>
@@ -337,16 +339,19 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug, onNavigat
 
         {/* 5. Two-Column Tile Row */}
         <div className="grid gap-2 mt-2" style={{ gridTemplateColumns: "0.85fr 1.15fr" }}>
-          {/* Next lesson (left, wider tile fills its column) */}
+          {/* Next lesson (left, full height matches right column stack) */}
           <Card padding={14} className="h-full">
-            <button onClick={() => onNavigate("schedule")} className="w-full text-left flex flex-col h-full">
+            <button
+              onClick={() => onNavigate("schedule")}
+              className={`w-full text-left flex flex-col h-full ${nextLesson ? "" : "justify-center items-start"}`}
+            >
               <div className="text-[12px] font-semibold mb-1" style={{ color: MUTED }}>Next lesson</div>
               {nextLesson ? (
                 <>
-                  <div className="text-[28px] font-bold leading-[1.05]" style={{ color: TEXT }}>
+                  <div className="text-[30px] font-bold leading-[1.05]" style={{ color: TEXT }}>
                     {format(parseISO(nextLesson.lesson_date), "EEE")}
                   </div>
-                  <div className="text-[22px] font-bold leading-tight" style={{ color: TEXT }}>
+                  <div className="text-[30px] font-bold leading-[1.05]" style={{ color: TEXT }}>
                     {format(parseISO(nextLesson.lesson_date), "d MMM")}
                   </div>
                   <div className="text-[11px] mt-1 truncate" style={{ color: MUTED }}>
@@ -355,7 +360,7 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug, onNavigat
                 </>
               ) : (
                 <>
-                  <div className="text-[16px] font-semibold mt-1" style={{ color: TEXT }}>No lesson booked</div>
+                  <div className="text-[16px] font-semibold" style={{ color: TEXT }}>No lesson booked</div>
                   <div className="text-[11px] mt-1" style={{ color: MUTED }}>Tap to schedule</div>
                 </>
               )}
@@ -371,15 +376,20 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug, onNavigat
                 <div className="flex-1 min-w-0">
                   <div className="text-[13px] font-semibold" style={{ color: TEXT }}>Theory Test</div>
                   {ttPassed === true ? (
-                    <div className="text-[11px] font-semibold flex items-center gap-1" style={{ color: "#16A34A" }}>
+                    <div
+                      className="flex items-center gap-1"
+                      style={{ color: "#16A34A", fontSize: 11, fontWeight: 600, lineHeight: 1.35 }}
+                    >
                       <CheckCircle2 size={12} /> Passed{tt ? ` · ${format(parseISO(tt), "d MMM")}` : ""}
                     </div>
                   ) : tt ? (
-                    <div className="text-[11px]" style={{ color: MUTED }}>
+                    <div style={{ color: MUTED, fontSize: 11, fontWeight: 500, lineHeight: 1.35 }}>
                       {format(parseISO(tt), "d MMM yyyy")}
                     </div>
                   ) : (
-                    <div className="text-[11px]" style={{ color: MUTED }}>Not taken</div>
+                    <div style={{ color: MUTED, fontSize: 11, fontWeight: 500, lineHeight: 1.35 }}>
+                      Not taken
+                    </div>
                   )}
                 </div>
               </button>
@@ -389,14 +399,22 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug, onNavigat
             <Card padding={12} className="relative">
               <button onClick={() => onEditProfile()} className="w-full text-left flex items-start gap-2">
                 <Car size={18} color={NAVY} strokeWidth={1.8} />
-                <div className="flex-1 min-w-0 pr-12">
+                <div className="flex-1 min-w-0 pr-16">
                   <div className="text-[13px] font-semibold" style={{ color: TEXT }}>Driving Test</div>
                   {dt ? (
-                    <div className="text-[11px]" style={{ color: MUTED }}>
-                      {format(parseISO(dt), "d MMM")}
+                    <div style={{ color: MUTED, fontSize: 11, fontWeight: 500, lineHeight: 1.35 }}>
+                      {pupilExtras?.test_centres?.name && (
+                        <div className="truncate">{pupilExtras.test_centres.name}</div>
+                      )}
+                      <div className="truncate">
+                        {format(parseISO(dt), "d MMM")}
+                        {pupilExtras?.test_time ? ` · ${String(pupilExtras.test_time).slice(0, 5)}` : ""}
+                      </div>
                     </div>
                   ) : (
-                    <div className="text-[11px]" style={{ color: MUTED }}>Not booked</div>
+                    <div style={{ color: MUTED, fontSize: 11, fontWeight: 500, lineHeight: 1.35 }}>
+                      Not booked
+                    </div>
                   )}
                 </div>
               </button>
@@ -404,13 +422,14 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug, onNavigat
                 <div
                   className="absolute"
                   style={{
-                    top: 8, right: 8,
+                    top: 12, right: 12,
                     background: RED, color: "#fff",
-                    borderRadius: 999, padding: "3px 9px",
-                    fontSize: 11, fontWeight: 700, lineHeight: 1.2,
+                    borderRadius: 12, padding: "4px 9px",
+                    fontSize: 10, fontWeight: 700, lineHeight: 1.2,
+                    boxShadow: "0 4px 10px -2px rgba(229,57,53,0.45)",
                   }}
                 >
-                  {dtDays} days
+                  <span style={{ fontWeight: 700 }}>{dtDays}</span> days
                 </div>
               )}
             </Card>
@@ -438,8 +457,13 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug, onNavigat
               {isOwed ? (
                 <button
                   onClick={() => onNavigate("payments")}
-                  className="px-3 py-1.5 rounded-full text-[12px] font-semibold"
-                  style={{ background: RED, color: "#fff" }}
+                  className="rounded-full"
+                  style={{
+                    background: RED, color: "#fff",
+                    fontSize: 13, fontWeight: 600,
+                    padding: "9px 16px", borderRadius: 24,
+                    boxShadow: "0 4px 12px -2px rgba(229,57,53,0.45)",
+                  }}
                 >
                   Pay Now
                 </button>
@@ -496,25 +520,30 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug, onNavigat
                       />
                     </svg>
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <span className="text-[18px] font-bold" style={{ color: TEXT }}>
+                      <span style={{ color: TEXT, fontSize: 19, fontWeight: 800, lineHeight: 1 }}>
                         {readinessPct !== null ? `${readinessPct}%` : "—"}
                       </span>
-                      <span className="text-[9px] font-semibold tracking-wider" style={{ color: MUTED }}>READY</span>
+                      <span
+                        className="uppercase"
+                        style={{ color: MUTED, fontSize: 8, fontWeight: 700, letterSpacing: "0.12em", marginTop: 2 }}
+                      >
+                        Ready
+                      </span>
                     </div>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-[15px] font-bold" style={{ color: TEXT }}>Test Readiness</div>
-                    <div className="text-[12px]" style={{ color: MUTED }}>Based on lessons & mock results</div>
-                    <div className="flex gap-3 mt-2">
+                    <div style={{ color: TEXT, fontSize: 17, fontWeight: 700 }}>Test Readiness</div>
+                    <div style={{ color: MUTED, fontSize: 13 }}>Based on lessons & mock results</div>
+                    <div className="flex gap-4 mt-2">
                       <div>
                         <div className="text-[14px] font-bold" style={{ color: TEXT }}>{lessonsTaken}</div>
-                        <div className="text-[10px]" style={{ color: MUTED }}>Lessons</div>
+                        <div className="text-[10px] uppercase tracking-wider" style={{ color: MUTED, fontWeight: 600 }}>Lessons</div>
                       </div>
                       <div>
                         <div className="text-[14px] font-bold" style={{ color: TEXT }}>
-                          {mockScore !== null ? `${mockScore}%` : "—"}
+                          {mockScoreData ? `${mockScoreData.score}/${mockScoreData.total}` : "—"}
                         </div>
-                        <div className="text-[10px]" style={{ color: MUTED }}>Mock score</div>
+                        <div className="text-[10px] uppercase tracking-wider" style={{ color: MUTED, fontWeight: 600 }}>Mock score</div>
                       </div>
                     </div>
                   </div>
