@@ -38,6 +38,8 @@ interface TakePaymentModalProps {
   instructorName?: string;
   instructorId?: string;
   pupils: Pupil[];
+  /** Fired when a payment is actually received (realtime insert or manual confirm). */
+  onPaymentReceived?: () => void;
 }
 
 export function TakePaymentModal({
@@ -49,6 +51,7 @@ export function TakePaymentModal({
   instructorName = "Your Instructor",
   instructorId,
   pupils,
+  onPaymentReceived,
 }: TakePaymentModalProps) {
   const [view, setView] = useState<View>("qr");
   const [selectedPupilId, setSelectedPupilId] = useState("");
@@ -98,6 +101,7 @@ export function TakePaymentModal({
           const amt = Number(row?.amount || 0);
           if (!amt || amt <= 0) return;
           setView("received");
+          onPaymentReceived?.();
         }
       )
       .subscribe();
@@ -318,7 +322,7 @@ export function TakePaymentModal({
                       <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
                       New Amount
                     </Button>
-                    <Button size="sm" onClick={() => setView("received")}>
+                    <Button size="sm" onClick={() => { setView("received"); onPaymentReceived?.(); }}>
                       <Check className="h-3.5 w-3.5 mr-1.5" />
                       Payment Done
                     </Button>

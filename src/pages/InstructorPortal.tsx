@@ -41,6 +41,8 @@ import { PDIBanner } from "@/components/instructor/PDIBanner";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useInstructorLiveStats } from "@/hooks/useInstructorLiveStats";
+import { useQueryClient } from "@tanstack/react-query";
+import { invalidateInstructorDashboard } from "@/lib/dashboardInvalidate";
 import { cn } from "@/lib/utils";
 import { getActivePaymentQrUrl } from "@/lib/getActivePaymentQrUrl";
 
@@ -310,6 +312,8 @@ function DesktopDashboardV2(props: DesktopDashboardV2Props) {
   } = props;
 
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const refreshDashboard = () => invalidateInstructorDashboard(queryClient, instructorId);
   const [addLessonOpen, setAddLessonOpen] = useState(false);
   const { total: notificationCount } = useCombinedNotificationCount(instructorId);
   const { data: earnings } = useDailyEarnings(instructorId);
@@ -372,6 +376,7 @@ function DesktopDashboardV2(props: DesktopDashboardV2Props) {
           instructorName={instructorData?.name}
           instructorId={instructorId}
           pupils={pupils}
+          onPaymentReceived={refreshDashboard}
         />
 
         <Dialog open={availabilityModalOpen} onOpenChange={setAvailabilityModalOpen}>
@@ -390,7 +395,7 @@ function DesktopDashboardV2(props: DesktopDashboardV2Props) {
           open={addLessonOpen}
           onOpenChange={setAddLessonOpen}
           instructorId={instructorId}
-          onSuccess={() => setAddLessonOpen(false)}
+          onSuccess={() => { setAddLessonOpen(false); refreshDashboard(); }}
         />
 
         <AICommandCenter />

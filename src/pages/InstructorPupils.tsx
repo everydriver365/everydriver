@@ -3,6 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { invalidateInstructorDashboard } from "@/lib/dashboardInvalidate";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { IOSLargeTitle } from "@/components/ui/IOSLargeTitle";
@@ -447,6 +448,7 @@ export default function InstructorPupils() {
       }
       
       toast.success("Pupil added successfully");
+      invalidateInstructorDashboard(queryClient, instructorId);
       setIsAddOpen(false);
       setAddForm({
         name: "",
