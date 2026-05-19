@@ -407,7 +407,24 @@ export default function InstructorPupilsDesktop() {
     setEditErrors(errs);
     if (Object.keys(errs).length) return;
     setEditSaving(true);
-    const payload = buildPupilUpdatePayload(editForm);
+    const basePayload = buildPupilUpdatePayload(editForm);
+    const toNumOrNull = (v: string) => {
+      const t = (v || "").trim(); if (!t) return null;
+      const n = parseFloat(t); return isNaN(n) ? null : n;
+    };
+    const isNI = editForm.source === "national_intensive";
+    const payload: any = {
+      ...basePayload,
+      parent_name: editForm.parent_name.trim() || null,
+      parent_phone: editForm.parent_phone.trim() || null,
+      custom_hourly_rate: toNumOrNull(editForm.custom_hourly_rate),
+      custom_rate_90min: toNumOrNull(editForm.custom_rate_90min),
+      custom_rate_120min: toNumOrNull(editForm.custom_rate_120min),
+      source: editForm.source || null,
+      intensive_hours_paid: isNI ? toNumOrNull(editForm.intensive_hours_paid) : null,
+      intensive_course_payout: isNI ? toNumOrNull(editForm.intensive_course_payout) : null,
+      intensive_pupil_payment: isNI ? toNumOrNull(editForm.intensive_pupil_payment) : null,
+    };
     const { error } = await supabase.from("pupils").update(payload).eq("id", editTargetId);
     setEditSaving(false);
     if (error) { toast.error(`Could not save: ${error.message}`); return; }
