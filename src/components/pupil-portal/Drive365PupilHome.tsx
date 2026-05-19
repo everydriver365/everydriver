@@ -457,8 +457,13 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug, onNavigat
               {isOwed ? (
                 <button
                   onClick={() => onNavigate("payments")}
-                  className="px-3 py-1.5 rounded-full text-[12px] font-semibold"
-                  style={{ background: RED, color: "#fff" }}
+                  className="rounded-full"
+                  style={{
+                    background: RED, color: "#fff",
+                    fontSize: 13, fontWeight: 600,
+                    padding: "9px 16px", borderRadius: 24,
+                    boxShadow: "0 4px 12px -2px rgba(229,57,53,0.45)",
+                  }}
                 >
                   Pay Now
                 </button>
