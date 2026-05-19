@@ -118,7 +118,7 @@ export function PupilPaymentsManager({
   const startEdit = (p: PaymentRow) => {
     setEditId(p.id);
     setEditAmount(String(p.amount));
-    setEditMethod(p.payment_method || "cash");
+    setEditMethod(p.payment_method || "Cash");
     setEditNotes(p.notes || "");
     setEditDate(p.recorded_at.slice(0, 16));
   };
