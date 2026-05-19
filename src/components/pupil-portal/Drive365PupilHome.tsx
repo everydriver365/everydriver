@@ -339,16 +339,19 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug, onNavigat
 
         {/* 5. Two-Column Tile Row */}
         <div className="grid gap-2 mt-2" style={{ gridTemplateColumns: "0.85fr 1.15fr" }}>
-          {/* Next lesson (left, wider tile fills its column) */}
+          {/* Next lesson (left, full height matches right column stack) */}
           <Card padding={14} className="h-full">
-            <button onClick={() => onNavigate("schedule")} className="w-full text-left flex flex-col h-full">
+            <button
+              onClick={() => onNavigate("schedule")}
+              className={`w-full text-left flex flex-col h-full ${nextLesson ? "" : "justify-center items-start"}`}
+            >
               <div className="text-[12px] font-semibold mb-1" style={{ color: MUTED }}>Next lesson</div>
               {nextLesson ? (
                 <>
-                  <div className="text-[28px] font-bold leading-[1.05]" style={{ color: TEXT }}>
+                  <div className="text-[30px] font-bold leading-[1.05]" style={{ color: TEXT }}>
                     {format(parseISO(nextLesson.lesson_date), "EEE")}
                   </div>
-                  <div className="text-[22px] font-bold leading-tight" style={{ color: TEXT }}>
+                  <div className="text-[30px] font-bold leading-[1.05]" style={{ color: TEXT }}>
                     {format(parseISO(nextLesson.lesson_date), "d MMM")}
                   </div>
                   <div className="text-[11px] mt-1 truncate" style={{ color: MUTED }}>
@@ -357,7 +360,7 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug, onNavigat
                 </>
               ) : (
                 <>
-                  <div className="text-[16px] font-semibold mt-1" style={{ color: TEXT }}>No lesson booked</div>
+                  <div className="text-[16px] font-semibold" style={{ color: TEXT }}>No lesson booked</div>
                   <div className="text-[11px] mt-1" style={{ color: MUTED }}>Tap to schedule</div>
                 </>
               )}
@@ -373,15 +376,20 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug, onNavigat
                 <div className="flex-1 min-w-0">
                   <div className="text-[13px] font-semibold" style={{ color: TEXT }}>Theory Test</div>
                   {ttPassed === true ? (
-                    <div className="text-[11px] font-semibold flex items-center gap-1" style={{ color: "#16A34A" }}>
+                    <div
+                      className="flex items-center gap-1"
+                      style={{ color: "#16A34A", fontSize: 11, fontWeight: 600, lineHeight: 1.35 }}
+                    >
                       <CheckCircle2 size={12} /> Passed{tt ? ` · ${format(parseISO(tt), "d MMM")}` : ""}
                     </div>
                   ) : tt ? (
-                    <div className="text-[11px]" style={{ color: MUTED }}>
+                    <div style={{ color: MUTED, fontSize: 11, fontWeight: 500, lineHeight: 1.35 }}>
                       {format(parseISO(tt), "d MMM yyyy")}
                     </div>
                   ) : (
-                    <div className="text-[11px]" style={{ color: MUTED }}>Not taken</div>
+                    <div style={{ color: MUTED, fontSize: 11, fontWeight: 500, lineHeight: 1.35 }}>
+                      Not taken
+                    </div>
                   )}
                 </div>
               </button>
@@ -391,14 +399,22 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug, onNavigat
             <Card padding={12} className="relative">
               <button onClick={() => onEditProfile()} className="w-full text-left flex items-start gap-2">
                 <Car size={18} color={NAVY} strokeWidth={1.8} />
-                <div className="flex-1 min-w-0 pr-12">
+                <div className="flex-1 min-w-0 pr-16">
                   <div className="text-[13px] font-semibold" style={{ color: TEXT }}>Driving Test</div>
                   {dt ? (
-                    <div className="text-[11px]" style={{ color: MUTED }}>
-                      {format(parseISO(dt), "d MMM")}
+                    <div style={{ color: MUTED, fontSize: 11, fontWeight: 500, lineHeight: 1.35 }}>
+                      {pupilExtras?.test_centres?.name && (
+                        <div className="truncate">{pupilExtras.test_centres.name}</div>
+                      )}
+                      <div className="truncate">
+                        {format(parseISO(dt), "d MMM")}
+                        {pupilExtras?.test_time ? ` · ${String(pupilExtras.test_time).slice(0, 5)}` : ""}
+                      </div>
                     </div>
                   ) : (
-                    <div className="text-[11px]" style={{ color: MUTED }}>Not booked</div>
+                    <div style={{ color: MUTED, fontSize: 11, fontWeight: 500, lineHeight: 1.35 }}>
+                      Not booked
+                    </div>
                   )}
                 </div>
               </button>
@@ -406,13 +422,14 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug, onNavigat
                 <div
                   className="absolute"
                   style={{
-                    top: 8, right: 8,
+                    top: 12, right: 12,
                     background: RED, color: "#fff",
-                    borderRadius: 999, padding: "3px 9px",
-                    fontSize: 11, fontWeight: 700, lineHeight: 1.2,
+                    borderRadius: 12, padding: "4px 9px",
+                    fontSize: 10, fontWeight: 700, lineHeight: 1.2,
+                    boxShadow: "0 4px 10px -2px rgba(229,57,53,0.45)",
                   }}
                 >
-                  {dtDays} days
+                  <span style={{ fontWeight: 700 }}>{dtDays}</span> days
                 </div>
               )}
             </Card>
