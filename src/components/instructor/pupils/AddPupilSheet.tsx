@@ -681,13 +681,23 @@ export function AddPupilSheet({
                 />
               </Row>
               <RowDivider />
-              <Row label="Course pays" required invalid={intensivePayoutInvalid}>
+              <Row label="National Intensive pays" required invalid={intensivePayoutInvalid}>
                 <RowInput
                   type="number"
                   inputMode="decimal"
                   value={form.intensive_course_payout || ""}
                   onChange={(e) => setForm({ ...form, intensive_course_payout: e.target.value })}
                   placeholder="£ amount"
+                />
+              </Row>
+              <RowDivider />
+              <Row label="Pupil pays you">
+                <RowInput
+                  type="number"
+                  inputMode="decimal"
+                  value={form.intensive_pupil_payment || ""}
+                  onChange={(e) => setForm({ ...form, intensive_pupil_payment: e.target.value })}
+                  placeholder="£ amount (optional)"
                 />
               </Row>
             </>
