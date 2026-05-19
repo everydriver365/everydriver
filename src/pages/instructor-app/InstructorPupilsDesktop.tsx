@@ -28,6 +28,9 @@ import { PUPIL_SOURCE_OPTIONS } from "@/components/instructor/pupils/AddPupilShe
 import { AddPupilSheet } from "@/components/instructor/pupils/AddPupilSheet";
 import { ImportPupilsCsvDialog } from "@/components/instructor/pupils/ImportPupilsCsvDialog";
 import { ArchivedPupilsDialog } from "@/components/instructor/pupils/ArchivedPupilsDialog";
+import { AddLessonSheet } from "@/components/instructor/AddLessonSheet";
+import { usePupilLessonHistory } from "@/hooks/usePupilLessonHistory";
+import { useQueryClient } from "@tanstack/react-query";
 
 // ----------------------------- Types & data -----------------------------
 type Status = "active" | "at-risk" | "test-ready" | "paused" | "archived";
@@ -104,6 +107,81 @@ function TestStatusCell({ theoryPassed, theoryDate, drivingPassed, drivingDate }
     </div>
   );
 }
+
+function LessonHistoryDialog({
+  pupil, onClose, onAddLesson,
+}: {
+  pupil: { id: string; name: string } | null;
+  onClose: () => void;
+  onAddLesson: () => void;
+}) {
+  const { data: lessons = [], isLoading } = usePupilLessonHistory(pupil?.id, 50);
+  return (
+    <Dialog open={!!pupil} onOpenChange={(o) => { if (!o) onClose(); }}>
+      <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
+        <DialogHeader>
+          <DialogTitle>Lesson history — {pupil?.name}</DialogTitle>
+        </DialogHeader>
+        <div className="flex items-center justify-between py-2">
+          <span className="text-xs text-muted-foreground">
+            {isLoading ? "Loading…" : `${lessons.filter(l => l.status === "completed").length} completed · ${lessons.filter(l => l.status === "cancelled").length} cancelled`}
+          </span>
+          <Button size="sm" onClick={onAddLesson}><Plus className="h-3.5 w-3.5 mr-1" /> Add lesson</Button>
+        </div>
+        <div className="flex-1 overflow-y-auto -mx-2 px-2">
+          {isLoading ? (
+            <div className="flex justify-center py-8"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
+          ) : lessons.length === 0 ? (
+            <div className="text-center py-10 text-sm text-muted-foreground">
+              No lessons recorded yet. Click "Add lesson" to log the first one.
+            </div>
+          ) : (
+            <ul className="divide-y">
+              {lessons.map((l) => {
+                const dateLabel = new Date(l.lesson_date).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
+                const isCancelled = l.status === "cancelled";
+                return (
+                  <li key={l.id} className="py-2.5 flex items-start gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium">{dateLabel}</span>
+                        {l.start_time && <span className="text-xs text-muted-foreground">{l.start_time.slice(0, 5)}</span>}
+                        <span className="text-xs text-muted-foreground">· {l.duration_minutes} min</span>
+                        {isCancelled && (
+                          <span className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-red-100 text-red-700">Cancelled</span>
+                        )}
+                      </div>
+                      {isCancelled ? (
+                        (l.cancellation_reason || l.cancellation_note) && (
+                          <div className="text-xs text-muted-foreground mt-0.5">
+                            {l.cancellation_reason}{l.cancellation_note ? ` — ${l.cancellation_note}` : ""}
+                          </div>
+                        )
+                      ) : (
+                        <>
+                          {l.skills_practiced.length > 0 && (
+                            <div className="text-xs text-muted-foreground mt-0.5 truncate">
+                              {l.skills_practiced.join(", ")}
+                            </div>
+                          )}
+                          {l.notes && <div className="text-xs mt-1 line-clamp-2">{l.notes}</div>}
+                        </>
+                      )}
+                    </div>
+                    {l.rating != null && !isCancelled && (
+                      <span className="text-xs font-semibold text-amber-600">{l.rating}/5</span>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 
 
 function deriveAvatar(name: string, idx: number): { initials: string; avatarColor: AvatarColor } {
@@ -499,6 +577,11 @@ export default function InstructorPupilsDesktop() {
     setDeleteTarget(null);
     setReloadTick(t => t + 1);
   };
+
+  // ---- Lesson history dialog ----
+  const [historyPupil, setHistoryPupil] = useState<{ id: string; name: string } | null>(null);
+  const [addLessonOpen, setAddLessonOpen] = useState(false);
+  const queryClient = useQueryClient();
 
 
   useEffect(() => {
@@ -939,7 +1022,19 @@ export default function InstructorPupilsDesktop() {
                   <div style={{ fontFamily: "var(--d2-mono)", color: "var(--d2-text-2)", fontVariantNumeric: "tabular-nums" }}>
                     {p.hoursLeft}h
                   </div>
-                  <div style={{ color: "var(--d2-text-2)" }}>{p.lastLesson}</div>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setHistoryPupil({ id: p.id, name: p.name }); }}
+                    title="View lesson history"
+                    style={{
+                      color: "var(--d2-text-2)", textAlign: "left",
+                      textDecoration: "underline", textDecorationColor: "transparent",
+                      textUnderlineOffset: 2, transition: "text-decoration-color 120ms",
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.textDecorationColor = "#4F46E5"; e.currentTarget.style.color = "#4F46E5"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.textDecorationColor = "transparent"; e.currentTarget.style.color = "var(--d2-text-2)"; }}
+                  >
+                    {p.lastLesson}
+                  </button>
                   <div
                     style={{
                       color: !p.nextLesson ? "var(--d2-text-3)" : isTomorrow && selected ? "#4338CA" : isTomorrow ? "#4F46E5" : "var(--d2-text-1)",
@@ -1407,6 +1502,28 @@ export default function InstructorPupilsDesktop() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Lesson history dialog */}
+      <LessonHistoryDialog
+        pupil={historyPupil}
+        onClose={() => setHistoryPupil(null)}
+        onAddLesson={() => setAddLessonOpen(true)}
+      />
+
+      {/* Add lesson sheet */}
+      {instructor?.id && historyPupil && (
+        <AddLessonSheet
+          open={addLessonOpen}
+          onOpenChange={setAddLessonOpen}
+          instructorId={instructor.id}
+          onSuccess={() => {
+            setAddLessonOpen(false);
+            queryClient.invalidateQueries({ queryKey: ["pupil-lesson-history", historyPupil.id] });
+            setReloadTick(t => t + 1);
+            toast.success("Lesson added");
+          }}
+        />
+      )}
     </DashboardShell>
   );
 }
