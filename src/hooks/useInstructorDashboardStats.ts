@@ -15,6 +15,7 @@ export interface InstructorDashboardStats {
   cpdTarget: number | null;
   invoicesUnpaid: number;
   standardsCheck: { result: string; at: string } | null;
+  nextTestDate: string | null;
 }
 
 async function fetchStats(instructorId: string): Promise<InstructorDashboardStats> {
