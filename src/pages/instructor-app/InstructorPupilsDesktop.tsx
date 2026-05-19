@@ -391,7 +391,7 @@ export default function InstructorPupilsDesktop() {
     const hoursNum = hours ? parseInt(hours, 10) : null;
     const rateNum = addForm.custom_hourly_rate ? parseFloat(addForm.custom_hourly_rate) : null;
     setAddSaving(true);
-    const { error } = await supabase.from("pupils").insert({
+    const { data: insertedRows, error } = await supabase.from("pupils").insert({
       instructor_id: instructorId,
       name: composedName || "Unnamed pupil",
       phone: addForm.phone.trim() || null,
@@ -424,10 +424,42 @@ export default function InstructorPupilsDesktop() {
         ? parseFloat(addForm.intensive_course_payout) : null,
       intensive_pupil_payment: addForm.source === "national_intensive" && addForm.intensive_pupil_payment
         ? parseFloat(addForm.intensive_pupil_payment) : null,
-    });
+    }).select("id").maybeSingle();
     setAddSaving(false);
     if (error) { toast.error(`Could not add pupil: ${error.message}`); return; }
     toast.success(`Added ${composedName || "pupil"}`);
+
+    // Suggest Test Swap if a future driving test was booked at creation
+    const newPupilId = (insertedRows as { id: string } | null)?.id;
+    if (newPupilId && addForm.test_booked && addForm.test_date) {
+      const inFuture = new Date(addForm.test_date) >= new Date(new Date().toDateString());
+      if (inFuture) {
+        const pName = composedName || "this pupil";
+        toast(`Add ${pName} to Test Swap?`, {
+          description: "Get notified when an earlier slot becomes available.",
+          duration: 12000,
+          action: {
+            label: "Add to Swap",
+            onClick: async () => {
+              const { error: upErr } = await supabase.from("pupil_swap_profile").upsert({
+                pupil_id: newPupilId,
+                instructor_id: instructorId,
+                opted_in: true,
+                email_notifications: true,
+                sms_notifications: false,
+                test_date: addForm.test_date,
+                test_time: addForm.test_time || null,
+                preference: "earlier",
+                consent_given: true,
+                consent_timestamp: new Date().toISOString(),
+              }, { onConflict: "pupil_id" });
+              if (upErr) toast.error(`Couldn't add to Test Swap: ${upErr.message}`);
+              else toast.success(`${pName} added to Test Swap`);
+            },
+          },
+        });
+      }
+    }
     setAddForm({
       name: "", phone: "", email: "", address: "", postcode: "", what3words: "",
       date_of_birth: "", sex: "", previous_experience_hours: "", transmission_type: "",
@@ -557,6 +589,49 @@ export default function InstructorPupilsDesktop() {
     if (error) { toast.error(`Could not save: ${error.message}`); return; }
     toast.success("Pupil updated");
     setEditErrors({});
+
+    // Suggest Test Swap when a future driving test date was entered and no result yet
+    const newTestDate = payload.test_date as string | null;
+    const newPassed = payload.test_passed as boolean | null;
+    const instructorId = instructor?.id;
+    const pupilId = editTargetId;
+    const pupilName = editForm.name?.trim() || "this pupil";
+    if (instructorId && pupilId && newTestDate && newPassed === null) {
+      const inFuture = new Date(newTestDate) >= new Date(new Date().toDateString());
+      if (inFuture) {
+        const { data: existing } = await supabase
+          .from("pupil_swap_profile")
+          .select("opted_in")
+          .eq("pupil_id", pupilId)
+          .maybeSingle();
+        if (!existing || !existing.opted_in) {
+          toast(`Add ${pupilName} to Test Swap?`, {
+            description: "Get notified when an earlier slot becomes available.",
+            duration: 12000,
+            action: {
+              label: "Add to Swap",
+              onClick: async () => {
+                const { error: upErr } = await supabase.from("pupil_swap_profile").upsert({
+                  pupil_id: pupilId,
+                  instructor_id: instructorId,
+                  opted_in: true,
+                  email_notifications: true,
+                  sms_notifications: false,
+                  test_date: newTestDate,
+                  test_time: (payload as any).test_time ?? null,
+                  preference: "earlier",
+                  consent_given: true,
+                  consent_timestamp: new Date().toISOString(),
+                }, { onConflict: "pupil_id" });
+                if (upErr) toast.error(`Couldn't add to Test Swap: ${upErr.message}`);
+                else toast.success(`${pupilName} added to Test Swap`);
+              },
+            },
+          });
+        }
+      }
+    }
+
     setEditOpen(false);
     setEditTargetId(null);
     setReloadTick(t => t + 1);
