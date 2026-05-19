@@ -557,32 +557,34 @@ export function DashboardSidebar({ collapsed, onToggle, userInitials, userName, 
                     to={item.to}
                     title={collapsed ? item.label : undefined}
                     aria-current={active ? "page" : undefined}
-                    className={cn("relative flex items-center gap-2 rounded-md transition-colors")}
+                    className={cn("relative flex items-center gap-2 transition-colors")}
                     style={{
                       height: 32,
                       padding: rightPad,
                       justifyContent: collapsed ? "center" : "flex-start",
-                      background: active ? "var(--d2-indigo)" : "transparent",
-                      color: active ? "#FFFFFF" : "var(--d2-text-2)",
+                      background: active ? navyActiveBg : "transparent",
+                      color: active ? navyTextActive : navyText,
                       fontSize: 12,
                       fontWeight: 500,
-                      boxShadow: active ? "0 1px 2px rgba(15,23,42,0.08), 0 1px 3px rgba(15,23,42,0.06)" : "none",
-                      transition: "background 150ms ease-out, color 150ms ease-out, box-shadow 150ms ease-out",
+                      borderLeft: active ? `3px solid ${navyAccentRed}` : "3px solid transparent",
+                      borderRadius: 0,
+                      transition: "background 150ms ease-out, color 150ms ease-out",
                     }}
                     onMouseEnter={(e) => {
                       if (!active) {
-                        e.currentTarget.style.background = "var(--d2-hover)";
-                        e.currentTarget.style.color = "var(--d2-text-1)";
+                        e.currentTarget.style.background = navyHoverBg;
+                        e.currentTarget.style.color = navyTextActive;
                       }
                     }}
                     onMouseLeave={(e) => {
                       if (!active) {
                         e.currentTarget.style.background = "transparent";
-                        e.currentTarget.style.color = "var(--d2-text-2)";
+                        e.currentTarget.style.color = navyText;
                       }
                     }}
                   >
-                    <Icon size={14} strokeWidth={active ? 2.25 : 1.75} style={{ color: active ? "#FFFFFF" : undefined }} />
+                    <Icon size={14} strokeWidth={active ? 2.25 : 1.75} style={{ color: active ? navyTextActive : "currentColor" }} />
+
                     {!collapsed && <span className="truncate flex-1">{item.label}</span>}
                     {!collapsed && item.badge && (
                       <span
