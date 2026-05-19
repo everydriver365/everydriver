@@ -219,6 +219,91 @@ function ScheduleCard({ instructorId }: { instructorId: string }) {
   );
 }
 
+// ---------------- NextLessonCard ----------------
+function NextLessonCard({ instructorId }: { instructorId: string }) {
+  const navigate = useNavigate();
+  const { data: next, isLoading } = useNextLessonDetails(instructorId);
+
+  const headerStyle: React.CSSProperties = {
+    padding: "8px 12px", borderBottom: `1px solid ${t.divider}`,
+    display: "flex", alignItems: "center", gap: 7,
+  };
+  const labelStyle: React.CSSProperties = {
+    fontSize: 11, fontWeight: 700, color: t.navy,
+    textTransform: "uppercase", letterSpacing: "0.05em", flex: 1,
+  };
+
+  if (isLoading) {
+    return (
+      <div style={{ backgroundColor: t.white, borderRadius: 12, border: `1px solid ${t.border}`, overflow: "hidden" }}>
+        <div style={headerStyle}>
+          <CarFront size={14} color={t.muted} />
+          <span style={labelStyle}>Next lesson</span>
+        </div>
+        <div style={{ padding: 14, fontSize: 11, color: t.muted }}>Loading…</div>
+      </div>
+    );
+  }
+
+  if (!next) {
+    return (
+      <div style={{ backgroundColor: t.white, borderRadius: 12, border: `1px solid ${t.border}`, overflow: "hidden" }}>
+        <div style={headerStyle}>
+          <CarFront size={14} color={t.muted} />
+          <span style={labelStyle}>Next lesson</span>
+        </div>
+        <div style={{ padding: "14px 12px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+          <span style={{ fontSize: 11, color: t.muted }}>No upcoming lessons</span>
+          <Link to="/instructor/diary" style={{ fontSize: 11, fontWeight: 600, color: t.blue, textDecoration: "none" }}>
+            Schedule →
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const lessonDate = new Date(`${next.lessonDate}T${next.startTime}`);
+  const todayStr = format(new Date(), "yyyy-MM-dd");
+  const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
+  const tomorrowStr = format(tomorrow, "yyyy-MM-dd");
+  let dayLabel = format(lessonDate, "EEE d MMM");
+  if (next.lessonDate === todayStr) dayLabel = "Today";
+  else if (next.lessonDate === tomorrowStr) dayLabel = "Tomorrow";
+  const timeLabel = format(lessonDate, "HH:mm");
+
+  return (
+    <div
+      onClick={() => navigate(`/instructor/diary?lessonId=${next.lessonId}`)}
+      style={{ backgroundColor: t.white, borderRadius: 12, border: `1px solid ${t.border}`, overflow: "hidden", cursor: "pointer" }}
+    >
+      <div style={headerStyle}>
+        <CarFront size={14} color={t.muted} />
+        <span style={labelStyle}>Next lesson</span>
+        <span style={{ fontSize: 11, fontWeight: 500, color: t.blue }}>View →</span>
+      </div>
+      <div style={{ padding: "12px 14px", display: "flex", flexDirection: "column", gap: 6 }}>
+        <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+          <span style={{ fontSize: 16, fontWeight: 700, color: t.navy, letterSpacing: -0.2 }}>
+            {dayLabel} {timeLabel}
+          </span>
+          <span style={{ fontSize: 11, color: t.muted, fontWeight: 500 }}>
+            · {next.durationMinutes} min
+          </span>
+        </div>
+        <div style={{ fontSize: 13, color: t.navy, fontWeight: 600 }}>{next.pupilName}</div>
+        {(next.pickupPostcode || next.pickupLocation) && (
+          <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, color: t.muted }}>
+            <MapPin size={11} />
+            <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {next.pickupPostcode || next.pickupLocation}
+            </span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ---------------- DvsaStandardsCard ----------------
 function DvsaStandardsCard({ standardsCheck }: { standardsCheck: { result: string; at: string } | null }) {
   const navigate = useNavigate();
@@ -226,7 +311,7 @@ function DvsaStandardsCard({ standardsCheck }: { standardsCheck: { result: strin
 
   return (
     <div style={{ backgroundColor: t.white, borderRadius: 12, border: `1px solid ${t.border}`, overflow: "hidden" }}>
-      <div style={{ padding: "11px 14px", borderBottom: `1px solid ${t.divider}`, display: "flex", alignItems: "center", gap: 7 }}>
+      <div style={{ padding: "8px 12px", borderBottom: `1px solid ${t.divider}`, display: "flex", alignItems: "center", gap: 7 }}>
         <ShieldCheck size={14} color={t.muted} />
         <span style={{ fontSize: 11, fontWeight: 700, color: t.navy, textTransform: "uppercase", letterSpacing: "0.05em", flex: 1 }}>
           DVSA standards check
@@ -236,32 +321,28 @@ function DvsaStandardsCard({ standardsCheck }: { standardsCheck: { result: strin
         </Link>
       </div>
       {hasResults ? (
-        <div style={{ padding: "16px 14px", display: "flex", flexDirection: "column", gap: 6 }}>
-          <div style={{ fontSize: 10, fontWeight: 600, color: t.muted, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-            Latest result
-          </div>
-          <div style={{ fontSize: 20, fontWeight: 700, color: t.navy, letterSpacing: -0.3 }}>
+        <div style={{ padding: "10px 12px", display: "flex", alignItems: "baseline", gap: 8 }}>
+          <span style={{ fontSize: 16, fontWeight: 700, color: t.navy, letterSpacing: -0.2 }}>
             {standardsCheck!.result}
-          </div>
-          <div style={{ fontSize: 11, color: t.muted }}>
+          </span>
+          <span style={{ fontSize: 11, color: t.muted }}>
             {format(new Date(standardsCheck!.at), "d MMM yyyy")}
-          </div>
+          </span>
         </div>
       ) : (
-        <div style={{ padding: "28px 16px", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: 7 }}>
-          <AwardIcon size={28} color={t.placeholder} />
-          <p style={{ fontSize: 11, color: t.muted, lineHeight: 1.5, maxWidth: 220 }}>
-            No driving test results logged yet. Log your first DVSA standards check to track your performance.
-          </p>
+        <div style={{ padding: "10px 12px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+            <AwardIcon size={16} color={t.placeholder} />
+            <span style={{ fontSize: 11, color: t.muted }}>No result logged yet</span>
+          </div>
           <button
             onClick={() => navigate("/instructor/standards-check")}
             style={{
-              backgroundColor: t.navy, border: "none", borderRadius: 7, padding: "7px 14px",
-              fontSize: 11, fontWeight: 600, color: t.white, cursor: "pointer",
-              fontFamily: "inherit", marginTop: 4,
+              backgroundColor: t.navy, border: "none", borderRadius: 7, padding: "5px 10px",
+              fontSize: 11, fontWeight: 600, color: t.white, cursor: "pointer", fontFamily: "inherit",
             }}
           >
-            Log a result
+            Log
           </button>
         </div>
       )}
