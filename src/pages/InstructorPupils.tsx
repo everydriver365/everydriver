@@ -521,6 +521,7 @@ export default function InstructorPupils() {
         source: "",
         intensive_hours_paid: "",
         intensive_course_payout: "",
+        intensive_pupil_payment: "",
       });
       fetchPupils();
     } catch (error: any) {

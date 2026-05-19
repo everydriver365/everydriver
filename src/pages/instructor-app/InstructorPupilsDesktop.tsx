@@ -211,7 +211,7 @@ export default function InstructorPupilsDesktop() {
     theory_passed: false, theory_pass_date: "",
     test_booked: false, test_centre_id: "", test_centre_label: "",
     test_date: "", test_time: "", duration: "", custom_hourly_rate: "",
-    source: "", intensive_hours_paid: "", intensive_course_payout: "",
+    source: "", intensive_hours_paid: "", intensive_course_payout: "", intensive_pupil_payment: "",
   });
   const [addErrors, setAddErrors] = useState<{
     email?: string;
