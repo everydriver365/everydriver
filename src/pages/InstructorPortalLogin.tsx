@@ -23,6 +23,16 @@ import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 import { SignInEnvironmentHint } from "@/components/auth/SignInEnvironmentHint";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { MobileLoginHero } from "@/components/auth/MobileLoginHero";
+import {
+  MobilePortalLoginShell,
+  darkPortalInputClass,
+  darkPortalInputStyle,
+  darkPortalLabelClass,
+  darkPortalPrimaryBtnClass,
+  darkPortalGhostBtnClass,
+  darkPortalGhostBtnStyle,
+} from "@/components/auth/MobilePortalLoginShell";
+import { cn } from "@/lib/utils";
 import dsmLogo from "@/assets/dsm-logo.png";
 import instructorHero from "@/assets/every-instructor-hero.webp";
 
