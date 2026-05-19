@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { format, parseISO } from "date-fns";
 import {
   Bell, Link2, Plus, Mail, MessageSquare, MessageCircle,
-  Trash2, Check, X, Edit3, Loader2, History, PoundSterling,
+  Trash2, Check, X, Edit3, Loader2, History, PoundSterling, AlertCircle, Minus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -57,6 +57,41 @@ export function PupilPaymentsManager({
   const [saving, setSaving] = useState(false);
   const [recordOpen, setRecordOpen] = useState(false);
   const [sending, setSending] = useState<string | null>(null);
+  const [chargeOpen, setChargeOpen] = useState(false);
+  const [chargeAmount, setChargeAmount] = useState("");
+  const [chargeNote, setChargeNote] = useState("");
+  const [chargeSaving, setChargeSaving] = useState(false);
+
+  const hasContact = !!(pupilEmail || pupilPhone);
+
+  const addCharge = async () => {
+    const amt = parseFloat(chargeAmount);
+    if (isNaN(amt) || amt <= 0) { toast.error("Enter a valid amount"); return; }
+    setChargeSaving(true);
+    try {
+      const { error } = await supabase.rpc("increment_pupil_balance", {
+        p_pupil_id: pupilId, p_amount: -amt,
+      });
+      if (error) throw error;
+      // Also log as a negative payment_history row so it shows in the audit trail
+      await supabase.from("payment_history").insert({
+        pupil_id: pupilId,
+        instructor_id: instructorId,
+        amount: -amt,
+        payment_method: "charge",
+        notes: chargeNote.trim() || "Amount owed",
+        recorded_at: new Date().toISOString(),
+      });
+      toast.success(`£${amt.toFixed(2)} added to amount owed`);
+      setChargeOpen(false);
+      setChargeAmount("");
+      setChargeNote("");
+      await fetchRows();
+      onChanged?.();
+    } catch (e: any) {
+      console.error(e); toast.error(e?.message || "Failed to add charge");
+    } finally { setChargeSaving(false); }
+  };
 
   const outstanding = currentBalance < 0 ? Math.abs(currentBalance) : 0;
 
@@ -200,9 +235,12 @@ export function PupilPaymentsManager({
         <Button size="sm" onClick={() => setRecordOpen(true)} className="gap-1.5">
           <Plus className="h-4 w-4" /> Record payment
         </Button>
+        <Button size="sm" variant="outline" onClick={() => setChargeOpen((v) => !v)} className="gap-1.5">
+          <Minus className="h-4 w-4" /> Add amount owed
+        </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button size="sm" variant="outline" className="gap-1.5" disabled={!!sending}>
+            <Button size="sm" variant="outline" className="gap-1.5" disabled={!!sending || !hasContact}>
               {sending?.startsWith("reminder") ? <Loader2 className="h-4 w-4 animate-spin" /> : <Bell className="h-4 w-4" />}
               Send reminder
             </Button>
@@ -211,7 +249,7 @@ export function PupilPaymentsManager({
         </DropdownMenu>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button size="sm" variant="outline" className="gap-1.5" disabled={!!sending}>
+            <Button size="sm" variant="outline" className="gap-1.5" disabled={!!sending || !hasContact}>
               {sending?.startsWith("link") ? <Loader2 className="h-4 w-4 animate-spin" /> : <Link2 className="h-4 w-4" />}
               Send payment link
             </Button>
@@ -223,6 +261,52 @@ export function PupilPaymentsManager({
           <Link2 className="h-4 w-4" /> Copy link
         </Button>
       </div>
+
+      {!hasContact && (
+        <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-900 p-2.5">
+          <AlertCircle className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
+          <p className="text-xs text-amber-900 dark:text-amber-200">
+            Add an email or phone to {pupilName}'s profile to send reminders or payment links. You can still <strong>Copy link</strong> and share it manually.
+          </p>
+        </div>
+      )}
+
+      {chargeOpen && (
+        <div className="rounded-2xl border border-border bg-card p-3 space-y-2">
+          <div className="text-sm font-medium">Add an amount owed</div>
+          <div className="grid grid-cols-2 gap-2">
+            <label className="text-xs text-muted-foreground">
+              Amount (£)
+              <input
+                type="number" step="0.01" min="0" autoFocus
+                value={chargeAmount}
+                onChange={(e) => setChargeAmount(e.target.value)}
+                placeholder="0.00"
+                className="w-full mt-1 border border-border rounded-md px-2 py-1 text-sm bg-background"
+              />
+            </label>
+            <label className="text-xs text-muted-foreground">
+              Reason (optional)
+              <input
+                type="text"
+                value={chargeNote}
+                onChange={(e) => setChargeNote(e.target.value)}
+                placeholder="e.g. Cancellation fee"
+                className="w-full mt-1 border border-border rounded-md px-2 py-1 text-sm bg-background"
+              />
+            </label>
+          </div>
+          <div className="flex gap-2 justify-end">
+            <Button size="sm" variant="ghost" onClick={() => { setChargeOpen(false); setChargeAmount(""); setChargeNote(""); }} disabled={chargeSaving}>
+              Cancel
+            </Button>
+            <Button size="sm" onClick={addCharge} disabled={chargeSaving || !chargeAmount}>
+              {chargeSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />} Add charge
+            </Button>
+          </div>
+        </div>
+      )}
+
 
       {/* History */}
       <div className="rounded-2xl border border-border bg-card">
@@ -307,10 +391,10 @@ export function PupilPaymentsManager({
                 ) : (
                   <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0">
-                      <div className="font-semibold text-sm text-foreground">
-                        £{Number(p.amount).toFixed(2)}
+                      <div className={`font-semibold text-sm ${Number(p.amount) < 0 ? "text-destructive" : "text-foreground"}`}>
+                        {Number(p.amount) < 0 ? "−" : ""}£{Math.abs(Number(p.amount)).toFixed(2)}
                         <span className="ml-2 text-xs text-muted-foreground font-normal">
-                          {formatMethod(p.payment_method)}
+                          {Number(p.amount) < 0 ? "Charge" : formatMethod(p.payment_method)}
                         </span>
                       </div>
                       <div className="text-xs text-muted-foreground">
