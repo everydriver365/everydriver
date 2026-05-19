@@ -741,6 +741,7 @@ export function AddLessonSheet({
         .select('id').single();
       if (pupilError) throw pupilError;
       const durationMinutes = parseFloat(lessonDuration) * 60;
+      const isNewNationalIntensive = paymentMethod === 'national_intensive';
       const weeks = isRecurring ? parseInt(recurrenceWeeks) : 1;
       const testNotes = buildDrivingTestNotes();
       const addr = [newPupilAddress, newPupilPostcode].filter(Boolean).join(', ');
