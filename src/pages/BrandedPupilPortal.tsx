@@ -72,6 +72,7 @@ import { SwapChecklistNeedsAttentionBanner } from "@/components/pupil-portal/Swa
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 import { ChevronDown } from "lucide-react";
+import { Drive365PupilHome } from "@/components/pupil-portal/Drive365PupilHome";
 
 interface InstructorBranding {
   id: string;
@@ -412,95 +413,43 @@ export default function BrandedPupilPortal() {
                 <PupilWelcomeTour pupilId={pupil.id} />
                 
                 <PullToRefresh onRefresh={async () => { await fetchPupil(pupil.id); }}>
-                <div className="p-4 space-y-4">
-                  {/* iOS Greeting */}
-                  <div className="flex items-center gap-3 pt-1">
-                    <Avatar className="h-11 w-11 border-2 border-border">
-                      <AvatarImage src={pupil.profile_image_url || undefined} />
-                      <AvatarFallback className="bg-primary text-primary-foreground font-bold text-sm">
-                        {pupil.name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="text-xs text-muted-foreground">Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'}</p>
-                      <h1 className="text-xl font-bold text-foreground">Hi {pupil.name.split(' ')[0]} 👋</h1>
-                    </div>
+                <div className="space-y-2">
+                  {/* Dynamic real-time alert banners (only render when active) */}
+                  <div className="px-4 pt-3 space-y-3 empty:hidden">
+                    <SwapNeedsAttentionBanner
+                      hasTestBooked={!!pupil.test_date}
+                      optedIn={swapOptedIn}
+                      onClick={openSwapSettings}
+                    />
+                    <SwapChecklistNeedsAttentionBanner
+                      swapStatus={swapStatus}
+                      onClick={() => setSwapChecklistOpen(true)}
+                    />
+                    <SlotOfferNotification pupilId={pupil.id} onAccept={() => setActiveSection('schedule')} />
+                    <PupilCheckInCard pupilId={pupil.id} />
+                    <PushNotificationBanner pupilId={pupil.id} brandColour={drive365Blue} />
+                    {instructor.lesson_feedback_enabled !== false && (
+                      <PupilEndOfLessonWizard pupilId={pupil.id} instructorId={instructor.id} brandColour={drive365Blue} />
+                    )}
+                    <PostLessonRating pupilId={pupil.id} instructorId={instructor.id} brandColour={drive365Blue} />
+                    <LessonSummaryCard pupilId={pupil.id} />
+                    <LessonPrepChecklist pupilId={pupil.id} instructorId={instructor.id} brandColour={drive365Blue} />
                   </div>
 
-                  {/* ═══ ZONE 1: RIGHT NOW ═══ */}
-                  <SwapNeedsAttentionBanner
-                    hasTestBooked={!!pupil.test_date}
-                    optedIn={swapOptedIn}
-                    onClick={openSwapSettings}
-                  />
-                  <SwapChecklistNeedsAttentionBanner
-                    swapStatus={swapStatus}
-                    onClick={() => setSwapChecklistOpen(true)}
-                  />
-                  <SlotOfferNotification pupilId={pupil.id} onAccept={() => setActiveSection('schedule')} />
-                  <PupilCheckInCard pupilId={pupil.id} />
-                  <PushNotificationBanner pupilId={pupil.id} brandColour={drive365Blue} />
-
-                  {instructor.lesson_feedback_enabled !== false && (
-                    <PupilEndOfLessonWizard pupilId={pupil.id} instructorId={instructor.id} brandColour={drive365Blue} />
-                  )}
-                  <PostLessonRating pupilId={pupil.id} instructorId={instructor.id} brandColour={drive365Blue} />
-                  <LessonSummaryCard pupilId={pupil.id} />
-                  <LessonPrepChecklist pupilId={pupil.id} instructorId={instructor.id} brandColour={drive365Blue} />
-
-                  <PupilPortalLessonCountdown
-                    pupilId={pupil.id}
-                    instructorId={instructor.id}
-                    brandColour={drive365Blue}
-                    darkMode={instructor.pupil_app_dark_mode}
-                    onBookLesson={() => { setBookingRequested(true); setActiveSection('schedule'); }}
-                  />
-
-                  {/* Test Countdown */}
-                  <TestCountdownCard pupilId={pupil.id} brandColour={drive365Blue} />
-                  <PupilTestStatusCard pupilId={pupil.id} brandColour={drive365Blue} />
-
-                  {/* ═══ ZONE 2: YOUR STATS (collapsible) ═══ */}
-                  <Collapsible open={statsOpen} onOpenChange={setStatsOpen}>
-                    <CollapsibleTrigger className="w-full flex items-center justify-between py-2">
-                      <span className="text-[13px] font-semibold text-muted-foreground uppercase tracking-wide">Your Progress</span>
-                      <motion.div animate={{ rotate: statsOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
-                        <ChevronDown className="h-4 w-4 text-muted-foreground/60" />
-                      </motion.div>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent className="space-y-4">
-                      <PupilWidgetGrid
-                        pupilId={pupil.id}
-                        pupil={{
-                          lessons_completed: pupil.lessons_completed,
-                          progress: pupil.progress,
-                          account_balance: pupil.account_balance,
-                          prepaid_hours: pupil.prepaid_hours,
-                        }}
-                        brandColour={drive365Blue}
-                        onNavigate={(section) => setActiveSection(section as ActiveSection)}
-                      />
-                      <LessonStreakCard pupilId={pupil.id} brandColour={drive365Blue} />
-                      <AchievementBadges pupilId={pupil.id} brandColour={drive365Blue} />
-                    </CollapsibleContent>
-                  </Collapsible>
-
-                  <WhatsNewModal portalType="pupil" userId={pupil.id} />
-
-                  {/* ═══ ZONE 3: QUICK ACCESS ═══ */}
-                  <GroupedNavMenu
+                  <Drive365PupilHome
+                    pupil={pupil}
+                    instructor={{ id: instructor.id, name: instructor.name, phone: instructor.phone }}
+                    instructorSlug={slug}
                     onNavigate={(section) => {
                       if (section === 'swap-settings') { openSwapSettings(); return; }
                       setActiveSection(section as ActiveSection);
                     }}
-                    brandColour={instructor.brand_colour || drive365Blue}
-                    selfBookingEnabled={instructor.pupil_self_booking_enabled ?? false}
-                    reflectiveLogsEnabled={instructor.reflective_logs_enabled !== false}
+                    onEditProfile={() => setActiveSection('profile')}
                   />
 
-                  <ReferralCard pupilId={pupil.id} instructorId={instructor.id} instructorSlug={slug} brandColour={drive365Blue} />
-                  <PupilPortalContact instructor={instructor} />
+                  <WhatsNewModal portalType="pupil" userId={pupil.id} />
                 </div>
+
                 </PullToRefresh>
               </motion.div>
             )}
