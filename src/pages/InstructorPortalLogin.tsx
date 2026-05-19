@@ -419,13 +419,9 @@ export default function InstructorPortalLogin() {
             </div>
           )}
 
-          {/* Hidden real Google button to reuse OAuth handler */}
-          <div className="hidden">
+          {/* Hidden real Google button — reuses existing OAuth handler */}
+          <div id="mobile-google-oauth-wrap" style={{ position: 'absolute', width: 0, height: 0, overflow: 'hidden', opacity: 0, pointerEvents: 'none' }} aria-hidden="true">
             <GoogleSignInButton redirectTo={`${window.location.origin}/auth/redirect?portal=instructor`} />
-            <button id="hidden-instructor-google-btn" type="button" onClick={() => {
-              const realBtn = document.querySelector<HTMLButtonElement>('.hidden button[type="button"]:not(#hidden-instructor-google-btn)');
-              realBtn?.click();
-            }} />
           </div>
         </div>
       </div>
