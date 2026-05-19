@@ -431,6 +431,10 @@ export default function InstructorPupilsDesktop() {
         intensive_hours_paid: d.intensive_hours_paid != null ? String(d.intensive_hours_paid) : "",
         intensive_course_payout: d.intensive_course_payout != null ? String(d.intensive_course_payout) : "",
         intensive_pupil_payment: d.intensive_pupil_payment != null ? String(d.intensive_pupil_payment) : "",
+        theory_test_date: d.theory_test_date || "",
+        theory_test_passed: d.theory_test_passed === true ? "pass" : d.theory_test_passed === false ? "fail" : "",
+        test_date: d.test_date || "",
+        test_passed: d.test_passed === true ? "pass" : d.test_passed === false ? "fail" : "",
       });
     }
   };
