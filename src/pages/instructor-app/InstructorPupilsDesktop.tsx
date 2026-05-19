@@ -907,6 +907,7 @@ export default function InstructorPupilsDesktop() {
                   >
                     {p.nextLesson || "—"}
                   </div>
+                  <TestStatusCell theoryPassed={p.theoryPassed} theoryDate={p.theoryDate} drivingPassed={p.drivingPassed} drivingDate={p.drivingTestDate} />
                   <div
                     style={{
                       textAlign: "right", fontFamily: "var(--d2-mono)",
