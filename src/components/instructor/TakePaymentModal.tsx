@@ -101,6 +101,7 @@ export function TakePaymentModal({
           const amt = Number(row?.amount || 0);
           if (!amt || amt <= 0) return;
           setView("received");
+          onPaymentReceived?.();
         }
       )
       .subscribe();
