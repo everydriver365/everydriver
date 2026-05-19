@@ -20,6 +20,7 @@ import { isEmailNotConfirmedError, resendSignupConfirmation } from "@/lib/emailC
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 import { MobileLoginHero } from "@/components/auth/MobileLoginHero";
 import { DarkMobileAuthForm } from "@/components/auth/DarkMobileAuthForm";
+import { useClearOnDeepLink } from "@/hooks/useClearOnDeepLink";
 import instructorHero from "@/assets/every-instructor-hero.webp";
 
 const loginSchema = z.object({
