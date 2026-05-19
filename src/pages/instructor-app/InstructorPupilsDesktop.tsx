@@ -55,6 +55,10 @@ interface Pupil {
   totalHours: number;
   testDate?: string;
   pickupAddress?: string;
+  theoryPassed?: boolean | null;
+  theoryDate?: string | null;
+  drivingPassed?: boolean | null;
+  drivingTestDate?: string | null;
 }
 
 const palette: Record<AvatarColor, { bg: string; text: string }> = {
@@ -70,6 +74,37 @@ const palette: Record<AvatarColor, { bg: string; text: string }> = {
 const colorOrder: AvatarColor[] = ["coral", "blue", "green", "pink", "purple", "gray", "amber"];
 
 // Real pupils are loaded from Supabase in the page component below.
+
+function TestBadge({ label, passed, date }: { label: string; passed?: boolean | null; date?: string | null }) {
+  let bg = "#F1F5F9", fg = "#64748B", title = `${label}: not set`;
+  if (passed === true) { bg = "#DCFCE7"; fg = "#15803D"; title = `${label}: passed${date ? ` ${date}` : ""}`; }
+  else if (passed === false) { bg = "#FEE2E2"; fg = "#B91C1C"; title = `${label}: not passed${date ? ` ${date}` : ""}`; }
+  else if (date) {
+    const isFuture = new Date(date) >= new Date(new Date().toDateString());
+    if (isFuture) { bg = "#DBEAFE"; fg = "#1D4ED8"; title = `${label}: booked ${date}`; }
+    else { bg = "#FEF3C7"; fg = "#92400E"; title = `${label}: taken ${date} — result pending`; }
+  }
+  return (
+    <span title={title} style={{
+      display: "inline-flex", alignItems: "center", justifyContent: "center",
+      minWidth: 18, height: 16, padding: "0 5px", borderRadius: 4,
+      background: bg, color: fg, fontSize: 9, fontWeight: 600, lineHeight: 1,
+    }}>{label}</span>
+  );
+}
+
+function TestStatusCell({ theoryPassed, theoryDate, drivingPassed, drivingDate }: {
+  theoryPassed?: boolean | null; theoryDate?: string | null;
+  drivingPassed?: boolean | null; drivingDate?: string | null;
+}) {
+  return (
+    <div style={{ display: "flex", gap: 4 }}>
+      <TestBadge label="T" passed={theoryPassed} date={theoryDate} />
+      <TestBadge label="D" passed={drivingPassed} date={drivingDate} />
+    </div>
+  );
+}
+
 
 function deriveAvatar(name: string, idx: number): { initials: string; avatarColor: AvatarColor } {
   const initials = name.split(" ").map(s => s[0]).filter(Boolean).join("").slice(0, 2).toUpperCase() || "?";
@@ -342,6 +377,8 @@ export default function InstructorPupilsDesktop() {
     parent_name: "", parent_phone: "",
     custom_hourly_rate: "", custom_rate_90min: "", custom_rate_120min: "",
     source: "", intensive_hours_paid: "", intensive_course_payout: "", intensive_pupil_payment: "",
+    theory_test_date: "", theory_test_passed: "" as "" | "pass" | "fail",
+    test_date: "", test_passed: "" as "" | "pass" | "fail",
   };
   const [editForm, setEditForm] = useState(emptyEditForm);
   const [editErrors, setEditErrors] = useState<{ name?: string; email?: string; postcode?: string; phone?: string }>({});
@@ -366,7 +403,7 @@ export default function InstructorPupilsDesktop() {
     setEditForm(emptyEditForm);
     const { data } = await supabase
       .from("pupils")
-      .select("name, phone, email, postcode, address, what3words, date_of_birth, sex, previous_experience, transmission_type, special_needs, notes, payment_method, parent_name, parent_phone, custom_hourly_rate, custom_rate_90min, custom_rate_120min, source, intensive_hours_paid, intensive_course_payout, intensive_pupil_payment")
+      .select("name, phone, email, postcode, address, what3words, date_of_birth, sex, previous_experience, transmission_type, special_needs, notes, payment_method, parent_name, parent_phone, custom_hourly_rate, custom_rate_90min, custom_rate_120min, source, intensive_hours_paid, intensive_course_payout, intensive_pupil_payment, theory_test_date, theory_test_passed, test_date, test_passed")
       .eq("id", id)
       .maybeSingle();
     if (data) {
@@ -394,6 +431,10 @@ export default function InstructorPupilsDesktop() {
         intensive_hours_paid: d.intensive_hours_paid != null ? String(d.intensive_hours_paid) : "",
         intensive_course_payout: d.intensive_course_payout != null ? String(d.intensive_course_payout) : "",
         intensive_pupil_payment: d.intensive_pupil_payment != null ? String(d.intensive_pupil_payment) : "",
+        theory_test_date: d.theory_test_date || "",
+        theory_test_passed: d.theory_test_passed === true ? "pass" : d.theory_test_passed === false ? "fail" : "",
+        test_date: d.test_date || "",
+        test_passed: d.test_passed === true ? "pass" : d.test_passed === false ? "fail" : "",
       });
     }
   };
@@ -426,6 +467,10 @@ export default function InstructorPupilsDesktop() {
       intensive_hours_paid: isNI ? toNumOrNull(editForm.intensive_hours_paid) : null,
       intensive_course_payout: isNI ? toNumOrNull(editForm.intensive_course_payout) : null,
       intensive_pupil_payment: isNI ? toNumOrNull(editForm.intensive_pupil_payment) : null,
+      theory_test_date: editForm.theory_test_date || null,
+      theory_test_passed: editForm.theory_test_passed === "pass" ? true : editForm.theory_test_passed === "fail" ? false : null,
+      test_date: editForm.test_date || null,
+      test_passed: editForm.test_passed === "pass" ? true : editForm.test_passed === "fail" ? false : null,
     };
     const { error } = await supabase.from("pupils").update(payload).eq("id", editTargetId);
     setEditSaving(false);
@@ -465,7 +510,7 @@ export default function InstructorPupilsDesktop() {
       try {
         const { data: pupilRows, error } = await supabase
           .from("pupils")
-          .select("id, name, phone, email, account_balance, course_status, created_at, address, postcode, notes, lessons_completed, prepaid_hours, custom_hourly_rate, test_date, source, intensive_hours_paid")
+          .select("id, name, phone, email, account_balance, course_status, created_at, address, postcode, notes, lessons_completed, prepaid_hours, custom_hourly_rate, test_date, source, intensive_hours_paid, theory_test_date, theory_test_passed, test_passed")
           .eq("instructor_id", instructorId)
           .is("deleted_at", null)
           .order("created_at", { ascending: false });
@@ -544,6 +589,10 @@ export default function InstructorPupilsDesktop() {
             totalHours: Math.round((hoursByPupil.get(p.id) || 0) * 10) / 10,
             testDate: p.test_date || undefined,
             pickupAddress: p.address || p.postcode || undefined,
+            theoryPassed: p.theory_test_passed ?? null,
+            theoryDate: p.theory_test_date ?? null,
+            drivingPassed: p.test_passed ?? null,
+            drivingTestDate: p.test_date ?? null,
           };
         });
 
@@ -666,7 +715,7 @@ export default function InstructorPupilsDesktop() {
   const handleSignOut = async () => { await signOut(); navigate("/instructor-app/login"); };
   const initials = (instructor?.name || "").split(" ").map(s => s[0]).filter(Boolean).slice(0, 2).join("").toUpperCase() || "ID";
 
-  const gridCols = "22px minmax(0, 1.6fr) 90px 100px 100px 90px 90px 30px";
+  const gridCols = "22px minmax(0, 1.6fr) 90px 100px 100px 110px 90px 90px 30px";
 
   return (
     <DashboardShell
@@ -833,6 +882,7 @@ export default function InstructorPupilsDesktop() {
               <SortHeader label="Hours left" k="lessonsLeft" sortKey={sortKey} sortDir={sortDir} onClick={toggleSort} />
               <SortHeader label="Last lesson" k="lastLesson" sortKey={sortKey} sortDir={sortDir} onClick={toggleSort} />
               <SortHeader label="Next lesson" k="nextLesson" sortKey={sortKey} sortDir={sortDir} onClick={toggleSort} />
+              <div>Tests</div>
               <SortHeader label="Balance" k="balance" sortKey={sortKey} sortDir={sortDir} onClick={toggleSort} align="right" />
               <div>Status</div>
               <div></div>
@@ -898,6 +948,7 @@ export default function InstructorPupilsDesktop() {
                   >
                     {p.nextLesson || "—"}
                   </div>
+                  <TestStatusCell theoryPassed={p.theoryPassed} theoryDate={p.theoryDate} drivingPassed={p.drivingPassed} drivingDate={p.drivingTestDate} />
                   <div
                     style={{
                       textAlign: "right", fontFamily: "var(--d2-mono)",
@@ -1275,6 +1326,49 @@ export default function InstructorPupilsDesktop() {
               )}
             </section>
 
+
+            {/* Tests */}
+            <section className="space-y-3">
+              <h4 className="text-[11px] font-semibold tracking-wider uppercase text-muted-foreground">Tests</h4>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label htmlFor="edit-theory-date">Theory test date</Label>
+                  <Input id="edit-theory-date" type="date"
+                    value={editForm.theory_test_date}
+                    onChange={e => setEditForm(f => ({ ...f, theory_test_date: e.target.value }))} />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="edit-theory-result">Theory result</Label>
+                  <Select value={editForm.theory_test_passed || "__none"}
+                    onValueChange={v => setEditForm(f => ({ ...f, theory_test_passed: v === "__none" ? "" : v as any }))}>
+                    <SelectTrigger id="edit-theory-result"><SelectValue placeholder="Not set" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none">Not set / booked</SelectItem>
+                      <SelectItem value="pass">Passed</SelectItem>
+                      <SelectItem value="fail">Not passed</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="edit-driving-date">Driving test date</Label>
+                  <Input id="edit-driving-date" type="date"
+                    value={editForm.test_date}
+                    onChange={e => setEditForm(f => ({ ...f, test_date: e.target.value }))} />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="edit-driving-result">Driving test result</Label>
+                  <Select value={editForm.test_passed || "__none"}
+                    onValueChange={v => setEditForm(f => ({ ...f, test_passed: v === "__none" ? "" : v as any }))}>
+                    <SelectTrigger id="edit-driving-result"><SelectValue placeholder="Not set" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none">Not set / booked</SelectItem>
+                      <SelectItem value="pass">Passed</SelectItem>
+                      <SelectItem value="fail">Not passed</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </section>
 
             {/* Comments */}
             <section className="space-y-3">
