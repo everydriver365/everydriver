@@ -196,6 +196,7 @@ export default function InstructorPupils() {
     source: "",
     intensive_hours_paid: "",
     intensive_course_payout: "",
+    intensive_pupil_payment: "",
   });
   const [newPupilId, setNewPupilId] = useState<string | null>(null);
   const [showPostAddPayment, setShowPostAddPayment] = useState(false);
@@ -435,6 +436,8 @@ export default function InstructorPupils() {
         ? parseFloat(addForm.intensive_hours_paid) : null;
       const intensivePayout = addForm.source === "national_intensive" && addForm.intensive_course_payout
         ? parseFloat(addForm.intensive_course_payout) : null;
+      const intensivePupilPay = addForm.source === "national_intensive" && addForm.intensive_pupil_payment
+        ? parseFloat(addForm.intensive_pupil_payment) : null;
 
       const { data, error } = await supabase.from("pupils").insert({
         instructor_id: instructorId,
@@ -465,6 +468,7 @@ export default function InstructorPupils() {
         source: addForm.source || null,
         intensive_hours_paid: intensiveHours && !isNaN(intensiveHours) ? intensiveHours : null,
         intensive_course_payout: intensivePayout && !isNaN(intensivePayout) ? intensivePayout : null,
+        intensive_pupil_payment: intensivePupilPay && !isNaN(intensivePupilPay) ? intensivePupilPay : null,
       }).select();
 
       if (error) {
