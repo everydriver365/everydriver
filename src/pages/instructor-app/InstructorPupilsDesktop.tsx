@@ -28,6 +28,9 @@ import { PUPIL_SOURCE_OPTIONS } from "@/components/instructor/pupils/AddPupilShe
 import { AddPupilSheet } from "@/components/instructor/pupils/AddPupilSheet";
 import { ImportPupilsCsvDialog } from "@/components/instructor/pupils/ImportPupilsCsvDialog";
 import { ArchivedPupilsDialog } from "@/components/instructor/pupils/ArchivedPupilsDialog";
+import { AddLessonSheet } from "@/components/instructor/AddLessonSheet";
+import { usePupilLessonHistory } from "@/hooks/usePupilLessonHistory";
+import { useQueryClient } from "@tanstack/react-query";
 
 // ----------------------------- Types & data -----------------------------
 type Status = "active" | "at-risk" | "test-ready" | "paused" | "archived";
