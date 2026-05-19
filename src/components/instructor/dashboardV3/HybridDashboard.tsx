@@ -662,11 +662,15 @@ export function HybridDashboard({ instructorId, instructorName, pupils, todaysLe
       <QuickActionRow items={quickActions} />
       <StatsRow stats={stats} />
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 280px", gap: 10, marginBottom: 14, alignItems: "start" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 280px", gap: 10, marginBottom: 14, alignItems: "stretch" }}>
         <ScheduleCard instructorId={instructorId} />
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          <NextLessonCard instructorId={instructorId} />
-          <DvsaStandardsCard standardsCheck={stats2?.standardsCheck ?? null} />
+          <div style={{ flex: 1, display: "flex", minHeight: 0 }}>
+            <NextLessonCard instructorId={instructorId} />
+          </div>
+          <div style={{ flex: 1, display: "flex", minHeight: 0 }}>
+            <DvsaStandardsCard standardsCheck={stats2?.standardsCheck ?? null} />
+          </div>
         </div>
         <EarningsCard
           balance={positiveBalance}
