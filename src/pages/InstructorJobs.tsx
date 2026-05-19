@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { AnimatePresence } from "framer-motion";
 import { Briefcase } from "lucide-react";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
@@ -9,6 +9,11 @@ import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { useInstructorProfile } from "@/hooks/useInstructorProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import {
+  computeJobCompatibility,
+  type CompatibilityResult,
+  type WorkingHourRow,
+} from "@/lib/jobOfferCompatibility";
 
 interface JobEnquiry {
   id: string;
@@ -27,12 +32,14 @@ export default function InstructorJobs() {
   const { instructor: authInstructor } = useInstructorAuth();
   const instructorId = authInstructor?.id;
   const { profile } = useInstructorProfile(instructorId || "");
-  
+
   const [jobs, setJobs] = useState<JobEnquiry[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedJob, setSelectedJob] = useState<JobEnquiry | null>(null);
   const [processing, setProcessing] = useState(false);
   const [jobDistances, setJobDistances] = useState<Record<string, number | null>>({});
+  const [radiusMi, setRadiusMi] = useState<number | null>(null);
+  const [workingHours, setWorkingHours] = useState<WorkingHourRow[]>([]);
 
   // Calculate distance between two coordinates using Haversine formula
   const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
@@ -97,6 +104,36 @@ export default function InstructorJobs() {
       fetchDistances(jobs);
     }
   }, [jobs, profile?.home_postcode, fetchDistances]);
+
+  // Fetch instructor radius + working hours for compatibility scoring
+  useEffect(() => {
+    if (!instructorId) return;
+    (async () => {
+      const [radiusRes, hoursRes] = await Promise.all([
+        supabase.from("instructors").select("radius_miles").eq("id", instructorId).maybeSingle(),
+        supabase
+          .from("instructor_working_hours")
+          .select("day_of_week, start_time, end_time, is_active")
+          .eq("instructor_id", instructorId),
+      ]);
+      if (radiusRes.data?.radius_miles != null) setRadiusMi(Number(radiusRes.data.radius_miles));
+      if (hoursRes.data) setWorkingHours(hoursRes.data as WorkingHourRow[]);
+    })();
+  }, [instructorId]);
+
+  // Compute compatibility for each visible job
+  const compatibilityByJob = useMemo<Record<string, CompatibilityResult>>(() => {
+    const map: Record<string, CompatibilityResult> = {};
+    for (const job of jobs) {
+      map[job.id] = computeJobCompatibility({
+        distanceMi: jobDistances[job.id] ?? null,
+        radiusMi,
+        preferredTiming: job.preferred_timing,
+        workingHours,
+      });
+    }
+    return map;
+  }, [jobs, jobDistances, radiusMi, workingHours]);
 
   const fetchJobs = async () => {
     try {
@@ -294,6 +331,7 @@ export default function InstructorJobs() {
                   key={job.id}
                   offer={job}
                   distanceMi={jobDistances[job.id] ?? null}
+                  compatibility={compatibilityByJob[job.id]}
                   onExpand={() => setSelectedJob(job)}
                   onAccept={() => handleAcceptJob(job)}
                   onDecline={() => handleDeclineJob(job)}
@@ -308,6 +346,7 @@ export default function InstructorJobs() {
         <JobOfferDetailSheet
           job={selectedJob}
           distanceMi={selectedJob ? jobDistances[selectedJob.id] ?? null : null}
+          compatibility={selectedJob ? compatibilityByJob[selectedJob.id] : undefined}
           hourlyRate={profile?.hourly_rate ?? 40}
           processing={processing}
           onClose={() => setSelectedJob(null)}

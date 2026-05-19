@@ -19,6 +19,10 @@ import {
   formatDistanceMiles,
   toSentenceCase,
 } from "@/lib/formatJobOffer";
+import {
+  compatibilityColors,
+  type CompatibilityResult,
+} from "@/lib/jobOfferCompatibility";
 
 export interface JobOfferCardOffer {
   id: string;
@@ -32,6 +36,7 @@ export interface JobOfferCardOffer {
 interface Props {
   offer: JobOfferCardOffer;
   distanceMi: number | null | undefined;
+  compatibility?: CompatibilityResult;
   onExpand: () => void;
   onAccept: () => void | Promise<void>;
   onDecline: () => void | Promise<void>;
@@ -41,6 +46,7 @@ interface Props {
 export function JobOfferCard({
   offer,
   distanceMi,
+  compatibility,
   onExpand,
   onAccept,
   onDecline,
@@ -53,6 +59,7 @@ export function JobOfferCard({
   const postcode = formatUkPostcode(offer.postcode);
   const distanceLabel = formatDistanceMiles(distanceMi ?? null);
   const timing = formatTiming(offer.preferred_timing);
+  const compatColors = compatibility ? compatibilityColors(compatibility.level) : null;
 
   const stop = (e: MouseEvent) => {
     e.stopPropagation();
@@ -131,20 +138,40 @@ export function JobOfferCard({
               </div>
             </div>
 
-            <span
-              style={{
-                background: "#F1ECFA",
-                color: "#8A5BC9",
-                borderRadius: 999,
-                padding: "4px 10px",
-                fontSize: 11,
-                fontWeight: 500,
-                flexShrink: 0,
-                lineHeight: 1.2,
-              }}
+            <div
+              className="flex items-center"
+              style={{ gap: 6, flexShrink: 0, flexWrap: "wrap", justifyContent: "flex-end" }}
             >
-              {hours}h
-            </span>
+              {compatibility && compatColors && compatibility.level !== "unknown" && (
+                <span
+                  title={compatibility.reasons.join(" · ")}
+                  style={{
+                    background: compatColors.bg,
+                    color: compatColors.fg,
+                    borderRadius: 999,
+                    padding: "4px 10px",
+                    fontSize: 11,
+                    fontWeight: 600,
+                    lineHeight: 1.2,
+                  }}
+                >
+                  {compatibility.label}
+                </span>
+              )}
+              <span
+                style={{
+                  background: "#F1ECFA",
+                  color: "#8A5BC9",
+                  borderRadius: 999,
+                  padding: "4px 10px",
+                  fontSize: 11,
+                  fontWeight: 500,
+                  lineHeight: 1.2,
+                }}
+              >
+                {hours}h
+              </span>
+            </div>
           </div>
 
           {/* Meta row */}
