@@ -1099,40 +1099,53 @@ export function AddPupilSheet({
               />
             </div>
             {form.source === "national_intensive" && (
-              <div className="flex gap-3">
-                <div className="flex-1">
-                  <DFieldLabel label="Hours paid for" />
-                  <DTextInput
-                    type="number"
-                    value={form.intensive_hours_paid || ""}
-                    onChange={(v) => updateForm({ intensive_hours_paid: v })}
-                    placeholder="e.g. 40"
-                    isConditional
-                    suffix={<span style={{ fontSize: 12, color: D_GREEN, marginLeft: 4 }}>hrs</span>}
-                  />
-                  {intensiveHoursInvalid && (
-                    <div style={{ fontSize: 11, color: "#DC2626", marginTop: 6 }}>
-                      Please enter a valid number of hours
-                    </div>
-                  )}
+              <>
+                <div className="flex gap-3">
+                  <div className="flex-1">
+                    <DFieldLabel label="Hours paid for" />
+                    <DTextInput
+                      type="number"
+                      value={form.intensive_hours_paid || ""}
+                      onChange={(v) => updateForm({ intensive_hours_paid: v })}
+                      placeholder="e.g. 40"
+                      isConditional
+                      suffix={<span style={{ fontSize: 12, color: D_GREEN, marginLeft: 4 }}>hrs</span>}
+                    />
+                    {intensiveHoursInvalid && (
+                      <div style={{ fontSize: 11, color: "#DC2626", marginTop: 6 }}>
+                        Please enter a valid number of hours
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <DFieldLabel label="National Intensive pays you" />
+                    <DTextInput
+                      type="number"
+                      value={form.intensive_course_payout || ""}
+                      onChange={(v) => updateForm({ intensive_course_payout: v })}
+                      placeholder="0.00"
+                      isConditional
+                      prefix={<span style={{ fontSize: 13, color: D_GREEN, marginRight: 4 }}>£</span>}
+                    />
+                    {intensivePayoutInvalid && (
+                      <div style={{ fontSize: 11, color: "#DC2626", marginTop: 6 }}>
+                        Please enter a valid payout amount
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <DFieldLabel label="Course pays" />
+                <div className="mt-3">
+                  <DFieldLabel label="Pupil pays you directly (optional)" />
                   <DTextInput
                     type="number"
-                    value={form.intensive_course_payout || ""}
-                    onChange={(v) => updateForm({ intensive_course_payout: v })}
+                    value={form.intensive_pupil_payment || ""}
+                    onChange={(v) => updateForm({ intensive_pupil_payment: v })}
                     placeholder="0.00"
                     isConditional
                     prefix={<span style={{ fontSize: 13, color: D_GREEN, marginRight: 4 }}>£</span>}
                   />
-                  {intensivePayoutInvalid && (
-                    <div style={{ fontSize: 11, color: "#DC2626", marginTop: 6 }}>
-                      Please enter a valid payout amount
-                    </div>
-                  )}
                 </div>
-              </div>
+              </>
             )}
           </DSection>
 
