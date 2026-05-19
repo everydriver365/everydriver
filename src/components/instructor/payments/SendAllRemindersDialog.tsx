@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Mail, MessageSquare, AlertCircle, Check, Loader2, MessageCircle, Send } from "lucide-react";
+import { Mail, MessageSquare, AlertCircle, Check, Loader2, MessageCircle, Send, X } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
@@ -30,6 +30,39 @@ const ALL_CHANNELS: Channel[] = ["email", "sms", "whatsapp", "in_app"];
 const gbp = (n: number) =>
   new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP" }).format(n);
 
+type Candidate = {
+  id: string;
+  name: string;
+  amount: number;
+  daysOverdue?: number;
+  daysUntilDue?: number;
+  phone: string | null;
+  email: string | null;
+};
+
+type ChannelStatus = "ready" | "missing-phone" | "missing-email";
+
+function channelStatusFor(p: Candidate, ch: Channel): ChannelStatus {
+  const f = CHANNEL_META[ch].field;
+  if (!f) return "ready";
+  if (f === "phone") return p.phone ? "ready" : "missing-phone";
+  return p.email ? "ready" : "missing-email";
+}
+
+function buildMessage(p: Candidate, ch: Channel, fromName: string): { subject?: string; body: string; html?: string } {
+  const firstName = p.name.split(" ")[0];
+  const amount = p.amount.toFixed(2);
+  const shortMsg = `Hi ${firstName}, friendly reminder from ${fromName} — you have an outstanding balance of £${amount}. Thank you!`;
+  if (ch === "email") {
+    return {
+      subject: `Payment reminder — £${amount} outstanding`,
+      body: `Hi ${firstName},\n\nFriendly reminder: you have an outstanding balance of £${amount} with ${fromName}.\n\nThank you!`,
+      html: `<p>Hi ${firstName},</p><p>Friendly reminder: you have an outstanding balance of <strong>£${amount}</strong> with ${fromName}.</p><p>Thank you!</p>`,
+    };
+  }
+  return { body: shortMsg };
+}
+
 export function SendAllRemindersDialog({
   open, onOpenChange, outstanding, allPupils, instructorId, instructorName,
 }: {
@@ -46,7 +79,7 @@ export function SendAllRemindersDialog({
   const [progress, setProgress] = useState<{ done: number; total: number; failures: string[] } | null>(null);
 
   // Merge outstanding (amount, due) with contact details
-  const candidates = useMemo(() => {
+  const candidates = useMemo<Candidate[]>(() => {
     const byId = new Map(allPupils.map(p => [p.id, p]));
     return outstanding.map(o => {
       const c = byId.get(o.id);
@@ -62,19 +95,12 @@ export function SendAllRemindersDialog({
     });
   }, [outstanding, allPupils]);
 
-  // For each candidate, list channels they can receive on (given selected channels)
-  const eligibleChannelsFor = (c: typeof candidates[number]): Channel[] =>
-    Array.from(channels).filter((ch) => {
-      const f = CHANNEL_META[ch].field;
-      if (!f) return true;
-      return !!c[f];
-    });
+  const eligibleChannelsFor = (c: Candidate): Channel[] =>
+    Array.from(channels).filter((ch) => channelStatusFor(c, ch) === "ready");
 
-  // Pupil is eligible if at least one selected channel can reach them
   const eligible   = useMemo(() => candidates.filter(c => eligibleChannelsFor(c).length > 0), [candidates, channels]);
   const ineligible = useMemo(() => candidates.filter(c => eligibleChannelsFor(c).length === 0), [candidates, channels]);
 
-  // Reset selection when dialog opens or channels change
   useEffect(() => {
     if (open) {
       setSelected(new Set(eligible.map(c => c.id)));
@@ -98,7 +124,7 @@ export function SendAllRemindersDialog({
     setChannels(prev => {
       const next = new Set(prev);
       if (next.has(c)) {
-        if (next.size > 1) next.delete(c); // keep at least one selected
+        if (next.size > 1) next.delete(c);
       } else next.add(c);
       return next;
     });
@@ -135,29 +161,18 @@ export function SendAllRemindersDialog({
     if (msgErr) throw msgErr;
   };
 
-  const sendOne = async (
-    p: typeof candidates[number],
-    ch: Channel,
-    fromName: string,
-  ) => {
-    const amount = p.amount.toFixed(2);
-    const firstName = p.name.split(" ")[0];
-    const shortMsg = `Hi ${firstName}, friendly reminder from ${fromName} — you have an outstanding balance of £${amount}. Thank you!`;
-
+  const sendOne = async (p: Candidate, ch: Channel, fromName: string) => {
+    const msg = buildMessage(p, ch, fromName);
     if (ch === "sms") {
-      await supabase.functions.invoke("send-sms", { body: { to: p.phone, message: shortMsg } });
+      await supabase.functions.invoke("send-sms", { body: { to: p.phone, message: msg.body } });
     } else if (ch === "whatsapp") {
-      await supabase.functions.invoke("send-whatsapp", { body: { to: p.phone, message: shortMsg } });
+      await supabase.functions.invoke("send-whatsapp", { body: { to: p.phone, message: msg.body } });
     } else if (ch === "email") {
       await supabase.functions.invoke("send-email", {
-        body: {
-          to: p.email,
-          subject: `Payment reminder — £${amount} outstanding`,
-          html: `<p>Hi ${firstName},</p><p>Friendly reminder: you have an outstanding balance of <strong>£${amount}</strong> with ${fromName}.</p><p>Thank you!</p>`,
-        },
+        body: { to: p.email, subject: msg.subject, html: msg.html },
       });
     } else if (ch === "in_app") {
-      await sendInApp(p.id, shortMsg);
+      await sendInApp(p.id, msg.body);
     }
 
     await supabase.from("followup_log").insert({
@@ -165,7 +180,7 @@ export function SendAllRemindersDialog({
       pupil_id: p.id,
       channel: ch,
       trigger_type: "manual_chase_bulk",
-      message_content: `Payment reminder for £${amount}`,
+      message_content: `Payment reminder for £${p.amount.toFixed(2)}`,
     });
   };
 
@@ -175,15 +190,11 @@ export function SendAllRemindersDialog({
     const list = eligible.filter(c => selected.has(c.id));
     if (list.length === 0) { toast.error("Select at least one pupil"); return; }
 
-    // Build per-pupil send tasks across all eligible channels
-    const tasks = list.flatMap((p) =>
-      eligibleChannelsFor(p).map((ch) => ({ p, ch }))
-    );
+    const tasks = list.flatMap((p) => eligibleChannelsFor(p).map((ch) => ({ p, ch })));
 
     setSending(true);
     setProgress({ done: 0, total: tasks.length, failures: [] });
     const failures: string[] = [];
-    const failureKeys = new Set<string>();
     let done = 0;
     const fromName = instructorName || "your instructor";
 
@@ -192,9 +203,7 @@ export function SendAllRemindersDialog({
         await sendOne(p, ch, fromName);
       } catch (e: any) {
         console.error(`Reminder failed for ${p.name} via ${ch}`, e);
-        const label = `${p.name} (${CHANNEL_META[ch].label})`;
-        failures.push(label);
-        failureKeys.add(`${p.id}:${ch}`);
+        failures.push(`${p.name} (${CHANNEL_META[ch].label})`);
       } finally {
         done += 1;
         setProgress({ done, total: tasks.length, failures: [...failures] });
@@ -218,12 +227,29 @@ export function SendAllRemindersDialog({
     .filter(c => selected.has(c.id))
     .reduce((s, c) => s + c.amount, 0);
 
-  // Estimate number of sends across selected pupils + channels
   const totalSends = useMemo(
     () => eligible.filter(c => selected.has(c.id))
       .reduce((sum, c) => sum + eligibleChannelsFor(c).length, 0),
     [eligible, selected, channels],
   );
+
+  // Skip summary: count missing-phone / missing-email across selected pupils × selected channels
+  const skipSummary = useMemo(() => {
+    let missingPhone = 0;
+    let missingEmail = 0;
+    const selectedList = candidates.filter(c => selected.has(c.id) || ineligible.includes(c));
+    for (const p of selectedList) {
+      for (const ch of channels) {
+        const s = channelStatusFor(p, ch);
+        if (s === "missing-phone") missingPhone++;
+        else if (s === "missing-email") missingEmail++;
+      }
+    }
+    return { missingPhone, missingEmail, total: missingPhone + missingEmail };
+  }, [candidates, selected, channels, ineligible]);
+
+  const reasonLabel = (s: ChannelStatus) =>
+    s === "missing-phone" ? "no phone on file" : s === "missing-email" ? "no email on file" : "";
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!sending) onOpenChange(v); }}>
@@ -235,7 +261,7 @@ export function SendAllRemindersDialog({
           </DialogDescription>
         </DialogHeader>
 
-        {/* Channel picker (multi-select) */}
+        {/* Channel picker */}
         <div className="grid grid-cols-4 gap-1.5 rounded-md bg-muted/40 p-1">
           {ALL_CHANNELS.map((c) => {
             const m = CHANNEL_META[c];
@@ -260,7 +286,6 @@ export function SendAllRemindersDialog({
           })}
         </div>
 
-        {/* Select-all */}
         {eligible.length > 0 && (
           <div className="flex items-center justify-between text-xs">
             <label className="flex items-center gap-2 cursor-pointer">
@@ -270,7 +295,7 @@ export function SendAllRemindersDialog({
           </div>
         )}
 
-        {/* Pupil list — all candidates with per-channel eligibility */}
+        {/* Pupil list */}
         <div className="max-h-[280px] overflow-y-auto -mx-1 px-1">
           {candidates.length === 0 && (
             <div className="text-center py-6 text-sm text-muted-foreground">
@@ -282,24 +307,13 @@ export function SendAllRemindersDialog({
             const overdue = p.daysOverdue !== undefined && p.daysOverdue > 0;
             const pupilEligibleChs = eligibleChannelsFor(p);
             const isEligible = pupilEligibleChs.length > 0;
-
-            // Missing: selected channels this pupil can't receive + why
-            const missingChs = Array.from(channels).filter(
-              (ch) => !pupilEligibleChs.includes(ch)
-            );
-            const missingFields = Array.from(
-              new Set(
-                missingChs
-                  .map((ch) => CHANNEL_META[ch].field)
-                  .filter(Boolean) as string[]
-              )
-            );
+            const channelList = Array.from(channels);
 
             return (
               <label
                 key={p.id}
-                className={`flex items-center gap-3 py-2 px-1 border-b last:border-0 rounded-sm ${
-                  isEligible ? "cursor-pointer hover:bg-muted/30" : "opacity-60 cursor-not-allowed"
+                className={`flex items-start gap-3 py-2 px-1 border-b last:border-0 rounded-sm ${
+                  isEligible ? "cursor-pointer hover:bg-muted/30" : "opacity-70 cursor-not-allowed"
                 }`}
               >
                 {isEligible ? (
@@ -307,9 +321,10 @@ export function SendAllRemindersDialog({
                     checked={checked}
                     onCheckedChange={() => toggleOne(p.id)}
                     disabled={sending}
+                    className="mt-0.5"
                   />
                 ) : (
-                  <div className="h-4 w-4 flex-shrink-0" />
+                  <div className="h-4 w-4 flex-shrink-0 mt-0.5" />
                 )}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5">
@@ -320,63 +335,124 @@ export function SendAllRemindersDialog({
                       </span>
                     )}
                   </div>
-                  <div className="text-[11px] truncate mt-0.5">
-                    {isEligible ? (
-                      <span className="text-emerald-700 flex items-center gap-1 flex-wrap">
-                        <Check className="h-3 w-3 inline" />
-                        Receiving on: {pupilEligibleChs.map((ch) => CHANNEL_META[ch].label).join(" · ")}
-                      </span>
-                    ) : (
-                      <span className="text-rose-700">
-                        Skipped — no {missingFields.join(" or ")} on file
-                      </span>
-                    )}
-                    {isEligible && missingChs.length > 0 && (
-                      <span className="text-muted-foreground ml-1">
-                        · missing {missingFields.join(" / ")} for{" "}
-                        {missingChs.map((ch) => CHANNEL_META[ch].label).join(" · ")}
-                      </span>
-                    )}
+
+                  {/* Per-channel status chips */}
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {channelList.map((ch) => {
+                      const m = CHANNEL_META[ch];
+                      const status = channelStatusFor(p, ch);
+                      const ready = status === "ready";
+                      return (
+                        <span
+                          key={ch}
+                          title={ready ? `Will send via ${m.label}` : reasonLabel(status)}
+                          className={`inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full border ${
+                            ready
+                              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                              : "bg-amber-50 text-amber-700 border-amber-200"
+                          }`}
+                        >
+                          {ready ? <Check className="h-2.5 w-2.5" /> : <X className="h-2.5 w-2.5" />}
+                          <m.Icon className="h-2.5 w-2.5" />
+                          {m.label}
+                        </span>
+                      );
+                    })}
                   </div>
+
+                  {!isEligible && (
+                    <div className="text-[11px] text-rose-700 mt-1">
+                      Skipped on all channels — no phone or email on file
+                    </div>
+                  )}
                 </div>
-                <div className="text-sm font-medium tabular-nums">{gbp(p.amount)}</div>
+                <div className="text-sm font-medium tabular-nums whitespace-nowrap">{gbp(p.amount)}</div>
                 {sending && checked && progress && progress.done < progress.total && (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
+                  <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground mt-1" />
                 )}
                 {!sending && progress && checked && (
                   progress.failures.some((f) => f.startsWith(p.name + " ("))
-                    ? <AlertCircle className="h-3.5 w-3.5 text-rose-600" />
-                    : <Check className="h-3.5 w-3.5 text-emerald-600" />
+                    ? <AlertCircle className="h-3.5 w-3.5 text-rose-600 mt-1" />
+                    : <Check className="h-3.5 w-3.5 text-emerald-600 mt-1" />
                 )}
               </label>
             );
           })}
         </div>
 
-        {/* Personalized preview */}
+        {/* Summary */}
+        {(totalSends > 0 || skipSummary.total > 0) && !sending && (
+          <div className="text-[11px] text-muted-foreground">
+            <span className="text-foreground font-medium">{totalSends}</span> will send
+            {skipSummary.total > 0 && (
+              <>
+                {" · "}
+                <span className="text-amber-700 font-medium">{skipSummary.total}</span> skipped
+                {" ("}
+                {skipSummary.missingEmail > 0 && <>{skipSummary.missingEmail} missing email</>}
+                {skipSummary.missingEmail > 0 && skipSummary.missingPhone > 0 && <>, </>}
+                {skipSummary.missingPhone > 0 && <>{skipSummary.missingPhone} missing phone</>}
+                {")"}
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Per-channel preview */}
         {selected.size > 0 && !sending && (
           <div className="rounded-md border bg-muted/30 p-3">
             <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide mb-2">
               Preview ({selected.size} pupil{selected.size === 1 ? "" : "s"})
             </div>
-            <div className="max-h-[160px] overflow-y-auto space-y-2">
+            <div className="max-h-[200px] overflow-y-auto space-y-3">
               {eligible
                 .filter(c => selected.has(c.id))
                 .map((p) => {
-                  const firstName = p.name.split(" ")[0];
-                  const amount = p.amount.toFixed(2);
                   const fromName = instructorName || "your instructor";
-                  const message = `Hi ${firstName}, friendly reminder from ${fromName} — you have an outstanding balance of £${amount}. Thank you!`;
-                  const pupilChs = eligibleChannelsFor(p);
                   return (
                     <div key={p.id} className="text-xs leading-relaxed">
-                      <div className="flex items-center gap-1.5 mb-0.5">
+                      <div className="flex items-center gap-1.5 mb-1">
                         <span className="font-medium text-foreground">{p.name}</span>
                         <span className="text-muted-foreground">·</span>
-                        <span className="text-muted-foreground">{pupilChs.map(ch => CHANNEL_META[ch].label).join(" · ")}</span>
+                        <span className="text-muted-foreground tabular-nums">{gbp(p.amount)}</span>
                       </div>
-                      <div className="pl-2.5 border-l-2 border-primary/30 text-muted-foreground italic">
-                        “{message}”
+                      <div className="space-y-1.5 pl-1">
+                        {Array.from(channels).map((ch) => {
+                          const m = CHANNEL_META[ch];
+                          const status = channelStatusFor(p, ch);
+                          if (status !== "ready") {
+                            return (
+                              <div key={ch} className="flex items-start gap-2">
+                                <span className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 shrink-0">
+                                  <X className="h-2.5 w-2.5" />
+                                  <m.Icon className="h-2.5 w-2.5" />
+                                  {m.label}
+                                </span>
+                                <span className="text-rose-700 text-[11px] pt-0.5">
+                                  Skipped — {reasonLabel(status)}
+                                </span>
+                              </div>
+                            );
+                          }
+                          const msg = buildMessage(p, ch, fromName);
+                          return (
+                            <div key={ch} className="flex items-start gap-2">
+                              <span className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 shrink-0">
+                                <Check className="h-2.5 w-2.5" />
+                                <m.Icon className="h-2.5 w-2.5" />
+                                {m.label}
+                              </span>
+                              <div className="flex-1 min-w-0 pl-1 border-l-2 border-primary/30 ml-1 px-2 text-muted-foreground italic">
+                                {msg.subject && (
+                                  <div className="not-italic font-medium text-foreground/80 text-[11px] mb-0.5">
+                                    {msg.subject}
+                                  </div>
+                                )}
+                                <div className="whitespace-pre-line">{msg.body}</div>
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   );
@@ -385,7 +461,6 @@ export function SendAllRemindersDialog({
           </div>
         )}
 
-        {/* Progress */}
         {sending && progress && (
           <div className="text-xs text-muted-foreground text-center">
             Sending… {progress.done} of {progress.total}
