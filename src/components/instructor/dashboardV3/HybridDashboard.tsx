@@ -342,6 +342,7 @@ export function HybridDashboard({ instructorId, instructorName, pupils, todaysLe
 
   const { hoursThisWeek, monthEarnings } = useInstructorLiveStats(instructorId);
   const { data: earningsData } = useDailyEarnings(instructorId);
+  const { data: stats2 } = useInstructorDashboardStats(instructorId);
 
   const owing = pupils.filter((p) => (p.account_balance ?? 0) < 0);
   const outstandingTotal = owing.reduce((sum, p) => sum + Math.abs(p.account_balance ?? 0), 0);
