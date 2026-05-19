@@ -317,7 +317,11 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug, onNavigat
             <span className="text-[15px] font-bold" style={{ color: TEXT }}>Lessons</span>
           </div>
           <div className="text-[13px] mb-2" style={{ color: MUTED }}>
-            <span style={{ color: TEXT, fontWeight: 600 }}>{lessonsTaken} hrs</span> of {totalHours} hrs taken
+            {totalHours && totalHours > 0 ? (
+              <><span style={{ color: TEXT, fontWeight: 600 }}>{lessonsTaken} hrs</span> of {totalHours} hrs taken</>
+            ) : (
+              <><span style={{ color: TEXT, fontWeight: 600 }}>{lessonsTaken} hrs</span> taken · add a plan to track progress</>
+            )}
           </div>
           <div style={{ height: 8, borderRadius: 4, background: "#EEF0F3", overflow: "hidden" }}>
             <div style={{ width: `${lessonProgressPct}%`, height: "100%", background: RED, borderRadius: 4 }} />
