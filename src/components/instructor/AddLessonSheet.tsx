@@ -1503,6 +1503,7 @@ export function AddLessonSheet({
                 <SelectItem value="cash">Cash</SelectItem>
                 <SelectItem value="card">Card</SelectItem>
                 <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
+                <SelectItem value="national_intensive">National Intensive</SelectItem>
                 <SelectItem value="send_link">Send Payment Link</SelectItem>
                 <SelectItem value="take_payment">Take Payment Now (QR)</SelectItem>
               </SelectContent>
