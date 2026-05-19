@@ -96,24 +96,37 @@ function QuickActionRow({ items }: { items: QA[] }) {
 }
 
 // ---------------- StatsRow ----------------
-type StatDef = { label: string; value: string; sub: string; pct: number; bar: string };
+type StatDef = { label: string; value: string; sub: string; pct: number; bar: string; href?: string; hasData?: boolean; extra?: string };
 function StatsRow({ stats }: { stats: StatDef[] }) {
   return (
     <div style={{ display: "grid", gridTemplateColumns: "repeat(6,1fr)", gap: 8, marginBottom: 14 }}>
-      {stats.map((s) => (
-        <div key={s.label} style={{ backgroundColor: t.white, border: `1px solid ${t.border}`, borderRadius: 10, padding: "12px 14px" }}>
-          <div style={{ fontSize: 10, fontWeight: 600, color: t.muted, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 5 }}>
-            {s.label}
+      {stats.map((s) => {
+        const inner = (
+          <div style={{ backgroundColor: t.white, border: `1px solid ${t.border}`, borderRadius: 10, padding: "12px 14px", height: "100%", cursor: s.href ? "pointer" : "default", position: "relative" }}>
+            <div style={{ fontSize: 10, fontWeight: 600, color: t.muted, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 5 }}>
+              {s.label}
+            </div>
+            <div style={{ fontSize: 22, fontWeight: 700, color: t.navy, letterSpacing: -0.5, lineHeight: 1, marginBottom: 2 }}>
+              {s.value}
+            </div>
+            <div style={{ fontSize: 10, color: t.muted, fontWeight: 300 }}>{s.sub}</div>
+            {s.extra && (
+              <div style={{ fontSize: 9, color: t.mid, fontWeight: 500, marginTop: 2 }}>{s.extra}</div>
+            )}
+            <div style={{ height: 3, borderRadius: 2, backgroundColor: t.surface, marginTop: 8, overflow: "hidden" }}>
+              <div style={{ height: "100%", borderRadius: 2, backgroundColor: s.bar, width: `${Math.min(100, Math.max(0, s.pct))}%`, transition: "width 0.4s ease" }} />
+            </div>
+            {s.href && s.hasData && (
+              <div style={{ fontSize: 10, fontWeight: 600, color: t.blue, marginTop: 6 }}>View →</div>
+            )}
           </div>
-          <div style={{ fontSize: 22, fontWeight: 700, color: t.navy, letterSpacing: -0.5, lineHeight: 1, marginBottom: 2 }}>
-            {s.value}
-          </div>
-          <div style={{ fontSize: 10, color: t.muted, fontWeight: 300 }}>{s.sub}</div>
-          <div style={{ height: 3, borderRadius: 2, backgroundColor: t.surface, marginTop: 8, overflow: "hidden" }}>
-            <div style={{ height: "100%", borderRadius: 2, backgroundColor: s.bar, width: `${Math.min(100, Math.max(0, s.pct))}%`, transition: "width 0.4s ease" }} />
-          </div>
-        </div>
-      ))}
+        );
+        return s.href ? (
+          <Link key={s.label} to={s.href} style={{ textDecoration: "none" }}>{inner}</Link>
+        ) : (
+          <div key={s.label}>{inner}</div>
+        );
+      })}
     </div>
   );
 }
@@ -434,6 +447,8 @@ export function HybridDashboard({ instructorId, instructorName, pupils, todaysLe
       sub: `${owing.length} owe money`,
       pct: pupils.length ? Math.min(100, pupils.length * 4) : 0,
       bar: t.blue,
+      href: "/instructor/pupils",
+      hasData: pupils.length > 0,
     },
     {
       label: "Payments",
@@ -441,6 +456,8 @@ export function HybridDashboard({ instructorId, instructorName, pupils, todaysLe
       sub: "This month",
       pct: monthEarnings > 0 ? 100 : 0,
       bar: t.green,
+      href: "/instructor/pay",
+      hasData: monthEarnings > 0,
     },
     {
       label: "Lessons booked",
@@ -448,6 +465,8 @@ export function HybridDashboard({ instructorId, instructorName, pupils, todaysLe
       sub: "This month",
       pct: stats2 && stats2.lessonsThisMonth > 0 ? Math.min(100, stats2.lessonsThisMonth * 2) : 0,
       bar: t.blue,
+      href: "/instructor/schedule",
+      hasData: !!stats2 && stats2.lessonsThisMonth > 0,
     },
     {
       label: "Pass rate",
@@ -457,13 +476,20 @@ export function HybridDashboard({ instructorId, instructorName, pupils, todaysLe
         : "No results yet",
       pct: stats2?.passRatePct ?? 0,
       bar: t.red,
+      href: "/instructor/test-requests",
+      hasData: !!stats2 && stats2.passRateSampleSize > 0,
     },
     {
       label: "Tests booked",
       value: stats2 ? String(stats2.testsBooked) : "—",
-      sub: "Upcoming",
+      sub: stats2 && stats2.testsBooked > 0 ? "Upcoming" : "None upcoming",
       pct: stats2 && stats2.testsBooked > 0 ? Math.min(100, stats2.testsBooked * 10) : 0,
       bar: t.amber,
+      href: "/instructor/test-requests",
+      hasData: !!stats2 && stats2.testsBooked > 0,
+      extra: stats2?.nextTestDate
+        ? `Next: ${format(new Date(stats2.nextTestDate), "EEE d MMM")}`
+        : undefined,
     },
     {
       label: "Cancelled",
@@ -471,6 +497,8 @@ export function HybridDashboard({ instructorId, instructorName, pupils, todaysLe
       sub: "This month",
       pct: stats2 && stats2.cancelledThisMonth > 0 ? Math.min(100, stats2.cancelledThisMonth * 5) : 0,
       bar: t.red,
+      href: "/instructor/schedule",
+      hasData: !!stats2 && stats2.cancelledThisMonth > 0,
     },
   ];
 

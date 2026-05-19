@@ -15,6 +15,7 @@ export interface InstructorDashboardStats {
   cpdTarget: number | null;
   invoicesUnpaid: number;
   standardsCheck: { result: string; at: string } | null;
+  nextTestDate: string | null;
 }
 
 async function fetchStats(instructorId: string): Promise<InstructorDashboardStats> {
@@ -53,10 +54,11 @@ async function fetchStats(instructorId: string): Promise<InstructorDashboardStat
       .eq("status", "cancelled"),
     supabase
       .from("test_requests")
-      .select("id", { count: "exact", head: true })
+      .select("test_date")
       .eq("instructor_id", instructorId)
       .gte("test_date", today)
-      .not("status", "in", "(cancelled,completed)"),
+      .not("status", "in", "(cancelled,completed)")
+      .order("test_date", { ascending: true }),
     supabase
       .from("driving_test_results")
       .select("result, is_mock, test_date")
@@ -113,10 +115,13 @@ async function fetchStats(instructorId: string): Promise<InstructorDashboardStat
       ? { result: instructor.standards_check_result, at: instructor.standards_check_at }
       : null;
 
+  const testRows = (testsBookedRes.data ?? []) as { test_date: string }[];
+  const nextTestDate = testRows.length > 0 ? testRows[0].test_date : null;
+
   return {
     lessonsThisMonth: lessonsBookedRes.count ?? 0,
     cancelledThisMonth: cancelledRes.count ?? 0,
-    testsBooked: testsBookedRes.count ?? 0,
+    testsBooked: testRows.length,
     passRatePct,
     passRateSampleSize: sampleSize,
     waitingListCount: waitlistRes.count ?? 0,
@@ -126,6 +131,7 @@ async function fetchStats(instructorId: string): Promise<InstructorDashboardStat
     cpdTarget: instructor?.cpd_year_target != null ? Number(instructor.cpd_year_target) : null,
     invoicesUnpaid: invoicesRes.count ?? 0,
     standardsCheck,
+    nextTestDate,
   };
 }
 
