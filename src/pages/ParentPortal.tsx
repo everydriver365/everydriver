@@ -49,6 +49,9 @@ interface Child {
   next_lesson_date: string | null;
   next_lesson_time: string | null;
   test_date: string | null;
+  test_passed: boolean | null;
+  theory_test_date: string | null;
+  theory_test_passed: boolean | null;
 }
 
 interface Activity {
@@ -148,10 +151,10 @@ export default function ParentPortal() {
   const fetchChildrenData = async (phone: string) => {
     try {
       const cleanPhone = phone.replace(/\s+/g, "");
-      const { data: pupils, error: pupilsError } = await supabase
-        .from("pupils")
-        .select("id, name, lessons_completed, progress, account_balance, prepaid_hours, test_date, instructor_id")
-        .or(`parent_phone.ilike.%${cleanPhone.slice(-9)}`);
+        const { data: pupils, error: pupilsError } = await supabase
+          .from("pupils")
+          .select("id, name, lessons_completed, progress, account_balance, prepaid_hours, test_date, test_passed, theory_test_date, theory_test_passed, instructor_id")
+          .or(`parent_phone.ilike.%${cleanPhone.slice(-9)}`);
 
       if (pupilsError) throw pupilsError;
       if (!pupils || pupils.length === 0) { setChildren([]); return; }
@@ -188,7 +191,10 @@ export default function ParentPortal() {
           account_balance: p.account_balance || 0, prepaid_hours: p.prepaid_hours || 0,
           next_lesson_date: nextLessonMap.get(p.id)?.date || null,
           next_lesson_time: nextLessonMap.get(p.id)?.time || null,
-          test_date: p.test_date
+          test_date: p.test_date,
+          test_passed: p.test_passed,
+          theory_test_date: p.theory_test_date,
+          theory_test_passed: p.theory_test_passed,
         };
       });
 
