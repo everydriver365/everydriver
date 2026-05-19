@@ -51,7 +51,9 @@ async function fetchStats(instructorId: string): Promise<InstructorDashboardStat
       .eq("instructor_id", instructorId)
       .gte("lesson_date", monthStart)
       .lte("lesson_date", monthEnd)
-      .eq("status", "cancelled"),
+      .eq("status", "cancelled")
+      .is("deleted_at", null),
+
     supabase
       .from("test_requests")
       .select("test_date")

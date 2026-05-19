@@ -38,8 +38,10 @@ async function fetchLiveStats(instructorId: string): Promise<LiveStatsData> {
     .lte("created_at", `${monthEnd}T23:59:59`);
   if (monthError) throw monthError;
 
+  // Only count actual money received — exclude negative rows (lesson charges / amounts owed)
   const monthEarnings =
-    monthPayments?.reduce((sum, p) => sum + (p.amount || 0), 0) || 0;
+    monthPayments?.reduce((sum, p) => sum + Math.max(0, p.amount || 0), 0) || 0;
+
 
   return { hoursThisWeek, lessonsThisWeek, monthEarnings };
 }
