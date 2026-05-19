@@ -965,41 +965,43 @@ export default function InstructorPupilsDesktop() {
           </div>
         </div>
 
-        {/* Slide-over panel */}
+        {/* Full-screen profile overlay */}
         <AnimatePresence>
           {openPupil && (
             <motion.div
               key="panel"
-              initial={{ x: 380, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: 380, opacity: 0 }}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 12 }}
               transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
               style={{
-                width: 360, flexShrink: 0,
+                position: "fixed",
+                inset: 0,
                 background: "#fff",
-                borderLeft: "0.5px solid var(--d2-border)",
-                boxShadow: "-4px 0 12px -8px rgba(15,23,42,0.08)",
-                marginLeft: 16, padding: 16,
-                alignSelf: "stretch",
+                zIndex: 60,
+                overflowY: "auto",
+                padding: "24px 32px",
               }}
             >
-              <PanelContent
-                pupil={openPupil}
-                tab={tab}
-                setTab={setTab}
-                onClose={() => setOpenId(null)}
-                onPrev={() => {
-                  const idx = filtered.findIndex(p => p.id === openPupil.id);
-                  const prev = filtered[Math.max(idx - 1, 0)];
-                  if (prev) setOpenId(prev.id);
-                }}
-                onNext={() => {
-                  const idx = filtered.findIndex(p => p.id === openPupil.id);
-                  const next = filtered[Math.min(idx + 1, filtered.length - 1)];
-                  if (next) setOpenId(next.id);
-                }}
-                onStatus={setStatus}
-              />
+              <div style={{ maxWidth: 960, margin: "0 auto" }}>
+                <PanelContent
+                  pupil={openPupil}
+                  tab={tab}
+                  setTab={setTab}
+                  onClose={() => setOpenId(null)}
+                  onPrev={() => {
+                    const idx = filtered.findIndex(p => p.id === openPupil.id);
+                    const prev = filtered[Math.max(idx - 1, 0)];
+                    if (prev) setOpenId(prev.id);
+                  }}
+                  onNext={() => {
+                    const idx = filtered.findIndex(p => p.id === openPupil.id);
+                    const next = filtered[Math.min(idx + 1, filtered.length - 1)];
+                    if (next) setOpenId(next.id);
+                  }}
+                  onStatus={setStatus}
+                />
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
