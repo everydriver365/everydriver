@@ -59,6 +59,14 @@ interface Props {
   children: ReactNode;
   /** Optional footer rendered under the trust strip (portal links etc.) */
   footer?: ReactNode;
+  /** Optional mobile hero header (driving-school photo + portal logo). Hidden on md+. */
+  mobileHero?: {
+    heroSrc: string;
+    logoSrc: string;
+    logoAlt: string;
+    title: string;
+    subtitle: string;
+  };
 }
 
 const TRUST_ITEMS: { Icon: LucideIcon; label: string }[] = [
