@@ -375,34 +375,32 @@ export function HybridDashboard({ instructorId, instructorName, pupils, todaysLe
     },
     {
       label: "Lessons booked",
-      // TODO: bind to a real lessons-booked-this-week / target hook when available
-      value: "—",
-      sub: "Needs data source",
-      pct: 0,
+      value: stats2 ? String(stats2.lessonsThisMonth) : "—",
+      sub: "This month",
+      pct: stats2 && stats2.lessonsThisMonth > 0 ? Math.min(100, stats2.lessonsThisMonth * 2) : 0,
       bar: t.blue,
     },
     {
       label: "Pass rate",
-      // TODO: bind to DVSA results hook
-      value: "—",
-      sub: "Needs data source",
-      pct: 0,
+      value: stats2?.passRatePct != null ? `${stats2.passRatePct}%` : "—",
+      sub: stats2 && stats2.passRateSampleSize > 0
+        ? `${stats2.passRateSampleSize} test${stats2.passRateSampleSize !== 1 ? "s" : ""} · 12 mo`
+        : "No results yet",
+      pct: stats2?.passRatePct ?? 0,
       bar: t.red,
     },
     {
       label: "Tests booked",
-      // TODO: bind to upcoming-tests hook
-      value: "—",
-      sub: "Needs data source",
-      pct: 0,
+      value: stats2 ? String(stats2.testsBooked) : "—",
+      sub: "Upcoming",
+      pct: stats2 && stats2.testsBooked > 0 ? Math.min(100, stats2.testsBooked * 10) : 0,
       bar: t.amber,
     },
     {
       label: "Cancelled",
-      // TODO: bind to cancellations hook
-      value: "—",
-      sub: "Needs data source",
-      pct: 0,
+      value: stats2 ? String(stats2.cancelledThisMonth) : "—",
+      sub: "This month",
+      pct: stats2 && stats2.cancelledThisMonth > 0 ? Math.min(100, stats2.cancelledThisMonth * 5) : 0,
       bar: t.red,
     },
   ];
@@ -411,16 +409,16 @@ export function HybridDashboard({ instructorId, instructorName, pupils, todaysLe
   const tiles: Tile[] = [
     { label: "Schedule",     Icon: Calendar,      iconBg: t.blueLight,   iconColor: t.blue,  accent: t.blue,  stat: `${todaysLessonCount} today`,           href: "/instructor/schedule" },
     { label: "Pupils",       Icon: Users,         iconBg: t.blueLight,   iconColor: t.blue,  accent: t.blue,  stat: `${pupils.length} active`,              href: "/instructor/pupils" },
-    { label: "Waiting list", Icon: ListChecks,    iconBg: t.blueLight,   iconColor: t.blue,  accent: t.blue,  stat: "—",                                    href: "/instructor/waiting-list" },
+    { label: "Waiting list", Icon: ListChecks,    iconBg: t.blueLight,   iconColor: t.blue,  accent: t.blue,  stat: stats2 ? `${stats2.waitingListCount} waiting` : "—", href: "/instructor/waiting-list" },
     { label: "Payments",     Icon: CreditCard,    iconBg: t.greenLight,  iconColor: t.green, accent: t.green, stat: `£${outstandingTotal.toFixed(0)} due`,  href: "/instructor/pay" },
-    { label: "Test swap",    Icon: Repeat2,       iconBg: t.redLight,    iconColor: t.red,   accent: t.red,   stat: "—",                                    href: "/instructor/test-requests" },
-    { label: "Progress",     Icon: TrendingUp,    iconBg: t.blueLight,   iconColor: t.blue,  accent: t.blue,  stat: "—",                                    href: "/instructor/pupils" },
-    { label: "Courses",      Icon: BookOpenCheck, iconBg: t.blueLight,   iconColor: t.blue,  accent: t.blue,  stat: "—",                                    href: "/instructor/course-planner" },
-    { label: "CPD log",      Icon: Award,         iconBg: t.blueSurface, iconColor: t.navy,  accent: t.navy,  stat: "—",                                    href: "/instructor/cpd" },
-    { label: "Invoices",     Icon: FileText,      iconBg: t.greenLight,  iconColor: t.green, accent: t.green, stat: "—",                                    href: "/instructor/pay" },
-    { label: "Find a slot",  Icon: Search,        iconBg: t.blueLight,   iconColor: t.blue,  accent: t.blue,  stat: "—",                                    href: "/instructor/find-appointment" },
-    { label: "Settings",     Icon: Settings,      iconBg: t.blueSurface, iconColor: t.navy,  accent: t.navy,  stat: "—",                                    href: "/instructor/settings" },
-    { label: "DVSA check",   Icon: ShieldCheck,   iconBg: t.amberLight,  iconColor: t.amber, accent: t.amber, stat: "—",                                    href: "/instructor/standards-check" },
+    { label: "Test swap",    Icon: Repeat2,       iconBg: t.redLight,    iconColor: t.red,   accent: t.red,   stat: stats2 ? `${stats2.testSwapOpenCount} open` : "—", href: "/instructor/test-requests" },
+    { label: "Progress",     Icon: TrendingUp,    iconBg: t.blueLight,   iconColor: t.blue,  accent: t.blue,  stat: "Open",                                 href: "/instructor/pupils" },
+    { label: "Courses",      Icon: BookOpenCheck, iconBg: t.blueLight,   iconColor: t.blue,  accent: t.blue,  stat: stats2 ? `${stats2.coursesCount} active` : "—", href: "/instructor/course-planner" },
+    { label: "CPD log",      Icon: Award,         iconBg: t.blueSurface, iconColor: t.navy,  accent: t.navy,  stat: stats2 ? (stats2.cpdTarget != null ? `${stats2.cpdThisYear} / ${stats2.cpdTarget}` : `${stats2.cpdThisYear} this year`) : "—", href: "/instructor/cpd" },
+    { label: "Invoices",     Icon: FileText,      iconBg: t.greenLight,  iconColor: t.green, accent: t.green, stat: stats2 ? `${stats2.invoicesUnpaid} unpaid` : "—", href: "/instructor/pay" },
+    { label: "Find a slot",  Icon: Search,        iconBg: t.blueLight,   iconColor: t.blue,  accent: t.blue,  stat: "Open",                                 href: "/instructor/find-appointment" },
+    { label: "Settings",     Icon: Settings,      iconBg: t.blueSurface, iconColor: t.navy,  accent: t.navy,  stat: "Open",                                 href: "/instructor/settings" },
+    { label: "DVSA check",   Icon: ShieldCheck,   iconBg: t.amberLight,  iconColor: t.amber, accent: t.amber, stat: stats2?.standardsCheck?.result ?? "—",  href: "/instructor/standards-check" },
   ];
 
   // TODO: derive hasAlert from real signals (overdue payments, expired docs, etc.)
