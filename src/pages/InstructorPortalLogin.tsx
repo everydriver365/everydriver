@@ -23,6 +23,7 @@ import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 import { SignInEnvironmentHint } from "@/components/auth/SignInEnvironmentHint";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { MobileLoginHero } from "@/components/auth/MobileLoginHero";
+import { useClearOnDeepLink } from "@/hooks/useClearOnDeepLink";
 import {
   MobilePortalLoginShell,
   darkPortalInputClass,
