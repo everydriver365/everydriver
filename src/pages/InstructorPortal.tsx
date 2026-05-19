@@ -395,7 +395,7 @@ function DesktopDashboardV2(props: DesktopDashboardV2Props) {
           open={addLessonOpen}
           onOpenChange={setAddLessonOpen}
           instructorId={instructorId}
-          onSuccess={() => setAddLessonOpen(false)}
+          onSuccess={() => { setAddLessonOpen(false); refreshDashboard(); }}
         />
 
         <AICommandCenter />
