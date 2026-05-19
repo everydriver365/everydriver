@@ -473,20 +473,22 @@ export default function ParentPortal() {
                   </div>
                 )}
 
-                {/* Test Date */}
-                {selectedChild.test_date && (
-                  <div className="rounded-2xl p-3 text-white text-xs" style={{ background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.85))' }}>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1.5">
-                        <Calendar className="h-3.5 w-3.5 text-white/80" />
-                        <span className="text-white/80">Test: {format(parseISO(selectedChild.test_date), 'd MMM yyyy')}</span>
-                      </div>
-                      <span className="font-bold text-sm">
-                        {Math.max(0, Math.ceil((new Date(selectedChild.test_date).getTime() - Date.now()) / 86400000))} days
-                      </span>
-                    </div>
-                  </div>
-                )}
+                {/* Tests */}
+                <div className="space-y-2">
+                  <h3 className="text-sm font-bold text-foreground flex items-center gap-1.5">
+                    <GraduationCap className="h-4 w-4 text-primary" /> Tests
+                  </h3>
+                  <TestStatusRow
+                    label="Theory"
+                    date={selectedChild.theory_test_date}
+                    passed={selectedChild.theory_test_passed}
+                  />
+                  <TestStatusRow
+                    label="Driving"
+                    date={selectedChild.test_date}
+                    passed={selectedChild.test_passed}
+                  />
+                </div>
 
                 {/* Chat */}
                 <div id="parent-chat-section">
