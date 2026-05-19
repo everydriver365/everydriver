@@ -2047,9 +2047,11 @@ function PlaceholderTab({ text }: { text: string }) {
 }
 
 function LessonsTab({ pupilId }: { pupilId: string }) {
-  const { data: lessons = [], isLoading } = usePupilLessonHistory(pupilId, 100);
-  const completedCount = lessons.filter(l => l.status === "completed").length;
-  const cancelledCount = lessons.filter(l => l.status === "cancelled").length;
+  const { data: lessons = [], isLoading } = usePupilLessonHistory(pupilId, 200, { includeUpcoming: true });
+  const upcoming = lessons.filter((l) => l.status === "upcoming");
+  const completed = lessons.filter((l) => l.status === "completed");
+  const cancelled = lessons.filter((l) => l.status === "cancelled");
+  const rescheduledCount = lessons.filter((l) => l.is_rescheduled).length;
 
   if (isLoading) {
     return <div style={{ fontSize: 11, color: "var(--d2-text-3)", padding: "16px 0" }}>Loading lessons…</div>;
@@ -2057,69 +2059,108 @@ function LessonsTab({ pupilId }: { pupilId: string }) {
   if (lessons.length === 0) {
     return <div style={{ fontSize: 11, color: "var(--d2-text-3)", padding: "16px 0" }}>No lessons recorded yet.</div>;
   }
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 8, paddingTop: 4 }}>
-      <div style={{ fontSize: 10, color: "var(--d2-text-3)", textTransform: "uppercase", letterSpacing: "0.4px", fontWeight: 500 }}>
-        {completedCount} completed · {cancelledCount} cancelled
-      </div>
-      <ul style={{ display: "flex", flexDirection: "column", gap: 0, margin: 0, padding: 0, listStyle: "none" }}>
-        {lessons.map((l) => {
-          const dateLabel = new Date(l.lesson_date).toLocaleDateString("en-GB", {
-            weekday: "short", day: "numeric", month: "short", year: "numeric",
-          });
-          const isCancelled = l.status === "cancelled";
-          return (
-            <li
-              key={`${l.status}-${l.id}`}
-              style={{
-                padding: "10px 0",
-                borderBottom: "0.5px solid var(--d2-border)",
-                display: "flex", alignItems: "flex-start", gap: 8,
-              }}
-            >
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-                  <span style={{ fontSize: 12, fontWeight: 500, color: "var(--d2-text-1)" }}>{dateLabel}</span>
-                  {l.start_time && (
-                    <span style={{ fontSize: 11, color: "var(--d2-text-3)" }}>{l.start_time.slice(0, 5)}</span>
-                  )}
-                  <span style={{ fontSize: 11, color: "var(--d2-text-3)" }}>· {l.duration_minutes} min</span>
-                  {isCancelled && (
-                    <span style={{
-                      fontSize: 9, textTransform: "uppercase", letterSpacing: "0.4px",
-                      padding: "2px 6px", borderRadius: 4,
-                      background: "#FEE2E2", color: "#B91C1C", fontWeight: 600,
-                    }}>Cancelled</span>
-                  )}
-                </div>
-                {isCancelled ? (
-                  (l.cancellation_reason || l.cancellation_note) && (
-                    <div style={{ fontSize: 11, color: "var(--d2-text-3)", marginTop: 2 }}>
-                      {l.cancellation_reason}{l.cancellation_note ? ` — ${l.cancellation_note}` : ""}
-                    </div>
-                  )
-                ) : (
-                  <>
-                    {l.skills_practiced.length > 0 && (
-                      <div style={{ fontSize: 11, color: "var(--d2-text-3)", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        {l.skills_practiced.join(", ")}
-                      </div>
-                    )}
-                    {l.notes && (
-                      <div style={{ fontSize: 11, color: "var(--d2-text-2)", marginTop: 4, lineHeight: 1.4 }}>
-                        {l.notes}
-                      </div>
-                    )}
-                  </>
-                )}
+
+  const renderRow = (l: typeof lessons[number]) => {
+    const dateLabel = new Date(l.lesson_date).toLocaleDateString("en-GB", {
+      weekday: "short", day: "numeric", month: "short", year: "numeric",
+    });
+    const isCancelled = l.status === "cancelled";
+    const isUpcoming = l.status === "upcoming";
+    return (
+      <li
+        key={`${l.status}-${l.id}`}
+        style={{
+          padding: "10px 0",
+          borderBottom: "0.5px solid var(--d2-border)",
+          display: "flex", alignItems: "flex-start", gap: 8,
+        }}
+      >
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+            <span style={{ fontSize: 12, fontWeight: 500, color: "var(--d2-text-1)" }}>{dateLabel}</span>
+            {l.start_time && (
+              <span style={{ fontSize: 11, color: "var(--d2-text-3)" }}>{l.start_time.slice(0, 5)}</span>
+            )}
+            <span style={{ fontSize: 11, color: "var(--d2-text-3)" }}>· {l.duration_minutes} min</span>
+            {isUpcoming && (
+              <span style={{
+                fontSize: 9, textTransform: "uppercase", letterSpacing: "0.4px",
+                padding: "2px 6px", borderRadius: 4,
+                background: "#DBEAFE", color: "#1D4ED8", fontWeight: 600,
+              }}>Scheduled</span>
+            )}
+            {isCancelled && (
+              <span style={{
+                fontSize: 9, textTransform: "uppercase", letterSpacing: "0.4px",
+                padding: "2px 6px", borderRadius: 4,
+                background: "#FEE2E2", color: "#B91C1C", fontWeight: 600,
+              }}>Cancelled</span>
+            )}
+            {l.is_rescheduled && (
+              <span style={{
+                fontSize: 9, textTransform: "uppercase", letterSpacing: "0.4px",
+                padding: "2px 6px", borderRadius: 4,
+                background: "#FEF3C7", color: "#92400E", fontWeight: 600,
+              }}>Rescheduled</span>
+            )}
+          </div>
+          {isCancelled ? (
+            (l.cancellation_reason || l.cancellation_note) && (
+              <div style={{ fontSize: 11, color: "var(--d2-text-3)", marginTop: 2 }}>
+                {l.cancellation_reason}{l.cancellation_note ? ` — ${l.cancellation_note}` : ""}
               </div>
-              {l.rating != null && !isCancelled && (
-                <span style={{ fontSize: 11, fontWeight: 600, color: "#D97706" }}>{l.rating}/5</span>
+            )
+          ) : isUpcoming ? (
+            l.pickup_location && (
+              <div style={{ fontSize: 11, color: "var(--d2-text-3)", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                Pickup: {l.pickup_location}
+              </div>
+            )
+          ) : (
+            <>
+              {l.skills_practiced.length > 0 && (
+                <div style={{ fontSize: 11, color: "var(--d2-text-3)", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {l.skills_practiced.join(", ")}
+                </div>
               )}
-            </li>
-          );
-        })}
-      </ul>
+              {l.notes && (
+                <div style={{ fontSize: 11, color: "var(--d2-text-2)", marginTop: 4, lineHeight: 1.4 }}>
+                  {l.notes}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+        {l.rating != null && !isCancelled && !isUpcoming && (
+          <span style={{ fontSize: 11, fontWeight: 600, color: "#D97706" }}>{l.rating}/5</span>
+        )}
+      </li>
+    );
+  };
+
+  const Section = ({ title, items }: { title: string; items: typeof lessons }) => {
+    if (items.length === 0) return null;
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+        <div style={{ fontSize: 10, color: "var(--d2-text-3)", textTransform: "uppercase", letterSpacing: "0.4px", fontWeight: 600, padding: "8px 0 4px" }}>
+          {title} · {items.length}
+        </div>
+        <ul style={{ display: "flex", flexDirection: "column", gap: 0, margin: 0, padding: 0, listStyle: "none" }}>
+          {items.map(renderRow)}
+        </ul>
+      </div>
+    );
+  };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 4, paddingTop: 4 }}>
+      <div style={{ fontSize: 10, color: "var(--d2-text-3)", textTransform: "uppercase", letterSpacing: "0.4px", fontWeight: 500 }}>
+        {upcoming.length} upcoming · {completed.length} completed · {cancelled.length} cancelled{rescheduledCount > 0 ? ` · ${rescheduledCount} rescheduled` : ""}
+      </div>
+      <Section title="Upcoming" items={upcoming} />
+      <Section title="Past lessons" items={completed} />
+      <Section title="Cancelled" items={cancelled} />
     </div>
   );
 }
+
