@@ -24,6 +24,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Pencil, Trash2, Upload, Archive } from "lucide-react";
 import { buildPupilUpdatePayload } from "./pupilEditPayload";
+import { PUPIL_SOURCE_OPTIONS } from "@/components/instructor/pupils/AddPupilSheet";
 import { AddPupilSheet } from "@/components/instructor/pupils/AddPupilSheet";
 import { ImportPupilsCsvDialog } from "@/components/instructor/pupils/ImportPupilsCsvDialog";
 import { ArchivedPupilsDialog } from "@/components/instructor/pupils/ArchivedPupilsDialog";
