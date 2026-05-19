@@ -166,9 +166,36 @@ export function PupilPaymentsManager({
     } finally { setSaving(false); }
   };
 
-  const paymentLink = () => {
-    const base = `${window.location.origin}/pay/${instructorId}?pupil=${pupilId}`;
-    return outstanding > 0 ? `${base}&amount=${outstanding.toFixed(2)}` : base;
+  // Generate a real Square hosted checkout link when there's an outstanding balance,
+  // otherwise fall back to the generic instructor pay page (same logic as TakePaymentModal).
+  const buildPaymentLink = async (): Promise<string> => {
+    const fallback = `${window.location.origin}/pay/${instructorId}?pupil=${pupilId}`;
+    if (!(outstanding > 0)) return fallback;
+    try {
+      const orderRef = `PR-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+      const { data, error } = await supabase.functions.invoke("square-checkout", {
+        body: {
+          amount: outstanding,
+          orderReference: orderRef,
+          customerEmail: pupilEmail || undefined,
+          customerPhone: pupilPhone || undefined,
+          customerName: pupilName,
+          description: `Payment Request from ${instructorName}`,
+          returnUrl: `https://drive365.co.uk/pay/${instructorId}?success=true`,
+          cancelUrl: `https://drive365.co.uk/pay/${instructorId}?cancelled=true`,
+          instructorId,
+          pupilId,
+        },
+      });
+      if (error || !data?.checkoutUrl) {
+        throw new Error(data?.error || error?.message || "Failed to generate payment link");
+      }
+      return data.checkoutUrl as string;
+    } catch (e: any) {
+      console.error("square-checkout failed, falling back to generic link", e);
+      toast.error(e?.message || "Could not create Square link, using generic link");
+      return fallback;
+    }
   };
 
   const sendVia = async (
@@ -180,8 +207,8 @@ export function PupilPaymentsManager({
     if ((channel === "sms" || channel === "whatsapp") && !pupilPhone) { toast.error("No phone on file"); return; }
     setSending(key);
     try {
+      const link = await buildPaymentLink();
       if (channel === "whatsapp") {
-        const link = paymentLink();
         const msg = kind === "reminder"
           ? `Hi ${pupilName}, you have an outstanding balance of £${outstanding.toFixed(2)} for lessons with ${instructorName}. Pay here: ${link}`
           : `Hi ${pupilName}, here's your payment link from ${instructorName}: ${link}`;
@@ -197,7 +224,7 @@ export function PupilPaymentsManager({
             instructorName,
             pupilIds: [pupilId],
             method: channel,
-            ...(kind === "link" ? { paymentLink: paymentLink() } : {}),
+            paymentLink: link,
           },
         });
         if (error) throw error;
@@ -209,6 +236,16 @@ export function PupilPaymentsManager({
     } catch (e: any) {
       console.error(e); toast.error(e?.message || "Send failed");
     } finally { setSending(null); }
+  };
+
+  const copyLink = async () => {
+    try {
+      const link = await buildPaymentLink();
+      await navigator.clipboard.writeText(link);
+      toast.success(outstanding > 0 ? `Square link copied (£${outstanding.toFixed(2)})` : "Link copied");
+    } catch (e: any) {
+      toast.error(e?.message || "Could not copy link");
+    }
   };
 
   const ChannelMenu = ({ kind }: { kind: "reminder" | "link" }) => (
@@ -256,8 +293,7 @@ export function PupilPaymentsManager({
           </DropdownMenuTrigger>
           <ChannelMenu kind="link" />
         </DropdownMenu>
-        <Button size="sm" variant="ghost" className="gap-1.5 ml-auto"
-          onClick={() => { navigator.clipboard.writeText(paymentLink()); toast.success("Link copied"); }}>
+        <Button size="sm" variant="ghost" className="gap-1.5 ml-auto" onClick={copyLink}>
           <Link2 className="h-4 w-4" /> Copy link
         </Button>
       </div>
