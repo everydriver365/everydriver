@@ -189,19 +189,14 @@ export default function PupilLogin() {
         localStorage.setItem("pupil_remembered_email", loginEmail);
       }
 
-      if (rememberMe) {
-        try {
-          await saveBiometricCredentials("pupil", loginEmail, loginPassword);
-        } catch {
-          // Continue — biometric save is best-effort
-        }
-      } else {
-        // User opted out of remember me — make sure no stale credentials linger.
-        try {
-          await clearBiometricCredentials("pupil");
-        } catch {
-          // ignore
-        }
+      // Always arm Face ID after a successful password sign-in so the next
+      // visit can use biometrics. Remember me only controls session persistence
+      // (handled by persistRememberMe above), not whether Face ID is enabled.
+      try {
+        await saveBiometricCredentials("pupil", loginEmail, loginPassword);
+        setFaceIdAvailable(true);
+      } catch {
+        // Best-effort — biometric save failure shouldn't block the login.
       }
 
       const firstName = data.pupilName?.split(" ")[0] || "";
