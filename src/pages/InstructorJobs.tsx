@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { AnimatePresence } from "framer-motion";
 import { Briefcase } from "lucide-react";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
@@ -9,6 +9,11 @@ import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { useInstructorProfile } from "@/hooks/useInstructorProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import {
+  computeJobCompatibility,
+  type CompatibilityResult,
+  type WorkingHourRow,
+} from "@/lib/jobOfferCompatibility";
 
 interface JobEnquiry {
   id: string;
@@ -27,12 +32,14 @@ export default function InstructorJobs() {
   const { instructor: authInstructor } = useInstructorAuth();
   const instructorId = authInstructor?.id;
   const { profile } = useInstructorProfile(instructorId || "");
-  
+
   const [jobs, setJobs] = useState<JobEnquiry[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedJob, setSelectedJob] = useState<JobEnquiry | null>(null);
   const [processing, setProcessing] = useState(false);
   const [jobDistances, setJobDistances] = useState<Record<string, number | null>>({});
+  const [radiusMi, setRadiusMi] = useState<number | null>(null);
+  const [workingHours, setWorkingHours] = useState<WorkingHourRow[]>([]);
 
   // Calculate distance between two coordinates using Haversine formula
   const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
