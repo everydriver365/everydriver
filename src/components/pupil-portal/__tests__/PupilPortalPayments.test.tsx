@@ -3,10 +3,14 @@ import { render, screen, waitFor } from "@testing-library/react";
 import { createSupabaseMock } from "@/test/supabaseMock";
 
 const mock = createSupabaseMock();
+(globalThis as any).__sb = mock.supabase;
 
-vi.mock("@/integrations/supabase/client", () => ({ supabase: mock.supabase }));
+vi.mock("@/integrations/supabase/client", () => ({
+  get supabase() {
+    return (globalThis as any).__sb;
+  },
+}));
 
-// Heavy children we don't need for data-wiring assertions
 vi.mock("@/components/pupil-portal/PupilPaymentModal", () => ({
   PupilPaymentModal: () => null,
 }));
@@ -41,7 +45,6 @@ describe("PupilPortalPayments — live payment data wiring", () => {
         payment_method: "bank",
         notes: "Block of 1.5 hours",
       },
-      // Different instructor — must not leak
       {
         id: "p3",
         pupil_id: "pupil-1",
@@ -66,7 +69,6 @@ describe("PupilPortalPayments — live payment data wiring", () => {
       />,
     );
 
-    // Real DB-sourced amounts and descriptions
     await waitFor(() =>
       expect(screen.getByText("Lesson on 10th May")).toBeInTheDocument(),
     );
@@ -74,14 +76,13 @@ describe("PupilPortalPayments — live payment data wiring", () => {
     expect(screen.getByText("£50.00")).toBeInTheDocument();
     expect(screen.getByText("£75.50")).toBeInTheDocument();
 
-    // Real account balance from prop appears in the hero
+    // Real account balance from prop appears
     expect(screen.getByText(/123\.45/)).toBeInTheDocument();
 
     // Cross-instructor row must not leak
     expect(screen.queryByText("Should not appear")).not.toBeInTheDocument();
     expect(screen.queryByText("£999.00")).not.toBeInTheDocument();
 
-    // Confirm the actual Supabase call targeted the right table & filters
     const phCall = mock.calls.find((c) => c.table === "payment_history");
     expect(phCall).toBeDefined();
     expect(phCall!.filters).toMatchObject({
