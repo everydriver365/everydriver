@@ -79,6 +79,7 @@ import { useInstructorMembership } from "@/hooks/useInstructorMembership";
 import { useDayLessons } from "@/hooks/useDayLessons";
 import { useInstructorPaymentsData } from "@/hooks/useInstructorPaymentsData";
 import { DsmLogo } from "@/components/instructor/ui/DsmLogo";
+import { UpNextExpanded } from "@/components/instructor/UpNextExpanded";
 
 /* ---------------------------- Design tokens ----------------------------- */
 const T = {
