@@ -792,6 +792,9 @@ function NeedsAttentionCard({
   attention, stats, navigate,
 }: { attention: any; stats: any; navigate: ReturnType<typeof useNavigate> }) {
   const [urgentOpen, setUrgentOpen] = useState(attention.urgentCount > 0);
+  const [msgsOpen, setMsgsOpen] = useState(false);
+  const [callsOpen, setCallsOpen] = useState(false);
+  const [enquiriesOpen, setEnquiriesOpen] = useState(false);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
