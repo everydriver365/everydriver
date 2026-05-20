@@ -22,7 +22,11 @@ import {
   validateSlot,
   toMinutes,
   describeReason,
+  mergeIntervals,
+  londonDow,
+  londonTodayStr,
 } from "../_shared/availabilityEngine.ts";  // Deno copy — identical logic
+
 import { syncLessonNow } from "../_shared/googleCalendarSync.ts";
 
 const CORS = {
