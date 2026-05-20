@@ -541,11 +541,12 @@ function HeroButton({
 
 /* ============================ NextLesson card =========================== */
 function NextLessonCard({
-  lesson, expanded, onToggle,
+  lesson, expanded, onToggle, instructorId,
 }: {
   lesson: ReturnType<typeof useNextLessonDetails>["data"];
   expanded: boolean;
   onToggle: () => void;
+  instructorId: string;
 }) {
   if (!lesson) {
     return (
@@ -573,106 +574,121 @@ function NextLessonCard({
   const phone = lesson.pupilPhone || "";
 
   return (
-    <button
-      type="button"
-      onClick={onToggle}
+    <div
       style={{
-        textAlign: "left",
-        width: "100%",
         backgroundColor: T.white,
         borderRadius: 14,
-        padding: 13,
         border: 0,
         boxShadow: "0 2px 12px rgba(0,0,0,0.10)",
-        cursor: "pointer",
+        overflow: "hidden",
       }}
     >
       <div
-        style={{
-          fontSize: 9, fontWeight: 700, color: T.textMuted,
-          letterSpacing: 0.8, textTransform: "uppercase", marginBottom: 6, fontFamily: FONT,
-        }}
+        role="button"
+        tabIndex={0}
+        onClick={onToggle}
+        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onToggle(); } }}
+        style={{ textAlign: "left", padding: 13, cursor: "pointer" }}
       >
-        Next lesson · {dateStr}
-      </div>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div style={{ minWidth: 0, flex: 1 }}>
-          <div
-            style={{
-              fontSize: 26, fontWeight: 800, color: T.navy,
-              letterSpacing: -1, lineHeight: "28px", fontFamily: FONT,
-            }}
-          >
-            {fmtTime(lesson.startTime)}
+        <div
+          style={{
+            fontSize: 9, fontWeight: 700, color: T.textMuted,
+            letterSpacing: 0.8, textTransform: "uppercase", marginBottom: 6, fontFamily: FONT,
+          }}
+        >
+          Next lesson · {dateStr}
+        </div>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <div
+              style={{
+                fontSize: 26, fontWeight: 800, color: T.navy,
+                letterSpacing: -1, lineHeight: "28px", fontFamily: FONT,
+              }}
+            >
+              {fmtTime(lesson.startTime)}
+            </div>
+            <div
+              style={{
+                fontSize: 14, fontWeight: 700, color: T.navy,
+                marginTop: 3, fontFamily: FONT,
+              }}
+            >
+              {lesson.pupilName}
+            </div>
+            <div style={{ fontSize: 11, color: T.textMuted, marginTop: 1, fontFamily: FONT }}>
+              {durationHours}h · {lesson.pickupPostcode || ""}
+            </div>
           </div>
-          <div
-            style={{
-              fontSize: 14, fontWeight: 700, color: T.navy,
-              marginTop: 3, fontFamily: FONT,
-            }}
-          >
-            {lesson.pupilName}
-          </div>
-          <div style={{ fontSize: 11, color: T.textMuted, marginTop: 1, fontFamily: FONT }}>
-            {durationHours}h · {lesson.pickupPostcode || ""}
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8 }}>
+            <PupilAvatar initials={initialsOf(lesson.pupilName)} />
+            <ChevronDown
+              size={16}
+              color={T.textLight}
+              strokeWidth={2.5}
+              style={{
+                transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
+                transition: "transform .2s",
+              }}
+            />
           </div>
         </div>
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8 }}>
-          <PupilAvatar initials={initialsOf(lesson.pupilName)} />
-          <ChevronDown
-            size={16}
-            color={T.textLight}
-            strokeWidth={2.5}
-            style={{
-              transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
-              transition: "transform .2s",
+
+        {/* Quick actions always visible — Call / Text / Go */}
+        <div style={{ display: "flex", gap: 6, marginTop: 10 }}>
+          <ActionBtn
+            label="Call"
+            Icon={Phone}
+            bg={T.red}
+            fg={T.white}
+            onClick={(e) => { e.stopPropagation(); if (phone) window.location.href = `tel:${phone}`; }}
+          />
+          <ActionBtn
+            label="Text"
+            Icon={MessageSquare}
+            bg={T.surface}
+            fg={T.textMid}
+            onClick={(e) => { e.stopPropagation(); if (phone) window.location.href = `sms:${phone}`; }}
+          />
+          <ActionBtn
+            label="Go"
+            Icon={NavIcon}
+            bg={T.surface}
+            fg={T.textMid}
+            onClick={(e) => {
+              e.stopPropagation();
+              const q = encodeURIComponent(address);
+              window.open(`https://www.google.com/maps/dir/?api=1&destination=${q}`, "_blank");
             }}
           />
         </div>
       </div>
 
-      {expanded ? (
-        <div style={{ marginTop: 8 }}>
-          <Row icon={<CalendarIcon size={14} color={T.textMuted} strokeWidth={1.7} />}>
-            <span style={{ fontWeight: 600, color: T.navy }}>{dateStr}</span>
-            {" · "}{durationHours}h
-          </Row>
-          <Row
-            icon={<MapPin size={14} color={T.textMuted} strokeWidth={1.7} style={{ marginTop: 1 }} />}
-            align="start"
-          >
-            {address}
-          </Row>
-          <div style={{ display: "flex", gap: 6, marginTop: 6 }}>
-            <ActionBtn
-              label="Call"
-              Icon={Phone}
-              bg={T.red}
-              fg={T.white}
-              onClick={(e) => { e.stopPropagation(); if (phone) window.location.href = `tel:${phone}`; }}
-            />
-            <ActionBtn
-              label="Text"
-              Icon={MessageSquare}
-              bg={T.surface}
-              fg={T.textMid}
-              onClick={(e) => { e.stopPropagation(); if (phone) window.location.href = `sms:${phone}`; }}
-            />
-            <ActionBtn
-              label="Go"
-              Icon={NavIcon}
-              bg={T.surface}
-              fg={T.textMid}
-              onClick={(e) => {
-                e.stopPropagation();
-                const q = encodeURIComponent(address);
-                window.open(`https://www.google.com/maps/dir/?api=1&destination=${q}`, "_blank");
-              }}
-            />
-          </div>
+      {/* Full expanded section — restores ETA, weather, OBD alerts,
+          On-my-way / Arrived / Reschedule / Cancel / lesson history, etc. */}
+      {expanded && (
+        <div onClick={(e) => e.stopPropagation()}>
+          <UpNextExpanded
+            lessonId={lesson.lessonId}
+            pupilId={lesson.pupilId}
+            pupilName={lesson.pupilName}
+            pupilPhone={lesson.pupilPhone}
+            pickupLocation={lesson.pickupLocation}
+            pickupPostcode={lesson.pickupPostcode}
+            pickupWhat3words={(lesson as any).pickupWhat3words}
+            pickupNotes={(lesson as any).pickupNotes}
+            startTime={lesson.startTime}
+            durationMinutes={lesson.durationMinutes}
+            accountBalance={(lesson as any).accountBalance ?? 0}
+            prepaidHours={(lesson as any).prepaidHours ?? 0}
+            checkInStatus={(lesson as any).checkInStatus ?? null}
+            lessonStatus={(lesson as any).lessonStatus ?? null}
+            lastLessonPlan={(lesson as any).lastLessonPlan ?? null}
+            instructorId={instructorId}
+          />
         </div>
-      ) : null}
-    </button>
+      )}
+    </div>
   );
 }
 
