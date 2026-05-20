@@ -672,22 +672,24 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
             {/* iOS Install Banner */}
             <IOSInstallBanner />
 
-            {/* Mobile Header — iOS Blue Gradient */}
-            <MobileBlueHeader
-              instructorId={instructor?.id}
-              firstName={firstName}
-              profileImageUrl={instructor?.profile_image_url}
-              isOnline={instructor?.is_active ?? true}
-              showBackButton={showBackButton}
-              showGreeting={!showBackButton}
-              surface={isHomePage ? "white" : "page"}
-              isHomePage={isHomePage}
-              pageTitle={mobilePageTitle}
-              onBack={() => navigate(-1)}
-              onSOS={() => setShowSOS(true)}
-              onPlus={() => setHeaderQuickActionsOpen(true)}
-              onMenu={() => setIsMobileMenuOpen(true)}
-            />
+            {/* Mobile Header — iOS Blue Gradient (hidden on home; DSM2026 hero replaces it) */}
+            {!isHomePage && (
+              <MobileBlueHeader
+                instructorId={instructor?.id}
+                firstName={firstName}
+                profileImageUrl={instructor?.profile_image_url}
+                isOnline={instructor?.is_active ?? true}
+                showBackButton={showBackButton}
+                showGreeting={!showBackButton}
+                surface={isHomePage ? "white" : "page"}
+                isHomePage={isHomePage}
+                pageTitle={mobilePageTitle}
+                onBack={() => navigate(-1)}
+                onSOS={() => setShowSOS(true)}
+                onPlus={() => setHeaderQuickActionsOpen(true)}
+                onMenu={() => setIsMobileMenuOpen(true)}
+              />
+            )}
 
             {/* Hidden mobile menu Sheet (controlled via header) */}
             <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
