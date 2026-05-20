@@ -21,6 +21,7 @@ const CourseImageOptimizer = lazy(() => import("@/pages/admin/CourseImageOptimiz
 const AdminInstructorVerifications = lazy(() => import("@/pages/admin/AdminInstructorVerifications"));
 const AvailabilitySyncHealth = lazy(() => import("@/pages/admin/AvailabilitySyncHealth"));
 const AvailabilityTester = lazy(() => import("@/pages/admin/AvailabilityTester"));
+const SlotDebugger = lazy(() => import("@/pages/admin/SlotDebugger"));
 
 export const adminRoutes = (
   <>
@@ -112,6 +113,10 @@ export const adminRoutes = (
     <Route
       path="/admin/availability-tester"
       element={<ProtectedAdminRoute><AvailabilityTester /></ProtectedAdminRoute>}
+    />
+    <Route
+      path="/admin/slot-debugger"
+      element={<ProtectedAdminRoute><SlotDebugger /></ProtectedAdminRoute>}
     />
   </>
 );
