@@ -91,7 +91,7 @@ function pupilTileStyle(opts: {
   hasCredit: boolean;
   status: string | undefined;
 }) {
-  if (opts.hasDebt) return CATEGORY_STYLES.course;     // red tint
+  // Debt no longer drives tile colour — overdue is already signalled by the red OVERDUE pill.
   if (opts.hasCredit) return CATEGORY_STYLES.holiday;  // green tint
   if (opts.status === "on_hold") return CATEGORY_STYLES.admin; // amber
   if (opts.status === "inactive") return CATEGORY_STYLES.task; // grey
