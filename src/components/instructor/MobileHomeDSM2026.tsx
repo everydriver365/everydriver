@@ -63,6 +63,8 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { format, addDays, getWeek, isSameDay, parse, parseISO } from "date-fns";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { useNextLessonDetails } from "@/hooks/useNextLessonDetails";
