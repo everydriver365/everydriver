@@ -1920,6 +1920,8 @@ function QATile({
   item, active, onPress,
 }: { item: QAItem; active: boolean; onPress: () => void; size?: "grid" | "scroll" }) {
   const Icon = item.Icon;
+  const DSM_BLUE = "#3D55A1";
+  const DSM_TINT = "#EDF2FE";
   return (
     <button
       type="button"
@@ -1927,32 +1929,47 @@ function QATile({
       style={{
         width: "100%",
         height: 80,
-        padding: "0 18px",
-        backgroundColor: active ? T.navy : T.white,
-        border: 0,
-        boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
+        padding: "0 14px",
+        backgroundColor: active ? DSM_BLUE : T.white,
+        border: active ? 0 : `1px solid ${DSM_TINT}`,
+        borderLeft: active ? 0 : `3px solid ${DSM_BLUE}`,
+        boxShadow: active
+          ? "0 2px 8px rgba(61,85,161,0.28)"
+          : "0 1px 3px rgba(61,85,161,0.08)",
         borderRadius: 12,
         cursor: "pointer",
         display: "flex",
         flexDirection: "row",
         alignItems: "center",
-        gap: 16,
+        gap: 12,
         textAlign: "left",
       }}
     >
-      <Icon
-        size={24}
-        color={active ? T.white : T.navy}
-        strokeWidth={1.8}
-        style={{ flexShrink: 0 }}
-      />
+      <div
+        style={{
+          width: 38,
+          height: 38,
+          borderRadius: 10,
+          backgroundColor: active ? "rgba(255,255,255,0.18)" : DSM_TINT,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+        }}
+      >
+        <Icon
+          size={20}
+          color={active ? T.white : DSM_BLUE}
+          strokeWidth={1.9}
+        />
+      </div>
       <span
         style={{
-          fontSize: 14,
+          fontSize: 13,
           fontWeight: 700,
           color: active ? T.white : T.navy,
           fontFamily: FONT,
-          lineHeight: "18px",
+          lineHeight: "16px",
           overflow: "hidden",
           textOverflow: "ellipsis",
           whiteSpace: "nowrap",
@@ -1963,6 +1980,7 @@ function QATile({
     </button>
   );
 }
+
 
 
 /* ============================ Upcoming events =========================== */
