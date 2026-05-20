@@ -121,7 +121,7 @@ export default function AvailabilityTester() {
       (w) => startMin >= w.start && startMin + duration <= w.end,
     );
     if (!win) {
-      return { ok: false as const, reason: "outside_window" as const };
+      return { ok: false, reason: "outside_window", cause: undefined } as ReturnType<typeof validateSlot>;
     }
 
     const conflicts = buildDayConflicts(
