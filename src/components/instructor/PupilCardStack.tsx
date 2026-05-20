@@ -743,8 +743,8 @@ export function PupilCardStack({
         transition={{ duration: 0.18, ease: [0.4, 0, 0.2, 1] }}
         style={{
           backgroundColor: tileStyle.bg,
-          border: "0.5px solid rgba(0,0,0,0.06)",
-          borderRadius: 12,
+          border: "0.5px solid #E5E5EA",
+          borderRadius: 10,
           overflow: "hidden",
           position: "relative",
           boxShadow: priority
@@ -752,18 +752,7 @@ export function PupilCardStack({
             : "0 1px 2px rgba(0,0,0,0.03)",
         }}
       >
-        {/* Left accent hairline (schedule-tile style) */}
-        <span
-          aria-hidden="true"
-          style={{
-            position: "absolute",
-            top: 0,
-            bottom: 0,
-            left: 0,
-            width: 3,
-            background: tileStyle.border,
-          }}
-        />
+
         {/* Collapsed Card — DSM mobile reskin */}
         <motion.button
           onClick={handleCardClick}
