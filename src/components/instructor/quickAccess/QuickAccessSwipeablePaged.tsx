@@ -1,8 +1,6 @@
 import { useMemo, useRef, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
 import { LucideIcon, Search as SearchIcon } from "lucide-react";
-import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import {
   QUICK_ACCESS_TILES,
   QUICK_ACCESS_TILES_BY_ID,
@@ -33,8 +31,6 @@ interface TileMeta {
 
 export function QuickAccessSwipeablePaged({ instructorId }: Props) {
   const navigate = useNavigate();
-  const { subscription } = useInstructorAuth();
-  const features = subscription?.features || [];
 
   const { data: todayLessons } = useTodayRemainingLessons(instructorId);
   const { data: activePupils } = useActivePupilsCount(instructorId);
@@ -119,16 +115,7 @@ export function QuickAccessSwipeablePaged({ instructorId }: Props) {
     }
   };
 
-  const isLocked = (tile: QuickAccessTile) =>
-    tile.requiredFeature ? !features.includes(tile.requiredFeature) : false;
-
   const onTilePress = (tile: QuickAccessTile) => {
-    if (isLocked(tile)) {
-      toast.info(`${tile.title} requires a plan upgrade`, {
-        action: { label: "View plans", onClick: () => navigate("/instructor/plans") },
-      });
-      return;
-    }
     navigate(tile.route);
   };
 
@@ -193,7 +180,7 @@ export function QuickAccessSwipeablePaged({ instructorId }: Props) {
         label={tile.title}
         subtitle={m.subtitle}
         isPrimary={isPrimary}
-        locked={isLocked(tile)}
+        locked={false}
         onPress={() => onTilePress(tile)}
       />
     );
