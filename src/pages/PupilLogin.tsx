@@ -29,6 +29,7 @@ import { setRememberMe as persistRememberMe } from "@/lib/sessionPersistence";
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 import { cn } from "@/lib/utils";
 import drive365Logo from "@/assets/drive365-logo.png";
+import drive365LogoWhite from "@/assets/drive365-logo-white.png";
 import pupilHero from "@/assets/drive365-hero-learner.webp";
 import { MobileLoginHero } from "@/components/auth/MobileLoginHero";
 import {
@@ -498,7 +499,7 @@ export default function PupilLogin() {
         />
 
         <div className="relative z-10">
-          <DSMLogo size="lg" />
+          <img src={drive365LogoWhite} alt="Drive365" className="h-9 object-contain" />
           <p className="text-[11px] font-light mt-[7px] tracking-[0.04em]" style={{ color: "rgba(255,255,255,0.35)" }}>
             Pupil portal · Drive365
           </p>
@@ -559,7 +560,7 @@ export default function PupilLogin() {
           className="w-full max-w-[390px]"
         >
           <div className="hidden md:block">
-            <DSMLogo size="sm" />
+            <img src={drive365Logo} alt="Drive365" className="h-7 object-contain" />
             <div className="h-7" />
 
             <h2 className="text-[22px] font-bold text-[#0F2044] tracking-[-0.4px] mb-[5px]">
