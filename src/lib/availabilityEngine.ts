@@ -16,10 +16,12 @@
 //      event in the same transaction, so the calendar IS the lesson record.
 //   6. Buffer = instructor.buffer_minutes. No hidden travel padding.
 //      TRAVEL_FALLBACK_MIN = 0 everywhere — server and browser.
+//   7. ONE clock: Europe/London. Every "today"/"now" decision goes through
+//      toLondonParts(). Never getUTCHours(), never new Date().getHours().
+//   8. No invented availability. Missing/unparseable input → "not available".
 //
-// The Deno edge-function copy (availabilityEngine.deno.ts) imports nothing from
-// Node/browser globals. It must stay byte-for-byte logically identical to this
-// file. If you change a rule here, change it there too.
+// The Deno edge-function copy (supabase/functions/_shared/availabilityEngine.ts)
+// must stay byte-for-byte logically identical to this file.
 // =============================================================================
 
 export const STEP_MINUTES = 15;
@@ -60,7 +62,7 @@ export interface RejectedSlot extends Slot {
 }
 
 export interface EngineInput {
-  /** yyyy-MM-dd */
+  /** yyyy-MM-dd (Europe/London calendar date) */
   dateStr: string;
   dayStartMin: number;
   dayEndMin: number;
@@ -82,9 +84,33 @@ export interface EngineResult {
 // Pure helpers (exported — reused by wrappers)
 // ---------------------------------------------------------------------------
 
+/**
+ * Strict HH:MM (or HH:MM:SS) parser. Returns minutes-since-midnight, or
+ * `null` if the input is missing or unparseable. Callers in the availability
+ * path MUST treat `null` as "no data → not available", never as midnight.
+ */
+export function parseHHMM(t: string | null | undefined): number | null {
+  if (t == null) return null;
+  const trimmed = String(t).trim();
+  if (!trimmed) return null;
+  const m = /^(\d{1,2}):(\d{2})(?::\d{2})?$/.exec(trimmed);
+  if (!m) return null;
+  const h = parseInt(m[1], 10);
+  const mins = parseInt(m[2], 10);
+  if (!Number.isFinite(h) || !Number.isFinite(mins)) return null;
+  if (h < 0 || h > 24 || mins < 0 || mins > 59) return null;
+  const total = h * 60 + mins;
+  if (total > 24 * 60) return null;
+  return total;
+}
+
+/**
+ * Legacy lossy parser. Returns 0 for bad input. NOT for use in availability
+ * decisions — use {@link parseHHMM} there. Kept for callers (pricing, clash
+ * check, create-booking) that pass already-validated DB time strings.
+ */
 export function toMinutes(t: string): number {
-  const [h, m] = t.split(":").map(Number);
-  return (h || 0) * 60 + (m || 0);
+  return parseHHMM(t) ?? 0;
 }
 
 export function fromMinutes(min: number): string {
@@ -96,19 +122,22 @@ export function fromMinutes(min: number): string {
  *   - Duration ≥ 23 h  (multi-day / term events)
  *   - Starts at 00:00 UTC and duration ≥ 12 h  (Google all-day sync format)
  *
- * IMPORTANT: always compare against UTC hours so server (Deno, UTC) and
- * browser (local tz) agree. Google sends all-day events as 00:00 UTC.
+ * Fails CLOSED: malformed or unparseable datetimes return `false`, so a bad
+ * event is treated as a real blocking conflict rather than silently freeing
+ * the slot.
  */
 export function isAllDayLikeEvent(startIso: string, endIso: string): boolean {
   try {
     const s = new Date(startIso);
     const e = new Date(endIso);
+    if (isNaN(s.getTime()) || isNaN(e.getTime())) return false;
     const durMs = e.getTime() - s.getTime();
+    if (!Number.isFinite(durMs) || durMs <= 0) return false;
     if (durMs >= ALL_DAY_MS) return true;
     const startsAtMidnightUTC = s.getUTCHours() === 0 && s.getUTCMinutes() === 0;
     return startsAtMidnightUTC && durMs >= MIDNIGHT_LONG_MS;
   } catch {
-    return true; // fail safe: ignore malformed events
+    return false; // fail closed
   }
 }
 
@@ -132,12 +161,59 @@ export function toLondonParts(d: Date): { date: string; hour: number; minute: nu
   return { date: `${year}-${month}-${day}`, hour, minute };
 }
 
+/** London-time "now" cutoff in minutes-of-day. */
+function londonNowMin(): number {
+  const p = toLondonParts(new Date());
+  return p.hour * 60 + p.minute;
+}
+
+/** London-time today's date string (yyyy-MM-dd). */
+export function londonTodayStr(): string {
+  return toLondonParts(new Date()).date;
+}
+
+/** London-time day-of-week for a given instant (0=Sun..6=Sat). */
+export function londonDow(d: Date): number {
+  // Derive via the London date string so DST transitions are honoured.
+  const { date } = toLondonParts(d);
+  // Construct a UTC Date at noon on that London calendar day — noon avoids
+  // any ambiguity around DST boundaries when reading getUTCDay.
+  const utc = new Date(`${date}T12:00:00Z`);
+  return utc.getUTCDay();
+}
+
+/** London-calendar date string for a given instant. */
+export function londonDateStr(d: Date): string {
+  return toLondonParts(d).date;
+}
+
 export function inTimeOfDay(startMin: number, tod: TimeOfDay = "any"): boolean {
   if (tod === "any")       return true;
   if (tod === "morning")   return startMin >= 6 * 60 && startMin < 12 * 60;
   if (tod === "afternoon") return startMin >= 12 * 60 && startMin < 17 * 60;
   if (tod === "evening")   return startMin >= 17 * 60 && startMin < 22 * 60;
   return true;
+}
+
+/**
+ * Merge overlapping or adjacent [start,end) intervals. Pure helper exported
+ * so the day-level resolver can normalise clipped conflicts before doing
+ * gap-pairing math.
+ */
+export function mergeIntervals<T extends Slot>(intervals: T[]): Slot[] {
+  if (intervals.length === 0) return [];
+  const sorted = [...intervals].sort((a, b) => a.start - b.start);
+  const out: Slot[] = [{ start: sorted[0].start, end: sorted[0].end }];
+  for (let i = 1; i < sorted.length; i++) {
+    const last = out[out.length - 1];
+    const cur = sorted[i];
+    if (cur.start <= last.end) {
+      if (cur.end > last.end) last.end = cur.end;
+    } else {
+      out.push({ start: cur.start, end: cur.end });
+    }
+  }
+  return out;
 }
 
 // ---------------------------------------------------------------------------
@@ -149,10 +225,11 @@ export function inTimeOfDay(startMin: number, tod: TimeOfDay = "any"): boolean {
  *
  * - scheduled_lessons are NOT passed in (rule 5 above — calendar is the record).
  * - All-day Google events are silently dropped.
- * - Multi-day blocks/events are clipped to this calendar day.
- *
- * Clipping uses UTC dates so server and browser agree on which day an event
- * falls on, regardless of the server's local timezone.
+ * - Multi-day blocks/events are clipped to this calendar day in London time.
+ * - `is_busy` is expected to be normalised by the caller (loader) — any
+ *   row reaching this function with `is_busy === false` is treated as free.
+ *   `null`/`undefined` means "busy" (fail closed), but the loader should
+ *   already have applied that default.
  */
 export function buildDayConflicts(
   dateStr: string,
@@ -161,11 +238,9 @@ export function buildDayConflicts(
 ): TaggedConflict[] {
   const out: TaggedConflict[] = [];
 
-  // Clip an event/block to the target day in **Europe/London local time**.
-  // Working-hours strings ("09:00") are local clock minutes, so conflicts
-  // MUST also be expressed in local clock minutes — comparing UTC minutes
-  // against local clock minutes silently offsets everything by 60 mins in BST
-  // and was the cause of busy Google events appearing free during summer.
+  // Clip in **Europe/London local minutes-of-day** — working-hours strings
+  // ("09:00") are local clock minutes, so conflicts MUST also be expressed
+  // in local clock minutes.
   const clipLondon = (sIso: string, eIso: string): Slot | null => {
     const sd = new Date(sIso);
     const ed = new Date(eIso);
@@ -185,6 +260,7 @@ export function buildDayConflicts(
   }
 
   for (const e of events) {
+    // Fail-closed default: only explicit `false` releases the slot.
     if (e.is_busy === false) continue;
     if (isAllDayLikeEvent(e.start_time, e.end_time)) continue;
     const c = clipLondon(e.start_time, e.end_time);
@@ -224,9 +300,10 @@ export function resolveAvailability(input: EngineInput): EngineResult {
   } = input;
 
   const padMin = Math.max(0, bufferMinutes); // no hidden travel padding
-  const now = new Date();
+  // Past-cutoff is computed in Europe/London wall-clock to match how
+  // working hours, conflicts and the `isToday` flag are expressed.
   const cutoffMin = isToday
-    ? now.getUTCHours() * 60 + now.getUTCMinutes() + Math.max(0, minNoticeMinutes)
+    ? londonNowMin() + Math.max(0, minNoticeMinutes)
     : -1;
 
   const slots: Slot[]         = [];
@@ -290,8 +367,7 @@ export function validateSlot(
   if (!inTimeOfDay(startMin, timeOfDay))              return { ok: false, reason: "time_of_day" };
 
   if (isToday) {
-    const now = new Date();
-    const cutoff = now.getUTCHours() * 60 + now.getUTCMinutes() + Math.max(0, minNoticeMinutes);
+    const cutoff = londonNowMin() + Math.max(0, minNoticeMinutes);
     if (startMin < cutoff) return { ok: false, reason: "past" };
   }
 

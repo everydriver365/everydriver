@@ -2,32 +2,42 @@
 // courseAvailability.ts
 // =============================================================================
 //
-// Learner-facing day-level availability resolver.
+// Day-level data loader + window shaper that sits on top of the canonical
+// availability engine in `./availabilityEngine.ts`.
 //
-// "Is instructor X available on date D?" means:
-//   1. D is today or in the future, and on/after instructor.available_from.
-//   2. A working window exists for D (override or weekly hours).
-//   3. After subtracting manual blocks and Google Calendar busy events the
-//      remaining free time inside the window is ≥ MIN_FREE_MINUTES.
+// STRICT RULES (do not violate):
+//   - This file MUST NOT decide whether a slot is bookable. The only
+//     functions that make that decision are `resolveAvailability` and
+//     `validateSlot` in the engine. Here we only load rows, shape working
+//     windows, build per-day conflict lists, and call the engine.
+//   - NO default availability. If working hours are missing or unparseable
+//     for a day, the instructor is NOT available that day — never substitute
+//     08:00–20:00 or any other fallback.
+//   - Single clock: Europe/London. All date/day/today decisions go through
+//     the engine's London helpers, never `day.getDay()` or `new Date()`
+//     wall-clock methods.
 //
 // Busyness sources (ONLY):
 //   - instructor_calendar_events (Google Calendar mirror) + instructor_manual_blocks.
 //   - scheduled_lessons is CRM data and is NEVER consulted for "is the
-//     instructor busy?". It can drift from Google (events deleted in Google,
-//     unpaid bookings, stale junk rows) — using it as a busy source caused
-//     real outages (e.g. Ken D 18 June 2026: 8 stale rows blocked a fully
-//     free day). Lesson geo is used ONLY for optional travel-time padding
-//     around lessons that ARE present in the Google mirror.
+//     instructor busy?". Lesson geo is used ONLY for optional travel-time
+//     padding around lessons that ARE present in the Google mirror.
 
-import { format, isAfter, isBefore, parseISO, startOfDay, addDays } from "date-fns";
+import { format, addDays, startOfDay } from "date-fns";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   TRAVEL_FALLBACK_MIN,
   resolveAvailability,
   buildDayConflicts,
+  mergeIntervals,
+  parseHHMM,
+  londonTodayStr,
+  londonDateStr,
+  londonDow,
   type TimeOfDay,
   type Slot,
   type RejectedSlot,
+  type TaggedConflict,
 } from "./availabilityEngine";
 import { estimateDriveMinutes } from "./travelTime";
 
@@ -58,7 +68,8 @@ export type CalendarEventRow = {
   instructor_id: string;
   start_time: string;   // ISO
   end_time: string;     // ISO
-  is_busy?: boolean | null;
+  /** Normalised by the loader: `null`/`undefined` → `true` (fail closed). */
+  is_busy: boolean;
 };
 
 export type ManualBlockRow = {
@@ -104,8 +115,6 @@ export interface CourseAvailabilitySources {
 // Constants
 // ---------------------------------------------------------------------------
 
-const DEFAULT_DAY_START = "08:00";
-const DEFAULT_DAY_END   = "20:00";
 export const MIN_FREE_MINUTES = 60;
 
 // Network-placeholder instructors (no real calendar) use fixed assumed hours.
@@ -120,25 +129,16 @@ const NP_WEEKEND_END   = 12 * 60;
 
 interface Window { start: number; end: number }
 
-function timeToMin(t?: string | null): number | null {
-  if (!t) return null;
-  const [h, m] = t.split(":").map((s) => parseInt(s, 10));
-  if (Number.isNaN(h)) return null;
-  return h * 60 + (Number.isNaN(m) ? 0 : m);
-}
-
 function mergeWindows(wins: Window[]): Window[] {
-  const sorted = [...wins].sort((a, b) => a.start - b.start);
-  const merged: Window[] = [];
-  for (const w of sorted) {
-    const last = merged[merged.length - 1];
-    if (last && w.start <= last.end) last.end = Math.max(last.end, w.end);
-    else merged.push({ ...w });
-  }
-  return merged;
+  return mergeIntervals(wins);
 }
 
-/** Weekly windows for one instructor on a given JS day-of-week (0=Sun..6=Sat). */
+/**
+ * Weekly windows for one instructor on a given JS day-of-week (0=Sun..6=Sat).
+ *
+ * STRICT: rows missing or with unparseable `start_time` / `end_time` are
+ * skipped entirely — no default substitution.
+ */
 function getWeeklyWindows(
   instructorId: string,
   jsDow: number,
@@ -149,8 +149,9 @@ function getWeeklyWindows(
   // instructor_working_hours: 0=Sun..6=Sat
   for (const w of src.workingHours) {
     if (w.instructor_id !== instructorId || !w.is_active || w.day_of_week !== jsDow) continue;
-    const s = timeToMin(w.start_time) ?? timeToMin(DEFAULT_DAY_START)!;
-    const e = timeToMin(w.end_time)   ?? timeToMin(DEFAULT_DAY_END)!;
+    const s = parseHHMM(w.start_time);
+    const e = parseHHMM(w.end_time);
+    if (s == null || e == null) continue; // no data → not available
     if (e > s) out.push({ start: s, end: e });
   }
 
@@ -160,8 +161,9 @@ function getWeeklyWindows(
     if (w.instructor_id !== instructorId || !w.is_active) continue;
     // Tolerate rows stored under either convention.
     if (w.day_of_week !== winDow && w.day_of_week !== jsDow) continue;
-    const s = timeToMin(w.start_time) ?? timeToMin(DEFAULT_DAY_START)!;
-    const e = timeToMin(w.end_time)   ?? timeToMin(DEFAULT_DAY_END)!;
+    const s = parseHHMM(w.start_time);
+    const e = parseHHMM(w.end_time);
+    if (s == null || e == null) continue;
     if (e > s) out.push({ start: s, end: e });
   }
 
@@ -183,33 +185,30 @@ function getOverride(
   return null;
 }
 
-// (Conflict clipping / subtraction now handled inside availabilityEngine via
-//  buildDayConflicts + resolveAvailability — see computeDaySlots below.)
-
-
-/** Resolve the working windows for one instructor on one day, honouring overrides. */
+/**
+ * Resolve the working windows for one instructor on one day, honouring overrides.
+ *
+ * STRICT override behaviour:
+ *   - `is_available=false` → []
+ *   - `is_available=true` AND both times present AND parseable → use them
+ *   - `is_available=true` AND times missing or unparseable → [] (no fallback)
+ *   - no override → weekly windows for that day-of-week (possibly [])
+ */
 function resolveWindowsForDay(
   instructor: InstructorLite,
   day: Date,
   src: CourseAvailabilitySources,
 ): Window[] {
-  const dateStr = format(day, "yyyy-MM-dd");
-  const jsDow   = day.getDay();
+  const dateStr = londonDateStr(day);
+  const jsDow   = londonDow(day);
   const override = getOverride(instructor.id, dateStr, src);
 
-  if (override && !override.is_available) return [];
-
-  if (override?.is_available && (override.start_time || override.end_time)) {
-    const s = timeToMin(override.start_time) ?? timeToMin(DEFAULT_DAY_START)!;
-    const e = timeToMin(override.end_time)   ?? timeToMin(DEFAULT_DAY_END)!;
+  if (override) {
+    if (!override.is_available) return [];
+    const s = parseHHMM(override.start_time);
+    const e = parseHHMM(override.end_time);
+    if (s == null || e == null) return []; // marked available but no times → not available
     return e > s ? [{ start: s, end: e }] : [];
-  }
-
-  if (override?.is_available) {
-    const weekly = getWeeklyWindows(instructor.id, jsDow, src);
-    return weekly.length > 0
-      ? weekly
-      : [{ start: timeToMin(DEFAULT_DAY_START)!, end: timeToMin(DEFAULT_DAY_END)! }];
   }
 
   return getWeeklyWindows(instructor.id, jsDow, src);
@@ -223,15 +222,24 @@ export function hasNetworkPlaceholderAvailabilityOn(
   day: Date,
   minFreeMinutes = MIN_FREE_MINUTES,
 ): boolean {
-  const today = startOfDay(new Date());
-  if (isBefore(day, today)) return false;
-  const jsDow    = day.getDay();
+  const todayStr = londonTodayStr();
+  const dateStr  = londonDateStr(day);
+  if (dateStr < todayStr) return false;
+  const jsDow     = londonDow(day);
   const isWeekend = jsDow === 0 || jsDow === 6;
   const start = isWeekend ? NP_WEEKEND_START : NP_WEEKDAY_START;
   const end   = isWeekend ? NP_WEEKEND_END   : NP_WEEKDAY_END;
-  const dateStr   = format(day, "yyyy-MM-dd");
-  const isToday   = format(today, "yyyy-MM-dd") === dateStr;
-  const nowMin    = isToday ? new Date().getHours() * 60 + new Date().getMinutes() : 0;
+  const isToday = todayStr === dateStr;
+  let nowMin = 0;
+  if (isToday) {
+    const parts = new Intl.DateTimeFormat("en-GB", {
+      timeZone: "Europe/London",
+      hour: "2-digit", minute: "2-digit", hour12: false,
+    }).formatToParts(new Date());
+    const h = parseInt(parts.find((p) => p.type === "hour")?.value ?? "0", 10);
+    const m = parseInt(parts.find((p) => p.type === "minute")?.value ?? "0", 10);
+    nowMin = (h === 24 ? 0 : h) * 60 + (Number.isFinite(m) ? m : 0);
+  }
   return end - Math.max(start, nowMin) >= minFreeMinutes;
 }
 
@@ -274,6 +282,9 @@ export interface DayComputeResult {
  * THE unified day-level slot computation. Every booking surface (public
  * booking page, course discovery, auto-scheduler, instructor gap-fill,
  * create-booking guard) calls this so they cannot disagree.
+ *
+ * This function ONLY shapes data and forwards it to `resolveAvailability`.
+ * It does not make availability decisions.
  */
 export function computeDaySlots(
   instructor: InstructorLite,
@@ -281,15 +292,19 @@ export function computeDaySlots(
   src: CourseAvailabilitySources,
   opts: DayComputeOptions,
 ): DayComputeResult {
-  const dateStr = format(day, "yyyy-MM-dd");
-  const today = startOfDay(new Date());
-  const isToday = format(today, "yyyy-MM-dd") === dateStr;
+  const dateStr  = londonDateStr(day);
+  const todayStr = londonTodayStr();
+  const isToday  = todayStr === dateStr;
 
   // Hard gates: past day, available_from
-  if (isBefore(day, today)) {
+  if (dateStr < todayStr) {
     return { windows: [], slots: [], rejected: [] };
   }
-  if (opts.respectAvailableFrom !== false && instructor.available_from && isAfter(parseISO(instructor.available_from), day)) {
+  if (
+    opts.respectAvailableFrom !== false &&
+    instructor.available_from &&
+    instructor.available_from > dateStr
+  ) {
     return { windows: [], slots: [], rejected: [] };
   }
 
@@ -298,15 +313,15 @@ export function computeDaySlots(
     return { windows: [], slots: [], rejected: [] };
   }
 
-  // Build conflicts once (engine handles the per-conflict padding internally).
-  const conflicts = buildDayConflicts(
+  // Build the shared per-day conflict list ONCE. Never mutated below.
+  const baseConflicts: TaggedConflict[] = buildDayConflicts(
     dateStr,
     src.manualBlocks
       .filter((b) => b.instructor_id === instructor.id)
       .map((b) => ({ start_datetime: b.start_datetime, end_datetime: b.end_datetime })),
     src.calendarEvents
       .filter((e) => e.instructor_id === instructor.id)
-      .map((e) => ({ start_time: e.start_time, end_time: e.end_time, is_busy: e.is_busy ?? true })),
+      .map((e) => ({ start_time: e.start_time, end_time: e.end_time, is_busy: e.is_busy })),
   );
 
   // Travel-time padding around existing booked lessons.
@@ -320,7 +335,8 @@ export function computeDaySlots(
     );
     for (const l of dayLessons) {
       if (l.pickup_lat == null || l.pickup_lng == null) continue;
-      const startMin = parseHHMMtoMin(l.start_time);
+      const startMin = parseHHMM(l.start_time);
+      if (startMin == null) continue; // strict: no midnight fallback
       const endMin = startMin + (l.duration_minutes ?? 0);
       const pickup = { lat: Number(l.pickup_lat), lng: Number(l.pickup_lng) };
       const dropoff =
@@ -331,7 +347,7 @@ export function computeDaySlots(
       const travelIn = estimateDriveMinutes(cand, pickup);   // cand dropoff → lesson pickup
       const travelOut = estimateDriveMinutes(dropoff, cand); // lesson dropoff → cand pickup
       if (travelIn > 0) {
-        conflicts.push({
+        baseConflicts.push({
           start: Math.max(0, startMin - travelIn),
           end: startMin,
           kind: "event",
@@ -340,7 +356,7 @@ export function computeDaySlots(
         });
       }
       if (travelOut > 0) {
-        conflicts.push({
+        baseConflicts.push({
           start: endMin,
           end: endMin + travelOut,
           kind: "event",
@@ -360,27 +376,31 @@ export function computeDaySlots(
   for (const win of windows) {
     let dayStartMin = win.start;
 
+    // Per-window copy — synthetic "Travel from home" markers must NEVER leak
+    // into the next window of a split shift.
+    const winConflicts: TaggedConflict[] = [...baseConflicts];
+
     // First-lesson travel buffer applies whenever the instructor has been
     // idle long enough to be home — not only at the very start of the working
     // window. We inject synthetic "travel from home" blocks at the start of
-    // every conflict-free gap whose length is ≥ firstLessonBuffer (i.e. long
-    // enough that the instructor would realistically have gone home and now
-    // needs the full travel time to return).
-    //
-    // Back-to-back lessons (short gaps < firstLessonBuffer) are unaffected
-    // and still use the standard `buffer_minutes` only.
+    // every conflict-free gap whose length is ≥ firstLessonBuffer.
     if (firstLessonBuffer > buffer) {
-      // Sort window-relevant conflicts and walk gaps.
-      const winConflicts = conflicts
+      // Clip window-relevant conflicts and MERGE so adjacent/overlapping
+      // ones don't corrupt the gap-pairing math below.
+      const clipped = winConflicts
         .filter((c) => c.end > win.start && c.start < win.end)
-        .map((c) => ({ start: Math.max(c.start, win.start), end: Math.min(c.end, win.end) }))
-        .sort((a, b) => a.start - b.start);
+        .map((c) => ({
+          start: Math.max(c.start, win.start),
+          end: Math.min(c.end, win.end),
+        }));
+      const merged = mergeIntervals(clipped);
 
-      // Build the sequence of gap-starts: window start, then every conflict end.
-      const gapStarts: number[] = [win.start, ...winConflicts.map((c) => c.end)];
-      // Corresponding gap-ends: next conflict start, or window end.
+      // Build the sequence of (gapStart, gapEnd) pairs: window start → first
+      // conflict, then between consecutive conflicts, then last conflict →
+      // window end.
+      const gapStarts: number[] = [win.start, ...merged.map((c) => c.end)];
       const gapEnds: number[] = [
-        ...winConflicts.map((c) => c.start),
+        ...merged.map((c) => c.start),
         win.end,
       ];
 
@@ -394,9 +414,8 @@ export function computeDaySlots(
           dayStartMin = Math.max(dayStartMin, gStart + firstLessonBuffer);
         } else {
           // Interior gap after a conflict: inject a synthetic "travel from
-          // home" block at the gap start. padOverrideMin:0 so the engine's
-          // own buffer padding isn't doubled on top of it.
-          conflicts.push({
+          // home" block at the gap start, INTO THE PER-WINDOW LIST ONLY.
+          winConflicts.push({
             start: gStart,
             end: gStart + firstLessonBuffer,
             kind: "event",
@@ -413,7 +432,7 @@ export function computeDaySlots(
       dayEndMin: win.end,
       bufferMinutes: opts.bufferMinutes,
       durationMinutes: opts.durationMinutes,
-      conflicts,
+      conflicts: winConflicts,
       timeOfDay: opts.timeOfDay,
       isToday,
       anchorSkipMinutes: opts.slotIncrementMinutes,
@@ -423,12 +442,12 @@ export function computeDaySlots(
     allRejected.push(...result.rejected);
   }
 
-  return { windows, slots: allSlots, rejected: allRejected };
-}
+  // Note: `buffer` is intentionally unused below — it's read from the
+  // instructor row by callers that pass `opts.bufferMinutes`. Kept for
+  // readability of the firstLessonBuffer comparison above.
+  void buffer;
 
-function parseHHMMtoMin(t: string): number {
-  const [h, m] = t.split(":").map((s) => parseInt(s, 10));
-  return (h || 0) * 60 + (m || 0);
+  return { windows, slots: allSlots, rejected: allRejected };
 }
 
 /**
@@ -464,6 +483,18 @@ export function hasInstructorAvailabilityOn(
 // Data loader  (shared by browser and the create-booking edge function)
 // ---------------------------------------------------------------------------
 
+// Narrow typing for the public RPCs used below. The generated `Database`
+// type doesn't list these as RPC return shapes, so we type the call surface
+// locally rather than reaching for `any`.
+type RpcCaller = <T>(name: string, args: Record<string, unknown>) =>
+  Promise<{ data: T[] | null; error: unknown }>;
+type RawCalendarRow = {
+  instructor_id: string;
+  start_time: string;
+  end_time: string;
+  is_busy?: boolean | null;
+};
+
 export async function loadCourseAvailabilitySources(
   client: SupabaseClient,
   instructorIds: string[],
@@ -478,6 +509,9 @@ export async function loadCourseAvailabilitySources(
   const toStr   = format(toDate,   "yyyy-MM-dd");
   const fromIso = startOfDay(fromDate).toISOString();
   const toIso   = startOfDay(addDays(toDate, 1)).toISOString();
+
+  // Cast the rpc method once locally instead of `any`-casting every call.
+  const rpc = client.rpc.bind(client) as unknown as RpcCaller;
 
   const [whRes, awRes, ovRes, mbRes, ceRes, lgRes] = await Promise.all([
     client
@@ -495,29 +529,35 @@ export async function loadCourseAvailabilitySources(
       .or(`override_date.gte.${fromStr},override_end_date.gte.${fromStr}`)
       .lte("override_date", toStr),
     // Public-safe RPC — returns only instructor_id, start/end datetime, no titles.
-    client.rpc("get_public_instructor_manual_blocks", {
+    rpc<ManualBlockRow>("get_public_instructor_manual_blocks", {
       p_instructor_ids: instructorIds,
       p_from_datetime: fromIso,
       p_to_datetime: toIso,
     }),
     // Public-safe RPC — returns only instructor_id, start_time, end_time, is_busy.
-    (client as any).rpc("get_public_instructor_calendar_blocks", {
+    rpc<RawCalendarRow>("get_public_instructor_calendar_blocks", {
       p_instructor_ids: instructorIds,
       p_from_datetime: fromIso,
       p_to_datetime: toIso,
     }),
     // Public-safe RPC — returns ONLY coords + timing of booked lessons.
-    // Used by the engine to pad candidate slots with realistic travel time
-    // between consecutive bookings. No PII (names/addresses/postcodes/prices).
-    (client as any).rpc("get_public_instructor_lesson_geo", {
+    rpc<BookedLessonGeoRow>("get_public_instructor_lesson_geo", {
       p_instructor_ids: instructorIds,
       p_from_date: fromStr,
       p_to_date: toStr,
     }),
   ]);
 
-  const calendarEvents = (ceRes.data as CalendarEventRow[]) ?? [];
-  const bookedLessonGeo = (lgRes.data as BookedLessonGeoRow[]) ?? [];
+  // Normalise `is_busy` at the data boundary: `null`/`undefined` → `true`
+  // (fail closed). Every downstream consumer now sees identical data.
+  const calendarEvents: CalendarEventRow[] = (ceRes.data ?? []).map((e) => ({
+    instructor_id: e.instructor_id,
+    start_time: e.start_time,
+    end_time: e.end_time,
+    is_busy: e.is_busy ?? true,
+  }));
+
+  const bookedLessonGeo = (lgRes.data as BookedLessonGeoRow[] | null) ?? [];
 
   // NOTE: scheduled_lessons rows are deliberately NOT injected as synthetic
   // busy events. Google Calendar mirror + manual blocks are the sole source of
@@ -525,11 +565,15 @@ export async function loadCourseAvailabilitySources(
   // slots with realistic travel time around lessons that are also present in
   // the live Google mirror.
 
+  type WHResult = { data: WeeklyHourRow[] | null };
+  type OVResult = { data: DateOverrideRow[] | null };
+  type MBResult = { data: ManualBlockRow[] | null };
+
   return {
-    workingHours:       (whRes.data  as WeeklyHourRow[])      ?? [],
-    availabilityWindows:(awRes.data  as WeeklyHourRow[])      ?? [],
-    overrides:          (ovRes.data  as DateOverrideRow[])    ?? [],
-    manualBlocks:       (mbRes.data  as ManualBlockRow[])     ?? [],
+    workingHours:        ((whRes as unknown as WHResult).data) ?? [],
+    availabilityWindows: ((awRes as unknown as WHResult).data) ?? [],
+    overrides:           ((ovRes as unknown as OVResult).data) ?? [],
+    manualBlocks:        ((mbRes as unknown as MBResult).data) ?? [],
     calendarEvents,
     bookedLessonGeo,
   };
