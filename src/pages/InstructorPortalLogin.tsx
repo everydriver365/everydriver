@@ -72,7 +72,22 @@ export default function InstructorPortalLogin() {
   const { signIn, resetPassword } = useInstructorAuth();
   const navigate = useNavigate();
 
-  useClearOnDeepLink(() => setError(""));
+  // Single source of truth for clearing transient auth state. Used by both
+  // deep-link arrivals AND the mobile sign-in ↔ forgot-password toggle so no
+  // stale banner / password / loading flag leaks across views.
+  const clearAuthTransientState = () => {
+    setError("");
+    setPassword("");
+    setLoading(false);
+    setBiometricLoading(false);
+  };
+
+  useClearOnDeepLink(clearAuthTransientState);
+
+  const switchMobileView = (toForgot: boolean) => {
+    clearAuthTransientState();
+    setIsForgotPassword(toForgot);
+  };
 
   useEffect(() => {
     const checkInstallState = () => {
@@ -260,7 +275,7 @@ export default function InstructorPortalLogin() {
           ) : (
             <button
               type="button"
-              onClick={() => setIsForgotPassword(false)}
+              onClick={() => switchMobileView(false)}
               className="text-[13px] font-semibold text-white"
             >
               Back to sign in
@@ -343,7 +358,7 @@ export default function InstructorPortalLogin() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setIsForgotPassword(true)}
+                  onClick={() => switchMobileView(true)}
                   className="text-[13px] font-semibold text-white"
                 >
                   Forgot password?

@@ -92,13 +92,24 @@ export default function InstructorLogin() {
   const [searchParams] = useSearchParams();
   const showVerifyBanner = searchParams.get("verify") === "1";
 
-  // Clear any local error/reset banners when a Supabase email link reroutes
-  // into the app on iOS / Android.
-  useClearOnDeepLink(() => {
+  // Single source of truth for clearing transient auth state. Used by both
+  // deep-link arrivals AND the mobile sign-in ↔ forgot-password toggle so no
+  // stale banner / password / loading flag leaks across views.
+  const clearAuthTransientState = () => {
     setError("");
     setResetSent(false);
     setResetSentTo("");
-  });
+    setPassword("");
+    setLoading(false);
+    setFaceIdState("idle");
+  };
+
+  useClearOnDeepLink(clearAuthTransientState);
+
+  const switchMobileView = (toForgot: boolean) => {
+    clearAuthTransientState();
+    setIsForgotPassword(toForgot);
+  };
 
   useEffect(() => {
     const prefill = searchParams.get("email");
@@ -239,7 +250,7 @@ export default function InstructorLogin() {
         rememberMe={rememberMe}
         setRememberMe={setRememberMeState}
         isForgot={isForgotPassword}
-        onForgotToggle={(v) => { setIsForgotPassword(v); setError(""); }}
+        onForgotToggle={switchMobileView}
         loading={loading}
         error={error}
         onSubmit={handleSignIn}
