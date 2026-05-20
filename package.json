@@ -9,7 +9,8 @@
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
-    "audit:rls": "bun run scripts/audit-instructor-rls.ts"
+    "audit:rls": "bun run scripts/audit-instructor-rls.ts",
+    "fuzz:availability": "bun run scripts/fuzz-availability-engine.ts"
   },
   "dependencies": {
     "@capacitor/android": "^8.3.1",
