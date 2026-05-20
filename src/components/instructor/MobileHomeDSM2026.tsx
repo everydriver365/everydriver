@@ -1290,79 +1290,297 @@ const QUICK_ACCESS: QAItem[] = [
   { label: "Settings",        Icon: SettingsIcon,     ...GREY_BG, route: "/instructor/settings" },
 ];
 
+const DEFAULT_PIN_LABELS = [
+  "Dashboard",
+  "Pupils",
+  "Schedule",
+  "Test swap",
+  "Payments",
+  "Availability",
+  "Find slot",
+  "Settings",
+];
+const PINS_STORAGE_KEY = "dsm2026:quickaccess:pins";
+
+function loadPinnedLabels(): string[] {
+  if (typeof window === "undefined") return DEFAULT_PIN_LABELS;
+  try {
+    const raw = window.localStorage.getItem(PINS_STORAGE_KEY);
+    if (!raw) return DEFAULT_PIN_LABELS;
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed) || parsed.length === 0) return DEFAULT_PIN_LABELS;
+    return parsed.filter((l: any) => typeof l === "string");
+  } catch {
+    return DEFAULT_PIN_LABELS;
+  }
+}
+
 function QuickAccessCard({ navigate }: { navigate: ReturnType<typeof useNavigate> }) {
   const [activeRoute, setActiveRoute] = useState<string | null>(null);
   const [query, setQuery] = useState("");
-  const filter = (xs: QAItem[]) =>
-    xs.filter((i) => i.label.toLowerCase().includes(query.trim().toLowerCase()));
-  const row1 = filter(QUICK_ACCESS.slice(0, 20));
-  const row2 = filter(QUICK_ACCESS.slice(20));
+  const [editOpen, setEditOpen] = useState(false);
+  const [pinnedLabels, setPinnedLabels] = useState<string[]>(() => loadPinnedLabels());
+
+  const pinnedItems = useMemo(() => {
+    const byLabel = new Map(QUICK_ACCESS.map((i) => [i.label, i]));
+    return pinnedLabels
+      .map((l) => byLabel.get(l))
+      .filter((x): x is QAItem => Boolean(x))
+      .slice(0, 8);
+  }, [pinnedLabels]);
+
+  const filtered = query.trim()
+    ? QUICK_ACCESS.filter((i) =>
+        i.label.toLowerCase().includes(query.trim().toLowerCase())
+      )
+    : null;
+
+  const persistPins = (labels: string[]) => {
+    setPinnedLabels(labels);
+    try { window.localStorage.setItem(PINS_STORAGE_KEY, JSON.stringify(labels)); } catch {}
+  };
+
+  const togglePin = (label: string) => {
+    if (pinnedLabels.includes(label)) {
+      persistPins(pinnedLabels.filter((l) => l !== label));
+    } else if (pinnedLabels.length < 8) {
+      persistPins([...pinnedLabels, label]);
+    }
+  };
 
   return (
     <SectionCard>
+      {/* Header */}
       <SectionHeader
         label="Quick access"
         right={
-          <span style={{ fontSize: 12, fontWeight: 600, color: T.blue, fontFamily: FONT }}>Edit</span>
+          <button
+            type="button"
+            onClick={() => setEditOpen(true)}
+            style={{
+              background: "transparent", border: 0, cursor: "pointer",
+              fontSize: 12, fontWeight: 600, color: T.blue, fontFamily: FONT,
+            }}
+          >
+            Edit pins
+          </button>
         }
       />
+
+      {/* Search */}
       <div
         style={{
-          margin: "12px 16px 10px",
+          margin: "10px 14px",
           backgroundColor: T.surface, borderRadius: 10,
-          padding: "10px 14px",
+          padding: "9px 12px",
           display: "flex", alignItems: "center", gap: 8,
         }}
       >
-        <Search size={14} color={T.textLight} strokeWidth={1.8} />
+        <Search size={13} color={T.textLight} strokeWidth={1.8} />
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search tools, pupils, lessons…"
+          placeholder={`Search all ${QUICK_ACCESS.length} tools…`}
           style={{
             flex: 1, background: "transparent", border: 0, outline: "none",
-            fontSize: 13, color: T.textMid, fontFamily: FONT,
+            fontSize: 12, color: T.textMid, fontFamily: FONT,
           }}
         />
+        {query.length > 0 ? (
+          <button
+            type="button"
+            onClick={() => setQuery("")}
+            style={{ background: "transparent", border: 0, cursor: "pointer", padding: 0, color: T.textLight, fontSize: 13 }}
+            aria-label="Clear search"
+          >
+            ×
+          </button>
+        ) : null}
       </div>
-      <div style={{ overflowX: "auto", paddingBottom: 16 }}>
-        <div style={{ display: "flex", flexDirection: "column", gap: 8, padding: "0 16px", width: "max-content" }}>
-          <div style={{ display: "flex", gap: 8 }}>
-            {row1.map((it) => (
+
+      {/* Pinned grid 4x2 */}
+      {!filtered ? (
+        <div
+          style={{
+            display: "flex", flexWrap: "wrap",
+            padding: "0 10px 10px", gap: 6,
+          }}
+        >
+          {pinnedItems.map((item) => (
+            <div key={item.label} style={{ width: "calc(25% - 5px)" }}>
               <QATile
-                key={it.label}
-                item={it}
-                active={activeRoute === it.route}
-                onPress={() => { setActiveRoute(it.route); navigate(it.route); }}
+                item={item}
+                active={activeRoute === item.route}
+                size="grid"
+                onPress={() => { setActiveRoute(item.route); navigate(item.route); }}
+              />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div style={{ overflowX: "auto", paddingBottom: 10 }}>
+          <div style={{ display: "flex", gap: 6, padding: "0 12px" }}>
+            {filtered.map((item) => (
+              <QATile
+                key={item.label}
+                item={item}
+                active={activeRoute === item.route}
+                size="scroll"
+                onPress={() => { setActiveRoute(item.route); navigate(item.route); }}
               />
             ))}
-          </div>
-          <div style={{ display: "flex", gap: 8 }}>
-            {row2.map((it) => (
-              <QATile
-                key={it.label}
-                item={it}
-                active={activeRoute === it.route}
-                onPress={() => { setActiveRoute(it.route); navigate(it.route); }}
-              />
-            ))}
+            {filtered.length === 0 ? (
+              <div style={{ padding: "12px 4px", fontSize: 12, color: T.textMuted, fontFamily: FONT }}>
+                No matching tools
+              </div>
+            ) : null}
           </div>
         </div>
-      </div>
+      )}
+
+      {/* See all */}
+      {!filtered ? (
+        <button
+          type="button"
+          onClick={() => navigate("/instructor/menu")}
+          style={{
+            margin: "0 12px 12px",
+            backgroundColor: T.surface, borderRadius: 10,
+            padding: "10px 14px",
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
+            border: 0, cursor: "pointer", width: "calc(100% - 24px)",
+          }}
+        >
+          <LayoutGrid size={14} color={T.blue} strokeWidth={2} />
+          <span style={{ fontSize: 12, fontWeight: 600, color: T.blue, fontFamily: FONT }}>
+            See all {QUICK_ACCESS.length} tools
+          </span>
+          <ChevronRight size={12} color={T.blue} strokeWidth={2.5} />
+        </button>
+      ) : null}
+
+      {editOpen ? (
+        <EditPinsSheet
+          allItems={QUICK_ACCESS}
+          pinned={pinnedLabels}
+          onToggle={togglePin}
+          onClose={() => setEditOpen(false)}
+        />
+      ) : null}
     </SectionCard>
   );
 }
 
+function EditPinsSheet({
+  allItems, pinned, onToggle, onClose,
+}: {
+  allItems: QAItem[];
+  pinned: string[];
+  onToggle: (label: string) => void;
+  onClose: () => void;
+}) {
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: "fixed", inset: 0, zIndex: 50,
+        backgroundColor: "rgba(15,32,68,0.45)",
+        display: "flex", alignItems: "flex-end", justifyContent: "center",
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          backgroundColor: T.white,
+          width: "100%", maxHeight: "80vh",
+          borderTopLeftRadius: 18, borderTopRightRadius: 18,
+          overflow: "hidden",
+          display: "flex", flexDirection: "column",
+        }}
+      >
+        <div
+          style={{
+            padding: "14px 18px", borderBottom: `1px solid ${T.divider}`,
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+          }}
+        >
+          <div style={{ fontSize: 14, fontWeight: 700, color: T.navy, fontFamily: FONT }}>
+            Edit pinned tools
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            style={{ background: "transparent", border: 0, cursor: "pointer", fontSize: 12, fontWeight: 600, color: T.blue, fontFamily: FONT }}
+          >
+            Done
+          </button>
+        </div>
+        <div style={{ padding: "6px 14px 14px", fontSize: 11, color: T.textMuted, fontFamily: FONT }}>
+          Pin up to 8 tools ({pinned.length}/8)
+        </div>
+        <div style={{ overflowY: "auto", padding: "0 8px 14px" }}>
+          {allItems.map((it) => {
+            const isPinned = pinned.includes(it.label);
+            const Icon = it.Icon;
+            const disabled = !isPinned && pinned.length >= 8;
+            return (
+              <button
+                key={it.label}
+                type="button"
+                onClick={() => onToggle(it.label)}
+                disabled={disabled}
+                style={{
+                  width: "100%", padding: "10px 10px",
+                  display: "flex", alignItems: "center", gap: 10,
+                  background: "transparent", border: 0,
+                  cursor: disabled ? "not-allowed" : "pointer",
+                  opacity: disabled ? 0.4 : 1,
+                  textAlign: "left",
+                }}
+              >
+                <div
+                  style={{
+                    width: 32, height: 32, borderRadius: 9, backgroundColor: it.bg,
+                    display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                  }}
+                >
+                  <Icon size={16} color={it.colour} strokeWidth={1.8} />
+                </div>
+                <span style={{ flex: 1, fontSize: 13, fontWeight: 500, color: T.navy, fontFamily: FONT }}>
+                  {it.label}
+                </span>
+                <span
+                  style={{
+                    fontSize: 11, fontWeight: 700, fontFamily: FONT,
+                    backgroundColor: isPinned ? T.blue : T.surface,
+                    color: isPinned ? T.white : T.textMid,
+                    borderRadius: 20, padding: "3px 10px",
+                  }}
+                >
+                  {isPinned ? "Pinned" : "Pin"}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function QATile({
-  item, active, onPress,
-}: { item: QAItem; active: boolean; onPress: () => void }) {
+  item, active, onPress, size = "scroll",
+}: { item: QAItem; active: boolean; onPress: () => void; size?: "grid" | "scroll" }) {
   const Icon = item.Icon;
+  const isGrid = size === "grid";
   return (
     <button
       type="button"
       onClick={onPress}
       style={{
-        minWidth: 76, padding: "11px 12px",
+        width: isGrid ? "100%" : undefined,
+        minWidth: isGrid ? undefined : 72,
+        padding: isGrid ? "10px 8px" : "11px 12px",
         backgroundColor: active ? T.navy : T.white,
         border: `1.5px solid ${active ? T.navy : T.border}`,
         borderRadius: 14, cursor: "pointer",
@@ -1372,12 +1590,12 @@ function QATile({
     >
       <div
         style={{
-          width: 36, height: 36, borderRadius: 10,
+          width: 32, height: 32, borderRadius: 9,
           backgroundColor: active ? "rgba(255,255,255,0.15)" : item.bg,
           display: "flex", alignItems: "center", justifyContent: "center",
         }}
       >
-        <Icon size={18} color={active ? T.white : item.colour} strokeWidth={1.8} />
+        <Icon size={16} color={active ? T.white : item.colour} strokeWidth={1.8} />
       </div>
       <span
         style={{
