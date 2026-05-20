@@ -880,7 +880,7 @@ export function PupilCardStack({
                     <div
                       className="truncate"
                       style={{
-                        fontSize: 14, fontWeight: 600, color: "#0F2044",
+                        fontSize: 14, fontWeight: 600, color: "#000000",
                         marginBottom: 4, fontFamily: "Poppins, sans-serif",
                         lineHeight: 1.25,
                       }}
