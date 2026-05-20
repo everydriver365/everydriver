@@ -167,6 +167,7 @@ export function MobileHomeDSM2026({ instructorId, instructorName }: Props) {
   const jobsCount = usePendingJobsCount();
   const { data: msgsCount = 0 } = useUnreadMessagesCount(instructorId);
   const { data: swapsCount = 0 } = useTestSwapNotifications(instructorId);
+  const { data: visitorChatCount = 0 } = useVisitorChatUnreadCount(instructorId);
   const { data: events = [] } = useUpcomingEvents(instructorId);
   const { data: membership } = useInstructorMembership(instructorId);
   const payments = useInstructorPaymentsData(instructorId);
