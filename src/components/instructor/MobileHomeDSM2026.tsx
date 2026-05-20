@@ -1915,39 +1915,45 @@ function EditPinsSheet({
 }
 
 function QATile({
-  item, active, onPress, size = "scroll",
+  item, active, onPress,
 }: { item: QAItem; active: boolean; onPress: () => void; size?: "grid" | "scroll" }) {
   const Icon = item.Icon;
-  const isGrid = size === "grid";
   return (
     <button
       type="button"
       onClick={onPress}
       style={{
-        width: isGrid ? "100%" : undefined,
-        minWidth: isGrid ? undefined : 72,
-        padding: isGrid ? "10px 8px" : "11px 12px",
+        width: "100%",
+        height: 80,
+        padding: "0 18px",
         backgroundColor: active ? T.navy : T.white,
-        border: `1.5px solid ${active ? T.navy : T.border}`,
-        borderRadius: 14, cursor: "pointer",
-        display: "flex", flexDirection: "column", alignItems: "center", gap: 7,
-        flexShrink: 0,
+        border: 0,
+        boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
+        borderRadius: 12,
+        cursor: "pointer",
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 16,
+        textAlign: "left",
       }}
     >
-      <div
-        style={{
-          width: 32, height: 32, borderRadius: 9,
-          backgroundColor: active ? "rgba(255,255,255,0.15)" : item.bg,
-          display: "flex", alignItems: "center", justifyContent: "center",
-        }}
-      >
-        <Icon size={16} color={active ? T.white : item.colour} strokeWidth={1.8} />
-      </div>
+      <Icon
+        size={24}
+        color={active ? T.white : T.navy}
+        strokeWidth={1.8}
+        style={{ flexShrink: 0 }}
+      />
       <span
         style={{
-          fontSize: 9, fontWeight: 600,
-          color: active ? T.white : T.textMid,
-          textAlign: "center", fontFamily: FONT, lineHeight: "12px",
+          fontSize: 14,
+          fontWeight: 700,
+          color: active ? T.white : T.navy,
+          fontFamily: FONT,
+          lineHeight: "18px",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
         }}
       >
         {item.label}
@@ -1955,6 +1961,7 @@ function QATile({
     </button>
   );
 }
+
 
 /* ============================ Upcoming events =========================== */
 function UpcomingEventsCard({
