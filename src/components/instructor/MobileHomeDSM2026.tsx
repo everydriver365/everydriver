@@ -1005,11 +1005,6 @@ function ActionTile({
           }}
         />
       </button>
-      {open ? (
-        <div style={{ borderTop: `1px solid ${T.divider}`, padding: "8px 0 10px" }}>
-          {children}
-        </div>
-      ) : null}
     </div>
   );
 }
