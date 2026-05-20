@@ -897,7 +897,6 @@ function ActionTile({
   badgeCount,
   open,
   onToggle,
-  children,
 }: {
   icon: LucideIcon;
   label: string;
@@ -906,7 +905,6 @@ function ActionTile({
   badgeCount: number;
   open: boolean;
   onToggle: () => void;
-  children: React.ReactNode;
 }) {
   const isUrgent = !!outlined && (badgeCount ?? 0) > 0;
   const labelColor = isUrgent ? (accent ?? T.red) : T.navy;
