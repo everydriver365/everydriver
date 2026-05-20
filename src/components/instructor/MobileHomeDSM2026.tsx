@@ -189,45 +189,42 @@ export function MobileHomeDSM2026({ instructorId, instructorName }: Props) {
   };
 
   const urgentCount = jobsCount + swapsCount;
-  const todoCount = msgsCount;
+  const todoCount = msgsCount + visitorChatCount;
 
   const attention = {
-    total: jobsCount + msgsCount + swapsCount,
+    total: jobsCount + msgsCount + swapsCount + visitorChatCount,
     jobs: jobsCount,
-    msgs: msgsCount,
-    swaps: swapsCount,
-    calls: 0,
-    enquiries: 0,
+    tests: swapsCount,
+    calls: visitorChatCount,
+    enquiries: msgsCount,
     urgentCount,
     todoCount,
-    urgentItems: [
-      ...(jobsCount > 0
-        ? [
-            {
-              id: "jobs",
-              type: "jobs" as const,
-              icon: Briefcase,
-              title: `${jobsCount} new pupil enquir${jobsCount === 1 ? "y" : "ies"}`,
-              subtitle: "Tap to review and respond",
-              count: jobsCount,
-              route: "/instructor/jobs",
-            },
-          ]
-        : []),
-      ...(swapsCount > 0
-        ? [
-            {
-              id: "swaps",
-              type: "swaps" as const,
-              icon: Repeat2,
-              title: `${swapsCount} test swap update${swapsCount === 1 ? "" : "s"}`,
-              subtitle: "Matching test slots or offers",
-              count: swapsCount,
-              route: "/instructor/test-requests",
-            },
-          ]
-        : []),
-    ],
+    jobItems: jobsCount > 0
+      ? [
+          {
+            id: "jobs",
+            type: "jobs" as const,
+            icon: Briefcase,
+            title: `${jobsCount} new pupil enquir${jobsCount === 1 ? "y" : "ies"}`,
+            subtitle: "Tap to review and respond",
+            count: jobsCount,
+            route: "/instructor/jobs",
+          },
+        ]
+      : [],
+    testItems: swapsCount > 0
+      ? [
+          {
+            id: "swaps",
+            type: "swaps" as const,
+            icon: Repeat2,
+            title: `${swapsCount} test swap update${swapsCount === 1 ? "" : "s"}`,
+            subtitle: "Matching test slots or offers",
+            count: swapsCount,
+            route: "/instructor/test-requests",
+          },
+        ]
+      : [],
   };
 
   return (
