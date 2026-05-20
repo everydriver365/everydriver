@@ -81,6 +81,22 @@ import { format, parseISO } from "date-fns";
 import { haptics } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
 import { SectionPanel } from "@/components/ui/SectionPanel";
+import { CATEGORY_STYLES } from "@/components/instructor/scheduleGoogleStyle";
+
+// Map a pupil's existing flags to one of the Schedule tile categories so the
+// collapsed card uses the same pale-tint + black-title palette as Schedule.
+// Visual only — no behaviour change.
+function pupilTileStyle(opts: {
+  hasDebt: boolean;
+  hasCredit: boolean;
+  status: string | undefined;
+}) {
+  if (opts.hasDebt) return CATEGORY_STYLES.course;     // red tint
+  if (opts.hasCredit) return CATEGORY_STYLES.holiday;  // green tint
+  if (opts.status === "on_hold") return CATEGORY_STYLES.admin; // amber
+  if (opts.status === "inactive") return CATEGORY_STYLES.task; // grey
+  return CATEGORY_STYLES.lesson;                       // blue (default)
+}
 
 interface ScheduledLesson {
   id: string;
