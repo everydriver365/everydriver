@@ -47,6 +47,9 @@ export function haversineMiles(a: LatLng, b: LatLng): number {
 /** Estimate drive time in whole minutes (rounded up). */
 export function estimateDriveMinutes(from: LatLng, to: LatLng): number {
   const miles = haversineMiles(from, to);
+  // Same location (~80 m): back-to-back lessons at the same address get
+  // no spurious handover gap.
+  if (miles < 0.05) return 0;
   const minutes = (miles / AVG_MPH) * 60 + HANDOVER_MIN;
   return Math.ceil(minutes);
 }

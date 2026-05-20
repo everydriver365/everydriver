@@ -134,10 +134,24 @@ function mergeWindows(wins: Window[]): Window[] {
 }
 
 /**
+ * Normalise a stored day_of_week value to the JS convention (0=Sun..6=Sat).
+ * ISO 7 (Sun) maps to 0. Values outside 0–6 (after normalising) return null
+ * so malformed rows are dropped rather than matched against the wrong day.
+ */
+function normalizeDow(raw: unknown): number | null {
+  if (typeof raw !== "number" || !Number.isFinite(raw)) return null;
+  if (raw === 7) return 0;            // ISO Sun → JS Sun
+  if (raw >= 0 && raw <= 6) return raw;
+  return null;
+}
+
+/**
  * Weekly windows for one instructor on a given JS day-of-week (0=Sun..6=Sat).
  *
  * STRICT: rows missing or with unparseable `start_time` / `end_time` are
- * skipped entirely — no default substitution.
+ * skipped entirely — no default substitution. Both `workingHours` and
+ * `availabilityWindows` rows are matched via `normalizeDow` so they share
+ * a single convention.
  */
 function getWeeklyWindows(
   instructorId: string,
@@ -146,21 +160,18 @@ function getWeeklyWindows(
 ): Window[] {
   const out: Window[] = [];
 
-  // instructor_working_hours: 0=Sun..6=Sat
   for (const w of src.workingHours) {
-    if (w.instructor_id !== instructorId || !w.is_active || w.day_of_week !== jsDow) continue;
+    if (w.instructor_id !== instructorId || !w.is_active) continue;
+    if (normalizeDow(w.day_of_week) !== jsDow) continue;
     const s = parseHHMM(w.start_time);
     const e = parseHHMM(w.end_time);
     if (s == null || e == null) continue; // no data → not available
     if (e > s) out.push({ start: s, end: e });
   }
 
-  // availability_windows: 1=Mon..7=Sun → map Sun (0) → 7
-  const winDow = jsDow === 0 ? 7 : jsDow;
   for (const w of src.availabilityWindows) {
     if (w.instructor_id !== instructorId || !w.is_active) continue;
-    // Tolerate rows stored under either convention.
-    if (w.day_of_week !== winDow && w.day_of_week !== jsDow) continue;
+    if (normalizeDow(w.day_of_week) !== jsDow) continue;
     const s = parseHHMM(w.start_time);
     const e = parseHHMM(w.end_time);
     if (s == null || e == null) continue;
@@ -367,85 +378,12 @@ export function computeDaySlots(
     }
   }
 
-  const buffer = Math.max(0, instructor.buffer_minutes ?? 0);
   const firstLessonBuffer = Math.max(0, opts.firstLessonBufferMinutes ?? 0);
-
-  const allSlots: Slot[] = [];
-  const allRejected: RejectedSlot[] = [];
-
-  for (const win of windows) {
-    let dayStartMin = win.start;
-
-    // Per-window copy — synthetic "Travel from home" markers must NEVER leak
-    // into the next window of a split shift.
-    const winConflicts: TaggedConflict[] = [...baseConflicts];
-
-    // First-lesson travel buffer applies whenever the instructor has been
-    // idle long enough to be home — not only at the very start of the working
-    // window. We inject synthetic "travel from home" blocks at the start of
-    // every conflict-free gap whose length is ≥ firstLessonBuffer.
-    if (firstLessonBuffer > buffer) {
-      // Clip window-relevant conflicts and MERGE so adjacent/overlapping
-      // ones don't corrupt the gap-pairing math below.
-      const clipped = winConflicts
-        .filter((c) => c.end > win.start && c.start < win.end)
-        .map((c) => ({
-          start: Math.max(c.start, win.start),
-          end: Math.min(c.end, win.end),
-        }));
-      const merged = mergeIntervals(clipped);
-
-      // Build the sequence of (gapStart, gapEnd) pairs: window start → first
-      // conflict, then between consecutive conflicts, then last conflict →
-      // window end.
-      const gapStarts: number[] = [win.start, ...merged.map((c) => c.end)];
-      const gapEnds: number[] = [
-        ...merged.map((c) => c.start),
-        win.end,
-      ];
-
-      for (let i = 0; i < gapStarts.length; i++) {
-        const gStart = gapStarts[i];
-        const gEnd = gapEnds[i];
-        if (gEnd - gStart < firstLessonBuffer) continue;
-
-        if (i === 0) {
-          // Very first gap of the day: shift the window start directly.
-          dayStartMin = Math.max(dayStartMin, gStart + firstLessonBuffer);
-        } else {
-          // Interior gap after a conflict: inject a synthetic "travel from
-          // home" block at the gap start, INTO THE PER-WINDOW LIST ONLY.
-          winConflicts.push({
-            start: gStart,
-            end: gStart + firstLessonBuffer,
-            kind: "event",
-            label: "Travel from home",
-            padOverrideMin: 0,
-          });
-        }
-      }
-    }
-
-    const result = resolveAvailability({
-      dateStr,
-      dayStartMin,
-      dayEndMin: win.end,
-      bufferMinutes: opts.bufferMinutes,
-      durationMinutes: opts.durationMinutes,
-      conflicts: winConflicts,
-      timeOfDay: opts.timeOfDay,
-      isToday,
-      anchorSkipMinutes: opts.slotIncrementMinutes,
-      minNoticeMinutes: opts.minNoticeMinutes,
-    });
+  const effectiveBuffer = Math.max(0, opts.bufferMinutes);
+...
     allSlots.push(...result.slots);
     allRejected.push(...result.rejected);
   }
-
-  // Note: `buffer` is intentionally unused below — it's read from the
-  // instructor row by callers that pass `opts.bufferMinutes`. Kept for
-  // readability of the firstLessonBuffer comparison above.
-  void buffer;
 
   return { windows, slots: allSlots, rejected: allRejected };
 }
