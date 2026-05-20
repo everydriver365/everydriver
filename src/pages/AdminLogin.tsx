@@ -68,7 +68,24 @@ export default function AdminLogin() {
   const { signIn, isAdmin, user } = useAdminAuth();
   const navigate = useNavigate();
 
-  useClearOnDeepLink(() => { setError(""); setSuccess(""); });
+  // Single source of truth for clearing transient auth state. Used by deep-link
+  // arrivals AND when the user toggles between sign-in ↔ forgot-password on
+  // mobile, so no stale banner / password / loading flag leaks across views.
+  const clearAuthTransientState = () => {
+    setError("");
+    setSuccess("");
+    setPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
+    setLoading(false);
+  };
+
+  useClearOnDeepLink(clearAuthTransientState);
+
+  const switchMobileView = (toForgot: boolean) => {
+    clearAuthTransientState();
+    setViewMode(toForgot ? "forgot" : "login");
+  };
 
   useState(() => {
     const hashParams = new URLSearchParams(window.location.hash.substring(1));
@@ -174,7 +191,7 @@ export default function AdminLogin() {
         rememberMe={rememberMe}
         setRememberMe={setRememberMeState}
         isForgot={viewMode === "forgot"}
-        onForgotToggle={(v) => { setViewMode(v ? "forgot" : "login"); setError(""); setSuccess(""); }}
+        onForgotToggle={switchMobileView}
         loading={loading}
         error={error}
         onSubmit={handleSubmit}
