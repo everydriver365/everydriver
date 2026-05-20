@@ -1006,6 +1006,7 @@ function ScheduleCard({
   const [selectedDay, setSelectedDay] = useState(0);
   const days = useMemo(() => Array.from({ length: 7 }, (_, i) => addDays(today, i)), []);
   const { data: lessons = [] } = useDayLessons(instructorId, days[selectedDay]);
+  const { data: weekLessonDates = new Set<string>() } = useWeekLessonDates(instructorId, days);
 
   return (
     <SectionCard>
@@ -1048,7 +1049,9 @@ function ScheduleCard({
         <div style={{ display: "flex", gap: 3, marginBottom: 14 }}>
           {days.map((day, i) => {
             const isSel = i === selectedDay;
+            const isTodayCell = isSameDay(day, today);
             const isWknd = [0, 6].includes(day.getDay());
+            const hasLesson = weekLessonDates.has(format(day, "yyyy-MM-dd"));
             return (
               <button
                 key={i}
@@ -1060,7 +1063,7 @@ function ScheduleCard({
                   borderRadius: 12,
                   backgroundColor: isSel ? T.navy : "transparent",
                   border: 0, cursor: "pointer",
-                  display: "flex", flexDirection: "column", alignItems: "center", gap: 5,
+                  display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
                 }}
               >
                 <span
@@ -1074,17 +1077,26 @@ function ScheduleCard({
                 </span>
                 <span
                   style={{
-                    fontSize: 16, fontWeight: 700,
+                    fontSize: 15, fontWeight: 700,
                     color: isSel ? T.white : isWknd ? T.textLight : T.navy,
                     fontFamily: FONT,
                   }}
                 >
                   {format(day, "d")}
                 </span>
+                <span
+                  style={{
+                    width: 5, height: 5, borderRadius: 3,
+                    backgroundColor: hasLesson
+                      ? (isTodayCell ? T.red : T.blue)
+                      : "transparent",
+                  }}
+                />
               </button>
             );
           })}
         </div>
+
 
         {lessons.length === 0 ? (
           <div
