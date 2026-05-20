@@ -333,6 +333,7 @@ function HeroHeader(props: {
         lesson={nextLesson}
         expanded={lessonExpanded}
         onToggle={onToggleLesson}
+        instructorId={instructorId}
       />
 
       {/* Stats strip (inside hero, below next lesson) */}
