@@ -22,7 +22,11 @@ import {
   validateSlot,
   toMinutes,
   describeReason,
+  mergeIntervals,
+  londonDow,
+  londonTodayStr,
 } from "../_shared/availabilityEngine.ts";  // Deno copy — identical logic
+
 import { syncLessonNow } from "../_shared/googleCalendarSync.ts";
 
 const CORS = {
@@ -115,14 +119,23 @@ serve(async (req) => {
           .eq("instructor_id", booking.instructorId)
           .gte("end_datetime", fromIso).lte("start_datetime", toIso),
         supabase.from("instructor_calendar_events")
+          // Fail-closed parity with browser engine: pull all rows in range and
+          // let buildDayConflicts treat null/undefined `is_busy` as busy.
           .select("start_time, end_time, is_busy")
-          .eq("instructor_id", booking.instructorId).eq("is_busy", true)
+          .eq("instructor_id", booking.instructorId)
           .gte("end_time", fromIso).lte("start_time", toIso),
         supabase.from("instructors")
-          .select("buffer_minutes").eq("id", booking.instructorId).maybeSingle(),
+          .select("buffer_minutes, available_from, min_lead_hours")
+          .eq("id", booking.instructorId).maybeSingle(),
       ]);
 
       const buffer    = Number(instRes.data?.buffer_minutes ?? 0);
+      const availableFrom = (instRes.data?.available_from as string | null) ?? null;
+      const minLeadHours  = Number.isFinite(instRes.data?.min_lead_hours)
+        ? Number(instRes.data!.min_lead_hours)
+        : 0;
+      const minNoticeMinutes = Math.max(0, Math.round(minLeadHours * 60));
+      const today = londonTodayStr();
       const wh        = whRes.data ?? [];
       const aw        = awRes.data ?? [];
       const overrides = ovRes.data ?? [];
@@ -134,8 +147,20 @@ serve(async (req) => {
       for (const slot of booking.slots) {
         const slotStart = toMinutes(slot.startTime);
         const slotEnd   = toMinutes(slot.endTime);
-        const dow       = new Date(`${slot.date}T00:00:00Z`).getUTCDay(); // 0=Sun
+        // Use the canonical London DOW helper. Noon UTC is always inside the
+        // same London calendar day across BST/GMT, so this is DST-safe.
+        const dow       = londonDow(new Date(`${slot.date}T12:00:00Z`));
         const override  = overrides.find((o: any) => o.override_date === slot.date);
+
+        // ── Instructor-level gate: available_from ─────────────────────────
+        if (availableFrom && slot.date < availableFrom) {
+          conflicts.push({
+            date: slot.date,
+            startTime: slot.startTime,
+            reason: `Instructor is not available until ${availableFrom}`,
+          });
+          continue;
+        }
 
         // ── Resolve working window ────────────────────────────────────────
         let winStart: number | null = null;
@@ -163,16 +188,24 @@ serve(async (req) => {
             conflicts.push({ date: slot.date, startTime: slot.startTime, reason: "No working hours configured for this day" });
             continue;
           }
-          // Find any window that contains the requested slot.
-          const fitting = matching.find(
-            (w: any) => slotStart >= toMinutes(w.start_time) && slotEnd <= toMinutes(w.end_time),
+          // Merge overlapping/adjacent windows so a slot spanning two adjacent
+          // rows (e.g. 09:00–12:00 + 12:00–17:00) is accepted just like the
+          // browser engine does.
+          const merged = mergeIntervals(
+            matching.map((w: any) => ({
+              start: toMinutes(w.start_time),
+              end:   toMinutes(w.end_time),
+            })),
+          );
+          const fitting = merged.find(
+            (w) => slotStart >= w.start && slotEnd <= w.end,
           );
           if (!fitting) {
             conflicts.push({ date: slot.date, startTime: slot.startTime, reason: "Outside instructor working hours" });
             continue;
           }
-          winStart = toMinutes(fitting.start_time);
-          winEnd   = toMinutes(fitting.end_time);
+          winStart = fitting.start;
+          winEnd   = fitting.end;
         } else if (slotStart < winStart || slotEnd > winEnd!) {
           conflicts.push({ date: slot.date, startTime: slot.startTime, reason: "Outside working hours for this date" });
           continue;
@@ -193,12 +226,17 @@ serve(async (req) => {
           dayEndMin:       winEnd!,
           bufferMinutes:   buffer,
           conflicts:       dayConflicts,
+          // Past-cutoff parity with browser: reject slots in the past or
+          // inside the instructor's notice window when booking today.
+          isToday:         slot.date === today,
+          minNoticeMinutes,
         });
 
         if (!result.ok) {
           conflicts.push({ date: slot.date, startTime: slot.startTime, reason: describeReason(result.reason, result.cause, buffer) });
         }
       }
+
 
       if (conflicts.length > 0) {
         return json({
