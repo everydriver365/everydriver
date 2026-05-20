@@ -1,44 +1,46 @@
-## Response to your pushback — agreed, with one correction
+## Decision: Option 3 — defer findings 5 and 6 to P3
 
-### Finding 7 resolved: it's a real sixth bug
+Both override rows are months out (2026-01-11 and 2026-03-02). Finding 6 harms no one today. Pulling `resolveDayWindows` into `_shared/` is the correct structural move but it *is* P3 — extracting it now in isolation, outside the precompute design, is letting the batch drive the architecture. Option 2 (a Deno twin) is exactly the trap the audit exists to expose; declining it is the audit doing its job.
 
-Schema check: `instructor_date_overrides` has nullable `start_time` and `end_time`. Live data: 2 rows in production have `is_available = true` with non-null `start_time` and `end_time` — confirmed partial-day "available between X and Y on this date" overrides. The `public-courses` short-circuit at lines 49–51 returns `dateStr` the moment it sees any `is_available = true` override and never reads start/end. So on those two rows, the function returns the date as "next available" even if the override window has already passed for today, or even if the rest of the day is otherwise blocked.
+---
 
-Cross-check on the canonical helper: `src/lib/courseAvailability.ts` lines 217–220 already handles this correctly — when an `is_available = true` override has start/end, it parses them into a partial-day window. The engine itself doesn't resolve overrides; `courseAvailability.resolveDayWindows` does, and it's the right place. `public-courses` is the only file that gets override semantics wrong.
+## Batch A — ship in one pass (`supabase/functions/public-courses`)
 
-So: finding 7 promoted to a confirmed sixth bug. Same class as the others — public-courses reimplements something the canonical helper already does correctly.
+Four edits, all pure reductions in parallel logic. No behavioural risk on real accounts (the one risky edit was finding 6, now deferred).
 
-### Yes, agreed on the split — finding 5 is not in the tactical batch
+1. **Finding 1 — timezone correctness.** Replace `formatDate(day)` → `londonTodayStr()` / `londonDateStr(day)` and `day.getDay()` → `londonDow(day)`. Calls into existing shared helpers, deletes the local equivalents.
+2. **Finding 2 — paused instructors.** Add `availability_paused = false` to the instructor SQL filter. One where clause.
+3. **Finding 3 — min lead hours.** When the candidate day is London-today, reject slot times earlier than `londonNowMinutes() + min_lead_hours * 60`. One comparison.
+4. **Finding 4 — past-cutoff for today.** Apply the same `londonNowMinutes` cutoff to today's window so the function never returns a start time that has already passed.
 
-You're right and I was wrong to recommend tactical for finding 5. Reading my own list back, the busyness patch IS reimplementing `buildDayConflicts`, and shipping it would entrench exactly what this whole audit exists to expose. The asymmetry you named is the deciding fact: findings 1, 2, 3, 4 are each one helper call or one SQL filter — they *reduce* parallel logic. Finding 5 is a second engine. Different class, different decision.
+Net: ~15 lines removed, ~8 lines added, every new line is a call into the canonical shared module. Parallel-logic surface area decreases.
 
-And your priority correction stands: finding 5 is the worst, not the fifth-worst. An instructor solidly booked for two weeks shows "Next available: Tomorrow" on the public discovery page, every day. That's not edge-case drift, that's the steady state for every busy instructor in the system. The audit understated it because I ordered by reading sequence, not by impact. Reordered: 5 first, then 3 (paused instructors still publicly listed), then 4, then 1+2+6 (timezone/override correctness).
+---
 
-### The split
+## Deferred — write into the brief as two distinct items
 
-**Batch A — ship as actual reduction in parallel logic** (findings 1, 2, 3, 4, 6):
-- Switch `formatDate` → `londonTodayStr` and `day.getDay()` → `londonDow` (calling shared helpers, not duplicating logic).
-- Add `availability_paused = false` to the instructor SQL filter (one where clause, zero engine logic).
-- Add `min_lead_hours` cutoff for today (one comparison against `londonNowMinutes`).
-- Replace the inline override handling with a call to `courseAvailability.resolveDayWindows` for the day — that already handles partial-day `is_available=true` correctly, fixing finding 6 by deletion rather than reimplementation.
+**Finding 5 — actively misleading today.** `public-courses` does not consult `instructor_calendar_events` or `instructor_manual_blocks`. Any instructor with a busy calendar shows fabricated "next available" dates on the public discovery feed. This is the steady state for every busy (i.e. best) instructor in the system. Wrong now, every day, for most accounts that matter.
 
-Net effect: ~25 lines deleted, ~10 lines added, all of them calls into existing canonical helpers. Parallel-logic surface area goes down, not up.
+**Finding 6 — dormant, activates 2026-01-11.** When an `instructor_date_overrides` row has `is_available = true` with a partial-day `start_time`/`end_time`, `public-courses` short-circuits at lines 49–51 and returns the date without checking the override window. Zero affected rows until 2026-01-11 (instructor `b7987…`), then a second row 2026-03-02 (instructor `c9843…`). Not wrong today; becomes wrong on a known date.
 
-**Batch B — explicitly deferred to P3** (finding 5):
-- Busyness from `instructor_calendar_events` + `instructor_manual_blocks` is not patched in `public-courses`. It stays knowingly broken for a few more days. The fix is `public-courses` reading `next_available_date` from a precomputed availability column populated by the engine. That deletes `findFirstAvailableDate` entirely and ends the parallel-logic question for this surface.
+Both resolved by P3 (the canonical `instructor_availability_cache` populated by the engine, read by every discovery surface).
 
-This means after Batch A ships, the public discovery feed will still show fictional "next available" dates for busy instructors. That's an honest tradeoff: shipping a wrong-but-less-wrong number for 3–5 more days is preferable to entrenching a second busyness engine that we then have to delete anyway.
+---
 
-### Brief edit — P3 reframed
+## Tripwire on finding 6
 
-P3 currently reads (per your earlier brief) as a scale/performance item: "won't scale, precompute availability." The audit changes its character. Proposed rewording for the brief:
+Deferral without a deadline is forgetting with extra steps. Add a tracked marker — issue / calendar entry / whatever the team uses — with the rule:
 
-> **P3 — Precomputed availability table (moved up; reframe).** This is no longer a scale optimisation. `public-courses` audit confirms the public discovery page is showing fabricated "next available" dates for any instructor with a busy calendar — i.e. the busiest, best instructors — because the function has no concept of busyness. The fix is structural: a `instructor_availability_cache` table with `next_available_date` populated by the canonical engine, and every discovery/listing surface reads from it. Same project also resolves the parallel-logic problem for `smart-schedule-suggestions`, `whatsapp-webhook`, and `ai-admin-receptionist` — they all become readers of the cache rather than independent implementers of availability.
+> **If P3 has not shipped by 2026-01-04, patch finding 6 standalone in `public-courses` before 2026-01-11.**
 
-### What I'm asking you to confirm before any code moves
+The standalone patch, if it fires, would be option 1 (extract `resolveDayWindows` into `supabase/functions/_shared/dateOverrides.ts`, refactor `src/lib/courseAvailability.ts` to import it). The tripwire makes "deferred" a commitment, not a hope.
 
-1. Batch A as scoped above — five edits, all reductions, including the finding-6 fix via `resolveDayWindows`. Ship it.
-2. Finding 5 explicitly deferred to P3, with the brief edited as above. No tactical busyness patch.
-3. After Batch A lands and the brief is updated: halt on this surface. `smart-schedule-suggestions` waits.
+---
 
-If you confirm, I'll do Batch A in one pass and stop. If you want any of those four edits to drop from Batch A (e.g. you'd rather even the `resolveDayWindows` swap waited for P3 because it changes behaviour), say so — that's the one edit in Batch A that has any behavioural risk worth flagging, because it will start respecting partial-day overrides correctly and may shift `nextAvailable` for the two instructors with such rows.
+## Steps in order
+
+1. Edit `supabase/functions/public-courses/index.ts` — apply findings 1, 2, 3, 4 in one pass.
+2. Edit `.lovable/plan.md` / the brief: P3 reframed (correctness-urgent, not scale), "knowingly broken" section lists finding 5 and finding 6 as separate items with the urgency framing above, finding-6 tripwire recorded with the 2026-01-04 / 2026-01-11 dates.
+3. **Halt.** `smart-schedule-suggestions` waits. Public-courses is resolved when Batch A is in, finding 6 is tracked with its date, and the brief reflects reality.
+
+No code outside `supabase/functions/public-courses/index.ts`. No twin of `resolveDayWindows`. No extraction into `_shared/` this week.
