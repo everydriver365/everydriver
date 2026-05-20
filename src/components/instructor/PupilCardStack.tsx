@@ -742,15 +742,16 @@ export function PupilCardStack({
         whileTap={{ boxShadow: "0 10px 24px rgba(0,0,0,0.10)" }}
         transition={{ duration: 0.18, ease: [0.4, 0, 0.2, 1] }}
         style={{
-          backgroundColor: tileStyle.bg,
-          border: "0.5px solid #E5E5EA",
-          borderRadius: 10,
+          backgroundColor: "#FFFFFF",
+          border: "none",
+          borderRadius: 16,
           overflow: "hidden",
           position: "relative",
           boxShadow: priority
-            ? "0 4px 14px rgba(43,123,200,0.08), 0 1px 2px rgba(0,0,0,0.03)"
-            : "0 1px 2px rgba(0,0,0,0.03)",
+            ? "0 4px 14px rgba(15,32,68,0.10), 0 1px 2px rgba(0,0,0,0.04)"
+            : "0 1px 6px rgba(15,32,68,0.07)",
         }}
+
       >
 
         {/* Collapsed Card — DSM mobile reskin */}
