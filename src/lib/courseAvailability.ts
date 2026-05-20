@@ -242,6 +242,10 @@ export function hasNetworkPlaceholderAvailabilityOn(
 export interface DayComputeOptions {
   durationMinutes: number;
   bufferMinutes: number;
+  /** Keep public booking/course searches gated by instructor.available_from.
+   *  Instructor diary surfaces can set false to ask the same engine for real
+   *  working-hour gaps before the public booking start date. */
+  respectAvailableFrom?: boolean;
   /** When > bufferMinutes, the first slot of the day is pushed by this many
    *  minutes (instructor travel-from-home buffer). Skipped if any real
    *  conflict already exists earlier in the working window. */
@@ -285,7 +289,7 @@ export function computeDaySlots(
   if (isBefore(day, today)) {
     return { windows: [], slots: [], rejected: [] };
   }
-  if (instructor.available_from && isAfter(parseISO(instructor.available_from), day)) {
+  if (opts.respectAvailableFrom !== false && instructor.available_from && isAfter(parseISO(instructor.available_from), day)) {
     return { windows: [], slots: [], rejected: [] };
   }
 

@@ -95,6 +95,7 @@ export function useRealGapSlots(instructorId: string | undefined) {
           durationMinutes: 60,
           bufferMinutes: buffer,
           slotIncrementMinutes: slotIncrement,
+          respectAvailableFrom: false,
         });
 
         if (slots.length === 0) continue;
