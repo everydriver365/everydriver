@@ -1221,6 +1221,100 @@ function UrgentBanner({
   );
 }
 
+/* ----------- Jobs preview list (course enquiries) ----------- */
+function JobsPreviewList({
+  navigate,
+}: { navigate: ReturnType<typeof useNavigate> }) {
+  const { data: jobs = [], isLoading } = useQuery({
+    queryKey: ["mhdsm-pending-jobs-preview"],
+    staleTime: 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("course_enquiries")
+        .select("id, name, postcode, course_type, requested_hours, preferred_timing, created_at")
+        .eq("status", "pending")
+        .order("created_at", { ascending: false })
+        .limit(5);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  if (isLoading) return <Empty>Loading…</Empty>;
+  if (jobs.length === 0) return <Empty>No pending jobs</Empty>;
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column" }}>
+      {jobs.map((j: any, idx: number) => {
+        const courseLabel = (j.course_type || "Course")
+          .replace(/-/g, " ")
+          .replace(/\b\w/g, (c: string) => c.toUpperCase());
+        const hours = j.requested_hours ? `${j.requested_hours}h` : null;
+        const ago = (() => {
+          try {
+            const mins = Math.floor((Date.now() - new Date(j.created_at).getTime()) / 60000);
+            if (mins < 60) return `${mins}m ago`;
+            const hrs = Math.floor(mins / 60);
+            if (hrs < 24) return `${hrs}h ago`;
+            return `${Math.floor(hrs / 24)}d ago`;
+          } catch { return ""; }
+        })();
+        const meta = [hours, j.postcode, j.preferred_timing].filter(Boolean).join(" · ");
+        return (
+          <div key={j.id}>
+            {idx > 0 && (
+              <div style={{ height: 1, backgroundColor: "rgba(15,32,68,0.08)", margin: "0 20px" }} />
+            )}
+            <button
+              type="button"
+              onClick={() => navigate("/instructor/jobs")}
+              style={{
+                width: "calc(100% - 28px)", margin: "0 14px 6px",
+                borderRadius: 10, backgroundColor: "#FEFAFA",
+                padding: 11, display: "flex", alignItems: "center", gap: 10,
+                cursor: "pointer", border: 0, textAlign: "left",
+              }}
+            >
+              <div
+                style={{
+                  width: 30, height: 30, borderRadius: 8, backgroundColor: T.redLight,
+                  display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                }}
+              >
+                <Briefcase size={15} color={T.red} strokeWidth={1.8} />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div
+                  style={{
+                    fontSize: 12, fontWeight: 700, color: T.navy, fontFamily: FONT,
+                    display: "flex", alignItems: "center", gap: 6,
+                  }}
+                >
+                  <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {j.name || "New enquiry"}
+                  </span>
+                  <span style={{ fontSize: 10, fontWeight: 600, color: T.textMuted }}>· {courseLabel}</span>
+                </div>
+                <div
+                  style={{
+                    fontSize: 10, color: T.textMuted, marginTop: 1, fontFamily: FONT,
+                    overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                  }}
+                >
+                  {meta || ago}{meta && ago ? ` · ${ago}` : ""}
+                </div>
+              </div>
+              <ChevronRight size={14} color={T.textLight} strokeWidth={2.5} />
+            </button>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+
+
 /* =============================== Schedule =============================== */
 function ScheduleCard({
   instructorId, navigate,
