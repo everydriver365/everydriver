@@ -1944,8 +1944,9 @@ function UpcomingEventsCard({
   const [openId, setOpenId] = useState<string | null>(null);
 
   return (
-    <div style={{ padding: "0 14px" }}>
+    <div>
       <div
+
         style={{
           fontSize: 11, fontWeight: 700, color: T.textLight,
           letterSpacing: 0.9, textTransform: "uppercase", fontFamily: FONT,
@@ -2115,49 +2116,113 @@ function MembershipCard({
   membership: ReturnType<typeof useInstructorMembership>["data"];
   navigate: ReturnType<typeof useNavigate>;
 }) {
+  const [open, setOpen] = useState(false);
+  const planName = membership?.planName ?? "Free";
+  const status = membership?.status;
+
   return (
-    <SectionCard>
-      <SectionHeader label="Membership" />
-      <button
-        type="button"
-        onClick={() => navigate("/instructor/subscription")}
+    <div>
+      <div
         style={{
-          width: "100%", padding: 16,
-          background: "transparent", border: 0, cursor: "pointer",
-          display: "flex", alignItems: "center", gap: 12, textAlign: "left",
+          fontSize: 11, fontWeight: 700, color: T.textLight,
+          letterSpacing: 0.9, textTransform: "uppercase", fontFamily: FONT,
+          padding: "4px 4px 10px",
         }}
       >
-        <div
+        Membership
+      </div>
+
+      <div
+        style={{
+          background: "#fff",
+          borderRadius: 12,
+          boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+          overflow: "hidden",
+        }}
+      >
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
           style={{
-            width: 38, height: 38, borderRadius: 11,
-            backgroundColor: T.redLight,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            flexShrink: 0,
+            width: "100%",
+            padding: "18px 18px",
+            background: "transparent",
+            border: 0,
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            textAlign: "left",
           }}
         >
-          <Star size={18} color={T.red} strokeWidth={1.8} />
-        </div>
-        <div
-          style={{
-            flex: 1, fontSize: 13, fontWeight: 700, color: T.navy,
-            textTransform: "uppercase", letterSpacing: 0.5, fontFamily: FONT,
-          }}
-        >
-          {membership?.planName ?? "Plan"}
-        </div>
-        <div
-          style={{
-            backgroundColor: T.surface, color: T.textMid,
-            borderRadius: 20, padding: "5px 12px",
-            display: "flex", alignItems: "center", gap: 4,
-            fontSize: 11, fontWeight: 600, fontFamily: FONT,
-          }}
-        >
-          Manage
-          <ChevronRight size={12} color={T.textMid} strokeWidth={2} />
-        </div>
-      </button>
-    </SectionCard>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div
+              style={{
+                fontSize: 15,
+                fontWeight: 700,
+                color: T.navy,
+                fontFamily: FONT,
+                lineHeight: 1.25,
+              }}
+            >
+              {planName} plan
+            </div>
+          </div>
+          <ChevronDown
+            size={20}
+            color={T.blue}
+            strokeWidth={2.5}
+            style={{
+              flexShrink: 0,
+              transition: "transform 0.2s ease",
+              transform: open ? "rotate(180deg)" : "rotate(0deg)",
+            }}
+          />
+        </button>
+
+        {open && (
+          <div
+            style={{
+              padding: "0 18px 18px",
+              display: "flex",
+              flexDirection: "column",
+              gap: 10,
+            }}
+          >
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <Star size={14} color={T.textMuted} strokeWidth={2} />
+              <span style={{ fontSize: 13, color: T.navy, fontFamily: FONT, fontWeight: 600 }}>
+                {planName}
+              </span>
+              {status && (
+                <span style={{ fontSize: 13, color: T.textMuted, fontFamily: FONT }}>
+                  · {status}
+                </span>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={() => navigate("/instructor/subscription")}
+              style={{
+                marginTop: 4,
+                alignSelf: "flex-start",
+                background: T.blue,
+                color: "#fff",
+                border: 0,
+                cursor: "pointer",
+                borderRadius: 8,
+                padding: "8px 14px",
+                fontSize: 13,
+                fontWeight: 600,
+                fontFamily: FONT,
+              }}
+            >
+              Manage
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
 
