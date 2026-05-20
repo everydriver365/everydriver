@@ -215,8 +215,8 @@ function isGarbageIso(s: string): boolean {
 
 for (let i = 0; i < 200; i++) {
   const s = randomDateIso();
-  // Force end to be garbage by prepending junk
-  const e = "garbage-" + randomString(Math.floor(Math.random() * 30) + 1);
+  // Force end to be truly unparseable: only letters and symbols, no digits.
+  const e = "garbage-" + randomString(Math.floor(Math.random() * 30) + 1).replace(/\d/g, "");
   const result = isAllDayLikeEvent(s, e);
   assert(result === false, `isAllDayLikeEvent(validIso, garbage) must return false, got ${result}`);
 }
