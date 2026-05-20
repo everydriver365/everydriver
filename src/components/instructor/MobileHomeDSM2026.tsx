@@ -60,6 +60,7 @@ import {
   Settings as SettingsIcon,
   Briefcase,
   CalendarRange,
+  AlertCircle,
   type LucideIcon,
 } from "lucide-react";
 import { format, addDays, getWeek, isSameDay, parse, parseISO } from "date-fns";
@@ -803,108 +804,253 @@ function NeedsAttentionCard({
     { label: "Enq",   value: attention.enquiries, hot: true, onClick: () => navigate("/instructor/enquiries") },
   ];
 
-  return (
-    <SectionCard>
-      <SectionHeader
-        label="Needs attention"
-        right={
-          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <span
-              style={{
-                backgroundColor: T.red, color: T.white, borderRadius: 20,
-                padding: "2px 9px", fontSize: 10, fontWeight: 700, fontFamily: FONT,
-              }}
-            >
-              {attention.urgentCount ?? 0} urgent
-            </span>
-            <span
-              style={{
-                backgroundColor: T.blueLight, color: T.blue, borderRadius: 20,
-                padding: "2px 9px", fontSize: 10, fontWeight: 700, fontFamily: FONT,
-              }}
-            >
-              {attention.todoCount ?? 0} to do
-            </span>
-          </div>
-        }
-      />
+  const tileShadow = "0 1px 3px rgba(15,32,68,0.06)";
+  const tileBorder = `1px solid ${T.border}`;
 
-      {/* Counter strip */}
-      <div
-        style={{
-          display: "flex", borderBottom: `1px solid ${T.divider}`,
-          backgroundColor: "#FAFBFC",
-        }}
-      >
-        {counters.map((c, i) => (
-          <button
-            key={c.label}
-            type="button"
-            onClick={c.onClick}
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      {/* Header row */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 2px" }}>
+        <span
+          style={{
+            fontSize: 11, fontWeight: 700, color: T.navy, opacity: 0.6,
+            letterSpacing: "0.12em", textTransform: "uppercase", fontFamily: FONT,
+          }}
+        >
+          Needs attention
+        </span>
+        <div style={{ display: "flex", gap: 6 }}>
+          <span
             style={{
-              flex: 1, padding: "13px 4px", textAlign: "center",
-              borderRight: i < counters.length - 1 ? `1px solid ${T.divider}` : 0,
-              opacity: c.value === 0 ? 0.4 : 1,
-              background: "transparent", border: 0,
-              borderTop: 0, borderBottom: 0, borderLeft: 0,
-              cursor: "pointer",
+              backgroundColor: T.red, color: T.white, borderRadius: 999,
+              padding: "2px 10px", fontSize: 10, fontWeight: 700, fontFamily: FONT,
             }}
           >
-            <div
-              style={{
-                fontSize: 22, fontWeight: 800,
-                color: c.value > 0 && c.hot ? T.red : c.value > 0 ? T.blue : T.navy,
-                lineHeight: "24px", fontFamily: FONT,
-              }}
-            >
-              {c.value}
-            </div>
-            <div style={{ fontSize: 10, fontWeight: 500, color: T.textMuted, marginTop: 2, fontFamily: FONT }}>
-              {c.label}
-            </div>
-          </button>
-        ))}
+            {attention.urgentCount ?? 0} urgent
+          </span>
+          <span
+            style={{
+              backgroundColor: "rgba(15,32,68,0.08)", color: T.navy, borderRadius: 999,
+              padding: "2px 10px", fontSize: 10, fontWeight: 700, fontFamily: FONT,
+            }}
+          >
+            {attention.todoCount ?? 0} to do
+          </span>
+        </div>
       </div>
 
-      <Collapsible
-        label="Urgent" labelColour={T.red} badgeColour={T.red}
-        badgeCount={attention.urgentCount}
-        open={urgentOpen} onToggle={() => setUrgentOpen((p) => !p)}
-        borderTop={false}
-      >
-        {attention.urgentItems.length === 0 ? (
-          <Empty>All clear</Empty>
-        ) : (
-          attention.urgentItems.map((it: any) => (
-            <UrgentBanner key={it.id} item={it} onPress={() => navigate(it.route)} />
-          ))
-        )}
-      </Collapsible>
+      {/* Summary tile grid — 5 columns */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 8 }}>
+        {counters.map((c) => {
+          const valueColor =
+            c.value > 0 && c.hot ? T.red : c.value > 0 ? T.blue : T.navy;
+          const isZero = c.value === 0;
+          return (
+            <button
+              key={c.label}
+              type="button"
+              onClick={c.onClick}
+              style={{
+                backgroundColor: T.white, borderRadius: 12, padding: "10px 4px",
+                border: tileBorder, boxShadow: tileShadow,
+                display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+                cursor: "pointer",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 18, fontWeight: 800, color: valueColor, lineHeight: 1,
+                  marginBottom: 4, opacity: isZero ? 0.4 : 1, fontFamily: FONT,
+                  fontVariantNumeric: "tabular-nums",
+                }}
+              >
+                {c.value}
+              </div>
+              <div
+                style={{
+                  fontSize: 10, fontWeight: 500, color: T.navy, opacity: 0.6, fontFamily: FONT,
+                }}
+              >
+                {c.label}
+              </div>
+            </button>
+          );
+        })}
+      </div>
 
-      <Collapsible
-        label="Messages" labelColour={T.textMuted} badgeCount={attention.msgs}
-        clearLabel={attention.msgs === 0}
-        open={msgsOpen} onToggle={() => setMsgsOpen((p) => !p)} borderTop
-      >
-        <Empty>No new messages</Empty>
-      </Collapsible>
+      {/* Action tiles */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        <ActionTile
+          icon={AlertCircle}
+          label="Urgent"
+          accent={T.red}
+          outlined
+          badgeCount={attention.urgentCount}
+          open={urgentOpen}
+          onToggle={() => setUrgentOpen((p) => !p)}
+        >
+          {attention.urgentItems.length === 0 ? (
+            <Empty>All clear</Empty>
+          ) : (
+            attention.urgentItems.map((it: any) => (
+              <UrgentBanner key={it.id} item={it} onPress={() => navigate(it.route)} />
+            ))
+          )}
+        </ActionTile>
 
-      <Collapsible
-        label="Calls" labelColour={T.textMuted} badgeCount={attention.calls}
-        clearLabel={attention.calls === 0}
-        open={callsOpen} onToggle={() => setCallsOpen((p) => !p)} borderTop
-      >
-        <Empty>No missed calls</Empty>
-      </Collapsible>
+        <ActionTile
+          icon={MessageSquare}
+          label="Messages"
+          badgeCount={attention.msgs}
+          open={msgsOpen}
+          onToggle={() => setMsgsOpen((p) => !p)}
+        >
+          <Empty>No new messages</Empty>
+        </ActionTile>
 
-      <Collapsible
-        label="Enquiries" labelColour={T.textMuted} badgeCount={attention.enquiries}
-        clearLabel={attention.enquiries === 0}
-        open={enquiriesOpen} onToggle={() => setEnquiriesOpen((p) => !p)} borderTop
+        <ActionTile
+          icon={PhoneCall}
+          label="Calls"
+          badgeCount={attention.calls}
+          open={callsOpen}
+          onToggle={() => setCallsOpen((p) => !p)}
+        >
+          <Empty>No missed calls</Empty>
+        </ActionTile>
+
+        <ActionTile
+          icon={HelpCircle}
+          label="Enquiries"
+          badgeCount={attention.enquiries}
+          open={enquiriesOpen}
+          onToggle={() => setEnquiriesOpen((p) => !p)}
+        >
+          <Empty>No new enquiries</Empty>
+        </ActionTile>
+      </div>
+    </div>
+  );
+}
+
+/* Vodafone-style action tile — white rounded card with left line icon,
+   bold label, right-side badge + chevron. Tapping toggles the expanded body. */
+function ActionTile({
+  icon: Icon,
+  label,
+  accent,
+  outlined,
+  badgeCount,
+  open,
+  onToggle,
+  children,
+}: {
+  icon: LucideIcon;
+  label: string;
+  accent?: string;
+  outlined?: boolean;
+  badgeCount: number;
+  open: boolean;
+  onToggle: () => void;
+  children: React.ReactNode;
+}) {
+  const isUrgent = !!outlined && (badgeCount ?? 0) > 0;
+  const labelColor = isUrgent ? (accent ?? T.red) : T.navy;
+  const iconColor = isUrgent ? (accent ?? T.red) : T.navy;
+  const iconOpacity = isUrgent ? 1 : 0.6;
+  const border = isUrgent
+    ? `2px solid ${accent ?? T.red}`
+    : `1px solid ${T.border}`;
+  const cleared = (badgeCount ?? 0) === 0 && !isUrgent;
+
+  return (
+    <div
+      style={{
+        backgroundColor: T.white,
+        borderRadius: 16,
+        border,
+        boxShadow: "0 1px 3px rgba(15,32,68,0.06)",
+        overflow: "hidden",
+      }}
+    >
+      <button
+        type="button"
+        onClick={onToggle}
+        style={{
+          width: "100%", padding: "14px 16px",
+          display: "flex", alignItems: "center", gap: 14,
+          background: "transparent", border: 0, cursor: "pointer", textAlign: "left",
+        }}
       >
-        <Empty>No new enquiries</Empty>
-      </Collapsible>
-    </SectionCard>
+        <div
+          style={{
+            width: 36, height: 36, display: "flex",
+            alignItems: "center", justifyContent: "center",
+            color: iconColor, opacity: iconOpacity, flexShrink: 0,
+          }}
+        >
+          <Icon size={22} strokeWidth={1.8} />
+        </div>
+        <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 8 }}>
+          <span
+            style={{
+              fontSize: 15, fontWeight: 700, color: labelColor,
+              letterSpacing: "-0.01em", fontFamily: FONT,
+            }}
+          >
+            {label}
+          </span>
+          {isUrgent ? (
+            <span
+              style={{
+                backgroundColor: accent ?? T.red, color: T.white,
+                borderRadius: 999, padding: "2px 8px",
+                fontSize: 10, fontWeight: 700, fontFamily: FONT,
+              }}
+            >
+              {badgeCount}
+            </span>
+          ) : null}
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+          {cleared ? (
+            <span
+              style={{
+                display: "inline-flex", alignItems: "center", gap: 4,
+                backgroundColor: "rgba(26,82,160,0.10)", color: T.blue,
+                borderRadius: 999, padding: "3px 10px",
+                fontSize: 11, fontWeight: 700, fontFamily: FONT,
+              }}
+            >
+              ✓ Clear
+            </span>
+          ) : !isUrgent && badgeCount > 0 ? (
+            <span
+              style={{
+                backgroundColor: T.surface, color: T.navy,
+                borderRadius: 999, padding: "3px 10px",
+                fontSize: 11, fontWeight: 700, fontFamily: FONT,
+              }}
+            >
+              {badgeCount}
+            </span>
+          ) : null}
+          <ChevronDown
+            size={18}
+            strokeWidth={2}
+            style={{
+              color: T.navy, opacity: 0.25,
+              transform: open ? "rotate(180deg)" : "rotate(0deg)",
+              transition: "transform .2s",
+            }}
+          />
+        </div>
+      </button>
+      {open ? (
+        <div style={{ borderTop: `1px solid ${T.divider}`, padding: "8px 0 10px" }}>
+          {children}
+        </div>
+      ) : null}
+    </div>
   );
 }
 
