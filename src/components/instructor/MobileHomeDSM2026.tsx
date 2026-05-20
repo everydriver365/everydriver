@@ -1931,33 +1931,33 @@ function QATile({
       onClick={onPress}
       style={{
         width: "100%",
-        height: 80,
-        padding: "0 18px",
+        height: 60,
+        padding: "0 14px",
         backgroundColor: "#FFFFFF",
         border: 0,
-        boxShadow: "0 4px 12px rgba(17,24,39,0.08), 0 1px 2px rgba(17,24,39,0.04)",
-        borderRadius: 16,
+        boxShadow: "0 2px 8px rgba(17,24,39,0.06), 0 1px 2px rgba(17,24,39,0.04)",
+        borderRadius: 12,
         cursor: "pointer",
         display: "flex",
         flexDirection: "row",
         alignItems: "center",
-        gap: 14,
+        gap: 10,
         textAlign: "left",
       }}
     >
       <Icon
-        size={26}
+        size={20}
         color={T.navy}
         strokeWidth={1.8}
         style={{ flexShrink: 0 }}
       />
       <span
         style={{
-          fontSize: 15,
+          fontSize: 13,
           fontWeight: 700,
           color: T.navy,
           fontFamily: FONT,
-          lineHeight: "18px",
+          lineHeight: "16px",
           letterSpacing: "-0.2px",
           overflow: "hidden",
           textOverflow: "ellipsis",
