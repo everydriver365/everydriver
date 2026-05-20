@@ -176,7 +176,7 @@ export function MobileHomeDSM2026({ instructorId, instructorName }: Props) {
 
   const [lessonExpanded, setLessonExpanded] = useState(false);
 
-  // Earliest upcoming free slot (excludes today; engine returns tomorrow onward).
+  // Earliest instructor diary gap, including today when a slot is still valid.
   const nextFreeSlotLabel = (() => {
     const first = gapDays.find((d) => d.slots.length > 0);
     if (!first) return null;
