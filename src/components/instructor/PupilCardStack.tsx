@@ -727,6 +727,12 @@ export function PupilCardStack({
     }
   };
 
+  const tileStyle = pupilTileStyle({
+    hasDebt,
+    hasCredit,
+    status: pupil.status as string | undefined,
+  });
+
   return (
     <>
       <motion.div
@@ -736,8 +742,8 @@ export function PupilCardStack({
         whileTap={{ boxShadow: "0 10px 24px rgba(0,0,0,0.10)" }}
         transition={{ duration: 0.18, ease: [0.4, 0, 0.2, 1] }}
         style={{
-          backgroundColor: "#FFFFFF",
-          border: priority ? "0.5px solid #DCE7F2" : "0.5px solid #ECECEF",
+          backgroundColor: tileStyle.bg,
+          border: "0.5px solid rgba(0,0,0,0.06)",
           borderRadius: 12,
           overflow: "hidden",
           position: "relative",
@@ -746,6 +752,18 @@ export function PupilCardStack({
             : "0 1px 2px rgba(0,0,0,0.03)",
         }}
       >
+        {/* Left accent hairline (schedule-tile style) */}
+        <span
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            top: 0,
+            bottom: 0,
+            left: 0,
+            width: 3,
+            background: tileStyle.border,
+          }}
+        />
         {/* Collapsed Card — DSM mobile reskin */}
         <motion.button
           onClick={handleCardClick}
