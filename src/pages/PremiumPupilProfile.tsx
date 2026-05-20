@@ -1422,15 +1422,8 @@ export default function PremiumPupilProfile() {
     </div>
   );
 
-  // ─── Scheduling: per-pupil travel time override ───
-  const pupilTravelMin = (pupil as any).travel_time_minutes as number | null | undefined;
-  const [travelInput, setTravelInput] = useState<string>(
-    pupilTravelMin == null ? "" : String(pupilTravelMin)
-  );
-  const [savingTravel, setSavingTravel] = useState(false);
-  useEffect(() => {
-    setTravelInput(pupilTravelMin == null ? "" : String(pupilTravelMin));
-  }, [pupilTravelMin]);
+  // ─── Scheduling: per-pupil travel time override (hooks moved above early return) ───
+
 
   const saveTravelTime = async (next: number | null) => {
     if (!pupil?.id) return;
