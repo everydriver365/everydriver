@@ -874,8 +874,8 @@ function NeedsAttentionCard({
 }
 
 
-/* Grid-friendly action tile — vertical layout so label + badge fit inside
-   a compact 2×2 grid cell (~175 px wide). */
+/* Horizontal strip action tile — icon left, label, badge, chevron right.
+   Tapping toggles inline expanded body. */
 function ActionTile({
   icon: Icon,
   label,
@@ -884,6 +884,7 @@ function ActionTile({
   badgeCount,
   open,
   onToggle,
+  children,
 }: {
   icon: LucideIcon;
   label: string;
@@ -892,6 +893,7 @@ function ActionTile({
   badgeCount: number;
   open: boolean;
   onToggle: () => void;
+  children: React.ReactNode;
 }) {
   const isUrgent = !!outlined && (badgeCount ?? 0) > 0;
   const labelColor = isUrgent ? (accent ?? T.red) : T.navy;
@@ -899,6 +901,7 @@ function ActionTile({
   const iconOpacity = isUrgent ? 1 : 0.6;
   const border = `1px solid ${T.border}`;
   const hasItems = (badgeCount ?? 0) > 0;
+  const cleared = !hasItems && !isUrgent;
 
   return (
     <div
@@ -908,90 +911,86 @@ function ActionTile({
         border,
         boxShadow: "0 1px 3px rgba(15,32,68,0.06)",
         overflow: "hidden",
-        display: "flex",
-        flexDirection: "column",
       }}
     >
       <button
         type="button"
         onClick={onToggle}
         style={{
-          width: "100%",
-          padding: "14px 8px",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          gap: 6,
-          background: "transparent",
-          border: 0,
-          cursor: "pointer",
-          textAlign: "center",
+          width: "100%", padding: "14px 16px",
+          display: "flex", alignItems: "center", gap: 14,
+          background: "transparent", border: 0, cursor: "pointer", textAlign: "left",
         }}
       >
-        <div style={{ position: "relative", opacity: iconOpacity, color: iconColor }}>
+        <div
+          style={{
+            width: 36, height: 36, display: "flex",
+            alignItems: "center", justifyContent: "center",
+            color: iconColor, opacity: iconOpacity, flexShrink: 0,
+          }}
+        >
           <Icon size={22} strokeWidth={1.8} />
-          {hasItems ? (
+        </div>
+        <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 8 }}>
+          <span
+            style={{
+              fontSize: 15, fontWeight: 700, color: labelColor,
+              letterSpacing: "-0.01em", fontFamily: FONT,
+            }}
+          >
+            {label}
+          </span>
+          {isUrgent ? (
             <span
               style={{
-                position: "absolute",
-                top: -5,
-                right: -8,
-                minWidth: 15,
-                height: 15,
-                borderRadius: 8,
-                backgroundColor: isUrgent ? (accent ?? T.red) : T.blue,
-                color: T.white,
-                fontSize: 8,
-                fontWeight: 700,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                padding: "0 3px",
-                fontFamily: FONT,
+                backgroundColor: accent ?? T.red, color: T.white,
+                borderRadius: 999, padding: "2px 8px",
+                fontSize: 10, fontWeight: 700, fontFamily: FONT,
               }}
             >
-              {badgeCount > 99 ? "99+" : badgeCount}
+              {badgeCount}
             </span>
           ) : null}
         </div>
-
-        <span
-          style={{
-            fontSize: 12,
-            fontWeight: 700,
-            color: labelColor,
-            fontFamily: FONT,
-            lineHeight: "14px",
-          }}
-        >
-          {label}
-        </span>
-
-        {!hasItems ? (
-          <span
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+          {cleared ? (
+            <span
+              style={{
+                display: "inline-flex", alignItems: "center", gap: 4,
+                backgroundColor: "rgba(26,82,160,0.10)", color: T.blue,
+                borderRadius: 999, padding: "3px 10px",
+                fontSize: 11, fontWeight: 700, fontFamily: FONT,
+              }}
+            >
+              ✓ Clear
+            </span>
+          ) : !isUrgent && hasItems ? (
+            <span
+              style={{
+                backgroundColor: T.surface, color: T.navy,
+                borderRadius: 999, padding: "3px 10px",
+                fontSize: 11, fontWeight: 700, fontFamily: FONT,
+              }}
+            >
+              {badgeCount}
+            </span>
+          ) : null}
+          <ChevronDown
+            size={18}
+            strokeWidth={2}
             style={{
-              fontSize: 10,
-              fontWeight: 600,
-              color: T.blue,
-              fontFamily: FONT,
+              color: T.navy, opacity: 0.25,
+              transform: open ? "rotate(180deg)" : "rotate(0deg)",
+              transition: "transform .2s",
             }}
-          >
-            Clear
-          </span>
-        ) : null}
-
-        <ChevronDown
-          size={14}
-          strokeWidth={2}
-          style={{
-            color: T.navy,
-            opacity: 0.2,
-            transform: open ? "rotate(180deg)" : "rotate(0deg)",
-            transition: "transform .2s",
-            marginTop: 2,
-          }}
-        />
+          />
+        </div>
       </button>
+      {open ? (
+        <div style={{ borderTop: `1px solid ${T.divider}`, padding: "8px 0 10px" }}>
+          {children}
+        </div>
+      ) : null}
     </div>
   );
 }
