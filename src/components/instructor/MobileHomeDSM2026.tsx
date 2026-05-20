@@ -1731,7 +1731,8 @@ function QuickAccessCard({ navigate }: { navigate: ReturnType<typeof useNavigate
             overflowX: "auto",
             WebkitOverflowScrolling: "touch",
             scrollbarWidth: "none",
-            paddingBottom: 10,
+            padding: "12px 0",
+            backgroundColor: "#F7F7F7",
           }}
         >
           <div
