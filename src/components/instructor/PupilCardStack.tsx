@@ -81,6 +81,22 @@ import { format, parseISO } from "date-fns";
 import { haptics } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
 import { SectionPanel } from "@/components/ui/SectionPanel";
+import { CATEGORY_STYLES } from "@/components/instructor/scheduleGoogleStyle";
+
+// Map a pupil's existing flags to one of the Schedule tile categories so the
+// collapsed card uses the same pale-tint + black-title palette as Schedule.
+// Visual only — no behaviour change.
+function pupilTileStyle(opts: {
+  hasDebt: boolean;
+  hasCredit: boolean;
+  status: string | undefined;
+}) {
+  if (opts.hasDebt) return CATEGORY_STYLES.course;     // red tint
+  if (opts.hasCredit) return CATEGORY_STYLES.holiday;  // green tint
+  if (opts.status === "on_hold") return CATEGORY_STYLES.admin; // amber
+  if (opts.status === "inactive") return CATEGORY_STYLES.task; // grey
+  return CATEGORY_STYLES.lesson;                       // blue (default)
+}
 
 interface ScheduledLesson {
   id: string;
@@ -711,6 +727,12 @@ export function PupilCardStack({
     }
   };
 
+  const tileStyle = pupilTileStyle({
+    hasDebt,
+    hasCredit,
+    status: pupil.status as string | undefined,
+  });
+
   return (
     <>
       <motion.div
@@ -720,8 +742,8 @@ export function PupilCardStack({
         whileTap={{ boxShadow: "0 10px 24px rgba(0,0,0,0.10)" }}
         transition={{ duration: 0.18, ease: [0.4, 0, 0.2, 1] }}
         style={{
-          backgroundColor: "#FFFFFF",
-          border: priority ? "0.5px solid #DCE7F2" : "0.5px solid #ECECEF",
+          backgroundColor: tileStyle.bg,
+          border: "0.5px solid rgba(0,0,0,0.06)",
           borderRadius: 12,
           overflow: "hidden",
           position: "relative",
@@ -730,6 +752,18 @@ export function PupilCardStack({
             : "0 1px 2px rgba(0,0,0,0.03)",
         }}
       >
+        {/* Left accent hairline (schedule-tile style) */}
+        <span
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            top: 0,
+            bottom: 0,
+            left: 0,
+            width: 3,
+            background: tileStyle.border,
+          }}
+        />
         {/* Collapsed Card — DSM mobile reskin */}
         <motion.button
           onClick={handleCardClick}
@@ -846,7 +880,7 @@ export function PupilCardStack({
                     <div
                       className="truncate"
                       style={{
-                        fontSize: 14, fontWeight: 600, color: "#0F2044",
+                        fontSize: 14, fontWeight: 600, color: "#000000",
                         marginBottom: 4, fontFamily: "Poppins, sans-serif",
                         lineHeight: 1.25,
                       }}
@@ -928,7 +962,7 @@ export function PupilCardStack({
                 </div>
 
                 {/* Divider */}
-                <div style={{ height: 1, background: "#F2F4F8", marginLeft: 16, marginRight: 16 }} />
+                <div style={{ height: 1, background: "rgba(0,0,0,0.06)", marginLeft: 16, marginRight: 16 }} />
 
                 {/* Actions row */}
                 <div
