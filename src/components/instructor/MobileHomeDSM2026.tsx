@@ -75,6 +75,7 @@ import { useTestSwapNotifications } from "@/hooks/useTestSwapNotifications";
 import { useUpcomingEvents, type UpcomingEvent } from "@/hooks/useUpcomingEvents";
 import { useInstructorMembership } from "@/hooks/useInstructorMembership";
 import { useDayLessons } from "@/hooks/useDayLessons";
+import { useInstructorPaymentsData } from "@/hooks/useInstructorPaymentsData";
 import { DsmLogo } from "@/components/instructor/ui/DsmLogo";
 
 /* ---------------------------- Design tokens ----------------------------- */
