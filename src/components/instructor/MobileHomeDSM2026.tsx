@@ -852,8 +852,8 @@ function NeedsAttentionCard({
         </div>
       </div>
 
-      {/* Action tile heads — 2×2 grid */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+      {/* Action tiles — horizontal strips */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         {tiles.map((t) => (
           <ActionTile
             key={t.key}
@@ -864,24 +864,11 @@ function NeedsAttentionCard({
             badgeCount={t.count}
             open={openKey === t.key}
             onToggle={() => toggle(t.key)}
-          />
+          >
+            {t.body}
+          </ActionTile>
         ))}
       </div>
-
-      {/* Expanded drawer — full width below grid */}
-      {openTile ? (
-        <div
-          style={{
-            backgroundColor: T.white,
-            borderRadius: 16,
-            border: `1px solid ${T.border}`,
-            boxShadow: "0 1px 3px rgba(15,32,68,0.06)",
-            padding: "10px 12px",
-          }}
-        >
-          {openTile.body}
-        </div>
-      ) : null}
     </div>
   );
 }
