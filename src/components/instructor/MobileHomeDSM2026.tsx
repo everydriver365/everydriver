@@ -765,38 +765,23 @@ function NeedsAttentionCard({
       <SectionHeader
         label="Needs attention"
         right={
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
             <span
               style={{
                 backgroundColor: T.red, color: T.white, borderRadius: 20,
-                padding: "3px 10px", fontSize: 11, fontWeight: 700, fontFamily: FONT,
+                padding: "2px 9px", fontSize: 10, fontWeight: 700, fontFamily: FONT,
               }}
             >
-              {attention.total}
+              {attention.urgentCount ?? 0} urgent
             </span>
-            <div
+            <span
               style={{
-                backgroundColor: T.blueLight, borderRadius: 10,
-                padding: "5px 12px", textAlign: "center",
+                backgroundColor: T.blueLight, color: T.blue, borderRadius: 20,
+                padding: "2px 9px", fontSize: 10, fontWeight: 700, fontFamily: FONT,
               }}
             >
-              <div
-                style={{
-                  fontSize: 15, fontWeight: 800, color: T.blue,
-                  lineHeight: "16px", fontFamily: FONT,
-                }}
-              >
-                {stats.weekHours}h
-              </div>
-              <div
-                style={{
-                  fontSize: 8, fontWeight: 700, color: T.blue,
-                  textTransform: "uppercase", letterSpacing: 0.6, fontFamily: FONT,
-                }}
-              >
-                Week
-              </div>
-            </div>
+              {attention.todoCount ?? 0} to do
+            </span>
           </div>
         }
       />
