@@ -75,6 +75,7 @@ import { useWeeklyGoals } from "@/hooks/useWeeklyGoals";
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
 import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
 import { useTestSwapNotifications } from "@/hooks/useTestSwapNotifications";
+import { useVisitorChatUnreadCount } from "@/hooks/useVisitorChatUnreadCount";
 import { useUpcomingEvents, type UpcomingEvent } from "@/hooks/useUpcomingEvents";
 import { useInstructorMembership } from "@/hooks/useInstructorMembership";
 import { useDayLessons } from "@/hooks/useDayLessons";
