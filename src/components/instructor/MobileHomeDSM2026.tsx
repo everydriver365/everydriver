@@ -810,9 +810,24 @@ function NeedsAttentionCard({
       count: attention.urgentCount, urgent: true, accent: T.red,
       body: attention.urgentItems.length === 0
         ? <Empty>All clear</Empty>
-        : attention.urgentItems.map((it: any) => (
-            <UrgentBanner key={it.id} item={it} onPress={() => navigate(it.route)} />
-          )),
+        : (
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            {attention.urgentItems.map((it: any, idx: number) => (
+              <div key={it.id}>
+                {idx > 0 && (
+                  <div
+                    style={{
+                      height: 1,
+                      backgroundColor: "rgba(15,32,68,0.08)",
+                      margin: "0 20px",
+                    }}
+                  />
+                )}
+                <UrgentBanner item={it} onPress={() => navigate(it.route)} />
+              </div>
+            ))}
+          </div>
+        ),
     },
     { key: "msgs", icon: MessageSquare, label: "Messages",
       count: attention.msgs, body: <Empty>No new messages</Empty> },
