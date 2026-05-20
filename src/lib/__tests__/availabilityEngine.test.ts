@@ -476,13 +476,13 @@ describe("validateSlot", () => {
   it("rejects slot starting before working hours", () => {
     const res = validateSlot({ ...base, startMin: 8 * 60 });
     expect(res.ok).toBe(false);
-    if (!res.ok) expect(res.reason).toBe("outside_window");
+    expect(res.ok === false && res.reason).toBe("outside_window");
   });
 
   it("rejects slot ending after working hours", () => {
     const res = validateSlot({ ...base, startMin: 16 * 60 + 30 });
     expect(res.ok).toBe(false);
-    if (!res.ok) expect(res.reason).toBe("outside_window");
+    expect(res.ok === false && res.reason).toBe("outside_window");
   });
 
   it("rejects slot that overlaps a conflict", () => {
@@ -499,7 +499,7 @@ describe("validateSlot", () => {
       bufferMinutes: 0,
     });
     expect(res.ok).toBe(false);
-    if (!res.ok) expect(res.reason).toBe("overlap_event");
+    expect(res.ok === false && res.reason).toBe("overlap_event");
   });
 
   it("rejects slot that violates the buffer window", () => {
@@ -515,7 +515,7 @@ describe("validateSlot", () => {
       startMin: 11 * 60, // ends 12:00 — within 15-min buffer
     });
     expect(res.ok).toBe(false);
-    if (!res.ok) expect(res.reason).toBe("buffer_block");
+    expect(res.ok === false && res.reason).toBe("buffer_block");
   });
 
   it("rejects out-of-band time_of_day", () => {
@@ -525,7 +525,7 @@ describe("validateSlot", () => {
       timeOfDay: "morning",
     });
     expect(res.ok).toBe(false);
-    if (!res.ok) expect(res.reason).toBe("time_of_day");
+    expect(res.ok === false && res.reason).toBe("time_of_day");
   });
 });
 
