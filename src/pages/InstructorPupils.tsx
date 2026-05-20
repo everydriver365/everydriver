@@ -807,8 +807,6 @@ export default function InstructorPupils() {
 
         <div style={{ padding: "12px 15px 0" }}>
 
-
-        <div style={{ padding: "0 15px" }}>
           {/* Pupils List */}
           {displayedPupils.length === 0 ? (
             <div
