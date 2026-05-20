@@ -192,14 +192,28 @@ for (const { start, end } of isAllDayLikeFailures) {
   assert(result === false, `isAllDayLikeEvent(${JSON.stringify(start)}, ${JSON.stringify(end)}) must return false, got ${result}`);
 }
 
-// Randomised fuzz: 1000 random start/end pairs should all return false.
+// Randomised fuzz: 1000 random start/end pairs.
+// Because JavaScript's Date parser is lenient, some random strings may
+// coincidentally parse as valid dates.  We only assert fail-closed (false)
+// when at least one string does NOT parse.  When both parse, we assert the
+// result is consistent with the actual duration.
 for (let i = 0; i < 1000; i++) {
   const sLen = Math.floor(Math.random() * 80) + 1;
   const eLen = Math.floor(Math.random() * 80) + 1;
   const s = randomString(sLen);
   const e = randomString(eLen);
+  const sValid = !isNaN(new Date(s).getTime());
+  const eValid = !isNaN(new Date(e).getTime());
   const result = isAllDayLikeEvent(s, e);
-  assert(result === false, `isAllDayLikeEvent(random[${sLen}], random[${eLen}]) must return false, got ${result}`);
+  if (!sValid || !eValid) {
+    assert(result === false, `isAllDayLikeEvent(random[${sLen}], random[${eLen}]) must return false when unparseable, got ${result}`);
+  } else {
+    // Both happened to parse — result must be consistent with the duration.
+    const durMs = new Date(e).getTime() - new Date(s).getTime();
+    const expected = durMs >= 23 * 60 * 60 * 1000 ||
+      (new Date(s).getUTCHours() === 0 && new Date(s).getUTCMinutes() === 0 && durMs >= 12 * 60 * 60 * 1000);
+    assert(result === expected, `isAllDayLikeEvent(random-parseable) must match computed duration, got ${result}, expected ${expected}`);
+  }
 }
 
 // ---------------------------------------------------------------------------
