@@ -1931,47 +1931,35 @@ function QATile({
       style={{
         width: "100%",
         height: 80,
-        padding: "0 14px",
-        backgroundColor: active ? DSM_BLUE : T.white,
-        border: active ? 0 : `1px solid ${DSM_TINT}`,
-        borderLeft: active ? 0 : `3px solid ${DSM_BLUE}`,
+        padding: "0 18px",
+        backgroundColor: active ? DSM_BLUE : "#FFFFFF",
+        border: 0,
         boxShadow: active
-          ? "0 2px 8px rgba(61,85,161,0.28)"
-          : "0 1px 3px rgba(61,85,161,0.08)",
-        borderRadius: 12,
+          ? "0 6px 16px rgba(61,85,161,0.32), 0 2px 4px rgba(61,85,161,0.18)"
+          : "0 4px 12px rgba(17,24,39,0.08), 0 1px 2px rgba(17,24,39,0.04)",
+        borderRadius: 16,
         cursor: "pointer",
         display: "flex",
         flexDirection: "row",
         alignItems: "center",
-        gap: 12,
+        gap: 14,
         textAlign: "left",
       }}
     >
-      <div
-        style={{
-          width: 38,
-          height: 38,
-          borderRadius: 10,
-          backgroundColor: active ? "rgba(255,255,255,0.18)" : DSM_TINT,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          flexShrink: 0,
-        }}
-      >
-        <Icon
-          size={20}
-          color={active ? T.white : DSM_BLUE}
-          strokeWidth={1.9}
-        />
-      </div>
+      <Icon
+        size={26}
+        color={active ? "#FFFFFF" : DSM_BLUE}
+        strokeWidth={1.8}
+        style={{ flexShrink: 0 }}
+      />
       <span
         style={{
-          fontSize: 13,
+          fontSize: 15,
           fontWeight: 700,
-          color: active ? T.white : T.navy,
+          color: active ? "#FFFFFF" : T.navy,
           fontFamily: FONT,
-          lineHeight: "16px",
+          lineHeight: "18px",
+          letterSpacing: "-0.2px",
           overflow: "hidden",
           textOverflow: "ellipsis",
           whiteSpace: "nowrap",
