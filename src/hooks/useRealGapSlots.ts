@@ -86,7 +86,7 @@ export function useRealGapSlots(instructorId: string | undefined) {
 
       const result: RealGapSuggestion[] = [];
 
-      for (let i = 1; i <= 14; i++) {
+      for (let i = 0; i <= 14; i++) {
         if (result.length >= 7) break;
         const day = addDays(fromDate, i);
         const dateStr = format(day, "yyyy-MM-dd");
