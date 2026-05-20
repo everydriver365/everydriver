@@ -1,15 +1,12 @@
 // =============================================================================
-// availabilityEngine.deno.ts  —  Deno/Edge-Function copy of the engine
+// availabilityEngine.ts  —  Deno/Edge-Function copy of the engine
 // =============================================================================
 //
 // Kept byte-for-byte logically identical to src/lib/availabilityEngine.ts.
 // No Node or browser globals — runs in Deno/V8 only.
 //
 // IF YOU CHANGE A RULE, CHANGE BOTH FILES.
-// The CI diff test (scripts/check-engine-parity.ts) will catch divergence.
 // =============================================================================
-
-// Deploy as: supabase/functions/_shared/availabilityEngine.ts
 
 export const STEP_MINUTES = 15;
 export const TRAVEL_FALLBACK_MIN = 0; // No hidden padding. Buffer only.
@@ -60,25 +57,51 @@ export interface EngineResult {
   rejected: RejectedSlot[];
 }
 
+/**
+ * Strict HH:MM (or HH:MM:SS) parser. Returns minutes-since-midnight, or
+ * `null` if the input is missing or unparseable. Callers in the availability
+ * path MUST treat `null` as "no data → not available", never as midnight.
+ */
+export function parseHHMM(t: string | null | undefined): number | null {
+  if (t == null) return null;
+  const trimmed = String(t).trim();
+  if (!trimmed) return null;
+  const m = /^(\d{1,2}):(\d{2})(?::\d{2})?$/.exec(trimmed);
+  if (!m) return null;
+  const h = parseInt(m[1], 10);
+  const mins = parseInt(m[2], 10);
+  if (!Number.isFinite(h) || !Number.isFinite(mins)) return null;
+  if (h < 0 || h > 24 || mins < 0 || mins > 59) return null;
+  const total = h * 60 + mins;
+  if (total > 24 * 60) return null;
+  return total;
+}
+
+/** Legacy lossy parser — NOT for use in availability decisions. */
 export function toMinutes(t: string): number {
-  const [h, m] = t.split(":").map(Number);
-  return (h || 0) * 60 + (m || 0);
+  return parseHHMM(t) ?? 0;
 }
 
 export function fromMinutes(min: number): string {
   return `${Math.floor(min / 60).toString().padStart(2, "0")}:${(min % 60).toString().padStart(2, "0")}`;
 }
 
+/**
+ * Fails CLOSED: malformed/unparseable datetimes return `false` so a bad
+ * event blocks the slot rather than silently freeing it.
+ */
 export function isAllDayLikeEvent(startIso: string, endIso: string): boolean {
   try {
     const s = new Date(startIso);
     const e = new Date(endIso);
+    if (isNaN(s.getTime()) || isNaN(e.getTime())) return false;
     const durMs = e.getTime() - s.getTime();
+    if (!Number.isFinite(durMs) || durMs <= 0) return false;
     if (durMs >= ALL_DAY_MS) return true;
     const startsAtMidnightUTC = s.getUTCHours() === 0 && s.getUTCMinutes() === 0;
     return startsAtMidnightUTC && durMs >= MIDNIGHT_LONG_MS;
   } catch {
-    return true;
+    return false;
   }
 }
 
@@ -110,6 +133,42 @@ export function toLondonParts(d: Date): { date: string; hour: number; minute: nu
   return { date: `${year}-${month}-${day}`, hour, minute };
 }
 
+function londonNowMin(): number {
+  const p = toLondonParts(new Date());
+  return p.hour * 60 + p.minute;
+}
+
+export function londonTodayStr(): string {
+  return toLondonParts(new Date()).date;
+}
+
+export function londonDateStr(d: Date): string {
+  return toLondonParts(d).date;
+}
+
+export function londonDow(d: Date): number {
+  const { date } = toLondonParts(d);
+  const utc = new Date(`${date}T12:00:00Z`);
+  return utc.getUTCDay();
+}
+
+/** Merge overlapping/adjacent [start,end) intervals. */
+export function mergeIntervals<T extends Slot>(intervals: T[]): Slot[] {
+  if (intervals.length === 0) return [];
+  const sorted = [...intervals].sort((a, b) => a.start - b.start);
+  const out: Slot[] = [{ start: sorted[0].start, end: sorted[0].end }];
+  for (let i = 1; i < sorted.length; i++) {
+    const last = out[out.length - 1];
+    const cur = sorted[i];
+    if (cur.start <= last.end) {
+      if (cur.end > last.end) last.end = cur.end;
+    } else {
+      out.push({ start: cur.start, end: cur.end });
+    }
+  }
+  return out;
+}
+
 export function buildDayConflicts(
   dateStr: string,
   blocks: Array<{ start_datetime: string; end_datetime: string; label?: string }>,
@@ -117,8 +176,6 @@ export function buildDayConflicts(
 ): TaggedConflict[] {
   const out: TaggedConflict[] = [];
 
-  // Clip to **Europe/London local minutes-of-day** — working-hours strings
-  // ("09:00") are local clock minutes, so conflicts must match.
   const clipLondon = (sIso: string, eIso: string): Slot | null => {
     const sd = new Date(sIso);
     const ed = new Date(eIso);
@@ -169,9 +226,8 @@ export function resolveAvailability(input: EngineInput): EngineResult {
   } = input;
 
   const padMin = Math.max(0, bufferMinutes);
-  const now = new Date();
   const cutoffMin = isToday
-    ? now.getUTCHours() * 60 + now.getUTCMinutes() + Math.max(0, minNoticeMinutes)
+    ? londonNowMin() + Math.max(0, minNoticeMinutes)
     : -1;
 
   const slots: Slot[]            = [];
@@ -230,8 +286,7 @@ export function validateSlot(
   if (!inTimeOfDay(startMin, timeOfDay))              return { ok: false, reason: "time_of_day" };
 
   if (isToday) {
-    const now    = new Date();
-    const cutoff = now.getUTCHours() * 60 + now.getUTCMinutes() + Math.max(0, minNoticeMinutes);
+    const cutoff = londonNowMin() + Math.max(0, minNoticeMinutes);
     if (startMin < cutoff) return { ok: false, reason: "past" };
   }
 
