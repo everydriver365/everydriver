@@ -856,66 +856,94 @@ function NeedsAttentionCard({
         </div>
       </div>
 
-      {/* Counters strip */}
+      {/* Counters strip — tap to expand sections */}
       <div
         style={{
-          display: "grid",
-          gridTemplateColumns: `repeat(${tiles.length}, 1fr)`,
-          gap: 8,
           backgroundColor: T.white,
           border: `1px solid ${T.border}`,
           borderRadius: 14,
-          padding: "10px 8px",
           boxShadow: "0 1px 3px rgba(15,32,68,0.06)",
+          overflow: "hidden",
         }}
       >
-        {tiles.map((t) => {
-          const active = (t.count ?? 0) > 0;
-          const color = t.urgent && active ? (t.accent ?? T.red) : T.navy;
-          return (
-            <button
-              key={`c-${t.key}`}
-              type="button"
-              onClick={() => toggle(t.key)}
-              style={{
-                background: "transparent", border: 0, cursor: "pointer",
-                display: "flex", flexDirection: "column", alignItems: "center", gap: 2,
-                opacity: active ? 1 : 0.4, padding: 0,
-              }}
-            >
-              <span style={{ fontSize: 20, fontWeight: 800, color, fontFamily: FONT, lineHeight: 1 }}>
-                {t.count ?? 0}
-              </span>
-              <span
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: `repeat(${tiles.length}, 1fr) auto`,
+            gap: 8,
+            alignItems: "center",
+            padding: "10px 12px 10px 8px",
+          }}
+        >
+          {tiles.map((t) => {
+            const active = (t.count ?? 0) > 0;
+            const color = t.urgent && active ? (t.accent ?? T.red) : T.navy;
+            return (
+              <button
+                key={`c-${t.key}`}
+                type="button"
+                onClick={() => toggle(t.key)}
                 style={{
-                  fontSize: 10, fontWeight: 600, color: T.navy, opacity: 0.7,
-                  fontFamily: FONT, letterSpacing: "0.04em", textTransform: "uppercase",
+                  background: "transparent", border: 0, cursor: "pointer",
+                  display: "flex", flexDirection: "column", alignItems: "center", gap: 2,
+                  opacity: active ? 1 : 0.4, padding: 0,
                 }}
               >
-                {t.label}
-              </span>
-            </button>
-          );
-        })}
+                <span style={{ fontSize: 20, fontWeight: 800, color, fontFamily: FONT, lineHeight: 1 }}>
+                  {t.count ?? 0}
+                </span>
+                <span
+                  style={{
+                    fontSize: 10, fontWeight: 600, color: T.navy, opacity: 0.7,
+                    fontFamily: FONT, letterSpacing: "0.04em", textTransform: "uppercase",
+                  }}
+                >
+                  {t.label}
+                </span>
+              </button>
+            );
+          })}
+          <button
+            type="button"
+            onClick={() => setSectionsOpen((v) => !v)}
+            aria-label={sectionsOpen ? "Collapse sections" : "Expand sections"}
+            style={{
+              background: "transparent", border: 0, cursor: "pointer",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              padding: 4, marginLeft: 2,
+            }}
+          >
+            <ChevronDown
+              size={18}
+              style={{
+                color: T.navy, opacity: 0.4,
+                transform: sectionsOpen ? "rotate(180deg)" : "rotate(0deg)",
+                transition: "transform 0.2s",
+              }}
+            />
+          </button>
+        </div>
       </div>
 
-      {/* Action tiles — horizontal strips */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        {tiles.map((t) => (
-          <ActionTile
-            key={t.key}
-            icon={t.icon}
-            label={t.label}
-            accent={t.accent}
-            outlined={t.urgent}
-            badgeCount={t.count}
-            open={openKey === t.key}
-            onToggle={() => toggle(t.key)}
-          >
-            {t.body}
-          </ActionTile>
-        ))}
-      </div>
+      {/* Action tiles — horizontal strips, only when expanded */}
+      {sectionsOpen && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {tiles.map((t) => (
+            <ActionTile
+              key={t.key}
+              icon={t.icon}
+              label={t.label}
+              accent={t.accent}
+              outlined={t.urgent}
+              badgeCount={t.count}
+              open={openKey === t.key}
+              onToggle={() => toggle(t.key)}
+            >
+              {t.body}
+            </ActionTile>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
