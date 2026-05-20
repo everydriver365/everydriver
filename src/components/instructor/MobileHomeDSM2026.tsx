@@ -1159,7 +1159,6 @@ function UrgentBanner({
       style={{
         width: "calc(100% - 28px)", margin: "0 14px 6px",
         borderRadius: 10, backgroundColor: cfg.bg,
-        border: `1px solid ${cfg.border}`, borderLeft: `3px solid ${cfg.accent}`,
         padding: 11, display: "flex", alignItems: "center", gap: 10,
         cursor: "pointer",
       }}
