@@ -839,44 +839,6 @@ function NeedsAttentionCard({
         </div>
       </div>
 
-      {/* Summary tile grid — 5 columns */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 8 }}>
-        {counters.map((c) => {
-          const valueColor =
-            c.value > 0 && c.hot ? T.red : c.value > 0 ? T.blue : T.navy;
-          const isZero = c.value === 0;
-          return (
-            <button
-              key={c.label}
-              type="button"
-              onClick={c.onClick}
-              style={{
-                backgroundColor: T.white, borderRadius: 12, padding: "10px 4px",
-                border: tileBorder, boxShadow: tileShadow,
-                display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-                cursor: "pointer",
-              }}
-            >
-              <div
-                style={{
-                  fontSize: 18, fontWeight: 800, color: valueColor, lineHeight: 1,
-                  marginBottom: 4, opacity: isZero ? 0.4 : 1, fontFamily: FONT,
-                  fontVariantNumeric: "tabular-nums",
-                }}
-              >
-                {c.value}
-              </div>
-              <div
-                style={{
-                  fontSize: 10, fontWeight: 500, color: T.navy, opacity: 0.6, fontFamily: FONT,
-                }}
-              >
-                {c.label}
-              </div>
-            </button>
-          );
-        })}
-      </div>
 
       {/* Action tiles */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
