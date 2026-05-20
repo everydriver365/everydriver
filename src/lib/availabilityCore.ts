@@ -22,12 +22,13 @@ import {
 } from "./availabilityEngine";
 
 export const STEP_MINUTES = ENGINE_STEP_MINUTES;
-// Engine now applies travel padding (10 min) on top of bufferMinutes.
-// Legacy callers expected this to be 0; restore that expectation for code
-// that did `bufferMinutes + TRAVEL_FALLBACK_MIN` manually by exposing it as 0
-// here. The engine internally still adds TRAVEL_FALLBACK_MIN.
+// Engine applies bufferMinutes only — no hidden travel padding.
+// TRAVEL_FALLBACK_MIN is re-exported as 0 for legacy callers that did
+// `bufferMinutes + TRAVEL_FALLBACK_MIN` manually; ENGINE_TRAVEL_PADDING
+// mirrors the engine's own constant (also 0) for symmetry.
 export const TRAVEL_FALLBACK_MIN = 0;
 export const ENGINE_TRAVEL_PADDING = ENGINE_TRAVEL_FALLBACK_MIN;
+
 
 export type TimeOfDay = EngineTimeOfDay;
 export type ConflictKind = EngineTaggedConflict["kind"];
