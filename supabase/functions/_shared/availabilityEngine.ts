@@ -220,15 +220,20 @@ function classify(
 
 export function resolveAvailability(input: EngineInput): EngineResult {
   const {
-    dayStartMin, dayEndMin, bufferMinutes, durationMinutes,
+    dateStr, dayStartMin, dayEndMin, bufferMinutes, durationMinutes,
     conflicts, timeOfDay = "any", isToday, anchorSkipMinutes,
     minNoticeMinutes = 0,
   } = input;
 
   const padMin = Math.max(0, bufferMinutes);
-  const cutoffMin = isToday
+  // Guard against stale `isToday=true` by also confirming dateStr === today.
+  const cutoffMin = (isToday === true && dateStr === londonTodayStr())
     ? londonNowMin() + Math.max(0, minNoticeMinutes)
     : -1;
+
+  // Internal step stays at STEP_MINUTES so `rejected` is complete; emit only
+  // slots that land on the stride grid anchored to dayStartMin.
+  const stride = Math.max(STEP_MINUTES, anchorSkipMinutes ?? STEP_MINUTES);
 
   const slots: Slot[]            = [];
   const rejected: RejectedSlot[] = [];
@@ -264,9 +269,8 @@ export function resolveAvailability(input: EngineInput): EngineResult {
       continue;
     }
 
-    slots.push({ start: s, end: e });
-    if (anchorSkipMinutes && anchorSkipMinutes > STEP_MINUTES) {
-      s += anchorSkipMinutes - STEP_MINUTES;
+    if ((s - dayStartMin) % stride === 0) {
+      slots.push({ start: s, end: e });
     }
   }
 
@@ -277,7 +281,7 @@ export function validateSlot(
   input: Omit<EngineInput, "anchorSkipMinutes"> & { startMin: number },
 ): { ok: true } | { ok: false; reason: RejectReason; cause?: TaggedConflict } {
   const {
-    startMin, durationMinutes, dayStartMin, dayEndMin,
+    dateStr, startMin, durationMinutes, dayStartMin, dayEndMin,
     bufferMinutes, conflicts, timeOfDay = "any", isToday, minNoticeMinutes = 0,
   } = input;
 
@@ -285,7 +289,7 @@ export function validateSlot(
   if (startMin < dayStartMin || endMin > dayEndMin) return { ok: false, reason: "outside_window" };
   if (!inTimeOfDay(startMin, timeOfDay))              return { ok: false, reason: "time_of_day" };
 
-  if (isToday) {
+  if (isToday === true && dateStr === londonTodayStr()) {
     const cutoff = londonNowMin() + Math.max(0, minNoticeMinutes);
     if (startMin < cutoff) return { ok: false, reason: "past" };
   }
