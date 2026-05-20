@@ -870,13 +870,14 @@ export function PupilCardStack({
                     <div
                       className="truncate"
                       style={{
-                        fontSize: 14, fontWeight: 600, color: "#000000",
-                        marginBottom: 4, fontFamily: "Poppins, sans-serif",
-                        lineHeight: 1.25,
+                        fontSize: 13, fontWeight: 500, color: "#000000",
+                        marginBottom: 3, fontFamily: "Poppins, sans-serif",
+                        lineHeight: 1.3, letterSpacing: "-0.1px",
                       }}
                     >
                       {titleCaseName(pupil.name)}
                     </div>
+
                     <div className="flex items-center" style={{ gap: 6, flexWrap: "wrap" }}>
                       <span
                         style={{
