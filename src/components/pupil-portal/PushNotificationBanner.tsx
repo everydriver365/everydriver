@@ -1,4 +1,5 @@
-import { Bell, BellOff, Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Bell, Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { usePupilPushNotifications } from "@/hooks/usePupilPushNotifications";
@@ -8,43 +9,49 @@ interface PushNotificationBannerProps {
   brandColour?: string | null;
 }
 
-export function PushNotificationBanner({ pupilId, brandColour }: PushNotificationBannerProps) {
-  const { isSupported, isSubscribed, isLoading, toggle, permission } = usePupilPushNotifications(pupilId);
+const dismissKey = (pupilId: string) => `pupil-push-banner-dismissed:${pupilId}`;
 
-  // Don't show if not supported or already subscribed
+export function PushNotificationBanner({ pupilId, brandColour }: PushNotificationBannerProps) {
+  const { isSupported, isSubscribed, isLoading, subscribe, permission } = usePupilPushNotifications(pupilId);
+  const [dismissed, setDismissed] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    try { return window.localStorage.getItem(dismissKey(pupilId)) === "1"; } catch { return false; }
+  });
+
+  // Re-evaluate dismissed flag if pupilId changes
+  useEffect(() => {
+    try { setDismissed(window.localStorage.getItem(dismissKey(pupilId)) === "1"); } catch {}
+  }, [pupilId]);
+
+  const handleDismiss = () => {
+    try { window.localStorage.setItem(dismissKey(pupilId), "1"); } catch {}
+    setDismissed(true);
+  };
+
+  // Hide if not supported, already subscribed, OS-blocked, dismissed, or still loading initial state
   if (!isSupported) return null;
+  if (isLoading) return null;
+  if (isSubscribed) return null;
+  if (permission === "granted") return null; // notifications are on at OS/browser level
+  if (permission === "denied") return null;  // no point nagging; user blocked
+  if (dismissed) return null;
 
   const primaryColor = brandColour || '#1e3a5f';
 
-  if (isSubscribed) {
-    return (
-      <Card className="border-emerald-200 bg-emerald-50/50 dark:bg-emerald-950/20 dark:border-emerald-800">
-        <CardContent className="p-3 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2 text-sm">
-            <Bell className="h-4 w-4 text-emerald-600" />
-            <span className="text-emerald-700 dark:text-emerald-400">Notifications enabled</span>
-          </div>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={toggle}
-            disabled={isLoading}
-            className="text-muted-foreground hover:text-foreground"
-          >
-            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <BellOff className="h-4 w-4" />}
-          </Button>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  // Show prompt to enable
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden relative">
       <div className="h-1" style={{ backgroundColor: primaryColor }} />
+      <button
+        type="button"
+        onClick={handleDismiss}
+        aria-label="Dismiss notification prompt"
+        className="absolute top-2 right-2 p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+      >
+        <X className="h-4 w-4" />
+      </button>
       <CardContent className="p-4">
-        <div className="flex items-start gap-3">
-          <div 
+        <div className="flex items-start gap-3 pr-6">
+          <div
             className="p-2 rounded-lg flex-shrink-0"
             style={{ backgroundColor: `${primaryColor}15` }}
           >
@@ -58,23 +65,14 @@ export function PushNotificationBanner({ pupilId, brandColour }: PushNotificatio
           </div>
           <Button
             size="sm"
-            onClick={toggle}
-            disabled={isLoading || permission === "denied"}
+            onClick={subscribe}
+            disabled={isLoading}
             style={{ backgroundColor: primaryColor }}
             className="flex-shrink-0"
           >
-            {isLoading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              "Enable"
-            )}
+            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Enable"}
           </Button>
         </div>
-        {permission === "denied" && (
-          <p className="text-xs text-destructive mt-2">
-            Notifications blocked. Enable them in your browser settings.
-          </p>
-        )}
       </CardContent>
     </Card>
   );

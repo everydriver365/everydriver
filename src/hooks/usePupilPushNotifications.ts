@@ -52,6 +52,16 @@ export function usePupilPushNotifications(pupilId: string) {
     }
 
     try {
+      // Check the actual browser push subscription as well (source of truth on this device)
+      let browserSubscribed = false;
+      try {
+        if (Notification.permission === "granted" && "serviceWorker" in navigator) {
+          const reg = await navigator.serviceWorker.getRegistration();
+          const sub = await reg?.pushManager.getSubscription();
+          browserSubscribed = !!sub;
+        }
+      } catch {}
+
       const { data, error } = await supabase
         .from("pupil_push_subscriptions")
         .select("id")
@@ -62,13 +72,17 @@ export function usePupilPushNotifications(pupilId: string) {
 
       setState((prev) => ({
         ...prev,
-        isSubscribed: data && data.length > 0,
+        isSubscribed: browserSubscribed || (!!data && data.length > 0),
         isLoading: false,
         permission: Notification.permission,
       }));
     } catch (error) {
       console.error("Error checking subscription:", error);
-      setState((prev) => ({ ...prev, isLoading: false }));
+      setState((prev) => ({
+        ...prev,
+        isLoading: false,
+        permission: typeof Notification !== "undefined" ? Notification.permission : "default",
+      }));
     }
   }, [pupilId, checkSupport]);
 
