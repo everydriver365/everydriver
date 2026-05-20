@@ -69,9 +69,7 @@ export function useRealGapSlots(instructorId: string | undefined) {
       const row = (instructorRes.data || { id: instructorId }) as any;
       const instructor: InstructorLite = {
         id: instructorId,
-        // Instructor dashboard gap-fill should show real diary gaps, not only
-        // public-bookable dates. `available_from` is for new pupil bookings.
-        available_from: null,
+        available_from: row.available_from ?? null,
         buffer_minutes: row.buffer_minutes ?? 0,
         is_network_placeholder: row.is_network_placeholder ?? false,
       };
