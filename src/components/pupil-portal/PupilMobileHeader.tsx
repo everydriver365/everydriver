@@ -55,7 +55,7 @@ export function PupilMobileHeader({
         <div className="absolute -top-6 -right-6 w-28 h-28 rounded-full bg-white/5" />
         <div className="absolute -bottom-8 -left-8 w-32 h-32 rounded-full bg-white/[0.03]" />
 
-        <div className="relative flex items-center justify-between px-4 py-3">
+        <div className="relative flex items-center justify-between px-4 pt-1.5 pb-[7px]">
           {/* Left: Back button OR Drive365 logo */}
           <div className="flex items-center gap-3">
             {showBackButton ? (
