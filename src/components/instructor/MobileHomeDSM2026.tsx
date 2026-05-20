@@ -249,10 +249,11 @@ function HeroHeader(props: {
   onBell: () => void;
   onMenu: () => void;
   onProfile: () => void;
+  stats: any;
 }) {
   const {
     firstName, unreadCount, nextLesson, lessonExpanded,
-    onToggleLesson, onPhone, onBell, onMenu, onProfile,
+    onToggleLesson, onPhone, onBell, onMenu, onProfile, stats,
   } = props;
 
   return (
@@ -307,6 +308,172 @@ function HeroHeader(props: {
         expanded={lessonExpanded}
         onToggle={onToggleLesson}
       />
+
+      {/* Stats strip (inside hero, below next lesson) */}
+      <StatsStrip stats={stats} />
+    </div>
+  );
+}
+
+/* ============================== Stats strip ============================= */
+function StatsStrip({ stats }: { stats: any }) {
+  const cells = [
+    {
+      label: "Earnings · week",
+      value: `£${(stats?.weekEarnings ?? 0).toLocaleString("en-GB")}`,
+      sub: `£${stats?.todayEarnings ?? 0} today`,
+      barPct: stats?.earningsPct ?? 0,
+      barColour: T.red,
+      denom: null as string | null,
+    },
+    {
+      label: "Lessons · week",
+      value: `${stats?.weekLessons ?? 0}`,
+      sub: `${stats?.todayLessons ?? 0} today`,
+      barPct: stats?.lessonsPct ?? 0,
+      barColour: T.blue,
+      denom: stats?.lessonTarget > 0 ? `/${stats.lessonTarget}` : null,
+    },
+  ];
+  return (
+    <div
+      style={{
+        display: "flex",
+        backgroundColor: "rgba(255,255,255,0.08)",
+        borderRadius: 10,
+        overflow: "hidden",
+        marginTop: 10,
+      }}
+    >
+      {cells.map((s, i) => (
+        <div
+          key={s.label}
+          style={{
+            flex: 1,
+            padding: "9px 14px",
+            borderRight: i === 0 ? "1px solid rgba(255,255,255,0.10)" : 0,
+          }}
+        >
+          <div
+            style={{
+              fontSize: 9, fontWeight: 700, color: "rgba(255,255,255,0.4)",
+              textTransform: "uppercase", letterSpacing: 0.6,
+              marginBottom: 4, fontFamily: FONT,
+            }}
+          >
+            {s.label}
+          </div>
+          <div
+            style={{
+              fontSize: 18, fontWeight: 800, color: T.white,
+              letterSpacing: -0.6, lineHeight: "20px", fontFamily: FONT,
+            }}
+          >
+            {s.value}
+            {s.denom ? (
+              <span style={{ fontSize: 11, fontWeight: 400, color: "rgba(255,255,255,0.4)" }}>
+                {s.denom}
+              </span>
+            ) : null}
+          </div>
+          <div
+            style={{
+              fontSize: 10, color: "rgba(255,255,255,0.4)",
+              marginTop: 2, fontFamily: FONT,
+            }}
+          >
+            {s.sub}
+          </div>
+          <div
+            style={{
+              height: 2, backgroundColor: "rgba(255,255,255,0.12)",
+              borderRadius: 1, marginTop: 6, overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                height: "100%",
+                width: `${s.barPct}%`,
+                backgroundColor: s.barColour,
+                borderRadius: 1,
+              }}
+            />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ============================== Today strip ============================= */
+function TodayStrip({ stats }: { stats: any }) {
+  const items = [
+    {
+      value: String(stats?.todayLessons ?? 0),
+      label: "Lessons today",
+      valueColour: T.navy,
+      small: false,
+    },
+    {
+      value: stats?.nextFreeSlot ?? "—",
+      label: "Next free slot",
+      valueColour: T.blue,
+      small: true,
+    },
+    {
+      value: `£${(stats?.outstanding ?? 0).toLocaleString("en-GB")}`,
+      label: "Outstanding",
+      valueColour: (stats?.outstanding ?? 0) > 0 ? T.red : T.navy,
+      small: false,
+    },
+  ];
+  return (
+    <div
+      style={{
+        display: "flex",
+        backgroundColor: T.white,
+        borderRadius: 14,
+        overflow: "hidden",
+        boxShadow: "0 1px 6px rgba(15,32,68,0.06)",
+      }}
+    >
+      {items.map((item, i, arr) => (
+        <div
+          key={item.label}
+          style={{
+            flex: 1,
+            padding: "11px 10px",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 3,
+            borderRight: i < arr.length - 1 ? `1px solid ${T.divider}` : 0,
+          }}
+        >
+          <div
+            style={{
+              fontSize: item.small ? 12 : 16,
+              fontWeight: 800,
+              color: item.valueColour,
+              letterSpacing: -0.5,
+              lineHeight: item.small ? "14px" : "18px",
+              fontFamily: FONT,
+              textAlign: "center",
+            }}
+          >
+            {item.value}
+          </div>
+          <div
+            style={{
+              fontSize: 9, fontWeight: 600, color: T.textMuted,
+              textTransform: "uppercase", letterSpacing: 0.5,
+              textAlign: "center", fontFamily: FONT,
+            }}
+          >
+            {item.label}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
