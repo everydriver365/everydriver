@@ -790,10 +790,10 @@ function SectionHeader({
 function NeedsAttentionCard({
   attention, stats, navigate,
 }: { attention: any; stats: any; navigate: ReturnType<typeof useNavigate> }) {
-  type Key = "urgent" | "msgs" | "calls" | "enquiries";
+  type Key = "jobs" | "tests" | "calls" | "enquiries";
   const [sectionsOpen, setSectionsOpen] = useState<boolean>(attention.urgentCount > 0);
   const [openKey, setOpenKey] = useState<Key | null>(
-    attention.urgentCount > 0 ? "urgent" : null
+    attention.urgentCount > 0 ? "jobs" : null
   );
   const toggle = (k: Key) => {
     setSectionsOpen(true);
@@ -805,13 +805,13 @@ function NeedsAttentionCard({
     urgent?: boolean; accent?: string; body: React.ReactNode;
   }[] = [
     {
-      key: "urgent", icon: AlertCircle, label: "Urgent",
-      count: attention.urgentCount, urgent: true, accent: T.red,
-      body: attention.urgentItems.length === 0
+      key: "jobs", icon: Briefcase, label: "Jobs",
+      count: attention.jobs, urgent: true, accent: T.red,
+      body: attention.jobItems.length === 0
         ? <Empty>All clear</Empty>
         : (
           <div style={{ display: "flex", flexDirection: "column" }}>
-            {attention.urgentItems.map((it: any, idx: number) => (
+            {attention.jobItems.map((it: any, idx: number) => (
               <div key={it.id}>
                 {idx > 0 && (
                   <div
@@ -828,11 +828,33 @@ function NeedsAttentionCard({
           </div>
         ),
     },
-    { key: "msgs", icon: MessageSquare, label: "Messages",
-      count: attention.msgs, body: <Empty>No new messages</Empty> },
+    {
+      key: "tests", icon: Repeat2, label: "Tests",
+      count: attention.tests, urgent: true, accent: T.blue,
+      body: attention.testItems.length === 0
+        ? <Empty>All clear</Empty>
+        : (
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            {attention.testItems.map((it: any, idx: number) => (
+              <div key={it.id}>
+                {idx > 0 && (
+                  <div
+                    style={{
+                      height: 1,
+                      backgroundColor: "rgba(15,32,68,0.08)",
+                      margin: "0 20px",
+                    }}
+                  />
+                )}
+                <UrgentBanner item={it} onPress={() => navigate(it.route)} />
+              </div>
+            ))}
+          </div>
+        ),
+    },
     { key: "calls", icon: PhoneCall, label: "Calls",
       count: attention.calls, body: <Empty>No missed calls</Empty> },
-    { key: "enquiries", icon: HelpCircle, label: "Enquiries",
+    { key: "enquiries", icon: MessageSquare, label: "Enq's",
       count: attention.enquiries, body: <Empty>No new enquiries</Empty> },
   ];
 
