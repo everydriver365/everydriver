@@ -829,23 +829,23 @@ export function PupilCardStack({
                 {/* Top row */}
                 <div
                   className="flex items-center"
-                  style={{ padding: "14px 14px 10px", gap: 12 }}
+                  style={{ padding: "10px 12px 8px", gap: 10 }}
                 >
                   {/* Avatar with status dot */}
-                  <div className="relative shrink-0" style={{ width: 44, height: 44 }}>
+                  <div className="relative shrink-0" style={{ width: 36, height: 36 }}>
                     {pupil.profile_image_url ? (
                       <img
                         src={pupil.profile_image_url}
                         alt={titleCaseName(pupil.name)}
-                        style={{ width: 44, height: 44, borderRadius: 22, objectFit: "cover", display: "block" }}
+                        style={{ width: 36, height: 36, borderRadius: 18, objectFit: "cover", display: "block" }}
                       />
                     ) : (
                       <div
                         style={{
-                          width: 44, height: 44, borderRadius: 22,
+                          width: 36, height: 36, borderRadius: 18,
                           background: avatarBg, color: "#FFFFFF",
                           display: "flex", alignItems: "center", justifyContent: "center",
-                          fontSize: 13, fontWeight: 700, letterSpacing: "0.02em",
+                          fontSize: 12, fontWeight: 700, letterSpacing: "0.02em",
                           fontFamily: "Poppins, sans-serif",
                         }}
                         aria-label={titleCaseName(pupil.name)}
@@ -856,13 +856,14 @@ export function PupilCardStack({
                     <span
                       aria-hidden="true"
                       style={{
-                        position: "absolute", bottom: 1, right: 1,
+                        position: "absolute", bottom: 0, right: 0,
                         width: 9, height: 9, borderRadius: 5,
                         background: statusDotColor === "#3B8B3B" ? "#1D9E75" : (statusDotColor || "#C4C9D4"),
                         border: "2px solid #FFFFFF", boxSizing: "content-box",
                       }}
                     />
                   </div>
+
 
                   {/* Name + badges */}
                   <div className="flex-1 min-w-0">
