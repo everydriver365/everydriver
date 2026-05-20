@@ -367,17 +367,16 @@ export default function AvailabilityTester() {
                   if (validation == null) {
                     return <p className="text-muted-foreground">Enter a valid HH:MM start time above.</p>;
                   }
-                  if (validation.ok) {
+                  if (validation.ok === true) {
                     return <Badge variant="default">OK — bookable</Badge>;
                   }
-                  const v = validation;
                   return (
                     <div className="space-y-1">
-                      <Badge variant="destructive">REJECTED: {v.reason}</Badge>
+                      <Badge variant="destructive">REJECTED: {validation.reason}</Badge>
                       <p className="text-muted-foreground">
                         {describeReason(
-                          v.reason,
-                          "cause" in v ? v.cause : undefined,
+                          validation.reason,
+                          validation.cause,
                           instructor.buffer_minutes ?? 0,
                         )}
                       </p>
