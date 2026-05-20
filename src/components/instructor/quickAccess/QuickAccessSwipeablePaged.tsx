@@ -336,7 +336,10 @@ export function QuickAccessSwipeablePaged({ instructorId }: Props) {
         <div
           ref={scrollerRef}
           style={{
-            display: "flex",
+            display: "grid",
+            gridAutoFlow: "column",
+            gridTemplateRows: "repeat(2, min-content)",
+            gridAutoColumns: "132px",
             gap: 9,
             overflowX: "auto",
             scrollSnapType: "x mandatory",
@@ -349,14 +352,7 @@ export function QuickAccessSwipeablePaged({ instructorId }: Props) {
           className="hide-scrollbar"
         >
           {orderedTiles.map((tile, i) => (
-            <div
-              key={tile.id}
-              style={{
-                flex: "0 0 132px",
-                width: 132,
-                scrollSnapAlign: "start",
-              }}
-            >
+            <div key={tile.id} style={{ scrollSnapAlign: "start" }}>
               {renderTile(tile, i, 0)}
             </div>
           ))}
