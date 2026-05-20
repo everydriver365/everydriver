@@ -221,10 +221,11 @@ export default function InstructorPortal() {
         {layoutStyle === "settings-v2" ? (
           <SettingsV2HomeView instructorId={instructorId} instructor={instructorData as any} />
         ) : (
-          <MobileHomeRedesign
+          <MobileHomeDSM2026
             instructorId={instructorId}
             instructorName={instructorData?.name}
           />
+
         )}
         <TakePaymentModal
           open={paymentModalOpen}
