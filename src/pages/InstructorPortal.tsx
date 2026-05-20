@@ -20,6 +20,7 @@ import { GapsFiller } from "@/components/instructor/GapsFiller";
 import { UpcomingTestsView } from "@/components/instructor/UpcomingTestsView";
 import { InstructorMobileHome } from "@/components/instructor/InstructorMobileHome";
 import { MobileHomeRedesign } from "@/components/instructor/MobileHomeRedesign";
+import { MobileHomeDSM2026 } from "@/components/instructor/MobileHomeDSM2026";
 import { SettingsV2HomeView } from "@/components/instructor/SettingsV2HomeView";
 import { useInstructorAppearance } from "@/hooks/useInstructorAppearance";
 
