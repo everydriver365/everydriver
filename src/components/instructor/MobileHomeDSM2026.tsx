@@ -1722,24 +1722,27 @@ function QuickAccessCard({ navigate }: { navigate: ReturnType<typeof useNavigate
         ) : null}
       </div>
 
-      {/* Pinned grid 4x2 */}
+      {/* Pinned horizontal scroll */}
       {!filtered ? (
         <div
           style={{
-            display: "flex", flexWrap: "wrap",
-            padding: "0 10px 10px", gap: 6,
+            overflowX: "auto",
+            WebkitOverflowScrolling: "touch",
+            scrollbarWidth: "none",
+            paddingBottom: 10,
           }}
         >
-          {pinnedItems.map((item) => (
-            <div key={item.label} style={{ width: "calc(25% - 5px)" }}>
+          <div style={{ display: "flex", gap: 8, padding: "0 12px" }}>
+            {pinnedItems.map((item) => (
               <QATile
+                key={item.label}
                 item={item}
                 active={activeRoute === item.route}
-                size="grid"
+                size="scroll"
                 onPress={() => { setActiveRoute(item.route); navigate(item.route); }}
               />
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       ) : (
         <div style={{ overflowX: "auto", paddingBottom: 10 }}>
