@@ -45,10 +45,10 @@ export function PupilMobileHeader({
         style={{
           backgroundColor: bgColor,
           paddingTop: "env(safe-area-inset-top)",
-          paddingBottom: 10,
+          paddingBottom: 4,
           boxShadow: "none",
-          borderBottomLeftRadius: "50% 8px",
-          borderBottomRightRadius: "50% 8px",
+          borderBottomLeftRadius: "50% 6px",
+          borderBottomRightRadius: "50% 6px",
         }}
       >
         {/* Decorative circles */}
