@@ -807,26 +807,9 @@ function NeedsAttentionCard({
     {
       key: "jobs", icon: Briefcase, label: "Jobs",
       count: attention.jobs, urgent: true, accent: T.red,
-      body: attention.jobItems.length === 0
+      body: attention.jobs === 0
         ? <Empty>All clear</Empty>
-        : (
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            {attention.jobItems.map((it: any, idx: number) => (
-              <div key={it.id}>
-                {idx > 0 && (
-                  <div
-                    style={{
-                      height: 1,
-                      backgroundColor: "rgba(15,32,68,0.08)",
-                      margin: "0 20px",
-                    }}
-                  />
-                )}
-                <UrgentBanner item={it} onPress={() => navigate(it.route)} />
-              </div>
-            ))}
-          </div>
-        ),
+        : <JobsPreviewList navigate={navigate} />,
     },
     {
       key: "tests", icon: Repeat2, label: "Tests",
