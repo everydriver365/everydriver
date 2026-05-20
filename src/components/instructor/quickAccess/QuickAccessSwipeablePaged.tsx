@@ -326,8 +326,8 @@ export function QuickAccessSwipeablePaged({ instructorId }: Props) {
             display: "grid",
             gridAutoFlow: "column",
             gridTemplateRows: "repeat(2, min-content)",
-            gridAutoColumns: "132px",
-            gap: 9,
+            gridAutoColumns: "220px",
+            gap: 12,
             overflowX: "auto",
             scrollSnapType: "x mandatory",
             scrollbarWidth: "none",
@@ -345,6 +345,7 @@ export function QuickAccessSwipeablePaged({ instructorId }: Props) {
           ))}
         </div>
       )}
+
 
       <CustomizeTilesSheet
         open={editing}
