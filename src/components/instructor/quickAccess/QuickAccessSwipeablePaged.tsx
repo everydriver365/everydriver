@@ -237,9 +237,6 @@ export function QuickAccessSwipeablePaged({ instructorId }: Props) {
           >
             Edit
           </button>
-          {totalPages > 1 && !filtered && (
-            <PageDots currentPage={page} totalPages={totalPages} compact />
-          )}
         </div>
       </div>
 
@@ -336,71 +333,34 @@ export function QuickAccessSwipeablePaged({ instructorId }: Props) {
           </div>
         )
       ) : (
-        <>
-          <div
-            ref={scrollerRef}
-            style={{
-              display: "flex",
-              overflowX: "auto",
-              scrollSnapType: "x mandatory",
-              scrollbarWidth: "none",
-              msOverflowStyle: "none",
-              WebkitOverflowScrolling: "touch",
-            }}
-            className="hide-scrollbar"
-          >
-            {pages.map((pageTiles, pageIdx) => (
-              <div
-                key={pageIdx}
-                style={{
-                  flex: "0 0 100%",
-                  width: "100%",
-                  scrollSnapAlign: "start",
-                  display: "grid",
-                  gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-                  gridAutoRows: "min-content",
-                  gap: 9,
-                }}
-              >
-                {pageTiles.map((tile, i) => renderTile(tile, i, pageIdx))}
-              </div>
-            ))}
-          </div>
-
-          {totalPages > 1 && (
+        <div
+          ref={scrollerRef}
+          style={{
+            display: "flex",
+            gap: 9,
+            overflowX: "auto",
+            scrollSnapType: "x mandatory",
+            scrollbarWidth: "none",
+            msOverflowStyle: "none",
+            WebkitOverflowScrolling: "touch",
+            marginRight: -16,
+            paddingRight: 16,
+          }}
+          className="hide-scrollbar"
+        >
+          {orderedTiles.map((tile, i) => (
             <div
+              key={tile.id}
               style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 5,
-                marginTop: 10,
+                flex: "0 0 132px",
+                width: 132,
+                scrollSnapAlign: "start",
               }}
             >
-              {pages.map((_, i) => {
-                const active = i === page;
-                return (
-                  <button
-                    key={i}
-                    type="button"
-                    aria-label={`Go to page ${i + 1}`}
-                    onClick={() => jumpToPage(i)}
-                    style={{
-                      width: active ? 18 : 4,
-                      height: 4,
-                      background: active ? PRIMARY : "#D0D5DD",
-                      borderRadius: 2,
-                      border: 0,
-                      padding: 0,
-                      cursor: "pointer",
-                      transition: "width 180ms ease, background 180ms ease",
-                    }}
-                  />
-                );
-              })}
+              {renderTile(tile, i, 0)}
             </div>
-          )}
-        </>
+          ))}
+        </div>
       )}
 
       <CustomizeTilesSheet
