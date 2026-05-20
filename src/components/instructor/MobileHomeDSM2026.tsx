@@ -957,9 +957,7 @@ function ActionTile({
   const labelColor = isUrgent ? (accent ?? T.red) : T.navy;
   const iconColor = isUrgent ? (accent ?? T.red) : T.navy;
   const iconOpacity = isUrgent ? 1 : 0.6;
-  const border = isUrgent
-    ? `2px solid ${accent ?? T.red}`
-    : `1px solid ${T.border}`;
+  const border = `1px solid ${T.border}`;
   const cleared = (badgeCount ?? 0) === 0 && !isUrgent;
 
   return (
