@@ -1944,8 +1944,9 @@ function UpcomingEventsCard({
   const [openId, setOpenId] = useState<string | null>(null);
 
   return (
-    <div style={{ padding: "0 14px" }}>
+    <div>
       <div
+
         style={{
           fontSize: 11, fontWeight: 700, color: T.textLight,
           letterSpacing: 0.9, textTransform: "uppercase", fontFamily: FONT,
