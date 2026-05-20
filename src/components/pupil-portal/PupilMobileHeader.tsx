@@ -36,6 +36,10 @@ export function PupilMobileHeader({
   const navigate = useNavigate();
   const bgColor = brandColour || "hsl(var(--primary))";
 
+  // Concave scoop carved out of the bottom edge (Vodafone-style hero curve).
+  const curveDepth = 18;
+  const curveMask = `radial-gradient(120% ${curveDepth * 2}px at 50% calc(100% + ${curveDepth}px), transparent 0, transparent ${curveDepth}px, #000 ${curveDepth + 0.5}px)`;
+
   return (
     <div className="sticky top-0 z-50">
       <div
@@ -43,7 +47,10 @@ export function PupilMobileHeader({
         style={{
           backgroundColor: bgColor,
           paddingTop: "env(safe-area-inset-top)",
+          paddingBottom: curveDepth,
           boxShadow: "none",
+          WebkitMaskImage: curveMask,
+          maskImage: curveMask,
         }}
       >
         {/* Decorative circles */}
