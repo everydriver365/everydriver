@@ -379,8 +379,77 @@ export function computeDaySlots(
   }
 
   const firstLessonBuffer = Math.max(0, opts.firstLessonBufferMinutes ?? 0);
-  const effectiveBuffer = Math.max(0, opts.bufferMinutes);
-...
+
+  const allSlots: Slot[] = [];
+  const allRejected: RejectedSlot[] = [];
+
+  for (const win of windows) {
+    let dayStartMin = win.start;
+
+    // Per-window copy — synthetic "Travel from home" markers must NEVER leak
+    // into the next window of a split shift.
+    const winConflicts: TaggedConflict[] = [...baseConflicts];
+
+    // First-lesson travel buffer applies whenever the instructor has been
+    // idle long enough to be home — not only at the very start of the working
+    // window. We inject synthetic "travel from home" blocks at the start of
+    // every conflict-free gap whose length is ≥ firstLessonBuffer.
+    // Compare against the buffer actually in effect (opts.bufferMinutes),
+    // not the instructor row default — the caller may have overridden it.
+    if (firstLessonBuffer > opts.bufferMinutes) {
+      // Clip window-relevant conflicts and MERGE so adjacent/overlapping
+      // ones don't corrupt the gap-pairing math below.
+      const clipped = winConflicts
+        .filter((c) => c.end > win.start && c.start < win.end)
+        .map((c) => ({
+          start: Math.max(c.start, win.start),
+          end: Math.min(c.end, win.end),
+        }));
+      const merged = mergeIntervals(clipped);
+
+      // Build the sequence of (gapStart, gapEnd) pairs: window start → first
+      // conflict, then between consecutive conflicts, then last conflict →
+      // window end.
+      const gapStarts: number[] = [win.start, ...merged.map((c) => c.end)];
+      const gapEnds: number[] = [
+        ...merged.map((c) => c.start),
+        win.end,
+      ];
+
+      for (let i = 0; i < gapStarts.length; i++) {
+        const gStart = gapStarts[i];
+        const gEnd = gapEnds[i];
+        if (gEnd - gStart < firstLessonBuffer) continue;
+
+        if (i === 0) {
+          // Very first gap of the day: shift the window start directly.
+          dayStartMin = Math.max(dayStartMin, gStart + firstLessonBuffer);
+        } else {
+          // Interior gap after a conflict: inject a synthetic "travel from
+          // home" block at the gap start, INTO THE PER-WINDOW LIST ONLY.
+          winConflicts.push({
+            start: gStart,
+            end: gStart + firstLessonBuffer,
+            kind: "event",
+            label: "Travel from home",
+            padOverrideMin: 0,
+          });
+        }
+      }
+    }
+
+    const result = resolveAvailability({
+      dateStr,
+      dayStartMin,
+      dayEndMin: win.end,
+      bufferMinutes: opts.bufferMinutes,
+      durationMinutes: opts.durationMinutes,
+      conflicts: winConflicts,
+      timeOfDay: opts.timeOfDay,
+      isToday,
+      anchorSkipMinutes: opts.slotIncrementMinutes,
+      minNoticeMinutes: opts.minNoticeMinutes,
+    });
     allSlots.push(...result.slots);
     allRejected.push(...result.rejected);
   }
