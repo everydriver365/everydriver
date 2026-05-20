@@ -1571,23 +1571,22 @@ const QUICK_ACCESS: QAItem[] = [
   { label: "Dashboard",       Icon: LayoutDashboard,  ...BLUE_BG, route: "/instructor" },
   { label: "Schedule",        Icon: CalendarIcon,     ...BLUE_BG, route: "/instructor/schedule" },
   { label: "Working hours",   Icon: Clock,            ...BLUE_BG, route: "/instructor/availability" },
-  { label: "How pupils book", Icon: FileText,         ...BLUE_BG, route: "/instructor/booking-rules" },
+  { label: "How pupils book", Icon: FileText,         ...BLUE_BG, route: "/instructor/settings/how-pupils-book" },
   { label: "Pupils",          Icon: Users,            ...BLUE_BG, route: "/instructor/pupils" },
   { label: "Payments",        Icon: CreditCard,       ...BLUE_BG, route: "/instructor/payments" },
-  { label: "Discounts",       Icon: Tag,              ...RED_BG,  route: "/instructor/discounts" },
   { label: "Driving Tests",   Icon: Car,              ...RED_BG,  route: "/instructor/test-requests" },
   { label: "Lesson history",  Icon: BookOpen,         ...BLUE_BG, route: "/instructor/pupils" },
   { label: "Find slot",       Icon: Search,           ...BLUE_BG, route: "/instructor/gaps" },
   { label: "Next slot",       Icon: ArrowRight,       ...NAVY_BG, route: "/instructor/gaps" },
-  { label: "Course planner",  Icon: Grid3x3,          ...BLUE_BG, route: "/instructor/courses" },
-  { label: "Waiting list",    Icon: List,             ...RED_BG,  route: "/instructor/enquiries" },
+  { label: "Course planner",  Icon: Grid3x3,          ...BLUE_BG, route: "/instructor/course-planner" },
+  { label: "Waiting list",    Icon: List,             ...RED_BG,  route: "/instructor/waiting-list" },
   { label: "Fill gaps",       Icon: Plus,             ...NAVY_BG, route: "/instructor/gaps" },
   { label: "Test swap",       Icon: Repeat2,          ...RED_BG,  route: "/instructor/test-requests" },
   { label: "Standards",       Icon: ShieldCheck,      ...BLUE_BG, route: "/instructor/standards-check" },
   { label: "CPD",             Icon: Award,            ...NAVY_BG, route: "/instructor/cpd" },
   { label: "Rates",           Icon: MapPin,           ...BLUE_BG, route: "/instructor/locations" },
   { label: "Availability",    Icon: CalendarCheck,    ...BLUE_BG, route: "/instructor/availability" },
-  { label: "My courses",      Icon: LayoutGrid,       ...BLUE_BG, route: "/instructor/courses" },
+  { label: "My courses",      Icon: LayoutGrid,       ...BLUE_BG, route: "/instructor/course-planner" },
   // Row 2
   { label: "Take payment",    Icon: Upload,           ...BLUE_BG, route: "/instructor/pay" },
   { label: "Pending",         Icon: Clock,            ...RED_BG,  route: "/instructor/payments?tab=pending" },
@@ -1596,22 +1595,22 @@ const QUICK_ACCESS: QAItem[] = [
   { label: "Reviews",         Icon: Star,             ...RED_BG,  route: "/instructor/reviews" },
   { label: "Referrals",       Icon: Share2,           ...RED_BG,  route: "/instructor/payments?tab=bonus" },
   { label: "Fees",            Icon: Info,             ...BLUE_BG, route: "/instructor/payments?tab=fees" },
-  { label: "Plan & billing",  Icon: FileSpreadsheet,  ...NAVY_BG, route: "/instructor/subscription" },
+  { label: "Plan & billing",  Icon: FileSpreadsheet,  ...NAVY_BG, route: "/instructor/settings/plan-billing" },
   { label: "Vehicle",         Icon: Car,              ...BLUE_BG, route: "/instructor/vehicle-health" },
   { label: "GPS tracking",    Icon: MapPin,           ...BLUE_BG, route: "/instructor/tracking" },
-  { label: "Telephony",       Icon: Phone,            ...NAVY_BG, route: "/instructor/calls" },
-  { label: "Call answering",  Icon: PhoneCall,        ...NAVY_BG, route: "/instructor/calls" },
-  { label: "Reporting",       Icon: TrendingUp,       ...BLUE_BG, route: "/instructor/earnings" },
+  { label: "Telephony",       Icon: Phone,            ...NAVY_BG, route: "/instructor/settings/phone-ai" },
+  { label: "Call answering",  Icon: PhoneCall,        ...NAVY_BG, route: "/instructor/settings/phone-ai" },
+  { label: "Reporting",       Icon: TrendingUp,       ...BLUE_BG, route: "/instructor/income" },
   { label: "To do",           Icon: CheckSquare,      ...GREY_BG, route: "/instructor/notifications" },
-  { label: "Productivity",    Icon: Zap,              ...BLUE_BG, route: "/instructor/earnings" },
+  { label: "Productivity",    Icon: Zap,              ...BLUE_BG, route: "/instructor/income" },
   { label: "People & growth", Icon: Users,            ...BLUE_BG, route: "/instructor/pupils" },
-  { label: "Support",         Icon: HelpCircle,       ...RED_BG,  route: "/instructor/menu" },
+  { label: "Support",         Icon: HelpCircle,       ...RED_BG,  route: "/instructor/settings" },
   { label: "Profile",         Icon: UserIcon,         ...RED_BG,  route: "/instructor/profile" },
   { label: "Security",        Icon: Lock,             ...NAVY_BG, route: "/instructor/settings" },
   { label: "Appearance",      Icon: Sliders,          ...GREY_BG, route: "/instructor/settings" },
   { label: "Lab features",    Icon: FlaskConical,     ...BLUE_BG, route: "/instructor/settings" },
-  { label: "Accessibility",   Icon: UserCheck,        ...NAVY_BG, route: "/instructor/settings" },
-  { label: "Insights",        Icon: BarChart2,        ...BLUE_BG, route: "/instructor/earnings" },
+  { label: "Accessibility",   Icon: UserCheck,        ...NAVY_BG, route: "/instructor/settings/accessibility" },
+  { label: "Insights",        Icon: BarChart2,        ...BLUE_BG, route: "/instructor/income" },
   { label: "Settings",        Icon: SettingsIcon,     ...GREY_BG, route: "/instructor/settings" },
 ];
 
@@ -1723,24 +1722,27 @@ function QuickAccessCard({ navigate }: { navigate: ReturnType<typeof useNavigate
         ) : null}
       </div>
 
-      {/* Pinned grid 4x2 */}
+      {/* Pinned horizontal scroll */}
       {!filtered ? (
         <div
           style={{
-            display: "flex", flexWrap: "wrap",
-            padding: "0 10px 10px", gap: 6,
+            overflowX: "auto",
+            WebkitOverflowScrolling: "touch",
+            scrollbarWidth: "none",
+            paddingBottom: 10,
           }}
         >
-          {pinnedItems.map((item) => (
-            <div key={item.label} style={{ width: "calc(25% - 5px)" }}>
+          <div style={{ display: "flex", gap: 8, padding: "0 12px" }}>
+            {pinnedItems.map((item) => (
               <QATile
+                key={item.label}
                 item={item}
                 active={activeRoute === item.route}
-                size="grid"
+                size="scroll"
                 onPress={() => { setActiveRoute(item.route); navigate(item.route); }}
               />
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       ) : (
         <div style={{ overflowX: "auto", paddingBottom: 10 }}>
