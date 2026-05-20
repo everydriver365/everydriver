@@ -247,6 +247,7 @@ export function MobileHomeDSM2026({ instructorId, instructorName }: Props) {
         onMenu={() => navigate("/instructor/menu")}
         onProfile={() => navigate("/instructor/profile")}
         stats={stats}
+        instructorId={instructorId}
       />
 
       <div style={{ padding: 14, display: "flex", flexDirection: "column", gap: 12 }}>
