@@ -399,14 +399,10 @@ interface QuickTileProps {
 
 function QuickTile({
   icon: Icon,
-  tone,
   label,
-  subtitle,
-  isPrimary,
   locked,
   onPress,
 }: QuickTileProps) {
-  const palette = TILE_TONE[tone];
   return (
     <button
       type="button"
@@ -414,57 +410,36 @@ function QuickTile({
       aria-label={label}
       style={{
         width: "100%",
-        background: isPrimary ? PRIMARY : "#FFF",
-        borderRadius: 16,
-        padding: "14px 13px",
-        border: isPrimary ? "0" : "0.5px solid rgba(26,82,160,0.08)",
-        boxShadow: isPrimary
-          ? "0 2px 8px rgba(26,82,160,0.25)"
-          : "0 1px 4px rgba(0,0,0,0.04)",
+        height: 90,
+        background: "#FFF",
+        borderRadius: 14,
+        padding: "0 20px",
+        border: 0,
+        boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
         display: "flex",
-        flexDirection: "column",
-        alignItems: "flex-start",
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 18,
         textAlign: "left",
         cursor: "pointer",
         opacity: locked ? 0.55 : 1,
-        position: "relative",
       }}
     >
-      <div
-        style={{
-          width: 32,
-          height: 32,
-          borderRadius: 9,
-          marginBottom: 10,
-          background: isPrimary ? "rgba(255,255,255,0.18)" : palette.bg,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <Icon size={14} strokeWidth={1.7} color={isPrimary ? "#FFF" : palette.fg} />
-      </div>
+      <Icon size={26} strokeWidth={1.75} color="#1A1A1A" style={{ flexShrink: 0 }} />
       <span
         style={{
-          fontSize: 12,
+          fontSize: 16,
           fontWeight: 700,
-          lineHeight: "15px",
-          color: isPrimary ? "#FFF" : "#1A1A1A",
+          lineHeight: "20px",
+          color: "#1A1A1A",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
         }}
       >
         {label}
       </span>
-      {subtitle && (
-        <span
-          style={{
-            fontSize: 9,
-            marginTop: 2,
-            color: isPrimary ? "rgba(255,255,255,0.6)" : "#8E8E93",
-          }}
-        >
-          {subtitle}
-        </span>
-      )}
     </button>
   );
 }
+
