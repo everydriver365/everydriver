@@ -314,7 +314,7 @@ function HeroHeader(props: {
   return (
     <div
       style={{
-        backgroundColor: T.navy,
+        backgroundColor: "#1E6FB8",
         padding: "calc(env(safe-area-inset-top, 0px) + 12px) 18px 16px",
         marginTop: "calc(-1 * env(safe-area-inset-top, 0px))",
         borderBottomLeftRadius: 20,
