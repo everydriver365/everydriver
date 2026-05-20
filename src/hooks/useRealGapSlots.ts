@@ -6,7 +6,7 @@ import {
   computeDaySlots,
   type InstructorLite,
 } from "@/lib/courseAvailability";
-import { fromMinutes } from "@/lib/availabilityEngine";
+import { fromMinutes, londonDateStr } from "@/lib/availabilityEngine";
 
 interface GapSlot {
   id: string;
@@ -53,7 +53,7 @@ export function useRealGapSlots(instructorId: string | undefined) {
       const [instructorRes, pupilsRes, sources] = await Promise.all([
         supabase
           .from("instructors")
-          .select("id, available_from, buffer_minutes, slot_increment_minutes, is_network_placeholder")
+          .select("id, available_from, buffer_minutes, slot_increment_minutes, is_network_placeholder, min_lead_hours")
           .eq("id", instructorId)
           .maybeSingle(),
         supabase
@@ -75,6 +75,12 @@ export function useRealGapSlots(instructorId: string | undefined) {
       };
       const slotIncrement = row.slot_increment_minutes ?? 60;
       const buffer = row.buffer_minutes ?? 0;
+      // Instructor's minimum booking-lead time. Stored as hours; engine
+      // takes minutes. Today's cutoff = London-now + minNoticeMinutes, so
+      // this prevents "next free slot" surfacing a time that's already
+      // past or too imminent to honour.
+      const minLeadHours = Number.isFinite(row.min_lead_hours) ? Number(row.min_lead_hours) : 0;
+      const minNoticeMinutes = Math.max(0, Math.round(minLeadHours * 60));
 
       const suggestedPupils: SuggestedPupil[] = (pupilsRes.data || []).map((p) => ({
         id: p.id,
@@ -89,13 +95,16 @@ export function useRealGapSlots(instructorId: string | undefined) {
       for (let i = 0; i <= 14; i++) {
         if (result.length >= 7) break;
         const day = addDays(fromDate, i);
-        const dateStr = format(day, "yyyy-MM-dd");
+        // Use the London calendar date so the engine's `isToday` derivation
+        // (todayStr === dateStr) matches what we display.
+        const dateStr = londonDateStr(day);
 
         const { slots } = computeDaySlots(instructor, day, sources, {
           durationMinutes: 60,
           bufferMinutes: buffer,
           slotIncrementMinutes: slotIncrement,
           respectAvailableFrom: false,
+          minNoticeMinutes,
         });
 
         if (slots.length === 0) continue;
@@ -116,7 +125,11 @@ export function useRealGapSlots(instructorId: string | undefined) {
       return result;
     },
     enabled: !!instructorId,
-    staleTime: 2 * 60 * 1000,
+    // Short stale window + 1-minute refetch so a slot can't sit on the
+    // dashboard after the wall-clock has passed it.
+    staleTime: 30 * 1000,
+    refetchInterval: 60 * 1000,
     refetchOnWindowFocus: true,
   });
 }
+
