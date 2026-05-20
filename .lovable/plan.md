@@ -1,39 +1,28 @@
 ## Goal
-Persist every pupil mock theory test attempt to the existing `theory_mock_scores` table so scores show up in `TheoryMockScoreLogger`, the Drive365 home Theory tile, and the Test Readiness ring — replacing the current broken write to the non-existent `theory_mock_results` table.
+Reshape the top of the pupil mobile portal header to match the Vodafone-style hero: a taller coloured band that curves/scoops down at the bottom into the page, with the existing subtle dot pattern preserved. Everything else (logo, hamburger, menu, brand colour, content below) stays exactly as it is today.
 
-## Current state
-- `src/components/pupil-portal/TheoryMockTest.tsx` line 122 `saveResult` inserts into `theory_mock_results` cast as `any`. That table doesn't exist → inserts silently fail and nothing is shown in the portal.
-- The real table `theory_mock_scores` already exists with columns: `pupil_id`, `instructor_id` (required), `score`, `total_questions`, `test_type`, `source`, `test_date`, `notes`. It's already read by `TheoryMockScoreLogger.tsx` and `Drive365PupilHome.tsx`.
-- `TheoryMockTest` is rendered from `BrandedPupilPortal.tsx` line 494 with only `pupilId`; `instructor.id` is in scope on that page but not passed in.
+## Scope
+Single file: `src/components/pupil-portal/PupilMobileHeader.tsx`
 
-## Changes
+No changes to:
+- Logo, title, back button, dropdown menu items or behaviour
+- Brand colour resolution (`brandColour || hsl(var(--primary))`)
+- Any page content under the header
+- Desktop layouts
+- Any other portal (instructor / admin / DSM)
 
-1. **`src/components/pupil-portal/TheoryMockTest.tsx`**
-   - Add `instructorId?: string` to `TheoryMockTestProps`.
-   - Rewrite `saveResult` to insert into `theory_mock_scores` with:
-     - `pupil_id`, `instructor_id`
-     - `score`, `total_questions: questions.length`
-     - `test_type: 'full_mock'` (matches the enum used by `TheoryMockScoreLogger`)
-     - `source: 'mock_test'`
-     - `test_date: format(new Date(), 'yyyy-MM-dd')`
-     - `notes`: JSON string of `categoryResults` + `time_taken_seconds` (preserves the category breakdown we currently capture).
-   - Guard: only insert when both `pupilId` and `instructorId` are present and `questions.length > 0`. If `instructorId` is missing, log a console warning and skip — no fabricated fallback (per project Live-Data rule).
-   - Toast on success/failure; remove `as any` casts and the dead `theory_mock_results` reference.
+## Visual change
+Currently the header is a flat rectangle that ends in a straight horizontal edge. Target: the bottom edge becomes a smooth concave curve (the page "scoops" up into the red band), giving the same silhouette as the Vodafone screenshot where the white content card sits inside a curved red hero.
 
-2. **`src/pages/BrandedPupilPortal.tsx`** (line ~494)
-   - Pass `instructorId={instructor.id}` to `<TheoryMockTest ... />`.
+### Technical approach
+- Keep the existing sticky wrapper, safe-area padding, decorative circles, logo row, and dropdown unchanged.
+- Add ~16–20px of extra bottom padding to the coloured band so the curve has room.
+- Apply the curve using a CSS mask (or an inline SVG `<svg>` positioned at the bottom of the band) that carves a shallow concave arc out of the bottom edge. Mask is preferred because it preserves the background colour, dot pattern and decorative circles without needing a second coloured layer.
+- The curve should be subtle (rise ~14–18px in the middle), full-width, and use `pointer-events-none`.
+- Ensure the sticky behaviour still works (mask is applied to the inner coloured div, not the sticky wrapper).
 
-3. **Test** — `src/components/pupil-portal/__tests__/TheoryMockTest.test.tsx`
-   - Using the existing `src/test/supabaseMock.ts`, render `TheoryMockTest` with a pupilId + instructorId, force the results screen, and assert the mock recorded an `insert` to `theory_mock_scores` with the expected payload shape.
+No new assets, no new dependencies.
 
-## Verification
-- Manual: run a mock test on `/p/<slug>` → finish → confirm:
-  - new row in `theory_mock_scores` via `supabase--read_query`.
-  - `TheoryMockScoreLogger` updates with the new score and chart bar.
-  - Drive365 Home Theory tile shows "✓ Passed · {date}" or the latest %.
-- Automated: `bunx vitest run src/components/pupil-portal/__tests__/TheoryMockTest.test.tsx`.
-
-## Out of scope
-- No schema or RLS changes (table + policies already exist).
-- No UI changes to the mock test screens or the home tile.
-- Streak/XP wiring untouched.
+## QA
+- Verify on the current route `/p/ken-d` at 390px width that the curve renders, the logo/menu stay aligned, and the content below sits flush against the curve with no white gap or clipping.
+- Confirm dark/light brand colours both render the curve correctly (mask, not overlay).
