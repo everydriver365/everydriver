@@ -172,8 +172,22 @@ export function MobileHomeDSM2026({ instructorId, instructorName }: Props) {
   const { data: events = [] } = useUpcomingEvents(instructorId);
   const { data: membership } = useInstructorMembership(instructorId);
   const payments = useInstructorPaymentsData(instructorId);
+  const { data: gapDays = [] } = useRealGapSlots(instructorId);
 
   const [lessonExpanded, setLessonExpanded] = useState(false);
+
+  // Earliest upcoming free slot (excludes today; engine returns tomorrow onward).
+  const nextFreeSlotLabel = (() => {
+    const first = gapDays.find((d) => d.slots.length > 0);
+    if (!first) return null;
+    const slot = first.slots[0];
+    const hhmm = slot.startTime.slice(0, 5);
+    try {
+      return `${format(parseISO(first.date), "EEE")} ${hhmm}`;
+    } catch {
+      return `${first.formattedDate} ${hhmm}`;
+    }
+  })();
 
   // Compose stats shape expected by StatsStrip + TodayStrip + NeedsAttention.
   const stats = {
@@ -186,7 +200,7 @@ export function MobileHomeDSM2026({ instructorId, instructorName }: Props) {
     lessonsPct: pct(lessonsThisWeek, weekly?.hoursGoal || 0),
     weekHours: hoursThisWeek,
     outstanding: Math.round(payments?.stats?.outstanding ?? 0),
-    nextFreeSlot: null as string | null, // no hook exists — surface "—" per live-data policy
+    nextFreeSlot: nextFreeSlotLabel,
   };
 
   const urgentCount = jobsCount + swapsCount;
