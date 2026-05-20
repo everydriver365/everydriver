@@ -1,52 +1,44 @@
-## public-courses audit — read end-to-end
+## Response to your pushback — agreed, with one correction
 
-You were right on all three framings. This isn't drift — `public-courses` never imported the engine; it's independent parallel logic that happens to answer an availability question. The grep hinted at one line; reading the whole file (and checking the schema) surfaced more, and the worst ones are absences. Reporting fix-by-fix below, then halting per your instruction.
+### Finding 7 resolved: it's a real sixth bug
 
-### What this function actually decides
+Schema check: `instructor_date_overrides` has nullable `start_time` and `end_time`. Live data: 2 rows in production have `is_available = true` with non-null `start_time` and `end_time` — confirmed partial-day "available between X and Y on this date" overrides. The `public-courses` short-circuit at lines 49–51 returns `dateStr` the moment it sees any `is_available = true` override and never reads start/end. So on those two rows, the function returns the date as "next available" even if the override window has already passed for today, or even if the rest of the day is otherwise blocked.
 
-Given an instructor slug, it returns a course list and a single per-instructor field `nextAvailable` — a date string used on the public `/courses` page as "Next available: …". That date is the only availability decision it makes, but it's a high-trust one: it's the first availability number a pupil ever sees, before any booking funnel runs.
+Cross-check on the canonical helper: `src/lib/courseAvailability.ts` lines 217–220 already handles this correctly — when an `is_available = true` override has start/end, it parses them into a partial-day window. The engine itself doesn't resolve overrides; `courseAvailability.resolveDayWindows` does, and it's the right place. `public-courses` is the only file that gets override semantics wrong.
 
-The decision is computed by `findFirstAvailableDate` (lines 22–65): walk 90 days from "today", skip dates before `available_from`, consult `instructor_date_overrides`, otherwise return the first day with any active `instructor_working_hours` row for that DOW.
+So: finding 7 promoted to a confirmed sixth bug. Same class as the others — public-courses reimplements something the canonical helper already does correctly.
 
-### Findings (independent of grep — what's actually wrong when you read it)
+### Yes, agreed on the split — finding 5 is not in the tactical batch
 
-**1. Server-local "today" is UTC, not London — silent off-by-one near midnight.** (lines 15–20, 27–28)
-`new Date()` + `getFullYear/getMonth/getDate` on Deno Deploy = UTC. Between 00:00 and 01:00 BST (23:00–00:00 UTC the day before) the function's `today` is yesterday's London date. A pupil loading the page at 00:30 BST sees "Next available: [yesterday]" — which then fails validation when they click through, because the booking funnel uses `londonTodayStr`. **Parity break with the engine's canonical helper.** Same class of bug the engine's `londonDow` / `londonTodayStr` exists to prevent.
+You're right and I was wrong to recommend tactical for finding 5. Reading my own list back, the busyness patch IS reimplementing `buildDayConflicts`, and shipping it would entrench exactly what this whole audit exists to expose. The asymmetry you named is the deciding fact: findings 1, 2, 3, 4 are each one helper call or one SQL filter — they *reduce* parallel logic. Finding 5 is a second engine. Different class, different decision.
 
-**2. DOW computed from UTC, not `londonDow`.** (line 38)
-`day.getDay()` on a UTC-midnight Date. Symptom is rarer than #1 but same root cause: late Sunday in London (Sun 23:30 BST = Sun 22:30 UTC) is fine, but the construction is fragile and contradicts the codebase rule that DOW always comes from `londonDow`. Memory: `mem://constraints/availability-london-timezone`.
+And your priority correction stands: finding 5 is the worst, not the fifth-worst. An instructor solidly booked for two weeks shows "Next available: Tomorrow" on the public discovery page, every day. That's not edge-case drift, that's the steady state for every busy instructor in the system. The audit understated it because I ordered by reading sequence, not by impact. Reordered: 5 first, then 3 (paused instructors still publicly listed), then 4, then 1+2+6 (timezone/override correctness).
 
-**3. `availability_paused` is never checked — absence.** (line 93 select list)
-Schema confirms `instructors.availability_paused boolean` exists. A paused instructor is still publicly listed with a fabricated `nextAvailable` date. This is the public-discovery equivalent of "instructors on long break still publicly listed" that you flagged hypothetically — it's real, and it's worse than `available_from` drift because at least `available_from` is checked. `availability_paused` is invisible to this surface entirely.
+### The split
 
-**4. `min_lead_hours` ignored — "Next available: Today" with no bookable slots.** (line 30, today included unconditionally)
-If an instructor's lead time is 24h and today is a working day, `nextAvailable` returns today. Pupil clicks through, sees zero slots. The engine's `minNoticeMinutes` gate is exactly what we just added to `create-booking` for parity. Same parity gap here, different surface.
+**Batch A — ship as actual reduction in parallel logic** (findings 1, 2, 3, 4, 6):
+- Switch `formatDate` → `londonTodayStr` and `day.getDay()` → `londonDow` (calling shared helpers, not duplicating logic).
+- Add `availability_paused = false` to the instructor SQL filter (one where clause, zero engine logic).
+- Add `min_lead_hours` cutoff for today (one comparison against `londonNowMinutes`).
+- Replace the inline override handling with a call to `courseAvailability.resolveDayWindows` for the day — that already handles partial-day `is_available=true` correctly, fixing finding 6 by deletion rather than reimplementation.
 
-**5. GCal events + manual blocks not consulted — contradicts the source-of-truth rule.** (no query for `instructor_calendar_events` / `instructor_manual_blocks`)
-Per `mem://constraints/google-calendar-source-of-truth`, those two tables are the **only** sources of "instructor is busy." `public-courses` consults working-hours and date-overrides but never asks whether the day is actually busy. An instructor with a whole-day GCal event still shows that day as "next available." This is the largest behavioural gap on this surface, and again it's an absence — the grep table couldn't have flagged it.
+Net effect: ~25 lines deleted, ~10 lines added, all of them calls into existing canonical helpers. Parallel-logic surface area goes down, not up.
 
-**6. `available_from` check itself is correct but exists outside the engine.** (line 34)
-String compare on ISO dates works. The problem isn't the logic; it's that it exists at all in this file. Same gate is in `create-booking` (now), in `availabilityCore`, and reimplemented here.
+**Batch B — explicitly deferred to P3** (finding 5):
+- Busyness from `instructor_calendar_events` + `instructor_manual_blocks` is not patched in `public-courses`. It stays knowingly broken for a few more days. The fix is `public-courses` reading `next_available_date` from a precomputed availability column populated by the engine. That deletes `findFirstAvailableDate` entirely and ends the parallel-logic question for this surface.
 
-**7. Override `is_available = true` short-circuits return without checking working-hour times.** (lines 49–51)
-Acceptable if "override with is_available=true" means "I'm working this whole day." If overrides can be partial-day with `is_available=true` and the rest of the day is blocked, this returns a misleading date. Lower priority — depends on override semantics elsewhere — but flagging because reading the file end-to-end raised it and the grep wouldn't have.
+This means after Batch A ships, the public discovery feed will still show fictional "next available" dates for busy instructors. That's an honest tradeoff: shipping a wrong-but-less-wrong number for 3–5 more days is preferable to entrenching a second busyness engine that we then have to delete anyway.
 
-**8. `hoursToShow` defaults to `DISPLAY_HOURS` when instructor has no courses.** (lines 141–144)
-Not an availability bug, but it means we publish "next available" dates for courses the instructor doesn't sell. Out of scope for this audit; noting for the brief.
+### Brief edit — P3 reframed
 
-### Reframe of the finding
+P3 currently reads (per your earlier brief) as a scale/performance item: "won't scale, precompute availability." The audit changes its character. Proposed rewording for the brief:
 
-`public-courses` makes **one** availability decision (`nextAvailable`) and gets **five** things wrong relative to the canonical engine: timezone, DOW source, pause flag, lead time, busyness source. Four of those are absences, not divergences. This matches your prediction: grep finds wrong checks; only reading finds missing ones.
+> **P3 — Precomputed availability table (moved up; reframe).** This is no longer a scale optimisation. `public-courses` audit confirms the public discovery page is showing fabricated "next available" dates for any instructor with a busy calendar — i.e. the busiest, best instructors — because the function has no concept of busyness. The fix is structural: a `instructor_availability_cache` table with `next_available_date` populated by the canonical engine, and every discovery/listing surface reads from it. Same project also resolves the parallel-logic problem for `smart-schedule-suggestions`, `whatsapp-webhook`, and `ai-admin-receptionist` — they all become readers of the cache rather than independent implementers of availability.
 
-It also confirms the structural point. This file was written before the engine existed (or in parallel with it), checks the same things differently, and there's nothing in the codebase that would have caught it. Fixing this one file doesn't fix the class.
+### What I'm asking you to confirm before any code moves
 
-### Two fix shapes, per your framing
+1. Batch A as scoped above — five edits, all reductions, including the finding-6 fix via `resolveDayWindows`. Ship it.
+2. Finding 5 explicitly deferred to P3, with the brief edited as above. No tactical busyness patch.
+3. After Batch A lands and the brief is updated: halt on this surface. `smart-schedule-suggestions` waits.
 
-- **Tactical (patch this surface):** five edits — switch to `londonTodayStr` + `londonDow`, add `availability_paused` filter at the SQL level, add `min_lead_hours` cutoff for today, query `instructor_calendar_events` + `instructor_manual_blocks` and skip days that are fully blocked. Keeps `findFirstAvailableDate` local. Lowest risk, doesn't touch the engine.
-- **Structural (route through the engine):** call `computeDaySlots` (or a thin "is any slot bookable today?" wrapper) per day in the 90-day walk, return the first day that yields ≥1 slot. Deletes ~40 lines of parallel logic. Higher risk because `computeDaySlots` was built for a single-day query and a 90-iteration loop has cost/latency implications — needs measuring before commit.
-
-I'd recommend **tactical now, structural as part of the durable-fix conversation** — because the structural option is the same conversation as the seventh-surface problem you raised, and shouldn't be decided one surface at a time.
-
-### Halting here
-
-Per your instruction: one surface, reported, reviewed, before the next. Not touching `smart-schedule-suggestions`, not drafting tests, not editing the brief, not writing code. Awaiting your call on which fix shape (or both, or neither yet) before any edits to this file.
+If you confirm, I'll do Batch A in one pass and stop. If you want any of those four edits to drop from Batch A (e.g. you'd rather even the `resolveDayWindows` swap waited for P3 because it changes behaviour), say so — that's the one edit in Batch A that has any behavioural risk worth flagging, because it will start respecting partial-day overrides correctly and may shift `nextAvailable` for the two instructors with such rows.
