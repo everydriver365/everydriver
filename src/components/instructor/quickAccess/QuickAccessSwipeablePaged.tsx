@@ -237,9 +237,6 @@ export function QuickAccessSwipeablePaged({ instructorId }: Props) {
           >
             Edit
           </button>
-          {totalPages > 1 && !filtered && (
-            <PageDots currentPage={page} totalPages={totalPages} compact />
-          )}
         </div>
       </div>
 
