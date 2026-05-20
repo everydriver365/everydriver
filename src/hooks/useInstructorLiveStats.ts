@@ -17,12 +17,11 @@ async function fetchLiveStats(instructorId: string): Promise<LiveStatsData> {
 
   const { data: weekLessons, error: weekError } = await supabase
     .from("scheduled_lessons")
-    .select("duration_minutes, pupils!inner(deleted_at)")
+    .select("duration_minutes")
     .eq("instructor_id", instructorId)
     .gte("lesson_date", weekStart)
     .lte("lesson_date", weekEnd)
-    .neq("status", "cancelled")
-    .is("pupils.deleted_at", null);
+    .neq("status", "cancelled");
   if (weekError) throw weekError;
 
   const totalMinutes =
