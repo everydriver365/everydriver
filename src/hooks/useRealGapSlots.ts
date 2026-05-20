@@ -1,12 +1,23 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { format, addDays, startOfDay, parseISO } from "date-fns";
+import { format, parseISO } from "date-fns";
 import {
   loadCourseAvailabilitySources,
   computeDaySlots,
   type InstructorLite,
 } from "@/lib/courseAvailability";
-import { fromMinutes, londonDateStr } from "@/lib/availabilityEngine";
+import { fromMinutes, londonDateStr, londonTodayStr } from "@/lib/availabilityEngine";
+
+/**
+ * Build a Date that resolves to (London today + offsetDays) under
+ * `londonDateStr(...)`. Noon UTC is always inside the same London calendar
+ * day regardless of BST/GMT, so this avoids any DST edge cases and keeps
+ * the loop's dateStrs identical to what `computeDaySlots` derives internally.
+ */
+function londonDayDate(offsetDays: number): Date {
+  const [y, m, d] = londonTodayStr().split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d + offsetDays, 12, 0, 0));
+}
 
 interface GapSlot {
   id: string;
@@ -47,8 +58,13 @@ export function useRealGapSlots(instructorId: string | undefined) {
     queryFn: async (): Promise<RealGapSuggestion[]> => {
       if (!instructorId) return [];
 
-      const fromDate = startOfDay(new Date());
-      const toDate = addDays(fromDate, 14);
+      // Anchor the loop to London calendar dates so each per-day `dateStr`
+      // matches what `computeDaySlots` derives internally via londonDateStr.
+      // Using browser-local startOfDay/addDays would mis-align day 0 when the
+      // device timezone differs from Europe/London, causing today's slots to
+      // be treated as a future day (isToday=false → no past-cutoff applied).
+      const fromDate = londonDayDate(0);
+      const toDate = londonDayDate(14);
 
       const [instructorRes, pupilsRes, sources] = await Promise.all([
         supabase
@@ -94,9 +110,10 @@ export function useRealGapSlots(instructorId: string | undefined) {
 
       for (let i = 0; i <= 14; i++) {
         if (result.length >= 7) break;
-        const day = addDays(fromDate, i);
-        // Use the London calendar date so the engine's `isToday` derivation
-        // (todayStr === dateStr) matches what we display.
+        const day = londonDayDate(i);
+        // dateStr is now guaranteed identical to the engine's internal
+        // londonDateStr(day), so isToday lines up and the past-cutoff
+        // (londonNowMin + minNoticeMinutes) fires for the real London-today.
         const dateStr = londonDateStr(day);
 
         const { slots } = computeDaySlots(instructor, day, sources, {
