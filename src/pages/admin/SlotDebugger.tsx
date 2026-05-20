@@ -417,7 +417,7 @@ export default function SlotDebugger() {
       isToday,
     });
 
-    if (result.ok) {
+    if (result.ok === true) {
       checks.push({
         status: "pass",
         label: "validateSlot() returned OK",
@@ -432,18 +432,19 @@ export default function SlotDebugger() {
       };
     }
 
-    const reason = result.reason as RejectReason;
+    const reason: RejectReason = result.reason;
+    const cause = result.cause;
     checks.push({
       status: "fail",
       label: `validateSlot() rejected — reason: ${reason}`,
-      detail: describeReason(reason, result.cause, buffer),
+      detail: describeReason(reason, cause, buffer),
     });
 
-    if (result.cause) {
+    if (cause) {
       checks.push({
         status: "info",
         label: `Conflicting interval`,
-        detail: `${fromMinutes(result.cause.start)}–${fromMinutes(result.cause.end)} (${result.cause.kind}${result.cause.label ? `: ${result.cause.label}` : ""})`,
+        detail: `${fromMinutes(cause.start)}–${fromMinutes(cause.end)} (${cause.kind}${cause.label ? `: ${cause.label}` : ""})`,
       });
     }
 
@@ -452,7 +453,7 @@ export default function SlotDebugger() {
       warnings,
       conflictRows,
       finalStatus: "fail" as const,
-      finalReason: describeReason(reason, result.cause, buffer),
+      finalReason: describeReason(reason, cause, buffer),
     };
   }, [instructor, sources, startTime, duration, date, today]);
 
