@@ -1758,7 +1758,7 @@ function QuickAccessCard({ navigate }: { navigate: ReturnType<typeof useNavigate
           </div>
         </div>
       ) : (
-        <div style={{ overflowX: "auto", paddingBottom: 10 }}>
+        <div style={{ overflowX: "auto", padding: "12px 0", backgroundColor: "#F7F7F7" }}>
           <div
             style={{
               display: "grid",
