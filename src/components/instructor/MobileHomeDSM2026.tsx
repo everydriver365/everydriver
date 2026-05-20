@@ -1647,10 +1647,12 @@ function QuickAccessCard({ navigate }: { navigate: ReturnType<typeof useNavigate
 
   const pinnedItems = useMemo(() => {
     const byLabel = new Map(QUICK_ACCESS.map((i) => [i.label, i]));
-    return pinnedLabels
+    const pinned = pinnedLabels
       .map((l) => byLabel.get(l))
-      .filter((x): x is QAItem => Boolean(x))
-      .slice(0, 8);
+      .filter((x): x is QAItem => Boolean(x));
+    const pinnedSet = new Set(pinned.map((p) => p.label));
+    const rest = QUICK_ACCESS.filter((i) => !pinnedSet.has(i.label));
+    return [...pinned, ...rest];
   }, [pinnedLabels]);
 
   const filtered = query.trim()
