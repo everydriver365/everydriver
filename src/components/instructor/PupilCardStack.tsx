@@ -962,7 +962,7 @@ export function PupilCardStack({
                 </div>
 
                 {/* Divider */}
-                <div style={{ height: 1, background: "#F2F4F8", marginLeft: 16, marginRight: 16 }} />
+                <div style={{ height: 1, background: "rgba(0,0,0,0.06)", marginLeft: 16, marginRight: 16 }} />
 
                 {/* Actions row */}
                 <div
