@@ -60,6 +60,7 @@ import {
   Settings as SettingsIcon,
   Briefcase,
   CalendarRange,
+  AlertCircle,
   type LucideIcon,
 } from "lucide-react";
 import { format, addDays, getWeek, isSameDay, parse, parseISO } from "date-fns";
