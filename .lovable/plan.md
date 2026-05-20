@@ -1,66 +1,52 @@
-## Goal
-Eliminate the two real risks surfaced by the engine audit:
-1. A misleading comment in the legacy wrapper that misrepresents buffer padding.
-2. The create-booking edge function's hand-rolled availability layer diverging from the browser engine — most importantly **letting past slots pass server-side**.
+## public-courses audit — read end-to-end
 
-The engine twin itself is logically identical to the browser engine; no changes needed there.
+You were right on all three framings. This isn't drift — `public-courses` never imported the engine; it's independent parallel logic that happens to answer an availability question. The grep hinted at one line; reading the whole file (and checking the schema) surfaced more, and the worst ones are absences. Reporting fix-by-fix below, then halting per your instruction.
 
-## Scope
+### What this function actually decides
 
-### A. Fix the wrapper comment (trivial)
-File: `src/lib/availabilityCore.ts` (lines ~24–27, plus the const it precedes).
+Given an instructor slug, it returns a course list and a single per-instructor field `nextAvailable` — a date string used on the public `/courses` page as "Next available: …". That date is the only availability decision it makes, but it's a high-trust one: it's the first availability number a pupil ever sees, before any booking funnel runs.
 
-Replace the false claim with the truth:
-- Delete `// Engine now applies travel padding (10 min) on top of bufferMinutes.` and the two-line continuation.
-- Replace with: `// Engine applies bufferMinutes only — no hidden travel padding. TRAVEL_FALLBACK_MIN re-exported as 0 for legacy callers that did "bufferMinutes + TRAVEL_FALLBACK_MIN" by hand.`
-- Leave the `export const TRAVEL_FALLBACK_MIN = 0;` and `ENGINE_TRAVEL_PADDING` lines untouched — runtime is correct.
+The decision is computed by `findFirstAvailableDate` (lines 22–65): walk 90 days from "today", skip dates before `available_from`, consult `instructor_date_overrides`, otherwise return the first day with any active `instructor_working_hours` row for that DOW.
 
-No behaviour change. Pure documentation correction.
+### Findings (independent of grep — what's actually wrong when you read it)
 
-### B. Close create-booking guard drift
-File: `supabase/functions/create-booking/index.ts` (lines ~93–210).
+**1. Server-local "today" is UTC, not London — silent off-by-one near midnight.** (lines 15–20, 27–28)
+`new Date()` + `getFullYear/getMonth/getDate` on Deno Deploy = UTC. Between 00:00 and 01:00 BST (23:00–00:00 UTC the day before) the function's `today` is yesterday's London date. A pupil loading the page at 00:30 BST sees "Next available: [yesterday]" — which then fails validation when they click through, because the booking funnel uses `londonTodayStr`. **Parity break with the engine's canonical helper.** Same class of bug the engine's `londonDow` / `londonTodayStr` exists to prevent.
 
-Five targeted edits, no rewrite of the surrounding flow:
+**2. DOW computed from UTC, not `londonDow`.** (line 38)
+`day.getDay()` on a UTC-midnight Date. Symptom is rarer than #1 but same root cause: late Sunday in London (Sun 23:30 BST = Sun 22:30 UTC) is fine, but the construction is fragile and contradicts the codebase rule that DOW always comes from `londonDow`. Memory: `mem://constraints/availability-london-timezone`.
 
-1. **Pass past-cutoff inputs to `validateSlot`** (highest priority).
-   - Import `londonTodayStr` from `_shared/availabilityEngine.ts`.
-   - In the per-slot loop, derive `const isToday = slot.date === londonTodayStr();`.
-   - Read instructor `min_lead_hours` in the same `instructors` select as `buffer_minutes`; compute `minNoticeMinutes = Math.max(0, Math.round(Number(min_lead_hours ?? 0) * 60))`.
-   - Pass both into `validateSlot({ ..., isToday, minNoticeMinutes })`.
-   - Result: server rejects a slot that is already past in London or inside the instructor's notice window, matching the browser engine.
+**3. `availability_paused` is never checked — absence.** (line 93 select list)
+Schema confirms `instructors.availability_paused boolean` exists. A paused instructor is still publicly listed with a fabricated `nextAvailable` date. This is the public-discovery equivalent of "instructors on long break still publicly listed" that you flagged hypothetically — it's real, and it's worse than `available_from` drift because at least `available_from` is checked. `availability_paused` is invisible to this surface entirely.
 
-2. **Add `available_from` gate.**
-   - Add `available_from` to the `instructors` select.
-   - Before the per-slot loop, if `available_from` is set and parses to a date `> londonTodayStr()` for **any** requested slot whose date is earlier than `available_from`, push a `Date is before instructor's available-from` conflict and skip the engine call for that slot.
+**4. `min_lead_hours` ignored — "Next available: Today" with no bookable slots.** (line 30, today included unconditionally)
+If an instructor's lead time is 24h and today is a working day, `nextAvailable` returns today. Pupil clicks through, sees zero slots. The engine's `minNoticeMinutes` gate is exactly what we just added to `create-booking` for parity. Same parity gap here, different surface.
 
-3. **Merge working windows before containment check.**
-   - Import `mergeIntervals` (already exported by the twin).
-   - After building `matching`, map to `{ start: toMinutes(w.start_time), end: toMinutes(w.end_time) }`, run `mergeIntervals(...)`, then do the containment search against the merged list. Use the merged window's `start`/`end` for `winStart`/`winEnd`.
+**5. GCal events + manual blocks not consulted — contradicts the source-of-truth rule.** (no query for `instructor_calendar_events` / `instructor_manual_blocks`)
+Per `mem://constraints/google-calendar-source-of-truth`, those two tables are the **only** sources of "instructor is busy." `public-courses` consults working-hours and date-overrides but never asks whether the day is actually busy. An instructor with a whole-day GCal event still shows that day as "next available." This is the largest behavioural gap on this surface, and again it's an absence — the grep table couldn't have flagged it.
 
-4. **Fail-closed `is_busy` parity.**
-   - Drop the `.eq("is_busy", true)` SQL filter so `is_busy = null` rows reach `buildDayConflicts`, which treats them as busy (matching the browser).
-   - Keep the time-range filter unchanged.
+**6. `available_from` check itself is correct but exists outside the engine.** (line 34)
+String compare on ISO dates works. The problem isn't the logic; it's that it exists at all in this file. Same gate is in `create-booking` (now), in `availabilityCore`, and reimplemented here.
 
-5. **Switch DOW derivation to `londonDow`.**
-   - Import `londonDow` from the twin.
-   - Replace `const dow = new Date(\`${slot.date}T00:00:00Z\`).getUTCDay();` with `const dow = londonDow(new Date(\`${slot.date}T12:00:00Z\`));`.
-   - Functionally equivalent today, eliminates the silent-break risk if a future caller passes an instant. Removes the parallel "what convention?" question.
+**7. Override `is_available = true` short-circuits return without checking working-hour times.** (lines 49–51)
+Acceptable if "override with is_available=true" means "I'm working this whole day." If overrides can be partial-day with `is_available=true` and the rest of the day is blocked, this returns a misleading date. Lower priority — depends on override semantics elsewhere — but flagging because reading the file end-to-end raised it and the grep wouldn't have.
 
-No change to the engine itself, the wrapper, or the browser code paths beyond Step A.
+**8. `hoursToShow` defaults to `DISPLAY_HOURS` when instructor has no courses.** (lines 141–144)
+Not an availability bug, but it means we publish "next available" dates for courses the instructor doesn't sell. Out of scope for this audit; noting for the brief.
 
-## Out of scope (for this plan)
-- The "next free slot" widget end-to-end trace — agreed earlier to do this after the twin work.
-- Any refactor pulling create-booking's window resolution into a shared `_shared/courseAvailability.ts` (the right long-term move, but bigger than this fix and not necessary for correctness).
-- Adding tests; the Deno test runner is available and we should follow up, but the user did not request it.
+### Reframe of the finding
 
-## Verification
-- After Step A: re-read the comment block; no behaviour to test.
-- After Step B: deploy `create-booking`, then run the existing Deno tests (if any) plus a manual `curl_edge_functions` POST with:
-  - a slot in London-past on today → expect `SLOT_UNAVAILABLE / Slot is in the past`.
-  - a slot before the instructor's `available_from` → expect the new conflict reason.
-  - a 60-min slot bridging two adjacent working-hour rows → expect success (currently fails).
-- Spot-check edge function logs (`edge_function_logs`) for the new `Slot is in the past` rejection appearing on stale-tab attempts.
+`public-courses` makes **one** availability decision (`nextAvailable`) and gets **five** things wrong relative to the canonical engine: timezone, DOW source, pause flag, lead time, busyness source. Four of those are absences, not divergences. This matches your prediction: grep finds wrong checks; only reading finds missing ones.
 
-## Risk
-- Step B item 4 (removing `is_busy` SQL filter) slightly increases rows fetched per request. Negligible — already date-scoped, instructor-scoped.
-- Step B item 1 makes the server stricter. A pupil whose browser submits a stale booking will now see `SLOT_UNAVAILABLE` instead of a confirmation that later collides. This is the intended behaviour and matches what the UI already promises.
+It also confirms the structural point. This file was written before the engine existed (or in parallel with it), checks the same things differently, and there's nothing in the codebase that would have caught it. Fixing this one file doesn't fix the class.
+
+### Two fix shapes, per your framing
+
+- **Tactical (patch this surface):** five edits — switch to `londonTodayStr` + `londonDow`, add `availability_paused` filter at the SQL level, add `min_lead_hours` cutoff for today, query `instructor_calendar_events` + `instructor_manual_blocks` and skip days that are fully blocked. Keeps `findFirstAvailableDate` local. Lowest risk, doesn't touch the engine.
+- **Structural (route through the engine):** call `computeDaySlots` (or a thin "is any slot bookable today?" wrapper) per day in the 90-day walk, return the first day that yields ≥1 slot. Deletes ~40 lines of parallel logic. Higher risk because `computeDaySlots` was built for a single-day query and a 90-iteration loop has cost/latency implications — needs measuring before commit.
+
+I'd recommend **tactical now, structural as part of the durable-fix conversation** — because the structural option is the same conversation as the seventh-surface problem you raised, and shouldn't be decided one surface at a time.
+
+### Halting here
+
+Per your instruction: one surface, reported, reviewed, before the next. Not touching `smart-schedule-suggestions`, not drafting tests, not editing the brief, not writing code. Awaiting your call on which fix shape (or both, or neither yet) before any edits to this file.
