@@ -144,20 +144,26 @@ export function MobileHomeDSM2026({ instructorId, instructorName }: Props) {
   const { data: swapsCount = 0 } = useTestSwapNotifications(instructorId);
   const { data: events = [] } = useUpcomingEvents(instructorId);
   const { data: membership } = useInstructorMembership(instructorId);
+  const payments = useInstructorPaymentsData(instructorId);
 
   const [lessonExpanded, setLessonExpanded] = useState(false);
 
-  // Compose stats shape expected by ThisWeek + NeedsAttention.
+  // Compose stats shape expected by StatsStrip + TodayStrip + NeedsAttention.
   const stats = {
     weekEarnings: Math.round(weekly?.earningsThisWeek ?? 0),
     todayEarnings: Math.round(today?.expectedEarnings ?? 0),
     earningsPct: pct(weekly?.earningsThisWeek ?? 0, weekly?.earningsLastWeek || 0),
     weekLessons: lessonsThisWeek,
     todayLessons: today?.lessonCount ?? 0,
-    lessonTarget: weekly?.hoursGoal ?? 0, // hours goal stands in for target volume
+    lessonTarget: weekly?.hoursGoal ?? 0,
     lessonsPct: pct(lessonsThisWeek, weekly?.hoursGoal || 0),
     weekHours: hoursThisWeek,
+    outstanding: Math.round(payments?.stats?.outstanding ?? 0),
+    nextFreeSlot: null as string | null, // no hook exists — surface "—" per live-data policy
   };
+
+  const urgentCount = jobsCount + swapsCount;
+  const todoCount = msgsCount;
 
   const attention = {
     total: jobsCount + msgsCount + swapsCount,
@@ -166,7 +172,8 @@ export function MobileHomeDSM2026({ instructorId, instructorName }: Props) {
     swaps: swapsCount,
     calls: 0,
     enquiries: 0,
-    urgentCount: jobsCount + swapsCount,
+    urgentCount,
+    todoCount,
     urgentItems: [
       ...(jobsCount > 0
         ? [
@@ -216,10 +223,11 @@ export function MobileHomeDSM2026({ instructorId, instructorName }: Props) {
         onBell={() => navigate("/instructor/notifications")}
         onMenu={() => navigate("/instructor/menu")}
         onProfile={() => navigate("/instructor/profile")}
+        stats={stats}
       />
 
       <div style={{ padding: 14, display: "flex", flexDirection: "column", gap: 12 }}>
-        <ThisWeekCard stats={stats} />
+        <TodayStrip stats={stats} />
         <NeedsAttentionCard attention={attention} stats={stats} navigate={navigate} />
         <ScheduleCard instructorId={instructorId} navigate={navigate} />
         <QuickAccessCard navigate={navigate} />
