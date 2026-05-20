@@ -825,28 +825,43 @@ export function PupilCardStack({
               } catch {}
             }
 
+            // EOL — only render when live per-pupil EOL signal exists on the
+            // pupil record. No fallback / no invention: if the field isn't
+            // present, the tag stays off.
+            const pupilAny = pupil as any;
+            const eolRequired = pupilAny.eol_required === true;
+            const eolCompleted = pupilAny.eol_completed === true;
+            const eolPending = eolRequired && !eolCompleted;
+
+            const balanceFmt = Math.abs(balance).toLocaleString("en-GB");
+            const amountStr = hasDebt ? `−£${balanceFmt}` : `£${balanceFmt}`;
+            const amountColourNew = hasDebt ? "#CC2229" : "#9CA3AF";
+            const payChipBg = hasDebt ? "#FBEAEA" : "#DCFCE7";
+            const payChipFg = hasDebt ? "#CC2229" : "#16A34A";
+            const payChipLabel = hasDebt ? "Overdue" : "Paid";
+
             return (
               <>
-                {/* Top row */}
+                {/* MAIN ROW */}
                 <div
                   className="flex items-center"
-                  style={{ padding: "10px 12px 8px", gap: 10 }}
+                  style={{ padding: 13, gap: 12 }}
                 >
-                  {/* Avatar with status dot */}
-                  <div className="relative shrink-0" style={{ width: 36, height: 36 }}>
+                  {/* Avatar — square-rounded with online dot */}
+                  <div className="relative shrink-0" style={{ width: 46, height: 46 }}>
                     {pupil.profile_image_url ? (
                       <img
                         src={pupil.profile_image_url}
                         alt={titleCaseName(pupil.name)}
-                        style={{ width: 36, height: 36, borderRadius: 18, objectFit: "cover", display: "block" }}
+                        style={{ width: 46, height: 46, borderRadius: 14, objectFit: "cover", display: "block" }}
                       />
                     ) : (
                       <div
                         style={{
-                          width: 36, height: 36, borderRadius: 18,
+                          width: 46, height: 46, borderRadius: 14,
                           background: avatarBg, color: "#FFFFFF",
                           display: "flex", alignItems: "center", justifyContent: "center",
-                          fontSize: 12, fontWeight: 700, letterSpacing: "0.02em",
+                          fontSize: 14, fontWeight: 800, letterSpacing: "0.5px",
                           fontFamily: "Poppins, sans-serif",
                         }}
                         aria-label={titleCaseName(pupil.name)}
@@ -857,69 +872,102 @@ export function PupilCardStack({
                     <span
                       aria-hidden="true"
                       style={{
-                        position: "absolute", bottom: 0, right: 0,
-                        width: 9, height: 9, borderRadius: 5,
-                        background: statusDotColor === "#3B8B3B" ? "#1D9E75" : (statusDotColor || "#C4C9D4"),
+                        position: "absolute", bottom: -2, right: -2,
+                        width: 11, height: 11, borderRadius: 6,
+                        background: statusDotColor ? (statusDotColor === "#3B8B3B" ? "#22C55E" : statusDotColor) : "#C4C9D4",
                         border: "2px solid #FFFFFF", boxSizing: "content-box",
                       }}
                     />
                   </div>
 
-
-                  {/* Name + badges */}
+                  {/* Name + tag row */}
                   <div className="flex-1 min-w-0">
                     <div
                       className="truncate"
                       style={{
-                        fontSize: 13, fontWeight: 500, color: "#000000",
-                        marginBottom: 3, fontFamily: "Poppins, sans-serif",
-                        lineHeight: 1.3, letterSpacing: "-0.1px",
+                        fontSize: 14, fontWeight: 700, color: "#0F2044",
+                        letterSpacing: "-0.2px", marginBottom: 5,
+                        fontFamily: "Poppins, sans-serif", lineHeight: 1.25,
                       }}
                     >
                       {titleCaseName(pupil.name)}
+                      {nameSuffix && (
+                        <span style={{ fontWeight: 500, color: "#9CA3AF", marginLeft: 6 }}>
+                          · {nameSuffix}
+                        </span>
+                      )}
                     </div>
 
-                    <div className="flex items-center" style={{ gap: 6, flexWrap: "wrap" }}>
+                    <div className="flex items-center" style={{ gap: 5, flexWrap: "wrap" }}>
+                      {/* Transmission */}
                       <span
                         style={{
-                          background: coursePill.bg, color: coursePill.fg,
-                          borderRadius: 5, padding: "2px 8px",
-                          fontSize: 10, fontWeight: 600, fontFamily: "Poppins, sans-serif",
-                          lineHeight: 1.3,
+                          background: "#E6F1FB", color: "#1A52A0",
+                          borderRadius: 5, padding: "2px 7px",
+                          fontSize: 10, fontWeight: 600,
+                          fontFamily: "Poppins, sans-serif", lineHeight: 1.3,
                         }}
                       >
                         {courseLabel}
                       </span>
+
+                      {/* Lesson count */}
+                      <span
+                        style={{
+                          background: "#F2F4F8", color: "#6B7280",
+                          borderRadius: 5, padding: "2px 7px",
+                          fontSize: 10, fontWeight: 600,
+                          fontFamily: "Poppins, sans-serif", lineHeight: 1.3,
+                        }}
+                      >
+                        {lessonsDone} {lessonsDone === 1 ? "lesson" : "lessons"}
+                      </span>
+
+                      {/* EOL — live only, gated to per-pupil signal */}
+                      {eolRequired && (
+                        <span
+                          style={{
+                            background: eolPending ? "#FBEAEA" : "#F2F4F8",
+                            borderRadius: 5,
+                            padding: "2px 7px",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 3,
+                            fontSize: 10,
+                            fontWeight: 700,
+                            color: eolPending ? "#CC2229" : "#9CA3AF",
+                            fontFamily: "Poppins, sans-serif",
+                            lineHeight: 1.3,
+                          }}
+                        >
+                          {eolPending && <AlertCircle size={9} strokeWidth={2.5} color="#CC2229" />}
+                          EOL
+                        </span>
+                      )}
+
+                      {/* Test date — preserved live data */}
                       {testBadge && (
                         <span
                           style={{
                             background: "#FEF3C7", color: "#92400E",
-                            borderRadius: 5, padding: "2px 8px",
-                            fontSize: 10, fontWeight: 600, fontFamily: "Poppins, sans-serif",
-                            lineHeight: 1.3,
+                            borderRadius: 5, padding: "2px 7px",
+                            fontSize: 10, fontWeight: 600,
+                            fontFamily: "Poppins, sans-serif", lineHeight: 1.3,
                           }}
                         >
                           {testBadge}
                         </span>
                       )}
-                      {lessonsDone > 0 && (
-                        <span style={{ fontSize: 11, color: "#9CA3AF", fontFamily: "Poppins, sans-serif" }}>
-                          Lesson {lessonsDone}
-                        </span>
-                      )}
                     </div>
-                    {nameSuffix && (
-                      <div
-                        className="truncate"
-                        style={{ marginTop: 4, fontSize: 11, color: "#9CA3AF", fontFamily: "Poppins, sans-serif" }}
-                      >
-                        {nameSuffix}
-                      </div>
-                    )}
+
                     {nextLine && (
                       <div
                         className="flex items-center truncate"
-                        style={{ marginTop: 4, gap: 4, fontSize: 11, color: "#6B7280", fontFamily: "Poppins, sans-serif", fontVariantNumeric: "tabular-nums" }}
+                        style={{
+                          marginTop: 5, gap: 4, fontSize: 11,
+                          color: "#6B7280", fontFamily: "Poppins, sans-serif",
+                          fontVariantNumeric: "tabular-nums",
+                        }}
                       >
                         <Calendar size={10} strokeWidth={2} color="#9CA3AF" />
                         <span className="truncate">{nextLine}</span>
@@ -927,116 +975,121 @@ export function PupilCardStack({
                     )}
                   </div>
 
-                  {/* Amount + status pill */}
-                  <div className="shrink-0 flex flex-col items-end" style={{ gap: 3 }}>
+                  {/* Payment — right aligned */}
+                  <div
+                    className="shrink-0"
+                    style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}
+                  >
                     <span
                       style={{
-                        fontSize: 16, fontWeight: 700, letterSpacing: "-0.3px",
-                        color: amountColour, fontFamily: "Poppins, sans-serif",
-                        fontVariantNumeric: "tabular-nums", lineHeight: 1.1,
+                        fontSize: 17, fontWeight: 800, letterSpacing: "-0.5px",
+                        lineHeight: 1.05, color: amountColourNew,
+                        fontFamily: "Poppins, sans-serif", fontVariantNumeric: "tabular-nums",
                       }}
                     >
-                      {amountDisplay}
+                      {amountStr}
                     </span>
                     <span
-                      className="inline-flex items-center"
                       style={{
-                        gap: 3, background: pillConfig.bg,
-                        borderRadius: 4, padding: "2px 7px",
+                        background: payChipBg, borderRadius: 4,
+                        padding: "2px 6px", display: "inline-flex",
+                        alignItems: "center", gap: 3,
                       }}
                     >
-                      <pillConfig.Icon size={9} strokeWidth={2.2} color={pillConfig.text} />
-                      <span style={{ fontSize: 10, fontWeight: 700, color: pillConfig.text, fontFamily: "Poppins, sans-serif", lineHeight: 1.2 }}>
-                        {pillConfig.label}
+                      {hasDebt && <AlertCircle size={8} strokeWidth={2} color="#CC2229" />}
+                      {!hasDebt && <Check size={8} strokeWidth={2.5} color="#22C55E" />}
+                      <span
+                        style={{
+                          fontSize: 9, fontWeight: 700, color: payChipFg,
+                          textTransform: "uppercase", letterSpacing: 0.4,
+                          fontFamily: "Poppins, sans-serif", lineHeight: 1.2,
+                        }}
+                      >
+                        {payChipLabel}
                       </span>
                     </span>
                   </div>
                 </div>
 
-                {/* Divider */}
-                <div style={{ height: 1, background: "rgba(0,0,0,0.06)", marginLeft: 16, marginRight: 16 }} />
-
-                {/* Actions row */}
-                <div
-                  className="flex items-center"
-                  style={{ gap: 8, padding: "10px 16px 12px" }}
-                >
-                  {hasDebt && (
-                    <button
-                      type="button"
-                      onClick={handleSendReminder}
-                      style={{
-                        flex: 1,
-                        display: "inline-flex", alignItems: "center", justifyContent: "center",
-                        gap: 5, background: "#FEF3C7", color: "#92400E",
-                        borderRadius: 8, padding: "7px 12px",
-                        fontSize: 12, fontWeight: 600, fontFamily: "Poppins, sans-serif",
-                        border: "none", cursor: "pointer",
-                      }}
-                    >
-                      <Bell size={12} strokeWidth={2} />
-                      Remind
-                    </button>
-                  )}
-                  {hasDebt && (
-                    <button
-                      type="button"
-                      onClick={(e) => { e.stopPropagation(); setShowPayLinkSheet(true); }}
-                      style={{
-                        flex: 1,
-                        display: "inline-flex", alignItems: "center", justifyContent: "center",
-                        gap: 5, background: "#CC2229", color: "#FFFFFF",
-                        borderRadius: 8, padding: "7px 12px",
-                        fontSize: 12, fontWeight: 600, fontFamily: "Poppins, sans-serif",
-                        border: "none", cursor: "pointer",
-                      }}
-                    >
-                      <CreditCard size={12} strokeWidth={2} />
-                      Pay link
-                    </button>
-                  )}
-                  <button
-                    type="button"
-                    onClick={(e) => { e.stopPropagation(); handleCardClick(); }}
-                    style={{
-                      flex: hasDebt ? 0 : 1,
-                      display: "inline-flex", alignItems: "center", justifyContent: "center",
-                      gap: 5, background: "#F2F4F8", color: "#374151",
-                      borderRadius: 8, padding: "7px 14px",
-                      fontSize: 12, fontWeight: 600, fontFamily: "Poppins, sans-serif",
-                      border: "none", cursor: "pointer",
-                    }}
-                  >
-                    View
-                  </button>
-                </div>
-
-                {/* Progress row */}
+                {/* PROGRESS BAR */}
                 {hasProgress && (
-                  <div style={{ padding: "0 16px 14px" }}>
-                    <div className="flex items-center justify-between" style={{ marginBottom: 5 }}>
-                      <span style={{ fontSize: 11, color: "#9CA3AF", fontFamily: "Poppins, sans-serif" }}>
-                        Lesson progress
-                      </span>
-                      <span style={{ fontSize: 11, fontWeight: 600, color: "#0F2044", fontFamily: "Poppins, sans-serif", fontVariantNumeric: "tabular-nums" }}>
-                        {progressPct}%
-                      </span>
-                    </div>
-                    <div style={{ height: 4, background: "#F2F4F8", borderRadius: 2, overflow: "hidden" }}>
+                  <div style={{ padding: "0 13px 10px" }}>
+                    <div style={{ height: 3, background: "#F2F4F8", borderRadius: 2, overflow: "hidden", marginBottom: 4 }}>
                       <div
                         style={{
-                          height: "100%",
-                          width: `${progressPct}%`,
-                          background: progressColour,
-                          borderRadius: 2,
+                          height: "100%", width: `${progressPct}%`,
+                          background: "#1A52A0", borderRadius: 2,
                           transition: "width 0.4s ease",
                         }}
                       />
                     </div>
+                    <div className="flex items-center justify-between">
+                      <span style={{ fontSize: 10, color: "#C4C9D4", fontWeight: 500, fontFamily: "Poppins, sans-serif" }}>
+                        Lesson progress
+                      </span>
+                      <span style={{ fontSize: 10, fontWeight: 700, color: "#9CA3AF", fontFamily: "Poppins, sans-serif", fontVariantNumeric: "tabular-nums" }}>
+                        {progressPct}%
+                      </span>
+                    </div>
                   </div>
                 )}
+
+                {/* ACTIONS — full-bleed with 1px dividers */}
+                <div className="flex items-stretch" style={{ borderTop: "1px solid #F2F4F8" }}>
+                  <button
+                    type="button"
+                    onClick={handleSendReminder}
+                    style={{
+                      flex: 1, padding: "10px 0", display: "inline-flex",
+                      alignItems: "center", justifyContent: "center", gap: 4,
+                      background: "transparent", border: "none", cursor: "pointer",
+                      fontFamily: "Poppins, sans-serif",
+                    }}
+                  >
+                    <Bell size={12} strokeWidth={2} color="#F59E0B" />
+                    <span style={{ fontSize: 11, fontWeight: 600, color: "#92400E" }}>Remind</span>
+                  </button>
+
+                  <div style={{ width: 1, background: "#F2F4F8" }} />
+
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); if (hasDebt) setShowPayLinkSheet(true); }}
+                    disabled={!hasDebt}
+                    style={{
+                      flex: 1, padding: "10px 0", display: "inline-flex",
+                      alignItems: "center", justifyContent: "center", gap: 4,
+                      background: "transparent", border: "none",
+                      cursor: hasDebt ? "pointer" : "default",
+                      opacity: hasDebt ? 1 : 0.3,
+                      fontFamily: "Poppins, sans-serif",
+                    }}
+                  >
+                    <CreditCard size={12} strokeWidth={2} color={hasDebt ? "#CC2229" : "#C4C9D4"} />
+                    <span style={{ fontSize: 11, fontWeight: 600, color: hasDebt ? "#CC2229" : "#C4C9D4" }}>
+                      Pay link
+                    </span>
+                  </button>
+
+                  <div style={{ width: 1, background: "#F2F4F8" }} />
+
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); handleCardClick(); }}
+                    style={{
+                      flex: 1, padding: "10px 0", display: "inline-flex",
+                      alignItems: "center", justifyContent: "center", gap: 4,
+                      background: "transparent", border: "none", cursor: "pointer",
+                      fontFamily: "Poppins, sans-serif",
+                    }}
+                  >
+                    <span style={{ fontSize: 11, fontWeight: 600, color: "#374151" }}>View</span>
+                    <ChevronRight size={10} strokeWidth={2.5} color="#9CA3AF" />
+                  </button>
+                </div>
               </>
             );
+
           })()}
         </motion.button>
 
