@@ -1722,7 +1722,7 @@ function QuickAccessCard({ navigate }: { navigate: ReturnType<typeof useNavigate
         ) : null}
       </div>
 
-      {/* Pinned horizontal scroll */}
+      {/* Pinned 2-row swipeable grid */}
       {!filtered ? (
         <div
           style={{
@@ -1732,7 +1732,16 @@ function QuickAccessCard({ navigate }: { navigate: ReturnType<typeof useNavigate
             paddingBottom: 10,
           }}
         >
-          <div style={{ display: "flex", gap: 8, padding: "0 12px" }}>
+          <div
+            style={{
+              display: "grid",
+              gridAutoFlow: "column",
+              gridTemplateRows: "repeat(2, min-content)",
+              gridAutoColumns: "200px",
+              gap: 10,
+              padding: "0 12px",
+            }}
+          >
             {pinnedItems.map((item) => (
               <QATile
                 key={item.label}
@@ -1746,7 +1755,16 @@ function QuickAccessCard({ navigate }: { navigate: ReturnType<typeof useNavigate
         </div>
       ) : (
         <div style={{ overflowX: "auto", paddingBottom: 10 }}>
-          <div style={{ display: "flex", gap: 6, padding: "0 12px" }}>
+          <div
+            style={{
+              display: "grid",
+              gridAutoFlow: "column",
+              gridTemplateRows: "repeat(2, min-content)",
+              gridAutoColumns: "200px",
+              gap: 10,
+              padding: "0 12px",
+            }}
+          >
             {filtered.map((item) => (
               <QATile
                 key={item.label}
@@ -1764,6 +1782,7 @@ function QuickAccessCard({ navigate }: { navigate: ReturnType<typeof useNavigate
           </div>
         </div>
       )}
+
 
       {/* See all */}
       {!filtered ? (
