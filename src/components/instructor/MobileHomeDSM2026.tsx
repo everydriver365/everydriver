@@ -1941,80 +1941,146 @@ function QATile({
 function UpcomingEventsCard({
   events, navigate,
 }: { events: UpcomingEvent[]; navigate: ReturnType<typeof useNavigate> }) {
-  // Group by dateLabel (already preformatted by hook)
-  const groups = useMemo(() => {
-    const m = new Map<string, UpcomingEvent[]>();
-    for (const e of events) {
-      const arr = m.get(e.dateLabel) ?? [];
-      arr.push(e);
-      m.set(e.dateLabel, arr);
-    }
-    return Array.from(m.entries()).map(([label, items]) => ({ label, items }));
-  }, [events]);
+  const [openId, setOpenId] = useState<string | null>(null);
 
   return (
-    <SectionCard>
-      <SectionHeader label="Upcoming events" />
-      {groups.length === 0 ? (
-        <div style={{ padding: 18 }}>
+    <div style={{ padding: "0 14px" }}>
+      <div
+        style={{
+          fontSize: 11, fontWeight: 700, color: T.textLight,
+          letterSpacing: 0.9, textTransform: "uppercase", fontFamily: FONT,
+          padding: "4px 4px 10px",
+        }}
+      >
+        Upcoming events
+      </div>
+
+      {events.length === 0 ? (
+        <div
+          style={{
+            background: "#fff",
+            borderRadius: 12,
+            padding: 18,
+            boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+          }}
+        >
           <Empty>No upcoming events</Empty>
         </div>
       ) : (
-        groups.map((g) => (
-          <div key={g.label}>
-            <div
-              style={{
-                padding: "10px 18px 4px",
-                fontSize: 9, fontWeight: 700, color: T.textLight,
-                letterSpacing: 0.9, textTransform: "uppercase", fontFamily: FONT,
-              }}
-            >
-              {g.label}
-            </div>
-            {g.items.map((ev) => (
-              <button
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {events.map((ev) => {
+            const isOpen = openId === ev.id;
+            return (
+              <div
                 key={ev.id}
-                type="button"
-                onClick={() => navigate(ev.destinationPath)}
                 style={{
-                  width: "100%", padding: "12px 18px",
-                  borderBottom: `1px solid ${T.divider}`,
-                  background: "transparent", border: 0, cursor: "pointer",
-                  display: "flex", alignItems: "center", gap: 12, textAlign: "left",
+                  background: "#fff",
+                  borderRadius: 12,
+                  boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+                  overflow: "hidden",
                 }}
               >
-                <div
+                <button
+                  type="button"
+                  onClick={() => setOpenId(isOpen ? null : ev.id)}
                   style={{
-                    width: 38, height: 38, borderRadius: 11,
-                    backgroundColor: T.blueLight,
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    flexShrink: 0,
+                    width: "100%",
+                    padding: "18px 18px",
+                    background: "transparent",
+                    border: 0,
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 12,
+                    textAlign: "left",
                   }}
                 >
-                  <CalendarIcon size={17} color={T.blue} strokeWidth={1.8} />
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: T.navy, fontFamily: FONT }}>
-                    {ev.title}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div
+                      style={{
+                        fontSize: 15,
+                        fontWeight: 700,
+                        color: T.navy,
+                        fontFamily: FONT,
+                        lineHeight: 1.25,
+                      }}
+                    >
+                      {ev.title}
+                    </div>
                   </div>
-                  <div style={{ fontSize: 11, color: T.textMuted, marginTop: 2, fontFamily: FONT }}>
-                    {ev.locationLabel}
+                  <ChevronDown
+                    size={20}
+                    color={T.blue}
+                    strokeWidth={2.5}
+                    style={{
+                      flexShrink: 0,
+                      transition: "transform 0.2s ease",
+                      transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
+                    }}
+                  />
+                </button>
+
+                {isOpen && (
+                  <div
+                    style={{
+                      padding: "0 18px 18px",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 10,
+                    }}
+                  >
+                    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                      <CalendarIcon size={14} color={T.textMuted} strokeWidth={2} />
+                      <span style={{ fontSize: 13, color: T.navy, fontFamily: FONT, fontWeight: 600 }}>
+                        {ev.dateLabel}
+                      </span>
+                      {ev.timeLabel && ev.timeLabel !== "—" && (
+                        <span style={{ fontSize: 13, color: T.navy, fontFamily: FONT, fontWeight: 600 }}>
+                          · {ev.timeLabel}
+                        </span>
+                      )}
+                    </div>
+                    {ev.locationLabel && ev.locationLabel !== "—" && (
+                      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                        <MapPin size={14} color={T.textMuted} strokeWidth={2} />
+                        <span style={{ fontSize: 13, color: T.textMuted, fontFamily: FONT }}>
+                          {ev.locationLabel}
+                        </span>
+                      </div>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => navigate(ev.destinationPath)}
+                      style={{
+                        marginTop: 4,
+                        alignSelf: "flex-start",
+                        background: T.blue,
+                        color: "#fff",
+                        border: 0,
+                        cursor: "pointer",
+                        borderRadius: 8,
+                        padding: "8px 14px",
+                        fontSize: 13,
+                        fontWeight: 600,
+                        fontFamily: FONT,
+                      }}
+                    >
+                      View
+                    </button>
                   </div>
-                </div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: T.navy, fontFamily: FONT, flexShrink: 0 }}>
-                  {ev.timeLabel}
-                </div>
-                <ChevronRight size={14} color={T.textLight} strokeWidth={2} />
-              </button>
-            ))}
-          </div>
-        ))
+                )}
+              </div>
+            );
+          })}
+        </div>
       )}
+
       <div
         style={{
-          padding: "11px 18px", display: "flex",
-          alignItems: "center", justifyContent: "space-between",
-          borderTop: `1px solid ${T.divider}`,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "12px 4px 0",
         }}
       >
         <button
@@ -2022,7 +2088,7 @@ function UpcomingEventsCard({
           onClick={() => navigate("/instructor/schedule")}
           style={{
             background: "transparent", border: 0, cursor: "pointer",
-            fontSize: 12, fontWeight: 600, color: T.blue, fontFamily: FONT,
+            fontSize: 13, fontWeight: 600, color: T.blue, fontFamily: FONT,
           }}
         >
           + Add event
@@ -2032,13 +2098,13 @@ function UpcomingEventsCard({
           onClick={() => navigate("/instructor/schedule")}
           style={{
             background: "transparent", border: 0, cursor: "pointer",
-            fontSize: 12, fontWeight: 600, color: T.blue, fontFamily: FONT,
+            fontSize: 13, fontWeight: 600, color: T.blue, fontFamily: FONT,
           }}
         >
           See all →
         </button>
       </div>
-    </SectionCard>
+    </div>
   );
 }
 
