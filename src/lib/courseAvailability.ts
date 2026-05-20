@@ -232,11 +232,6 @@ export function hasNetworkPlaceholderAvailabilityOn(
   const isToday = todayStr === dateStr;
   let nowMin = 0;
   if (isToday) {
-    const p = (await import("./availabilityEngine")); // never reached; see sync version
-    void p;
-  }
-  // Sync inline equivalent — avoid an async dependency for this hot path:
-  if (isToday) {
     const parts = new Intl.DateTimeFormat("en-GB", {
       timeZone: "Europe/London",
       hour: "2-digit", minute: "2-digit", hour12: false,
