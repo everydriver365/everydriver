@@ -64,6 +64,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { format, addDays, getWeek, isSameDay, parse, parseISO } from "date-fns";
+import { londonTodayStr, toLondonParts, parseHHMM } from "@/lib/availabilityEngine";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -176,17 +177,31 @@ export function MobileHomeDSM2026({ instructorId, instructorName }: Props) {
 
   const [lessonExpanded, setLessonExpanded] = useState(false);
 
-  // Earliest instructor diary gap, including today when a slot is still valid.
+  // Earliest instructor diary gap. Defensive: filter out any slot that has
+  // already slid into the past on today's London date (cache can briefly
+  // outlive the wall clock). The engine itself filters past + minNotice,
+  // this is belt-and-braces so the dashboard never shows a stale time.
   const nextFreeSlotLabel = (() => {
-    const first = gapDays.find((d) => d.slots.length > 0);
-    if (!first) return null;
-    const slot = first.slots[0];
-    const hhmm = slot.startTime.slice(0, 5);
-    try {
-      return `${format(parseISO(first.date), "EEE")} ${hhmm}`;
-    } catch {
-      return `${first.formattedDate} ${hhmm}`;
+    const todayStr = londonTodayStr();
+    const nowParts = toLondonParts(new Date());
+    const nowMin = nowParts.hour * 60 + nowParts.minute;
+    for (const d of gapDays) {
+      for (const s of d.slots) {
+        if (d.date === todayStr) {
+          const startMin = parseHHMM(s.startTime);
+          if (startMin == null || startMin <= nowMin) continue;
+        } else if (d.date < todayStr) {
+          continue;
+        }
+        const hhmm = s.startTime.slice(0, 5);
+        try {
+          return `${format(parseISO(d.date), "EEE")} ${hhmm}`;
+        } catch {
+          return `${d.formattedDate} ${hhmm}`;
+        }
+      }
     }
+    return null;
   })();
 
   // Compose stats shape expected by StatsStrip + TodayStrip + NeedsAttention.
