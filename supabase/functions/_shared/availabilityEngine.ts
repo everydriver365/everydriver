@@ -133,7 +133,7 @@ export function toLondonParts(d: Date): { date: string; hour: number; minute: nu
   return { date: `${year}-${month}-${day}`, hour, minute };
 }
 
-function londonNowMin(): number {
+export function londonNowMin(): number {
   const p = toLondonParts(new Date());
   return p.hour * 60 + p.minute;
 }

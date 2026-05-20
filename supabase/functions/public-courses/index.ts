@@ -1,4 +1,10 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import {
+  londonTodayStr,
+  londonDateStr,
+  londonDow,
+  londonNowMin,
+} from "../_shared/availabilityEngine.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -8,15 +14,14 @@ const corsHeaders = {
 
 function addDays(date: Date, days: number): Date {
   const result = new Date(date);
-  result.setDate(result.getDate() + days);
+  result.setUTCDate(result.getUTCDate() + days);
   return result;
 }
 
-function formatDate(date: Date): string {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
+/** Parse "HH:MM[:SS]" → minutes since midnight. */
+function hmToMin(s: string): number {
+  const [h, m] = s.split(":").map(Number);
+  return h * 60 + (m || 0);
 }
 
 function findFirstAvailableDate(
@@ -24,18 +29,28 @@ function findFirstAvailableDate(
   workingHours: any[],
   dateOverrides: any[]
 ): string | null {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  // Anchor the loop to London-today at UTC noon so each `londonDateStr`
+  // resolves to the right calendar day under both BST and GMT.
+  const [ty, tm, td] = londonTodayStr().split("-").map(Number);
+  const today = new Date(Date.UTC(ty, tm - 1, td, 12, 0, 0));
+
+  // Finding 3 — `min_lead_hours` is stored on the instructor (nullable).
+  // Today's earliest bookable minute = London-now + lead, in local minutes.
+  const minLeadHours = Number.isFinite(instructor.min_lead_hours)
+    ? Number(instructor.min_lead_hours)
+    : 0;
+  const todayCutoffMin = londonNowMin() + Math.max(0, Math.round(minLeadHours * 60));
+  const todayStr = londonTodayStr();
 
   for (let i = 0; i < 90; i++) {
     const day = addDays(today, i);
-    const dateStr = formatDate(day);
+    const dateStr = londonDateStr(day);
 
     if (instructor.available_from && instructor.available_from > dateStr) {
       continue;
     }
 
-    const dayOfWeek = day.getDay();
+    const dayOfWeek = londonDow(day);
 
     const override = dateOverrides.find(
       (o) =>
@@ -47,18 +62,49 @@ function findFirstAvailableDate(
     );
 
     if (override) {
-      if (override.is_available) return dateStr;
+      // KNOWN GAP — finding 6, deferred to P3.
+      // Partial-day `is_available=true` overrides (start_time/end_time) are
+      // not honoured here: this short-circuit returns the date regardless of
+      // whether the override window has passed today or excludes the
+      // bookable hours. Activates 2026-01-11 (instructor b7987…) and
+      // 2026-03-02 (instructor c9843…). Tripwire: if P3 has not shipped
+      // by 2026-01-04, extract resolveDayWindows into _shared/ and use it
+      // here. See .lovable/plan.md.
+      if (override.is_available) {
+        if (dateStr !== todayStr) return dateStr;
+        // Today: still apply the lead-time cutoff against working-hours
+        // end if any are configured for today, otherwise return today.
+        const dayWh = workingHours.filter(
+          (wh) =>
+            wh.instructor_id === instructor.id &&
+            wh.day_of_week === dayOfWeek &&
+            wh.is_active,
+        );
+        if (dayWh.length === 0) return dateStr;
+        const latestEnd = Math.max(...dayWh.map((wh) => hmToMin(wh.end_time)));
+        if (latestEnd > todayCutoffMin) return dateStr;
+        continue;
+      }
       continue;
     }
 
-    const hasWorkingHours = workingHours.some(
+    const dayWh = workingHours.filter(
       (wh) =>
         wh.instructor_id === instructor.id &&
         wh.day_of_week === dayOfWeek &&
-        wh.is_active
+        wh.is_active,
     );
+    if (dayWh.length === 0) continue;
 
-    if (hasWorkingHours) return dateStr;
+    // Findings 3 & 4 — for today only, the working-day must still have
+    // bookable time remaining after London-now + lead. Future days skip
+    // this check.
+    if (dateStr === todayStr) {
+      const latestEnd = Math.max(...dayWh.map((wh) => hmToMin(wh.end_time)));
+      if (latestEnd <= todayCutoffMin) continue;
+    }
+
+    return dateStr;
   }
 
   return null;
@@ -87,12 +133,14 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_ANON_KEY")!
     );
 
-    // Fetch instructor by slug
+    // Finding 2 — exclude paused instructors from the public discovery
+    // surface. One SQL filter, zero engine logic.
     const { data: instructor, error: instrError } = await supabase
       .from("instructors")
-      .select("id, name, hourly_rate, car_type, profile_image_url, available_from, brand_colour, app_slug")
+      .select("id, name, hourly_rate, car_type, profile_image_url, available_from, brand_colour, app_slug, min_lead_hours")
       .eq("app_slug", slug)
       .eq("is_active", true)
+      .eq("availability_paused", false)
       .single();
 
     if (instrError || !instructor) {
@@ -102,7 +150,9 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Fetch courses, templates, working hours, date overrides in parallel
+    // Fetch courses, templates, working hours, date overrides in parallel.
+    // Working hours now include start_time/end_time so today's lead-time
+    // cutoff (findings 3 & 4) can be evaluated against the latest end.
     const [
       { data: coursesData },
       { data: templatesData },
@@ -120,7 +170,7 @@ Deno.serve(async (req) => {
         .eq("is_active", true),
       supabase
         .from("instructor_working_hours")
-        .select("instructor_id, day_of_week, is_active")
+        .select("instructor_id, day_of_week, is_active, start_time, end_time")
         .eq("instructor_id", instructor.id)
         .eq("is_active", true),
       supabase
