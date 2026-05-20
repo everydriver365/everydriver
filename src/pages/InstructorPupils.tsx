@@ -53,7 +53,9 @@ import {
   CreditCard,
   Banknote,
   Send,
+  X,
 } from "lucide-react";
+
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { format } from "date-fns";
 import { LessonHistory } from "@/components/instructor/LessonHistory";
