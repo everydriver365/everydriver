@@ -124,6 +124,26 @@ function pct(num: number, denom: number) {
   if (!denom || denom <= 0) return 0;
   return Math.max(0, Math.min(100, Math.round((num / denom) * 100)));
 }
+function useWeekLessonDates(instructorId: string, days: Date[]) {
+  const start = days[0] ? format(days[0], "yyyy-MM-dd") : null;
+  const end = days[days.length - 1] ? format(days[days.length - 1], "yyyy-MM-dd") : null;
+  return useQuery({
+    queryKey: ["mhdsm-week-lesson-dates", instructorId, start, end],
+    enabled: !!instructorId && !!start && !!end,
+    staleTime: 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("scheduled_lessons")
+        .select("lesson_date")
+        .eq("instructor_id", instructorId)
+        .gte("lesson_date", start!)
+        .lte("lesson_date", end!)
+        .neq("status", "cancelled");
+      if (error) throw error;
+      return new Set<string>((data ?? []).map((r: any) => r.lesson_date));
+    },
+  });
+}
 
 /* ============================ Main component ============================ */
 interface Props {
