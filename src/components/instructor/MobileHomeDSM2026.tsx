@@ -741,76 +741,7 @@ function SectionHeader({
   );
 }
 
-/* ============================== This week =============================== */
-function ThisWeekCard({ stats }: { stats: any }) {
-  const cells = [
-    {
-      label: "Earnings",
-      value: `£${stats.weekEarnings}`,
-      sub: `£${stats.todayEarnings} today`,
-      pct: stats.earningsPct,
-    },
-    {
-      label: "Lessons",
-      value: `${stats.weekLessons}`,
-      sub: `${stats.todayLessons} today`,
-      pct: stats.lessonsPct,
-      denom: stats.lessonTarget > 0 ? `/${stats.lessonTarget}` : null,
-    },
-  ];
-  return (
-    <SectionCard>
-      <SectionHeader label="This week" />
-      <div style={{ display: "flex" }}>
-        {cells.map((s, i) => (
-          <div
-            key={s.label}
-            style={{
-              flex: 1, padding: "12px 16px",
-              borderRight: i === 0 ? `1px solid ${T.divider}` : 0,
-            }}
-          >
-            <div
-              style={{
-                fontSize: 9, fontWeight: 700, color: T.textMuted,
-                letterSpacing: 0.8, textTransform: "uppercase", marginBottom: 4, fontFamily: FONT,
-              }}
-            >
-              {s.label}
-            </div>
-            <div
-              style={{
-                fontSize: 22, fontWeight: 800, color: T.navy,
-                letterSpacing: -0.8, lineHeight: "24px", fontFamily: FONT,
-              }}
-            >
-              {s.value}
-              {s.denom ? (
-                <span style={{ fontSize: 12, fontWeight: 400, color: T.textMuted }}>{s.denom}</span>
-              ) : null}
-            </div>
-            <div style={{ fontSize: 11, color: T.textMuted, marginTop: 1, fontFamily: FONT }}>
-              {s.sub}
-            </div>
-            <div
-              style={{
-                height: 3, backgroundColor: T.surface, borderRadius: 2,
-                marginTop: 8, overflow: "hidden",
-              }}
-            >
-              <div
-                style={{
-                  height: "100%", width: `${s.pct}%`,
-                  backgroundColor: T.blue, borderRadius: 2,
-                }}
-              />
-            </div>
-          </div>
-        ))}
-      </div>
-    </SectionCard>
-  );
-}
+/* (ThisWeekCard removed — stats now live in HeroHeader StatsStrip) */
 
 /* =========================== Needs attention ============================ */
 function NeedsAttentionCard({
