@@ -363,22 +363,27 @@ export default function AvailabilityTester() {
                 <CardTitle>validateSlot result for {startTime}</CardTitle>
               </CardHeader>
               <CardContent className="text-sm">
-                {validation == null ? (
-                  <p className="text-muted-foreground">Enter a valid HH:MM start time above.</p>
-                ) : validation.ok ? (
-                  <Badge variant="default">OK — bookable</Badge>
-                ) : (
-                  <div className="space-y-1">
-                    <Badge variant="destructive">REJECTED: {validation.reason}</Badge>
-                    <p className="text-muted-foreground">
-                      {describeReason(
-                        validation.reason,
-                        "cause" in validation ? validation.cause : undefined,
-                        instructor.buffer_minutes ?? 0,
-                      )}
-                    </p>
-                  </div>
-                )}
+                {(() => {
+                  if (validation == null) {
+                    return <p className="text-muted-foreground">Enter a valid HH:MM start time above.</p>;
+                  }
+                  if (validation.ok) {
+                    return <Badge variant="default">OK — bookable</Badge>;
+                  }
+                  const v = validation;
+                  return (
+                    <div className="space-y-1">
+                      <Badge variant="destructive">REJECTED: {v.reason}</Badge>
+                      <p className="text-muted-foreground">
+                        {describeReason(
+                          v.reason,
+                          "cause" in v ? v.cause : undefined,
+                          instructor.buffer_minutes ?? 0,
+                        )}
+                      </p>
+                    </div>
+                  );
+                })()}
               </CardContent>
             </Card>
           )}
