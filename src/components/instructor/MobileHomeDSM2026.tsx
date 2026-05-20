@@ -63,6 +63,8 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { format, addDays, getWeek, isSameDay, parse, parseISO } from "date-fns";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { useNextLessonDetails } from "@/hooks/useNextLessonDetails";
@@ -75,6 +77,7 @@ import { useTestSwapNotifications } from "@/hooks/useTestSwapNotifications";
 import { useUpcomingEvents, type UpcomingEvent } from "@/hooks/useUpcomingEvents";
 import { useInstructorMembership } from "@/hooks/useInstructorMembership";
 import { useDayLessons } from "@/hooks/useDayLessons";
+import { useInstructorPaymentsData } from "@/hooks/useInstructorPaymentsData";
 import { DsmLogo } from "@/components/instructor/ui/DsmLogo";
 
 /* ---------------------------- Design tokens ----------------------------- */
@@ -121,6 +124,26 @@ function pct(num: number, denom: number) {
   if (!denom || denom <= 0) return 0;
   return Math.max(0, Math.min(100, Math.round((num / denom) * 100)));
 }
+function useWeekLessonDates(instructorId: string, days: Date[]) {
+  const start = days[0] ? format(days[0], "yyyy-MM-dd") : null;
+  const end = days[days.length - 1] ? format(days[days.length - 1], "yyyy-MM-dd") : null;
+  return useQuery({
+    queryKey: ["mhdsm-week-lesson-dates", instructorId, start, end],
+    enabled: !!instructorId && !!start && !!end,
+    staleTime: 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("scheduled_lessons")
+        .select("lesson_date")
+        .eq("instructor_id", instructorId)
+        .gte("lesson_date", start!)
+        .lte("lesson_date", end!)
+        .neq("status", "cancelled");
+      if (error) throw error;
+      return new Set<string>((data ?? []).map((r: any) => r.lesson_date));
+    },
+  });
+}
 
 /* ============================ Main component ============================ */
 interface Props {
@@ -143,20 +166,26 @@ export function MobileHomeDSM2026({ instructorId, instructorName }: Props) {
   const { data: swapsCount = 0 } = useTestSwapNotifications(instructorId);
   const { data: events = [] } = useUpcomingEvents(instructorId);
   const { data: membership } = useInstructorMembership(instructorId);
+  const payments = useInstructorPaymentsData(instructorId);
 
   const [lessonExpanded, setLessonExpanded] = useState(false);
 
-  // Compose stats shape expected by ThisWeek + NeedsAttention.
+  // Compose stats shape expected by StatsStrip + TodayStrip + NeedsAttention.
   const stats = {
     weekEarnings: Math.round(weekly?.earningsThisWeek ?? 0),
     todayEarnings: Math.round(today?.expectedEarnings ?? 0),
     earningsPct: pct(weekly?.earningsThisWeek ?? 0, weekly?.earningsLastWeek || 0),
     weekLessons: lessonsThisWeek,
     todayLessons: today?.lessonCount ?? 0,
-    lessonTarget: weekly?.hoursGoal ?? 0, // hours goal stands in for target volume
+    lessonTarget: weekly?.hoursGoal ?? 0,
     lessonsPct: pct(lessonsThisWeek, weekly?.hoursGoal || 0),
     weekHours: hoursThisWeek,
+    outstanding: Math.round(payments?.stats?.outstanding ?? 0),
+    nextFreeSlot: null as string | null, // no hook exists — surface "—" per live-data policy
   };
+
+  const urgentCount = jobsCount + swapsCount;
+  const todoCount = msgsCount;
 
   const attention = {
     total: jobsCount + msgsCount + swapsCount,
@@ -165,7 +194,8 @@ export function MobileHomeDSM2026({ instructorId, instructorName }: Props) {
     swaps: swapsCount,
     calls: 0,
     enquiries: 0,
-    urgentCount: jobsCount + swapsCount,
+    urgentCount,
+    todoCount,
     urgentItems: [
       ...(jobsCount > 0
         ? [
@@ -215,10 +245,11 @@ export function MobileHomeDSM2026({ instructorId, instructorName }: Props) {
         onBell={() => navigate("/instructor/notifications")}
         onMenu={() => navigate("/instructor/menu")}
         onProfile={() => navigate("/instructor/profile")}
+        stats={stats}
       />
 
       <div style={{ padding: 14, display: "flex", flexDirection: "column", gap: 12 }}>
-        <ThisWeekCard stats={stats} />
+        <TodayStrip stats={stats} />
         <NeedsAttentionCard attention={attention} stats={stats} navigate={navigate} />
         <ScheduleCard instructorId={instructorId} navigate={navigate} />
         <QuickAccessCard navigate={navigate} />
@@ -240,10 +271,11 @@ function HeroHeader(props: {
   onBell: () => void;
   onMenu: () => void;
   onProfile: () => void;
+  stats: any;
 }) {
   const {
     firstName, unreadCount, nextLesson, lessonExpanded,
-    onToggleLesson, onPhone, onBell, onMenu, onProfile,
+    onToggleLesson, onPhone, onBell, onMenu, onProfile, stats,
   } = props;
 
   return (
@@ -298,6 +330,172 @@ function HeroHeader(props: {
         expanded={lessonExpanded}
         onToggle={onToggleLesson}
       />
+
+      {/* Stats strip (inside hero, below next lesson) */}
+      <StatsStrip stats={stats} />
+    </div>
+  );
+}
+
+/* ============================== Stats strip ============================= */
+function StatsStrip({ stats }: { stats: any }) {
+  const cells = [
+    {
+      label: "Earnings · week",
+      value: `£${(stats?.weekEarnings ?? 0).toLocaleString("en-GB")}`,
+      sub: `£${stats?.todayEarnings ?? 0} today`,
+      barPct: stats?.earningsPct ?? 0,
+      barColour: T.red,
+      denom: null as string | null,
+    },
+    {
+      label: "Lessons · week",
+      value: `${stats?.weekLessons ?? 0}`,
+      sub: `${stats?.todayLessons ?? 0} today`,
+      barPct: stats?.lessonsPct ?? 0,
+      barColour: T.blue,
+      denom: stats?.lessonTarget > 0 ? `/${stats.lessonTarget}` : null,
+    },
+  ];
+  return (
+    <div
+      style={{
+        display: "flex",
+        backgroundColor: "rgba(255,255,255,0.08)",
+        borderRadius: 10,
+        overflow: "hidden",
+        marginTop: 10,
+      }}
+    >
+      {cells.map((s, i) => (
+        <div
+          key={s.label}
+          style={{
+            flex: 1,
+            padding: "9px 14px",
+            borderRight: i === 0 ? "1px solid rgba(255,255,255,0.10)" : 0,
+          }}
+        >
+          <div
+            style={{
+              fontSize: 9, fontWeight: 700, color: "rgba(255,255,255,0.4)",
+              textTransform: "uppercase", letterSpacing: 0.6,
+              marginBottom: 4, fontFamily: FONT,
+            }}
+          >
+            {s.label}
+          </div>
+          <div
+            style={{
+              fontSize: 18, fontWeight: 800, color: T.white,
+              letterSpacing: -0.6, lineHeight: "20px", fontFamily: FONT,
+            }}
+          >
+            {s.value}
+            {s.denom ? (
+              <span style={{ fontSize: 11, fontWeight: 400, color: "rgba(255,255,255,0.4)" }}>
+                {s.denom}
+              </span>
+            ) : null}
+          </div>
+          <div
+            style={{
+              fontSize: 10, color: "rgba(255,255,255,0.4)",
+              marginTop: 2, fontFamily: FONT,
+            }}
+          >
+            {s.sub}
+          </div>
+          <div
+            style={{
+              height: 2, backgroundColor: "rgba(255,255,255,0.12)",
+              borderRadius: 1, marginTop: 6, overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                height: "100%",
+                width: `${s.barPct}%`,
+                backgroundColor: s.barColour,
+                borderRadius: 1,
+              }}
+            />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ============================== Today strip ============================= */
+function TodayStrip({ stats }: { stats: any }) {
+  const items = [
+    {
+      value: String(stats?.todayLessons ?? 0),
+      label: "Lessons today",
+      valueColour: T.navy,
+      small: false,
+    },
+    {
+      value: stats?.nextFreeSlot ?? "—",
+      label: "Next free slot",
+      valueColour: T.blue,
+      small: true,
+    },
+    {
+      value: `£${(stats?.outstanding ?? 0).toLocaleString("en-GB")}`,
+      label: "Outstanding",
+      valueColour: (stats?.outstanding ?? 0) > 0 ? T.red : T.navy,
+      small: false,
+    },
+  ];
+  return (
+    <div
+      style={{
+        display: "flex",
+        backgroundColor: T.white,
+        borderRadius: 14,
+        overflow: "hidden",
+        boxShadow: "0 1px 6px rgba(15,32,68,0.06)",
+      }}
+    >
+      {items.map((item, i, arr) => (
+        <div
+          key={item.label}
+          style={{
+            flex: 1,
+            padding: "11px 10px",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 3,
+            borderRight: i < arr.length - 1 ? `1px solid ${T.divider}` : 0,
+          }}
+        >
+          <div
+            style={{
+              fontSize: item.small ? 12 : 16,
+              fontWeight: 800,
+              color: item.valueColour,
+              letterSpacing: -0.5,
+              lineHeight: item.small ? "14px" : "18px",
+              fontFamily: FONT,
+              textAlign: "center",
+            }}
+          >
+            {item.value}
+          </div>
+          <div
+            style={{
+              fontSize: 9, fontWeight: 600, color: T.textMuted,
+              textTransform: "uppercase", letterSpacing: 0.5,
+              textAlign: "center", fontFamily: FONT,
+            }}
+          >
+            {item.label}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
@@ -565,76 +763,7 @@ function SectionHeader({
   );
 }
 
-/* ============================== This week =============================== */
-function ThisWeekCard({ stats }: { stats: any }) {
-  const cells = [
-    {
-      label: "Earnings",
-      value: `£${stats.weekEarnings}`,
-      sub: `£${stats.todayEarnings} today`,
-      pct: stats.earningsPct,
-    },
-    {
-      label: "Lessons",
-      value: `${stats.weekLessons}`,
-      sub: `${stats.todayLessons} today`,
-      pct: stats.lessonsPct,
-      denom: stats.lessonTarget > 0 ? `/${stats.lessonTarget}` : null,
-    },
-  ];
-  return (
-    <SectionCard>
-      <SectionHeader label="This week" />
-      <div style={{ display: "flex" }}>
-        {cells.map((s, i) => (
-          <div
-            key={s.label}
-            style={{
-              flex: 1, padding: "12px 16px",
-              borderRight: i === 0 ? `1px solid ${T.divider}` : 0,
-            }}
-          >
-            <div
-              style={{
-                fontSize: 9, fontWeight: 700, color: T.textMuted,
-                letterSpacing: 0.8, textTransform: "uppercase", marginBottom: 4, fontFamily: FONT,
-              }}
-            >
-              {s.label}
-            </div>
-            <div
-              style={{
-                fontSize: 22, fontWeight: 800, color: T.navy,
-                letterSpacing: -0.8, lineHeight: "24px", fontFamily: FONT,
-              }}
-            >
-              {s.value}
-              {s.denom ? (
-                <span style={{ fontSize: 12, fontWeight: 400, color: T.textMuted }}>{s.denom}</span>
-              ) : null}
-            </div>
-            <div style={{ fontSize: 11, color: T.textMuted, marginTop: 1, fontFamily: FONT }}>
-              {s.sub}
-            </div>
-            <div
-              style={{
-                height: 3, backgroundColor: T.surface, borderRadius: 2,
-                marginTop: 8, overflow: "hidden",
-              }}
-            >
-              <div
-                style={{
-                  height: "100%", width: `${s.pct}%`,
-                  backgroundColor: T.blue, borderRadius: 2,
-                }}
-              />
-            </div>
-          </div>
-        ))}
-      </div>
-    </SectionCard>
-  );
-}
+/* (ThisWeekCard removed — stats now live in HeroHeader StatsStrip) */
 
 /* =========================== Needs attention ============================ */
 function NeedsAttentionCard({
@@ -658,38 +787,23 @@ function NeedsAttentionCard({
       <SectionHeader
         label="Needs attention"
         right={
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
             <span
               style={{
                 backgroundColor: T.red, color: T.white, borderRadius: 20,
-                padding: "3px 10px", fontSize: 11, fontWeight: 700, fontFamily: FONT,
+                padding: "2px 9px", fontSize: 10, fontWeight: 700, fontFamily: FONT,
               }}
             >
-              {attention.total}
+              {attention.urgentCount ?? 0} urgent
             </span>
-            <div
+            <span
               style={{
-                backgroundColor: T.blueLight, borderRadius: 10,
-                padding: "5px 12px", textAlign: "center",
+                backgroundColor: T.blueLight, color: T.blue, borderRadius: 20,
+                padding: "2px 9px", fontSize: 10, fontWeight: 700, fontFamily: FONT,
               }}
             >
-              <div
-                style={{
-                  fontSize: 15, fontWeight: 800, color: T.blue,
-                  lineHeight: "16px", fontFamily: FONT,
-                }}
-              >
-                {stats.weekHours}h
-              </div>
-              <div
-                style={{
-                  fontSize: 8, fontWeight: 700, color: T.blue,
-                  textTransform: "uppercase", letterSpacing: 0.6, fontFamily: FONT,
-                }}
-              >
-                Week
-              </div>
-            </div>
+              {attention.todoCount ?? 0} to do
+            </span>
           </div>
         }
       />
@@ -914,6 +1028,7 @@ function ScheduleCard({
   const [selectedDay, setSelectedDay] = useState(0);
   const days = useMemo(() => Array.from({ length: 7 }, (_, i) => addDays(today, i)), []);
   const { data: lessons = [] } = useDayLessons(instructorId, days[selectedDay]);
+  const { data: weekLessonDates = new Set<string>() } = useWeekLessonDates(instructorId, days);
 
   return (
     <SectionCard>
@@ -956,7 +1071,9 @@ function ScheduleCard({
         <div style={{ display: "flex", gap: 3, marginBottom: 14 }}>
           {days.map((day, i) => {
             const isSel = i === selectedDay;
+            const isTodayCell = isSameDay(day, today);
             const isWknd = [0, 6].includes(day.getDay());
+            const hasLesson = weekLessonDates.has(format(day, "yyyy-MM-dd"));
             return (
               <button
                 key={i}
@@ -968,7 +1085,7 @@ function ScheduleCard({
                   borderRadius: 12,
                   backgroundColor: isSel ? T.navy : "transparent",
                   border: 0, cursor: "pointer",
-                  display: "flex", flexDirection: "column", alignItems: "center", gap: 5,
+                  display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
                 }}
               >
                 <span
@@ -982,17 +1099,26 @@ function ScheduleCard({
                 </span>
                 <span
                   style={{
-                    fontSize: 16, fontWeight: 700,
+                    fontSize: 15, fontWeight: 700,
                     color: isSel ? T.white : isWknd ? T.textLight : T.navy,
                     fontFamily: FONT,
                   }}
                 >
                   {format(day, "d")}
                 </span>
+                <span
+                  style={{
+                    width: 5, height: 5, borderRadius: 3,
+                    backgroundColor: hasLesson
+                      ? (isTodayCell ? T.red : T.blue)
+                      : "transparent",
+                  }}
+                />
               </button>
             );
           })}
         </div>
+
 
         {lessons.length === 0 ? (
           <div
@@ -1164,79 +1290,297 @@ const QUICK_ACCESS: QAItem[] = [
   { label: "Settings",        Icon: SettingsIcon,     ...GREY_BG, route: "/instructor/settings" },
 ];
 
+const DEFAULT_PIN_LABELS = [
+  "Dashboard",
+  "Pupils",
+  "Schedule",
+  "Test swap",
+  "Payments",
+  "Availability",
+  "Find slot",
+  "Settings",
+];
+const PINS_STORAGE_KEY = "dsm2026:quickaccess:pins";
+
+function loadPinnedLabels(): string[] {
+  if (typeof window === "undefined") return DEFAULT_PIN_LABELS;
+  try {
+    const raw = window.localStorage.getItem(PINS_STORAGE_KEY);
+    if (!raw) return DEFAULT_PIN_LABELS;
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed) || parsed.length === 0) return DEFAULT_PIN_LABELS;
+    return parsed.filter((l: any) => typeof l === "string");
+  } catch {
+    return DEFAULT_PIN_LABELS;
+  }
+}
+
 function QuickAccessCard({ navigate }: { navigate: ReturnType<typeof useNavigate> }) {
   const [activeRoute, setActiveRoute] = useState<string | null>(null);
   const [query, setQuery] = useState("");
-  const filter = (xs: QAItem[]) =>
-    xs.filter((i) => i.label.toLowerCase().includes(query.trim().toLowerCase()));
-  const row1 = filter(QUICK_ACCESS.slice(0, 20));
-  const row2 = filter(QUICK_ACCESS.slice(20));
+  const [editOpen, setEditOpen] = useState(false);
+  const [pinnedLabels, setPinnedLabels] = useState<string[]>(() => loadPinnedLabels());
+
+  const pinnedItems = useMemo(() => {
+    const byLabel = new Map(QUICK_ACCESS.map((i) => [i.label, i]));
+    return pinnedLabels
+      .map((l) => byLabel.get(l))
+      .filter((x): x is QAItem => Boolean(x))
+      .slice(0, 8);
+  }, [pinnedLabels]);
+
+  const filtered = query.trim()
+    ? QUICK_ACCESS.filter((i) =>
+        i.label.toLowerCase().includes(query.trim().toLowerCase())
+      )
+    : null;
+
+  const persistPins = (labels: string[]) => {
+    setPinnedLabels(labels);
+    try { window.localStorage.setItem(PINS_STORAGE_KEY, JSON.stringify(labels)); } catch {}
+  };
+
+  const togglePin = (label: string) => {
+    if (pinnedLabels.includes(label)) {
+      persistPins(pinnedLabels.filter((l) => l !== label));
+    } else if (pinnedLabels.length < 8) {
+      persistPins([...pinnedLabels, label]);
+    }
+  };
 
   return (
     <SectionCard>
+      {/* Header */}
       <SectionHeader
         label="Quick access"
         right={
-          <span style={{ fontSize: 12, fontWeight: 600, color: T.blue, fontFamily: FONT }}>Edit</span>
+          <button
+            type="button"
+            onClick={() => setEditOpen(true)}
+            style={{
+              background: "transparent", border: 0, cursor: "pointer",
+              fontSize: 12, fontWeight: 600, color: T.blue, fontFamily: FONT,
+            }}
+          >
+            Edit pins
+          </button>
         }
       />
+
+      {/* Search */}
       <div
         style={{
-          margin: "12px 16px 10px",
+          margin: "10px 14px",
           backgroundColor: T.surface, borderRadius: 10,
-          padding: "10px 14px",
+          padding: "9px 12px",
           display: "flex", alignItems: "center", gap: 8,
         }}
       >
-        <Search size={14} color={T.textLight} strokeWidth={1.8} />
+        <Search size={13} color={T.textLight} strokeWidth={1.8} />
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search tools, pupils, lessons…"
+          placeholder={`Search all ${QUICK_ACCESS.length} tools…`}
           style={{
             flex: 1, background: "transparent", border: 0, outline: "none",
-            fontSize: 13, color: T.textMid, fontFamily: FONT,
+            fontSize: 12, color: T.textMid, fontFamily: FONT,
           }}
         />
+        {query.length > 0 ? (
+          <button
+            type="button"
+            onClick={() => setQuery("")}
+            style={{ background: "transparent", border: 0, cursor: "pointer", padding: 0, color: T.textLight, fontSize: 13 }}
+            aria-label="Clear search"
+          >
+            ×
+          </button>
+        ) : null}
       </div>
-      <div style={{ overflowX: "auto", paddingBottom: 16 }}>
-        <div style={{ display: "flex", flexDirection: "column", gap: 8, padding: "0 16px", width: "max-content" }}>
-          <div style={{ display: "flex", gap: 8 }}>
-            {row1.map((it) => (
+
+      {/* Pinned grid 4x2 */}
+      {!filtered ? (
+        <div
+          style={{
+            display: "flex", flexWrap: "wrap",
+            padding: "0 10px 10px", gap: 6,
+          }}
+        >
+          {pinnedItems.map((item) => (
+            <div key={item.label} style={{ width: "calc(25% - 5px)" }}>
               <QATile
-                key={it.label}
-                item={it}
-                active={activeRoute === it.route}
-                onPress={() => { setActiveRoute(it.route); navigate(it.route); }}
+                item={item}
+                active={activeRoute === item.route}
+                size="grid"
+                onPress={() => { setActiveRoute(item.route); navigate(item.route); }}
+              />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div style={{ overflowX: "auto", paddingBottom: 10 }}>
+          <div style={{ display: "flex", gap: 6, padding: "0 12px" }}>
+            {filtered.map((item) => (
+              <QATile
+                key={item.label}
+                item={item}
+                active={activeRoute === item.route}
+                size="scroll"
+                onPress={() => { setActiveRoute(item.route); navigate(item.route); }}
               />
             ))}
-          </div>
-          <div style={{ display: "flex", gap: 8 }}>
-            {row2.map((it) => (
-              <QATile
-                key={it.label}
-                item={it}
-                active={activeRoute === it.route}
-                onPress={() => { setActiveRoute(it.route); navigate(it.route); }}
-              />
-            ))}
+            {filtered.length === 0 ? (
+              <div style={{ padding: "12px 4px", fontSize: 12, color: T.textMuted, fontFamily: FONT }}>
+                No matching tools
+              </div>
+            ) : null}
           </div>
         </div>
-      </div>
+      )}
+
+      {/* See all */}
+      {!filtered ? (
+        <button
+          type="button"
+          onClick={() => navigate("/instructor/menu")}
+          style={{
+            margin: "0 12px 12px",
+            backgroundColor: T.surface, borderRadius: 10,
+            padding: "10px 14px",
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
+            border: 0, cursor: "pointer", width: "calc(100% - 24px)",
+          }}
+        >
+          <LayoutGrid size={14} color={T.blue} strokeWidth={2} />
+          <span style={{ fontSize: 12, fontWeight: 600, color: T.blue, fontFamily: FONT }}>
+            See all {QUICK_ACCESS.length} tools
+          </span>
+          <ChevronRight size={12} color={T.blue} strokeWidth={2.5} />
+        </button>
+      ) : null}
+
+      {editOpen ? (
+        <EditPinsSheet
+          allItems={QUICK_ACCESS}
+          pinned={pinnedLabels}
+          onToggle={togglePin}
+          onClose={() => setEditOpen(false)}
+        />
+      ) : null}
     </SectionCard>
   );
 }
 
+function EditPinsSheet({
+  allItems, pinned, onToggle, onClose,
+}: {
+  allItems: QAItem[];
+  pinned: string[];
+  onToggle: (label: string) => void;
+  onClose: () => void;
+}) {
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: "fixed", inset: 0, zIndex: 50,
+        backgroundColor: "rgba(15,32,68,0.45)",
+        display: "flex", alignItems: "flex-end", justifyContent: "center",
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          backgroundColor: T.white,
+          width: "100%", maxHeight: "80vh",
+          borderTopLeftRadius: 18, borderTopRightRadius: 18,
+          overflow: "hidden",
+          display: "flex", flexDirection: "column",
+        }}
+      >
+        <div
+          style={{
+            padding: "14px 18px", borderBottom: `1px solid ${T.divider}`,
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+          }}
+        >
+          <div style={{ fontSize: 14, fontWeight: 700, color: T.navy, fontFamily: FONT }}>
+            Edit pinned tools
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            style={{ background: "transparent", border: 0, cursor: "pointer", fontSize: 12, fontWeight: 600, color: T.blue, fontFamily: FONT }}
+          >
+            Done
+          </button>
+        </div>
+        <div style={{ padding: "6px 14px 14px", fontSize: 11, color: T.textMuted, fontFamily: FONT }}>
+          Pin up to 8 tools ({pinned.length}/8)
+        </div>
+        <div style={{ overflowY: "auto", padding: "0 8px 14px" }}>
+          {allItems.map((it) => {
+            const isPinned = pinned.includes(it.label);
+            const Icon = it.Icon;
+            const disabled = !isPinned && pinned.length >= 8;
+            return (
+              <button
+                key={it.label}
+                type="button"
+                onClick={() => onToggle(it.label)}
+                disabled={disabled}
+                style={{
+                  width: "100%", padding: "10px 10px",
+                  display: "flex", alignItems: "center", gap: 10,
+                  background: "transparent", border: 0,
+                  cursor: disabled ? "not-allowed" : "pointer",
+                  opacity: disabled ? 0.4 : 1,
+                  textAlign: "left",
+                }}
+              >
+                <div
+                  style={{
+                    width: 32, height: 32, borderRadius: 9, backgroundColor: it.bg,
+                    display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                  }}
+                >
+                  <Icon size={16} color={it.colour} strokeWidth={1.8} />
+                </div>
+                <span style={{ flex: 1, fontSize: 13, fontWeight: 500, color: T.navy, fontFamily: FONT }}>
+                  {it.label}
+                </span>
+                <span
+                  style={{
+                    fontSize: 11, fontWeight: 700, fontFamily: FONT,
+                    backgroundColor: isPinned ? T.blue : T.surface,
+                    color: isPinned ? T.white : T.textMid,
+                    borderRadius: 20, padding: "3px 10px",
+                  }}
+                >
+                  {isPinned ? "Pinned" : "Pin"}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function QATile({
-  item, active, onPress,
-}: { item: QAItem; active: boolean; onPress: () => void }) {
+  item, active, onPress, size = "scroll",
+}: { item: QAItem; active: boolean; onPress: () => void; size?: "grid" | "scroll" }) {
   const Icon = item.Icon;
+  const isGrid = size === "grid";
   return (
     <button
       type="button"
       onClick={onPress}
       style={{
-        minWidth: 76, padding: "11px 12px",
+        width: isGrid ? "100%" : undefined,
+        minWidth: isGrid ? undefined : 72,
+        padding: isGrid ? "10px 8px" : "11px 12px",
         backgroundColor: active ? T.navy : T.white,
         border: `1.5px solid ${active ? T.navy : T.border}`,
         borderRadius: 14, cursor: "pointer",
@@ -1246,12 +1590,12 @@ function QATile({
     >
       <div
         style={{
-          width: 36, height: 36, borderRadius: 10,
+          width: 32, height: 32, borderRadius: 9,
           backgroundColor: active ? "rgba(255,255,255,0.15)" : item.bg,
           display: "flex", alignItems: "center", justifyContent: "center",
         }}
       >
-        <Icon size={18} color={active ? T.white : item.colour} strokeWidth={1.8} />
+        <Icon size={16} color={active ? T.white : item.colour} strokeWidth={1.8} />
       </div>
       <span
         style={{
