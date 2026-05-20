@@ -791,10 +791,34 @@ function SectionHeader({
 function NeedsAttentionCard({
   attention, stats, navigate,
 }: { attention: any; stats: any; navigate: ReturnType<typeof useNavigate> }) {
-  const [urgentOpen, setUrgentOpen] = useState(attention.urgentCount > 0);
-  const [msgsOpen, setMsgsOpen] = useState(false);
-  const [callsOpen, setCallsOpen] = useState(false);
-  const [enquiriesOpen, setEnquiriesOpen] = useState(false);
+  type Key = "urgent" | "msgs" | "calls" | "enquiries";
+  const [openKey, setOpenKey] = useState<Key | null>(
+    attention.urgentCount > 0 ? "urgent" : null
+  );
+  const toggle = (k: Key) => setOpenKey((p) => (p === k ? null : k));
+
+  const tiles: {
+    key: Key; icon: LucideIcon; label: string; count: number;
+    urgent?: boolean; accent?: string; body: React.ReactNode;
+  }[] = [
+    {
+      key: "urgent", icon: AlertCircle, label: "Urgent",
+      count: attention.urgentCount, urgent: true, accent: T.red,
+      body: attention.urgentItems.length === 0
+        ? <Empty>All clear</Empty>
+        : attention.urgentItems.map((it: any) => (
+            <UrgentBanner key={it.id} item={it} onPress={() => navigate(it.route)} />
+          )),
+    },
+    { key: "msgs", icon: MessageSquare, label: "Messages",
+      count: attention.msgs, body: <Empty>No new messages</Empty> },
+    { key: "calls", icon: PhoneCall, label: "Calls",
+      count: attention.calls, body: <Empty>No missed calls</Empty> },
+    { key: "enquiries", icon: HelpCircle, label: "Enquiries",
+      count: attention.enquiries, body: <Empty>No new enquiries</Empty> },
+  ];
+
+  const openTile = tiles.find((t) => t.key === openKey);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -828,60 +852,40 @@ function NeedsAttentionCard({
         </div>
       </div>
 
-
-      {/* Action tiles */}
+      {/* Action tile heads — 2×2 grid */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-        <ActionTile
-          icon={AlertCircle}
-          label="Urgent"
-          accent={T.red}
-          outlined
-          badgeCount={attention.urgentCount}
-          open={urgentOpen}
-          onToggle={() => setUrgentOpen((p) => !p)}
-        >
-          {attention.urgentItems.length === 0 ? (
-            <Empty>All clear</Empty>
-          ) : (
-            attention.urgentItems.map((it: any) => (
-              <UrgentBanner key={it.id} item={it} onPress={() => navigate(it.route)} />
-            ))
-          )}
-        </ActionTile>
-
-        <ActionTile
-          icon={MessageSquare}
-          label="Messages"
-          badgeCount={attention.msgs}
-          open={msgsOpen}
-          onToggle={() => setMsgsOpen((p) => !p)}
-        >
-          <Empty>No new messages</Empty>
-        </ActionTile>
-
-        <ActionTile
-          icon={PhoneCall}
-          label="Calls"
-          badgeCount={attention.calls}
-          open={callsOpen}
-          onToggle={() => setCallsOpen((p) => !p)}
-        >
-          <Empty>No missed calls</Empty>
-        </ActionTile>
-
-        <ActionTile
-          icon={HelpCircle}
-          label="Enquiries"
-          badgeCount={attention.enquiries}
-          open={enquiriesOpen}
-          onToggle={() => setEnquiriesOpen((p) => !p)}
-        >
-          <Empty>No new enquiries</Empty>
-        </ActionTile>
+        {tiles.map((t) => (
+          <ActionTile
+            key={t.key}
+            icon={t.icon}
+            label={t.label}
+            accent={t.accent}
+            outlined={t.urgent}
+            badgeCount={t.count}
+            open={openKey === t.key}
+            onToggle={() => toggle(t.key)}
+          />
+        ))}
       </div>
+
+      {/* Expanded drawer — full width below grid */}
+      {openTile ? (
+        <div
+          style={{
+            backgroundColor: T.white,
+            borderRadius: 16,
+            border: `1px solid ${T.border}`,
+            boxShadow: "0 1px 3px rgba(15,32,68,0.06)",
+            padding: "10px 12px",
+          }}
+        >
+          {openTile.body}
+        </div>
+      ) : null}
     </div>
   );
 }
+
 
 /* Grid-friendly action tile — vertical layout so label + badge fit inside
    a compact 2×2 grid cell (~175 px wide). */
