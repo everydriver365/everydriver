@@ -698,143 +698,115 @@ export default function InstructorPupils() {
           minHeight: "calc(100dvh - 56px)",
         }}
       >
-        {/* Header */}
+        {/* SummaryBar — live stats + Add pupil (Import CSV moved to Settings → Data & import) */}
         <div
           style={{
             background: "#FFFFFF",
-            padding: "12px 16px",
-            borderBottom: "0.5px solid #F0F3F8",
+            padding: "10px 18px",
+            borderBottom: "1px solid #F2F4F8",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
+            gap: 10,
           }}
         >
-          <div>
-            <p style={{ fontSize: 12, color: "#8E8E93" }}>
-              {stats.active} active · {stats.passed} passed · {lessonsToday} lessons today
-            </p>
+          <div style={{ display: "flex", alignItems: "center", gap: 14, minWidth: 0, flex: 1 }}>
+            {(() => {
+              const overdueCount = pupils.filter((p) => (p.account_balance ?? 0) < 0).length;
+              const summaryStats = [
+                { value: stats.active, label: "Active",  colour: "#0F2044" },
+                { value: overdueCount, label: "Overdue", colour: overdueCount > 0 ? "#CC2229" : "#0F2044" },
+                { value: lessonsToday, label: "Today",   colour: "#0F2044" },
+                { value: stats.passed, label: "Passed",  colour: "#0F2044" },
+              ];
+              return summaryStats.map((s, i, arr) => (
+                <div key={s.label} style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 1 }}>
+                    <span
+                      style={{
+                        fontSize: 16, fontWeight: 800, color: s.colour,
+                        lineHeight: 1.1, fontFamily: "Poppins, sans-serif",
+                        fontVariantNumeric: "tabular-nums",
+                      }}
+                    >
+                      {s.value}
+                    </span>
+                    <span
+                      style={{
+                        fontSize: 9, fontWeight: 600, color: "#9CA3AF",
+                        textTransform: "uppercase", letterSpacing: 0.5,
+                        fontFamily: "Poppins, sans-serif",
+                      }}
+                    >
+                      {s.label}
+                    </span>
+                  </div>
+                  {i < arr.length - 1 && (
+                    <div style={{ width: 1, height: 28, background: "#F2F4F8" }} />
+                  )}
+                </div>
+              ));
+            })()}
           </div>
-          <div style={{ display: "flex", gap: 6 }}>
-            <button
-              type="button"
-              onClick={() => setIsImportOpen(true)}
-              style={{
-                background: "#FFF",
-                border: "0.5px solid rgba(26,82,160,0.25)",
-                borderRadius: 20,
-                padding: "7px 12px",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 5,
-                cursor: "pointer",
-              }}
-            >
-              <span style={{ fontSize: 12, fontWeight: 700, color: "#3D55A1" }}>Import CSV</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsAddOpen(true)}
-              style={{
-                background: "#3D55A1",
-                borderRadius: 20,
-                padding: "7px 14px",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 5,
-                border: "none",
-                cursor: "pointer",
-              }}
-            >
-              <Plus size={11} color="#FFF" strokeWidth={2.2} />
-              <span style={{ fontSize: 12, fontWeight: 700, color: "#FFF" }}>Add</span>
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => setIsAddOpen(true)}
+            style={{
+              background: "#0F2044",
+              borderRadius: 8,
+              padding: "6px 12px",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 4,
+              border: "none",
+              cursor: "pointer",
+              flexShrink: 0,
+            }}
+          >
+            <Plus size={11} color="#FFFFFF" strokeWidth={2.5} />
+            <span style={{ fontSize: 11, fontWeight: 700, color: "#FFFFFF", fontFamily: "Poppins, sans-serif" }}>
+              Add pupil
+            </span>
+          </button>
         </div>
 
-
-        <div style={{ padding: "14px 15px 0" }}>
-          {/* Search */}
-          <div style={{ marginBottom: 10 }}>
-            <SearchInput
-              value={searchQuery}
-              onChange={setSearchQuery}
-              placeholder="Search name, phone, postcode..."
-            />
-          </div>
-
-          {/* Filter pills — horizontally scrollable */}
+        {/* SearchBar — pill input, no filter tabs */}
+        <div style={{ background: "#FFFFFF", padding: "8px 14px", borderBottom: "1px solid #F2F4F8" }}>
           <div
-            role="tablist"
-            aria-label="Filter pupils"
-            className="flex gap-2 overflow-x-auto scrollbar-none -mx-1 px-1"
-            style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch", marginBottom: 14 }}
+            style={{
+              background: "#F2F4F8",
+              borderRadius: 10,
+              padding: "9px 13px",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+            }}
           >
-            {segmentOptions.map((opt) => {
-              const active = opt.value === activeTab;
-              const count =
-                opt.value === "all" ? stats.total :
-                opt.value === "active" ? stats.active :
-                opt.value === "passed" ? stats.passed :
-                opt.value === "needs_lesson" ? needsLessonCount :
-                opt.value === "upcoming" ? upcomingCount :
-                opt.value === "on_hold" ? statusCounts.on_hold :
-                opt.value === "inactive" ? statusCounts.inactive : null;
-              const countColor = filterChipColor[opt.value] || "#8E8E93";
-              return (
-                <button
-                  key={opt.value}
-                  type="button"
-                  role="tab"
-                  aria-selected={active}
-                  onClick={() => setActiveTab(opt.value as any)}
-                  className="shrink-0 transition-all"
-                  style={{
-                    padding: "5px 12px",
-                    borderRadius: 20,
-                    background: active ? "#3D55A1" : "#FFF",
-                    border: active ? "none" : "0.5px solid rgba(26,82,160,0.15)",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 4,
-                    cursor: "pointer",
-                    whiteSpace: "nowrap",
-                    fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif',
-                  }}
-                >
-                  <span style={{ fontSize: 11, fontWeight: 600, color: active ? "#FFF" : "#5B6B8A" }}>
-                    {opt.label}
-                  </span>
-                  {count != null && (
-                    <span style={{ fontSize: 10, color: active ? "rgba(255,255,255,0.7)" : countColor }}>
-                      {count}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-            {(searchQuery || activeTab !== "all") && (
+            <Search size={14} color="#C4C9D4" strokeWidth={1.8} />
+            <input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search name, phone, postcode…"
+              style={{
+                flex: 1, background: "transparent", border: "none", outline: "none",
+                fontSize: 13, color: "#374151", fontFamily: "Poppins, sans-serif",
+              }}
+            />
+            {searchQuery.length > 0 && (
               <button
                 type="button"
-                onClick={() => { setSearchQuery(""); setActiveTab("all"); }}
-                className="shrink-0 transition-all"
-                style={{
-                  padding: "5px 12px",
-                  borderRadius: 20,
-                  background: "transparent",
-                  border: "0.5px solid rgba(26,82,160,0.25)",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 4,
-                  cursor: "pointer",
-                  whiteSpace: "nowrap",
-                  fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif',
-                }}
+                onClick={() => setSearchQuery("")}
+                style={{ background: "transparent", border: "none", padding: 0, cursor: "pointer", display: "flex" }}
+                aria-label="Clear search"
               >
-                <span style={{ fontSize: 11, fontWeight: 600, color: "#3D55A1" }}>Clear</span>
+                <X size={12} color="#C4C9D4" strokeWidth={2} />
               </button>
             )}
           </div>
         </div>
+
+        <div style={{ padding: "12px 15px 0" }}>
+
 
         <div style={{ padding: "0 15px" }}>
           {/* Pupils List */}
