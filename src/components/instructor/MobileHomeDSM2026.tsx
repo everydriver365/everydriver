@@ -1932,11 +1932,9 @@ function QATile({
         width: "100%",
         height: 80,
         padding: "0 18px",
-        backgroundColor: active ? DSM_BLUE : "#FFFFFF",
+        backgroundColor: "#FFFFFF",
         border: 0,
-        boxShadow: active
-          ? "0 6px 16px rgba(61,85,161,0.32), 0 2px 4px rgba(61,85,161,0.18)"
-          : "0 4px 12px rgba(17,24,39,0.08), 0 1px 2px rgba(17,24,39,0.04)",
+        boxShadow: "0 4px 12px rgba(17,24,39,0.08), 0 1px 2px rgba(17,24,39,0.04)",
         borderRadius: 16,
         cursor: "pointer",
         display: "flex",
@@ -1948,7 +1946,7 @@ function QATile({
     >
       <Icon
         size={26}
-        color={active ? "#FFFFFF" : DSM_BLUE}
+        color={T.navy}
         strokeWidth={1.8}
         style={{ flexShrink: 0 }}
       />
@@ -1956,7 +1954,7 @@ function QATile({
         style={{
           fontSize: 15,
           fontWeight: 700,
-          color: active ? "#FFFFFF" : T.navy,
+          color: T.navy,
           fontFamily: FONT,
           lineHeight: "18px",
           letterSpacing: "-0.2px",
