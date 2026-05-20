@@ -591,6 +591,16 @@ export default function PremiumPupilProfile() {
     window.open(`https://maps.google.com/maps?q=${encodeURIComponent(q)}`, "_blank");
   };
 
+  // ─── Hooks that must run on every render (keep above any early return) ───
+  const pupilTravelMin = (pupil as any)?.travel_time_minutes as number | null | undefined;
+  const [travelInput, setTravelInput] = useState<string>(
+    pupilTravelMin == null ? "" : String(pupilTravelMin)
+  );
+  const [savingTravel, setSavingTravel] = useState(false);
+  useEffect(() => {
+    setTravelInput(pupilTravelMin == null ? "" : String(pupilTravelMin));
+  }, [pupilTravelMin]);
+
   if (isLoading || !pupil) {
     return (
       <InstructorPortalLayout>
