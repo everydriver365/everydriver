@@ -1737,11 +1737,12 @@ function QuickAccessCard({ navigate }: { navigate: ReturnType<typeof useNavigate
               display: "grid",
               gridAutoFlow: "column",
               gridTemplateRows: "repeat(2, min-content)",
-              gridAutoColumns: "200px",
+              gridAutoColumns: "calc((100vw - 46px) / 2)",
               gap: 10,
               padding: "0 12px",
             }}
           >
+
             {pinnedItems.map((item) => (
               <QATile
                 key={item.label}
