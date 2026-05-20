@@ -792,20 +792,6 @@ function NeedsAttentionCard({
   attention, stats, navigate,
 }: { attention: any; stats: any; navigate: ReturnType<typeof useNavigate> }) {
   const [urgentOpen, setUrgentOpen] = useState(attention.urgentCount > 0);
-  const [msgsOpen, setMsgsOpen] = useState(false);
-  const [callsOpen, setCallsOpen] = useState(false);
-  const [enquiriesOpen, setEnquiriesOpen] = useState(false);
-
-  const counters = [
-    { label: "Jobs",  value: attention.jobs,  hot: true,  onClick: () => navigate("/instructor/jobs") },
-    { label: "Msgs",  value: attention.msgs,  hot: true,  onClick: () => navigate("/instructor/messages") },
-    { label: "Swaps", value: attention.swaps, hot: false, onClick: () => navigate("/instructor/test-requests") },
-    { label: "Calls", value: attention.calls, hot: true,  onClick: () => navigate("/instructor/calls") },
-    { label: "Enq",   value: attention.enquiries, hot: true, onClick: () => navigate("/instructor/enquiries") },
-  ];
-
-  const tileShadow = "0 1px 3px rgba(15,32,68,0.06)";
-  const tileBorder = `1px solid ${T.border}`;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
