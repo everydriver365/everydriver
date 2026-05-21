@@ -1,5 +1,5 @@
-import { useMemo, Fragment } from "react";
-import { Plus, RefreshCw, ChevronRight, MapPin } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Plus, RefreshCw, ChevronRight, MapPin, CalendarOff } from "lucide-react";
 
 export interface Lesson {
   id: string;
@@ -18,16 +18,17 @@ interface ScheduleTileProps {
 }
 
 const C = {
+  outerBg: "#f0efe9",
   charcoal: "#1a1a1f",
   muted: "#888888",
-  border: "#dddddd",
+  border: "#e0dfd9",
   blue: "#2952b3",
   blueTint: "#E6ECF8",
   green: "#2d8a4e",
   chevron: "#B5B9C2",
 };
 
-type Status = "done" | "now" | "next" | "upcoming";
+const FONT = "Poppins, -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif";
 
 function pad(n: number) { return n < 10 ? `0${n}` : `${n}`; }
 function fmtHM(d: Date) { return `${pad(d.getHours())}:${pad(d.getMinutes())}`; }
@@ -40,150 +41,212 @@ function fmtDuration(startMs: number, endMs: number) {
   return `${m}m`;
 }
 const DAYS = ["SUN","MON","TUE","WED","THU","FRI","SAT"];
-const DAYS_SHORT = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
+function sameDay(a: Date, b: Date) {
+  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+}
+
 export function ScheduleTile({ lessons, onAddLesson, onFillGaps, onLessonClick }: ScheduleTileProps) {
-  const { withStatus, headerDate, isToday } = useMemo(() => {
-    const now = new Date();
-    let nextFound = false;
+  const [tab, setTab] = useState<"today" | "tomorrow">("today");
+
+  const { todayDate, tomorrowDate, todayLessons, tomorrowLessons } = useMemo(() => {
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+
     const sorted = lessons
       .slice()
-      .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+      .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
+      .map((l) => ({ ...l, _start: new Date(l.startTime), _end: new Date(l.endTime) }));
 
-    const ws = sorted.map((lesson) => {
-      const start = new Date(lesson.startTime);
-      const end = new Date(lesson.endTime);
-      let _status: Status;
-      if (end < now) _status = "done";
-      else if (start <= now && now <= end) _status = "now";
-      else if (!nextFound && start > now) { nextFound = true; _status = "next"; }
-      else _status = "upcoming";
-      return { ...lesson, _status, _start: start, _end: end };
-    });
-
-    const ref = sorted.length ? new Date(sorted[0].startTime) : now;
-    const today = new Date();
-    const isT = ref.getFullYear() === today.getFullYear() &&
-                ref.getMonth() === today.getMonth() &&
-                ref.getDate() === today.getDate();
-    return { withStatus: ws, headerDate: ref, isToday: isT };
+    return {
+      todayDate: today,
+      tomorrowDate: tomorrow,
+      todayLessons: sorted.filter((l) => sameDay(l._start, today)),
+      tomorrowLessons: sorted.filter((l) => sameDay(l._start, tomorrow)),
+    };
   }, [lessons]);
 
+  const active = tab === "today" ? todayLessons : tomorrowLessons;
+  const headerDate = tab === "today" ? todayDate : tomorrowDate;
   const kicker = `SCHEDULE · ${DAYS[headerDate.getDay()]} ${headerDate.getDate()} ${MONTHS[headerDate.getMonth()].toUpperCase()}`;
-  const titleStr = isToday ? "Today" : `${DAYS_SHORT[headerDate.getDay()]} ${headerDate.getDate()} ${MONTHS[headerDate.getMonth()]}`;
+
+  const fmtPill = (d: Date) => `${d.getDate()} ${MONTHS[d.getMonth()]}`;
+
+  const renderPill = (key: "today" | "tomorrow", label: string, date: Date) => {
+    const isActive = tab === key;
+    return (
+      <button
+        key={key}
+        type="button"
+        onClick={() => setTab(key)}
+        className="flex-1 transition-colors"
+        style={{
+          background: isActive ? C.charcoal : "#FFFFFF",
+          color: isActive ? "#FFFFFF" : C.muted,
+          border: isActive ? "0" : `1px solid ${C.border}`,
+          borderRadius: 12,
+          padding: "8px 10px",
+          cursor: "pointer",
+          fontFamily: FONT,
+          textAlign: "center",
+          lineHeight: 1.2,
+        }}
+        onMouseEnter={(e) => {
+          if (!isActive) {
+            (e.currentTarget as HTMLButtonElement).style.color = C.charcoal;
+            (e.currentTarget as HTMLButtonElement).style.borderColor = C.charcoal;
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (!isActive) {
+            (e.currentTarget as HTMLButtonElement).style.color = C.muted;
+            (e.currentTarget as HTMLButtonElement).style.borderColor = C.border;
+          }
+        }}
+      >
+        <div style={{ fontSize: 13, fontWeight: 600 }}>{label}</div>
+        <div style={{ fontSize: 10, fontWeight: 400, marginTop: 2, opacity: 0.9 }}>{fmtPill(date)}</div>
+      </button>
+    );
+  };
 
   return (
     <div
       className="w-full"
       style={{
-        fontFamily: "Poppins, -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif",
+        fontFamily: FONT,
+        background: C.outerBg,
+        borderRadius: 18,
+        padding: 14,
       }}
     >
-      {/* Header */}
-      <div style={{ marginBottom: 12 }}>
+      {/* Header kicker */}
+      <div
+        style={{
+          fontSize: 10,
+          color: C.muted,
+          letterSpacing: "1.2px",
+          fontWeight: 600,
+          textTransform: "uppercase",
+          marginBottom: 10,
+        }}
+      >
+        {kicker}
+      </div>
+
+      {/* Day selector */}
+      <div className="flex" style={{ gap: 8, marginBottom: 12 }}>
+        {renderPill("today", "Today", todayDate)}
+        {renderPill("tomorrow", "Tomorrow", tomorrowDate)}
+      </div>
+
+      {/* Section label */}
+      <div
+        style={{
+          fontSize: 10,
+          color: C.muted,
+          letterSpacing: "1.2px",
+          fontWeight: 600,
+          textTransform: "uppercase",
+          marginBottom: 8,
+        }}
+      >
+        {active.length === 0
+          ? "No lessons"
+          : `${active.length} lesson${active.length === 1 ? "" : "s"}`}
+      </div>
+
+      {/* Lessons / empty */}
+      {active.length === 0 ? (
         <div
           style={{
-            fontSize: 11,
-            color: C.muted,
-            letterSpacing: "1.2px",
-            fontWeight: 600,
-            textTransform: "uppercase",
+            background: "#FFFFFF",
+            border: `1px solid ${C.border}`,
+            borderRadius: 16,
+            padding: "24px 14px",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 10,
           }}
         >
-          {kicker}
+          <CalendarOff size={28} color="#C7C7CC" strokeWidth={1.75} />
+          <div style={{ fontSize: 13, color: C.muted, fontWeight: 500, textAlign: "center" }}>
+            Nothing scheduled for {tab === "today" ? "today" : "tomorrow"}
+          </div>
         </div>
-        <div style={{ fontSize: 26, fontWeight: 700, color: C.charcoal, lineHeight: 1.15, marginTop: 4 }}>
-          {titleStr}
-        </div>
-      </div>
-
-      {/* Lesson cards */}
-      <div className="flex flex-col" style={{ gap: 10 }}>
-        {withStatus.map((l) => (
-          <button
-            key={l.id}
-            type="button"
-            onClick={() => onLessonClick(l.id)}
-            className="w-full text-left transition-colors"
-            style={{
-              background: "#FFFFFF",
-              border: `1px solid ${C.border}`,
-              borderRadius: 16,
-              padding: "14px 14px",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: 14,
-            }}
-          >
-            {/* Time col */}
-            <div style={{ width: 52, flexShrink: 0 }}>
-              <div style={{
-                fontSize: 20, fontWeight: 700,
-                color: C.charcoal, lineHeight: 1.05,
-                letterSpacing: "-0.3px",
-              }}>
-                {fmtHM(l._start)}
-              </div>
-              <div style={{ fontSize: 12, color: C.muted, marginTop: 4, fontWeight: 500 }}>
-                {fmtDuration(l._start.getTime(), l._end.getTime())}
-              </div>
-            </div>
-            {/* Blue divider */}
-            <div
-              className="flex-shrink-0 self-stretch"
+      ) : (
+        <div className="flex flex-col" style={{ gap: 10 }}>
+          {active.map((l) => (
+            <button
+              key={l.id}
+              type="button"
+              onClick={() => onLessonClick(l.id)}
+              className="w-full text-left transition-colors"
               style={{
-                width: 2,
-                background: C.blue,
-                minHeight: 40,
-                borderRadius: 1,
+                background: "#FFFFFF",
+                border: `1px solid ${C.border}`,
+                borderRadius: 16,
+                padding: "14px 14px",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: 14,
               }}
-            />
-            {/* Info col */}
-            <div className="flex-1 min-w-0">
-              <div
-                style={{
-                  fontSize: 15, fontWeight: 600,
-                  color: C.charcoal,
-                  whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
-                }}
-              >
-                {l.studentName}
-              </div>
-              <div style={{
-                fontSize: 13, color: C.muted, marginTop: 2,
-                whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
-              }}>
-                {l.lessonType}
-              </div>
-              {l.postcode && (
-                <div
-                  className="inline-flex items-center"
-                  style={{
-                    marginTop: 6,
-                    background: C.blueTint,
-                    color: C.blue,
-                    borderRadius: 999,
-                    padding: "3px 8px",
-                    fontSize: 11,
-                    fontWeight: 600,
-                    gap: 4,
-                  }}
-                >
-                  <MapPin size={11} strokeWidth={2.5} color={C.blue} />
-                  {l.postcode}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.borderColor = C.blue; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.borderColor = C.border; }}
+            >
+              {/* Time col */}
+              <div style={{ width: 52, flexShrink: 0 }}>
+                <div style={{ fontSize: 20, fontWeight: 700, color: C.charcoal, lineHeight: 1.05, letterSpacing: "-0.3px" }}>
+                  {fmtHM(l._start)}
                 </div>
-              )}
-            </div>
-            {/* Chevron */}
-            <ChevronRight size={20} color={C.chevron} className="flex-shrink-0" strokeWidth={2.5} />
-          </button>
-        ))}
-      </div>
+                <div style={{ fontSize: 12, color: C.muted, marginTop: 4, fontWeight: 500 }}>
+                  {fmtDuration(l._start.getTime(), l._end.getTime())}
+                </div>
+              </div>
+              {/* Blue divider */}
+              <div
+                className="flex-shrink-0 self-stretch"
+                style={{ width: 2.5, background: C.blue, minHeight: 40, borderRadius: 2 }}
+              />
+              {/* Info col */}
+              <div className="flex-1 min-w-0">
+                <div style={{ fontSize: 15, fontWeight: 700, color: C.charcoal, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                  {l.studentName}
+                </div>
+                <div style={{ fontSize: 13, color: C.muted, marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                  {l.lessonType}
+                </div>
+                {l.postcode && (
+                  <div
+                    className="inline-flex items-center"
+                    style={{
+                      marginTop: 6,
+                      background: C.blueTint,
+                      color: C.blue,
+                      borderRadius: 999,
+                      padding: "3px 8px",
+                      fontSize: 11,
+                      fontWeight: 600,
+                      gap: 4,
+                    }}
+                  >
+                    <MapPin size={11} strokeWidth={2.5} color={C.blue} />
+                    {l.postcode}
+                  </div>
+                )}
+              </div>
+              <ChevronRight size={20} color={C.chevron} className="flex-shrink-0" strokeWidth={2.5} />
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Footer */}
-      <div className="flex mt-3" style={{ gap: 10 }}>
+      <div className="flex" style={{ gap: 10, marginTop: 12 }}>
         <button
           type="button"
           onClick={onAddLesson}
@@ -191,9 +254,9 @@ export function ScheduleTile({ lessons, onAddLesson, onFillGaps, onLessonClick }
           style={{
             background: C.green, color: "#FFFFFF",
             border: 0, borderRadius: 14,
-            padding: "14px 14px",
+            padding: "15px 14px",
             fontSize: 14, fontWeight: 600, cursor: "pointer", gap: 6,
-            fontFamily: "Poppins, -apple-system, sans-serif",
+            fontFamily: FONT,
           }}
         >
           <Plus size={16} strokeWidth={2.5} color="#FFFFFF" /> Add lesson
@@ -205,9 +268,9 @@ export function ScheduleTile({ lessons, onAddLesson, onFillGaps, onLessonClick }
           style={{
             background: C.blue, color: "#FFFFFF",
             border: 0, borderRadius: 14,
-            padding: "14px 14px",
+            padding: "15px 14px",
             fontSize: 14, fontWeight: 600, cursor: "pointer", gap: 6,
-            fontFamily: "Poppins, -apple-system, sans-serif",
+            fontFamily: FONT,
           }}
         >
           <RefreshCw size={16} strokeWidth={2.5} color="#FFFFFF" /> Fill gaps
