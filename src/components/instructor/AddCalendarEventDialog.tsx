@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { checkLessonClash, describeLessonClashError } from '@/lib/lessonClashCheck';
+import { validateRequired, validateNotInPast } from '@/lib/validators';
 
 const BLOCK_COLOR_PRESETS = [
   '#3b82f6', // blue
@@ -173,8 +174,10 @@ export function AddCalendarEventDialog({
 
   const handleAddBlock = async () => {
     const nextErrors: Record<string, string> = {};
-    if (!blockTitle) nextErrors.blockTitle = 'Title is required';
-    if (!blockDate) nextErrors.blockDate = 'Date is required';
+    const titleErr = validateRequired(blockTitle, 'Title');
+    if (titleErr) nextErrors.blockTitle = titleErr;
+    const dateErr = validateNotInPast(blockDate ?? null, { label: 'Date' });
+    if (dateErr) nextErrors.blockDate = dateErr;
     if (Object.keys(nextErrors).length) {
       setErrors(nextErrors);
       return;
@@ -233,8 +236,10 @@ export function AddCalendarEventDialog({
 
   const handleAddLesson = async () => {
     const nextErrors: Record<string, string> = {};
-    if (!selectedPupil) nextErrors.selectedPupil = 'Please select a pupil';
-    if (!lessonDate) nextErrors.lessonDate = 'Date is required';
+    const pupilErr = validateRequired(selectedPupil, 'Pupil');
+    if (pupilErr) nextErrors.selectedPupil = 'Please select a pupil';
+    const dateErr = validateNotInPast(lessonDate ?? null, { label: 'Date' });
+    if (dateErr) nextErrors.lessonDate = dateErr;
     if (Object.keys(nextErrors).length) {
       setErrors(nextErrors);
       return;
@@ -299,8 +304,10 @@ export function AddCalendarEventDialog({
 
   const handleAddEvent = async () => {
     const nextErrors: Record<string, string> = {};
-    if (!eventTitle) nextErrors.eventTitle = 'Title is required';
-    if (!eventDate) nextErrors.eventDate = 'Date is required';
+    const titleErr = validateRequired(eventTitle, 'Title');
+    if (titleErr) nextErrors.eventTitle = titleErr;
+    const dateErr = validateNotInPast(eventDate ?? null, { label: 'Date' });
+    if (dateErr) nextErrors.eventDate = dateErr;
     if (Object.keys(nextErrors).length) {
       setErrors(nextErrors);
       return;

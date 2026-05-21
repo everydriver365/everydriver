@@ -231,10 +231,14 @@ serve(async (req: Request): Promise<Response> => {
 </html>
     `;
 
+    // Round 4a: standardised subject — "Payment Receipt — £X from Pupil Name"
+    const directionWord = isRefund ? "to" : "from";
+    const subjectLine = `${isRefund ? "Refund" : "Payment"} Receipt — £${Math.abs(amount).toFixed(2)} ${directionWord} ${pupil.name}`;
+
     const emailResponse = await resend.emails.send({
       from: `${instructor.name} <noreply@everydriver.lovable.app>`,
       to: [pupil.email],
-      subject: `${isRefund ? "Refund" : "Payment"} Receipt - £${Math.abs(amount).toFixed(2)}`,
+      subject: subjectLine,
       html: emailHtml,
     });
 

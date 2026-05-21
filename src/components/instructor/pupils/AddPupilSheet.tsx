@@ -491,10 +491,15 @@ export function AddPupilSheet({
 
   const isNationalIntensive = form.source === "national_intensive";
 
+  // Round 4a: require at least one contact method (phone OR email)
+  const hasContactMethod =
+    (form.phone || "").trim().length > 0 || (form.email || "").trim().length > 0;
+
   const isValid =
     effectiveName.trim().length > 0 &&
     form.address.trim().length > 0 &&
     form.postcode.trim().length > 0 &&
+    hasContactMethod &&
     (!isNationalIntensive || (
       String(form.intensive_hours_paid || "").trim().length > 0 &&
       String(form.intensive_course_payout || "").trim().length > 0 &&
@@ -505,6 +510,7 @@ export function AddPupilSheet({
   const nameInvalid = submitted && !effectiveName.trim();
   const addressInvalid = submitted && !form.address.trim();
   const postcodeInvalid = submitted && !form.postcode.trim();
+  const contactInvalid = submitted && !hasContactMethod;
   const intensiveHoursInvalid = submitted && isNationalIntensive && (
     !String(form.intensive_hours_paid || "").trim() ||
     isNaN(parseFloat(String(form.intensive_hours_paid || "")))
@@ -1084,6 +1090,11 @@ export function AddPupilSheet({
             {nameInvalid && (
               <div style={{ fontSize: 11, color: "#DC2626", marginTop: 8 }}>
                 Please enter a name
+              </div>
+            )}
+            {contactInvalid && (
+              <div style={{ fontSize: 11, color: "#DC2626", marginTop: 8 }}>
+                Please provide a phone number or email address
               </div>
             )}
           </DSection>
