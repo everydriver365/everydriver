@@ -1142,26 +1142,48 @@ export function AddLessonSheet({
               </div>
               <div>
                 <div style={{ fontSize: 11, color: "#6E6E73", margin: "0 0 4px", paddingLeft: 2 }}>Duration</div>
-                <Select value={lessonDuration} onValueChange={setLessonDuration}>
-                  <SelectTrigger
-                    style={{
-                      width: "100%", display: "flex", alignItems: "center", gap: 8,
-                      padding: 12, background: "#FFFFFF",
-                      border: "0.5px solid #E5E5EA", borderRadius: 10,
-                      height: "auto", textAlign: "left",
-                    }}
-                  >
-                    <Clock style={{ width: 16, height: 16, color: "#6E6E73", flexShrink: 0 }} strokeWidth={1.8} />
-                    <span style={{ flex: 1, fontSize: 14, fontWeight: 500, color: "#000000" }}>
-                      <SelectValue />
-                    </span>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {DURATIONS.map((d) => (
-                      <SelectItem key={d.value} value={d.value}>{d.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div
+                  role="radiogroup"
+                  aria-label="Lesson duration"
+                  style={{
+                    display: "flex",
+                    width: "100%",
+                    padding: 2,
+                    background: "#F2F2F7",
+                    border: "0.5px solid #E5E5EA",
+                    borderRadius: 10,
+                    gap: 2,
+                  }}
+                >
+                  {DURATIONS.map((d) => {
+                    const active = lessonDuration === d.value;
+                    return (
+                      <button
+                        key={d.value}
+                        type="button"
+                        role="radio"
+                        aria-checked={active}
+                        onClick={() => setLessonDuration(d.value)}
+                        style={{
+                          flex: 1,
+                          minWidth: 0,
+                          padding: "8px 4px",
+                          border: "none",
+                          borderRadius: 8,
+                          background: active ? "#FFFFFF" : "transparent",
+                          boxShadow: active ? "0 1px 2px rgba(0,0,0,0.06)" : "none",
+                          fontSize: 12,
+                          fontWeight: active ? 600 : 500,
+                          color: active ? "#000000" : "#6E6E73",
+                          cursor: "pointer",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {d.label}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
 
