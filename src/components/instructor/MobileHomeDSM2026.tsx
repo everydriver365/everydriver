@@ -63,6 +63,7 @@ import {
   AlertCircle,
   PhoneOff,
   Inbox,
+  IdCard,
   type LucideIcon,
 } from "lucide-react";
 import { format, addDays, getWeek, isSameDay, parse, parseISO } from "date-fns";
@@ -1852,138 +1853,135 @@ function UpcomingEventsCard({
 }: { events: UpcomingEvent[]; navigate: ReturnType<typeof useNavigate> }) {
   const [openId, setOpenId] = useState<string | null>(null);
 
+  const BORDER = "#e0e3ea";
+  const DIVIDER = "#f0f1f4";
+  const HOVER = "#f8f9fb";
+  const CHARCOAL = "#1a1a1f";
+  const MUTED = "#999999";
+  const BLUE = "#2952b3";
+  const BLUE_TINT = "#e8eefb";
+  const GREEN = "#2d8a4e";
+  const BODY = "#6E6E73";
+
+  const list: UpcomingEvent[] = events.length > 0
+    ? events
+    : [{ id: "placeholder", title: "No upcoming events", dateLabel: "No date set", timeLabel: "", locationLabel: "", destinationPath: "/instructor/schedule" } as UpcomingEvent];
+
   return (
     <div>
       <div
-
         style={{
-          fontSize: 11, fontWeight: 700, color: T.textLight,
-          letterSpacing: 0.9, textTransform: "uppercase", fontFamily: FONT,
+          fontSize: 10, fontWeight: 600, color: MUTED,
+          letterSpacing: "0.12em", textTransform: "uppercase", fontFamily: FONT,
           padding: "4px 4px 10px",
         }}
       >
         Upcoming events
       </div>
 
-      {events.length === 0 ? (
-        <div
-          style={{
-            background: "#fff",
-            borderRadius: 12,
-            padding: 18,
-            boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
-          }}
-        >
-          <Empty>No upcoming events</Empty>
-        </div>
-      ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          {events.map((ev) => {
-            const isOpen = openId === ev.id;
-            return (
-              <div
-                key={ev.id}
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        {list.map((ev) => {
+          const isOpen = openId === ev.id;
+          return (
+            <div
+              key={ev.id}
+              style={{
+                background: "#fff",
+                border: `1px solid ${BORDER}`,
+                borderRadius: 14,
+                overflow: "hidden",
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => setOpenId(isOpen ? null : ev.id)}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = HOVER; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
                 style={{
-                  background: "#fff",
-                  borderRadius: 12,
-                  boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
-                  overflow: "hidden",
+                  width: "100%", padding: "12px 14px",
+                  background: "transparent", border: 0, cursor: "pointer",
+                  display: "flex", alignItems: "center", gap: 12, textAlign: "left",
+                  transition: "background 150ms ease",
                 }}
               >
-                <button
-                  type="button"
-                  onClick={() => setOpenId(isOpen ? null : ev.id)}
+                <div
                   style={{
-                    width: "100%",
-                    padding: "18px 18px",
-                    background: "transparent",
-                    border: 0,
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 12,
-                    textAlign: "left",
+                    width: 34, height: 34, borderRadius: 9,
+                    backgroundColor: BLUE_TINT,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    flexShrink: 0,
                   }}
                 >
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div
-                      style={{
-                        fontSize: 15,
-                        fontWeight: 700,
-                        color: T.navy,
-                        fontFamily: FONT,
-                        lineHeight: 1.25,
-                      }}
-                    >
-                      {ev.title}
-                    </div>
-                  </div>
-                  <ChevronDown
-                    size={20}
-                    color={T.blue}
-                    strokeWidth={2.5}
+                  <CalendarRange size={18} strokeWidth={2} color={BLUE} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
+                  <span
                     style={{
-                      flexShrink: 0,
-                      transition: "transform 0.2s ease",
-                      transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
-                    }}
-                  />
-                </button>
-
-                {isOpen && (
-                  <div
-                    style={{
-                      padding: "0 18px 18px",
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 10,
+                      fontSize: 14, fontWeight: 600, color: CHARCOAL,
+                      letterSpacing: "-0.01em", fontFamily: FONT,
+                      overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
                     }}
                   >
-                    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                      <CalendarIcon size={14} color={T.textMuted} strokeWidth={2} />
-                      <span style={{ fontSize: 13, color: T.navy, fontFamily: FONT, fontWeight: 600 }}>
+                    {ev.title}
+                  </span>
+                  <span style={{ fontSize: 11, color: MUTED, fontFamily: FONT }}>
+                    {ev.dateLabel || "No date set"}
+                  </span>
+                </div>
+                <ChevronDown
+                  size={16}
+                  color="#999999"
+                  strokeWidth={2.2}
+                  style={{
+                    flexShrink: 0,
+                    transition: "transform 0.2s ease",
+                    transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
+                  }}
+                />
+              </button>
+
+              {isOpen && (
+                <div
+                  style={{
+                    borderTop: `1px solid ${DIVIDER}`,
+                    padding: "12px 14px",
+                    fontSize: 12,
+                    color: BODY,
+                    fontFamily: FONT,
+                    lineHeight: 1.5,
+                  }}
+                >
+                  {ev.id === "placeholder" ? (
+                    "Nothing scheduled yet. Add an event to get started."
+                  ) : (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                      <div>
                         {ev.dateLabel}
-                      </span>
-                      {ev.timeLabel && ev.timeLabel !== "—" && (
-                        <span style={{ fontSize: 13, color: T.navy, fontFamily: FONT, fontWeight: 600 }}>
-                          · {ev.timeLabel}
-                        </span>
-                      )}
-                    </div>
-                    {ev.locationLabel && ev.locationLabel !== "—" && (
-                      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                        <MapPin size={14} color={T.textMuted} strokeWidth={2} />
-                        <span style={{ fontSize: 13, color: T.textMuted, fontFamily: FONT }}>
-                          {ev.locationLabel}
-                        </span>
+                        {ev.timeLabel && ev.timeLabel !== "—" ? ` · ${ev.timeLabel}` : ""}
                       </div>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => navigate(ev.destinationPath)}
-                      style={{
-                        marginTop: 4,
-                        alignSelf: "flex-start",
-                        background: T.blue,
-                        color: "#fff",
-                        border: 0,
-                        cursor: "pointer",
-                        borderRadius: 8,
-                        padding: "8px 14px",
-                        fontSize: 13,
-                        fontWeight: 600,
-                        fontFamily: FONT,
-                      }}
-                    >
-                      View
-                    </button>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
+                      {ev.locationLabel && ev.locationLabel !== "—" && (
+                        <div>{ev.locationLabel}</div>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => navigate(ev.destinationPath)}
+                        style={{
+                          alignSelf: "flex-start",
+                          background: "transparent", border: 0, padding: 0,
+                          color: BLUE, fontSize: 12, fontWeight: 600,
+                          fontFamily: FONT, cursor: "pointer",
+                        }}
+                      >
+                        View →
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
 
       <div
         style={{
@@ -1997,21 +1995,23 @@ function UpcomingEventsCard({
           type="button"
           onClick={() => navigate("/instructor/schedule")}
           style={{
-            background: "transparent", border: 0, cursor: "pointer",
-            fontSize: 13, fontWeight: 600, color: T.blue, fontFamily: FONT,
+            background: "transparent", border: 0, cursor: "pointer", padding: 0,
+            display: "inline-flex", alignItems: "center", gap: 4,
+            fontSize: 12, fontWeight: 600, color: GREEN, fontFamily: FONT,
           }}
         >
-          + Add event
+          <Plus size={14} strokeWidth={2.4} /> Add event
         </button>
         <button
           type="button"
           onClick={() => navigate("/instructor/schedule")}
           style={{
-            background: "transparent", border: 0, cursor: "pointer",
-            fontSize: 13, fontWeight: 600, color: T.blue, fontFamily: FONT,
+            background: "transparent", border: 0, cursor: "pointer", padding: 0,
+            display: "inline-flex", alignItems: "center", gap: 4,
+            fontSize: 12, fontWeight: 600, color: BLUE, fontFamily: FONT,
           }}
         >
-          See all →
+          See all <ArrowRight size={14} strokeWidth={2.4} />
         </button>
       </div>
     </div>
@@ -2029,12 +2029,24 @@ function MembershipCard({
   const planName = membership?.planName ?? "Free";
   const status = membership?.status;
 
+  const BORDER = "#e0e3ea";
+  const DIVIDER = "#f0f1f4";
+  const HOVER = "#f8f9fb";
+  const CHARCOAL = "#1a1a1f";
+  const MUTED = "#999999";
+  const PURPLE = "#6b4fc4";
+  const PURPLE_TINT = "#f0edfb";
+  const BLUE = "#2952b3";
+  const BODY = "#6E6E73";
+
+  const subtitle = status === "active" ? "Active plan" : status ? status : "Manage plan";
+
   return (
     <div>
       <div
         style={{
-          fontSize: 11, fontWeight: 700, color: T.textLight,
-          letterSpacing: 0.9, textTransform: "uppercase", fontFamily: FONT,
+          fontSize: 10, fontWeight: 600, color: MUTED,
+          letterSpacing: "0.12em", textTransform: "uppercase", fontFamily: FONT,
           padding: "4px 4px 10px",
         }}
       >
@@ -2044,43 +2056,51 @@ function MembershipCard({
       <div
         style={{
           background: "#fff",
-          borderRadius: 12,
-          boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+          border: `1px solid ${BORDER}`,
+          borderRadius: 14,
           overflow: "hidden",
         }}
       >
         <button
           type="button"
           onClick={() => setOpen((o) => !o)}
+          onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = HOVER; }}
+          onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
           style={{
-            width: "100%",
-            padding: "18px 18px",
-            background: "transparent",
-            border: 0,
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            gap: 12,
-            textAlign: "left",
+            width: "100%", padding: "12px 14px",
+            background: "transparent", border: 0, cursor: "pointer",
+            display: "flex", alignItems: "center", gap: 12, textAlign: "left",
+            transition: "background 150ms ease",
           }}
         >
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div
+          <div
+            style={{
+              width: 34, height: 34, borderRadius: 9,
+              backgroundColor: PURPLE_TINT,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              flexShrink: 0,
+            }}
+          >
+            <IdCard size={18} strokeWidth={2} color={PURPLE} />
+          </div>
+          <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
+            <span
               style={{
-                fontSize: 15,
-                fontWeight: 700,
-                color: T.navy,
-                fontFamily: FONT,
-                lineHeight: 1.25,
+                fontSize: 14, fontWeight: 600, color: CHARCOAL,
+                letterSpacing: "-0.01em", fontFamily: FONT,
+                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
               }}
             >
               {planName} plan
-            </div>
+            </span>
+            <span style={{ fontSize: 11, color: MUTED, fontFamily: FONT }}>
+              {subtitle}
+            </span>
           </div>
           <ChevronDown
-            size={20}
-            color={T.blue}
-            strokeWidth={2.5}
+            size={16}
+            color="#999999"
+            strokeWidth={2.2}
             style={{
               flexShrink: 0,
               transition: "transform 0.2s ease",
@@ -2092,41 +2112,29 @@ function MembershipCard({
         {open && (
           <div
             style={{
-              padding: "0 18px 18px",
-              display: "flex",
-              flexDirection: "column",
-              gap: 10,
+              borderTop: `1px solid ${DIVIDER}`,
+              padding: "12px 14px",
+              fontSize: 12,
+              color: BODY,
+              fontFamily: FONT,
+              lineHeight: 1.5,
+              display: "flex", flexDirection: "column", gap: 10,
             }}
           >
-            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              <Star size={14} color={T.textMuted} strokeWidth={2} />
-              <span style={{ fontSize: 13, color: T.navy, fontFamily: FONT, fontWeight: 600 }}>
-                {planName}
-              </span>
-              {status && (
-                <span style={{ fontSize: 13, color: T.textMuted, fontFamily: FONT }}>
-                  · {status}
-                </span>
-              )}
+            <div>
+              Your {planName} plan is {status === "active" ? "active" : "available"}. View details to manage your membership.
             </div>
             <button
               type="button"
               onClick={() => navigate("/instructor/subscription")}
               style={{
-                marginTop: 4,
                 alignSelf: "flex-start",
-                background: T.blue,
-                color: "#fff",
-                border: 0,
-                cursor: "pointer",
-                borderRadius: 8,
-                padding: "8px 14px",
-                fontSize: 13,
-                fontWeight: 600,
-                fontFamily: FONT,
+                background: "transparent", border: 0, padding: 0,
+                color: BLUE, fontSize: 12, fontWeight: 600,
+                fontFamily: FONT, cursor: "pointer",
               }}
             >
-              Manage
+              Manage →
             </button>
           </div>
         )}
@@ -2136,3 +2144,4 @@ function MembershipCard({
 }
 
 export default MobileHomeDSM2026;
+
