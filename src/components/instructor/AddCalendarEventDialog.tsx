@@ -291,6 +291,19 @@ export function AddCalendarEventDialog({
       }
 
       toast.success('Lesson scheduled');
+      // Pupil push so they know the instructor booked them in.
+      supabase.functions.invoke('notify-pupil', {
+        body: {
+          pupilId: selectedPupil,
+          type: 'booking_confirmed',
+          data: {
+            type: 'booking_confirmed',
+            lessonDate: dateStr,
+            lessonTime: lessonStartTime,
+            durationMinutes,
+          },
+        },
+      }).catch((e) => console.error('notify-pupil failed:', e));
       resetForm();
       onSuccess();
     } catch (error) {

@@ -9,7 +9,18 @@ const corsHeaders = {
 
 interface NotifyPupilRequest {
   pupilId: string;
-  type: "slot_offer" | "lesson_reminder" | "lesson_cancelled" | "payment_confirmed" | "waitlist_match" | "en_route";
+  type:
+    | "slot_offer"
+    | "lesson_reminder"
+    | "lesson_cancelled"
+    | "booking_confirmed"
+    | "test_booking_confirmed"
+    | "payment_confirmed"
+    | "waitlist_match"
+    | "en_route"
+    | "arrived"
+    | "running_late"
+    | "payment_reminder";
   title?: string;
   body?: string;
   data?: Record<string, unknown>;
@@ -67,6 +78,14 @@ serve(async (req: Request) => {
           notificationTitle = "Lesson Cancelled";
           notificationBody = "Your lesson has been cancelled. Check your schedule for details.";
           break;
+        case "booking_confirmed":
+          notificationTitle = "Lesson Booked ✓";
+          notificationBody = "Your driving lesson has been added to your schedule.";
+          break;
+        case "test_booking_confirmed":
+          notificationTitle = "Driving Test Booked ✓";
+          notificationBody = "Your driving test has been added to your schedule.";
+          break;
         case "payment_confirmed":
           notificationTitle = "Payment Received ✓";
           notificationBody = "Your payment has been processed successfully.";
@@ -78,6 +97,18 @@ serve(async (req: Request) => {
         case "en_route":
           notificationTitle = "Your instructor is on the way! 🚗";
           notificationBody = "Get ready — your driving lesson is about to begin.";
+          break;
+        case "arrived":
+          notificationTitle = "Your instructor has arrived 🚗";
+          notificationBody = "Your instructor is outside and ready for your lesson.";
+          break;
+        case "running_late":
+          notificationTitle = "Instructor running late";
+          notificationBody = "Your instructor is running a few minutes behind. Updated ETA coming shortly.";
+          break;
+        case "payment_reminder":
+          notificationTitle = "Payment reminder";
+          notificationBody = "You have an outstanding balance with your instructor.";
           break;
         default:
           notificationTitle = "Notification";
