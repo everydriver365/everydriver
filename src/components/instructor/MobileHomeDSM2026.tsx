@@ -61,6 +61,8 @@ import {
   Briefcase,
   CalendarRange,
   AlertCircle,
+  PhoneOff,
+  Inbox,
   type LucideIcon,
 } from "lucide-react";
 import { format, addDays, getWeek, isSameDay, parse, parseISO } from "date-fns";
@@ -824,9 +826,9 @@ function NeedsAttentionCard({
   attention, stats, navigate,
 }: { attention: any; stats: any; navigate: ReturnType<typeof useNavigate> }) {
   type Key = "jobs" | "tests" | "calls" | "enquiries";
-  const [sectionsOpen, setSectionsOpen] = useState<boolean>(attention.urgentCount > 0);
+  const [sectionsOpen, setSectionsOpen] = useState<boolean>(true);
   const [openKey, setOpenKey] = useState<Key | null>(
-    attention.urgentCount > 0 ? "jobs" : null
+    attention.urgentCount > 0 ? "jobs" : "enquiries"
   );
   const toggle = (k: Key) => {
     setSectionsOpen(true);
@@ -836,51 +838,46 @@ function NeedsAttentionCard({
   const RED = "#c9302c";
   const RED_TINT = "#fbe8e8";
   const BLUE = "#2952b3";
+  const BLUE_TINT = "#e8eefb";
+  const GREY_TINT = "#f0f1f4";
+  const GREY_ICON = "#aaaaaa";
   const BORDER = "#e0e3ea";
   const MUTED = "#999999";
   const GREY_LIGHT = "#cccccc";
 
-  const cells: { key: Key; label: string; count: number; tint: boolean; valueColor: string }[] = [
-    { key: "jobs",      label: "Jobs",   count: attention.jobs ?? 0,     tint: true,  valueColor: RED },
-    { key: "tests",     label: "Tests",  count: attention.tests ?? 0,    tint: true,  valueColor: BLUE },
-    { key: "calls",     label: "Calls",  count: attention.calls ?? 0,    tint: false, valueColor: GREY_LIGHT },
-    { key: "enquiries", label: "Enq's",  count: attention.enquiries ?? 0, tint: false, valueColor: GREY_LIGHT },
+  const cells: { key: Key; label: string; count: number; bg: string; valueColor: string }[] = [
+    { key: "jobs",      label: "Jobs",   count: attention.jobs ?? 0,      bg: RED_TINT,     valueColor: RED },
+    { key: "tests",     label: "Tests",  count: attention.tests ?? 0,     bg: BLUE_TINT,    valueColor: BLUE },
+    { key: "calls",     label: "Calls",  count: attention.calls ?? 0,     bg: "transparent", valueColor: GREY_LIGHT },
+    { key: "enquiries", label: "Enq's",  count: attention.enquiries ?? 0, bg: "transparent", valueColor: GREY_LIGHT },
   ];
 
   const tiles: {
     key: Key; icon: LucideIcon; label: string; count: number;
-    urgent?: boolean; accent?: string; body: React.ReactNode;
+    urgent?: boolean; accent?: string; tint?: string; body: React.ReactNode;
   }[] = [
     {
       key: "jobs", icon: Briefcase, label: "Jobs",
-      count: attention.jobs, urgent: true, accent: RED,
-      body: attention.jobs === 0
-        ? <Empty>All clear</Empty>
-        : <JobsPreviewList navigate={navigate} />,
+      count: attention.jobs ?? 0, urgent: true, accent: RED, tint: RED_TINT,
+      body: (attention.jobs ?? 0) === 0
+        ? <EmptyState icon={Inbox}>No jobs to action</EmptyState>
+        : <SimpleMsg>{attention.jobs} job{attention.jobs === 1 ? "" : "s"} require{attention.jobs === 1 ? "s" : ""} your attention</SimpleMsg>,
     },
     {
       key: "tests", icon: Repeat2, label: "Tests",
-      count: attention.tests, urgent: true, accent: BLUE,
-      body: attention.testItems.length === 0
-        ? <Empty>All clear</Empty>
-        : (
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            {attention.testItems.map((it: any, idx: number) => (
-              <div key={it.id}>
-                {idx > 0 && (
-                  <div style={{ height: 1, backgroundColor: "rgba(15,32,68,0.08)", margin: "0 20px" }} />
-                )}
-                <UrgentBanner item={it} onPress={() => navigate(it.route)} />
-              </div>
-            ))}
-          </div>
-        ),
+      count: attention.tests ?? 0, urgent: true, accent: BLUE, tint: BLUE_TINT,
+      body: (attention.tests ?? 0) === 0
+        ? <EmptyState icon={Inbox}>No tests to review</EmptyState>
+        : <SimpleMsg>{attention.tests} test{attention.tests === 1 ? "" : "s"} are pending review</SimpleMsg>,
     },
     { key: "calls", icon: PhoneCall, label: "Calls",
-      count: attention.calls, body: <Empty>No missed calls</Empty> },
+      count: attention.calls ?? 0, accent: GREY_ICON, tint: GREY_TINT,
+      body: <EmptyState icon={PhoneOff}>No calls to action</EmptyState> },
     { key: "enquiries", icon: MessageSquare, label: "Enq's",
-      count: attention.enquiries, body: <Empty>No new enquiries</Empty> },
+      count: attention.enquiries ?? 0, accent: GREY_ICON, tint: GREY_TINT,
+      body: <EmptyState icon={Inbox}>No new enquiries</EmptyState> },
   ];
+
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -915,16 +912,16 @@ function NeedsAttentionCard({
         </div>
 
         {/* 4-col grid */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 }}>
           {cells.map((c) => (
             <button
               key={c.key}
               type="button"
               onClick={() => toggle(c.key)}
               style={{
-                background: c.tint ? RED_TINT : "transparent",
+                background: c.bg,
                 border: 0, borderRadius: 10,
-                padding: "10px 4px",
+                padding: 8,
                 display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
                 cursor: "pointer",
               }}
@@ -954,6 +951,7 @@ function NeedsAttentionCard({
               icon={t.icon}
               label={t.label}
               accent={t.accent}
+              tint={t.tint}
               outlined={t.urgent}
               badgeCount={t.count}
               open={openKey === t.key}
@@ -961,6 +959,7 @@ function NeedsAttentionCard({
             >
               {t.body}
             </ActionTile>
+
           ))}
         </div>
       )}
@@ -970,12 +969,12 @@ function NeedsAttentionCard({
 
 
 
-/* Horizontal strip action tile — icon left, label, badge, chevron right.
-   Tapping toggles inline expanded body. */
+/* Horizontal action tile with tinted icon box, count/clear pill, expandable body. */
 function ActionTile({
   icon: Icon,
   label,
   accent,
+  tint,
   outlined,
   badgeCount,
   open,
@@ -985,97 +984,94 @@ function ActionTile({
   icon: LucideIcon;
   label: string;
   accent?: string;
+  tint?: string;
   outlined?: boolean;
   badgeCount: number;
   open: boolean;
   onToggle: () => void;
   children: React.ReactNode;
 }) {
+  const BORDER = "#e0e3ea";
+  const DIVIDER = "#f0f1f4";
+  const HOVER = "#f8f9fb";
+  const CHARCOAL = "#1a1a1f";
+  const GREY_PILL_BG = "#f0f1f4";
+  const GREY_PILL_FG = "#888888";
+
   const isUrgent = !!outlined && (badgeCount ?? 0) > 0;
-  const labelColor = isUrgent ? (accent ?? T.red) : T.navy;
-  const iconColor = isUrgent ? (accent ?? T.red) : T.navy;
-  const iconOpacity = isUrgent ? 1 : 0.6;
-  const border = `1px solid ${T.border}`;
-  const hasItems = (badgeCount ?? 0) > 0;
-  const cleared = !hasItems && !isUrgent;
+  const iconColor = accent ?? "#aaaaaa";
+  const iconBg = tint ?? "#f0f1f4";
+  const showClearPill = !isUrgent;
 
   return (
     <div
       style={{
-        backgroundColor: T.white,
-        borderRadius: 16,
-        border,
-        boxShadow: "0 1px 3px rgba(15,32,68,0.06)",
+        backgroundColor: "#FFFFFF",
+        borderRadius: 14,
+        border: `1px solid ${BORDER}`,
         overflow: "hidden",
       }}
     >
       <button
         type="button"
         onClick={onToggle}
+        onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = HOVER; }}
+        onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
         style={{
-          width: "100%", padding: "14px 16px",
-          display: "flex", alignItems: "center", gap: 14,
+          width: "100%", padding: "12px 14px",
+          display: "flex", alignItems: "center", gap: 12,
           background: "transparent", border: 0, cursor: "pointer", textAlign: "left",
+          transition: "background 150ms ease",
         }}
       >
         <div
           style={{
-            width: 36, height: 36, display: "flex",
-            alignItems: "center", justifyContent: "center",
-            color: iconColor, opacity: iconOpacity, flexShrink: 0,
+            width: 34, height: 34, borderRadius: 9,
+            backgroundColor: iconBg,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            flexShrink: 0,
           }}
         >
-          <Icon size={22} strokeWidth={1.8} />
+          <Icon size={18} strokeWidth={2} color={iconColor} />
         </div>
-        <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 8 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
           <span
             style={{
-              fontSize: 15, fontWeight: 700, color: labelColor,
+              fontSize: 14, fontWeight: 600, color: CHARCOAL,
               letterSpacing: "-0.01em", fontFamily: FONT,
             }}
           >
             {label}
           </span>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
           {isUrgent ? (
             <span
               style={{
-                backgroundColor: accent ?? T.red, color: T.white,
-                borderRadius: 999, padding: "2px 8px",
-                fontSize: 10, fontWeight: 700, fontFamily: FONT,
+                backgroundColor: accent ?? "#c9302c", color: "#FFFFFF",
+                borderRadius: 999, padding: "2px 10px",
+                fontSize: 11, fontWeight: 700, fontFamily: FONT, minWidth: 24, textAlign: "center",
               }}
             >
               {badgeCount}
             </span>
-          ) : null}
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
-          {cleared ? (
+          ) : showClearPill ? (
             <span
               style={{
                 display: "inline-flex", alignItems: "center", gap: 4,
-                backgroundColor: "rgba(26,82,160,0.10)", color: T.blue,
-                borderRadius: 999, padding: "3px 10px",
-                fontSize: 11, fontWeight: 700, fontFamily: FONT,
+                backgroundColor: GREY_PILL_BG, color: GREY_PILL_FG,
+                borderRadius: 999, padding: "2px 10px",
+                fontSize: 11, fontWeight: 600, fontFamily: FONT,
               }}
             >
               ✓ Clear
             </span>
-          ) : !isUrgent && hasItems ? (
-            <span
-              style={{
-                backgroundColor: T.surface, color: T.navy,
-                borderRadius: 999, padding: "3px 10px",
-                fontSize: 11, fontWeight: 700, fontFamily: FONT,
-              }}
-            >
-              {badgeCount}
-            </span>
           ) : null}
           <ChevronDown
-            size={18}
-            strokeWidth={2}
+            size={16}
+            strokeWidth={2.2}
+            color="#999999"
             style={{
-              color: T.navy, opacity: 0.25,
               transform: open ? "rotate(180deg)" : "rotate(0deg)",
               transition: "transform .2s",
             }}
@@ -1083,13 +1079,36 @@ function ActionTile({
         </div>
       </button>
       {open ? (
-        <div style={{ borderTop: `1px solid ${T.divider}`, padding: "8px 0 10px" }}>
+        <div style={{ borderTop: `1px solid ${DIVIDER}`, padding: "12px 14px" }}>
           {children}
         </div>
       ) : null}
     </div>
   );
 }
+
+function SimpleMsg({ children }: { children: React.ReactNode }) {
+  return (
+    <div style={{ fontSize: 13, color: "#6E6E73", fontFamily: FONT, lineHeight: 1.4 }}>
+      {children}
+    </div>
+  );
+}
+
+function EmptyState({ icon: Icon, children }: { icon: LucideIcon; children: React.ReactNode }) {
+  return (
+    <div
+      style={{
+        display: "flex", flexDirection: "column", alignItems: "center", gap: 8,
+        padding: "12px 8px", fontFamily: FONT,
+      }}
+    >
+      <Icon size={22} strokeWidth={1.8} color="#cccccc" />
+      <span style={{ fontSize: 12, color: "#999999", fontFamily: FONT }}>{children}</span>
+    </div>
+  );
+}
+
 
 function Empty({ children }: { children: React.ReactNode }) {
   return (
