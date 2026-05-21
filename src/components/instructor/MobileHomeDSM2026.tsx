@@ -675,12 +675,24 @@ function NextLessonCard({
           padding: 13,
           cursor: "pointer",
           position: "relative",
-          backgroundImage: `url(${nextLessonCar})`,
-          backgroundRepeat: "no-repeat",
-          backgroundPosition: "right center",
-          backgroundSize: "auto 92%",
+          overflow: "hidden",
         }}
       >
+        <img
+          src={nextLessonCar}
+          alt=""
+          aria-hidden
+          style={{
+            position: "absolute",
+            right: -10,
+            top: -20,
+            height: "130%",
+            width: "auto",
+            pointerEvents: "none",
+            WebkitMaskImage: "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.2) 30%, #000 65%)",
+            maskImage: "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.2) 30%, #000 65%)",
+          }}
+        />
         <div
           style={{
             fontSize: 9, fontWeight: 700, color: T.textMuted,
