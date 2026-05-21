@@ -35,9 +35,10 @@ interface PaymentRecord {
 interface PaymentHistoryProps {
   instructorId: string;
   limit?: number;
+  monthOnly?: boolean;
 }
 
-export function PaymentHistory({ instructorId, limit = 10 }: PaymentHistoryProps) {
+export function PaymentHistory({ instructorId, limit = 10, monthOnly = false }: PaymentHistoryProps) {
   const [payments, setPayments] = useState<PaymentRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState<string | null>(null);
@@ -45,7 +46,7 @@ export function PaymentHistory({ instructorId, limit = 10 }: PaymentHistoryProps
   const fetchPayments = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from("payment_history")
         .select(`
           id,
@@ -57,7 +58,14 @@ export function PaymentHistory({ instructorId, limit = 10 }: PaymentHistoryProps
           pupils (name)
         `)
         .eq("instructor_id", instructorId)
-        .is("deleted_at", null)
+        .is("deleted_at", null);
+
+      if (monthOnly) {
+        const monthStartIso = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
+        query = query.gte("recorded_at", monthStartIso);
+      }
+
+      const { data, error } = await query
         .order("recorded_at", { ascending: false })
         .limit(limit);
 
