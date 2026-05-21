@@ -162,6 +162,55 @@ Deno.serve(async (req) => {
       console.error("[record-payment] receipt block error:", e);
     }
 
+    // Fire instructor push (non-blocking) for cash / bank — Square flow
+    // already fires from square-webhook. Refunds get their own framing.
+    if (!body.isRefund) {
+      try {
+        const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+        const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+        await fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${supabaseServiceKey}`,
+          },
+          body: JSON.stringify({
+            instructorId,
+            category: "payment",
+            importance: "normal",
+            notification: {
+              title: "💰 Payment Received",
+              body: `£${positive.toFixed(2)} received from ${pupil.name || "a pupil"} via ${methodLabel}`,
+              tag: `payment-received-${inserted?.id ?? Date.now()}`,
+              data: { type: "payment_received", pupilId: body.pupilId, amount: positive, method: methodLabel },
+            },
+          }),
+        }).catch((e) => console.error("[record-payment] push fire failed:", e));
+      } catch (e) {
+        console.error("[record-payment] push block error:", e);
+      }
+
+      // Notify pupil (non-blocking) that their payment was confirmed.
+      try {
+        const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+        const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+        await fetch(`${supabaseUrl}/functions/v1/notify-pupil`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${supabaseServiceKey}`,
+          },
+          body: JSON.stringify({
+            pupilId: body.pupilId,
+            type: "payment_confirmed",
+            data: { type: "payment_confirmed", amount: positive, method: methodLabel },
+          }),
+        }).catch((e) => console.error("[record-payment] pupil notify failed:", e));
+      } catch (e) {
+        console.error("[record-payment] pupil notify block error:", e);
+      }
+    }
+
     return json({
       ok: true,
       kind: body.method,
