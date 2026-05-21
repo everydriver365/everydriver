@@ -246,20 +246,20 @@ export function ScheduleTile({ lessons, onAddLesson, onFillGaps, onLessonClick }
       )}
 
       {/* Footer */}
-      <div className="flex" style={{ gap: 10, marginTop: 12 }}>
+      <div className="flex" style={{ gap: 8, marginTop: 12 }}>
         <button
           type="button"
           onClick={onAddLesson}
           className="flex-1 flex items-center justify-center"
           style={{
             background: C.green, color: "#FFFFFF",
-            border: 0, borderRadius: 14,
-            padding: "15px 14px",
-            fontSize: 14, fontWeight: 600, cursor: "pointer", gap: 6,
+            border: 0, borderRadius: 12,
+            padding: "10px 12px",
+            fontSize: 13, fontWeight: 600, cursor: "pointer", gap: 6,
             fontFamily: FONT,
           }}
         >
-          <Plus size={16} strokeWidth={2.5} color="#FFFFFF" /> Add lesson
+          <Plus size={14} strokeWidth={2.5} color="#FFFFFF" /> Add lesson
         </button>
         <button
           type="button"
@@ -267,15 +267,16 @@ export function ScheduleTile({ lessons, onAddLesson, onFillGaps, onLessonClick }
           className="flex-1 flex items-center justify-center"
           style={{
             background: C.blue, color: "#FFFFFF",
-            border: 0, borderRadius: 14,
-            padding: "15px 14px",
-            fontSize: 14, fontWeight: 600, cursor: "pointer", gap: 6,
+            border: 0, borderRadius: 12,
+            padding: "10px 12px",
+            fontSize: 13, fontWeight: 600, cursor: "pointer", gap: 6,
             fontFamily: FONT,
           }}
         >
-          <RefreshCw size={16} strokeWidth={2.5} color="#FFFFFF" /> Fill gaps
+          <RefreshCw size={14} strokeWidth={2.5} color="#FFFFFF" /> Fill gaps
         </button>
       </div>
+
     </div>
   );
 }
