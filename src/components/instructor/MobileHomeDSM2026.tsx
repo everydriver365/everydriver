@@ -1853,18 +1853,34 @@ function QuickAccessCard({ navigate }: { navigate: ReturnType<typeof useNavigate
           marginBottom: 10,
         }}
       >
-        <span
-          style={{
-            fontSize: 10,
-            fontWeight: 700,
-            color: MUTED,
-            letterSpacing: 1.2,
-            textTransform: "uppercase",
-            fontFamily: FONT,
-          }}
-        >
-          Quick access
-        </span>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span
+            style={{
+              fontSize: 10,
+              fontWeight: 700,
+              color: MUTED,
+              letterSpacing: 1.2,
+              textTransform: "uppercase",
+              fontFamily: FONT,
+            }}
+          >
+            Quick access
+          </span>
+          <button
+            type="button"
+            onClick={() => setSearchExpanded((v) => !v)}
+            aria-label="Search tools"
+            style={{
+              width: 22, height: 22, borderRadius: 999,
+              background: searchExpanded ? ACTION_BLUE : "#fff",
+              border: `1px solid ${BORDER}`,
+              display: "inline-flex", alignItems: "center", justifyContent: "center",
+              cursor: "pointer", padding: 0,
+            }}
+          >
+            <Search size={12} color={searchExpanded ? "#fff" : MUTED} strokeWidth={2} />
+          </button>
+        </div>
         <button
           type="button"
           onClick={() => setEditOpen(true)}
@@ -1878,42 +1894,53 @@ function QuickAccessCard({ navigate }: { navigate: ReturnType<typeof useNavigate
         </button>
       </div>
 
-      {/* Search */}
+      {/* Expandable Search */}
       <div
         style={{
-          background: "#fff",
-          borderRadius: 12,
-          padding: "11px 14px",
-          display: "flex",
-          alignItems: "center",
-          gap: 10,
-          marginBottom: 12,
-          border: `1px solid ${BORDER}`,
+          overflow: "hidden",
+          maxHeight: searchExpanded ? 60 : 0,
+          opacity: searchExpanded ? 1 : 0,
+          marginBottom: searchExpanded ? 12 : 0,
+          transition: "max-height 200ms ease, opacity 200ms ease, margin-bottom 200ms ease",
         }}
       >
-        <Search size={16} color={PLACEHOLDER} strokeWidth={2} />
-        <input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder={`Search all ${QUICK_ACCESS.length} tools…`}
+        <div
           style={{
-            flex: 1, background: "transparent", border: 0, outline: "none",
-            fontSize: 14, color: CHARCOAL, fontFamily: FONT, minWidth: 0, padding: 0,
+            background: "#fff",
+            borderRadius: 12,
+            padding: "11px 14px",
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            border: `1px solid ${BORDER}`,
           }}
-          className="qa-search-input"
-        />
+        >
+          <Search size={16} color={PLACEHOLDER} strokeWidth={2} />
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={`Search all ${QUICK_ACCESS.length} tools…`}
+            autoFocus={searchExpanded}
+            style={{
+              flex: 1, background: "transparent", border: 0, outline: "none",
+              fontSize: 14, color: CHARCOAL, fontFamily: FONT, minWidth: 0, padding: 0,
+            }}
+            className="qa-search-input"
+          />
 
-        {query.length > 0 ? (
-          <button
-            type="button"
-            onClick={() => setQuery("")}
-            style={{ background: "transparent", border: 0, cursor: "pointer", padding: 0, color: "#C7C7CC", fontSize: 16, lineHeight: 1 }}
-            aria-label="Clear search"
-          >
-            ×
-          </button>
-        ) : null}
+          {query.length > 0 ? (
+            <button
+              type="button"
+              onClick={() => setQuery("")}
+              style={{ background: "transparent", border: 0, cursor: "pointer", padding: 0, color: "#C7C7CC", fontSize: 16, lineHeight: 1 }}
+              aria-label="Clear search"
+            >
+              ×
+            </button>
+          ) : null}
+        </div>
       </div>
+
 
       {/* 2×2 Scrollable paged grid */}
       {sourceTiles.length === 0 ? (
