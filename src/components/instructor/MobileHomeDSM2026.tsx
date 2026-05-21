@@ -557,8 +557,7 @@ function TodayStrip({ stats, loading }: { stats: any; loading?: boolean }) {
               textAlign: "center",
               whiteSpace: "nowrap",
             }}
-          >
-            {item.value}
+            {loading ? <Shimmer width={48} height={item.valueSize} radius={4} /> : item.value}
           </div>
           <div
             style={{
