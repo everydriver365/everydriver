@@ -387,14 +387,15 @@ export default function InstructorPay() {
 
         <div className="grid grid-cols-2 gap-[10px] auto-rows-fr">
           {/* Owes Money */}
-          <div className={cn(owesExpanded && "col-span-2")}>
+          <div className={cn("h-full", owesExpanded && "col-span-2")}>
             <motion.button
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.12 }}
               whileTap={{ scale: 0.97 }}
               onClick={() => { haptics.selection(); setOwesExpanded(!owesExpanded); }}
-              style={tileStyle} className="w-full text-left"
+              style={tileStyle} className="w-full h-full text-left"
+
             >
               <div style={{ padding: 14, minHeight: 120, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
                 <div style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: "#FEF2F2", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
@@ -458,14 +459,15 @@ export default function InstructorPay() {
           </div>
 
           {/* Recent Payments */}
-          <div className={cn(paymentsExpanded && "col-span-2")}>
+          <div className={cn("h-full", paymentsExpanded && "col-span-2")}>
             <motion.button
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.16 }}
               whileTap={{ scale: 0.97 }}
               onClick={() => { haptics.selection(); setPaymentsExpanded(!paymentsExpanded); }}
-              style={tileStyle} className="w-full text-left"
+              style={tileStyle} className="w-full h-full text-left"
+
             >
               <div style={{ padding: 14, minHeight: 120, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
                 <div style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: "#DBEAFE", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
@@ -497,7 +499,8 @@ export default function InstructorPay() {
           </div>
 
           {/* Course Rewards */}
-          <div>
+          <div className="h-full">
+
             <Link to="/instructor/bonus" onClick={() => haptics.selection()} className="block h-full">
               <motion.div
                 initial={{ opacity: 0, y: 12 }}
@@ -522,14 +525,15 @@ export default function InstructorPay() {
 
 
           {/* Pupil Balances */}
-          <div className={cn(balancesExpanded && "col-span-2")}>
+          <div className={cn("h-full", balancesExpanded && "col-span-2")}>
             <motion.button
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.24 }}
               whileTap={{ scale: 0.97 }}
               onClick={() => { haptics.selection(); setBalancesExpanded(!balancesExpanded); }}
-              style={tileStyle} className="w-full text-left"
+              style={tileStyle} className="w-full h-full text-left"
+
             >
               <div style={{ padding: 14, minHeight: 120, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
                 <div style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: "#E8ECF1", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
