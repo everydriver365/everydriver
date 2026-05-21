@@ -1117,7 +1117,7 @@ function SectionPanel({
           ? empty("No calls to action", PhoneOff)
           : items.map((c) => (
               <button key={c.sessionId} type="button" style={rowStyle}
-                onClick={() => navigate("/instructor/messages")}>
+                onClick={() => navigate(`/instructor/messages?session=${c.sessionId}`)}>
                 <div style={{ minWidth: 0, flex: 1 }}>
                   <div style={titleStyle}>{c.visitorName || "Visitor"}</div>
                   <div style={subStyle}>{c.preview}</div>
