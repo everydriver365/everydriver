@@ -17,7 +17,7 @@ interface EarningsData {
   thisMonth: number;
   lastMonth: number;
   hoursThisMonth: number;
-  hourlyRate: number;
+  hourlyRate: number | null;
 }
 
 export function useDailyEarnings(instructorId: string | undefined) {
@@ -32,7 +32,7 @@ export function useDailyEarnings(instructorId: string | undefined) {
           thisMonth: 0,
           lastMonth: 0,
           hoursThisMonth: 0,
-          hourlyRate: 40,
+          hourlyRate: null,
         };
       }
 
@@ -46,7 +46,14 @@ export function useDailyEarnings(instructorId: string | undefined) {
         fetchInstructorPostcodeRules(instructorId),
       ]);
 
-      const hourlyRate = instructor?.hourly_rate || 40;
+      // No fallback: surface missing rate as null so UI can prompt setup.
+      // Pricing math still needs a number; use 0 so missing-rate lessons
+      // contribute £0 rather than fabricating a rate.
+      const hourlyRate: number | null =
+        typeof instructor?.hourly_rate === "number" && instructor.hourly_rate > 0
+          ? instructor.hourly_rate
+          : null;
+      const rateForMath = hourlyRate ?? 0;
 
       const lessonSelect = "lesson_date, duration_minutes, pupils!inner (postcode, custom_hourly_rate, custom_rate_90min, custom_rate_120min)";
 
