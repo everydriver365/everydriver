@@ -677,8 +677,10 @@ function NextLessonCard({
           position: "relative",
           backgroundImage: `url(${nextLessonCar})`,
           backgroundRepeat: "no-repeat",
-          backgroundPosition: "right center",
-          backgroundSize: "auto 92%",
+          backgroundPosition: "right -10px top -20px",
+          backgroundSize: "auto 130%",
+          WebkitMaskImage: "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.15) 35%, #000 70%)",
+          maskImage: "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.15) 35%, #000 70%)",
         }}
       >
         <div
