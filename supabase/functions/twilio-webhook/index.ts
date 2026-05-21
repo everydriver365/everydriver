@@ -463,6 +463,8 @@ const handler = async (req: Request): Promise<Response> => {
           },
           body: JSON.stringify({
             instructorId: firstOffer.instructor_id,
+            category: NotifyCategory.LESSON,
+            importance: NotifyImportance.NORMAL,
             notification,
           }),
         });
