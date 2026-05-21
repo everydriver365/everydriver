@@ -56,19 +56,23 @@ const App = () => (
                   <CustomDomainCanonical />
                   <DynamicPWAMeta />
                   <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>}>
-                    <Routes>
-                      <Route path="/" element={<ConditionalHome />} />
-                      <Route path="/index" element={<ConditionalHome />} />
-                      {isEveryDriverHost() ? everydriverRoutes : publicRoutes}
-                      {instructorPortalRoutes}
-                      {instructorAppRoutes}
-                      {adminRoutes}
-                      {demoRoutes}
-                      {everyInstructorRoutes}
-                      {schoolRoutes}
-                      {parentRoutes}
-                      <Route path="*" element={<NotFound />} />
-                    </Routes>
+                    <MFAGate>
+                      <Routes>
+                        <Route path="/" element={<ConditionalHome />} />
+                        <Route path="/index" element={<ConditionalHome />} />
+                        <Route path="/2fa-challenge" element={<MFAChallenge />} />
+                        <Route path="/admin/2fa-enrol" element={<Admin2FAEnrol />} />
+                        {isEveryDriverHost() ? everydriverRoutes : publicRoutes}
+                        {instructorPortalRoutes}
+                        {instructorAppRoutes}
+                        {adminRoutes}
+                        {demoRoutes}
+                        {everyInstructorRoutes}
+                        {schoolRoutes}
+                        {parentRoutes}
+                        <Route path="*" element={<NotFound />} />
+                      </Routes>
+                    </MFAGate>
                   </Suspense>
                 </>
                 </ModulesProvider>
