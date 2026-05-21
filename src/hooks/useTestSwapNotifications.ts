@@ -39,15 +39,8 @@ export function useTestSwapNotifications(instructorId: string | undefined) {
         matchingTests = count || 0;
       }
 
-      // Count scraped_match records for this instructor directly
-      const { count: scrapedMatches } = await supabase
-        .from("test_slot_reservations" as any)
-        .select("*", { count: "exact", head: true })
-        .eq("instructor_id", instructorId)
-        .eq("status", "scraped_match");
+      return (pendingOffers || 0) + matchingTests;
 
-      return (pendingOffers || 0) + matchingTests + (scrapedMatches || 0);
-    },
     enabled: !!instructorId,
     refetchInterval: 30_000,
     staleTime: 15_000,
