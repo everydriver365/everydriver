@@ -235,10 +235,27 @@ export function RefundModal({
         });
         if (balErr) throw balErr;
 
+        // Fire refund receipt email (non-blocking) for non-Square refunds
+        const methodLabel =
+          method === "cash" ? "Cash" :
+          method === "bank_transfer" ? "Bank Transfer" :
+          method === "card" ? "Card" : method;
+        supabase.functions.invoke("send-payment-receipt", {
+          body: {
+            pupilId,
+            instructorId,
+            amount: Math.abs(parsedAmount),
+            paymentMethod: methodLabel,
+            transactionReference: `manual-refund-${Date.now()}`,
+            type: "refund",
+          },
+        }).catch((e) => console.error("Refund receipt fire failed:", e));
+
         toast.success(
           `${formatCurrency(parsedAmount)} refunded to ${titleCaseName(pupil?.name || "pupil")}`
         );
       }
+
       invalidatePaymentQueries({ pupilId, instructorId });
       handleClose(false);
       onRefunded?.();
