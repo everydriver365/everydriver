@@ -738,11 +738,13 @@ async function notifyInstructor(supabase: any, supabaseUrl: string, instructorId
       },
       body: JSON.stringify({
         instructorId,
+        category: NotifyCategory.LESSON,
+        importance: NotifyImportance.NORMAL,
         notification: {
           title: "WhatsApp: New message needs attention",
           body: `${senderName}: ${message.substring(0, 100)}`,
           tag: "whatsapp-handoff",
-          data: { type: "whatsapp_handoff" },
+          data: { type: PushDataType.WHATSAPP_HANDOFF },
         },
       }),
     });
