@@ -717,29 +717,13 @@ export default function InstructorProfileDesktop() {
                 action={<OutlineBtn>Change password</OutlineBtn>}
               />
               <SecurityRow
-                title={<>Two-factor authentication <span style={verifiedPill}>ON</span></>}
-                sub="Code via authenticator app · Recovery codes generated"
-                action={<Toggle on={profile.security.twoFactor} onChange={(v) => patch("security", { twoFactor: v })} />}
-              />
-              <SecurityRow
-                title="Active sessions"
-                sub="3 devices · iPhone (this), Mac, iPad"
-                action={<OutlineBtn>Manage</OutlineBtn>}
-              />
-              <SecurityRow
-                title="Login alerts"
-                sub="Email me whenever a new device signs in"
-                action={<Toggle on={profile.security.loginAlerts} onChange={(v) => patch("security", { loginAlerts: v })} />}
-              />
-              <SecurityRow
-                title="Recovery codes"
-                sub="Last viewed 3 months ago"
+                title="Two-factor authentication"
+                sub="Manage authenticator app and recovery codes in Login & Security."
                 last
                 action={
-                  <div style={{ display: "flex", gap: 6 }}>
-                    <OutlineBtn>View</OutlineBtn>
-                    <OutlineBtn>Regenerate</OutlineBtn>
-                  </div>
+                  <a href="/instructor/settings/login-security">
+                    <OutlineBtn>Open settings</OutlineBtn>
+                  </a>
                 }
               />
             </div>
