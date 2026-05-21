@@ -184,6 +184,7 @@ export function TakePaymentModal({
             cancelUrl: `https://drive365.co.uk/pay/${instructorId}?cancelled=true`,
             instructorId,
             pupilId: isManualOnly ? undefined : selectedPupilId,
+            platformFeePence: hasFee ? Math.round(adminFee * 100) : 0,
           },
         });
 
