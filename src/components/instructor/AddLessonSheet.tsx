@@ -747,6 +747,20 @@ export function AddLessonSheet({
         return { ok: false, error: 'Could not add to Google Calendar — slot released' };
       }
       toast.success(isDrivingTest ? 'Test scheduled!' : isRecurring ? `${weeks} lessons scheduled` : 'Lesson scheduled');
+      // Fire-and-forget pupil push so the learner knows the instructor booked them in.
+      supabase.functions.invoke('notify-pupil', {
+        body: {
+          pupilId: selectedPupil,
+          type: isDrivingTest ? 'test_booking_confirmed' : 'booking_confirmed',
+          data: {
+            type: isDrivingTest ? 'test_booking_confirmed' : 'booking_confirmed',
+            lessonDate: format(lessonDate!, 'yyyy-MM-dd'),
+            lessonTime: lessonStartTime,
+            durationMinutes,
+            count: lessons.length,
+          },
+        },
+      }).catch((e) => console.error('notify-pupil failed:', e));
       handlePostSavePayment(selectedPupil);
       invalidateLessonQueries(queryClient);
       resetForm(); onOpenChange(false); onSuccess();
