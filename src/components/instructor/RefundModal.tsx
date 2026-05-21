@@ -195,10 +195,15 @@ export function RefundModal({
       toast.error(`Refund cannot exceed original payment of ${formatCurrency(squareCap)}`);
       return;
     }
-
+    setSaving(true);
+    try {
+      if (method === "square") {
+        if (!selectedSquarePaymentId) {
+          toast.error("Pick the Square payment to refund");
           setSaving(false);
           return;
         }
+
         const { data, error } = await supabase.functions.invoke("square-refund", {
           body: {
             paymentHistoryId: selectedSquarePaymentId,
