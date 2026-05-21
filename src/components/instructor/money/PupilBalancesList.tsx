@@ -15,11 +15,13 @@ interface Pupil {
 interface PupilBalancesListProps {
   pupils: Pupil[];
   limit?: number;
+  creditOnly?: boolean;
 }
 
-export function PupilBalancesList({ pupils, limit = 5 }: PupilBalancesListProps) {
-  // Sort by balance (debt first, then credit)
+export function PupilBalancesList({ pupils, limit = 5, creditOnly = false }: PupilBalancesListProps) {
+  // Sort by balance (debt first, then credit). If creditOnly, only positive balances.
   const sortedPupils = [...pupils]
+    .filter((p) => (creditOnly ? (p.account_balance || 0) > 0 : true))
     .sort((a, b) => (a.account_balance || 0) - (b.account_balance || 0))
     .slice(0, limit);
 
