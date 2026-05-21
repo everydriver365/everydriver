@@ -693,8 +693,10 @@ function NextLessonCard({
             objectPosition: "center 25%",
             opacity: 0.85,
             pointerEvents: "none",
-            WebkitMaskImage: "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.7) 35%, #000 100%)",
-            maskImage: "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.7) 35%, #000 100%)",
+            WebkitMaskImage: "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.7) 35%, #000 100%), linear-gradient(to bottom, #000 0%, #000 60%, rgba(0,0,0,0.5) 85%, transparent 100%)",
+            WebkitMaskComposite: "source-in",
+            maskImage: "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.7) 35%, #000 100%), linear-gradient(to bottom, #000 0%, #000 60%, rgba(0,0,0,0.5) 85%, transparent 100%)",
+            maskComposite: "intersect",
           }}
         />
         <div
