@@ -88,13 +88,52 @@ export function RefundModal({
 
   const parsedAmount = parseFloat(amount) || 0;
   const selectedSquarePayment = squarePayments.find((p) => p.id === selectedSquarePaymentId);
+
+  // For Square refunds: cap at original payment amount, and fetch original platform
+  // commission so we can preview the proportional fee reversal and the net balance
+  // reduction the pupil will see (pupil's card receives the gross refund amount).
+  const squareCap = selectedSquarePayment?.amount ?? 0;
+  const exceedsOriginal = method === "square" && selectedSquarePayment && parsedAmount > squareCap + 0.005;
+
+  // Extract original square payment ID from notes to look up commission
+  const originalSquareId = useMemo(() => {
+    if (!selectedSquarePayment) return null;
+    const m = String(selectedSquarePayment.notes || "").match(/ID:\s*([A-Za-z0-9_-]+)/);
+    return m?.[1] ?? null;
+  }, [selectedSquarePayment]);
+
+  const [originalFee, setOriginalFee] = useState<number | null>(null);
+  useEffect(() => {
+    if (!originalSquareId) { setOriginalFee(null); return; }
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("platform_commissions")
+        .select("commission_amount")
+        .eq("source_id", originalSquareId)
+        .maybeSingle();
+      if (cancelled) return;
+      setOriginalFee(data ? Number((data as any).commission_amount || 0) : 0);
+    })();
+    return () => { cancelled = true; };
+  }, [originalSquareId]);
+
+  const feeReversal = method === "square" && selectedSquarePayment && originalFee != null && squareCap > 0
+    ? +(originalFee * (parsedAmount / squareCap)).toFixed(2)
+    : 0;
+  const netBalanceReduction = method === "square"
+    ? Math.max(0, +(parsedAmount - feeReversal).toFixed(2))
+    : parsedAmount;
+
   const canSave =
     !!pupilId &&
     parsedAmount > 0 &&
     !saving &&
+    !exceedsOriginal &&
     (method !== "square" || !!selectedSquarePaymentId);
 
   const METHOD_OPTIONS = squareConnected ? [SQUARE_OPTION, ...METHOD_OPTIONS_BASE] : METHOD_OPTIONS_BASE;
+
 
   // Fetch this pupil's refundable Square payments when in Square mode
   useEffect(() => {
