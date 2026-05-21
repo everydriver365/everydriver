@@ -385,7 +385,7 @@ export default function InstructorPay() {
 
         {/* ── Summary Tiles 2×2 ── */}
 
-        <div className="grid grid-cols-2 gap-[10px]">
+        <div className="grid grid-cols-2 gap-[10px] auto-rows-fr">
           {/* Owes Money */}
           <div className={cn(owesExpanded && "col-span-2")}>
             <motion.button
@@ -498,13 +498,13 @@ export default function InstructorPay() {
 
           {/* Course Rewards */}
           <div>
-            <Link to="/instructor/bonus" onClick={() => haptics.selection()}>
+            <Link to="/instructor/bonus" onClick={() => haptics.selection()} className="block h-full">
               <motion.div
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.20 }}
                 whileTap={{ scale: 0.97 }}
-                style={tileStyle} className="w-full text-left block"
+                style={tileStyle} className="w-full text-left block h-full"
               >
                 <div style={{ padding: 14, minHeight: 120, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
                   <div style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: "#FEF3C7", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
@@ -519,6 +519,7 @@ export default function InstructorPay() {
               </motion.div>
             </Link>
           </div>
+
 
           {/* Pupil Balances */}
           <div className={cn(balancesExpanded && "col-span-2")}>
@@ -656,7 +657,12 @@ export default function InstructorPay() {
         instructorName={instructorName}
         instructorId={instructorId}
         pupils={pupils}
+        onPaymentReceived={() => {
+          fetchPupils();
+          fetchRecentPaymentCount();
+        }}
       />
+
 
       <RefundModal
         open={refundModalOpen}
