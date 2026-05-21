@@ -1476,11 +1476,13 @@ function QuickAccessCard({ navigate }: { navigate: ReturnType<typeof useNavigate
   };
 
   const VISIBLE = 4;
-  const BORDER = "#e0dfd9";
-  const OUTER_BG = "#f0efe9";
+  const BORDER = "#e0e3ea";
+  const OUTER_BG = "#F2F4F8";
   const CHARCOAL = "#1a1a1f";
-  const MUTED = "#888888";
+  const MUTED = "#999999";
+  const PLACEHOLDER = "#bbbbbb";
   const ACTION_BLUE = "#2952b3";
+
 
   const sourceTiles = filtered ?? pinnedItems;
   const pages: QAItem[][] = [];
