@@ -686,7 +686,7 @@ function NextLessonCard({
             position: "absolute",
             zIndex: 0,
             right: -30,
-            top: -40,
+            top: -45,
             height: "100%",
             width: "65%",
             objectFit: "cover",
