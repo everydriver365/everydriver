@@ -125,6 +125,7 @@ export default function InstructorPay() {
           try { haptics.success(); } catch {}
           fetchPupils();
           fetchRecentPaymentCount();
+          refreshEarnings();
         }
       )
       .subscribe();
