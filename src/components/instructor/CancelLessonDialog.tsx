@@ -195,20 +195,27 @@ export function CancelLessonDialog({
       }
 
       if (notifyPupil) {
+        // Push the pupil that their lesson was cancelled (with refund context).
         try {
-          await supabase.functions.invoke("notify-instructor", {
+          await supabase.functions.invoke("notify-pupil", {
             body: {
-              instructorId,
-              type: "cancellation",
-              pupilName,
-              lessonDate,
-              lessonTime,
-              chargeApplied: chargeAmount > 0,
+              pupilId,
+              type: "lesson_cancelled",
+              data: {
+                type: "lesson_cancelled",
+                lessonDate,
+                lessonTime,
+                chargeApplied: chargeAmount > 0,
+                chargeAmount: chargeAmount > 0 ? chargeAmount : undefined,
+              },
             },
           });
-        } catch (smsError) {
-          console.error("Failed to send cancellation SMS:", smsError);
+        } catch (pupilNotifyError) {
+          console.error("Failed to notify pupil of cancellation:", pupilNotifyError);
         }
+        // Self-notification on the cancelling instructor is suppressed —
+        // they just performed the action. (Admin-path cancellations should
+        // route through their own caller if they need to alert the instructor.)
       }
 
       triggerAutomations({
