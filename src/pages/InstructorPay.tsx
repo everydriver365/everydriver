@@ -584,7 +584,7 @@ export default function InstructorPay() {
                         : ""
                   )}
                 >
-                  <div style={{ padding: "14px", display: "flex", flexDirection: "column", gap: 12 }}>
+                  <div style={{ padding: "14px", display: "flex", flexDirection: "column", gap: 12, minHeight: 110, justifyContent: "space-between" }}>
                     <div
                       style={{
                         width: 44,
