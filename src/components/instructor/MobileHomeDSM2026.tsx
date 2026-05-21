@@ -956,6 +956,7 @@ function NeedsAttentionCard({
                 key={c.key}
                 type="button"
                 onClick={() => toggle(c.key)}
+                aria-expanded={active}
                 style={{
                   background: c.bg,
                   border: active ? `1px solid ${BORDER}` : "1px solid transparent",
@@ -963,7 +964,7 @@ function NeedsAttentionCard({
                   padding: 8,
                   display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
                   cursor: "pointer",
-                  transition: "border-color 150ms ease",
+                  transition: "border-color 200ms ease, background-color 200ms ease",
                 }}
               >
                 <span style={{ fontSize: 20, fontWeight: 800, color: c.valueColor, fontFamily: FONT, lineHeight: 1 }}>
@@ -977,19 +978,49 @@ function NeedsAttentionCard({
                 >
                   {c.label}
                 </span>
+                <ChevronDown
+                  size={12}
+                  strokeWidth={2.4}
+                  color={active ? c.valueColor : MUTED}
+                  style={{
+                    marginTop: 1,
+                    transform: active ? "rotate(180deg)" : "rotate(0deg)",
+                    transition: "transform 260ms cubic-bezier(0.4, 0, 0.2, 1), color 200ms ease",
+                  }}
+                />
               </button>
             );
           })}
         </div>
       </div>
 
-      {/* Inline live list — only the active section renders, no extra header */}
-      {openKey ? (
-        <SectionPanel sectionKey={openKey} instructorId={instructorId} navigate={navigate} />
-      ) : null}
+      {/* Smooth expand/collapse — grid-row trick animates height for any content */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateRows: openKey ? "1fr" : "0fr",
+          transition: "grid-template-rows 300ms cubic-bezier(0.4, 0, 0.2, 1)",
+        }}
+        aria-hidden={!openKey}
+      >
+        <div style={{ overflow: "hidden" }}>
+          <div
+            key={openKey ?? "closed"}
+            style={{
+              opacity: openKey ? 1 : 0,
+              transition: "opacity 220ms ease 60ms",
+            }}
+          >
+            {openKey ? (
+              <SectionPanel sectionKey={openKey} instructorId={instructorId} navigate={navigate} />
+            ) : null}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
+
 
 
 /* ===================== SectionPanel (inline live list) ===================== */
