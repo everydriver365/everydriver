@@ -13,6 +13,7 @@ import { StepLessonSummary } from "./end-lesson/StepLessonSummary";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { triggerAutomations } from "@/utils/triggerAutomations";
 import { logAudit } from "@/lib/auditLogger";
+import { NotifyCategory, NotifyImportance, PushDataType } from "@/lib/notificationTypes";
 
 interface EndLessonWizardProps {
   open: boolean;
