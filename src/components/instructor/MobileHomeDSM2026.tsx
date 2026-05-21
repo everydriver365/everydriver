@@ -693,9 +693,9 @@ function NextLessonCard({
             objectPosition: "center 25%",
             opacity: 1,
             pointerEvents: "none",
-            WebkitMaskImage: "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.7) 35%, #000 100%), linear-gradient(to bottom, #000 0%, #000 60%, rgba(0,0,0,0.5) 85%, transparent 100%)",
+            WebkitMaskImage: "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.9) 25%, #000 60%), linear-gradient(to bottom, #000 0%, #000 65%, rgba(0,0,0,0.5) 88%, transparent 100%)",
             WebkitMaskComposite: "source-in",
-            maskImage: "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.7) 35%, #000 100%), linear-gradient(to bottom, #000 0%, #000 60%, rgba(0,0,0,0.5) 85%, transparent 100%)",
+            maskImage: "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.9) 25%, #000 60%), linear-gradient(to bottom, #000 0%, #000 65%, rgba(0,0,0,0.5) 88%, transparent 100%)",
             maskComposite: "intersect",
           }}
         />
