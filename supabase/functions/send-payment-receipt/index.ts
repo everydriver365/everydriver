@@ -25,7 +25,14 @@ serve(async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { pupilId, instructorId, amount, paymentMethod, transactionReference, receiptUrl }: PaymentReceiptRequest = await req.json();
+    const { pupilId, instructorId, amount, paymentMethod, transactionReference, receiptUrl, type }: PaymentReceiptRequest = await req.json();
+    const isRefund = type === "refund";
+    const headerTitle = isRefund ? "Refund Receipt" : "Payment Receipt";
+    const headerSub = isRefund ? "Your refund has been processed." : "Thank you for your payment!";
+    const amountLabel = isRefund ? "Amount Refunded" : "Amount Paid";
+    const bodyIntro = isRefund
+      ? "We've processed a refund on your account. Here's your receipt for your records."
+      : "We've received your payment. Here's your receipt for your records.";
 
     if (!pupilId || !instructorId || !amount) {
       return new Response(
