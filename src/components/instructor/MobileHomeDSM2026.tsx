@@ -983,6 +983,7 @@ function ActionTile({
   open,
   onToggle,
   children,
+  nested,
 }: {
   icon: LucideIcon;
   label: string;
@@ -993,6 +994,7 @@ function ActionTile({
   open: boolean;
   onToggle: () => void;
   children: React.ReactNode;
+  nested?: boolean;
 }) {
   const BORDER = "#e0e3ea";
   const DIVIDER = "#f0f1f4";
@@ -1010,11 +1012,13 @@ function ActionTile({
     <div
       style={{
         backgroundColor: "#FFFFFF",
-        borderRadius: 14,
-        border: `1px solid ${BORDER}`,
+        borderRadius: nested ? 0 : 14,
+        border: nested ? 0 : `1px solid ${BORDER}`,
+        borderTop: nested ? `1px solid ${DIVIDER}` : undefined,
         overflow: "hidden",
       }}
     >
+
       <button
         type="button"
         onClick={onToggle}
