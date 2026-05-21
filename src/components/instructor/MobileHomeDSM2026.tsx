@@ -405,10 +405,12 @@ function StatsStrip({ stats }: { stats: any }) {
     <div
       style={{
         display: "flex",
-        backgroundColor: "rgba(255,255,255,0.08)",
-        borderRadius: 10,
+        backgroundColor: "rgba(255,255,255,0.16)",
+        border: "1px solid rgba(255,255,255,0.22)",
+        borderRadius: 12,
         overflow: "hidden",
         marginTop: 10,
+        boxShadow: "0 4px 14px rgba(0,0,0,0.18)",
       }}
     >
       {cells.map((s, i) => (
@@ -416,13 +418,13 @@ function StatsStrip({ stats }: { stats: any }) {
           key={s.label}
           style={{
             flex: 1,
-            padding: "9px 14px",
-            borderRight: i === 0 ? "1px solid rgba(255,255,255,0.10)" : 0,
+            padding: "10px 14px",
+            borderRight: i === 0 ? "1px solid rgba(255,255,255,0.22)" : 0,
           }}
         >
           <div
             style={{
-              fontSize: 9, fontWeight: 700, color: "rgba(255,255,255,0.4)",
+              fontSize: 9, fontWeight: 700, color: "rgba(255,255,255,0.85)",
               textTransform: "uppercase", letterSpacing: 0.6,
               marginBottom: 4, fontFamily: FONT,
             }}
@@ -431,20 +433,20 @@ function StatsStrip({ stats }: { stats: any }) {
           </div>
           <div
             style={{
-              fontSize: 18, fontWeight: 800, color: T.white,
-              letterSpacing: -0.6, lineHeight: "20px", fontFamily: FONT,
+              fontSize: 19, fontWeight: 800, color: T.white,
+              letterSpacing: -0.6, lineHeight: "22px", fontFamily: FONT,
             }}
           >
             {s.value}
             {s.denom ? (
-              <span style={{ fontSize: 11, fontWeight: 400, color: "rgba(255,255,255,0.4)" }}>
+              <span style={{ fontSize: 11, fontWeight: 500, color: "rgba(255,255,255,0.7)" }}>
                 {s.denom}
               </span>
             ) : null}
           </div>
           <div
             style={{
-              fontSize: 10, color: "rgba(255,255,255,0.4)",
+              fontSize: 10, color: "rgba(255,255,255,0.75)", fontWeight: 500,
               marginTop: 2, fontFamily: FONT,
             }}
           >
@@ -452,8 +454,8 @@ function StatsStrip({ stats }: { stats: any }) {
           </div>
           <div
             style={{
-              height: 2, backgroundColor: "rgba(255,255,255,0.12)",
-              borderRadius: 1, marginTop: 6, overflow: "hidden",
+              height: 3, backgroundColor: "rgba(255,255,255,0.22)",
+              borderRadius: 2, marginTop: 7, overflow: "hidden",
             }}
           >
             <div
@@ -461,13 +463,14 @@ function StatsStrip({ stats }: { stats: any }) {
                 height: "100%",
                 width: `${s.barPct}%`,
                 backgroundColor: s.barColour,
-                borderRadius: 1,
+                borderRadius: 2,
               }}
             />
           </div>
         </div>
       ))}
     </div>
+
   );
 }
 
