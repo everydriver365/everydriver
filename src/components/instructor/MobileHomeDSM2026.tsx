@@ -670,7 +670,16 @@ function NextLessonCard({
         tabIndex={0}
         onClick={onToggle}
         onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onToggle(); } }}
-        style={{ textAlign: "left", padding: 13, cursor: "pointer" }}
+        style={{
+          textAlign: "left",
+          padding: 13,
+          cursor: "pointer",
+          position: "relative",
+          backgroundImage: `linear-gradient(180deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.82) 55%, rgba(255,255,255,0.98) 100%), url(${nextLessonBg})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center top",
+          backgroundRepeat: "no-repeat",
+        }}
       >
         <div
           style={{
