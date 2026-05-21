@@ -291,7 +291,7 @@ export function MobileHomeDSM2026({ instructorId, instructorName }: Props) {
 
       <div style={{ padding: 14, display: "flex", flexDirection: "column", gap: 12 }}>
         <TodayStrip stats={stats} />
-        <NeedsAttentionCard attention={attention} stats={stats} navigate={navigate} />
+        <NeedsAttentionCard attention={attention} stats={stats} navigate={navigate} instructorId={instructorId} />
         <ScheduleCard instructorId={instructorId} navigate={navigate} />
         <QuickAccessCard navigate={navigate} />
         <UpcomingEventsCard events={events} navigate={navigate} />
