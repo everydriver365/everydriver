@@ -473,7 +473,7 @@ export default function InstructorPay() {
                 </div>
                 <p style={{ fontSize: 22, fontWeight: 700, color: "#18181B", fontFamily: "Inter, sans-serif" }} className="tabular-nums">{recentPaymentCount}</p>
                 <div className="flex items-center justify-between" style={{ marginTop: 2 }}>
-                  <p style={{ fontSize: 12, fontWeight: 400, color: "#71717A", fontFamily: "Inter, sans-serif" }}>Recent Payments</p>
+                  <p style={{ fontSize: 12, fontWeight: 400, color: "#71717A", fontFamily: "Inter, sans-serif" }}>Payments This Month</p>
                   <ChevronRight size={16} strokeWidth={2} color="#A1A1AA" className={cn("transition-transform", paymentsExpanded && "rotate-90")} />
                 </div>
               </div>
