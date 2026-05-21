@@ -684,16 +684,16 @@ function NextLessonCard({
           aria-hidden
           style={{
             position: "absolute",
-            right: -20,
-            top: "50%",
-            transform: "translateY(-50%)",
-            height: "180%",
-            width: "auto",
-            objectFit: "contain",
-            opacity: 1,
+            right: -30,
+            top: -30,
+            height: "100%",
+            width: "65%",
+            objectFit: "cover",
+            objectPosition: "center 25%",
+            opacity: 0.85,
             pointerEvents: "none",
-            WebkitMaskImage: "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.5) 30%, #000 70%)",
-            maskImage: "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.5) 30%, #000 70%)",
+            WebkitMaskImage: "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.4) 35%, #000 100%)",
+            maskImage: "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.4) 35%, #000 100%)",
           }}
         />
         <div
