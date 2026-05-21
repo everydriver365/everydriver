@@ -567,7 +567,7 @@ export default function InstructorPay() {
                   className="overflow-hidden"
                 >
                   <div style={{ ...tileStyle, marginTop: 8, padding: 16 }}>
-                    <PupilBalancesList pupils={pupils} limit={5} />
+                    <PupilBalancesList pupils={pupils} limit={5} creditOnly />
                     <GradientLine />
                   </div>
                 </motion.div>
