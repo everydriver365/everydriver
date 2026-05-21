@@ -1504,49 +1504,86 @@ function QuickAccessCard({ navigate }: { navigate: ReturnType<typeof useNavigate
     }
   };
 
+  const VISIBLE = 4;
+  const BORDER = "#e0dfd9";
+  const OUTER_BG = "#f0efe9";
+  const CHARCOAL = "#1a1a1f";
+  const MUTED = "#888888";
+  const ACTION_BLUE = "#2952b3";
+
+  const gridTiles = filtered ?? pinnedItems.slice(0, VISIBLE);
+
   return (
-    <SectionCard>
+    <div
+      style={{
+        background: OUTER_BG,
+        borderRadius: 18,
+        overflow: "hidden",
+        padding: "14px 14px 14px",
+      }}
+    >
       {/* Header */}
-      <SectionHeader
-        label="Quick access"
-        right={
-          <button
-            type="button"
-            onClick={() => setEditOpen(true)}
-            style={{
-              background: "transparent", border: 0, cursor: "pointer",
-              fontSize: 12, fontWeight: 600, color: T.blue, fontFamily: FONT,
-            }}
-          >
-            Edit pins
-          </button>
-        }
-      />
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: 10,
+        }}
+      >
+        <span
+          style={{
+            fontSize: 10,
+            fontWeight: 700,
+            color: MUTED,
+            letterSpacing: 1.2,
+            textTransform: "uppercase",
+            fontFamily: FONT,
+          }}
+        >
+          Quick access
+        </span>
+        <button
+          type="button"
+          onClick={() => setEditOpen(true)}
+          style={{
+            background: "transparent", border: 0, cursor: "pointer",
+            fontSize: 13, fontWeight: 600, color: ACTION_BLUE, fontFamily: FONT,
+            padding: 0,
+          }}
+        >
+          Edit pins
+        </button>
+      </div>
 
       {/* Search */}
       <div
         style={{
-          margin: "10px 14px",
-          backgroundColor: T.surface, borderRadius: 10,
-          padding: "9px 12px",
-          display: "flex", alignItems: "center", gap: 8,
+          background: "#fff",
+          borderRadius: 12,
+          padding: "11px 14px",
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          marginBottom: 12,
+          border: `1px solid ${BORDER}`,
         }}
       >
-        <Search size={13} color={T.textLight} strokeWidth={1.8} />
+        <Search size={16} color={MUTED} strokeWidth={2} />
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={`Search all ${QUICK_ACCESS.length} tools…`}
           style={{
             flex: 1, background: "transparent", border: 0, outline: "none",
-            fontSize: 12, color: T.textMid, fontFamily: FONT,
+            fontSize: 14, color: CHARCOAL, fontFamily: FONT, minWidth: 0, padding: 0,
           }}
         />
         {query.length > 0 ? (
           <button
             type="button"
             onClick={() => setQuery("")}
-            style={{ background: "transparent", border: 0, cursor: "pointer", padding: 0, color: T.textLight, fontSize: 13 }}
+            style={{ background: "transparent", border: 0, cursor: "pointer", padding: 0, color: "#C7C7CC", fontSize: 16, lineHeight: 1 }}
             aria-label="Clear search"
           >
             ×
@@ -1554,89 +1591,67 @@ function QuickAccessCard({ navigate }: { navigate: ReturnType<typeof useNavigate
         ) : null}
       </div>
 
-      {/* Pinned 2-row swipeable grid */}
-      {!filtered ? (
+      {/* 2×2 Grid */}
+      {gridTiles.length === 0 ? (
         <div
           style={{
-            overflowX: "auto",
-            WebkitOverflowScrolling: "touch",
-            scrollbarWidth: "none",
-            padding: "12px 0",
-            backgroundColor: "#F7F7F7",
+            padding: "24px 12px",
+            textAlign: "center",
+            background: "#fff",
+            border: `1px solid ${BORDER}`,
+            borderRadius: 14,
+            fontSize: 13,
+            color: "#6E6E73",
+            fontFamily: FONT,
           }}
         >
-          <div
-            style={{
-              display: "grid",
-              gridAutoFlow: "column",
-              gridTemplateRows: "repeat(2, min-content)",
-              gridAutoColumns: "calc((100vw - 46px) / 2)",
-              gap: 10,
-              padding: "0 12px",
-            }}
-          >
-
-            {pinnedItems.map((item) => (
-              <QATile
-                key={item.label}
-                item={item}
-                active={activeRoute === item.route}
-                size="scroll"
-                onPress={() => { setActiveRoute(item.route); navigate(item.route); }}
-              />
-            ))}
-          </div>
+          No matching tools
         </div>
       ) : (
-        <div style={{ overflowX: "auto", padding: "12px 0", backgroundColor: "#F7F7F7" }}>
-          <div
-            style={{
-              display: "grid",
-              gridAutoFlow: "column",
-              gridTemplateRows: "repeat(2, min-content)",
-              gridAutoColumns: "calc((100vw - 46px) / 2)",
-              gap: 10,
-              padding: "0 12px",
-            }}
-          >
-
-            {filtered.map((item) => (
-              <QATile
-                key={item.label}
-                item={item}
-                active={activeRoute === item.route}
-                size="scroll"
-                onPress={() => { setActiveRoute(item.route); navigate(item.route); }}
-              />
-            ))}
-            {filtered.length === 0 ? (
-              <div style={{ padding: "12px 4px", fontSize: 12, color: T.textMuted, fontFamily: FONT }}>
-                No matching tools
-              </div>
-            ) : null}
-          </div>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+            gap: 10,
+          }}
+        >
+          {gridTiles.map((item) => (
+            <QATile
+              key={item.label}
+              item={item}
+              active={activeRoute === item.route}
+              onPress={() => { setActiveRoute(item.route); navigate(item.route); }}
+            />
+          ))}
         </div>
       )}
-
 
       {/* See all */}
       {!filtered ? (
         <button
           type="button"
           onClick={() => navigate("/instructor/menu")}
+          onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "#e8eefb"; }}
+          onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "#fff"; }}
           style={{
-            margin: "0 12px 12px",
-            backgroundColor: T.surface, borderRadius: 10,
-            padding: "10px 14px",
-            display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
-            border: 0, cursor: "pointer", width: "calc(100% - 24px)",
+            marginTop: 10,
+            width: "100%",
+            background: "#fff",
+            border: `1px solid ${BORDER}`,
+            borderRadius: 14,
+            padding: "13px 14px",
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            cursor: "pointer",
+            transition: "background 150ms ease",
           }}
         >
-          <LayoutGrid size={14} color={T.blue} strokeWidth={2} />
-          <span style={{ fontSize: 12, fontWeight: 600, color: T.blue, fontFamily: FONT }}>
+          <LayoutGrid size={18} color={ACTION_BLUE} strokeWidth={2.2} />
+          <span style={{ flex: 1, textAlign: "left", fontSize: 14, fontWeight: 600, color: ACTION_BLUE, fontFamily: FONT }}>
             See all {QUICK_ACCESS.length} tools
           </span>
-          <ChevronRight size={12} color={T.blue} strokeWidth={2.5} />
+          <ChevronRight size={18} color={ACTION_BLUE} strokeWidth={2.2} />
         </button>
       ) : null}
 
@@ -1648,7 +1663,7 @@ function QuickAccessCard({ navigate }: { navigate: ReturnType<typeof useNavigate
           onClose={() => setEditOpen(false)}
         />
       ) : null}
-    </SectionCard>
+    </div>
   );
 }
 
@@ -1753,45 +1768,55 @@ function QATile({
   item, active, onPress,
 }: { item: QAItem; active: boolean; onPress: () => void; size?: "grid" | "scroll" }) {
   const Icon = item.Icon;
-  const DSM_BLUE = "#3D55A1";
-  const DSM_TINT = "#EDF2FE";
+  const BORDER = "#e0dfd9";
+  const HOVER = "#2952b3";
   return (
     <button
       type="button"
       onClick={onPress}
+      onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.borderColor = HOVER; }}
+      onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.borderColor = BORDER; }}
       style={{
         width: "100%",
-        height: 60,
-        padding: "0 14px",
+        padding: "14px 14px",
         backgroundColor: "#FFFFFF",
-        border: 0,
-        boxShadow: "0 2px 8px rgba(17,24,39,0.06), 0 1px 2px rgba(17,24,39,0.04)",
-        borderRadius: 12,
+        border: `1px solid ${BORDER}`,
+        borderRadius: 14,
         cursor: "pointer",
         display: "flex",
-        flexDirection: "row",
-        alignItems: "center",
+        flexDirection: "column",
+        alignItems: "flex-start",
         gap: 10,
         textAlign: "left",
+        transition: "border-color 150ms ease",
       }}
     >
-      <Icon
-        size={20}
-        color={T.navy}
-        strokeWidth={1.8}
-        style={{ flexShrink: 0 }}
-      />
       <span
         style={{
-          fontSize: 13,
-          fontWeight: 700,
-          color: T.navy,
+          width: 36,
+          height: 36,
+          borderRadius: 10,
+          background: item.bg,
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+        }}
+      >
+        <Icon size={18} strokeWidth={2.2} color={item.colour} />
+      </span>
+      <span
+        style={{
+          fontSize: 14,
+          fontWeight: 600,
+          color: "#1a1a1f",
           fontFamily: FONT,
-          lineHeight: "16px",
-          letterSpacing: "-0.2px",
+          lineHeight: "18px",
+          letterSpacing: "-0.1px",
           overflow: "hidden",
           textOverflow: "ellipsis",
           whiteSpace: "nowrap",
+          maxWidth: "100%",
         }}
       >
         {item.label}
