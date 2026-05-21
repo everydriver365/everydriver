@@ -744,7 +744,7 @@ function NextLessonCard({
         </div>
 
         {/* Quick actions always visible — Call / Text / Go */}
-        <div style={{ display: "flex", gap: 6, marginTop: 10 }}>
+        <div style={{ display: "flex", gap: 6, marginTop: 10, position: "relative", zIndex: 1 }}>
           <ActionBtn
             label="Call"
             Icon={Phone}
