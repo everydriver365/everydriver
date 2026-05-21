@@ -261,12 +261,13 @@ export function MobileHomeDSM2026({ instructorId, instructorName }: Props) {
   return (
     <div
       style={{
-        backgroundColor: "#f0efe9",
+        backgroundColor: "#F2F4F8",
         minHeight: "100%",
         fontFamily: FONT,
         WebkitFontSmoothing: "antialiased",
       }}
     >
+
       <HeroHeader
         firstName={(instructorName || instructor?.name || "").split(" ")[0]}
         unreadCount={msgsCount}
