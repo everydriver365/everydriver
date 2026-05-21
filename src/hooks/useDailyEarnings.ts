@@ -63,7 +63,7 @@ export function useDailyEarnings(instructorId: string | undefined) {
         pupilCustomRate90: l.pupils?.custom_rate_90min,
         pupilCustomRate120: l.pupils?.custom_rate_120min,
         pupilPostcode: l.pupils?.postcode,
-        instructorDefaultRate: hourlyRate,
+        instructorDefaultRate: rateForMath,
         postcodeRules,
       });
 
