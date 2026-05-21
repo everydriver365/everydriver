@@ -121,7 +121,7 @@ async function signInWithTimeout(email: string, password: string) {
     supabase.auth.signInWithPassword({ email, password }),
     retryDelay(SIGN_IN_TIMEOUT_MS).then(() => ({
       data: { user: null, session: null },
-      error: new Error('Login service is taking too long. Please try again in a moment.'),
+      error: new Error('Login service timed out. Please try again in a moment.'),
     })),
   ]);
 }
