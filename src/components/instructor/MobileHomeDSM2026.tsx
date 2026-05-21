@@ -977,25 +977,10 @@ function NeedsAttentionCard({
         </div>
       </div>
 
-      {/* Nested expandable row — only the active section renders */}
-      {tiles
-        .filter((t) => openKey === t.key)
-        .map((t) => (
-          <ActionTile
-            key={t.key}
-            icon={t.icon}
-            label={t.label}
-            accent={t.accent}
-            tint={t.tint}
-            outlined={t.urgent}
-            badgeCount={t.count}
-            open={true}
-            onToggle={() => toggle(t.key)}
-            nested
-          >
-            {t.body}
-          </ActionTile>
-        ))}
+      {/* Inline live list — only the active section renders, no extra header */}
+      {openKey ? (
+        <SectionPanel sectionKey={openKey} instructorId={instructorId} navigate={navigate} />
+      ) : null}
     </div>
   );
 }
