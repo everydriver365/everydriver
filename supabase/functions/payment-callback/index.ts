@@ -458,11 +458,14 @@ serve(async (req: Request) => {
                       },
                       body: JSON.stringify({
                         instructorId: pupil.instructor_id,
+                        category: NotifyCategory.PAYMENT,
+                        importance: NotifyImportance.NORMAL,
+                        pupilId,
                         notification: {
                           title: "💰 Payment Received",
                           body: `£${capturedAmount.toFixed(2)} received via Clearpay`,
                           tag: `payment-received-${Date.now()}`,
-                          data: { type: "payment_received", pupilId, amount: capturedAmount },
+                          data: { type: PushDataType.PAYMENT_RECEIVED, pupilId, amount: capturedAmount },
                         },
                       }),
                     });
