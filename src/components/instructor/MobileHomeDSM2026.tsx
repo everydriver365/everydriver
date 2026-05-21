@@ -1131,6 +1131,48 @@ function SimpleMsg({ children }: { children: React.ReactNode }) {
   );
 }
 
+function ActionBody({
+  message, accent, tint, actionLabel, onAction,
+}: {
+  message: string;
+  accent: string;
+  tint: string;
+  actionLabel: string;
+  onAction: () => void;
+}) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 10, fontFamily: FONT }}>
+      <div style={{ fontSize: 13, color: "#6E6E73", lineHeight: 1.4 }}>{message}</div>
+      <button
+        type="button"
+        onClick={onAction}
+        onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.filter = "brightness(0.96)"; }}
+        onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.filter = "none"; }}
+        style={{
+          alignSelf: "stretch",
+          backgroundColor: tint,
+          color: accent,
+          border: `1px solid ${accent}`,
+          borderRadius: 12,
+          padding: "10px 14px",
+          fontSize: 13,
+          fontWeight: 600,
+          fontFamily: FONT,
+          cursor: "pointer",
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 6,
+          transition: "filter 150ms ease",
+        }}
+      >
+        {actionLabel} →
+      </button>
+    </div>
+  );
+}
+
+
 function EmptyState({ icon: Icon, children }: { icon: LucideIcon; children: React.ReactNode }) {
   return (
     <div
