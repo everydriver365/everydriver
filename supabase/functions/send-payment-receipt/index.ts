@@ -234,7 +234,7 @@ serve(async (req: Request): Promise<Response> => {
     const emailResponse = await resend.emails.send({
       from: `${instructor.name} <noreply@everydriver.lovable.app>`,
       to: [pupil.email],
-      subject: `Payment Receipt - £${amount.toFixed(2)}`,
+      subject: `${isRefund ? "Refund" : "Payment"} Receipt - £${Math.abs(amount).toFixed(2)}`,
       html: emailHtml,
     });
 
