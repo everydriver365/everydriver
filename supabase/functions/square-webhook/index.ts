@@ -611,11 +611,14 @@ serve(async (req: Request) => {
             headers: { "Content-Type": "application/json", "Authorization": `Bearer ${supabaseServiceKey}` },
             body: JSON.stringify({
               instructorId: original.instructor_id,
+              category: NotifyCategory.PAYMENT,
+              importance: NotifyImportance.IMPORTANT,
+              pupilId: original.pupil_id,
               notification: {
                 title: "↩️ Refund processed",
                 body: `£${refundAmount.toFixed(2)} refunded to pupil${fullRefund ? "" : " (partial)"}`,
                 tag: `refund-${refundId}`,
-                data: { type: "refund", pupilId: original.pupil_id, amount: refundAmount },
+                data: { type: PushDataType.REFUND, pupilId: original.pupil_id, amount: refundAmount },
               },
             }),
           });
