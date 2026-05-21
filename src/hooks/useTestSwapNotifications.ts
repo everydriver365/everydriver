@@ -40,6 +40,8 @@ export function useTestSwapNotifications(instructorId: string | undefined) {
       }
 
       return (pendingOffers || 0) + matchingTests;
+    },
+
 
     enabled: !!instructorId,
     refetchInterval: 30_000,
