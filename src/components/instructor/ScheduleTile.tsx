@@ -1,6 +1,5 @@
 import { useMemo, Fragment } from "react";
-import { Plus, Repeat2, ChevronRight } from "lucide-react";
-
+import { Plus, RefreshCw, ChevronRight, MapPin } from "lucide-react";
 
 export interface Lesson {
   id: string;
@@ -19,17 +18,13 @@ interface ScheduleTileProps {
 }
 
 const C = {
-  navy: "#1B2A4A",
-  blue: "#2E5FA8",
-  red: "#C0392B",
-  redTint: "#F2E0DE",
-  blueTint: "#E4ECF7",
-  muted: "#8A93A5",
-  kicker: "#9AA3B2",
-  line: "#ECEEF2",
-  cardGrey: "#F1F3F6",
-  bg: "#EEF0F3",
-  grey: "#CDD2DA",
+  charcoal: "#1a1a1f",
+  muted: "#888888",
+  border: "#dddddd",
+  blue: "#2952b3",
+  blueTint: "#E6ECF8",
+  green: "#2d8a4e",
+  chevron: "#B5B9C2",
 };
 
 type Status = "done" | "now" | "next" | "upcoming";
@@ -82,154 +77,140 @@ export function ScheduleTile({ lessons, onAddLesson, onFillGaps, onLessonClick }
     <div
       className="w-full"
       style={{
-        background: "#FFFFFF",
-        borderRadius: 22,
-        boxShadow: "0 10px 30px -10px rgba(27,42,74,0.28)",
-        padding: 18,
-        fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif",
+        fontFamily: "Poppins, -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif",
       }}
     >
       {/* Header */}
-      <div className="flex items-start justify-between mb-4">
-        <div className="min-w-0">
-          <div
-            style={{
-              fontSize: 13,
-              color: C.kicker,
-              letterSpacing: "1.4px",
-              fontWeight: 600,
-            }}
-          >
-            {kicker}
-          </div>
-          <div style={{ fontSize: 30, fontWeight: 800, color: C.navy, lineHeight: 1.15, marginTop: 2 }}>
-            {titleStr}
-          </div>
-        </div>
+      <div style={{ marginBottom: 12 }}>
         <div
-          className="flex flex-col items-center justify-center flex-shrink-0"
           style={{
-            width: 58, height: 58, borderRadius: 29,
-            background: C.navy, color: "#FFFFFF",
+            fontSize: 11,
+            color: C.muted,
+            letterSpacing: "1.2px",
+            fontWeight: 600,
+            textTransform: "uppercase",
           }}
         >
-          <div style={{ fontSize: 20, fontWeight: 800, lineHeight: 1 }}>{lessons.length}</div>
-          <div style={{ fontSize: 8, fontWeight: 700, letterSpacing: "1px", marginTop: 2, opacity: 0.85 }}>
-            LESSONS
-          </div>
+          {kicker}
+        </div>
+        <div style={{ fontSize: 26, fontWeight: 700, color: C.charcoal, lineHeight: 1.15, marginTop: 4 }}>
+          {titleStr}
         </div>
       </div>
 
-      {/* List */}
-      <div className="flex flex-col">
-        {withStatus.map((l, idx) => {
-          const isNow = l._status === "now";
-          const isNext = l._status === "next";
-          const isDone = l._status === "done";
-          const barColor = isNow ? C.red : isNext ? C.blue : isDone ? C.grey : C.blue;
-          const titleColor = isDone ? "#AEB4BF" : C.navy;
-
-          return (
-            <Fragment key={l.id}>
-              {idx > 0 && (
-                <div style={{ height: 1, background: C.line, marginLeft: 72 }} />
-              )}
-              <button
-                type="button"
-                onClick={() => onLessonClick(l.id)}
-                className="w-full text-left transition-colors"
+      {/* Lesson cards */}
+      <div className="flex flex-col" style={{ gap: 10 }}>
+        {withStatus.map((l) => (
+          <button
+            key={l.id}
+            type="button"
+            onClick={() => onLessonClick(l.id)}
+            className="w-full text-left transition-colors"
+            style={{
+              background: "#FFFFFF",
+              border: `1px solid ${C.border}`,
+              borderRadius: 16,
+              padding: "14px 14px",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: 14,
+            }}
+          >
+            {/* Time col */}
+            <div style={{ width: 52, flexShrink: 0 }}>
+              <div style={{
+                fontSize: 20, fontWeight: 700,
+                color: C.charcoal, lineHeight: 1.05,
+                letterSpacing: "-0.3px",
+              }}>
+                {fmtHM(l._start)}
+              </div>
+              <div style={{ fontSize: 12, color: C.muted, marginTop: 4, fontWeight: 500 }}>
+                {fmtDuration(l._start.getTime(), l._end.getTime())}
+              </div>
+            </div>
+            {/* Blue divider */}
+            <div
+              className="flex-shrink-0 self-stretch"
+              style={{
+                width: 2,
+                background: C.blue,
+                minHeight: 40,
+                borderRadius: 1,
+              }}
+            />
+            {/* Info col */}
+            <div className="flex-1 min-w-0">
+              <div
                 style={{
-                  background: "transparent",
-                  border: 0,
-                  borderRadius: 12,
-                  padding: "14px 6px",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 14,
+                  fontSize: 15, fontWeight: 600,
+                  color: C.charcoal,
+                  whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = "#F5F7FA"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
               >
-                {/* Time col */}
-                <div style={{ width: 52, flexShrink: 0 }}>
-                  <div style={{
-                    fontSize: 20, fontWeight: 800,
-                    color: titleColor, lineHeight: 1.05,
-                    letterSpacing: "-0.3px",
-                  }}>
-                    {fmtHM(l._start)}
-                  </div>
-                  <div style={{ fontSize: 12, color: C.muted, marginTop: 4, fontWeight: 500 }}>
-                    {fmtDuration(l._start.getTime(), l._end.getTime())}
-                  </div>
-                </div>
-                {/* Colored bar */}
+                {l.studentName}
+              </div>
+              <div style={{
+                fontSize: 13, color: C.muted, marginTop: 2,
+                whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+              }}>
+                {l.lessonType}
+              </div>
+              {l.postcode && (
                 <div
-                  className="flex-shrink-0 self-stretch"
+                  className="inline-flex items-center"
                   style={{
-                    width: 4, borderRadius: 2,
-                    background: barColor,
-                    minHeight: 36,
+                    marginTop: 6,
+                    background: C.blueTint,
+                    color: C.blue,
+                    borderRadius: 999,
+                    padding: "3px 8px",
+                    fontSize: 11,
+                    fontWeight: 600,
+                    gap: 4,
                   }}
-                />
-                {/* Info col */}
-                <div className="flex-1 min-w-0">
-                  <div
-                    style={{
-                      fontSize: 17, fontWeight: 700,
-                      color: titleColor,
-                      letterSpacing: "-0.3px",
-                      textDecoration: isDone ? "line-through" : "none",
-                      textDecorationColor: isDone ? C.grey : undefined,
-                      whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
-                    }}
-                  >
-                    {l.studentName}
-                  </div>
-                  <div style={{
-                    fontSize: 13, color: C.muted, marginTop: 2,
-                    whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
-                  }}>
-                    {l.lessonType} · {l.postcode}
-                  </div>
+                >
+                  <MapPin size={11} strokeWidth={2.5} color={C.blue} />
+                  {l.postcode}
                 </div>
-                {/* Chevron */}
-                <ChevronRight size={18} color={C.grey} className="flex-shrink-0" strokeWidth={2.5} />
-              </button>
-            </Fragment>
-          );
-        })}
+              )}
+            </div>
+            {/* Chevron */}
+            <ChevronRight size={20} color={C.chevron} className="flex-shrink-0" strokeWidth={2.5} />
+          </button>
+        ))}
       </div>
 
-
       {/* Footer */}
-      <div className="flex mt-3" style={{ gap: 8 }}>
+      <div className="flex mt-3" style={{ gap: 10 }}>
         <button
           type="button"
           onClick={onAddLesson}
-          className="flex items-center justify-center"
+          className="flex-1 flex items-center justify-center"
           style={{
-            background: C.redTint, color: C.red,
-            border: 0, borderRadius: 999,
-            padding: "7px 14px",
-            fontSize: 13, fontWeight: 700, cursor: "pointer", gap: 6,
+            background: C.green, color: "#FFFFFF",
+            border: 0, borderRadius: 14,
+            padding: "14px 14px",
+            fontSize: 14, fontWeight: 600, cursor: "pointer", gap: 6,
+            fontFamily: "Poppins, -apple-system, sans-serif",
           }}
         >
-          <Plus size={14} strokeWidth={2.75} color={C.red} /> Add lesson
+          <Plus size={16} strokeWidth={2.5} color="#FFFFFF" /> Add lesson
         </button>
         <button
           type="button"
           onClick={onFillGaps}
-          className="flex items-center justify-center"
+          className="flex-1 flex items-center justify-center"
           style={{
-            background: C.cardGrey, color: C.navy,
-            border: 0, borderRadius: 999,
-            padding: "7px 14px",
-            fontSize: 13, fontWeight: 700, cursor: "pointer", gap: 6,
+            background: C.blue, color: "#FFFFFF",
+            border: 0, borderRadius: 14,
+            padding: "14px 14px",
+            fontSize: 14, fontWeight: 600, cursor: "pointer", gap: 6,
+            fontFamily: "Poppins, -apple-system, sans-serif",
           }}
         >
-          <Repeat2 size={14} strokeWidth={2.75} color={C.navy} /> Fill gaps
+          <RefreshCw size={16} strokeWidth={2.5} color="#FFFFFF" /> Fill gaps
         </button>
       </div>
     </div>
