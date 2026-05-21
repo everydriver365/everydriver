@@ -154,10 +154,18 @@ export default function InstructorPay() {
 
   const fetchRecentPaymentCount = async () => {
     if (!instructorId) return;
+    // Month-to-date count, not all-time, to match the "Recent Payments" label.
+    const monthStartIso = new Date(
+      new Date().getFullYear(),
+      new Date().getMonth(),
+      1
+    ).toISOString();
     const { count } = await supabase
       .from("payment_history")
       .select("id", { count: "exact", head: true })
-      .eq("instructor_id", instructorId);
+      .eq("instructor_id", instructorId)
+      .is("deleted_at", null)
+      .gte("recorded_at", monthStartIso);
     setRecentPaymentCount(count || 0);
   };
 
