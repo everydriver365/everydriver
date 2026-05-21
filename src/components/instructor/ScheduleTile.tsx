@@ -240,32 +240,32 @@ export function ScheduleTile({ lessons, onAddLesson, onFillGaps, onLessonClick }
       </div>
 
       {/* Footer */}
-      <div className="flex mt-3" style={{ gap: 10 }}>
+      <div className="flex mt-3" style={{ gap: 8 }}>
         <button
           type="button"
           onClick={onAddLesson}
-          className="flex-1 flex items-center justify-center"
+          className="flex items-center justify-center"
           style={{
             background: C.redTint, color: C.red,
-            border: 0, borderRadius: 16,
-            padding: "16px 14px",
-            fontSize: 16, fontWeight: 800, cursor: "pointer", gap: 8,
+            border: 0, borderRadius: 999,
+            padding: "7px 14px",
+            fontSize: 13, fontWeight: 700, cursor: "pointer", gap: 6,
           }}
         >
-          <Plus size={18} strokeWidth={2.75} color={C.red} /> Add lesson
+          <Plus size={14} strokeWidth={2.75} color={C.red} /> Add lesson
         </button>
         <button
           type="button"
           onClick={onFillGaps}
-          className="flex-1 flex items-center justify-center"
+          className="flex items-center justify-center"
           style={{
             background: C.cardGrey, color: C.navy,
-            border: 0, borderRadius: 16,
-            padding: "16px 14px",
-            fontSize: 16, fontWeight: 800, cursor: "pointer", gap: 8,
+            border: 0, borderRadius: 999,
+            padding: "7px 14px",
+            fontSize: 13, fontWeight: 700, cursor: "pointer", gap: 6,
           }}
         >
-          <Repeat2 size={18} strokeWidth={2.75} color={C.navy} /> Fill gaps
+          <Repeat2 size={14} strokeWidth={2.75} color={C.navy} /> Fill gaps
         </button>
       </div>
     </div>
