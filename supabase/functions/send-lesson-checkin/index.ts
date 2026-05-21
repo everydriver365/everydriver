@@ -64,11 +64,13 @@ serve(async (req) => {
               },
               body: JSON.stringify({
                 instructorId: lesson.instructor_id,
+                category: NotifyCategory.LESSON,
+                importance: NotifyImportance.NORMAL,
                 notification: {
                   title: "Lesson Tomorrow - Please Confirm",
                   body: `You have a lesson at ${lesson.start_time} tomorrow. Tap to confirm attendance.`,
                   tag: `checkin-${lesson.id}`,
-                  data: { type: "lesson_checkin", lessonId: lesson.id },
+                  data: { type: PushDataType.LESSON_CHECKIN, lessonId: lesson.id },
                   actions: [
                     { action: "confirm", title: "I'll be there" },
                     { action: "decline", title: "Can't make it" },
