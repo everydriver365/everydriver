@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   PoundSterling,
@@ -68,7 +69,13 @@ export default function InstructorPay() {
   const reminderPupilId = searchParams.get("pupilId");
 
   const { data: earnings, isLoading } = useDailyEarnings(instructorId);
-  const { stats: paymentsStats } = useInstructorPaymentsData(instructorId);
+  const { stats: paymentsStats, refresh: refreshPaymentsData } = useInstructorPaymentsData(instructorId);
+  const queryClient = useQueryClient();
+  const refreshEarnings = () => {
+    if (!instructorId) return;
+    queryClient.invalidateQueries({ queryKey: ["daily-earnings", instructorId] });
+    refreshPaymentsData();
+  };
   const [resolvedQrUrl, setResolvedQrUrl] = useState<string | null>(null);
   const [commissionPayer, setCommissionPayer] = useState<string | null>("pupil");
   const [instructorName, setInstructorName] = useState<string>("Your Instructor");
@@ -118,6 +125,7 @@ export default function InstructorPay() {
           try { haptics.success(); } catch {}
           fetchPupils();
           fetchRecentPaymentCount();
+          refreshEarnings();
         }
       )
       .subscribe();
@@ -668,6 +676,7 @@ export default function InstructorPay() {
         onPaymentReceived={() => {
           fetchPupils();
           fetchRecentPaymentCount();
+          refreshEarnings();
         }}
       />
 
@@ -681,6 +690,7 @@ export default function InstructorPay() {
         onRefunded={() => {
           fetchPupils();
           fetchRecentPaymentCount();
+          refreshEarnings();
         }}
       />
     </InstructorPortalLayout>

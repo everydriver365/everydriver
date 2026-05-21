@@ -135,12 +135,14 @@ export function useDailyEarnings(instructorId: string | undefined) {
           .select("amount")
           .eq("instructor_id", instructorId)
           .is("deleted_at", null)
+          .gt("amount", 0)
           .gte("recorded_at", new Date(now.getFullYear(), now.getMonth(), 1).toISOString()),
         supabase
           .from("payment_history")
           .select("amount")
           .eq("instructor_id", instructorId)
           .is("deleted_at", null)
+          .gt("amount", 0)
           .gte("recorded_at", new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString())
           .lt("recorded_at", new Date(now.getFullYear(), now.getMonth(), 1).toISOString()),
       ]);
