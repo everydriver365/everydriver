@@ -148,7 +148,7 @@ export default function InstructorPay() {
       .from("pupils") as any)
       .select("id, name, account_balance, phone, email, profile_image_url")
       .eq("instructor_id", instructorId)
-      .eq("is_active", true)
+      .is("deleted_at", null)
       .order("name", { ascending: true });
     setPupils(data || []);
   };
@@ -191,8 +191,10 @@ export default function InstructorPay() {
   const thisWeek = earnings?.thisWeek || 0;
   const lastMonth = earnings?.lastMonth || 0;
 
-  const debtors = pupils.filter((p) => (p.account_balance || 0) < 0).sort((a, b) => (a.account_balance || 0) - (b.account_balance || 0));
-  const totalOwed = debtors.reduce((sum, p) => sum + Math.abs(p.account_balance || 0), 0);
+  const debtors = pupils
+    .filter((p) => typeof p.account_balance === "number" && p.account_balance < 0)
+    .sort((a, b) => Number(a.account_balance) - Number(b.account_balance));
+  const totalOwed = debtors.reduce((sum, p) => sum + Math.abs(Number(p.account_balance)), 0);
 
   const getInitials = (name: string) =>
     name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
