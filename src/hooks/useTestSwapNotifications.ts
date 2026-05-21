@@ -39,15 +39,10 @@ export function useTestSwapNotifications(instructorId: string | undefined) {
         matchingTests = count || 0;
       }
 
-      // Count scraped_match records for this instructor directly
-      const { count: scrapedMatches } = await supabase
-        .from("test_slot_reservations" as any)
-        .select("*", { count: "exact", head: true })
-        .eq("instructor_id", instructorId)
-        .eq("status", "scraped_match");
-
-      return (pendingOffers || 0) + matchingTests + (scrapedMatches || 0);
+      return (pendingOffers || 0) + matchingTests;
     },
+
+
     enabled: !!instructorId,
     refetchInterval: 30_000,
     staleTime: 15_000,
@@ -68,13 +63,6 @@ export function useTestSwapNotifications(instructorId: string | undefined) {
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "test_requests" },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ["test-swap-notifications", instructorId] });
-        }
-      )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "test_slot_reservations" },
         () => {
           queryClient.invalidateQueries({ queryKey: ["test-swap-notifications", instructorId] });
         }
