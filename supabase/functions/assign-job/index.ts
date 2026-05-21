@@ -73,12 +73,15 @@ serve(async (req) => {
           },
           body: JSON.stringify({
             instructorId,
+            category: NotifyCategory.JOB,
+            importance: NotifyImportance.IMPORTANT,
+            jobValue: totalPayable,
             notification: {
               title: "🚗 New Job Offer!",
               body: `${enquiry.name} wants a ${enquiry.requested_hours}h ${enquiry.course_type} course in ${enquiry.postcode}. Earn £${totalPayable.toFixed(0)}!`,
               tag: `job-${enquiryId}`,
               data: {
-                type: "job_offer",
+                type: PushDataType.JOB_OFFER,
                 enquiryId,
                 url: "/instructor/jobs",
               },
