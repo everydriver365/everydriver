@@ -827,12 +827,8 @@ function NeedsAttentionCard({
   attention, stats, navigate,
 }: { attention: any; stats: any; navigate: ReturnType<typeof useNavigate> }) {
   type Key = "jobs" | "tests" | "calls" | "enquiries";
-  const [sectionsOpen, setSectionsOpen] = useState<boolean>(true);
-  const [openKey, setOpenKey] = useState<Key | null>(
-    attention.urgentCount > 0 ? "jobs" : "enquiries"
-  );
+  const [openKey, setOpenKey] = useState<Key | null>(null);
   const toggle = (k: Key) => {
-    setSectionsOpen(true);
     setOpenKey((p) => (p === k ? null : k));
   };
 
