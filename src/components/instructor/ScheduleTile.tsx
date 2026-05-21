@@ -256,35 +256,40 @@ export function ScheduleTile({ lessons, onAddLesson, onFillGaps, onLessonClick }
         <button
           type="button"
           onClick={onAddLesson}
-          className="flex-1 flex items-center justify-center"
+          className="flex-1 flex items-center justify-center transition-colors"
           style={{
-            background: C.green, color: "#FFFFFF",
-            border: 0, borderRadius: 12,
-            padding: "10px 12px",
+            background: "#FFFFFF", color: C.green,
+            border: `1px solid ${C.border}`, borderRadius: 14,
+            padding: "13px 12px",
             fontSize: 13, fontWeight: 600, cursor: "pointer", gap: 6,
             fontFamily: FONT,
           }}
+          onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = C.hover; }}
+          onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "#FFFFFF"; }}
         >
-          <Plus size={14} strokeWidth={2.5} color="#FFFFFF" /> Add lesson
+          <Plus size={14} strokeWidth={2.5} color={C.green} /> Add lesson
         </button>
         <button
           type="button"
           onClick={onFillGaps}
-          className="flex-1 flex items-center justify-center"
+          className="flex-1 flex items-center justify-center transition-colors"
           style={{
-            background: C.blue, color: "#FFFFFF",
-            border: 0, borderRadius: 12,
-            padding: "10px 12px",
+            background: "#FFFFFF", color: C.blue,
+            border: `1px solid ${C.border}`, borderRadius: 14,
+            padding: "13px 12px",
             fontSize: 13, fontWeight: 600, cursor: "pointer", gap: 6,
             fontFamily: FONT,
           }}
+          onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = C.hover; }}
+          onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "#FFFFFF"; }}
         >
-          <RefreshCw size={14} strokeWidth={2.5} color="#FFFFFF" /> Fill gaps
+          <RefreshCw size={14} strokeWidth={2.5} color={C.blue} /> Fill gaps
         </button>
       </div>
 
     </div>
   );
 }
+
 
 export default ScheduleTile;
