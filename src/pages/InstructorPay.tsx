@@ -497,42 +497,27 @@ export default function InstructorPay() {
           </div>
 
           {/* Course Rewards */}
-          <div className={cn(bonusExpanded && "col-span-2")}>
-            <motion.button
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.20 }}
-              whileTap={{ scale: 0.97 }}
-              onClick={() => { haptics.selection(); setBonusExpanded(!bonusExpanded); }}
-              style={tileStyle} className="w-full text-left"
-            >
-              <div style={{ padding: 14, minHeight: 120, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-                <div style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: "#FEF3C7", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
-                  <Trophy size={22} strokeWidth={2} color="#92400E" />
-                </div>
-                <p style={{ fontSize: 22, fontWeight: 700, color: "#18181B", fontFamily: "Inter, sans-serif" }} className="tabular-nums">£{bonusEarned}</p>
-                <div className="flex items-center justify-between" style={{ marginTop: 2 }}>
-                  <p style={{ fontSize: 12, fontWeight: 400, color: "#71717A", fontFamily: "Inter, sans-serif" }}>Course Rewards</p>
-                  <ChevronRight size={16} strokeWidth={2} color="#A1A1AA" className={cn("transition-transform", bonusExpanded && "rotate-90")} />
-                </div>
-              </div>
-            </motion.button>
-
-            <AnimatePresence>
-              {bonusExpanded && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.25 }}
-                  className="overflow-hidden"
-                >
-                  <div className="mt-2">
-                    <InstructorPayoutHistory instructorId={instructorId || ""} />
+          <div>
+            <Link to="/instructor/bonus" onClick={() => haptics.selection()}>
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.20 }}
+                whileTap={{ scale: 0.97 }}
+                style={tileStyle} className="w-full text-left block"
+              >
+                <div style={{ padding: 14, minHeight: 120, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                  <div style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: "#FEF3C7", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
+                    <Trophy size={22} strokeWidth={2} color="#92400E" />
                   </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                  <p style={{ fontSize: 22, fontWeight: 700, color: "#18181B", fontFamily: "Inter, sans-serif" }} className="tabular-nums">£{bonusEarned}</p>
+                  <div className="flex items-center justify-between" style={{ marginTop: 2 }}>
+                    <p style={{ fontSize: 12, fontWeight: 400, color: "#71717A", fontFamily: "Inter, sans-serif" }}>Course Rewards</p>
+                    <ChevronRight size={16} strokeWidth={2} color="#A1A1AA" />
+                  </div>
+                </div>
+              </motion.div>
+            </Link>
           </div>
 
           {/* Pupil Balances */}
