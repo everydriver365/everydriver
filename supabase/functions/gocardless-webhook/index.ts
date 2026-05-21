@@ -532,6 +532,19 @@ async function handlePayment(supabase: any, event: any) {
     }
 
     console.log(`Payment ${paymentId} confirmed, period extended, receipt sent`);
+
+    // Push instructor about successful subscription payment.
+    if (sub?.instructor_id) {
+      await pushToInstructor(sub.instructor_id, {
+        title: "💰 Subscription Payment Received",
+        body: `£${(paymentAmount / 100).toFixed(2)} ${planName} payment confirmed.`,
+        tag: `sub-payment-${paymentId}`,
+        dataType: "payment_received",
+        extra: { paymentId, subscriptionId, amount: paymentAmount / 100, source: "gocardless_subscription" },
+        category: "payment",
+        importance: "normal",
+      });
+    }
   } else if (action === "failed" && subscriptionId) {
     // Find the subscription
     const { data: sub } = await supabase
@@ -593,6 +606,17 @@ async function handlePayment(supabase: any, event: any) {
           console.error("Failed to send admin SMS:", smsErr);
         }
       }
+
+      // Push the affected instructor as well — admin SMS alone wasn't reaching them.
+      await pushToInstructor(sub.instructor_id, {
+        title: "⚠️ Subscription Payment Failed",
+        body: "Your subscription payment didn't go through. Please check your bank details — we'll retry automatically.",
+        tag: `sub-payment-failed-${paymentId}`,
+        dataType: "payment_failed",
+        extra: { paymentId, subscriptionId, source: "gocardless_subscription" },
+        category: "system",
+        importance: "important",
+      });
     }
 
     console.log(`Payment ${paymentId} failed, alert created`);
@@ -613,6 +637,74 @@ async function handlePayment(supabase: any, event: any) {
         .eq("id", intent.id);
 
       console.log(`Standalone payment ${paymentId} confirmed`);
+
+      // Resolve instructor from the intent and push.
+      const instructorIdFromIntent: string | null =
+        (intent as any).instructor_id ?? null;
+      const pupilIdFromIntent: string | null =
+        (intent as any).pupil_id ?? null;
+      const amountPounds: number = Number((intent as any).amount ?? 0) / 100;
+      if (instructorIdFromIntent) {
+        await pushToInstructor(instructorIdFromIntent, {
+          title: "💰 Payment Received",
+          body: `£${amountPounds.toFixed(2)} received via GoCardless (Instant Bank Pay)`,
+          tag: `ibp-confirmed-${paymentId}`,
+          dataType: "payment_received",
+          extra: { paymentId, pupilId: pupilIdFromIntent, amount: amountPounds, source: "gocardless_ibp" },
+          category: "payment",
+          importance: "normal",
+        });
+      }
+      // Notify pupil that their payment confirmed.
+      if (pupilIdFromIntent) {
+        try {
+          const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+          const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+          await fetch(`${supabaseUrl}/functions/v1/notify-pupil`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${supabaseServiceKey}` },
+            body: JSON.stringify({
+              pupilId: pupilIdFromIntent,
+              type: "payment_confirmed",
+              data: { type: "payment_confirmed", amount: amountPounds, method: "GoCardless" },
+            }),
+          });
+        } catch (e) {
+          console.error("[gocardless-webhook] pupil notify failed:", e);
+        }
+      }
+    }
+  }
+
+  // Handle standalone payment failures (Instant Bank Pay failures).
+  if (action === "failed" && !subscriptionId) {
+    const { data: intent } = await supabase
+      .from("payment_intents")
+      .select("*")
+      .eq("gocardless_payment_id", paymentId)
+      .maybeSingle();
+
+    if (intent) {
+      await supabase
+        .from("payment_intents")
+        .update({ status: "failed" })
+        .eq("id", intent.id);
+
+      const instructorIdFromIntent: string | null =
+        (intent as any).instructor_id ?? null;
+      const amountPounds: number = Number((intent as any).amount ?? 0) / 100;
+      if (instructorIdFromIntent) {
+        await pushToInstructor(instructorIdFromIntent, {
+          title: "⚠️ Payment Failed",
+          body: `A £${amountPounds.toFixed(2)} GoCardless payment didn't go through.`,
+          tag: `ibp-failed-${paymentId}`,
+          dataType: "payment_failed",
+          extra: { paymentId, amount: amountPounds, source: "gocardless_ibp" },
+          category: "system",
+          importance: "important",
+        });
+      }
+      console.log(`Standalone payment ${paymentId} failed`);
     }
   }
 }
