@@ -312,10 +312,12 @@ export default function InstructorPay() {
                 <p className="text-[10px] font-bold text-white/60 uppercase tracking-[0.08em]">Last Month</p>
                 <p className="text-[18px] font-bold text-white tabular-nums">£{lastMonth}</p>
               </div>
-              <div className="flex-1 border-l border-white/10 pl-4">
+              <Link to="/instructor/settings" className="flex-1 border-l border-white/10 pl-4 block">
                 <p className="text-[10px] font-bold text-white/60 uppercase tracking-[0.08em]">Per Hour</p>
-                <p className="text-[18px] font-bold text-white tabular-nums">£{earnings?.hourlyRate || 40}</p>
-              </div>
+                <p className="text-[18px] font-bold text-white tabular-nums">
+                  {earnings?.hourlyRate != null ? `£${earnings.hourlyRate}` : "—"}
+                </p>
+              </Link>
             </div>
           </div>
           <GradientLine />
