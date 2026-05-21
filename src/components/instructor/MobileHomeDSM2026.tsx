@@ -1065,7 +1065,7 @@ function SectionPanel({
           ? empty("No jobs to action", Inbox)
           : items.map((j) => (
               <button key={j.id} type="button" style={rowStyle}
-                onClick={() => navigate("/instructor/jobs")}>
+                onClick={() => navigate(`/instructor/jobs?id=${j.id}`)}>
                 <div style={{ minWidth: 0, flex: 1 }}>
                   <div style={titleStyle}>
                     {j.courseType}{j.hours ? ` · ${j.hours}h` : ""}
