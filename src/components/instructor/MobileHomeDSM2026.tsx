@@ -2000,34 +2000,6 @@ function QuickAccessCard({ navigate }: { navigate: ReturnType<typeof useNavigate
 
 
 
-      {/* See all */}
-      {!filtered ? (
-        <button
-          type="button"
-          onClick={() => navigate("/instructor/menu")}
-          onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "#e8eefb"; }}
-          onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "#fff"; }}
-          style={{
-            marginTop: 10,
-            width: "100%",
-            background: "#fff",
-            border: `1px solid ${BORDER}`,
-            borderRadius: 14,
-            padding: "13px 14px",
-            display: "flex",
-            alignItems: "center",
-            gap: 12,
-            cursor: "pointer",
-            transition: "background 150ms ease",
-          }}
-        >
-          <LayoutGrid size={18} color={ACTION_BLUE} strokeWidth={2.2} />
-          <span style={{ flex: 1, textAlign: "left", fontSize: 14, fontWeight: 600, color: ACTION_BLUE, fontFamily: FONT }}>
-            See all {QUICK_ACCESS.length} tools
-          </span>
-          <ChevronRight size={18} color={ACTION_BLUE} strokeWidth={2.2} />
-        </button>
-      ) : null}
 
       {editOpen ? (
         <EditPinsSheet
