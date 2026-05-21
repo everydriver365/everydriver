@@ -316,11 +316,14 @@ serve(async (req: Request) => {
             },
             body: JSON.stringify({
               instructorId,
+              category: NotifyCategory.PAYMENT,
+              importance: NotifyImportance.NORMAL,
+              pupilId,
               notification: {
                 title: "💰 Payment Received",
                 body: `£${creditAmount.toFixed(2)} received from ${pupil?.name || "a pupil"} via Square Checkout`,
                 tag: `payment-received-${Date.now()}`,
-                data: { type: "payment_received", pupilId, amount: creditAmount },
+                data: { type: PushDataType.PAYMENT_RECEIVED, pupilId, amount: creditAmount },
               },
             }),
           });
