@@ -120,17 +120,22 @@ export function ScheduleTile({ lessons, onAddLesson, onFillGaps, onLessonClick }
       </div>
 
       {/* List */}
-      <div className="flex flex-col">
-        {withStatus.map((l, idx) => {
-          const dotColor =
-            l._status === "now" ? C.red :
-            l._status === "next" ? C.blue :
-            C.grey;
-          const glow = l._status === "now"
-            ? `0 0 0 4px ${C.red}22`
-            : l._status === "next"
-              ? `0 0 0 4px ${C.blue}22`
+      <div className="flex flex-col gap-1">
+        {withStatus.map((l) => {
+          const isNow = l._status === "now";
+          const isNext = l._status === "next";
+          const isDone = l._status === "done";
+          const elevated = isNow || isNext;
+          const dotColor = isNow ? C.red : isNext ? C.blue : C.grey;
+          const glow = isNow
+            ? `0 0 0 5px rgba(192,57,43,0.14)`
+            : isNext
+              ? `0 0 0 5px rgba(46,95,168,0.14)`
               : "none";
+
+          const rowShadow = elevated
+            ? `0 2px 8px -3px rgba(27,42,74,0.14), inset 0 0 0 1px ${C.line}`
+            : "none";
 
           return (
             <button
@@ -139,33 +144,40 @@ export function ScheduleTile({ lessons, onAddLesson, onFillGaps, onLessonClick }
               onClick={() => onLessonClick(l.id)}
               className="w-full text-left transition-colors"
               style={{
-                background: "transparent",
+                background: elevated ? "#F7F9FC" : "transparent",
                 border: 0,
-                borderRadius: 14,
-                padding: "10px 8px",
+                borderRadius: 16,
+                padding: "16px 14px",
                 cursor: "pointer",
                 display: "flex",
                 alignItems: "center",
                 gap: 12,
-                borderTop: idx === 0 ? "none" : `1px solid ${C.line}`,
+                boxShadow: rowShadow,
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = "#F7F8FA")}
-              onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+              onMouseEnter={(e) => {
+                if (!elevated) e.currentTarget.style.background = "#F0F2F5";
+              }}
+              onMouseLeave={(e) => {
+                if (!elevated) e.currentTarget.style.background = "transparent";
+              }}
             >
               {/* Dot */}
               <div
                 className="flex-shrink-0"
                 style={{
-                  width: 10, height: 10, borderRadius: 5,
+                  width: 13, height: 13, borderRadius: 7,
                   background: dotColor, boxShadow: glow,
                 }}
               />
               {/* Time col */}
               <div style={{ width: 60, flexShrink: 0 }}>
-                <div style={{ fontSize: 16, fontWeight: 700, color: C.navy, lineHeight: 1.1 }}>
+                <div style={{
+                  fontSize: 21, fontWeight: 800,
+                  color: isDone ? "#AEB4BF" : C.navy, lineHeight: 1.05,
+                }}>
                   {fmtHM(l._start)}
                 </div>
-                <div style={{ fontSize: 12, color: C.muted, marginTop: 2 }}>
+                <div style={{ fontSize: 11, color: C.muted, marginTop: 3 }}>
                   {fmtDuration(l._start.getTime(), l._end.getTime())}
                 </div>
               </div>
@@ -173,7 +185,11 @@ export function ScheduleTile({ lessons, onAddLesson, onFillGaps, onLessonClick }
               <div className="flex-1 min-w-0">
                 <div
                   style={{
-                    fontSize: 16, fontWeight: 700, color: C.navy,
+                    fontSize: 17, fontWeight: 800,
+                    color: isDone ? "#AEB4BF" : C.navy,
+                    letterSpacing: "-0.4px",
+                    textDecoration: isDone ? "line-through" : "none",
+                    textDecorationColor: isDone ? C.grey : undefined,
                     whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
                   }}
                 >
@@ -185,48 +201,36 @@ export function ScheduleTile({ lessons, onAddLesson, onFillGaps, onLessonClick }
               </div>
               {/* Right element */}
               <div className="flex-shrink-0">
-                {l._status === "now" && (
-                  <span
-                    style={{
-                      background: C.red, color: "#FFFFFF",
-                      borderRadius: 999, padding: "4px 10px",
-                      fontSize: 12, fontWeight: 700,
-                    }}
-                  >
-                    Now
-                  </span>
+                {isNow && (
+                  <span style={{
+                    background: C.red, color: "#FFFFFF",
+                    borderRadius: 999, padding: "5px 12px",
+                    fontSize: 12, fontWeight: 800,
+                  }}>Now</span>
                 )}
-                {l._status === "next" && (
-                  <span
-                    style={{
-                      background: C.blueTint, color: C.blue,
-                      borderRadius: 999, padding: "4px 10px",
-                      fontSize: 12, fontWeight: 700,
-                    }}
-                  >
-                    Next
-                  </span>
+                {isNext && (
+                  <span style={{
+                    background: C.blueTint, color: C.blue,
+                    borderRadius: 999, padding: "5px 12px",
+                    fontSize: 12, fontWeight: 800,
+                  }}>Next</span>
                 )}
                 {l._status === "upcoming" && (
-                  <span
-                    style={{
-                      background: C.cardGrey, color: C.muted,
-                      borderRadius: 999, padding: "4px 10px",
-                      fontSize: 12, fontWeight: 700,
-                    }}
-                  >
-                    {fmtHM(l._start)}
-                  </span>
+                  <span style={{
+                    background: C.cardGrey, color: "#7A8294",
+                    borderRadius: 999, padding: "5px 12px",
+                    fontSize: 12, fontWeight: 800,
+                  }}>{fmtHM(l._start)}</span>
                 )}
-                {l._status === "done" && (
+                {isDone && (
                   <div
                     className="flex items-center justify-center"
                     style={{
-                      width: 24, height: 24, borderRadius: 12,
-                      background: C.cardGrey, color: C.muted,
+                      width: 20, height: 20, borderRadius: 10,
+                      background: C.grey, color: "#FFFFFF",
                     }}
                   >
-                    <Check size={14} strokeWidth={3} color={C.muted} />
+                    <Check size={12} strokeWidth={3.5} color="#FFFFFF" />
                   </div>
                 )}
               </div>
@@ -236,7 +240,7 @@ export function ScheduleTile({ lessons, onAddLesson, onFillGaps, onLessonClick }
       </div>
 
       {/* Footer */}
-      <div className="flex gap-10 mt-3" style={{ gap: 10 }}>
+      <div className="flex mt-3" style={{ gap: 10 }}>
         <button
           type="button"
           onClick={onAddLesson}
@@ -244,11 +248,11 @@ export function ScheduleTile({ lessons, onAddLesson, onFillGaps, onLessonClick }
           style={{
             background: C.redTint, color: C.red,
             border: 0, borderRadius: 16,
-            padding: "13px 0",
-            fontSize: 16, fontWeight: 700, cursor: "pointer", gap: 8,
+            padding: "16px 14px",
+            fontSize: 16, fontWeight: 800, cursor: "pointer", gap: 8,
           }}
         >
-          <Plus size={18} strokeWidth={2.5} color={C.red} /> Add lesson
+          <Plus size={18} strokeWidth={2.75} color={C.red} /> Add lesson
         </button>
         <button
           type="button"
@@ -257,11 +261,11 @@ export function ScheduleTile({ lessons, onAddLesson, onFillGaps, onLessonClick }
           style={{
             background: C.cardGrey, color: C.navy,
             border: 0, borderRadius: 16,
-            padding: "13px 0",
-            fontSize: 16, fontWeight: 700, cursor: "pointer", gap: 8,
+            padding: "16px 14px",
+            fontSize: 16, fontWeight: 800, cursor: "pointer", gap: 8,
           }}
         >
-          <Repeat2 size={18} strokeWidth={2.5} color={C.navy} /> Fill gaps
+          <Repeat2 size={18} strokeWidth={2.75} color={C.navy} /> Fill gaps
         </button>
       </div>
     </div>
