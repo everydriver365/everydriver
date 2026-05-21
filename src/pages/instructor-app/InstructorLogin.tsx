@@ -141,6 +141,10 @@ export default function InstructorLogin() {
     if (faceIdState === "scanning") return;
     setFaceIdState("scanning");
     setError("");
+    const safety = window.setTimeout(() => {
+      setFaceIdState("idle");
+      setError("Biometric login timed out. Please use email and password.");
+    }, 20000);
     try {
       const creds = await getBiometricCredentials("instructor", "Sign in to DSM365");
       if (!creds) {
@@ -160,6 +164,8 @@ export default function InstructorLogin() {
     } catch {
       setFaceIdState("idle");
       setError("Biometric login not available. Please use email and password.");
+    } finally {
+      window.clearTimeout(safety);
     }
   };
 
