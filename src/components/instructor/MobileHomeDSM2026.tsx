@@ -12,7 +12,7 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { PullToRefresh } from "@/components/instructor/home/PullToRefresh";
 import { Shimmer } from "@/components/instructor/home/Shimmer";
-import nextLessonBg from "@/assets/next-lesson-bg.jpg";
+import nextLessonCar from "@/assets/next-lesson-car.png";
 import {
   Phone,
   Bell,
@@ -675,6 +675,10 @@ function NextLessonCard({
           padding: 13,
           cursor: "pointer",
           position: "relative",
+          backgroundImage: `url(${nextLessonCar})`,
+          backgroundRepeat: "no-repeat",
+          backgroundPosition: "right center",
+          backgroundSize: "auto 92%",
         }}
       >
         <div
