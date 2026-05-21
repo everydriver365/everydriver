@@ -191,9 +191,9 @@ export function ScheduleTile({ lessons, onAddLesson, onFillGaps, onLessonClick }
               onClick={() => onLessonClick(l.id)}
               className="w-full text-left transition-colors"
               style={{
-                background: "#FFFFFF",
+                background: C.outerBg,
                 border: `1px solid ${C.border}`,
-                borderRadius: 16,
+                borderRadius: 12,
                 padding: "14px 14px",
                 cursor: "pointer",
                 display: "flex",
@@ -203,6 +203,7 @@ export function ScheduleTile({ lessons, onAddLesson, onFillGaps, onLessonClick }
               onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.borderColor = C.blue; }}
               onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.borderColor = C.border; }}
             >
+
               {/* Time col */}
               <div style={{ width: 52, flexShrink: 0 }}>
                 <div style={{ fontSize: 20, fontWeight: 700, color: C.charcoal, lineHeight: 1.05, letterSpacing: "-0.3px" }}>
