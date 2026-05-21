@@ -443,7 +443,7 @@ const handler = async (req: Request): Promise<Response> => {
         body: `${pupilName} booked ${slotsText}`,
         tag: `gap-filled-${firstOffer.id}`,
         data: {
-          type: "gap_filled",
+          type: PushDataType.GAP_FILLED,
           offerId: firstOffer.id,
           pupilId: firstOffer.pupil_id,
           slotDate: firstOffer.slot_date,
