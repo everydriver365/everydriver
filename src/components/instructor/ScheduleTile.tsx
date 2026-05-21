@@ -18,15 +18,19 @@ interface ScheduleTileProps {
 }
 
 const C = {
-  outerBg: "#f0efe9",
+  outerBg: "#F2F4F8",
+  cardBg: "#FFFFFF",
   charcoal: "#1a1a1f",
-  muted: "#888888",
-  border: "#e0dfd9",
+  muted: "#999999",
+  border: "#e0e3ea",
   blue: "#2952b3",
   blueTint: "#E6ECF8",
   green: "#2d8a4e",
   chevron: "#B5B9C2",
+  trackBg: "#F2F4F8",
+  hover: "#e8e9ed",
 };
+
 
 const FONT = "Poppins, -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif";
 
@@ -81,33 +85,23 @@ export function ScheduleTile({ lessons, onAddLesson, onFillGaps, onLessonClick }
         key={key}
         type="button"
         onClick={() => setTab(key)}
-        className="flex-1 transition-colors"
+        className="flex-1 transition-all"
         style={{
-          background: isActive ? C.charcoal : "#FFFFFF",
-          color: isActive ? "#FFFFFF" : C.muted,
-          border: isActive ? "0" : `1px solid ${C.border}`,
-          borderRadius: 12,
+          background: isActive ? "#FFFFFF" : "transparent",
+          color: isActive ? C.charcoal : C.muted,
+          border: 0,
+          borderRadius: 8,
           padding: "8px 10px",
           cursor: "pointer",
           fontFamily: FONT,
           textAlign: "center",
           lineHeight: 1.2,
-        }}
-        onMouseEnter={(e) => {
-          if (!isActive) {
-            (e.currentTarget as HTMLButtonElement).style.color = C.charcoal;
-            (e.currentTarget as HTMLButtonElement).style.borderColor = C.charcoal;
-          }
-        }}
-        onMouseLeave={(e) => {
-          if (!isActive) {
-            (e.currentTarget as HTMLButtonElement).style.color = C.muted;
-            (e.currentTarget as HTMLButtonElement).style.borderColor = C.border;
-          }
+          boxShadow: isActive ? "0 1px 3px rgba(15,32,68,0.10)" : "none",
         }}
       >
-        <div style={{ fontSize: 13, fontWeight: 600 }}>{label}</div>
-        <div style={{ fontSize: 10, fontWeight: 400, marginTop: 2, opacity: 0.9 }}>{fmtPill(date)}</div>
+        <div style={{ fontSize: 11, fontWeight: 500 }}>
+          {label} / {date.getDate()} {MONTHS[date.getMonth()]}
+        </div>
       </button>
     );
   };
@@ -117,8 +111,9 @@ export function ScheduleTile({ lessons, onAddLesson, onFillGaps, onLessonClick }
       className="w-full"
       style={{
         fontFamily: FONT,
-        background: C.outerBg,
-        borderRadius: 18,
+        background: C.cardBg,
+        border: `1px solid ${C.border}`,
+        borderRadius: 14,
         padding: 14,
       }}
     >
@@ -136,11 +131,21 @@ export function ScheduleTile({ lessons, onAddLesson, onFillGaps, onLessonClick }
         {kicker}
       </div>
 
-      {/* Day selector */}
-      <div className="flex" style={{ gap: 8, marginBottom: 12 }}>
+      {/* Segmented day selector */}
+      <div
+        className="flex"
+        style={{
+          gap: 0,
+          marginBottom: 12,
+          background: C.trackBg,
+          borderRadius: 8,
+          padding: 3,
+        }}
+      >
         {renderPill("today", "Today", todayDate)}
         {renderPill("tomorrow", "Tomorrow", tomorrowDate)}
       </div>
+
 
       {/* Section label */}
       <div
@@ -186,9 +191,9 @@ export function ScheduleTile({ lessons, onAddLesson, onFillGaps, onLessonClick }
               onClick={() => onLessonClick(l.id)}
               className="w-full text-left transition-colors"
               style={{
-                background: "#FFFFFF",
+                background: C.outerBg,
                 border: `1px solid ${C.border}`,
-                borderRadius: 16,
+                borderRadius: 12,
                 padding: "14px 14px",
                 cursor: "pointer",
                 display: "flex",
@@ -198,6 +203,7 @@ export function ScheduleTile({ lessons, onAddLesson, onFillGaps, onLessonClick }
               onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.borderColor = C.blue; }}
               onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.borderColor = C.border; }}
             >
+
               {/* Time col */}
               <div style={{ width: 52, flexShrink: 0 }}>
                 <div style={{ fontSize: 20, fontWeight: 700, color: C.charcoal, lineHeight: 1.05, letterSpacing: "-0.3px" }}>
@@ -250,35 +256,40 @@ export function ScheduleTile({ lessons, onAddLesson, onFillGaps, onLessonClick }
         <button
           type="button"
           onClick={onAddLesson}
-          className="flex-1 flex items-center justify-center"
+          className="flex-1 flex items-center justify-center transition-colors"
           style={{
-            background: C.green, color: "#FFFFFF",
-            border: 0, borderRadius: 12,
-            padding: "10px 12px",
+            background: "#FFFFFF", color: C.green,
+            border: `1px solid ${C.border}`, borderRadius: 14,
+            padding: "13px 12px",
             fontSize: 13, fontWeight: 600, cursor: "pointer", gap: 6,
             fontFamily: FONT,
           }}
+          onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = C.hover; }}
+          onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "#FFFFFF"; }}
         >
-          <Plus size={14} strokeWidth={2.5} color="#FFFFFF" /> Add lesson
+          <Plus size={14} strokeWidth={2.5} color={C.green} /> Add lesson
         </button>
         <button
           type="button"
           onClick={onFillGaps}
-          className="flex-1 flex items-center justify-center"
+          className="flex-1 flex items-center justify-center transition-colors"
           style={{
-            background: C.blue, color: "#FFFFFF",
-            border: 0, borderRadius: 12,
-            padding: "10px 12px",
+            background: "#FFFFFF", color: C.blue,
+            border: `1px solid ${C.border}`, borderRadius: 14,
+            padding: "13px 12px",
             fontSize: 13, fontWeight: 600, cursor: "pointer", gap: 6,
             fontFamily: FONT,
           }}
+          onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = C.hover; }}
+          onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "#FFFFFF"; }}
         >
-          <RefreshCw size={14} strokeWidth={2.5} color="#FFFFFF" /> Fill gaps
+          <RefreshCw size={14} strokeWidth={2.5} color={C.blue} /> Fill gaps
         </button>
       </div>
 
     </div>
   );
 }
+
 
 export default ScheduleTile;

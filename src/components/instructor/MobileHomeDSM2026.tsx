@@ -261,12 +261,13 @@ export function MobileHomeDSM2026({ instructorId, instructorName }: Props) {
   return (
     <div
       style={{
-        backgroundColor: "#f0efe9",
+        backgroundColor: "#F2F4F8",
         minHeight: "100%",
         fontFamily: FONT,
         WebkitFontSmoothing: "antialiased",
       }}
     >
+
       <HeroHeader
         firstName={(instructorName || instructor?.name || "").split(" ")[0]}
         unreadCount={msgsCount}
@@ -469,63 +470,63 @@ function TodayStrip({ stats }: { stats: any }) {
     {
       value: String(stats?.todayLessons ?? 0),
       label: "Lessons today",
-      valueColour: T.navy,
-      small: false,
+      valueColour: "#1a1a1f",
+      valueSize: 22,
     },
     {
       value: stats?.nextFreeSlot ?? "—",
       label: "Next free slot",
-      valueColour: T.blue,
-      small: true,
+      valueColour: "#2952b3",
+      valueSize: 13,
     },
     {
       value: `£${(stats?.outstanding ?? 0).toLocaleString("en-GB")}`,
       label: "Outstanding",
-      valueColour: (stats?.outstanding ?? 0) > 0 ? T.red : T.navy,
-      small: false,
+      valueColour: (stats?.outstanding ?? 0) > 0 ? "#c9302c" : "#1a1a1f",
+      valueSize: 18,
     },
   ];
   return (
-    <div
-      style={{
-        display: "flex",
-        backgroundColor: T.white,
-        borderRadius: 14,
-        overflow: "hidden",
-        boxShadow: "0 1px 6px rgba(15,32,68,0.06)",
-      }}
-    >
-      {items.map((item, i, arr) => (
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
+      {items.map((item) => (
         <div
           key={item.label}
           style={{
-            flex: 1,
-            padding: "11px 10px",
+            backgroundColor: "#FFFFFF",
+            border: "1px solid #e0e3ea",
+            borderRadius: 14,
+            padding: "12px 8px",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            gap: 3,
-            borderRight: i < arr.length - 1 ? `1px solid ${T.divider}` : 0,
+            justifyContent: "center",
+            gap: 6,
+            minHeight: 70,
           }}
         >
           <div
             style={{
-              fontSize: item.small ? 12 : 16,
-              fontWeight: 800,
+              fontSize: item.valueSize,
+              fontWeight: 700,
               color: item.valueColour,
-              letterSpacing: -0.5,
-              lineHeight: item.small ? "14px" : "18px",
+              letterSpacing: -0.3,
+              lineHeight: 1.1,
               fontFamily: FONT,
               textAlign: "center",
+              whiteSpace: "nowrap",
             }}
           >
             {item.value}
           </div>
           <div
             style={{
-              fontSize: 9, fontWeight: 600, color: T.textMuted,
-              textTransform: "uppercase", letterSpacing: 0.5,
-              textAlign: "center", fontFamily: FONT,
+              fontSize: 9,
+              fontWeight: 600,
+              color: "#999999",
+              textTransform: "uppercase",
+              letterSpacing: 0.8,
+              textAlign: "center",
+              fontFamily: FONT,
             }}
           >
             {item.label}
@@ -535,6 +536,7 @@ function TodayStrip({ stats }: { stats: any }) {
     </div>
   );
 }
+
 
 function HeroButton({
   Icon, onPress, badge,
@@ -831,20 +833,34 @@ function NeedsAttentionCard({
     setOpenKey((p) => (p === k ? null : k));
   };
 
+  const RED = "#c9302c";
+  const RED_TINT = "#fbe8e8";
+  const BLUE = "#2952b3";
+  const BORDER = "#e0e3ea";
+  const MUTED = "#999999";
+  const GREY_LIGHT = "#cccccc";
+
+  const cells: { key: Key; label: string; count: number; tint: boolean; valueColor: string }[] = [
+    { key: "jobs",      label: "Jobs",   count: attention.jobs ?? 0,     tint: true,  valueColor: RED },
+    { key: "tests",     label: "Tests",  count: attention.tests ?? 0,    tint: true,  valueColor: BLUE },
+    { key: "calls",     label: "Calls",  count: attention.calls ?? 0,    tint: false, valueColor: GREY_LIGHT },
+    { key: "enquiries", label: "Enq's",  count: attention.enquiries ?? 0, tint: false, valueColor: GREY_LIGHT },
+  ];
+
   const tiles: {
     key: Key; icon: LucideIcon; label: string; count: number;
     urgent?: boolean; accent?: string; body: React.ReactNode;
   }[] = [
     {
       key: "jobs", icon: Briefcase, label: "Jobs",
-      count: attention.jobs, urgent: true, accent: T.red,
+      count: attention.jobs, urgent: true, accent: RED,
       body: attention.jobs === 0
         ? <Empty>All clear</Empty>
         : <JobsPreviewList navigate={navigate} />,
     },
     {
       key: "tests", icon: Repeat2, label: "Tests",
-      count: attention.tests, urgent: true, accent: T.blue,
+      count: attention.tests, urgent: true, accent: BLUE,
       body: attention.testItems.length === 0
         ? <Empty>All clear</Empty>
         : (
@@ -852,13 +868,7 @@ function NeedsAttentionCard({
             {attention.testItems.map((it: any, idx: number) => (
               <div key={it.id}>
                 {idx > 0 && (
-                  <div
-                    style={{
-                      height: 1,
-                      backgroundColor: "rgba(15,32,68,0.08)",
-                      margin: "0 20px",
-                    }}
-                  />
+                  <div style={{ height: 1, backgroundColor: "rgba(15,32,68,0.08)", margin: "0 20px" }} />
                 )}
                 <UrgentBanner item={it} onPress={() => navigate(it.route)} />
               </div>
@@ -872,110 +882,70 @@ function NeedsAttentionCard({
       count: attention.enquiries, body: <Empty>No new enquiries</Empty> },
   ];
 
-  const openTile = tiles.find((t) => t.key === openKey);
-
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-      {/* Header row */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 2px" }}>
-        <span
-          style={{
-            fontSize: 11, fontWeight: 700, color: T.navy, opacity: 0.6,
-            letterSpacing: "0.12em", textTransform: "uppercase", fontFamily: FONT,
-          }}
-        >
-          Needs attention
-        </span>
-        <div style={{ display: "flex", gap: 6 }}>
-          <span
-            style={{
-              backgroundColor: T.red, color: T.white, borderRadius: 999,
-              padding: "2px 10px", fontSize: 10, fontWeight: 700, fontFamily: FONT,
-            }}
-          >
-            {attention.urgentCount ?? 0} urgent
-          </span>
-          <span
-            style={{
-              backgroundColor: "rgba(15,32,68,0.08)", color: T.navy, borderRadius: 999,
-              padding: "2px 10px", fontSize: 10, fontWeight: 700, fontFamily: FONT,
-            }}
-          >
-            {attention.todoCount ?? 0} to do
-          </span>
-        </div>
-      </div>
-
-      {/* Counters strip — tap to expand sections */}
+    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
       <div
         style={{
-          backgroundColor: T.white,
-          border: `1px solid ${T.border}`,
+          backgroundColor: "#FFFFFF",
+          border: `1px solid ${BORDER}`,
           borderRadius: 14,
-          boxShadow: "0 1px 3px rgba(15,32,68,0.06)",
-          overflow: "hidden",
+          padding: 14,
         }}
       >
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: `repeat(${tiles.length}, 1fr) auto`,
-            gap: 8,
-            alignItems: "center",
-            padding: "10px 12px 10px 8px",
-          }}
-        >
-          {tiles.map((t) => {
-            const active = (t.count ?? 0) > 0;
-            const color = t.urgent && active ? (t.accent ?? T.red) : T.navy;
-            return (
-              <button
-                key={`c-${t.key}`}
-                type="button"
-                onClick={() => toggle(t.key)}
-                style={{
-                  background: "transparent", border: 0, cursor: "pointer",
-                  display: "flex", flexDirection: "column", alignItems: "center", gap: 2,
-                  opacity: active ? 1 : 0.4, padding: 0,
-                }}
-              >
-                <span style={{ fontSize: 20, fontWeight: 800, color, fontFamily: FONT, lineHeight: 1 }}>
-                  {t.count ?? 0}
-                </span>
-                <span
-                  style={{
-                    fontSize: 10, fontWeight: 600, color: T.navy, opacity: 0.7,
-                    fontFamily: FONT, letterSpacing: "0.04em", textTransform: "uppercase",
-                  }}
-                >
-                  {t.label}
-                </span>
-              </button>
-            );
-          })}
-          <button
-            type="button"
-            onClick={() => setSectionsOpen((v) => !v)}
-            aria-label={sectionsOpen ? "Collapse sections" : "Expand sections"}
+        {/* Header */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+          <span
             style={{
-              background: "transparent", border: 0, cursor: "pointer",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              padding: 4, marginLeft: 2,
+              fontSize: 10, fontWeight: 700, color: MUTED,
+              letterSpacing: "0.12em", textTransform: "uppercase", fontFamily: FONT,
             }}
           >
-            <ChevronDown
-              size={18}
+            Needs attention
+          </span>
+          {(attention.urgentCount ?? 0) > 0 && (
+            <span
               style={{
-                color: T.navy, opacity: 0.4,
-                transform: sectionsOpen ? "rotate(180deg)" : "rotate(0deg)",
-                transition: "transform 0.2s",
+                backgroundColor: RED, color: "#FFFFFF", borderRadius: 999,
+                padding: "2px 10px", fontSize: 10, fontWeight: 700, fontFamily: FONT,
               }}
-            />
-          </button>
+            >
+              {attention.urgentCount} urgent
+            </span>
+          )}
+        </div>
+
+        {/* 4-col grid */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
+          {cells.map((c) => (
+            <button
+              key={c.key}
+              type="button"
+              onClick={() => toggle(c.key)}
+              style={{
+                background: c.tint ? RED_TINT : "transparent",
+                border: 0, borderRadius: 10,
+                padding: "10px 4px",
+                display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
+                cursor: "pointer",
+              }}
+            >
+              <span style={{ fontSize: 20, fontWeight: 800, color: c.valueColor, fontFamily: FONT, lineHeight: 1 }}>
+                {c.count}
+              </span>
+              <span
+                style={{
+                  fontSize: 9, fontWeight: 600, color: MUTED,
+                  fontFamily: FONT, letterSpacing: "0.08em", textTransform: "uppercase",
+                }}
+              >
+                {c.label}
+              </span>
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Action tiles — horizontal strips, only when expanded */}
+      {/* Expanded action tiles */}
       {sectionsOpen && (
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {tiles.map((t) => (
@@ -997,6 +967,7 @@ function NeedsAttentionCard({
     </div>
   );
 }
+
 
 
 /* Horizontal strip action tile — icon left, label, badge, chevron right.
