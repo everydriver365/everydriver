@@ -469,12 +469,18 @@ function StatsStrip({ stats, loading }: { stats: any; loading?: boolean }) {
               letterSpacing: -0.6, lineHeight: "22px", fontFamily: FONT,
             }}
           >
-            {s.value}
-            {s.denom ? (
-              <span style={{ fontSize: 11, fontWeight: 500, color: "rgba(255,255,255,0.7)" }}>
-                {s.denom}
-              </span>
-            ) : null}
+            {loading ? (
+              <Shimmer width={70} height={20} radius={4} style={{ background: "linear-gradient(90deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0.15) 100%)", backgroundSize: "200% 100%" }} />
+            ) : (
+              <>
+                {s.value}
+                {s.denom ? (
+                  <span style={{ fontSize: 11, fontWeight: 500, color: "rgba(255,255,255,0.7)" }}>
+                    {s.denom}
+                  </span>
+                ) : null}
+              </>
+            )}
           </div>
           <div
             style={{
