@@ -9,7 +9,18 @@ const corsHeaders = {
 
 interface NotifyPupilRequest {
   pupilId: string;
-  type: "slot_offer" | "lesson_reminder" | "lesson_cancelled" | "payment_confirmed" | "waitlist_match" | "en_route";
+  type:
+    | "slot_offer"
+    | "lesson_reminder"
+    | "lesson_cancelled"
+    | "booking_confirmed"
+    | "test_booking_confirmed"
+    | "payment_confirmed"
+    | "waitlist_match"
+    | "en_route"
+    | "arrived"
+    | "running_late"
+    | "payment_reminder";
   title?: string;
   body?: string;
   data?: Record<string, unknown>;
