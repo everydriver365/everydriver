@@ -78,17 +78,46 @@ export function QuickAccessSwipeablePaged({ instructorId }: Props) {
           marginBottom: 10,
         }}
       >
-        <span
-          style={{
-            fontSize: 10,
-            fontWeight: 700,
-            color: MUTED,
-            letterSpacing: 1.4,
-            textTransform: "uppercase",
-          }}
-        >
-          Quick access
-        </span>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span
+            style={{
+              fontSize: 10,
+              fontWeight: 700,
+              color: MUTED,
+              letterSpacing: 1.4,
+              textTransform: "uppercase",
+            }}
+          >
+            Quick access
+          </span>
+          <button
+            type="button"
+            onClick={() => {
+              setSearchExpanded((v) => {
+                const next = !v;
+                if (!next) setQuery("");
+                return next;
+              });
+            }}
+            aria-label={searchExpanded ? "Close search" : "Search tools"}
+            aria-expanded={searchExpanded}
+            style={{
+              width: 22,
+              height: 22,
+              borderRadius: 999,
+              background: "transparent",
+              border: 0,
+              padding: 0,
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              color: MUTED,
+            }}
+          >
+            <SearchIcon size={14} strokeWidth={2} />
+          </button>
+        </div>
         <button
           type="button"
           onClick={() => setEditing(true)}
@@ -106,69 +135,80 @@ export function QuickAccessSwipeablePaged({ instructorId }: Props) {
         </button>
       </div>
 
-      {/* Search bar */}
+      {/* Expanding search bar */}
       <div
         style={{
-          background: "#fff",
-          borderRadius: 12,
-          padding: "11px 14px",
-          display: "flex",
-          alignItems: "center",
-          gap: 10,
-          marginBottom: 12,
-          border: `1px solid ${BORDER}`,
+          maxHeight: searchExpanded ? 60 : 0,
+          opacity: searchExpanded ? 1 : 0,
+          overflow: "hidden",
+          transition: "max-height 220ms ease, opacity 180ms ease, margin-bottom 220ms ease",
+          marginBottom: searchExpanded ? 12 : 0,
         }}
       >
-        <SearchIcon size={16} color={MUTED} strokeWidth={2} style={{ flexShrink: 0 }} />
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder={`Search all ${totalCount} tools…`}
-          aria-label="Search tools"
+        <div
           style={{
-            flex: 1,
-            minWidth: 0,
-            border: 0,
-            outline: "none",
-            background: "transparent",
-            fontSize: 14,
-            color: CHARCOAL,
-            padding: 0,
-            fontFamily:
-              '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif',
+            background: "#fff",
+            borderRadius: 12,
+            padding: "11px 14px",
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            border: `1px solid ${BORDER}`,
           }}
-        />
-        {query && (
-          <button
-            type="button"
-            onClick={() => setQuery("")}
-            aria-label="Clear search"
+        >
+          <SearchIcon size={16} color={MUTED} strokeWidth={2} style={{ flexShrink: 0 }} />
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={`Search all ${totalCount} tools…`}
+            aria-label="Search tools"
+            autoFocus={searchExpanded}
             style={{
-              background: "transparent",
+              flex: 1,
+              minWidth: 0,
               border: 0,
+              outline: "none",
+              background: "transparent",
+              fontSize: 14,
+              color: CHARCOAL,
               padding: 0,
-              color: "#C7C7CC",
-              cursor: "pointer",
-              display: "flex",
+              fontFamily:
+                '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif',
             }}
-          >
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+          />
+          {query && (
+            <button
+              type="button"
+              onClick={() => setQuery("")}
+              aria-label="Clear search"
+              style={{
+                background: "transparent",
+                border: 0,
+                padding: 0,
+                color: "#C7C7CC",
+                cursor: "pointer",
+                display: "flex",
+              }}
             >
-              <circle cx="12" cy="12" r="10" />
-              <path d="m15 9-6 6M9 9l6 6" />
-            </svg>
-          </button>
-        )}
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <path d="m15 9-6 6M9 9l6 6" />
+              </svg>
+            </button>
+          )}
+        </div>
       </div>
+
 
       {/* 2×2 Grid */}
       {gridTiles.length === 0 ? (
