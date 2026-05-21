@@ -12,6 +12,7 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { PullToRefresh } from "@/components/instructor/home/PullToRefresh";
 import { Shimmer } from "@/components/instructor/home/Shimmer";
+import nextLessonBg from "@/assets/next-lesson-bg.jpg";
 import {
   Phone,
   Bell,
