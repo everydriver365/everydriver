@@ -132,12 +132,15 @@ serve(async (req) => {
                 },
                 body: JSON.stringify({
                   instructorId: instructor.id,
+                  category: NotifyCategory.JOB,
+                  importance: NotifyImportance.NORMAL,
+                  jobValue: Math.round((instructor.hourly_rate || 35) * enquiry.requestedHours),
                   notification: {
                     title: "🚗 New Job Available!",
                     body: `${enquiry.name} needs a ${enquiry.requestedHours}h ${enquiry.courseType} course in ${enquiry.postcode}. Earn ~£${Math.round((instructor.hourly_rate || 35) * enquiry.requestedHours)}!`,
                     tag: `job-${newEnquiry.id}`,
                     data: {
-                      type: "new_job",
+                      type: PushDataType.JOB_OFFER,
                       enquiryId: newEnquiry.id,
                       url: "/instructor/jobs",
                     },
