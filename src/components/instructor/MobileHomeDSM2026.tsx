@@ -727,7 +727,7 @@ function NextLessonCard({
             </div>
           </div>
           <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8 }}>
-            <PupilAvatar initials={initialsOf(lesson.pupilName)} />
+            
             <ChevronDown
               size={16}
               color={T.textLight}
