@@ -1595,8 +1595,8 @@ function QuickAccessCard({ navigate }: { navigate: ReturnType<typeof useNavigate
         ) : null}
       </div>
 
-      {/* 2×2 Grid */}
-      {gridTiles.length === 0 ? (
+      {/* 2×2 Scrollable paged grid */}
+      {sourceTiles.length === 0 ? (
         <div
           style={{
             padding: "24px 12px",
@@ -1614,21 +1614,41 @@ function QuickAccessCard({ navigate }: { navigate: ReturnType<typeof useNavigate
       ) : (
         <div
           style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+            display: "flex",
+            overflowX: "auto",
+            scrollSnapType: "x mandatory",
             gap: 10,
+            margin: "0 -14px",
+            padding: "0 14px 4px",
+            scrollbarWidth: "none",
+            WebkitOverflowScrolling: "touch",
           }}
+          className="hide-scrollbar"
         >
-          {gridTiles.map((item) => (
-            <QATile
-              key={item.label}
-              item={item}
-              active={activeRoute === item.route}
-              onPress={() => { setActiveRoute(item.route); navigate(item.route); }}
-            />
+          {pages.map((page, pIdx) => (
+            <div
+              key={pIdx}
+              style={{
+                flex: "0 0 100%",
+                scrollSnapAlign: "start",
+                display: "grid",
+                gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                gap: 10,
+              }}
+            >
+              {page.map((item) => (
+                <QATile
+                  key={item.label}
+                  item={item}
+                  active={activeRoute === item.route}
+                  onPress={() => { setActiveRoute(item.route); navigate(item.route); }}
+                />
+              ))}
+            </div>
           ))}
         </div>
       )}
+
 
       {/* See all */}
       {!filtered ? (
