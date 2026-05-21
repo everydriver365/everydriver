@@ -68,8 +68,10 @@ serve(async (req) => {
         },
         body: JSON.stringify({
           instructorId,
+          category: NotifyCategory.REMINDER,
+          importance: NotifyImportance.NORMAL,
           bypassGate: true,
-          notification: { title, body, tag: "digest", data: { type: "digest" } },
+          notification: { title, body, tag: "digest", data: { type: PushDataType.DIGEST } },
         }),
       });
     } catch (e) {
