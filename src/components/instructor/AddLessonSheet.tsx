@@ -1212,6 +1212,34 @@ export function AddLessonSheet({
                   <div style={{ fontSize: 12, color: "#000000", lineHeight: 1.4, margin: "0 0 8px" }}>
                     {conflictWarning}
                   </div>
+                  {conflictSuggestions.length > 0 && (
+                    <div style={{ margin: "0 0 8px" }}>
+                      <div style={{ fontSize: 11, fontWeight: 600, color: "#6E6E73", margin: "0 0 6px" }}>
+                        Free this day
+                      </div>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                        {conflictSuggestions.map((t) => (
+                          <button
+                            key={t}
+                            type="button"
+                            onClick={() => setLessonStartTime(t)}
+                            style={{
+                              padding: "5px 10px",
+                              borderRadius: 999,
+                              background: "#FFFFFF",
+                              border: "0.5px solid #C8434F",
+                              color: "#C8434F",
+                              fontSize: 12,
+                              fontWeight: 600,
+                              cursor: "pointer",
+                            }}
+                          >
+                            {t}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   {travelSuggestion && (
                     <button
                       type="button"
