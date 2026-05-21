@@ -689,7 +689,7 @@ function NextLessonCard({
             height: "100%",
             width: "65%",
             objectFit: "cover",
-            objectPosition: "center 25%",
+            objectPosition: "center 0%",
             opacity: 0.85,
             pointerEvents: "none",
             WebkitMaskImage: "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.4) 35%, #000 100%)",
