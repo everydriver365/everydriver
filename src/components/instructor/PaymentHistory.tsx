@@ -93,7 +93,7 @@ export function PaymentHistory({ instructorId, limit = 10, monthOnly = false }: 
 
   useEffect(() => {
     fetchPayments();
-  }, [instructorId]);
+  }, [instructorId, monthOnly, limit]);
 
   const handleDelete = async (paymentId: string) => {
     setDeleting(paymentId);
