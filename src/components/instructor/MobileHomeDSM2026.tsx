@@ -261,7 +261,7 @@ export function MobileHomeDSM2026({ instructorId, instructorName }: Props) {
   return (
     <div
       style={{
-        backgroundColor: "#F7F7F7",
+        backgroundColor: "#f0efe9",
         minHeight: "100%",
         fontFamily: FONT,
         WebkitFontSmoothing: "antialiased",
