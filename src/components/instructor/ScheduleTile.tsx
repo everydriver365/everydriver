@@ -18,15 +18,19 @@ interface ScheduleTileProps {
 }
 
 const C = {
-  outerBg: "#f0efe9",
+  outerBg: "#F2F4F8",
+  cardBg: "#FFFFFF",
   charcoal: "#1a1a1f",
-  muted: "#888888",
-  border: "#e0dfd9",
+  muted: "#999999",
+  border: "#e0e3ea",
   blue: "#2952b3",
   blueTint: "#E6ECF8",
   green: "#2d8a4e",
   chevron: "#B5B9C2",
+  trackBg: "#F2F4F8",
+  hover: "#e8e9ed",
 };
+
 
 const FONT = "Poppins, -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif";
 
