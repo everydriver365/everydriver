@@ -121,124 +121,87 @@ export function ScheduleTile({ lessons, onAddLesson, onFillGaps, onLessonClick }
       </div>
 
       {/* List */}
-      <div className="flex flex-col gap-1">
-        {withStatus.map((l) => {
+      <div className="flex flex-col">
+        {withStatus.map((l, idx) => {
           const isNow = l._status === "now";
           const isNext = l._status === "next";
           const isDone = l._status === "done";
-          const elevated = isNow || isNext;
-          const dotColor = isNow ? C.red : isNext ? C.blue : C.grey;
-          const glow = isNow
-            ? `0 0 0 5px rgba(192,57,43,0.14)`
-            : isNext
-              ? `0 0 0 5px rgba(46,95,168,0.14)`
-              : "none";
-
-          const rowShadow = elevated
-            ? `0 2px 8px -3px rgba(27,42,74,0.14), inset 0 0 0 1px ${C.line}`
-            : "none";
+          const barColor = isNow ? C.red : isNext ? C.blue : isDone ? C.grey : C.blue;
+          const titleColor = isDone ? "#AEB4BF" : C.navy;
 
           return (
-            <button
-              key={l.id}
-              type="button"
-              onClick={() => onLessonClick(l.id)}
-              className="w-full text-left transition-colors"
-              style={{
-                background: elevated ? "#F7F9FC" : "transparent",
-                border: 0,
-                borderRadius: 16,
-                padding: "16px 14px",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                gap: 12,
-                boxShadow: rowShadow,
-              }}
-              onMouseEnter={(e) => {
-                if (!elevated) e.currentTarget.style.background = "#F0F2F5";
-              }}
-              onMouseLeave={(e) => {
-                if (!elevated) e.currentTarget.style.background = "transparent";
-              }}
-            >
-              {/* Dot */}
-              <div
-                className="flex-shrink-0"
+            <Fragment key={l.id}>
+              {idx > 0 && (
+                <div style={{ height: 1, background: C.line, marginLeft: 72 }} />
+              )}
+              <button
+                type="button"
+                onClick={() => onLessonClick(l.id)}
+                className="w-full text-left transition-colors"
                 style={{
-                  width: 13, height: 13, borderRadius: 7,
-                  background: dotColor, boxShadow: glow,
+                  background: "transparent",
+                  border: 0,
+                  borderRadius: 12,
+                  padding: "14px 6px",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 14,
                 }}
-              />
-              {/* Time col */}
-              <div style={{ width: 60, flexShrink: 0 }}>
-                <div style={{
-                  fontSize: 21, fontWeight: 800,
-                  color: isDone ? "#AEB4BF" : C.navy, lineHeight: 1.05,
-                }}>
-                  {fmtHM(l._start)}
+                onMouseEnter={(e) => { e.currentTarget.style.background = "#F5F7FA"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+              >
+                {/* Time col */}
+                <div style={{ width: 52, flexShrink: 0 }}>
+                  <div style={{
+                    fontSize: 20, fontWeight: 800,
+                    color: titleColor, lineHeight: 1.05,
+                    letterSpacing: "-0.3px",
+                  }}>
+                    {fmtHM(l._start)}
+                  </div>
+                  <div style={{ fontSize: 12, color: C.muted, marginTop: 4, fontWeight: 500 }}>
+                    {fmtDuration(l._start.getTime(), l._end.getTime())}
+                  </div>
                 </div>
-                <div style={{ fontSize: 11, color: C.muted, marginTop: 3 }}>
-                  {fmtDuration(l._start.getTime(), l._end.getTime())}
-                </div>
-              </div>
-              {/* Info col */}
-              <div className="flex-1 min-w-0">
+                {/* Colored bar */}
                 <div
+                  className="flex-shrink-0 self-stretch"
                   style={{
-                    fontSize: 17, fontWeight: 800,
-                    color: isDone ? "#AEB4BF" : C.navy,
-                    letterSpacing: "-0.4px",
-                    textDecoration: isDone ? "line-through" : "none",
-                    textDecorationColor: isDone ? C.grey : undefined,
-                    whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+                    width: 4, borderRadius: 2,
+                    background: barColor,
+                    minHeight: 36,
                   }}
-                >
-                  {l.studentName}
-                </div>
-                <div style={{ fontSize: 13, color: C.muted, marginTop: 2 }}>
-                  {l.lessonType} · <span style={{ color: C.blue, fontWeight: 700 }}>{l.postcode}</span>
-                </div>
-              </div>
-              {/* Right element */}
-              <div className="flex-shrink-0">
-                {isNow && (
-                  <span style={{
-                    background: C.red, color: "#FFFFFF",
-                    borderRadius: 999, padding: "5px 12px",
-                    fontSize: 12, fontWeight: 800,
-                  }}>Now</span>
-                )}
-                {isNext && (
-                  <span style={{
-                    background: C.blueTint, color: C.blue,
-                    borderRadius: 999, padding: "5px 12px",
-                    fontSize: 12, fontWeight: 800,
-                  }}>Next</span>
-                )}
-                {l._status === "upcoming" && (
-                  <span style={{
-                    background: C.cardGrey, color: "#7A8294",
-                    borderRadius: 999, padding: "5px 12px",
-                    fontSize: 12, fontWeight: 800,
-                  }}>{fmtHM(l._start)}</span>
-                )}
-                {isDone && (
+                />
+                {/* Info col */}
+                <div className="flex-1 min-w-0">
                   <div
-                    className="flex items-center justify-center"
                     style={{
-                      width: 20, height: 20, borderRadius: 10,
-                      background: C.grey, color: "#FFFFFF",
+                      fontSize: 17, fontWeight: 700,
+                      color: titleColor,
+                      letterSpacing: "-0.3px",
+                      textDecoration: isDone ? "line-through" : "none",
+                      textDecorationColor: isDone ? C.grey : undefined,
+                      whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
                     }}
                   >
-                    <Check size={12} strokeWidth={3.5} color="#FFFFFF" />
+                    {l.studentName}
                   </div>
-                )}
-              </div>
-            </button>
+                  <div style={{
+                    fontSize: 13, color: C.muted, marginTop: 2,
+                    whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+                  }}>
+                    {l.lessonType} · {l.postcode}
+                  </div>
+                </div>
+                {/* Chevron */}
+                <ChevronRight size={18} color={C.grey} className="flex-shrink-0" strokeWidth={2.5} />
+              </button>
+            </Fragment>
           );
         })}
       </div>
+
 
       {/* Footer */}
       <div className="flex mt-3" style={{ gap: 8 }}>
