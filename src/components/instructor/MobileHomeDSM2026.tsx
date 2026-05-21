@@ -61,6 +61,8 @@ import {
   Briefcase,
   CalendarRange,
   AlertCircle,
+  PhoneOff,
+  Inbox,
   type LucideIcon,
 } from "lucide-react";
 import { format, addDays, getWeek, isSameDay, parse, parseISO } from "date-fns";
