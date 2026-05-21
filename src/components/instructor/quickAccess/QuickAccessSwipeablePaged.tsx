@@ -32,6 +32,7 @@ export function QuickAccessSwipeablePaged({ instructorId }: Props) {
   const [query, setQuery] = useState("");
   const [editing, setEditing] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [searchExpanded, setSearchExpanded] = useState(false);
 
   const { data: pinnedRows, isCustomised, setPins, isSaving } =
     useInstructorPinnedTiles(instructorId);
