@@ -1,33 +1,51 @@
-# Fix "99" on Tests tile — purge legacy scraped data from UI
+## Goal
 
-## Root cause
+On `/instructor/payments` (mobile, `src/pages/InstructorPay.tsx`), make all tiles render at the same size and verify each tile is wired to the correct data and the correct expanded view.
 
-The Tests tile badge reads `useTestSwapNotifications`, which sums three counts. One of them queries `test_slot_reservations` where `status = 'scraped_match'`. The database currently holds **98 such rows** (left over from the retired external scraper), plus 1 genuine swap match → badge shows **99** (capped visually as "9+", but the underlying number is 99 and the expand panel / action lists still expose them).
+## What's wrong today
 
-The same legacy source is read in two more places, which contradicts the new "no external scraping" banner on the Available tab:
-- `src/components/test-requests/MatchedSlotsList.tsx` — Available tab list
-- `src/hooks/useTestActionItems.ts` — action items feed
+**Sizing**
+- 2×2 summary grid: each row's two tiles can be different heights because tile content is variable (number of digits, no min-height). On wider numbers the box grows.
+- Quick Actions grid: the two accent tiles (Take Payment, Refund) use gradient wrappers and slightly different paddings than the white tiles — they don't line up perfectly.
+- The expandable summary tiles use `col-span-2` when expanded, which is intended, but the **collapsed** state still has no fixed min-height so neighbours can mismatch.
 
-## Plan
+**Wiring**
+- "Course Rewards" tile shows `instructors.bonus_earned` but expands to `InstructorPayoutHistory` (Square payout history) — wrong drill-down. Should expand to bonus / rewards detail, or be renamed.
+- "Credit on Account" sums positive pupil balances correctly, but `PupilBalancesList` in the expanded panel shows all pupils (incl. debtors) — label/content mismatch.
+- "Payments This Month" count uses `recordedAt >= start of month` ✓, but the expanded `PaymentHistory` component shows all-time history — drill-down should be filtered to this month to match the headline number.
+- "Owes Money" total + expanded debtor list ✓ (correct).
 
-Frontend-only change. No DB writes, no schema change. We simply stop reading the deprecated `scraped_match` rows anywhere in the instructor UI.
+## Changes
 
-### 1. `src/hooks/useTestSwapNotifications.ts`
-- Remove the `test_slot_reservations` / `scraped_match` count block.
-- Remove its realtime subscription.
-- Return only `pendingOffers + matchingTests`.
+### 1. Uniform tile sizing (visual)
 
-### 2. `src/components/test-requests/MatchedSlotsList.tsx`
-- Remove the `scraped_match` query branch so the Available tab shows **only** swap-system `have_test` listings at the instructor's watched centres — matching the banner's promise.
+- Wrap the 4 summary tiles in the same `tileStyle` with a **fixed `minHeight: 120`** on the collapsed tile body so all four match regardless of digit count.
+- Standardise inner padding to `14px`, icon box `44×44 / radius 12`, value `22px/700`, label `12px/400` — already mostly there; remove the per-tile variance.
+- Quick Actions: keep accent (Take Payment) and highlight (Refund) gradients, but apply the same `tileStyle` box dimensions and `minHeight: 96` so the 2-col grid lines up cleanly across all 7 actions.
+- Keep `col-span-2` expansion behaviour for summary tiles.
 
-### 3. `src/hooks/useTestActionItems.ts`
-- Drop the `scrapedRes` query and the `"scraped"` kind from the merged list. Keep only pending swap offers.
+### 2. Wiring fixes
 
-### 4. (Optional, ask user) Database cleanup
-- Leave the 98 legacy rows in `test_slot_reservations` untouched (they are no longer read by the UI), **or** issue a one-off migration to delete/archive them. Recommend leaving them for now and only purging if the user confirms — that avoids any risk to historical/admin views (`AdminScrapedMatchesPanel` still uses them).
+| Tile | Headline value (today) | Expanded panel (today) | Fix |
+|---|---|---|---|
+| Owes Money | sum of negative balances | debtor list with Remind buttons | keep |
+| Payments This Month | count of `payment_history` this month | `PaymentHistory` (all-time) | pass a `monthOnly` prop / filter to PaymentHistory so the drill-down matches the headline |
+| Course Rewards | `instructors.bonus_earned` | `InstructorPayoutHistory` (Square payouts) | swap drill-down to a bonus-history list (or, if no component exists, link out to `/instructor/bonus` and remove the expand) |
+| Credit on Account | sum of positive balances | `PupilBalancesList` (all pupils) | pass `creditOnly` filter so only pupils with positive balances render |
 
-## Expected result
+### 3. Files touched
 
-- Tests tile badge drops to the real swap-only count (currently 1 in prod).
-- Available tab content matches its banner — swap data only.
-- Admin panel that intentionally inspects scraped legacy rows is unaffected.
+- `src/pages/InstructorPay.tsx` — tile markup, min-heights, drill-down wiring
+- `src/components/instructor/PaymentHistory.tsx` — add optional `monthOnly?: boolean` filter
+- `src/components/instructor/money/PupilBalancesList.tsx` — add optional `creditOnly?: boolean` filter
+- `src/components/instructor/InstructorPayoutHistory.tsx` — only used if we decide to keep it for the bonus tile; otherwise unused on this page
+
+### 4. Out of scope
+
+- No backend / schema changes.
+- No copy changes beyond what the wiring requires.
+- Desktop payments page (`InstructorPaymentsDesktop.tsx`) — not touched unless you want me to mirror.
+
+## Open question I'll default on
+
+For "Course Rewards" expansion I'll **link out to `/instructor/bonus`** (chevron, no expand) rather than show payout history, since payout history is unrelated to bonuses. Tell me if you'd rather keep an inline expand and I'll build a small bonus-history list instead.

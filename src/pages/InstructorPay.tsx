@@ -396,7 +396,7 @@ export default function InstructorPay() {
               onClick={() => { haptics.selection(); setOwesExpanded(!owesExpanded); }}
               style={tileStyle} className="w-full text-left"
             >
-              <div style={{ padding: 14 }}>
+              <div style={{ padding: 14, minHeight: 120, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
                 <div style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: "#FEF2F2", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
                   <AlertCircle size={22} strokeWidth={2} color="#DC2626" />
                 </div>
@@ -467,7 +467,7 @@ export default function InstructorPay() {
               onClick={() => { haptics.selection(); setPaymentsExpanded(!paymentsExpanded); }}
               style={tileStyle} className="w-full text-left"
             >
-              <div style={{ padding: 14 }}>
+              <div style={{ padding: 14, minHeight: 120, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
                 <div style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: "#DBEAFE", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
                   <CreditCard size={22} strokeWidth={2} color="#1E40AF" />
                 </div>
@@ -489,7 +489,7 @@ export default function InstructorPay() {
                   className="overflow-hidden"
                 >
                   <div className="mt-2">
-                    <PaymentHistory instructorId={instructorId || ""} />
+                    <PaymentHistory instructorId={instructorId || ""} monthOnly />
                   </div>
                 </motion.div>
               )}
@@ -497,42 +497,27 @@ export default function InstructorPay() {
           </div>
 
           {/* Course Rewards */}
-          <div className={cn(bonusExpanded && "col-span-2")}>
-            <motion.button
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.20 }}
-              whileTap={{ scale: 0.97 }}
-              onClick={() => { haptics.selection(); setBonusExpanded(!bonusExpanded); }}
-              style={tileStyle} className="w-full text-left"
-            >
-              <div style={{ padding: 14 }}>
-                <div style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: "#FEF3C7", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
-                  <Trophy size={22} strokeWidth={2} color="#92400E" />
-                </div>
-                <p style={{ fontSize: 22, fontWeight: 700, color: "#18181B", fontFamily: "Inter, sans-serif" }} className="tabular-nums">£{bonusEarned}</p>
-                <div className="flex items-center justify-between" style={{ marginTop: 2 }}>
-                  <p style={{ fontSize: 12, fontWeight: 400, color: "#71717A", fontFamily: "Inter, sans-serif" }}>Course Rewards</p>
-                  <ChevronRight size={16} strokeWidth={2} color="#A1A1AA" className={cn("transition-transform", bonusExpanded && "rotate-90")} />
-                </div>
-              </div>
-            </motion.button>
-
-            <AnimatePresence>
-              {bonusExpanded && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.25 }}
-                  className="overflow-hidden"
-                >
-                  <div className="mt-2">
-                    <InstructorPayoutHistory instructorId={instructorId || ""} />
+          <div>
+            <Link to="/instructor/bonus" onClick={() => haptics.selection()}>
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.20 }}
+                whileTap={{ scale: 0.97 }}
+                style={tileStyle} className="w-full text-left block"
+              >
+                <div style={{ padding: 14, minHeight: 120, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                  <div style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: "#FEF3C7", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
+                    <Trophy size={22} strokeWidth={2} color="#92400E" />
                   </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                  <p style={{ fontSize: 22, fontWeight: 700, color: "#18181B", fontFamily: "Inter, sans-serif" }} className="tabular-nums">£{bonusEarned}</p>
+                  <div className="flex items-center justify-between" style={{ marginTop: 2 }}>
+                    <p style={{ fontSize: 12, fontWeight: 400, color: "#71717A", fontFamily: "Inter, sans-serif" }}>Course Rewards</p>
+                    <ChevronRight size={16} strokeWidth={2} color="#A1A1AA" />
+                  </div>
+                </div>
+              </motion.div>
+            </Link>
           </div>
 
           {/* Pupil Balances */}
@@ -545,7 +530,7 @@ export default function InstructorPay() {
               onClick={() => { haptics.selection(); setBalancesExpanded(!balancesExpanded); }}
               style={tileStyle} className="w-full text-left"
             >
-              <div style={{ padding: 14 }}>
+              <div style={{ padding: 14, minHeight: 120, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
                 <div style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: "#E8ECF1", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
                   <Users size={22} strokeWidth={2} color="#2A394F" />
                 </div>
@@ -567,7 +552,7 @@ export default function InstructorPay() {
                   className="overflow-hidden"
                 >
                   <div style={{ ...tileStyle, marginTop: 8, padding: 16 }}>
-                    <PupilBalancesList pupils={pupils} limit={5} />
+                    <PupilBalancesList pupils={pupils} limit={5} creditOnly />
                     <GradientLine />
                   </div>
                 </motion.div>
@@ -581,7 +566,7 @@ export default function InstructorPay() {
           <p className="text-[11px] font-bold text-[#8e8e93] uppercase tracking-[0.06em] px-1 mb-[10px]">
             Quick Actions
           </p>
-          <div className="grid grid-cols-2 gap-[10px]">
+          <div className="grid grid-cols-2 gap-[10px] auto-rows-fr">
             {actions.map((action, i) => {
               const inner = (
                 <motion.div
@@ -592,6 +577,7 @@ export default function InstructorPay() {
                   whileTap={{ scale: 0.97 }}
                   style={action.accent || action.highlight ? undefined : tileStyle}
                   className={cn(
+                    "h-full",
                     action.accent
                       ? "rounded-[14px] overflow-hidden bg-gradient-to-br from-[#1F2B3D] to-[#2A394F] shadow-[0_6px_20px_rgba(26,111,212,0.35)]"
                       : action.highlight
@@ -599,7 +585,7 @@ export default function InstructorPay() {
                         : ""
                   )}
                 >
-                  <div style={{ padding: "14px", display: "flex", flexDirection: "column", gap: 12 }}>
+                  <div style={{ padding: "14px", display: "flex", flexDirection: "column", gap: 12, minHeight: 110, justifyContent: "space-between" }}>
                     <div
                       style={{
                         width: 44,
@@ -632,6 +618,7 @@ export default function InstructorPay() {
                     key={action.id}
                     to={action.href}
                     onClick={() => haptics.selection()}
+                    className="h-full block"
                   >
                     {inner}
                   </Link>
@@ -641,7 +628,7 @@ export default function InstructorPay() {
                 <button
                   key={action.id}
                   onClick={action.onClick}
-                  className="text-left"
+                  className="text-left h-full"
                 >
                   {inner}
                 </button>
