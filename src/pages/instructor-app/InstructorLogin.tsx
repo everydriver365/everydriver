@@ -189,6 +189,7 @@ export default function InstructorLogin() {
 
   const handleSignIn = async (e?: React.FormEvent) => {
     e?.preventDefault();
+    if (loading) return;
     setError("");
 
     if (isForgotPassword) {
@@ -217,9 +218,12 @@ export default function InstructorLogin() {
     const validation = loginSchema.safeParse({ email: email.trim(), password });
     if (!validation.success) { setError(validation.error.errors[0].message); return; }
 
+    const attemptId = startAuthAttempt();
     setLoading(true);
+    console.info(`${LOGIN_LOG_PREFIX} password sign-in submitted`);
     try {
-      const { error: signInError } = await signIn(email.trim(), password);
+      const { error: signInError, session } = await signIn(email.trim(), password);
+      if (!isActiveAuthAttempt(attemptId)) return;
       if (signInError) {
         if (isEmailNotConfirmedError(signInError)) {
           setError("Please verify your email before signing in. Check your inbox for the confirmation link.");
@@ -234,14 +238,19 @@ export default function InstructorLogin() {
       } else {
         setRememberMe(rememberMe);
         await saveBiometricCredentials("instructor", email.trim(), password);
+        if (!isActiveAuthAttempt(attemptId)) return;
         setBiometricAvailable(true);
         toast.success("Welcome back!");
+        console.info(`${LOGIN_LOG_PREFIX} password redirecting to instructor dashboard`, {
+          sessionReceived: Boolean(session),
+        });
         navigate("/instructor");
       }
     } catch {
+      if (!isActiveAuthAttempt(attemptId)) return;
       setError("An unexpected error occurred");
     } finally {
-      setLoading(false);
+      if (isActiveAuthAttempt(attemptId)) setLoading(false);
     }
   };
 
