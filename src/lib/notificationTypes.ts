@@ -18,7 +18,10 @@ export const PushDataType = {
   LESSON_CANCELLED: "lesson_cancelled",
   LESSON_RESCHEDULED: "lesson_rescheduled",
   LESSON_REMINDER: "lesson_reminder",
+  LESSON_EOL: "lesson_eol",
+  LESSON_CHECKIN: "lesson_checkin",
   CALENDAR_SYNC_FAILED: "calendar_sync_failed",
+  GAP_FILLED: "gap_filled",
 
   // Payments
   PAYMENT_RECEIVED: "payment_received",
@@ -33,6 +36,7 @@ export const PushDataType = {
   // Messaging
   MESSAGE: "message",
   ADMIN_MESSAGE: "admin_message",
+  WHATSAPP_HANDOFF: "whatsapp_handoff",
 
   // Live tracking
   EN_ROUTE: "en_route",
@@ -42,8 +46,12 @@ export const PushDataType = {
   // System
   SYSTEM: "system",
   TEST_SWAP: "test_swap",
+  TEST_SWAP_MATCH: "test_swap_match",
   WAITLIST_MATCH: "waitlist_match",
   SLOT_OFFER: "slot_offer",
+  DAILY_SUMMARY: "daily_summary",
+  DIGEST: "digest",
+  COURSE_BONUS: "course_bonus",
 } as const;
 
 export type PushDataTypeValue = (typeof PushDataType)[keyof typeof PushDataType];

@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { PushDataType, NotifyCategory, NotifyImportance } from "../_shared/notification-types.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -442,7 +443,7 @@ const handler = async (req: Request): Promise<Response> => {
         body: `${pupilName} booked ${slotsText}`,
         tag: `gap-filled-${firstOffer.id}`,
         data: {
-          type: "gap_filled",
+          type: PushDataType.GAP_FILLED,
           offerId: firstOffer.id,
           pupilId: firstOffer.pupil_id,
           slotDate: firstOffer.slot_date,
@@ -462,6 +463,8 @@ const handler = async (req: Request): Promise<Response> => {
           },
           body: JSON.stringify({
             instructorId: firstOffer.instructor_id,
+            category: NotifyCategory.LESSON,
+            importance: NotifyImportance.NORMAL,
             notification,
           }),
         });

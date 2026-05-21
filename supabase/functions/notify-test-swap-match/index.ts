@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.89.0";
 import { Resend } from "npm:resend@4.0.1";
 import { shouldSendToInstructor } from "../_shared/notify-gate.ts";
+import { PushDataType, NotifyCategory, NotifyImportance } from "../_shared/notification-types.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -65,13 +66,14 @@ async function sendPush(supabase: ReturnType<typeof createClient>, instructorId:
       },
       body: JSON.stringify({
         instructorId,
+        category: NotifyCategory.TEST_SWAP,
+        importance: NotifyImportance.IMPORTANT,
         notification: {
           title,
           body,
           tag: "test-swap-match",
-          data: { url: "/instructor/test-requests" },
+          data: { type: PushDataType.TEST_SWAP_MATCH, url: "/instructor/test-requests" },
         },
-        category: "test_swap",
       }),
     });
   } catch (e) {

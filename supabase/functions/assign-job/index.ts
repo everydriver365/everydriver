@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.89.0";
+import { PushDataType, NotifyCategory, NotifyImportance } from "../_shared/notification-types.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -72,12 +73,15 @@ serve(async (req) => {
           },
           body: JSON.stringify({
             instructorId,
+            category: NotifyCategory.JOB,
+            importance: NotifyImportance.IMPORTANT,
+            jobValue: totalPayable,
             notification: {
               title: "🚗 New Job Offer!",
               body: `${enquiry.name} wants a ${enquiry.requested_hours}h ${enquiry.course_type} course in ${enquiry.postcode}. Earn £${totalPayable.toFixed(0)}!`,
               tag: `job-${enquiryId}`,
               data: {
-                type: "job_offer",
+                type: PushDataType.JOB_OFFER,
                 enquiryId,
                 url: "/instructor/jobs",
               },

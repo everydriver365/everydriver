@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { verifyCardstreamSignature } from "../_shared/cardstream_signature.ts";
+import { PushDataType, NotifyCategory, NotifyImportance } from "../_shared/notification-types.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -234,11 +235,14 @@ serve(async (req: Request) => {
                 },
                 body: JSON.stringify({
                   instructorId: pupil.instructor_id,
+                  category: NotifyCategory.PAYMENT,
+                  importance: NotifyImportance.NORMAL,
+                  pupilId,
                   notification: {
                     title: "💰 Payment Received",
                     body: `£${paymentAmountDisplay} received from ${pupil.name || "a pupil"} via ${provider.toUpperCase()} Card`,
                     tag: `payment-received-${Date.now()}`,
-                    data: { type: "payment_received", pupilId, amount: paymentAmountPounds },
+                    data: { type: PushDataType.PAYMENT_RECEIVED, pupilId, amount: paymentAmountPounds },
                   },
                 }),
               });
@@ -454,11 +458,14 @@ serve(async (req: Request) => {
                       },
                       body: JSON.stringify({
                         instructorId: pupil.instructor_id,
+                        category: NotifyCategory.PAYMENT,
+                        importance: NotifyImportance.NORMAL,
+                        pupilId,
                         notification: {
                           title: "💰 Payment Received",
                           body: `£${capturedAmount.toFixed(2)} received via Clearpay`,
                           tag: `payment-received-${Date.now()}`,
-                          data: { type: "payment_received", pupilId, amount: capturedAmount },
+                          data: { type: PushDataType.PAYMENT_RECEIVED, pupilId, amount: capturedAmount },
                         },
                       }),
                     });
@@ -635,11 +642,14 @@ serve(async (req: Request) => {
                 },
                 body: JSON.stringify({
                   instructorId: pupil.instructor_id,
+                  category: NotifyCategory.PAYMENT,
+                  importance: NotifyImportance.NORMAL,
+                  pupilId,
                   notification: {
                     title: "💰 Payment Received",
                     body: `£${klarnaAmount.toFixed(2)} received via Klarna`,
                     tag: `payment-received-${Date.now()}`,
-                    data: { type: "payment_received", pupilId, amount: klarnaAmount },
+                    data: { type: PushDataType.PAYMENT_RECEIVED, pupilId, amount: klarnaAmount },
                   },
                 }),
               });

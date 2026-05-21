@@ -5,6 +5,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { PushDataType, NotifyCategory, NotifyImportance } from "../_shared/notification-types.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -128,8 +129,10 @@ serve(async (req) => {
         },
         body: JSON.stringify({
           instructorId: row.instructor_id,
+          category: NotifyCategory.REMINDER,
+          importance: NotifyImportance.NORMAL,
           bypassGate: true,
-          notification: { title, body, tag: "daily-summary", data: { type: "daily_summary" } },
+          notification: { title, body, tag: "daily-summary", data: { type: PushDataType.DAILY_SUMMARY } },
         }),
       });
     } catch (e) {

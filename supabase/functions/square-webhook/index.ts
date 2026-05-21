@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { encode as hexEncode } from "https://deno.land/std@0.168.0/encoding/hex.ts";
+import { PushDataType, NotifyCategory, NotifyImportance } from "../_shared/notification-types.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -315,11 +316,14 @@ serve(async (req: Request) => {
             },
             body: JSON.stringify({
               instructorId,
+              category: NotifyCategory.PAYMENT,
+              importance: NotifyImportance.NORMAL,
+              pupilId,
               notification: {
                 title: "💰 Payment Received",
                 body: `£${creditAmount.toFixed(2)} received from ${pupil?.name || "a pupil"} via Square Checkout`,
                 tag: `payment-received-${Date.now()}`,
-                data: { type: "payment_received", pupilId, amount: creditAmount },
+                data: { type: PushDataType.PAYMENT_RECEIVED, pupilId, amount: creditAmount },
               },
             }),
           });
@@ -607,11 +611,14 @@ serve(async (req: Request) => {
             headers: { "Content-Type": "application/json", "Authorization": `Bearer ${supabaseServiceKey}` },
             body: JSON.stringify({
               instructorId: original.instructor_id,
+              category: NotifyCategory.PAYMENT,
+              importance: NotifyImportance.IMPORTANT,
+              pupilId: original.pupil_id,
               notification: {
                 title: "↩️ Refund processed",
                 body: `£${refundAmount.toFixed(2)} refunded to pupil${fullRefund ? "" : " (partial)"}`,
                 tag: `refund-${refundId}`,
-                data: { type: "refund", pupilId: original.pupil_id, amount: refundAmount },
+                data: { type: PushDataType.REFUND, pupilId: original.pupil_id, amount: refundAmount },
               },
             }),
           });
