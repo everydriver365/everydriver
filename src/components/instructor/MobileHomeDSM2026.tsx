@@ -912,16 +912,16 @@ function NeedsAttentionCard({
         </div>
 
         {/* 4-col grid */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 }}>
           {cells.map((c) => (
             <button
               key={c.key}
               type="button"
               onClick={() => toggle(c.key)}
               style={{
-                background: c.tint ? RED_TINT : "transparent",
+                background: c.bg,
                 border: 0, borderRadius: 10,
-                padding: "10px 4px",
+                padding: 8,
                 display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
                 cursor: "pointer",
               }}
@@ -951,6 +951,7 @@ function NeedsAttentionCard({
               icon={t.icon}
               label={t.label}
               accent={t.accent}
+              tint={t.tint}
               outlined={t.urgent}
               badgeCount={t.count}
               open={openKey === t.key}
@@ -958,6 +959,7 @@ function NeedsAttentionCard({
             >
               {t.body}
             </ActionTile>
+
           ))}
         </div>
       )}
