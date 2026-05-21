@@ -405,13 +405,13 @@ function HeroHeader(props: {
       />
 
       {/* Stats strip (inside hero, below next lesson) */}
-      <StatsStrip stats={stats} />
+      <StatsStrip stats={stats} loading={statsLoading} />
     </div>
   );
 }
 
 /* ============================== Stats strip ============================= */
-function StatsStrip({ stats }: { stats: any }) {
+function StatsStrip({ stats, loading }: { stats: any; loading?: boolean }) {
   const cells = [
     {
       label: "Earnings · week",
@@ -507,7 +507,7 @@ function StatsStrip({ stats }: { stats: any }) {
 }
 
 /* ============================== Today strip ============================= */
-function TodayStrip({ stats }: { stats: any }) {
+function TodayStrip({ stats, loading }: { stats: any; loading?: boolean }) {
   const items = [
     {
       value: String(stats?.todayLessons ?? 0),
