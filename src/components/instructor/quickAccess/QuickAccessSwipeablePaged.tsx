@@ -1,50 +1,37 @@
-import { useMemo, useRef, useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { LucideIcon, Search as SearchIcon } from "lucide-react";
+import {
+  LucideIcon,
+  Search as SearchIcon,
+  LayoutGrid,
+  ChevronRight,
+} from "lucide-react";
 import {
   QUICK_ACCESS_TILES,
   QUICK_ACCESS_TILES_BY_ID,
   QuickAccessTile,
   TILE_TONE,
-  TileTone,
 } from "./tileRegistry";
 import { CustomizeTilesSheet } from "./CustomizeTilesSheet";
+import { InstructorSearchOverlay } from "@/components/instructor/InstructorSearchOverlay";
 import { useInstructorPinnedTiles } from "@/hooks/useInstructorPinnedTiles";
-import { useTodayRemainingLessons } from "@/hooks/useTodayRemainingLessons";
-import { useActivePupilsCount } from "@/hooks/useActivePupilsCount";
-import { useTestSwapNotifications } from "@/hooks/useTestSwapNotifications";
-import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
-import { useVehicleHealth } from "@/hooks/useVehicleHealth";
-import { useInstructorPeriodStats } from "@/hooks/useInstructorPeriodStats";
 
-const TILES_PER_PAGE = 4;
-const PRIMARY = "#1A52A0";
+const VISIBLE_COUNT = 4;
+const PRIMARY = "#2952b3";
+const BORDER = "#e0dfd9";
+const SECTION_BG = "#f0efe9";
+const CHARCOAL = "#1a1a1f";
+const MUTED = "#888888";
 
 interface Props {
   instructorId?: string;
 }
 
-interface TileMeta {
-  subtitle?: string;
-  badge?: { label: string; tone?: TileTone };
-}
-
 export function QuickAccessSwipeablePaged({ instructorId }: Props) {
   const navigate = useNavigate();
-
-  const { data: todayLessons } = useTodayRemainingLessons(instructorId);
-  const { data: activePupils } = useActivePupilsCount(instructorId);
-  const { data: swapCount } = useTestSwapNotifications(instructorId);
-  const { data: unreadMessages } = useUnreadMessagesCount(instructorId);
-  const { data: monthStats } = useInstructorPeriodStats(instructorId, "month");
-  const { devices: vehicleDevices } = useVehicleHealth();
-  const vehicleFaultCount = vehicleDevices.flatMap((d) => d.last_fault_codes || []).length;
-
   const [query, setQuery] = useState("");
-  const [page, setPage] = useState(0);
   const [editing, setEditing] = useState(false);
-  const scrollerRef = useRef<HTMLDivElement>(null);
-  const lastPageRef = useRef(0);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   const { data: pinnedRows, isCustomised, setPins, isSaving } =
     useInstructorPinnedTiles(instructorId);
@@ -70,193 +57,86 @@ export function QuickAccessSwipeablePaged({ instructorId }: Props) {
       .filter(Boolean) as QuickAccessTile[];
   }, [isCustomised, pinnedRows, alphabeticalIds]);
 
-  const richMeta = (tileId: string): TileMeta => {
-    switch (tileId) {
-      case "schedule": {
-        const n = todayLessons?.length ?? 0;
-        return { subtitle: n === 0 ? "Done for today" : `${n} lesson${n === 1 ? "" : "s"} today` };
-      }
-      case "pupils": {
-        const n = activePupils ?? 0;
-        return {
-          subtitle: n > 0 ? `${n} active` : "Manage learners",
-          badge: n > 0 ? { label: String(n), tone: "green" } : undefined,
-        };
-      }
-      case "tests": {
-        const n = swapCount ?? 0;
-        return {
-          subtitle: n > 0 ? `${n} swap request${n === 1 ? "" : "s"}` : undefined,
-          badge: n > 0 ? { label: String(n), tone: "blue" } : undefined,
-        };
-      }
-      case "earnings": {
-        const amt = Math.round(monthStats?.earnings ?? 0);
-        return { subtitle: `£${amt.toLocaleString("en-GB")} this month` };
-      }
-      case "messages": {
-        const n = unreadMessages ?? 0;
-        return {
-          subtitle: n > 0 ? `${n} unread` : undefined,
-          badge: n > 0 ? { label: String(n), tone: "red" } : undefined,
-        };
-      }
-      case "vehicle-health": {
-        const n = vehicleFaultCount;
-        return {
-          subtitle: n > 0 ? `${n} fault${n === 1 ? "" : "s"} detected` : "All clear",
-          badge: n > 0 ? { label: String(n), tone: "red" } : undefined,
-        };
-      }
-      default: {
-        const t = QUICK_ACCESS_TILES_BY_ID[tileId];
-        return { subtitle: t?.subtitle };
-      }
-    }
-  };
-
-  const onTilePress = (tile: QuickAccessTile) => {
-    navigate(tile.route);
-  };
+  const visibleTiles = orderedTiles.slice(0, VISIBLE_COUNT);
+  const totalCount = QUICK_ACCESS_TILES.length;
 
   const trimmed = query.trim().toLowerCase();
   const filtered = trimmed
     ? orderedTiles.filter((t) => t.title.toLowerCase().includes(trimmed))
     : null;
 
-  const pages = useMemo(() => {
-    const out: QuickAccessTile[][] = [];
-    for (let i = 0; i < orderedTiles.length; i += TILES_PER_PAGE) {
-      out.push(orderedTiles.slice(i, i + TILES_PER_PAGE));
-    }
-    return out;
-  }, [orderedTiles]);
-
-  useEffect(() => {
-    const el = scrollerRef.current;
-    if (!el || filtered) return;
-    const onScroll = () => {
-      const w = el.clientWidth;
-      if (!w) return;
-      const idx = Math.round(el.scrollLeft / w);
-      if (idx !== page) setPage(idx);
-    };
-    el.addEventListener("scroll", onScroll, { passive: true });
-    return () => el.removeEventListener("scroll", onScroll);
-  }, [filtered, page]);
-
-  useEffect(() => {
-    if (filtered) {
-      lastPageRef.current = page;
-    } else {
-      const el = scrollerRef.current;
-      if (el) {
-        requestAnimationFrame(() => {
-          el.scrollTo({ left: lastPageRef.current * el.clientWidth, behavior: "instant" as ScrollBehavior });
-          setPage(lastPageRef.current);
-        });
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [!!filtered]);
-
-  const jumpToPage = (i: number) => {
-    const el = scrollerRef.current;
-    if (!el) return;
-    el.scrollTo({ left: i * el.clientWidth, behavior: "smooth" });
-    setPage(i);
-  };
-
-  const totalPages = pages.length;
-
-  const renderTile = (tile: QuickAccessTile, index: number, pageIdx: number) => {
-    const m = richMeta(tile.id);
-    const isPrimary = false;
-    return (
-      <QuickTile
-        key={tile.id}
-        icon={tile.icon}
-        tone={tile.tone}
-        label={tile.title}
-        subtitle={m.subtitle}
-        isPrimary={isPrimary}
-        locked={false}
-        onPress={() => onTilePress(tile)}
-      />
-    );
-  };
+  const gridTiles = filtered ?? visibleTiles;
 
   return (
-    <div style={{ padding: "0 16px" }}>
-      {/* Section header */}
+    <div style={{ padding: "0 16px", background: SECTION_BG }}>
+      {/* Header */}
       <div
         style={{
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          marginBottom: 8,
+          marginBottom: 10,
         }}
       >
         <span
           style={{
             fontSize: 10,
             fontWeight: 700,
-            color: "#8E8E93",
-            letterSpacing: 1.2,
+            color: MUTED,
+            letterSpacing: 1.4,
             textTransform: "uppercase",
           }}
         >
           Quick access
         </span>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <button
-            type="button"
-            onClick={() => setEditing(true)}
-            style={{
-              background: "transparent",
-              border: 0,
-              padding: 0,
-              fontSize: 12,
-              fontWeight: 600,
-              color: PRIMARY,
-              cursor: "pointer",
-            }}
-          >
-            Edit
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={() => setEditing(true)}
+          style={{
+            background: "transparent",
+            border: 0,
+            padding: 0,
+            fontSize: 13,
+            fontWeight: 600,
+            color: PRIMARY,
+            cursor: "pointer",
+          }}
+        >
+          Edit pins
+        </button>
       </div>
 
       {/* Search bar */}
       <div
         style={{
-          background: "#FFF",
+          background: "#fff",
           borderRadius: 12,
-          padding: "9px 12px",
+          padding: "11px 14px",
           display: "flex",
           alignItems: "center",
-          gap: 7,
+          gap: 10,
           marginBottom: 12,
-          border: "0.5px solid rgba(26,82,160,0.1)",
+          border: `1px solid ${BORDER}`,
         }}
       >
-        <SearchIcon size={13} color="#8E8E93" strokeWidth={1.8} style={{ flexShrink: 0 }} />
+        <SearchIcon size={16} color={MUTED} strokeWidth={2} style={{ flexShrink: 0 }} />
         <input
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search tools, pupils, lessons..."
-          aria-label="Search tools, pupils, lessons"
+          placeholder={`Search all ${totalCount} tools…`}
+          aria-label="Search tools"
           style={{
             flex: 1,
             minWidth: 0,
             border: 0,
             outline: "none",
             background: "transparent",
-            fontSize: 11.5,
-            color: "#1A1A1A",
+            fontSize: 14,
+            color: CHARCOAL,
             padding: 0,
-            fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif',
+            fontFamily:
+              '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif',
           }}
         />
         {query && (
@@ -273,79 +153,115 @@ export function QuickAccessSwipeablePaged({ instructorId }: Props) {
               display: "flex",
             }}
           >
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="10"></circle>
-              <path d="m15 9-6 6M9 9l6 6"></path>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <path d="m15 9-6 6M9 9l6 6" />
             </svg>
           </button>
         )}
       </div>
 
-      {filtered ? (
-        filtered.length === 0 ? (
-          <div
+      {/* 2×2 Grid */}
+      {gridTiles.length === 0 ? (
+        <div
+          style={{
+            padding: "28px 12px",
+            textAlign: "center",
+            color: "#6E6E73",
+            fontSize: 13,
+            background: "#fff",
+            border: `1px solid ${BORDER}`,
+            borderRadius: 14,
+          }}
+        >
+          <div>No tools match “{query}”</div>
+          <button
+            type="button"
+            onClick={() => setQuery("")}
             style={{
-              padding: "32px 12px",
-              textAlign: "center",
-              color: "#6E6E73",
+              marginTop: 8,
+              background: "transparent",
+              border: 0,
+              color: PRIMARY,
               fontSize: 13,
+              cursor: "pointer",
+              padding: 0,
+              fontWeight: 600,
             }}
           >
-            <div>No tools match “{query}”</div>
-            <button
-              type="button"
-              onClick={() => setQuery("")}
-              style={{
-                marginTop: 8,
-                background: "transparent",
-                border: 0,
-                color: PRIMARY,
-                fontSize: 13,
-                cursor: "pointer",
-                padding: 0,
-              }}
-            >
-              Clear search
-            </button>
-          </div>
-        ) : (
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-              gap: 9,
-            }}
-          >
-            {filtered.map((t, i) => renderTile(t, i, -1))}
-          </div>
-        )
+            Clear search
+          </button>
+        </div>
       ) : (
         <div
-          ref={scrollerRef}
           style={{
             display: "grid",
-            gridAutoFlow: "column",
-            gridTemplateRows: "repeat(2, min-content)",
-            gridAutoColumns: "220px",
-            gap: 12,
-            overflowX: "auto",
-            scrollSnapType: "x mandatory",
-            scrollbarWidth: "none",
-            msOverflowStyle: "none",
-            WebkitOverflowScrolling: "touch",
-            marginRight: -16,
-            paddingRight: 16,
+            gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+            gap: 10,
           }}
-          className="hide-scrollbar"
         >
-          {orderedTiles.map((tile, i) => (
-            <div key={tile.id} style={{ scrollSnapAlign: "start" }}>
-              {renderTile(tile, i, 0)}
-            </div>
+          {gridTiles.map((tile) => (
+            <QuickTile
+              key={tile.id}
+              icon={tile.icon}
+              label={tile.title}
+              tintBg={TILE_TONE[tile.tone].bg}
+              tintFg={TILE_TONE[tile.tone].fg}
+              onPress={() => navigate(tile.route)}
+            />
           ))}
         </div>
       )}
 
+      {/* See all */}
+      {!filtered && (
+        <button
+          type="button"
+          onClick={() => setSearchOpen(true)}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLButtonElement).style.background = "#e8eefb";
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLButtonElement).style.background = "#fff";
+          }}
+          style={{
+            marginTop: 10,
+            width: "100%",
+            background: "#fff",
+            border: `1px solid ${BORDER}`,
+            borderRadius: 14,
+            padding: "13px 14px",
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            cursor: "pointer",
+            transition: "background 150ms ease",
+          }}
+        >
+          <LayoutGrid size={18} color={PRIMARY} strokeWidth={2.2} />
+          <span
+            style={{
+              flex: 1,
+              textAlign: "left",
+              fontSize: 14,
+              fontWeight: 600,
+              color: PRIMARY,
+            }}
+          >
+            See all {totalCount} tools
+          </span>
+          <ChevronRight size={18} color={PRIMARY} strokeWidth={2.2} />
+        </button>
+      )}
 
       <CustomizeTilesSheet
         open={editing}
@@ -355,86 +271,77 @@ export function QuickAccessSwipeablePaged({ instructorId }: Props) {
         onSave={setPins}
         saving={isSaving}
       />
-    </div>
-  );
-}
 
-function PageDots({
-  currentPage,
-  totalPages,
-  compact,
-}: {
-  currentPage: number;
-  totalPages: number;
-  compact?: boolean;
-}) {
-  const activeW = compact ? 16 : 18;
-  return (
-    <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-      {Array.from({ length: totalPages }).map((_, i) => (
-        <span
-          key={i}
-          style={{
-            width: i === currentPage ? activeW : 4,
-            height: 4,
-            borderRadius: 2,
-            background: i === currentPage ? PRIMARY : "#D0D5DD",
-            transition: "width 180ms ease, background 180ms ease",
-          }}
+      {instructorId && (
+        <InstructorSearchOverlay
+          open={searchOpen}
+          onOpenChange={setSearchOpen}
+          instructorId={instructorId}
         />
-      ))}
+      )}
     </div>
   );
 }
 
 interface QuickTileProps {
   icon: LucideIcon;
-  tone: TileTone;
   label: string;
-  subtitle?: string;
-  isPrimary?: boolean;
-  locked?: boolean;
+  tintBg: string;
+  tintFg: string;
   onPress: () => void;
 }
 
-function QuickTile({
-  icon: Icon,
-  label,
-  locked,
-  onPress,
-}: QuickTileProps) {
+function QuickTile({ icon: Icon, label, tintBg, tintFg, onPress }: QuickTileProps) {
   return (
     <button
       type="button"
       onClick={onPress}
       aria-label={label}
+      onMouseEnter={(e) => {
+        (e.currentTarget as HTMLButtonElement).style.borderColor = PRIMARY;
+      }}
+      onMouseLeave={(e) => {
+        (e.currentTarget as HTMLButtonElement).style.borderColor = BORDER;
+      }}
       style={{
         width: "100%",
-        height: 90,
-        background: "#FFF",
+        background: "#fff",
+        border: `1px solid ${BORDER}`,
         borderRadius: 14,
-        padding: "0 20px",
-        border: 0,
-        boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
+        padding: "14px 14px",
         display: "flex",
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 18,
+        flexDirection: "column",
+        alignItems: "flex-start",
+        gap: 10,
         textAlign: "left",
         cursor: "pointer",
-        opacity: locked ? 0.55 : 1,
+        transition: "border-color 150ms ease",
       }}
     >
-      <Icon size={26} strokeWidth={1.75} color="#1A1A1A" style={{ flexShrink: 0 }} />
       <span
         style={{
-          fontSize: 16,
-          fontWeight: 700,
-          lineHeight: "20px",
-          color: "#1A1A1A",
+          width: 36,
+          height: 36,
+          borderRadius: 10,
+          background: tintBg,
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+        }}
+      >
+        <Icon size={18} strokeWidth={2.2} color={tintFg} />
+      </span>
+      <span
+        style={{
+          fontSize: 14,
+          fontWeight: 600,
+          lineHeight: "18px",
+          color: CHARCOAL,
           overflow: "hidden",
           textOverflow: "ellipsis",
           whiteSpace: "nowrap",
+          maxWidth: "100%",
         }}
       >
         {label}
@@ -442,4 +349,3 @@ function QuickTile({
     </button>
   );
 }
-
