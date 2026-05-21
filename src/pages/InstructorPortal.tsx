@@ -16,7 +16,7 @@ import { TodayScheduleView } from "@/components/instructor/TodayScheduleView";
 import { TomorrowScheduleView } from "@/components/instructor/TomorrowScheduleView";
 import { TakePaymentModal } from "@/components/instructor/TakePaymentModal";
 import { PaymentSummaryWidget } from "@/components/instructor/PaymentSummaryWidget";
-import { GapsFiller } from "@/components/instructor/GapsFiller";
+
 import { UpcomingTestsView } from "@/components/instructor/UpcomingTestsView";
 import { InstructorMobileHome } from "@/components/instructor/InstructorMobileHome";
 import { MobileHomeDSM2026 } from "@/components/instructor/MobileHomeDSM2026";

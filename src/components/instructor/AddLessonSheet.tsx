@@ -73,11 +73,11 @@ const LESSON_TYPES = [
 ];
 
 const DURATIONS = [
+  { value: '0.5', label: '30 min' },
+  { value: '0.75', label: '45 min' },
   { value: '1', label: '1 hr' },
   { value: '1.5', label: '1.5 hr' },
   { value: '2', label: '2 hr' },
-  { value: '2.5', label: '2.5 hr' },
-  { value: '3', label: '3 hr' },
 ];
 
 // Styled section wrapper
@@ -225,6 +225,7 @@ export function AddLessonSheet({
   const [checklistOpen, setChecklistOpen] = useState(true);
   const [conflictWarning, setConflictWarning] = useState<string | null>(null);
   const [isHardOverlap, setIsHardOverlap] = useState(false);
+  const [conflictSuggestions, setConflictSuggestions] = useState<string[]>([]);
   const [travelDetailsOpen, setTravelDetailsOpen] = useState(false);
   const [checkingConflict, setCheckingConflict] = useState(false);
   const pendingCheckRef = useRef<Promise<void> | null>(null);
@@ -485,11 +486,39 @@ export function AddLessonSheet({
             );
             // Fall through — travel-time checks below still run so the amber
             // soft warning can appear alongside the red hard-block banner.
+
+            // Suggest up to 3 alternative free slots on the same day so the
+            // instructor can re-pick without manually scanning the schedule.
+            const DAY_START = 7 * 60; // 07:00
+            const DAY_END = 21 * 60;  // 21:00
+            const STEP = 15;
+            const fits = (candidateStart: number) => {
+              const candidateEnd = candidateStart + durationMinutes;
+              if (candidateStart < DAY_START || candidateEnd > DAY_END) return false;
+              return !allSlots.some((s) => {
+                const bStart = s._start - effectiveBuffer;
+                const bEnd = s._end + effectiveBuffer;
+                return candidateStart < bEnd && candidateEnd > bStart;
+              });
+            };
+            const suggestions: string[] = [];
+            for (let t = DAY_START; t <= DAY_END - durationMinutes; t += STEP) {
+              if (t === newStartMinutes) continue;
+              if (fits(t)) {
+                const hh = Math.floor(t / 60).toString().padStart(2, '0');
+                const mm = (t % 60).toString().padStart(2, '0');
+                suggestions.push(`${hh}:${mm}`);
+                if (suggestions.length >= 3) break;
+              }
+            }
+            setConflictSuggestions(suggestions);
           } else {
             setConflictWarning(null); setIsHardOverlap(false);
+            setConflictSuggestions([]);
           }
         } else {
           setConflictWarning(null); setIsHardOverlap(false);
+          setConflictSuggestions([]);
         }
 
         const previous = allSlots
@@ -1113,26 +1142,48 @@ export function AddLessonSheet({
               </div>
               <div>
                 <div style={{ fontSize: 11, color: "#6E6E73", margin: "0 0 4px", paddingLeft: 2 }}>Duration</div>
-                <Select value={lessonDuration} onValueChange={setLessonDuration}>
-                  <SelectTrigger
-                    style={{
-                      width: "100%", display: "flex", alignItems: "center", gap: 8,
-                      padding: 12, background: "#FFFFFF",
-                      border: "0.5px solid #E5E5EA", borderRadius: 10,
-                      height: "auto", textAlign: "left",
-                    }}
-                  >
-                    <Clock style={{ width: 16, height: 16, color: "#6E6E73", flexShrink: 0 }} strokeWidth={1.8} />
-                    <span style={{ flex: 1, fontSize: 14, fontWeight: 500, color: "#000000" }}>
-                      <SelectValue />
-                    </span>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {DURATIONS.map((d) => (
-                      <SelectItem key={d.value} value={d.value}>{d.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div
+                  role="radiogroup"
+                  aria-label="Lesson duration"
+                  style={{
+                    display: "flex",
+                    width: "100%",
+                    padding: 2,
+                    background: "#F2F2F7",
+                    border: "0.5px solid #E5E5EA",
+                    borderRadius: 10,
+                    gap: 2,
+                  }}
+                >
+                  {DURATIONS.map((d) => {
+                    const active = lessonDuration === d.value;
+                    return (
+                      <button
+                        key={d.value}
+                        type="button"
+                        role="radio"
+                        aria-checked={active}
+                        onClick={() => setLessonDuration(d.value)}
+                        style={{
+                          flex: 1,
+                          minWidth: 0,
+                          padding: "8px 4px",
+                          border: "none",
+                          borderRadius: 8,
+                          background: active ? "#FFFFFF" : "transparent",
+                          boxShadow: active ? "0 1px 2px rgba(0,0,0,0.06)" : "none",
+                          fontSize: 12,
+                          fontWeight: active ? 600 : 500,
+                          color: active ? "#000000" : "#6E6E73",
+                          cursor: "pointer",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {d.label}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
 
@@ -1161,6 +1212,34 @@ export function AddLessonSheet({
                   <div style={{ fontSize: 12, color: "#000000", lineHeight: 1.4, margin: "0 0 8px" }}>
                     {conflictWarning}
                   </div>
+                  {conflictSuggestions.length > 0 && (
+                    <div style={{ margin: "0 0 8px" }}>
+                      <div style={{ fontSize: 11, fontWeight: 600, color: "#6E6E73", margin: "0 0 6px" }}>
+                        Free this day
+                      </div>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                        {conflictSuggestions.map((t) => (
+                          <button
+                            key={t}
+                            type="button"
+                            onClick={() => setLessonStartTime(t)}
+                            style={{
+                              padding: "5px 10px",
+                              borderRadius: 999,
+                              background: "#FFFFFF",
+                              border: "0.5px solid #C8434F",
+                              color: "#C8434F",
+                              fontSize: 12,
+                              fontWeight: 600,
+                              cursor: "pointer",
+                            }}
+                          >
+                            {t}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   {travelSuggestion && (
                     <button
                       type="button"

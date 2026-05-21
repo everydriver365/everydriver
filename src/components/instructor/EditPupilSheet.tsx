@@ -214,8 +214,11 @@ export function EditPupilSheet({
 
   const nameTrim = (form.name || "").trim();
   const nameHardError = nameTrim.length === 0;
+  // Mirror AddPupilSheet: pupils need at least one way to be reached.
+  const hasContactMethod =
+    !!(form.email && form.email.trim()) || !!(form.phone && form.phone.trim());
 
-  const canSave = !saving && dirty && !nameHardError;
+  const canSave = !saving && dirty && !nameHardError && hasContactMethod;
 
   /* ---- handlers ---- */
 
@@ -534,6 +537,11 @@ export function EditPupilSheet({
                 )}
               </div>
             </div>
+            {!hasContactMethod && (
+              <HelperText tone="warning">
+                Add at least an email or phone number so you can reach this pupil.
+              </HelperText>
+            )}
 
             {/* Address */}
             <div>

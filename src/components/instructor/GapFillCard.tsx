@@ -7,6 +7,7 @@ import { RefreshCw, Info } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   evaluateFeasibility,
+  partitionAndRankCandidates,
   MIN_LESSON_MIN as MIN_LESSON_MIN_SHARED,
   TRAVEL_FALLBACK_MIN as TRAVEL_FALLBACK_MIN_SHARED,
 } from "./gapFeasibility";
@@ -292,29 +293,12 @@ function useGapCandidatePupils(
         }),
       );
 
-      const included = enrichedAll.filter((c) => c.included);
-      const excluded = enrichedAll.filter((c) => !c.included);
-
-      // Sort included: highest score first, then shortest combined travel, then alpha
-      included.sort((a, b) => {
-        if (b.score !== a.score) return b.score - a.score;
-        const at = (a.travelOutMin ?? TRAVEL_FALLBACK_MIN) + (a.travelInMin ?? TRAVEL_FALLBACK_MIN);
-        const bt = (b.travelOutMin ?? TRAVEL_FALLBACK_MIN) + (b.travelInMin ?? TRAVEL_FALLBACK_MIN);
-        if (at !== bt) return at - bt;
-        return a.name.localeCompare(b.name);
-      });
-
-      // Sort excluded: closest-to-fitting first (smallest shortfall), then alpha
-      excluded.sort((a, b) => {
-        const aOut = a.travelOutMin ?? TRAVEL_FALLBACK_MIN;
-        const aIn = a.travelInMin ?? TRAVEL_FALLBACK_MIN;
-        const bOut = b.travelOutMin ?? TRAVEL_FALLBACK_MIN;
-        const bIn = b.travelInMin ?? TRAVEL_FALLBACK_MIN;
-        const aNeeded = bufferMinutes + aOut + MIN_LESSON_MIN + aIn + bufferMinutes;
-        const bNeeded = bufferMinutes + bOut + MIN_LESSON_MIN + bIn + bufferMinutes;
-        if (aNeeded !== bNeeded) return aNeeded - bNeeded;
-        return a.name.localeCompare(b.name);
-      });
+      // Partition + rank using the shared rules (single source of truth).
+      const { included, excluded } = partitionAndRankCandidates(
+        enrichedAll,
+        gapMin,
+        bufferMinutes,
+      );
 
       return { included, excluded, gapMin, bufferMin: bufferMinutes };
     },

@@ -19,6 +19,7 @@ import {
   renderTemplate,
 } from "./gap-filler/ConfirmSendSheet";
 import { SendResultStatus } from "./gap-filler/SendResultSheet";
+import { evaluateFeasibility } from "./gapFeasibility";
 
 const FONT_STACK =
   '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Roboto", sans-serif';
@@ -51,6 +52,7 @@ interface GapsFillerProps {
 export function GapsFiller({ instructorId }: GapsFillerProps) {
   const [searchParams] = useSearchParams();
   const [instructorName, setInstructorName] = useState("");
+  const [bufferMinutes, setBufferMinutes] = useState(0);
   const [gaps, setGaps] = useState<GapSlot[]>([]);
   const [loading, setLoading] = useState(true);
   const [pupils, setPupils] = useState<RecipientPupil[]>([]);
@@ -177,10 +179,14 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
     try {
       const { data } = await supabase
         .from("instructors")
-        .select("name")
+        .select("name, buffer_minutes")
         .eq("id", instructorId)
         .single();
-      if (data) setInstructorName(data.name);
+      if (data) {
+        setInstructorName(data.name);
+        const b = (data as { buffer_minutes?: number | null }).buffer_minutes;
+        setBufferMinutes(typeof b === "number" ? b : 0);
+      }
     } catch (error) {
       console.error("Error fetching instructor:", error);
     }
@@ -355,6 +361,16 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
           });
 
           if (!hasLessonConflict && !hasBlockConflict && !hasCalendarConflict) {
+            // Apply instructor buffer + fallback travel feasibility so the
+            // page-level list matches the rules used by the schedule card.
+            const { fits } = evaluateFeasibility({
+              gapMin: 120,
+              bufferMinutes,
+              travelOutMin: null,
+              travelInMin: null,
+            });
+            if (!fits) continue;
+
             calculatedGaps.push({
               id: `${dateStr}-${slotStart}`,
               date: dateStr,
