@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import dsmLogo from "@/assets/dsm-logo.png";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
@@ -27,6 +27,8 @@ const loginSchema = z.object({
   email: z.string().trim().email("Please enter a valid email address").max(255),
   password: z.string().min(1, "Password is required").max(128),
 });
+
+const LOGIN_LOG_PREFIX = "[InstructorLogin]";
 
 const t = {
   navy: "#0F2044",
@@ -86,6 +88,7 @@ export default function InstructorLogin() {
   const [biometricAvailable, setBiometricAvailable] = useState(false);
   const [biometryLabel, setBiometryLabel] = useState("Face ID / Touch ID");
   const [faceIdState, setFaceIdState] = useState<"idle" | "scanning" | "success">("idle");
+  const activeAuthAttemptRef = useRef(0);
 
   const { signIn, resetPassword } = useInstructorAuth();
   const navigate = useNavigate();
@@ -96,6 +99,7 @@ export default function InstructorLogin() {
   // deep-link arrivals AND the mobile sign-in ↔ forgot-password toggle so no
   // stale banner / password / loading flag leaks across views.
   const clearAuthTransientState = () => {
+    activeAuthAttemptRef.current += 1;
     setError("");
     setResetSent(false);
     setResetSentTo("");
@@ -103,6 +107,13 @@ export default function InstructorLogin() {
     setLoading(false);
     setFaceIdState("idle");
   };
+
+  const startAuthAttempt = () => {
+    activeAuthAttemptRef.current += 1;
+    return activeAuthAttemptRef.current;
+  };
+
+  const isActiveAuthAttempt = (attemptId: number) => activeAuthAttemptRef.current === attemptId;
 
   useClearOnDeepLink(clearAuthTransientState);
 
