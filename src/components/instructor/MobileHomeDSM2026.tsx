@@ -470,63 +470,63 @@ function TodayStrip({ stats }: { stats: any }) {
     {
       value: String(stats?.todayLessons ?? 0),
       label: "Lessons today",
-      valueColour: T.navy,
-      small: false,
+      valueColour: "#1a1a1f",
+      valueSize: 22,
     },
     {
       value: stats?.nextFreeSlot ?? "—",
       label: "Next free slot",
-      valueColour: T.blue,
-      small: true,
+      valueColour: "#2952b3",
+      valueSize: 13,
     },
     {
       value: `£${(stats?.outstanding ?? 0).toLocaleString("en-GB")}`,
       label: "Outstanding",
-      valueColour: (stats?.outstanding ?? 0) > 0 ? T.red : T.navy,
-      small: false,
+      valueColour: (stats?.outstanding ?? 0) > 0 ? "#c9302c" : "#1a1a1f",
+      valueSize: 18,
     },
   ];
   return (
-    <div
-      style={{
-        display: "flex",
-        backgroundColor: T.white,
-        borderRadius: 14,
-        overflow: "hidden",
-        boxShadow: "0 1px 6px rgba(15,32,68,0.06)",
-      }}
-    >
-      {items.map((item, i, arr) => (
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
+      {items.map((item) => (
         <div
           key={item.label}
           style={{
-            flex: 1,
-            padding: "11px 10px",
+            backgroundColor: "#FFFFFF",
+            border: "1px solid #e0e3ea",
+            borderRadius: 14,
+            padding: "12px 8px",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            gap: 3,
-            borderRight: i < arr.length - 1 ? `1px solid ${T.divider}` : 0,
+            justifyContent: "center",
+            gap: 6,
+            minHeight: 70,
           }}
         >
           <div
             style={{
-              fontSize: item.small ? 12 : 16,
-              fontWeight: 800,
+              fontSize: item.valueSize,
+              fontWeight: 700,
               color: item.valueColour,
-              letterSpacing: -0.5,
-              lineHeight: item.small ? "14px" : "18px",
+              letterSpacing: -0.3,
+              lineHeight: 1.1,
               fontFamily: FONT,
               textAlign: "center",
+              whiteSpace: "nowrap",
             }}
           >
             {item.value}
           </div>
           <div
             style={{
-              fontSize: 9, fontWeight: 600, color: T.textMuted,
-              textTransform: "uppercase", letterSpacing: 0.5,
-              textAlign: "center", fontFamily: FONT,
+              fontSize: 9,
+              fontWeight: 600,
+              color: "#999999",
+              textTransform: "uppercase",
+              letterSpacing: 0.8,
+              textAlign: "center",
+              fontFamily: FONT,
             }}
           >
             {item.label}
@@ -536,6 +536,7 @@ function TodayStrip({ stats }: { stats: any }) {
     </div>
   );
 }
+
 
 function HeroButton({
   Icon, onPress, badge,
