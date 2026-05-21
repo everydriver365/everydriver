@@ -881,15 +881,15 @@ function NeedsAttentionCard({
 
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-      <div
-        style={{
-          backgroundColor: "#FFFFFF",
-          border: `1px solid ${BORDER}`,
-          borderRadius: 14,
-          padding: 14,
-        }}
-      >
+    <div
+      style={{
+        backgroundColor: "#FFFFFF",
+        border: `1px solid ${BORDER}`,
+        borderRadius: 14,
+        overflow: "hidden",
+      }}
+    >
+      <div style={{ padding: 14 }}>
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
           <span
@@ -914,59 +914,61 @@ function NeedsAttentionCard({
 
         {/* 4-col grid */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 }}>
-          {cells.map((c) => (
-            <button
-              key={c.key}
-              type="button"
-              onClick={() => toggle(c.key)}
-              style={{
-                background: c.bg,
-                border: 0, borderRadius: 10,
-                padding: 8,
-                display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
-                cursor: "pointer",
-              }}
-            >
-              <span style={{ fontSize: 20, fontWeight: 800, color: c.valueColor, fontFamily: FONT, lineHeight: 1 }}>
-                {c.count}
-              </span>
-              <span
+          {cells.map((c) => {
+            const active = openKey === c.key;
+            return (
+              <button
+                key={c.key}
+                type="button"
+                onClick={() => toggle(c.key)}
                 style={{
-                  fontSize: 9, fontWeight: 600, color: MUTED,
-                  fontFamily: FONT, letterSpacing: "0.08em", textTransform: "uppercase",
+                  background: c.bg,
+                  border: active ? `1px solid ${BORDER}` : "1px solid transparent",
+                  borderRadius: 10,
+                  padding: 8,
+                  display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
+                  cursor: "pointer",
+                  transition: "border-color 150ms ease",
                 }}
               >
-                {c.label}
-              </span>
-            </button>
-          ))}
+                <span style={{ fontSize: 20, fontWeight: 800, color: c.valueColor, fontFamily: FONT, lineHeight: 1 }}>
+                  {c.count}
+                </span>
+                <span
+                  style={{
+                    fontSize: 9, fontWeight: 600, color: MUTED,
+                    fontFamily: FONT, letterSpacing: "0.08em", textTransform: "uppercase",
+                  }}
+                >
+                  {c.label}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      {/* Expanded action tiles */}
-      {sectionsOpen && (
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          {tiles.map((t) => (
-            <ActionTile
-              key={t.key}
-              icon={t.icon}
-              label={t.label}
-              accent={t.accent}
-              tint={t.tint}
-              outlined={t.urgent}
-              badgeCount={t.count}
-              open={openKey === t.key}
-              onToggle={() => toggle(t.key)}
-            >
-              {t.body}
-            </ActionTile>
-
-          ))}
-        </div>
-      )}
+      {/* Nested expandable rows */}
+      {tiles.map((t) => (
+        <ActionTile
+          key={t.key}
+          icon={t.icon}
+          label={t.label}
+          accent={t.accent}
+          tint={t.tint}
+          outlined={t.urgent}
+          badgeCount={t.count}
+          open={openKey === t.key}
+          onToggle={() => toggle(t.key)}
+          nested
+        >
+          {t.body}
+        </ActionTile>
+      ))}
     </div>
   );
 }
+
 
 
 
