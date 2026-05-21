@@ -267,39 +267,65 @@ export function MobileHomeDSM2026({ instructorId, instructorName }: Props) {
       : [],
   };
 
+  const queryClient = useQueryClient();
+  const handleRefresh = async () => {
+    // Refetch every active query mounted on this page in parallel.
+    await queryClient.refetchQueries({ type: "active" });
+  };
+
+  // Loading hints for shimmer placeholders (first-paint only).
+  const todayLoading = today === undefined;
+  const weeklyLoading = weekly === undefined;
+  const paymentsLoading = !payments?.stats;
+
   return (
-    <div
-      style={{
-        backgroundColor: "#F2F4F8",
-        minHeight: "100%",
-        fontFamily: FONT,
-        WebkitFontSmoothing: "antialiased",
-      }}
-    >
+    <PullToRefresh onRefresh={handleRefresh}>
+      <div
+        style={{
+          backgroundColor: "#F2F4F8",
+          minHeight: "100%",
+          fontFamily: FONT,
+          WebkitFontSmoothing: "antialiased",
+        }}
+      >
 
-      <HeroHeader
-        firstName={(instructorName || instructor?.name || "").split(" ")[0]}
-        unreadCount={msgsCount}
-        nextLesson={nextLesson}
-        lessonExpanded={lessonExpanded}
-        onToggleLesson={() => setLessonExpanded((p) => !p)}
-        onPhone={() => navigate("/instructor/calls")}
-        onBell={() => navigate("/instructor/notifications")}
-        onMenu={() => navigate("/instructor/menu")}
-        onProfile={() => navigate("/instructor/profile")}
-        stats={stats}
-        instructorId={instructorId}
-      />
+        <HeroHeader
+          firstName={(instructorName || instructor?.name || "").split(" ")[0]}
+          unreadCount={msgsCount}
+          nextLesson={nextLesson}
+          lessonExpanded={lessonExpanded}
+          onToggleLesson={() => setLessonExpanded((p) => !p)}
+          onPhone={() => navigate("/instructor/calls")}
+          onBell={() => navigate("/instructor/notifications")}
+          onMenu={() => navigate("/instructor/menu")}
+          onProfile={() => navigate("/instructor/profile")}
+          stats={stats}
+          statsLoading={weeklyLoading || todayLoading}
+          instructorId={instructorId}
+        />
 
-      <div style={{ padding: 14, display: "flex", flexDirection: "column", gap: 12 }}>
-        <TodayStrip stats={stats} />
-        <NeedsAttentionCard attention={attention} stats={stats} navigate={navigate} instructorId={instructorId} />
-        <ScheduleCard instructorId={instructorId} navigate={navigate} />
-        <QuickAccessCard navigate={navigate} />
-        <UpcomingEventsCard events={events} navigate={navigate} />
-        <MembershipCard membership={membership} navigate={navigate} />
+        <div style={{ padding: 14, display: "flex", flexDirection: "column", gap: 12 }}>
+          <div className="animate-fade-in" style={{ animationDelay: "0ms", animationFillMode: "both" }}>
+            <TodayStrip stats={stats} loading={todayLoading || paymentsLoading} />
+          </div>
+          <div className="animate-fade-in" style={{ animationDelay: "60ms", animationFillMode: "both" }}>
+            <NeedsAttentionCard attention={attention} stats={stats} navigate={navigate} instructorId={instructorId} />
+          </div>
+          <div className="animate-fade-in" style={{ animationDelay: "120ms", animationFillMode: "both" }}>
+            <ScheduleCard instructorId={instructorId} navigate={navigate} />
+          </div>
+          <div className="animate-fade-in" style={{ animationDelay: "180ms", animationFillMode: "both" }}>
+            <QuickAccessCard navigate={navigate} />
+          </div>
+          <div className="animate-fade-in" style={{ animationDelay: "240ms", animationFillMode: "both" }}>
+            <UpcomingEventsCard events={events} navigate={navigate} />
+          </div>
+          <div className="animate-fade-in" style={{ animationDelay: "300ms", animationFillMode: "both" }}>
+            <MembershipCard membership={membership} navigate={navigate} />
+          </div>
+        </div>
       </div>
-    </div>
+    </PullToRefresh>
   );
 }
 
