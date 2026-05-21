@@ -436,7 +436,7 @@ function StatsStrip({ stats }: { stats: any }) {
           </div>
           <div
             style={{
-              fontSize: 19, fontWeight: 800, color: T.white,
+              fontSize: 19, fontWeight: 800, color: s.valueColour,
               letterSpacing: -0.6, lineHeight: "22px", fontFamily: FONT,
             }}
           >
