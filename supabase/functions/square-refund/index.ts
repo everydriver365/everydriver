@@ -43,7 +43,7 @@ serve(async (req: Request) => {
     // Load original payment
     const { data: original, error: origErr } = await supabase
       .from("payment_history")
-      .select("id, instructor_id, pupil_id, amount, payment_method, notes, payout_status")
+      .select("id, instructor_id, pupil_id, amount, payment_method, notes, payout_status, external_payment_ref")
       .eq("id", paymentHistoryId)
       .maybeSingle();
 
@@ -63,9 +63,16 @@ serve(async (req: Request) => {
       return json({ error: "This payment was not made via Square" }, 400);
     }
 
-    // Extract Square payment id from notes (format: "... ID: <id> ...")
-    const match = String(original.notes || "").match(/ID:\s*([A-Za-z0-9_-]+)/);
-    const squarePaymentId = match?.[1];
+    // Resolve Square payment id: prefer external_payment_ref ("square:<id>"), fall back to notes regex
+    let squarePaymentId: string | undefined;
+    const ref = String((original as any).external_payment_ref || "");
+    if (ref.startsWith("square:")) {
+      squarePaymentId = ref.slice("square:".length).trim() || undefined;
+    }
+    if (!squarePaymentId) {
+      const match = String(original.notes || "").match(/ID:\s*([A-Za-z0-9_-]+)/);
+      squarePaymentId = match?.[1];
+    }
     if (!squarePaymentId) {
       return json({ error: "Could not locate Square payment id on this transaction" }, 400);
     }
