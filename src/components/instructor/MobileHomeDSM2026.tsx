@@ -1511,7 +1511,11 @@ function QuickAccessCard({ navigate }: { navigate: ReturnType<typeof useNavigate
   const MUTED = "#888888";
   const ACTION_BLUE = "#2952b3";
 
-  const gridTiles = filtered ?? pinnedItems.slice(0, VISIBLE);
+  const sourceTiles = filtered ?? pinnedItems;
+  const pages: QAItem[][] = [];
+  for (let i = 0; i < sourceTiles.length; i += VISIBLE) {
+    pages.push(sourceTiles.slice(i, i + VISIBLE));
+  }
 
   return (
     <div
