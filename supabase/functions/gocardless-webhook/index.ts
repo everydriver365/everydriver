@@ -1,5 +1,11 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import {
+  PushDataType,
+  NotifyCategory,
+  NotifyImportance,
+  PupilNotifyType,
+} from "../_shared/notification-types.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -341,8 +347,8 @@ async function pushToInstructor(
     tag: string;
     dataType: string;
     extra?: Record<string, unknown>;
-    category: "payment" | "system";
-    importance: "normal" | "important";
+    category: NotifyCategory;
+    importance: NotifyImportance;
   },
 ) {
   if (!instructorId) return;
@@ -399,20 +405,20 @@ async function handleMandate(supabase: any, event: any) {
         title: "⚠️ Direct Debit mandate failed",
         body: "Your Direct Debit mandate has failed. Please update your bank details to keep your subscription active.",
         tag: `mandate-failed-${mandateId}`,
-        dataType: "payment_failed",
+        dataType: PushDataType.PAYMENT_FAILED,
         extra: { mandateId, reason: "mandate_failed" },
-        category: "system",
-        importance: "important",
+        category: NotifyCategory.SYSTEM,
+        importance: NotifyImportance.IMPORTANT,
       });
     } else if (affectedSub?.instructor_id && (action === "cancelled" || action === "expired")) {
       await pushToInstructor(affectedSub.instructor_id, {
         title: `Direct Debit mandate ${action}`,
         body: `Your Direct Debit mandate was ${action}. Set up a new mandate to continue your subscription.`,
         tag: `mandate-${action}-${mandateId}`,
-        dataType: "system",
+        dataType: PushDataType.SYSTEM,
         extra: { mandateId, reason: `mandate_${action}` },
-        category: "system",
-        importance: "important",
+        category: NotifyCategory.SYSTEM,
+        importance: NotifyImportance.IMPORTANT,
       });
     }
 
@@ -539,10 +545,10 @@ async function handlePayment(supabase: any, event: any) {
         title: "💰 Subscription Payment Received",
         body: `£${(paymentAmount / 100).toFixed(2)} ${planName} payment confirmed.`,
         tag: `sub-payment-${paymentId}`,
-        dataType: "payment_received",
+        dataType: PushDataType.PAYMENT_RECEIVED,
         extra: { paymentId, subscriptionId, amount: paymentAmount / 100, source: "gocardless_subscription" },
-        category: "payment",
-        importance: "normal",
+        category: NotifyCategory.PAYMENT,
+        importance: NotifyImportance.NORMAL,
       });
     }
   } else if (action === "failed" && subscriptionId) {
@@ -612,10 +618,10 @@ async function handlePayment(supabase: any, event: any) {
         title: "⚠️ Subscription Payment Failed",
         body: "Your subscription payment didn't go through. Please check your bank details — we'll retry automatically.",
         tag: `sub-payment-failed-${paymentId}`,
-        dataType: "payment_failed",
+        dataType: PushDataType.PAYMENT_FAILED,
         extra: { paymentId, subscriptionId, source: "gocardless_subscription" },
-        category: "system",
-        importance: "important",
+        category: NotifyCategory.SYSTEM,
+        importance: NotifyImportance.IMPORTANT,
       });
     }
 
@@ -649,10 +655,10 @@ async function handlePayment(supabase: any, event: any) {
           title: "💰 Payment Received",
           body: `£${amountPounds.toFixed(2)} received via GoCardless (Instant Bank Pay)`,
           tag: `ibp-confirmed-${paymentId}`,
-          dataType: "payment_received",
+          dataType: PushDataType.PAYMENT_RECEIVED,
           extra: { paymentId, pupilId: pupilIdFromIntent, amount: amountPounds, source: "gocardless_ibp" },
-          category: "payment",
-          importance: "normal",
+          category: NotifyCategory.PAYMENT,
+          importance: NotifyImportance.NORMAL,
         });
       }
       // Notify pupil that their payment confirmed.
@@ -665,8 +671,8 @@ async function handlePayment(supabase: any, event: any) {
             headers: { "Content-Type": "application/json", Authorization: `Bearer ${supabaseServiceKey}` },
             body: JSON.stringify({
               pupilId: pupilIdFromIntent,
-              type: "payment_confirmed",
-              data: { type: "payment_confirmed", amount: amountPounds, method: "GoCardless" },
+              type: PupilNotifyType.PAYMENT_CONFIRMED,
+              data: { type: PushDataType.PAYMENT_CONFIRMED, amount: amountPounds, method: "GoCardless" },
             }),
           });
         } catch (e) {
@@ -698,10 +704,10 @@ async function handlePayment(supabase: any, event: any) {
           title: "⚠️ Payment Failed",
           body: `A £${amountPounds.toFixed(2)} GoCardless payment didn't go through.`,
           tag: `ibp-failed-${paymentId}`,
-          dataType: "payment_failed",
+          dataType: PushDataType.PAYMENT_FAILED,
           extra: { paymentId, amount: amountPounds, source: "gocardless_ibp" },
-          category: "system",
-          importance: "important",
+          category: NotifyCategory.SYSTEM,
+          importance: NotifyImportance.IMPORTANT,
         });
       }
       console.log(`Standalone payment ${paymentId} failed`);

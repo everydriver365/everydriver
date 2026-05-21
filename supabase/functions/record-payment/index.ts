@@ -1,5 +1,11 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.95.0";
 import { corsHeaders } from "https://esm.sh/@supabase/supabase-js@2.95.0/cors";
+import {
+  PushDataType,
+  NotifyCategory,
+  NotifyImportance,
+  PupilNotifyType,
+} from "../_shared/notification-types.ts";
 
 type Method = "cash" | "bank" | "card";
 
@@ -176,13 +182,13 @@ Deno.serve(async (req) => {
           },
           body: JSON.stringify({
             instructorId,
-            category: "payment",
-            importance: "normal",
+            category: NotifyCategory.PAYMENT,
+            importance: NotifyImportance.NORMAL,
             notification: {
               title: "💰 Payment Received",
               body: `£${positive.toFixed(2)} received from ${pupil.name || "a pupil"} via ${methodLabel}`,
               tag: `payment-received-${inserted?.id ?? Date.now()}`,
-              data: { type: "payment_received", pupilId: body.pupilId, amount: positive, method: methodLabel },
+              data: { type: PushDataType.PAYMENT_RECEIVED, pupilId: body.pupilId, amount: positive, method: methodLabel },
             },
           }),
         }).catch((e) => console.error("[record-payment] push fire failed:", e));
@@ -202,8 +208,8 @@ Deno.serve(async (req) => {
           },
           body: JSON.stringify({
             pupilId: body.pupilId,
-            type: "payment_confirmed",
-            data: { type: "payment_confirmed", amount: positive, method: methodLabel },
+            type: PupilNotifyType.PAYMENT_CONFIRMED,
+            data: { type: PushDataType.PAYMENT_CONFIRMED, amount: positive, method: methodLabel },
           }),
         }).catch((e) => console.error("[record-payment] pupil notify failed:", e));
       } catch (e) {

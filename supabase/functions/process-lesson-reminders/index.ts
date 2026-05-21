@@ -1,6 +1,12 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendWhatsAppTemplate } from "../_shared/whatsapp-template.ts";
+import {
+  PushDataType,
+  NotifyCategory,
+  NotifyImportance,
+  PupilNotifyType,
+} from "../_shared/notification-types.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -20,14 +26,13 @@ serve(async (req) => {
     const now = new Date();
     const fifteenMinutesFromNow = new Date(now.getTime() + 15 * 60 * 1000);
 
-    // Get pending reminders that should be sent now
     const { data: reminders, error: fetchErr } = await supabase
       .from("lesson_reminders")
       .select(`
         *,
         pupils(id, name, phone, email, whatsapp_opt_in),
         instructors(id, name, phone),
-        scheduled_lessons(lesson_date, start_time, duration_minutes)
+        scheduled_lessons(id, lesson_date, start_time, duration_minutes)
       `)
       .eq("status", "pending")
       .lte("scheduled_for", fifteenMinutesFromNow.toISOString())
@@ -51,6 +56,63 @@ serve(async (req) => {
     const TWILIO_PHONE_NUMBER = Deno.env.get("TWILIO_PHONE_NUMBER");
     const hasTwilio = TWILIO_ACCOUNT_SID && TWILIO_AUTH_TOKEN && TWILIO_PHONE_NUMBER;
 
+    // Helper — third channel: web push to the pupil (additive, never blocks).
+    const firePupilPush = async (
+      pupilId: string,
+      lessonId: string | undefined,
+      lessonDate: string,
+      lessonTime: string,
+      reminderType: string,
+    ) => {
+      try {
+        await fetch(`${supabaseUrl}/functions/v1/notify-pupil`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${serviceKey}` },
+          body: JSON.stringify({
+            pupilId,
+            type: PupilNotifyType.LESSON_REMINDER,
+            data: {
+              type: PushDataType.LESSON_REMINDER,
+              lessonId,
+              lessonDate,
+              lessonTime,
+              reminderType,
+            },
+          }),
+        });
+      } catch (e) {
+        console.error("[process-lesson-reminders] pupil push failed:", e);
+      }
+    };
+
+    // Helper — instructor push (only at 1h mark, gated by reminder category).
+    const fireInstructorPush = async (
+      instructorId: string,
+      pupilName: string,
+      lessonId: string | undefined,
+      lessonTime: string,
+    ) => {
+      try {
+        await fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${serviceKey}` },
+          body: JSON.stringify({
+            instructorId,
+            category: NotifyCategory.REMINDER,
+            importance: NotifyImportance.NORMAL,
+            notification: {
+              title: "⏰ Lesson in 1 hour",
+              body: `${pupilName} at ${lessonTime}`,
+              tag: `lesson-reminder-${lessonId ?? "x"}`,
+              data: { type: PushDataType.LESSON_REMINDER, lessonId, lessonTime },
+            },
+          }),
+        });
+      } catch (e) {
+        console.error("[process-lesson-reminders] instructor push failed:", e);
+      }
+    };
+
     for (const reminder of reminders) {
       try {
         const pupil = reminder.pupils as any;
@@ -64,6 +126,15 @@ serve(async (req) => {
 
         const lessonTime = lesson.start_time?.slice(0, 5) || "TBC";
         const lessonDate = lesson.lesson_date;
+        const lessonId = lesson.id as string | undefined;
+
+        // Always fire the pupil push as a third channel — additive, no-op if no subscription.
+        await firePupilPush(pupil.id, lessonId, lessonDate, lessonTime, reminder.reminder_type);
+
+        // Instructor push only for the 1h reminder (24h would be noise).
+        if (reminder.reminder_type === "1h" && instructor?.id) {
+          await fireInstructorPush(instructor.id, pupil.name ?? "Your pupil", lessonId, lessonTime);
+        }
 
         // 1) Try WhatsApp template first if pupil opted in and we have a phone
         if (pupil.phone && pupil.whatsapp_opt_in && instructor?.id) {
@@ -117,12 +188,12 @@ serve(async (req) => {
           await supabase.from("lesson_reminders").update({ status: "sent", sent_at: new Date().toISOString() }).eq("id", reminder.id);
           sent++;
         } else if (reminder.channel === "in_app") {
-          // Mark as sent - the frontend will poll for these
           await supabase.from("lesson_reminders").update({ status: "sent", sent_at: new Date().toISOString() }).eq("id", reminder.id);
           sent++;
         } else {
-          // No delivery channel available, skip
-          await supabase.from("lesson_reminders").update({ status: "skipped" }).eq("id", reminder.id);
+          // Push already attempted above; mark as sent so we don't retry the row.
+          await supabase.from("lesson_reminders").update({ status: "sent", sent_at: new Date().toISOString(), channel: "push" }).eq("id", reminder.id);
+          sent++;
         }
       } catch (err) {
         console.error(`Reminder ${reminder.id} failed:`, err);

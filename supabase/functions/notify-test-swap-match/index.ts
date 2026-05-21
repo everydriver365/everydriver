@@ -132,11 +132,13 @@ async function notifyInstructor(
     .eq("id", instructorId)
     .maybeSingle();
 
-  // Push (gated)
+  // Push (gated). INTENTIONAL: category is "test_swap" (not "job") so the
+  // job_min_value_pounds gate cannot suppress time-sensitive test-swap pushes
+  // for instructors with a minimum job-value filter set. Confirmed in 4c-tail.
   const pushGate = await shouldSendToInstructor(supabase, instructorId, {
-    category: "test_swap",
+    category: NotifyCategory.TEST_SWAP,
     channel: "push",
-    importance: "important",
+    importance: NotifyImportance.IMPORTANT,
   });
   if (pushGate.allow) {
     await sendPush(supabase, instructorId, title, message);
@@ -144,9 +146,9 @@ async function notifyInstructor(
 
   // Email (gated)
   const emailGate = await shouldSendToInstructor(supabase, instructorId, {
-    category: "test_swap",
+    category: NotifyCategory.TEST_SWAP,
     channel: "email",
-    importance: "important",
+    importance: NotifyImportance.IMPORTANT,
   });
   if (emailGate.allow && instructor?.email) {
     await sendEmail(instructor as any, title, message);

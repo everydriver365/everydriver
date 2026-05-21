@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { checkLessonClash, describeLessonClashError } from '@/lib/lessonClashCheck';
 import { validateRequired, validateNotInPast } from '@/lib/validators';
+import { PupilNotifyType, PushDataType } from '@/lib/notificationTypes';
 
 const BLOCK_COLOR_PRESETS = [
   '#3b82f6', // blue
@@ -295,9 +296,9 @@ export function AddCalendarEventDialog({
       supabase.functions.invoke('notify-pupil', {
         body: {
           pupilId: selectedPupil,
-          type: 'booking_confirmed',
+          type: PupilNotifyType.BOOKING_CONFIRMED,
           data: {
-            type: 'booking_confirmed',
+            type: PushDataType.BOOKING_CONFIRMED,
             lessonDate: dateStr,
             lessonTime: lessonStartTime,
             durationMinutes,

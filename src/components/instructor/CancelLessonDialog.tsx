@@ -11,6 +11,7 @@ import { toast } from "@/hooks/use-toast";
 import { usePaymentInvalidation } from "@/hooks/usePaymentInvalidation";
 import { triggerAutomations } from "@/utils/triggerAutomations";
 import { format, parseISO } from "date-fns";
+import { PupilNotifyType, PushDataType } from "@/lib/notificationTypes";
 
 interface CancelLessonDialogProps {
   open: boolean;
@@ -200,9 +201,9 @@ export function CancelLessonDialog({
           await supabase.functions.invoke("notify-pupil", {
             body: {
               pupilId,
-              type: "lesson_cancelled",
+              type: PupilNotifyType.LESSON_CANCELLED,
               data: {
-                type: "lesson_cancelled",
+                type: PushDataType.LESSON_CANCELLED,
                 lessonDate,
                 lessonTime,
                 chargeApplied: chargeAmount > 0,

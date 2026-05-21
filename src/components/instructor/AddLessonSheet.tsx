@@ -26,6 +26,7 @@ import { TestCentrePicker } from './driving-test/TestCentrePicker';
 import { SegmentedControl } from '@/components/instructor/ui/SegmentedControl';
 import { pupilAvatarColor, pupilAvatarInitial } from '@/lib/pupilAvatarColor';
 import { applyRateModifiers, loadUkBankHolidays, type RateModifiers } from '@/lib/pricing/applyRateModifiers';
+import { PupilNotifyType, PushDataType } from '@/lib/notificationTypes';
 
 interface AddLessonSheetProps {
   open: boolean;
@@ -751,9 +752,9 @@ export function AddLessonSheet({
       supabase.functions.invoke('notify-pupil', {
         body: {
           pupilId: selectedPupil,
-          type: isDrivingTest ? 'test_booking_confirmed' : 'booking_confirmed',
+          type: isDrivingTest ? PupilNotifyType.TEST_BOOKING_CONFIRMED : PupilNotifyType.BOOKING_CONFIRMED,
           data: {
-            type: isDrivingTest ? 'test_booking_confirmed' : 'booking_confirmed',
+            type: isDrivingTest ? PushDataType.TEST_BOOKING_CONFIRMED : PushDataType.BOOKING_CONFIRMED,
             lessonDate: format(lessonDate!, 'yyyy-MM-dd'),
             lessonTime: lessonStartTime,
             durationMinutes,
@@ -839,9 +840,9 @@ export function AddLessonSheet({
       supabase.functions.invoke('notify-pupil', {
         body: {
           pupilId: newPupil.id,
-          type: isDrivingTest ? 'test_booking_confirmed' : 'booking_confirmed',
+          type: isDrivingTest ? PupilNotifyType.TEST_BOOKING_CONFIRMED : PupilNotifyType.BOOKING_CONFIRMED,
           data: {
-            type: isDrivingTest ? 'test_booking_confirmed' : 'booking_confirmed',
+            type: isDrivingTest ? PushDataType.TEST_BOOKING_CONFIRMED : PushDataType.BOOKING_CONFIRMED,
             lessonDate: format(lessonDate!, 'yyyy-MM-dd'),
             lessonTime: lessonStartTime,
             durationMinutes,
