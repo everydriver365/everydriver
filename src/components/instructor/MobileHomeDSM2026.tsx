@@ -684,6 +684,7 @@ function NextLessonCard({
           aria-hidden
           style={{
             position: "absolute",
+            zIndex: 0,
             right: -30,
             top: -30,
             height: "100%",
