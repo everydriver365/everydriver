@@ -16,6 +16,7 @@ interface PaymentReceiptRequest {
   paymentMethod: string;
   transactionReference: string;
   receiptUrl?: string;
+  type?: "payment" | "refund";
 }
 
 serve(async (req: Request): Promise<Response> => {
@@ -24,7 +25,14 @@ serve(async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { pupilId, instructorId, amount, paymentMethod, transactionReference, receiptUrl }: PaymentReceiptRequest = await req.json();
+    const { pupilId, instructorId, amount, paymentMethod, transactionReference, receiptUrl, type }: PaymentReceiptRequest = await req.json();
+    const isRefund = type === "refund";
+    const headerTitle = isRefund ? "Refund Receipt" : "Payment Receipt";
+    const headerSub = isRefund ? "Your refund has been processed." : "Thank you for your payment!";
+    const amountLabel = isRefund ? "Amount Refunded" : "Amount Paid";
+    const bodyIntro = isRefund
+      ? "We've processed a refund on your account. Here's your receipt for your records."
+      : "We've received your payment. Here's your receipt for your records.";
 
     if (!pupilId || !instructorId || !amount) {
       return new Response(
@@ -107,8 +115,8 @@ serve(async (req: Request): Promise<Response> => {
           <tr>
             <td style="padding: 30px; text-align: center;">
               ${instructor.logo_url ? `<img src="${instructor.logo_url}" alt="${instructor.name}" style="max-height: 60px; margin-bottom: 15px;">` : ""}
-              <h1 style="color: white; margin: 0; font-size: 24px;">Payment Receipt</h1>
-              <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 14px;">Thank you for your payment!</p>
+              <h1 style="color: white; margin: 0; font-size: 24px;">${headerTitle}</h1>
+              <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 14px;">${headerSub}</p>
             </td>
           </tr>
         </table>
@@ -121,15 +129,15 @@ serve(async (req: Request): Promise<Response> => {
                 Hi ${pupil.name},
               </p>
               <p style="color: #71717a; margin: 0 0 30px 0; font-size: 14px;">
-                We've received your payment. Here's your receipt for your records.
+                ${bodyIntro}
               </p>
 
               <!-- Payment Amount Box -->
               <table width="100%" cellspacing="0" cellpadding="0" style="background-color: #f4f4f5; border-radius: 8px; margin-bottom: 25px;">
                 <tr>
                   <td style="padding: 25px; text-align: center;">
-                    <p style="color: #71717a; margin: 0 0 5px 0; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Amount Paid</p>
-                    <p style="color: ${brandColor}; margin: 0; font-size: 36px; font-weight: bold;">£${amount.toFixed(2)}</p>
+                    <p style="color: #71717a; margin: 0 0 5px 0; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">${amountLabel}</p>
+                    <p style="color: ${isRefund ? "#dc2626" : brandColor}; margin: 0; font-size: 36px; font-weight: bold;">${isRefund ? "−" : ""}£${Math.abs(amount).toFixed(2)}</p>
                   </td>
                 </tr>
               </table>
@@ -226,7 +234,7 @@ serve(async (req: Request): Promise<Response> => {
     const emailResponse = await resend.emails.send({
       from: `${instructor.name} <noreply@everydriver.lovable.app>`,
       to: [pupil.email],
-      subject: `Payment Receipt - £${amount.toFixed(2)}`,
+      subject: `${isRefund ? "Refund" : "Payment"} Receipt - £${Math.abs(amount).toFixed(2)}`,
       html: emailHtml,
     });
 

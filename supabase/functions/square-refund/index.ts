@@ -133,30 +133,89 @@ serve(async (req: Request) => {
     const refundId = refundData?.refund?.id;
     const status = refundData?.refund?.status; // PENDING / COMPLETED
 
-    // Optimistically record the refund row now (webhook idempotency will skip duplicate)
     const fullRefund = Math.abs(Number(original.amount) - amount) < 0.01;
+    const refundRatio = amount / Number(original.amount);
 
+    // Look up original commission row to compute proportional fee reversal
+    // (so pupil balance + payment_history net + platform_commissions all stay consistent)
+    let originalFee = 0;
+    const { data: commissionRow } = await supabase
+      .from("platform_commissions")
+      .select("id, commission_amount, gross_amount")
+      .eq("source_id", squarePaymentId)
+      .maybeSingle();
+
+    if (commissionRow) {
+      originalFee = Number(commissionRow.commission_amount || 0);
+    } else {
+      // Fallback: parse "(admin fee: £X.XX)" from original notes
+      const feeMatch = String(original.notes || "").match(/admin fee:\s*£?(\d+(?:\.\d+)?)/i);
+      if (feeMatch) originalFee = Number(feeMatch[1]);
+    }
+
+    // Proportional fee for this refund (pupil was only credited net of fee originally)
+    const feeReversal = +(originalFee * refundRatio).toFixed(2);
+    const netRefund = +(amount - feeReversal).toFixed(2);
+
+    // Insert refund row in payment_history (negative net amount — so monthly/earnings totals net correctly)
     const { error: insErr } = await supabase.from("payment_history").insert({
       instructor_id: original.instructor_id,
       pupil_id: original.pupil_id,
-      amount: -Math.abs(amount),
+      amount: -Math.abs(netRefund),
       payment_method: "Square Refund",
       payout_status: "refunded",
-      notes: `Refund ${refundId} for payment ${squarePaymentId}${fullRefund ? " (full)" : " (partial)"}${reason ? ` — ${reason}` : ""}`,
+      external_payment_ref: `square_refund:${refundId}`,
+      notes: `Refund ${refundId} for payment ${squarePaymentId}${fullRefund ? " (full)" : " (partial)"}${feeReversal > 0 ? ` — gross £${amount.toFixed(2)} less £${feeReversal.toFixed(2)} fee` : ""}${reason ? ` — ${reason}` : ""}`,
     });
     if (insErr) console.error("[square-refund] insert err", insErr);
 
+    // Debit pupil balance by NET (what they were actually credited originally)
     await supabase.rpc("increment_pupil_balance", {
       p_pupil_id: original.pupil_id,
-      p_amount: -Math.abs(amount),
+      p_amount: -Math.abs(netRefund),
     });
+
+    // Reverse the proportional commission so YTD/monthly platform deductions stay accurate
+    if (feeReversal > 0) {
+      await supabase.from("platform_commissions").insert({
+        instructor_id: original.instructor_id,
+        source_type: "square_refund_reversal",
+        source_id: refundId,
+        gross_amount: -Math.abs(amount),
+        commission_amount: -Math.abs(feeReversal),
+        net_amount: -Math.abs(netRefund),
+        description: `Reversal of fee on refunded Square payment ${squarePaymentId}`,
+      });
+    }
 
     await supabase
       .from("payment_history")
       .update({ payout_status: fullRefund ? "refunded" : "partially_refunded" })
       .eq("id", original.id);
 
-    return json({ success: true, refundId, status });
+    // Send refund receipt email (non-blocking)
+    try {
+      const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+      await fetch(`${supabaseUrl}/functions/v1/send-payment-receipt`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${supabaseAnonKey}`,
+        },
+        body: JSON.stringify({
+          pupilId: original.pupil_id,
+          instructorId: original.instructor_id,
+          amount: netRefund,
+          paymentMethod: "Square Refund",
+          transactionReference: refundId,
+          type: "refund",
+        }),
+      });
+    } catch (e) {
+      console.error("[square-refund] receipt email error:", e);
+    }
+
+    return json({ success: true, refundId, status, netRefund, feeReversal });
   } catch (e) {
     console.error("[square-refund] error:", e);
     return json({ error: (e as Error).message || "Unexpected error" }, 500);

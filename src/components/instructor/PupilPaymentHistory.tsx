@@ -101,6 +101,7 @@ export function PupilPaymentHistory({
           "id, amount, payment_method, notes, recorded_at, payout_status, lesson_id, scheduled_lessons:lesson_id(lesson_date, start_time)"
         )
         .eq("pupil_id", pupilId)
+        .is("deleted_at", null)
         .order("recorded_at", { ascending: false })
         .limit(limit);
 
@@ -148,18 +149,22 @@ export function PupilPaymentHistory({
         <div className="space-y-2">
           {payments.map((payment) => {
             const MethodIcon = getPaymentMethodIcon(payment.payment_method);
+            const isRefund = Number(payment.amount) < 0;
             return (
               <div
                 key={payment.id}
                 className="flex items-center justify-between bg-background/60 rounded-2xl p-2.5"
               >
                 <div className="flex items-center gap-2">
-                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/50">
-                    <MethodIcon className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                  <div className={`flex h-7 w-7 items-center justify-center rounded-full ${isRefund ? "bg-destructive/10" : "bg-emerald-100 dark:bg-emerald-900/50"}`}>
+                    <MethodIcon className={`h-3.5 w-3.5 ${isRefund ? "text-destructive" : "text-emerald-600 dark:text-emerald-400"}`} />
                   </div>
                   <div>
-                    <div className="font-semibold text-sm text-emerald-700 dark:text-emerald-300">
-                      £{Number(payment.amount).toFixed(2)}
+                    <div className={`font-semibold text-sm flex items-center gap-1.5 ${isRefund ? "text-destructive" : "text-emerald-700 dark:text-emerald-300"}`}>
+                      {isRefund ? "−" : ""}£{Math.abs(Number(payment.amount)).toFixed(2)}
+                      {isRefund && (
+                        <Badge variant="destructive" className="text-[9px] px-1 py-0">Refund</Badge>
+                      )}
                     </div>
                     <div className="text-[10px] text-muted-foreground">
                       {format(new Date(payment.recorded_at), "d MMM, HH:mm")} • {formatPaymentMethod(payment.payment_method)}

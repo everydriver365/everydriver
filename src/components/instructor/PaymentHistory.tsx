@@ -163,17 +163,24 @@ export function PaymentHistory({ instructorId, limit = 10, monthOnly = false }: 
         ) : (
           <ScrollArea className="h-[300px] pr-4">
             <div className="space-y-3">
-              {payments.map((payment) => (
+              {payments.map((payment) => {
+                const isRefund = Number(payment.amount) < 0;
+                return (
                 <div
                   key={payment.id}
                   className="flex items-center justify-between rounded-2xl border p-3 hover:bg-muted/50 transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10">
-                      <User className="h-4 w-4 text-primary" />
+                    <div className={`flex h-9 w-9 items-center justify-center rounded-full ${isRefund ? "bg-destructive/10" : "bg-primary/10"}`}>
+                      <User className={`h-4 w-4 ${isRefund ? "text-destructive" : "text-primary"}`} />
                     </div>
                     <div>
-                      <div className="font-medium text-sm">{payment.pupil.name}</div>
+                      <div className="font-medium text-sm flex items-center gap-2">
+                        {payment.pupil.name}
+                        {isRefund && (
+                          <Badge variant="destructive" className="text-[10px] px-1.5 py-0">Refunded</Badge>
+                        )}
+                      </div>
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <Calendar className="h-3 w-3" />
                         {format(new Date(payment.recorded_at), "dd MMM yyyy, HH:mm")}
@@ -182,8 +189,8 @@ export function PaymentHistory({ instructorId, limit = 10, monthOnly = false }: 
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="text-right">
-                      <div className="font-semibold text-primary">
-                        £{Number(payment.amount).toFixed(2)}
+                      <div className={`font-semibold ${isRefund ? "text-destructive" : "text-primary"}`}>
+                        {isRefund ? "−" : ""}£{Math.abs(Number(payment.amount)).toFixed(2)}
                       </div>
                       <div className="text-xs text-muted-foreground capitalize">
                         {payment.payment_method}
@@ -205,7 +212,7 @@ export function PaymentHistory({ instructorId, limit = 10, monthOnly = false }: 
                         <AlertDialogHeader>
                           <AlertDialogTitle>Delete payment record?</AlertDialogTitle>
                           <AlertDialogDescription>
-                            This will remove the £{Number(payment.amount).toFixed(2)} payment from {payment.pupil.name}'s history. This action cannot be undone.
+                            This will remove the £{Math.abs(Number(payment.amount)).toFixed(2)} {isRefund ? "refund" : "payment"} from {payment.pupil.name}'s history. This action cannot be undone.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
@@ -221,7 +228,8 @@ export function PaymentHistory({ instructorId, limit = 10, monthOnly = false }: 
                     </AlertDialog>
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           </ScrollArea>
         )}
