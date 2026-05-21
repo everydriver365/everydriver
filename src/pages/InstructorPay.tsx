@@ -148,6 +148,7 @@ export default function InstructorPay() {
       .from("pupils")
       .select("id, name, account_balance, phone, email, profile_image_url")
       .eq("instructor_id", instructorId)
+      .eq("is_active", true)
       .order("name", { ascending: true });
     setPupils(data || []);
   };
