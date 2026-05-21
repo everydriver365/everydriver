@@ -708,21 +708,23 @@ function NextLessonCard({
           <div style={{ minWidth: 0, flex: 1 }}>
             <div
               style={{
-                fontSize: 26, fontWeight: 800, color: T.navy,
-                letterSpacing: -1, lineHeight: "28px", fontFamily: FONT,
+                fontSize: 28, fontWeight: 900, color: T.navy,
+                letterSpacing: -1, lineHeight: "30px", fontFamily: FONT,
+                textShadow: "0 1px 2px rgba(255,255,255,0.9)",
               }}
             >
               {fmtTime(lesson.startTime)}
             </div>
             <div
               style={{
-                fontSize: 14, fontWeight: 700, color: T.navy,
-                marginTop: 3, fontFamily: FONT,
+                fontSize: 15, fontWeight: 800, color: T.navy,
+                marginTop: 4, fontFamily: FONT,
+                textShadow: "0 1px 2px rgba(255,255,255,0.9)",
               }}
             >
               {lesson.pupilName}
             </div>
-            <div style={{ fontSize: 11, color: T.textMuted, marginTop: 1, fontFamily: FONT }}>
+            <div style={{ fontSize: 12, fontWeight: 600, color: T.textMid, marginTop: 2, fontFamily: FONT, textShadow: "0 1px 2px rgba(255,255,255,0.9)" }}>
               {durationHours}h · {lesson.pickupPostcode || ""}
             </div>
           </div>
@@ -759,8 +761,8 @@ function NextLessonCard({
           <ActionBtn
             label="Go"
             Icon={NavIcon}
-            bg={T.surface}
-            fg={T.textMid}
+            bg="#4ADE80"
+            fg="#FFFFFF"
             onClick={(e) => {
               e.stopPropagation();
               const q = encodeURIComponent(address);
