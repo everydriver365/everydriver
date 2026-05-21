@@ -754,8 +754,8 @@ function NextLessonCard({
           <ActionBtn
             label="Text"
             Icon={MessageSquare}
-            bg={T.surface}
-            fg={T.textMid}
+            bg="#D1D5DB"
+            fg="#374151"
             onClick={(e) => { e.stopPropagation(); if (phone) window.location.href = `sms:${phone}`; }}
           />
           <ActionBtn
