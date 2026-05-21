@@ -10,6 +10,8 @@
 
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { PullToRefresh } from "@/components/instructor/home/PullToRefresh";
+import { Shimmer } from "@/components/instructor/home/Shimmer";
 import {
   Phone,
   Bell,
@@ -68,7 +70,7 @@ import {
 } from "lucide-react";
 import { format, addDays, getWeek, isSameDay, parse, parseISO } from "date-fns";
 import { londonTodayStr, toLondonParts, parseHHMM } from "@/lib/availabilityEngine";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
