@@ -154,10 +154,18 @@ export default function InstructorPay() {
 
   const fetchRecentPaymentCount = async () => {
     if (!instructorId) return;
+    // Month-to-date count, not all-time, to match the "Recent Payments" label.
+    const monthStartIso = new Date(
+      new Date().getFullYear(),
+      new Date().getMonth(),
+      1
+    ).toISOString();
     const { count } = await supabase
       .from("payment_history")
       .select("id", { count: "exact", head: true })
-      .eq("instructor_id", instructorId);
+      .eq("instructor_id", instructorId)
+      .is("deleted_at", null)
+      .gte("recorded_at", monthStartIso);
     setRecentPaymentCount(count || 0);
   };
 
@@ -304,10 +312,12 @@ export default function InstructorPay() {
                 <p className="text-[10px] font-bold text-white/60 uppercase tracking-[0.08em]">Last Month</p>
                 <p className="text-[18px] font-bold text-white tabular-nums">£{lastMonth}</p>
               </div>
-              <div className="flex-1 border-l border-white/10 pl-4">
+              <Link to="/instructor/settings" className="flex-1 border-l border-white/10 pl-4 block">
                 <p className="text-[10px] font-bold text-white/60 uppercase tracking-[0.08em]">Per Hour</p>
-                <p className="text-[18px] font-bold text-white tabular-nums">£{earnings?.hourlyRate || 40}</p>
-              </div>
+                <p className="text-[18px] font-bold text-white tabular-nums">
+                  {earnings?.hourlyRate != null ? `£${earnings.hourlyRate}` : "—"}
+                </p>
+              </Link>
             </div>
           </div>
           <GradientLine />
@@ -463,7 +473,7 @@ export default function InstructorPay() {
                 </div>
                 <p style={{ fontSize: 22, fontWeight: 700, color: "#18181B", fontFamily: "Inter, sans-serif" }} className="tabular-nums">{recentPaymentCount}</p>
                 <div className="flex items-center justify-between" style={{ marginTop: 2 }}>
-                  <p style={{ fontSize: 12, fontWeight: 400, color: "#71717A", fontFamily: "Inter, sans-serif" }}>Recent Payments</p>
+                  <p style={{ fontSize: 12, fontWeight: 400, color: "#71717A", fontFamily: "Inter, sans-serif" }}>Payments This Month</p>
                   <ChevronRight size={16} strokeWidth={2} color="#A1A1AA" className={cn("transition-transform", paymentsExpanded && "rotate-90")} />
                 </div>
               </div>
@@ -539,9 +549,9 @@ export default function InstructorPay() {
                 <div style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: "#E8ECF1", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
                   <Users size={22} strokeWidth={2} color="#2A394F" />
                 </div>
-                <p style={{ fontSize: 22, fontWeight: 700, color: "#18181B", fontFamily: "Inter, sans-serif" }} className="tabular-nums">{pupils.length}</p>
+                <p style={{ fontSize: 22, fontWeight: 700, color: "#18181B", fontFamily: "Inter, sans-serif" }} className="tabular-nums">£{pupils.reduce((s, p) => s + Math.max(0, p.account_balance || 0), 0).toFixed(0)}</p>
                 <div className="flex items-center justify-between" style={{ marginTop: 2 }}>
-                  <p style={{ fontSize: 12, fontWeight: 400, color: "#71717A", fontFamily: "Inter, sans-serif" }}>Pupil Balances</p>
+                  <p style={{ fontSize: 12, fontWeight: 400, color: "#71717A", fontFamily: "Inter, sans-serif" }}>Credit on Account</p>
                   <ChevronRight size={16} strokeWidth={2} color="#A1A1AA" className={cn("transition-transform", balancesExpanded && "rotate-90")} />
                 </div>
               </div>
