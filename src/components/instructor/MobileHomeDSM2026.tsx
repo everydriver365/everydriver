@@ -827,12 +827,8 @@ function NeedsAttentionCard({
   attention, stats, navigate,
 }: { attention: any; stats: any; navigate: ReturnType<typeof useNavigate> }) {
   type Key = "jobs" | "tests" | "calls" | "enquiries";
-  const [sectionsOpen, setSectionsOpen] = useState<boolean>(true);
-  const [openKey, setOpenKey] = useState<Key | null>(
-    attention.urgentCount > 0 ? "jobs" : "enquiries"
-  );
+  const [openKey, setOpenKey] = useState<Key | null>(null);
   const toggle = (k: Key) => {
-    setSectionsOpen(true);
     setOpenKey((p) => (p === k ? null : k));
   };
 
@@ -977,23 +973,25 @@ function NeedsAttentionCard({
         </div>
       </div>
 
-      {/* Nested expandable rows */}
-      {tiles.map((t) => (
-        <ActionTile
-          key={t.key}
-          icon={t.icon}
-          label={t.label}
-          accent={t.accent}
-          tint={t.tint}
-          outlined={t.urgent}
-          badgeCount={t.count}
-          open={openKey === t.key}
-          onToggle={() => toggle(t.key)}
-          nested
-        >
-          {t.body}
-        </ActionTile>
-      ))}
+      {/* Nested expandable row — only the active section renders */}
+      {tiles
+        .filter((t) => openKey === t.key)
+        .map((t) => (
+          <ActionTile
+            key={t.key}
+            icon={t.icon}
+            label={t.label}
+            accent={t.accent}
+            tint={t.tint}
+            outlined={t.urgent}
+            badgeCount={t.count}
+            open={true}
+            onToggle={() => toggle(t.key)}
+            nested
+          >
+            {t.body}
+          </ActionTile>
+        ))}
     </div>
   );
 }
