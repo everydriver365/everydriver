@@ -1767,7 +1767,7 @@ function QATile({
   item, active, onPress,
 }: { item: QAItem; active: boolean; onPress: () => void; size?: "grid" | "scroll" }) {
   const Icon = item.Icon;
-  const BORDER = "#e0dfd9";
+  const BORDER = "#e0e3ea";
   const HOVER = "#2952b3";
   return (
     <button
@@ -1777,7 +1777,7 @@ function QATile({
       onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.borderColor = BORDER; }}
       style={{
         width: "100%",
-        padding: "14px 14px",
+        padding: 16,
         backgroundColor: "#FFFFFF",
         border: `1px solid ${BORDER}`,
         borderRadius: 14,
@@ -1785,15 +1785,15 @@ function QATile({
         display: "flex",
         flexDirection: "column",
         alignItems: "flex-start",
-        gap: 10,
+        gap: 12,
         textAlign: "left",
         transition: "border-color 150ms ease",
       }}
     >
       <span
         style={{
-          width: 36,
-          height: 36,
+          width: 40,
+          height: 40,
           borderRadius: 10,
           background: item.bg,
           display: "inline-flex",
@@ -1802,8 +1802,9 @@ function QATile({
           flexShrink: 0,
         }}
       >
-        <Icon size={18} strokeWidth={2.2} color={item.colour} />
+        <Icon size={20} strokeWidth={2.2} color={item.colour} />
       </span>
+
       <span
         style={{
           fontSize: 14,
