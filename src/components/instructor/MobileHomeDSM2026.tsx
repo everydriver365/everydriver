@@ -1965,10 +1965,11 @@ function QuickAccessCard({ navigate }: { navigate: ReturnType<typeof useNavigate
             display: "flex",
             overflowX: "auto",
             scrollSnapType: "x mandatory",
-            gap: 10,
+            gap: 0,
             width: "100%",
             margin: 0,
             padding: "0 0 4px",
+            boxSizing: "border-box",
             scrollbarWidth: "none",
             WebkitOverflowScrolling: "touch",
           }}
