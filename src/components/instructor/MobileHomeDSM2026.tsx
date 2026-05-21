@@ -1546,7 +1546,7 @@ function QuickAccessCard({ navigate }: { navigate: ReturnType<typeof useNavigate
           border: `1px solid ${BORDER}`,
         }}
       >
-        <Search size={16} color={MUTED} strokeWidth={2} />
+        <Search size={16} color={PLACEHOLDER} strokeWidth={2} />
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
@@ -1555,7 +1555,9 @@ function QuickAccessCard({ navigate }: { navigate: ReturnType<typeof useNavigate
             flex: 1, background: "transparent", border: 0, outline: "none",
             fontSize: 14, color: CHARCOAL, fontFamily: FONT, minWidth: 0, padding: 0,
           }}
+          className="qa-search-input"
         />
+
         {query.length > 0 ? (
           <button
             type="button"
