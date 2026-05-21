@@ -969,12 +969,12 @@ function NeedsAttentionCard({
 
 
 
-/* Horizontal strip action tile — icon left, label, badge, chevron right.
-   Tapping toggles inline expanded body. */
+/* Horizontal action tile with tinted icon box, count/clear pill, expandable body. */
 function ActionTile({
   icon: Icon,
   label,
   accent,
+  tint,
   outlined,
   badgeCount,
   open,
@@ -984,97 +984,94 @@ function ActionTile({
   icon: LucideIcon;
   label: string;
   accent?: string;
+  tint?: string;
   outlined?: boolean;
   badgeCount: number;
   open: boolean;
   onToggle: () => void;
   children: React.ReactNode;
 }) {
+  const BORDER = "#e0e3ea";
+  const DIVIDER = "#f0f1f4";
+  const HOVER = "#f8f9fb";
+  const CHARCOAL = "#1a1a1f";
+  const GREY_PILL_BG = "#f0f1f4";
+  const GREY_PILL_FG = "#888888";
+
   const isUrgent = !!outlined && (badgeCount ?? 0) > 0;
-  const labelColor = isUrgent ? (accent ?? T.red) : T.navy;
-  const iconColor = isUrgent ? (accent ?? T.red) : T.navy;
-  const iconOpacity = isUrgent ? 1 : 0.6;
-  const border = `1px solid ${T.border}`;
-  const hasItems = (badgeCount ?? 0) > 0;
-  const cleared = !hasItems && !isUrgent;
+  const iconColor = accent ?? "#aaaaaa";
+  const iconBg = tint ?? "#f0f1f4";
+  const showClearPill = !isUrgent;
 
   return (
     <div
       style={{
-        backgroundColor: T.white,
-        borderRadius: 16,
-        border,
-        boxShadow: "0 1px 3px rgba(15,32,68,0.06)",
+        backgroundColor: "#FFFFFF",
+        borderRadius: 14,
+        border: `1px solid ${BORDER}`,
         overflow: "hidden",
       }}
     >
       <button
         type="button"
         onClick={onToggle}
+        onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = HOVER; }}
+        onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
         style={{
-          width: "100%", padding: "14px 16px",
-          display: "flex", alignItems: "center", gap: 14,
+          width: "100%", padding: "12px 14px",
+          display: "flex", alignItems: "center", gap: 12,
           background: "transparent", border: 0, cursor: "pointer", textAlign: "left",
+          transition: "background 150ms ease",
         }}
       >
         <div
           style={{
-            width: 36, height: 36, display: "flex",
-            alignItems: "center", justifyContent: "center",
-            color: iconColor, opacity: iconOpacity, flexShrink: 0,
+            width: 34, height: 34, borderRadius: 9,
+            backgroundColor: iconBg,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            flexShrink: 0,
           }}
         >
-          <Icon size={22} strokeWidth={1.8} />
+          <Icon size={18} strokeWidth={2} color={iconColor} />
         </div>
-        <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 8 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
           <span
             style={{
-              fontSize: 15, fontWeight: 700, color: labelColor,
+              fontSize: 14, fontWeight: 600, color: CHARCOAL,
               letterSpacing: "-0.01em", fontFamily: FONT,
             }}
           >
             {label}
           </span>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
           {isUrgent ? (
             <span
               style={{
-                backgroundColor: accent ?? T.red, color: T.white,
-                borderRadius: 999, padding: "2px 8px",
-                fontSize: 10, fontWeight: 700, fontFamily: FONT,
+                backgroundColor: accent ?? "#c9302c", color: "#FFFFFF",
+                borderRadius: 999, padding: "2px 10px",
+                fontSize: 11, fontWeight: 700, fontFamily: FONT, minWidth: 24, textAlign: "center",
               }}
             >
               {badgeCount}
             </span>
-          ) : null}
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
-          {cleared ? (
+          ) : showClearPill ? (
             <span
               style={{
                 display: "inline-flex", alignItems: "center", gap: 4,
-                backgroundColor: "rgba(26,82,160,0.10)", color: T.blue,
-                borderRadius: 999, padding: "3px 10px",
-                fontSize: 11, fontWeight: 700, fontFamily: FONT,
+                backgroundColor: GREY_PILL_BG, color: GREY_PILL_FG,
+                borderRadius: 999, padding: "2px 10px",
+                fontSize: 11, fontWeight: 600, fontFamily: FONT,
               }}
             >
               ✓ Clear
             </span>
-          ) : !isUrgent && hasItems ? (
-            <span
-              style={{
-                backgroundColor: T.surface, color: T.navy,
-                borderRadius: 999, padding: "3px 10px",
-                fontSize: 11, fontWeight: 700, fontFamily: FONT,
-              }}
-            >
-              {badgeCount}
-            </span>
           ) : null}
           <ChevronDown
-            size={18}
-            strokeWidth={2}
+            size={16}
+            strokeWidth={2.2}
+            color="#999999"
             style={{
-              color: T.navy, opacity: 0.25,
               transform: open ? "rotate(180deg)" : "rotate(0deg)",
               transition: "transform .2s",
             }}
@@ -1082,13 +1079,36 @@ function ActionTile({
         </div>
       </button>
       {open ? (
-        <div style={{ borderTop: `1px solid ${T.divider}`, padding: "8px 0 10px" }}>
+        <div style={{ borderTop: `1px solid ${DIVIDER}`, padding: "12px 14px" }}>
           {children}
         </div>
       ) : null}
     </div>
   );
 }
+
+function SimpleMsg({ children }: { children: React.ReactNode }) {
+  return (
+    <div style={{ fontSize: 13, color: "#6E6E73", fontFamily: FONT, lineHeight: 1.4 }}>
+      {children}
+    </div>
+  );
+}
+
+function EmptyState({ icon: Icon, children }: { icon: LucideIcon; children: React.ReactNode }) {
+  return (
+    <div
+      style={{
+        display: "flex", flexDirection: "column", alignItems: "center", gap: 8,
+        padding: "12px 8px", fontFamily: FONT,
+      }}
+    >
+      <Icon size={22} strokeWidth={1.8} color="#cccccc" />
+      <span style={{ fontSize: 12, color: "#999999", fontFamily: FONT }}>{children}</span>
+    </div>
+  );
+}
+
 
 function Empty({ children }: { children: React.ReactNode }) {
   return (
