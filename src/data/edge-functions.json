@@ -367,10 +367,6 @@
       "has_config_block": false
     },
     {
-      "name": "scrape-test-slots",
-      "has_config_block": false
-    },
-    {
       "name": "send-campaign",
       "has_config_block": true
     },
