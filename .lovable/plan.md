@@ -1,37 +1,33 @@
-## Fix accuracy issues on Instructor Payments (mobile)
+# Fix "99" on Tests tile — purge legacy scraped data from UI
 
-Scope: `src/pages/InstructorPay.tsx` + `src/hooks/useDailyEarnings.ts`. UI/data only — no business logic or layout changes.
+## Root cause
 
-### 1. "This Month" hero under-reports mid/late month
-`useDailyEarnings` only fetches `lesson_history` from the last 14 days, so `thisMonth` misses lessons earlier in the month.
+The Tests tile badge reads `useTestSwapNotifications`, which sums three counts. One of them queries `test_slot_reservations` where `status = 'scraped_match'`. The database currently holds **98 such rows** (left over from the retired external scraper), plus 1 genuine swap match → badge shows **99** (capped visually as "9+", but the underlying number is 99 and the expand panel / action lists still expose them).
 
-- Change the query window to `gte(lesson_date, startOfMonth(subMonths(today, 1)))` so it always covers the current month + last month in full (still bounded, still fast).
-- Keep the 14-day daily sparkline by deriving it from the same dataset.
+The same legacy source is read in two more places, which contradicts the new "no external scraping" banner on the Available tab:
+- `src/components/test-requests/MatchedSlotsList.tsx` — Available tab list
+- `src/hooks/useTestActionItems.ts` — action items feed
 
-### 2. "Recent Payments" tile shows all-time count
-The `payment_history` count query has no date filter.
+## Plan
 
-- Filter to `recorded_at >= startOfMonth(now)` and relabel sublabel to "This Month" (or last 30 days — pick one; recommend month-to-date to match the hero).
+Frontend-only change. No DB writes, no schema change. We simply stop reading the deprecated `scraped_match` rows anywhere in the instructor UI.
 
-### 3. "Pupil Balances" tile shows pupil count, not a balance
-The number displayed is `pupils.length`.
+### 1. `src/hooks/useTestSwapNotifications.ts`
+- Remove the `test_slot_reservations` / `scraped_match` count block.
+- Remove its realtime subscription.
+- Return only `pendingOffers + matchingTests`.
 
-- Replace with **total credit on account**: sum of `account_balance` where `> 0`. Keep label "Pupil Balances" or change to "Credit on Account" (recommend the latter for clarity).
-- Tile expansion already shows the per-pupil list — unchanged.
+### 2. `src/components/test-requests/MatchedSlotsList.tsx`
+- Remove the `scraped_match` query branch so the Available tab shows **only** swap-system `have_test` listings at the instructor's watched centres — matching the banner's promise.
 
-### 4. Hardcoded `40` hourly-rate fallback
-Violates `mem://constraints/no-hardcoded-fallbacks-live-data-only`.
+### 3. `src/hooks/useTestActionItems.ts`
+- Drop the `scrapedRes` query and the `"scraped"` kind from the merged list. Keep only pending swap offers.
 
-- In `useDailyEarnings`: stop defaulting `hourlyRate` to `40`. If the instructor has no `hourly_rate` set, return `hourlyRate: null` and skip the per-hour tile (or render "—" with a "Set your rate" link to settings).
-- In `InstructorPay.tsx` "Per Hour" stat: render `£{earnings.hourlyRate ?? "—"}` and link the tile to `/instructor/settings` when null.
+### 4. (Optional, ask user) Database cleanup
+- Leave the 98 legacy rows in `test_slot_reservations` untouched (they are no longer read by the UI), **or** issue a one-off migration to delete/archive them. Recommend leaving them for now and only purging if the user confirms — that avoids any risk to historical/admin views (`AdminScrapedMatchesPanel` still uses them).
 
-### Technical details
+## Expected result
 
-- Files touched: `src/pages/InstructorPay.tsx`, `src/hooks/useDailyEarnings.ts`.
-- New date-fns imports if needed: `startOfMonth`, `subMonths`.
-- `EarningsData.hourlyRate` type changes from `number` to `number | null`; update consumers (grep usage — likely only this page).
-- No DB/schema/edge-function changes. No layout changes.
-
-### Verification
-
-- Manually verify on preview: hero "This Month" matches sum of lessons in current month; "Recent Payments" matches month-to-date row count in `payment_history`; "Credit on Account" matches sum of positive `account_balance`; instructor with no `hourly_rate` shows "—" not 40.
+- Tests tile badge drops to the real swap-only count (currently 1 in prod).
+- Available tab content matches its banner — swap data only.
+- Admin panel that intentionally inspects scraped legacy rows is unaffected.
