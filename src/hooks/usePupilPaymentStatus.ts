@@ -21,12 +21,12 @@ export function useInstructorPupilsPaymentSummary(instructorId: string | undefin
     queryKey: ["instructor-pupils-payment-summary", instructorId],
     queryFn: async () => {
       if (!instructorId) return { debtors: 0, totalDebt: 0, debtorsList: [] as { id: string; name: string; debt: number }[] };
-      const { data: pupils } = await (supabase.from("pupils") as any).select("id, name, account_balance").eq("instructor_id", instructorId).eq("is_active", true);
-      const debtors = (pupils || []).filter((p: any) => (p.account_balance || 0) < 0);
+      const { data: pupils } = await (supabase.from("pupils") as any).select("id, name, account_balance").eq("instructor_id", instructorId).is("deleted_at", null);
+      const debtors = (pupils || []).filter((p: any) => typeof p.account_balance === "number" && p.account_balance < 0);
       return {
         debtors: debtors.length,
-        totalDebt: Math.abs(debtors.reduce((sum: number, p: any) => sum + (p.account_balance || 0), 0)),
-        debtorsList: debtors.slice(0, 5).map((p: any) => ({ id: p.id, name: p.name, debt: Math.abs(p.account_balance || 0) })),
+        totalDebt: Math.abs(debtors.reduce((sum: number, p: any) => sum + Number(p.account_balance), 0)),
+        debtorsList: debtors.slice(0, 5).map((p: any) => ({ id: p.id, name: p.name, debt: Math.abs(Number(p.account_balance)) })),
       };
     },
     enabled: !!instructorId,
