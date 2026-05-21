@@ -506,7 +506,7 @@ export default function InstructorPay() {
               onClick={() => { haptics.selection(); setBonusExpanded(!bonusExpanded); }}
               style={tileStyle} className="w-full text-left"
             >
-              <div style={{ padding: 14 }}>
+              <div style={{ padding: 14, minHeight: 120, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
                 <div style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: "#FEF3C7", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
                   <Trophy size={22} strokeWidth={2} color="#92400E" />
                 </div>
