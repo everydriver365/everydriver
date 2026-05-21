@@ -566,7 +566,7 @@ export default function InstructorPay() {
           <p className="text-[11px] font-bold text-[#8e8e93] uppercase tracking-[0.06em] px-1 mb-[10px]">
             Quick Actions
           </p>
-          <div className="grid grid-cols-2 gap-[10px]">
+          <div className="grid grid-cols-2 gap-[10px] auto-rows-fr">
             {actions.map((action, i) => {
               const inner = (
                 <motion.div
