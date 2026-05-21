@@ -150,29 +150,36 @@ export default function InstructorLogin() {
 
   const handleBiometricLogin = async () => {
     if (faceIdState === "scanning") return;
+    const attemptId = startAuthAttempt();
     setFaceIdState("scanning");
     setError("");
     const safety = window.setTimeout(() => {
+      if (!isActiveAuthAttempt(attemptId)) return;
       setFaceIdState("idle");
       setError("Biometric login timed out. Please use email and password.");
     }, 20000);
     try {
       const creds = await getBiometricCredentials("instructor", "Sign in to DSM365");
+      if (!isActiveAuthAttempt(attemptId)) return;
       if (!creds) {
         setFaceIdState("idle");
         setError("No saved credentials found. Please log in manually first.");
         return;
       }
+      console.info(`${LOGIN_LOG_PREFIX} biometric sign-in submitted`);
       const { error: signInError } = await signIn(creds.email, creds.password);
+      if (!isActiveAuthAttempt(attemptId)) return;
       if (signInError) {
         setFaceIdState("idle");
         setError("Biometric login failed. Please use email and password.");
       } else {
         setFaceIdState("success");
         toast.success("Welcome back!");
+        console.info(`${LOGIN_LOG_PREFIX} biometric redirecting to instructor dashboard`);
         navigate("/instructor");
       }
     } catch {
+      if (!isActiveAuthAttempt(attemptId)) return;
       setFaceIdState("idle");
       setError("Biometric login not available. Please use email and password.");
     } finally {
