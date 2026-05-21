@@ -187,11 +187,14 @@ serve(async (req: Request) => {
         },
         body: JSON.stringify({
           instructorId,
+          category: NotifyCategory.PAYMENT,
+          importance: NotifyImportance.NORMAL,
+          pupilId,
           notification: {
             title: "💰 Payment Received",
             body: `£${amount.toFixed(2)} received from ${pupil?.name || "a pupil"} via ${walletType === "apple" ? "Apple Pay" : "Google Pay"}`,
             tag: `payment-received-${Date.now()}`,
-            data: { type: "payment_received", pupilId, amount },
+            data: { type: PushDataType.PAYMENT_RECEIVED, pupilId, amount },
           },
         }),
       });
