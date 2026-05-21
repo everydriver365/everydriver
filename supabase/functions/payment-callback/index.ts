@@ -235,11 +235,14 @@ serve(async (req: Request) => {
                 },
                 body: JSON.stringify({
                   instructorId: pupil.instructor_id,
+                  category: NotifyCategory.PAYMENT,
+                  importance: NotifyImportance.NORMAL,
+                  pupilId,
                   notification: {
                     title: "💰 Payment Received",
                     body: `£${paymentAmountDisplay} received from ${pupil.name || "a pupil"} via ${provider.toUpperCase()} Card`,
                     tag: `payment-received-${Date.now()}`,
-                    data: { type: "payment_received", pupilId, amount: paymentAmountPounds },
+                    data: { type: PushDataType.PAYMENT_RECEIVED, pupilId, amount: paymentAmountPounds },
                   },
                 }),
               });
