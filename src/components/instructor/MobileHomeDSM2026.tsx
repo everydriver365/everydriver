@@ -828,8 +828,8 @@ function SectionHeader({
 
 /* =========================== Needs attention ============================ */
 function NeedsAttentionCard({
-  attention, stats, navigate,
-}: { attention: any; stats: any; navigate: ReturnType<typeof useNavigate> }) {
+  attention, stats, navigate, instructorId,
+}: { attention: any; stats: any; navigate: ReturnType<typeof useNavigate>; instructorId: string | undefined }) {
   type Key = "jobs" | "tests" | "calls" | "enquiries";
   const [openKey, setOpenKey] = useState<Key | null>(null);
   const toggle = (k: Key) => {
