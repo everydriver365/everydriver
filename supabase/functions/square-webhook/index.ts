@@ -215,12 +215,17 @@ serve(async (req: Request) => {
 
         let feeAmount = 0;
         let creditAmount = amountPounds;
-        if (commConfig && !isAutoTransfer) {
-          // Only deduct fee from platform account when NOT using instructor OAuth
-          // (OAuth payments already split via app_fee_money)
+        if (commConfig) {
+          // Compute platform fee for BOTH OAuth (auto-transfer) and platform-pool payments.
+          // For OAuth, Square already routed app_fee_money to the platform; we still need
+          // to record the commission row so reporting/MTD is accurate.
           feeAmount = amountPounds * (commConfig.rate_percent / 100) + (commConfig.fixed_fee_pence / 100);
           feeAmount = Math.round(feeAmount * 100) / 100;
-          creditAmount = amountPounds - feeAmount;
+          if (!isAutoTransfer) {
+            // Platform-pool: deduct from credited amount (instructor is paid out the net later)
+            creditAmount = amountPounds - feeAmount;
+          }
+          // OAuth: pupil gets credited the full amount (= what they paid). Fee already taken by Square.
         }
 
         const payoutStatus = isAutoTransfer ? "auto_transferred" : "pending";
@@ -243,30 +248,33 @@ serve(async (req: Request) => {
         });
         console.log(`Credited £${creditAmount.toFixed(2)} to pupil ${pupilId} (${payoutStatus})`);
 
-        // Create auto-payout record for OAuth payments
+        // Create auto-payout record for OAuth payments (net of platform fee)
         if (isAutoTransfer && instructorId) {
+          const payoutAmount = Math.max(0, Math.round((amountPounds - feeAmount) * 100) / 100);
           await supabase.from("instructor_payouts").insert({
             instructor_id: instructorId,
-            amount: creditAmount,
+            amount: payoutAmount,
             payment_ids: [],
-            notes: `Auto-paid via Square OAuth — ${paymentId}`,
+            notes: `Auto-paid via Square OAuth — ${paymentId}${feeAmount > 0 ? ` (after £${feeAmount.toFixed(2)} platform fee)` : ''}`,
           });
         }
 
-        // Record commission
+        // Record commission (for both OAuth and platform-pool)
         if (feeAmount > 0) {
           await supabase.from("platform_commissions").insert({
             instructor_id: instructorId,
-            source_type: "square_checkout",
+            source_type: isAutoTransfer ? "square_oauth_checkout" : "square_checkout",
             source_id: paymentId,
             gross_amount: amountPounds,
             commission_amount: feeAmount,
             commission_rate: commConfig?.rate_percent ? commConfig.rate_percent / 100 : 0.025,
             fixed_fee: commConfig?.fixed_fee_pence ? commConfig.fixed_fee_pence / 100 : 0.20,
-            net_amount: creditAmount,
-            description: "Admin fee on Square Checkout payment",
+            net_amount: amountPounds - feeAmount,
+            description: isAutoTransfer
+              ? "Platform fee on Square OAuth Checkout (taken via app_fee_money)"
+              : "Admin fee on Square Checkout payment",
           });
-          console.log(`Recorded commission: £${feeAmount.toFixed(2)}`);
+          console.log(`Recorded commission: £${feeAmount.toFixed(2)} (autoTransfer=${isAutoTransfer})`);
         }
 
         // Send receipt email (non-blocking)
