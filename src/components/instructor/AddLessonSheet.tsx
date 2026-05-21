@@ -73,11 +73,11 @@ const LESSON_TYPES = [
 ];
 
 const DURATIONS = [
+  { value: '0.5', label: '30 min' },
+  { value: '0.75', label: '45 min' },
   { value: '1', label: '1 hr' },
   { value: '1.5', label: '1.5 hr' },
   { value: '2', label: '2 hr' },
-  { value: '2.5', label: '2.5 hr' },
-  { value: '3', label: '3 hr' },
 ];
 
 // Styled section wrapper
@@ -225,6 +225,7 @@ export function AddLessonSheet({
   const [checklistOpen, setChecklistOpen] = useState(true);
   const [conflictWarning, setConflictWarning] = useState<string | null>(null);
   const [isHardOverlap, setIsHardOverlap] = useState(false);
+  const [conflictSuggestions, setConflictSuggestions] = useState<string[]>([]);
   const [travelDetailsOpen, setTravelDetailsOpen] = useState(false);
   const [checkingConflict, setCheckingConflict] = useState(false);
   const pendingCheckRef = useRef<Promise<void> | null>(null);
