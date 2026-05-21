@@ -180,6 +180,10 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
     // Set up auth state listener FIRST
     const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.info(`${AUTH_LOG_PREFIX} auth state changed`, {
+          event,
+          hasSession: Boolean(session),
+        });
         setSession(session);
         setUser(session?.user ?? null);
         
@@ -196,7 +200,12 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
     );
 
     // THEN check for existing session
+    const sessionStartedAt = performance.now();
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.info(`${AUTH_LOG_PREFIX} initial session checked`, {
+        durationMs: Math.round(performance.now() - sessionStartedAt),
+        hasSession: Boolean(session),
+      });
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
@@ -210,7 +219,9 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
   }, []);
 
   const fetchInstructorProfile = async (userId: string) => {
+    const startedAt = performance.now();
     try {
+      console.info(`${AUTH_LOG_PREFIX} instructor profile fetch started`);
       // Fetch instructor profile linked to this auth user
       const { data: instructorData, error: instructorError } = await supabase
         .from('instructors')
@@ -219,15 +230,22 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
         .maybeSingle();
 
       if (instructorError) {
-        console.error('Error fetching instructor:', instructorError);
+        console.error(`${AUTH_LOG_PREFIX} instructor profile fetch failed`, instructorError);
         setLoading(false);
         return;
       }
+
+      console.info(`${AUTH_LOG_PREFIX} instructor profile fetch finished`, {
+        durationMs: Math.round(performance.now() - startedAt),
+        found: Boolean(instructorData),
+      });
 
       if (instructorData) {
         setInstructor(instructorData);
 
         // Fetch subscription
+        const subscriptionStartedAt = performance.now();
+        console.info(`${AUTH_LOG_PREFIX} subscription fetch started`);
         const { data: subData } = await supabase
           .from('instructor_subscriptions')
           .select(`
@@ -244,6 +262,11 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
           .eq('status', 'active')
           .maybeSingle();
 
+        console.info(`${AUTH_LOG_PREFIX} subscription fetch finished`, {
+          durationMs: Math.round(performance.now() - subscriptionStartedAt),
+          found: Boolean(subData),
+        });
+
         if (subData) {
           const planData = subData.subscription_plans as SubscriptionPlanData | null;
           setSubscription({
@@ -257,7 +280,7 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
         }
       }
     } catch (error) {
-      console.error('Error in fetchInstructorProfile:', error);
+      console.error(`${AUTH_LOG_PREFIX} profile loading failed`, error);
     } finally {
       setLoading(false);
     }
