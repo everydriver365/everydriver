@@ -5,7 +5,6 @@ import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayo
 import { TestRequestForm } from "@/components/test-requests/TestRequestForm";
 import { TestRequestList } from "@/components/test-requests/TestRequestList";
 import { SwapBoard } from "@/components/test-requests/SwapBoard";
-import { AvailableTestSlots } from "@/components/test-requests/AvailableTestSlots";
 import { MatchedSlotsList } from "@/components/test-requests/MatchedSlotsList";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { SegmentedControl } from "@/components/instructor/ui/SegmentedControl";
@@ -93,10 +92,7 @@ export default function InstructorTestRequests() {
           )}
           {tab === "swap-board" && <SwapBoard instructorId={instructor?.id} />}
           {tab === "available-slots" && (
-            <>
-              <MatchedSlotsList instructorId={instructor?.id} />
-              <AvailableTestSlots instructorId={instructor?.id} />
-            </>
+            <MatchedSlotsList instructorId={instructor?.id} />
           )}
         </div>
 
