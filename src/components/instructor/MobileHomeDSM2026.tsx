@@ -862,22 +862,51 @@ function NeedsAttentionCard({
       count: attention.jobs ?? 0, urgent: true, accent: RED, tint: RED_TINT,
       body: (attention.jobs ?? 0) === 0
         ? <EmptyState icon={Inbox}>No jobs to action</EmptyState>
-        : <SimpleMsg>{attention.jobs} job{attention.jobs === 1 ? "" : "s"} require{attention.jobs === 1 ? "s" : ""} your attention</SimpleMsg>,
+        : <ActionBody
+            message={`${attention.jobs} job${attention.jobs === 1 ? "" : "s"} require${attention.jobs === 1 ? "s" : ""} your attention`}
+            accent={RED}
+            tint={RED_TINT}
+            actionLabel="Review & mark handled"
+            onAction={() => navigate("/instructor/jobs")}
+          />,
     },
     {
       key: "tests", icon: Repeat2, label: "Tests",
       count: attention.tests ?? 0, urgent: true, accent: BLUE, tint: BLUE_TINT,
       body: (attention.tests ?? 0) === 0
         ? <EmptyState icon={Inbox}>No tests to review</EmptyState>
-        : <SimpleMsg>{attention.tests} test{attention.tests === 1 ? "" : "s"} are pending review</SimpleMsg>,
+        : <ActionBody
+            message={`${attention.tests} test${attention.tests === 1 ? "" : "s"} pending review`}
+            accent={BLUE}
+            tint={BLUE_TINT}
+            actionLabel="Review & mark handled"
+            onAction={() => navigate("/instructor/test-requests")}
+          />,
     },
     { key: "calls", icon: PhoneCall, label: "Calls",
       count: attention.calls ?? 0, accent: GREY_ICON, tint: GREY_TINT,
-      body: <EmptyState icon={PhoneOff}>No calls to action</EmptyState> },
+      body: (attention.calls ?? 0) === 0
+        ? <EmptyState icon={PhoneOff}>No calls to action</EmptyState>
+        : <ActionBody
+            message={`${attention.calls} call${attention.calls === 1 ? "" : "s"} waiting`}
+            accent={BLUE}
+            tint={BLUE_TINT}
+            actionLabel="Open calls & mark handled"
+            onAction={() => navigate("/instructor/calls")}
+          /> },
     { key: "enquiries", icon: MessageSquare, label: "Enq's",
       count: attention.enquiries ?? 0, accent: GREY_ICON, tint: GREY_TINT,
-      body: <EmptyState icon={Inbox}>No new enquiries</EmptyState> },
+      body: (attention.enquiries ?? 0) === 0
+        ? <EmptyState icon={Inbox}>No new enquiries</EmptyState>
+        : <ActionBody
+            message={`${attention.enquiries} new enquir${attention.enquiries === 1 ? "y" : "ies"}`}
+            accent={BLUE}
+            tint={BLUE_TINT}
+            actionLabel="Open inbox & mark read"
+            onAction={() => navigate("/instructor/messages")}
+          /> },
   ];
+
 
 
   return (
