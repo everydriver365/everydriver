@@ -333,11 +333,54 @@ async function createGoCardlessSubscription(supabase: any, subscription: any) {
   }
 }
 
+async function pushToInstructor(
+  instructorId: string,
+  payload: {
+    title: string;
+    body: string;
+    tag: string;
+    dataType: string;
+    extra?: Record<string, unknown>;
+    category: "payment" | "system";
+    importance: "normal" | "important";
+  },
+) {
+  if (!instructorId) return;
+  try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    await fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${supabaseServiceKey}` },
+      body: JSON.stringify({
+        instructorId,
+        category: payload.category,
+        importance: payload.importance,
+        notification: {
+          title: payload.title,
+          body: payload.body,
+          tag: payload.tag,
+          data: { type: payload.dataType, ...(payload.extra ?? {}) },
+        },
+      }),
+    });
+  } catch (e) {
+    console.error("[gocardless-webhook] push fire failed:", e);
+  }
+}
+
 async function handleMandate(supabase: any, event: any) {
   const mandateId = event.links?.mandate;
   const action = event.action;
 
   if (action === "cancelled" || action === "failed" || action === "expired") {
+    // Resolve affected instructor before updating so we can notify.
+    const { data: affectedSub } = await supabase
+      .from("instructor_subscriptions")
+      .select("instructor_id")
+      .eq("gocardless_mandate_id", mandateId)
+      .maybeSingle();
+
     await supabase
       .from("instructor_subscriptions")
       .update({
@@ -350,6 +393,28 @@ async function handleMandate(supabase: any, event: any) {
       .from("pupil_subscriptions")
       .update({ gocardless_mandate_id: null } as any)
       .eq("gocardless_mandate_id", mandateId);
+
+    if (affectedSub?.instructor_id && action === "failed") {
+      await pushToInstructor(affectedSub.instructor_id, {
+        title: "⚠️ Direct Debit mandate failed",
+        body: "Your Direct Debit mandate has failed. Please update your bank details to keep your subscription active.",
+        tag: `mandate-failed-${mandateId}`,
+        dataType: "payment_failed",
+        extra: { mandateId, reason: "mandate_failed" },
+        category: "system",
+        importance: "important",
+      });
+    } else if (affectedSub?.instructor_id && (action === "cancelled" || action === "expired")) {
+      await pushToInstructor(affectedSub.instructor_id, {
+        title: `Direct Debit mandate ${action}`,
+        body: `Your Direct Debit mandate was ${action}. Set up a new mandate to continue your subscription.`,
+        tag: `mandate-${action}-${mandateId}`,
+        dataType: "system",
+        extra: { mandateId, reason: `mandate_${action}` },
+        category: "system",
+        importance: "important",
+      });
+    }
 
     console.log(`Mandate ${mandateId} ${action}`);
   }
