@@ -81,11 +81,13 @@ export function TakePaymentModal({
   const qrParsedAmount = parseFloat(qrAmount) || 0;
   const qrFee = useAdminFee(qrParsedAmount, splitPct, tierConfig);
 
-  // Realtime: auto-flip to "received" when a matching payment lands while
-  // the modal is open on the QR or link view.
+  // Realtime: auto-flip to "received" when a Square payment lands while
+  // the modal is open. Filter by external_payment_ref prefix + open timestamp
+  // so unrelated (e.g. cash) inserts don't trigger.
   useEffect(() => {
     if (!open || !instructorId) return;
     if (view !== "qr" && view !== "link") return;
+    const openedAt = Date.now() - 2000; // 2s grace for clock drift
     const channel = supabase
       .channel(`take-pay-${instructorId}-${Date.now()}`)
       .on(
@@ -100,6 +102,10 @@ export function TakePaymentModal({
           const row: any = payload.new;
           const amt = Number(row?.amount || 0);
           if (!amt || amt <= 0) return;
+          const ref = String(row?.external_payment_ref || "");
+          if (!ref.startsWith("square:")) return;
+          const createdAt = row?.created_at ? new Date(row.created_at).getTime() : Date.now();
+          if (createdAt < openedAt) return;
           setView("received");
           onPaymentReceived?.();
         }
