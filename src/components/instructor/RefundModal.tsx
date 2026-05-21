@@ -487,11 +487,53 @@ export function RefundModal({
             />
           </section>
 
+          {/* Refund preview / validation */}
+          {parsedAmount > 0 && (
+            <div
+              style={{
+                background: exceedsOriginal ? "#FBEAEA" : "#F2F4F8",
+                border: `0.5px solid ${exceedsOriginal ? C.red : C.hairline}`,
+                borderRadius: 12,
+                padding: 12,
+                display: "flex",
+                flexDirection: "column",
+                gap: 4,
+              }}
+            >
+              {exceedsOriginal ? (
+                <span style={{ fontSize: 13, color: C.red, fontWeight: 500 }}>
+                  Refund cannot exceed original payment of {formatCurrency(squareCap)}
+                </span>
+              ) : method === "square" ? (
+                <>
+                  <span style={{ fontSize: 13, color: C.text }}>
+                    Pupil receives <strong>{formatCurrency(parsedAmount)}</strong> back to their card
+                  </span>
+                  {feeReversal > 0 && (
+                    <span style={{ fontSize: 12, color: C.muted }}>
+                      Balance reduces by {formatCurrency(netBalanceReduction)} (after {formatCurrency(feeReversal)} Service Fee reversal)
+                    </span>
+                  )}
+                  {originalFee != null && feeReversal === 0 && (
+                    <span style={{ fontSize: 12, color: C.muted }}>
+                      Balance reduces by {formatCurrency(parsedAmount)} (no Service Fee on original payment)
+                    </span>
+                  )}
+                </>
+              ) : (
+                <span style={{ fontSize: 13, color: C.text }}>
+                  Pupil balance will reduce by <strong>{formatCurrency(parsedAmount)}</strong>
+                </span>
+              )}
+            </div>
+          )}
+
           <p style={{ fontSize: 11, color: C.muted, lineHeight: 1.4 }}>
             {method === "square"
               ? "Funds will be returned to the pupil's original card via Square. Their balance is reduced automatically."
               : "This logs a refund and reduces the pupil's balance by the refunded amount. You'll need to return the cash, card or transfer payment to the pupil yourself."}
           </p>
+
         </div>
       </DialogContent>
     </Dialog>
