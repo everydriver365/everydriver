@@ -85,33 +85,23 @@ export function ScheduleTile({ lessons, onAddLesson, onFillGaps, onLessonClick }
         key={key}
         type="button"
         onClick={() => setTab(key)}
-        className="flex-1 transition-colors"
+        className="flex-1 transition-all"
         style={{
-          background: isActive ? C.charcoal : "#FFFFFF",
-          color: isActive ? "#FFFFFF" : C.muted,
-          border: isActive ? "0" : `1px solid ${C.border}`,
-          borderRadius: 12,
+          background: isActive ? "#FFFFFF" : "transparent",
+          color: isActive ? C.charcoal : C.muted,
+          border: 0,
+          borderRadius: 8,
           padding: "8px 10px",
           cursor: "pointer",
           fontFamily: FONT,
           textAlign: "center",
           lineHeight: 1.2,
-        }}
-        onMouseEnter={(e) => {
-          if (!isActive) {
-            (e.currentTarget as HTMLButtonElement).style.color = C.charcoal;
-            (e.currentTarget as HTMLButtonElement).style.borderColor = C.charcoal;
-          }
-        }}
-        onMouseLeave={(e) => {
-          if (!isActive) {
-            (e.currentTarget as HTMLButtonElement).style.color = C.muted;
-            (e.currentTarget as HTMLButtonElement).style.borderColor = C.border;
-          }
+          boxShadow: isActive ? "0 1px 3px rgba(15,32,68,0.10)" : "none",
         }}
       >
-        <div style={{ fontSize: 13, fontWeight: 600 }}>{label}</div>
-        <div style={{ fontSize: 10, fontWeight: 400, marginTop: 2, opacity: 0.9 }}>{fmtPill(date)}</div>
+        <div style={{ fontSize: 11, fontWeight: 500 }}>
+          {label} / {date.getDate()} {MONTHS[date.getMonth()]}
+        </div>
       </button>
     );
   };
@@ -121,8 +111,9 @@ export function ScheduleTile({ lessons, onAddLesson, onFillGaps, onLessonClick }
       className="w-full"
       style={{
         fontFamily: FONT,
-        background: C.outerBg,
-        borderRadius: 18,
+        background: C.cardBg,
+        border: `1px solid ${C.border}`,
+        borderRadius: 14,
         padding: 14,
       }}
     >
@@ -140,11 +131,21 @@ export function ScheduleTile({ lessons, onAddLesson, onFillGaps, onLessonClick }
         {kicker}
       </div>
 
-      {/* Day selector */}
-      <div className="flex" style={{ gap: 8, marginBottom: 12 }}>
+      {/* Segmented day selector */}
+      <div
+        className="flex"
+        style={{
+          gap: 0,
+          marginBottom: 12,
+          background: C.trackBg,
+          borderRadius: 8,
+          padding: 3,
+        }}
+      >
         {renderPill("today", "Today", todayDate)}
         {renderPill("tomorrow", "Tomorrow", tomorrowDate)}
       </div>
+
 
       {/* Section label */}
       <div
