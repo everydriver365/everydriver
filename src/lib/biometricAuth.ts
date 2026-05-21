@@ -10,6 +10,11 @@
  *    pragmatic equivalent. The browser PasswordCredential API is unavailable
  *    in cross-origin iframes / WebViews, which is why we need this fallback.
  *  - Regular browser: PasswordCredential API for autofill where supported.
+ *
+ * 2FA NOTE: Biometric quick-sign-in ultimately replays signInWithPassword,
+ * producing an aal1 session. Biometric satisfies the FIRST factor only —
+ * MFAGate runs immediately after and forces a TOTP challenge if the user
+ * has a verified factor enrolled. Do not treat biometric as a 2FA bypass.
  */
 
 import { Capacitor } from "@capacitor/core";
