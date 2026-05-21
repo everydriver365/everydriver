@@ -92,10 +92,7 @@ export default function InstructorTestRequests() {
           )}
           {tab === "swap-board" && <SwapBoard instructorId={instructor?.id} />}
           {tab === "available-slots" && (
-            <>
-              <MatchedSlotsList instructorId={instructor?.id} />
-              <AvailableTestSlots instructorId={instructor?.id} />
-            </>
+            <MatchedSlotsList instructorId={instructor?.id} />
           )}
         </div>
 
