@@ -691,7 +691,7 @@ function NextLessonCard({
             width: "65%",
             objectFit: "cover",
             objectPosition: "center 25%",
-            opacity: 0.85,
+            opacity: 1,
             pointerEvents: "none",
             WebkitMaskImage: "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.7) 35%, #000 100%), linear-gradient(to bottom, #000 0%, #000 60%, rgba(0,0,0,0.5) 85%, transparent 100%)",
             WebkitMaskComposite: "source-in",
