@@ -191,11 +191,11 @@ export function RefundModal({
       toast.error("Enter a valid amount");
       return;
     }
-    setSaving(true);
-    try {
-      if (method === "square") {
-        if (!selectedSquarePaymentId) {
-          toast.error("Pick the Square payment to refund");
+    if (exceedsOriginal) {
+      toast.error(`Refund cannot exceed original payment of ${formatCurrency(squareCap)}`);
+      return;
+    }
+
           setSaving(false);
           return;
         }
