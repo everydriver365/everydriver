@@ -138,6 +138,30 @@ Deno.serve(async (req) => {
     });
     if (balErr) throw balErr;
 
+    // Fire receipt email (non-blocking). Cash/bank payments and refunds both
+    // get a receipt — consistent with Square flow.
+    try {
+      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+      const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+      await fetch(`${supabaseUrl}/functions/v1/send-payment-receipt`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${supabaseAnonKey}`,
+        },
+        body: JSON.stringify({
+          pupilId: body.pupilId,
+          instructorId,
+          amount: positive,
+          paymentMethod: methodLabel,
+          transactionReference: inserted?.id ?? `${body.method}-${Date.now()}`,
+          type: body.isRefund ? "refund" : "payment",
+        }),
+      }).catch((e) => console.error("[record-payment] receipt fire failed:", e));
+    } catch (e) {
+      console.error("[record-payment] receipt block error:", e);
+    }
+
     return json({
       ok: true,
       kind: body.method,
@@ -146,6 +170,7 @@ Deno.serve(async (req) => {
       newBalance,
       message: `${body.isRefund ? "Refunded" : "Recorded"} £${positive.toFixed(2)} (${methodLabel})`,
     });
+
   } catch (e) {
     console.error("record-payment error:", e);
     return json({ error: (e as Error)?.message || "Internal error" }, 500);
