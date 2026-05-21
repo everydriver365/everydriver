@@ -1350,207 +1350,36 @@ function ScheduleCard({
   instructorId, navigate,
 }: { instructorId: string; navigate: ReturnType<typeof useNavigate> }) {
   const today = new Date();
-  const [selectedDay, setSelectedDay] = useState(0);
-  const days = useMemo(() => Array.from({ length: 7 }, (_, i) => addDays(today, i)), []);
-  const { data: lessons = [] } = useDayLessons(instructorId, days[selectedDay]);
-  const { data: weekLessonDates = new Set<string>() } = useWeekLessonDates(instructorId, days);
+  const { data: dayLessons = [] } = useDayLessons(instructorId, today);
+
+  const lessons = useMemo(() => {
+    const dateStr = format(today, "yyyy-MM-dd");
+    return dayLessons.map((l) => {
+      // l.startTime is "HH:mm:ss" from the DB — combine with today's date.
+      const startISO = `${dateStr}T${l.startTime}`;
+      const startMs = new Date(startISO).getTime();
+      const endISO = new Date(startMs + (l.durationMinutes || 60) * 60000).toISOString();
+      return {
+        id: l.id,
+        startTime: startISO,
+        endTime: endISO,
+        studentName: l.pupilName,
+        lessonType: l.lessonType,
+        postcode: l.pickupPostcode || "",
+      };
+    });
+  }, [dayLessons]);
 
   return (
-    <SectionCard>
-      <SectionHeader
-        label="Schedule"
-        right={
-          <button
-            type="button"
-            onClick={() => navigate("/instructor/schedule")}
-            style={{
-              background: "transparent", border: 0, cursor: "pointer",
-              fontSize: 12, fontWeight: 600, color: T.blue, fontFamily: FONT,
-            }}
-          >
-            Week →
-          </button>
-        }
-      />
-
-      <div style={{ padding: "14px 18px 0" }}>
-        <div
-          style={{
-            display: "flex", alignItems: "center", justifyContent: "space-between",
-            marginBottom: 14,
-          }}
-        >
-          <div style={{ fontSize: 16, fontWeight: 700, color: T.navy, fontFamily: FONT }}>
-            {format(today, "MMMM yyyy")}
-            <span style={{ fontSize: 13, fontWeight: 400, color: T.textMuted }}>
-              {" "}· W{getWeek(today)}
-            </span>
-          </div>
-          <div style={{ display: "flex", gap: 6 }}>
-            <NavBtn Icon={ChevronLeft} onClick={() => setSelectedDay((d) => Math.max(0, d - 1))} />
-            <NavBtn Icon={ChevronRight} onClick={() => setSelectedDay((d) => Math.min(6, d + 1))} />
-          </div>
-        </div>
-
-        {/* Day strip */}
-        <div style={{ display: "flex", gap: 3, marginBottom: 14 }}>
-          {days.map((day, i) => {
-            const isSel = i === selectedDay;
-            const isTodayCell = isSameDay(day, today);
-            const isWknd = [0, 6].includes(day.getDay());
-            const hasLesson = weekLessonDates.has(format(day, "yyyy-MM-dd"));
-            return (
-              <button
-                key={i}
-                type="button"
-                onClick={() => setSelectedDay(i)}
-                style={{
-                  flex: 1,
-                  padding: "8px 3px",
-                  borderRadius: 12,
-                  backgroundColor: isSel ? T.navy : "transparent",
-                  border: 0, cursor: "pointer",
-                  display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: 9, fontWeight: 700, letterSpacing: 0.5,
-                    color: isSel ? "rgba(255,255,255,0.55)" : isWknd ? T.textLight : T.textMuted,
-                    fontFamily: FONT,
-                  }}
-                >
-                  {format(day, "EEEEE")}
-                </span>
-                <span
-                  style={{
-                    fontSize: 15, fontWeight: 700,
-                    color: isSel ? T.white : isWknd ? T.textLight : T.navy,
-                    fontFamily: FONT,
-                  }}
-                >
-                  {format(day, "d")}
-                </span>
-                <span
-                  style={{
-                    width: 5, height: 5, borderRadius: 3,
-                    backgroundColor: hasLesson
-                      ? (isTodayCell ? T.red : T.blue)
-                      : "transparent",
-                  }}
-                />
-              </button>
-            );
-          })}
-        </div>
-
-
-        {lessons.length === 0 ? (
-          <div
-            style={{
-              padding: "12px 0 14px",
-              textAlign: "center", color: T.textMuted, fontSize: 12, fontFamily: FONT,
-            }}
-          >
-            No lessons on {format(days[selectedDay], "EEE d MMM")}
-          </div>
-        ) : (
-          lessons.map((l) => (
-            <button
-              key={l.id}
-              type="button"
-              onClick={() => navigate(`/instructor/schedule?lesson=${l.id}`)}
-              style={{
-                width: "100%",
-                marginBottom: 10, borderRadius: 10,
-                backgroundColor: T.blueSurface, border: `1px solid ${T.blueMid}`,
-                borderLeft: `3px solid ${T.blue}`,
-                padding: "10px 12px", display: "flex", alignItems: "center", gap: 10,
-                cursor: "pointer", textAlign: "left",
-              }}
-            >
-              <div style={{ minWidth: 36, textAlign: "center", flexShrink: 0 }}>
-                <div style={{ fontSize: 13, fontWeight: 800, color: T.blue, lineHeight: "14px", fontFamily: FONT }}>
-                  {fmtTime(l.startTime)}
-                </div>
-                <div style={{ fontSize: 9, color: T.textMuted, marginTop: 2, fontFamily: FONT }}>
-                  {(l.durationMinutes / 60).toFixed(l.durationMinutes % 60 === 0 ? 0 : 1)}h
-                </div>
-              </div>
-              <div style={{ width: 1, height: 32, backgroundColor: T.blueMid, flexShrink: 0 }} />
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 12, fontWeight: 700, color: T.navy, marginBottom: 2, fontFamily: FONT }}>
-                  {l.pupilName}
-                </div>
-                <div style={{ fontSize: 10, color: T.textMuted, fontFamily: FONT }}>
-                  {l.lessonType}{l.pickupPostcode ? ` · ${l.pickupPostcode}` : ""}
-                </div>
-              </div>
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4, flexShrink: 0 }}>
-                {isSameDay(addDays(today, selectedDay), today) ? (
-                  <span
-                    style={{
-                      backgroundColor: T.navy, color: T.white,
-                      borderRadius: 4, padding: "2px 7px",
-                      fontSize: 9, fontWeight: 700, fontFamily: FONT,
-                    }}
-                  >
-                    TODAY
-                  </span>
-                ) : null}
-                <ChevronRight size={12} color={T.textLight} strokeWidth={2.5} />
-              </div>
-            </button>
-          ))
-        )}
-
-        <div style={{ display: "flex", gap: 10, paddingBottom: 14 }}>
-          <button
-            type="button"
-            onClick={() => navigate("/instructor/schedule?add=1")}
-            style={{
-              flex: 1, borderRadius: 11, padding: "11px 0",
-              backgroundColor: T.navy, color: T.white, border: 0, cursor: "pointer",
-              display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-              fontSize: 13, fontWeight: 600, fontFamily: FONT,
-            }}
-          >
-            <Plus size={13} color={T.white} strokeWidth={2.2} /> Add lesson
-          </button>
-          <button
-            type="button"
-            onClick={() => navigate("/instructor/gaps")}
-            style={{
-              flex: 1, borderRadius: 11, padding: "11px 0",
-              backgroundColor: T.white, color: T.textMid,
-              border: `1.5px solid ${T.border}`, cursor: "pointer",
-              display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-              fontSize: 13, fontWeight: 600, fontFamily: FONT,
-            }}
-          >
-            <Repeat2 size={13} color={T.textMid} strokeWidth={2} /> Fill gaps
-          </button>
-        </div>
-      </div>
-    </SectionCard>
+    <ScheduleTile
+      lessons={lessons}
+      onAddLesson={() => navigate("/instructor/schedule?add=1")}
+      onFillGaps={() => navigate("/instructor/gaps")}
+      onLessonClick={(id) => navigate(`/instructor/schedule?lesson=${id}`)}
+    />
   );
 }
 
-function NavBtn({ Icon, onClick }: { Icon: LucideIcon; onClick: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      style={{
-        width: 28, height: 28, borderRadius: 8,
-        backgroundColor: T.surface, border: 0, cursor: "pointer",
-        display: "flex", alignItems: "center", justifyContent: "center",
-      }}
-    >
-      <Icon size={14} color={T.textMid} strokeWidth={2} />
-    </button>
-  );
-}
 
 /* ============================== Quick access ============================ */
 interface QAItem {
