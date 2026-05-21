@@ -1,5 +1,6 @@
-import { useMemo } from "react";
-import { Plus, Repeat2, Check } from "lucide-react";
+import { useMemo, Fragment } from "react";
+import { Plus, Repeat2, ChevronRight } from "lucide-react";
+
 
 export interface Lesson {
   id: string;
