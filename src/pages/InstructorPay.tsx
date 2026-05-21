@@ -467,7 +467,7 @@ export default function InstructorPay() {
               onClick={() => { haptics.selection(); setPaymentsExpanded(!paymentsExpanded); }}
               style={tileStyle} className="w-full text-left"
             >
-              <div style={{ padding: 14 }}>
+              <div style={{ padding: 14, minHeight: 120, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
                 <div style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: "#DBEAFE", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
                   <CreditCard size={22} strokeWidth={2} color="#1E40AF" />
                 </div>
