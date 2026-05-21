@@ -1091,7 +1091,7 @@ function SectionPanel({
           ? empty("No tests to review", Inbox)
           : items.map((t) => (
               <button key={`${t.kind}-${t.id}`} type="button" style={rowStyle}
-                onClick={() => navigate("/instructor/test-requests")}>
+                onClick={() => navigate(`/instructor/test-requests?id=${t.id}&kind=${t.kind}`)}>
                 <div style={{ minWidth: 0, flex: 1 }}>
                   <div style={titleStyle}>
                     {t.centre ?? (t.kind === "offer" ? "Swap offer" : "Matched test slot")}
