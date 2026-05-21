@@ -92,7 +92,24 @@ export default function InstructorTestRequests() {
           )}
           {tab === "swap-board" && <SwapBoard instructorId={instructor?.id} />}
           {tab === "available-slots" && (
-            <MatchedSlotsList instructorId={instructor?.id} />
+            <>
+              <div
+                role="note"
+                style={{
+                  background: "#E6F1FB",
+                  border: "1px solid #BBD9F2",
+                  color: "#1F4E79",
+                  borderRadius: 10,
+                  padding: "10px 12px",
+                  fontSize: 12,
+                  lineHeight: 1.4,
+                  marginBottom: 12,
+                }}
+              >
+                Showing swap system data only — slots posted by pupils and instructors. No external websites are scraped.
+              </div>
+              <MatchedSlotsList instructorId={instructor?.id} />
+            </>
           )}
         </div>
 
