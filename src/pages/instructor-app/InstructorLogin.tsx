@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import dsmLogo from "@/assets/dsm-logo.png";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
@@ -27,6 +27,8 @@ const loginSchema = z.object({
   email: z.string().trim().email("Please enter a valid email address").max(255),
   password: z.string().min(1, "Password is required").max(128),
 });
+
+const LOGIN_LOG_PREFIX = "[InstructorLogin]";
 
 const t = {
   navy: "#0F2044",
@@ -86,6 +88,7 @@ export default function InstructorLogin() {
   const [biometricAvailable, setBiometricAvailable] = useState(false);
   const [biometryLabel, setBiometryLabel] = useState("Face ID / Touch ID");
   const [faceIdState, setFaceIdState] = useState<"idle" | "scanning" | "success">("idle");
+  const activeAuthAttemptRef = useRef(0);
 
   const { signIn, resetPassword } = useInstructorAuth();
   const navigate = useNavigate();
@@ -96,6 +99,7 @@ export default function InstructorLogin() {
   // deep-link arrivals AND the mobile sign-in ↔ forgot-password toggle so no
   // stale banner / password / loading flag leaks across views.
   const clearAuthTransientState = () => {
+    activeAuthAttemptRef.current += 1;
     setError("");
     setResetSent(false);
     setResetSentTo("");
@@ -103,6 +107,13 @@ export default function InstructorLogin() {
     setLoading(false);
     setFaceIdState("idle");
   };
+
+  const startAuthAttempt = () => {
+    activeAuthAttemptRef.current += 1;
+    return activeAuthAttemptRef.current;
+  };
+
+  const isActiveAuthAttempt = (attemptId: number) => activeAuthAttemptRef.current === attemptId;
 
   useClearOnDeepLink(clearAuthTransientState);
 
@@ -139,29 +150,36 @@ export default function InstructorLogin() {
 
   const handleBiometricLogin = async () => {
     if (faceIdState === "scanning") return;
+    const attemptId = startAuthAttempt();
     setFaceIdState("scanning");
     setError("");
     const safety = window.setTimeout(() => {
+      if (!isActiveAuthAttempt(attemptId)) return;
       setFaceIdState("idle");
       setError("Biometric login timed out. Please use email and password.");
     }, 20000);
     try {
       const creds = await getBiometricCredentials("instructor", "Sign in to DSM365");
+      if (!isActiveAuthAttempt(attemptId)) return;
       if (!creds) {
         setFaceIdState("idle");
         setError("No saved credentials found. Please log in manually first.");
         return;
       }
+      console.info(`${LOGIN_LOG_PREFIX} biometric sign-in submitted`);
       const { error: signInError } = await signIn(creds.email, creds.password);
+      if (!isActiveAuthAttempt(attemptId)) return;
       if (signInError) {
         setFaceIdState("idle");
         setError("Biometric login failed. Please use email and password.");
       } else {
         setFaceIdState("success");
         toast.success("Welcome back!");
+        console.info(`${LOGIN_LOG_PREFIX} biometric redirecting to instructor dashboard`);
         navigate("/instructor");
       }
     } catch {
+      if (!isActiveAuthAttempt(attemptId)) return;
       setFaceIdState("idle");
       setError("Biometric login not available. Please use email and password.");
     } finally {
@@ -171,6 +189,7 @@ export default function InstructorLogin() {
 
   const handleSignIn = async (e?: React.FormEvent) => {
     e?.preventDefault();
+    if (loading) return;
     setError("");
 
     if (isForgotPassword) {
@@ -199,9 +218,12 @@ export default function InstructorLogin() {
     const validation = loginSchema.safeParse({ email: email.trim(), password });
     if (!validation.success) { setError(validation.error.errors[0].message); return; }
 
+    const attemptId = startAuthAttempt();
     setLoading(true);
+    console.info(`${LOGIN_LOG_PREFIX} password sign-in submitted`);
     try {
-      const { error: signInError } = await signIn(email.trim(), password);
+      const { error: signInError, session } = await signIn(email.trim(), password);
+      if (!isActiveAuthAttempt(attemptId)) return;
       if (signInError) {
         if (isEmailNotConfirmedError(signInError)) {
           setError("Please verify your email before signing in. Check your inbox for the confirmation link.");
@@ -216,14 +238,19 @@ export default function InstructorLogin() {
       } else {
         setRememberMe(rememberMe);
         await saveBiometricCredentials("instructor", email.trim(), password);
+        if (!isActiveAuthAttempt(attemptId)) return;
         setBiometricAvailable(true);
         toast.success("Welcome back!");
+        console.info(`${LOGIN_LOG_PREFIX} password redirecting to instructor dashboard`, {
+          sessionReceived: Boolean(session),
+        });
         navigate("/instructor");
       }
     } catch {
+      if (!isActiveAuthAttempt(attemptId)) return;
       setError("An unexpected error occurred");
     } finally {
-      setLoading(false);
+      if (isActiveAuthAttempt(attemptId)) setLoading(false);
     }
   };
 

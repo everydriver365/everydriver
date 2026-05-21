@@ -81,7 +81,7 @@ interface InstructorAuthContextType {
   subscription: Subscription | null;
   loading: boolean;
   signUp: (email: string, password: string, name: string) => Promise<{ error: Error | null; needsEmailConfirmation?: boolean }>;
-  signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
+  signIn: (email: string, password: string) => Promise<{ error: Error | null; session?: Session | null }>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error: Error | null }>;
   hasFeature: (feature: string) => boolean;
@@ -89,6 +89,10 @@ interface InstructorAuthContextType {
 }
 
 const InstructorAuthContext = createContext<InstructorAuthContextType | undefined>(undefined);
+type SignInResult = Awaited<ReturnType<typeof supabase.auth.signInWithPassword>>;
+type AuthServiceError = Error & { status?: number; code?: string };
+
+const AUTH_LOG_PREFIX = '[InstructorAuth]';
 
 const transientAuthMessages = [
   'timeout',
@@ -116,14 +120,53 @@ const retryDelay = (ms: number) => new Promise((resolve) => window.setTimeout(re
 
 const SIGN_IN_TIMEOUT_MS = 12000;
 
-async function signInWithTimeout(email: string, password: string) {
-  return Promise.race([
-    supabase.auth.signInWithPassword({ email, password }),
-    retryDelay(SIGN_IN_TIMEOUT_MS).then(() => ({
-      data: { user: null, session: null },
-      error: new Error('Login service timed out. Please try again in a moment.'),
-    })),
-  ]);
+function createTransientAuthError(message: string): AuthServiceError {
+  const error = new Error(message) as AuthServiceError;
+  error.name = 'AuthServiceTimeoutError';
+  error.status = 504;
+  error.code = 'request_timeout';
+  return error;
+}
+
+async function signInWithTimeout(email: string, password: string): Promise<SignInResult> {
+  const startedAt = performance.now();
+  let timeoutId: number | undefined;
+  console.info(`${AUTH_LOG_PREFIX} password sign-in started`);
+
+  const timeout = new Promise<SignInResult>((resolve) => {
+    timeoutId = window.setTimeout(() => {
+      resolve({
+        data: { user: null, session: null },
+        error: createTransientAuthError('Login service timed out. Please try again in a moment.'),
+      } as SignInResult);
+    }, SIGN_IN_TIMEOUT_MS);
+  });
+
+  try {
+    const result = await Promise.race([
+      supabase.auth.signInWithPassword({ email, password }),
+      timeout,
+    ]);
+    const durationMs = Math.round(performance.now() - startedAt);
+
+    if (result.error) {
+      const error = result.error as AuthServiceError;
+      console.info(`${AUTH_LOG_PREFIX} password sign-in failed`, {
+        durationMs,
+        status: error.status,
+        code: error.code,
+      });
+    } else {
+      console.info(`${AUTH_LOG_PREFIX} password sign-in succeeded`, {
+        durationMs,
+        sessionReceived: Boolean(result.data.session),
+      });
+    }
+
+    return result;
+  } finally {
+    if (timeoutId) window.clearTimeout(timeoutId);
+  }
 }
 
 export function InstructorAuthProvider({ children }: { children: React.ReactNode }) {
@@ -137,6 +180,10 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
     // Set up auth state listener FIRST
     const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.info(`${AUTH_LOG_PREFIX} auth state changed`, {
+          event,
+          hasSession: Boolean(session),
+        });
         setSession(session);
         setUser(session?.user ?? null);
         
@@ -153,7 +200,12 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
     );
 
     // THEN check for existing session
+    const sessionStartedAt = performance.now();
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.info(`${AUTH_LOG_PREFIX} initial session checked`, {
+        durationMs: Math.round(performance.now() - sessionStartedAt),
+        hasSession: Boolean(session),
+      });
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
@@ -167,7 +219,9 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
   }, []);
 
   const fetchInstructorProfile = async (userId: string) => {
+    const startedAt = performance.now();
     try {
+      console.info(`${AUTH_LOG_PREFIX} instructor profile fetch started`);
       // Fetch instructor profile linked to this auth user
       const { data: instructorData, error: instructorError } = await supabase
         .from('instructors')
@@ -176,15 +230,22 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
         .maybeSingle();
 
       if (instructorError) {
-        console.error('Error fetching instructor:', instructorError);
+        console.error(`${AUTH_LOG_PREFIX} instructor profile fetch failed`, instructorError);
         setLoading(false);
         return;
       }
+
+      console.info(`${AUTH_LOG_PREFIX} instructor profile fetch finished`, {
+        durationMs: Math.round(performance.now() - startedAt),
+        found: Boolean(instructorData),
+      });
 
       if (instructorData) {
         setInstructor(instructorData);
 
         // Fetch subscription
+        const subscriptionStartedAt = performance.now();
+        console.info(`${AUTH_LOG_PREFIX} subscription fetch started`);
         const { data: subData } = await supabase
           .from('instructor_subscriptions')
           .select(`
@@ -201,6 +262,11 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
           .eq('status', 'active')
           .maybeSingle();
 
+        console.info(`${AUTH_LOG_PREFIX} subscription fetch finished`, {
+          durationMs: Math.round(performance.now() - subscriptionStartedAt),
+          found: Boolean(subData),
+        });
+
         if (subData) {
           const planData = subData.subscription_plans as SubscriptionPlanData | null;
           setSubscription({
@@ -214,7 +280,7 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
         }
       }
     } catch (error) {
-      console.error('Error in fetchInstructorProfile:', error);
+      console.error(`${AUTH_LOG_PREFIX} profile loading failed`, error);
     } finally {
       setLoading(false);
     }
@@ -303,9 +369,15 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
     let lastError: Error | null = null;
 
     for (let attempt = 0; attempt < 2; attempt += 1) {
-      const { error } = await signInWithTimeout(email, password);
+      console.info(`${AUTH_LOG_PREFIX} password sign-in attempt`, { attempt: attempt + 1 });
+      const { data, error } = await signInWithTimeout(email, password);
 
-      if (!error) return { error: null };
+      if (!error) {
+        console.info(`${AUTH_LOG_PREFIX} password sign-in accepted`, {
+          sessionReceived: Boolean(data.session),
+        });
+        return { error: null, session: data.session };
+      }
 
       lastError = error as Error;
       if (!isTransientAuthError(lastError) || attempt === 1) break;
@@ -313,10 +385,10 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
     }
 
     if (lastError && isTransientAuthError(lastError)) {
-      return { error: new Error('Login service timed out. Please try again in a moment.') };
+      return { error: createTransientAuthError('Login service timed out. Please try again in a moment.') };
     }
 
-    return { error: lastError };
+    return { error: lastError, session: null };
   };
 
   const signOut = async () => {
