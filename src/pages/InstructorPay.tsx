@@ -489,7 +489,7 @@ export default function InstructorPay() {
                   className="overflow-hidden"
                 >
                   <div className="mt-2">
-                    <PaymentHistory instructorId={instructorId || ""} />
+                    <PaymentHistory instructorId={instructorId || ""} monthOnly />
                   </div>
                 </motion.div>
               )}
