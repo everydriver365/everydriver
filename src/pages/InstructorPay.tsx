@@ -577,6 +577,7 @@ export default function InstructorPay() {
                   whileTap={{ scale: 0.97 }}
                   style={action.accent || action.highlight ? undefined : tileStyle}
                   className={cn(
+                    "h-full",
                     action.accent
                       ? "rounded-[14px] overflow-hidden bg-gradient-to-br from-[#1F2B3D] to-[#2A394F] shadow-[0_6px_20px_rgba(26,111,212,0.35)]"
                       : action.highlight
