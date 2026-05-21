@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import {
@@ -8,6 +8,7 @@ import {
 import { SettingsListRow } from "../SettingsListRow";
 import { StatusPill } from "../StatusPill";
 import { IconMail, IconKey, IconLogout, IconShieldCheck, IconDeviceLaptop } from "@tabler/icons-react";
+import { TwoFactorPanel } from "./TwoFactorPanel";
 
 export function LoginSecurityPage() {
   return (
@@ -24,18 +25,7 @@ export function LoginSecurityPage() {
         </div>
       </section>
 
-      <section className="sv2-card">
-        <div style={{ marginBottom: 4 }}>
-          <div className="sv2-section-title">Two-factor authentication</div>
-          <div className="sv2-section-sub">Add a second step when signing in from a new device.</div>
-        </div>
-        <SettingsListRow
-          icon={<IconShieldCheck size={16} stroke={1.5} />}
-          name="Authenticator app"
-          meta="Use an app like 1Password or Authy to generate codes"
-          status={<StatusPill variant="warning">Coming soon</StatusPill>}
-        />
-      </section>
+      <TwoFactorPanel />
 
       <section className="sv2-card">
         <div style={{ marginBottom: 4 }}>
