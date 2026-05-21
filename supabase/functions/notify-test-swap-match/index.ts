@@ -66,13 +66,14 @@ async function sendPush(supabase: ReturnType<typeof createClient>, instructorId:
       },
       body: JSON.stringify({
         instructorId,
+        category: NotifyCategory.TEST_SWAP,
+        importance: NotifyImportance.IMPORTANT,
         notification: {
           title,
           body,
           tag: "test-swap-match",
-          data: { url: "/instructor/test-requests" },
+          data: { type: PushDataType.TEST_SWAP_MATCH, url: "/instructor/test-requests" },
         },
-        category: "test_swap",
       }),
     });
   } catch (e) {
