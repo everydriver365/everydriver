@@ -693,7 +693,6 @@ function NextLessonCard({
             maskImage: "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.2) 30%, #000 65%)",
           }}
         />
-      >
         <div
           style={{
             fontSize: 9, fontWeight: 700, color: T.textMuted,
