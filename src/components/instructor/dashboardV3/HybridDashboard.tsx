@@ -15,6 +15,7 @@ import { useInstructorDashboardStats } from "@/hooks/useInstructorDashboardStats
 import { useNextLessonDetails } from "@/hooks/useNextLessonDetails";
 import { supabase } from "@/integrations/supabase/client";
 import { SendAllRemindersDialog } from "@/components/instructor/payments/SendAllRemindersDialog";
+import { formatCurrencyCompact, truncateName } from "@/lib/formatters";
 
 interface Pupil {
   id: string;
