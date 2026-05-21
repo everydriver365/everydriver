@@ -18,7 +18,7 @@ export default function InstructorTestRequests() {
 
   return (
     <InstructorPortalLayout>
-      <div style={{ background: "#F2F2F4", padding: 16, paddingBottom: 96, display: "flex", flexDirection: "column", gap: 12 }}>
+      <div style={{ paddingBottom: 96, display: "flex", flexDirection: "column", gap: 12 }}>
         {/* Hero card */}
         <div
           style={{
