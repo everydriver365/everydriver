@@ -15,6 +15,7 @@ import { useInstructorDashboardStats } from "@/hooks/useInstructorDashboardStats
 import { useNextLessonDetails } from "@/hooks/useNextLessonDetails";
 import { supabase } from "@/integrations/supabase/client";
 import { SendAllRemindersDialog } from "@/components/instructor/payments/SendAllRemindersDialog";
+import { formatCurrencyCompact, truncateName } from "@/lib/formatters";
 
 interface Pupil {
   id: string;
@@ -369,7 +370,7 @@ function EarningsCard({ balance, outstanding, outstandingPct, monthTarget, hours
           Account balance
         </div>
         <div style={{ fontSize: 18, fontWeight: 700, color: balanceColour, letterSpacing: -0.3, marginBottom: 2 }}>
-          £{balance.toFixed(2)}
+          {formatCurrencyCompact(balance)}
         </div>
         <div style={{ fontSize: 10, fontWeight: 300, color: t.muted }}>{balance >= 0 ? "All balanced" : "Negative balance"}</div>
         <div style={{ height: 3, borderRadius: 2, backgroundColor: t.surface, marginTop: 7, overflow: "hidden" }}>
@@ -381,7 +382,7 @@ function EarningsCard({ balance, outstanding, outstandingPct, monthTarget, hours
           Outstanding
         </div>
         <div style={{ fontSize: 18, fontWeight: 700, color: t.red, letterSpacing: -0.3, marginBottom: 2 }}>
-          £{outstanding.toFixed(2)}
+          {formatCurrencyCompact(outstanding)}
         </div>
         <div style={{ fontSize: 10, fontWeight: 300, color: t.muted }}>{outstanding > 0 ? "Needs chasing now" : "Nothing outstanding"}</div>
         <div style={{ height: 3, borderRadius: 2, backgroundColor: t.surface, marginTop: 7, overflow: "hidden" }}>
