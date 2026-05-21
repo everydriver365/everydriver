@@ -181,11 +181,14 @@ serve(async (req) => {
           },
           body: JSON.stringify({
             instructorId: pupil.instructor_id,
+            category: NotifyCategory.PAYMENT,
+            importance: NotifyImportance.IMPORTANT,
+            pupilId: pupil.id,
             notification: {
               title: "Payment Reminder Sent",
               body: `Reminder sent to ${pupil.name} for ${formattedAmount} outstanding balance`,
               tag: `payment-reminder-${pupil.id}`,
-              data: { type: "payment_reminder", pupilId: pupil.id },
+              data: { type: PushDataType.PAYMENT_REMINDER, pupilId: pupil.id },
             },
           }),
         });
