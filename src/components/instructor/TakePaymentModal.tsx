@@ -417,6 +417,7 @@ export function TakePaymentModal({
                             cancelUrl: `https://drive365.co.uk/pay/${instructorId}?cancelled=true`,
                             instructorId,
                             pupilId: qrSelectedPupilId || undefined,
+                            platformFeePence: qrFee.hasFee ? Math.round(qrFee.adminFee * 100) : 0,
                           },
                         });
                         if (error || !data?.checkoutUrl) throw new Error(data?.error || "Failed to generate QR");
