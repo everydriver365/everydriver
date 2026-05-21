@@ -144,8 +144,8 @@ export default function InstructorPay() {
 
   const fetchPupils = async () => {
     if (!instructorId) return;
-    const { data } = await supabase
-      .from("pupils")
+    const { data } = await (supabase
+      .from("pupils") as any)
       .select("id, name, account_balance, phone, email, profile_image_url")
       .eq("instructor_id", instructorId)
       .eq("is_active", true)
