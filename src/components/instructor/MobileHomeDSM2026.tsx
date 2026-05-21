@@ -905,8 +905,6 @@ function NeedsAttentionCard({
 
 
 
-  const [tileOpen, setTileOpen] = useState<boolean>(false);
-
   return (
     <div
       style={{
@@ -916,34 +914,17 @@ function NeedsAttentionCard({
         overflow: "hidden",
       }}
     >
-      <button
-        type="button"
-        onClick={() => {
-          setTileOpen((p) => {
-            const next = !p;
-            if (!next) setOpenKey(null);
-            return next;
-          });
-        }}
-        style={{
-          width: "100%",
-          padding: 14,
-          background: "transparent",
-          border: 0,
-          cursor: "pointer",
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-          textAlign: "left",
-        }}
-      >
-        <span
-          style={{
-            fontSize: 10, fontWeight: 700, color: MUTED,
-            letterSpacing: "0.12em", textTransform: "uppercase", fontFamily: FONT,
-          }}
-        >
-          Needs attention
-        </span>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+      <div style={{ padding: 14 }}>
+        {/* Header */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+          <span
+            style={{
+              fontSize: 10, fontWeight: 700, color: MUTED,
+              letterSpacing: "0.12em", textTransform: "uppercase", fontFamily: FONT,
+            }}
+          >
+            Needs attention
+          </span>
           {(attention.urgentCount ?? 0) > 0 && (
             <span
               style={{
@@ -954,80 +935,64 @@ function NeedsAttentionCard({
               {attention.urgentCount} urgent
             </span>
           )}
-          <ChevronDown
-            size={16}
-            strokeWidth={2.2}
-            color="#999999"
-            style={{
-              transform: tileOpen ? "rotate(180deg)" : "rotate(0deg)",
-              transition: "transform .2s",
-            }}
-          />
         </div>
-      </button>
 
-      {tileOpen && (
-        <>
-          <div style={{ padding: "0 14px 14px" }}>
-            {/* 4-col grid */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 }}>
-              {cells.map((c) => {
-                const active = openKey === c.key;
-                return (
-                  <button
-                    key={c.key}
-                    type="button"
-                    onClick={() => toggle(c.key)}
-                    style={{
-                      background: c.bg,
-                      border: active ? `1px solid ${BORDER}` : "1px solid transparent",
-                      borderRadius: 10,
-                      padding: 8,
-                      display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
-                      cursor: "pointer",
-                      transition: "border-color 150ms ease",
-                    }}
-                  >
-                    <span style={{ fontSize: 20, fontWeight: 800, color: c.valueColor, fontFamily: FONT, lineHeight: 1 }}>
-                      {c.count}
-                    </span>
-                    <span
-                      style={{
-                        fontSize: 9, fontWeight: 600, color: MUTED,
-                        fontFamily: FONT, letterSpacing: "0.08em", textTransform: "uppercase",
-                      }}
-                    >
-                      {c.label}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Nested expandable row — only the active section renders */}
-          {tiles
-            .filter((t) => openKey === t.key)
-            .map((t) => (
-              <ActionTile
-                key={t.key}
-                icon={t.icon}
-                label={t.label}
-                accent={t.accent}
-                tint={t.tint}
-                outlined={t.urgent}
-                badgeCount={t.count}
-                open={true}
-                onToggle={() => toggle(t.key)}
-                nested
+        {/* 4-col grid */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 }}>
+          {cells.map((c) => {
+            const active = openKey === c.key;
+            return (
+              <button
+                key={c.key}
+                type="button"
+                onClick={() => toggle(c.key)}
+                style={{
+                  background: c.bg,
+                  border: active ? `1px solid ${BORDER}` : "1px solid transparent",
+                  borderRadius: 10,
+                  padding: 8,
+                  display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
+                  cursor: "pointer",
+                  transition: "border-color 150ms ease",
+                }}
               >
-                {t.body}
-              </ActionTile>
-            ))}
-        </>
-      )}
-    </div>
+                <span style={{ fontSize: 20, fontWeight: 800, color: c.valueColor, fontFamily: FONT, lineHeight: 1 }}>
+                  {c.count}
+                </span>
+                <span
+                  style={{
+                    fontSize: 9, fontWeight: 600, color: MUTED,
+                    fontFamily: FONT, letterSpacing: "0.08em", textTransform: "uppercase",
+                  }}
+                >
+                  {c.label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
+      {/* Nested expandable row — only the active section renders */}
+      {tiles
+        .filter((t) => openKey === t.key)
+        .map((t) => (
+          <ActionTile
+            key={t.key}
+            icon={t.icon}
+            label={t.label}
+            accent={t.accent}
+            tint={t.tint}
+            outlined={t.urgent}
+            badgeCount={t.count}
+            open={true}
+            onToggle={() => toggle(t.key)}
+            nested
+          >
+            {t.body}
+          </ActionTile>
+        ))}
+    </div>
   );
 }
 
