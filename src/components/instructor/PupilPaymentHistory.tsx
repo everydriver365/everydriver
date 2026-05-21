@@ -101,6 +101,7 @@ export function PupilPaymentHistory({
           "id, amount, payment_method, notes, recorded_at, payout_status, lesson_id, scheduled_lessons:lesson_id(lesson_date, start_time)"
         )
         .eq("pupil_id", pupilId)
+        .is("deleted_at", null)
         .order("recorded_at", { ascending: false })
         .limit(limit);
 
