@@ -88,13 +88,52 @@ export function RefundModal({
 
   const parsedAmount = parseFloat(amount) || 0;
   const selectedSquarePayment = squarePayments.find((p) => p.id === selectedSquarePaymentId);
+
+  // For Square refunds: cap at original payment amount, and fetch original platform
+  // commission so we can preview the proportional fee reversal and the net balance
+  // reduction the pupil will see (pupil's card receives the gross refund amount).
+  const squareCap = selectedSquarePayment?.amount ?? 0;
+  const exceedsOriginal = method === "square" && selectedSquarePayment && parsedAmount > squareCap + 0.005;
+
+  // Extract original square payment ID from notes to look up commission
+  const originalSquareId = useMemo(() => {
+    if (!selectedSquarePayment) return null;
+    const m = String(selectedSquarePayment.notes || "").match(/ID:\s*([A-Za-z0-9_-]+)/);
+    return m?.[1] ?? null;
+  }, [selectedSquarePayment]);
+
+  const [originalFee, setOriginalFee] = useState<number | null>(null);
+  useEffect(() => {
+    if (!originalSquareId) { setOriginalFee(null); return; }
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("platform_commissions")
+        .select("commission_amount")
+        .eq("source_id", originalSquareId)
+        .maybeSingle();
+      if (cancelled) return;
+      setOriginalFee(data ? Number((data as any).commission_amount || 0) : 0);
+    })();
+    return () => { cancelled = true; };
+  }, [originalSquareId]);
+
+  const feeReversal = method === "square" && selectedSquarePayment && originalFee != null && squareCap > 0
+    ? +(originalFee * (parsedAmount / squareCap)).toFixed(2)
+    : 0;
+  const netBalanceReduction = method === "square"
+    ? Math.max(0, +(parsedAmount - feeReversal).toFixed(2))
+    : parsedAmount;
+
   const canSave =
     !!pupilId &&
     parsedAmount > 0 &&
     !saving &&
+    !exceedsOriginal &&
     (method !== "square" || !!selectedSquarePaymentId);
 
   const METHOD_OPTIONS = squareConnected ? [SQUARE_OPTION, ...METHOD_OPTIONS_BASE] : METHOD_OPTIONS_BASE;
+
 
   // Fetch this pupil's refundable Square payments when in Square mode
   useEffect(() => {
@@ -152,6 +191,10 @@ export function RefundModal({
       toast.error("Enter a valid amount");
       return;
     }
+    if (exceedsOriginal) {
+      toast.error(`Refund cannot exceed original payment of ${formatCurrency(squareCap)}`);
+      return;
+    }
     setSaving(true);
     try {
       if (method === "square") {
@@ -160,6 +203,7 @@ export function RefundModal({
           setSaving(false);
           return;
         }
+
         const { data, error } = await supabase.functions.invoke("square-refund", {
           body: {
             paymentHistoryId: selectedSquarePaymentId,
@@ -443,11 +487,53 @@ export function RefundModal({
             />
           </section>
 
+          {/* Refund preview / validation */}
+          {parsedAmount > 0 && (
+            <div
+              style={{
+                background: exceedsOriginal ? "#FBEAEA" : "#F2F4F8",
+                border: `0.5px solid ${exceedsOriginal ? C.red : C.hairline}`,
+                borderRadius: 12,
+                padding: 12,
+                display: "flex",
+                flexDirection: "column",
+                gap: 4,
+              }}
+            >
+              {exceedsOriginal ? (
+                <span style={{ fontSize: 13, color: C.red, fontWeight: 500 }}>
+                  Refund cannot exceed original payment of {formatCurrency(squareCap)}
+                </span>
+              ) : method === "square" ? (
+                <>
+                  <span style={{ fontSize: 13, color: C.text }}>
+                    Pupil receives <strong>{formatCurrency(parsedAmount)}</strong> back to their card
+                  </span>
+                  {feeReversal > 0 && (
+                    <span style={{ fontSize: 12, color: C.muted }}>
+                      Balance reduces by {formatCurrency(netBalanceReduction)} (after {formatCurrency(feeReversal)} Service Fee reversal)
+                    </span>
+                  )}
+                  {originalFee != null && feeReversal === 0 && (
+                    <span style={{ fontSize: 12, color: C.muted }}>
+                      Balance reduces by {formatCurrency(parsedAmount)} (no Service Fee on original payment)
+                    </span>
+                  )}
+                </>
+              ) : (
+                <span style={{ fontSize: 13, color: C.text }}>
+                  Pupil balance will reduce by <strong>{formatCurrency(parsedAmount)}</strong>
+                </span>
+              )}
+            </div>
+          )}
+
           <p style={{ fontSize: 11, color: C.muted, lineHeight: 1.4 }}>
             {method === "square"
               ? "Funds will be returned to the pupil's original card via Square. Their balance is reduced automatically."
               : "This logs a refund and reduces the pupil's balance by the refunded amount. You'll need to return the cash, card or transfer payment to the pupil yourself."}
           </p>
+
         </div>
       </DialogContent>
     </Dialog>

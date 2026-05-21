@@ -1,101 +1,82 @@
+# Round 2 — Audit & Fix Plan
 
-# Round 1 — Money Accuracy Audit + Fixes
+Scope: all remaining Medium severity backlog items, executed in one pass after exploration. Output format will follow the requested 3-part report (Fixed / Verified Clean / Deferred).
 
-Single focused pass on every High-severity money item. Audit first, then fix everything found in the same session, then report.
+## §1 Dashboard tiles — live data verification
 
-## Scope (locked)
+Files to audit:
+- `src/components/instructor/InstructorMobileHome.tsx` (primary mobile home)
+- `src/components/instructor/MobileHomeDSM2026.tsx`, `PremiumIOSHomeView.tsx`, `AppStyleHomeView.tsx`, `IOSNativeHomeView.tsx` (variants in use)
+- `NextLessonTile.tsx`, `NextUpTile.tsx`, `HomeTodaySchedule.tsx`, `HomeMoneyOverview.tsx`, `HomeGreeting.tsx`
+- `OutstandingTasksCard.tsx` + `src/pages/InstructorAttentionLab2026.tsx` (Needs Attention)
+- `ActivityTilesGrid.tsx`, `InsightTilesGrid.tsx`, `QuickActionTiles.tsx`
+- Hooks: `useInstructorPaymentsData`, any `useDashboardStats`, `useNeedsAttention`, `useNextLesson`
 
-Only these four areas. No Medium/Low items, no dashboard tiles, no navigation — those go to Round 2/3.
+Checks & fixes:
+1. "Lessons today" — confirm count comes from `scheduled_lessons` filtered to `start_time` between today 00:00–24:00 London + `deleted_at IS NULL` + status != cancelled. Add realtime subscription or invalidation on lesson insert/cancel if missing.
+2. "Next free slot" — verify call into availability engine (`getNextAvailableSlot` / `availability-london-timezone`), not a static string.
+3. "Next lesson tile" — pupil name, time, duration, postcode, lesson type all from the next `scheduled_lessons` row (chronologically across days, not just today).
+4. "Outstanding balance" — make consistent with Round 1 EarningsDashboard logic: `sum(abs(account_balance)) where account_balance < 0 and deleted_at is null`.
+5. "Needs Attention" counts (Jobs/Tests/Calls/Enq's + urgent) — replace any `|| 0` masking with real queries; urgent = sum of the four, not hardcoded.
+6. "Earnings this week / lessons this week" — apply `deleted_at IS NULL` filter; align UK week boundary.
 
-1. Earnings tiles wired to live data
-2. Refund UI parity (badges + totals excluding refunds)
-3. Email receipts (payment + refund)
-4. Partial payment / partial refund math
+Per memory rule (mem://constraints/no-hardcoded-fallbacks-live-data-only): remove `||`/`??` fallbacks on DB values; show empty/needs-setup state instead.
 
----
+## §2 Navigation sweep
 
-## §1 Earnings tiles — verify live data
+Trace `src/App.tsx` routes plus instructor portal router. Verify each of:
+- Quick Access tiles → matching route exists
+- "See all 43 tools" → tools hub route
+- "Add lesson" → `AddLessonSheet` open + complete booking flow
+- "Fill gaps" → gap-filler logic + result screen
+- Lesson card chevron → lesson detail
+- Pupil card chevron → pupil profile
+- "Edit pins" → pin editor route
+- Payment/refund flow back paths
+- Needs Attention items (Jobs/Tests/Calls/Enq's) → detail views
+- "View in Tax Hub" → tax hub
+- Earnings tiles (Owes Money, Payments This Month) → detail views
+- Back nav works on every screen (no trapped modals)
 
-**Files to audit**
-- `src/hooks/useInstructorPaymentsData.ts` (main source — already pulls from `payment_history`, `pupils.account_balance`, `platform_fees`)
-- `src/components/instructor/EarningsDashboard.tsx` (separate fetcher — `thisMonth.amount`, `outstanding`, `hourlyRate`)
-- `src/components/instructor/EarningsSummaryStrip.tsx`
-- `src/components/instructor/PaymentSummaryWidget.tsx`
-- `src/components/instructor/money/EarningsChart.tsx`
-- `src/pages/InstructorPay.tsx`, `src/pages/instructor-app/InstructorPaymentsDesktop.tsx`
+Fix any dead links, missing routes, or chevrons wired to `onClick={() => {}}`.
 
-**Tiles to verify each derive live and exclude refunds correctly**
-- Payments this month → `payment_history` sum, current calendar month, exclude `deleted_at`, decide refund handling (see §2)
-- Per hour → `thisMonth.amount / totalHours` — confirm `totalHours` is from scheduled_lessons completed, not hardcoded
-- Service fees YTD → UK tax year (6 Apr→5 Apr) card × 1.75% + `platform_fees`
-- Platform deductions (month + YTD) → `platform_fees` rows split by `kind` (booking/transaction/uplift)
-- Owes money → sum of `pupils.account_balance < 0`, count of those pupils
+## §3 Form validation
 
-**Checks**
-- No `|| <number>` fallback masking missing data (per `mem://constraints/no-hardcoded-fallbacks-live-data-only`)
-- Empty/zero states render gracefully, not "—" hiding a real 0
-- `EarningsDashboard.tsx` and `useInstructorPaymentsData.ts` agree on month totals (currently two separate fetches — risk of drift)
+Forms to audit (add zod schemas + inline errors where missing):
+- `AddLessonSheet` — pupil, date, time, duration, type required; date not in past; slot not double-booked
+- Add pupil dialog — name + (phone OR email); email/phone/postcode format
+- `AddCalendarEventDialog` — title + date; date not in past
+- `TakePaymentModal` / Add payment — amount > 0; sensible cap vs balance; confirm step
+- `RefundModal` — amount ≤ original; **show pupil net after fee deduction** (deferred from R1, implement now); confirm step
+- Edit pupil — email/phone/postcode validation on save
+- `AccountSettings` — email/phone format; password change requires current password
 
----
+For each: success toast + immediate UI refresh on relevant screens.
 
-## §2 Refund UI parity
+## §4 Empty & error states
 
-**Files**
-- `src/components/instructor/PaymentHistory.tsx`
-- `src/components/instructor/PupilPaymentHistory.tsx`
-- `src/components/instructor/PaymentStatusBadge.tsx`
-- `src/components/parent/ParentPaymentHistory.tsx`
+Screens to verify each has: loading skeleton, empty state, error state with retry, no NaN/undefined.
+- Schedule, Pupils list, Payment history, Earnings (£0 not blank), Needs Attention (0 hides urgent pill), Quick Access tools, Upcoming events, Notifications list.
 
-**Fixes**
-- Add a visible "Refunded" badge (red/destructive variant) on any row where amount is negative or `notes` contains refund marker
-- Exclude refund rows from "Payments this month" and "Earnings totals" displays — OR show net with a clear "net of refunds" label
-- Decide and apply consistently across all three lists. Current `useInstructorPaymentsData` line 227-231 nets refunds in — confirm that matches the new badge logic
+## §5 Notifications
 
----
+- Verify push triggers exist for: new booking, lesson cancellation, payment received, new enquiry, upcoming lesson reminder (check edge functions + DB triggers).
+- Confirm per-type toggles exist in notification settings UI and persist to DB (not localStorage default).
+- Verify Needs Attention badge updates on action/dismiss (realtime or invalidation).
+- Verify in-app notifications list marks read correctly.
 
-## §3 Email receipts
+## Constraints
 
-**Files**
-- `supabase/functions/square-webhook/index.ts` (line 283 already calls `send-payment-receipt`)
-- `supabase/functions/square-refund/index.ts` (no receipt trigger currently)
-- `supabase/functions/send-payment-receipt/index.ts`
+- No mobile layout changes (per mem://constraints/mobile-update-policy) — data wiring & validation only on mobile screens; visual changes restricted to desktop or to bug-fix scope.
+- Live data only — no fallbacks; surface empty states (mem://constraints/no-hardcoded-fallbacks-live-data-only).
+- London timezone for any date math (mem://constraints/availability-london-timezone).
+- UK Service Fee naming preserved.
 
-**Fixes**
-- Verify `send-payment-receipt` actually fires on Square webhook (logs, both OAuth and platform flows)
-- Verify cash / bank transfer / GoCardless flows also send receipts (or document why not)
-- Add refund receipt: either extend `send-payment-receipt` with a `type: "refund"` mode, or trigger inline from `square-refund` after the refund row is inserted
-- Use existing app-emails infrastructure (`mem://infrastructure` rules — Lovable Email, idempotency key)
+## Deliverable
 
----
+Single response with:
+- **PART 1 — Fixed**: file, what was broken, fix applied ✓
+- **PART 2 — Verified clean**: list audited & confirmed working
+- **PART 3 — Deferred**: items moved to Round 3 (email settings, notification templates, cash/bank receipt coverage, UI polish)
 
-## §4 Partial payment / partial refund math
-
-**Files**
-- `supabase/functions/square-refund/index.ts`
-- `src/components/instructor/RefundModal.tsx`
-- DB RPC `increment_pupil_balance` (per `mem://core` — atomic balance updates only)
-
-**Checks**
-- On partial refund: `creditAmount = refundAmount - proportionalFee`. Verify the fee subtraction matches what was originally taken (don't double-subtract or skip)
-- Pupil `account_balance` adjustment uses `increment_pupil_balance` RPC, not direct UPDATE
-- `payment_history` insert for the refund row stores the negative amount and links via `external_payment_ref` (square refund id) — matches the §audit fixes already applied
-- `platform_commissions` is reduced or reversed proportionally on refund (not currently — needs verification)
-- Edge cases: full refund of partially-paid lesson; refund larger than original; refund when pupil balance currently positive
-
----
-
-## Deliverable format
-
-After fixing, post a single report:
-
-**PART 1 — Issues found & fixed** (per item: file/area, what was broken, fix applied)
-**PART 2 — Verified clean** (areas audited with no issues)
-**PART 3 — Deferred to later round** (anything discovered that's outside Round 1 scope)
-
-## Out of scope (Round 2+)
-
-Dashboard tiles, navigation routes, form validation, empty states, notifications, UI polish.
-
----
-
-Approve to proceed with the audit + fixes in one pass.
+All fixes shipped in one pass, no mid-pass confirmation.
