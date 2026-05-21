@@ -537,6 +537,11 @@ export function EditPupilSheet({
                 )}
               </div>
             </div>
+            {!hasContactMethod && (
+              <HelperText tone="warning">
+                Add at least an email or phone number so you can reach this pupil.
+              </HelperText>
+            )}
 
             {/* Address */}
             <div>
