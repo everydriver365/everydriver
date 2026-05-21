@@ -114,6 +114,18 @@ function isTransientAuthError(error: Error | null): boolean {
 
 const retryDelay = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms));
 
+const SIGN_IN_TIMEOUT_MS = 12000;
+
+async function signInWithTimeout(email: string, password: string) {
+  return Promise.race([
+    supabase.auth.signInWithPassword({ email, password }),
+    retryDelay(SIGN_IN_TIMEOUT_MS).then(() => ({
+      data: { user: null, session: null },
+      error: new Error('Login service is taking too long. Please try again in a moment.'),
+    })),
+  ]);
+}
+
 export function InstructorAuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -291,10 +303,7 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
     let lastError: Error | null = null;
 
     for (let attempt = 0; attempt < 2; attempt += 1) {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      const { error } = await signInWithTimeout(email, password);
 
       if (!error) return { error: null };
 
