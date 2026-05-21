@@ -369,9 +369,15 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
     let lastError: Error | null = null;
 
     for (let attempt = 0; attempt < 2; attempt += 1) {
-      const { error } = await signInWithTimeout(email, password);
+      console.info(`${AUTH_LOG_PREFIX} password sign-in attempt`, { attempt: attempt + 1 });
+      const { data, error } = await signInWithTimeout(email, password);
 
-      if (!error) return { error: null };
+      if (!error) {
+        console.info(`${AUTH_LOG_PREFIX} password sign-in accepted`, {
+          sessionReceived: Boolean(data.session),
+        });
+        return { error: null, session: data.session };
+      }
 
       lastError = error as Error;
       if (!isTransientAuthError(lastError) || attempt === 1) break;
@@ -379,10 +385,10 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
     }
 
     if (lastError && isTransientAuthError(lastError)) {
-      return { error: new Error('Login service timed out. Please try again in a moment.') };
+      return { error: createTransientAuthError('Login service timed out. Please try again in a moment.') };
     }
 
-    return { error: lastError };
+    return { error: lastError, session: null };
   };
 
   const signOut = async () => {
