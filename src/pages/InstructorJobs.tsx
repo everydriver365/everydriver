@@ -33,6 +33,7 @@ export default function InstructorJobs() {
   const { instructor: authInstructor } = useInstructorAuth();
   const instructorId = authInstructor?.id;
   const { profile } = useInstructorProfile(instructorId || "");
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [jobs, setJobs] = useState<JobEnquiry[]>([]);
   const [loading, setLoading] = useState(true);
