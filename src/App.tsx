@@ -18,6 +18,9 @@ import { CustomDomainCanonical } from "@/components/CustomDomainCanonical";
 import { ConditionalHome } from "@/components/ConditionalHome";
 import { BrandProvider } from "@/components/BrandProvider";
 import NotFound from "./pages/NotFound";
+import MFAChallenge from "./pages/MFAChallenge";
+import Admin2FAEnrol from "./pages/Admin2FAEnrol";
+import { MFAGate } from "@/components/auth/MFAGate";
 
 // Route modules
 import { publicRoutes } from "@/routes/publicRoutes";
