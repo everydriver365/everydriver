@@ -675,9 +675,9 @@ function NextLessonCard({
           padding: 13,
           cursor: "pointer",
           position: "relative",
-          backgroundImage: `linear-gradient(180deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.82) 55%, rgba(255,255,255,0.98) 100%), url(${nextLessonBg})`,
+          backgroundImage: `linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.25) 60%, rgba(255,255,255,0.55) 100%), url(${nextLessonBg})`,
           backgroundSize: "cover",
-          backgroundPosition: "center top",
+          backgroundPosition: "center 30%",
           backgroundRepeat: "no-repeat",
         }}
       >
