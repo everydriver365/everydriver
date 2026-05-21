@@ -16,6 +16,7 @@ interface PaymentReceiptRequest {
   paymentMethod: string;
   transactionReference: string;
   receiptUrl?: string;
+  type?: "payment" | "refund";
 }
 
 serve(async (req: Request): Promise<Response> => {
