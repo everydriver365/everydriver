@@ -1834,7 +1834,6 @@ function QuickAccessCard({ navigate }: { navigate: ReturnType<typeof useNavigate
           style={{
             display: "flex",
             overflowX: "auto",
-            scrollSnapType: "x mandatory",
             gap: 10,
             margin: "0 -14px",
             padding: "0 14px 4px",
@@ -1843,29 +1842,18 @@ function QuickAccessCard({ navigate }: { navigate: ReturnType<typeof useNavigate
           }}
           className="hide-scrollbar"
         >
-          {pages.map((page, pIdx) => (
-            <div
-              key={pIdx}
-              style={{
-                flex: "0 0 100%",
-                scrollSnapAlign: "start",
-                display: "grid",
-                gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-                gap: 10,
-              }}
-            >
-              {page.map((item) => (
-                <QATile
-                  key={item.label}
-                  item={item}
-                  active={activeRoute === item.route}
-                  onPress={() => { setActiveRoute(item.route); navigate(item.route); }}
-                />
-              ))}
+          {sourceTiles.map((item) => (
+            <div key={item.label} style={{ flex: "0 0 44%", maxWidth: 180 }}>
+              <QATile
+                item={item}
+                active={activeRoute === item.route}
+                onPress={() => { setActiveRoute(item.route); navigate(item.route); }}
+              />
             </div>
           ))}
         </div>
       )}
+
 
 
       {/* See all */}
