@@ -361,6 +361,16 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
           });
 
           if (!hasLessonConflict && !hasBlockConflict && !hasCalendarConflict) {
+            // Apply instructor buffer + fallback travel feasibility so the
+            // page-level list matches the rules used by the schedule card.
+            const { fits } = evaluateFeasibility({
+              gapMin: 120,
+              bufferMinutes,
+              travelOutMin: null,
+              travelInMin: null,
+            });
+            if (!fits) continue;
+
             calculatedGaps.push({
               id: `${dateStr}-${slotStart}`,
               date: dateStr,
