@@ -826,9 +826,9 @@ function NeedsAttentionCard({
   attention, stats, navigate,
 }: { attention: any; stats: any; navigate: ReturnType<typeof useNavigate> }) {
   type Key = "jobs" | "tests" | "calls" | "enquiries";
-  const [sectionsOpen, setSectionsOpen] = useState<boolean>(attention.urgentCount > 0);
+  const [sectionsOpen, setSectionsOpen] = useState<boolean>(true);
   const [openKey, setOpenKey] = useState<Key | null>(
-    attention.urgentCount > 0 ? "jobs" : null
+    attention.urgentCount > 0 ? "jobs" : "enquiries"
   );
   const toggle = (k: Key) => {
     setSectionsOpen(true);
@@ -838,51 +838,46 @@ function NeedsAttentionCard({
   const RED = "#c9302c";
   const RED_TINT = "#fbe8e8";
   const BLUE = "#2952b3";
+  const BLUE_TINT = "#e8eefb";
+  const GREY_TINT = "#f0f1f4";
+  const GREY_ICON = "#aaaaaa";
   const BORDER = "#e0e3ea";
   const MUTED = "#999999";
   const GREY_LIGHT = "#cccccc";
 
-  const cells: { key: Key; label: string; count: number; tint: boolean; valueColor: string }[] = [
-    { key: "jobs",      label: "Jobs",   count: attention.jobs ?? 0,     tint: true,  valueColor: RED },
-    { key: "tests",     label: "Tests",  count: attention.tests ?? 0,    tint: true,  valueColor: BLUE },
-    { key: "calls",     label: "Calls",  count: attention.calls ?? 0,    tint: false, valueColor: GREY_LIGHT },
-    { key: "enquiries", label: "Enq's",  count: attention.enquiries ?? 0, tint: false, valueColor: GREY_LIGHT },
+  const cells: { key: Key; label: string; count: number; bg: string; valueColor: string }[] = [
+    { key: "jobs",      label: "Jobs",   count: attention.jobs ?? 0,      bg: RED_TINT,     valueColor: RED },
+    { key: "tests",     label: "Tests",  count: attention.tests ?? 0,     bg: BLUE_TINT,    valueColor: BLUE },
+    { key: "calls",     label: "Calls",  count: attention.calls ?? 0,     bg: "transparent", valueColor: GREY_LIGHT },
+    { key: "enquiries", label: "Enq's",  count: attention.enquiries ?? 0, bg: "transparent", valueColor: GREY_LIGHT },
   ];
 
   const tiles: {
     key: Key; icon: LucideIcon; label: string; count: number;
-    urgent?: boolean; accent?: string; body: React.ReactNode;
+    urgent?: boolean; accent?: string; tint?: string; body: React.ReactNode;
   }[] = [
     {
       key: "jobs", icon: Briefcase, label: "Jobs",
-      count: attention.jobs, urgent: true, accent: RED,
-      body: attention.jobs === 0
-        ? <Empty>All clear</Empty>
-        : <JobsPreviewList navigate={navigate} />,
+      count: attention.jobs ?? 0, urgent: true, accent: RED, tint: RED_TINT,
+      body: (attention.jobs ?? 0) === 0
+        ? <EmptyState icon={Inbox}>No jobs to action</EmptyState>
+        : <SimpleMsg>{attention.jobs} job{attention.jobs === 1 ? "" : "s"} require{attention.jobs === 1 ? "s" : ""} your attention</SimpleMsg>,
     },
     {
       key: "tests", icon: Repeat2, label: "Tests",
-      count: attention.tests, urgent: true, accent: BLUE,
-      body: attention.testItems.length === 0
-        ? <Empty>All clear</Empty>
-        : (
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            {attention.testItems.map((it: any, idx: number) => (
-              <div key={it.id}>
-                {idx > 0 && (
-                  <div style={{ height: 1, backgroundColor: "rgba(15,32,68,0.08)", margin: "0 20px" }} />
-                )}
-                <UrgentBanner item={it} onPress={() => navigate(it.route)} />
-              </div>
-            ))}
-          </div>
-        ),
+      count: attention.tests ?? 0, urgent: true, accent: BLUE, tint: BLUE_TINT,
+      body: (attention.tests ?? 0) === 0
+        ? <EmptyState icon={Inbox}>No tests to review</EmptyState>
+        : <SimpleMsg>{attention.tests} test{attention.tests === 1 ? "" : "s"} are pending review</SimpleMsg>,
     },
     { key: "calls", icon: PhoneCall, label: "Calls",
-      count: attention.calls, body: <Empty>No missed calls</Empty> },
+      count: attention.calls ?? 0, accent: GREY_ICON, tint: GREY_TINT,
+      body: <EmptyState icon={PhoneOff}>No calls to action</EmptyState> },
     { key: "enquiries", icon: MessageSquare, label: "Enq's",
-      count: attention.enquiries, body: <Empty>No new enquiries</Empty> },
+      count: attention.enquiries ?? 0, accent: GREY_ICON, tint: GREY_TINT,
+      body: <EmptyState icon={Inbox}>No new enquiries</EmptyState> },
   ];
+
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
