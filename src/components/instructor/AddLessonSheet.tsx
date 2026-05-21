@@ -486,11 +486,39 @@ export function AddLessonSheet({
             );
             // Fall through — travel-time checks below still run so the amber
             // soft warning can appear alongside the red hard-block banner.
+
+            // Suggest up to 3 alternative free slots on the same day so the
+            // instructor can re-pick without manually scanning the schedule.
+            const DAY_START = 7 * 60; // 07:00
+            const DAY_END = 21 * 60;  // 21:00
+            const STEP = 15;
+            const fits = (candidateStart: number) => {
+              const candidateEnd = candidateStart + durationMinutes;
+              if (candidateStart < DAY_START || candidateEnd > DAY_END) return false;
+              return !allSlots.some((s) => {
+                const bStart = s._start - effectiveBuffer;
+                const bEnd = s._end + effectiveBuffer;
+                return candidateStart < bEnd && candidateEnd > bStart;
+              });
+            };
+            const suggestions: string[] = [];
+            for (let t = DAY_START; t <= DAY_END - durationMinutes; t += STEP) {
+              if (t === newStartMinutes) continue;
+              if (fits(t)) {
+                const hh = Math.floor(t / 60).toString().padStart(2, '0');
+                const mm = (t % 60).toString().padStart(2, '0');
+                suggestions.push(`${hh}:${mm}`);
+                if (suggestions.length >= 3) break;
+              }
+            }
+            setConflictSuggestions(suggestions);
           } else {
             setConflictWarning(null); setIsHardOverlap(false);
+            setConflictSuggestions([]);
           }
         } else {
           setConflictWarning(null); setIsHardOverlap(false);
+          setConflictSuggestions([]);
         }
 
         const previous = allSlots
