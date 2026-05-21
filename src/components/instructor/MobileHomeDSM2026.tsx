@@ -692,8 +692,8 @@ function NextLessonCard({
             objectPosition: "center 25%",
             opacity: 0.85,
             pointerEvents: "none",
-            WebkitMaskImage: "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.4) 35%, #000 100%)",
-            maskImage: "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.4) 35%, #000 100%)",
+            WebkitMaskImage: "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.7) 35%, #000 100%)",
+            maskImage: "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.7) 35%, #000 100%)",
           }}
         />
         <div
