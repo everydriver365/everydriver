@@ -9,6 +9,7 @@ import { useTrafficETA } from "@/hooks/useTrafficETA";
 import { LessonRouteRecorder } from "./LessonRouteRecorder";
 import { Link, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { truncateName } from "@/lib/formatters";
 
 interface NextLessonTileProps {
   instructorId: string;
@@ -203,7 +204,7 @@ export function NextLessonTile({ instructorId }: NextLessonTileProps) {
                 className="font-bold truncate text-[20px] mt-0.5"
                 style={{ color: "hsl(var(--foreground))" }}
               >
-                {nextLesson.pupil.name}
+                {truncateName(nextLesson.pupil.name, 28)}
               </h3>
             </div>
 
