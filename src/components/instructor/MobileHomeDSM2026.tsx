@@ -399,7 +399,7 @@ function StatsStrip({ stats }: { stats: any }) {
       sub: `${stats?.todayLessons ?? 0} today`,
       barPct: stats?.lessonsPct ?? 0,
       barColour: T.blue,
-      valueColour: "#7EE0FF",
+      valueColour: "#8FF0C2",
       denom: stats?.lessonTarget > 0 ? `/${stats.lessonTarget}` : null,
     },
   ];
