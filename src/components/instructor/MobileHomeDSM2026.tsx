@@ -1966,8 +1966,9 @@ function QuickAccessCard({ navigate }: { navigate: ReturnType<typeof useNavigate
             overflowX: "auto",
             scrollSnapType: "x mandatory",
             gap: 10,
-            margin: "0 -14px",
-            padding: "0 14px 4px",
+            width: "100%",
+            margin: 0,
+            padding: "0 0 4px",
             scrollbarWidth: "none",
             WebkitOverflowScrolling: "touch",
           }}
@@ -1978,6 +1979,8 @@ function QuickAccessCard({ navigate }: { navigate: ReturnType<typeof useNavigate
               key={pIdx}
               style={{
                 flex: "0 0 100%",
+                width: "100%",
+                minWidth: 0,
                 scrollSnapAlign: "start",
                 display: "grid",
                 gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
