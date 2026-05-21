@@ -2124,7 +2124,7 @@ function QATile({
       onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.borderColor = BORDER; }}
       style={{
         width: "100%",
-        padding: 16,
+        padding: 12,
         backgroundColor: "#FFFFFF",
         border: `1px solid ${BORDER}`,
         borderRadius: 14,
@@ -2132,9 +2132,10 @@ function QATile({
         display: "flex",
         flexDirection: "column",
         alignItems: "flex-start",
-        gap: 12,
+        gap: 10,
         textAlign: "left",
         transition: "border-color 150ms ease",
+        minWidth: 0,
       }}
     >
       <span
