@@ -1,65 +1,101 @@
 
-# Full-App Audit + Inline Critical Fixes
+# Round 1 — Money Accuracy Audit + Fixes
 
-I'll execute the audit in one pass on the instructor portal (current focus). Approving this plan kicks off the work — there is no per-section confirmation.
+Single focused pass on every High-severity money item. Audit first, then fix everything found in the same session, then report.
 
-## Approach
+## Scope (locked)
 
-For each of the 12 sections I will:
-1. Read the relevant screens, hooks, edge functions, and tables.
-2. Classify every issue as Critical / High / Medium / Low.
-3. Fix every Critical issue inline (code + edge function deploys + migrations where needed).
-4. Log High / Medium / Low to the backlog (no code changes).
+Only these four areas. No Medium/Low items, no dashboard tiles, no navigation — those go to Round 2/3.
 
-## What counts as Critical (will be fixed now)
+1. Earnings tiles wired to live data
+2. Refund UI parity (badges + totals excluding refunds)
+3. Email receipts (payment + refund)
+4. Partial payment / partial refund math
 
-- Money figures wrong (earnings, balance, owes money, payments this month, service fees, per-hour).
-- Payments or refunds that fail to complete, double-charge, or leave state inconsistent.
-- Refunds not subtracting from earnings / payments-this-month / pupil balance.
-- Dead routes on core flows (book lesson, take payment, refund, add pupil).
-- Forms that submit invalid data silently.
-- Screens that crash with empty/zero data.
-- Account email update that breaks login.
-- Security gaps already identified (e.g. unset `SQUARE_WEBHOOK_SIGNATURE_KEY`).
-- Hardcoded values masquerading as live data on money/lesson/pupil counts.
+---
 
-Everything else (UI polish, missing toggles, template editor, 2FA, GDPR niceties, edge-case input validation, empty-state visuals) → backlog.
+## §1 Earnings tiles — verify live data
 
-## Sections in order
+**Files to audit**
+- `src/hooks/useInstructorPaymentsData.ts` (main source — already pulls from `payment_history`, `pupils.account_balance`, `platform_fees`)
+- `src/components/instructor/EarningsDashboard.tsx` (separate fetcher — `thisMonth.amount`, `outstanding`, `hourlyRate`)
+- `src/components/instructor/EarningsSummaryStrip.tsx`
+- `src/components/instructor/PaymentSummaryWidget.tsx`
+- `src/components/instructor/money/EarningsChart.tsx`
+- `src/pages/InstructorPay.tsx`, `src/pages/instructor-app/InstructorPaymentsDesktop.tsx`
 
-1. Data wiring — Dashboard, Schedule, Needs Attention, Earnings, Pupils, Quick Access, Upcoming Events, Membership tiles.
-2. Cross-screen consistency — trace each of the 12 actions through every affected screen.
-3. Navigation & routing — sweep tappable elements, "See all 43 tools", "Add lesson", "Fill gaps", payment/refund flows.
-4. UI consistency — Poppins, #F2F4F8 bg, card style, button colours.
-5. Payments — end-to-end including platform fee collection (already in flight), receipts, partial payments, failure states.
-6. Refunds — end-to-end including earnings exclusion, notifications, "Refunded" label.
-7. Email settings — auto-confirmations, reminders, receipts, refund confirmations, enquiry/test/membership notifications.
-8. Notification settings — push channels, toggles, badge counts.
-9. Forms & validation — add lesson / pupil / event / payment / refund.
-10. Empty & error states.
-11. Account & profile — name, phone, email, photo, vehicle, areas, hourly rate, password, 2FA, account deletion.
-12. Edge cases — zero-data instructor, huge numbers, long names, multi-same-day lessons, timezone, midnight-spanning, negative balance.
+**Tiles to verify each derive live and exclude refunds correctly**
+- Payments this month → `payment_history` sum, current calendar month, exclude `deleted_at`, decide refund handling (see §2)
+- Per hour → `thisMonth.amount / totalHours` — confirm `totalHours` is from scheduled_lessons completed, not hardcoded
+- Service fees YTD → UK tax year (6 Apr→5 Apr) card × 1.75% + `platform_fees`
+- Platform deductions (month + YTD) → `platform_fees` rows split by `kind` (booking/transaction/uplift)
+- Owes money → sum of `pupils.account_balance < 0`, count of those pupils
 
-## Carry-overs from previous turn
+**Checks**
+- No `|| <number>` fallback masking missing data (per `mem://constraints/no-hardcoded-fallbacks-live-data-only`)
+- Empty/zero states render gracefully, not "—" hiding a real 0
+- `EarningsDashboard.tsx` and `useInstructorPaymentsData.ts` agree on month totals (currently two separate fetches — risk of drift)
 
-Already queued as Critical (will be applied as part of this audit):
-- Set `SQUARE_WEBHOOK_SIGNATURE_KEY` secret (will re-prompt).
-- Pass `platformFeePence` from `TakePaymentModal` into `square-checkout` for both QR and Send Request flows.
-- Drop `!isAutoTransfer` guard on `platform_commissions` insert in `square-webhook`.
-- Make `square-refund` prefer `external_payment_ref` over notes regex.
-- Tighten `TakePaymentModal` realtime listener to match by `external_payment_ref`.
+---
 
-## Output format
+## §2 Refund UI parity
 
-**Part 1 — Critical Fixes Applied** (per item: screen, what was broken, fix applied ✓)
-**Part 2 — Backlog** grouped High / Medium / Low (per item: screen, issue, effort estimate)
+**Files**
+- `src/components/instructor/PaymentHistory.tsx`
+- `src/components/instructor/PupilPaymentHistory.tsx`
+- `src/components/instructor/PaymentStatusBadge.tsx`
+- `src/components/parent/ParentPaymentHistory.tsx`
 
-## Out of scope for this pass
+**Fixes**
+- Add a visible "Refunded" badge (red/destructive variant) on any row where amount is negative or `notes` contains refund marker
+- Exclude refund rows from "Payments this month" and "Earnings totals" displays — OR show net with a clear "net of refunds" label
+- Decide and apply consistently across all three lists. Current `useInstructorPaymentsData` line 227-231 nets refunds in — confirm that matches the new badge logic
 
-- Pupil portal, school portal, admin portal, mini-website (unless a Critical issue there directly breaks instructor flows).
-- Visual redesign / Awwwards polish.
-- New features not present in the existing app.
+---
 
-## Risks
+## §3 Email receipts
 
-- This will touch many files and likely require 1–2 migrations and several edge function deploys. If you'd rather I batch fixes by section with a checkpoint between Payments and the rest, say so before approving.
+**Files**
+- `supabase/functions/square-webhook/index.ts` (line 283 already calls `send-payment-receipt`)
+- `supabase/functions/square-refund/index.ts` (no receipt trigger currently)
+- `supabase/functions/send-payment-receipt/index.ts`
+
+**Fixes**
+- Verify `send-payment-receipt` actually fires on Square webhook (logs, both OAuth and platform flows)
+- Verify cash / bank transfer / GoCardless flows also send receipts (or document why not)
+- Add refund receipt: either extend `send-payment-receipt` with a `type: "refund"` mode, or trigger inline from `square-refund` after the refund row is inserted
+- Use existing app-emails infrastructure (`mem://infrastructure` rules — Lovable Email, idempotency key)
+
+---
+
+## §4 Partial payment / partial refund math
+
+**Files**
+- `supabase/functions/square-refund/index.ts`
+- `src/components/instructor/RefundModal.tsx`
+- DB RPC `increment_pupil_balance` (per `mem://core` — atomic balance updates only)
+
+**Checks**
+- On partial refund: `creditAmount = refundAmount - proportionalFee`. Verify the fee subtraction matches what was originally taken (don't double-subtract or skip)
+- Pupil `account_balance` adjustment uses `increment_pupil_balance` RPC, not direct UPDATE
+- `payment_history` insert for the refund row stores the negative amount and links via `external_payment_ref` (square refund id) — matches the §audit fixes already applied
+- `platform_commissions` is reduced or reversed proportionally on refund (not currently — needs verification)
+- Edge cases: full refund of partially-paid lesson; refund larger than original; refund when pupil balance currently positive
+
+---
+
+## Deliverable format
+
+After fixing, post a single report:
+
+**PART 1 — Issues found & fixed** (per item: file/area, what was broken, fix applied)
+**PART 2 — Verified clean** (areas audited with no issues)
+**PART 3 — Deferred to later round** (anything discovered that's outside Round 1 scope)
+
+## Out of scope (Round 2+)
+
+Dashboard tiles, navigation routes, form validation, empty states, notifications, UI polish.
+
+---
+
+Approve to proceed with the audit + fixes in one pass.
