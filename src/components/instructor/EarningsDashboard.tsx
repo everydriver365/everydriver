@@ -251,18 +251,21 @@ export function EarningsDashboard() {
       const lastMonthStart = startOfMonth(subMonths(today, 1));
       const lastMonthEnd = endOfMonth(subMonths(today, 1));
 
-      // Fetch payment history
+      // Fetch payment history (exclude soft-deleted; refund rows have negative amounts so reduce nets correctly)
       const { data: payments } = await supabase
         .from("payment_history")
         .select("amount, recorded_at, pupil_id, pupils(name)")
         .eq("instructor_id", instructor.id)
+        .is("deleted_at", null)
         .gte("recorded_at", format(subMonths(today, 12), 'yyyy-MM-dd'));
 
-      // Fetch outstanding balances
+      // Fetch outstanding balances — only pupils who owe money (negative balance)
       const { data: pupils } = await supabase
         .from("pupils")
         .select("account_balance, name")
-        .eq("instructor_id", instructor.id);
+        .eq("instructor_id", instructor.id)
+        .is("deleted_at", null)
+        .lt("account_balance", 0);
 
       // Fetch expenses
       const { data: expenses } = await supabase
@@ -281,23 +284,23 @@ export function EarningsDashboard() {
       setAllPayments(payments);
       setAllExpenses(expenses || []);
 
-      // Calculate today's earnings
+      // Calculate today's earnings (net of refunds)
       const todayPayments = payments.filter(p => p.recorded_at.startsWith(todayStr));
-      const todayAmount = todayPayments.reduce((sum, p) => sum + p.amount, 0);
+      const todayAmount = todayPayments.reduce((sum, p) => sum + Number(p.amount), 0);
 
       // Calculate this week
       const weekPayments = payments.filter(p => {
         const date = parseISO(p.recorded_at);
         return date >= weekStart && date <= weekEnd;
       });
-      const weekAmount = weekPayments.reduce((sum, p) => sum + p.amount, 0);
+      const weekAmount = weekPayments.reduce((sum, p) => sum + Number(p.amount), 0);
 
       // Calculate last week for comparison
       const lastWeekPayments = payments.filter(p => {
         const date = parseISO(p.recorded_at);
         return date >= lastWeekStart && date <= lastWeekEnd;
       });
-      const lastWeekAmount = lastWeekPayments.reduce((sum, p) => sum + p.amount, 0);
+      const lastWeekAmount = lastWeekPayments.reduce((sum, p) => sum + Number(p.amount), 0);
       const weekChange = lastWeekAmount > 0 ? ((weekAmount - lastWeekAmount) / lastWeekAmount) * 100 : 0;
 
       // Calculate this month
@@ -305,18 +308,18 @@ export function EarningsDashboard() {
         const date = parseISO(p.recorded_at);
         return date >= monthStart && date <= monthEnd;
       });
-      const monthAmount = monthPayments.reduce((sum, p) => sum + p.amount, 0);
+      const monthAmount = monthPayments.reduce((sum, p) => sum + Number(p.amount), 0);
 
       // Calculate last month for comparison
       const lastMonthPayments = payments.filter(p => {
         const date = parseISO(p.recorded_at);
         return date >= lastMonthStart && date <= lastMonthEnd;
       });
-      const lastMonthAmount = lastMonthPayments.reduce((sum, p) => sum + p.amount, 0);
+      const lastMonthAmount = lastMonthPayments.reduce((sum, p) => sum + Number(p.amount), 0);
       const monthChange = lastMonthAmount > 0 ? ((monthAmount - lastMonthAmount) / lastMonthAmount) * 100 : 0;
 
-      // Calculate outstanding
-      const totalOutstanding = (pupils || []).reduce((sum, p) => sum + (p.account_balance || 0), 0);
+      // Outstanding: sum of amounts owed (account_balance is negative when owing)
+      const totalOutstanding = (pupils || []).reduce((sum, p) => sum + Math.abs(Number(p.account_balance || 0)), 0);
 
       // Project monthly earnings (average daily * days in month)
       const daysElapsed = today.getDate();
