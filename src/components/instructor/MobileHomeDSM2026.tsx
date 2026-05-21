@@ -973,23 +973,25 @@ function NeedsAttentionCard({
         </div>
       </div>
 
-      {/* Nested expandable rows */}
-      {tiles.map((t) => (
-        <ActionTile
-          key={t.key}
-          icon={t.icon}
-          label={t.label}
-          accent={t.accent}
-          tint={t.tint}
-          outlined={t.urgent}
-          badgeCount={t.count}
-          open={openKey === t.key}
-          onToggle={() => toggle(t.key)}
-          nested
-        >
-          {t.body}
-        </ActionTile>
-      ))}
+      {/* Nested expandable row — only the active section renders */}
+      {tiles
+        .filter((t) => openKey === t.key)
+        .map((t) => (
+          <ActionTile
+            key={t.key}
+            icon={t.icon}
+            label={t.label}
+            accent={t.accent}
+            tint={t.tint}
+            outlined={t.urgent}
+            badgeCount={t.count}
+            open={true}
+            onToggle={() => toggle(t.key)}
+            nested
+          >
+            {t.body}
+          </ActionTile>
+        ))}
     </div>
   );
 }
