@@ -100,6 +100,20 @@ export default function InstructorJobs() {
     }
   }, [instructorId]);
 
+  // Auto-open the JobOfferDetailSheet when navigated with ?id=<jobId>
+  useEffect(() => {
+    const targetId = searchParams.get("id");
+    if (!targetId || jobs.length === 0) return;
+    const match = jobs.find((j) => j.id === targetId);
+    if (match) {
+      setSelectedJob(match);
+      // Clear the param so it doesn't re-open after the user closes the sheet.
+      const next = new URLSearchParams(searchParams);
+      next.delete("id");
+      setSearchParams(next, { replace: true });
+    }
+  }, [jobs, searchParams, setSearchParams]);
+
   // Fetch distances when jobs or profile changes
   useEffect(() => {
     if (jobs.length > 0 && profile?.home_postcode) {
