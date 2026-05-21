@@ -1788,6 +1788,7 @@ function loadPinnedLabels(): string[] {
 function QuickAccessCard({ navigate }: { navigate: ReturnType<typeof useNavigate> }) {
   const [activeRoute, setActiveRoute] = useState<string | null>(null);
   const [query, setQuery] = useState("");
+  const [searchExpanded, setSearchExpanded] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [pinnedLabels, setPinnedLabels] = useState<string[]>(() => loadPinnedLabels());
 
