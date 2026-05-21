@@ -1768,45 +1768,55 @@ function QATile({
   item, active, onPress,
 }: { item: QAItem; active: boolean; onPress: () => void; size?: "grid" | "scroll" }) {
   const Icon = item.Icon;
-  const DSM_BLUE = "#3D55A1";
-  const DSM_TINT = "#EDF2FE";
+  const BORDER = "#e0dfd9";
+  const HOVER = "#2952b3";
   return (
     <button
       type="button"
       onClick={onPress}
+      onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.borderColor = HOVER; }}
+      onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.borderColor = BORDER; }}
       style={{
         width: "100%",
-        height: 60,
-        padding: "0 14px",
+        padding: "14px 14px",
         backgroundColor: "#FFFFFF",
-        border: 0,
-        boxShadow: "0 2px 8px rgba(17,24,39,0.06), 0 1px 2px rgba(17,24,39,0.04)",
-        borderRadius: 12,
+        border: `1px solid ${BORDER}`,
+        borderRadius: 14,
         cursor: "pointer",
         display: "flex",
-        flexDirection: "row",
-        alignItems: "center",
+        flexDirection: "column",
+        alignItems: "flex-start",
         gap: 10,
         textAlign: "left",
+        transition: "border-color 150ms ease",
       }}
     >
-      <Icon
-        size={20}
-        color={T.navy}
-        strokeWidth={1.8}
-        style={{ flexShrink: 0 }}
-      />
       <span
         style={{
-          fontSize: 13,
-          fontWeight: 700,
-          color: T.navy,
+          width: 36,
+          height: 36,
+          borderRadius: 10,
+          background: item.bg,
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+        }}
+      >
+        <Icon size={18} strokeWidth={2.2} color={item.colour} />
+      </span>
+      <span
+        style={{
+          fontSize: 14,
+          fontWeight: 600,
+          color: "#1a1a1f",
           fontFamily: FONT,
-          lineHeight: "16px",
-          letterSpacing: "-0.2px",
+          lineHeight: "18px",
+          letterSpacing: "-0.1px",
           overflow: "hidden",
           textOverflow: "ellipsis",
           whiteSpace: "nowrap",
+          maxWidth: "100%",
         }}
       >
         {item.label}
