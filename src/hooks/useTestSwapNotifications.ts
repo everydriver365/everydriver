@@ -67,13 +67,6 @@ export function useTestSwapNotifications(instructorId: string | undefined) {
           queryClient.invalidateQueries({ queryKey: ["test-swap-notifications", instructorId] });
         }
       )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "test_slot_reservations" },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ["test-swap-notifications", instructorId] });
-        }
-      )
       .subscribe();
 
     return () => {
