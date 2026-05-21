@@ -84,6 +84,7 @@ import { useInstructorPaymentsData } from "@/hooks/useInstructorPaymentsData";
 import { useRealGapSlots } from "@/hooks/useRealGapSlots";
 import { DsmLogo } from "@/components/instructor/ui/DsmLogo";
 import { UpNextExpanded } from "@/components/instructor/UpNextExpanded";
+import { ScheduleTile } from "@/components/instructor/ScheduleTile";
 
 /* ---------------------------- Design tokens ----------------------------- */
 const T = {
