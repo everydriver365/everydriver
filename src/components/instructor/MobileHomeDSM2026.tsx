@@ -341,11 +341,12 @@ function HeroHeader(props: {
   onMenu: () => void;
   onProfile: () => void;
   stats: any;
+  statsLoading?: boolean;
   instructorId: string;
 }) {
   const {
     firstName, unreadCount, nextLesson, lessonExpanded,
-    onToggleLesson, onPhone, onBell, onMenu, onProfile, stats, instructorId,
+    onToggleLesson, onPhone, onBell, onMenu, onProfile, stats, statsLoading, instructorId,
   } = props;
 
   return (
