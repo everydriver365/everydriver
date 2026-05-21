@@ -862,22 +862,51 @@ function NeedsAttentionCard({
       count: attention.jobs ?? 0, urgent: true, accent: RED, tint: RED_TINT,
       body: (attention.jobs ?? 0) === 0
         ? <EmptyState icon={Inbox}>No jobs to action</EmptyState>
-        : <SimpleMsg>{attention.jobs} job{attention.jobs === 1 ? "" : "s"} require{attention.jobs === 1 ? "s" : ""} your attention</SimpleMsg>,
+        : <ActionBody
+            message={`${attention.jobs} job${attention.jobs === 1 ? "" : "s"} require${attention.jobs === 1 ? "s" : ""} your attention`}
+            accent={RED}
+            tint={RED_TINT}
+            actionLabel="Review & mark handled"
+            onAction={() => navigate("/instructor/jobs")}
+          />,
     },
     {
       key: "tests", icon: Repeat2, label: "Tests",
       count: attention.tests ?? 0, urgent: true, accent: BLUE, tint: BLUE_TINT,
       body: (attention.tests ?? 0) === 0
         ? <EmptyState icon={Inbox}>No tests to review</EmptyState>
-        : <SimpleMsg>{attention.tests} test{attention.tests === 1 ? "" : "s"} are pending review</SimpleMsg>,
+        : <ActionBody
+            message={`${attention.tests} test${attention.tests === 1 ? "" : "s"} pending review`}
+            accent={BLUE}
+            tint={BLUE_TINT}
+            actionLabel="Review & mark handled"
+            onAction={() => navigate("/instructor/test-requests")}
+          />,
     },
     { key: "calls", icon: PhoneCall, label: "Calls",
       count: attention.calls ?? 0, accent: GREY_ICON, tint: GREY_TINT,
-      body: <EmptyState icon={PhoneOff}>No calls to action</EmptyState> },
+      body: (attention.calls ?? 0) === 0
+        ? <EmptyState icon={PhoneOff}>No calls to action</EmptyState>
+        : <ActionBody
+            message={`${attention.calls} call${attention.calls === 1 ? "" : "s"} waiting`}
+            accent={BLUE}
+            tint={BLUE_TINT}
+            actionLabel="Open calls & mark handled"
+            onAction={() => navigate("/instructor/calls")}
+          /> },
     { key: "enquiries", icon: MessageSquare, label: "Enq's",
       count: attention.enquiries ?? 0, accent: GREY_ICON, tint: GREY_TINT,
-      body: <EmptyState icon={Inbox}>No new enquiries</EmptyState> },
+      body: (attention.enquiries ?? 0) === 0
+        ? <EmptyState icon={Inbox}>No new enquiries</EmptyState>
+        : <ActionBody
+            message={`${attention.enquiries} new enquir${attention.enquiries === 1 ? "y" : "ies"}`}
+            accent={BLUE}
+            tint={BLUE_TINT}
+            actionLabel="Open inbox & mark read"
+            onAction={() => navigate("/instructor/messages")}
+          /> },
   ];
+
 
 
   return (
@@ -1101,6 +1130,48 @@ function SimpleMsg({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
+
+function ActionBody({
+  message, accent, tint, actionLabel, onAction,
+}: {
+  message: string;
+  accent: string;
+  tint: string;
+  actionLabel: string;
+  onAction: () => void;
+}) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 10, fontFamily: FONT }}>
+      <div style={{ fontSize: 13, color: "#6E6E73", lineHeight: 1.4 }}>{message}</div>
+      <button
+        type="button"
+        onClick={onAction}
+        onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.filter = "brightness(0.96)"; }}
+        onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.filter = "none"; }}
+        style={{
+          alignSelf: "stretch",
+          backgroundColor: tint,
+          color: accent,
+          border: `1px solid ${accent}`,
+          borderRadius: 12,
+          padding: "10px 14px",
+          fontSize: 13,
+          fontWeight: 600,
+          fontFamily: FONT,
+          cursor: "pointer",
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 6,
+          transition: "filter 150ms ease",
+        }}
+      >
+        {actionLabel} →
+      </button>
+    </div>
+  );
+}
+
 
 function EmptyState({ icon: Icon, children }: { icon: LucideIcon; children: React.ReactNode }) {
   return (
