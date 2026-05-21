@@ -133,6 +133,7 @@ const InstructorNextUpLab = lazy(() => import("@/pages/InstructorNextUpLab"));
 const InstructorHomeRedesignLab2026 = lazy(() => import("@/pages/InstructorHomeRedesignLab2026"));
 const InstructorHomeLowerLab2026 = lazy(() => import("@/pages/InstructorHomeLowerLab2026"));
 const InstructorAttentionLab2026 = lazy(() => import("@/pages/InstructorAttentionLab2026"));
+const InstructorScheduleTileLab = lazy(() => import("@/pages/InstructorScheduleTileLab"));
 const InstructorWhatsAppSettings = lazy(() => import("@/pages/instructor/InstructorWhatsAppSettings"));
 const InstructorWhatsAppTemplates = lazy(() => import("@/pages/instructor/InstructorWhatsAppTemplates"));
 
@@ -315,6 +316,7 @@ export const instructorPortalRoutes = (
     <Route path="/instructor/home-redesigns-2026" element={<InstructorHomeRedesignLab2026 />} />
     <Route path="/instructor/home-lower-redesigns-2026" element={<InstructorHomeLowerLab2026 />} />
     <Route path="/instructor/attention-redesigns-2026" element={<InstructorAttentionLab2026 />} />
+    <Route path="/instructor/schedule-tile-lab" element={<InstructorScheduleTileLab />} />
 
     {/* Lab features (beta) */}
     <Route path="/instructor/day-briefing" element={<InstructorDayBriefing />} />
