@@ -292,10 +292,13 @@ export function EndLessonWizard({
           await supabase.functions.invoke("send-push-notification", {
             body: {
               instructorId,
+              category: NotifyCategory.LESSON,
+              importance: NotifyImportance.NORMAL,
               notification: {
                 title: "£50 Bonus Earned! 🎉",
                 body: `${pupilName}'s course is complete. £50 bonus has been added to your account.`,
                 tag: "course-bonus",
+                data: { type: PushDataType.COURSE_BONUS, pupilId },
               },
             },
           });
