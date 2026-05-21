@@ -617,6 +617,7 @@ export default function InstructorPay() {
                     key={action.id}
                     to={action.href}
                     onClick={() => haptics.selection()}
+                    className="h-full block"
                   >
                     {inner}
                   </Link>
@@ -626,7 +627,7 @@ export default function InstructorPay() {
                 <button
                   key={action.id}
                   onClick={action.onClick}
-                  className="text-left"
+                  className="text-left h-full"
                 >
                   {inner}
                 </button>
