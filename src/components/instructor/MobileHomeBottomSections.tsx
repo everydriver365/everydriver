@@ -856,16 +856,38 @@ function QuickAccessSection({ instructorId }: { instructorId: string }) {
           marginBottom: 8,
         }}
       >
-        <div
-          style={{
-            fontSize: 10,
-            fontWeight: 700,
-            color: MUTED,
-            letterSpacing: "0.12em",
-            textTransform: "uppercase",
-          }}
-        >
-          Quick access
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <div
+            style={{
+              fontSize: 10,
+              fontWeight: 700,
+              color: MUTED,
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+            }}
+          >
+            Quick access
+          </div>
+          <button
+            type="button"
+            onClick={() => setSearchOpen(true)}
+            aria-label="Search tools, pupils, lessons"
+            style={{
+              width: 22,
+              height: 22,
+              borderRadius: 999,
+              background: "transparent",
+              border: "none",
+              padding: 0,
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              color: MUTED,
+            }}
+          >
+            <Search size={13} strokeWidth={1.8} />
+          </button>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <button
@@ -887,28 +909,6 @@ function QuickAccessSection({ instructorId }: { instructorId: string }) {
         </div>
       </div>
 
-      {/* Search bar */}
-      <button
-        type="button"
-        onClick={() => setSearchOpen(true)}
-        style={{
-          width: "100%",
-          background: "#FFF",
-          borderRadius: 12,
-          padding: "9px 12px",
-          display: "flex",
-          alignItems: "center",
-          gap: 7,
-          marginBottom: 12,
-          border: `0.5px solid ${BORDER_STRONG}`,
-          cursor: "pointer",
-        }}
-      >
-        <Search size={13} color={MUTED} strokeWidth={1.8} />
-        <span style={{ fontSize: 11.5, color: "#C7C7CC", flex: 1, textAlign: "left" }}>
-          Search tools, pupils, lessons...
-        </span>
-      </button>
 
       <CustomizeFrequentlyUsedSheet
         open={editOpen}
