@@ -166,6 +166,7 @@ export default function InstructorPay() {
       .select("id", { count: "exact", head: true })
       .eq("instructor_id", instructorId)
       .is("deleted_at", null)
+      .gt("amount", 0)
       .gte("recorded_at", monthStartIso);
     setRecentPaymentCount(count || 0);
   };
