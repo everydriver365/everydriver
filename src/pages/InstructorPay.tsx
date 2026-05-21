@@ -676,6 +676,7 @@ export default function InstructorPay() {
         onPaymentReceived={() => {
           fetchPupils();
           fetchRecentPaymentCount();
+          refreshEarnings();
         }}
       />
 
@@ -689,6 +690,7 @@ export default function InstructorPay() {
         onRefunded={() => {
           fetchPupils();
           fetchRecentPaymentCount();
+          refreshEarnings();
         }}
       />
     </InstructorPortalLayout>
