@@ -60,9 +60,9 @@ Deno.serve(async (req) => {
         if (endMs < winStart.getTime() || endMs > winEnd.getTime()) continue;
 
         const gate = await shouldSendToInstructor(admin, s.instructor_id, {
-          category: "lesson",
+          category: NotifyCategory.REMINDER,
           channel: "push",
-          importance: "normal",
+          importance: NotifyImportance.NORMAL,
         });
 
         // Always write the inbox row (so the bell shows it even if push gated).
@@ -70,7 +70,7 @@ Deno.serve(async (req) => {
           instructor_id: s.instructor_id,
           title: "Lesson ending soon",
           message: lead === 0 ? "Lesson is ending now — mark it complete." : `Lesson ends in ${lead} min — get ready to mark it complete.`,
-          type: "lesson_eol",
+          type: PushDataType.LESSON_EOL,
           action_url: `/instructor/lessons/${l.id}`,
           metadata: { lesson_id: l.id, pupil_id: l.pupil_id, lead_minutes: lead },
         });
@@ -83,7 +83,7 @@ Deno.serve(async (req) => {
           title: pushTitle,
           body: pushBody,
           tag: `eol-${l.id}`,
-          data: { type: "lesson_eol", lesson_id: l.id, url: `/instructor/lessons/${l.id}` },
+          data: { type: PushDataType.LESSON_EOL, lesson_id: l.id, url: `/instructor/lessons/${l.id}` },
         };
 
         if (gate.allow) {
@@ -95,8 +95,8 @@ Deno.serve(async (req) => {
             },
             body: JSON.stringify({
               instructorId: s.instructor_id,
-              category: "lesson",
-              importance: "normal",
+              category: NotifyCategory.REMINDER,
+              importance: NotifyImportance.NORMAL,
               bypassGate: true, // we've already gated above
               notification: pushPayload,
             }),
@@ -105,11 +105,11 @@ Deno.serve(async (req) => {
           // Queue through the same gate's outbox so hourly/daily cadence batches it.
           await enqueueOutbox(admin, {
             instructor_id: s.instructor_id,
-            category: "lesson",
-            importance: "normal",
+            category: NotifyCategory.REMINDER,
+            importance: NotifyImportance.NORMAL,
             title: pushTitle,
             body: pushBody,
-            payload: { notification: pushPayload, lesson_id: l.id, kind: "lesson_eol" },
+            payload: { notification: pushPayload, lesson_id: l.id, kind: PushDataType.LESSON_EOL },
             deliver_at: gate.defer_until,
           });
         } else {
