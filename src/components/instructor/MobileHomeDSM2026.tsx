@@ -80,6 +80,10 @@ import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
 import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
 import { useTestSwapNotifications } from "@/hooks/useTestSwapNotifications";
 import { useVisitorChatUnreadCount } from "@/hooks/useVisitorChatUnreadCount";
+import { usePendingJobsList } from "@/hooks/usePendingJobsList";
+import { useTestActionItems } from "@/hooks/useTestActionItems";
+import { useVisitorChatActionItems } from "@/hooks/useVisitorChatActionItems";
+import { useUnreadMessageThreads } from "@/hooks/useUnreadMessageThreads";
 import { useUpcomingEvents, type UpcomingEvent } from "@/hooks/useUpcomingEvents";
 import { useInstructorMembership } from "@/hooks/useInstructorMembership";
 import { useDayLessons } from "@/hooks/useDayLessons";
@@ -287,7 +291,7 @@ export function MobileHomeDSM2026({ instructorId, instructorName }: Props) {
 
       <div style={{ padding: 14, display: "flex", flexDirection: "column", gap: 12 }}>
         <TodayStrip stats={stats} />
-        <NeedsAttentionCard attention={attention} stats={stats} navigate={navigate} />
+        <NeedsAttentionCard attention={attention} stats={stats} navigate={navigate} instructorId={instructorId} />
         <ScheduleCard instructorId={instructorId} navigate={navigate} />
         <QuickAccessCard navigate={navigate} />
         <UpcomingEventsCard events={events} navigate={navigate} />
@@ -824,8 +828,8 @@ function SectionHeader({
 
 /* =========================== Needs attention ============================ */
 function NeedsAttentionCard({
-  attention, stats, navigate,
-}: { attention: any; stats: any; navigate: ReturnType<typeof useNavigate> }) {
+  attention, stats, navigate, instructorId,
+}: { attention: any; stats: any; navigate: ReturnType<typeof useNavigate>; instructorId: string | undefined }) {
   type Key = "jobs" | "tests" | "calls" | "enquiries";
   const [openKey, setOpenKey] = useState<Key | null>(null);
   const toggle = (k: Key) => {
@@ -973,30 +977,174 @@ function NeedsAttentionCard({
         </div>
       </div>
 
-      {/* Nested expandable row — only the active section renders */}
-      {tiles
-        .filter((t) => openKey === t.key)
-        .map((t) => (
-          <ActionTile
-            key={t.key}
-            icon={t.icon}
-            label={t.label}
-            accent={t.accent}
-            tint={t.tint}
-            outlined={t.urgent}
-            badgeCount={t.count}
-            open={true}
-            onToggle={() => toggle(t.key)}
-            nested
-          >
-            {t.body}
-          </ActionTile>
-        ))}
+      {/* Inline live list — only the active section renders, no extra header */}
+      {openKey ? (
+        <SectionPanel sectionKey={openKey} instructorId={instructorId} navigate={navigate} />
+      ) : null}
     </div>
   );
 }
 
 
+/* ===================== SectionPanel (inline live list) ===================== */
+function SectionPanel({
+  sectionKey,
+  instructorId,
+  navigate,
+}: {
+  sectionKey: "jobs" | "tests" | "calls" | "enquiries";
+  instructorId: string | undefined;
+  navigate: ReturnType<typeof useNavigate>;
+}) {
+  const DIVIDER = "#f0f1f4";
+  const BLUE = "#2952b3";
+  const MUTED = "#999999";
+  const CHARCOAL = "#1a1a1f";
+  const BODY = "#6E6E73";
+
+  const jobs = usePendingJobsList(5);
+  const tests = useTestActionItems(instructorId, 5);
+  const calls = useVisitorChatActionItems(instructorId, 5);
+  const enqs = useUnreadMessageThreads(instructorId, 5);
+
+  const rowStyle: React.CSSProperties = {
+    display: "flex", alignItems: "center", justifyContent: "space-between",
+    gap: 10, width: "100%", padding: "10px 14px",
+    background: "transparent", border: 0, borderTop: `1px solid ${DIVIDER}`,
+    textAlign: "left", cursor: "pointer", fontFamily: FONT,
+  };
+  const titleStyle: React.CSSProperties = {
+    fontSize: 13, fontWeight: 600, color: CHARCOAL,
+    overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+  };
+  const subStyle: React.CSSProperties = {
+    fontSize: 11, color: BODY, marginTop: 2,
+    overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+  };
+  const chev: React.CSSProperties = { color: MUTED, fontSize: 16, fontWeight: 600 };
+
+  const footer = (label: string, onClick: () => void) => (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        width: "100%", padding: "10px 14px", background: "transparent",
+        border: 0, borderTop: `1px solid ${DIVIDER}`, color: BLUE,
+        fontSize: 13, fontWeight: 600, fontFamily: FONT, cursor: "pointer",
+        display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+      }}
+    >
+      {label} →
+    </button>
+  );
+
+  const loading = (
+    <div style={{ padding: "14px", fontSize: 12, color: MUTED, fontFamily: FONT, borderTop: `1px solid ${DIVIDER}` }}>
+      Loading…
+    </div>
+  );
+
+  const empty = (text: string, Icon: LucideIcon) => (
+    <div style={{ borderTop: `1px solid ${DIVIDER}` }}>
+      <EmptyState icon={Icon}>{text}</EmptyState>
+    </div>
+  );
+
+  if (sectionKey === "jobs") {
+    const items = jobs.data ?? [];
+    if (jobs.isLoading) return loading;
+    return (
+      <>
+        {items.length === 0
+          ? empty("No jobs to action", Inbox)
+          : items.map((j) => (
+              <button key={j.id} type="button" style={rowStyle}
+                onClick={() => navigate("/instructor/jobs")}>
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <div style={titleStyle}>
+                    {j.courseType}{j.hours ? ` · ${j.hours}h` : ""}
+                  </div>
+                  <div style={subStyle}>
+                    {j.postcode ? `${j.postcode} · ` : ""}expires in {j.expiresInHours}h
+                  </div>
+                </div>
+                <span style={chev}>›</span>
+              </button>
+            ))}
+        {footer("View all jobs", () => navigate("/instructor/jobs"))}
+      </>
+    );
+  }
+
+  if (sectionKey === "tests") {
+    const items = tests.data ?? [];
+    if (tests.isLoading) return loading;
+    return (
+      <>
+        {items.length === 0
+          ? empty("No tests to review", Inbox)
+          : items.map((t) => (
+              <button key={`${t.kind}-${t.id}`} type="button" style={rowStyle}
+                onClick={() => navigate("/instructor/test-requests")}>
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <div style={titleStyle}>
+                    {t.centre ?? (t.kind === "offer" ? "Swap offer" : "Matched test slot")}
+                  </div>
+                  <div style={subStyle}>
+                    {[t.date, t.time].filter(Boolean).join(" · ") || (t.kind === "offer" ? "Pending offer" : "Scraped match")}
+                  </div>
+                </div>
+                <span style={chev}>›</span>
+              </button>
+            ))}
+        {footer("View all tests", () => navigate("/instructor/test-requests"))}
+      </>
+    );
+  }
+
+  if (sectionKey === "calls") {
+    const items = calls.data ?? [];
+    if (calls.isLoading) return loading;
+    return (
+      <>
+        {items.length === 0
+          ? empty("No calls to action", PhoneOff)
+          : items.map((c) => (
+              <button key={c.sessionId} type="button" style={rowStyle}
+                onClick={() => navigate("/instructor/messages")}>
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <div style={titleStyle}>{c.visitorName || "Visitor"}</div>
+                  <div style={subStyle}>{c.preview}</div>
+                </div>
+                <span style={chev}>›</span>
+              </button>
+            ))}
+        {footer("Open visitor chats", () => navigate("/instructor/messages"))}
+      </>
+    );
+  }
+
+  // enquiries
+  const items = enqs.data ?? [];
+  if (enqs.isLoading) return loading;
+  return (
+    <>
+      {items.length === 0
+        ? empty("No new enquiries", Inbox)
+        : items.map((m) => (
+            <button key={m.conversationId} type="button" style={rowStyle}
+              onClick={() => navigate(`/instructor/messages?c=${m.conversationId}`)}>
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <div style={titleStyle}>{m.pupilName || "Pupil"}</div>
+                <div style={subStyle}>{m.preview}</div>
+              </div>
+              <span style={chev}>›</span>
+            </button>
+          ))}
+      {footer("Open inbox", () => navigate("/instructor/messages"))}
+    </>
+  );
+}
 
 
 /* Horizontal action tile with tinted icon box, count/clear pill, expandable body. */

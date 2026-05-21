@@ -1,39 +1,55 @@
-## Findings
+## Goal
 
-The failing login is not caused by a wrong password or the login form itself.
+When you tap a summary tile in **Needs Attention** (Jobs / Tests / Calls / Enq's), show the actual items inline immediately — no second "Jobs" header row to click through.
 
-The live auth logs show repeated `/token` failures at the exact time of the attempts:
+## Current behaviour
 
-- `504 request_timeout`
-- `500 Database error querying schema`
-- `error finding user: failed to connect ... database=postgres`
+Tapping Jobs reveals an `ActionTile` component that has:
+1. Its own clickable header row (icon box + "Jobs" label + chevron + Clear/urgent pill)
+2. A body with a sentence ("1 job requires your attention") + a "Review & mark handled →" button
 
-Then one later `/token` request succeeds with `200`, which means the credentials are valid. The current app-side timeout is catching some failures and showing “login service is busy”, but the user experience still feels like it is spinning because successful/failed attempts can overlap and the post-login session/profile loading path is fragile.
+So the user sees an intermediate header before getting to anything useful.
 
-## Plan
+## Proposed change
 
-1. **Stop overlapping login attempts**
-   - Add a request id / abort guard in the instructor login form so an old timed-out login cannot keep updating the UI after a newer attempt.
-   - Keep the button disabled only for the active attempt.
+Remove the nested `ActionTile` wrapper. When `openKey` is set, render a list panel directly under the 4-tile grid, with:
 
-2. **Make auth timeout handling deterministic**
-   - Update the instructor auth context so the timeout result is typed and handled consistently.
-   - Return a clear transient-service error immediately after the timeout instead of leaving any pending promise to race against the UI state.
+- A thin `#f0f1f4` divider above
+- A small caption row: e.g. "1 pending job" on the left, "View all →" link on the right (routes to `/instructor/jobs` etc.)
+- A short live list (up to 5 items) of the actual records for that section, each row tappable to deep-link to its detail page
+- Empty state (icon + "No jobs to action") when the count is 0
 
-3. **Separate “signed in” from “profile loaded”**
-   - After a successful password token response, navigate only after the session is confirmed.
-   - If the instructor profile/subscription follow-up queries are slow, show the dashboard loading state instead of leaving the login button spinning.
+The 4 summary tiles stay exactly as they are; only the expanded region changes.
 
-4. **Add safe diagnostics for the exact stuck point**
-   - Add non-sensitive console timing logs around: password token request, session received, instructor profile fetch, subscription fetch, and redirect.
-   - Do not log passwords, tokens, or private data.
+### Per-section list content (all live, no fallbacks)
 
-5. **Check database performance for the post-login lookups**
-   - Confirm the required indexes exist for `instructors.auth_user_id` and `instructor_subscriptions(instructor_id, status)`.
-   - If the subscription lookup index is missing, add a small migration for that index so profile loading after login is faster and less likely to compound backend pressure.
+| Section | Source | Row shows | Tapping a row |
+|---|---|---|---|
+| Jobs | `course_enquiries` where `status='pending'` (latest 5) | Course type · hours · "expires in Xh" | `/instructor/jobs` (or `?id=`) |
+| Tests | `test_swap_offers` pending + `test_slot_reservations` scraped_match for this instructor | Centre · date · status pill | `/instructor/test-requests` |
+| Calls | `live_chat_messages` unread joined to active `live_chat_sessions` (latest 5, grouped by session) | Visitor name/anon · last message snippet · time | `/instructor/calls` |
+| Enq's | unread `messages` from pupils across this instructor's `conversations` (latest 5, grouped by conversation) | Pupil name · snippet · time | `/instructor/messages?c={id}` |
 
-## Technical notes
+### New hooks to add (small, query-only)
 
-- I will not change credentials, auth providers, or the login design.
-- I will not edit generated backend client files.
-- If the hosted auth service itself times out again, the app cannot force the backend to accept the login, but it can stop the endless spinner and show exactly where it failed.
+- `usePendingJobsList(limit=5)` — extends existing `usePendingJobsPreview` pattern to return a list
+- `useTestActionItems(instructorId, limit=5)` — combines pending offers + scraped matches
+- `useVisitorChatActionItems(instructorId, limit=5)`
+- `useUnreadMessageThreads(instructorId, limit=5)`
+
+Each follows the existing pattern: React Query + realtime invalidation on the same tables already used by the count hooks, so the lists refresh in lockstep with the counts.
+
+## Files touched
+
+- `src/components/instructor/MobileHomeDSM2026.tsx` — replace the filtered `ActionTile` render block with a direct `<SectionPanel>` that renders the list for `openKey`
+- `src/hooks/usePendingJobsList.ts` *(new)*
+- `src/hooks/useTestActionItems.ts` *(new)*
+- `src/hooks/useVisitorChatActionItems.ts` *(new)*
+- `src/hooks/useUnreadMessageThreads.ts` *(new)*
+
+## Out of scope
+
+- No DB changes, no migrations
+- No "mark handled" mutations in this pass (kept as a "Review →" link to the dedicated page)
+- No styling changes to the 4 summary tiles or to the rest of the Needs Attention card
+- No changes to any other dashboard tile
