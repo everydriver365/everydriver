@@ -390,6 +390,7 @@ function StatsStrip({ stats }: { stats: any }) {
       sub: `£${stats?.todayEarnings ?? 0} today`,
       barPct: stats?.earningsPct ?? 0,
       barColour: T.red,
+      valueColour: "#FFD27A",
       denom: null as string | null,
     },
     {
@@ -398,9 +399,11 @@ function StatsStrip({ stats }: { stats: any }) {
       sub: `${stats?.todayLessons ?? 0} today`,
       barPct: stats?.lessonsPct ?? 0,
       barColour: T.blue,
+      valueColour: "#7EE0FF",
       denom: stats?.lessonTarget > 0 ? `/${stats.lessonTarget}` : null,
     },
   ];
+
   return (
     <div
       style={{
@@ -433,7 +436,7 @@ function StatsStrip({ stats }: { stats: any }) {
           </div>
           <div
             style={{
-              fontSize: 19, fontWeight: 800, color: T.white,
+              fontSize: 19, fontWeight: 800, color: s.valueColour,
               letterSpacing: -0.6, lineHeight: "22px", fontFamily: FONT,
             }}
           >
