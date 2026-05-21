@@ -129,8 +129,10 @@ serve(async (req) => {
         },
         body: JSON.stringify({
           instructorId: row.instructor_id,
+          category: NotifyCategory.REMINDER,
+          importance: NotifyImportance.NORMAL,
           bypassGate: true,
-          notification: { title, body, tag: "daily-summary", data: { type: "daily_summary" } },
+          notification: { title, body, tag: "daily-summary", data: { type: PushDataType.DAILY_SUMMARY } },
         }),
       });
     } catch (e) {
