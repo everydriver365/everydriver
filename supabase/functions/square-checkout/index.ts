@@ -151,29 +151,47 @@ serve(async (req: Request) => {
     let effectiveLocationId = locationId;
     let appFeeAmountPence = 0;
 
+    // Capture supabase client + OAuth app credentials so we can refresh inline
+    // and also retry once after an UNAUTHORIZED Square response below.
+    let sbClient: ReturnType<typeof createClient> | null = null;
+    const sqAppId = Deno.env.get("SQUARE_APPLICATION_ID")?.trim() || "";
+    const sqOauthSecret = Deno.env.get("SQUARE_OAUTH_SECRET")?.trim() || "";
+    const locEnv = environment.toLowerCase();
+    const locIsProduction = locEnv === "production" || locEnv === "prod" || locEnv === "live";
+    const oauthBaseUrl = locIsProduction ? "https://connect.squareup.com" : "https://connect.squareupsandbox.com";
+
     if (body.instructorId) {
       try {
         const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
         const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-        const supabase = createClient(supabaseUrl, serviceRoleKey);
+        sbClient = createClient(supabaseUrl, serviceRoleKey);
 
-        const { data: instructor } = await supabase
+        const { data: instructor } = await sbClient
           .from("instructors")
-          .select("square_merchant_id, square_access_token_encrypted")
+          .select("square_merchant_id, square_access_token_encrypted, square_refresh_token_encrypted, square_token_expires_at")
           .eq("id", body.instructorId)
           .maybeSingle();
 
         if (instructor?.square_merchant_id && instructor?.square_access_token_encrypted) {
           useInstructorToken = true;
           effectiveAccessToken = instructor.square_access_token_encrypted;
+
+          // Proactive refresh if the access token is expired or expires within 5 minutes
+          const expiresAt = instructor.square_token_expires_at
+            ? new Date(instructor.square_token_expires_at).getTime()
+            : 0;
+          const fiveMinFromNow = Date.now() + 5 * 60 * 1000;
+          if (sqAppId && sqOauthSecret && instructor.square_refresh_token_encrypted && (!expiresAt || expiresAt <= fiveMinFromNow)) {
+            console.log(`[square-checkout] token expired/near-expiry for ${body.instructorId}, refreshing`);
+            const newToken = await refreshInstructorSquareToken(sbClient, body.instructorId, sqAppId, sqOauthSecret, oauthBaseUrl);
+            if (newToken) effectiveAccessToken = newToken;
+          }
+
           console.log(`Using instructor's Square OAuth token for ${body.instructorId}`);
 
           // Fetch instructor's main location from Square API
           try {
-            const locEnv = environment.toLowerCase();
-            const locIsProduction = locEnv === "production" || locEnv === "prod" || locEnv === "live";
-            const locBaseUrl = locIsProduction ? "https://connect.squareup.com" : "https://connect.squareupsandbox.com";
-            const locRes = await fetch(`${locBaseUrl}/v2/locations`, {
+            const locRes = await fetch(`${oauthBaseUrl}/v2/locations`, {
               headers: {
                 "Authorization": `Bearer ${effectiveAccessToken}`,
                 "Square-Version": "2024-01-18",
@@ -200,6 +218,7 @@ serve(async (req: Request) => {
         console.error("Error checking instructor Square OAuth:", e);
       }
     }
+
 
     // Square uses amount in smallest currency unit (pence for GBP)
     const amountInPence = Math.round(amount * 100);
