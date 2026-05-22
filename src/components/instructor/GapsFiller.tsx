@@ -60,6 +60,8 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
   const [searchParams] = useSearchParams();
   const [instructorName, setInstructorName] = useState("");
   const [bufferMinutes, setBufferMinutes] = useState(0);
+  const [homePostcode, setHomePostcode] = useState<string | null>(null);
+
   const [gaps, setGaps] = useState<GapSlot[]>([]);
   const [loading, setLoading] = useState(true);
   const [pupils, setPupils] = useState<RecipientPupil[]>([]);
