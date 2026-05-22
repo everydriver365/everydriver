@@ -200,6 +200,7 @@ serve(async (req: Request) => {
           instructor_id: instructorId || null,
           amount,
           payment_method: "Square",
+          payment_type: "lesson_payment",
           payout_status: payoutStatus,
           notes: `Square payment ${payment.id} — ${orderReference}${useInstructorToken ? ' (auto-paid via Square)' : ''}`,
         });

@@ -296,6 +296,7 @@ serve(async (req) => {
           instructor_id,
           amount,
           payment_method: "Cash",
+          payment_type: "lesson_payment",
           notes: "Recorded via voice assistant",
         });
 

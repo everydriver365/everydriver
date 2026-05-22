@@ -157,6 +157,7 @@ export function CancelLessonDialog({
           instructor_id: instructorId,
           amount: -chargeAmount,
           payment_method: "Cancellation Fee",
+          payment_type: "cancellation_fee",
           notes: `Cancellation charge (${pct}%) for ${lessonDate} ${lessonTime}`,
         });
 

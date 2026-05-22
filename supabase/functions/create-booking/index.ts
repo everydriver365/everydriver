@@ -403,6 +403,7 @@ serve(async (req) => {
         pupil_id:      pupil.id,
         amount:        0,
         payment_method: "Free",
+        payment_type:  "lesson_payment",
         notes:         `Free booking: ${booking.courseType}`,
       }).then(({ error }) => { if (error) console.error("Free payment record (non-fatal):", error); });
     }

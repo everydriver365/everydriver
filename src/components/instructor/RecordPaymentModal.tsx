@@ -214,6 +214,7 @@ export function RecordPaymentModal({
           instructor_id: instructorId,
           amount: parsedAmount,
           payment_method: methodLabel,
+          payment_type: "lesson_payment",
           notes: notes.trim() || null,
           lesson_id: lessonId,
         });

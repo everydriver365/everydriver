@@ -771,7 +771,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
         if (prefs?.auto_charge_no_show && prefs.no_show_fee > 0) {
           const newBalance = (lesson.pupil?.account_balance || 0) - prefs.no_show_fee;
           await supabase.from("pupils").update({ account_balance: newBalance }).eq("id", lesson.pupil.id);
-          await supabase.from("payment_history").insert({ pupil_id: lesson.pupil.id, instructor_id: instructorId, amount: -prefs.no_show_fee, payment_method: "No-Show Fee", notes: `No-show charge for ${lesson.lesson_date} ${lesson.start_time}` });
+          await supabase.from("payment_history").insert({ pupil_id: lesson.pupil.id, instructor_id: instructorId, amount: -prefs.no_show_fee, payment_method: "No-Show Fee", payment_type: "no_show_fee", notes: `No-show charge for ${lesson.lesson_date} ${lesson.start_time}` });
         }
       } catch (e) { console.error("No-show fee error:", e); }
       triggerAutomations({ triggerType: "no_show", instructorId, pupilId: lesson.pupil.id, pupilName: lesson.pupil.name });

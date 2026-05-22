@@ -178,6 +178,7 @@ serve(async (req: Request) => {
               pupil_id: pupilId,
               amount: creditAmount,
               payment_method: `${provider}_card`,
+              payment_type: "lesson_payment",
               notes: `${provider.toUpperCase()} Payment - Ref: ${paymentRef}, Auth: ${authorisationCode}${feeAmount > 0 ? ` (admin fee: £${feeAmount.toFixed(2)})` : ''}`,
             });
 
@@ -403,6 +404,7 @@ serve(async (req: Request) => {
                     pupil_id: pupilId,
                     amount: creditAmount,
                     payment_method: "Clearpay",
+                    payment_type: "lesson_payment",
                     notes: `Clearpay Payment ${captureResult.id}${feeAmount > 0 ? ` (admin fee: £${feeAmount.toFixed(2)})` : ''}`,
                   });
 
@@ -584,6 +586,7 @@ serve(async (req: Request) => {
               pupil_id: pupilId,
               amount: klarnaCreditAmount,
               payment_method: "Klarna",
+              payment_type: "lesson_payment",
               notes: `Klarna Payment - Order: ${klarnaOrderId}${klarnaFee > 0 ? ` (admin fee: £${klarnaFee.toFixed(2)})` : ''}`,
             });
 

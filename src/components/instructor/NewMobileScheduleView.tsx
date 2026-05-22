@@ -243,6 +243,7 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
             instructor_id: instructorId,
             amount: -prefs.no_show_fee,
             payment_method: "No-Show Fee",
+            payment_type: "no_show_fee",
             notes: `No-show charge for ${lesson.lesson_date} ${lesson.start_time}`,
           });
         }

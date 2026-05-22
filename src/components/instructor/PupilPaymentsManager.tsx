@@ -86,6 +86,7 @@ export function PupilPaymentsManager({
         instructor_id: instructorId,
         amount: -amt,
         payment_method: "Lesson Charge",
+        payment_type: "lesson_payment",
         notes: chargeNote.trim() || "Amount owed",
         recorded_at: new Date().toISOString(),
       });
