@@ -21,7 +21,10 @@ export interface SlotPickerRowProps {
   highlighted?: boolean;
   /** When provided, shows a Book pill that books this slot directly. */
   onBook?: () => void;
+  /** True when travel ETA for this slot came from the fallback (not real routing). */
+  etaEstimated?: boolean;
 }
+
 
 /**
  * Mobile slot card.
@@ -36,7 +39,9 @@ export function SlotPickerRow({
   onToggle,
   highlighted,
   onBook,
+  etaEstimated,
 }: SlotPickerRowProps) {
+
   // Split "11 May" -> ["11", "May"] for the calendar tile
   const [dayNum, ...monthParts] = slot.dateLabel.split(" ");
   const monthLabel = monthParts.join(" ");
@@ -164,7 +169,28 @@ export function SlotPickerRow({
             <Clock size={11} strokeWidth={2.2} color="#8A5BC9" />
             {slot.durationPill} slot
           </div>
+          {etaEstimated && (
+            <span
+              aria-label="Estimated travel time"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                marginLeft: 6,
+                marginTop: 6,
+                fontSize: 10,
+                fontWeight: 600,
+                color: "#6E6E73",
+                background: "#F0F0F2",
+                padding: "2px 7px",
+                borderRadius: 999,
+                letterSpacing: 0.2,
+              }}
+            >
+              Est.
+            </span>
+          )}
         </div>
+
 
         {/* Selection indicator */}
         <span

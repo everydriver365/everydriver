@@ -35,7 +35,14 @@ interface GapSlot {
   startTime: string;
   endTime: string;
   selected: boolean;
+  /** Resolved travel time from prev drop-off → slot start, in minutes. */
+  travelOutMin?: number | null;
+  /** Resolved travel time from slot end → next pickup, in minutes. */
+  travelInMin?: number | null;
+  /** True when either travel leg fell back to the 10-min default. */
+  etaEstimated?: boolean;
 }
+
 
 interface GapsFillerProps {
   instructorId: string;
@@ -53,6 +60,8 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
   const [searchParams] = useSearchParams();
   const [instructorName, setInstructorName] = useState("");
   const [bufferMinutes, setBufferMinutes] = useState(0);
+  const [homePostcode, setHomePostcode] = useState<string | null>(null);
+
   const [gaps, setGaps] = useState<GapSlot[]>([]);
   const [loading, setLoading] = useState(true);
   const [pupils, setPupils] = useState<RecipientPupil[]>([]);
@@ -179,18 +188,21 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
     try {
       const { data } = await supabase
         .from("instructors")
-        .select("name, buffer_minutes")
+        .select("name, buffer_minutes, home_postcode")
         .eq("id", instructorId)
         .single();
       if (data) {
         setInstructorName(data.name);
         const b = (data as { buffer_minutes?: number | null }).buffer_minutes;
         setBufferMinutes(typeof b === "number" ? b : 0);
+        const hp = (data as { home_postcode?: string | null }).home_postcode;
+        setHomePostcode(hp ? hp.replace(/\s+/g, "").toUpperCase() : null);
       }
     } catch (error) {
       console.error("Error fetching instructor:", error);
     }
   };
+
 
   const fetchPupils = async () => {
     try {
@@ -242,10 +254,11 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
 
       const { data: scheduledLessons } = await supabase
         .from("scheduled_lessons")
-        .select("lesson_date, start_time, duration_minutes")
+        .select("lesson_date, start_time, duration_minutes, pickup_postcode, pupils:pupils(postcode)")
         .eq("instructor_id", instructorId)
         .gte("lesson_date", today)
         .lte("lesson_date", twoWeeksLater)
+
         .neq("status", "cancelled");
 
       const { data: overrides } = await supabase
@@ -269,9 +282,20 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
         .gte("end_time", todayISO)
         .lte("start_time", twoWeeksISO);
 
+      type LoadedLesson = {
+        lesson_date: string;
+        start_time: string;
+        duration_minutes: number | null;
+        pickup_postcode: string | null;
+        pupils: { postcode: string | null } | null;
+      };
+      // Loaded for future per-slot prev/next postcode resolution.
+      void (scheduledLessons as LoadedLesson[] | null);
+
       const calculatedGaps: GapSlot[] = [];
       const nowHour = new Date().getHours();
       const todayStr = format(new Date(), "yyyy-MM-dd");
+
 
       for (let i = 0; i < 14; i++) {
         const currentDate = addDays(startOfDay(new Date()), i);
@@ -283,6 +307,7 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
 
         const dayHours = workingHours?.find((wh) => wh.day_of_week === dayOfWeek);
         if (!dayHours && !override?.is_available) continue;
+
 
         const startHour = override?.start_time || dayHours?.start_time || "09:00";
         const endHour = override?.end_time || dayHours?.end_time || "17:00";
