@@ -53,7 +53,12 @@ self.addEventListener("notificationclick", (event) => {
   event.notification.close();
 
   const data = event.notification.data || {};
-  const url = data.url || "/instructor";
+  // Deep-link based on notification type when no explicit url is provided
+  let url = data.url;
+  if (!url && (data.type === "slot_offer" || data.type === "slot_offer_cancelled") && data.offer_id) {
+    url = `/?offer_id=${data.offer_id}`;
+  }
+  url = url || "/instructor";
 
   event.waitUntil(
     clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
