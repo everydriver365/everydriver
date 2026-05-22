@@ -2229,10 +2229,8 @@ function QuickAccessCard({ navigate }: { navigate: ReturnType<typeof useNavigate
   return (
     <div
       style={{
-        background: OUTER_BG,
-        borderRadius: 18,
-        overflow: "hidden",
-        padding: "14px 14px 14px",
+        background: "transparent",
+        padding: 0,
       }}
     >
       {/* Header */}
@@ -2375,7 +2373,7 @@ function QuickAccessCard({ navigate }: { navigate: ReturnType<typeof useNavigate
                 scrollSnapAlign: "start",
                 display: "grid",
                 gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-                gap: 10,
+                gap: 8,
               }}
             >
               {page.map((item) => (
