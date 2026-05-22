@@ -16977,6 +16977,74 @@ export type Database = {
         }
         Relationships: []
       }
+      slot_offer_recipients: {
+        Row: {
+          claimed_at: string | null
+          created_at: string
+          declined_at: string | null
+          distance_miles: number | null
+          id: string
+          instructor_id: string
+          notified_at: string | null
+          pupil_id: string
+          slot_offer_id: string
+          viewed_at: string | null
+        }
+        Insert: {
+          claimed_at?: string | null
+          created_at?: string
+          declined_at?: string | null
+          distance_miles?: number | null
+          id?: string
+          instructor_id: string
+          notified_at?: string | null
+          pupil_id: string
+          slot_offer_id: string
+          viewed_at?: string | null
+        }
+        Update: {
+          claimed_at?: string | null
+          created_at?: string
+          declined_at?: string | null
+          distance_miles?: number | null
+          id?: string
+          instructor_id?: string
+          notified_at?: string | null
+          pupil_id?: string
+          slot_offer_id?: string
+          viewed_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "slot_offer_recipients_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "slot_offer_recipients_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "slot_offer_recipients_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "slot_offer_recipients_slot_offer_id_fkey"
+            columns: ["slot_offer_id"]
+            isOneToOne: false
+            referencedRelation: "slot_offers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       slot_offers: {
         Row: {
           claim_expires_at: string | null
@@ -16990,12 +17058,13 @@ export type Database = {
           instructor_id: string
           lesson_date: string
           original_lesson_id: string | null
-          pupil_id: string
+          pupil_id: string | null
           pupil_notified_at: string | null
           pupil_responded_at: string | null
           pupil_response: string | null
           queue_position: number | null
           start_time: string
+          status: string
         }
         Insert: {
           claim_expires_at?: string | null
@@ -17009,12 +17078,13 @@ export type Database = {
           instructor_id: string
           lesson_date: string
           original_lesson_id?: string | null
-          pupil_id: string
+          pupil_id?: string | null
           pupil_notified_at?: string | null
           pupil_responded_at?: string | null
           pupil_response?: string | null
           queue_position?: number | null
           start_time: string
+          status?: string
         }
         Update: {
           claim_expires_at?: string | null
@@ -17028,12 +17098,13 @@ export type Database = {
           instructor_id?: string
           lesson_date?: string
           original_lesson_id?: string | null
-          pupil_id?: string
+          pupil_id?: string | null
           pupil_notified_at?: string | null
           pupil_responded_at?: string | null
           pupil_response?: string | null
           queue_position?: number | null
           start_time?: string
+          status?: string
         }
         Relationships: [
           {
@@ -19657,6 +19728,10 @@ export type Database = {
         Returns: boolean
       }
       claim_cover_offer: { Args: { p_offer_id: string }; Returns: Json }
+      claim_slot_offer: {
+        Args: { p_offer_id: string; p_pupil_id: string }
+        Returns: Json
+      }
       cleanup_expired_otp_codes: { Args: never; Returns: undefined }
       cleanup_expired_parent_otp_codes: { Args: never; Returns: undefined }
       delete_email: {
