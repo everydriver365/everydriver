@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { logAdminAction } from "@/lib/adminLogger";
+import { AdminInstructorDangerZone } from "./AdminInstructorDangerZone";
 
 interface AdminInstructorProfileProps {
   instructorId: string;
@@ -884,7 +885,13 @@ export function AdminInstructorProfile({ instructorId, onBack, onNavigateToPupil
             </div>
           )}
         </SectionPanel>
+
+        <AdminInstructorDangerZone
+          instructorId={instructor.id}
+          instructorName={instructor.name}
+        />
       </div>
+
 
       {/* Dialogs */}
       <AlertDialog open={showDelete} onOpenChange={setShowDelete}>

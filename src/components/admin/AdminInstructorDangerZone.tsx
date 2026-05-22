@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { ShieldAlert, Trash2, RotateCcw, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -14,18 +14,33 @@ import { SectionPanel } from "@/components/ui/SectionPanel";
 interface AdminInstructorDangerZoneProps {
   instructorId: string;
   instructorName: string;
-  deletedAt: string | null;
-  scheduledPurgeAt: string | null;
-  onChanged: () => void;
 }
 
 export function AdminInstructorDangerZone({
   instructorId,
   instructorName,
-  deletedAt,
-  scheduledPurgeAt,
-  onChanged,
 }: AdminInstructorDangerZoneProps) {
+  const [deletedAt, setDeletedAt] = useState<string | null>(null);
+  const [scheduledPurgeAt, setScheduledPurgeAt] = useState<string | null>(null);
+  const [showSchedule, setShowSchedule] = useState(false);
+  const [showCancel, setShowCancel] = useState(false);
+  const [nameInput, setNameInput] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const refresh = useCallback(async () => {
+    const { data } = await supabase
+      .from("instructors")
+      .select("deleted_at, scheduled_purge_at")
+      .eq("id", instructorId)
+      .maybeSingle();
+    const row = data as { deleted_at?: string | null; scheduled_purge_at?: string | null } | null;
+    setDeletedAt(row?.deleted_at ?? null);
+    setScheduledPurgeAt(row?.scheduled_purge_at ?? null);
+  }, [instructorId]);
+
+  useEffect(() => { void refresh(); }, [refresh]);
+
+  const onChanged = refresh;
   const [showSchedule, setShowSchedule] = useState(false);
   const [showCancel, setShowCancel] = useState(false);
   const [nameInput, setNameInput] = useState("");
