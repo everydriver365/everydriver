@@ -205,6 +205,25 @@ export function SlotOfferNotification({ pupilId, focusOfferId, onAccept }: SlotO
         exit={{ opacity: 0, y: -20 }}
         className="space-y-3"
       >
+        {unavailableFocus && !offers.some((o) => o.id === focusOfferId) && (
+          <Card className="border-muted bg-muted/30">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2">
+                <XCircle className="h-4 w-4 text-muted-foreground" />
+                <span className="font-semibold text-foreground">
+                  {unavailableFocus.status === "filled"
+                    ? "This slot has already been taken"
+                    : unavailableFocus.status === "cancelled"
+                    ? "This slot offer was withdrawn"
+                    : "This slot offer has expired"}
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                {format(parseISO(unavailableFocus.date), "EEEE, d MMMM")} · {formatTime(unavailableFocus.start_time)}
+              </p>
+            </CardContent>
+          </Card>
+        )}
         {offers.map((offer) => (
           <Card key={offer.id} className="border-primary/30 bg-gradient-to-r from-primary/5 to-primary/10">
             <CardContent className="p-4">
