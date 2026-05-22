@@ -110,7 +110,7 @@ Deno.serve(async (req) => {
     const admin = createClient(supabaseUrl, serviceKey);
     const { data: ownIdRow, error: ownErr } = await admin.rpc(
       "get_instructor_id_for_user",
-      { _user_id: authUserId },
+      { p_user_id: authUserId },
     );
     if (ownErr) {
       return new Response(JSON.stringify({ error: ownErr.message }), {
