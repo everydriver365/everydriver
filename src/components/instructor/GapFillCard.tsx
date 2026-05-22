@@ -342,6 +342,7 @@ function useGapCandidatePupils(
 }
 
 export function GapFillCard({
+
   instructorId,
   date,
   startTime,
