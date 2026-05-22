@@ -2150,9 +2150,8 @@ const QUICK_ACCESS: QAItem[] = [
 ];
 
 const DEFAULT_PIN_LABELS = [
-  "Dashboard",
-  "Pupils",
   "Schedule",
+  "Pupils",
   "Test swap",
   "Payments",
   "Availability",
