@@ -1,102 +1,145 @@
-# Accounting Affiliate Signup
+# MTD Enrolment Flow — Wizard + Period Seeding
 
-## PART 1 — site_settings check + storage decision
+Build the minimum viable MTD enrolment flow. No HMRC OAuth, no submission API.
 
-`site_settings` schema (queried live):
-- `id uuid`, `setting_key text`, `setting_value text` (nullable), `setting_type text`, `label`, `description`, `display_order`, `created_at`, `updated_at`, `admin_notification_emails text[]`
+---
 
-It's a flat text key/value store — no jsonb, no `is_active`, no `updated_by`. The brief requires active/inactive toggle, updated_by audit, and unique-per-platform constraint. **Decision: create a dedicated table** `accounting_affiliate_links` (matches Step 2 fallback exactly).
+## PART 1 — Route split + marketing page update
 
-## PART 2 — Migration
+**Edit `src/pages/InstructorMTD.tsx`:**
+- Add gate at top using `useInstructorMTDStatus` + auth context:
+  - `is_mtd_enrolled === true` → `<Navigate to="/instructor-app/mtd/dashboard" replace />`
+  - Logged in + not enrolled → render marketing content with prominent "Get set up →" CTA linking to `/instructor-app/mtd/setup`
+  - Logged out → keep existing marketing page; replace email capture form with "Sign in to get started" link to login
+- Remove the fake email lead-capture form entirely (the one that just calls `setSubmitted(true)`).
 
-Create `accounting_affiliate_links`:
-- `id uuid pk default gen_random_uuid()`
-- `platform text not null` with CHECK in (`xero`,`quickbooks`,`freeagent`,`sage`)
-- `affiliate_url text`
-- `is_active boolean not null default false`
-- `updated_at timestamptz not null default now()`
-- `updated_by uuid` (no FK to auth.users per project convention)
-- Unique on `platform`
-- RLS enabled
-  - SELECT/INSERT/UPDATE/DELETE: `has_role(auth.uid(), 'admin')` only
-  - No instructor-facing policy on this table — instructors will read via a SECURITY DEFINER RPC `get_active_affiliate_links()` returning only `platform, affiliate_url` for rows where `is_active = true AND affiliate_url IS NOT NULL`
-- Trigger to set `updated_at` via existing `set_updated_at()`
-- Seed 4 rows (one per platform) inactive with NULL URL so admin UI shows all four immediately
+**Register routes in the instructor app router:**
+- `/instructor-app/mtd/setup` → `MTDSetup`
+- `/instructor-app/mtd/dashboard` → `MTDDashboard`
+- Both wrapped with auth guard (must be logged in instructor).
 
-Create `affiliate_link_clicks`:
-- `id uuid pk`
-- `instructor_id uuid not null` (no FK per project pattern, but indexed)
-- `platform text not null` (same CHECK)
-- `affiliate_url text`
-- `clicked_at timestamptz not null default now()`
-- RLS:
-  - INSERT: caller's `get_instructor_id_for_user(auth.uid()) = instructor_id`
-  - SELECT: `has_role(auth.uid(), 'admin')`
-- Index on `(platform, clicked_at desc)` and `(instructor_id)`
+---
 
-## PART 3 — Admin UI
+## PART 2 — Enrolment wizard at `/instructor-app/mtd/setup`
 
-New page `src/pages/admin/AccountingPartners.tsx` + route `/admin/accounting-partners` in `src/routes/adminRoutes.tsx` (ProtectedAdminRoute).
+**New file: `src/pages/instructor/MTDSetup.tsx`**
 
-Add nav entry in `src/components/admin/AdminLayout.tsx` under the **Settings** group: `{ key: "accounting-partners", label: "Accounting Partners", icon: Link2 }` and wire `accounting-partners` in AdminPortal's section switcher (will read the existing pattern; if AdminPortal uses key-based routing it gets a case, otherwise it links to the standalone route).
+4-step wizard, single-column card, bg `#F2F4F8`, card white + `1px #e0e3ea` border + `14px` radius, Poppins.
 
-Page UI:
-- Header card explaining purpose
-- 4 rows, one per platform (Xero, QuickBooks, FreeAgent, Sage), each with:
-  - Coloured icon/badge per platform
-  - Text input for `affiliate_url` (https:// validation, zod)
-  - `Switch` for `is_active`
-  - Last updated timestamp + updater email (joined via a separate fetch of admin profile or just shows uuid → look up display via `auth.users` not allowed, so show "Updated {time ago}" only; updater email out of scope unless a profiles table exists — defer email lookup if not trivial)
-- Single "Save changes" button — upserts all 4 rows in one mutation (RPC or batched upsert with `onConflict: 'platform'`), setting `updated_by = auth.uid()`
-- Toast on success/failure
-- Loads existing rows on mount
+**Step indicator:** numbered pills (1·2·3·4) at top with current highlighted.
 
-## PART 4 — Instructor signup prompt
+**Step 1 — Business details**
+- `business_name` (text, required, pre-populated from `instructors.business_name` if present)
+- `business_start_date` (shadcn date picker with `pointer-events-auto`, required, must be `<= today`)
+- Subtitle: "This is the name HMRC will see on your submissions"
 
-Edit `src/components/instructor/accounting-export/AccountingSyncPanel.tsx`:
-- Add a new hook `useAffiliateLinks()` that calls the `get_active_affiliate_links` RPC once and caches via react-query (single query covering all platforms — not per panel instance; key `['affiliate-links']`)
-- In `AccountingSyncPanel`, when `!connected` AND `affiliateUrlForPlatform` exists: render a new block below the existing "Connect" CTA:
-  - Divider + small heading "Don't have {Platform} yet?"
-  - One-line description "Get started with {Platform} using our partner link"
-  - Button (blue `#2952b3`, white text, full width, `gap-2`, ExternalLink icon) "Sign up to {Platform} →" — `onClick` logs click then `window.open(url, '_blank', 'noopener,noreferrer')`
-- When `connected`: no signup block (existing render is already gated by `if (!connected)` for the empty state; the new block sits inside that same branch, so connected instructors never see it)
-- If no active affiliate URL for the platform: render nothing (the block is conditional)
+**Step 2 — HMRC identifiers**
+- `hmrc_nino` (text, required)
+  - Regex: `^[A-CEGHJ-PR-TW-Z]{2}\d{6}[A-D]$` (uppercase, stripped of spaces before validation)
+  - Display formatted with spaces: `AB 12 34 56 C`
+  - Inline error: "Enter a valid NI number (e.g. AB123456C)"
+- `utr` (text, required, exactly 10 digits)
+  - Inline error: "UTR must be 10 digits"
+  - Info: "Find your UTR on any letter from HMRC or your Self Assessment tax return"
+- Validation via zod schemas; "Next" disabled until valid.
 
-No changes to `InstructorIntegrationsHub.tsx`, `AccountingExport.tsx`, `accounting-oauth`, or `accounting-sync`.
+**Step 3 — Accounting preferences**
+- `accounting_type` segmented control: `cash` (default) / `accruals`
+  - Descriptions as specified
+- `flat_rate_expenses` toggle, off by default
+  - Label + subtitle as specified
+- Info pill: "You can change these settings later"
 
-## PART 5 — Click tracking
+**Step 4 — Review + confirm**
+- Summary list of all entered values
+- Checkbox: "I confirm my details are correct and I want to enrol for Making Tax Digital"
+- "Complete enrolment" button disabled until checkbox ticked
+- On submit:
+  1. `supabase.from('mtd_instructor_settings').upsert({ instructor_id, ...fields, is_mtd_enrolled: true }, { onConflict: 'instructor_id' })`
+  2. `supabase.functions.invoke('seed-mtd-periods', { body: { instructor_id } })`
+  3. On success → `navigate('/instructor-app/mtd/dashboard')` + sonner toast "You're enrolled for Making Tax Digital"
+  4. On error → inline error block, no navigation, no enrolment flag flipped if seed fails (wrap in try/catch and roll back the upsert if seed errors? — actually keep simple: surface error and let user retry; seed is idempotent so retry is safe)
 
-In the same `AccountingSyncPanel.tsx` click handler:
-```ts
-await supabase.from('affiliate_link_clicks').insert({
-  instructor_id: instructorId,
-  platform,
-  affiliate_url: url,
-});
-window.open(url, '_blank', 'noopener,noreferrer');
-```
-Failure to log does not block the redirect (fire-and-forget try/catch, open URL regardless).
+Back button on steps 2–4; Next disabled until step's required fields valid.
 
-## PART 6 — Verified clean / Deferred
+---
 
-Verified untouched:
-- `accounting-oauth/index.ts`, `accounting-sync/index.ts`
-- `AccountingExport.tsx`
-- `src/lib/ukTax.ts`, `useInstructorTaxSummary.ts`, all tax UI
-- All existing admin pages
+## PART 3 — `seed-mtd-periods` edge function
 
-Deferred:
-- Click analytics dashboard for admin (table exists; no UI in this pass)
-- Showing updater email in admin UI (requires profile lookup; out of scope)
-- Localised copy / i18n strings for the signup block
+**New file: `supabase/functions/seed-mtd-periods/index.ts`**
 
-## Technical notes
+- CORS via `npm:@supabase/supabase-js@2/cors`
+- Validate JWT in code, derive `auth_user_id`, look up `instructor_id` via `get_instructor_id_for_user(auth.uid())` RPC, reject if mismatch with body's `instructor_id`
+- Inline pure copy of `getQuarterDeadlines(taxYear)` logic from `src/lib/mtdDeadlines.ts` (Apr–Jul, Aug–Oct, Nov–Jan, Feb–Apr; deadlines = period_end + 1 month + 7 days, standard MTD rules)
+- Determine current UK tax year (Apr 6 → Apr 5) from today
+- Build 8 rows: current year Q1–Q4 + next year Q1–Q4
+- Each row: `{ instructor_id, tax_year, quarter, period_start, period_end, deadline, status: 'open' }`
+- `upsert` on conflict `(instructor_id, tax_year, quarter)` — idempotent
+- Returns `{ seeded: number }`
+- Requires unique constraint on `(instructor_id, tax_year, quarter)` — **migration** to add it if not already present (check first via read_query before plan execution; add `ALTER TABLE … ADD CONSTRAINT IF NOT EXISTS …` only if missing)
 
-Files touched:
-- New migration (table + RLS + RPC + seed)
-- New: `src/pages/admin/AccountingPartners.tsx`
-- New: `src/hooks/useAffiliateLinks.ts`
-- Edit: `src/routes/adminRoutes.tsx` (add route)
-- Edit: `src/components/admin/AdminLayout.tsx` (sidebar entry)
-- Edit: `src/pages/AdminPortal.tsx` (section render switch, if key-based)
-- Edit: `src/components/instructor/accounting-export/AccountingSyncPanel.tsx` (signup block + click log)
+---
+
+## PART 4 — MTD dashboard at `/instructor-app/mtd/dashboard`
+
+**New file: `src/pages/instructor/MTDDashboard.tsx`**
+
+Visible only to enrolled instructors (redirect to `/instructor-app/mtd` if `is_mtd_enrolled !== true`).
+
+- **Header:** "Making Tax Digital" + green pill "Enrolled"
+- **Settings row:** tappable card → opens shadcn `Sheet` with same fields as wizard, pre-populated; "Save changes" upserts `mtd_instructor_settings`
+- **Tax year selector:** segmented control switching between current and next tax year
+- **Quarterly periods list:** fetch `mtd_quarterly_periods` for selected tax year, ordered by quarter
+  - Each row: quarter label (e.g. "Q1 Apr–Jul"), period dates, deadline, status pill (Open / Submitted / Overdue — Overdue computed client-side when `deadline < today && status === 'open'`)
+  - Current quarter (where today between period_start and deadline) gets blue left border (`border-l-4 border-[#2D3FE7]`)
+  - "Submit" button on rows where `status === 'open'` → sonner toast "HMRC submission coming soon"
+- **Footer link:** "View full tax breakdown →" → `/instructor/tax`
+
+Reuse `PortalCard` / portal tokens per design system memory.
+
+---
+
+## PART 5 — `MTDDeadlineTile` update
+
+**Edit existing tile component:**
+- Non-enrolled state CTA: change link target from `/instructor-app/mtd` to `/instructor-app/mtd/setup`, label "Get set up →"
+- Enrolled + submitted state: confirm it reads from `mtd_quarterly_periods` (now that rows exist after seeding) — show "Q{n} submitted ✓"
+- Enrolled + open state: unchanged
+
+---
+
+## PART 6 — Verified clean (untouched)
+
+- `src/pages/InstructorTax.tsx`
+- `src/components/instructor/TaxYearReport.tsx`
+- `src/lib/ukTax.ts`
+- `src/hooks/useInstructorTaxSummary.ts`
+- `mtd_sa103_mappings` table (reference data)
+- All payment / accounting affiliate code from the previous pass
+- No HMRC OAuth, no submission edge functions
+
+---
+
+## PART 7 — Deferred
+
+- HMRC OAuth + developer hub registration
+- `submit-mtd` edge function + fraud-prevention headers
+- `mtd_submission_log` writes
+- `mtd_sa103_mappings` consumer (income/expense categorisation)
+- Reminder emails before quarterly deadlines
+- Admin view of enrolled instructors
+
+---
+
+## Files
+
+**New**
+- `src/pages/instructor/MTDSetup.tsx`
+- `src/pages/instructor/MTDDashboard.tsx`
+- `supabase/functions/seed-mtd-periods/index.ts`
+- Migration (only if missing): unique constraint on `mtd_quarterly_periods(instructor_id, tax_year, quarter)`
+
+**Edited**
+- `src/pages/InstructorMTD.tsx` (gate + CTA + remove fake form)
+- Instructor app router (register 2 new routes)
+- `MTDDeadlineTile` component (CTA target + label)

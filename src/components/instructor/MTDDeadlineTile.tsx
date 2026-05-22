@@ -8,7 +8,8 @@ interface MTDDeadlineTileProps {
 }
 
 const FONT = '"Poppins", system-ui, -apple-system, "Segoe UI", sans-serif';
-const ROUTE = "/instructor-app/mtd";
+const ROUTE = "/instructor-app/mtd/dashboard";
+const SETUP_ROUTE = "/instructor-app/mtd/setup";
 
 const BASE_CARD: React.CSSProperties = {
   background: "#FFFFFF",
@@ -68,7 +69,7 @@ export function MTDDeadlineTile({ instructorId }: MTDDeadlineTileProps) {
   // ─── Not enrolled ───────────────────────────────────────────────────────
   if (!status.enrolled) {
     return (
-      <button type="button" onClick={go} style={BASE_CARD} aria-label="Set up Making Tax Digital">
+      <button type="button" onClick={() => navigate(SETUP_ROUTE)} style={BASE_CARD} aria-label="Get set up for Making Tax Digital">
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{
@@ -83,7 +84,7 @@ export function MTDDeadlineTile({ instructorId }: MTDDeadlineTileProps) {
             </div>
           </div>
           <span style={{ fontSize: 12, fontWeight: 700, color: "#2952b3", whiteSpace: "nowrap" }}>
-            Set up →
+            Get set up →
           </span>
         </div>
       </button>
