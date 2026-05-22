@@ -19,7 +19,16 @@ import {
   renderTemplate,
 } from "./gap-filler/ConfirmSendSheet";
 import { SendResultStatus } from "./gap-filler/SendResultSheet";
-import { evaluateFeasibility } from "./gapFeasibility";
+import { evaluateFeasibility, TRAVEL_FALLBACK_MIN } from "./gapFeasibility";
+
+const ETA_TIMEOUT_MS = 5000;
+const ETA_CONCURRENCY = 10;
+const normalisePostcode = (pc: string | null | undefined): string | null => {
+  if (!pc) return null;
+  const cleaned = pc.replace(/\s+/g, "").toUpperCase();
+  return cleaned.length > 0 ? cleaned : null;
+};
+const pairKey = (from: string, to: string) => `${from}|${to}`;
 
 const FONT_STACK =
   '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Roboto", sans-serif';
@@ -289,13 +298,25 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
         pickup_postcode: string | null;
         pupils: { postcode: string | null } | null;
       };
-      // Loaded for future per-slot prev/next postcode resolution.
-      void (scheduledLessons as LoadedLesson[] | null);
+      const loadedLessons = (scheduledLessons as LoadedLesson[] | null) || [];
 
-      const calculatedGaps: GapSlot[] = [];
+      type Candidate = GapSlot & {
+        prevDropPostcode: string | null;
+        nextPickupPostcode: string | null;
+      };
+      const candidates: Candidate[] = [];
       const nowHour = new Date().getHours();
       const todayStr = format(new Date(), "yyyy-MM-dd");
+      const normHome = normalisePostcode(homePostcode);
 
+      const lessonStartMin = (l: LoadedLesson) => {
+        const [h, m] = l.start_time.split(":").map(Number);
+        return (h || 0) * 60 + (m || 0);
+      };
+      const lessonEndMin = (l: LoadedLesson) =>
+        lessonStartMin(l) + (l.duration_minutes ?? 60);
+      const lessonPostcode = (l: LoadedLesson) =>
+        normalisePostcode(l.pickup_postcode ?? l.pupils?.postcode ?? null);
 
       for (let i = 0; i < 14; i++) {
         const currentDate = addDays(startOfDay(new Date()), i);
@@ -308,12 +329,12 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
         const dayHours = workingHours?.find((wh) => wh.day_of_week === dayOfWeek);
         if (!dayHours && !override?.is_available) continue;
 
-
         const startHour = override?.start_time || dayHours?.start_time || "09:00";
         const endHour = override?.end_time || dayHours?.end_time || "17:00";
 
-        const dayLessons =
-          scheduledLessons?.filter((l) => l.lesson_date === dateStr) || [];
+        const dayLessons = loadedLessons
+          .filter((l) => l.lesson_date === dateStr)
+          .sort((a, b) => lessonStartMin(a) - lessonStartMin(b));
 
         const dayBlocks =
           manualBlocks?.filter((b) => {
@@ -345,11 +366,13 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
           const slotEnd = `${(hour + 2).toString().padStart(2, "0")}:00`;
           const slotStartHour = hour;
           const slotEndHour = hour + 2;
+          const slotStartMin = slotStartHour * 60;
+          const slotEndMin = slotEndHour * 60;
 
           const hasLessonConflict = dayLessons.some((lesson) => {
             const lessonStart = parseInt(lesson.start_time.split(":")[0]);
             const lessonEnd =
-              lessonStart + Math.ceil(lesson.duration_minutes / 60);
+              lessonStart + Math.ceil((lesson.duration_minutes ?? 60) / 60);
             return slotStartHour < lessonEnd && slotEndHour > lessonStart;
           });
 
@@ -385,41 +408,158 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
             return false;
           });
 
-          if (!hasLessonConflict && !hasBlockConflict && !hasCalendarConflict) {
-            // Apply instructor buffer + fallback travel feasibility so the
-            // page-level list matches the rules used by the schedule card.
-            const { fits } = evaluateFeasibility({
-              gapMin: 120,
-              bufferMinutes,
-              travelOutMin: null,
-              travelInMin: null,
-            });
-            if (!fits) continue;
+          if (hasLessonConflict || hasBlockConflict || hasCalendarConflict) {
+            continue;
+          }
 
-            calculatedGaps.push({
-              id: `${dateStr}-${slotStart}`,
-              date: dateStr,
-              startTime: slotStart,
-              endTime: slotEnd,
-              selected: false,
+          // Optimistic pre-filter using fallback travel — eliminates clearly
+          // un-fittable slots before we spend ETA calls on them.
+          const optimistic = evaluateFeasibility({
+            gapMin: 120,
+            bufferMinutes,
+            travelOutMin: null,
+            travelInMin: null,
+          });
+          if (!optimistic.fits) continue;
+
+          // Resolve prev/next postcodes from sorted dayLessons.
+          let prevLesson: LoadedLesson | null = null;
+          let nextLesson: LoadedLesson | null = null;
+          for (const l of dayLessons) {
+            if (lessonEndMin(l) <= slotStartMin) {
+              if (!prevLesson || lessonEndMin(l) > lessonEndMin(prevLesson)) {
+                prevLesson = l;
+              }
+            } else if (lessonStartMin(l) >= slotEndMin) {
+              if (!nextLesson || lessonStartMin(l) < lessonStartMin(nextLesson)) {
+                nextLesson = l;
+              }
+            }
+          }
+          const prevDropPostcode = prevLesson
+            ? lessonPostcode(prevLesson)
+            : normHome;
+          const nextPickupPostcode = nextLesson
+            ? lessonPostcode(nextLesson)
+            : normHome;
+
+          candidates.push({
+            id: `${dateStr}-${slotStart}`,
+            date: dateStr,
+            startTime: slotStart,
+            endTime: slotEnd,
+            selected: false,
+            prevDropPostcode,
+            nextPickupPostcode,
+          });
+        }
+      }
+
+      // Cap before doing ETA work — never resolve more than the visible list.
+      const trimmed = candidates.slice(0, 20);
+
+      // Collect unique (prev, next) postcode pairs.
+      const uniquePairs = new Map<string, { from: string; to: string }>();
+      for (const c of trimmed) {
+        if (c.prevDropPostcode && c.nextPickupPostcode) {
+          const k = pairKey(c.prevDropPostcode, c.nextPickupPostcode);
+          if (!uniquePairs.has(k)) {
+            uniquePairs.set(k, {
+              from: c.prevDropPostcode,
+              to: c.nextPickupPostcode,
             });
           }
         }
       }
 
-      const newGaps = calculatedGaps.slice(0, 20);
+      // Resolve ETAs with concurrency cap of 10 and 5s timeout per pair.
+      const resolved = new Map<string, number | null>();
+      const pairList = [...uniquePairs.entries()];
+      const fetchPair = async (
+        from: string,
+        to: string,
+      ): Promise<number | null> => {
+        try {
+          const invocation = supabase.functions.invoke(
+            "calculate-route-distance",
+            { body: { from_postcode: from, to_postcode: to } },
+          );
+          const timeout = new Promise<{ __timeout: true }>((res) =>
+            setTimeout(() => res({ __timeout: true }), ETA_TIMEOUT_MS),
+          );
+          const result = await Promise.race([invocation, timeout]);
+          if ("__timeout" in (result as object)) return null;
+          const r = result as { data?: { duration_minutes?: number } | null; error?: unknown };
+          if (r.error) return null;
+          const d = r.data?.duration_minutes;
+          return typeof d === "number" && Number.isFinite(d) ? d : null;
+        } catch {
+          return null;
+        }
+      };
+      for (let i = 0; i < pairList.length; i += ETA_CONCURRENCY) {
+        const chunk = pairList.slice(i, i + ETA_CONCURRENCY);
+        const settled = await Promise.allSettled(
+          chunk.map(([, { from, to }]) => fetchPair(from, to)),
+        );
+        chunk.forEach(([k], idx) => {
+          const s = settled[idx];
+          resolved.set(k, s.status === "fulfilled" ? s.value : null);
+        });
+      }
+
+      // Re-evaluate feasibility per slot using resolved values; drop slots
+      // that only fit under the optimistic fallback.
+      const calculatedGaps: GapSlot[] = [];
+      for (const c of trimmed) {
+        let travelOutMin: number | null = null;
+        let travelInMin: number | null = null;
+        if (c.prevDropPostcode && c.nextPickupPostcode) {
+          const dur = resolved.get(
+            pairKey(c.prevDropPostcode, c.nextPickupPostcode),
+          );
+          if (typeof dur === "number") {
+            // Single-pair (prev → next) ETA: charge full duration to one leg,
+            // zero to the other — keeps total travel realistic without a
+            // per-pupil midpoint lookup at page level.
+            travelOutMin = dur;
+            travelInMin = 0;
+          }
+        }
+        const feas = evaluateFeasibility({
+          gapMin: 120,
+          bufferMinutes,
+          travelOutMin,
+          travelInMin,
+        });
+        if (!feas.fits) continue;
+        const etaEstimated =
+          feas.travelOutEstimated || feas.travelInEstimated;
+        calculatedGaps.push({
+          id: c.id,
+          date: c.date,
+          startTime: c.startTime,
+          endTime: c.endTime,
+          selected: false,
+          travelOutMin: feas.travelOutUsed,
+          travelInMin: feas.travelInUsed,
+          etaEstimated,
+        });
+      }
+
+      const newGaps = calculatedGaps;
       const newGapIds = newGaps.map((g) => g.id);
       const hydratedGaps = pendingPreselectedSlotId
         ? newGaps.map((gap) =>
             gap.id === pendingPreselectedSlotId
               ? { ...gap, selected: true }
-              : gap
+              : gap,
           )
         : newGaps;
 
       if (isRealtime && previousGapsRef.current.length > 0) {
         const addedIds = newGapIds.filter(
-          (id) => !previousGapsRef.current.includes(id)
+          (id) => !previousGapsRef.current.includes(id),
         );
         triggerHighlight(addedIds);
       }
@@ -434,6 +574,8 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
 
       previousGapsRef.current = newGapIds;
       setGaps(hydratedGaps);
+      // Silence unused-var lint for TRAVEL_FALLBACK_MIN re-export usage.
+      void TRAVEL_FALLBACK_MIN;
     } catch (error) {
       console.error("Error fetching gaps:", error);
       toast.error("Failed to load available slots");
@@ -841,6 +983,7 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
               onToggle={() => toggleSlot(raw.id)}
               highlighted={highlightedIds.has(raw.id)}
               onBook={() => handleBookSlot(raw)}
+              etaEstimated={raw.etaEstimated}
             />
           ))}
         </div>
