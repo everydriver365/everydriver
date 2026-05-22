@@ -15969,6 +15969,36 @@ export type Database = {
         }
         Relationships: []
       }
+      route_distance_cache: {
+        Row: {
+          distance_miles: number | null
+          duration_minutes: number
+          fetched_at: string
+          from_postcode: string
+          id: string
+          source: string
+          to_postcode: string
+        }
+        Insert: {
+          distance_miles?: number | null
+          duration_minutes: number
+          fetched_at?: string
+          from_postcode: string
+          id?: string
+          source: string
+          to_postcode: string
+        }
+        Update: {
+          distance_miles?: number | null
+          duration_minutes?: number
+          fetched_at?: string
+          from_postcode?: string
+          id?: string
+          source?: string
+          to_postcode?: string
+        }
+        Relationships: []
+      }
       saved_route_waypoints: {
         Row: {
           created_at: string
