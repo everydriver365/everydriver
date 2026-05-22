@@ -332,17 +332,7 @@ export function MobileHomeDSM2026({ instructorId, instructorName }: Props) {
             <QuickAccessCard navigate={navigate} />
           </div>
           <div className="animate-fade-in" style={{ animationDelay: "240ms", animationFillMode: "both" }}>
-            <EventsAndMembershipCard events={events} membership={membership} navigate={navigate} />
-          </div>
-          <div className="animate-fade-in" style={{ animationDelay: "270ms", animationFillMode: "both" }}>
-            <CollapsibleTile label="Tax estimate">
-              <TaxEstimateTile instructorId={instructorId} />
-            </CollapsibleTile>
-          </div>
-          <div className="animate-fade-in" style={{ animationDelay: "285ms", animationFillMode: "both" }}>
-            <CollapsibleTile label="Making Tax Digital">
-              <MTDDeadlineTile instructorId={instructorId} />
-            </CollapsibleTile>
+            <UnifiedInfoPanel navigate={navigate} />
           </div>
         </div>
       </div>
@@ -383,7 +373,244 @@ function CollapsibleTile({ label, children, defaultOpen = false }: { label: stri
   );
 }
 
+/* ============================ Unified info panel ============================ */
+function UnifiedInfoPanel({ navigate }: { navigate: (path: string) => void }) {
+  const [open, setOpen] = useState<Record<string, boolean>>({});
+  const toggle = (k: string) => setOpen((p) => ({ ...p, [k]: !p[k] }));
+  const FONT = '"Poppins", system-ui, -apple-system, "Segoe UI", sans-serif';
+
+  type Row = {
+    key: string;
+    icon: LucideIcon;
+    iconBg: string;
+    iconColor: string;
+    title: string;
+    subtitle: string;
+    body: React.ReactNode;
+  };
+
+  const detailRow = (label: string, value: React.ReactNode) => (
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <span style={{ fontSize: 12, color: "#999" }}>{label}</span>
+      <span style={{ fontSize: 12, fontWeight: 600, color: "#1a1a1f" }}>{value}</span>
+    </div>
+  );
+
+  const miniCard = (label: string, value: string, valueColor: string) => (
+    <div style={{ background: "#fff", border: "1px solid #e0e3ea", borderRadius: 8, padding: 10 }}>
+      <div style={{ fontSize: 10, color: "#999" }}>{label}</div>
+      <div style={{ fontSize: 14, fontWeight: 600, color: valueColor, marginTop: 2 }}>{value}</div>
+    </div>
+  );
+
+  const rows: Row[] = [
+    {
+      key: "events",
+      icon: CalendarDays,
+      iconBg: "#e8eefb",
+      iconColor: "#2952b3",
+      title: "Upcoming events",
+      subtitle: "No events scheduled",
+      body: (
+        <>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "16px 0 14px" }}>
+            <CalendarOff size={28} color="#ddd" />
+            <div style={{ fontSize: 12, color: "#bbb", marginTop: 8 }}>Nothing scheduled yet</div>
+          </div>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              borderTop: "1px solid #f0f1f4",
+              paddingTop: 10,
+              marginTop: 4,
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => navigate("/instructor/events/new")}
+              style={{ background: "none", border: "none", padding: 0, cursor: "pointer", fontSize: 11, fontWeight: 600, color: "#2d8a4e", fontFamily: FONT }}
+            >
+              + Add event
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate("/instructor/events")}
+              style={{ background: "none", border: "none", padding: 0, cursor: "pointer", fontSize: 11, fontWeight: 600, color: "#2952b3", fontFamily: FONT }}
+            >
+              See all →
+            </button>
+          </div>
+        </>
+      ),
+    },
+    {
+      key: "membership",
+      icon: IdCard,
+      iconBg: "#f0edfb",
+      iconColor: "#6b4fc4",
+      title: "Membership",
+      subtitle: "GPS + Health plan · Active",
+      body: (
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: 12, color: "#999" }}>Status</span>
+            <span
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 4,
+                background: "#e8f5ee",
+                color: "#2d8a4e",
+                fontSize: 10,
+                fontWeight: 600,
+                padding: "3px 8px",
+                borderRadius: 999,
+              }}
+            >
+              <Check size={11} /> Active
+            </span>
+          </div>
+          {detailRow("Plan", "GPS + Health")}
+          {detailRow("Renews", "1 Jun 2026")}
+          {detailRow("Billing", "Monthly")}
+        </div>
+      ),
+    },
+    {
+      key: "tax",
+      icon: Receipt,
+      iconBg: "#e8f5ee",
+      iconColor: "#2d8a4e",
+      title: "Tax estimate",
+      subtitle: "2025/26 · £1,240 estimated",
+      body: (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <div>
+            <div style={{ fontSize: 22, fontWeight: 700, color: "#1a1a1f", lineHeight: 1.1 }}>£1,240</div>
+            <div style={{ fontSize: 11, color: "#999", marginTop: 2 }}>Estimated total liability</div>
+          </div>
+          <div>
+            <div style={{ height: 3, background: "#e8eefb", borderRadius: 999, overflow: "hidden" }}>
+              <div style={{ width: "15%", height: "100%", background: "#2952b3" }} />
+            </div>
+            <div style={{ fontSize: 10, color: "#999", marginTop: 6 }}>15% through tax year · 11 months remaining</div>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+            {miniCard("Income tax", "£840", "#2952b3")}
+            {miniCard("Nat. Insurance", "£400", "#666")}
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: "mtd",
+      icon: FileText,
+      iconBg: "#fff8e8",
+      iconColor: "#d97706",
+      title: "Making Tax Digital",
+      subtitle: "Q1 due 7 Aug 2026",
+      body: (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {detailRow("Quarter", "Q1 · 6 Apr – 5 Jul")}
+            {detailRow("Deadline", "7 Aug 2026")}
+            {detailRow("Status", <span style={{ color: "#2952b3", fontWeight: 600 }}>Open</span>)}
+          </div>
+          <div>
+            <span
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 4,
+                background: "#e8eefb",
+                color: "#2952b3",
+                fontSize: 11,
+                fontWeight: 600,
+                padding: "4px 10px",
+                borderRadius: 20,
+              }}
+            >
+              <Clock size={12} /> 77 days remaining
+            </span>
+          </div>
+        </div>
+      ),
+    },
+  ];
+
+  return (
+    <div
+      style={{
+        background: "#fff",
+        border: "1px solid #e0e3ea",
+        borderRadius: 14,
+        overflow: "hidden",
+        fontFamily: FONT,
+      }}
+    >
+      {rows.map((row, idx) => {
+        const isOpen = !!open[row.key];
+        const isLast = idx === rows.length - 1;
+        const Icon = row.icon;
+        return (
+          <div key={row.key} style={{ borderBottom: isLast ? "none" : "1px solid #f0f1f4" }}>
+            <button
+              type="button"
+              onClick={() => toggle(row.key)}
+              aria-expanded={isOpen}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "#f8f9fb")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+              style={{
+                width: "100%",
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+                padding: "12px 14px",
+                background: "transparent",
+                border: "none",
+                cursor: "pointer",
+                textAlign: "left",
+                fontFamily: FONT,
+                transition: "background 150ms",
+              }}
+            >
+              <div
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: 9,
+                  background: row.iconBg,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                }}
+              >
+                <Icon size={18} color={row.iconColor} />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: "#1a1a1f" }}>{row.title}</div>
+                <div style={{ fontSize: 11, color: "#999", marginTop: 1 }}>{row.subtitle}</div>
+              </div>
+              <ChevronDown
+                size={18}
+                color="#8a93a4"
+                style={{ transition: "transform 200ms", transform: isOpen ? "rotate(180deg)" : "rotate(0deg)" }}
+              />
+            </button>
+            {isOpen && (
+              <div style={{ background: "#fafafa", borderTop: "1px solid #f0f1f4", padding: 14 }}>{row.body}</div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 /* ============================== Hero header ============================= */
+
 
 function HeroHeader(props: {
   firstName: string;
