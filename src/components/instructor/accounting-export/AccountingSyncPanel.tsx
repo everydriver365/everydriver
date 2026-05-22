@@ -75,7 +75,6 @@ export function AccountingSyncPanel({ platform, instructorId, accounting }: Acco
   };
 
   if (!connected) {
-    return (
     const platformLabel = platform.charAt(0).toUpperCase() + platform.slice(1);
     return (
       <div className="space-y-3">
