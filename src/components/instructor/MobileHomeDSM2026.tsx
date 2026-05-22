@@ -325,12 +325,6 @@ export function MobileHomeDSM2026({ instructorId, instructorName }: Props) {
           <div className="animate-fade-in" style={{ animationDelay: "80ms", animationFillMode: "both" }}>
             <RescheduleRequestsCard instructorId={instructorId} />
           </div>
-          <div className="animate-fade-in" style={{ animationDelay: "90ms", animationFillMode: "both" }}>
-            <TaxEstimateTile instructorId={instructorId} />
-          </div>
-          <div className="animate-fade-in" style={{ animationDelay: "105ms", animationFillMode: "both" }}>
-            <MTDDeadlineTile instructorId={instructorId} />
-          </div>
           <div className="animate-fade-in" style={{ animationDelay: "120ms", animationFillMode: "both" }}>
             <ScheduleCard instructorId={instructorId} navigate={navigate} />
           </div>
@@ -339,6 +333,16 @@ export function MobileHomeDSM2026({ instructorId, instructorName }: Props) {
           </div>
           <div className="animate-fade-in" style={{ animationDelay: "240ms", animationFillMode: "both" }}>
             <EventsAndMembershipCard events={events} membership={membership} navigate={navigate} />
+          </div>
+          <div className="animate-fade-in" style={{ animationDelay: "270ms", animationFillMode: "both" }}>
+            <CollapsibleTile label="Tax estimate">
+              <TaxEstimateTile instructorId={instructorId} />
+            </CollapsibleTile>
+          </div>
+          <div className="animate-fade-in" style={{ animationDelay: "285ms", animationFillMode: "both" }}>
+            <CollapsibleTile label="Making Tax Digital">
+              <MTDDeadlineTile instructorId={instructorId} />
+            </CollapsibleTile>
           </div>
         </div>
       </div>
