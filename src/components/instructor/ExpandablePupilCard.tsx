@@ -50,6 +50,7 @@ import { PaymentQRModal } from "@/components/instructor/PaymentQRModal";
 import { SendPaymentReminderButton } from "@/components/instructor/SendPaymentReminderButton";
 import { DrivingSyllabus } from "@/components/instructor/DrivingSyllabus";
 import { SyllabusRecommendations } from "@/components/instructor/SyllabusRecommendations";
+import { NextSyllabusFocus } from "@/components/shared/NextSyllabusFocus";
 import { NewPupilChecklist } from "@/components/instructor/NewPupilChecklist";
 import { TestDayPrep } from "@/components/instructor/TestDayPrep";
 import { Button } from "@/components/ui/button";
