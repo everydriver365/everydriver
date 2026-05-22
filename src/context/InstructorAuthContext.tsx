@@ -376,6 +376,37 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
         console.info(`${AUTH_LOG_PREFIX} password sign-in accepted`, {
           sessionReceived: Boolean(data.session),
         });
+
+        // Blocked-login check: refuse sign-in for instructors with a pending
+        // scheduled deletion. Match on auth user id; do not block if the
+        // record cannot be found (admins, pupils, etc. fall through).
+        const authUserId = data.session?.user?.id ?? data.user?.id;
+        if (authUserId) {
+          try {
+            const { data: instructorRow } = await supabase
+              .from('instructors')
+              .select('deleted_at, scheduled_purge_at')
+              .eq('auth_user_id', authUserId)
+              .maybeSingle();
+            const purgeAt = instructorRow?.scheduled_purge_at
+              ? new Date(instructorRow.scheduled_purge_at as string)
+              : null;
+            if (instructorRow?.deleted_at && purgeAt && purgeAt.getTime() > Date.now()) {
+              await supabase.auth.signOut();
+              const dateStr = purgeAt.toLocaleDateString('en-GB', {
+                day: 'numeric', month: 'long', year: 'numeric',
+              });
+              const blockErr = new Error(
+                `Your account is scheduled for deletion on ${dateStr}. Check your email for a cancellation link.`,
+              );
+              (blockErr as Error & { code?: string }).code = 'account_pending_deletion';
+              return { error: blockErr, session: null };
+            }
+          } catch (checkErr) {
+            console.warn(`${AUTH_LOG_PREFIX} pending-deletion check failed`, checkErr);
+          }
+        }
+
         return { error: null, session: data.session };
       }
 
