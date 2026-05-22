@@ -155,11 +155,35 @@ export function ActiveGapOffersList({ instructorId }: ActiveGapOffersListProps) 
   }, [instructorId]);
 
   const handleCancel = async (id: string) => {
+    // Fetch active recipients first so we can notify them after cancel
+    const { data: activeRecipients } = await supabase
+      .from("slot_offer_recipients")
+      .select("pupil_id, slot_offer:slot_offers!inner(lesson_date, start_time)")
+      .eq("slot_offer_id", id)
+      .is("claimed_at", null)
+      .is("declined_at", null);
+
     const { error } = await supabase
       .from("slot_offers")
       .update({ status: "cancelled" })
       .eq("id", id);
     if (error) { toast.error("Could not cancel offer"); return; }
+
+    // Fire push notifications (best-effort, don't block UI)
+    (activeRecipients ?? []).forEach((r: any) => {
+      supabase.functions.invoke("notify-pupil", {
+        body: {
+          pupilId: r.pupil_id,
+          type: "slot_offer_cancelled",
+          data: {
+            offer_id: id,
+            date: r.slot_offer?.lesson_date,
+            start_time: r.slot_offer?.start_time,
+          },
+        },
+      }).catch((e) => console.error("[ActiveGapOffersList] notify-pupil cancel", e));
+    });
+
     toast.success("Offer cancelled");
     fetchOffers();
   };
