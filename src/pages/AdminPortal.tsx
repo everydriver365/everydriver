@@ -1158,6 +1158,14 @@ export default function AdminPortal() {
           </motion.div>
         );
 
+      case "accounting-partners":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
+            <AccountingPartnersManager />
+          </motion.div>
+        );
+
       default:
         return null;
     }
