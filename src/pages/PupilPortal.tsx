@@ -24,6 +24,7 @@ import { LessonStatusBadge } from "@/components/pupil-portal/LessonStatusBadge";
 import { PupilFeedbackPrompt } from "@/components/pupil-portal/PupilFeedbackPrompt";
 import { LessonSummaryCard } from "@/components/pupil-portal/LessonSummaryCard";
 import { ReflectiveLog } from "@/components/pupil-portal/ReflectiveLog";
+import { InstructorLessonNotes } from "@/components/pupil-portal/InstructorLessonNotes";
 import { InstructorEnRouteTracker } from "@/components/pupil-portal/InstructorEnRouteTracker";
 import { PupilCheckInCard } from "@/components/pupil-portal/PupilCheckInCard";
 import { PupilInstallPrompt } from "@/components/pupil-portal/PupilInstallPrompt";
@@ -47,6 +48,7 @@ interface PupilData {
     car_model: string | null;
     car_type: string;
     profile_image_url: string | null;
+    share_lesson_notes_with_pupil: boolean | null;
   } | null;
 }
 
@@ -82,7 +84,7 @@ export default function PupilPortal() {
         .select(`
           id, name, email, phone, course_type, prepaid_hours,
           lessons_completed, progress, account_balance,
-          instructor:instructors(id, name, phone, car_make, car_model, car_type, profile_image_url)
+          instructor:instructors(id, name, phone, car_make, car_model, car_type, profile_image_url, share_lesson_notes_with_pupil)
         `)
         .eq("id", pupilId)
         .maybeSingle(),
@@ -316,6 +318,14 @@ export default function PupilPortal() {
         {/* Reflective Log */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
           <ReflectiveLog pupilId={pupil.id} />
+        </motion.div>
+
+        {/* Instructor's freeform lesson notes (only if instructor opted in) */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.32 }}>
+          <InstructorLessonNotes
+            pupilId={pupil.id}
+            shareEnabled={pupil.instructor?.share_lesson_notes_with_pupil}
+          />
         </motion.div>
 
         {/* Instructor Card */}
