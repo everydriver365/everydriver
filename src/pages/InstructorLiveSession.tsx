@@ -606,6 +606,9 @@ export default function InstructorLiveSession() {
   useEffect(() => {
     const currentDeviceId = device?.id;
     if (!currentDeviceId) return;
+    // Skip subscription for the virtual phone-provider device — it has no
+    // matching gps_devices row to poll or subscribe to.
+    if (isPhoneProvider || (typeof currentDeviceId === "string" && currentDeviceId.startsWith("phone-virtual-"))) return;
     
     // Only set up subscription once per device ID
     if (deviceIdRef.current === currentDeviceId) return;
