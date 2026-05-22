@@ -12,10 +12,11 @@ const CADENCE_OPTS: { key: DeliveryCadence; label: string; sub: string }[] = [
   { key: "important_only", label: "Important", sub: "Only critical" },
 ];
 
-const CATEGORIES: { key: CategoryKey; label: string }[] = [
+const CATEGORIES: { key: CategoryKey; label: string; sub?: string }[] = [
   { key: "test_swap", label: "Test swaps" },
   { key: "message", label: "Messages" },
   { key: "job", label: "Job offers" },
+  { key: "mtd", label: "MTD filing reminders", sub: "Notified 30, 7, and 1 day before each quarterly deadline" },
   { key: "system", label: "System" },
 ];
 
