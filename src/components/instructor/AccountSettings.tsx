@@ -576,6 +576,11 @@ export function AccountSettings({ instructorId }: AccountSettingsProps) {
       <div className="pt-4 border-t">
         <RecurringExpensesManager instructorId={instructorId} />
       </div>
+
+      {/* Danger Zone */}
+      <div className="pt-6 border-t">
+        <DangerZone />
+      </div>
     </div>
   );
 }
