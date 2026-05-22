@@ -42,6 +42,10 @@ export function CancellationBackfillSheet({
   const [selectedPupilIds, setSelectedPupilIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [grabSending, setGrabSending] = useState(false);
+  const [grabTarget, setGrabTarget] = useState<"all_active" | "selected">("all_active");
+  const [grabExpiryHours, setGrabExpiryHours] = useState<number>(4);
+  const [grabLocationHint, setGrabLocationHint] = useState("");
 
   useEffect(() => {
     if (!open) return;
