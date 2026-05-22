@@ -33,6 +33,7 @@ export const PushDataType = {
   DAILY_SUMMARY: "daily_summary",
   DIGEST: "digest",
   COURSE_BONUS: "course_bonus",
+  MTD_DEADLINE_REMINDER: "mtd_deadline_reminder",
 } as const;
 
 export const NotifyCategory = {
