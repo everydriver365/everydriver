@@ -17,24 +17,29 @@
  */
 export function formatCurrencyCompact(
   amount: number | null | undefined,
-  opts: { threshold?: number; decimals?: number } = {}
+  opts: { threshold?: number; decimals?: number | false } = {}
 ): string {
   if (amount == null || !Number.isFinite(amount)) return "£0.00";
   const abs = Math.abs(amount);
   const sign = amount < 0 ? "-" : "";
   const threshold = opts.threshold ?? 10_000;
+  const noDecimals = opts.decimals === false;
 
   if (abs < threshold) {
+    const minMax = noDecimals ? 0 : 2;
     return `${sign}£${abs.toLocaleString("en-GB", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
+      minimumFractionDigits: minMax,
+      maximumFractionDigits: minMax,
     })}`;
   }
   if (abs < 1_000_000) {
-    return `${sign}£${(abs / 1_000).toFixed(opts.decimals ?? 1)}k`;
+    const d = noDecimals ? 0 : (typeof opts.decimals === "number" ? opts.decimals : 1);
+    return `${sign}£${(abs / 1_000).toFixed(d)}k`;
   }
-  return `${sign}£${(abs / 1_000_000).toFixed(opts.decimals ?? 2)}m`;
+  const d = noDecimals ? 0 : (typeof opts.decimals === "number" ? opts.decimals : 2);
+  return `${sign}£${(abs / 1_000_000).toFixed(d)}m`;
 }
+
 
 /** Plain £X.XX with no compaction. Use when overflow is not a concern. */
 export function formatCurrency(amount: number | null | undefined): string {
