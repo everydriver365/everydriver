@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { format, addDays } from "date-fns";
+import { formatCurrencyCompact } from "@/lib/formatters";
+
 import { 
   Calendar, 
   Clock, 
@@ -111,7 +113,7 @@ export function TomorrowScheduleView({ instructorId }: TomorrowScheduleViewProps
     if (balance > 0) {
       return (
         <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-xs">
-          £{Math.round(balance)} Credit
+          {formatCurrencyCompact(balance, { decimals: false })} Credit
         </Badge>
       );
     }
@@ -119,7 +121,7 @@ export function TomorrowScheduleView({ instructorId }: TomorrowScheduleViewProps
     if (balance < 0) {
       return (
         <Badge variant="destructive" className="text-xs">
-          £{Math.abs(Math.round(balance))} Due
+          {formatCurrencyCompact(Math.abs(balance), { decimals: false })} Due
         </Badge>
       );
     }
