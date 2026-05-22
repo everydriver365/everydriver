@@ -269,3 +269,6 @@ verify_jwt = false
 
 [functions.process-email-queue]
 verify_jwt = true
+
+[functions.slot-offer-expire]
+verify_jwt = false
