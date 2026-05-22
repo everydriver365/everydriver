@@ -99,45 +99,68 @@ export function TaxEstimateTile({ instructorId }: TaxEstimateTileProps) {
         </div>
       ) : (
         <>
-          <div style={{ marginTop: 6, display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8 }}>
-            <div>
-              <div style={{ fontSize: 28, fontWeight: 800, color: "#1F2937", letterSpacing: -0.6, lineHeight: "32px" }}>
-                {formatGBP(summary.totalLiability)}
-              </div>
-              <div style={{ fontSize: 11, color: "#6B7280", marginTop: 2 }}>Estimated tax + NI</div>
-            </div>
-            <ChevronRight size={18} color="#9CA3AF" />
-          </div>
+          {(() => {
+            const useProjection = summary.daysElapsed >= 30;
+            const headline = useProjection ? summary.projectedLiability : summary.totalLiability;
+            const headlineTax = useProjection ? summary.projectedTax : summary.estimatedTax;
+            const headlineNI = useProjection ? summary.projectedNI : summary.estimatedNI;
+            const subtitle = useProjection
+              ? "Projected full-year estimate"
+              : "Year-to-date · projection available after 30 days";
+            const class2Note = summary.estimatedClass2NI > 0
+              ? `Includes £${Math.round(summary.estimatedClass2NI)} Class 2 + £${Math.round(summary.estimatedClass4NI)} Class 4`
+              : null;
+            return (
+              <>
+                <div style={{ marginTop: 6, display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8 }}>
+                  <div>
+                    <div style={{ fontSize: 28, fontWeight: 800, color: "#1F2937", letterSpacing: -0.6, lineHeight: "32px" }}>
+                      {formatGBP(headline)}
+                    </div>
+                    <div style={{ fontSize: 11, color: "#6B7280", marginTop: 2 }}>{subtitle}</div>
+                    <div style={{ fontSize: 11, color: "#8a93a4", marginTop: 2 }}>
+                      Based on {formatGBP(summary.totalIncome)} earned so far this year
+                      {summary.accountingBasis === "accruals" ? " (accruals)" : ""}
+                    </div>
+                  </div>
+                  <ChevronRight size={18} color="#9CA3AF" />
+                </div>
 
-          <div style={{ marginTop: 12 }}>
-            <div style={{ height: 6, background: "#F2F4F8", borderRadius: 999, overflow: "hidden" }}>
-              <div style={{ width: `${yearProgressPct}%`, height: "100%", background: "#2952b3" }} />
-            </div>
-            <div style={{ fontSize: 10, color: "#8a93a4", marginTop: 4 }}>
-              {summary.monthsRemaining === 0
-                ? "Final month of the tax year"
-                : `${summary.monthsRemaining} month${summary.monthsRemaining === 1 ? "" : "s"} remaining`}
-            </div>
-          </div>
+                <div style={{ marginTop: 12 }}>
+                  <div style={{ height: 6, background: "#F2F4F8", borderRadius: 999, overflow: "hidden" }}>
+                    <div style={{ width: `${yearProgressPct}%`, height: "100%", background: "#2952b3" }} />
+                  </div>
+                  <div style={{ fontSize: 10, color: "#8a93a4", marginTop: 4 }}>
+                    {summary.monthsRemaining === 0
+                      ? "Final month of the tax year"
+                      : `${summary.monthsRemaining} month${summary.monthsRemaining === 1 ? "" : "s"} remaining`}
+                  </div>
+                </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 12 }}>
-            <div style={{ background: "#F7F9FC", borderRadius: 10, padding: "8px 10px" }}>
-              <div style={{ fontSize: 10, color: "#8a93a4", textTransform: "uppercase", letterSpacing: 0.4, fontWeight: 700 }}>
-                Income tax
-              </div>
-              <div style={{ fontSize: 15, fontWeight: 700, color: "#2952b3", marginTop: 2 }}>
-                {formatGBP(summary.estimatedTax)}
-              </div>
-            </div>
-            <div style={{ background: "#F7F9FC", borderRadius: 10, padding: "8px 10px" }}>
-              <div style={{ fontSize: 10, color: "#8a93a4", textTransform: "uppercase", letterSpacing: 0.4, fontWeight: 700 }}>
-                National Insurance
-              </div>
-              <div style={{ fontSize: 15, fontWeight: 700, color: "#4B5563", marginTop: 2 }}>
-                {formatGBP(summary.estimatedNI)}
-              </div>
-            </div>
-          </div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 12 }}>
+                  <div style={{ background: "#F7F9FC", borderRadius: 10, padding: "8px 10px" }}>
+                    <div style={{ fontSize: 10, color: "#8a93a4", textTransform: "uppercase", letterSpacing: 0.4, fontWeight: 700 }}>
+                      Income tax
+                    </div>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: "#2952b3", marginTop: 2 }}>
+                      {formatGBP(headlineTax)}
+                    </div>
+                  </div>
+                  <div style={{ background: "#F7F9FC", borderRadius: 10, padding: "8px 10px" }}>
+                    <div style={{ fontSize: 10, color: "#8a93a4", textTransform: "uppercase", letterSpacing: 0.4, fontWeight: 700 }}>
+                      Class 2 + Class 4
+                    </div>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: "#4B5563", marginTop: 2 }}>
+                      {formatGBP(headlineNI)}
+                    </div>
+                    {class2Note && (
+                      <div style={{ fontSize: 10, color: "#8a93a4", marginTop: 2 }}>{class2Note}</div>
+                    )}
+                  </div>
+                </div>
+              </>
+            );
+          })()}
         </>
       )}
     </button>
