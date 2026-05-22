@@ -275,19 +275,42 @@ serve(async (req: Request) => {
 
     console.log("Square API payload:", JSON.stringify(payload, null, 2));
 
-    const response = await fetch(`${baseUrl}/v2/online-checkout/payment-links`, {
-      method: "POST",
-      headers: {
-        "Square-Version": "2024-01-18",
-        "Authorization": `Bearer ${effectiveAccessToken}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(payload)
-    });
+    const doCheckoutFetch = (token: string) =>
+      fetch(`${baseUrl}/v2/online-checkout/payment-links`, {
+        method: "POST",
+        headers: {
+          "Square-Version": "2024-01-18",
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
 
-    const responseText = await response.text();
+    let response = await doCheckoutFetch(effectiveAccessToken);
+    let responseText = await response.text();
     console.log("Square API response status:", response.status);
     console.log("Square API response:", responseText);
+
+    // Retry once on auth failure: try to refresh the instructor's OAuth token
+    // and replay the checkout request before falling through to the friendly
+    // "isn't connected" error message.
+    if (!response.ok && useInstructorToken && sbClient && body.instructorId && sqAppId && sqOauthSecret) {
+      let parsedErr: any = null;
+      try { parsedErr = JSON.parse(responseText); } catch { /* ignore */ }
+      const errCode = String(parsedErr?.errors?.[0]?.code || "").toUpperCase();
+      if (response.status === 401 || errCode === "UNAUTHORIZED" || errCode === "ACCESS_TOKEN_EXPIRED" || errCode === "ACCESS_TOKEN_REVOKED") {
+        console.log("[square-checkout] auth failure, attempting one-shot refresh + retry");
+        const newToken = await refreshInstructorSquareToken(sbClient, body.instructorId, sqAppId, sqOauthSecret, oauthBaseUrl);
+        if (newToken) {
+          effectiveAccessToken = newToken;
+          response = await doCheckoutFetch(newToken);
+          responseText = await response.text();
+          console.log("Square API retry response status:", response.status);
+          console.log("Square API retry response:", responseText);
+        }
+      }
+    }
+
 
     if (!response.ok) {
       console.error("Square API error:", responseText);
