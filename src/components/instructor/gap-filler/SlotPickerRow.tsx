@@ -21,7 +21,10 @@ export interface SlotPickerRowProps {
   highlighted?: boolean;
   /** When provided, shows a Book pill that books this slot directly. */
   onBook?: () => void;
+  /** True when travel ETA for this slot came from the fallback (not real routing). */
+  etaEstimated?: boolean;
 }
+
 
 /**
  * Mobile slot card.
