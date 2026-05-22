@@ -11,6 +11,7 @@ import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayo
 import { PageSkeleton } from "@/components/ui/skeletons/PageSkeleton";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { calculateTax, calculateNI } from "@/lib/ukTax";
 
 interface TaxSummary {
   totalIncome: number;
