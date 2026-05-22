@@ -259,7 +259,7 @@ export function TaxYearReport({
           ["Personal Allowance", `£${personalAllowance.toFixed(2)}`],
           ["", ""],
           ["Estimated Income Tax", `£${incomeTax.toFixed(2)}`],
-          ["Estimated NI (Class 4)", `£${nationalInsurance.toFixed(2)}`],
+          ["Estimated NI (Class 2 + 4)", `£${nationalInsurance.toFixed(2)}`],
           ["Total Tax Liability", `£${(incomeTax + nationalInsurance).toFixed(2)}`],
         ],
         theme: "striped",
