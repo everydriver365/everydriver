@@ -14,7 +14,10 @@ interface NotifyPupilRequest {
     | "slot_offer_cancelled"
     | "lesson_reminder"
     | "lesson_cancelled"
+    | "lesson_rescheduled"
+    | "reschedule_declined"
     | "booking_confirmed"
+    | "booking_declined"
     | "test_booking_confirmed"
     | "payment_confirmed"
     | "waitlist_match"
@@ -83,9 +86,21 @@ serve(async (req: Request) => {
           notificationTitle = "Lesson Cancelled";
           notificationBody = "Your lesson has been cancelled. Check your schedule for details.";
           break;
+        case "lesson_rescheduled":
+          notificationTitle = "Lesson rescheduled";
+          notificationBody = "Your instructor confirmed your new lesson time. Check your schedule.";
+          break;
+        case "reschedule_declined":
+          notificationTitle = "Reschedule declined";
+          notificationBody = "Your instructor couldn't accommodate the new time. Your original lesson stands.";
+          break;
         case "booking_confirmed":
           notificationTitle = "Lesson Booked ✓";
           notificationBody = "Your driving lesson has been added to your schedule.";
+          break;
+        case "booking_declined":
+          notificationTitle = "Lesson request declined";
+          notificationBody = "Your instructor couldn't confirm the requested slot. Please pick another time.";
           break;
         case "test_booking_confirmed":
           notificationTitle = "Driving Test Booked ✓";

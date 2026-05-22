@@ -1,112 +1,102 @@
-## PART 1 — Dead code (correction to investigation)
 
-`XeroExport.tsx` is **not** unused. It is still imported and rendered:
+# Pupil self-booking — fix two actively broken gaps
 
-- `src/pages/instructor/InstructorIntegrationsHub.tsx:9` — `import { XeroExport } ...`
-- `src/pages/instructor/InstructorIntegrationsHub.tsx:385` — rendered under the `"xero"` tab
+## Pre-implementation findings (changes the prompt slightly)
 
-Since `AccountingExport` (mounted on `InstructorAccounts.tsx`) supersedes it with all 4 platforms + live API sync, the safe cleanup is:
+- `reschedule_requests` columns confirmed: `id, pupil_id, lesson_id, instructor_id, requested_date, requested_time, original_date, original_time, reason, status, created_at, responded_at`. ✅
+- `instructor_booking_settings.require_approval` exists and is already honoured in `PupilPortalSchedule.tsx` line 512 (its inline pupil-reschedule flow). **Only `SelfBookingCalendar.tsx` line 184 ignores it** — confirming Gap 2 scope.
+- `UpcomingLessonCard.tsx` already renders a "Pending approval" badge for `booking_status === 'pending_approval'`, so pupil-side surfacing exists.
+- `PupilNotifyType` exists in `src/lib/notificationTypes.ts` and is mirrored at `supabase/functions/_shared/notification-types.ts`. Existing types include `BOOKING_CONFIRMED`, `LESSON_CANCELLED`, `LESSON_REMINDER`. Missing: `LESSON_RESCHEDULED`, `RESCHEDULE_DECLINED`, `BOOKING_DECLINED`.
+- **No instructor UI currently reads `scheduled_lessons` where `booking_status = 'pending_approval'`** — confirms a `PendingBookingsCard` is needed.
+- `RescheduleRequestForm.tsx` only writes the row and shows a toast — no notification fired. Will add `notify-instructor` call.
+- `notify-pupil` and `notify-instructor` edge functions both exist.
 
-1. Open `InstructorIntegrationsHub.tsx`, remove the `XeroExport` import and replace the `tab === "xero"` branch with `<AccountingExport instructorId={instructorId} />` (single source of truth for CSV + sync).
-2. Delete `src/components/instructor/XeroExport.tsx`.
-3. Re-grep to confirm zero remaining references.
+---
 
-If you'd rather keep `InstructorIntegrationsHub` untouched, alternative is to leave `XeroExport.tsx` in place — say the word and I'll skip the delete.
+## PART 1 — Gap 1: Reschedule request approval queue
 
-## PART 2 — Mileage in accounting sync
+**New:** `src/components/instructor/RescheduleRequestsCard.tsx`
+- Queries `reschedule_requests` where `instructor_id = current` and `status = 'pending'`, joined to `pupils(name)` and `scheduled_lessons(lesson_date, start_time, duration_minutes)`.
+- Row layout: pupil name, original date/time → requested date/time (+ optional time), reason text, Accept / Decline buttons.
+- **Accept**: pre-check clash via `checkLessonClash`; update `scheduled_lessons` row (`lesson_date`, `start_time`) for `lesson_id`; update `reschedule_requests` (`status='approved'`, `responded_at=now()`); call `notify-pupil` with `LESSON_RESCHEDULED`; toast success; invalidate query.
+- **Decline**: optional reason via small textarea; update `reschedule_requests` (`status='declined'`, `responded_at=now()`); call `notify-pupil` with `RESCHEDULE_DECLINED`; toast.
+- Loading skeleton + error state + empty state ("No pending reschedule requests").
+- Returns `null` when zero pending rows (self-hides — same pattern as `ActiveGapOffersList`).
+- Styling: DSM tokens, `rounded-2xl`, `#F4F7F6` surrounding bg (per design memory).
 
-Edit `supabase/functions/accounting-sync/index.ts` only.
+**Mount:** add to `src/components/instructor/MobileHomeDSM2026.tsx` near the existing `ActiveGapOffersList` placement. Standalone card, not folded into Needs Attention (it has explicit actions, doesn't fit that pattern).
 
-**HMRC helper (inlined in the edge function — `src/lib/ukTax.ts` is a browser module and can't be imported into Deno):**
-```ts
-const KM_TO_MILES = 0.621371;
-function hmrcMileageAllowance(miles: number, tierUsedMiles = 0): number {
-  // 45p first 10,000 miles in tax year, 25p after
-  const tier1Remaining = Math.max(0, 10000 - tierUsedMiles);
-  const tier1 = Math.min(miles, tier1Remaining);
-  const tier2 = Math.max(0, miles - tier1);
-  return +(tier1 * 0.45 + tier2 * 0.25).toFixed(2);
-}
-```
+**Pupil-side notification on submit:** in `RescheduleRequestForm.tsx` after successful insert, fire `supabase.functions.invoke('notify-instructor', { body: { instructor_id, type: 'reschedule_requested', pupil_id, lesson_id, requested_date, requested_time } })`. Non-blocking (don't throw on notify failure).
 
-For accuracy against the 10k threshold, query `mileage_logs` twice:
-- `trip_type='business'` from **start of UK tax year (6 Apr)** up to `period_start - 1` → sum km → miles → `tierUsedMiles`.
-- `trip_type='business'` for `[period_start, period_end]` → sum km → miles → period miles.
+---
 
-Compute `allowance = hmrcMileageAllowance(periodMiles, tierUsedMiles)`. If `periodMiles === 0` or `allowance === 0`, skip (no row).
+## PART 2 — Gap 2: Enforce `require_approval` in SelfBookingCalendar
 
-**Post as a single expense line** when `sync_type` is `expenses` or `both`:
+**Edit `src/components/pupil-portal/SelfBookingCalendar.tsx` only:**
+- Read `effectiveSettings.require_approval` (already loaded into `settings`).
+- In `bookLessonMutation.mutationFn`: branch the insert payload — if `require_approval`, use `status: 'pending', booking_status: 'pending_approval'`; otherwise existing `status: 'scheduled', booking_status: 'confirmed'`.
+- Return the chosen status from the mutation; in `onSuccess`, if pending: **skip confetti** and show `toast({ title: 'Lesson request sent', description: 'Waiting for your instructor to confirm.' })`. Otherwise existing confetti + "Lesson Booked! 🎉" path.
 
-- description: `Business mileage ${period_start} to ${period_end} (${periodMiles.toFixed(1)} mi @ HMRC AMAP)`
-- amount: `allowance`
-- date: `period_end`
-- category: `"Mileage"`
+**New:** `src/components/instructor/PendingBookingsCard.tsx`
+- Queries `scheduled_lessons` where `instructor_id = current` and `booking_status = 'pending_approval'`, joined to `pupils(name)`.
+- Row: pupil name, requested date/time, duration.
+- **Accept**: update row to `booking_status='confirmed', status='scheduled'`; `notify-pupil` with `BOOKING_CONFIRMED`; toast.
+- **Decline**: update row to `booking_status='declined', status='cancelled', cancellation_reason='Declined by instructor'`; `notify-pupil` with `BOOKING_DECLINED`; toast.
+- Self-hides at zero rows. Same styling pattern as `RescheduleRequestsCard`.
 
-Reuse each platform's existing `formatExpense(...)` by passing a synthetic object `{ expense_date: period_end, amount: allowance, description, id: '<uuid-v4-generated>' }`. Use a generated UUID (not from DB) so each sync is unique.
+**Mount:** alongside `RescheduleRequestsCard` in `MobileHomeDSM2026.tsx`.
 
-Increment `totalSynced` only when the POST returns `res.ok`; on failure push to `errors` exactly like the existing expense loop.
+---
 
-**Account code mapping** — `platformConfigs.ts` has no `Mileage` key today. Add it to all four maps in `src/components/instructor/accounting-export/platformConfigs.ts`:
+## PART 3 — Notification types
 
-| Platform | Code |
-|---|---|
-| Xero | `410` (Motor Vehicle Expenses) |
-| QuickBooks | `Car & Van Expenses` |
-| FreeAgent | `Motor Expenses` |
-| Sage | `7400` (Travelling) |
+Add to **both** `src/lib/notificationTypes.ts` and `supabase/functions/_shared/notification-types.ts` `PupilNotifyType` const:
+- `LESSON_RESCHEDULED = 'lesson_rescheduled'`
+- `RESCHEDULE_DECLINED = 'reschedule_declined'`
+- `BOOKING_DECLINED = 'booking_declined'`
+- (`BOOKING_CONFIRMED` already exists — do not duplicate.)
 
-The edge function's own `getXeroCode` / `getQBOCategory` helpers also need a `Mileage` entry mirroring the above — those are duplicated in the edge function, not imported from the client config.
+Add cases to `supabase/functions/notify-pupil/index.ts` switch with concise title/body copy for each new type:
+- `lesson_rescheduled`: "Lesson rescheduled" / "Your new lesson time is {date} at {time}."
+- `reschedule_declined`: "Reschedule declined" / "Your instructor couldn't accommodate the new time."
+- `booking_declined`: "Lesson request declined" / "Your instructor couldn't confirm the requested slot."
 
-Read-only: no writes to `mileage_logs`.
+---
 
-## PART 3 — Mark expenses synced after live API push
+## PART 4 — Verified clean checklist
 
-**Migration (additive, nullable, no default):**
-```sql
-ALTER TABLE public.instructor_expenses
-  ADD COLUMN last_synced_platform text;
-```
+- No edits to: public `/book/:instructorId`, `BookingSummary.tsx`, `booking_enquiries`, `ai_booking_requests`, `FamulorHub`, `instructor_booking_settings` schema.
+- `SelfBookingCalendar` change is purely a branch on `require_approval`; no other logic touched.
+- `PupilPortalSchedule.tsx` reschedule branch already correct — left as-is.
+- Both new cards self-hide at zero rows (no empty visual clutter on dashboard).
+- Notification types stay in sync between client lib and edge `_shared`.
+- `notify-instructor` call from `RescheduleRequestForm` is non-blocking.
 
-**Edge function change** (`accounting-sync/index.ts`), inside the `expenses` loop, only when `res.ok`:
-```ts
-await supabase
-  .from('instructor_expenses')
-  .update({
-    xero_synced: true,
-    xero_sync_date: new Date().toISOString(),
-    last_synced_platform: platform,
-  })
-  .eq('id', exp.id);
-```
+---
 
-Notes:
-- Despite the legacy `xero_*` column names, we set them for **every** platform — they're now generic "synced" flags, and `last_synced_platform` tells you which.
-- Only set on per-row success; partial failures stay unmarked so a re-run picks them up.
-- The mileage synthetic line is **not** persisted to `instructor_expenses`, so nothing to flag for it.
-- Skip the update on the income loop (income comes from `scheduled_lessons`; no flag column).
+## PART 5 — Deferred (explicitly out of scope)
 
-## PART 4 — Verification
+- Gap 3 (AI booking requests dashboard tile)
+- Gap 4 (`instructor_assigns` pupil request flow — would need new `lesson_requests` table)
+- Gap 5 (`first_lesson_only` enforcement)
+- Realtime subscription on the two new cards (poll-on-mount is sufficient for v1)
+- Bulk-accept and counter-offer flows
+- Reschedule conflict resolution beyond clash pre-check (e.g. auto-suggesting nearest free slot)
 
-- `rg "XeroExport"` returns zero hits after cleanup.
-- Edge function compiles; deploy `accounting-sync` and (if changed) `accounting-oauth` stays untouched.
-- Manually invoke `accounting-sync` against a test instructor with no OAuth secrets → still 400s on "Not connected", proving no regression for unconfigured tenants.
-- Confirm `last_synced_platform` column visible in `types.ts` after migration regenerates.
-- Confirm `instructor_expenses.xero_synced` flips to `true` after a successful sync (DB check).
-- No edits to: `AccountingSyncPanel`, `AccountingExport` body (only the swap into IntegrationsHub), `useAccountingConnection`, `InstructorTax.tsx`, payment bridges, `mileage_logs`.
-
-## PART 5 — Deferred
-
-- Registering OAuth apps with Xero/QBO/FreeAgent/Sage and adding `XERO_CLIENT_ID/SECRET`, `QBO_*`, `FREEAGENT_*`, `SAGE_*` runtime secrets — required before any instructor can actually connect. **Will request via `add_secret` only if/when you confirm.**
-- Bridging real payment receipts (`pupil_payments` / GoCardless / Square / SumUp) → accounting income (current path uses lesson-completion as proxy).
-- Backfilling `last_synced_platform` for historical CSV-exported rows (left null intentionally).
-- Income/lesson rows getting a `synced` flag of their own.
-- Splitting mileage into one line per month if a sync period spans multiple months.
+---
 
 ## Files touched
-- **edit** `src/pages/instructor/InstructorIntegrationsHub.tsx` (swap XeroExport → AccountingExport)
-- **delete** `src/components/instructor/XeroExport.tsx`
-- **edit** `supabase/functions/accounting-sync/index.ts` (mileage line + mark synced)
-- **edit** `src/components/instructor/accounting-export/platformConfigs.ts` (Mileage category)
-- **migration** add `instructor_expenses.last_synced_platform text`
 
-Approve to proceed.
+**New (3):**
+- `src/components/instructor/RescheduleRequestsCard.tsx`
+- `src/components/instructor/PendingBookingsCard.tsx`
+
+**Edited (5):**
+- `src/components/pupil-portal/SelfBookingCalendar.tsx` — branch on `require_approval`
+- `src/components/pupil-portal/RescheduleRequestForm.tsx` — fire `notify-instructor`
+- `src/components/instructor/MobileHomeDSM2026.tsx` — mount both cards
+- `src/lib/notificationTypes.ts` — add 3 types
+- `supabase/functions/_shared/notification-types.ts` — add 3 types
+- `supabase/functions/notify-pupil/index.ts` — add 3 cases
+
+No DB migration required (all columns and tables already exist).

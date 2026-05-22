@@ -158,7 +158,9 @@ const SelfBookingCalendar: React.FC<SelfBookingCalendarProps> = ({
 
       if (pupilError) throw pupilError;
 
-      const bookingStatus = 'confirmed';
+      const requireApproval = settings?.require_approval === true;
+      const bookingStatus = requireApproval ? 'pending_approval' : 'confirmed';
+      const lessonStatus = requireApproval ? 'pending' : 'scheduled';
       const pupilData = pupil as { address: string | null; postcode: string | null };
 
       // Pre-check for clashes so the user gets a clean message instead of a raw DB error.
@@ -180,7 +182,7 @@ const SelfBookingCalendar: React.FC<SelfBookingCalendarProps> = ({
           lesson_date: slot.date,
           start_time: slot.startTime,
           duration_minutes: selectedDuration,
-          status: 'scheduled',
+          status: lessonStatus,
           booking_status: bookingStatus,
           pickup_address: pupilData.address,
           pickup_postcode: pupilData.postcode,
@@ -190,14 +192,39 @@ const SelfBookingCalendar: React.FC<SelfBookingCalendarProps> = ({
         const friendly = describeLessonClashError(error);
         throw new Error(friendly ?? error.message);
       }
+
+      // Notify instructor of pending request (non-blocking)
+      if (requireApproval) {
+        const { data: p } = await supabase.from('pupils').select('name').eq('id', pupilId).single();
+        supabase.functions.invoke('notify-instructor', {
+          body: {
+            instructorId,
+            type: 'booking_request',
+            pupilName: (p as { name?: string } | null)?.name ?? 'A pupil',
+            lessonDate: slot.date,
+            lessonTime: slot.startTime,
+            durationMinutes: selectedDuration,
+          },
+        }).catch((e) => console.error('[SelfBookingCalendar] notify-instructor', e));
+      }
+
       return bookingStatus;
     },
     onSuccess: (bookingStatus) => {
       queryClient.invalidateQueries({ queryKey: ['existing-bookings'] });
       setShowConfirmDialog(false);
       setSelectedSlot(null);
+
+      if (bookingStatus === 'pending_approval') {
+        toast({
+          title: 'Lesson request sent',
+          description: 'Waiting for your instructor to confirm.',
+        });
+        return;
+      }
+
       setBookingSuccess(true);
-      
+
       // Confetti!
       confetti({
         particleCount: 80,
@@ -207,7 +234,7 @@ const SelfBookingCalendar: React.FC<SelfBookingCalendarProps> = ({
       });
 
       setTimeout(() => setBookingSuccess(false), 3000);
-      
+
       toast({
         title: 'Lesson Booked! 🎉',
         description: 'Your lesson has been confirmed.',
