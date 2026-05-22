@@ -334,6 +334,7 @@ export function MobileHomeDSM2026({ instructorId, instructorName }: Props) {
           <div className="animate-fade-in" style={{ animationDelay: "180ms", animationFillMode: "both" }}>
             <QuickAccessCard navigate={navigate} />
           </div>
+          <div style={{ height: 0.5, background: "#ebebeb", margin: "2px 0" }} />
           <div className="animate-fade-in" style={{ animationDelay: "240ms", animationFillMode: "both" }}>
             <UnifiedInfoPanel navigate={navigate} instructorId={instructorId} events={events} membership={membership} />
           </div>
@@ -427,8 +428,8 @@ function UnifiedInfoPanel({
   const cardBase: React.CSSProperties = {
     background: "#fff",
     border: "0.5px solid #e0e3ea",
-    borderRadius: 12,
-    padding: "11px 12px",
+    borderRadius: 14,
+    padding: 14,
     cursor: "pointer",
     fontFamily: FONT,
     textAlign: "left",
@@ -456,9 +457,9 @@ function UnifiedInfoPanel({
   }) => (
     <div
       style={{
-        width: 26,
-        height: 26,
-        borderRadius: 7,
+        width: 36,
+        height: 36,
+        borderRadius: 10,
         background: bg,
         display: "flex",
         alignItems: "center",
@@ -466,18 +467,18 @@ function UnifiedInfoPanel({
         flexShrink: 0,
       }}
     >
-      <Icon size={13} color={color} />
+      <Icon size={18} color={color} />
     </div>
   );
 
   const Title = ({ children }: { children: React.ReactNode }) => (
-    <div style={{ fontSize: 11, fontWeight: 500, color: "#1a1a1f", marginTop: 8 }}>
+    <div style={{ fontSize: 13, fontWeight: 500, color: "#1a1a1f", marginTop: 10 }}>
       {children}
     </div>
   );
 
   const Subtitle = ({ children }: { children: React.ReactNode }) => (
-    <div style={{ fontSize: 10, color: "#bbb", lineHeight: 1.3, marginTop: 2 }}>
+    <div style={{ fontSize: 11, color: "#bbb", lineHeight: 1.3, marginTop: 2 }}>
       {children}
     </div>
   );
@@ -612,7 +613,7 @@ function UnifiedInfoPanel({
           <>
             <div
               style={{
-                fontSize: 16,
+                fontSize: 17,
                 fontWeight: 600,
                 color: "#1a1a1f",
                 marginTop: 6,
@@ -644,7 +645,7 @@ function UnifiedInfoPanel({
           <>
             <div
               style={{
-                fontSize: 16,
+                fontSize: 17,
                 fontWeight: 600,
                 color: "#1a1a1f",
                 marginTop: 6,
@@ -684,7 +685,7 @@ function UnifiedInfoPanel({
           <>
             <div
               style={{
-                fontSize: 16,
+                fontSize: 17,
                 fontWeight: 600,
                 color: mtdValueColor,
                 marginTop: 6,
@@ -699,7 +700,7 @@ function UnifiedInfoPanel({
           <>
             <div
               style={{
-                fontSize: 16,
+                fontSize: 17,
                 fontWeight: 600,
                 color: "#1a1a1f",
                 marginTop: 6,
@@ -2526,10 +2527,10 @@ function QATile({
       }}
       style={{
         width: "100%",
-        padding: "11px 12px",
+        padding: 14,
         backgroundColor: "#FFFFFF",
         border: `0.5px solid ${BORDER}`,
-        borderRadius: 12,
+        borderRadius: 14,
         cursor: "pointer",
         display: "flex",
         flexDirection: "column",
@@ -2541,9 +2542,9 @@ function QATile({
     >
       <span
         style={{
-          width: 26,
-          height: 26,
-          borderRadius: 7,
+          width: 36,
+          height: 36,
+          borderRadius: 10,
           background: item.bg,
           display: "inline-flex",
           alignItems: "center",
@@ -2551,17 +2552,17 @@ function QATile({
           flexShrink: 0,
         }}
       >
-        <Icon size={13} strokeWidth={2} color={item.colour} />
+        <Icon size={18} strokeWidth={2} color={item.colour} />
       </span>
 
       <span
         style={{
-          fontSize: 11,
+          fontSize: 13,
           fontWeight: 500,
           color: "#1a1a1f",
           fontFamily: FONT,
           lineHeight: 1.3,
-          marginTop: 8,
+          marginTop: 10,
           overflow: "hidden",
           textOverflow: "ellipsis",
           whiteSpace: "nowrap",
