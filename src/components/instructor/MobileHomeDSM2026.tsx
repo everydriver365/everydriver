@@ -2229,10 +2229,8 @@ function QuickAccessCard({ navigate }: { navigate: ReturnType<typeof useNavigate
   return (
     <div
       style={{
-        background: OUTER_BG,
-        borderRadius: 18,
-        overflow: "hidden",
-        padding: "14px 14px 14px",
+        background: "transparent",
+        padding: 0,
       }}
     >
       {/* Header */}
