@@ -1,82 +1,59 @@
-# Round 2 — Audit & Fix Plan
+## Short answer: yes, and most of it is already built
 
-Scope: all remaining Medium severity backlog items, executed in one pass after exploration. Output format will follow the requested 3-part report (Fixed / Verified Clean / Deferred).
+A full DVSA syllabus tracker is already wired into the project across all three portals. Before adding anything new, the right move is to audit what's live, fix any gaps, then layer on the "what's next" coaching piece if it isn't already strong enough.
 
-## §1 Dashboard tiles — live data verification
+## What already exists
 
-Files to audit:
-- `src/components/instructor/InstructorMobileHome.tsx` (primary mobile home)
-- `src/components/instructor/MobileHomeDSM2026.tsx`, `PremiumIOSHomeView.tsx`, `AppStyleHomeView.tsx`, `IOSNativeHomeView.tsx` (variants in use)
-- `NextLessonTile.tsx`, `NextUpTile.tsx`, `HomeTodaySchedule.tsx`, `HomeMoneyOverview.tsx`, `HomeGreeting.tsx`
-- `OutstandingTasksCard.tsx` + `src/pages/InstructorAttentionLab2026.tsx` (Needs Attention)
-- `ActivityTilesGrid.tsx`, `InsightTilesGrid.tsx`, `QuickActionTiles.tsx`
-- Hooks: `useInstructorPaymentsData`, any `useDashboardStats`, `useNeedsAttention`, `useNextLesson`
+**Shared data layer**
+- `src/constants/dvsaSyllabus.ts` — 27 official DVSA competencies grouped into 6 categories (Controls, Road Procedure, Junctions, Judgement, Manoeuvres, Test Ready), plus a 0–5 skill-level scale (Not Started → Independent)
+- `pupil_syllabus_progress` table — stores `competency_id`, `level`, `instructor_notes`, `updated_at` per pupil
 
-Checks & fixes:
-1. "Lessons today" — confirm count comes from `scheduled_lessons` filtered to `start_time` between today 00:00–24:00 London + `deleted_at IS NULL` + status != cancelled. Add realtime subscription or invalidation on lesson insert/cancel if missing.
-2. "Next free slot" — verify call into availability engine (`getNextAvailableSlot` / `availability-london-timezone`), not a static string.
-3. "Next lesson tile" — pupil name, time, duration, postcode, lesson type all from the next `scheduled_lessons` row (chronologically across days, not just today).
-4. "Outstanding balance" — make consistent with Round 1 EarningsDashboard logic: `sum(abs(account_balance)) where account_balance < 0 and deleted_at is null`.
-5. "Needs Attention" counts (Jobs/Tests/Calls/Enq's + urgent) — replace any `|| 0` masking with real queries; urgent = sum of the four, not hardcoded.
-6. "Earnings this week / lessons this week" — apply `deleted_at IS NULL` filter; align UK week boundary.
+**Instructor portal**
+- `DrivingSyllabus.tsx` — full grid editor to set skill level per competency
+- `SyllabusBuilder.tsx`, `CompetencyPicker.tsx` — lesson planning around competencies
+- `SyllabusProgressChart.tsx` — radar chart of category coverage
+- `SyllabusRecommendations.tsx` — "Needs attention / Ready to progress / Not yet started / Test ready" bucketing
+- `StepSkills.tsx` (end-of-lesson flow) — instructor logs what was covered after each lesson
+- `TestReadinessScore.tsx`, `PupilProgressionTracker.tsx`
 
-Per memory rule (mem://constraints/no-hardcoded-fallbacks-live-data-only): remove `||`/`??` fallbacks on DB values; show empty/needs-setup state instead.
+**Pupil portal**
+- `PupilSyllabusView.tsx` — pupil-facing skills list
+- `PupilDashboardRadar.tsx` — radar chart on dashboard
+- `ProgressDashboard.tsx`, `PupilPortalProgress.tsx`, `TestReadinessCard.tsx`
 
-## §2 Navigation sweep
+**Parent portal**
+- `ParentSyllabusOverview.tsx` — per-child category bars, % test ready, PDF export
 
-Trace `src/App.tsx` routes plus instructor portal router. Verify each of:
-- Quick Access tiles → matching route exists
-- "See all 43 tools" → tools hub route
-- "Add lesson" → `AddLessonSheet` open + complete booking flow
-- "Fill gaps" → gap-filler logic + result screen
-- Lesson card chevron → lesson detail
-- Pupil card chevron → pupil profile
-- "Edit pins" → pin editor route
-- Payment/refund flow back paths
-- Needs Attention items (Jobs/Tests/Calls/Enq's) → detail views
-- "View in Tax Hub" → tax hub
-- Earnings tiles (Owes Money, Payments This Month) → detail views
-- Back nav works on every screen (no trapped modals)
+## What's likely missing or weak
 
-Fix any dead links, missing routes, or chevrons wired to `onClick={() => {}}`.
+Without running the audit I can't be certain, but typical gaps for a system this size are:
+1. **"What's next" suggestions** — the instructor sees recommendations, but the pupil/parent may not see a clear *next lesson focus*
+2. **Visibility on the mobile instructor home** — no syllabus tile in `MobileHomeDSM2026`
+3. **Timeline / history** — competencies have `updated_at` but no per-competency log of when each level changed
+4. **Auto-logging** — `StepSkills` may not be reliably triggering from every lesson-end path
+5. **Parent notifications** when a child masters a new skill
 
-## §3 Form validation
+## Proposed plan
 
-Forms to audit (add zod schemas + inline errors where missing):
-- `AddLessonSheet` — pupil, date, time, duration, type required; date not in past; slot not double-booked
-- Add pupil dialog — name + (phone OR email); email/phone/postcode format
-- `AddCalendarEventDialog` — title + date; date not in past
-- `TakePaymentModal` / Add payment — amount > 0; sensible cap vs balance; confirm step
-- `RefundModal` — amount ≤ original; **show pupil net after fee deduction** (deferred from R1, implement now); confirm step
-- Edit pupil — email/phone/postcode validation on save
-- `AccountSettings` — email/phone format; password change requires current password
+**Phase 1 — Audit (no code changes)**
+Open each of the three portals and confirm:
+- Instructor: syllabus editor reachable from pupil profile, end-of-lesson StepSkills fires, recommendations show
+- Pupil: radar + skills list + test readiness all load with live data
+- Parent: per-child syllabus overview loads and PDF exports
 
-For each: success toast + immediate UI refresh on relevant screens.
+**Phase 2 — Fill the most useful gap: "Next focus"**
+Add a single shared component `NextSyllabusFocus` that picks the 3 highest-priority competencies (lowest level, weighted by category coverage gap) and renders it:
+- On the pupil portal home (above test readiness)
+- On the parent child-detail page
+- On the instructor pupil card / lesson prep card
 
-## §4 Empty & error states
+**Phase 3 — Mobile instructor surfacing (optional)**
+Add a compact "Syllabus" quick-tile to `MobileHomeDSM2026` linking to the per-pupil syllabus editor, since you've been iterating on that screen.
 
-Screens to verify each has: loading skeleton, empty state, error state with retry, no NaN/undefined.
-- Schedule, Pupils list, Payment history, Earnings (£0 not blank), Needs Attention (0 hides urgent pill), Quick Access tools, Upcoming events, Notifications list.
+**Phase 4 — History trail (optional, schema change)**
+New `pupil_syllabus_progress_history` table that logs every level change with timestamp + instructor_id, so pupils/parents can see a timeline of "you levelled up Roundabouts on 12 May".
 
-## §5 Notifications
+### Recommendation
+Start with Phase 1 + Phase 2. Phase 2 is a single new component reused in 3 places, no schema change, and directly answers your "what's next to do" question. Phase 3 and 4 only if you want them after seeing Phase 2.
 
-- Verify push triggers exist for: new booking, lesson cancellation, payment received, new enquiry, upcoming lesson reminder (check edge functions + DB triggers).
-- Confirm per-type toggles exist in notification settings UI and persist to DB (not localStorage default).
-- Verify Needs Attention badge updates on action/dismiss (realtime or invalidation).
-- Verify in-app notifications list marks read correctly.
-
-## Constraints
-
-- No mobile layout changes (per mem://constraints/mobile-update-policy) — data wiring & validation only on mobile screens; visual changes restricted to desktop or to bug-fix scope.
-- Live data only — no fallbacks; surface empty states (mem://constraints/no-hardcoded-fallbacks-live-data-only).
-- London timezone for any date math (mem://constraints/availability-london-timezone).
-- UK Service Fee naming preserved.
-
-## Deliverable
-
-Single response with:
-- **PART 1 — Fixed**: file, what was broken, fix applied ✓
-- **PART 2 — Verified clean**: list audited & confirmed working
-- **PART 3 — Deferred**: items moved to Round 3 (email settings, notification templates, cash/bank receipt coverage, UI polish)
-
-All fixes shipped in one pass, no mid-pass confirmation.
+Want me to proceed with Phase 1 + 2, or go wider?
