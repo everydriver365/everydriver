@@ -22,6 +22,7 @@ const xeroCategories: Record<string, string> = {
   "Office Supplies": "453",
   Marketing: "449",
   "Tolls & Parking": "429",
+  Mileage: "410",
   Other: "499",
 };
 
@@ -33,6 +34,7 @@ const qboCategories: Record<string, string> = {
   "Office Supplies": "Office Expenses",
   Marketing: "Advertising & Marketing",
   "Tolls & Parking": "Travel Expenses",
+  Mileage: "Car & Van Expenses",
   Other: "Other Expenses",
 };
 
@@ -44,6 +46,7 @@ const freeagentCategories: Record<string, string> = {
   "Office Supplies": "Office Costs",
   Marketing: "Advertising",
   "Tolls & Parking": "Motor Expenses",
+  Mileage: "Motor Expenses",
   Other: "General Administrative Costs",
 };
 
@@ -55,6 +58,7 @@ const sageCategories: Record<string, string> = {
   "Office Supplies": "7502",
   Marketing: "6201",
   "Tolls & Parking": "7300",
+  Mileage: "7400",
   Other: "8200",
 };
 
