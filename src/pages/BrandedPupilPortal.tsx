@@ -203,6 +203,12 @@ export default function BrandedPupilPortal() {
     }
   }, [searchParams]);
 
+  // Slot offer deep-link: ensure user lands on home where SlotOfferNotification renders
+  const focusOfferId = searchParams.get("offer_id");
+  useEffect(() => {
+    if (focusOfferId) setActiveSection('home');
+  }, [focusOfferId]);
+
   useEffect(() => {
     fetchInstructor();
   }, [slug]);
