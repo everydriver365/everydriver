@@ -18,6 +18,8 @@ const InstructorOnboarding = lazy(() => import("@/pages/instructor-app/onboardin
 const OnboardingPreview = lazy(() => import("@/pages/instructor-app/onboarding/OnboardingPreview"));
 const DrivingSchools = lazy(() => import("@/pages/instructor-app/DrivingSchools"));
 const InstructorMTD = lazy(() => import("@/pages/instructor-app/InstructorMTD"));
+const MTDSetup = lazy(() => import("@/pages/instructor/MTDSetup"));
+const MTDDashboard = lazy(() => import("@/pages/instructor/MTDDashboard"));
 const DSM = lazy(() => import("@/pages/instructor-app/DSM"));
 
 export const instructorAppRoutes = (
