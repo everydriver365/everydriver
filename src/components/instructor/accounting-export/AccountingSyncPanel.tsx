@@ -43,6 +43,22 @@ function getPeriodDates(preset: PeriodPreset) {
 export function AccountingSyncPanel({ platform, instructorId, accounting }: AccountingSyncPanelProps) {
   const [syncType, setSyncType] = useState<SyncType>("both");
   const [period, setPeriod] = useState<PeriodPreset>("this_month");
+  const affiliate = useAffiliateLinks();
+  const affiliateUrl = affiliate.getUrl(platform as AffiliatePlatform);
+
+  const handleAffiliateClick = async () => {
+    if (!affiliateUrl) return;
+    try {
+      await supabase.from("affiliate_link_clicks").insert({
+        instructor_id: instructorId,
+        platform,
+        affiliate_url: affiliateUrl,
+      });
+    } catch (e) {
+      console.warn("affiliate click log failed", e);
+    }
+    window.open(affiliateUrl, "_blank", "noopener,noreferrer");
+  };
 
   const connection = accounting.getConnection(platform);
   const lastSync = accounting.getLastSync(platform);
