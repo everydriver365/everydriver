@@ -565,6 +565,7 @@ export default function ParentPortal() {
             {childDetailTab === 'progress' && (
               <motion.div key="progress" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
                 <ParentSyllabusOverview childId={selectedChild.id} childName={selectedChild.name} />
+                <NextSyllabusFocus pupilId={selectedChild.id} audience="parent" />
                 <ParentSafetyScores childId={selectedChild.id} />
                 {/* Instructor Feedback */}
                 <div className="bg-card rounded-2xl border border-border shadow-sm p-4">
