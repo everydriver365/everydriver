@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { Clock, Calendar, CheckCircle, XCircle, Sparkles } from "lucide-react";
-import { format, differenceInHours, parseISO } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface SlotOffer {
@@ -15,8 +15,8 @@ interface SlotOffer {
   end_time: string;
   duration_mins: number;
   expires_at: string | null;
-  instructor_approved: boolean;
-  pupil_response: string;
+  status: string;
+  recipient_id: string;
 }
 
 interface SlotOfferNotificationProps {
@@ -28,115 +28,152 @@ export function SlotOfferNotification({ pupilId, onAccept }: SlotOfferNotificati
   const [offers, setOffers] = useState<SlotOffer[]>([]);
   const [loading, setLoading] = useState(true);
   const [respondingId, setRespondingId] = useState<string | null>(null);
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const i = setInterval(() => setNow(Date.now()), 30_000);
+    return () => clearInterval(i);
+  }, []);
 
   useEffect(() => {
     if (!pupilId) return;
     fetchOffers();
 
-    // Realtime subscription for instant updates
     const channel = supabase
-      .channel(`slot-offers-${pupilId}`)
+      .channel(`slot-recipients-${pupilId}`)
       .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'slot_offers',
-          filter: `pupil_id=eq.${pupilId}`,
-        },
-        () => {
-          fetchOffers();
-        }
+        "postgres_changes",
+        { event: "*", schema: "public", table: "slot_offer_recipients", filter: `pupil_id=eq.${pupilId}` },
+        () => fetchOffers()
+      )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "slot_offers" },
+        () => fetchOffers()
       )
       .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return () => { supabase.removeChannel(channel); };
   }, [pupilId]);
 
   const fetchOffers = async () => {
     try {
       const { data, error } = await supabase
-        .from("slot_offers")
-        .select("*")
+        .from("slot_offer_recipients")
+        .select(`
+          id,
+          slot_offer_id,
+          viewed_at,
+          claimed_at,
+          declined_at,
+          slot_offer:slot_offers!inner (
+            id, lesson_date, start_time, end_time, duration_mins, expires_at, status
+          )
+        `)
         .eq("pupil_id", pupilId)
-        .eq("instructor_approved", true)
-        .eq("pupil_response", "pending")
-        .order("lesson_date", { ascending: true });
+        .is("claimed_at", null)
+        .is("declined_at", null);
 
       if (error) throw error;
 
-      // Filter out expired offers
-      const validOffers = (data || []).filter((offer) => {
-        if (!offer.expires_at) return true;
-        return new Date(offer.expires_at) > new Date();
-      });
+      const rows = (data ?? [])
+        .map((r: any) => ({
+          recipient_id: r.id,
+          ...r.slot_offer,
+        }))
+        .filter((o: SlotOffer) => o.status === "open")
+        .filter((o: SlotOffer) => !o.expires_at || new Date(o.expires_at) > new Date());
 
-      setOffers(validOffers);
-    } catch (error) {
-      console.error("Error fetching slot offers:", error);
+      setOffers(rows);
+
+      // Mark unseen as viewed
+      const unseen = (data ?? []).filter((r: any) => !r.viewed_at).map((r: any) => r.id);
+      if (unseen.length) {
+        await supabase
+          .from("slot_offer_recipients")
+          .update({ viewed_at: new Date().toISOString() })
+          .in("id", unseen);
+      }
+    } catch (e) {
+      console.error("[SlotOfferNotification] fetch", e);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleRespond = async (offerId: string, response: "accepted" | "declined") => {
+  const handleClaim = async (offerId: string) => {
     setRespondingId(offerId);
     try {
-      const { error } = await supabase
-        .from("slot_offers")
-        .update({
-          pupil_response: response,
-          pupil_responded_at: new Date().toISOString(),
-        })
-        .eq("id", offerId);
-
+      const { data, error } = await supabase.rpc("claim_slot_offer", {
+        p_offer_id: offerId,
+        p_pupil_id: pupilId,
+      });
       if (error) throw error;
+      const res = data as { success: boolean; reason?: string; lesson_id?: string };
 
-      if (response === "accepted") {
-        // Optionally create the actual lesson booking here
-        toast({
-          title: "Slot booked!",
-          description: "Your lesson has been confirmed",
-        });
+      if (res.success) {
+        toast({ title: "You got it!", description: "Lesson booked" });
+        setOffers((prev) => prev.filter((o) => o.id !== offerId));
         onAccept?.();
       } else {
-        toast({ title: "Offer declined" });
+        switch (res.reason) {
+          case "already_filled":
+            toast({ title: "Sorry, someone else grabbed this slot first", variant: "destructive" });
+            break;
+          case "already_claimed":
+            toast({ title: "You've already claimed this slot" });
+            break;
+          case "expired":
+            toast({ title: "This offer has expired", variant: "destructive" });
+            break;
+          case "not_a_recipient":
+          case "not_authorised":
+            console.error("[SlotOfferNotification] claim denied:", res.reason);
+            toast({ title: "Unable to claim this slot", variant: "destructive" });
+            break;
+          default:
+            toast({ title: "Could not claim slot", variant: "destructive" });
+        }
+        setOffers((prev) => prev.filter((o) => o.id !== offerId));
       }
+    } catch (e) {
+      console.error("[SlotOfferNotification] claim", e);
+      toast({ title: "Error", description: "Failed to claim slot", variant: "destructive" });
+    } finally {
+      setRespondingId(null);
+    }
+  };
 
+  const handleDecline = async (recipientId: string, offerId: string) => {
+    setRespondingId(offerId);
+    try {
+      await supabase
+        .from("slot_offer_recipients")
+        .update({ declined_at: new Date().toISOString() })
+        .eq("id", recipientId);
       setOffers((prev) => prev.filter((o) => o.id !== offerId));
-    } catch (error) {
-      console.error("Error responding to offer:", error);
-      toast({
-        title: "Error",
-        description: "Failed to respond to offer",
-        variant: "destructive",
-      });
     } finally {
       setRespondingId(null);
     }
   };
 
   const formatTime = (time: string) => {
-    const [hours, minutes] = time.split(":");
-    const h = parseInt(hours);
-    const ampm = h >= 12 ? "pm" : "am";
-    const hour12 = h % 12 || 12;
-    return `${hour12}:${minutes}${ampm}`;
+    const [h, m] = time.split(":");
+    const hh = parseInt(h);
+    const ampm = hh >= 12 ? "pm" : "am";
+    return `${hh % 12 || 12}:${m}${ampm}`;
   };
 
-  const getExpiryText = (expiresAt: string | null) => {
+  const getRemaining = (expiresAt: string | null) => {
     if (!expiresAt) return null;
-    const hoursLeft = differenceInHours(parseISO(expiresAt), new Date());
-    if (hoursLeft <= 0) return "Expiring soon";
-    if (hoursLeft === 1) return "1 hour left";
-    return `${hoursLeft} hours left`;
+    const diff = new Date(expiresAt).getTime() - now;
+    if (diff <= 0) return "Expiring";
+    const h = Math.floor(diff / 3_600_000);
+    const m = Math.floor((diff % 3_600_000) / 60_000);
+    return h > 0 ? `${h}h ${m}m left` : `${m}m left`;
   };
 
-  if (loading || offers.length === 0) {
-    return null;
-  }
+  if (loading || offers.length === 0) return null;
 
   return (
     <AnimatePresence>
@@ -147,20 +184,17 @@ export function SlotOfferNotification({ pupilId, onAccept }: SlotOfferNotificati
         className="space-y-3"
       >
         {offers.map((offer) => (
-          <Card
-            key={offer.id}
-            className="border-primary/30 bg-gradient-to-r from-primary/5 to-primary/10"
-          >
+          <Card key={offer.id} className="border-primary/30 bg-gradient-to-r from-primary/5 to-primary/10">
             <CardContent className="p-4">
               <div className="flex items-start justify-between gap-4">
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <Sparkles className="h-4 w-4 text-primary" />
-                    <span className="font-semibold text-primary">Slot Available!</span>
+                    <span className="font-semibold text-primary">Grab a Gap — slot available!</span>
                     {offer.expires_at && (
                       <Badge variant="outline" className="text-xs">
                         <Clock className="mr-1 h-3 w-3" />
-                        {getExpiryText(offer.expires_at)}
+                        {getRemaining(offer.expires_at)}
                       </Badge>
                     )}
                   </div>
@@ -175,13 +209,13 @@ export function SlotOfferNotification({ pupilId, onAccept }: SlotOfferNotificati
                     </span>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    {offer.duration_mins} minute lesson
+                    {offer.duration_mins} minute lesson · first to claim gets it
                   </p>
                 </div>
                 <div className="flex flex-col gap-2">
                   <Button
                     size="sm"
-                    onClick={() => handleRespond(offer.id, "accepted")}
+                    onClick={() => handleClaim(offer.id)}
                     disabled={respondingId === offer.id}
                   >
                     {respondingId === offer.id ? (
@@ -189,18 +223,18 @@ export function SlotOfferNotification({ pupilId, onAccept }: SlotOfferNotificati
                     ) : (
                       <>
                         <CheckCircle className="mr-1 h-4 w-4" />
-                        Book
+                        Grab it
                       </>
                     )}
                   </Button>
                   <Button
                     size="sm"
                     variant="ghost"
-                    onClick={() => handleRespond(offer.id, "declined")}
+                    onClick={() => handleDecline(offer.recipient_id, offer.id)}
                     disabled={respondingId === offer.id}
                   >
                     <XCircle className="mr-1 h-4 w-4" />
-                    Decline
+                    Dismiss
                   </Button>
                 </div>
               </div>

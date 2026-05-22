@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Users, Check, Send, X, Clock, Loader2 } from "lucide-react";
+import { Users, Check, Send, X, Clock, Loader2, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { haptics } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface MatchedPupil {
   id: string;
@@ -41,6 +42,10 @@ export function CancellationBackfillSheet({
   const [selectedPupilIds, setSelectedPupilIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [grabSending, setGrabSending] = useState(false);
+  const [grabTarget, setGrabTarget] = useState<"all_active" | "selected">("all_active");
+  const [grabExpiryHours, setGrabExpiryHours] = useState<number>(4);
+  const [grabLocationHint, setGrabLocationHint] = useState("");
 
   useEffect(() => {
     if (!open) return;
@@ -121,6 +126,45 @@ export function CancellationBackfillSheet({
 
     setSending(false);
     onOpenChange(false);
+  };
+
+  const handleGrabAGap = async () => {
+    setGrabSending(true);
+    haptics.medium();
+    try {
+      const target = grabTarget === "all_active"
+        ? "all_active"
+        : Array.from(selectedPupilIds);
+
+      if (grabTarget === "selected" && (target as string[]).length === 0) {
+        toast.error("Select at least one pupil first");
+        setGrabSending(false);
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke("slot-offer-broadcast", {
+        body: {
+          instructor_id: instructorId,
+          slot_date: lessonDate,
+          start_time: startTime,
+          end_time: endTime,
+          duration_mins: durationMinutes,
+          location_hint: grabLocationHint || undefined,
+          target,
+          expires_in_hours: grabExpiryHours,
+        },
+      });
+
+      if (error) throw error;
+      const count = (data as { recipient_count?: number })?.recipient_count ?? 0;
+      toast.success(`Sent to ${count} pupil${count === 1 ? "" : "s"} — first to claim gets the slot`);
+      onOpenChange(false);
+    } catch (e) {
+      console.error("[grab-a-gap]", e);
+      toast.error((e as Error).message ?? "Failed to send Grab a Gap");
+    } finally {
+      setGrabSending(false);
+    }
   };
 
   if (!open) return null;
@@ -225,6 +269,67 @@ export function CancellationBackfillSheet({
               </div>
             </>
           )}
+
+          {/* ====== Grab a Gap ====== */}
+          <div className="mt-5 pt-4 border-t border-border">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="h-7 w-7 rounded-xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+                <Zap className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-foreground">Grab a Gap</h4>
+                <p className="text-[11px] text-muted-foreground">Blast all active pupils — first to claim books it</p>
+              </div>
+            </div>
+
+            <div className="space-y-2.5">
+              <div className="grid grid-cols-2 gap-1.5 rounded-xl bg-muted/50 p-1">
+                {(["all_active", "selected"] as const).map((t) => (
+                  <button
+                    key={t}
+                    onClick={() => { haptics.light(); setGrabTarget(t); }}
+                    className={cn(
+                      "text-[12px] font-medium py-2 rounded-lg transition-colors",
+                      grabTarget === t ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
+                    )}
+                  >
+                    {t === "all_active" ? "All active pupils" : `Selected (${selectedPupilIds.size})`}
+                  </button>
+                ))}
+              </div>
+
+              <input
+                type="text"
+                value={grabLocationHint}
+                onChange={(e) => setGrabLocationHint(e.target.value)}
+                placeholder="Location hint (optional, e.g. South Bristol)"
+                className="w-full text-[12px] px-3 py-2 rounded-xl bg-muted/50 border border-border focus:outline-none focus:border-primary"
+              />
+
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] text-muted-foreground">Expires in</span>
+                <select
+                  value={grabExpiryHours}
+                  onChange={(e) => setGrabExpiryHours(Number(e.target.value))}
+                  className="flex-1 text-[12px] px-3 py-2 rounded-xl bg-muted/50 border border-border focus:outline-none focus:border-primary"
+                >
+                  <option value={1}>1 hour</option>
+                  <option value={2}>2 hours</option>
+                  <option value={4}>4 hours</option>
+                  <option value={24}>24 hours</option>
+                </select>
+              </div>
+
+              <Button
+                onClick={handleGrabAGap}
+                disabled={grabSending}
+                className="w-full gap-2 bg-amber-500 hover:bg-amber-600 text-white"
+              >
+                {grabSending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
+                Send Grab a Gap
+              </Button>
+            </div>
+          </div>
         </motion.div>
       </motion.div>
     </AnimatePresence>
