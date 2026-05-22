@@ -612,7 +612,7 @@ function UnifiedInfoPanel({
           <>
             <div
               style={{
-                fontSize: 16,
+                fontSize: 17,
                 fontWeight: 600,
                 color: "#1a1a1f",
                 marginTop: 6,
@@ -644,7 +644,7 @@ function UnifiedInfoPanel({
           <>
             <div
               style={{
-                fontSize: 16,
+                fontSize: 17,
                 fontWeight: 600,
                 color: "#1a1a1f",
                 marginTop: 6,
@@ -684,7 +684,7 @@ function UnifiedInfoPanel({
           <>
             <div
               style={{
-                fontSize: 16,
+                fontSize: 17,
                 fontWeight: 600,
                 color: mtdValueColor,
                 marginTop: 6,
@@ -699,7 +699,7 @@ function UnifiedInfoPanel({
           <>
             <div
               style={{
-                fontSize: 16,
+                fontSize: 17,
                 fontWeight: 600,
                 color: "#1a1a1f",
                 marginTop: 6,
