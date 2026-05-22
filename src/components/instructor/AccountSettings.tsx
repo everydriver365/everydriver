@@ -30,6 +30,7 @@ import {
 import { ExpandChevron } from "@/components/ui/ExpandChevron";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RecurringExpensesManager } from "./RecurringExpensesManager";
+import { DangerZone } from "./DangerZone";
 import { PaymentOptionsSettings } from "./PaymentOptionsSettings";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
@@ -574,6 +575,11 @@ export function AccountSettings({ instructorId }: AccountSettingsProps) {
       {/* Recurring Business Expenses */}
       <div className="pt-4 border-t">
         <RecurringExpensesManager instructorId={instructorId} />
+      </div>
+
+      {/* Danger Zone */}
+      <div className="pt-6 border-t">
+        <DangerZone />
       </div>
     </div>
   );

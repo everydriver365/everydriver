@@ -9459,6 +9459,7 @@ export type Database = {
           radius_miles: number
           reflective_logs_enabled: boolean | null
           road_tax_reference: string | null
+          scheduled_purge_at: string | null
           school_skim_amount: number | null
           school_skim_percentage: number | null
           secondary_colour: string | null
@@ -9670,6 +9671,7 @@ export type Database = {
           radius_miles?: number
           reflective_logs_enabled?: boolean | null
           road_tax_reference?: string | null
+          scheduled_purge_at?: string | null
           school_skim_amount?: number | null
           school_skim_percentage?: number | null
           secondary_colour?: string | null
@@ -9881,6 +9883,7 @@ export type Database = {
           radius_miles?: number
           reflective_logs_enabled?: boolean | null
           road_tax_reference?: string | null
+          scheduled_purge_at?: string | null
           school_skim_amount?: number | null
           school_skim_percentage?: number | null
           secondary_colour?: string | null
