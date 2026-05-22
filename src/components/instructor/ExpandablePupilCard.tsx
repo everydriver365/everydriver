@@ -1042,6 +1042,9 @@ export function ExpandablePupilCard({
               {/* Test Day Preparation */}
               <TestDayPrep pupilId={pupil.id} pupilName={pupil.name} />
 
+              {/* Next Lesson Focus */}
+              <NextSyllabusFocus pupilId={pupil.id} audience="instructor" />
+
               {/* Syllabus Recommendations */}
               <SyllabusRecommendations pupilId={pupil.id} />
 
