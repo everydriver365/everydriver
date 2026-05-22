@@ -15,7 +15,7 @@ interface LessonSlot {
 
 interface NotifyRequest {
   instructorId: string;
-  type: "new_booking" | "cancellation" | "reschedule" | "reschedule_request" | "booking_request" | "admin_message" | "admin_direct_message" | "pupil_message" | "security_alert";
+  type: "new_booking" | "cancellation" | "reschedule" | "reschedule_request" | "booking_request" | "admin_message" | "admin_direct_message" | "pupil_message" | "security_alert" | "mtd_deadline_reminder";
   pupilName?: string;
   lessonDate?: string;
   lessonTime?: string;
@@ -32,6 +32,11 @@ interface NotifyRequest {
   speedKmh?: number;
   latitude?: number;
   longitude?: number;
+  // MTD reminder fields
+  quarterLabel?: string;
+  daysRemaining?: number;
+  deadline?: string; // YYYY-MM-DD
+  periodId?: string;
 }
 
 interface PushNotification {
@@ -213,6 +218,35 @@ serve(async (req) => {
         };
         break;
 
+      case "mtd_deadline_reminder": {
+        const ql = data.quarterLabel || "your";
+        const days = data.daysRemaining ?? 0;
+        const deadlineFmt = data.deadline
+          ? new Date(data.deadline).toLocaleDateString("en-GB", { day: "numeric", month: "short" })
+          : "";
+        let body: string;
+        if (days === 30) body = `Your ${ql} MTD return is due in 30 days${deadlineFmt ? ` (${deadlineFmt})` : ""}. Start gathering your figures.`;
+        else if (days === 7) body = `Your ${ql} MTD return is due in 7 days. Don't leave it too late.`;
+        else if (days === 1) body = `Your ${ql} MTD return is due tomorrow. Submit now to avoid a penalty.`;
+        else body = `Your ${ql} MTD return is due in ${days} days.`;
+        smsMessage = `📊 MTD filing deadline: ${body}`;
+        pushNotification = {
+          title: "📊 MTD filing deadline",
+          body,
+          tag: `mtd-deadline-${days}`,
+          icon: "/favicon.png",
+          data: {
+            type: "mtd_deadline_reminder",
+            quarterLabel: ql,
+            daysRemaining: days,
+            deadline: data.deadline,
+            periodId: data.periodId,
+            url: "/instructor-app/mtd/dashboard",
+          },
+        };
+        break;
+      }
+
       default:
         smsMessage = `📱 Update for ${data.pupilName || 'you'}${data.lessonDate ? `'s lesson on ${formatDate(data.lessonDate)}` : ''}.`;
         pushNotification = {
@@ -242,10 +276,15 @@ serve(async (req) => {
       admin_direct_message: "message",
       pupil_message: "message",
       security_alert: "system",
+      mtd_deadline_reminder: "mtd",
     };
     const gateCategory: NotifyCategory = categoryMap[data.type] ?? "system";
     const gateImportance: NotifyImportance =
-      data.type === "security_alert" || data.type === "cancellation" ? "important" : "normal";
+      data.type === "security_alert" || data.type === "cancellation"
+        ? "important"
+        : data.type === "mtd_deadline_reminder" && (data.daysRemaining ?? 0) <= 7
+          ? "important"
+          : "normal";
 
     // Send Push Notification
     try {

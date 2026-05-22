@@ -12,10 +12,11 @@ const CADENCE_OPTS: { key: DeliveryCadence; label: string; sub: string }[] = [
   { key: "important_only", label: "Important", sub: "Only critical" },
 ];
 
-const CATEGORIES: { key: CategoryKey; label: string }[] = [
+const CATEGORIES: { key: CategoryKey; label: string; sub?: string }[] = [
   { key: "test_swap", label: "Test swaps" },
   { key: "message", label: "Messages" },
   { key: "job", label: "Job offers" },
+  { key: "mtd", label: "MTD filing reminders", sub: "Notified 30, 7, and 1 day before each quarterly deadline" },
   { key: "system", label: "System" },
 ];
 
@@ -116,8 +117,11 @@ export default function NotificationPreferencesPanel({ instructorId }: Props) {
       <Section title="Categories">
         {CATEGORIES.map((c, i) => (
           <div key={c.key}>
-            <div className="flex items-center justify-between" style={{ padding: "6px 0" }}>
-              <p className="m-0" style={{ fontSize: 14, color: TEXT }}>{c.label}</p>
+            <div className="flex items-center justify-between" style={{ padding: "6px 0", gap: 12 }}>
+              <div className="flex flex-col" style={{ minWidth: 0 }}>
+                <p className="m-0" style={{ fontSize: 14, color: TEXT }}>{c.label}</p>
+                {c.sub && <p className="m-0" style={{ fontSize: 12, color: MUTED, marginTop: 2 }}>{c.sub}</p>}
+              </div>
               <Switch
                 checked={!settings.category_mutes[c.key]}
                 onCheckedChange={v => update({ category_mutes: { ...settings.category_mutes, [c.key]: !v } })}

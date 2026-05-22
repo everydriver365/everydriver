@@ -13,7 +13,7 @@ export interface NotificationRules {
   dedupe_repeat_sender?: boolean;
 }
 
-export type CategoryKey = "test_swap" | "message" | "job" | "system";
+export type CategoryKey = "test_swap" | "message" | "job" | "system" | "mtd";
 
 export interface DailySummaryInclude {
   tomorrow_lessons: boolean;
