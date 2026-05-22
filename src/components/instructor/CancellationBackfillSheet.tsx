@@ -128,11 +128,53 @@ export function CancellationBackfillSheet({
     onOpenChange(false);
   };
 
+  const handleGrabAGap = async () => {
+    setGrabSending(true);
+    haptics.medium();
+    try {
+      const target = grabTarget === "all_active"
+        ? "all_active"
+        : Array.from(selectedPupilIds);
+
+      if (grabTarget === "selected" && (target as string[]).length === 0) {
+        toast.error("Select at least one pupil first");
+        setGrabSending(false);
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke("slot-offer-broadcast", {
+        body: {
+          instructor_id: instructorId,
+          slot_date: lessonDate,
+          start_time: startTime,
+          end_time: endTime,
+          duration_mins: durationMinutes,
+          location_hint: grabLocationHint || undefined,
+          target,
+          expires_in_hours: grabExpiryHours,
+        },
+      });
+
+      if (error) throw error;
+      const count = (data as { recipient_count?: number })?.recipient_count ?? 0;
+      toast.success(`Sent to ${count} pupil${count === 1 ? "" : "s"} — first to claim gets the slot`);
+      onOpenChange(false);
+    } catch (e) {
+      console.error("[grab-a-gap]", e);
+      toast.error((e as Error).message ?? "Failed to send Grab a Gap");
+    } finally {
+      setGrabSending(false);
+    }
+  };
+
   if (!open) return null;
 
   return (
     <AnimatePresence>
       <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
