@@ -262,16 +262,20 @@ function useGapCandidatePupils(
               travelOutMin: null,
               travelInMin: null,
               etaSource: "fallback" as const,
+              routeSource: null,
               included: false,
               reason: "Already booked in this window",
             };
           }
 
-          const [outMin, inMin] = await Promise.all([
+          const [outRes, inRes] = await Promise.all([
             fetchTravelMinutes(prevDropPostcode, pupilPostcode),
             fetchTravelMinutes(pupilPostcode, nextPickupPostcode),
           ]);
+          const outMin = outRes.minutes;
+          const inMin = inRes.minutes;
           const realResolved = outMin !== null || inMin !== null;
+          const routeSource: RouteSource | null = worseSource(outRes.source, inRes.source);
           const feasibility = evaluateFeasibility({
             gapMin,
             bufferMinutes,
@@ -316,6 +320,7 @@ function useGapCandidatePupils(
             travelOutMin: outMin,
             travelInMin: inMin,
             etaSource: realResolved ? "real" : "fallback",
+            routeSource,
             included: fits,
             reason,
           };
