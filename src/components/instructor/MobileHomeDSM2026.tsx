@@ -99,6 +99,7 @@ import { DsmLogo } from "@/components/instructor/ui/DsmLogo";
 import { UpNextExpanded } from "@/components/instructor/UpNextExpanded";
 import { ScheduleTile } from "@/components/instructor/ScheduleTile";
 import { TaxEstimateTile } from "@/components/instructor/TaxEstimateTile";
+import { MTDDeadlineTile } from "@/components/instructor/MTDDeadlineTile";
 
 /* ---------------------------- Design tokens ----------------------------- */
 const T = {
@@ -318,6 +319,9 @@ export function MobileHomeDSM2026({ instructorId, instructorName }: Props) {
           </div>
           <div className="animate-fade-in" style={{ animationDelay: "90ms", animationFillMode: "both" }}>
             <TaxEstimateTile instructorId={instructorId} />
+          </div>
+          <div className="animate-fade-in" style={{ animationDelay: "105ms", animationFillMode: "both" }}>
+            <MTDDeadlineTile instructorId={instructorId} />
           </div>
           <div className="animate-fade-in" style={{ animationDelay: "120ms", animationFillMode: "both" }}>
             <ScheduleCard instructorId={instructorId} navigate={navigate} />
