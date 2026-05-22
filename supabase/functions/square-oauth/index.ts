@@ -208,6 +208,83 @@ serve(async (req: Request) => {
         );
       }
 
+      case "refresh": {
+        const { instructor_id } = body;
+        if (!instructor_id) {
+          return new Response(
+            JSON.stringify({ error: "Missing instructor_id" }),
+            { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+
+        const { data: instructor } = await supabase
+          .from("instructors")
+          .select("square_refresh_token_encrypted")
+          .eq("id", instructor_id)
+          .maybeSingle();
+
+        const refreshToken = instructor?.square_refresh_token_encrypted;
+        if (!refreshToken) {
+          return new Response(
+            JSON.stringify({ refreshed: false, error: "No refresh token on file" }),
+            { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+
+        const refreshRes = await fetch(`${baseUrl}/oauth2/token`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            client_id: appId,
+            client_secret: oauthSecret,
+            grant_type: "refresh_token",
+            refresh_token: refreshToken,
+          }),
+        });
+        const refreshData = await refreshRes.json();
+        console.log("Square OAuth refresh status:", refreshRes.status);
+
+        if (!refreshRes.ok || !refreshData.access_token) {
+          console.error("Square OAuth refresh failed:", refreshData);
+          const code = String(refreshData?.errors?.[0]?.code || "").toUpperCase();
+          if (code === "UNAUTHORIZED" || code === "REFRESH_TOKEN_REVOKED" || code === "REFRESH_TOKEN_EXPIRED" || code === "NOT_FOUND") {
+            await supabase
+              .from("instructors")
+              .update({
+                square_merchant_id: null,
+                square_access_token_encrypted: null,
+                square_refresh_token_encrypted: null,
+                square_token_expires_at: null,
+                square_connected_at: null,
+              })
+              .eq("id", instructor_id);
+            return new Response(
+              JSON.stringify({ refreshed: false, revoked: true, error: refreshData?.message || "Refresh token revoked" }),
+              { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
+          }
+          return new Response(
+            JSON.stringify({ refreshed: false, error: refreshData?.message || "Failed to refresh token" }),
+            { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+
+        const { access_token, refresh_token: newRefresh, expires_at } = refreshData;
+        await supabase
+          .from("instructors")
+          .update({
+            square_access_token_encrypted: access_token,
+            square_refresh_token_encrypted: newRefresh || refreshToken,
+            square_token_expires_at: expires_at,
+          })
+          .eq("id", instructor_id);
+
+        return new Response(
+          JSON.stringify({ refreshed: true, access_token, expires_at }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
       default:
         return new Response(
           JSON.stringify({ error: `Unknown action: ${action}` }),
