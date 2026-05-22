@@ -262,6 +262,41 @@ export type Database = {
         }
         Relationships: []
       }
+      account_deletion_reminders_sent: {
+        Row: {
+          deletion_request_id: string
+          detail: string | null
+          id: string
+          kind: string
+          sent_at: string
+          sent_ok: boolean
+        }
+        Insert: {
+          deletion_request_id: string
+          detail?: string | null
+          id?: string
+          kind: string
+          sent_at?: string
+          sent_ok?: boolean
+        }
+        Update: {
+          deletion_request_id?: string
+          detail?: string | null
+          id?: string
+          kind?: string
+          sent_at?: string
+          sent_ok?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "account_deletion_reminders_sent_deletion_request_id_fkey"
+            columns: ["deletion_request_id"]
+            isOneToOne: false
+            referencedRelation: "account_deletion_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       account_deletion_requests: {
         Row: {
           cancel_token: string | null
