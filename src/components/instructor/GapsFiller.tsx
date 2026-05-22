@@ -19,7 +19,16 @@ import {
   renderTemplate,
 } from "./gap-filler/ConfirmSendSheet";
 import { SendResultStatus } from "./gap-filler/SendResultSheet";
-import { evaluateFeasibility } from "./gapFeasibility";
+import { evaluateFeasibility, TRAVEL_FALLBACK_MIN } from "./gapFeasibility";
+
+const ETA_TIMEOUT_MS = 5000;
+const ETA_CONCURRENCY = 10;
+const normalisePostcode = (pc: string | null | undefined): string | null => {
+  if (!pc) return null;
+  const cleaned = pc.replace(/\s+/g, "").toUpperCase();
+  return cleaned.length > 0 ? cleaned : null;
+};
+const pairKey = (from: string, to: string) => `${from}|${to}`;
 
 const FONT_STACK =
   '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Roboto", sans-serif';
