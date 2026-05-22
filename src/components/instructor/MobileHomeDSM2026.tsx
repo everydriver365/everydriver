@@ -350,7 +350,41 @@ export function MobileHomeDSM2026({ instructorId, instructorName }: Props) {
   );
 }
 
+/* ============================ Collapsible tile ============================ */
+function CollapsibleTile({ label, children, defaultOpen = false }: { label: string; children: React.ReactNode; defaultOpen?: boolean }) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div style={{ background: "#FFFFFF", border: "1px solid #e0e3ea", borderRadius: 14, overflow: "hidden", fontFamily: '"Poppins", system-ui, -apple-system, "Segoe UI", sans-serif' }}>
+      <button
+        type="button"
+        onClick={() => setOpen((p) => !p)}
+        aria-expanded={open}
+        style={{
+          width: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "12px 14px",
+          background: "transparent",
+          border: "none",
+          cursor: "pointer",
+          textAlign: "left",
+        }}
+      >
+        <span style={{ fontSize: 13, fontWeight: 700, color: "#1F2937" }}>{label}</span>
+        <ChevronDown size={18} color="#8a93a4" style={{ transition: "transform 200ms", transform: open ? "rotate(180deg)" : "rotate(0deg)" }} />
+      </button>
+      {open && (
+        <div style={{ padding: "0 10px 10px 10px" }}>
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ============================== Hero header ============================= */
+
 function HeroHeader(props: {
   firstName: string;
   unreadCount: number;
