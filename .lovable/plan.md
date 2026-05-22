@@ -1,101 +1,104 @@
+## Goal
 
-# Tax estimate tile — fix all 10 discrepancies
+Tag `payment_type` on every `payment_history` insert site, then backfill historical rows so the income filter in `useInstructorTaxSummary` (and any future consumers) reflects accurate categories.
 
-Scope: `src/lib/ukTax.ts`, `src/hooks/useInstructorTaxSummary.ts`, and minimal copy/label changes in `src/components/instructor/TaxEstimateTile.tsx` only. The affiliate-signup prompt is deferred to a follow-up loop per the user's "after the tax fix completes" instruction.
+Strictly additive: no amount, flow, or logic changes.
 
-## Schema facts confirmed (read-only checks)
+## Mapping (no ambiguity)
 
-- `mtd_instructor_settings.accounting_type` exists (text). All current rows are NULL → default to cash.
-- `instructor_expenses` has `deleted_at` but **no `status` and no `is_deductible` column** → D6 reduces to `deleted_at IS NULL`.
-- `mileage_logs.trip_type` distinct values are exactly `business` and `personal` → existing `eq('trip_type','business')` filter is correct. D10 is a no-op fix; just record the finding.
-- `payment_history` has `deleted_at` but **no `type`/`source`/`category` column** distinguishing platform-fee rows from instructor income → D5 reduces to: keep `instructor_id` + `amount > 0` + add `deleted_at IS NULL`.
-- `scheduled_lessons` has `status`, `amount_due`, `deleted_at`. Status values in use: `scheduled`, `confirmed`, `cancelled` — **there is no `completed` status**. For accruals basis we treat a lesson as earned when `lesson_date <= today`, `status IN ('scheduled','confirmed')`, `deleted_at IS NULL`.
+| Insert site | payment_type |
+|---|---|
+| Positive payments via Square / Klarna / Clearpay / GoCardless / manual / wallet / booking | `lesson_payment` |
+| Refund flows (`square-refund`, `RefundModal`, Square webhook refund branch, any negative-amount insert) | `refund` |
+| No-show charges (`MultiDayScheduleView`, `CancelLessonDialog`, anywhere `No-Show Fee` is recorded) | `no_show_fee` |
+| Cancellation fees | `cancellation_fee` |
+| Subscription billing inserts | `subscription` |
 
-## PART 1 — High severity (D1, D3, D4)
+## PART 1 — Tag insert sites
 
-### D1 — Personal allowance taper above £100k (`ukTax.ts`)
-Rewrite `calculateTax(taxable)` to compute an adjusted personal allowance:
+### Frontend (`src/components/instructor/...`)
+1. `CancelLessonDialog.tsx:155` — cancellation/no-show branch. Inspect surrounding code: if it's a no-show charge → `no_show_fee`; if cancellation fee → `cancellation_fee`. Add `payment_type` to the insert object.
+2. `EndLessonWizard.tsx:227` → `lesson_payment`.
+3. `MultiDayScheduleView.tsx:774` (No-Show Fee insert) → `no_show_fee`.
+4. `NewMobileScheduleView.tsx:241` — inspect; if no-show charge → `no_show_fee`, else `lesson_payment`.
+5. `PupilPaymentsManager.tsx:84` → `lesson_payment`.
+6. `TodayScheduleView.tsx:397` — inspect like #4.
+7. `end-lesson/StepPayment.tsx:114` → `lesson_payment`.
+8. `RecordPaymentModal.tsx:211` → `lesson_payment`.
+9. `RefundModal.tsx:149` and `:222` → `refund`.
+10. `TakePaymentModal.tsx:98` (realtime channel insert) → `lesson_payment` if it actually inserts a row; skip if it's only a subscription listener.
+
+### Edge functions (`supabase/functions/...`)
+11. `record-payment/index.ts:105` and `:129` → `lesson_payment`.
+12. `klarna-order/index.ts:146` / `:152` / `:170` → `lesson_payment`.
+13. `clearpay-capture/index.ts:66` / `:130` → `lesson_payment`.
+14. `create-booking/index.ts:401` → `lesson_payment`.
+15. `gocardless-webhook/index.ts:227` → `lesson_payment` (DD/IBP captured payments).
+16. `payment-callback/index.ts:176`, `:401`, `:582` → `lesson_payment`.
+17. `square-booking-wallet-payment/index.ts:238` → `lesson_payment`.
+18. `square-payment/index.ts:198` → `lesson_payment`.
+19. `square-wallet-payment/index.ts:146` → `lesson_payment`.
+20. `square-webhook/index.ts:235` (capture branch) → `lesson_payment`.
+21. `square-webhook/index.ts:585` — refund branch → `refund`.
+22. `square-refund/index.ts:161` → `refund`.
+23. `voice-execute/index.ts:294` — inspect; almost certainly `lesson_payment`.
+
+Each edit is a one-line addition inside the existing insert object literal — no flow change, no field rename, no amount adjustment.
+
+## PART 2 — Historical backfill migration
+
+Single migration file with two updates:
+
+```sql
+UPDATE public.payment_history
+SET payment_type = 'lesson_payment'
+WHERE amount > 0 AND payment_type IS NULL;
+
+UPDATE public.payment_history
+SET payment_type = 'refund'
+WHERE amount < 0 AND payment_type IS NULL;
 ```
-adjustedPA = Math.max(0, 12570 - Math.floor(Math.max(0, taxable - 100000) / 2))
-```
-Use `adjustedPA` in place of the `PERSONAL_ALLOWANCE` constant inside the function body. The three band constants (50,270 / 125,140) stay fixed — only the PA shrinks. At ≥125,140 the PA is 0, never negative. Existing call sites unchanged (same signature).
 
-### D3 — Cash vs accruals basis (`useInstructorTaxSummary.ts`)
-Add a 4th parallel query that reads `mtd_instructor_settings.accounting_type` for the instructor (`.maybeSingle()`). Branch:
-- `accounting_type === 'accruals'` → income = sum of `amount_due` from `scheduled_lessons` where `instructor_id = X`, `lesson_date BETWEEN startISO AND endISO`, `status IN ('scheduled','confirmed')`, `deleted_at IS NULL`. Adapt to actual delivered lessons by also requiring `lesson_date <= today` so future bookings are not pre-counted.
-- Otherwise (cash, NULL, or missing row) → existing `payment_history` logic.
+This leaves zero-amount rows (if any) untagged, which is correct — the income filter already tolerates `NULL`.
 
-Expose `accountingBasis: 'cash' | 'accruals'` on the returned summary so the tile can label the figure.
+## PART 3 — Verified clean (no changes)
 
-### D4 — Full-year projection (`useInstructorTaxSummary.ts` + `TaxEstimateTile.tsx`)
-Compute:
-```
-daysElapsed = max(1, daysBetween(startISO, today))
-daysInYear  = daysBetween(startISO, endISO) + 1  // 365 or 366
-projectedAnnualIncome   = (ytdIncome / daysElapsed) * daysInYear
-projectedAnnualExpenses = (totalExpenses / daysElapsed) * daysInYear
-projectedTaxable        = max(0, projectedAnnualIncome - projectedAnnualExpenses)
-projectedTax            = calculateTax(projectedTaxable)
-projectedNI             = calculateNI(projectedTaxable)   // includes Class 2 after D2
-projectedLiability      = projectedTax + projectedNI
-```
-Return `daysElapsed`, `projectedAnnualIncome`, `projectedLiability`, plus existing YTD fields (unchanged so `InstructorTax.tsx` is unaffected).
+- `ukTax.ts` — untouched (source of truth).
+- `useInstructorTaxSummary.ts` — filter already live, will start excluding `platform_fee` / `commission` automatically once those tags appear.
+- All accounting-sync, refund-amount, payout, and Square webhook business logic — untouched.
+- `payment_history` schema — no further migration (check constraint already accepts all values used).
 
-`TaxEstimateTile.tsx` minimal edit:
-- Headline £ = `projectedLiability` when `daysElapsed >= 30`, else `totalLiability` (YTD).
-- Subtitle: "Projected full-year estimate" (or "Year-to-date · projection available after 30 days" before day 30).
-- Secondary 11px grey line: "Based on £X earned so far this year".
-- No other layout changes.
+## PART 4 — Deferred
 
-## PART 2 — Medium severity (D2, D5, D6)
+- `platform_fee` / `commission` tags: no insert site currently writes these as separate rows, so no tagging to do today. When a future site does (e.g. a fee-skim writer), it must use the new values.
+- Subscription billing inserts — confirm whether any subscription edge function writes to `payment_history`; current grep shows none. If one is added later it should use `subscription`.
+- Affiliate signup flow (Xero/accounting) — to be actioned in the next loop after this pass lands.
 
-### D2 — Class 2 NI (`ukTax.ts` + hook + tile)
-Refactor `calculateNI(taxable)` to return `{ class2: number; class4: number; total: number }`:
-- `class4` = existing logic
-- `class2` = `taxable > 12570 ? 179.40 : 0` (£3.45 × 52)
-- `total` = sum
-Update all call sites:
-- `useInstructorTaxSummary.ts` — surface `estimatedClass2NI`, `estimatedClass4NI`, keep `estimatedNI = total` for backward compatibility with `InstructorTax.tsx`.
-- `TaxEstimateTile.tsx` — relabel the right-hand mini card "Nat. Insurance" → "Class 2 + Class 4" and add an 11px grey subtitle under the value: `"£179 Class 2 + £X Class 4"` (only when Class 2 applies).
+## Files touched
 
-### D5 — `payment_history` filtering (`useInstructorTaxSummary.ts`)
-Add `.is('deleted_at', null)` to the payments query. Keep existing `instructor_id` filter and `> 0` post-filter. Note in code comment: no platform-fee column exists on `payment_history` so no additional type filter is applicable.
+Code edits (≈22 one-line additions across):
+- `src/components/instructor/CancelLessonDialog.tsx`
+- `src/components/instructor/EndLessonWizard.tsx`
+- `src/components/instructor/MultiDayScheduleView.tsx`
+- `src/components/instructor/NewMobileScheduleView.tsx`
+- `src/components/instructor/PupilPaymentsManager.tsx`
+- `src/components/instructor/TodayScheduleView.tsx`
+- `src/components/instructor/end-lesson/StepPayment.tsx`
+- `src/components/instructor/RecordPaymentModal.tsx`
+- `src/components/instructor/RefundModal.tsx`
+- `supabase/functions/record-payment/index.ts`
+- `supabase/functions/klarna-order/index.ts`
+- `supabase/functions/clearpay-capture/index.ts`
+- `supabase/functions/create-booking/index.ts`
+- `supabase/functions/gocardless-webhook/index.ts`
+- `supabase/functions/payment-callback/index.ts`
+- `supabase/functions/square-booking-wallet-payment/index.ts`
+- `supabase/functions/square-payment/index.ts`
+- `supabase/functions/square-wallet-payment/index.ts`
+- `supabase/functions/square-webhook/index.ts`
+- `supabase/functions/square-refund/index.ts`
+- `supabase/functions/voice-execute/index.ts`
 
-### D6 — `instructor_expenses` filtering (`useInstructorTaxSummary.ts`)
-Add `.is('deleted_at', null)`. No `status` or `is_deductible` columns exist → those filters skipped (documented in code comment + reported in output).
+One new migration for the backfill UPDATEs.
 
-## PART 3 — Low severity (D8/D9, D10, cosmetic)
-
-### D8 + D9 — Timezone-safe tax-year boundary (`ukTax.ts currentUkTaxYear`)
-Replace `new Date(year, 3, 6)` constructions with explicit London-clock anchors. April 6 in the UK is always BST → use `+01:00`:
-```
-const cutover = new Date(`${year}-04-06T00:00:00+01:00`);
-const start   = new Date(`${startYear}-04-06T00:00:00+01:00`);
-const end     = new Date(`${startYear + 1}-04-05T23:59:59+01:00`);
-```
-ISO strings returned (`startISO`, `endISO`) stay as bare dates `YYYY-04-06` / `YYYY-04-05` since both Supabase queries use them either as `date` columns (no TZ) or as `T00:00:00`/`T23:59:59` bounds — switch the timestamp bound in the payments query to `T23:59:59+01:00` so a 5-Apr-23:30-UTC payment is correctly counted in the closing year. `getQuarterDeadlines` is not in this file — skip per scope; flag if it exists elsewhere.
-
-### D10 — `trip_type` casing
-Confirmed only `business` and `personal` exist. Filter is already correct. No code change. Report in output.
-
-### Cosmetic
-Update the file header comment in `ukTax.ts` from "2024/25" to "2025/26".
-
-## PART 4 — Verified clean
-
-- `InstructorTax.tsx` untouched. `calculateNI` signature change is the one risk → either keep the old `calculateNI` exported as a thin wrapper returning `total`, OR update `InstructorTax.tsx` to read `.total` (preferred: thin wrapper to honour "do not modify InstructorTax.tsx").
-- No edits to payment/refund/accounting-sync code.
-- D3 only reads `scheduled_lessons` and `mtd_instructor_settings` — no writes.
-- No migration needed.
-
-## PART 5 — Deferred
-
-- Affiliate-signup prompt (`site_settings` audit, admin panel, signup UI, click tracking) → next loop once user confirms tax fix.
-- Quarter deadline TZ fix outside `ukTax.ts` if `getQuarterDeadlines` lives elsewhere.
-- Platform-fee filtering on `payment_history` once a distinguishing column exists.
-
-## Files
-
-- Edit: `src/lib/ukTax.ts`
-- Edit: `src/hooks/useInstructorTaxSummary.ts`
-- Edit: `src/components/instructor/TaxEstimateTile.tsx` (label + projection display only)
+Sites flagged "inspect" (`CancelLessonDialog:155`, `NewMobileScheduleView:241`, `TodayScheduleView:397`, `voice-execute:294`) will be classified by reading the surrounding 20 lines before tagging — if any turns out to be genuinely ambiguous it goes in PART 4 deferred with a one-line note rather than being guessed.

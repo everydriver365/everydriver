@@ -229,6 +229,7 @@ async function handleBillingRequest(supabase: any, event: any) {
             instructor_id: instructorId,
             amount: paymentIntent.amount,
             payment_method: "GoCardless Bank Pay",
+            payment_type: "lesson_payment",
             external_payment_ref: externalRef,
             notes: `Instant Bank Pay · billing_request_id:${billingRequestId} · payment_id:${paymentId}`,
           });

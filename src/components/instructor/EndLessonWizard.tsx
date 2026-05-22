@@ -229,6 +229,7 @@ export function EndLessonWizard({
           instructor_id: instructorId,
           amount: -lessonCost,
           payment_method: "Lesson Charge",
+          payment_type: "lesson_payment",
           notes: `${durationMinutes}min lesson on ${lessonDate}`,
         });
 

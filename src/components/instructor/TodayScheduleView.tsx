@@ -399,6 +399,7 @@ export function TodayScheduleView({ instructorId }: TodayScheduleViewProps) {
           instructor_id: instructorId,
           amount: -lessonCost,
           payment_method: "Lesson Charge",
+          payment_type: "lesson_payment",
           notes: `${lesson.duration_minutes}min lesson on ${lesson.lesson_date}`,
         });
 

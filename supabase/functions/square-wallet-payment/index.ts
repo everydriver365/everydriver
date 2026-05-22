@@ -147,7 +147,7 @@ serve(async (req: Request) => {
       pupil_id: pupilId,
       instructor_id: instructorId,
       amount: amount,
-      payment_type: "payment",
+      payment_type: "lesson_payment",
       payment_method: walletType === "apple" ? "Apple Pay" : "Google Pay",
       transaction_reference: orderReference,
     });

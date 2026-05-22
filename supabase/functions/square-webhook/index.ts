@@ -237,6 +237,7 @@ serve(async (req: Request) => {
           pupil_id: pupilId,
           amount: creditAmount,
           payment_method: "Square",
+          payment_type: "lesson_payment",
           payout_status: payoutStatus,
           external_payment_ref: `square:${paymentId}`,
           notes: `Square Checkout Payment - ID: ${paymentId}${feeAmount > 0 ? ` (admin fee: £${feeAmount.toFixed(2)})` : ''}${isAutoTransfer ? ' (auto-paid via Square)' : ''}`,
@@ -587,6 +588,7 @@ serve(async (req: Request) => {
           pupil_id: original.pupil_id,
           amount: -Math.abs(refundAmount),
           payment_method: "Square Refund",
+          payment_type: "refund",
           payout_status: "refunded",
           notes: `Refund ${refundId} for payment ${originalPaymentId}${fullRefund ? " (full)" : " (partial)"}`,
         });

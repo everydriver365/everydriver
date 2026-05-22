@@ -108,6 +108,7 @@ Deno.serve(async (req) => {
           instructor_id: instructorId,
           amount: positive,
           payment_method: "Square",
+          payment_type: "lesson_payment",
           notes: `${body.note ? body.note + " · " : ""}Awaiting payment · ${orderRef} pending`,
           payout_status: "pending",
         })
@@ -132,6 +133,7 @@ Deno.serve(async (req) => {
         instructor_id: instructorId,
         amount: signed,
         payment_method: methodLabel,
+        payment_type: body.isRefund ? "refund" : "lesson_payment",
         notes: body.note || (body.isRefund ? "Refund" : `${methodLabel} payment`),
       })
       .select("id, recorded_at")

@@ -163,6 +163,7 @@ serve(async (req: Request) => {
       pupil_id: original.pupil_id,
       amount: -Math.abs(netRefund),
       payment_method: "Square Refund",
+      payment_type: "refund",
       payout_status: "refunded",
       external_payment_ref: `square_refund:${refundId}`,
       notes: `Refund ${refundId} for payment ${squarePaymentId}${fullRefund ? " (full)" : " (partial)"}${feeReversal > 0 ? ` — gross £${amount.toFixed(2)} less £${feeReversal.toFixed(2)} fee` : ""}${reason ? ` — ${reason}` : ""}`,

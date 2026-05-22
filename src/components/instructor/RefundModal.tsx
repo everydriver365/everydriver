@@ -225,6 +225,7 @@ export function RefundModal({
             instructor_id: instructorId,
             amount: -Math.abs(parsedAmount),
             payment_method: method,
+            payment_type: "refund",
             notes: `Refund${notes.trim() ? ` — ${notes.trim()}` : ""}`,
           });
         if (histErr) throw histErr;

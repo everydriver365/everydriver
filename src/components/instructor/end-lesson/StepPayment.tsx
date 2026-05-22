@@ -116,6 +116,7 @@ export function StepPayment({
         instructor_id: instructorId,
         amount: parsed,
         payment_method: method,
+        payment_type: "lesson_payment",
         notes: note.trim() ? note.trim() : "Recorded at end of lesson",
         lesson_id: lessonId ?? null,
       });

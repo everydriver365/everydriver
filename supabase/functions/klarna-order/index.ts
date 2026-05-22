@@ -173,6 +173,7 @@ serve(async (req: Request) => {
               instructor_id: data.instructorId,
               amount: amountGbp,
               payment_method: "Klarna",
+              payment_type: "lesson_payment",
               external_payment_ref: externalRef,
               notes: noteText,
             });
