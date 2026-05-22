@@ -12715,6 +12715,7 @@ export type Database = {
           lesson_id: string | null
           notes: string | null
           payment_method: string | null
+          payment_type: string | null
           payout_id: string | null
           payout_status: string | null
           pupil_id: string
@@ -12731,6 +12732,7 @@ export type Database = {
           lesson_id?: string | null
           notes?: string | null
           payment_method?: string | null
+          payment_type?: string | null
           payout_id?: string | null
           payout_status?: string | null
           pupil_id: string
@@ -12747,6 +12749,7 @@ export type Database = {
           lesson_id?: string | null
           notes?: string | null
           payment_method?: string | null
+          payment_type?: string | null
           payout_id?: string | null
           payout_status?: string | null
           pupil_id?: string
