@@ -40,6 +40,69 @@ function normalizePhoneE164(raw?: string | null): string | null {
   return null;
 }
 
+// Attempt to refresh an instructor's Square OAuth access token using the stored
+// refresh token. Returns the new access token on success, or null if refresh
+// was not possible (no token, revoked, network error, etc.).
+async function refreshInstructorSquareToken(
+  supabase: ReturnType<typeof createClient>,
+  instructorId: string,
+  appId: string,
+  oauthSecret: string,
+  baseUrl: string,
+): Promise<string | null> {
+  try {
+    const { data: row } = await supabase
+      .from("instructors")
+      .select("square_refresh_token_encrypted")
+      .eq("id", instructorId)
+      .maybeSingle();
+    const refreshToken = (row as any)?.square_refresh_token_encrypted;
+    if (!refreshToken) return null;
+
+    const res = await fetch(`${baseUrl}/oauth2/token`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        client_id: appId,
+        client_secret: oauthSecret,
+        grant_type: "refresh_token",
+        refresh_token: refreshToken,
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok || !data.access_token) {
+      console.error("[square-checkout] inline refresh failed:", res.status, data);
+      const code = String(data?.errors?.[0]?.code || "").toUpperCase();
+      if (code === "UNAUTHORIZED" || code === "REFRESH_TOKEN_REVOKED" || code === "REFRESH_TOKEN_EXPIRED" || code === "NOT_FOUND") {
+        await supabase
+          .from("instructors")
+          .update({
+            square_merchant_id: null,
+            square_access_token_encrypted: null,
+            square_refresh_token_encrypted: null,
+            square_token_expires_at: null,
+            square_connected_at: null,
+          })
+          .eq("id", instructorId);
+      }
+      return null;
+    }
+    await supabase
+      .from("instructors")
+      .update({
+        square_access_token_encrypted: data.access_token,
+        square_refresh_token_encrypted: data.refresh_token || refreshToken,
+        square_token_expires_at: data.expires_at,
+      })
+      .eq("id", instructorId);
+    console.log("[square-checkout] refreshed Square token for", instructorId);
+    return data.access_token as string;
+  } catch (e) {
+    console.error("[square-checkout] inline refresh exception:", e);
+    return null;
+  }
+}
+
 serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -88,29 +151,47 @@ serve(async (req: Request) => {
     let effectiveLocationId = locationId;
     let appFeeAmountPence = 0;
 
+    // Capture supabase client + OAuth app credentials so we can refresh inline
+    // and also retry once after an UNAUTHORIZED Square response below.
+    let sbClient: ReturnType<typeof createClient> | null = null;
+    const sqAppId = Deno.env.get("SQUARE_APPLICATION_ID")?.trim() || "";
+    const sqOauthSecret = Deno.env.get("SQUARE_OAUTH_SECRET")?.trim() || "";
+    const locEnv = environment.toLowerCase();
+    const locIsProduction = locEnv === "production" || locEnv === "prod" || locEnv === "live";
+    const oauthBaseUrl = locIsProduction ? "https://connect.squareup.com" : "https://connect.squareupsandbox.com";
+
     if (body.instructorId) {
       try {
         const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
         const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-        const supabase = createClient(supabaseUrl, serviceRoleKey);
+        sbClient = createClient(supabaseUrl, serviceRoleKey);
 
-        const { data: instructor } = await supabase
+        const { data: instructor } = await sbClient
           .from("instructors")
-          .select("square_merchant_id, square_access_token_encrypted")
+          .select("square_merchant_id, square_access_token_encrypted, square_refresh_token_encrypted, square_token_expires_at")
           .eq("id", body.instructorId)
           .maybeSingle();
 
         if (instructor?.square_merchant_id && instructor?.square_access_token_encrypted) {
           useInstructorToken = true;
           effectiveAccessToken = instructor.square_access_token_encrypted;
+
+          // Proactive refresh if the access token is expired or expires within 5 minutes
+          const expiresAt = instructor.square_token_expires_at
+            ? new Date(instructor.square_token_expires_at).getTime()
+            : 0;
+          const fiveMinFromNow = Date.now() + 5 * 60 * 1000;
+          if (sqAppId && sqOauthSecret && instructor.square_refresh_token_encrypted && (!expiresAt || expiresAt <= fiveMinFromNow)) {
+            console.log(`[square-checkout] token expired/near-expiry for ${body.instructorId}, refreshing`);
+            const newToken = await refreshInstructorSquareToken(sbClient, body.instructorId, sqAppId, sqOauthSecret, oauthBaseUrl);
+            if (newToken) effectiveAccessToken = newToken;
+          }
+
           console.log(`Using instructor's Square OAuth token for ${body.instructorId}`);
 
           // Fetch instructor's main location from Square API
           try {
-            const locEnv = environment.toLowerCase();
-            const locIsProduction = locEnv === "production" || locEnv === "prod" || locEnv === "live";
-            const locBaseUrl = locIsProduction ? "https://connect.squareup.com" : "https://connect.squareupsandbox.com";
-            const locRes = await fetch(`${locBaseUrl}/v2/locations`, {
+            const locRes = await fetch(`${oauthBaseUrl}/v2/locations`, {
               headers: {
                 "Authorization": `Bearer ${effectiveAccessToken}`,
                 "Square-Version": "2024-01-18",
@@ -137,6 +218,7 @@ serve(async (req: Request) => {
         console.error("Error checking instructor Square OAuth:", e);
       }
     }
+
 
     // Square uses amount in smallest currency unit (pence for GBP)
     const amountInPence = Math.round(amount * 100);
@@ -193,19 +275,42 @@ serve(async (req: Request) => {
 
     console.log("Square API payload:", JSON.stringify(payload, null, 2));
 
-    const response = await fetch(`${baseUrl}/v2/online-checkout/payment-links`, {
-      method: "POST",
-      headers: {
-        "Square-Version": "2024-01-18",
-        "Authorization": `Bearer ${effectiveAccessToken}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(payload)
-    });
+    const doCheckoutFetch = (token: string) =>
+      fetch(`${baseUrl}/v2/online-checkout/payment-links`, {
+        method: "POST",
+        headers: {
+          "Square-Version": "2024-01-18",
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
 
-    const responseText = await response.text();
+    let response = await doCheckoutFetch(effectiveAccessToken);
+    let responseText = await response.text();
     console.log("Square API response status:", response.status);
     console.log("Square API response:", responseText);
+
+    // Retry once on auth failure: try to refresh the instructor's OAuth token
+    // and replay the checkout request before falling through to the friendly
+    // "isn't connected" error message.
+    if (!response.ok && useInstructorToken && sbClient && body.instructorId && sqAppId && sqOauthSecret) {
+      let parsedErr: any = null;
+      try { parsedErr = JSON.parse(responseText); } catch { /* ignore */ }
+      const errCode = String(parsedErr?.errors?.[0]?.code || "").toUpperCase();
+      if (response.status === 401 || errCode === "UNAUTHORIZED" || errCode === "ACCESS_TOKEN_EXPIRED" || errCode === "ACCESS_TOKEN_REVOKED") {
+        console.log("[square-checkout] auth failure, attempting one-shot refresh + retry");
+        const newToken = await refreshInstructorSquareToken(sbClient, body.instructorId, sqAppId, sqOauthSecret, oauthBaseUrl);
+        if (newToken) {
+          effectiveAccessToken = newToken;
+          response = await doCheckoutFetch(newToken);
+          responseText = await response.text();
+          console.log("Square API retry response status:", response.status);
+          console.log("Square API retry response:", responseText);
+        }
+      }
+    }
+
 
     if (!response.ok) {
       console.error("Square API error:", responseText);

@@ -1,109 +1,44 @@
-## MTD deadline reminders — implementation plan
+## Problem
 
-Mirror `send-deletion-reminders` pattern. Daily cron checks `mtd_quarterly_periods` for periods whose `deadline` falls exactly 30, 7, or 1 day from today (Europe/London), dedupes via a new table, and sends push via `notify-instructor`.
+When generating a Square payment QR (and payment links), the edge function returns "Your Square account isn't connected" even though Square is connected in Settings.
 
----
+Root cause: the instructor's Square OAuth access token expired on 25 Apr 2026 (today is 22 May 2026). Square access tokens only live ~30 days. The `square-checkout` edge function reads `square_access_token_encrypted` directly and calls Square — Square returns `UNAUTHORIZED` / `ACCESS_TOKEN_EXPIRED`, which the function maps to the friendly "Square account isn't connected" message.
 
-### PART 1 — Notification type constants
+There is currently **no refresh path anywhere** — `square-oauth` only has `authorize`, `callback`, and `disconnect` actions. So every instructor silently loses Square access ~30 days after connecting.
 
-**`supabase/functions/_shared/notification-types.ts`** and **`src/lib/notificationTypes.ts`** (mirrored):
-- Add `PushDataType.MTD_DEADLINE_REMINDER = "mtd_deadline_reminder"`.
-- Add `NotifyCategory.MTD = "mtd"`.
+## Fix (backend only — no UI changes)
 
-**`supabase/functions/_shared/notify-gate.ts`**:
-- Extend `NotifyCategory` union with `"mtd"`.
+### 1. Add `refresh` action to `supabase/functions/square-oauth/index.ts`
 
-**`supabase/functions/notify-instructor/index.ts`**:
-- Extend `NotifyRequest.type` with `"mtd_deadline_reminder"`.
-- Add fields: `quarterLabel?: string`, `daysRemaining?: number`, `deadline?: string`, `periodId?: string`.
-- Add `case "mtd_deadline_reminder"` in switch with tier-specific copy:
-  - 30: "Your {quarterLabel} MTD return is due in 30 days ({deadline}). Start gathering your figures."
-  - 7: "Your {quarterLabel} MTD return is due in 7 days. Don't leave it too late."
-  - 1: "Your {quarterLabel} MTD return is due tomorrow. Submit now to avoid a penalty."
-  - Title: "MTD filing deadline"
-  - Push `data`: `{ type: "mtd_deadline_reminder", quarterLabel, daysRemaining, deadline, periodId, url: "/instructor-app/mtd/dashboard" }`
-  - `tag: "mtd-deadline"` (per-tier suffix `mtd-deadline-{tier}` to allow stacking).
-- Extend `categoryMap`: `mtd_deadline_reminder: "mtd"`.
-- Importance: `important` when `daysRemaining <= 7`, else `normal`.
+New case `"refresh"` that:
+- Accepts `{ instructor_id }`.
+- Loads `square_refresh_token_encrypted`, `square_merchant_id` for that instructor (service role).
+- Calls Square's `POST /oauth2/token` with `grant_type=refresh_token`, `client_id`, `client_secret`, `refresh_token`.
+- On success, updates `instructors` row: `square_access_token_encrypted`, `square_refresh_token_encrypted` (Square may rotate it), `square_token_expires_at`.
+- On failure (e.g. revoked), clears the three fields + `square_merchant_id` and returns `{ refreshed: false, revoked: true }`.
+- Uses the same `SQUARE_ENVIRONMENT` literal (`production`) check already used elsewhere — never relax that.
 
-### PART 2 — Deduplication table (migration)
+### 2. Make `supabase/functions/square-checkout/index.ts` refresh on demand
 
-```sql
-CREATE TABLE public.mtd_deadline_reminders_sent (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  period_id uuid NOT NULL REFERENCES public.mtd_quarterly_periods(id) ON DELETE CASCADE,
-  tier int NOT NULL CHECK (tier IN (30, 7, 1)),
-  sent_at timestamptz NOT NULL DEFAULT now(),
-  sent_ok boolean NOT NULL,
-  detail text,
-  UNIQUE (period_id, tier)
-);
-CREATE INDEX ON public.mtd_deadline_reminders_sent (period_id);
-ALTER TABLE public.mtd_deadline_reminders_sent ENABLE ROW LEVEL SECURITY;
-```
+In the existing `if (body.instructorId)` block (around line 91):
+- Also select `square_refresh_token_encrypted, square_token_expires_at`.
+- If `square_token_expires_at` is missing or within 5 minutes of `now`, attempt an inline refresh (same logic as the new action, factored into a small helper at the top of the file). Use the refreshed access token + persist it.
+- Keep `effectiveAccessToken = instructor.square_access_token_encrypted` as the fallback path.
 
-RLS:
-- Instructor SELECT own: `EXISTS (SELECT 1 FROM mtd_quarterly_periods p WHERE p.id = period_id AND p.instructor_id = public.get_instructor_id_for_user(auth.uid()))`.
-- Admin SELECT all: `public.has_role(auth.uid(), 'admin')`.
-- No INSERT/UPDATE/DELETE policies → service role only (bypasses RLS).
+Also add a **single retry on UNAUTHORIZED**: if the Square checkout call returns `UNAUTHORIZED` / `ACCESS_TOKEN_EXPIRED` / `ACCESS_TOKEN_REVOKED` and we have a `refresh_token`, run the refresh helper once and replay the checkout request before mapping to the friendly error.
 
-### PART 3 — Edge function `send-mtd-deadline-reminders`
+### 3. Out of scope (intentionally)
 
-`supabase/functions/send-mtd-deadline-reminders/index.ts`:
-- CORS, OPTIONS handling.
-- Service-role client.
-- Compute `today` as `YYYY-MM-DD` in `Europe/London` via `Intl.DateTimeFormat`.
-- Compute `horizon = today + 31 days` (string).
-- Query `mtd_quarterly_periods` where `status = 'open'` AND `deadline > today` AND `deadline <= horizon`, select `id, instructor_id, tax_year, quarter, deadline`.
-- For each period: `daysUntil = floor((Date(deadline) - Date(today)) / 86400000)`; skip if not in `{30, 7, 1}`.
-- Pre-check `mtd_deadline_reminders_sent` for `(period_id, tier)` → skip if present.
-- Build `quarterLabel = "Q{quarter} {taxYear}/{(taxYear+1)%100 padded}"`.
-- Call `notify-instructor` via `supabase.functions.invoke` with type `mtd_deadline_reminder` (the gate inside notify-instructor handles the `category_mutes.mtd` check).
-- Insert `mtd_deadline_reminders_sent` row with `sent_ok: true/false` + error detail.
-- Use `Promise.allSettled` for parallelism.
-- Return `{ processed, sent, skipped, today }`.
+- No changes to `TakePaymentModal.tsx` or any other frontend.
+- No changes to the friendly error mapping — it stays as the final fallback when refresh itself fails (token revoked, Square down, etc.). In that case the user does need to reconnect.
+- No new pg_cron job for proactive refresh — on-demand refresh is enough and matches how other gateways here behave. Can be added later if we see repeated expiry pain.
 
-### PART 4 — Cron registration
+### Files touched
 
-Via **insert tool** (contains anon key, must not be a migration):
-```sql
-SELECT cron.unschedule('send-mtd-deadline-reminders-daily')
-  WHERE EXISTS (SELECT 1 FROM cron.job WHERE jobname = 'send-mtd-deadline-reminders-daily');
-SELECT cron.schedule(
-  'send-mtd-deadline-reminders-daily',
-  '0 9 * * *',
-  $$ SELECT net.http_post(
-       url := 'https://qyqeibovdhyohkfagujv.supabase.co/functions/v1/send-mtd-deadline-reminders',
-       headers := '{"Content-Type":"application/json","apikey":"<anon>"}'::jsonb,
-       body := '{}'::jsonb
-     ); $$
-);
-```
+- `supabase/functions/square-oauth/index.ts` — add `refresh` case.
+- `supabase/functions/square-checkout/index.ts` — pre-check expiry, retry once on auth error.
 
-### PART 5 — Instructor opt-out UI
+### Verification
 
-**`src/hooks/useInstructorNotificationSettings.ts`**: extend `CategoryKey` union with `"mtd"`.
-
-**`src/components/instructor/notifications/NotificationPreferencesPanel.tsx`**: append to the `CATEGORIES` array:
-```ts
-{ key: "mtd", label: "MTD filing reminders", subtitle: "Notified 30, 7, and 1 day before each quarterly deadline" }
-```
-If the panel doesn't currently render a subtitle, add a small muted line under the label for the new row only (or for all rows if minimal). Default unchecked-in-mutes = on.
-
-### PART 6 — Verified clean
-
-Will not touch: `send-deletion-reminders`, deletion code paths, `mtd_quarterly_periods` schema, `InstructorTax.tsx`, `ukTax.ts`, tax calculation helpers, `MTDSetup.tsx` enrolment logic, `MTDDashboard.tsx` display, `seed-mtd-periods` function.
-
-### PART 7 — Deferred
-
-- HMRC OAuth + actual submission edge function.
-- Email channel for MTD reminders (push-only for now; SMS path already exists via `notify-instructor` if instructor has phone + Twilio configured).
-- Backfill of `mtd_deadline_reminders_sent` for already-elapsed periods (none exist — table is empty).
-- Admin observability view of reminder send log.
-
----
-
-### Technical notes
-- First real send under live data: **Wed 8 Jul 2026** (30-day tier for Q1 2026/27, deadline 7 Aug 2026), provided at least one instructor has completed enrolment by then.
-- Cron fires daily at 09:00 UTC. Idempotent: the unique `(period_id, tier)` constraint guarantees no double-send even if the function runs twice in a day.
-- The `notify-instructor` gate already honours quiet hours and category mutes — we delegate to it rather than re-implementing.
+- Confirm Ken D's instructor row (`square_token_expires_at` was 2026-04-25) refreshes on next QR generation and `square_token_expires_at` moves forward ~30 days.
+- Confirm a deliberately revoked instructor still gets the existing "Reconnect Square in Settings → Payments" message.
