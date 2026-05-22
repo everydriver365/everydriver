@@ -254,10 +254,11 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
 
       const { data: scheduledLessons } = await supabase
         .from("scheduled_lessons")
-        .select("lesson_date, start_time, duration_minutes")
+        .select("lesson_date, start_time, duration_minutes, pickup_postcode, pupils:pupils(postcode)")
         .eq("instructor_id", instructorId)
         .gte("lesson_date", today)
         .lte("lesson_date", twoWeeksLater)
+
         .neq("status", "cancelled");
 
       const { data: overrides } = await supabase
