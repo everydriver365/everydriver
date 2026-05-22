@@ -15,6 +15,7 @@ import { InstructorPageHeader } from "@/components/instructor/InstructorPageHead
 import { PupilMobileHeader } from "@/components/pupil-portal/PupilMobileHeader";
 import { PupilBottomNav } from "@/components/pupil-portal/PupilBottomNav";
 import { PupilDashboardRadar } from "@/components/pupil-portal/PupilDashboardRadar";
+import { NextSyllabusFocus } from "@/components/shared/NextSyllabusFocus";
 import { PupilTelematicsCard } from "@/components/pupil-portal/PupilTelematicsCard";
 import { LearnerDrivingScore } from "@/components/pupil-portal/LearnerDrivingScore";
 import { PupilCoachingCard } from "@/components/pupil-portal/PupilCoachingCard";
@@ -295,6 +296,11 @@ export default function PupilPortal() {
         {/* Syllabus Radar */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
           <PupilDashboardRadar pupilId={pupil.id} />
+        </motion.div>
+
+        {/* Next Focus */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.11 }}>
+          <NextSyllabusFocus pupilId={pupil.id} audience="pupil" />
         </motion.div>
 
         {/* Driving Score */}

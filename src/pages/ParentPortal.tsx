@@ -24,6 +24,7 @@ import { ParentBottomNav } from "@/components/parent/ParentBottomNav";
 import { PortalIOSInstallBanner } from "@/components/pwa/PortalIOSInstallBanner";
 import { ParentMessageCard } from "@/components/parent/ParentMessageCard";
 import { ParentSyllabusOverview } from "@/components/parent/ParentSyllabusOverview";
+import { NextSyllabusFocus } from "@/components/shared/NextSyllabusFocus";
 import { ParentAttendanceReport } from "@/components/parent/ParentAttendanceReport";
 import { ParentLessonNotes } from "@/components/parent/ParentLessonNotes";
 import { ParentPaymentHistory } from "@/components/parent/ParentPaymentHistory";
@@ -564,6 +565,7 @@ export default function ParentPortal() {
             {childDetailTab === 'progress' && (
               <motion.div key="progress" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
                 <ParentSyllabusOverview childId={selectedChild.id} childName={selectedChild.name} />
+                <NextSyllabusFocus pupilId={selectedChild.id} audience="parent" />
                 <ParentSafetyScores childId={selectedChild.id} />
                 {/* Instructor Feedback */}
                 <div className="bg-card rounded-2xl border border-border shadow-sm p-4">
