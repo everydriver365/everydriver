@@ -1991,38 +1991,99 @@ export default function InstructorLiveSession() {
         {/* Location permission prompt — shown when starting phone tracking without permission */}
         <Dialog open={showLocationDialog} onOpenChange={setShowLocationDialog}>
           <DialogContent className="max-w-sm">
-            <DialogHeader>
-              <DialogTitle>Allow location access</DialogTitle>
-              <DialogDescription>
-                Phone GPS needs permission to track lessons. We only record your
-                location while a session is active.
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2">
-              <Button variant="outline" onClick={() => setShowLocationDialog(false)}>
-                Not now
-              </Button>
-              <Button
-                onClick={async () => {
-                  const next = await requestLocationPermission();
-                  if (next === "granted") {
-                    setShowLocationDialog(false);
-                    // Re-fire start once permission lands.
-                    setTimeout(() => { void startSession("practice"); }, 50);
-                  } else if (next === "denied") {
-                    toast({
-                      title: "Location blocked",
-                      description: "Enable location for this site/app in your browser or device settings.",
-                      variant: "destructive",
-                    });
-                  }
-                }}
-              >
-                Allow location
-              </Button>
-            </DialogFooter>
+            {locationPermissionStatus === "denied" ? (() => {
+              const ua = typeof navigator !== "undefined" ? navigator.userAgent : "";
+              const isIOS = /iPad|iPhone|iPod/.test(ua);
+              const isAndroid = /Android/.test(ua);
+              const inIframe = typeof window !== "undefined" && window.self !== window.top;
+              return (
+                <>
+                  <DialogHeader>
+                    <DialogTitle>Location is blocked</DialogTitle>
+                    <DialogDescription>
+                      Your browser previously blocked location for this site, so
+                      we can't ask again from inside the app — you'll need to
+                      re-enable it manually.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="text-sm text-slate-700 space-y-3 mt-1">
+                    {inIframe && (
+                      <div className="rounded-lg bg-amber-50 border border-amber-200 px-3 py-2 text-amber-800">
+                        You're viewing this inside a preview. Open the app in
+                        its own browser tab first, then follow the steps below.
+                      </div>
+                    )}
+                    {isIOS ? (
+                      <ol className="list-decimal pl-5 space-y-1">
+                        <li>Open <strong>Settings → Safari → Location</strong> (or <strong>Settings → Drive365</strong> if installed).</li>
+                        <li>Choose <strong>Ask</strong> or <strong>Allow</strong>.</li>
+                        <li>Return here and tap <strong>Try again</strong>.</li>
+                      </ol>
+                    ) : isAndroid ? (
+                      <ol className="list-decimal pl-5 space-y-1">
+                        <li>Tap the <strong>lock icon</strong> in the address bar.</li>
+                        <li>Open <strong>Permissions → Location</strong> and set to <strong>Allow</strong>.</li>
+                        <li>Reload this page and tap <strong>Try again</strong>.</li>
+                      </ol>
+                    ) : (
+                      <ol className="list-decimal pl-5 space-y-1">
+                        <li>Click the <strong>lock / location icon</strong> next to the URL.</li>
+                        <li>Set <strong>Location</strong> to <strong>Allow</strong>.</li>
+                        <li>Reload the page and tap <strong>Try again</strong>.</li>
+                      </ol>
+                    )}
+                  </div>
+                  <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2 mt-2">
+                    <Button variant="outline" onClick={() => setShowLocationDialog(false)}>
+                      Close
+                    </Button>
+                    <Button
+                      onClick={async () => {
+                        const next = await requestLocationPermission();
+                        if (next === "granted") {
+                          setShowLocationDialog(false);
+                          setTimeout(() => { void startSession("practice"); }, 50);
+                        }
+                      }}
+                    >
+                      Try again
+                    </Button>
+                  </DialogFooter>
+                </>
+              );
+            })() : (
+              <>
+                <DialogHeader>
+                  <DialogTitle>Allow location access</DialogTitle>
+                  <DialogDescription>
+                    Phone GPS needs permission to track lessons. We only record your
+                    location while a session is active.
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2">
+                  <Button variant="outline" onClick={() => setShowLocationDialog(false)}>
+                    Not now
+                  </Button>
+                  <Button
+                    onClick={async () => {
+                      const next = await requestLocationPermission();
+                      if (next === "granted") {
+                        setShowLocationDialog(false);
+                        // Re-fire start once permission lands.
+                        setTimeout(() => { void startSession("practice"); }, 50);
+                      }
+                      // If denied, the dialog content swaps to instructions
+                      // automatically because locationPermissionStatus updates.
+                    }}
+                  >
+                    Allow location
+                  </Button>
+                </DialogFooter>
+              </>
+            )}
           </DialogContent>
         </Dialog>
+
       </div>
     </InstructorPortalLayout>
   );
