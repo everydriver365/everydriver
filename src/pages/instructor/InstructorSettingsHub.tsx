@@ -31,7 +31,10 @@ export default function InstructorSettingsHub() {
 
   return (
     <InstructorPortalLayout>
-      <div className="max-w-5xl mx-auto px-4 pt-4">
+      <div
+        className="max-w-5xl mx-auto pt-4 md:px-4"
+        style={isMobile ? { paddingLeft: 14, paddingRight: 14 } : undefined}
+      >
         <SettingsLayout
           categories={categories}
           search={search}
