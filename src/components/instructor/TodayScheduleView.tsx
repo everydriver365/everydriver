@@ -175,7 +175,7 @@ export function TodayScheduleView({ instructorId }: TodayScheduleViewProps) {
     if (balance > 0) {
       return (
         <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-xs">
-          £{Math.round(balance)} Credit
+          {formatCurrencyCompact(balance, { decimals: false })} Credit
         </Badge>
       );
     }
