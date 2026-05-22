@@ -8,6 +8,7 @@ import { FileText, Download, Loader2, Calendar } from "lucide-react";
 import { format, startOfYear, endOfYear, parse } from "date-fns";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { calculateNI, calculateHmrcMileageDeduction } from "@/lib/ukTax";
 
 interface TaxYearReportProps {
   instructorId: string;
