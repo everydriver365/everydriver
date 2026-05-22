@@ -262,13 +262,51 @@ export type Database = {
         }
         Relationships: []
       }
+      account_deletion_reminders_sent: {
+        Row: {
+          deletion_request_id: string
+          detail: string | null
+          id: string
+          kind: string
+          sent_at: string
+          sent_ok: boolean
+        }
+        Insert: {
+          deletion_request_id: string
+          detail?: string | null
+          id?: string
+          kind: string
+          sent_at?: string
+          sent_ok?: boolean
+        }
+        Update: {
+          deletion_request_id?: string
+          detail?: string | null
+          id?: string
+          kind?: string
+          sent_at?: string
+          sent_ok?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "account_deletion_reminders_sent_deletion_request_id_fkey"
+            columns: ["deletion_request_id"]
+            isOneToOne: false
+            referencedRelation: "account_deletion_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       account_deletion_requests: {
         Row: {
+          cancel_token: string | null
           cancelled_at: string | null
           completed_at: string | null
           contact_email_encrypted: string
           created_at: string
           deleted_by: string | null
+          failed_at: string | null
+          failure_reason: string | null
           id: string
           instructor_id: string
           purge_summary: Json | null
@@ -278,11 +316,14 @@ export type Database = {
           sentinel_uuid: string
         }
         Insert: {
+          cancel_token?: string | null
           cancelled_at?: string | null
           completed_at?: string | null
           contact_email_encrypted: string
           created_at?: string
           deleted_by?: string | null
+          failed_at?: string | null
+          failure_reason?: string | null
           id?: string
           instructor_id: string
           purge_summary?: Json | null
@@ -292,11 +333,14 @@ export type Database = {
           sentinel_uuid: string
         }
         Update: {
+          cancel_token?: string | null
           cancelled_at?: string | null
           completed_at?: string | null
           contact_email_encrypted?: string
           created_at?: string
           deleted_by?: string | null
+          failed_at?: string | null
+          failure_reason?: string | null
           id?: string
           instructor_id?: string
           purge_summary?: Json | null
