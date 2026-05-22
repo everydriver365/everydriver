@@ -3,14 +3,19 @@ import { motion } from "framer-motion";
 import { AlertTriangle, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { getNextDeadline, type NextDeadline } from "@/lib/mtdDeadlines";
 
-const MTD_DEADLINE = new Date("2026-04-06T00:00:00Z");
+interface TimeBlock {
+  days: number;
+  hours: number;
+  minutes: number;
+  seconds: number;
+  expired: boolean;
+}
 
-function getTimeRemaining() {
-  const now = new Date();
-  const diff = MTD_DEADLINE.getTime() - now.getTime();
+function getTimeRemaining(target: Date): TimeBlock {
+  const diff = target.getTime() - Date.now();
   if (diff <= 0) return { days: 0, hours: 0, minutes: 0, seconds: 0, expired: true };
-
   return {
     days: Math.floor(diff / (1000 * 60 * 60 * 24)),
     hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
@@ -24,13 +29,24 @@ interface MTDCountdownProps {
   variant?: "banner" | "full";
 }
 
+function formatDeadlineLabel(d: NextDeadline): string {
+  return `${d.label} filing deadline: ${new Intl.DateTimeFormat("en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(d.deadline)}`;
+}
+
 export function MTDCountdown({ variant = "banner" }: MTDCountdownProps) {
-  const [time, setTime] = useState(getTimeRemaining);
+  // Compute the next live quarterly deadline (dynamic — no hardcoded date).
+  const [next] = useState<NextDeadline>(() => getNextDeadline());
+  const [time, setTime] = useState<TimeBlock>(() => getTimeRemaining(next.deadline));
 
   useEffect(() => {
-    const timer = setInterval(() => setTime(getTimeRemaining()), 1000);
+    const timer = setInterval(() => setTime(getTimeRemaining(next.deadline)), 1000);
     return () => clearInterval(timer);
-  }, []);
+  }, [next.deadline]);
 
   const blocks = [
     { value: time.days, label: "Days" },
@@ -38,6 +54,9 @@ export function MTDCountdown({ variant = "banner" }: MTDCountdownProps) {
     { value: time.minutes, label: "Mins" },
     { value: time.seconds, label: "Secs" },
   ];
+
+  const headline = formatDeadlineLabel(next);
+  const subline = "MTD for Income Tax is live — quarterly digital reporting is mandatory for self-employed ADIs";
 
   if (variant === "banner") {
     return (
@@ -52,12 +71,8 @@ export function MTDCountdown({ variant = "banner" }: MTDCountdownProps) {
               <AlertTriangle className="h-5 w-5 text-destructive" />
             </div>
             <div>
-              <p className="font-semibold text-foreground text-sm">
-                HMRC MTD Deadline: 6 April 2026
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Digital record-keeping becomes mandatory for self-employed ADIs
-              </p>
+              <p className="font-semibold text-foreground text-sm">{headline}</p>
+              <p className="text-xs text-muted-foreground">{subline}</p>
             </div>
           </div>
 
@@ -83,9 +98,10 @@ export function MTDCountdown({ variant = "banner" }: MTDCountdownProps) {
     );
   }
 
-  // Full variant — used on the dedicated MTD page
+  // Full variant — used on the dedicated MTD marketing page
   return (
     <div className="text-center space-y-6">
+      <p className="text-sm sm:text-base text-muted-foreground font-medium">{headline}</p>
       <div className="flex justify-center gap-3 sm:gap-5">
         {blocks.map((b) => (
           <motion.div
@@ -103,7 +119,7 @@ export function MTDCountdown({ variant = "banner" }: MTDCountdownProps) {
         ))}
       </div>
       {time.expired && (
-        <p className="text-destructive font-semibold text-lg">The MTD deadline has passed!</p>
+        <p className="text-destructive font-semibold text-lg">MTD is now live — start filing quarterly.</p>
       )}
     </div>
   );
