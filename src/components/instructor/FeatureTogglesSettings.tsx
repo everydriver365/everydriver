@@ -22,6 +22,7 @@ const featureToggles: FeatureToggle[] = [
   { key: "broadcast_messaging_enabled", label: "Broadcast Messaging", description: "Send messages to all pupils at once from your inbox", defaultValue: true },
   { key: "lesson_feedback_enabled", label: "Post-Lesson Feedback", description: "Automatically request feedback from pupils after lessons", defaultValue: true },
   { key: "reflective_logs_enabled", label: "Reflective Logs", description: "Let pupils write reflective journal entries in their portal", defaultValue: true },
+  { key: "share_lesson_notes_with_pupil", label: "Share Lesson Notes", description: "Show your end-of-lesson freeform notes on the pupil (and linked parent) portal. Off by default.", defaultValue: false },
   { key: "cancellation_analytics_enabled", label: "Cancellation Analytics", description: "Show cancellation trends on the Performance page", defaultValue: true },
   { key: "cash_payments_enabled", label: "Cash Payments", description: "Allow pupils to select 'Pay by Cash' during booking checkout", defaultValue: false },
   { key: "instant_bank_pay_enabled", label: "Instant Bank Pay", description: "Offer one-off bank payments at checkout via GoCardless (lower fees than card)", defaultValue: false },

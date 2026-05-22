@@ -98,6 +98,7 @@ import { useRealGapSlots } from "@/hooks/useRealGapSlots";
 import { DsmLogo } from "@/components/instructor/ui/DsmLogo";
 import { UpNextExpanded } from "@/components/instructor/UpNextExpanded";
 import { ScheduleTile } from "@/components/instructor/ScheduleTile";
+import { TaxEstimateTile } from "@/components/instructor/TaxEstimateTile";
 
 /* ---------------------------- Design tokens ----------------------------- */
 const T = {
@@ -314,6 +315,9 @@ export function MobileHomeDSM2026({ instructorId, instructorName }: Props) {
           </div>
           <div className="animate-fade-in" style={{ animationDelay: "60ms", animationFillMode: "both" }}>
             <NeedsAttentionCard attention={attention} stats={stats} navigate={navigate} instructorId={instructorId} />
+          </div>
+          <div className="animate-fade-in" style={{ animationDelay: "90ms", animationFillMode: "both" }}>
+            <TaxEstimateTile instructorId={instructorId} />
           </div>
           <div className="animate-fade-in" style={{ animationDelay: "120ms", animationFillMode: "both" }}>
             <ScheduleCard instructorId={instructorId} navigate={navigate} />

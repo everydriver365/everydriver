@@ -34,6 +34,7 @@ import { PupilDashboardInsights } from "@/components/pupil-portal/PupilDashboard
 import { PupilAICoaching } from "@/components/pupil-portal/PupilAICoaching";
 import { PupilTestRequests } from "@/components/test-requests/PupilTestRequests";
 import { ReflectiveLog } from "@/components/pupil-portal/ReflectiveLog";
+import { InstructorLessonNotes } from "@/components/pupil-portal/InstructorLessonNotes";
 import { PupilEndOfLessonWizard } from "@/components/pupil-portal/PupilEndOfLessonWizard";
 import { LessonSummaryCard } from "@/components/pupil-portal/LessonSummaryCard";
 import { AchievementBadges } from "@/components/pupil-portal/AchievementBadges";
@@ -89,6 +90,7 @@ interface InstructorBranding {
   reflective_logs_enabled: boolean | null;
   pupil_self_booking_enabled: boolean | null;
   lesson_feedback_enabled: boolean | null;
+  share_lesson_notes_with_pupil: boolean | null;
   payment_qr_url: string | null;
   payment_qr_url_pupil_pays: string | null;
   payment_qr_url_instructor_pays: string | null;
@@ -240,7 +242,7 @@ export default function BrandedPupilPortal() {
     try {
       const { data, error } = await supabase
         .from("instructors")
-        .select("id, name, phone, email, logo_url, brand_colour, secondary_colour, pupil_app_dark_mode, pupil_app_enabled, profile_image_url, reflective_logs_enabled, pupil_self_booking_enabled, lesson_feedback_enabled, payment_qr_url, payment_qr_url_pupil_pays, payment_qr_url_instructor_pays, payment_link_base_url, commission_payer, commission_split_percent")
+        .select("id, name, phone, email, logo_url, brand_colour, secondary_colour, pupil_app_dark_mode, pupil_app_enabled, profile_image_url, reflective_logs_enabled, pupil_self_booking_enabled, lesson_feedback_enabled, share_lesson_notes_with_pupil, payment_qr_url, payment_qr_url_pupil_pays, payment_qr_url_instructor_pays, payment_link_base_url, commission_payer, commission_split_percent")
         .eq("app_slug", slug)
         .single();
 
@@ -569,8 +571,13 @@ export default function BrandedPupilPortal() {
             {activeSection === 'reflections' && (
               <motion.div key="reflections" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
                 <SubPageHeader title="My Reflections" onBack={handleBack} />
-                <div className="px-4">
+                <div className="px-4 space-y-4">
                   <ReflectiveLog pupilId={pupil.id} brandColour={drive365Blue} />
+                  <InstructorLessonNotes
+                    pupilId={pupil.id}
+                    shareEnabled={instructor.share_lesson_notes_with_pupil}
+                    brandColour={drive365Blue}
+                  />
                 </div>
               </motion.div>
             )}
