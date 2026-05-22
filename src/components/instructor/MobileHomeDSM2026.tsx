@@ -427,8 +427,8 @@ function UnifiedInfoPanel({
   const cardBase: React.CSSProperties = {
     background: "#fff",
     border: "0.5px solid #e0e3ea",
-    borderRadius: 12,
-    padding: "11px 12px",
+    borderRadius: 14,
+    padding: 14,
     cursor: "pointer",
     fontFamily: FONT,
     textAlign: "left",
@@ -456,9 +456,9 @@ function UnifiedInfoPanel({
   }) => (
     <div
       style={{
-        width: 26,
-        height: 26,
-        borderRadius: 7,
+        width: 36,
+        height: 36,
+        borderRadius: 10,
         background: bg,
         display: "flex",
         alignItems: "center",
@@ -466,18 +466,18 @@ function UnifiedInfoPanel({
         flexShrink: 0,
       }}
     >
-      <Icon size={13} color={color} />
+      <Icon size={18} color={color} />
     </div>
   );
 
   const Title = ({ children }: { children: React.ReactNode }) => (
-    <div style={{ fontSize: 11, fontWeight: 500, color: "#1a1a1f", marginTop: 8 }}>
+    <div style={{ fontSize: 13, fontWeight: 500, color: "#1a1a1f", marginTop: 10 }}>
       {children}
     </div>
   );
 
   const Subtitle = ({ children }: { children: React.ReactNode }) => (
-    <div style={{ fontSize: 10, color: "#bbb", lineHeight: 1.3, marginTop: 2 }}>
+    <div style={{ fontSize: 11, color: "#bbb", lineHeight: 1.3, marginTop: 2 }}>
       {children}
     </div>
   );
