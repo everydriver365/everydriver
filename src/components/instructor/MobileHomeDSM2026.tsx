@@ -63,10 +63,13 @@ import {
   Settings as SettingsIcon,
   Briefcase,
   CalendarRange,
+  CalendarDays,
+  CalendarOff,
   AlertCircle,
   PhoneOff,
   Inbox,
   IdCard,
+  Check,
   type LucideIcon,
 } from "lucide-react";
 import { format, addDays, getWeek, isSameDay, parse, parseISO } from "date-fns";
