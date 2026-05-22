@@ -1,102 +1,101 @@
 
-# Pupil self-booking — fix two actively broken gaps
+# Tax estimate tile — fix all 10 discrepancies
 
-## Pre-implementation findings (changes the prompt slightly)
+Scope: `src/lib/ukTax.ts`, `src/hooks/useInstructorTaxSummary.ts`, and minimal copy/label changes in `src/components/instructor/TaxEstimateTile.tsx` only. The affiliate-signup prompt is deferred to a follow-up loop per the user's "after the tax fix completes" instruction.
 
-- `reschedule_requests` columns confirmed: `id, pupil_id, lesson_id, instructor_id, requested_date, requested_time, original_date, original_time, reason, status, created_at, responded_at`. ✅
-- `instructor_booking_settings.require_approval` exists and is already honoured in `PupilPortalSchedule.tsx` line 512 (its inline pupil-reschedule flow). **Only `SelfBookingCalendar.tsx` line 184 ignores it** — confirming Gap 2 scope.
-- `UpcomingLessonCard.tsx` already renders a "Pending approval" badge for `booking_status === 'pending_approval'`, so pupil-side surfacing exists.
-- `PupilNotifyType` exists in `src/lib/notificationTypes.ts` and is mirrored at `supabase/functions/_shared/notification-types.ts`. Existing types include `BOOKING_CONFIRMED`, `LESSON_CANCELLED`, `LESSON_REMINDER`. Missing: `LESSON_RESCHEDULED`, `RESCHEDULE_DECLINED`, `BOOKING_DECLINED`.
-- **No instructor UI currently reads `scheduled_lessons` where `booking_status = 'pending_approval'`** — confirms a `PendingBookingsCard` is needed.
-- `RescheduleRequestForm.tsx` only writes the row and shows a toast — no notification fired. Will add `notify-instructor` call.
-- `notify-pupil` and `notify-instructor` edge functions both exist.
+## Schema facts confirmed (read-only checks)
 
----
+- `mtd_instructor_settings.accounting_type` exists (text). All current rows are NULL → default to cash.
+- `instructor_expenses` has `deleted_at` but **no `status` and no `is_deductible` column** → D6 reduces to `deleted_at IS NULL`.
+- `mileage_logs.trip_type` distinct values are exactly `business` and `personal` → existing `eq('trip_type','business')` filter is correct. D10 is a no-op fix; just record the finding.
+- `payment_history` has `deleted_at` but **no `type`/`source`/`category` column** distinguishing platform-fee rows from instructor income → D5 reduces to: keep `instructor_id` + `amount > 0` + add `deleted_at IS NULL`.
+- `scheduled_lessons` has `status`, `amount_due`, `deleted_at`. Status values in use: `scheduled`, `confirmed`, `cancelled` — **there is no `completed` status**. For accruals basis we treat a lesson as earned when `lesson_date <= today`, `status IN ('scheduled','confirmed')`, `deleted_at IS NULL`.
 
-## PART 1 — Gap 1: Reschedule request approval queue
+## PART 1 — High severity (D1, D3, D4)
 
-**New:** `src/components/instructor/RescheduleRequestsCard.tsx`
-- Queries `reschedule_requests` where `instructor_id = current` and `status = 'pending'`, joined to `pupils(name)` and `scheduled_lessons(lesson_date, start_time, duration_minutes)`.
-- Row layout: pupil name, original date/time → requested date/time (+ optional time), reason text, Accept / Decline buttons.
-- **Accept**: pre-check clash via `checkLessonClash`; update `scheduled_lessons` row (`lesson_date`, `start_time`) for `lesson_id`; update `reschedule_requests` (`status='approved'`, `responded_at=now()`); call `notify-pupil` with `LESSON_RESCHEDULED`; toast success; invalidate query.
-- **Decline**: optional reason via small textarea; update `reschedule_requests` (`status='declined'`, `responded_at=now()`); call `notify-pupil` with `RESCHEDULE_DECLINED`; toast.
-- Loading skeleton + error state + empty state ("No pending reschedule requests").
-- Returns `null` when zero pending rows (self-hides — same pattern as `ActiveGapOffersList`).
-- Styling: DSM tokens, `rounded-2xl`, `#F4F7F6` surrounding bg (per design memory).
+### D1 — Personal allowance taper above £100k (`ukTax.ts`)
+Rewrite `calculateTax(taxable)` to compute an adjusted personal allowance:
+```
+adjustedPA = Math.max(0, 12570 - Math.floor(Math.max(0, taxable - 100000) / 2))
+```
+Use `adjustedPA` in place of the `PERSONAL_ALLOWANCE` constant inside the function body. The three band constants (50,270 / 125,140) stay fixed — only the PA shrinks. At ≥125,140 the PA is 0, never negative. Existing call sites unchanged (same signature).
 
-**Mount:** add to `src/components/instructor/MobileHomeDSM2026.tsx` near the existing `ActiveGapOffersList` placement. Standalone card, not folded into Needs Attention (it has explicit actions, doesn't fit that pattern).
+### D3 — Cash vs accruals basis (`useInstructorTaxSummary.ts`)
+Add a 4th parallel query that reads `mtd_instructor_settings.accounting_type` for the instructor (`.maybeSingle()`). Branch:
+- `accounting_type === 'accruals'` → income = sum of `amount_due` from `scheduled_lessons` where `instructor_id = X`, `lesson_date BETWEEN startISO AND endISO`, `status IN ('scheduled','confirmed')`, `deleted_at IS NULL`. Adapt to actual delivered lessons by also requiring `lesson_date <= today` so future bookings are not pre-counted.
+- Otherwise (cash, NULL, or missing row) → existing `payment_history` logic.
 
-**Pupil-side notification on submit:** in `RescheduleRequestForm.tsx` after successful insert, fire `supabase.functions.invoke('notify-instructor', { body: { instructor_id, type: 'reschedule_requested', pupil_id, lesson_id, requested_date, requested_time } })`. Non-blocking (don't throw on notify failure).
+Expose `accountingBasis: 'cash' | 'accruals'` on the returned summary so the tile can label the figure.
 
----
+### D4 — Full-year projection (`useInstructorTaxSummary.ts` + `TaxEstimateTile.tsx`)
+Compute:
+```
+daysElapsed = max(1, daysBetween(startISO, today))
+daysInYear  = daysBetween(startISO, endISO) + 1  // 365 or 366
+projectedAnnualIncome   = (ytdIncome / daysElapsed) * daysInYear
+projectedAnnualExpenses = (totalExpenses / daysElapsed) * daysInYear
+projectedTaxable        = max(0, projectedAnnualIncome - projectedAnnualExpenses)
+projectedTax            = calculateTax(projectedTaxable)
+projectedNI             = calculateNI(projectedTaxable)   // includes Class 2 after D2
+projectedLiability      = projectedTax + projectedNI
+```
+Return `daysElapsed`, `projectedAnnualIncome`, `projectedLiability`, plus existing YTD fields (unchanged so `InstructorTax.tsx` is unaffected).
 
-## PART 2 — Gap 2: Enforce `require_approval` in SelfBookingCalendar
+`TaxEstimateTile.tsx` minimal edit:
+- Headline £ = `projectedLiability` when `daysElapsed >= 30`, else `totalLiability` (YTD).
+- Subtitle: "Projected full-year estimate" (or "Year-to-date · projection available after 30 days" before day 30).
+- Secondary 11px grey line: "Based on £X earned so far this year".
+- No other layout changes.
 
-**Edit `src/components/pupil-portal/SelfBookingCalendar.tsx` only:**
-- Read `effectiveSettings.require_approval` (already loaded into `settings`).
-- In `bookLessonMutation.mutationFn`: branch the insert payload — if `require_approval`, use `status: 'pending', booking_status: 'pending_approval'`; otherwise existing `status: 'scheduled', booking_status: 'confirmed'`.
-- Return the chosen status from the mutation; in `onSuccess`, if pending: **skip confetti** and show `toast({ title: 'Lesson request sent', description: 'Waiting for your instructor to confirm.' })`. Otherwise existing confetti + "Lesson Booked! 🎉" path.
+## PART 2 — Medium severity (D2, D5, D6)
 
-**New:** `src/components/instructor/PendingBookingsCard.tsx`
-- Queries `scheduled_lessons` where `instructor_id = current` and `booking_status = 'pending_approval'`, joined to `pupils(name)`.
-- Row: pupil name, requested date/time, duration.
-- **Accept**: update row to `booking_status='confirmed', status='scheduled'`; `notify-pupil` with `BOOKING_CONFIRMED`; toast.
-- **Decline**: update row to `booking_status='declined', status='cancelled', cancellation_reason='Declined by instructor'`; `notify-pupil` with `BOOKING_DECLINED`; toast.
-- Self-hides at zero rows. Same styling pattern as `RescheduleRequestsCard`.
+### D2 — Class 2 NI (`ukTax.ts` + hook + tile)
+Refactor `calculateNI(taxable)` to return `{ class2: number; class4: number; total: number }`:
+- `class4` = existing logic
+- `class2` = `taxable > 12570 ? 179.40 : 0` (£3.45 × 52)
+- `total` = sum
+Update all call sites:
+- `useInstructorTaxSummary.ts` — surface `estimatedClass2NI`, `estimatedClass4NI`, keep `estimatedNI = total` for backward compatibility with `InstructorTax.tsx`.
+- `TaxEstimateTile.tsx` — relabel the right-hand mini card "Nat. Insurance" → "Class 2 + Class 4" and add an 11px grey subtitle under the value: `"£179 Class 2 + £X Class 4"` (only when Class 2 applies).
 
-**Mount:** alongside `RescheduleRequestsCard` in `MobileHomeDSM2026.tsx`.
+### D5 — `payment_history` filtering (`useInstructorTaxSummary.ts`)
+Add `.is('deleted_at', null)` to the payments query. Keep existing `instructor_id` filter and `> 0` post-filter. Note in code comment: no platform-fee column exists on `payment_history` so no additional type filter is applicable.
 
----
+### D6 — `instructor_expenses` filtering (`useInstructorTaxSummary.ts`)
+Add `.is('deleted_at', null)`. No `status` or `is_deductible` columns exist → those filters skipped (documented in code comment + reported in output).
 
-## PART 3 — Notification types
+## PART 3 — Low severity (D8/D9, D10, cosmetic)
 
-Add to **both** `src/lib/notificationTypes.ts` and `supabase/functions/_shared/notification-types.ts` `PupilNotifyType` const:
-- `LESSON_RESCHEDULED = 'lesson_rescheduled'`
-- `RESCHEDULE_DECLINED = 'reschedule_declined'`
-- `BOOKING_DECLINED = 'booking_declined'`
-- (`BOOKING_CONFIRMED` already exists — do not duplicate.)
+### D8 + D9 — Timezone-safe tax-year boundary (`ukTax.ts currentUkTaxYear`)
+Replace `new Date(year, 3, 6)` constructions with explicit London-clock anchors. April 6 in the UK is always BST → use `+01:00`:
+```
+const cutover = new Date(`${year}-04-06T00:00:00+01:00`);
+const start   = new Date(`${startYear}-04-06T00:00:00+01:00`);
+const end     = new Date(`${startYear + 1}-04-05T23:59:59+01:00`);
+```
+ISO strings returned (`startISO`, `endISO`) stay as bare dates `YYYY-04-06` / `YYYY-04-05` since both Supabase queries use them either as `date` columns (no TZ) or as `T00:00:00`/`T23:59:59` bounds — switch the timestamp bound in the payments query to `T23:59:59+01:00` so a 5-Apr-23:30-UTC payment is correctly counted in the closing year. `getQuarterDeadlines` is not in this file — skip per scope; flag if it exists elsewhere.
 
-Add cases to `supabase/functions/notify-pupil/index.ts` switch with concise title/body copy for each new type:
-- `lesson_rescheduled`: "Lesson rescheduled" / "Your new lesson time is {date} at {time}."
-- `reschedule_declined`: "Reschedule declined" / "Your instructor couldn't accommodate the new time."
-- `booking_declined`: "Lesson request declined" / "Your instructor couldn't confirm the requested slot."
+### D10 — `trip_type` casing
+Confirmed only `business` and `personal` exist. Filter is already correct. No code change. Report in output.
 
----
+### Cosmetic
+Update the file header comment in `ukTax.ts` from "2024/25" to "2025/26".
 
-## PART 4 — Verified clean checklist
+## PART 4 — Verified clean
 
-- No edits to: public `/book/:instructorId`, `BookingSummary.tsx`, `booking_enquiries`, `ai_booking_requests`, `FamulorHub`, `instructor_booking_settings` schema.
-- `SelfBookingCalendar` change is purely a branch on `require_approval`; no other logic touched.
-- `PupilPortalSchedule.tsx` reschedule branch already correct — left as-is.
-- Both new cards self-hide at zero rows (no empty visual clutter on dashboard).
-- Notification types stay in sync between client lib and edge `_shared`.
-- `notify-instructor` call from `RescheduleRequestForm` is non-blocking.
+- `InstructorTax.tsx` untouched. `calculateNI` signature change is the one risk → either keep the old `calculateNI` exported as a thin wrapper returning `total`, OR update `InstructorTax.tsx` to read `.total` (preferred: thin wrapper to honour "do not modify InstructorTax.tsx").
+- No edits to payment/refund/accounting-sync code.
+- D3 only reads `scheduled_lessons` and `mtd_instructor_settings` — no writes.
+- No migration needed.
 
----
+## PART 5 — Deferred
 
-## PART 5 — Deferred (explicitly out of scope)
+- Affiliate-signup prompt (`site_settings` audit, admin panel, signup UI, click tracking) → next loop once user confirms tax fix.
+- Quarter deadline TZ fix outside `ukTax.ts` if `getQuarterDeadlines` lives elsewhere.
+- Platform-fee filtering on `payment_history` once a distinguishing column exists.
 
-- Gap 3 (AI booking requests dashboard tile)
-- Gap 4 (`instructor_assigns` pupil request flow — would need new `lesson_requests` table)
-- Gap 5 (`first_lesson_only` enforcement)
-- Realtime subscription on the two new cards (poll-on-mount is sufficient for v1)
-- Bulk-accept and counter-offer flows
-- Reschedule conflict resolution beyond clash pre-check (e.g. auto-suggesting nearest free slot)
+## Files
 
----
-
-## Files touched
-
-**New (3):**
-- `src/components/instructor/RescheduleRequestsCard.tsx`
-- `src/components/instructor/PendingBookingsCard.tsx`
-
-**Edited (5):**
-- `src/components/pupil-portal/SelfBookingCalendar.tsx` — branch on `require_approval`
-- `src/components/pupil-portal/RescheduleRequestForm.tsx` — fire `notify-instructor`
-- `src/components/instructor/MobileHomeDSM2026.tsx` — mount both cards
-- `src/lib/notificationTypes.ts` — add 3 types
-- `supabase/functions/_shared/notification-types.ts` — add 3 types
-- `supabase/functions/notify-pupil/index.ts` — add 3 cases
-
-No DB migration required (all columns and tables already exist).
+- Edit: `src/lib/ukTax.ts`
+- Edit: `src/hooks/useInstructorTaxSummary.ts`
+- Edit: `src/components/instructor/TaxEstimateTile.tsx` (label + projection display only)
