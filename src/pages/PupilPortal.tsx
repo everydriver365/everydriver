@@ -15,6 +15,7 @@ import { InstructorPageHeader } from "@/components/instructor/InstructorPageHead
 import { PupilMobileHeader } from "@/components/pupil-portal/PupilMobileHeader";
 import { PupilBottomNav } from "@/components/pupil-portal/PupilBottomNav";
 import { PupilDashboardRadar } from "@/components/pupil-portal/PupilDashboardRadar";
+import { NextSyllabusFocus } from "@/components/shared/NextSyllabusFocus";
 import { PupilTelematicsCard } from "@/components/pupil-portal/PupilTelematicsCard";
 import { LearnerDrivingScore } from "@/components/pupil-portal/LearnerDrivingScore";
 import { PupilCoachingCard } from "@/components/pupil-portal/PupilCoachingCard";
