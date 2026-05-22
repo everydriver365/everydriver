@@ -1,0 +1,2 @@
+ALTER TABLE public.instructors ADD COLUMN IF NOT EXISTS scheduled_purge_at timestamptz;
+CREATE INDEX IF NOT EXISTS idx_instructors_scheduled_purge_at ON public.instructors(scheduled_purge_at) WHERE scheduled_purge_at IS NOT NULL;
