@@ -28,75 +28,14 @@ interface ExpenseBreakdown {
   percentage: number;
 }
 
-// UK Tax rates for 2024-25
+// UK Tax thresholds reused for the band-label below (Personal allowance + basic band).
 const PERSONAL_ALLOWANCE = 12570;
 const BASIC_RATE_THRESHOLD = 50270;
-const HIGHER_RATE_THRESHOLD = 125140;
-const BASIC_RATE = 0.20;
-const HIGHER_RATE = 0.40;
-const ADDITIONAL_RATE = 0.45;
 
-// Class 4 NI rates
-const NI_LOWER_PROFITS_LIMIT = 12570;
-const NI_UPPER_PROFITS_LIMIT = 50270;
-const NI_MAIN_RATE = 0.06; // 6% for 2024-25
-const NI_ADDITIONAL_RATE = 0.02;
+// Tax + NI maths now live in src/lib/ukTax.ts (single source of truth — includes
+// PA taper, Class 2 NI, and London-timezone tax-year boundaries).
 
-function calculateTax(taxableIncome: number): number {
-  if (taxableIncome <= PERSONAL_ALLOWANCE) return 0;
-  
-  let tax = 0;
-  let remainingIncome = taxableIncome;
-  
-  // Personal allowance reduction for high earners
-  let personalAllowance = PERSONAL_ALLOWANCE;
-  if (taxableIncome > 100000) {
-    personalAllowance = Math.max(0, PERSONAL_ALLOWANCE - ((taxableIncome - 100000) / 2));
-  }
-  
-  remainingIncome -= personalAllowance;
-  
-  if (remainingIncome <= 0) return 0;
-  
-  // Basic rate
-  const basicRateBand = Math.min(remainingIncome, BASIC_RATE_THRESHOLD - PERSONAL_ALLOWANCE);
-  tax += basicRateBand * BASIC_RATE;
-  remainingIncome -= basicRateBand;
-  
-  if (remainingIncome <= 0) return tax;
-  
-  // Higher rate
-  const higherRateBand = Math.min(remainingIncome, HIGHER_RATE_THRESHOLD - BASIC_RATE_THRESHOLD);
-  tax += higherRateBand * HIGHER_RATE;
-  remainingIncome -= higherRateBand;
-  
-  if (remainingIncome <= 0) return tax;
-  
-  // Additional rate
-  tax += remainingIncome * ADDITIONAL_RATE;
-  
-  return tax;
-}
 
-function calculateNI(taxableIncome: number): number {
-  if (taxableIncome <= NI_LOWER_PROFITS_LIMIT) return 0;
-  
-  let ni = 0;
-  
-  // Main rate
-  const mainRateBand = Math.min(
-    Math.max(0, taxableIncome - NI_LOWER_PROFITS_LIMIT),
-    NI_UPPER_PROFITS_LIMIT - NI_LOWER_PROFITS_LIMIT
-  );
-  ni += mainRateBand * NI_MAIN_RATE;
-  
-  // Additional rate
-  if (taxableIncome > NI_UPPER_PROFITS_LIMIT) {
-    ni += (taxableIncome - NI_UPPER_PROFITS_LIMIT) * NI_ADDITIONAL_RATE;
-  }
-  
-  return ni;
-}
 
 export default function InstructorTax() {
   const { instructor } = useInstructorAuth();
