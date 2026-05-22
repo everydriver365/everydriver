@@ -107,7 +107,8 @@ export default function InstructorTax() {
       const taxableIncome = Math.max(0, totalIncome - totalExpenses);
       
       const estimatedTax = calculateTax(taxableIncome);
-      const estimatedNI = calculateNI(taxableIncome);
+      const ni = calculateNI(taxableIncome);
+      const estimatedNI = ni.total;
 
       setSummary({
         totalIncome,
