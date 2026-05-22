@@ -403,7 +403,14 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
               return { error: blockErr, session: null };
             }
           } catch (checkErr) {
-            console.warn(`${AUTH_LOG_PREFIX} pending-deletion check failed`, checkErr);
+            // Fail open: don't lock anyone out if this check itself fails.
+            // Log with enough context to detect at scale in production.
+            const errMsg = checkErr instanceof Error ? checkErr.message : String(checkErr);
+            console.warn(`${AUTH_LOG_PREFIX} pending-deletion check failed (fail-open)`, {
+              authUserId,
+              email,
+              error: errMsg,
+            });
           }
         }
 

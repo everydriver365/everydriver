@@ -272,6 +272,12 @@ serve(async (req) => {
       CANCEL_SECRET,
     );
 
+    // Persist token so reminder/admin flows can re-use the same cancel link.
+    await admin
+      .from("account_deletion_requests")
+      .update({ cancel_token: cancelToken })
+      .eq("id", inserted.id);
+
     const origin = req.headers.get("origin") || req.headers.get("referer")?.replace(/\/[^/]*$/, "") || "";
     const baseUrl = origin || "https://everydriver.co";
     const cancelUrl = `${baseUrl.replace(/\/$/, "")}/cancel-deletion?token=${encodeURIComponent(cancelToken)}`;
