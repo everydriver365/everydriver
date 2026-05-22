@@ -101,6 +101,21 @@ interface CurrencyCounterProps {
 }
 
 export function CurrencyCounter({ value, showPence = false, className = "" }: CurrencyCounterProps) {
+  // For values above £9,999, use the no-decimal compact formatter (e.g. "£12k")
+  // to keep tile widths consistent.
+  if (Math.abs(value) > 9_999) {
+    return (
+      <motion.span
+        className={className}
+        initial={{ scale: 1 }}
+        animate={{ scale: [1, 1.05, 1] }}
+        transition={{ duration: 0.2 }}
+        key={value}
+      >
+        {formatCurrencyCompact(value, { decimals: false })}
+      </motion.span>
+    );
+  }
   return (
     <AnimatedCounter
       value={value}
@@ -110,6 +125,7 @@ export function CurrencyCounter({ value, showPence = false, className = "" }: Cu
     />
   );
 }
+
 
 // Percentage counter
 interface PercentCounterProps {
