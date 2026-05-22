@@ -146,6 +146,7 @@ export default function BrandedPupilPortal() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [instructor, setInstructor] = useState<InstructorBranding | null>(null);
   const [pupil, setPupil] = useState<Pupil | null>(null);
+  usePupilOneSignalBinding(pupil?.id);
   const [loading, setLoading] = useState(true);
   const [activeSection, setActiveSection] = useState<ActiveSection>('home');
   const [bookingRequested, setBookingRequested] = useState(false);
