@@ -179,6 +179,7 @@ Deno.serve(async (req) => {
             title,
             body: bodyText,
             data: {
+              type: "slot_offer",
               offer_id: offer.id,
               date: slot_date,
               start_time,

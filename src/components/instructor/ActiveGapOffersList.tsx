@@ -176,6 +176,7 @@ export function ActiveGapOffersList({ instructorId }: ActiveGapOffersListProps) 
           pupilId: r.pupil_id,
           type: "slot_offer_cancelled",
           data: {
+            type: "slot_offer_cancelled",
             offer_id: id,
             date: r.slot_offer?.lesson_date,
             start_time: r.slot_offer?.start_time,
