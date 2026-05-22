@@ -606,6 +606,9 @@ export default function InstructorLiveSession() {
   useEffect(() => {
     const currentDeviceId = device?.id;
     if (!currentDeviceId) return;
+    // Skip subscription for the virtual phone-provider device — it has no
+    // matching gps_devices row to poll or subscribe to.
+    if (isPhoneProvider || (typeof currentDeviceId === "string" && currentDeviceId.startsWith("phone-virtual-"))) return;
     
     // Only set up subscription once per device ID
     if (deviceIdRef.current === currentDeviceId) return;
@@ -899,7 +902,10 @@ export default function InstructorLiveSession() {
     if (isPhoneProvider && !phoneStreamingConfirmed) {
       setPhoneStreamingConfirmed(true);
     }
-    if (!device || !instructor?.id) {
+    // For phone provider, a hardware gps_devices row is not required —
+    // tracking is handled by the phone GPS streamer. For radius, we
+    // must have a device row to attach the session to.
+    if (!instructor?.id || (!device && !isPhoneProvider)) {
       toast({
         title: "Error",
         description: "Device not configured",
@@ -912,7 +918,7 @@ export default function InstructorLiveSession() {
     const effectivePupilId = testDetails?.pupilId || selectedPupilId || null;
 
     // Determine test route mode based on route type and pupil selection
-    const isTestRouteMode = routeType === "test" || routeType === "driving_test" || !effectivePupilId || device.is_test_route_mode;
+    const isTestRouteMode = routeType === "test" || routeType === "driving_test" || !effectivePupilId || (device?.is_test_route_mode ?? false);
     
     // Store the route type and details for when we save the route
     setPendingRouteType(routeType);
@@ -937,20 +943,31 @@ export default function InstructorLiveSession() {
 
       if (sessionError) throw sessionError;
 
-      // Update device with session, pupil (if any), and test route mode
-      const { error: deviceError } = await supabase
-        .from("gps_devices")
-        .update({
-          current_session_id: session.id,
-          current_pupil_id: effectivePupilId,
-          is_test_route_mode: isTestRouteMode,
-        })
-        .eq("id", device.id);
+      if (device && !isPhoneProvider) {
+        // Update device with session, pupil (if any), and test route mode
+        const { error: deviceError } = await supabase
+          .from("gps_devices")
+          .update({
+            current_session_id: session.id,
+            current_pupil_id: effectivePupilId,
+            is_test_route_mode: isTestRouteMode,
+          })
+          .eq("id", device.id);
 
-      if (deviceError) throw deviceError;
+        if (deviceError) throw deviceError;
+      }
 
+      // Build a device-shaped object so downstream UI has session/pupil context.
+      // For phone provider with no hardware row, this is a virtual record kept
+      // only in local state (never written to gps_devices).
+      const baseDevice = device ?? ({
+        id: `phone-virtual-${instructor.id}`,
+        instructor_id: instructor.id,
+        tracking_provider: "phone",
+        is_active: true,
+      } as unknown as GPSDevice);
       setDevice({
-        ...device,
+        ...baseDevice,
         current_session_id: session.id,
         current_pupil_id: effectivePupilId,
         is_test_route_mode: isTestRouteMode,
