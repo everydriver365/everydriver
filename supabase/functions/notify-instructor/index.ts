@@ -276,10 +276,15 @@ serve(async (req) => {
       admin_direct_message: "message",
       pupil_message: "message",
       security_alert: "system",
+      mtd_deadline_reminder: "mtd",
     };
     const gateCategory: NotifyCategory = categoryMap[data.type] ?? "system";
     const gateImportance: NotifyImportance =
-      data.type === "security_alert" || data.type === "cancellation" ? "important" : "normal";
+      data.type === "security_alert" || data.type === "cancellation"
+        ? "important"
+        : data.type === "mtd_deadline_reminder" && (data.daysRemaining ?? 0) <= 7
+          ? "important"
+          : "normal";
 
     // Send Push Notification
     try {
