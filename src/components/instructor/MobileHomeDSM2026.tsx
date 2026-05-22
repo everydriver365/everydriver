@@ -2104,7 +2104,6 @@ const GREY_BG = { bg: T.surface,   colour: "#6B7280" };
 
 const QUICK_ACCESS: QAItem[] = [
   // Row 1
-  { label: "Dashboard",       Icon: LayoutDashboard,  ...BLUE_BG, route: "/instructor" },
   { label: "Schedule",        Icon: CalendarIcon,     ...BLUE_BG, route: "/instructor/schedule" },
   { label: "Working hours",   Icon: Clock,            ...BLUE_BG, route: "/instructor/availability" },
   { label: "How pupils book", Icon: FileText,         ...BLUE_BG, route: "/instructor/settings/how-pupils-book" },
