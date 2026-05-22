@@ -351,6 +351,36 @@ export type Database = {
         }
         Relationships: []
       }
+      accounting_affiliate_links: {
+        Row: {
+          affiliate_url: string | null
+          created_at: string
+          id: string
+          is_active: boolean
+          platform: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          affiliate_url?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          platform: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          affiliate_url?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          platform?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       accounting_sync_log: {
         Row: {
           error_message: string | null
@@ -737,6 +767,30 @@ export type Database = {
           title?: string
           updated_at?: string
           username?: string | null
+        }
+        Relationships: []
+      }
+      affiliate_link_clicks: {
+        Row: {
+          affiliate_url: string | null
+          clicked_at: string
+          id: string
+          instructor_id: string
+          platform: string
+        }
+        Insert: {
+          affiliate_url?: string | null
+          clicked_at?: string
+          id?: string
+          instructor_id: string
+          platform: string
+        }
+        Update: {
+          affiliate_url?: string | null
+          clicked_at?: string
+          id?: string
+          instructor_id?: string
+          platform?: string
         }
         Relationships: []
       }
@@ -19795,6 +19849,13 @@ export type Database = {
       generate_unique_instructor_slug: {
         Args: { p_source: string }
         Returns: string
+      }
+      get_active_affiliate_links: {
+        Args: never
+        Returns: {
+          affiliate_url: string
+          platform: string
+        }[]
       }
       get_auth_user_id_by_email: { Args: { p_email: string }; Returns: string }
       get_instructor_id_for_user: {

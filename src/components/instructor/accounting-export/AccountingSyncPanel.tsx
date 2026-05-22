@@ -2,9 +2,11 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Link2, Unlink, RefreshCw, Loader2, CheckCircle, Clock, AlertTriangle } from "lucide-react";
+import { Link2, Unlink, RefreshCw, Loader2, CheckCircle, Clock, AlertTriangle, ExternalLink } from "lucide-react";
 import { format, startOfMonth, endOfMonth, subMonths, startOfYear, endOfYear } from "date-fns";
 import { AccountingPlatform } from "@/hooks/useAccountingConnection";
+import { useAffiliateLinks, AffiliatePlatform } from "@/hooks/useAffiliateLinks";
+import { supabase } from "@/integrations/supabase/client";
 
 interface AccountingSyncPanelProps {
   platform: AccountingPlatform;
@@ -41,6 +43,22 @@ function getPeriodDates(preset: PeriodPreset) {
 export function AccountingSyncPanel({ platform, instructorId, accounting }: AccountingSyncPanelProps) {
   const [syncType, setSyncType] = useState<SyncType>("both");
   const [period, setPeriod] = useState<PeriodPreset>("this_month");
+  const affiliate = useAffiliateLinks();
+  const affiliateUrl = affiliate.getUrl(platform as AffiliatePlatform);
+
+  const handleAffiliateClick = async () => {
+    if (!affiliateUrl) return;
+    try {
+      await supabase.from("affiliate_link_clicks").insert({
+        instructor_id: instructorId,
+        platform,
+        affiliate_url: affiliateUrl,
+      });
+    } catch (e) {
+      console.warn("affiliate click log failed", e);
+    }
+    window.open(affiliateUrl, "_blank", "noopener,noreferrer");
+  };
 
   const connection = accounting.getConnection(platform);
   const lastSync = accounting.getLastSync(platform);
@@ -57,30 +75,51 @@ export function AccountingSyncPanel({ platform, instructorId, accounting }: Acco
   };
 
   if (!connected) {
+    const platformLabel = platform.charAt(0).toUpperCase() + platform.slice(1);
     return (
-      <div className="p-4 rounded-2xl border-2 border-dashed border-muted-foreground/20 text-center space-y-3">
-        <div className="flex flex-col items-center gap-2">
-          <Link2 className="h-8 w-8 text-muted-foreground/40" />
-          <div>
-            <p className="font-medium text-sm">Connect to {platform.charAt(0).toUpperCase() + platform.slice(1)}</p>
-            <p className="text-xs text-muted-foreground">
-              Sync expenses and income directly via API
-            </p>
+      <div className="space-y-3">
+        <div className="p-4 rounded-2xl border-2 border-dashed border-muted-foreground/20 text-center space-y-3">
+          <div className="flex flex-col items-center gap-2">
+            <Link2 className="h-8 w-8 text-muted-foreground/40" />
+            <div>
+              <p className="font-medium text-sm">Connect to {platformLabel}</p>
+              <p className="text-xs text-muted-foreground">
+                Sync expenses and income directly via API
+              </p>
+            </div>
           </div>
+          <Button
+            size="sm"
+            onClick={() => accounting.connect(platform)}
+            disabled={accounting.isConnecting}
+            className="gap-2"
+          >
+            {accounting.isConnecting ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Link2 className="h-4 w-4" />
+            )}
+            Connect {platformLabel}
+          </Button>
         </div>
-        <Button
-          size="sm"
-          onClick={() => accounting.connect(platform)}
-          disabled={accounting.isConnecting}
-          className="gap-2"
-        >
-          {accounting.isConnecting ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Link2 className="h-4 w-4" />
-          )}
-          Connect {platform.charAt(0).toUpperCase() + platform.slice(1)}
-        </Button>
+
+        {affiliateUrl && (
+          <div className="p-3 rounded-2xl border bg-muted/30 space-y-2">
+            <p className="text-sm font-medium">Don't have {platformLabel} yet?</p>
+            <p className="text-xs text-muted-foreground">
+              Get started with {platformLabel} using our partner link.
+            </p>
+            <Button
+              size="sm"
+              onClick={handleAffiliateClick}
+              className="w-full gap-2 text-white"
+              style={{ backgroundColor: "#2952b3" }}
+            >
+              <ExternalLink className="h-4 w-4" />
+              Sign up to {platformLabel} →
+            </Button>
+          </div>
+        )}
       </div>
     );
   }

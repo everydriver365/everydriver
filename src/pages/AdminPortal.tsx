@@ -78,6 +78,7 @@ import { AdminNotesManager } from "@/components/admin/AdminNotesManager";
 
 import ComparisonEditor from "@/components/admin/ComparisonEditor";
 import { AdminBookingPagesManager } from "@/components/admin/AdminBookingPagesManager";
+import { AccountingPartnersManager } from "@/components/admin/AccountingPartnersManager";
 import { AdminAlerts } from "@/components/admin/AdminAlerts";
 import { AdminTrackersManager } from "@/components/admin/AdminTrackersManager";
 
@@ -1155,6 +1156,14 @@ export default function AdminPortal() {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <AdminBackButton onClick={() => setActiveSection("overview")} />
             <FamulorHub scope="admin" />
+          </motion.div>
+        );
+
+      case "accounting-partners":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
+            <AccountingPartnersManager />
           </motion.div>
         );
 
