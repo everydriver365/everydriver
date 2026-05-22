@@ -234,7 +234,7 @@ export default function InstructorTax() {
                 </p>
                 <div className="flex gap-4 mt-2 text-xs text-muted-foreground">
                   <span>Income Tax: {formatCurrency(summary?.estimatedTax || 0)}</span>
-                  <span>Class 4 NI: {formatCurrency(summary?.estimatedNI || 0)}</span>
+                  <span>Class 2 + 4 NI: {formatCurrency(summary?.estimatedNI || 0)}</span>
                 </div>
               </CardContent>
             </Card>
