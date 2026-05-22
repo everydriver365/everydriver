@@ -76,7 +76,7 @@ Deno.serve(async (req) => {
     // Verify the caller IS this instructor
     const { data: instructor } = await admin
       .from("instructors")
-      .select("id, name")
+      .select("id, name, app_slug")
       .eq("auth_user_id", userData.user.id)
       .maybeSingle();
 
@@ -179,12 +179,14 @@ Deno.serve(async (req) => {
             title,
             body: bodyText,
             data: {
+              type: "slot_offer",
               offer_id: offer.id,
               date: slot_date,
               start_time,
               end_time,
               instructor_name: instructor.name,
               location_hint: location_hint ?? null,
+              url: instructor.app_slug ? `/p/${instructor.app_slug}?offer_id=${offer.id}` : undefined,
             },
           },
         });

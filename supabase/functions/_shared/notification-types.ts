@@ -29,6 +29,7 @@ export const PushDataType = {
   TEST_SWAP_MATCH: "test_swap_match",
   WAITLIST_MATCH: "waitlist_match",
   SLOT_OFFER: "slot_offer",
+  SLOT_OFFER_CANCELLED: "slot_offer_cancelled",
   DAILY_SUMMARY: "daily_summary",
   DIGEST: "digest",
   COURSE_BONUS: "course_bonus",
@@ -51,6 +52,7 @@ export const NotifyImportance = {
 
 export const PupilNotifyType = {
   SLOT_OFFER: "slot_offer",
+  SLOT_OFFER_CANCELLED: "slot_offer_cancelled",
   LESSON_REMINDER: "lesson_reminder",
   LESSON_CANCELLED: "lesson_cancelled",
   BOOKING_CONFIRMED: "booking_confirmed",

@@ -203,6 +203,12 @@ export default function BrandedPupilPortal() {
     }
   }, [searchParams]);
 
+  // Slot offer deep-link: ensure user lands on home where SlotOfferNotification renders
+  const focusOfferId = searchParams.get("offer_id");
+  useEffect(() => {
+    if (focusOfferId) setActiveSection('home');
+  }, [focusOfferId]);
+
   useEffect(() => {
     fetchInstructor();
   }, [slug]);
@@ -425,7 +431,7 @@ export default function BrandedPupilPortal() {
                       swapStatus={swapStatus}
                       onClick={() => setSwapChecklistOpen(true)}
                     />
-                    <SlotOfferNotification pupilId={pupil.id} onAccept={() => setActiveSection('schedule')} />
+                    <SlotOfferNotification pupilId={pupil.id} focusOfferId={focusOfferId} onAccept={() => setActiveSection('schedule')} />
                     <PupilCheckInCard pupilId={pupil.id} />
                     <PushNotificationBanner pupilId={pupil.id} brandColour={drive365Blue} />
                     {instructor.lesson_feedback_enabled !== false && (
