@@ -2,9 +2,11 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Link2, Unlink, RefreshCw, Loader2, CheckCircle, Clock, AlertTriangle } from "lucide-react";
+import { Link2, Unlink, RefreshCw, Loader2, CheckCircle, Clock, AlertTriangle, ExternalLink } from "lucide-react";
 import { format, startOfMonth, endOfMonth, subMonths, startOfYear, endOfYear } from "date-fns";
 import { AccountingPlatform } from "@/hooks/useAccountingConnection";
+import { useAffiliateLinks, AffiliatePlatform } from "@/hooks/useAffiliateLinks";
+import { supabase } from "@/integrations/supabase/client";
 
 interface AccountingSyncPanelProps {
   platform: AccountingPlatform;
