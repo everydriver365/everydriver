@@ -264,11 +264,14 @@ export type Database = {
       }
       account_deletion_requests: {
         Row: {
+          cancel_token: string | null
           cancelled_at: string | null
           completed_at: string | null
           contact_email_encrypted: string
           created_at: string
           deleted_by: string | null
+          failed_at: string | null
+          failure_reason: string | null
           id: string
           instructor_id: string
           purge_summary: Json | null
@@ -278,11 +281,14 @@ export type Database = {
           sentinel_uuid: string
         }
         Insert: {
+          cancel_token?: string | null
           cancelled_at?: string | null
           completed_at?: string | null
           contact_email_encrypted: string
           created_at?: string
           deleted_by?: string | null
+          failed_at?: string | null
+          failure_reason?: string | null
           id?: string
           instructor_id: string
           purge_summary?: Json | null
@@ -292,11 +298,14 @@ export type Database = {
           sentinel_uuid: string
         }
         Update: {
+          cancel_token?: string | null
           cancelled_at?: string | null
           completed_at?: string | null
           contact_email_encrypted?: string
           created_at?: string
           deleted_by?: string | null
+          failed_at?: string | null
+          failure_reason?: string | null
           id?: string
           instructor_id?: string
           purge_summary?: Json | null
