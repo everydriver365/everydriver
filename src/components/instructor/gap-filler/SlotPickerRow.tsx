@@ -39,7 +39,9 @@ export function SlotPickerRow({
   onToggle,
   highlighted,
   onBook,
+  etaEstimated,
 }: SlotPickerRowProps) {
+
   // Split "11 May" -> ["11", "May"] for the calendar tile
   const [dayNum, ...monthParts] = slot.dateLabel.split(" ");
   const monthLabel = monthParts.join(" ");
