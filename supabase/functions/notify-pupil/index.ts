@@ -205,6 +205,38 @@ serve(async (req: Request) => {
       }
     }
 
+    // Native (Despia / OneSignal) push fan-out — runs in parallel with web push.
+    // The edge function is a no-op when the pupil has no native binding.
+    try {
+      const rawUrl = (data as any)?.url as string | undefined;
+      const offerId = (data as any)?.offer_id as string | undefined;
+      const appBase =
+        Deno.env.get("PUPIL_APP_URL") ?? "https://drive365.co.uk";
+      let absoluteUrl: string | undefined;
+      if (rawUrl) {
+        absoluteUrl = rawUrl.startsWith("http")
+          ? rawUrl
+          : `${appBase}${rawUrl.startsWith("/") ? "" : "/"}${rawUrl}`;
+      } else if (offerId) {
+        absoluteUrl = `${appBase}/?offer_id=${offerId}`;
+      }
+
+      const despiaResp = await supabase.functions.invoke("send-despia-push", {
+        body: {
+          pupil_id: pupilId,
+          title: notificationTitle,
+          body: notificationBody,
+          url: absoluteUrl,
+          data: { type, ...(data ?? {}) },
+        },
+      });
+      if (despiaResp.error) {
+        results.errors.push(`Despia push failed: ${despiaResp.error.message}`);
+      }
+    } catch (despiaErr) {
+      results.errors.push(`Despia push failed: ${(despiaErr as Error).message}`);
+    }
+
     return new Response(
       JSON.stringify({ success: true, ...results }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
