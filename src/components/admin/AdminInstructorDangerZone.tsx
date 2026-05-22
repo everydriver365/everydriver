@@ -41,10 +41,7 @@ export function AdminInstructorDangerZone({
   useEffect(() => { void refresh(); }, [refresh]);
 
   const onChanged = refresh;
-  const [showSchedule, setShowSchedule] = useState(false);
-  const [showCancel, setShowCancel] = useState(false);
-  const [nameInput, setNameInput] = useState("");
-  const [busy, setBusy] = useState(false);
+
 
   const isPending = Boolean(deletedAt && scheduledPurgeAt && new Date(scheduledPurgeAt).getTime() > Date.now());
   const scheduledLabel = useMemo(() => {
