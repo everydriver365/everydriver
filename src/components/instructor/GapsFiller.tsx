@@ -289,19 +289,13 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
         pickup_postcode: string | null;
         pupils: { postcode: string | null } | null;
       };
-      const lessons = (scheduledLessons as LoadedLesson[] | null) || [];
+      // Loaded for future per-slot prev/next postcode resolution.
+      void (scheduledLessons as LoadedLesson[] | null);
 
-      type Candidate = {
-        id: string;
-        date: string;
-        startTime: string;
-        endTime: string;
-        prevDropPostcode: string | null;
-        nextPickupPostcode: string | null;
-      };
-      const calculatedGaps: Candidate[] = [];
+      const calculatedGaps: GapSlot[] = [];
       const nowHour = new Date().getHours();
       const todayStr = format(new Date(), "yyyy-MM-dd");
+
 
       for (let i = 0; i < 14; i++) {
         const currentDate = addDays(startOfDay(new Date()), i);
