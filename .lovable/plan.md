@@ -1,104 +1,102 @@
-## Goal
+# Accounting Affiliate Signup
 
-Tag `payment_type` on every `payment_history` insert site, then backfill historical rows so the income filter in `useInstructorTaxSummary` (and any future consumers) reflects accurate categories.
+## PART 1 — site_settings check + storage decision
 
-Strictly additive: no amount, flow, or logic changes.
+`site_settings` schema (queried live):
+- `id uuid`, `setting_key text`, `setting_value text` (nullable), `setting_type text`, `label`, `description`, `display_order`, `created_at`, `updated_at`, `admin_notification_emails text[]`
 
-## Mapping (no ambiguity)
+It's a flat text key/value store — no jsonb, no `is_active`, no `updated_by`. The brief requires active/inactive toggle, updated_by audit, and unique-per-platform constraint. **Decision: create a dedicated table** `accounting_affiliate_links` (matches Step 2 fallback exactly).
 
-| Insert site | payment_type |
-|---|---|
-| Positive payments via Square / Klarna / Clearpay / GoCardless / manual / wallet / booking | `lesson_payment` |
-| Refund flows (`square-refund`, `RefundModal`, Square webhook refund branch, any negative-amount insert) | `refund` |
-| No-show charges (`MultiDayScheduleView`, `CancelLessonDialog`, anywhere `No-Show Fee` is recorded) | `no_show_fee` |
-| Cancellation fees | `cancellation_fee` |
-| Subscription billing inserts | `subscription` |
+## PART 2 — Migration
 
-## PART 1 — Tag insert sites
+Create `accounting_affiliate_links`:
+- `id uuid pk default gen_random_uuid()`
+- `platform text not null` with CHECK in (`xero`,`quickbooks`,`freeagent`,`sage`)
+- `affiliate_url text`
+- `is_active boolean not null default false`
+- `updated_at timestamptz not null default now()`
+- `updated_by uuid` (no FK to auth.users per project convention)
+- Unique on `platform`
+- RLS enabled
+  - SELECT/INSERT/UPDATE/DELETE: `has_role(auth.uid(), 'admin')` only
+  - No instructor-facing policy on this table — instructors will read via a SECURITY DEFINER RPC `get_active_affiliate_links()` returning only `platform, affiliate_url` for rows where `is_active = true AND affiliate_url IS NOT NULL`
+- Trigger to set `updated_at` via existing `set_updated_at()`
+- Seed 4 rows (one per platform) inactive with NULL URL so admin UI shows all four immediately
 
-### Frontend (`src/components/instructor/...`)
-1. `CancelLessonDialog.tsx:155` — cancellation/no-show branch. Inspect surrounding code: if it's a no-show charge → `no_show_fee`; if cancellation fee → `cancellation_fee`. Add `payment_type` to the insert object.
-2. `EndLessonWizard.tsx:227` → `lesson_payment`.
-3. `MultiDayScheduleView.tsx:774` (No-Show Fee insert) → `no_show_fee`.
-4. `NewMobileScheduleView.tsx:241` — inspect; if no-show charge → `no_show_fee`, else `lesson_payment`.
-5. `PupilPaymentsManager.tsx:84` → `lesson_payment`.
-6. `TodayScheduleView.tsx:397` — inspect like #4.
-7. `end-lesson/StepPayment.tsx:114` → `lesson_payment`.
-8. `RecordPaymentModal.tsx:211` → `lesson_payment`.
-9. `RefundModal.tsx:149` and `:222` → `refund`.
-10. `TakePaymentModal.tsx:98` (realtime channel insert) → `lesson_payment` if it actually inserts a row; skip if it's only a subscription listener.
+Create `affiliate_link_clicks`:
+- `id uuid pk`
+- `instructor_id uuid not null` (no FK per project pattern, but indexed)
+- `platform text not null` (same CHECK)
+- `affiliate_url text`
+- `clicked_at timestamptz not null default now()`
+- RLS:
+  - INSERT: caller's `get_instructor_id_for_user(auth.uid()) = instructor_id`
+  - SELECT: `has_role(auth.uid(), 'admin')`
+- Index on `(platform, clicked_at desc)` and `(instructor_id)`
 
-### Edge functions (`supabase/functions/...`)
-11. `record-payment/index.ts:105` and `:129` → `lesson_payment`.
-12. `klarna-order/index.ts:146` / `:152` / `:170` → `lesson_payment`.
-13. `clearpay-capture/index.ts:66` / `:130` → `lesson_payment`.
-14. `create-booking/index.ts:401` → `lesson_payment`.
-15. `gocardless-webhook/index.ts:227` → `lesson_payment` (DD/IBP captured payments).
-16. `payment-callback/index.ts:176`, `:401`, `:582` → `lesson_payment`.
-17. `square-booking-wallet-payment/index.ts:238` → `lesson_payment`.
-18. `square-payment/index.ts:198` → `lesson_payment`.
-19. `square-wallet-payment/index.ts:146` → `lesson_payment`.
-20. `square-webhook/index.ts:235` (capture branch) → `lesson_payment`.
-21. `square-webhook/index.ts:585` — refund branch → `refund`.
-22. `square-refund/index.ts:161` → `refund`.
-23. `voice-execute/index.ts:294` — inspect; almost certainly `lesson_payment`.
+## PART 3 — Admin UI
 
-Each edit is a one-line addition inside the existing insert object literal — no flow change, no field rename, no amount adjustment.
+New page `src/pages/admin/AccountingPartners.tsx` + route `/admin/accounting-partners` in `src/routes/adminRoutes.tsx` (ProtectedAdminRoute).
 
-## PART 2 — Historical backfill migration
+Add nav entry in `src/components/admin/AdminLayout.tsx` under the **Settings** group: `{ key: "accounting-partners", label: "Accounting Partners", icon: Link2 }` and wire `accounting-partners` in AdminPortal's section switcher (will read the existing pattern; if AdminPortal uses key-based routing it gets a case, otherwise it links to the standalone route).
 
-Single migration file with two updates:
+Page UI:
+- Header card explaining purpose
+- 4 rows, one per platform (Xero, QuickBooks, FreeAgent, Sage), each with:
+  - Coloured icon/badge per platform
+  - Text input for `affiliate_url` (https:// validation, zod)
+  - `Switch` for `is_active`
+  - Last updated timestamp + updater email (joined via a separate fetch of admin profile or just shows uuid → look up display via `auth.users` not allowed, so show "Updated {time ago}" only; updater email out of scope unless a profiles table exists — defer email lookup if not trivial)
+- Single "Save changes" button — upserts all 4 rows in one mutation (RPC or batched upsert with `onConflict: 'platform'`), setting `updated_by = auth.uid()`
+- Toast on success/failure
+- Loads existing rows on mount
 
-```sql
-UPDATE public.payment_history
-SET payment_type = 'lesson_payment'
-WHERE amount > 0 AND payment_type IS NULL;
+## PART 4 — Instructor signup prompt
 
-UPDATE public.payment_history
-SET payment_type = 'refund'
-WHERE amount < 0 AND payment_type IS NULL;
+Edit `src/components/instructor/accounting-export/AccountingSyncPanel.tsx`:
+- Add a new hook `useAffiliateLinks()` that calls the `get_active_affiliate_links` RPC once and caches via react-query (single query covering all platforms — not per panel instance; key `['affiliate-links']`)
+- In `AccountingSyncPanel`, when `!connected` AND `affiliateUrlForPlatform` exists: render a new block below the existing "Connect" CTA:
+  - Divider + small heading "Don't have {Platform} yet?"
+  - One-line description "Get started with {Platform} using our partner link"
+  - Button (blue `#2952b3`, white text, full width, `gap-2`, ExternalLink icon) "Sign up to {Platform} →" — `onClick` logs click then `window.open(url, '_blank', 'noopener,noreferrer')`
+- When `connected`: no signup block (existing render is already gated by `if (!connected)` for the empty state; the new block sits inside that same branch, so connected instructors never see it)
+- If no active affiliate URL for the platform: render nothing (the block is conditional)
+
+No changes to `InstructorIntegrationsHub.tsx`, `AccountingExport.tsx`, `accounting-oauth`, or `accounting-sync`.
+
+## PART 5 — Click tracking
+
+In the same `AccountingSyncPanel.tsx` click handler:
+```ts
+await supabase.from('affiliate_link_clicks').insert({
+  instructor_id: instructorId,
+  platform,
+  affiliate_url: url,
+});
+window.open(url, '_blank', 'noopener,noreferrer');
 ```
+Failure to log does not block the redirect (fire-and-forget try/catch, open URL regardless).
 
-This leaves zero-amount rows (if any) untagged, which is correct — the income filter already tolerates `NULL`.
+## PART 6 — Verified clean / Deferred
 
-## PART 3 — Verified clean (no changes)
+Verified untouched:
+- `accounting-oauth/index.ts`, `accounting-sync/index.ts`
+- `AccountingExport.tsx`
+- `src/lib/ukTax.ts`, `useInstructorTaxSummary.ts`, all tax UI
+- All existing admin pages
 
-- `ukTax.ts` — untouched (source of truth).
-- `useInstructorTaxSummary.ts` — filter already live, will start excluding `platform_fee` / `commission` automatically once those tags appear.
-- All accounting-sync, refund-amount, payout, and Square webhook business logic — untouched.
-- `payment_history` schema — no further migration (check constraint already accepts all values used).
+Deferred:
+- Click analytics dashboard for admin (table exists; no UI in this pass)
+- Showing updater email in admin UI (requires profile lookup; out of scope)
+- Localised copy / i18n strings for the signup block
 
-## PART 4 — Deferred
+## Technical notes
 
-- `platform_fee` / `commission` tags: no insert site currently writes these as separate rows, so no tagging to do today. When a future site does (e.g. a fee-skim writer), it must use the new values.
-- Subscription billing inserts — confirm whether any subscription edge function writes to `payment_history`; current grep shows none. If one is added later it should use `subscription`.
-- Affiliate signup flow (Xero/accounting) — to be actioned in the next loop after this pass lands.
-
-## Files touched
-
-Code edits (≈22 one-line additions across):
-- `src/components/instructor/CancelLessonDialog.tsx`
-- `src/components/instructor/EndLessonWizard.tsx`
-- `src/components/instructor/MultiDayScheduleView.tsx`
-- `src/components/instructor/NewMobileScheduleView.tsx`
-- `src/components/instructor/PupilPaymentsManager.tsx`
-- `src/components/instructor/TodayScheduleView.tsx`
-- `src/components/instructor/end-lesson/StepPayment.tsx`
-- `src/components/instructor/RecordPaymentModal.tsx`
-- `src/components/instructor/RefundModal.tsx`
-- `supabase/functions/record-payment/index.ts`
-- `supabase/functions/klarna-order/index.ts`
-- `supabase/functions/clearpay-capture/index.ts`
-- `supabase/functions/create-booking/index.ts`
-- `supabase/functions/gocardless-webhook/index.ts`
-- `supabase/functions/payment-callback/index.ts`
-- `supabase/functions/square-booking-wallet-payment/index.ts`
-- `supabase/functions/square-payment/index.ts`
-- `supabase/functions/square-wallet-payment/index.ts`
-- `supabase/functions/square-webhook/index.ts`
-- `supabase/functions/square-refund/index.ts`
-- `supabase/functions/voice-execute/index.ts`
-
-One new migration for the backfill UPDATEs.
-
-Sites flagged "inspect" (`CancelLessonDialog:155`, `NewMobileScheduleView:241`, `TodayScheduleView:397`, `voice-execute:294`) will be classified by reading the surrounding 20 lines before tagging — if any turns out to be genuinely ambiguous it goes in PART 4 deferred with a one-line note rather than being guessed.
+Files touched:
+- New migration (table + RLS + RPC + seed)
+- New: `src/pages/admin/AccountingPartners.tsx`
+- New: `src/hooks/useAffiliateLinks.ts`
+- Edit: `src/routes/adminRoutes.tsx` (add route)
+- Edit: `src/components/admin/AdminLayout.tsx` (sidebar entry)
+- Edit: `src/pages/AdminPortal.tsx` (section render switch, if key-based)
+- Edit: `src/components/instructor/accounting-export/AccountingSyncPanel.tsx` (signup block + click log)
