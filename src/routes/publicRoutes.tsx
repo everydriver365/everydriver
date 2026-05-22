@@ -24,6 +24,7 @@ const News = lazy(() => import("@/pages/News"));
 const NewsArticle = lazy(() => import("@/pages/NewsArticle"));
 const InstallPupil = lazy(() => import("@/pages/InstallPupil"));
 const ResetPassword = lazy(() => import("@/pages/ResetPassword"));
+const CancelDeletion = lazy(() => import("@/pages/CancelDeletion"));
 const RoleRedirectPage = lazy(() => import("@/components/auth/RoleRedirect").then(m => ({ default: m.RoleRedirect })));
 const WhitelabelPreviewRedirect = lazy(() => import("@/pages/WhitelabelPreviewRedirect"));
 const SitemapRedirect = lazy(() => import("@/pages/SitemapRedirect"));
