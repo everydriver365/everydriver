@@ -53,6 +53,8 @@ function colorForPupil(id: string): string {
   return AVATAR_PALETTE[Math.abs(hash) % AVATAR_PALETTE.length];
 }
 
+type RouteSource = "tomtom" | "cache" | "osrm" | "fallback";
+
 interface CandidatePupil {
   id: string;
   name: string;
@@ -62,6 +64,8 @@ interface CandidatePupil {
   travelOutMin: number | null; // prev drop-off → pupil pickup
   travelInMin: number | null; // pupil pickup → next pickup
   etaSource: "real" | "fallback";
+  /** Worst-of-two source across both travel legs. Null while still resolving. */
+  routeSource: RouteSource | null;
   included: boolean;
   reason: string; // human-readable explanation of inclusion / exclusion
 }
@@ -77,8 +81,21 @@ const TRAVEL_FALLBACK_MIN = TRAVEL_FALLBACK_MIN_SHARED;
 const MIN_LESSON_MIN = MIN_LESSON_MIN_SHARED;
 const UK_POSTCODE_RE = /^[A-Z]{1,2}[0-9][A-Z0-9]?\s?[0-9][A-Z]{2}$/i;
 
-// In-memory cache of postcode-pair travel minutes (per session)
-const travelCache = new Map<string, number | null>();
+// In-memory cache of postcode-pair travel resolution (per session)
+const travelCache = new Map<string, { minutes: number | null; source: RouteSource | null }>();
+
+// Worst-source ranking: bigger number = more degraded.
+const SOURCE_RANK: Record<RouteSource, number> = {
+  tomtom: 0,
+  cache: 1,
+  osrm: 2,
+  fallback: 3,
+};
+function worseSource(a: RouteSource | null, b: RouteSource | null): RouteSource | null {
+  if (!a) return b;
+  if (!b) return a;
+  return SOURCE_RANK[a] >= SOURCE_RANK[b] ? a : b;
+}
 
 async function fetchTravelMinutes(
   fromPostcode: string | null,
