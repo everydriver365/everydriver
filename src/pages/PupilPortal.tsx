@@ -298,6 +298,11 @@ export default function PupilPortal() {
           <PupilDashboardRadar pupilId={pupil.id} />
         </motion.div>
 
+        {/* Next Focus */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.11 }}>
+          <NextSyllabusFocus pupilId={pupil.id} audience="pupil" />
+        </motion.div>
+
         {/* Driving Score */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }}>
           <LearnerDrivingScore pupilId={pupil.id} />
