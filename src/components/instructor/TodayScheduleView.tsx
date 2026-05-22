@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
+import { formatCurrencyCompact } from "@/lib/formatters";
+
 import {
   Calendar,
   Navigation, 
