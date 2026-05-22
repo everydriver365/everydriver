@@ -15,7 +15,7 @@ interface LessonSlot {
 
 interface NotifyRequest {
   instructorId: string;
-  type: "new_booking" | "cancellation" | "reschedule" | "admin_message" | "admin_direct_message" | "pupil_message" | "security_alert";
+  type: "new_booking" | "cancellation" | "reschedule" | "reschedule_request" | "booking_request" | "admin_message" | "admin_direct_message" | "pupil_message" | "security_alert";
   pupilName?: string;
   lessonDate?: string;
   lessonTime?: string;
@@ -136,6 +136,26 @@ serve(async (req) => {
         };
         break;
 
+      case "reschedule_request":
+        smsMessage = `🔁 Reschedule request: ${data.pupilName} wants to move their lesson from ${formatDate(data.oldDate!)} at ${formatTime(data.oldTime!)} → ${formatDate(data.lessonDate!)}${data.lessonTime ? ` at ${formatTime(data.lessonTime)}` : ""}. Review in your dashboard.`;
+        pushNotification = {
+          title: "🔁 Reschedule Request",
+          body: `${data.pupilName} requested a new time for ${formatDate(data.oldDate!)}`,
+          tag: "reschedule-request",
+          data: { type: "reschedule_request", lessonDate: data.lessonDate, oldDate: data.oldDate, url: "/instructor" }
+        };
+        break;
+
+      case "booking_request":
+        smsMessage = `📩 Booking request: ${data.pupilName} requested a lesson on ${formatDate(data.lessonDate!)} at ${formatTime(data.lessonTime!)}. Review in your dashboard.`;
+        pushNotification = {
+          title: "📩 Booking Request",
+          body: `${data.pupilName} requested ${formatDate(data.lessonDate!)} at ${formatTime(data.lessonTime!)}`,
+          tag: "booking-request",
+          data: { type: "booking_request", lessonDate: data.lessonDate, url: "/instructor" }
+        };
+        break;
+
       case "admin_message":
         const preview = data.messagePreview?.substring(0, 50) || "New message";
         smsMessage = `💬 Admin sent a message to ${data.pupilName} on your behalf: "${preview}${(data.messagePreview?.length || 0) > 50 ? '...' : ''}"`;
@@ -216,6 +236,8 @@ serve(async (req) => {
       new_booking: "lesson",
       cancellation: "lesson",
       reschedule: "lesson",
+      reschedule_request: "lesson",
+      booking_request: "lesson",
       admin_message: "message",
       admin_direct_message: "message",
       pupil_message: "message",

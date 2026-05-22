@@ -46,6 +46,21 @@ export function RescheduleRequestForm({
         reason: reason || null,
       });
       if (error) throw error;
+
+      // Notify instructor (non-blocking)
+      const { data: p } = await supabase.from("pupils").select("name").eq("id", pupilId).single();
+      supabase.functions.invoke("notify-instructor", {
+        body: {
+          instructorId,
+          type: "reschedule_request",
+          pupilName: (p as { name?: string } | null)?.name ?? "A pupil",
+          oldDate: originalDate,
+          oldTime: originalTime,
+          lessonDate: date,
+          lessonTime: time || undefined,
+        },
+      }).catch((e) => console.error("[RescheduleRequestForm] notify-instructor", e));
+
       toast.success("Reschedule request sent to your instructor");
       setOpen(false);
       setDate(""); setTime(""); setReason("");
