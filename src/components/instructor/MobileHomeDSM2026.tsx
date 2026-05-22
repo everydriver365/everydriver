@@ -2508,34 +2508,42 @@ function QATile({
 }: { item: QAItem; active: boolean; onPress: () => void; size?: "grid" | "scroll" }) {
   const Icon = item.Icon;
   const BORDER = "#e0e3ea";
-  const HOVER = "#2952b3";
+  const HOVER_BORDER = "#c8cdd6";
+  const HOVER_BG = "#f8f9fb";
   return (
     <button
       type="button"
       onClick={onPress}
-      onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.borderColor = HOVER; }}
-      onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.borderColor = BORDER; }}
+      onMouseEnter={(e) => {
+        const el = e.currentTarget as HTMLButtonElement;
+        el.style.borderColor = HOVER_BORDER;
+        el.style.background = HOVER_BG;
+      }}
+      onMouseLeave={(e) => {
+        const el = e.currentTarget as HTMLButtonElement;
+        el.style.borderColor = BORDER;
+        el.style.background = "#FFFFFF";
+      }}
       style={{
         width: "100%",
-        padding: 12,
+        padding: "11px 12px",
         backgroundColor: "#FFFFFF",
-        border: `1px solid ${BORDER}`,
-        borderRadius: 14,
+        border: `0.5px solid ${BORDER}`,
+        borderRadius: 12,
         cursor: "pointer",
         display: "flex",
         flexDirection: "column",
         alignItems: "flex-start",
-        gap: 10,
         textAlign: "left",
-        transition: "border-color 150ms ease",
+        transition: "border-color 150ms ease, background 150ms ease",
         minWidth: 0,
       }}
     >
       <span
         style={{
-          width: 40,
-          height: 40,
-          borderRadius: 10,
+          width: 26,
+          height: 26,
+          borderRadius: 7,
           background: item.bg,
           display: "inline-flex",
           alignItems: "center",
@@ -2543,17 +2551,17 @@ function QATile({
           flexShrink: 0,
         }}
       >
-        <Icon size={20} strokeWidth={2.2} color={item.colour} />
+        <Icon size={13} strokeWidth={2} color={item.colour} />
       </span>
 
       <span
         style={{
-          fontSize: 14,
-          fontWeight: 600,
+          fontSize: 11,
+          fontWeight: 500,
           color: "#1a1a1f",
           fontFamily: FONT,
-          lineHeight: "18px",
-          letterSpacing: "-0.1px",
+          lineHeight: 1.3,
+          marginTop: 8,
           overflow: "hidden",
           textOverflow: "ellipsis",
           whiteSpace: "nowrap",
@@ -2565,6 +2573,7 @@ function QATile({
     </button>
   );
 }
+
 
 
 
