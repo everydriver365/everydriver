@@ -30,6 +30,7 @@ import {
 import { ExpandChevron } from "@/components/ui/ExpandChevron";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RecurringExpensesManager } from "./RecurringExpensesManager";
+import { DangerZone } from "./DangerZone";
 import { PaymentOptionsSettings } from "./PaymentOptionsSettings";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
