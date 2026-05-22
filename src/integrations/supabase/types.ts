@@ -14206,6 +14206,44 @@ export type Database = {
           },
         ]
       }
+      pupil_native_push_bindings: {
+        Row: {
+          created_at: string
+          last_seen_at: string
+          permission_granted: boolean
+          platform: string
+          pupil_id: string
+          updated_at: string
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string
+          last_seen_at?: string
+          permission_granted?: boolean
+          platform: string
+          pupil_id: string
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string
+          last_seen_at?: string
+          permission_granted?: boolean
+          platform?: string
+          pupil_id?: string
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pupil_native_push_bindings_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: true
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pupil_otp_codes: {
         Row: {
           code: string
