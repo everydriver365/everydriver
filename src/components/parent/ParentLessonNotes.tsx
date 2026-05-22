@@ -33,8 +33,10 @@ export function ParentLessonNotes({ childId }: Props) {
     (async () => {
       setLoading(true);
 
-      // Existing pupil-side feedback (unchanged behaviour).
-      const feedbackPromise = supabase
+      // Existing pupil-side feedback (unchanged behaviour). The legacy column
+      // name `feedback_text` isn't in generated types — cast through `any` so
+      // we don't change the runtime query while keeping the build green.
+      const feedbackPromise = (supabase as any)
         .from("lesson_feedback")
         .select("id, feedback_text, created_at, lesson_id")
         .eq("pupil_id", childId)
