@@ -17,7 +17,7 @@ import { DeepLinkBridge } from "@/components/DeepLinkBridge";
 import { CustomDomainCanonical } from "@/components/CustomDomainCanonical";
 import { ConditionalHome } from "@/components/ConditionalHome";
 import { BrandProvider } from "@/components/BrandProvider";
-import { MobileBackButton } from "@/components/instructor/MobileBackButton";
+
 import NotFound from "./pages/NotFound";
 import MFAChallenge from "./pages/MFAChallenge";
 import Admin2FAEnrol from "./pages/Admin2FAEnrol";
@@ -57,7 +57,7 @@ const App = () => (
                   <CustomDomainCanonical />
                   <DynamicPWAMeta />
                   <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>}>
-                    <MobileBackButton />
+                    
                     <MFAGate>
                       <Routes>
                         <Route path="/" element={<ConditionalHome />} />
