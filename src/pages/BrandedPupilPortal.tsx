@@ -24,6 +24,7 @@ import { PupilPortalGaps } from "@/components/pupil-portal/PupilPortalGaps";
 import { PupilChat } from "@/components/pupil-portal/PupilChat";
 import { ReferralCard } from "@/components/pupil-portal/ReferralCard";
 import { PushNotificationBanner } from "@/components/pupil-portal/PushNotificationBanner";
+import { usePupilOneSignalBinding } from "@/hooks/usePupilOneSignalBinding";
 import { PupilPortalProfileEdit } from "@/components/pupil-portal/PupilPortalProfileEdit";
 import { PupilNotes } from "@/components/pupil-portal/PupilNotes";
 import { PortalIOSInstallBanner } from "@/components/pwa/PortalIOSInstallBanner";
