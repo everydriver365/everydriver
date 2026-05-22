@@ -97,17 +97,23 @@ function worseSource(a: RouteSource | null, b: RouteSource | null): RouteSource 
   return SOURCE_RANK[a] >= SOURCE_RANK[b] ? a : b;
 }
 
+interface TravelResolution {
+  minutes: number | null;
+  source: RouteSource | null;
+}
+
 async function fetchTravelMinutes(
   fromPostcode: string | null,
   toPostcode: string | null,
-): Promise<number | null> {
-  if (!fromPostcode || !toPostcode) return null;
+): Promise<TravelResolution> {
+  if (!fromPostcode || !toPostcode) return { minutes: null, source: null };
   const a = fromPostcode.replace(/\s+/g, "").toUpperCase();
   const b = toPostcode.replace(/\s+/g, "").toUpperCase();
-  if (!UK_POSTCODE_RE.test(a) || !UK_POSTCODE_RE.test(b)) return null;
-  if (a === b) return 0;
+  if (!UK_POSTCODE_RE.test(a) || !UK_POSTCODE_RE.test(b)) return { minutes: null, source: null };
+  if (a === b) return { minutes: 0, source: "cache" };
   const key = `${a}|${b}`;
-  if (travelCache.has(key)) return travelCache.get(key) ?? null;
+  const cached = travelCache.get(key);
+  if (cached) return cached;
   try {
     const { data, error } = await supabase.functions.invoke("calculate-route-distance", {
       body: { from_postcode: a, to_postcode: b },
@@ -115,11 +121,17 @@ async function fetchTravelMinutes(
     if (error) throw error;
     const mins =
       typeof data?.duration_minutes === "number" ? Math.round(data.duration_minutes) : null;
-    travelCache.set(key, mins);
-    return mins;
+    const src =
+      typeof data?.source === "string" && ["tomtom", "osrm", "cache", "fallback"].includes(data.source)
+        ? (data.source as RouteSource)
+        : null;
+    const resolved: TravelResolution = { minutes: mins, source: mins === null ? null : src };
+    travelCache.set(key, resolved);
+    return resolved;
   } catch {
-    travelCache.set(key, null);
-    return null;
+    const resolved: TravelResolution = { minutes: null, source: null };
+    travelCache.set(key, resolved);
+    return resolved;
   }
 }
 
