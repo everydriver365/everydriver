@@ -5,6 +5,8 @@ export interface InstructorMembership {
   planName: string; // e.g. "Free", "Starter", "Pro", "Premium"
   planSlug: string | null;
   status: string | null;
+  currentPeriodEnd: string | null;
+  billingCycle: string | null;
 }
 
 /**
@@ -16,12 +18,12 @@ export function useInstructorMembership(instructorId: string | undefined) {
     queryKey: ["instructor-membership", instructorId],
     queryFn: async () => {
       if (!instructorId) {
-        return { planName: "Free", planSlug: null, status: null };
+        return { planName: "Free", planSlug: null, status: null, currentPeriodEnd: null, billingCycle: null };
       }
 
       const { data: sub } = await supabase
         .from("instructor_subscriptions")
-        .select("status, subscription_plans(name, slug)")
+        .select("status, current_period_end, billing_cycle, subscription_plans(name, slug)")
         .eq("instructor_id", instructorId)
         .eq("status", "active")
         .limit(1)
@@ -29,13 +31,15 @@ export function useInstructorMembership(instructorId: string | undefined) {
 
       const plan = (sub as any)?.subscription_plans;
       if (!plan?.name) {
-        return { planName: "Free", planSlug: null, status: null };
+        return { planName: "Free", planSlug: null, status: null, currentPeriodEnd: null, billingCycle: null };
       }
 
       return {
         planName: plan.name as string,
         planSlug: (plan.slug ?? null) as string | null,
         status: ((sub as any)?.status ?? null) as string | null,
+        currentPeriodEnd: ((sub as any)?.current_period_end ?? null) as string | null,
+        billingCycle: ((sub as any)?.billing_cycle ?? null) as string | null,
       };
     },
     enabled: !!instructorId,
