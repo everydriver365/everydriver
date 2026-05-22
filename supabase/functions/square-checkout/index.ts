@@ -40,6 +40,69 @@ function normalizePhoneE164(raw?: string | null): string | null {
   return null;
 }
 
+// Attempt to refresh an instructor's Square OAuth access token using the stored
+// refresh token. Returns the new access token on success, or null if refresh
+// was not possible (no token, revoked, network error, etc.).
+async function refreshInstructorSquareToken(
+  supabase: ReturnType<typeof createClient>,
+  instructorId: string,
+  appId: string,
+  oauthSecret: string,
+  baseUrl: string,
+): Promise<string | null> {
+  try {
+    const { data: row } = await supabase
+      .from("instructors")
+      .select("square_refresh_token_encrypted")
+      .eq("id", instructorId)
+      .maybeSingle();
+    const refreshToken = (row as any)?.square_refresh_token_encrypted;
+    if (!refreshToken) return null;
+
+    const res = await fetch(`${baseUrl}/oauth2/token`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        client_id: appId,
+        client_secret: oauthSecret,
+        grant_type: "refresh_token",
+        refresh_token: refreshToken,
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok || !data.access_token) {
+      console.error("[square-checkout] inline refresh failed:", res.status, data);
+      const code = String(data?.errors?.[0]?.code || "").toUpperCase();
+      if (code === "UNAUTHORIZED" || code === "REFRESH_TOKEN_REVOKED" || code === "REFRESH_TOKEN_EXPIRED" || code === "NOT_FOUND") {
+        await supabase
+          .from("instructors")
+          .update({
+            square_merchant_id: null,
+            square_access_token_encrypted: null,
+            square_refresh_token_encrypted: null,
+            square_token_expires_at: null,
+            square_connected_at: null,
+          })
+          .eq("id", instructorId);
+      }
+      return null;
+    }
+    await supabase
+      .from("instructors")
+      .update({
+        square_access_token_encrypted: data.access_token,
+        square_refresh_token_encrypted: data.refresh_token || refreshToken,
+        square_token_expires_at: data.expires_at,
+      })
+      .eq("id", instructorId);
+    console.log("[square-checkout] refreshed Square token for", instructorId);
+    return data.access_token as string;
+  } catch (e) {
+    console.error("[square-checkout] inline refresh exception:", e);
+    return null;
+  }
+}
+
 serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
