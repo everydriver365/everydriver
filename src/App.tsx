@@ -17,7 +17,7 @@ import { DeepLinkBridge } from "@/components/DeepLinkBridge";
 import { CustomDomainCanonical } from "@/components/CustomDomainCanonical";
 import { ConditionalHome } from "@/components/ConditionalHome";
 import { BrandProvider } from "@/components/BrandProvider";
-import { MobileBackButton } from "@/components/instructor/MobileBackButton";
+
 import NotFound from "./pages/NotFound";
 import MFAChallenge from "./pages/MFAChallenge";
 import Admin2FAEnrol from "./pages/Admin2FAEnrol";
