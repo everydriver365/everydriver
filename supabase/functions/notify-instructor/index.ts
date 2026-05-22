@@ -15,7 +15,7 @@ interface LessonSlot {
 
 interface NotifyRequest {
   instructorId: string;
-  type: "new_booking" | "cancellation" | "reschedule" | "reschedule_request" | "booking_request" | "admin_message" | "admin_direct_message" | "pupil_message" | "security_alert";
+  type: "new_booking" | "cancellation" | "reschedule" | "reschedule_request" | "booking_request" | "admin_message" | "admin_direct_message" | "pupil_message" | "security_alert" | "mtd_deadline_reminder";
   pupilName?: string;
   lessonDate?: string;
   lessonTime?: string;
@@ -32,6 +32,11 @@ interface NotifyRequest {
   speedKmh?: number;
   latitude?: number;
   longitude?: number;
+  // MTD reminder fields
+  quarterLabel?: string;
+  daysRemaining?: number;
+  deadline?: string; // YYYY-MM-DD
+  periodId?: string;
 }
 
 interface PushNotification {
