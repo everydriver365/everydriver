@@ -35,7 +35,14 @@ interface GapSlot {
   startTime: string;
   endTime: string;
   selected: boolean;
+  /** Resolved travel time from prev drop-off → slot start, in minutes. */
+  travelOutMin?: number | null;
+  /** Resolved travel time from slot end → next pickup, in minutes. */
+  travelInMin?: number | null;
+  /** True when either travel leg fell back to the 10-min default. */
+  etaEstimated?: boolean;
 }
+
 
 interface GapsFillerProps {
   instructorId: string;
