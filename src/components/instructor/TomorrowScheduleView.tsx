@@ -121,7 +121,7 @@ export function TomorrowScheduleView({ instructorId }: TomorrowScheduleViewProps
     if (balance < 0) {
       return (
         <Badge variant="destructive" className="text-xs">
-          £{Math.abs(Math.round(balance))} Due
+          {formatCurrencyCompact(Math.abs(balance), { decimals: false })} Due
         </Badge>
       );
     }
