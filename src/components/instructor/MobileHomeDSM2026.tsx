@@ -315,6 +315,9 @@ export function MobileHomeDSM2026({ instructorId, instructorName }: Props) {
           <div className="animate-fade-in" style={{ animationDelay: "60ms", animationFillMode: "both" }}>
             <NeedsAttentionCard attention={attention} stats={stats} navigate={navigate} instructorId={instructorId} />
           </div>
+          <div className="animate-fade-in" style={{ animationDelay: "90ms", animationFillMode: "both" }}>
+            <TaxEstimateTile instructorId={instructorId} />
+          </div>
           <div className="animate-fade-in" style={{ animationDelay: "120ms", animationFillMode: "both" }}>
             <ScheduleCard instructorId={instructorId} navigate={navigate} />
           </div>
