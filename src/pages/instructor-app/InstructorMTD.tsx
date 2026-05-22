@@ -1,18 +1,17 @@
-import { useState } from "react";
 import { InstructorSaaSLayout } from "@/components/layout/InstructorSaaSLayout";
 import { MTDCountdown } from "@/components/instructor-features/MTDCountdown";
 import { FeatureCTA } from "@/components/instructor-features/FeatureCTA";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import {
-  CheckCircle, ArrowRight, AlertTriangle, FileText, PoundSterling,
-  Shield, Calendar, BookOpen, Calculator, BarChart3,
+  CheckCircle, ArrowRight, AlertTriangle, PoundSterling,
+  Shield, Calendar, BookOpen, Calculator, BarChart3, Loader2,
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { toast } from "sonner";
+import { useInstructorAuth } from "@/context/InstructorAuthContext";
+import { useInstructorMTDStatus } from "@/hooks/useInstructorMTDStatus";
 
 const mtdSteps = [
   {
@@ -49,15 +48,43 @@ const complianceFeatures = [
 ];
 
 export default function InstructorMTD() {
-  const [email, setEmail] = useState("");
-  const [submitted, setSubmitted] = useState(false);
+  const { instructor, loading: authLoading } = useInstructorAuth();
+  const status = useInstructorMTDStatus(instructor?.id);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email) return;
-    // In production this would save to a leads table
-    setSubmitted(true);
-    toast.success("You're on the list! We'll send your free MTD guide.");
+  // If logged-in instructor is already enrolled, send them to the dashboard.
+  if (!authLoading && !status.loading && instructor && status.enrolled) {
+    return <Navigate to="/instructor-app/mtd/dashboard" replace />;
+  }
+
+  const isLoggedInInstructor = !!instructor && !authLoading;
+  const checkingStatus = !!instructor && status.loading;
+
+  const PrimaryCta = () => {
+    if (checkingStatus) {
+      return (
+        <Button size="lg" className="bg-primary text-primary-foreground" disabled>
+          <Loader2 className="h-4 w-4 mr-2 animate-spin" /> Checking…
+        </Button>
+      );
+    }
+    if (isLoggedInInstructor) {
+      return (
+        <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground" asChild>
+          <Link to="/instructor-app/mtd/setup">
+            Get set up
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </Link>
+        </Button>
+      );
+    }
+    return (
+      <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground" asChild>
+        <Link to="/instructor-app/signup">
+          Get MTD Ready — Free
+          <ArrowRight className="ml-2 h-4 w-4" />
+        </Link>
+      </Button>
+    );
   };
 
   return (
@@ -82,6 +109,10 @@ export default function InstructorMTD() {
             </p>
 
             <MTDCountdown variant="full" />
+
+            <div className="mt-10 flex justify-center">
+              <PrimaryCta />
+            </div>
           </motion.div>
         </div>
       </section>
@@ -154,12 +185,7 @@ export default function InstructorMTD() {
                 built into every plan — including the free tier. Your mileage, expenses, and income are tracked
                 digitally from day one.
               </p>
-              <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground" asChild>
-                <Link to="/instructor-app/signup">
-                  Get MTD Ready — Free
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
+              <PrimaryCta />
             </motion.div>
 
             <motion.div
@@ -182,7 +208,7 @@ export default function InstructorMTD() {
         </div>
       </section>
 
-      {/* ═══════════════════ LEAD CAPTURE ═══════════════════ */}
+      {/* ═══════════════════ NEXT STEP CTA (replaces fake lead form) ═══════════════════ */}
       <section className="py-16 bg-background">
         <div className="container max-w-2xl">
           <motion.div
@@ -191,52 +217,23 @@ export default function InstructorMTD() {
             viewport={{ once: true }}
             className="text-center"
           >
-            <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-6">
-              <FileText className="h-8 w-8 text-primary" />
-            </div>
             <h2 className="text-3xl font-bold text-foreground mb-3">
-              Free MTD Readiness Guide for ADIs
+              {isLoggedInInstructor ? "Ready to enrol?" : "Ready when you are"}
             </h2>
             <p className="text-muted-foreground mb-8 max-w-lg mx-auto">
-              Get our plain-English guide to MTD — what you need to do, key dates, and how EveryDriver keeps you compliant automatically.
+              {isLoggedInInstructor
+                ? "It takes about two minutes. You'll need your NI number and your UTR."
+                : "Create your free EveryDriver account and we'll guide you through MTD enrolment when you're ready."}
             </p>
-
-            {submitted ? (
-              <Card className="border-primary/20 bg-primary/5">
-                <CardContent className="p-6 text-center">
-                  <CheckCircle className="h-10 w-10 text-primary mx-auto mb-3" />
-                  <p className="font-semibold text-foreground">You're on the list!</p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    We'll send your free MTD guide shortly. In the meantime, why not start your free account?
-                  </p>
-                  <Button className="mt-4" asChild>
-                    <Link to="/instructor-app/signup">
-                      Create Free Account
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Link>
-                  </Button>
-                </CardContent>
-              </Card>
-            ) : (
-              <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-                <Input
-                  type="email"
-                  placeholder="Your email address"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="flex-1"
-                />
-                <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground whitespace-nowrap">
-                  Send Me the Guide
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </form>
+            <PrimaryCta />
+            {!isLoggedInInstructor && (
+              <p className="mt-4 text-sm text-muted-foreground">
+                Already have an account?{" "}
+                <Link to="/instructor-app/login?redirect=/instructor-app/mtd" className="text-primary font-semibold">
+                  Sign in to get started
+                </Link>
+              </p>
             )}
-
-            <p className="mt-4 text-xs text-muted-foreground">
-              No spam. Unsubscribe anytime. We'll only email you about MTD updates.
-            </p>
           </motion.div>
         </div>
       </section>
