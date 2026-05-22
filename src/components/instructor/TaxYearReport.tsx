@@ -8,6 +8,7 @@ import { FileText, Download, Loader2, Calendar } from "lucide-react";
 import { format, startOfYear, endOfYear, parse } from "date-fns";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { calculateNI, calculateHmrcMileageDeduction } from "@/lib/ukTax";
 
 interface TaxYearReportProps {
   instructorId: string;
@@ -18,11 +19,8 @@ interface TaxYearReportProps {
   fuelCostPerLitre: number;
 }
 
-// HMRC mileage allowance rates
-const MILEAGE_ALLOWANCE_FIRST_10K = 0.45;
-const MILEAGE_ALLOWANCE_AFTER_10K = 0.25;
-
-// UK Tax rates 2024/25
+// UK Tax bands 2025/26 (used only for the tax-code-driven personal-allowance
+// flow below). Mileage allowance + NI maths come from src/lib/ukTax.ts.
 const TAX_FREE_ALLOWANCE = 12570;
 const BASIC_RATE_THRESHOLD = 50270;
 const HIGHER_RATE_THRESHOLD = 125140;
@@ -40,29 +38,31 @@ export function TaxYearReport({
 
   const getTaxYearDates = (year: string) => {
     const [startYear] = year.split("-").map(Number);
-    const startDate = new Date(startYear, 3, 6); // April 6th
-    const endDate = new Date(startYear + 1, 3, 5); // April 5th next year
+    // April 6 is always BST in the UK — anchor explicitly to avoid timezone drift.
+    const startDate = new Date(`${startYear}-04-06T00:00:00+01:00`);
+    const endDate = new Date(`${startYear + 1}-04-05T23:59:59+01:00`);
     return { startDate, endDate };
   };
 
-  const calculateMileageAllowance = (totalMiles: number): number => {
-    if (totalMiles <= 10000) {
-      return totalMiles * MILEAGE_ALLOWANCE_FIRST_10K;
-    }
-    return (10000 * MILEAGE_ALLOWANCE_FIRST_10K) + ((totalMiles - 10000) * MILEAGE_ALLOWANCE_AFTER_10K);
-  };
+  const calculateMileageAllowance = calculateHmrcMileageDeduction;
 
+  /**
+   * Income tax using the instructor's HMRC tax code (codeNumber × 10 = personal
+   * allowance). This intentionally diverges from src/lib/ukTax.ts because the
+   * standard PA taper does not apply when a user supplies a custom tax code.
+   * NI is delegated to the shared library (Class 2 + Class 4).
+   */
   const calculateTax = (taxableIncome: number) => {
     const codeNumber = parseInt(taxCode.replace(/[A-Z]/g, '')) || 1257;
     const personalAllowance = codeNumber * 10;
-    
+
     let taxable = Math.max(0, taxableIncome - personalAllowance);
     let incomeTax = 0;
-    
+
     // Basic rate (20%)
     const basicRateBand = Math.min(taxable, BASIC_RATE_THRESHOLD - TAX_FREE_ALLOWANCE);
     incomeTax += basicRateBand * 0.20;
-    
+
     // Higher rate (40%)
     if (taxable > BASIC_RATE_THRESHOLD - TAX_FREE_ALLOWANCE) {
       const higherRateBand = Math.min(
@@ -71,24 +71,22 @@ export function TaxYearReport({
       );
       incomeTax += higherRateBand * 0.40;
     }
-    
+
     // Additional rate (45%)
     if (taxable > HIGHER_RATE_THRESHOLD - TAX_FREE_ALLOWANCE) {
       incomeTax += (taxable - (HIGHER_RATE_THRESHOLD - TAX_FREE_ALLOWANCE)) * 0.45;
     }
 
-    // National Insurance Class 4
-    let ni = 0;
-    if (taxableIncome > 12570) {
-      const mainBand = Math.min(taxableIncome, 50270) - 12570;
-      ni += Math.max(0, mainBand) * 0.06;
-      if (taxableIncome > 50270) {
-        ni += (taxableIncome - 50270) * 0.02;
-      }
-    }
-
-    return { incomeTax, nationalInsurance: ni, personalAllowance };
+    const ni = calculateNI(taxableIncome);
+    return {
+      incomeTax,
+      nationalInsurance: ni.total,
+      class2NI: ni.class2,
+      class4NI: ni.class4,
+      personalAllowance,
+    };
   };
+
 
   const generateReport = async () => {
     setGenerating(true);
@@ -261,7 +259,7 @@ export function TaxYearReport({
           ["Personal Allowance", `£${personalAllowance.toFixed(2)}`],
           ["", ""],
           ["Estimated Income Tax", `£${incomeTax.toFixed(2)}`],
-          ["Estimated NI (Class 4)", `£${nationalInsurance.toFixed(2)}`],
+          ["Estimated NI (Class 2 + 4)", `£${nationalInsurance.toFixed(2)}`],
           ["Total Tax Liability", `£${(incomeTax + nationalInsurance).toFixed(2)}`],
         ],
         theme: "striped",
