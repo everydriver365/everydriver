@@ -70,9 +70,6 @@ function shortMonth(iso: string): string {
 function longDate(iso: string): string {
   return format(parseISO(iso), "d MMM yyyy");
 }
-function quarterRange(q: QuarterDeadline): string {
-  return `${format(q.periodStart, "MMM")}–${format(q.periodEnd, "MMM")}`;
-}
 
 export default function MTDDashboard() {
   const { instructor, loading: authLoading } = useInstructorAuth();
