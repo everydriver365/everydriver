@@ -4,7 +4,7 @@
 
 import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-export type NotifyCategory = "test_swap" | "message" | "job" | "system" | "lesson" | "payment" | "reminder";
+export type NotifyCategory = "test_swap" | "message" | "job" | "system" | "lesson" | "payment" | "reminder" | "mtd";
 export type NotifyChannel = "push" | "email" | "sms";
 export type NotifyImportance = "normal" | "important";
 
