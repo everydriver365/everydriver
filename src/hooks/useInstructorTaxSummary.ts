@@ -108,10 +108,13 @@ export function useInstructorTaxSummary(instructorId: string | undefined): Instr
         : supabase
             .from("payment_history")
             .select("amount")
-            // D5: no platform-fee/type column exists on payment_history,
-            // so filter by instructor_id + amount > 0 + deleted_at IS NULL.
+            // D5: filter by instructor_id + positive amount + not soft-deleted.
+            // Once payment_type is backfilled across insert sites, the OR-clause
+            // below will exclude platform_fee / commission rows automatically;
+            // legacy rows (payment_type IS NULL) remain counted as income.
             .eq("instructor_id", instructorId)
             .is("deleted_at", null)
+            .or("payment_type.is.null,payment_type.not.in.(platform_fee,commission)")
             .gte("recorded_at", `${startISO}T00:00:00+01:00`)
             .lte("recorded_at", `${endISO}T23:59:59+01:00`);
 
