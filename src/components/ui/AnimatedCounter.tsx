@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, useSpring, useTransform, useMotionValue } from "framer-motion";
+import { formatCurrencyCompact } from "@/lib/formatters";
+
 
 interface AnimatedCounterProps {
   value: number;
