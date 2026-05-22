@@ -76,29 +76,51 @@ export function AccountingSyncPanel({ platform, instructorId, accounting }: Acco
 
   if (!connected) {
     return (
-      <div className="p-4 rounded-2xl border-2 border-dashed border-muted-foreground/20 text-center space-y-3">
-        <div className="flex flex-col items-center gap-2">
-          <Link2 className="h-8 w-8 text-muted-foreground/40" />
-          <div>
-            <p className="font-medium text-sm">Connect to {platform.charAt(0).toUpperCase() + platform.slice(1)}</p>
-            <p className="text-xs text-muted-foreground">
-              Sync expenses and income directly via API
-            </p>
+    const platformLabel = platform.charAt(0).toUpperCase() + platform.slice(1);
+    return (
+      <div className="space-y-3">
+        <div className="p-4 rounded-2xl border-2 border-dashed border-muted-foreground/20 text-center space-y-3">
+          <div className="flex flex-col items-center gap-2">
+            <Link2 className="h-8 w-8 text-muted-foreground/40" />
+            <div>
+              <p className="font-medium text-sm">Connect to {platformLabel}</p>
+              <p className="text-xs text-muted-foreground">
+                Sync expenses and income directly via API
+              </p>
+            </div>
           </div>
+          <Button
+            size="sm"
+            onClick={() => accounting.connect(platform)}
+            disabled={accounting.isConnecting}
+            className="gap-2"
+          >
+            {accounting.isConnecting ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Link2 className="h-4 w-4" />
+            )}
+            Connect {platformLabel}
+          </Button>
         </div>
-        <Button
-          size="sm"
-          onClick={() => accounting.connect(platform)}
-          disabled={accounting.isConnecting}
-          className="gap-2"
-        >
-          {accounting.isConnecting ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Link2 className="h-4 w-4" />
-          )}
-          Connect {platform.charAt(0).toUpperCase() + platform.slice(1)}
-        </Button>
+
+        {affiliateUrl && (
+          <div className="p-3 rounded-2xl border bg-muted/30 space-y-2">
+            <p className="text-sm font-medium">Don't have {platformLabel} yet?</p>
+            <p className="text-xs text-muted-foreground">
+              Get started with {platformLabel} using our partner link.
+            </p>
+            <Button
+              size="sm"
+              onClick={handleAffiliateClick}
+              className="w-full gap-2 text-white"
+              style={{ backgroundColor: "#2952b3" }}
+            >
+              <ExternalLink className="h-4 w-4" />
+              Sign up to {platformLabel} →
+            </Button>
+          </div>
+        )}
       </div>
     );
   }
