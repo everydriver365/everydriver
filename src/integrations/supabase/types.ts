@@ -11944,6 +11944,41 @@ export type Database = {
           },
         ]
       }
+      mtd_deadline_reminders_sent: {
+        Row: {
+          detail: string | null
+          id: string
+          period_id: string
+          sent_at: string
+          sent_ok: boolean
+          tier: number
+        }
+        Insert: {
+          detail?: string | null
+          id?: string
+          period_id: string
+          sent_at?: string
+          sent_ok: boolean
+          tier: number
+        }
+        Update: {
+          detail?: string | null
+          id?: string
+          period_id?: string
+          sent_at?: string
+          sent_ok?: boolean
+          tier?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mtd_deadline_reminders_sent_period_id_fkey"
+            columns: ["period_id"]
+            isOneToOne: false
+            referencedRelation: "mtd_quarterly_periods"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mtd_instructor_settings: {
         Row: {
           accounting_type: string | null
