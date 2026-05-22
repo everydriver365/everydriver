@@ -282,7 +282,24 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
         .gte("end_time", todayISO)
         .lte("start_time", twoWeeksISO);
 
-      const calculatedGaps: GapSlot[] = [];
+      type LoadedLesson = {
+        lesson_date: string;
+        start_time: string;
+        duration_minutes: number | null;
+        pickup_postcode: string | null;
+        pupils: { postcode: string | null } | null;
+      };
+      const lessons = (scheduledLessons as LoadedLesson[] | null) || [];
+
+      type Candidate = {
+        id: string;
+        date: string;
+        startTime: string;
+        endTime: string;
+        prevDropPostcode: string | null;
+        nextPickupPostcode: string | null;
+      };
+      const calculatedGaps: Candidate[] = [];
       const nowHour = new Date().getHours();
       const todayStr = format(new Date(), "yyyy-MM-dd");
 
@@ -296,6 +313,7 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
 
         const dayHours = workingHours?.find((wh) => wh.day_of_week === dayOfWeek);
         if (!dayHours && !override?.is_available) continue;
+
 
         const startHour = override?.start_time || dayHours?.start_time || "09:00";
         const endHour = override?.end_time || dayHours?.end_time || "17:00";
