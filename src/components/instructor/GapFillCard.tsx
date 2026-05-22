@@ -53,6 +53,8 @@ function colorForPupil(id: string): string {
   return AVATAR_PALETTE[Math.abs(hash) % AVATAR_PALETTE.length];
 }
 
+type RouteSource = "tomtom" | "cache" | "osrm" | "fallback";
+
 interface CandidatePupil {
   id: string;
   name: string;
@@ -62,6 +64,8 @@ interface CandidatePupil {
   travelOutMin: number | null; // prev drop-off → pupil pickup
   travelInMin: number | null; // pupil pickup → next pickup
   etaSource: "real" | "fallback";
+  /** Worst-of-two source across both travel legs. Null while still resolving. */
+  routeSource: RouteSource | null;
   included: boolean;
   reason: string; // human-readable explanation of inclusion / exclusion
 }
@@ -77,20 +81,39 @@ const TRAVEL_FALLBACK_MIN = TRAVEL_FALLBACK_MIN_SHARED;
 const MIN_LESSON_MIN = MIN_LESSON_MIN_SHARED;
 const UK_POSTCODE_RE = /^[A-Z]{1,2}[0-9][A-Z0-9]?\s?[0-9][A-Z]{2}$/i;
 
-// In-memory cache of postcode-pair travel minutes (per session)
-const travelCache = new Map<string, number | null>();
+// In-memory cache of postcode-pair travel resolution (per session)
+const travelCache = new Map<string, { minutes: number | null; source: RouteSource | null }>();
+
+// Worst-source ranking: bigger number = more degraded.
+const SOURCE_RANK: Record<RouteSource, number> = {
+  tomtom: 0,
+  cache: 1,
+  osrm: 2,
+  fallback: 3,
+};
+function worseSource(a: RouteSource | null, b: RouteSource | null): RouteSource | null {
+  if (!a) return b;
+  if (!b) return a;
+  return SOURCE_RANK[a] >= SOURCE_RANK[b] ? a : b;
+}
+
+interface TravelResolution {
+  minutes: number | null;
+  source: RouteSource | null;
+}
 
 async function fetchTravelMinutes(
   fromPostcode: string | null,
   toPostcode: string | null,
-): Promise<number | null> {
-  if (!fromPostcode || !toPostcode) return null;
+): Promise<TravelResolution> {
+  if (!fromPostcode || !toPostcode) return { minutes: null, source: null };
   const a = fromPostcode.replace(/\s+/g, "").toUpperCase();
   const b = toPostcode.replace(/\s+/g, "").toUpperCase();
-  if (!UK_POSTCODE_RE.test(a) || !UK_POSTCODE_RE.test(b)) return null;
-  if (a === b) return 0;
+  if (!UK_POSTCODE_RE.test(a) || !UK_POSTCODE_RE.test(b)) return { minutes: null, source: null };
+  if (a === b) return { minutes: 0, source: "cache" };
   const key = `${a}|${b}`;
-  if (travelCache.has(key)) return travelCache.get(key) ?? null;
+  const cached = travelCache.get(key);
+  if (cached) return cached;
   try {
     const { data, error } = await supabase.functions.invoke("calculate-route-distance", {
       body: { from_postcode: a, to_postcode: b },
@@ -98,11 +121,17 @@ async function fetchTravelMinutes(
     if (error) throw error;
     const mins =
       typeof data?.duration_minutes === "number" ? Math.round(data.duration_minutes) : null;
-    travelCache.set(key, mins);
-    return mins;
+    const src =
+      typeof data?.source === "string" && ["tomtom", "osrm", "cache", "fallback"].includes(data.source)
+        ? (data.source as RouteSource)
+        : null;
+    const resolved: TravelResolution = { minutes: mins, source: mins === null ? null : src };
+    travelCache.set(key, resolved);
+    return resolved;
   } catch {
-    travelCache.set(key, null);
-    return null;
+    const resolved: TravelResolution = { minutes: null, source: null };
+    travelCache.set(key, resolved);
+    return resolved;
   }
 }
 
@@ -233,16 +262,20 @@ function useGapCandidatePupils(
               travelOutMin: null,
               travelInMin: null,
               etaSource: "fallback" as const,
+              routeSource: null,
               included: false,
               reason: "Already booked in this window",
             };
           }
 
-          const [outMin, inMin] = await Promise.all([
+          const [outRes, inRes] = await Promise.all([
             fetchTravelMinutes(prevDropPostcode, pupilPostcode),
             fetchTravelMinutes(pupilPostcode, nextPickupPostcode),
           ]);
+          const outMin = outRes.minutes;
+          const inMin = inRes.minutes;
           const realResolved = outMin !== null || inMin !== null;
+          const routeSource: RouteSource | null = worseSource(outRes.source, inRes.source);
           const feasibility = evaluateFeasibility({
             gapMin,
             bufferMinutes,
@@ -287,6 +320,7 @@ function useGapCandidatePupils(
             travelOutMin: outMin,
             travelInMin: inMin,
             etaSource: realResolved ? "real" : "fallback",
+            routeSource,
             included: fits,
             reason,
           };
@@ -307,7 +341,36 @@ function useGapCandidatePupils(
   });
 }
 
+function EtaSourcePill({ source }: { source: RouteSource }) {
+  const live = source === "tomtom" || source === "cache";
+  const osrm = source === "osrm";
+  const bg = live ? "#e8f5ee" : osrm ? "#e8eefb" : "#F0F0F2";
+  const fg = live ? "#2d8a4e" : osrm ? "#2952b3" : "#6E6E73";
+  const label = live ? "Live ETA" : "Est.";
+  return (
+    <span
+      aria-label={`Travel time source: ${source}`}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        marginLeft: 6,
+        fontSize: 10,
+        fontWeight: 600,
+        color: fg,
+        background: bg,
+        padding: "1px 6px",
+        borderRadius: 999,
+        letterSpacing: 0.2,
+        verticalAlign: "baseline",
+      }}
+    >
+      {label}
+    </span>
+  );
+}
+
 export function GapFillCard({
+
   instructorId,
   date,
   startTime,
@@ -459,7 +522,10 @@ export function GapFillCard({
               </TooltipTrigger>
               <TooltipContent side="top" className="max-w-[260px] text-xs leading-snug">
                 <div style={{ fontWeight: 600, marginBottom: 2 }}>{p.name}</div>
-                <div>{p.reason}</div>
+                <div>
+                  {p.reason}
+                  {p.routeSource && <EtaSourcePill source={p.routeSource} />}
+                </div>
               </TooltipContent>
             </Tooltip>
           ))}
