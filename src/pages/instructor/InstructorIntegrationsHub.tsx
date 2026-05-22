@@ -6,7 +6,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { GoogleServiceAccountSetup } from "@/components/instructor/GoogleServiceAccountSetup";
 import { SquareConnectSettings } from "@/components/instructor/SquareConnectSettings";
-import { XeroExport } from "@/components/instructor/XeroExport";
+import { AccountingExport } from "@/components/instructor/accounting-export/AccountingExport";
 import { IntegrationStatusBadge, IntegrationStatusKind } from "@/components/instructor/integrations/IntegrationStatusBadge";
 import { IntegrationInstructions } from "@/components/instructor/integrations/IntegrationInstructions";
 import { useIntegrationStatuses } from "@/hooks/useIntegrationStatuses";
@@ -382,7 +382,7 @@ export default function InstructorIntegrationsHub() {
               </div>
             </div>
           )}
-          {tab === "xero" && <XeroExport instructorId={instructorId} />}
+          {tab === "xero" && <AccountingExport instructorId={instructorId} />}
         </div>
       </div>
     </div>

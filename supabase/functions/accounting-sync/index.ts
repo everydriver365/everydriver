@@ -154,20 +154,36 @@ const platformApis: Record<string, {
 
 // Category mapping helpers
 function getXeroCode(cat: string) {
-  const m: Record<string, string> = { Fuel:'429', 'Vehicle Maintenance':'455', Insurance:'463', 'Training Materials':'400', 'Office Supplies':'453', Marketing:'449', 'Tolls & Parking':'429' };
+  const m: Record<string, string> = { Fuel:'429', 'Vehicle Maintenance':'455', Insurance:'463', 'Training Materials':'400', 'Office Supplies':'453', Marketing:'449', 'Tolls & Parking':'429', Mileage:'410' };
   return m[cat] || '499';
 }
 function getQBOCategory(cat: string) {
-  const m: Record<string, string> = { Fuel:'Car & Van Expenses', 'Vehicle Maintenance':'Repair & Maintenance', Insurance:'Insurance', 'Training Materials':'Training Costs', Marketing:'Advertising & Marketing' };
+  const m: Record<string, string> = { Fuel:'Car & Van Expenses', 'Vehicle Maintenance':'Repair & Maintenance', Insurance:'Insurance', 'Training Materials':'Training Costs', Marketing:'Advertising & Marketing', Mileage:'Car & Van Expenses' };
   return m[cat] || 'Other Expenses';
 }
 function getFreeAgentCategory(cat: string) {
-  const m: Record<string, string> = { Fuel:'Motor Expenses', 'Vehicle Maintenance':'Motor Expenses', Insurance:'Insurance', Marketing:'Advertising' };
+  const m: Record<string, string> = { Fuel:'Motor Expenses', 'Vehicle Maintenance':'Motor Expenses', Insurance:'Insurance', Marketing:'Advertising', Mileage:'Motor Expenses' };
   return m[cat] || 'General Administrative Costs';
 }
 function getSageCode(cat: string) {
-  const m: Record<string, string> = { Fuel:'7300', 'Vehicle Maintenance':'7301', Insurance:'7104', Marketing:'6201' };
+  const m: Record<string, string> = { Fuel:'7300', 'Vehicle Maintenance':'7301', Insurance:'7104', Marketing:'6201', Mileage:'7400' };
   return m[cat] || '8200';
+}
+
+// HMRC AMAP mileage allowance — 45p/mile for first 10,000 business miles in tax year, 25p after
+const KM_TO_MILES = 0.621371;
+function hmrcMileageAllowance(periodMiles: number, tierUsedMiles: number): number {
+  const tier1Remaining = Math.max(0, 10000 - tierUsedMiles);
+  const tier1 = Math.min(periodMiles, tier1Remaining);
+  const tier2 = Math.max(0, periodMiles - tier1);
+  return +(tier1 * 0.45 + tier2 * 0.25).toFixed(2);
+}
+// UK tax year starts 6 April
+function ukTaxYearStart(forDate: Date): string {
+  const y = forDate.getUTCFullYear();
+  const cutoff = Date.UTC(y, 3, 6); // Apr is month 3 (0-indexed)
+  const startYear = forDate.getTime() >= cutoff ? y : y - 1;
+  return `${startYear}-04-06`;
 }
 
 async function refreshTokenIfNeeded(supabase: any, connection: any, platformApi: any) {
@@ -304,6 +320,14 @@ serve(async (req: Request) => {
 
               if (res.ok) {
                 totalSynced++;
+                await supabase
+                  .from('instructor_expenses')
+                  .update({
+                    xero_synced: true,
+                    xero_sync_date: new Date().toISOString(),
+                    last_synced_platform: platform,
+                  })
+                  .eq('id', exp.id);
               } else {
                 const errText = await res.text();
                 errors.push(`Expense ${exp.id.slice(0,8)}: ${res.status} - ${errText.slice(0, 200)}`);
@@ -312,6 +336,60 @@ serve(async (req: Request) => {
               errors.push(`Expense ${exp.id.slice(0,8)}: ${e instanceof Error ? e.message : 'Unknown error'}`);
             }
           }
+        }
+
+        // HMRC mileage allowance — single synthetic expense line for the period
+        try {
+          const taxYearStart = ukTaxYearStart(new Date(period_start));
+          // Prior business mileage in tax year (for 10k threshold)
+          let tierUsedMiles = 0;
+          if (taxYearStart < period_start) {
+            const priorEnd = new Date(new Date(period_start).getTime() - 86400000).toISOString().slice(0,10);
+            const { data: priorLogs } = await supabase
+              .from('mileage_logs')
+              .select('distance_km')
+              .eq('instructor_id', instructor_id)
+              .eq('trip_type', 'business')
+              .gte('log_date', taxYearStart)
+              .lte('log_date', priorEnd);
+            const priorKm = (priorLogs || []).reduce((s: number, r: any) => s + Number(r.distance_km || 0), 0);
+            tierUsedMiles = priorKm * KM_TO_MILES;
+          }
+          const { data: periodLogs } = await supabase
+            .from('mileage_logs')
+            .select('distance_km')
+            .eq('instructor_id', instructor_id)
+            .eq('trip_type', 'business')
+            .gte('log_date', period_start)
+            .lte('log_date', period_end);
+          const periodKm = (periodLogs || []).reduce((s: number, r: any) => s + Number(r.distance_km || 0), 0);
+          const periodMiles = periodKm * KM_TO_MILES;
+          const allowance = hmrcMileageAllowance(periodMiles, tierUsedMiles);
+
+          if (periodMiles > 0 && allowance > 0) {
+            const mileageExpense = {
+              id: crypto.randomUUID(),
+              expense_date: period_end,
+              amount: allowance,
+              description: `Business mileage ${period_start} to ${period_end} (${periodMiles.toFixed(1)} mi @ HMRC AMAP)`,
+            };
+            const payload = platformApi.formatExpense(mileageExpense, 'Mileage');
+            const body = platform === 'xero'
+              ? JSON.stringify({ BankTransactions: [payload] })
+              : JSON.stringify(payload);
+            const res = await fetch(
+              platformApi.expenseEndpoint(connection.tenant_id || ''),
+              { method: 'POST', headers, body }
+            );
+            if (res.ok) {
+              totalSynced++;
+            } else {
+              const errText = await res.text();
+              errors.push(`Mileage: ${res.status} - ${errText.slice(0, 200)}`);
+            }
+          }
+        } catch (e) {
+          errors.push(`Mileage: ${e instanceof Error ? e.message : 'Unknown error'}`);
         }
       }
 

@@ -6967,6 +6967,7 @@ export type Database = {
           expense_date: string
           id: string
           instructor_id: string
+          last_synced_platform: string | null
           receipt_url: string | null
           updated_at: string
           xero_sync_date: string | null
@@ -6981,6 +6982,7 @@ export type Database = {
           expense_date?: string
           id?: string
           instructor_id: string
+          last_synced_platform?: string | null
           receipt_url?: string | null
           updated_at?: string
           xero_sync_date?: string | null
@@ -6995,6 +6997,7 @@ export type Database = {
           expense_date?: string
           id?: string
           instructor_id?: string
+          last_synced_platform?: string | null
           receipt_url?: string | null
           updated_at?: string
           xero_sync_date?: string | null

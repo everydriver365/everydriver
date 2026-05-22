@@ -1,0 +1,1 @@
+ALTER TABLE public.instructor_expenses ADD COLUMN last_synced_platform text;
