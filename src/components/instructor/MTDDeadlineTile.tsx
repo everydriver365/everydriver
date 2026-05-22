@@ -8,7 +8,8 @@ interface MTDDeadlineTileProps {
 }
 
 const FONT = '"Poppins", system-ui, -apple-system, "Segoe UI", sans-serif';
-const ROUTE = "/instructor-app/mtd";
+const ROUTE = "/instructor-app/mtd/dashboard";
+const SETUP_ROUTE = "/instructor-app/mtd/setup";
 
 const BASE_CARD: React.CSSProperties = {
   background: "#FFFFFF",
