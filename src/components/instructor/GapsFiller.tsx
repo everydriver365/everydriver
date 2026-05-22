@@ -188,18 +188,21 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
     try {
       const { data } = await supabase
         .from("instructors")
-        .select("name, buffer_minutes")
+        .select("name, buffer_minutes, home_postcode")
         .eq("id", instructorId)
         .single();
       if (data) {
         setInstructorName(data.name);
         const b = (data as { buffer_minutes?: number | null }).buffer_minutes;
         setBufferMinutes(typeof b === "number" ? b : 0);
+        const hp = (data as { home_postcode?: string | null }).home_postcode;
+        setHomePostcode(hp ? hp.replace(/\s+/g, "").toUpperCase() : null);
       }
     } catch (error) {
       console.error("Error fetching instructor:", error);
     }
   };
+
 
   const fetchPupils = async () => {
     try {
