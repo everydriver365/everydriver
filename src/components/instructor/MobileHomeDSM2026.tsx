@@ -2526,10 +2526,10 @@ function QATile({
       }}
       style={{
         width: "100%",
-        padding: "11px 12px",
+        padding: 14,
         backgroundColor: "#FFFFFF",
         border: `0.5px solid ${BORDER}`,
-        borderRadius: 12,
+        borderRadius: 14,
         cursor: "pointer",
         display: "flex",
         flexDirection: "column",
@@ -2541,9 +2541,9 @@ function QATile({
     >
       <span
         style={{
-          width: 26,
-          height: 26,
-          borderRadius: 7,
+          width: 36,
+          height: 36,
+          borderRadius: 10,
           background: item.bg,
           display: "inline-flex",
           alignItems: "center",
@@ -2551,17 +2551,17 @@ function QATile({
           flexShrink: 0,
         }}
       >
-        <Icon size={13} strokeWidth={2} color={item.colour} />
+        <Icon size={18} strokeWidth={2} color={item.colour} />
       </span>
 
       <span
         style={{
-          fontSize: 11,
+          fontSize: 13,
           fontWeight: 500,
           color: "#1a1a1f",
           fontFamily: FONT,
           lineHeight: 1.3,
-          marginTop: 8,
+          marginTop: 10,
           overflow: "hidden",
           textOverflow: "ellipsis",
           whiteSpace: "nowrap",
