@@ -69,6 +69,7 @@ export const NotifyCategory = {
   MESSAGE: "message",
   TEST_SWAP: "test_swap",
   SYSTEM: "system",
+  MTD: "mtd",
 } as const;
 
 export type NotifyCategoryValue = (typeof NotifyCategory)[keyof typeof NotifyCategory];
