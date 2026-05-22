@@ -11,6 +11,7 @@ interface NotifyPupilRequest {
   pupilId: string;
   type:
     | "slot_offer"
+    | "slot_offer_cancelled"
     | "lesson_reminder"
     | "lesson_cancelled"
     | "booking_confirmed"
@@ -69,6 +70,10 @@ serve(async (req: Request) => {
         case "slot_offer":
           notificationTitle = "Lesson Slot Available! 🎉";
           notificationBody = "A slot matching your preferences just opened up. Book now!";
+          break;
+        case "slot_offer_cancelled":
+          notificationTitle = "Slot offer withdrawn";
+          notificationBody = "A lesson slot you were offered has been withdrawn.";
           break;
         case "lesson_reminder":
           notificationTitle = "Lesson Tomorrow";
