@@ -2179,211 +2179,61 @@ function QATile({
 
 
 
-/* ============================ Upcoming events =========================== */
-function UpcomingEventsCard({
-  events, navigate,
-}: { events: UpcomingEvent[]; navigate: ReturnType<typeof useNavigate> }) {
-  const [open, setOpen] = useState(false);
+/* ===================== Events + Membership combined ===================== */
+function EventsAndMembershipCard({
+  events, membership, navigate,
+}: {
+  events: UpcomingEvent[];
+  membership: ReturnType<typeof useInstructorMembership>["data"];
+  navigate: ReturnType<typeof useNavigate>;
+}) {
+  const [eventsOpen, setEventsOpen] = useState(false);
+  const [memberOpen, setMemberOpen] = useState(false);
 
   const BORDER = "#e0e3ea";
   const DIVIDER = "#f0f1f4";
   const HOVER = "#f8f9fb";
+  const BODY_BG = "#fafafa";
   const CHARCOAL = "#1a1a1f";
   const MUTED = "#999999";
   const EMPTY = "#bbbbbb";
   const BLUE = "#2952b3";
   const BLUE_TINT = "#e8eefb";
+  const PURPLE = "#6b4fc4";
+  const PURPLE_TINT = "#f0edfb";
   const GREEN = "#2d8a4e";
+  const GREEN_TINT = "#e8f5ee";
 
   const hasEvents = events.length > 0;
   const next = hasEvents ? events[0] : null;
-  const headerTitle = next ? next.title : "No upcoming events";
-  const headerSub = next ? (next.dateLabel || "No date set") : "No date set";
+  const eventsTitle = next ? next.title : "No upcoming events";
+  const eventsSub = next ? (next.dateLabel || "No date set") : "No date set";
 
-  return (
-    <div>
-      <div
-        style={{
-          fontSize: 10, fontWeight: 600, color: MUTED,
-          letterSpacing: "0.12em", textTransform: "uppercase", fontFamily: FONT,
-          padding: "4px 4px 10px",
-        }}
-      >
-        Upcoming events
-      </div>
-
-      <div
-        style={{
-          background: "#fff",
-          border: `1px solid ${BORDER}`,
-          borderRadius: 14,
-          overflow: "hidden",
-        }}
-      >
-        <button
-          type="button"
-          onClick={() => setOpen((o) => !o)}
-          onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = HOVER; }}
-          onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
-          style={{
-            width: "100%", padding: "12px 14px",
-            background: "transparent", border: 0, cursor: "pointer",
-            display: "flex", alignItems: "center", gap: 12, textAlign: "left",
-            transition: "background 150ms ease",
-            fontFamily: FONT,
-          }}
-        >
-          <div
-            style={{
-              width: 38, height: 38, borderRadius: 10,
-              backgroundColor: BLUE_TINT,
-              display: "flex", alignItems: "center", justifyContent: "center",
-              flexShrink: 0,
-            }}
-          >
-            <CalendarDays size={20} strokeWidth={2} color={BLUE} />
-          </div>
-          <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
-            <span
-              style={{
-                fontSize: 14, fontWeight: 600, color: CHARCOAL,
-                letterSpacing: "-0.01em", fontFamily: FONT,
-                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-              }}
-            >
-              {headerTitle}
-            </span>
-            <span style={{ fontSize: 11, color: MUTED, fontFamily: FONT }}>
-              {headerSub}
-            </span>
-          </div>
-          <ChevronDown
-            size={16}
-            color="#999999"
-            strokeWidth={2.2}
-            style={{
-              flexShrink: 0,
-              transition: "transform 0.2s ease",
-              transform: open ? "rotate(180deg)" : "rotate(0deg)",
-            }}
-          />
-        </button>
-
-        {open && (
-          <div style={{ borderTop: `1px solid ${DIVIDER}` }}>
-            {hasEvents ? (
-              <div style={{ display: "flex", flexDirection: "column" }}>
-                {events.slice(0, 5).map((ev, i) => (
-                  <button
-                    key={ev.id}
-                    type="button"
-                    onClick={() => navigate(ev.destinationPath)}
-                    style={{
-                      background: "transparent", border: 0, cursor: "pointer",
-                      padding: "12px 14px",
-                      borderTop: i === 0 ? "none" : `1px solid ${DIVIDER}`,
-                      display: "flex", alignItems: "center", gap: 10,
-                      textAlign: "left", fontFamily: FONT,
-                    }}
-                  >
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{
-                        fontSize: 13, fontWeight: 600, color: CHARCOAL,
-                        overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-                      }}>
-                        {ev.title}
-                      </div>
-                      <div style={{ fontSize: 11, color: MUTED, marginTop: 2 }}>
-                        {ev.dateLabel}
-                        {ev.timeLabel && ev.timeLabel !== "—" ? ` · ${ev.timeLabel}` : ""}
-                      </div>
-                    </div>
-                    <ChevronRight size={14} color={MUTED} strokeWidth={2} />
-                  </button>
-                ))}
-              </div>
-            ) : (
-              <div
-                style={{
-                  padding: "28px 14px",
-                  display: "flex", flexDirection: "column", alignItems: "center",
-                  gap: 10, fontFamily: FONT,
-                }}
-              >
-                <CalendarOff size={28} strokeWidth={1.6} color="#d6d8de" />
-                <div style={{ fontSize: 12, color: EMPTY }}>Nothing scheduled yet</div>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          padding: "12px 4px 0",
-        }}
-      >
-        <button
-          type="button"
-          onClick={() => navigate("/instructor/schedule")}
-          style={{
-            background: "transparent", border: 0, cursor: "pointer", padding: 0,
-            display: "inline-flex", alignItems: "center", gap: 4,
-            fontSize: 12, fontWeight: 600, color: GREEN, fontFamily: FONT,
-          }}
-        >
-          <Plus size={14} strokeWidth={2.4} /> Add event
-        </button>
-        <button
-          type="button"
-          onClick={() => navigate("/instructor/schedule")}
-          style={{
-            background: "transparent", border: 0, cursor: "pointer", padding: 0,
-            display: "inline-flex", alignItems: "center", gap: 4,
-            fontSize: 12, fontWeight: 600, color: BLUE, fontFamily: FONT,
-          }}
-        >
-          See all <ArrowRight size={14} strokeWidth={2.4} />
-        </button>
-      </div>
-    </div>
-  );
-}
-
-/* ============================== Membership ============================== */
-function MembershipCard({
-  membership, navigate,
-}: {
-  membership: ReturnType<typeof useInstructorMembership>["data"];
-  navigate: ReturnType<typeof useNavigate>;
-}) {
-  const [open, setOpen] = useState(false);
   const planName = membership?.planName ?? "Free";
   const status = membership?.status;
   const isActive = status === "active";
   const billingCycle = membership?.billingCycle ?? null;
   const renews = membership?.currentPeriodEnd ?? null;
-
-  const BORDER = "#e0e3ea";
-  const DIVIDER = "#f0f1f4";
-  const HOVER = "#f8f9fb";
-  const CHARCOAL = "#1a1a1f";
-  const MUTED = "#999999";
-  const PURPLE = "#6b4fc4";
-  const PURPLE_TINT = "#f0edfb";
-  const BLUE = "#2952b3";
-  const GREEN = "#2d8a4e";
-  const GREEN_TINT = "#e8f5ee";
-
-  const subtitle = isActive ? "Active plan" : status ? status : "Manage plan";
-
   const renewsLabel = renews ? format(new Date(renews), "d MMM yyyy") : "—";
   const billingLabel = billingCycle
     ? billingCycle.charAt(0).toUpperCase() + billingCycle.slice(1)
     : "—";
+  const memberTitle = `${planName} plan`;
+  const memberSub = isActive ? "Active plan" : status ? status : "Manage plan";
+
+  const sectionLabelStyle: React.CSSProperties = {
+    fontSize: 10, fontWeight: 600, color: MUTED,
+    letterSpacing: "0.12em", textTransform: "uppercase",
+    fontFamily: FONT,
+  };
+
+  const rowButtonStyle: React.CSSProperties = {
+    width: "100%", padding: "13px 14px",
+    background: "transparent", border: 0, cursor: "pointer",
+    display: "flex", alignItems: "center", gap: 12, textAlign: "left",
+    transition: "background 150ms ease",
+    fontFamily: FONT,
+  };
 
   const Row = ({ label, value }: { label: string; value: React.ReactNode }) => (
     <div style={{
@@ -2396,118 +2246,230 @@ function MembershipCard({
   );
 
   return (
-    <div>
+    <div
+      style={{
+        background: "#fff",
+        border: `1px solid ${BORDER}`,
+        borderRadius: 14,
+        overflow: "hidden",
+        fontFamily: FONT,
+      }}
+    >
+      {/* Events section header */}
       <div
         style={{
-          fontSize: 10, fontWeight: 600, color: MUTED,
-          letterSpacing: "0.12em", textTransform: "uppercase", fontFamily: FONT,
-          padding: "4px 4px 10px",
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          padding: "12px 14px 8px",
+          borderBottom: `1px solid ${DIVIDER}`,
         }}
       >
-        Membership
+        <span style={sectionLabelStyle}>Upcoming events</span>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 12 }}>
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); navigate("/instructor/schedule"); }}
+            style={{
+              background: "transparent", border: 0, padding: 0, cursor: "pointer",
+              fontSize: 11, fontWeight: 600, color: GREEN, fontFamily: FONT,
+            }}
+          >
+            + Add
+          </button>
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); navigate("/instructor/schedule"); }}
+            style={{
+              background: "transparent", border: 0, padding: 0, cursor: "pointer",
+              fontSize: 11, fontWeight: 600, color: BLUE, fontFamily: FONT,
+            }}
+          >
+            See all →
+          </button>
+        </div>
       </div>
 
-      <div
-        style={{
-          background: "#fff",
-          border: `1px solid ${BORDER}`,
-          borderRadius: 14,
-          overflow: "hidden",
-        }}
+      {/* Events row */}
+      <button
+        type="button"
+        onClick={() => setEventsOpen((o) => !o)}
+        onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = HOVER; }}
+        onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
+        style={rowButtonStyle}
       >
-        <button
-          type="button"
-          onClick={() => setOpen((o) => !o)}
-          onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = HOVER; }}
-          onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
+        <div
           style={{
-            width: "100%", padding: "12px 14px",
-            background: "transparent", border: 0, cursor: "pointer",
-            display: "flex", alignItems: "center", gap: 12, textAlign: "left",
-            transition: "background 150ms ease",
-            fontFamily: FONT,
+            width: 36, height: 36, borderRadius: 9,
+            backgroundColor: BLUE_TINT,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            flexShrink: 0,
           }}
         >
-          <div
+          <CalendarDays size={18} strokeWidth={2} color={BLUE} />
+        </div>
+        <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
+          <span
             style={{
-              width: 38, height: 38, borderRadius: 10,
-              backgroundColor: PURPLE_TINT,
-              display: "flex", alignItems: "center", justifyContent: "center",
-              flexShrink: 0,
+              fontSize: 13, fontWeight: 600, color: CHARCOAL,
+              fontFamily: FONT,
+              overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
             }}
           >
-            <IdCard size={20} strokeWidth={2} color={PURPLE} />
-          </div>
-          <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
-            <span
-              style={{
-                fontSize: 14, fontWeight: 600, color: CHARCOAL,
-                letterSpacing: "-0.01em", fontFamily: FONT,
-                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-              }}
-            >
-              {planName} plan
-            </span>
-            <span style={{ fontSize: 11, color: MUTED, fontFamily: FONT }}>
-              {subtitle}
-            </span>
-          </div>
-          <ChevronDown
-            size={16}
-            color="#999999"
-            strokeWidth={2.2}
-            style={{
-              flexShrink: 0,
-              transition: "transform 0.2s ease",
-              transform: open ? "rotate(180deg)" : "rotate(0deg)",
-            }}
-          />
-        </button>
+            {eventsTitle}
+          </span>
+          <span style={{ fontSize: 11, color: MUTED, fontFamily: FONT }}>
+            {eventsSub}
+          </span>
+        </div>
+        <ChevronDown
+          size={16} color={MUTED} strokeWidth={2.2}
+          style={{
+            flexShrink: 0, transition: "transform 0.2s ease",
+            transform: eventsOpen ? "rotate(180deg)" : "rotate(0deg)",
+          }}
+        />
+      </button>
 
-        {open && (
-          <div
-            style={{
-              borderTop: `1px solid ${DIVIDER}`,
-              padding: 14,
-              display: "flex", flexDirection: "column", gap: 10,
-            }}
-          >
-            <Row
-              label="Status"
-              value={
-                <span
+      {eventsOpen && (
+        <div style={{ borderTop: `1px solid ${DIVIDER}`, background: BODY_BG, padding: 14 }}>
+          {hasEvents ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {events.slice(0, 5).map((ev) => (
+                <button
+                  key={ev.id}
+                  type="button"
+                  onClick={() => navigate(ev.destinationPath)}
                   style={{
-                    display: "inline-flex", alignItems: "center", gap: 4,
-                    background: isActive ? GREEN_TINT : "#f2f4f8",
-                    color: isActive ? GREEN : MUTED,
-                    fontSize: 10, fontWeight: 600,
-                    padding: "3px 8px", borderRadius: 999,
-                    fontFamily: FONT,
+                    background: "transparent", border: 0, cursor: "pointer", padding: 0,
+                    display: "flex", alignItems: "center", gap: 10,
+                    textAlign: "left", fontFamily: FONT,
                   }}
                 >
-                  {isActive && <Check size={10} strokeWidth={3} />}
-                  {isActive ? "Active" : status ? status : "Inactive"}
-                </span>
-              }
-            />
-            <Row label="Plan" value={planName} />
-            <Row label="Renews" value={renewsLabel} />
-            <Row label="Billing" value={billingLabel} />
-            <button
-              type="button"
-              onClick={() => navigate("/instructor/subscription")}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{
+                      fontSize: 13, fontWeight: 600, color: CHARCOAL,
+                      overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                    }}>
+                      {ev.title}
+                    </div>
+                    <div style={{ fontSize: 11, color: MUTED, marginTop: 2 }}>
+                      {ev.dateLabel}
+                      {ev.timeLabel && ev.timeLabel !== "—" ? ` · ${ev.timeLabel}` : ""}
+                    </div>
+                  </div>
+                  <ChevronRight size={14} color={MUTED} strokeWidth={2} />
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div
               style={{
-                alignSelf: "flex-start",
-                background: "transparent", border: 0, padding: 0,
-                color: BLUE, fontSize: 12, fontWeight: 600,
-                fontFamily: FONT, cursor: "pointer", marginTop: 2,
+                display: "flex", flexDirection: "column", alignItems: "center",
+                gap: 10, padding: "14px 0",
               }}
             >
-              Manage →
-            </button>
-          </div>
-        )}
+              <CalendarOff size={28} strokeWidth={1.6} color="#d6d8de" />
+              <div style={{ fontSize: 12, color: EMPTY, fontFamily: FONT }}>Nothing scheduled yet</div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Membership section header — heavier divider on top */}
+      <div
+        style={{
+          padding: "10px 14px 8px",
+          borderTop: `1px solid ${BORDER}`,
+          borderBottom: `1px solid ${DIVIDER}`,
+        }}
+      >
+        <span style={sectionLabelStyle}>Membership</span>
       </div>
+
+      {/* Membership row */}
+      <button
+        type="button"
+        onClick={() => setMemberOpen((o) => !o)}
+        onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = HOVER; }}
+        onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
+        style={rowButtonStyle}
+      >
+        <div
+          style={{
+            width: 36, height: 36, borderRadius: 9,
+            backgroundColor: PURPLE_TINT,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            flexShrink: 0,
+          }}
+        >
+          <IdCard size={18} strokeWidth={2} color={PURPLE} />
+        </div>
+        <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
+          <span
+            style={{
+              fontSize: 13, fontWeight: 600, color: CHARCOAL,
+              fontFamily: FONT,
+              overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+            }}
+          >
+            {memberTitle}
+          </span>
+          <span style={{ fontSize: 11, color: MUTED, fontFamily: FONT }}>
+            {memberSub}
+          </span>
+        </div>
+        <ChevronDown
+          size={16} color={MUTED} strokeWidth={2.2}
+          style={{
+            flexShrink: 0, transition: "transform 0.2s ease",
+            transform: memberOpen ? "rotate(180deg)" : "rotate(0deg)",
+          }}
+        />
+      </button>
+
+      {memberOpen && (
+        <div
+          style={{
+            borderTop: `1px solid ${DIVIDER}`,
+            background: BODY_BG,
+            padding: 14,
+            display: "flex", flexDirection: "column", gap: 8,
+          }}
+        >
+          <Row
+            label="Status"
+            value={
+              <span
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 4,
+                  background: isActive ? GREEN_TINT : "#f2f4f8",
+                  color: isActive ? GREEN : MUTED,
+                  fontSize: 10, fontWeight: 600,
+                  padding: "3px 8px", borderRadius: 999,
+                  fontFamily: FONT,
+                }}
+              >
+                {isActive && <Check size={10} strokeWidth={3} />}
+                {isActive ? "Active" : status ? status : "Inactive"}
+              </span>
+            }
+          />
+          <Row label="Plan" value={planName} />
+          <Row label="Renews" value={renewsLabel} />
+          <Row label="Billing" value={billingLabel} />
+          <button
+            type="button"
+            onClick={() => navigate("/instructor/subscription")}
+            style={{
+              alignSelf: "flex-start",
+              background: "transparent", border: 0, padding: 0,
+              color: BLUE, fontSize: 12, fontWeight: 600,
+              fontFamily: FONT, cursor: "pointer", marginTop: 2,
+            }}
+          >
+            Manage →
+          </button>
+        </div>
+      )}
     </div>
   );
 }
