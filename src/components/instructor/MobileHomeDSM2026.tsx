@@ -2373,7 +2373,7 @@ function QuickAccessCard({ navigate }: { navigate: ReturnType<typeof useNavigate
                 scrollSnapAlign: "start",
                 display: "grid",
                 gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-                gap: 10,
+                gap: 8,
               }}
             >
               {page.map((item) => (
