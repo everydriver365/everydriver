@@ -341,6 +341,34 @@ function useGapCandidatePupils(
   });
 }
 
+function EtaSourcePill({ source }: { source: RouteSource }) {
+  const live = source === "tomtom" || source === "cache";
+  const osrm = source === "osrm";
+  const bg = live ? "#e8f5ee" : osrm ? "#e8eefb" : "#F0F0F2";
+  const fg = live ? "#2d8a4e" : osrm ? "#2952b3" : "#6E6E73";
+  const label = live ? "Live ETA" : "Est.";
+  return (
+    <span
+      aria-label={`Travel time source: ${source}`}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        marginLeft: 6,
+        fontSize: 10,
+        fontWeight: 600,
+        color: fg,
+        background: bg,
+        padding: "1px 6px",
+        borderRadius: 999,
+        letterSpacing: 0.2,
+        verticalAlign: "baseline",
+      }}
+    >
+      {label}
+    </span>
+  );
+}
+
 export function GapFillCard({
 
   instructorId,
