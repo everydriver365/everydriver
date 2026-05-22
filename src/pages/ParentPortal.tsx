@@ -24,6 +24,7 @@ import { ParentBottomNav } from "@/components/parent/ParentBottomNav";
 import { PortalIOSInstallBanner } from "@/components/pwa/PortalIOSInstallBanner";
 import { ParentMessageCard } from "@/components/parent/ParentMessageCard";
 import { ParentSyllabusOverview } from "@/components/parent/ParentSyllabusOverview";
+import { NextSyllabusFocus } from "@/components/shared/NextSyllabusFocus";
 import { ParentAttendanceReport } from "@/components/parent/ParentAttendanceReport";
 import { ParentLessonNotes } from "@/components/parent/ParentLessonNotes";
 import { ParentPaymentHistory } from "@/components/parent/ParentPaymentHistory";
