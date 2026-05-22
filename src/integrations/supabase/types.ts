@@ -9508,6 +9508,7 @@ export type Database = {
           school_skim_percentage: number | null
           secondary_colour: string | null
           settings_sidebar_order: Json | null
+          share_lesson_notes_with_pupil: boolean
           sidebar_critical: Json | null
           sidebar_pinned: Json | null
           slot_increment_minutes: number
@@ -9720,6 +9721,7 @@ export type Database = {
           school_skim_percentage?: number | null
           secondary_colour?: string | null
           settings_sidebar_order?: Json | null
+          share_lesson_notes_with_pupil?: boolean
           sidebar_critical?: Json | null
           sidebar_pinned?: Json | null
           slot_increment_minutes?: number
@@ -9932,6 +9934,7 @@ export type Database = {
           school_skim_percentage?: number | null
           secondary_colour?: string | null
           settings_sidebar_order?: Json | null
+          share_lesson_notes_with_pupil?: boolean
           sidebar_critical?: Json | null
           sidebar_pinned?: Json | null
           slot_increment_minutes?: number
