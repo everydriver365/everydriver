@@ -493,7 +493,10 @@ export function GapFillCard({
               </TooltipTrigger>
               <TooltipContent side="top" className="max-w-[260px] text-xs leading-snug">
                 <div style={{ fontWeight: 600, marginBottom: 2 }}>{p.name}</div>
-                <div>{p.reason}</div>
+                <div>
+                  {p.reason}
+                  {p.routeSource && <EtaSourcePill source={p.routeSource} />}
+                </div>
               </TooltipContent>
             </Tooltip>
           ))}
