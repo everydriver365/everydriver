@@ -7,11 +7,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { useInstructorMTDStatus } from "@/hooks/useInstructorMTDStatus";
-import {
-  getCurrentTaxYear,
-  getQuarterDeadlines,
-  type QuarterDeadline,
-} from "@/lib/mtdDeadlines";
+import { getCurrentTaxYear } from "@/lib/mtdDeadlines";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
