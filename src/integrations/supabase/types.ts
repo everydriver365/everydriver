@@ -262,6 +262,51 @@ export type Database = {
         }
         Relationships: []
       }
+      account_deletion_requests: {
+        Row: {
+          cancelled_at: string | null
+          completed_at: string | null
+          contact_email_encrypted: string
+          created_at: string
+          deleted_by: string | null
+          id: string
+          instructor_id: string
+          purge_summary: Json | null
+          requested_at: string
+          revocation_results: Json | null
+          scheduled_purge_at: string
+          sentinel_uuid: string
+        }
+        Insert: {
+          cancelled_at?: string | null
+          completed_at?: string | null
+          contact_email_encrypted: string
+          created_at?: string
+          deleted_by?: string | null
+          id?: string
+          instructor_id: string
+          purge_summary?: Json | null
+          requested_at?: string
+          revocation_results?: Json | null
+          scheduled_purge_at: string
+          sentinel_uuid: string
+        }
+        Update: {
+          cancelled_at?: string | null
+          completed_at?: string | null
+          contact_email_encrypted?: string
+          created_at?: string
+          deleted_by?: string | null
+          id?: string
+          instructor_id?: string
+          purge_summary?: Json | null
+          requested_at?: string
+          revocation_results?: Json | null
+          scheduled_purge_at?: string
+          sentinel_uuid?: string
+        }
+        Relationships: []
+      }
       accounting_sync_log: {
         Row: {
           error_message: string | null
@@ -19736,6 +19781,10 @@ export type Database = {
           source_queue: string
         }
         Returns: number
+      }
+      purge_instructor_data: {
+        Args: { p_instructor_id: string; p_sentinel_uuid: string }
+        Returns: Json
       }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
