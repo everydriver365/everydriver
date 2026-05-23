@@ -891,45 +891,6 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
         minHeight: "100%",
       }}
     >
-      {/* Stats row — 4 equal cards */}
-      <div style={{ padding: "0 15px", marginBottom: 14 }}>
-        <div style={{ display: "flex", gap: 7 }}>
-          {[
-            { value: String(todaySummary.lessonCount), label: "Lessons", color: "#3D55A1", small: false },
-            { value: `${Math.floor(todaySummary.scheduledMins / 60)}h`, label: "Scheduled", color: "#1A7A3C", small: false },
-            { value: formatHm(todaySummary.freeMins), label: "Free", color: "#5B6B8A", small: true },
-            { value: String(todaySummary.overdueCount), label: "Overdue", color: "#B23A3F", small: false },
-          ].map((stat) => (
-            <div
-              key={stat.label}
-              style={{
-                flex: 1,
-                backgroundColor: "#FFFFFF",
-                borderRadius: 12,
-                padding: "10px 8px",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                border: "0.5px solid rgba(26,82,160,0.08)",
-              }}
-            >
-              <span style={{
-                fontSize: stat.small ? 13 : 18,
-                fontWeight: 700,
-                color: stat.color,
-                lineHeight: stat.small ? "17px" : "21px",
-                letterSpacing: "-0.5px",
-                fontVariantNumeric: "tabular-nums",
-              }}>
-                {stat.value}
-              </span>
-              <span style={{ fontSize: 8, color: "#8E8E93", marginTop: 3, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.4px" }}>
-                {stat.label}
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
 
       {/* Day-grouped timeline sections (no big white wrapper — let cards float) */}
       <div>
