@@ -542,3 +542,397 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
     </>
   );
 }
+
+/* ============================================================
+ * MobileExtendedTabs — restyled tab bar + redesigned Vehicle card
+ * UI-only. Data bindings & handlers passed in unchanged.
+ * ============================================================ */
+
+type ExtTabId = "vehicle" | "qualifications" | "social" | "gps";
+
+interface MobileExtendedTabsProps {
+  defaultTab: ExtTabId;
+  details: InstructorDetails;
+  setDetails: (d: InstructorDetails) => void;
+  handleSave: () => void;
+  saving: boolean;
+  qualificationsContent: React.ReactNode;
+  socialContent: React.ReactNode;
+  gpsContent: React.ReactNode;
+}
+
+const TAB_DEFS: { id: ExtTabId; label: string }[] = [
+  { id: "vehicle", label: "Vehicle" },
+  { id: "qualifications", label: "Qualifications" },
+  { id: "social", label: "Social" },
+  { id: "gps", label: "GPS" },
+];
+
+function MobileExtendedTabs({
+  defaultTab,
+  details,
+  setDetails,
+  handleSave,
+  saving,
+  qualificationsContent,
+  socialContent,
+  gpsContent,
+}: MobileExtendedTabsProps) {
+  const [active, setActive] = useState<ExtTabId>(defaultTab);
+
+  return (
+    <div style={{ fontFamily: "'Poppins', system-ui, sans-serif" }}>
+      {/* Tab bar */}
+      <div
+        style={{
+          display: "flex",
+          gap: 2,
+          backgroundColor: "#fff",
+          border: "1px solid #e0e3ea",
+          borderRadius: 12,
+          padding: 3,
+          marginBottom: 12,
+        }}
+      >
+        {TAB_DEFS.map((tab) => {
+          const isActive = active === tab.id;
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActive(tab.id)}
+              style={{
+                flex: 1,
+                padding: "7px 0",
+                borderRadius: 9,
+                border: "none",
+                fontSize: 11,
+                fontWeight: 500,
+                fontFamily: "inherit",
+                color: isActive ? "#fff" : "#aaa",
+                backgroundColor: isActive ? "#1a1a1f" : "transparent",
+                cursor: "pointer",
+                transition: "all 0.15s",
+              }}
+            >
+              {tab.label}
+            </button>
+          );
+        })}
+      </div>
+
+      {active === "vehicle" && (
+        <VehicleRedesignCard
+          details={details}
+          setDetails={setDetails}
+          handleSave={handleSave}
+          saving={saving}
+        />
+      )}
+      {active === "qualifications" && qualificationsContent}
+      {active === "social" && socialContent}
+      {active === "gps" && gpsContent}
+    </div>
+  );
+}
+
+function VehicleRedesignCard({
+  details,
+  setDetails,
+  handleSave,
+  saving,
+}: {
+  details: InstructorDetails;
+  setDetails: (d: InstructorDetails) => void;
+  handleSave: () => void;
+  saving: boolean;
+}) {
+  const vehicleName =
+    [details.car_make, details.car_model].filter(Boolean).join(" ") || "Add your vehicle";
+  const vehicleSub = details.car_type || "Type & colour not set";
+  const skills = (details.special_skills || "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+  const updateSkills = (next: string[]) => {
+    setDetails({ ...details, special_skills: next.join(", ") });
+  };
+
+  const onAddSkill = () => {
+    const v = typeof window !== "undefined" ? window.prompt("Add skill") : null;
+    if (v && v.trim()) updateSkills([...skills, v.trim()]);
+  };
+
+  const onRemoveSkill = (i: number) => {
+    const next = skills.slice();
+    next.splice(i, 1);
+    updateSkills(next);
+  };
+
+  const labelStyle: React.CSSProperties = {
+    fontSize: 10,
+    textTransform: "uppercase",
+    letterSpacing: 0.6,
+    color: "#aaa",
+    minWidth: 90,
+    flexShrink: 0,
+    fontWeight: 500,
+  };
+  const inputStyle: React.CSSProperties = {
+    flex: 1,
+    border: "none",
+    outline: "none",
+    background: "transparent",
+    fontSize: 13,
+    color: "#1a1a1f",
+    textAlign: "right",
+    fontFamily: "inherit",
+    padding: 0,
+    minWidth: 0,
+  };
+  const rowStyle: React.CSSProperties = {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    padding: "10px 14px",
+  };
+  const dividerStyle: React.CSSProperties = {
+    height: 1,
+    background: "#f0f1f4",
+    width: "100%",
+  };
+
+  return (
+    <div style={{ fontFamily: "inherit" }}>
+      <div
+        style={{
+          background: "#fff",
+          border: "1px solid #e0e3ea",
+          borderRadius: 14,
+          overflow: "hidden",
+        }}
+      >
+        {/* Vehicle summary row */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            padding: "12px 14px",
+          }}
+        >
+          <div
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: 10,
+              background: "#e8eefb",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}
+          >
+            <CarIcon size={18} strokeWidth={1.8} color="#2952b3" />
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div
+              style={{
+                fontSize: 13,
+                fontWeight: 600,
+                color: "#1a1a1f",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {vehicleName}
+            </div>
+            <div
+              style={{
+                fontSize: 11,
+                color: "#aaa",
+                marginTop: 1,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {vehicleSub}
+            </div>
+          </div>
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 5,
+              background: "#e8f5ee",
+              borderRadius: 20,
+              padding: "3px 9px",
+              flexShrink: 0,
+            }}
+          >
+            <span
+              style={{
+                width: 5,
+                height: 5,
+                borderRadius: "50%",
+                background: "#2d8a4e",
+                display: "inline-block",
+              }}
+            />
+            <span style={{ fontSize: 9, fontWeight: 600, color: "#2d8a4e" }}>Live</span>
+          </div>
+        </div>
+
+        <div style={dividerStyle} />
+
+        {/* Make */}
+        <div style={rowStyle}>
+          <div style={labelStyle}>Make</div>
+          <input
+            style={inputStyle}
+            value={details.car_make || ""}
+            placeholder="e.g. Vauxhall"
+            onChange={(e) => setDetails({ ...details, car_make: e.target.value })}
+          />
+          <Mic size={13} color="#ddd" />
+        </div>
+        <div style={dividerStyle} />
+
+        {/* Model */}
+        <div style={rowStyle}>
+          <div style={labelStyle}>Model</div>
+          <input
+            style={inputStyle}
+            value={details.car_model || ""}
+            placeholder="e.g. Corsa"
+            onChange={(e) => setDetails({ ...details, car_model: e.target.value })}
+          />
+          <Mic size={13} color="#ddd" />
+        </div>
+        <div style={dividerStyle} />
+
+        {/* Type / Colour */}
+        <div style={rowStyle}>
+          <div style={labelStyle}>Type / Colour</div>
+          <input
+            style={inputStyle}
+            value={details.car_type || ""}
+            placeholder="e.g. Red Hatchback"
+            onChange={(e) => setDetails({ ...details, car_type: e.target.value })}
+          />
+          <Mic size={13} color="#ddd" />
+        </div>
+        <div style={dividerStyle} />
+
+        {/* Coverage */}
+        <div style={rowStyle}>
+          <div style={labelStyle}>Coverage</div>
+          <input
+            style={inputStyle}
+            value={details.home_postcode || ""}
+            placeholder="e.g. SW1A 1AA"
+            onChange={(e) => setDetails({ ...details, home_postcode: e.target.value })}
+          />
+          <Mic size={13} color="#ddd" />
+        </div>
+        <div style={dividerStyle} />
+
+        {/* Radius */}
+        <div style={rowStyle}>
+          <div style={labelStyle}>Radius (mi)</div>
+          <input
+            style={inputStyle}
+            type="number"
+            value={details.radius_miles ?? ""}
+            placeholder="10"
+            onChange={(e) =>
+              setDetails({
+                ...details,
+                radius_miles: e.target.value ? parseInt(e.target.value) : null,
+              })
+            }
+          />
+        </div>
+        <div style={dividerStyle} />
+
+        {/* Special skills */}
+        <div style={{ padding: "10px 14px 12px" }}>
+          <div
+            style={{
+              fontSize: 10,
+              textTransform: "uppercase",
+              letterSpacing: 0.6,
+              color: "#999",
+              fontWeight: 500,
+              paddingBottom: 4,
+            }}
+          >
+            Special Skills
+          </div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+            {skills.map((s, i) => (
+              <span
+                key={`${s}-${i}`}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 4,
+                  background: "#e8eefb",
+                  color: "#2952b3",
+                  fontSize: 10,
+                  fontWeight: 500,
+                  padding: "3px 9px",
+                  borderRadius: 20,
+                }}
+              >
+                {s}
+                <button
+                  type="button"
+                  onClick={() => onRemoveSkill(i)}
+                  aria-label="Remove skill"
+                  style={{
+                    border: "none",
+                    background: "transparent",
+                    padding: 0,
+                    cursor: "pointer",
+                    display: "inline-flex",
+                    color: "#2952b3",
+                  }}
+                >
+                  <XIcon size={10} strokeWidth={2} />
+                </button>
+              </span>
+            ))}
+            <button
+              type="button"
+              onClick={onAddSkill}
+              style={{
+                background: "#F2F4F8",
+                color: "#aaa",
+                border: "1px dashed #d0d3d8",
+                fontSize: 10,
+                fontWeight: 500,
+                padding: "3px 9px",
+                borderRadius: 20,
+                cursor: "pointer",
+                fontFamily: "inherit",
+              }}
+            >
+              + Add
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Save (kept for save logic) */}
+      <Button onClick={handleSave} disabled={saving} className="w-full mt-3">
+        {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+        Save Vehicle Details
+      </Button>
+    </div>
+  );
+}
+
