@@ -1015,7 +1015,12 @@ export function UpNextExpanded({
         durationMinutes={durationMinutes}
         onRescheduled={() => {
           qc.invalidateQueries({ queryKey: ["next-lesson-details"] });
+          qc.invalidateQueries({ queryKey: ["today-remaining-lessons"] });
+          qc.invalidateQueries({ queryKey: ["instructor-calendar-events"] });
+          qc.invalidateQueries({ queryKey: ["scheduled-lessons"] });
+          qc.invalidateQueries({ queryKey: ["instructor-agenda"] });
         }}
+
       />
       <RunningLateSheet
         open={lateOpen}
