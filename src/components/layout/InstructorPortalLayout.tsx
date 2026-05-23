@@ -685,6 +685,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
     return (
       <RealtimeHubProvider instructorId={instructor?.id}>
       <GlobalSyncBridge instructorId={instructor?.id} />
+      <BackgroundAutoTrackingBridge instructorId={instructor?.id} />
       <UrgentAlertOverlay alerts={urgentAlerts} onDismiss={dismissUrgentAlert} />
       {!endWizardLesson && <LessonEndAlert lesson={overdueLesson} onComplete={handleCompleteLessonAlert} onDismiss={dismissLessonAlert} />}
       {endWizardLesson && instructor?.id && (
@@ -1196,6 +1197,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
   return (
     <RealtimeHubProvider instructorId={instructor?.id}>
       <GlobalSyncBridge instructorId={instructor?.id} />
+      <BackgroundAutoTrackingBridge instructorId={instructor?.id} />
       <UrgentAlertOverlay alerts={urgentAlerts} onDismiss={dismissUrgentAlert} />
       {!endWizardLesson && <LessonEndAlert lesson={overdueLesson} onComplete={handleCompleteLessonAlert} onDismiss={dismissLessonAlert} />}
       {endWizardLesson && instructor?.id && (
