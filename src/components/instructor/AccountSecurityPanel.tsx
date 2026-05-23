@@ -129,6 +129,7 @@ export function AccountSecurityPanel() {
       return;
     }
     setPassword("");
+    setConfirmPassword("");
     setCurrentPassword("");
     uiToast({ title: "Password updated", description: "Your new password is now active." });
   };
