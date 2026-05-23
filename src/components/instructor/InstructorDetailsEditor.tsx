@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Loader2, Globe, Facebook, Instagram, Link as LinkIcon, Satellite, Wifi, WifiOff, RefreshCw, Car as CarIcon, Mic, X as XIcon } from "lucide-react";
+import { Loader2, Globe, Facebook, Instagram, Link as LinkIcon, Satellite, Wifi, WifiOff, RefreshCw, Car as CarIcon, Mic, X as XIcon, AlertTriangle, BadgeCheck, Award, IdCard, Calendar as CalendarIcon, Check } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,6 +40,10 @@ interface InstructorDetails {
   instructor_grade: string | null;
   cpd_certified: boolean;
   adi_code_of_practice: boolean;
+  adi_badge_number: string | null;
+  adi_badge_expiry: string | null;
+  adi_grade: string | null;
+  dbs_certificate_expiry: string | null;
   personal_website_url: string | null;
   facebook_url: string | null;
   instagram_url: string | null;
@@ -88,6 +92,10 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
           instructor_grade,
           cpd_certified,
           adi_code_of_practice,
+          adi_badge_number,
+          adi_badge_expiry,
+          adi_grade,
+          dbs_certificate_expiry,
           personal_website_url,
           facebook_url,
           instagram_url,
@@ -327,64 +335,158 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
       setDetails={setDetails}
       handleSave={handleSave}
       saving={saving}
-      qualificationsContent={
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label>Instructor Grade</Label>
-            <Select
-              value={details.instructor_grade || ""}
-              onValueChange={(value) => setDetails({ ...details, instructor_grade: value })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select grade" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="A">Grade A</SelectItem>
-                <SelectItem value="B">Grade B</SelectItem>
-                <SelectItem value="trainee">Trainee (Pink Badge)</SelectItem>
-              </SelectContent>
-            </Select>
-            <p className="text-xs text-muted-foreground">
-              Your DVSA assessed instructor grade
-            </p>
+      qualificationsContent={(() => {
+        const today = new Date();
+        const todayStr = today.toISOString().slice(0, 10);
+        const isExpired = (d: string | null) => !!d && d < todayStr;
+        const isMissing = (v: string | null) => !v || v.trim() === "";
+        const issues: string[] = [];
+        if (isMissing(details.adi_badge_number) || isMissing(details.adi_badge_expiry) || isExpired(details.adi_badge_expiry)) issues.push("adi");
+        if (isMissing(details.dbs_certificate_expiry) || isExpired(details.dbs_certificate_expiry)) issues.push("dbs");
+        const badgeValid = !isMissing(details.adi_badge_number) && !isMissing(details.adi_badge_expiry) && !isExpired(details.adi_badge_expiry);
+        const grade = details.adi_grade || "";
+        const isPdiStage1 = grade === "PDI-2";
+        const isPdiStage2 = grade === "PDI-3";
+        const divider = <div style={{ height: 1, background: "#f0f1f4", width: "100%" }} />;
+        const labelCss: React.CSSProperties = { fontSize: 10, color: "#aaa", textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 4 };
+        const inputCss: React.CSSProperties = {
+          width: "100%", background: "#F2F4F8", border: "1px solid #eaecee",
+          borderRadius: 8, padding: "7px 10px", fontSize: 13, color: "#1a1a1f",
+          fontFamily: "inherit", outline: "none", boxSizing: "border-box",
+        };
+        const gradeChip = (value: string, label: string, activeColor: string) => {
+          const active = grade === value;
+          return (
+            <button key={value} type="button"
+              onClick={() => setDetails({ ...details, adi_grade: value })}
+              style={{
+                background: active ? activeColor : "#F2F4F8",
+                color: active ? "#fff" : "#1a1a1f",
+                border: "none", borderRadius: 8, padding: "7px 12px",
+                fontSize: 12, fontWeight: 600, fontFamily: "Poppins, sans-serif",
+                cursor: "pointer",
+              }}
+            >{label}</button>
+          );
+        };
+        const stageButton = (value: string, label: string, active: boolean) => (
+          <button type="button"
+            onClick={() => setDetails({ ...details, adi_grade: value })}
+            style={{
+              width: "100%",
+              background: active ? "#fbe8f5" : "#fff",
+              border: `1px solid ${active ? "#d97aa6" : "#e0e3ea"}`,
+              borderRadius: 10, padding: "9px 12px",
+              display: "flex", alignItems: "center", gap: 8,
+              cursor: "pointer", fontFamily: "inherit",
+            }}>
+            <span style={{ width: 8, height: 8, borderRadius: "50%", background: active ? "#d97aa6" : "#e0e3ea", flexShrink: 0 }} />
+            <span style={{ flex: 1, textAlign: "left", fontSize: 12, fontWeight: 500, color: "#1a1a1f" }}>{label}</span>
+            {active && <Check size={14} color="#d97aa6" />}
+          </button>
+        );
+
+        return (
+          <div style={{ fontFamily: "Poppins, sans-serif", background: "#F2F4F8" }}>
+            <div style={{ padding: "0 2px 10px" }}>
+              <div style={{ fontSize: 16, fontWeight: 700, color: "#1a1a1f" }}>Qualifications &amp; credentials</div>
+              <div style={{ fontSize: 11, color: "#aaa", marginTop: 2 }}>ADI badge, DBS licence and insurance documents</div>
+            </div>
+
+            <div style={{ background: "#fff", border: "1px solid #e0e3ea", borderRadius: 14, overflow: "hidden" }}>
+              {issues.length > 0 && (
+                <div style={{ background: "#fff8e8", borderBottom: "1px solid #fde9a0", padding: "11px 14px", display: "flex", alignItems: "flex-start", gap: 10 }}>
+                  <AlertTriangle size={16} color="#f59e0b" style={{ flexShrink: 0, marginTop: 1 }} />
+                  <div>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: "#854f0b" }}>Action needed</div>
+                    <div style={{ fontSize: 10, color: "#b87a2a", marginTop: 1 }}>
+                      {issues.length} document{issues.length === 1 ? "" : "s"} expired or missing
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ADI badge section */}
+              <div>
+                <div style={{ padding: "12px 14px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                    <IdCard size={15} color="#2952b3" />
+                    <span style={{ fontSize: 13, fontWeight: 600, color: "#1a1a1f" }}>ADI badge</span>
+                  </div>
+                  <div style={{
+                    display: "inline-flex", alignItems: "center", gap: 4,
+                    background: badgeValid ? "#e8f5ee" : "#fbe8e8",
+                    color: badgeValid ? "#2d8a4e" : "#c9302c",
+                    fontSize: 11, fontWeight: 600, padding: "3px 9px", borderRadius: 999,
+                  }}>
+                    {badgeValid ? <Check size={11} /> : <XIcon size={11} />}
+                    {badgeValid ? "Valid" : "Expired"}
+                  </div>
+                </div>
+                <div style={{ padding: "0 14px 12px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                  <div>
+                    <span style={labelCss}>Badge number</span>
+                    <input
+                      type="text"
+                      value={details.adi_badge_number || ""}
+                      onChange={(e) => setDetails({ ...details, adi_badge_number: e.target.value })}
+                      style={inputCss}
+                      placeholder="e.g. 123456"
+                    />
+                  </div>
+                  <div>
+                    <span style={labelCss}>Expiry date</span>
+                    <div style={{ position: "relative" }}>
+                      <input
+                        type="date"
+                        value={details.adi_badge_expiry || ""}
+                        onChange={(e) => setDetails({ ...details, adi_badge_expiry: e.target.value })}
+                        style={{ ...inputCss, paddingRight: 28 }}
+                      />
+                      <CalendarIcon size={14} color="#ccc" style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {divider}
+
+              {/* ADI grade */}
+              <div>
+                <div style={{ padding: "12px 14px 8px", display: "flex", alignItems: "center", gap: 7 }}>
+                  <Award size={15} color="#2952b3" />
+                  <span style={{ fontSize: 13, fontWeight: 600, color: "#1a1a1f" }}>ADI grade</span>
+                </div>
+                <div style={{ padding: "0 14px 5px" }}><span style={labelCss}>Select your grade</span></div>
+                <div style={{ padding: "0 14px 12px", display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  {gradeChip("A", "Grade A", "#2952b3")}
+                  {gradeChip("B", "Grade B", "#2952b3")}
+                  {gradeChip("PDI", "PDI", "#6b4fc4")}
+                </div>
+              </div>
+
+              {divider}
+
+              {/* Pink licence stage */}
+              <div>
+                <div style={{ padding: "12px 14px 8px", display: "flex", alignItems: "center", gap: 7 }}>
+                  <BadgeCheck size={15} color="#2952b3" />
+                  <span style={{ fontSize: 13, fontWeight: 600, color: "#1a1a1f" }}>Pink licence stage</span>
+                </div>
+                <div style={{ padding: "0 14px 14px", display: "flex", flexDirection: "column", gap: 6 }}>
+                  {stageButton("PDI-2", "Part 2 — Pink Badge", isPdiStage1)}
+                  {stageButton("PDI-3", "Part 3 — Trainee Licence", isPdiStage2)}
+                </div>
+              </div>
+            </div>
+
+            <Button onClick={handleSave} disabled={saving} className="w-full" style={{ marginTop: 12 }}>
+              {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              Save Qualifications
+            </Button>
           </div>
-
-          <Card>
-            <CardContent className="p-4 space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label className="text-sm font-medium">CPD Certified</Label>
-                  <p className="text-xs text-muted-foreground">
-                    Continuous Professional Development
-                  </p>
-                </div>
-                <Switch
-                  checked={details.cpd_certified}
-                  onCheckedChange={(checked) => setDetails({ ...details, cpd_certified: checked })}
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label className="text-sm font-medium">ADI Code of Practice</Label>
-                  <p className="text-xs text-muted-foreground">
-                    DVSA voluntary code adherence
-                  </p>
-                </div>
-                <Switch
-                  checked={details.adi_code_of_practice}
-                  onCheckedChange={(checked) => setDetails({ ...details, adi_code_of_practice: checked })}
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Button onClick={handleSave} disabled={saving} className="w-full">
-            {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-            Save Qualifications
-          </Button>
-        </div>
-      }
+        );
+      })()}
       socialContent={
         <div className="space-y-4">
           <div className="space-y-2">
