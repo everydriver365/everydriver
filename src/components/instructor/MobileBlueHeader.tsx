@@ -120,7 +120,9 @@ export function MobileBlueHeader({
           >
             <Phone size={20} strokeWidth={1.9} color={divertColor} aria-hidden="true" />
           </button>
+          <AutoTrackingIndicator instructorId={instructorId} />
           <button
+
             onClick={() => navigate("/instructor/notifications")}
             className="relative flex items-center justify-center transition-transform active:scale-95"
             style={{ width: 44, height: 44, margin: -12, WebkitTapHighlightColor: "transparent" }}
