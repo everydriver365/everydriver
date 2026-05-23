@@ -8,6 +8,7 @@ export function useCombinedNotificationCount(instructorId: string | undefined) {
   const [messageCount, setMessageCount] = useState(0);
   const [visitorChatCount, setVisitorChatCount] = useState(0);
   const [pendingJobsCount, setPendingJobsCount] = useState(0);
+  const [notificationsCount, setNotificationsCount] = useState(0);
 
   useEffect(() => {
     if (!instructorId) return;
@@ -45,6 +46,14 @@ export function useCombinedNotificationCount(instructorId: string | undefined) {
         .select("*", { count: "exact", head: true })
         .eq("status", "pending");
       setPendingJobsCount(jobCount || 0);
+
+      // Unread instructor notifications (alerts on /instructor/notifications)
+      const { count: notifCount } = await supabase
+        .from("instructor_notifications")
+        .select("*", { count: "exact", head: true })
+        .eq("instructor_id", instructorId)
+        .eq("is_read", false);
+      setNotificationsCount(notifCount || 0);
     };
 
     fetchCounts();
@@ -58,15 +67,19 @@ export function useCombinedNotificationCount(instructorId: string | undefined) {
     const ch3 = supabase.channel("combined-notif-jobs")
       .on("postgres_changes", { event: "*", schema: "public", table: "course_enquiries" }, fetchCounts)
       .subscribe();
+    const ch4 = supabase.channel("combined-notif-instructor")
+      .on("postgres_changes", { event: "*", schema: "public", table: "instructor_notifications", filter: `instructor_id=eq.${instructorId}` }, fetchCounts)
+      .subscribe();
 
     return () => {
       supabase.removeChannel(ch1);
       supabase.removeChannel(ch2);
       supabase.removeChannel(ch3);
+      supabase.removeChannel(ch4);
     };
   }, [instructorId]);
 
-  const total = swapCount + messageCount + visitorChatCount + pendingJobsCount;
+  const total = swapCount + messageCount + visitorChatCount + pendingJobsCount + notificationsCount;
 
-  return { total, swapCount, messageCount, visitorChatCount, pendingJobsCount };
+  return { total, swapCount, messageCount, visitorChatCount, pendingJobsCount, notificationsCount };
 }
