@@ -32,6 +32,8 @@ interface Form {
   dbs_certificate_issued: string;
   dbs_certificate_expiry: string;
   dbs_certificate_url: string | null;
+  dbs_update_service_subscribed: boolean;
+  dbs_update_service_expiry: string;
 
   driving_licence_number: string;
   driving_licence_expiry: string;
@@ -53,6 +55,8 @@ const EMPTY: Form = {
   dbs_certificate_issued: "",
   dbs_certificate_expiry: "",
   dbs_certificate_url: null,
+  dbs_update_service_subscribed: false,
+  dbs_update_service_expiry: "",
   driving_licence_number: "",
   driving_licence_expiry: "",
   insurance_provider: "",
@@ -62,6 +66,7 @@ const EMPTY: Form = {
   years_experience_adi: "",
   additional_certifications: [],
 };
+
 
 const CERTS: { id: string; label: string }[] = [
   { id: "pass_plus", label: "Pass plus registered" },
