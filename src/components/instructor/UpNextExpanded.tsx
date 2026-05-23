@@ -659,7 +659,7 @@ export function UpNextExpanded({
       </div>
 
       {/* Status buttons — Row 2 (primary CTA) */}
-      <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>
+      <div className="upnext-status-row" style={{ marginBottom: 12 }}>
         {statusBtn({
           Icon: ClipboardList,
           label: "Prep",
@@ -676,8 +676,10 @@ export function UpNextExpanded({
           solidColor: "#fff",
           flex: 1.6,
           shadow: true,
+          ctaFlex: true,
         })}
       </div>
+
 
 
       {/* Map */}
