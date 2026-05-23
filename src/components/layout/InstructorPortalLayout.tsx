@@ -119,7 +119,6 @@ import { useOfflinePrefetch } from "@/hooks/useOfflinePrefetch";
 import instructorBg from "@/assets/instructor-bg-signs.png";
 import dsmLogo from "@/assets/dsm-logo.png";
 import { MobileBlueHeader } from "@/components/instructor/MobileBlueHeader";
-import { MobileBackButton } from "@/components/instructor/MobileBackButton";
 const sidebarGroups = [
   {
     label: "TEACHING",
@@ -673,13 +672,16 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
     );
   }
 
-  // Tab roots — no back button on these
+  // Only the home page has no back button; every other instructor page gets one.
+  const normalizedPath = location.pathname.replace(/\/+$/, "");
+  const isHomeRoot = normalizedPath === "/instructor";
   const tabRootPaths = ["/instructor", "/instructor/schedule", "/instructor/tracking", "/instructor/pupils", "/instructor/menu"];
   const isTabRoot = tabRootPaths.includes(location.pathname);
-  const showBackButton = !isTabRoot;
+  const showBackButton = !isHomeRoot;
   const firstName = instructor?.name?.split(" ")[0] || "Instructor";
   const headerLabel = firstName;
   const mobilePageTitle = sidebarLinks.find(l => l.href === location.pathname)?.label || "Dashboard";
+
 
   // Mobile Layout
   if (isMobile) {
@@ -715,7 +717,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
           <>
             {/* iOS Install Banner */}
             <IOSInstallBanner />
-            <MobileBackButton />
+            
 
 
             {/* Mobile Header — iOS Blue Gradient (hidden on home; DSM2026 hero replaces it) */}
@@ -730,7 +732,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                 surface={isHomePage ? "white" : "page"}
                 isHomePage={isHomePage}
                 pageTitle={mobilePageTitle}
-                onBack={() => navigate(-1)}
+                onBack={() => (isTabRoot ? navigate("/instructor") : navigate(-1))}
                 onSOS={() => setShowSOS(true)}
                 onPlus={() => setHeaderQuickActionsOpen(true)}
                 onMenu={() => setIsMobileMenuOpen(true)}
