@@ -639,7 +639,7 @@ export function QualificationsEditor({ instructorId }: Props) {
           title="Insurance"
           status={insuranceStatus}
         >
-          <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-3">
             <Field label="Provider">
               <input
                 value={form.insurance_provider}
