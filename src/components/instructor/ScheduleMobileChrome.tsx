@@ -227,35 +227,6 @@ export function ScheduleMobileChrome({
 
 
 
-      {/* Date section header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 4 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
-          <span style={{ width: 8, height: 8, borderRadius: 999, background: "#2952b3", flexShrink: 0 }} />
-          <span style={{ fontSize: 13, fontWeight: 600, color: "#1a1a1f" }}>
-            {now.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" })}
-          </span>
-          <span style={{
-            background: "#e8eefb", color: "#2952b3",
-            fontSize: 10, fontWeight: 600,
-            padding: "2px 7px", borderRadius: 10,
-          }}>
-            Today
-          </span>
-        </div>
-        <button
-          onClick={onAdd}
-          style={{
-            background: "#1a1a1f", color: "#fff",
-            borderRadius: 10, padding: "8px 14px",
-            border: "none", cursor: "pointer",
-            display: "inline-flex", alignItems: "center", gap: 5,
-            fontSize: 12, fontWeight: 600, fontFamily: FONT,
-          }}
-        >
-          <Plus size={13} strokeWidth={2.2} />
-          Add
-        </button>
-      </div>
 
       <AICallDivertSheet open={divertSheetOpen} onOpenChange={setDivertSheetOpen} state={aiDivert} />
     </div>
