@@ -376,7 +376,9 @@ export default function AdminPortal() {
                   </CardContent>
                 </Card>
               </Link>
+              <BackfillCommuteMileageTile />
             </div>
+
             <BespokeBookingModal open={isBespokeOpen} onOpenChange={setIsBespokeOpen} />
             <SendUrgentAlertDialog open={isUrgentAlertOpen} onOpenChange={setIsUrgentAlertOpen} />
           </>
