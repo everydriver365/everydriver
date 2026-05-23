@@ -12,6 +12,10 @@ import {
   AlertTriangle,
   Clock3,
   Info,
+  Calendar as CalendarIcon,
+  Bell,
+  Mail,
+  Save,
 } from "lucide-react";
 import { differenceInDays, format, parseISO } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
