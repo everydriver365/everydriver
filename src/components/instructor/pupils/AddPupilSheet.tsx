@@ -42,6 +42,8 @@ import {
   Clock as ClockIcon,
   Check as CheckIcon,
 } from "lucide-react";
+import { ImportFromContactsButton } from "@/components/instructor/pupils/ImportFromContactsButton";
+import { formatPhoneNumber } from "@/lib/formatPhoneNumber";
 
 // ---- Design tokens (mobile iOS system, kept for mobile sheet) ----
 const HAIRLINE = "#E4E4E7";
