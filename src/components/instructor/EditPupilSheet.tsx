@@ -464,6 +464,20 @@ export function EditPupilSheet({
 
           {/* Form fields */}
           <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 14 }}>
+            <ImportFromContactsButton
+              variant="card"
+              label="Replace from contacts"
+              onImport={(c) =>
+                setForm((prev: any) => ({
+                  ...prev,
+                  name: c.name || prev.name,
+                  phone: c.phone ? formatPhoneNumber(c.phone) || c.phone : prev.phone,
+                  email: c.email || prev.email,
+                  address: c.address || prev.address,
+                  postcode: c.postcode || prev.postcode,
+                }))
+              }
+            />
             {/* Name */}
             <div>
               <Eyebrow>Name</Eyebrow>
