@@ -21,6 +21,10 @@ import {
   X,
   GraduationCap,
   IdCard,
+  Shield,
+  Phone,
+  PhoneCall,
+  Minus,
 } from "lucide-react";
 import { differenceInDays, format, parseISO } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
