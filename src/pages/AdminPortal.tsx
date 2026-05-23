@@ -26,6 +26,8 @@ import { InstructorBonusManager } from "@/components/admin/InstructorBonusManage
 import { CMSManager } from "@/components/admin/CMSManager";
 import { InstructorHomepageManager } from "@/components/admin/InstructorHomepageManager";
 import { PWAConfigManager } from "@/components/admin/PWAConfigManager";
+import { BackfillCommuteMileageTile } from "@/components/admin/BackfillCommuteMileageTile";
+
 import { SiteSettingsManager } from "@/components/admin/SiteSettingsManager";
 import { InstructorAppCMSManager } from "@/components/admin/InstructorAppCMSManager";
 import { AdminLayout } from "@/components/admin/AdminLayout";
@@ -376,7 +378,9 @@ export default function AdminPortal() {
                   </CardContent>
                 </Card>
               </Link>
+              <BackfillCommuteMileageTile />
             </div>
+
             <BespokeBookingModal open={isBespokeOpen} onOpenChange={setIsBespokeOpen} />
             <SendUrgentAlertDialog open={isUrgentAlertOpen} onOpenChange={setIsUrgentAlertOpen} />
           </>
