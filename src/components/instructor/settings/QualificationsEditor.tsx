@@ -480,7 +480,7 @@ export function QualificationsEditor({ instructorId }: Props) {
               {adiBadgeValidSpec ? "Valid" : "Expired"}
             </span>
           </div>
-          <div style={{ padding: "0 14px 12px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+          <div style={{ padding: "0 14px 12px", display: "flex", flexDirection: "column", gap: 10 }}>
             <div>
               <span style={adiLabel}>Badge number</span>
               <input
