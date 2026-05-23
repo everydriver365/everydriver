@@ -84,6 +84,7 @@ import { useTodayOverview } from "@/hooks/useTodayOverview";
 import { useWeeklyGoals } from "@/hooks/useWeeklyGoals";
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
 import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
+import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
 import { useTestSwapNotifications } from "@/hooks/useTestSwapNotifications";
 import { useVisitorChatUnreadCount } from "@/hooks/useVisitorChatUnreadCount";
 import { usePendingJobsList } from "@/hooks/usePendingJobsList";
