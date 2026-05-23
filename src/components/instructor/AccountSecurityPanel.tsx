@@ -40,7 +40,9 @@ export function AccountSecurityPanel() {
 
   // Password change
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [pwdError, setPwdError] = useState<string | null>(null);
   const [savingPwd, setSavingPwd] = useState(false);
 
