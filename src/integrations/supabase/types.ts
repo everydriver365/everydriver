@@ -9474,6 +9474,9 @@ export type Database = {
           dbs_certificate_expiry: string | null
           dbs_certificate_issued: string | null
           dbs_certificate_url: string | null
+          dbs_update_service_expiry: string | null
+          dbs_update_service_reminder_sent_at: string | null
+          dbs_update_service_subscribed: boolean
           deleted_at: string | null
           demo_mode: boolean | null
           deposit_amount: number | null
@@ -9687,6 +9690,9 @@ export type Database = {
           dbs_certificate_expiry?: string | null
           dbs_certificate_issued?: string | null
           dbs_certificate_url?: string | null
+          dbs_update_service_expiry?: string | null
+          dbs_update_service_reminder_sent_at?: string | null
+          dbs_update_service_subscribed?: boolean
           deleted_at?: string | null
           demo_mode?: boolean | null
           deposit_amount?: number | null
@@ -9900,6 +9906,9 @@ export type Database = {
           dbs_certificate_expiry?: string | null
           dbs_certificate_issued?: string | null
           dbs_certificate_url?: string | null
+          dbs_update_service_expiry?: string | null
+          dbs_update_service_reminder_sent_at?: string | null
+          dbs_update_service_subscribed?: boolean
           deleted_at?: string | null
           demo_mode?: boolean | null
           deposit_amount?: number | null
