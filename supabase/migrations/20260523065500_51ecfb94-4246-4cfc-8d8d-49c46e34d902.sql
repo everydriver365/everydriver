@@ -1,0 +1,10 @@
+ALTER TABLE public.pupils DROP COLUMN IF EXISTS damoov_device_token;
+ALTER TABLE public.lesson_telematics DROP COLUMN IF EXISTS damoov_trip_token;
+ALTER TABLE public.lesson_telematics DROP COLUMN IF EXISTS damoov_overall_score;
+ALTER TABLE public.lesson_telematics DROP COLUMN IF EXISTS damoov_acceleration_score;
+ALTER TABLE public.lesson_telematics DROP COLUMN IF EXISTS damoov_braking_score;
+ALTER TABLE public.lesson_telematics DROP COLUMN IF EXISTS damoov_cornering_score;
+ALTER TABLE public.lesson_telematics DROP COLUMN IF EXISTS damoov_speeding_score;
+ALTER TABLE public.lesson_telematics DROP COLUMN IF EXISTS damoov_phone_score;
+ALTER TABLE public.lesson_telematics DROP COLUMN IF EXISTS damoov_crash_detected;
+ALTER TABLE public.lesson_telematics DROP COLUMN IF EXISTS damoov_crash_timestamp;

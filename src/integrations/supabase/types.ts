@@ -10957,15 +10957,6 @@ export type Database = {
         Row: {
           avg_speed_kmh: number | null
           created_at: string
-          damoov_acceleration_score: number | null
-          damoov_braking_score: number | null
-          damoov_cornering_score: number | null
-          damoov_crash_detected: boolean | null
-          damoov_crash_timestamp: string | null
-          damoov_overall_score: number | null
-          damoov_phone_score: number | null
-          damoov_speeding_score: number | null
-          damoov_trip_token: string | null
           ended_at: string | null
           harsh_brake_count: number | null
           id: string
@@ -10984,15 +10975,6 @@ export type Database = {
         Insert: {
           avg_speed_kmh?: number | null
           created_at?: string
-          damoov_acceleration_score?: number | null
-          damoov_braking_score?: number | null
-          damoov_cornering_score?: number | null
-          damoov_crash_detected?: boolean | null
-          damoov_crash_timestamp?: string | null
-          damoov_overall_score?: number | null
-          damoov_phone_score?: number | null
-          damoov_speeding_score?: number | null
-          damoov_trip_token?: string | null
           ended_at?: string | null
           harsh_brake_count?: number | null
           id?: string
@@ -11011,15 +10993,6 @@ export type Database = {
         Update: {
           avg_speed_kmh?: number | null
           created_at?: string
-          damoov_acceleration_score?: number | null
-          damoov_braking_score?: number | null
-          damoov_cornering_score?: number | null
-          damoov_crash_detected?: boolean | null
-          damoov_crash_timestamp?: string | null
-          damoov_overall_score?: number | null
-          damoov_phone_score?: number | null
-          damoov_speeding_score?: number | null
-          damoov_trip_token?: string | null
           ended_at?: string | null
           harsh_brake_count?: number | null
           id?: string
@@ -15152,7 +15125,6 @@ export type Database = {
           custom_hourly_rate: number | null
           custom_rate_120min: number | null
           custom_rate_90min: number | null
-          damoov_device_token: string | null
           date_of_birth: string | null
           deleted_at: string | null
           deposit_forfeited: boolean | null
@@ -15253,7 +15225,6 @@ export type Database = {
           custom_hourly_rate?: number | null
           custom_rate_120min?: number | null
           custom_rate_90min?: number | null
-          damoov_device_token?: string | null
           date_of_birth?: string | null
           deleted_at?: string | null
           deposit_forfeited?: boolean | null
@@ -15354,7 +15325,6 @@ export type Database = {
           custom_hourly_rate?: number | null
           custom_rate_120min?: number | null
           custom_rate_90min?: number | null
-          damoov_device_token?: string | null
           date_of_birth?: string | null
           deleted_at?: string | null
           deposit_forfeited?: boolean | null
