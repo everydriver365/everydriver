@@ -623,50 +623,17 @@ export function QualificationsEditor({ instructorId }: Props) {
         />
 
 
-        {/* Insurance */}
-        <CredentialCard
-          icon={<CarFront size={15} className="text-[#2B7BC8]" />}
-          title="Insurance"
+        {/* Insurance — redesigned */}
+        <InsuranceCard
+          form={form}
+          set={set}
           status={insuranceStatus}
-        >
-          <div className="space-y-3">
-            <Field label="Provider">
-              <input
-                value={form.insurance_provider}
-                onChange={(e) => set("insurance_provider", e.target.value)}
-                placeholder="e.g. Adrian Flux"
-                className={inputCls}
-                style={inputStyle}
-              />
-            </Field>
-            <Field label="Policy number">
-              <input
-                value={form.insurance_policy_number}
-                onChange={(e) => set("insurance_policy_number", e.target.value)}
-                className={inputCls}
-                style={inputStyle}
-              />
-            </Field>
-          </div>
-          <Field label="Expiry date">
-            <input
-              type="date"
-              value={form.car_insurance_expiry}
-              onChange={(e) => set("car_insurance_expiry", e.target.value)}
-              className={inputCls}
-              style={inputStyle}
-            />
-          </Field>
-          <Field label="Insurance certificate">
-            <FileField
-              url={form.insurance_certificate_url}
-              bucket="compliance-documents"
-              pathPrefix={`${instructorId}/insurance`}
-              onChange={(u) => persistCertificate("insurance_certificate_url", u)}
-            />
-          </Field>
-          <SectionFooter sectionKey="insurance" />
-        </CredentialCard>
+          instructorId={instructorId}
+          onCertificateChange={(u) => persistCertificate("insurance_certificate_url", u)}
+          onSave={() => saveSection("insurance")}
+          saving={savingSection === "insurance"}
+        />
+
 
         {/* Experience + extras */}
         <section
