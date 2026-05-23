@@ -160,20 +160,21 @@ export default function InstructorSchedule() {
   const today = new Date();
   const sameDay = (d: Date) => d.getFullYear() === today.getFullYear() && d.getMonth() === today.getMonth() && d.getDate() === today.getDate();
   const todaysEvents = calendar.events.filter((e) => {
-    try { return sameDay(new Date(e.start_time)); } catch { return false; }
+    try { return sameDay(e.start); } catch { return false; }
   });
   const todaysLessons = todaysEvents.filter((e) => e.type === 'lesson');
   const lessonsCount = todaysLessons.length;
-  const scheduledCount = todaysLessons.filter((e) => ['scheduled', 'confirmed'].includes((e.status || '').toLowerCase())).length;
-  const overdueCount = todaysLessons.filter((e) => (e.payment_status || '').toLowerCase() === 'overdue' || (e.payment_status || '').toLowerCase() === 'unpaid').length;
+  const scheduledCount = todaysLessons.filter((e) => ['scheduled', 'confirmed'].includes((e.data?.status || '').toLowerCase())).length;
+  const overdueCount = todaysLessons.filter((e) => {
+    const p = (e.data?.payment_status || '').toLowerCase();
+    return p === 'overdue' || p === 'unpaid';
+  }).length;
   const busyHours = todaysEvents.reduce((sum, e) => {
-    try {
-      const s = new Date(e.start_time).getTime();
-      const en = new Date(e.end_time).getTime();
-      return sum + Math.max(0, (en - s) / 3600000);
-    } catch { return sum; }
+    const ms = e.end.getTime() - e.start.getTime();
+    return sum + Math.max(0, ms / 3600000);
   }, 0);
   const freeHours = Math.max(0, Math.round(10 - busyHours));
+
 
   return (
     <InstructorPortalLayout>
