@@ -517,23 +517,37 @@ export function QualificationsEditor({ instructorId }: Props) {
             {gradeChip("B", "Grade B", "#2952b3")}
             {gradeChip("PDI", "PDI", "#6b4fc4")}
           </div>
-        </div>
-
-        {gradeIsPDI && (
-          <>
-            {adiDivider}
-            <div>
-              <div style={{ padding: "12px 14px 8px", display: "flex", alignItems: "center", gap: 7 }}>
-                <BadgeCheck size={15} color="#2952b3" />
-                <span style={{ fontSize: 13, fontWeight: 600, color: "#1a1a1f" }}>Pink licence stage</span>
-              </div>
-              <div style={{ padding: "0 14px 14px", display: "flex", flexDirection: "column", gap: 6 }}>
-                {stageButton("PDI-2", "Part 2 — Pink Badge")}
-                {stageButton("PDI-3", "Part 3 — Trainee Licence")}
-              </div>
+          {gradeIsPDI && (
+            <div style={{ padding: "0 14px 14px", display: "flex", flexWrap: "wrap", gap: 14 }}>
+              {([
+                { v: "PDI-1", label: "1st" },
+                { v: "PDI-2", label: "2nd" },
+                { v: "PDI-3", label: "3rd" },
+              ] as const).map((p) => {
+                const checked = form.adi_grade === p.v;
+                return (
+                  <label
+                    key={p.v}
+                    onClick={() => set("adi_grade", checked ? "PDI" : p.v)}
+                    style={{ display: "inline-flex", alignItems: "center", gap: 6, cursor: "pointer" }}
+                  >
+                    <span
+                      style={{
+                        width: 16, height: 16, borderRadius: 4,
+                        border: `1.5px solid ${checked ? "#d97aa6" : "#d0d3d8"}`,
+                        background: checked ? "#d97aa6" : "#fff",
+                        display: "inline-flex", alignItems: "center", justifyContent: "center",
+                      }}
+                    >
+                      {checked && <CheckCircle2 size={10} color="#fff" strokeWidth={3} />}
+                    </span>
+                    <span style={{ fontSize: 12, color: "#1a1a1f", fontWeight: 500 }}>{p.label}</span>
+                  </label>
+                );
+              })}
             </div>
-          </>
-        )}
+          )}
+        </div>
 
         {/* Certificate uploader + save button preserved */}
         <div style={{ padding: "12px 14px 14px", borderTop: "1px solid #f0f1f4" }}>
