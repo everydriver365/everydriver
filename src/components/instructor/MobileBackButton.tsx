@@ -14,20 +14,12 @@ export function MobileBackButton() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
 
-  const isInstructorRoute = pathname.startsWith("/instructor");
+  // Schedule renders its own chrome and skips MobileBlueHeader, so the
+  // shared header back button isn't available there. Show a floating
+  // fallback only on that route.
   const normalized = pathname.replace(/\/+$/, "");
-  const isHome = normalized === "/instructor";
-  // Tab roots already lack a header back button — show floating back there.
-  // Subpages get the back arrow inside MobileBlueHeader, so skip them to avoid duplication.
-  const tabRoots = new Set([
-    "/instructor/schedule",
-    "/instructor/tracking",
-    "/instructor/pupils",
-    "/instructor/menu",
-  ]);
-  const isTabRoot = tabRoots.has(normalized);
+  if (normalized !== "/instructor/schedule") return null;
 
-  if (!isInstructorRoute || isHome || !isTabRoot) return null;
 
 
   return (
