@@ -535,9 +535,9 @@ export function UpNextExpanded({
     Icon: LucideIcon; label: string; onClick: () => void; disabled?: boolean;
     active?: boolean; activeBg?: string; activeBorder?: string; activeColor?: string;
     solidBg?: string; solidBorder?: string; solidColor?: string;
-    flex?: number; shadow?: boolean;
+    flex?: number; shadow?: boolean; ctaFlex?: boolean;
   }) => {
-    const { Icon, label, onClick, disabled, active, activeBg, activeBorder, activeColor, solidBg, solidBorder, solidColor, flex = 1, shadow } = opts;
+    const { Icon, label, onClick, disabled, active, activeBg, activeBorder, activeColor, solidBg, solidBorder, solidColor, flex = 1, shadow, ctaFlex } = opts;
     const bg = solidBg ?? (active ? (activeBg || "#fff") : "#fff");
     const bd = solidBorder ?? (active ? (activeBorder || "#e3e6ec") : "#e3e6ec");
     const fg = solidColor ?? (active ? (activeColor || TEXT) : "#3a3f4a");
@@ -546,29 +546,30 @@ export function UpNextExpanded({
         type="button"
         onClick={onClick}
         disabled={disabled}
+        className={`upnext-status-btn${ctaFlex ? " upnext-status-btn--cta" : ""}`}
         style={{
           flex, minWidth: 0,
-          height: 36,
+          height: "var(--ub-h, 36px)",
           background: bg,
           border: `1px solid ${bd}`,
           borderRadius: 10,
-          padding: "0 10px",
+          padding: "0 var(--ub-px, 10px)",
           fontFamily: PFONT,
-          fontSize: 12,
+          fontSize: "var(--ub-fs, 12px)",
           fontWeight: 600,
           letterSpacing: "-0.01em",
           color: fg,
           display: "inline-flex",
           alignItems: "center",
           justifyContent: "center",
-          gap: 6,
+          gap: "var(--ub-gap, 6px)",
           cursor: disabled ? "not-allowed" : "pointer",
           opacity: disabled ? 0.45 : 1,
           boxShadow: shadow ? "0 1px 2px rgba(41,82,179,0.18)" : "none",
           transition: "background 150ms, border-color 150ms, box-shadow 150ms",
         }}
       >
-        <Icon size={13} strokeWidth={1.9} />
+        <Icon size={13} strokeWidth={1.9} style={{ width: "var(--ub-ic, 13px)", height: "var(--ub-ic, 13px)", flexShrink: 0 }} />
         <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{label}</span>
       </button>
     );
@@ -607,10 +608,20 @@ export function UpNextExpanded({
       <style>{`
         @keyframes upnext-fade { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        .upnext-status-row { display: flex; gap: 6px; }
+        @media (max-width: 380px) {
+          .upnext-status-btn { --ub-h: 34px; --ub-fs: 11.5px; --ub-px: 8px; --ub-gap: 5px; --ub-ic: 12px; }
+        }
+        @media (max-width: 340px) {
+          .upnext-status-row { gap: 4px; }
+          .upnext-status-btn { --ub-h: 32px; --ub-fs: 11px; --ub-px: 6px; --ub-gap: 4px; --ub-ic: 11px; }
+          .upnext-status-btn--cta { flex: 1.3 !important; }
+        }
       `}</style>
 
       {/* Status buttons — Row 1 (secondary signals) */}
-      <div style={{ display: "flex", gap: 6, marginBottom: 6 }}>
+      <div className="upnext-status-row" style={{ marginBottom: 6 }}>
+
         {statusBtn({
           Icon: MapPin,
           label: "Here",
@@ -648,7 +659,7 @@ export function UpNextExpanded({
       </div>
 
       {/* Status buttons — Row 2 (primary CTA) */}
-      <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>
+      <div className="upnext-status-row" style={{ marginBottom: 12 }}>
         {statusBtn({
           Icon: ClipboardList,
           label: "Prep",
@@ -665,8 +676,10 @@ export function UpNextExpanded({
           solidColor: "#fff",
           flex: 1.6,
           shadow: true,
+          ctaFlex: true,
         })}
       </div>
+
 
 
       {/* Map */}
