@@ -302,19 +302,37 @@ export function ComplianceTracker({ instructorId }: ComplianceTrackerProps) {
       })()}
 
 
-      {/* Compliance Items */}
-      <Card>
-        <CardHeader className="pb-2">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-base flex items-center gap-2">
-              <FileText className="h-4 w-4 text-primary" />
-              Vehicle documents
-            </CardTitle>
+      {/* Vehicle documents - redesigned */}
+      <div style={{ fontFamily: "Poppins, sans-serif" }}>
+        <div style={{ background: "#fff", border: "1px solid #e0e3ea", borderRadius: 14, overflow: "hidden" }}>
+          {/* Section header */}
+          <div style={{ padding: "13px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+              <span style={{
+                width: 34, height: 34, borderRadius: 9, background: "#e8eefb",
+                display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+              }}>
+                <FileText size={18} color="#2952b3" />
+              </span>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: "#1a1a1f", lineHeight: 1.2 }}>Vehicle documents</div>
+                <div style={{ fontSize: 10, color: "#aaa", marginTop: 1 }}>MOT, road tax and CPD logging</div>
+              </div>
+            </div>
             <Dialog open={editMode} onOpenChange={setEditMode}>
               <DialogTrigger asChild>
-                <Button variant="outline" size="sm">
-                  Edit Dates
-                </Button>
+                <button
+                  style={{
+                    display: "inline-flex", alignItems: "center", gap: 5,
+                    background: "#F2F4F8", color: "#1a1a1f",
+                    border: "1px solid #e0e3ea",
+                    fontFamily: "inherit", fontSize: 11, fontWeight: 600,
+                    padding: "7px 12px", borderRadius: 9, cursor: "pointer", flexShrink: 0,
+                  }}
+                >
+                  <Pencil size={12} color="#666" />
+                  Edit dates
+                </button>
               </DialogTrigger>
               <DialogContent className="max-w-md">
                 <DialogHeader>
@@ -353,45 +371,64 @@ export function ComplianceTracker({ instructorId }: ComplianceTrackerProps) {
               </DialogContent>
             </Dialog>
           </div>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          {complianceItems.map((item) => {
-            const status = getExpiryStatus(item.expiry);
-            const Icon = item.icon;
-            
+
+          {/* Document rows */}
+          {([
+            { id: "mot", title: "MOT Certificate", subtitle: "Annual vehicle test", expiry: data?.car_mot_expiry, Icon: Car, iconBg: "#e8f5ee", iconColor: "#2d8a4e" },
+            { id: "tax", title: "Road Tax", subtitle: "Vehicle excise duty", expiry: data?.car_tax_expiry, Icon: Receipt, iconBg: "#e8eefb", iconColor: "#2952b3" },
+          ] as const).map((row) => {
+            const days = row.expiry ? differenceInDays(parseISO(row.expiry), new Date()) : null;
+            let pillBg = "#F2F4F8", pillColor = "#666", pillLabel = "Not set", PillIcon: any = Clock;
+            if (days !== null) {
+              if (days < 0) { pillBg = "#fbe8e8"; pillColor = "#c9302c"; pillLabel = "Expired"; PillIcon = XIcon; }
+              else if (days <= 60) { pillBg = "#fff3e0"; pillColor = "#d97706"; pillLabel = "Expiring"; PillIcon = AlertTriangle; }
+              else { pillBg = "#e8f5ee"; pillColor = "#2d8a4e"; pillLabel = "Valid"; PillIcon = CheckCircle2; }
+            }
+            const dateLabel = row.expiry ? format(parseISO(row.expiry), "d MMM yyyy") : "—";
             return (
-              <div
-                key={item.id}
-                className="flex items-center justify-between p-3 rounded-2xl bg-muted/50"
+              <button
+                key={row.id}
+                onClick={() => setEditMode(true)}
+                style={{
+                  width: "100%", textAlign: "left", background: "#fff",
+                  border: "none", borderTop: "1px solid #f0f1f4",
+                  fontFamily: "inherit", cursor: "pointer",
+                  padding: "12px 14px",
+                  display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "#f8f9fb")}
+                onMouseLeave={(e) => (e.currentTarget.style.background = "#fff")}
               >
-                <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-2xl ${
-                    status.status === "ok" ? "bg-emerald-500/10" : 
-                    status.status === "expired" || status.status === "urgent" ? "bg-destructive/10" : 
-                    status.status === "warning" ? "bg-amber-500/10" : "bg-muted"
-                  }`}>
-                    <Icon className={`h-4 w-4 ${
-                      status.status === "ok" ? "text-emerald-500" : 
-                      status.status === "expired" || status.status === "urgent" ? "text-destructive" : 
-                      status.status === "warning" ? "text-amber-500" : "text-muted-foreground"
-                    }`} />
-                  </div>
-                  <div>
-                    <p className="font-medium text-sm">{item.title}</p>
-                    <p className="text-xs text-muted-foreground">{item.subtitle}</p>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+                  <span style={{
+                    width: 36, height: 36, borderRadius: 10, background: row.iconBg,
+                    display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                  }}>
+                    <row.Icon size={18} color={row.iconColor} />
+                  </span>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: "#1a1a1f", lineHeight: 1.2 }}>{row.title}</div>
+                    <div style={{ fontSize: 10, color: "#aaa", marginTop: 1 }}>{row.subtitle}</div>
                   </div>
                 </div>
-                <Badge className={status.color}>
-                  {status.status === "ok" && <CheckCircle2 className="h-3 w-3 mr-1" />}
-                  {(status.status === "expired" || status.status === "urgent") && <AlertTriangle className="h-3 w-3 mr-1" />}
-                  {status.status === "warning" && <Clock className="h-3 w-3 mr-1" />}
-                  {status.label}
-                </Badge>
-              </div>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4, flexShrink: 0 }}>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: "#1a1a1f" }}>{dateLabel}</span>
+                  <span style={{
+                    display: "inline-flex", alignItems: "center", gap: 3,
+                    background: pillBg, color: pillColor,
+                    fontSize: 9, fontWeight: 600,
+                    padding: "2px 7px", borderRadius: 20,
+                  }}>
+                    <PillIcon size={9} />
+                    {pillLabel}
+                  </span>
+                </div>
+              </button>
             );
           })}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
+
 
       {/* CPD Log Dialog */}
       <Dialog open={showCPDLog} onOpenChange={setShowCPDLog}>
