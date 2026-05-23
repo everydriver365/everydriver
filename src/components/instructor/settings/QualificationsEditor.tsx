@@ -1003,3 +1003,345 @@ function DbsCard({
     </div>
   );
 }
+
+// ============= LicenceCard =============
+interface Endorsement {
+  id: string;
+  offence_code: string;
+  points: string;
+  date_of_offence: string;
+  points_expire: string;
+}
+interface NdorsCourse {
+  id: string;
+  name: string;
+  date_completed: string;
+  expiry: string;
+}
+
+function LicenceCard({
+  form,
+  set,
+  status,
+  onSave,
+  saving,
+}: {
+  form: Form;
+  set: <K extends keyof Form>(k: K, v: Form[K]) => void;
+  status: Status;
+  onSave: () => void;
+  saving: boolean;
+}) {
+  const [endorsements, setEndorsements] = useState<Endorsement[]>([]);
+  const [courses, setCourses] = useState<NdorsCourse[]>([]);
+  const [endOpen, setEndOpen] = useState(false);
+  const [courseOpen, setCourseOpen] = useState(false);
+
+  const valid = status === "valid" || status === "expiring";
+  const totalPoints = endorsements.reduce((s, e) => s + (parseInt(e.points) || 0), 0);
+
+  const label: React.CSSProperties = {
+    fontSize: 10, color: "#aaa", textTransform: "uppercase",
+    letterSpacing: "0.06em", display: "block", marginBottom: 4, fontWeight: 600,
+  };
+  const subLabel: React.CSSProperties = {
+    fontSize: 9, color: "#aaa", textTransform: "uppercase",
+    letterSpacing: "0.06em", display: "block", marginBottom: 3, fontWeight: 600,
+  };
+  const mainInput: React.CSSProperties = {
+    width: "100%", background: "#F2F4F8", border: "1px solid #eaecee",
+    borderRadius: 8, padding: "8px 10px", fontSize: 13, color: "#1a1a1f",
+    outline: "none", boxSizing: "border-box", fontFamily: "Poppins, sans-serif",
+  };
+  const subInput: React.CSSProperties = {
+    width: "100%", background: "#fff", border: "1px solid #e0e3ea",
+    borderRadius: 7, padding: "6px 9px", fontSize: 12, color: "#1a1a1f",
+    outline: "none", boxSizing: "border-box", fontFamily: "Poppins, sans-serif",
+  };
+  const divider = <div style={{ height: 1, background: "#f0f1f4", width: "100%" }} />;
+
+  const addEnd = () =>
+    setEndorsements((p) => [...p, { id: crypto.randomUUID(), offence_code: "", points: "", date_of_offence: "", points_expire: "" }]);
+  const updateEnd = (id: string, k: keyof Endorsement, v: string) =>
+    setEndorsements((p) => p.map((e) => (e.id === id ? { ...e, [k]: v } : e)));
+  const removeEnd = (id: string) => setEndorsements((p) => p.filter((e) => e.id !== id));
+
+  const addCourse = () =>
+    setCourses((p) => [...p, { id: crypto.randomUUID(), name: "", date_completed: "", expiry: "" }]);
+  const updateCourse = (id: string, k: keyof NdorsCourse, v: string) =>
+    setCourses((p) => p.map((c) => (c.id === id ? { ...c, [k]: v } : c)));
+  const removeCourse = (id: string) => setCourses((p) => p.filter((c) => c.id !== id));
+
+  return (
+    <div
+      style={{
+        background: "#fff", border: "1px solid #e0e3ea", borderRadius: 14,
+        overflow: "hidden", fontFamily: "Poppins, sans-serif", marginBottom: 16,
+      }}
+    >
+      {/* Header */}
+      <div style={{ padding: "13px 14px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{
+            width: 34, height: 34, borderRadius: 9, background: "#e8eefb",
+            display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+          }}>
+            <IdCard size={18} color="#2952b3" />
+          </span>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: "#1a1a1f", lineHeight: 1.2 }}>
+              Driving licence
+            </div>
+            <div style={{ fontSize: 10, color: "#aaa", marginTop: 1 }}>
+              DVLA issued licence details
+            </div>
+          </div>
+        </div>
+        <span style={{
+          display: "inline-flex", alignItems: "center", gap: 4,
+          background: valid ? "#e8f5ee" : "#fbe8e8",
+          color: valid ? "#2d8a4e" : "#c9302c",
+          border: `0.5px solid ${valid ? "#c5e9d2" : "#f5c5c5"}`,
+          fontSize: 11, fontWeight: 600, padding: "3px 9px", borderRadius: 999,
+        }}>
+          {valid ? <CheckCircle2 size={11} /> : <AlertTriangle size={11} />}
+          {valid ? "Valid" : "Missing"}
+        </span>
+      </div>
+
+      {divider}
+
+      {/* Licence number */}
+      <div style={{ padding: "12px 14px 0" }}>
+        <span style={label}>Licence number</span>
+        <input
+          value={form.driving_licence_number}
+          onChange={(e) => set("driving_licence_number", e.target.value.toUpperCase())}
+          placeholder="e.g. SMITH751025AB9IJ"
+          style={mainInput}
+        />
+      </div>
+
+      {/* Expiry date */}
+      <div style={{ padding: "12px 14px" }}>
+        <span style={label}>Expiry date</span>
+        <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+          <input
+            type="date"
+            value={form.driving_licence_expiry}
+            onChange={(e) => set("driving_licence_expiry", e.target.value)}
+            style={mainInput}
+          />
+        </div>
+      </div>
+
+      {divider}
+
+      {/* Endorsements */}
+      <div>
+        <button
+          type="button"
+          onClick={() => setEndOpen((v) => !v)}
+          style={{
+            width: "100%", padding: "11px 14px", display: "flex", alignItems: "center",
+            gap: 10, background: "transparent", border: "none", cursor: "pointer",
+            fontFamily: "Poppins, sans-serif", textAlign: "left",
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = "#f8f9fb")}
+          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+        >
+          <span style={{
+            width: 28, height: 28, borderRadius: 8, background: "#fff3e0",
+            display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+          }}>
+            <AlertTriangle size={14} color="#d97706" />
+          </span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 12, fontWeight: 600, color: "#1a1a1f", lineHeight: 1.2 }}>
+              Endorsements &amp; penalty points
+            </div>
+            <div style={{ fontSize: 10, color: "#aaa", marginTop: 1 }}>
+              List any current points on your licence
+            </div>
+          </div>
+          <span style={{
+            background: "#fbe8e8", color: "#c9302c", fontSize: 10, fontWeight: 600,
+            padding: "3px 8px", borderRadius: 999,
+          }}>
+            {totalPoints} points
+          </span>
+          <ChevronDown size={16} color="#aaa" style={{ transition: "transform 0.2s", transform: endOpen ? "rotate(180deg)" : "rotate(0)" }} />
+        </button>
+        <div style={{
+          overflow: "hidden",
+          maxHeight: endOpen ? 2000 : 0,
+          transition: "max-height 0.3s ease",
+        }}>
+          <div style={{ padding: "0 14px 12px" }}>
+            {endorsements.map((e, i) => (
+              <div key={e.id} style={{ background: "#F2F4F8", borderRadius: 10, padding: "10px 12px", marginBottom: 8 }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                  <span style={{ fontSize: 11, fontWeight: 600, color: "#1a1a1f" }}>Endorsement {i + 1}</span>
+                  <button
+                    type="button"
+                    onClick={() => removeEnd(e.id)}
+                    style={{
+                      width: 22, height: 22, borderRadius: 999, background: "#fbe8e8",
+                      border: "none", color: "#c9302c", cursor: "pointer",
+                      display: "inline-flex", alignItems: "center", justifyContent: "center",
+                    }}
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+                  <div style={{ gridColumn: "1 / -1" }}>
+                    <span style={subLabel}>Offence code</span>
+                    <input value={e.offence_code} onChange={(ev) => updateEnd(e.id, "offence_code", ev.target.value)} placeholder="e.g. SP30" style={subInput} />
+                  </div>
+                  <div>
+                    <span style={subLabel}>Penalty points</span>
+                    <input type="number" value={e.points} onChange={(ev) => updateEnd(e.id, "points", ev.target.value)} placeholder="e.g. 3" style={subInput} />
+                  </div>
+                  <div>
+                    <span style={subLabel}>Date of offence</span>
+                    <input value={e.date_of_offence} onChange={(ev) => updateEnd(e.id, "date_of_offence", ev.target.value)} placeholder="dd/mm/yyyy" style={subInput} />
+                  </div>
+                  <div style={{ gridColumn: "1 / -1" }}>
+                    <span style={subLabel}>Points expire</span>
+                    <input value={e.points_expire} onChange={(ev) => updateEnd(e.id, "points_expire", ev.target.value)} placeholder="dd/mm/yyyy" style={subInput} />
+                  </div>
+                </div>
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={addEnd}
+              style={{
+                width: "100%", border: "1.5px dashed #d0d3d8", borderRadius: 8,
+                padding: 8, background: "transparent", color: "#2952b3", cursor: "pointer",
+                display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
+                fontSize: 11, fontWeight: 600, fontFamily: "Poppins, sans-serif",
+              }}
+            >
+              <Plus size={12} /> Add endorsement
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {divider}
+
+      {/* NDORS courses */}
+      <div>
+        <button
+          type="button"
+          onClick={() => setCourseOpen((v) => !v)}
+          style={{
+            width: "100%", padding: "11px 14px", display: "flex", alignItems: "center",
+            gap: 10, background: "transparent", border: "none", cursor: "pointer",
+            fontFamily: "Poppins, sans-serif", textAlign: "left",
+          }}
+          onMouseEnter={(ev) => (ev.currentTarget.style.background = "#f8f9fb")}
+          onMouseLeave={(ev) => (ev.currentTarget.style.background = "transparent")}
+        >
+          <span style={{
+            width: 28, height: 28, borderRadius: 8, background: "#e8eefb",
+            display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+          }}>
+            <GraduationCap size={14} color="#2952b3" />
+          </span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 12, fontWeight: 600, color: "#1a1a1f", lineHeight: 1.2 }}>
+              NDORS educational courses
+            </div>
+            <div style={{ fontSize: 10, color: "#aaa", marginTop: 1 }}>
+              Speed awareness and driver retraining
+            </div>
+          </div>
+          <span style={{
+            background: "#e8eefb", color: "#2952b3", fontSize: 10, fontWeight: 600,
+            padding: "3px 8px", borderRadius: 999,
+          }}>
+            {courses.length} courses
+          </span>
+          <ChevronDown size={16} color="#aaa" style={{ transition: "transform 0.2s", transform: courseOpen ? "rotate(180deg)" : "rotate(0)" }} />
+        </button>
+        <div style={{
+          overflow: "hidden",
+          maxHeight: courseOpen ? 2000 : 0,
+          transition: "max-height 0.3s ease",
+        }}>
+          <div style={{ padding: "0 14px 12px" }}>
+            {courses.map((c, i) => (
+              <div key={c.id} style={{ background: "#F2F4F8", borderRadius: 10, padding: "10px 12px", marginBottom: 8 }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                  <span style={{ fontSize: 11, fontWeight: 600, color: "#1a1a1f" }}>Course {i + 1}</span>
+                  <button
+                    type="button"
+                    onClick={() => removeCourse(c.id)}
+                    style={{
+                      width: 22, height: 22, borderRadius: 999, background: "#fbe8e8",
+                      border: "none", color: "#c9302c", cursor: "pointer",
+                      display: "inline-flex", alignItems: "center", justifyContent: "center",
+                    }}
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+                  <div style={{ gridColumn: "1 / -1" }}>
+                    <span style={subLabel}>Course name</span>
+                    <input value={c.name} onChange={(ev) => updateCourse(c.id, "name", ev.target.value)} placeholder="e.g. National Speed Awareness" style={subInput} />
+                  </div>
+                  <div>
+                    <span style={subLabel}>Date completed</span>
+                    <input value={c.date_completed} onChange={(ev) => updateCourse(c.id, "date_completed", ev.target.value)} placeholder="dd/mm/yyyy" style={subInput} />
+                  </div>
+                  <div>
+                    <span style={subLabel}>Expiry date</span>
+                    <input value={c.expiry} onChange={(ev) => updateCourse(c.id, "expiry", ev.target.value)} placeholder="dd/mm/yyyy" style={subInput} />
+                  </div>
+                </div>
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={addCourse}
+              style={{
+                width: "100%", border: "1.5px dashed #d0d3d8", borderRadius: 8,
+                padding: 8, background: "transparent", color: "#2952b3", cursor: "pointer",
+                display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
+                fontSize: 11, fontWeight: 600, fontFamily: "Poppins, sans-serif",
+              }}
+            >
+              <Plus size={12} /> Add course
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {divider}
+
+      {/* Save */}
+      <div style={{ padding: "12px 14px 14px" }}>
+        <button
+          type="button"
+          onClick={onSave}
+          disabled={saving}
+          style={{
+            width: "100%", background: "#1a1a1f", color: "#fff",
+            borderRadius: 9, padding: "10px", fontSize: 13, fontWeight: 600,
+            border: "none", cursor: saving ? "not-allowed" : "pointer",
+            display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+            fontFamily: "Poppins, sans-serif", opacity: saving ? 0.6 : 1,
+          }}
+        >
+          {saving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
+          Save
+        </button>
+      </div>
+    </div>
+  );
+}
+
