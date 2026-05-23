@@ -733,7 +733,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                 surface={isHomePage ? "white" : "page"}
                 isHomePage={isHomePage}
                 pageTitle={mobilePageTitle}
-                onBack={() => navigate(-1)}
+                onBack={() => (isTabRoot ? navigate("/instructor") : navigate(-1))}
                 onSOS={() => setShowSOS(true)}
                 onPlus={() => setHeaderQuickActionsOpen(true)}
                 onMenu={() => setIsMobileMenuOpen(true)}
