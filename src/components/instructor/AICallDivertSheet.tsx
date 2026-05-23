@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Phone, Sparkles, Check, X, XCircle, PhoneOff, Clock, ChevronRight, Info } from "lucide-react";
 import type { AICallDivertMode, AICallDivertState } from "@/hooks/useAICallDivert";
