@@ -51,10 +51,14 @@ interface Form {
   insurance_policy_number: string;
   car_insurance_expiry: string;
   insurance_certificate_url: string | null;
+  insurance_ncb_years: number;
+  insurance_company_phone: string;
+  insurance_claims_line: string;
 
   years_experience_adi: string;
   additional_certifications: string[];
 }
+
 
 const EMPTY: Form = {
   adi_badge_number: "",
