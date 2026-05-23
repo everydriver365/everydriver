@@ -321,7 +321,8 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
   return (
     <>
     <MobileExtendedTabs
-      defaultTab={defaultTab === "gps" ? "vehicle" : defaultTab}
+      defaultTab={defaultTab}
+
       details={details}
       setDetails={setDetails}
       handleSave={handleSave}
