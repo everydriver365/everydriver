@@ -196,8 +196,6 @@ export function ComplianceTracker({ instructorId }: ComplianceTrackerProps) {
         </Card>
       )}
 
-      {/* DVSA Standards Check Triggers */}
-      <CompactStandardsCheck instructorId={instructorId} />
 
       {/* CPD Progress */}
       <Card>
