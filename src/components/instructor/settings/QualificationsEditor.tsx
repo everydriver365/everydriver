@@ -12,6 +12,10 @@ import {
   AlertTriangle,
   Clock3,
   Info,
+  Calendar as CalendarIcon,
+  Bell,
+  Mail,
+  Save,
 } from "lucide-react";
 import { differenceInDays, format, parseISO } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
@@ -579,105 +583,16 @@ export function QualificationsEditor({ instructorId }: Props) {
       <div className="space-y-4">
 
 
-        {/* DBS */}
-        <CredentialCard
-          icon={<ShieldCheck size={15} className="text-[#2B7BC8]" />}
-          title="DBS / enhanced background check"
-          status={dbsStatus}
-        >
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Date issued">
-              <input
-                type="date"
-                value={form.dbs_certificate_issued}
-                onChange={(e) => set("dbs_certificate_issued", e.target.value)}
-                className={inputCls}
-                style={inputStyle}
-              />
-            </Field>
-            <Field label="Expiry date">
-              <input
-                type="date"
-                value={form.dbs_certificate_expiry}
-                onChange={(e) => set("dbs_certificate_expiry", e.target.value)}
-                className={inputCls}
-                style={inputStyle}
-              />
-            </Field>
-          </div>
-          <Field label="DBS certificate">
-            <FileField
-              url={form.dbs_certificate_url}
-              bucket="compliance-documents"
-              pathPrefix={`${instructorId}/dbs`}
-              onChange={(u) => persistCertificate("dbs_certificate_url", u)}
-            />
-          </Field>
+        {/* DBS — redesigned */}
+        <DbsCard
+          form={form}
+          set={set}
+          instructorId={instructorId}
+          onCertificateChange={(u) => persistCertificate("dbs_certificate_url", u)}
+          onSave={() => saveSection("dbs")}
+          saving={savingSection === "dbs"}
+        />
 
-          {/* Update Service subscription */}
-          <div style={{ marginTop: 4, borderTop: "1px solid #f0f1f4", paddingTop: 12, fontFamily: "Poppins, sans-serif" }}>
-            <div
-              style={{
-                padding: "12px 14px",
-                background: "#F2F4F8",
-                border: "1px solid #eaecee",
-                borderRadius: 10,
-                display: "flex",
-                alignItems: "flex-start",
-                gap: 12,
-                cursor: "pointer",
-              }}
-              onClick={() => {
-                const next = !form.dbs_update_service_subscribed;
-                set("dbs_update_service_subscribed", next);
-                if (!next) set("dbs_update_service_expiry", "");
-              }}
-            >
-              <div
-                role="checkbox"
-                aria-checked={form.dbs_update_service_subscribed}
-                style={{
-                  width: 18,
-                  height: 18,
-                  borderRadius: 5,
-                  marginTop: 1,
-                  flexShrink: 0,
-                  background: form.dbs_update_service_subscribed ? "#2B7BC8" : "#fff",
-                  border: `1px solid ${form.dbs_update_service_subscribed ? "#2B7BC8" : "#cfd4dc"}`,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                {form.dbs_update_service_subscribed && <CheckCircle2 size={12} color="#fff" />}
-              </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 13, fontWeight: 500, color: "#1a1a1f", lineHeight: 1.3 }}>
-                  Subscribed to DBS Update Service
-                </div>
-                <div style={{ fontSize: 11, color: "#aaa", marginTop: 2 }}>
-                  Keeps your check continuously valid
-                </div>
-              </div>
-            </div>
-
-            {form.dbs_update_service_subscribed && (
-              <div style={{ marginTop: 10 }}>
-                <Field label="Update Service expiry date">
-                  <input
-                    type="date"
-                    value={form.dbs_update_service_expiry}
-                    onChange={(e) => set("dbs_update_service_expiry", e.target.value)}
-                    className={inputCls}
-                    style={inputStyle}
-                  />
-                </Field>
-              </div>
-            )}
-          </div>
-
-          <SectionFooter sectionKey="dbs" />
-        </CredentialCard>
 
 
         {/* Driving licence */}
@@ -816,6 +731,290 @@ export function QualificationsEditor({ instructorId }: Props) {
         </div>
       </div>
 
+    </div>
+  );
+}
+
+function DbsCard({
+  form,
+  set,
+  instructorId,
+  onCertificateChange,
+  onSave,
+  saving,
+}: {
+  form: Form;
+  set: <K extends keyof Form>(k: K, v: Form[K]) => void;
+  instructorId: string;
+  onCertificateChange: (url: string | null) => void;
+  onSave: () => void;
+  saving: boolean;
+}) {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const valid =
+    !!form.dbs_certificate_expiry &&
+    differenceInDays(parseISO(form.dbs_certificate_expiry || "1970-01-01"), new Date()) >= 0;
+  const subscribed = form.dbs_update_service_subscribed;
+
+  const label: React.CSSProperties = {
+    fontSize: 10, color: "#aaa", textTransform: "uppercase",
+    letterSpacing: "0.06em", display: "block", marginBottom: 4, fontWeight: 600,
+  };
+  const inputWrap: React.CSSProperties = {
+    position: "relative", display: "flex", alignItems: "center",
+  };
+  const dateInput: React.CSSProperties = {
+    width: "100%", background: "#F2F4F8", border: "1px solid #eaecee",
+    borderRadius: 8, padding: "8px 30px 8px 10px", fontSize: 13, color: "#1a1a1f",
+    outline: "none", boxSizing: "border-box", fontFamily: "Poppins, sans-serif",
+  };
+  const divider = <div style={{ height: 1, background: "#f0f1f4", width: "100%" }} />;
+
+  const handleUpload = async (file: File) => {
+    if (file.size > 10 * 1024 * 1024) { toast.error("File must be 10MB or less"); return; }
+    if (!/^(application\/pdf|image\/)/.test(file.type)) { toast.error("PDF or image only"); return; }
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `${instructorId}/dbs-${Date.now()}.${ext}`;
+      const { error } = await supabase.storage.from("compliance-documents").upload(path, file, { upsert: true });
+      if (error) throw error;
+      onCertificateChange(path);
+    } catch (e: any) {
+      toast.error(e?.message || "Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const certFilename = form.dbs_certificate_url ? form.dbs_certificate_url.split("/").pop() : null;
+
+  return (
+    <div
+      style={{
+        background: "#fff", border: "1px solid #e0e3ea", borderRadius: 14,
+        overflow: "hidden", fontFamily: "Poppins, sans-serif", marginBottom: 16,
+      }}
+    >
+      {/* Header */}
+      <div style={{ padding: "13px 14px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{
+            width: 34, height: 34, borderRadius: 9, background: "#e8eefb",
+            display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+          }}>
+            <ShieldCheck size={18} color="#2952b3" />
+          </span>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: "#1a1a1f", lineHeight: 1.2 }}>
+              DBS / Enhanced background check
+            </div>
+            <div style={{ fontSize: 10, color: "#aaa", marginTop: 1 }}>
+              Disclosure &amp; Barring Service
+            </div>
+          </div>
+        </div>
+        <span style={{
+          display: "inline-flex", alignItems: "center", gap: 4,
+          background: valid ? "#e8f5ee" : "#fbe8e8",
+          color: valid ? "#2d8a4e" : "#c9302c",
+          border: `1px solid ${valid ? "#c5e9d2" : "#f5c5c5"}`,
+          fontSize: 11, fontWeight: 600, padding: "3px 9px", borderRadius: 999,
+        }}>
+          {valid ? <CheckCircle2 size={11} /> : <AlertTriangle size={11} />}
+          {valid ? "Valid" : "Missing"}
+        </span>
+      </div>
+
+      {divider}
+
+      {/* Date fields */}
+      <div style={{ padding: "12px 14px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+        <div>
+          <span style={label}>Date issued</span>
+          <div style={inputWrap}>
+            <input
+              type="date"
+              value={form.dbs_certificate_issued}
+              onChange={(e) => set("dbs_certificate_issued", e.target.value)}
+              style={dateInput}
+            />
+            <CalendarIcon size={13} color="#ccc" style={{ position: "absolute", right: 10, pointerEvents: "none" }} />
+          </div>
+        </div>
+        <div>
+          <span style={label}>Expiry date</span>
+          <div style={inputWrap}>
+            <input
+              type="date"
+              value={form.dbs_certificate_expiry}
+              onChange={(e) => set("dbs_certificate_expiry", e.target.value)}
+              style={dateInput}
+            />
+            <CalendarIcon size={13} color="#ccc" style={{ position: "absolute", right: 10, pointerEvents: "none" }} />
+          </div>
+        </div>
+      </div>
+
+      {divider}
+
+      {/* Certificate upload */}
+      <div style={{ padding: "12px 14px" }}>
+        <span style={label}>DBS certificate</span>
+        {certFilename ? (
+          <div style={{
+            display: "flex", alignItems: "center", gap: 8,
+            border: "1px solid #eaecee", borderRadius: 10, padding: "8px 12px", background: "#fff",
+          }}>
+            <FileCheck2 size={14} color="#2d8a4e" style={{ flexShrink: 0 }} />
+            <span style={{ fontSize: 12, fontWeight: 500, color: "#1a1a1f", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {certFilename}
+            </span>
+            <button
+              type="button"
+              onClick={() => onCertificateChange(null)}
+              style={{ background: "none", border: "none", cursor: "pointer", color: "#aaa", padding: 0 }}
+            >
+              <Trash2 size={13} />
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => fileRef.current?.click()}
+            disabled={uploading}
+            style={{
+              width: "100%", display: "flex", alignItems: "center", gap: 10,
+              border: "1.5px dashed #d0d3d8", borderRadius: 10, padding: "12px 14px",
+              background: "#fafafa", cursor: "pointer", fontFamily: "Poppins, sans-serif",
+              textAlign: "left",
+            }}
+          >
+            <span style={{
+              width: 30, height: 30, borderRadius: 8, background: "#e8eefb",
+              display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+            }}>
+              {uploading ? <Loader2 size={14} color="#2952b3" className="animate-spin" /> : <Upload size={14} color="#2952b3" />}
+            </span>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 12, fontWeight: 500, color: "#888" }}>
+                {uploading ? "Uploading…" : "Upload PDF or image"}
+              </div>
+              <div style={{ fontSize: 10, color: "#bbb", marginTop: 1 }}>
+                Max 10MB · PDF, JPG, PNG
+              </div>
+            </div>
+          </button>
+        )}
+        <input
+          ref={fileRef}
+          type="file"
+          accept="application/pdf,image/*"
+          hidden
+          onChange={(e) => e.target.files?.[0] && handleUpload(e.target.files[0])}
+        />
+      </div>
+
+      {divider}
+
+      {/* Update Service toggle */}
+      <div
+        style={{ padding: "12px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, cursor: "pointer" }}
+        onClick={() => {
+          const next = !subscribed;
+          set("dbs_update_service_subscribed", next);
+          if (!next) set("dbs_update_service_expiry", "");
+        }}
+      >
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 13, fontWeight: 600, color: "#1a1a1f", lineHeight: 1.3 }}>
+            DBS Update Service
+          </div>
+          <div style={{ fontSize: 11, color: "#aaa", marginTop: 2 }}>
+            Keeps your check continuously valid
+          </div>
+        </div>
+        <div
+          role="switch"
+          aria-checked={subscribed}
+          style={{
+            width: 42, height: 24, borderRadius: 999,
+            background: subscribed ? "#2d8a4e" : "#e0e3ea",
+            position: "relative", flexShrink: 0, transition: "background 0.2s ease",
+          }}
+        >
+          <div style={{
+            position: "absolute", top: 2, left: subscribed ? 20 : 2,
+            width: 20, height: 20, borderRadius: 999, background: "#fff",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
+            transition: "left 0.2s ease",
+          }} />
+        </div>
+      </div>
+
+      {/* Expiry — animated show/hide */}
+      <div
+        style={{
+          overflow: "hidden",
+          maxHeight: subscribed ? 200 : 0,
+          opacity: subscribed ? 1 : 0,
+          transition: "max-height 0.25s ease, opacity 0.2s ease",
+        }}
+      >
+        <div style={{ padding: "0 14px 12px" }}>
+          <div style={{
+            background: "#e8f5ee", borderRadius: 10, padding: "10px 12px",
+            display: "flex", gap: 10, alignItems: "flex-start",
+          }}>
+            <span style={{
+              width: 26, height: 26, borderRadius: 7, background: "#fff",
+              display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+            }}>
+              <Bell size={13} color="#2d8a4e" />
+            </span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <span style={{ ...label, color: "#2d8a4e", marginBottom: 4 }}>Subscription expiry</span>
+              <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+                <input
+                  type="date"
+                  value={form.dbs_update_service_expiry}
+                  onChange={(e) => set("dbs_update_service_expiry", e.target.value)}
+                  style={{
+                    width: "100%", background: "#fff", border: "1px solid #c5e9d2",
+                    borderRadius: 7, padding: "5px 28px 5px 8px", fontSize: 12, color: "#1a1a1f",
+                    outline: "none", boxSizing: "border-box", fontFamily: "Poppins, sans-serif",
+                  }}
+                />
+                <CalendarIcon size={12} color="#aaa" style={{ position: "absolute", right: 8, pointerEvents: "none" }} />
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 6, color: "#2d8a4e", opacity: 0.8 }}>
+                <Mail size={10} />
+                <span style={{ fontSize: 9 }}>Email reminder sent 30 days before expiry</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Save */}
+      <div style={{ padding: "0 14px 14px" }}>
+        <button
+          type="button"
+          onClick={onSave}
+          disabled={saving}
+          style={{
+            width: "100%", background: "#1a1a1f", color: "#fff",
+            borderRadius: 9, padding: "10px", fontSize: 13, fontWeight: 600,
+            border: "none", cursor: saving ? "not-allowed" : "pointer",
+            display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+            fontFamily: "Poppins, sans-serif", opacity: saving ? 0.6 : 1,
+          }}
+        >
+          {saving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
+          Save
+        </button>
+      </div>
     </div>
   );
 }
