@@ -9,6 +9,7 @@ import { UserAvatar } from "@/components/instructor/UserAvatar";
 import { PupilPackageCard } from "@/components/instructor/PupilPackageCard";
 import { PupilRateEditor } from "@/components/instructor/PupilRateEditor";
 import { PUPIL_SOURCE_OPTIONS } from "@/components/instructor/pupils/AddPupilSheet";
+import { ImportFromContactsButton } from "@/components/instructor/pupils/ImportFromContactsButton";
 import { titleCaseName } from "@/lib/titleCase";
 import { formatPhoneNumber } from "@/lib/formatPhoneNumber";
 import {
