@@ -514,786 +514,443 @@ export function UpNextExpanded({
     navigate(`/instructor/pupils/${pupilId}?tab=payments`);
   };
 
+  const onMyWayActive = norm === "on_the_way" || norm === "en_route";
+  const lateActive = norm === "running_late" || norm === "late";
+  const arrivedActive = norm === "arrived";
+
+  const PFONT = 'Poppins, -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif';
+  const BG = "#F2F4F8";
+  const CARD_BORDER = "#d0d3d8";
+  const DIV = "#ebebeb";
+  const BTN_BORDER = "#c8cdd6";
+  const TEXT = "#1a1a1f";
+  const LABEL = "#999";
+  const PRIMARY = "#2952b3";
+  const PRIMARY_TINT = "#e8eefb";
+  const PAY_BG = "#fbe8e8";
+  const PAY_BORDER = "#f5c5c5";
+  const PAY_TEXT = "#c9302c";
+
+  const statusBtn = (opts: {
+    Icon: LucideIcon; label: string; onClick: () => void; disabled?: boolean;
+    active?: boolean; activeBg?: string; activeBorder?: string; activeColor?: string;
+    solidBg?: string; solidBorder?: string; solidColor?: string;
+  }) => {
+    const { Icon, label, onClick, disabled, active, activeBg, activeBorder, activeColor, solidBg, solidBorder, solidColor } = opts;
+    const bg = solidBg ?? (active ? (activeBg || "#fff") : "#fff");
+    const bd = solidBorder ?? (active ? (activeBorder || BTN_BORDER) : BTN_BORDER);
+    const fg = solidColor ?? (active ? (activeColor || TEXT) : TEXT);
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        disabled={disabled}
+        style={{
+          flex: 1, minWidth: 0,
+          background: bg,
+          border: `1px solid ${bd}`,
+          borderRadius: 10,
+          padding: "11px 8px",
+          fontFamily: PFONT,
+          fontSize: 12,
+          fontWeight: 600,
+          color: fg,
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 6,
+          cursor: disabled ? "not-allowed" : "pointer",
+          opacity: disabled ? 0.5 : 1,
+        }}
+      >
+        <Icon size={14} strokeWidth={2} />
+        <span>{label}</span>
+      </button>
+    );
+  };
+
+  const SectLabel = ({ children, color = LABEL }: { children: React.ReactNode; color?: string }) => (
+    <div style={{ fontSize: 10, fontWeight: 600, color, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8, fontFamily: PFONT }}>
+      {children}
+    </div>
+  );
+
+  const weatherData = weather.data;
+  const WIcon = weatherData ? (WEATHER_ICONS[weatherData.icon] || Cloud) : Sun;
+  const alertCount = drivingAlerts.alerts?.length || 0;
+
+  // Vehicle data
+  const v = obdDevice?.vehicle;
+  const vehicleTitle = obdDevice
+    ? ([v?.registration, [v?.make, v?.model].filter(Boolean).join(" ") || null].filter(Boolean).join(" · ") || obdDevice.device_name || "Vehicle")
+    : "Not connected";
+  const vehicleStats: string[] = [];
+  if (obdDevice?.last_battery_voltage != null) vehicleStats.push(`${obdDevice.last_battery_voltage.toFixed(1)}V`);
+  else if (obdDevice?.last_battery_percent != null) vehicleStats.push(`Batt ${Math.round(obdDevice.last_battery_percent)}%`);
+  if (obdDevice?.last_ecu_odometer_km != null) vehicleStats.push(`${Math.round(obdDevice.last_ecu_odometer_km * 0.621371).toLocaleString()} mi`);
+
   return (
     <div
       style={{
-        fontFamily: FONT,
+        fontFamily: PFONT,
         animation: "upnext-fade 200ms ease-out",
+        background: BG,
+        padding: 12,
+        borderRadius: 16,
       }}
     >
       <style>{`
         @keyframes upnext-fade { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
       `}</style>
-      <div
-        style={{
-          background: "#FFFFFF",
-          borderRadius: 20,
-          border: `0.5px solid ${BORDER}`,
-          paddingBottom: 12,
-          overflow: "hidden",
-        }}
-      >
-        {/* SECTION — Actions (compact redesign) */}
-        {(() => {
-          const onMyWayActive = norm === "on_the_way" || norm === "en_route";
-          const lateActive = norm === "running_late" || norm === "late";
-          const arrivedActive = norm === "arrived";
-          const rowBtn = {
-            border: "none",
-            display: "inline-flex" as const,
-            alignItems: "center" as const,
-            justifyContent: "center" as const,
-            cursor: "pointer" as const,
-          };
-          return (
-            <div style={{ margin: "12px 16px 0" }}>
-              <div
-                style={{
-                  backgroundColor: "transparent",
-                  padding: 0,
-                }}
-              >
 
-                {/* Row 1 — Here · On My Way · Running Late */}
-                <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      sendSMS(`Hi ${firstName}, I'm outside whenever you're ready 👋`);
-                      if (pupilPhone) toast.success("Text sent — pupil notified you're here");
-                    }}
-                    disabled={!pupilPhone}
-                    style={{
-                      ...rowBtn,
-                      flex: 1,
-                      height: 38,
-                      backgroundColor: "#E8F8ED",
-                      borderRadius: 12,
-                      padding: "0 6px", minWidth: 0,
-                      gap: 4,
-                      color: "#1A7A3C",
-                      border: "0.5px solid rgba(26,122,60,0.15)",
-                      opacity: !pupilPhone ? 0.5 : 1,
-                      cursor: !pupilPhone ? "not-allowed" : "pointer",
-                    }}
-                  >
-                    <MapPin style={{ width: 13, height: 13 }} strokeWidth={2} />
-                    <span style={{ fontSize: 12, fontWeight: 700 }}>Here</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={onMyWay}
-                    disabled={busyAction === "on_the_way"}
-                    style={{
-                      ...rowBtn,
-                      flex: 1,
-                      height: 38,
-                      backgroundColor: "#E8F8ED",
-                      borderRadius: 12,
-                      padding: "0 6px", minWidth: 0,
-                      gap: 4,
-                      color: "#1A7A3C",
-                      border: "0.5px solid rgba(26,122,60,0.15)",
-                      opacity: busyAction === "on_the_way" ? 0.5 : 1,
-                      cursor: busyAction === "on_the_way" ? "not-allowed" : "pointer",
-                      outline: onMyWayActive ? "1.5px solid #1A7A3C" : "none",
-                    }}
-                  >
-                    <Send style={{ width: 13, height: 13 }} strokeWidth={1.9} />
-                    <span style={{ fontSize: 12, fontWeight: 700 }}>On My Way</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={runningLate}
-                    disabled={busyAction === "running_late"}
-                    style={{
-                      ...rowBtn,
-                      flex: 1,
-                      height: 38,
-                      backgroundColor: "#FFF6E6",
-                      borderRadius: 12,
-                      padding: "0 6px", minWidth: 0,
-                      gap: 4,
-                      color: "#B45309",
-                      border: "0.5px solid rgba(180,83,9,0.15)",
-                      opacity: busyAction === "running_late" ? 0.5 : 1,
-                      cursor: busyAction === "running_late" ? "not-allowed" : "pointer",
-                      outline: lateActive ? "1.5px solid #B45309" : "none",
-                    }}
-                  >
-                    <Clock style={{ width: 13, height: 13 }} strokeWidth={1.9} />
-                    <span style={{ fontSize: 12, fontWeight: 700 }}>Late</span>
-                  </button>
-                </div>
+      {/* Status buttons — Row 1 */}
+      <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+        {statusBtn({
+          Icon: MapPin,
+          label: "Here",
+          onClick: () => {
+            sendSMS(`Hi ${firstName}, I'm outside whenever you're ready 👋`);
+            if (pupilPhone) toast.success("Text sent — pupil notified you're here");
+          },
+          disabled: !pupilPhone,
+        })}
+        {statusBtn({
+          Icon: Send,
+          label: "On My Way",
+          onClick: onMyWay,
+          disabled: busyAction === "on_the_way",
+          active: onMyWayActive,
+          activeBg: "#fff8e8",
+          activeBorder: "#f59e0b",
+          activeColor: "#854f0b",
+        })}
+        {statusBtn({
+          Icon: Clock,
+          label: "Late",
+          onClick: runningLate,
+          disabled: busyAction === "running_late",
+          active: lateActive,
+          activeBg: "#fff8e8",
+          activeBorder: "#f59e0b",
+          activeColor: "#854f0b",
+        })}
+      </div>
 
-                {/* Row 2 — Prep · Arrived */}
-                <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-                  <button
-                    type="button"
-                    onClick={openPrep}
-                    style={{
-                      ...rowBtn,
-                      flex: 1,
-                      height: 38,
-                      backgroundColor: "#F2F4F8",
-                      borderRadius: 12,
-                      padding: "0 6px", minWidth: 0,
-                      gap: 4,
-                      color: "#5B6B8A",
-                    }}
-                  >
-                    <ClipboardList style={{ width: 13, height: 13 }} strokeWidth={1.7} />
-                    <span style={{ fontSize: 12, fontWeight: 600 }}>Prep</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={arrived}
-                    disabled={busyAction === "arrived"}
-                    style={{
-                      ...rowBtn,
-                      flex: 2,
-                      height: 38,
-                      backgroundColor: "#1A52A0",
-                      borderRadius: 12,
-                      padding: "0 6px", minWidth: 0,
-                      gap: 4,
-                      color: "#FFF",
-                      boxShadow: "0 2px 7px rgba(26,82,160,0.20)",
-                      opacity: busyAction === "arrived" ? 0.5 : 1,
-                      cursor: busyAction === "arrived" ? "not-allowed" : "pointer",
-                    }}
-                  >
-                    <CheckCheck style={{ width: 13, height: 13 }} strokeWidth={2.2} />
-                    <span style={{ fontSize: 12, fontWeight: 700 }}>
-                      {arrivedActive ? "Arrived ✓" : "Arrived"}
-                    </span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          );
-        })()}
+      {/* Status buttons — Row 2 */}
+      <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+        {statusBtn({
+          Icon: ClipboardList,
+          label: "Prep",
+          onClick: openPrep,
+        })}
+        {statusBtn({
+          Icon: CheckCheck,
+          label: arrivedActive ? "Arrived ✓" : "Arrived",
+          onClick: arrived,
+          disabled: busyAction === "arrived",
+          solidBg: PRIMARY,
+          solidBorder: PRIMARY,
+          solidColor: "#fff",
+        })}
+      </div>
 
-        <Divider />
-
-        {/* Live mini map */}
-        <div style={{ marginTop: 12 }}>
+      {/* Map */}
+      <div style={{ position: "relative", marginBottom: 12 }}>
+        <div
+          style={{
+            height: 110,
+            borderRadius: 14,
+            background: "#dce8f5",
+            border: "1px solid #c8d5e8",
+            overflow: "hidden",
+          }}
+        >
           <UpNextLiveMapStrip
             pickupPostcode={pickupPostcode}
             pickupLocation={pickupLocation}
             instructorId={instructorId}
             hasDestination={!!fullAddress}
             onNavigate={(e) => { e.stopPropagation(); navigateMap(); }}
-            height={130}
+            height={110}
           />
         </div>
-
-        {/* SECTION 1 — Status banners */}
-        <div style={{ paddingTop: 14 }}>
-          {checkInStatus === "confirmed" && (
-            <Banner bg="#E8F8ED" color="#1A7A3C" Icon={CheckCircle2}>
-              Lesson confirmed
-            </Banner>
-          )}
-          {(checkInStatus === "pending" || !checkInStatus) && (
-            <Banner bg="#FFF6E6" color="#B45309" Icon={AlertCircle}>
-              Awaiting confirmation
-            </Banner>
-          )}
-          {debt > 0 && (
-            <Banner bg="#FFF0F0" color={RED} Icon={AlertCircle}>
-              Payment not received · £{debt.toFixed(0)}
-            </Banner>
-          )}
-        </div>
-
-        <Divider />
-
-        {/* SECTION 2 — Pick-up address */}
-        <SectionLabel>Pick-up address</SectionLabel>
-        <button
-          type="button"
-          onClick={copyAddress}
-          style={{
-            width: "calc(100% - 32px)",
-            margin: "0 16px 12px",
-            display: "flex",
-            alignItems: "flex-start",
-            gap: 10,
-            background: "transparent",
-            border: "none",
-            padding: 0,
-            textAlign: "left",
-            cursor: "pointer",
-          }}
-        >
-          <span
-            style={{
-              width: 28,
-              height: 28,
-              borderRadius: 8,
-              background: BLUE_TINT,
-              color: BLUE,
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              flexShrink: 0,
-            }}
-          >
-            <NavIcon size={14} strokeWidth={2.2} />
-          </span>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            {pickupLocation ? (
-              <div style={{ fontSize: 13, color: CHARCOAL, fontWeight: 600, lineHeight: 1.4 }}>
-                {pickupLocation.split(",").map((line, i) => (
-                  <div key={i}>{line.trim()}</div>
-                ))}
-                {pickupPostcode && <div>{pickupPostcode}</div>}
-              </div>
-            ) : (
-              <div style={{ fontSize: 13, color: MUTED }}>
-                {pickupPostcode || "Pick-up address not set"}
-              </div>
-            )}
-          </div>
-          <Copy size={14} color={MUTED} />
-        </button>
-
-        {(pickupWhat3words || pickupNotes) && (
-          <div style={{ padding: "0 16px 12px", display: "flex", flexDirection: "column", gap: 8 }}>
-            {pickupWhat3words && (
-              <a
-                href={`https://what3words.com/${pickupWhat3words}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={(e) => e.stopPropagation()}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 10,
-                  background: BLUE_TINT,
-                  borderRadius: 10,
-                  padding: "8px 12px",
-                  textDecoration: "none",
-                }}
-              >
-                <span style={{ fontSize: 14, fontWeight: 700, color: BLUE }}>///</span>
-                <span style={{ fontSize: 13, fontWeight: 600, color: BLUE, flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                  {pickupWhat3words}
-                </span>
-              </a>
-            )}
-            {pickupNotes && (
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "flex-start",
-                  gap: 10,
-                  background: "#FFF8E6",
-                  borderRadius: 10,
-                  padding: "8px 12px",
-                }}
-              >
-                <StickyNote size={14} color="#A66B00" strokeWidth={2.2} style={{ marginTop: 1, flexShrink: 0 }} />
-                <div style={{ fontSize: 12, color: CHARCOAL, lineHeight: 1.4, whiteSpace: "pre-wrap" }}>
-                  {pickupNotes}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        <Divider />
-
-        {/* SECTION 4 — Lesson details */}
-        <SectionLabel>Lesson details</SectionLabel>
+        {/* ETA chip */}
         <div
           style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr 1fr",
-            gap: 8,
-            padding: "0 16px 12px",
+            position: "absolute",
+            top: 8,
+            right: 8,
+            background: "#fff",
+            borderRadius: 20,
+            border: "1px solid #ddd",
+            padding: "5px 10px",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 6,
+            fontSize: 11,
+            fontWeight: 600,
+            color: TEXT,
+            fontFamily: PFONT,
+            boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
           }}
         >
-          <StatChip Icon={Clock} value={`${durationMinutes}m`} label="Duration" />
-          <StatChip Icon={PoundSterling} value={`£${lessonFee.toFixed(0)}`} label="Lesson fee" />
-          <StatChip
-            Icon={NavIcon}
-            value={eta.isLoading ? "…" : eta.durationMinutes ? `${eta.durationMinutes}m` : "—"}
-            label="Travel"
-          />
+          <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#2d8a4e" }} />
+          ETA {eta.isLoading ? "…" : eta.durationMinutes ? `${eta.durationMinutes}m` : "—"}
         </div>
+      </div>
 
-        <Divider />
-
-        {/* SECTION 5 — Conditions */}
-        <SectionLabel>Conditions</SectionLabel>
-        <WeatherRow
-          loading={weather.isLoading}
-          data={weather.data}
-          hasPostcode={!!pickupPostcode}
-        />
-        <AlertsRow alerts={drivingAlerts.alerts} loading={drivingAlerts.loading} />
-
-        <Divider />
-
-        {/* SECTION 6 — Vehicle / OBD */}
-        <SectionLabel>Vehicle</SectionLabel>
-        {(() => {
-          if (!obdDevice) {
-            return (
-              <div
-                style={{
-                  margin: "0 16px 12px",
-                  background: "#F1F4F8",
-                  borderRadius: 12,
-                  padding: "10px 12px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 10,
-                  color: MUTED,
-                  fontSize: 12,
-                }}
-              >
-                <CloudOff size={16} strokeWidth={2.2} />
-                OBD not connected
-              </div>
-            );
-          }
-          const d = obdDevice;
-          const v = d.vehicle;
-          const title = [
-            v?.registration,
-            [v?.make, v?.model].filter(Boolean).join(" ") || null,
-          ]
-            .filter(Boolean)
-            .join(" · ") || d.device_name || "Vehicle";
-
-          const stats: string[] = [];
-          if (d.last_fuel_percent != null) stats.push(`Fuel ${Math.round(d.last_fuel_percent)}%`);
-          if (d.last_battery_voltage != null) stats.push(`Batt ${d.last_battery_voltage.toFixed(1)}V`);
-          else if (d.last_battery_percent != null) stats.push(`Batt ${Math.round(d.last_battery_percent)}%`);
-          if (d.last_coolant_temp_c != null) stats.push(`${Math.round(d.last_coolant_temp_c)}°C`);
-          if (d.last_ecu_odometer_km != null)
-            stats.push(`${Math.round(d.last_ecu_odometer_km * 0.621371).toLocaleString()} mi`);
-
-          const tyres = d.last_tire_pressure_json
-            ? Object.values(d.last_tire_pressure_json).filter((n) => typeof n === "number")
-            : [];
-          const tyreWarn = tyres.length > 0 && tyres.some((p) => p < 28 || p > 40);
-          const faults = (d.last_fault_codes || []).filter(Boolean);
-
-          const ago = d.last_seen_at
-            ? formatDistanceToNow(new Date(d.last_seen_at), { addSuffix: false })
-            : null;
-
-          return (
-            <div
-              onClick={() => navigate("/instructor/vehicle-health")}
+      {/* Single white card */}
+      <div
+        style={{
+          background: "#fff",
+          border: `1px solid ${CARD_BORDER}`,
+          borderRadius: 14,
+          overflow: "hidden",
+        }}
+      >
+        {/* Section 1 — Pick-up address */}
+        <div style={{ padding: "12px 14px" }}>
+          <SectLabel>Pick-up address</SectLabel>
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+            <span
               style={{
-                margin: "0 16px 12px",
-                background: BLUE_TINT,
-                borderRadius: 12,
-                padding: "10px 12px",
-                display: "flex",
-                flexDirection: "column",
-                gap: 6,
-                cursor: "pointer",
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <Car size={14} color={BLUE} strokeWidth={2.2} />
-                <div style={{ fontSize: 13, fontWeight: 700, color: CHARCOAL, flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                  {title}
-                </div>
-                <span
-                  style={{
-                    width: 6,
-                    height: 6,
-                    borderRadius: "50%",
-                    background: d.is_connected ? "#22A06B" : "#9AA5B8",
-                    display: "inline-block",
-                  }}
-                />
-                <span style={{ fontSize: 11, color: MUTED, fontWeight: 600 }}>
-                  {d.is_connected ? "Live" : ago ? `${ago} ago` : "Offline"}
-                </span>
-              </div>
-              {stats.length > 0 && (
-                <div style={{ fontSize: 12, color: MUTED, fontWeight: 500 }}>
-                  {stats.join(" · ")}
-                </div>
-              )}
-              {(faults.length > 0 || tyreWarn) && (
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 2 }}>
-                  {faults.length > 0 && (
-                    <span
-                      style={{
-                        background: "rgba(204,34,41,0.10)",
-                        color: RED,
-                        fontSize: 11,
-                        fontWeight: 700,
-                        padding: "3px 8px",
-                        borderRadius: 999,
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: 4,
-                      }}
-                    >
-                      <AlertTriangle size={11} strokeWidth={2.4} />
-                      {faults.length === 1
-                        ? `1 fault: ${faults[0].code}`
-                        : `${faults.length} faults`}
-                    </span>
-                  )}
-                  {tyreWarn && (
-                    <span
-                      style={{
-                        background: "#FFF8E6",
-                        color: "#A66B00",
-                        fontSize: 11,
-                        fontWeight: 700,
-                        padding: "3px 8px",
-                        borderRadius: 999,
-                      }}
-                    >
-                      Tyre check
-                    </span>
-                  )}
-                </div>
-              )}
-            </div>
-          );
-        })()}
-
-
-        {obdDevice && (obdDevice.last_fault_codes?.length ?? 0) > 0 && (
-          <>
-            <Divider />
-            <SectionLabel>Fault codes</SectionLabel>
-            <div style={{ padding: "0 16px 12px", display: "flex", flexDirection: "column", gap: 6 }}>
-              {(obdDevice.last_fault_codes || []).map((f, i) => {
-                const enriched = enrichFaultCode(f);
-                const sev = (enriched.severity || "").toLowerCase();
-                const isCritical = sev === "critical" || sev === "high";
-                const isWarn = sev === "medium" || sev === "warning";
-                const bg = isCritical
-                  ? "rgba(204,34,41,0.08)"
-                  : isWarn
-                  ? "#FFF8E6"
-                  : "#F1F4F8";
-                const fg = isCritical ? RED : isWarn ? "#A66B00" : MUTED;
-                return (
-                  <div
-                    key={`${enriched.code}-${i}`}
-                    onClick={() => navigate("/instructor/vehicle-health")}
-                    style={{
-                      background: bg,
-                      borderRadius: 12,
-                      padding: "8px 12px",
-                      display: "flex",
-                      alignItems: "flex-start",
-                      gap: 10,
-                      cursor: "pointer",
-                    }}
-                  >
-                    <AlertTriangle size={14} color={fg} strokeWidth={2.4} style={{ marginTop: 2, flexShrink: 0 }} />
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <span style={{ fontSize: 13, fontWeight: 700, color: fg }}>{enriched.code}</span>
-                        <span style={{ fontSize: 10, fontWeight: 700, color: fg, textTransform: "uppercase", letterSpacing: "0.04em", opacity: 0.8 }}>
-                          {enriched.severity}
-                        </span>
-                        {enriched.source && (
-                          <span style={{ fontSize: 10, color: MUTED, marginLeft: "auto" }}>{enriched.source}</span>
-                        )}
-                      </div>
-                      <div style={{ fontSize: 12, color: CHARCOAL, lineHeight: 1.4, marginTop: 2 }}>
-                        {enriched.description}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </>
-        )}
-
-        <Divider />
-
-        {/* SECTION 7 — Previous lessons */}
-        <SectionLabel>Previous lessons</SectionLabel>
-        <div style={{ padding: "0 16px 12px", display: "flex", flexDirection: "column", gap: 8 }}>
-          {lessonHistoryQuery.isLoading ? (
-            <div style={{ height: 64, borderRadius: 12, background: "linear-gradient(90deg,#F1F4F8 0%,#FAFBFD 50%,#F1F4F8 100%)", backgroundSize: "200% 100%", animation: "shimmer 1.4s infinite" }} />
-          ) : (lessonHistoryQuery.data?.length ?? 0) === 0 ? (
-            <button
-              type="button"
-              onClick={() => navigate(`/instructor/pupils/${pupilId}`)}
-              style={{
-                width: "100%",
-                background: "transparent",
-                border: `0.5px dashed ${BORDER}`,
-                borderRadius: 12,
-                padding: 12,
-                color: MUTED,
-                fontSize: 12,
+                width: 28, height: 28,
+                borderRadius: 8,
+                background: PRIMARY_TINT,
+                color: PRIMARY,
                 display: "inline-flex",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: 8,
-                cursor: "pointer",
+                flexShrink: 0,
               }}
             >
-              <History size={14} /> View pupil history
+              <NavIcon size={14} strokeWidth={2.2} />
+            </span>
+            <div style={{ flex: 1, minWidth: 0, fontSize: 13, fontWeight: 500, color: TEXT, lineHeight: 1.55, fontFamily: PFONT }}>
+              {pickupLocation ? (
+                <>
+                  {pickupLocation.split(",").map((line, i) => (
+                    <div key={i}>{line.trim()}</div>
+                  ))}
+                  {pickupPostcode && <div>{pickupPostcode}</div>}
+                </>
+              ) : (
+                <div style={{ color: LABEL }}>{pickupPostcode || "Pick-up address not set"}</div>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={copyAddress}
+              style={{
+                width: 28, height: 28,
+                background: "#f0f1f4",
+                border: "none",
+                borderRadius: 8,
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+                flexShrink: 0,
+              }}
+              aria-label="Copy address"
+            >
+              <Copy size={14} color="#888" />
             </button>
-          ) : (
-            <>
-              {(lessonHistoryQuery.data || []).map((l) => {
-                const dateLabel = (() => {
-                  try {
-                    return format(new Date(l.lesson_date), "EEE d MMM");
-                  } catch {
-                    return l.lesson_date;
-                  }
-                })();
-                const timeLabel = l.start_time
-                  ? (() => {
-                      try {
-                        return format(parseDateFn(l.start_time.slice(0, 5), "HH:mm", new Date()), "h:mm a");
-                      } catch {
-                        return l.start_time;
-                      }
-                    })()
-                  : "";
-                const topics = l.skills_practiced || [];
-                const isCancelled = l.status === "cancelled";
-                const cancelReason = isCancelled
-                  ? (l.cancellation_reason || "").split(" — ")[0].trim() || "No reason given"
-                  : "";
-                const cancelNote = isCancelled
-                  ? (l.cancellation_note || "").trim()
-                  : "";
-                return (
-                  <button
-                    key={l.id}
-                    type="button"
-                    onClick={() => !isCancelled && setSelectedHistoryLesson(l)}
-                    style={{
-                      textAlign: "left",
-                      background: isCancelled ? "#FEF4F4" : "#FAFBFD",
-                      border: `0.5px solid ${isCancelled ? "#F4D4D4" : ROW_BORDER}`,
-                      borderRadius: 12,
-                      padding: 12,
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 6,
-                      cursor: isCancelled ? "default" : "pointer",
-                    }}
-                  >
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: CHARCOAL, flex: 1, minWidth: 0 }}>
-                        {dateLabel}
-                        {timeLabel && <span style={{ color: MUTED, fontWeight: 500 }}> · {timeLabel}</span>}
-                      </div>
-                      {l.rating != null && (
-                        <span style={{ fontSize: 11, fontWeight: 700, color: "#A66B00", background: "#FFF8E6", padding: "2px 8px", borderRadius: 999 }}>
-                          ★ {l.rating}
-                        </span>
-                      )}
-                      {isCancelled ? (
-                        <span style={{ fontSize: 11, fontWeight: 700, color: "#B42318", background: "#FEE4E2", padding: "2px 8px", borderRadius: 999 }}>
-                          Cancelled
-                        </span>
-                      ) : (
-                        <span style={{ fontSize: 11, fontWeight: 600, color: MUTED, background: "#F1F4F8", padding: "2px 8px", borderRadius: 999 }}>
-                          {l.duration_minutes} min
-                        </span>
-                      )}
-                    </div>
-                    {isCancelled ? (
-                      <div style={{ fontSize: 12, color: "#B42318", lineHeight: 1.4 }}>
-                        Cancelled · {cancelReason}{cancelNote ? ` · ${cancelNote}` : ""}
-                      </div>
-                    ) : (
-                      <>
-                        {topics.length > 0 && (
-                          <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
-                            {topics.slice(0, 3).map((t, i) => (
-                              <span key={`${t}-${i}`} style={{ background: BLUE_TINT, color: BLUE, fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 999 }}>
-                                {t}
-                              </span>
-                            ))}
-                            {topics.length > 3 && (
-                              <span style={{ background: "#F1F4F8", color: MUTED, fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 999 }}>
-                                +{topics.length - 3}
-                              </span>
-                            )}
-                          </div>
-                        )}
-                        {l.notes && (
-                          <div style={{ fontSize: 12, color: MUTED, lineHeight: 1.4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                            {l.notes}
-                          </div>
-                        )}
-                      </>
-                    )}
-                  </button>
-                );
-              })}
-              <button
-                type="button"
-                onClick={() => navigate(`/instructor/pupils/${pupilId}`)}
-                style={{
-                  background: "transparent",
-                  border: "none",
-                  color: BLUE,
-                  fontSize: 12,
-                  fontWeight: 600,
-                  padding: "4px 0 0",
-                  cursor: "pointer",
-                  alignSelf: "flex-end",
-                }}
-              >
-                View all lessons →
-              </button>
-            </>
-          )}
+          </div>
         </div>
-        <PreviousLessonModal
-          open={!!selectedHistoryLesson}
-          onOpenChange={(v) => !v && setSelectedHistoryLesson(null)}
-          lesson={selectedHistoryLesson}
-          pupilId={pupilId}
-          pupilName={pupilName}
-        />
 
+        <div style={{ height: 1, background: DIV, margin: "0 14px" }} />
 
-        {/* SECTION 8 — Payment status */}
-        {!isPaid && (
-          <>
-            <Divider />
-            <SectionLabel>Payment</SectionLabel>
-            <div style={{ padding: "0 16px 12px" }}>
-              <div
-                style={{
-                  background: "#FFF0F0",
-                  borderRadius: 12,
-                  padding: "10px 12px",
-                  marginBottom: 8,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
-                }}
-              >
-                <PoundSterling size={16} color={RED} />
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: RED }}>
-                    £{debt.toFixed(0)} outstanding
+        {/* Section 2 — Lesson details */}
+        <div style={{ padding: "12px 14px" }}>
+          <SectLabel>Lesson details</SectLabel>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
+            {[
+              { value: `${durationMinutes}m`, label: "Duration", color: TEXT },
+              { value: `£${lessonFee.toFixed(0)}`, label: "Lesson fee", color: PRIMARY },
+              { value: eta.isLoading ? "…" : eta.durationMinutes ? `${eta.durationMinutes}m` : "—", label: "Travel", color: "#2d8a4e" },
+            ].map((t, i) => (
+              <div key={i} style={{ background: BG, borderRadius: 9, padding: 10, textAlign: "center" }}>
+                <div style={{ fontSize: 15, fontWeight: 700, color: t.color, fontFamily: PFONT }}>{t.value}</div>
+                <div style={{ fontSize: 9, color: LABEL, textTransform: "uppercase", letterSpacing: "0.06em", marginTop: 4, fontFamily: PFONT }}>{t.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ height: 1, background: DIV, margin: "0 14px" }} />
+
+        {/* Section 3 — Conditions + Payment + Vehicle */}
+        <div style={{ padding: "12px 14px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: isPaid ? "1fr 1fr" : "1fr 1fr 1fr", gap: 8 }}>
+            {/* Conditions */}
+            <div style={{ background: BG, borderRadius: 10, padding: 10 }}>
+              <SectLabel>Conditions</SectLabel>
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 6, marginBottom: 6 }}>
+                <WIcon size={14} color="#f59e0b" strokeWidth={2.2} style={{ flexShrink: 0, marginTop: 1 }} />
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: 10, fontWeight: 500, color: TEXT, lineHeight: 1.25, fontFamily: PFONT }}>
+                    {weatherData ? `${weatherData.description} · ${weatherData.temperature}°C` : weather.isLoading ? "Loading…" : "—"}
                   </div>
-                  <div style={{ fontSize: 11, color: MUTED, marginTop: 2 }}>
-                    Due before lesson
-                  </div>
+                  {weatherData && (
+                    <div style={{ fontSize: 9, color: "#aaa", marginTop: 2, fontFamily: PFONT }}>
+                      {weatherData.windSpeedMph}mph · {weatherData.visibilityMi}mi
+                    </div>
+                  )}
                 </div>
               </div>
-              <div style={{ display: "flex", gap: 8 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                <CheckCircle2 size={11} color={alertCount === 0 ? "#2d8a4e" : "#f59e0b"} strokeWidth={2.4} />
+                <span style={{ fontSize: 9, fontWeight: 500, color: alertCount === 0 ? "#2d8a4e" : "#854f0b", fontFamily: PFONT }}>
+                  {alertCount === 0 ? "No alerts" : `${alertCount} alert${alertCount > 1 ? "s" : ""}`}
+                </span>
+              </div>
+            </div>
+
+            {/* Payment (only if outstanding) */}
+            {!isPaid && (
+              <div style={{ background: PAY_BG, border: `1px solid ${PAY_BORDER}`, borderRadius: 10, padding: 10, display: "flex", flexDirection: "column", gap: 6 }}>
+                <SectLabel color={PAY_TEXT}>Payment</SectLabel>
+                <div style={{ fontSize: 15, fontWeight: 700, color: PAY_TEXT, fontFamily: PFONT, lineHeight: 1.1 }}>£{debt.toFixed(0)}</div>
+                <div style={{ fontSize: 9, color: PAY_TEXT, opacity: 0.7, fontFamily: PFONT }}>Due before lesson</div>
                 <button
                   type="button"
                   onClick={chasePayment}
                   style={{
-                    flex: 1,
-                    height: 40,
-                    background: RED,
-                    color: "#FFFFFF",
-                    border: "none",
-                    borderRadius: 12,
-                    fontWeight: 700,
-                    fontSize: 13,
-                    cursor: "pointer",
+                    background: PAY_TEXT, color: "#fff", border: "none",
+                    borderRadius: 8, padding: "5px 6px",
+                    fontSize: 9, fontWeight: 600, cursor: "pointer", fontFamily: PFONT,
                   }}
                 >
-                  Chase Payment
+                  Chase payment
                 </button>
                 <button
                   type="button"
                   onClick={markPaid}
                   style={{
-                    flex: 1,
-                    height: 40,
-                    background: "#FFFFFF",
-                    color: BLUE,
-                    border: `1px solid ${BLUE}`,
-                    borderRadius: 12,
-                    fontWeight: 700,
-                    fontSize: 13,
-                    cursor: "pointer",
+                    background: "#fff", color: TEXT, border: `1px solid ${CARD_BORDER}`,
+                    borderRadius: 8, padding: "5px 6px",
+                    fontSize: 9, fontWeight: 600, cursor: "pointer", fontFamily: PFONT,
                   }}
                 >
-                  Mark as Paid
+                  Mark as paid
                 </button>
               </div>
-            </div>
-          </>
-        )}
+            )}
 
-        <Divider />
-
-        {/* SECTION 9 — Footer */}
-        <div style={{ padding: "12px 16px 4px" }}>
-          <div
-            style={{
-              backgroundColor: "#FFF",
-              borderRadius: 16,
-              padding: "12px 14px",
-              border: "0.5px solid rgba(26,82,160,0.08)",
-            }}
-          >
-            <div style={{ display: "flex", gap: 7, marginBottom: 10 }}>
-              <button
-                type="button"
-                onClick={() => setRescheduleOpen(true)}
-                style={{
-                  flex: 1,
-                  backgroundColor: "#F8F9FF",
-                  borderRadius: 10,
-                  border: "1px solid rgba(26,82,160,0.25)",
-                  padding: "8px 6px",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 5,
-                  cursor: "pointer",
-                  color: "#1A52A0",
-                }}
-              >
-                <RefreshCw size={11} strokeWidth={1.8} />
-                <span style={{ fontSize: 11, fontWeight: 600 }}>Reschedule</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setCancelOpen(true)}
-                style={{
-                  flex: 1,
-                  backgroundColor: "#FFF8F8",
-                  borderRadius: 10,
-                  border: "1px solid rgba(204,34,41,0.20)",
-                  padding: "8px 6px",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 5,
-                  cursor: "pointer",
-                  color: "#CC2229",
-                }}
-              >
-                <XCircle size={11} strokeWidth={1.8} />
-                <span style={{ fontSize: 11, fontWeight: 600 }}>Cancel lesson</span>
-              </button>
+            {/* Vehicle */}
+            <div style={{ background: BG, borderRadius: 10, padding: 10, cursor: obdDevice ? "pointer" : "default" }} onClick={() => obdDevice && navigate("/instructor/vehicle-health")}>
+              <SectLabel>Vehicle</SectLabel>
+              <div style={{ width: 26, height: 26, borderRadius: 7, background: PRIMARY_TINT, color: PRIMARY, display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: 6 }}>
+                <Car size={13} strokeWidth={2.2} />
+              </div>
+              <div style={{ fontSize: 11, fontWeight: 600, color: TEXT, fontFamily: PFONT, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {vehicleTitle}
+              </div>
+              {vehicleStats.length > 0 && (
+                <div style={{ fontSize: 9, color: "#aaa", marginTop: 2, fontFamily: PFONT }}>
+                  {vehicleStats.join(" · ")}
+                </div>
+              )}
+              {obdDevice && (
+                <div style={{ marginTop: 6, display: "inline-flex", alignItems: "center", gap: 4, background: "#e8f5ee", borderRadius: 20, padding: "2px 7px" }}>
+                  <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#2d8a4e" }} />
+                  <span style={{ fontSize: 9, fontWeight: 600, color: "#2d8a4e", fontFamily: PFONT }}>
+                    {obdDevice.is_connected ? "Live" : "Offline"}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         </div>
+
+        <div style={{ height: 1, background: DIV, margin: "0 14px" }} />
+
+        {/* Section 4 — Previous lessons */}
+        <div style={{ padding: "12px 14px" }}>
+          <SectLabel>Previous lessons</SectLabel>
+          <button
+            type="button"
+            onClick={() => navigate(`/instructor/pupils/${pupilId}`)}
+            style={{
+              width: "100%",
+              background: "transparent",
+              border: "none",
+              padding: "6px 0",
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
+              color: PRIMARY,
+              fontSize: 13,
+              fontWeight: 500,
+              cursor: "pointer",
+              fontFamily: PFONT,
+            }}
+          >
+            <History size={14} strokeWidth={2} />
+            View pupil history
+          </button>
+        </div>
       </div>
+
+      {/* Bottom action buttons */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 12 }}>
+        <button
+          type="button"
+          onClick={() => setRescheduleOpen(true)}
+          style={{
+            background: "#fff",
+            color: PRIMARY,
+            border: `1px solid ${CARD_BORDER}`,
+            borderRadius: 12,
+            padding: "11px 12px",
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 6,
+            fontSize: 12,
+            fontWeight: 600,
+            cursor: "pointer",
+            fontFamily: PFONT,
+          }}
+        >
+          <RefreshCw size={14} strokeWidth={2} />
+          Reschedule
+        </button>
+        <button
+          type="button"
+          onClick={() => setCancelOpen(true)}
+          style={{
+            background: PAY_BG,
+            color: PAY_TEXT,
+            border: `1px solid ${PAY_BORDER}`,
+            borderRadius: 12,
+            padding: "11px 12px",
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 6,
+            fontSize: 12,
+            fontWeight: 600,
+            cursor: "pointer",
+            fontFamily: PFONT,
+          }}
+        >
+          <XCircle size={14} strokeWidth={2} />
+          Cancel lesson
+        </button>
+      </div>
+
+      <PreviousLessonModal
+        open={!!selectedHistoryLesson}
+        onOpenChange={(v) => !v && setSelectedHistoryLesson(null)}
+        lesson={selectedHistoryLesson}
+        pupilId={pupilId}
+        pupilName={pupilName}
+      />
+
 
       <CancelLessonDialog
         open={cancelOpen}
