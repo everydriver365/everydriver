@@ -196,44 +196,108 @@ export function ComplianceTracker({ instructorId }: ComplianceTrackerProps) {
       )}
 
 
-      {/* CPD Progress */}
-      <Card>
-        <CardHeader className="pb-2">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-base flex items-center gap-2">
-              <GraduationCap className="h-4 w-4 text-primary" />
-              CPD Hours
-            </CardTitle>
-            <Button variant="outline" size="sm" onClick={() => setShowCPDLog(true)}>
-              <Plus className="h-4 w-4 mr-1" />
-              Log CPD
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-2xl font-bold">{data?.cpd_hours_logged || 0}h</span>
-            <span className="text-sm text-muted-foreground">
-              of {data?.cpd_year_target || 35}h target
-            </span>
-          </div>
-          <Progress value={cpdProgress} className="h-2" />
-          <p className="text-xs text-muted-foreground">
-            {Math.max(0, (data?.cpd_year_target || 35) - (data?.cpd_hours_logged || 0))}h remaining this year
-          </p>
-          {latestCPD && (
-            <div className="mt-2 flex items-center justify-between rounded-lg border bg-muted/30 px-3 py-2 text-xs">
-              <div className="min-w-0 flex-1">
-                <p className="font-medium truncate">{latestCPD.title}</p>
-                <p className="text-muted-foreground">
-                  Last logged · {format(parseISO(latestCPD.date), "d MMM yyyy")}
+      {/* CPD Hours - redesigned */}
+      {(() => {
+        const logged = data?.cpd_hours_logged || 0;
+        const target = data?.cpd_year_target || 35;
+        const remaining = Math.max(0, target - logged);
+        const pct = target > 0 ? Math.min(100, (logged / target) * 100) : 0;
+        return (
+          <div style={{ fontFamily: "Poppins, sans-serif" }}>
+            <div style={{ background: "#fff", border: "1px solid #e0e3ea", borderRadius: 14, overflow: "hidden" }}>
+              {/* Section header */}
+              <div style={{ padding: "13px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+                  <span style={{
+                    width: 34, height: 34, borderRadius: 9, background: "#e8eefb",
+                    display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                  }}>
+                    <GraduationCap size={18} color="#2952b3" />
+                  </span>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: "#1a1a1f", lineHeight: 1.2 }}>CPD Hours</div>
+                    <div style={{ fontSize: 10, color: "#aaa", marginTop: 1 }}>Continuing professional development</div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowCPDLog(true)}
+                  style={{
+                    display: "inline-flex", alignItems: "center", gap: 4,
+                    background: "#1a1a1f", color: "#fff", border: "none",
+                    fontFamily: "inherit", fontSize: 11, fontWeight: 600,
+                    padding: "7px 12px", borderRadius: 9, cursor: "pointer", flexShrink: 0,
+                  }}
+                >
+                  <Plus size={13} />
+                  Log CPD
+                </button>
+              </div>
+
+              <div style={{ height: 1, background: "#f0f1f4" }} />
+
+              {/* Progress section */}
+              <div style={{ padding: "12px 14px" }}>
+                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8 }}>
+                  <span style={{ fontSize: 28, fontWeight: 700, color: "#1a1a1f", lineHeight: 1 }}>{logged}h</span>
+                  <span style={{ fontSize: 11, color: "#aaa" }}>
+                    of <span style={{ fontSize: 11, fontWeight: 600, color: "#1a1a1f" }}>{target}h</span> target
+                  </span>
+                </div>
+                <div style={{ marginTop: 10, height: 6, background: "#F2F4F8", borderRadius: 3, overflow: "hidden" }}>
+                  <div style={{ width: `${pct}%`, height: "100%", background: "#2952b3", borderRadius: 3, transition: "width 240ms ease" }} />
+                </div>
+                <p style={{ margin: "8px 0 0", fontSize: 10, color: "#aaa" }}>
+                  <span style={{ color: "#2952b3", fontWeight: 600 }}>{remaining}h</span> remaining this year
                 </p>
               </div>
-              <span className="ml-2 font-semibold text-primary">{latestCPD.hours}h</span>
+
+              <div style={{ height: 1, background: "#f0f1f4" }} />
+
+              {/* Recent activity */}
+              <div style={{ padding: "12px 0 4px" }}>
+                <div style={{ fontSize: 10, fontWeight: 600, color: "#999", letterSpacing: 0.6, textTransform: "uppercase", padding: "0 14px 8px" }}>
+                  Recent activity
+                </div>
+                {recentCPD.length === 0 ? (
+                  <div style={{ fontSize: 12, color: "#aaa", textAlign: "center", padding: "20px 14px" }}>
+                    No CPD logged yet
+                  </div>
+                ) : (
+                  recentCPD.map((entry, i) => (
+                    <div
+                      key={i}
+                      style={{
+                        display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10,
+                        padding: "10px 14px",
+                        borderTop: i === 0 ? "none" : "1px solid #f0f1f4",
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+                        <span style={{
+                          width: 28, height: 28, borderRadius: 8, background: "#e8eefb",
+                          display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                        }}>
+                          <BadgeCheck size={15} color="#2952b3" />
+                        </span>
+                        <div style={{ minWidth: 0 }}>
+                          <div style={{ fontSize: 12, fontWeight: 600, color: "#1a1a1f", lineHeight: 1.2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                            {entry.title}
+                          </div>
+                          <div style={{ fontSize: 10, color: "#aaa", marginTop: 1 }}>
+                            Last logged · {format(parseISO(entry.date), "d MMM yyyy")}
+                          </div>
+                        </div>
+                      </div>
+                      <span style={{ fontSize: 14, fontWeight: 700, color: "#2952b3", flexShrink: 0 }}>{entry.hours}h</span>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </div>
+        );
+      })()}
+
 
       {/* Compliance Items */}
       <Card>
