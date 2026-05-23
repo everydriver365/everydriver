@@ -76,9 +76,13 @@ const EMPTY: Form = {
   insurance_policy_number: "",
   car_insurance_expiry: "",
   insurance_certificate_url: null,
+  insurance_ncb_years: 0,
+  insurance_company_phone: "",
+  insurance_claims_line: "",
   years_experience_adi: "",
   additional_certifications: [],
 };
+
 
 
 const CERTS: { id: string; label: string }[] = [
