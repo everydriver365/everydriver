@@ -195,7 +195,7 @@ export function UpNextLiveMapStrip({
         </div>
       )}
 
-      {hasDestination && (
+      {hasDestination && !hideEtaChip && (
         <div style={{
           position: "absolute", top: 10, right: 10,
           backgroundColor: "rgba(255,255,255,0.96)",
