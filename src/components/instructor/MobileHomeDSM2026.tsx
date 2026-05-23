@@ -84,6 +84,7 @@ import { useTodayOverview } from "@/hooks/useTodayOverview";
 import { useWeeklyGoals } from "@/hooks/useWeeklyGoals";
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
 import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
+import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
 import { useTestSwapNotifications } from "@/hooks/useTestSwapNotifications";
 import { useVisitorChatUnreadCount } from "@/hooks/useVisitorChatUnreadCount";
 import { usePendingJobsList } from "@/hooks/usePendingJobsList";
@@ -191,6 +192,7 @@ export function MobileHomeDSM2026({ instructorId, instructorName }: Props) {
   const { data: msgsCount = 0 } = useUnreadMessagesCount(instructorId);
   const { data: swapsCount = 0 } = useTestSwapNotifications(instructorId);
   const { data: visitorChatCount = 0 } = useVisitorChatUnreadCount(instructorId);
+  const { total: bellAlertCount } = useCombinedNotificationCount(instructorId);
   const { data: events = [] } = useUpcomingEvents(instructorId);
   const { data: membership } = useInstructorMembership(instructorId);
   const payments = useInstructorPaymentsData(instructorId);
@@ -302,7 +304,7 @@ export function MobileHomeDSM2026({ instructorId, instructorName }: Props) {
 
         <HeroHeader
           firstName={(instructorName || instructor?.name || "").split(" ")[0]}
-          unreadCount={msgsCount}
+          unreadCount={bellAlertCount}
           nextLesson={nextLesson}
           lessonExpanded={lessonExpanded}
           onToggleLesson={() => setLessonExpanded((p) => !p)}
