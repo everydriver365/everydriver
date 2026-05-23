@@ -331,6 +331,7 @@ export function AICallDivertSheet({ open, onOpenChange, state }: Props) {
 
               <button
                 type="button"
+                onClick={goToHub}
                 aria-label="Edit auto rules"
                 style={{
                   width: "100%",
