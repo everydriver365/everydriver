@@ -594,6 +594,21 @@ export function AddPupilSheet({
       style={{ background: `linear-gradient(180deg, ${SHELL_BG_START} 0%, ${SHELL_BG_END} 100%)` }}
     >
       <section>
+        <ImportFromContactsButton
+          variant="card"
+          onImport={(c) =>
+            setForm((prev) => ({
+              ...prev,
+              name: c.name || prev.name,
+              phone: c.phone ? formatPhoneNumber(c.phone) || c.phone : prev.phone,
+              email: c.email || prev.email,
+              address: c.address || prev.address,
+              postcode: c.postcode || prev.postcode,
+            }))
+          }
+        />
+      </section>
+      <section>
         <SectionLabel>Pupil details</SectionLabel>
         <SectionCard>
           <Row label="Name" required invalid={nameInvalid}>
