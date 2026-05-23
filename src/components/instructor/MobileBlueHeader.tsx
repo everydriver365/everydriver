@@ -5,6 +5,8 @@ import dsmLogo from "@/assets/dsm-logo.png";
 import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
 import { useAICallDivert } from "@/hooks/useAICallDivert";
 import { AICallDivertSheet } from "@/components/instructor/AICallDivertSheet";
+import { AutoTrackingIndicator } from "@/components/instructor/AutoTrackingIndicator";
+
 
 interface Props {
   instructorId: string | undefined;
