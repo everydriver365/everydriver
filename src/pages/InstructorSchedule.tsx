@@ -156,121 +156,49 @@ export default function InstructorSchedule() {
     <div style={{ height: 1, backgroundColor: "#2B7BC8", position: "absolute", bottom: 0, left: 0, right: 0, opacity: 0.6, animation: "pulse 1.5s ease-in-out infinite" }} />
   ) : null;
 
+  // Today stats derived from calendar events
+  const today = new Date();
+  const sameDay = (d: Date) => d.getFullYear() === today.getFullYear() && d.getMonth() === today.getMonth() && d.getDate() === today.getDate();
+  const todaysEvents = calendar.events.filter((e) => {
+    try { return sameDay(new Date(e.start_time)); } catch { return false; }
+  });
+  const todaysLessons = todaysEvents.filter((e) => e.type === 'lesson');
+  const lessonsCount = todaysLessons.length;
+  const scheduledCount = todaysLessons.filter((e) => ['scheduled', 'confirmed'].includes((e.status || '').toLowerCase())).length;
+  const overdueCount = todaysLessons.filter((e) => (e.payment_status || '').toLowerCase() === 'overdue' || (e.payment_status || '').toLowerCase() === 'unpaid').length;
+  const busyHours = todaysEvents.reduce((sum, e) => {
+    try {
+      const s = new Date(e.start_time).getTime();
+      const en = new Date(e.end_time).getTime();
+      return sum + Math.max(0, (en - s) / 3600000);
+    } catch { return sum; }
+  }, 0);
+  const freeHours = Math.max(0, Math.round(10 - busyHours));
+
   return (
     <InstructorPortalLayout>
       <div
         className="h-full flex flex-col"
-        style={{ backgroundColor: "transparent", margin: "-16px -16px 0", padding: viewMode === 'list' && isMobile ? "0" : "0 20px" }}
+        style={{ backgroundColor: isMobile ? "#F2F4F8" : "transparent", margin: "-16px -16px 0", padding: viewMode === 'list' && isMobile ? "0" : "0 20px", fontFamily: "Poppins, system-ui, sans-serif" }}
       >
         {/* Header */}
         <div
           className="sticky top-0 z-20"
-          style={{ backgroundColor: "transparent", position: "relative", padding: isMobile ? "16px 20px 10px" : "12px 0 8px" }}
+          style={{ backgroundColor: isMobile ? "#F2F4F8" : "transparent", position: "relative", padding: isMobile ? "12px 14px 8px" : "12px 0 8px" }}
         >
           {isMobile ? (
-            <div style={{
-              backgroundColor: "#FFFFFF",
-              padding: "12px 16px",
-              borderBottom: "0.5px solid #F0F3F8",
-              margin: "-16px -20px 0",
-            }}>
-              {/* Title row */}
-              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 10 }}>
-                <div style={{ minWidth: 0 }}>
-                  <h1 style={{
-                    margin: 0,
-                    fontSize: 24,
-                    fontWeight: 700,
-                    color: "#1A1A1A",
-                    letterSpacing: "-0.5px",
-                    lineHeight: "28px",
-                  }}>
-                    {new Date().toLocaleDateString("en-GB", { month: "long", year: "numeric" })}
-                  </h1>
-                  <div style={{
-                    marginTop: 3,
-                    fontSize: 11,
-                    color: "#8E8E93",
-                  }}>
-                    {new Date().toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" })} · Today
-                  </div>
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
-                  <button
-                    onClick={handleSync}
-                    disabled={isSyncing}
-                    style={{
-                      width: 30, height: 30, borderRadius: 15,
-                      backgroundColor: "#F2F4F8",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      border: "none", cursor: "pointer",
-                    }}
-                    aria-label="Sync calendar"
-                  >
-                    <RefreshCw style={{ width: 14, height: 14, color: "#5B6B8A", strokeWidth: 1.8, ...(isSyncing ? { animation: "spin 1s linear infinite" } : {}) }} />
-                  </button>
-                  <button
-                    onClick={() => navigate("/instructor/profile")}
-                    style={{
-                      width: 34, height: 34, borderRadius: 17,
-                      backgroundColor: "#B23A3F",
-                      border: "2px solid #3D55A1",
-                      overflow: "hidden",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      padding: 0, cursor: "pointer",
-                    }}
-                    aria-label="Profile"
-                  >
-                    {instructor?.profile_image_url ? (
-                      <img src={instructor.profile_image_url} alt="" style={{ width: 34, height: 34, objectFit: "cover" }} />
-                    ) : (
-                      <span style={{ fontSize: 13, fontWeight: 700, color: "#FFFFFF" }}>
-                        {(instructor?.name || "I").charAt(0).toUpperCase()}
-                      </span>
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              {/* View toggle: Calendar / Schedule */}
-              <div
-                style={{
-                  backgroundColor: "#F2F4F8",
-                  borderRadius: 11,
-                  padding: 3,
-                  display: "flex",
-                  gap: 2,
-                }}
-              >
-                {([
-                  { label: "List", target: "list" as ViewMode, Icon: List },
-                  { label: "Week", target: "week" as ViewMode, Icon: Columns3 },
-                  { label: "Month", target: "month" as ViewMode, Icon: CalendarRange },
-                ]).map(({ label, target, Icon }) => {
-                  const active = viewMode === target;
-                  return (
-                    <button
-                      key={label}
-                      onClick={() => setViewMode(target)}
-                      style={{
-                        flex: 1,
-                        padding: "6px 0",
-                        borderRadius: 8,
-                        backgroundColor: active ? "#FFFFFF" : "transparent",
-                        display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
-                        border: "none", cursor: "pointer",
-                        fontSize: 11,
-                        fontWeight: active ? 700 : 500,
-                        color: active ? "#3D55A1" : "#8E8E93",
-                      }}
-                    >
-                      <Icon style={{ width: 12, height: 12, strokeWidth: 1.7 }} />
-                      {label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+            <ScheduleMobileChrome
+              instructorId={instructorId}
+              profileImageUrl={instructor?.profile_image_url}
+              instructorName={instructor?.name}
+              viewMode={viewMode}
+              setViewMode={setViewMode}
+              onSync={handleSync}
+              isSyncing={isSyncing}
+              onAdd={() => handleAddEvent(new Date())}
+              navigate={navigate}
+              stats={{ lessons: lessonsCount, scheduled: scheduledCount, free: freeHours, overdue: overdueCount }}
+            />
           ) : (
             <div className="flex items-center justify-between gap-2">
               <InstructorPageHeader
@@ -325,7 +253,7 @@ export default function InstructorSchedule() {
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-auto pb-4">
+        <div className="flex-1 overflow-auto pb-4" style={{ backgroundColor: isMobile ? "#F2F4F8" : undefined }}>
           <div className={cn("px-1", isMobile && viewMode === 'list' ? "px-4 pt-3" : "pb-2")}>
             <ActiveGapOffersList instructorId={instructorId} />
           </div>
@@ -366,6 +294,7 @@ export default function InstructorSchedule() {
           )}
         </div>
       </div>
+
 
       <CalendarEventSheet
         event={selectedEvent}
