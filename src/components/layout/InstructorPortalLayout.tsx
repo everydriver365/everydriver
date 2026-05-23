@@ -228,6 +228,45 @@ function GlobalSyncBridge({ instructorId }: { instructorId: string | undefined }
   return null;
 }
 
+/**
+ * Background phone-GPS streamer. Mounted persistently inside the instructor
+ * portal so that when the `auto-start-lesson-tracker` cron creates a
+ * `lesson_telematics` row, the instructor's open app starts streaming GPS
+ * points to it within ~10s — regardless of which screen they're on.
+ *
+ * Gated behind the `auto_start_tracker` instructor preference. When the
+ * toggle is OFF, this component is rendered as null and `usePhoneTrackingStreamer`
+ * is never invoked, so the browser will not prompt for GPS permission.
+ */
+function BackgroundAutoTrackingBridge({ instructorId }: { instructorId: string | undefined }) {
+  const { data: prefs } = useQuery({
+    queryKey: ["instructor-auto-start-tracker", instructorId],
+    enabled: !!instructorId,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("instructors")
+        .select("auto_start_tracker")
+        .eq("id", instructorId!)
+        .maybeSingle();
+      return data as { auto_start_tracker: boolean | null } | null;
+    },
+  });
+
+  if (!instructorId || !prefs?.auto_start_tracker) return null;
+  return <BackgroundAutoTrackingStreamer instructorId={instructorId} />;
+}
+
+function BackgroundAutoTrackingStreamer({ instructorId }: { instructorId: string }) {
+  const { data: activeSession } = useActiveTrackingSession(instructorId);
+  usePhoneTrackingStreamer({
+    provider: activeSession ? "phone" : null,
+    pupilId: activeSession?.pupil_id ?? null,
+    sessionId: activeSession?.id ?? null,
+    minIntervalMs: 3000,
+  });
+  return null;
+}
+
 
 interface InstructorPortalLayoutProps {
   children: ReactNode;
