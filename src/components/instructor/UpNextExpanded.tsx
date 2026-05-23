@@ -535,36 +535,41 @@ export function UpNextExpanded({
     Icon: LucideIcon; label: string; onClick: () => void; disabled?: boolean;
     active?: boolean; activeBg?: string; activeBorder?: string; activeColor?: string;
     solidBg?: string; solidBorder?: string; solidColor?: string;
+    flex?: number; shadow?: boolean;
   }) => {
-    const { Icon, label, onClick, disabled, active, activeBg, activeBorder, activeColor, solidBg, solidBorder, solidColor } = opts;
+    const { Icon, label, onClick, disabled, active, activeBg, activeBorder, activeColor, solidBg, solidBorder, solidColor, flex = 1, shadow } = opts;
     const bg = solidBg ?? (active ? (activeBg || "#fff") : "#fff");
-    const bd = solidBorder ?? (active ? (activeBorder || BTN_BORDER) : BTN_BORDER);
-    const fg = solidColor ?? (active ? (activeColor || TEXT) : TEXT);
+    const bd = solidBorder ?? (active ? (activeBorder || "#e3e6ec") : "#e3e6ec");
+    const fg = solidColor ?? (active ? (activeColor || TEXT) : "#3a3f4a");
     return (
       <button
         type="button"
         onClick={onClick}
         disabled={disabled}
         style={{
-          flex: 1, minWidth: 0,
+          flex, minWidth: 0,
+          height: 36,
           background: bg,
           border: `1px solid ${bd}`,
           borderRadius: 10,
-          padding: "11px 8px",
+          padding: "0 10px",
           fontFamily: PFONT,
           fontSize: 12,
           fontWeight: 600,
+          letterSpacing: "-0.01em",
           color: fg,
           display: "inline-flex",
           alignItems: "center",
           justifyContent: "center",
           gap: 6,
           cursor: disabled ? "not-allowed" : "pointer",
-          opacity: disabled ? 0.5 : 1,
+          opacity: disabled ? 0.45 : 1,
+          boxShadow: shadow ? "0 1px 2px rgba(41,82,179,0.18)" : "none",
+          transition: "background 150ms, border-color 150ms, box-shadow 150ms",
         }}
       >
-        <Icon size={14} strokeWidth={2} />
-        <span>{label}</span>
+        <Icon size={13} strokeWidth={1.9} />
+        <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{label}</span>
       </button>
     );
   };
@@ -604,8 +609,8 @@ export function UpNextExpanded({
         @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
       `}</style>
 
-      {/* Status buttons — Row 1 */}
-      <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+      {/* Status buttons — Row 1 (secondary signals) */}
+      <div style={{ display: "flex", gap: 6, marginBottom: 6 }}>
         {statusBtn({
           Icon: MapPin,
           label: "Here",
@@ -637,23 +642,27 @@ export function UpNextExpanded({
         })}
       </div>
 
-      {/* Status buttons — Row 2 */}
-      <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+      {/* Status buttons — Row 2 (primary CTA) */}
+      <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>
         {statusBtn({
           Icon: ClipboardList,
           label: "Prep",
           onClick: openPrep,
+          flex: 1,
         })}
         {statusBtn({
           Icon: CheckCheck,
-          label: arrivedActive ? "Arrived ✓" : "Arrived",
+          label: arrivedActive ? "Arrived" : "Arrived",
           onClick: arrived,
           disabled: busyAction === "arrived",
           solidBg: PRIMARY,
           solidBorder: PRIMARY,
           solidColor: "#fff",
+          flex: 1.6,
+          shadow: true,
         })}
       </div>
+
 
       {/* Map */}
       <div style={{ position: "relative", marginBottom: 12 }}>
