@@ -57,21 +57,6 @@ verify_jwt = false
 [functions.generate-route-report]
 verify_jwt = false
 
-[functions.damoov-register]
-verify_jwt = false
-
-[functions.damoov-submit-trip]
-verify_jwt = false
-
-[functions.damoov-get-scores]
-verify_jwt = false
-
-[functions.damoov-crash-alert]
-verify_jwt = false
-
-[functions.damoov-leaderboard]
-verify_jwt = false
-
 [functions.sync-all-calendars]
 verify_jwt = false
 
