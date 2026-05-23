@@ -182,18 +182,21 @@ export function UpNextLiveMapStrip({
       {countdownLine && (
         <div style={{
           position: "absolute", top: 10, left: 10,
+          maxWidth: "calc(100% - 110px)",
           backgroundColor: "rgba(255,255,255,0.94)",
           borderRadius: 999, padding: "4px 9px",
           display: "inline-flex", alignItems: "center", gap: 5,
           boxShadow: "0 1px 5px rgba(0,0,0,0.12)",
           pointerEvents: "none",
+          minWidth: 0,
         }}>
-          <span style={{ width: 5, height: 5, borderRadius: 999, background: BLUE, boxShadow: "0 0 0 3px rgba(61,85,161,0.25)" }} />
-          <span style={{ fontSize: 11, fontWeight: 800, color: BLUE, letterSpacing: 0.5, textTransform: "uppercase" }}>
+          <span style={{ flexShrink: 0, width: 5, height: 5, borderRadius: 999, background: BLUE, boxShadow: "0 0 0 3px rgba(61,85,161,0.25)" }} />
+          <span style={{ fontSize: 11, fontWeight: 800, color: BLUE, letterSpacing: 0.5, textTransform: "uppercase", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", minWidth: 0 }}>
             Live · {countdownLine}
           </span>
         </div>
       )}
+
 
       {hasDestination && !hideEtaChip && (
         <div style={{
