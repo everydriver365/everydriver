@@ -21,6 +21,9 @@ interface Row {
   phone: string | null;
   bio: string | null;
   profile_image_url: string | null;
+  home_postcode: string | null;
+  radius_miles: number | null;
+  special_skills: string | null;
 }
 
 export function ProfileBasicsEditor({ instructorId }: Props) {
@@ -36,7 +39,7 @@ export function ProfileBasicsEditor({ instructorId }: Props) {
     (async () => {
       const { data, error } = await supabase
         .from("instructors")
-        .select("name, email, phone, bio, profile_image_url")
+        .select("name, email, phone, bio, profile_image_url, home_postcode, radius_miles, special_skills")
         .eq("id", instructorId)
         .single();
       if (!error && data) setProfile(data as Row);
@@ -54,6 +57,9 @@ export function ProfileBasicsEditor({ instructorId }: Props) {
         email: profile.email,
         phone: profile.phone,
         bio: profile.bio,
+        home_postcode: profile.home_postcode,
+        radius_miles: profile.radius_miles,
+        special_skills: profile.special_skills,
       })
       .eq("id", instructorId);
     setSaving(false);
@@ -62,6 +68,7 @@ export function ProfileBasicsEditor({ instructorId }: Props) {
       variant: error ? "destructive" : undefined,
     });
   };
+
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
