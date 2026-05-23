@@ -2,6 +2,10 @@ import { useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { resolvePhoneSpeedLimit, haversineMetres } from "@/lib/phoneSpeedLimit";
 
+// iOS WKWebView / Despia detection — GPS behaves differently here
+const isIOS = typeof navigator !== "undefined" && /iPhone|iPad/.test(navigator.userAgent);
+
+
 export interface PhoneFix {
   latitude: number;
   longitude: number;
@@ -44,6 +48,7 @@ export function usePhoneTrackingStreamer({
 }: Options) {
   const watchIdRef = useRef<number | null>(null);
   const lastSentRef = useRef<number>(0);
+  const startedAtRef = useRef<number>(0);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
   const lastPointRef = useRef<{ lat: number; lng: number } | null>(null);
   const lastLimitFetchRef = useRef<{ lat: number; lng: number; at: number } | null>(null);

@@ -6,6 +6,9 @@ import { getMapTileUrl, getMapAttribution } from "@/lib/mapConfig";
 import { Button } from "@/components/ui/button";
 import { Crosshair } from "lucide-react";
 
+// ========== iOS detection (WKWebView / Despia) ==========
+const isIOS = typeof navigator !== "undefined" && /iPhone|iPad/.test(navigator.userAgent);
+
 // ========== Types ==========
 interface GPSPoint {
   lat: number;
@@ -79,6 +82,26 @@ async function matchToRoad(points: GPSPoint[]): Promise<GPSPoint[]> {
   return allMatched;
 }
 
+// ========== Build the marker divIcon once ==========
+function buildCarIcon(): L.DivIcon {
+  const html = `
+    <div class="gps-car-marker" style="position:relative;width:48px;height:48px;display:flex;align-items:center;justify-content:center;">
+      <div class="gps-car-ring" style="position:absolute;width:44px;height:44px;border-radius:50%;background:#3b82f6;box-shadow:0 3px 12px rgba(0,0,0,0.25);"></div>
+      <div class="gps-car-rotator" style="position:relative;width:24px;height:24px;transform:rotate(0deg);transition:transform 0.5s ease;will-change:transform;z-index:1;">
+        <svg viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+          <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>
+        </svg>
+      </div>
+    </div>
+  `;
+  return L.divIcon({
+    html,
+    className: "gps-marker-icon",
+    iconSize: [48, 48],
+    iconAnchor: [24, 24],
+  });
+}
+
 // ========== Component ==========
 export default function LiveTrackingMap({
   latitude,
@@ -101,6 +124,11 @@ export default function LiveTrackingMap({
   const matchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingMatchRef = useRef(false);
 
+  // iOS-friendly drag/auto-follow state
+  const isProgrammaticMoveRef = useRef(false);
+  const dragResetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const initialCentreSet = useRef(false);
+
   const [userDragged, setUserDragged] = useState(false);
 
   // ========== Speed: simple filter ==========
@@ -109,6 +137,19 @@ export default function LiveTrackingMap({
   const speedMph = Math.round(displaySpeedKmh * 0.621371);
   const speedLimitMph = speedLimitKmh !== null ? Math.round(speedLimitKmh * 0.621371) : null;
   const isSpeeding = speedLimitMph !== null && speedMph > speedLimitMph;
+
+  // Programmatic move helper
+  const panProgrammatic = useCallback((lat: number, lng: number, zoom?: number) => {
+    const map = mapInstance.current;
+    if (!map) return;
+    isProgrammaticMoveRef.current = true;
+    const z = zoom ?? map.getZoom();
+    if (isIOS) {
+      map.setView([lat, lng], z, { animate: false });
+    } else {
+      map.flyTo([lat, lng], z, { duration: 0.6 });
+    }
+  }, []);
 
   // ========== Initialize Map ==========
   useEffect(() => {
@@ -129,7 +170,16 @@ export default function LiveTrackingMap({
       attribution: getMapAttribution(),
     }).addTo(mapInstance.current);
 
-    mapInstance.current.on("dragstart", () => setUserDragged(true));
+    // movestart fires reliably on both mouse drag and WKWebView touch pan
+    mapInstance.current.on("movestart", () => {
+      if (isProgrammaticMoveRef.current) return;
+      setUserDragged(true);
+      if (dragResetTimerRef.current) clearTimeout(dragResetTimerRef.current);
+      dragResetTimerRef.current = setTimeout(() => setUserDragged(false), 30_000);
+    });
+    mapInstance.current.on("moveend", () => {
+      isProgrammaticMoveRef.current = false;
+    });
 
     const resizeObserver = new ResizeObserver(() => {
       mapInstance.current?.invalidateSize();
@@ -138,6 +188,8 @@ export default function LiveTrackingMap({
 
     return () => {
       resizeObserver.disconnect();
+      if (dragResetTimerRef.current) clearTimeout(dragResetTimerRef.current);
+      dragResetTimerRef.current = null;
       mapInstance.current?.remove();
       mapInstance.current = null;
     };
@@ -232,37 +284,29 @@ export default function LiveTrackingMap({
       return;
     }
 
-    // --- Update marker ---
-    const rotation = heading ?? 0;
-    const bgColor = isConnected ? '#3b82f6' : '#9ca3af';
-    const iconHtml = `
-      <div class="gps-car-marker" style="position:relative;width:48px;height:48px;display:flex;align-items:center;justify-content:center;">
-        <div style="position:absolute;width:44px;height:44px;border-radius:50%;background:${bgColor};box-shadow:0 3px 12px rgba(0,0,0,0.25);"></div>
-        <div style="position:relative;width:24px;height:24px;transform:rotate(${rotation}deg);transition:transform 0.5s ease;z-index:1;">
-          <svg viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
-            <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>
-          </svg>
-        </div>
-      </div>
-    `;
-
-    const icon = L.divIcon({
-      html: iconHtml,
-      className: "gps-marker-icon",
-      iconSize: [48, 48],
-      iconAnchor: [24, 24],
-    });
-
+    // --- Create marker once; mutate afterwards ---
     if (!markerRef.current) {
-      markerRef.current = L.marker([latitude, longitude], { icon }).addTo(map);
+      markerRef.current = L.marker([latitude, longitude], { icon: buildCarIcon() }).addTo(map);
     } else {
       markerRef.current.setLatLng([latitude, longitude]);
-      markerRef.current.setIcon(icon);
     }
 
-    // --- Auto-center ---
-    if (!userDragged) {
-      map.panTo([latitude, longitude], { animate: true, duration: 0.5 });
+    // Rotate inner div directly (no icon rebuild → no WKWebView stutter)
+    const el = markerRef.current.getElement();
+    if (el) {
+      const rotator = el.querySelector<HTMLElement>(".gps-car-rotator");
+      if (rotator) rotator.style.transform = `rotate(${heading ?? 0}deg)`;
+      const ring = el.querySelector<HTMLElement>(".gps-car-ring");
+      if (ring) ring.style.background = isConnected ? "#3b82f6" : "#9ca3af";
+    }
+
+    // --- First fix: jump instantly to real location (no animation) ---
+    if (!initialCentreSet.current) {
+      initialCentreSet.current = true;
+      panProgrammatic(latitude, longitude, 17);
+    } else if (!userDragged) {
+      // --- Auto-center on subsequent fixes ---
+      panProgrammatic(latitude, longitude);
     }
 
     // --- Add to polyline (3m jitter filter) ---
@@ -286,7 +330,7 @@ export default function LiveTrackingMap({
         scheduleRoadMatch();
       }
     }
-  }, [latitude, longitude, heading, isConnected, userDragged, sessionId, scheduleRoadMatch]);
+  }, [latitude, longitude, heading, isConnected, userDragged, sessionId, scheduleRoadMatch, panProgrammatic]);
 
   // ========== Polyline renderer ==========
   const renderPolyline = useCallback((points: GPSPoint[]) => {
@@ -307,11 +351,15 @@ export default function LiveTrackingMap({
   }, []);
   // ========== Re-center Handler ==========
   const handleRecenter = useCallback(() => {
+    if (dragResetTimerRef.current) {
+      clearTimeout(dragResetTimerRef.current);
+      dragResetTimerRef.current = null;
+    }
     setUserDragged(false);
     if (mapInstance.current && latitude !== null && longitude !== null) {
-      mapInstance.current.setView([latitude, longitude], mapInstance.current.getZoom(), { animate: true });
+      panProgrammatic(latitude, longitude);
     }
-  }, [latitude, longitude]);
+  }, [latitude, longitude, panProgrammatic]);
 
   return (
     <div className={`relative w-full h-full ${className}`}>
