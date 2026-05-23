@@ -21,6 +21,10 @@ import {
   X,
   GraduationCap,
   IdCard,
+  Shield,
+  Phone,
+  PhoneCall,
+  Minus,
 } from "lucide-react";
 import { differenceInDays, format, parseISO } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
@@ -51,10 +55,14 @@ interface Form {
   insurance_policy_number: string;
   car_insurance_expiry: string;
   insurance_certificate_url: string | null;
+  insurance_ncb_years: number;
+  insurance_company_phone: string;
+  insurance_claims_line: string;
 
   years_experience_adi: string;
   additional_certifications: string[];
 }
+
 
 const EMPTY: Form = {
   adi_badge_number: "",
@@ -72,9 +80,13 @@ const EMPTY: Form = {
   insurance_policy_number: "",
   car_insurance_expiry: "",
   insurance_certificate_url: null,
+  insurance_ncb_years: 0,
+  insurance_company_phone: "",
+  insurance_claims_line: "",
   years_experience_adi: "",
   additional_certifications: [],
 };
+
 
 
 const CERTS: { id: string; label: string }[] = [
@@ -264,8 +276,9 @@ export function QualificationsEditor({ instructorId }: Props) {
       const { data, error } = await supabase
         .from("instructors")
         .select(
-          "adi_badge_number, adi_badge_expiry, adi_grade, adi_certificate_url, dbs_certificate_issued, dbs_certificate_expiry, dbs_certificate_url, dbs_update_service_subscribed, dbs_update_service_expiry, driving_licence_number, driving_licence_expiry, insurance_provider, insurance_policy_number, car_insurance_expiry, insurance_certificate_url, years_experience_adi, additional_certifications"
+          "adi_badge_number, adi_badge_expiry, adi_grade, adi_certificate_url, dbs_certificate_issued, dbs_certificate_expiry, dbs_certificate_url, dbs_update_service_subscribed, dbs_update_service_expiry, driving_licence_number, driving_licence_expiry, insurance_provider, insurance_policy_number, car_insurance_expiry, insurance_certificate_url, insurance_ncb_years, insurance_company_phone, insurance_claims_line, years_experience_adi, additional_certifications"
         )
+
         .eq("id", instructorId)
         .single();
       if (error) {
@@ -287,9 +300,13 @@ export function QualificationsEditor({ instructorId }: Props) {
           insurance_policy_number: (data as any).insurance_policy_number || "",
           car_insurance_expiry: data.car_insurance_expiry || "",
           insurance_certificate_url: (data as any).insurance_certificate_url,
+          insurance_ncb_years: (data as any).insurance_ncb_years ?? 0,
+          insurance_company_phone: (data as any).insurance_company_phone || "",
+          insurance_claims_line: (data as any).insurance_claims_line || "",
           years_experience_adi: (data as any).years_experience_adi?.toString() || "",
           additional_certifications: (data as any).additional_certifications || [],
         };
+
         setForm(next);
         setOriginal(next);
       }
@@ -323,7 +340,7 @@ export function QualificationsEditor({ instructorId }: Props) {
     adi: ["adi_badge_number", "adi_badge_expiry", "adi_grade", "adi_certificate_url"],
     dbs: ["dbs_certificate_issued", "dbs_certificate_expiry", "dbs_certificate_url", "dbs_update_service_subscribed", "dbs_update_service_expiry"],
     licence: ["driving_licence_number", "driving_licence_expiry"],
-    insurance: ["insurance_provider", "insurance_policy_number", "car_insurance_expiry", "insurance_certificate_url"],
+    insurance: ["insurance_provider", "insurance_policy_number", "car_insurance_expiry", "insurance_certificate_url", "insurance_ncb_years", "insurance_company_phone", "insurance_claims_line"],
     experience: ["years_experience_adi", "additional_certifications"],
   };
 
@@ -610,50 +627,17 @@ export function QualificationsEditor({ instructorId }: Props) {
         />
 
 
-        {/* Insurance */}
-        <CredentialCard
-          icon={<CarFront size={15} className="text-[#2B7BC8]" />}
-          title="Insurance"
+        {/* Insurance — redesigned */}
+        <InsuranceCard
+          form={form}
+          set={set}
           status={insuranceStatus}
-        >
-          <div className="space-y-3">
-            <Field label="Provider">
-              <input
-                value={form.insurance_provider}
-                onChange={(e) => set("insurance_provider", e.target.value)}
-                placeholder="e.g. Adrian Flux"
-                className={inputCls}
-                style={inputStyle}
-              />
-            </Field>
-            <Field label="Policy number">
-              <input
-                value={form.insurance_policy_number}
-                onChange={(e) => set("insurance_policy_number", e.target.value)}
-                className={inputCls}
-                style={inputStyle}
-              />
-            </Field>
-          </div>
-          <Field label="Expiry date">
-            <input
-              type="date"
-              value={form.car_insurance_expiry}
-              onChange={(e) => set("car_insurance_expiry", e.target.value)}
-              className={inputCls}
-              style={inputStyle}
-            />
-          </Field>
-          <Field label="Insurance certificate">
-            <FileField
-              url={form.insurance_certificate_url}
-              bucket="compliance-documents"
-              pathPrefix={`${instructorId}/insurance`}
-              onChange={(u) => persistCertificate("insurance_certificate_url", u)}
-            />
-          </Field>
-          <SectionFooter sectionKey="insurance" />
-        </CredentialCard>
+          instructorId={instructorId}
+          onCertificateChange={(u) => persistCertificate("insurance_certificate_url", u)}
+          onSave={() => saveSection("insurance")}
+          saving={savingSection === "insurance"}
+        />
+
 
         {/* Experience + extras */}
         <section
@@ -1344,4 +1328,316 @@ function LicenceCard({
     </div>
   );
 }
+
+// ============= InsuranceCard =============
+function InsuranceCard({
+  form,
+  set,
+  status,
+  instructorId,
+  onCertificateChange,
+  onSave,
+  saving,
+}: {
+  form: Form;
+  set: <K extends keyof Form>(k: K, v: Form[K]) => void;
+  status: Status;
+  instructorId: string;
+  onCertificateChange: (url: string | null) => void;
+  onSave: () => void;
+  saving: boolean;
+}) {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const valid = status === "valid" || status === "expiring";
+
+  const label: React.CSSProperties = {
+    fontSize: 10, color: "#aaa", textTransform: "uppercase",
+    letterSpacing: "0.06em", display: "block", marginBottom: 4, fontWeight: 600,
+  };
+  const mainInput: React.CSSProperties = {
+    width: "100%", background: "#F2F4F8", border: "1px solid #eaecee",
+    borderRadius: 8, padding: "8px 10px", fontSize: 13, color: "#1a1a1f",
+    outline: "none", boxSizing: "border-box", fontFamily: "Poppins, sans-serif",
+  };
+  const phoneInput: React.CSSProperties = {
+    ...mainInput, padding: "7px 10px", fontSize: 12,
+  };
+  const divider = <div style={{ height: 1, background: "#f0f1f4", width: "100%" }} />;
+
+  const ncb = form.insurance_ncb_years ?? 0;
+  const setNcb = (n: number) => set("insurance_ncb_years", Math.max(0, Math.min(30, n)));
+
+  const handleUpload = async (file: File) => {
+    if (file.size > 10 * 1024 * 1024) { toast.error("File must be 10MB or less"); return; }
+    if (!/^(application\/pdf|image\/)/.test(file.type)) { toast.error("PDF or image only"); return; }
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `${instructorId}/insurance-${Date.now()}.${ext}`;
+      const { error } = await supabase.storage.from("compliance-documents").upload(path, file, { upsert: true });
+      if (error) throw error;
+      onCertificateChange(path);
+    } catch (e: any) {
+      toast.error(e?.message || "Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const certFilename = form.insurance_certificate_url ? form.insurance_certificate_url.split("/").pop() : null;
+
+  return (
+    <div
+      style={{
+        background: "#fff", border: "1px solid #e0e3ea", borderRadius: 14,
+        overflow: "hidden", fontFamily: "Poppins, sans-serif", marginBottom: 16,
+      }}
+    >
+      {/* Header */}
+      <div style={{ padding: "13px 14px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{
+            width: 34, height: 34, borderRadius: 9, background: "#e8eefb",
+            display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+          }}>
+            <Shield size={18} color="#2952b3" />
+          </span>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: "#1a1a1f", lineHeight: 1.2 }}>
+              Insurance
+            </div>
+            <div style={{ fontSize: 10, color: "#aaa", marginTop: 1 }}>
+              Motor insurance policy details
+            </div>
+          </div>
+        </div>
+        <span style={{
+          display: "inline-flex", alignItems: "center", gap: 4,
+          background: valid ? "#e8f5ee" : "#fbe8e8",
+          color: valid ? "#2d8a4e" : "#c9302c",
+          border: `0.5px solid ${valid ? "#c5e9d2" : "#f5c5c5"}`,
+          fontSize: 11, fontWeight: 600, padding: "3px 9px", borderRadius: 999,
+        }}>
+          {valid ? <CheckCircle2 size={11} /> : <AlertTriangle size={11} />}
+          {valid ? "Valid" : "Missing"}
+        </span>
+      </div>
+
+      {divider}
+
+      {/* Provider */}
+      <div style={{ padding: "12px 14px" }}>
+        <span style={label}>Provider</span>
+        <input
+          value={form.insurance_provider}
+          onChange={(e) => set("insurance_provider", e.target.value)}
+          placeholder="e.g. Adrian Flux"
+          style={mainInput}
+        />
+      </div>
+
+      {divider}
+
+      {/* Policy number + Expiry */}
+      <div style={{ padding: "12px 14px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+        <div>
+          <span style={label}>Policy number</span>
+          <input
+            value={form.insurance_policy_number}
+            onChange={(e) => set("insurance_policy_number", e.target.value)}
+            placeholder="e.g. POL123"
+            style={mainInput}
+          />
+        </div>
+        <div>
+          <span style={label}>Expiry date</span>
+          <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+            <input
+              type="date"
+              value={form.car_insurance_expiry}
+              onChange={(e) => set("car_insurance_expiry", e.target.value)}
+              style={mainInput}
+            />
+          </div>
+        </div>
+      </div>
+
+      {divider}
+
+      {/* NCB */}
+      <div style={{ padding: "12px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <span style={label}>No claims bonus</span>
+          <div style={{ fontSize: 10, color: "#aaa" }}>Years of protected no-claims discount</div>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
+          <div style={{
+            display: "flex", background: "#F2F4F8", border: "1px solid #eaecee",
+            borderRadius: 8, overflow: "hidden",
+          }}>
+            <button
+              type="button"
+              onClick={() => setNcb(ncb - 1)}
+              style={{
+                width: 34, height: 34, background: "transparent", border: "none",
+                color: "#2952b3", fontSize: 18, cursor: "pointer",
+                display: "inline-flex", alignItems: "center", justifyContent: "center",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "#e8eefb")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+            >
+              <Minus size={16} />
+            </button>
+            <div style={{
+              width: 40, display: "inline-flex", alignItems: "center", justifyContent: "center",
+              fontSize: 14, fontWeight: 700, color: "#1a1a1f",
+              borderLeft: "1px solid #eaecee", borderRight: "1px solid #eaecee",
+            }}>
+              {ncb}
+            </div>
+            <button
+              type="button"
+              onClick={() => setNcb(ncb + 1)}
+              style={{
+                width: 34, height: 34, background: "transparent", border: "none",
+                color: "#2952b3", fontSize: 18, cursor: "pointer",
+                display: "inline-flex", alignItems: "center", justifyContent: "center",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "#e8eefb")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+            >
+              <Plus size={16} />
+            </button>
+          </div>
+          <span style={{ fontSize: 10, color: "#aaa" }}>years</span>
+        </div>
+      </div>
+
+      {divider}
+
+      {/* Contact numbers */}
+      <div style={{ padding: "10px 14px 8px" }}>
+        <span style={{ fontSize: 10, color: "#999", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 600 }}>
+          Contact numbers
+        </span>
+      </div>
+      <div style={{ padding: "0 14px 10px", display: "flex", alignItems: "center", gap: 10 }}>
+        <span style={{
+          width: 28, height: 28, borderRadius: 8, background: "#e8f5ee",
+          display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+        }}>
+          <Phone size={14} color="#2d8a4e" />
+        </span>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <span style={{ ...label, marginBottom: 3 }}>Company phone</span>
+          <input
+            value={form.insurance_company_phone}
+            onChange={(e) => set("insurance_company_phone", e.target.value)}
+            placeholder="01234 567890"
+            style={phoneInput}
+          />
+        </div>
+      </div>
+      <div style={{ padding: "0 14px 12px", display: "flex", alignItems: "center", gap: 10 }}>
+        <span style={{
+          width: 28, height: 28, borderRadius: 8, background: "#fbe8e8",
+          display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+        }}>
+          <PhoneCall size={14} color="#c9302c" />
+        </span>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <span style={{ ...label, marginBottom: 3 }}>Claims line</span>
+          <input
+            value={form.insurance_claims_line}
+            onChange={(e) => set("insurance_claims_line", e.target.value)}
+            placeholder="0800 000 000"
+            style={phoneInput}
+          />
+        </div>
+      </div>
+
+      {divider}
+
+      {/* Certificate upload */}
+      <div style={{ padding: "12px 14px" }}>
+        <span style={{ ...label, marginBottom: 6 }}>Insurance certificate</span>
+        {certFilename ? (
+          <div style={{
+            display: "flex", alignItems: "center", gap: 8,
+            border: "1px solid #eaecee", borderRadius: 10, padding: "8px 12px", background: "#fff",
+          }}>
+            <FileCheck2 size={14} color="#2d8a4e" style={{ flexShrink: 0 }} />
+            <span style={{ fontSize: 12, fontWeight: 500, color: "#1a1a1f", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {certFilename}
+            </span>
+            <button
+              type="button"
+              onClick={() => onCertificateChange(null)}
+              style={{ background: "none", border: "none", cursor: "pointer", color: "#aaa", padding: 0 }}
+            >
+              <Trash2 size={13} />
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => fileRef.current?.click()}
+            disabled={uploading}
+            style={{
+              width: "100%", display: "flex", alignItems: "center", gap: 10,
+              border: "1.5px dashed #d0d3d8", borderRadius: 10, padding: "11px 14px",
+              background: "#fafafa", cursor: "pointer", fontFamily: "Poppins, sans-serif",
+              textAlign: "left",
+            }}
+          >
+            <span style={{
+              width: 30, height: 30, borderRadius: 8, background: "#e8eefb",
+              display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+            }}>
+              {uploading ? <Loader2 size={14} color="#2952b3" className="animate-spin" /> : <Upload size={14} color="#2952b3" />}
+            </span>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 12, fontWeight: 500, color: "#888" }}>
+                {uploading ? "Uploading…" : "Upload PDF or image"}
+              </div>
+              <div style={{ fontSize: 10, color: "#bbb", marginTop: 1 }}>
+                Max 10MB · PDF, JPG, PNG
+              </div>
+            </div>
+          </button>
+        )}
+        <input
+          ref={fileRef}
+          type="file"
+          accept="application/pdf,image/*"
+          hidden
+          onChange={(e) => e.target.files?.[0] && handleUpload(e.target.files[0])}
+        />
+      </div>
+
+      {divider}
+
+      {/* Save */}
+      <div style={{ padding: "12px 14px 14px" }}>
+        <button
+          type="button"
+          onClick={onSave}
+          disabled={saving}
+          style={{
+            width: "100%", background: "#1a1a1f", color: "#fff",
+            borderRadius: 9, padding: "10px", fontSize: 13, fontWeight: 600,
+            border: "none", cursor: saving ? "not-allowed" : "pointer",
+            display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+            fontFamily: "Poppins, sans-serif", opacity: saving ? 0.6 : 1,
+          }}
+        >
+          {saving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
+          Save
+        </button>
+      </div>
+    </div>
+  );
+}
+
 
