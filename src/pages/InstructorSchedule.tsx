@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { Calendar, List, CalendarDays, ChevronDown, Check, Plus, RefreshCw, CalendarRange, Columns3 } from "lucide-react";
+import { Calendar, List, CalendarDays, ChevronDown, Check, Plus, RefreshCw, CalendarRange, Columns3, Phone, Bell, Menu } from "lucide-react";
+import { AutoTrackingIndicator } from "@/components/instructor/AutoTrackingIndicator";
+import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
 import { WeekTimelineView } from "@/components/instructor/WeekTimelineView";
 import { ScheduleSkeleton } from "@/components/ui/skeletons/ScheduleSkeleton";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
