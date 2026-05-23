@@ -1440,7 +1440,7 @@ function InsuranceCard({
       {divider}
 
       {/* Policy number + Expiry */}
-      <div style={{ padding: "12px 14px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+      <div style={{ padding: "12px 14px", display: "flex", flexDirection: "column", gap: 10 }}>
         <div>
           <span style={label}>Policy number</span>
           <input
