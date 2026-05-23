@@ -53,7 +53,7 @@ const TrackingDebugPanel: React.FC<TrackingDebugPanelProps> = ({ debugInfo }) =>
     }
   };
 
-  const getStatusBadge = (status: string | boolean | null, type: 'gps' | 'motion' | 'damoov') => {
+  const getStatusBadge = (status: string | boolean | null, type: 'gps' | 'motion') => {
     if (type === 'gps') {
       const colors = {
         good: 'bg-green-500',

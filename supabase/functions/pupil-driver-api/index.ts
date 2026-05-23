@@ -78,7 +78,7 @@ async function getDriverSummary(supabase: any, params: any) {
       id, name, drive_coins, current_streak, longest_streak, total_trips,
       weekly_driving_score, monthly_driving_score, best_driving_score,
       total_distance_km, total_driving_minutes, speeding_events_total,
-      harsh_brake_events_total, last_trip_at, damoov_device_token
+      harsh_brake_events_total, last_trip_at
     `)
     .eq('id', pupilId)
     .single();
@@ -90,21 +90,17 @@ async function getDriverSummary(supabase: any, params: any) {
     });
   }
 
-  // Get average scores from recent trips
+  // Get average score from recent trips
   const { data: recentTrips } = await supabase
     .from('lesson_telematics')
-    .select('damoov_overall_score, damoov_acceleration_score, damoov_braking_score, damoov_cornering_score, damoov_speeding_score')
+    .select('local_score')
     .eq('pupil_id', pupilId)
-    .not('damoov_overall_score', 'is', null)
+    .not('local_score', 'is', null)
     .order('started_at', { ascending: false })
     .limit(10);
 
   const averageScores = recentTrips && recentTrips.length > 0 ? {
-    overall: Math.round(recentTrips.reduce((sum: number, t: any) => sum + (t.damoov_overall_score || 0), 0) / recentTrips.length),
-    acceleration: Math.round(recentTrips.reduce((sum: number, t: any) => sum + (t.damoov_acceleration_score || 0), 0) / recentTrips.length),
-    braking: Math.round(recentTrips.reduce((sum: number, t: any) => sum + (t.damoov_braking_score || 0), 0) / recentTrips.length),
-    cornering: Math.round(recentTrips.reduce((sum: number, t: any) => sum + (t.damoov_cornering_score || 0), 0) / recentTrips.length),
-    speeding: Math.round(recentTrips.reduce((sum: number, t: any) => sum + (t.damoov_speeding_score || 0), 0) / recentTrips.length),
+    overall: Math.round(recentTrips.reduce((sum: number, t: any) => sum + (t.local_score || 0), 0) / recentTrips.length),
   } : null;
 
   // Get achievements count
@@ -119,7 +115,6 @@ async function getDriverSummary(supabase: any, params: any) {
       ...pupil,
       averageScores,
       achievementsCount: achievementsCount || 0,
-      isRegisteredWithDamoov: !!pupil.damoov_device_token,
     }
   }), {
     headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -140,8 +135,6 @@ async function getDriverTrips(supabase: any, params: any) {
     .from('lesson_telematics')
     .select(`
       id, started_at, ended_at, total_distance_km, avg_speed_kmh, max_speed_kmh,
-      damoov_overall_score, damoov_acceleration_score, damoov_braking_score,
-      damoov_cornering_score, damoov_speeding_score, damoov_phone_score,
       harsh_brake_count, speeding_events_count, local_score
     `, { count: 'exact' })
     .eq('pupil_id', pupilId)
@@ -192,13 +185,12 @@ async function getDriverScore(supabase: any, params: any) {
   const { data: trips } = await supabase
     .from('lesson_telematics')
     .select(`
-      started_at, damoov_overall_score, damoov_acceleration_score,
-      damoov_braking_score, damoov_cornering_score, damoov_speeding_score,
+      started_at, local_score,
       harsh_brake_count, speeding_events_count, total_distance_km
     `)
     .eq('pupil_id', pupilId)
     .gte('started_at', thirtyDaysAgo.toISOString())
-    .not('damoov_overall_score', 'is', null)
+    .not('local_score', 'is', null)
     .order('started_at', { ascending: true });
 
   if (!trips || trips.length === 0) {
@@ -225,7 +217,7 @@ async function getDriverScore(supabase: any, params: any) {
     weekStart.setDate(weekStart.getDate() - weekStart.getDay());
     const weekKey = weekStart.toISOString().split('T')[0];
     if (!weeks[weekKey]) weeks[weekKey] = [];
-    weeks[weekKey].push(trip.damoov_overall_score);
+    weeks[weekKey].push(trip.local_score);
   });
 
   Object.entries(weeks).forEach(([week, scores]) => {
@@ -239,30 +231,24 @@ async function getDriverScore(supabase: any, params: any) {
   const recentTrips = trips.slice(-5);
   const olderTrips = trips.slice(0, Math.max(trips.length - 5, 0));
   const recentAvg = recentTrips.length > 0
-    ? recentTrips.reduce((sum: number, t: any) => sum + t.damoov_overall_score, 0) / recentTrips.length
+    ? recentTrips.reduce((sum: number, t: any) => sum + t.local_score, 0) / recentTrips.length
     : 0;
   const olderAvg = olderTrips.length > 0
-    ? olderTrips.reduce((sum: number, t: any) => sum + t.damoov_overall_score, 0) / olderTrips.length
+    ? olderTrips.reduce((sum: number, t: any) => sum + t.local_score, 0) / olderTrips.length
     : recentAvg;
   
   const trend = recentAvg > olderAvg + 5 ? 'improving' : recentAvg < olderAvg - 5 ? 'declining' : 'stable';
 
-  // Category breakdown from most recent trip
+  // Latest trip score
   const latestTrip = trips[trips.length - 1];
-  const categoryBreakdown = {
-    acceleration: latestTrip.damoov_acceleration_score,
-    braking: latestTrip.damoov_braking_score,
-    cornering: latestTrip.damoov_cornering_score,
-    speeding: latestTrip.damoov_speeding_score,
-  };
 
   return new Response(JSON.stringify({
     success: true,
     data: {
-      currentScore: latestTrip.damoov_overall_score,
+      currentScore: latestTrip.local_score,
       trend,
       weeklyScores,
-      categoryBreakdown,
+      categoryBreakdown: null,
       totalTrips: trips.length,
       totalDistance: trips.reduce((sum: number, t: any) => sum + (t.total_distance_km || 0), 0).toFixed(1),
       totalHarshBrakes: trips.reduce((sum: number, t: any) => sum + (t.harsh_brake_count || 0), 0),

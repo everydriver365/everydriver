@@ -15,11 +15,6 @@ interface SessionScore {
   id: string;
   started_at: string;
   local_score: number | null;
-  damoov_overall_score: number | null;
-  damoov_braking_score: number | null;
-  damoov_speeding_score: number | null;
-  damoov_acceleration_score: number | null;
-  damoov_cornering_score: number | null;
   harsh_brake_count: number | null;
   speeding_events_count: number | null;
   total_distance_km: number | null;
@@ -49,8 +44,6 @@ export function ParentSafetyScores({ childId }: ParentSafetyScoresProps) {
         .from("lesson_telematics")
         .select(`
           id, started_at, local_score,
-          damoov_overall_score, damoov_braking_score, damoov_speeding_score,
-          damoov_acceleration_score, damoov_cornering_score,
           harsh_brake_count, speeding_events_count,
           total_distance_km, max_speed_kmh
         `)
@@ -115,17 +108,17 @@ export function ParentSafetyScores({ childId }: ParentSafetyScoresProps) {
   }
 
   // Calculate averages
-  const scoredSessions = sessions.filter(s => s.local_score || s.damoov_overall_score);
+  const scoredSessions = sessions.filter(s => s.local_score != null);
   const avgScore = scoredSessions.length > 0
-    ? Math.round(scoredSessions.reduce((sum, s) => sum + (s.damoov_overall_score || s.local_score || 0), 0) / scoredSessions.length)
+    ? Math.round(scoredSessions.reduce((sum, s) => sum + (s.local_score || 0), 0) / scoredSessions.length)
     : null;
 
   // Trend: compare first half vs second half
   const getTrend = () => {
     if (scoredSessions.length < 4) return "steady";
     const half = Math.floor(scoredSessions.length / 2);
-    const recentAvg = scoredSessions.slice(0, half).reduce((s, x) => s + (x.damoov_overall_score || x.local_score || 0), 0) / half;
-    const olderAvg = scoredSessions.slice(half).reduce((s, x) => s + (x.damoov_overall_score || x.local_score || 0), 0) / (scoredSessions.length - half);
+    const recentAvg = scoredSessions.slice(0, half).reduce((s, x) => s + (x.local_score || 0), 0) / half;
+    const olderAvg = scoredSessions.slice(half).reduce((s, x) => s + (x.local_score || 0), 0) / (scoredSessions.length - half);
     if (recentAvg > olderAvg + 3) return "improving";
     if (recentAvg < olderAvg - 3) return "declining";
     return "steady";
@@ -147,16 +140,7 @@ export function ParentSafetyScores({ childId }: ParentSafetyScoresProps) {
     return "bg-red-500";
   };
 
-  // Category averages from damoov scores
-  const categoryScores = [
-    { label: "Braking", key: "damoov_braking_score" as const },
-    { label: "Acceleration", key: "damoov_acceleration_score" as const },
-    { label: "Cornering", key: "damoov_cornering_score" as const },
-    { label: "Speed", key: "damoov_speeding_score" as const },
-  ].map(cat => {
-    const vals = sessions.filter(s => s[cat.key] != null).map(s => s[cat.key]!);
-    return { ...cat, avg: vals.length > 0 ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : null };
-  }).filter(c => c.avg != null);
+  const categoryScores: { label: string; avg: number | null }[] = [];
 
   const totalAlerts = alertSummary.speeding + alertSummary.harsh_brake + alertSummary.harsh_accel + alertSummary.sharp_turn;
 
@@ -195,7 +179,7 @@ export function ParentSafetyScores({ childId }: ParentSafetyScoresProps) {
         {categoryScores.length > 0 && (
           <div className="grid grid-cols-2 gap-2">
             {categoryScores.map(cat => (
-              <div key={cat.key} className="rounded-lg border p-2.5">
+              <div key={cat.label} className="rounded-lg border p-2.5">
                 <div className="flex items-center justify-between text-xs mb-1.5">
                   <span className="text-muted-foreground">{cat.label}</span>
                   <span className={cn("font-bold", getScoreColor(cat.avg!))}>{cat.avg}</span>
@@ -250,7 +234,7 @@ export function ParentSafetyScores({ childId }: ParentSafetyScoresProps) {
           <h4 className="text-xs font-medium text-muted-foreground mb-2">Recent Sessions</h4>
           <div className="space-y-1.5">
             {sessions.slice(0, 5).map(s => {
-              const score = s.damoov_overall_score || s.local_score;
+              const score = s.local_score;
               return (
                 <div key={s.id} className="flex items-center justify-between p-2 rounded-lg border text-xs">
                   <div>
