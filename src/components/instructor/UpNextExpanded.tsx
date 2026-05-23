@@ -615,11 +615,16 @@ export function UpNextExpanded({
           Icon: MapPin,
           label: "Here",
           onClick: () => {
-            sendSMS(`Hi ${firstName}, I'm outside whenever you're ready 👋`);
-            if (pupilPhone) toast.success("Text sent — pupil notified you're here");
+            const msg = `Hi ${firstName}, I'm outside whenever you're ready 👋`;
+            if (pupilPhone) sendSMS(msg);
+            supabase.functions
+              .invoke("notify-pupil", { body: { pupilId, type: "arrived", message: msg } })
+              .catch(() => {});
+            try { haptics.medium(); } catch {}
+            toast.success(pupilPhone ? "Text sent — pupil notified you're here" : "Pupil notified you're here");
           },
-          disabled: !pupilPhone,
         })}
+
         {statusBtn({
           Icon: Send,
           label: "Going",
