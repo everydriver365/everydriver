@@ -1,26 +1,27 @@
-## Why the bell shows nothing
+## Goal
+Show traffic delay information on the ETA chip in the expanded Next Lesson tile, so you can see at a glance whether traffic is adding time to your route.
 
-The bell in the mobile home hero (`MobileHomeDSM2026.tsx`) is wired to `useUnreadMessagesCount(instructorId)` (variable `msgsCount`, line 191 → passed as `unreadCount` on line 305 → rendered as `badge` on line 785).
+## Where
+`src/components/instructor/UpNextExpanded.tsx` — the ETA chip at top-right of the live map strip (lines ~694–716). UI-only change. No data hooks, handlers, or queries modified — `useTrafficETA` already returns `delayMinutes` and `trafficCondition`, we're just rendering them.
 
-That hook only counts unread pupil chat messages. It does **not** read the `instructor_notifications` table — which is where the actual alerts live (the same data the `/instructor/notifications` page shows via `useInstructorNotifications`, and the same data shown elsewhere in the app via `useCombinedNotificationCount`).
+## Behavior
+The chip already shows `ETA {n}m`. Extend it with a delay indicator:
 
-So unless the instructor has an unread pupil message, the bell stays badge-less even when there are real notifications waiting.
+- **No delay (`delayMinutes` < 2)** → unchanged: green dot + `ETA 25m`
+- **Light delay (2–5 min)** → amber dot + `ETA 25m · +3` (amber text for the +N)
+- **Heavy delay (>5 min)** → red dot + `ETA 25m · +8` (red text for the +N)
+- **Loading** → unchanged: `ETA …`
+- **No data** → unchanged: `ETA —`
 
-## Fix
+The dot colour reflects severity. The `+N` suffix shows minutes added vs free-flow traffic. Tabular numerals stay so the chip width is stable.
 
-Switch the home bell badge to a notification-aware source. Two reasonable options:
+## Visual tokens
+- Green (no delay): `#2d8a4e` (already in use)
+- Amber (light): `#f59e0b`
+- Red (heavy): `#dc2626`
+- `+N` text uses the same severity colour, 600 weight, 11px
 
-1. **Match the `/instructor/notifications` page exactly** — use `useInstructorNotifications(instructorId).unreadCount`. The badge then mirrors the page the bell navigates to.
-2. **Match every other header in the app** — use `useCombinedNotificationCount(instructorId).total` (messages + visitor chats + pending course enquiries + test swap requests). This is what `MobileBlueHeader` and `ScheduleMobileChrome` already use, so the badge would be consistent across the portal.
-
-Recommendation: **option 2** for consistency with the rest of the portal headers, plus add `instructor_notifications` unread count into `useCombinedNotificationCount` so true "alert" rows are included too (currently that hook ignores the `instructor_notifications` table).
-
-## Changes
-
-- `src/hooks/useCombinedNotificationCount.ts`: also count unread rows in `instructor_notifications` for the instructor, subscribe to its realtime channel, add to `total`.
-- `src/components/instructor/MobileHomeDSM2026.tsx`: replace `useUnreadMessagesCount` usage feeding the bell badge with `useCombinedNotificationCount(instructorId).total`. Leave `msgsCount` in place for anywhere else it's used (todoCount, enquiries, etc.) — only the bell's `unreadCount` prop changes.
-
-## Verification
-
-- Insert a test row into `instructor_notifications` with `is_read = false` for the signed-in instructor → bell badge on `/instructor` increments within ~1s (realtime), tap navigates to `/instructor/notifications` where the same row is listed.
-- Mark it read on that page → badge clears.
+## Out of scope
+- No tooltip, no popover, no new sheet
+- No changes to the collapsed tile, status buttons, or any other section
+- No edge function changes — `calculate-traffic-eta` already returns `delay_minutes`

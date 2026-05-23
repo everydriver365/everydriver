@@ -692,28 +692,41 @@ export function UpNextExpanded({
 
         </div>
         {/* ETA chip */}
-        <div
-          style={{
-            position: "absolute",
-            top: 8,
-            right: 8,
-            background: "#fff",
-            borderRadius: 20,
-            border: "1px solid #ddd",
-            padding: "5px 10px",
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 6,
-            fontSize: 11,
-            fontWeight: 600,
-            color: TEXT,
-            fontFamily: PFONT,
-            boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
-          }}
-        >
-          <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#2d8a4e" }} />
-          ETA {eta.isLoading ? "…" : eta.durationMinutes ? `${eta.durationMinutes}m` : "—"}
-        </div>
+        {(() => {
+          const delay = eta.delayMinutes || 0;
+          const severity = delay >= 6 ? "heavy" : delay >= 2 ? "light" : "none";
+          const dotColor = severity === "heavy" ? "#dc2626" : severity === "light" ? "#f59e0b" : "#2d8a4e";
+          const delayColor = severity === "heavy" ? "#dc2626" : "#f59e0b";
+          return (
+            <div
+              style={{
+                position: "absolute",
+                top: 8,
+                right: 8,
+                background: "#fff",
+                borderRadius: 20,
+                border: "1px solid #ddd",
+                padding: "5px 10px",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                fontSize: 11,
+                fontWeight: 600,
+                color: TEXT,
+                fontFamily: PFONT,
+                boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+                fontVariantNumeric: "tabular-nums",
+              }}
+            >
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: dotColor }} />
+              <span>ETA {eta.isLoading ? "…" : eta.durationMinutes ? `${eta.durationMinutes}m` : "—"}</span>
+              {severity !== "none" && eta.durationMinutes > 0 && (
+                <span style={{ color: delayColor, fontWeight: 600 }}>· +{delay}</span>
+              )}
+            </div>
+          );
+        })()}
+
       </div>
 
       {/* Single white card */}
