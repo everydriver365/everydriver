@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Loader2, Camera, Mic } from "lucide-react";
+import { Loader2, Camera, Mic, X as XIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -14,12 +14,16 @@ interface Props {
   instructorId: string;
 }
 
+
 interface Row {
   name: string;
   email: string | null;
   phone: string | null;
   bio: string | null;
   profile_image_url: string | null;
+  home_postcode: string | null;
+  radius_miles: number | null;
+  special_skills: string | null;
 }
 
 export function ProfileBasicsEditor({ instructorId }: Props) {
@@ -35,7 +39,7 @@ export function ProfileBasicsEditor({ instructorId }: Props) {
     (async () => {
       const { data, error } = await supabase
         .from("instructors")
-        .select("name, email, phone, bio, profile_image_url")
+        .select("name, email, phone, bio, profile_image_url, home_postcode, radius_miles, special_skills")
         .eq("id", instructorId)
         .single();
       if (!error && data) setProfile(data as Row);
@@ -53,6 +57,9 @@ export function ProfileBasicsEditor({ instructorId }: Props) {
         email: profile.email,
         phone: profile.phone,
         bio: profile.bio,
+        home_postcode: profile.home_postcode,
+        radius_miles: profile.radius_miles,
+        special_skills: profile.special_skills,
       })
       .eq("id", instructorId);
     setSaving(false);
@@ -61,6 +68,7 @@ export function ProfileBasicsEditor({ instructorId }: Props) {
       variant: error ? "destructive" : undefined,
     });
   };
+
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -420,7 +428,60 @@ function MobileProfileBasics({
             </button>
           </div>
         </div>
+
+        <div style={divider} />
+
+        {/* Coverage (home_postcode) */}
+        <div style={{ padding: "0 14px" }}>
+          <div style={labelStyle}>Coverage</div>
+          <div style={fieldWrap}>
+            <input
+              type="text"
+              value={profile.home_postcode || ""}
+              onChange={(e) => setProfile({ ...profile, home_postcode: e.target.value })}
+              placeholder="e.g. SW1A 1AA"
+              style={inputBaseStyle}
+            />
+            <button type="button" style={micBtn} aria-label="Voice input">
+              <Mic size={14} color="#ccc" />
+            </button>
+          </div>
+        </div>
+
+        <div style={divider} />
+
+        {/* Radius (radius_miles) */}
+        <div style={{ padding: "0 14px" }}>
+          <div style={labelStyle}>Radius (mi)</div>
+          <div style={fieldWrap}>
+            <input
+              type="number"
+              inputMode="numeric"
+              value={profile.radius_miles ?? ""}
+              onChange={(e) =>
+                setProfile({
+                  ...profile,
+                  radius_miles: e.target.value ? parseInt(e.target.value, 10) : null,
+                })
+              }
+              placeholder="10"
+              style={{ ...inputBaseStyle, paddingRight: 11 }}
+            />
+          </div>
+        </div>
+
+        <div style={divider} />
+
+        {/* Special skills */}
+        <div style={{ padding: "0 14px" }}>
+          <div style={labelStyle}>Special Skills</div>
+          <SkillPills
+            value={profile.special_skills || ""}
+            onChange={(v) => setProfile({ ...profile, special_skills: v })}
+          />
+        </div>
       </div>
+
 
       {/* Save */}
       <button
@@ -460,3 +521,81 @@ function MobileProfileBasics({
     </div>
   );
 }
+
+function SkillPills({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const FONT = "'Poppins', system-ui, sans-serif";
+  const skills = value
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+  const update = (next: string[]) => onChange(next.join(", "));
+
+  const onAdd = () => {
+    const v = typeof window !== "undefined" ? window.prompt("Add skill") : null;
+    if (v && v.trim()) update([...skills, v.trim()]);
+  };
+
+  const onRemove = (i: number) => {
+    const next = skills.slice();
+    next.splice(i, 1);
+    update(next);
+  };
+
+  return (
+    <div style={{ display: "flex", flexWrap: "wrap", gap: 5, paddingBottom: 2 }}>
+      {skills.map((s, i) => (
+        <span
+          key={`${s}-${i}`}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 4,
+            background: "#e8eefb",
+            color: "#2952b3",
+            fontSize: 11,
+            fontWeight: 500,
+            padding: "4px 10px",
+            borderRadius: 20,
+            fontFamily: FONT,
+          }}
+        >
+          {s}
+          <button
+            type="button"
+            onClick={() => onRemove(i)}
+            aria-label="Remove skill"
+            style={{
+              border: "none",
+              background: "transparent",
+              padding: 0,
+              cursor: "pointer",
+              display: "inline-flex",
+              color: "#2952b3",
+            }}
+          >
+            <XIcon size={11} strokeWidth={2} />
+          </button>
+        </span>
+      ))}
+      <button
+        type="button"
+        onClick={onAdd}
+        style={{
+          background: "#F2F4F8",
+          color: "#aaa",
+          border: "1px dashed #d0d3d8",
+          fontSize: 11,
+          fontWeight: 500,
+          padding: "4px 10px",
+          borderRadius: 20,
+          cursor: "pointer",
+          fontFamily: FONT,
+        }}
+      >
+        + Add
+      </button>
+    </div>
+  );
+}
+
