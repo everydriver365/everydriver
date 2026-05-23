@@ -389,6 +389,32 @@ export function AICallDivertSheet({ open, onOpenChange, state }: Props) {
               Auto-divert works with your connected Every Driver AI Receptionist number.
             </p>
           </div>
+
+          {/* Open full Voice Hub */}
+          <button
+            type="button"
+            onClick={goToHub}
+            style={{
+              marginTop: 14,
+              width: "100%",
+              height: 44,
+              borderRadius: 12,
+              border: "1px solid #DBE3F0",
+              background: "#FFFFFF",
+              color: "#1A52A0",
+              fontSize: 13,
+              fontWeight: 600,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
+              cursor: "pointer",
+            }}
+          >
+            <Phone size={14} strokeWidth={1.9} />
+            Open Voice Hub
+            <ChevronRight size={14} strokeWidth={1.8} />
+          </button>
         </div>
       </SheetContent>
     </Sheet>
