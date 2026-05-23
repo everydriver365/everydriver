@@ -119,6 +119,7 @@ import { useOfflinePrefetch } from "@/hooks/useOfflinePrefetch";
 import instructorBg from "@/assets/instructor-bg-signs.png";
 import dsmLogo from "@/assets/dsm-logo.png";
 import { MobileBlueHeader } from "@/components/instructor/MobileBlueHeader";
+import { MobileBackButton } from "@/components/instructor/MobileBackButton";
 const sidebarGroups = [
   {
     label: "TEACHING",
@@ -717,6 +718,8 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
           <>
             {/* iOS Install Banner */}
             <IOSInstallBanner />
+            <MobileBackButton />
+
             
 
 
