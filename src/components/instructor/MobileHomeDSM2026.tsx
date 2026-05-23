@@ -87,6 +87,9 @@ import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
 import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
 import { useTestSwapNotifications } from "@/hooks/useTestSwapNotifications";
 import { useVisitorChatUnreadCount } from "@/hooks/useVisitorChatUnreadCount";
+import { useMissedCallsCount } from "@/hooks/useMissedCallsCount";
+import { useNewEnquiriesCount } from "@/hooks/useNewEnquiriesCount";
+
 import { usePendingJobsList } from "@/hooks/usePendingJobsList";
 import { useTestActionItems } from "@/hooks/useTestActionItems";
 import { useVisitorChatActionItems } from "@/hooks/useVisitorChatActionItems";
@@ -192,6 +195,9 @@ export function MobileHomeDSM2026({ instructorId, instructorName }: Props) {
   const { data: msgsCount = 0 } = useUnreadMessagesCount(instructorId);
   const { data: swapsCount = 0 } = useTestSwapNotifications(instructorId);
   const { data: visitorChatCount = 0 } = useVisitorChatUnreadCount(instructorId);
+  const { data: missedCallsCount = 0 } = useMissedCallsCount(instructorId);
+  const { data: newEnquiriesCount = 0 } = useNewEnquiriesCount(instructorId);
+
   const { total: bellAlertCount } = useCombinedNotificationCount(instructorId);
   const { data: events = [] } = useUpcomingEvents(instructorId);
   const { data: membership } = useInstructorMembership(instructorId);
@@ -241,17 +247,18 @@ export function MobileHomeDSM2026({ instructorId, instructorName }: Props) {
     nextFreeSlot: nextFreeSlotLabel,
   };
 
-  const urgentCount = jobsCount + swapsCount;
+  const urgentCount = jobsCount + swapsCount + missedCallsCount + newEnquiriesCount;
   const todoCount = msgsCount + visitorChatCount;
 
   const attention = {
-    total: jobsCount + msgsCount + swapsCount + visitorChatCount,
+    total: jobsCount + swapsCount + missedCallsCount + newEnquiriesCount + msgsCount + visitorChatCount,
     jobs: jobsCount,
     tests: swapsCount,
-    calls: visitorChatCount,
-    enquiries: msgsCount,
+    calls: missedCallsCount,
+    enquiries: newEnquiriesCount,
     urgentCount,
     todoCount,
+
     jobItems: jobsCount > 0
       ? [
           {
