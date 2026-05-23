@@ -26,6 +26,7 @@ export function PupilSelector({ instructorId, value, onChange, disabled }: Pupil
           .from("pupils")
           .select("id, name")
           .eq("instructor_id", instructorId)
+          .is("deleted_at", null)
           .order("name");
 
         if (error) throw error;

@@ -1,45 +1,58 @@
 ## Goal
-When an instructor adds a lesson on the mobile app, the "Next Up" tile on the instructor home (`MobileHomeDSM2026` → `NextLessonCard`) should immediately reflect the new lesson when it becomes the soonest upcoming lesson.
+Make sure soft-deleted pupils can never appear in instructor "add lesson" pickers, and can never be booked into a lesson — even from older code paths or stale data.
 
-## Findings so far
-- The tile is driven by `useNextLessonDetails(instructorId)` — key `["next-lesson-details", instructorId]`, `staleTime: 0`, 60s `refetchInterval`, `refetchOnWindowFocus: true`.
-- The hook queries **today only** first (`.eq("lesson_date", today)`), then falls back to the next future date *only if today returns nothing*. So if today already has a lesson, an added future lesson will correctly not change the tile — but an added **earlier-today** lesson should.
-- All `AddLessonSheet` save paths (`handleAddLessonExisting` line 766, `handleAddLessonNew` line 854) call `invalidateLessonQueries(queryClient)`, which invalidates `["next-lesson-details"]` (prefix match against `[..., instructorId]`).
-- On mobile `/instructor`, the home view (`MobileHomeDSM2026`) does **not** mount its own `AddLessonSheet` — its FAB navigates to `/instructor/schedule?add=1`. The sheet is mounted on `InstructorSchedule.tsx`. The invalidation still goes through the shared `QueryClient`, so when the user navigates back the home should refetch.
+## What I found
 
-## Most likely causes
-1. **Stale closure / no re-render**: `NextLessonCard` receives `lesson` as a prop but parent may not re-render fast enough — confirm with a console log on `useNextLessonDetails` data changing.
-2. **Future-date hook gap**: when today has no lessons and user adds one for tomorrow, the fallback query *does* refetch — verify it returns the new row (no extra cache key mismatch).
-3. **Realtime not firing on mobile**: `useGlobalLessonSync` invalidates on `scheduled_lessons` realtime events, but is only mounted in some layouts — verify it is mounted in the path serving `/instructor` mobile. If not, the only refresh trigger is the explicit `invalidateLessonQueries` call inside `AddLessonSheet`.
-4. **Schedule page's `onSuccess` only calls `calendar.refetch()`** — that's fine because the sheet itself already invalidates lesson queries; but worth re-confirming the order (`invalidateLessonQueries` runs before `onSuccess`, so the home query is marked stale before navigation).
+Both mobile lesson-add entry points already filter on the client:
+- `AddLessonSheet.tsx` (line 322) — `.is('deleted_at', null)` ✓
+- `VoiceQuickAddLessonSheet.tsx` (line 84) — `.is('deleted_at', null)` ✓
+
+So the UI looks correct today. The Algernon Bin Bag orphan lesson was likely booked before that pupil was archived (or via a flow we no longer use). What's missing is a **server-side guard** so this can never happen again, regardless of which client path is used.
+
+I'll also do a sweep of remaining pupil pickers to make sure none of them surface deleted pupils when used for any lesson/booking-related action.
 
 ## Plan
 
-### Step 1 — Reproduce & confirm
-- Add a temporary `console.log` in `useNextLessonDetails` queryFn entry/exit (`instructorId`, count of `todayLessons`, returned `lessonId`).
-- From mobile home → FAB → add a lesson for *today, earlier than the current next lesson* on `/instructor/schedule`.
-- Navigate back to `/instructor` and observe:
-  - Did `useNextLessonDetails` re-run?
-  - Did it return the new lesson id?
-  - Did `NextLessonCard` re-render?
+### 1. Database guard (prevents the bug at the source)
+Add a `BEFORE INSERT OR UPDATE OF pupil_id` trigger on `public.scheduled_lessons` that raises an error if the referenced pupil has `deleted_at IS NOT NULL`. This guarantees that no client, edge function, or future code path can ever attach a lesson to an archived pupil.
 
-### Step 2 — Apply the right fix based on the signal
+```sql
+CREATE OR REPLACE FUNCTION public.prevent_lesson_for_deleted_pupil()
+RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM public.pupils
+    WHERE id = NEW.pupil_id AND deleted_at IS NOT NULL
+  ) THEN
+    RAISE EXCEPTION 'Cannot book a lesson against an archived pupil'
+      USING ERRCODE = 'check_violation';
+  END IF;
+  RETURN NEW;
+END;
+$$;
 
-- **If queryFn doesn't re-run on navigate back**: ensure `useGlobalLessonSync(instructorId)` is mounted in the InstructorPortal mobile layout (likely in `InstructorPortalLayout`). If missing, add it there so any scheduled_lessons INSERT triggers invalidation regardless of where the user is.
-- **If queryFn runs but returns stale data**: harden the SELECT — drop `.neq("status","completed")` from the *primary* query path (a freshly inserted lesson is `scheduled`, so this is unlikely the culprit, but confirm there is no RLS visibility lag by adding a tiny retry-on-empty when we just invalidated).
-- **If queryFn returns the right lesson but card doesn't update**: check `NextLessonCard` is not wrapped in `React.memo` with a stale equality check; remove memoization or include `lesson.lessonId` + `lesson.startTime` in comparison.
-- **Always**: change `invalidateLessonQueries` callers in `AddLessonSheet` from `invalidateQueries` to `invalidateQueries({ refetchType: "all" })` so background (inactive) queries also refetch — this matters because the home query is *inactive* while the user is on `/instructor/schedule`.
+CREATE TRIGGER trg_prevent_lesson_for_deleted_pupil
+BEFORE INSERT OR UPDATE OF pupil_id ON public.scheduled_lessons
+FOR EACH ROW EXECUTE FUNCTION public.prevent_lesson_for_deleted_pupil();
+```
 
-### Step 3 — Verify
-- Repeat the repro: add lesson for today (earlier than current next), today (no existing lessons), and tomorrow. Confirm tile updates in cases 1 and 2, and stays correct in case 3.
-- Remove the temporary console logs.
+### 2. Clean up the existing orphan lesson
+The 23 May 20:00 lesson booked against archived pupil "Algernon Bin Bag" is what's currently hiding behind the Next Up tile. I'll cancel it (set `status = 'cancelled'`) so the Next Up tile resolves correctly. If you'd rather restore the pupil instead, say so and I'll do that.
 
-## Files likely touched
-- `src/lib/invalidateLessonQueries.ts` — add `refetchType: "all"` so inactive home query refetches.
-- `src/components/instructor/AddLessonSheet.tsx` — no change expected if Step 2 fix is in the helper.
-- `src/hooks/useNextLessonDetails.ts` — only if Step 2 reveals a data issue.
-- `src/pages/InstructorPortal.tsx` or `InstructorPortalLayout` — mount `useGlobalLessonSync` if missing (defensive).
+### 3. Client picker audit
+Confirm the two known lesson-add pickers stay filtered (they already are) and add `.is('deleted_at', null)` to any other instructor-mobile pupil picker that feeds into a lesson/booking action. Candidates I'll re-check:
+- `PupilSelector.tsx` (used by favourite-location dialogs — not lesson booking, but cheap to fix)
+- `QuickActionsFAB` quick-add paths
+- Any pupil dropdown reachable from the mobile schedule / home FAB
 
-## Out of scope
-- Desktop dashboard (`HybridDashboard`) — only fixing mobile per the report.
-- Any business logic changes to lesson creation.
+Pure read-only views (reports, history, archived-pupils dialog) are explicitly left alone — they need to show deleted pupils.
+
+### 4. Verify
+- Try booking a lesson against an archived pupil via SQL — expect the trigger to reject.
+- Reload `/instructor` on mobile — Next Up should now show today's correct lesson (or fall through cleanly to the next real one).
+- Spot-check the mobile add-lesson sheet to confirm Algernon no longer appears in the pupil list.
+
+## Files touched
+- New migration: trigger + function
+- Data update: cancel the one orphan lesson
+- Possibly small `.is('deleted_at', null)` additions in 1–2 picker components
