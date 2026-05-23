@@ -9,6 +9,7 @@ import { UserAvatar } from "@/components/instructor/UserAvatar";
 import { PupilPackageCard } from "@/components/instructor/PupilPackageCard";
 import { PupilRateEditor } from "@/components/instructor/PupilRateEditor";
 import { PUPIL_SOURCE_OPTIONS } from "@/components/instructor/pupils/AddPupilSheet";
+import { ImportFromContactsButton } from "@/components/instructor/pupils/ImportFromContactsButton";
 import { titleCaseName } from "@/lib/titleCase";
 import { formatPhoneNumber } from "@/lib/formatPhoneNumber";
 import {
@@ -463,6 +464,20 @@ export function EditPupilSheet({
 
           {/* Form fields */}
           <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 14 }}>
+            <ImportFromContactsButton
+              variant="card"
+              label="Replace from contacts"
+              onImport={(c) =>
+                setForm((prev: any) => ({
+                  ...prev,
+                  name: c.name || prev.name,
+                  phone: c.phone ? formatPhoneNumber(c.phone) || c.phone : prev.phone,
+                  email: c.email || prev.email,
+                  address: c.address || prev.address,
+                  postcode: c.postcode || prev.postcode,
+                }))
+              }
+            />
             {/* Name */}
             <div>
               <Eyebrow>Name</Eyebrow>
