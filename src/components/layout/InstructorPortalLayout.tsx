@@ -1,5 +1,8 @@
 import { type ElementType, type ReactNode, useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { RealtimeHubProvider } from "@/hooks/useRealtimeHub";
+import { useActiveTrackingSession } from "@/hooks/useActiveTrackingSession";
+import { usePhoneTrackingStreamer } from "@/hooks/usePhoneTrackingStreamer";
 import { useGlobalLessonSync } from "@/hooks/useGlobalLessonSync";
 import { motion } from "framer-motion";
 import { Mic, Loader2, Volume2 } from "lucide-react";
@@ -225,6 +228,45 @@ function MobileNotificationBell({ instructorId }: { instructorId: string | undef
 
 function GlobalSyncBridge({ instructorId }: { instructorId: string | undefined }) {
   useGlobalLessonSync(instructorId);
+  return null;
+}
+
+/**
+ * Background phone-GPS streamer. Mounted persistently inside the instructor
+ * portal so that when the `auto-start-lesson-tracker` cron creates a
+ * `lesson_telematics` row, the instructor's open app starts streaming GPS
+ * points to it within ~10s — regardless of which screen they're on.
+ *
+ * Gated behind the `auto_start_tracker` instructor preference. When the
+ * toggle is OFF, this component is rendered as null and `usePhoneTrackingStreamer`
+ * is never invoked, so the browser will not prompt for GPS permission.
+ */
+function BackgroundAutoTrackingBridge({ instructorId }: { instructorId: string | undefined }) {
+  const { data: prefs } = useQuery({
+    queryKey: ["instructor-auto-start-tracker", instructorId],
+    enabled: !!instructorId,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("instructors")
+        .select("auto_start_tracker")
+        .eq("id", instructorId!)
+        .maybeSingle();
+      return data as { auto_start_tracker: boolean | null } | null;
+    },
+  });
+
+  if (!instructorId || !prefs?.auto_start_tracker) return null;
+  return <BackgroundAutoTrackingStreamer instructorId={instructorId} />;
+}
+
+function BackgroundAutoTrackingStreamer({ instructorId }: { instructorId: string }) {
+  const { data: activeSession } = useActiveTrackingSession(instructorId);
+  usePhoneTrackingStreamer({
+    provider: activeSession ? "phone" : null,
+    pupilId: activeSession?.pupil_id ?? null,
+    sessionId: activeSession?.id ?? null,
+    minIntervalMs: 3000,
+  });
   return null;
 }
 
@@ -643,6 +685,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
     return (
       <RealtimeHubProvider instructorId={instructor?.id}>
       <GlobalSyncBridge instructorId={instructor?.id} />
+      <BackgroundAutoTrackingBridge instructorId={instructor?.id} />
       <UrgentAlertOverlay alerts={urgentAlerts} onDismiss={dismissUrgentAlert} />
       {!endWizardLesson && <LessonEndAlert lesson={overdueLesson} onComplete={handleCompleteLessonAlert} onDismiss={dismissLessonAlert} />}
       {endWizardLesson && instructor?.id && (
@@ -1154,6 +1197,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
   return (
     <RealtimeHubProvider instructorId={instructor?.id}>
       <GlobalSyncBridge instructorId={instructor?.id} />
+      <BackgroundAutoTrackingBridge instructorId={instructor?.id} />
       <UrgentAlertOverlay alerts={urgentAlerts} onDismiss={dismissUrgentAlert} />
       {!endWizardLesson && <LessonEndAlert lesson={overdueLesson} onComplete={handleCompleteLessonAlert} onDismiss={dismissLessonAlert} />}
       {endWizardLesson && instructor?.id && (
