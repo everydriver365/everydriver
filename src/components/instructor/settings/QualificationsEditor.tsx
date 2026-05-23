@@ -851,7 +851,7 @@ function DbsCard({
               onChange={(e) => set("dbs_certificate_expiry", e.target.value)}
               style={dateInput}
             />
-            <CalendarIcon size={13} color="#ccc" style={{ position: "absolute", right: 10, pointerEvents: "none" }} />
+            
           </div>
         </div>
       </div>
