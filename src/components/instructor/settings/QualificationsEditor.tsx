@@ -341,6 +341,18 @@ export function QualificationsEditor({ instructorId }: Props) {
     toast.success("Saved");
   };
 
+  // Auto-persist a certificate URL field as soon as upload finishes
+  const persistCertificate = async (field: keyof Form, value: string | null) => {
+    set(field, value);
+    const { error } = await supabase.from("instructors").update({ [field]: value }).eq("id", instructorId);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    setOriginal((o) => ({ ...o, [field]: value }));
+    toast.success(value ? "Certificate uploaded" : "Certificate removed");
+  };
+
   const SectionFooter = ({ sectionKey }: { sectionKey: string }) => {
     const keys = SECTIONS[sectionKey];
     const isDirty = sectionDirty(keys);
@@ -480,7 +492,7 @@ export function QualificationsEditor({ instructorId }: Props) {
               {adiBadgeValidSpec ? "Valid" : "Expired"}
             </span>
           </div>
-          <div style={{ padding: "0 14px 12px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+          <div style={{ padding: "0 14px 12px", display: "flex", flexDirection: "column", gap: 10 }}>
             <div>
               <span style={adiLabel}>Badge number</span>
               <input
@@ -556,7 +568,7 @@ export function QualificationsEditor({ instructorId }: Props) {
             url={form.adi_certificate_url}
             bucket="compliance-documents"
             pathPrefix={`${instructorId}/adi-badge`}
-            onChange={(u) => set("adi_certificate_url", u)}
+            onChange={(u) => persistCertificate("adi_certificate_url", u)}
           />
           <div style={{ marginTop: 10 }}>
             <SectionFooter sectionKey="adi" />
@@ -598,7 +610,7 @@ export function QualificationsEditor({ instructorId }: Props) {
               url={form.dbs_certificate_url}
               bucket="compliance-documents"
               pathPrefix={`${instructorId}/dbs`}
-              onChange={(u) => set("dbs_certificate_url", u)}
+              onChange={(u) => persistCertificate("dbs_certificate_url", u)}
             />
           </Field>
           <SectionFooter sectionKey="dbs" />
@@ -639,7 +651,7 @@ export function QualificationsEditor({ instructorId }: Props) {
           title="Insurance"
           status={insuranceStatus}
         >
-          <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-3">
             <Field label="Provider">
               <input
                 value={form.insurance_provider}
@@ -672,7 +684,7 @@ export function QualificationsEditor({ instructorId }: Props) {
               url={form.insurance_certificate_url}
               bucket="compliance-documents"
               pathPrefix={`${instructorId}/insurance`}
-              onChange={(u) => set("insurance_certificate_url", u)}
+              onChange={(u) => persistCertificate("insurance_certificate_url", u)}
             />
           </Field>
           <SectionFooter sectionKey="insurance" />
