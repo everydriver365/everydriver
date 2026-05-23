@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Loader2, Globe, Facebook, Instagram, Link as LinkIcon, Satellite, Wifi, WifiOff, RefreshCw } from "lucide-react";
+import { Loader2, Globe, Facebook, Instagram, Link as LinkIcon, Satellite, Wifi, WifiOff, RefreshCw, Car as CarIcon, Mic, X as XIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
