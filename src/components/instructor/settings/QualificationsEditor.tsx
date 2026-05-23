@@ -296,9 +296,13 @@ export function QualificationsEditor({ instructorId }: Props) {
           insurance_policy_number: (data as any).insurance_policy_number || "",
           car_insurance_expiry: data.car_insurance_expiry || "",
           insurance_certificate_url: (data as any).insurance_certificate_url,
+          insurance_ncb_years: (data as any).insurance_ncb_years ?? 0,
+          insurance_company_phone: (data as any).insurance_company_phone || "",
+          insurance_claims_line: (data as any).insurance_claims_line || "",
           years_experience_adi: (data as any).years_experience_adi?.toString() || "",
           additional_certifications: (data as any).additional_certifications || [],
         };
+
         setForm(next);
         setOriginal(next);
       }
