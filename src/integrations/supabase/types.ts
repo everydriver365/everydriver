@@ -9516,6 +9516,9 @@ export type Database = {
           instant_bank_pay_enabled: boolean
           instructor_grade: string | null
           insurance_certificate_url: string | null
+          insurance_claims_line: string | null
+          insurance_company_phone: string | null
+          insurance_ncb_years: number
           insurance_policy_number: string | null
           insurance_provider: string | null
           intake_questions_enabled: boolean | null
@@ -9732,6 +9735,9 @@ export type Database = {
           instant_bank_pay_enabled?: boolean
           instructor_grade?: string | null
           insurance_certificate_url?: string | null
+          insurance_claims_line?: string | null
+          insurance_company_phone?: string | null
+          insurance_ncb_years?: number
           insurance_policy_number?: string | null
           insurance_provider?: string | null
           intake_questions_enabled?: boolean | null
@@ -9948,6 +9954,9 @@ export type Database = {
           instant_bank_pay_enabled?: boolean
           instructor_grade?: string | null
           insurance_certificate_url?: string | null
+          insurance_claims_line?: string | null
+          insurance_company_phone?: string | null
+          insurance_ncb_years?: number
           insurance_policy_number?: string | null
           insurance_provider?: string | null
           intake_questions_enabled?: boolean | null
