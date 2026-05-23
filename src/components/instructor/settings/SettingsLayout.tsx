@@ -154,18 +154,46 @@ export function SettingsLayout({ categories, search, onSearchChange }: SettingsL
         }
       >
 
-        <button
-          type="button"
-          onClick={() => navigate("/instructor/settings")}
-          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-        >
-          <ChevronLeft className="h-4 w-4" /> Settings
-        </button>
         {isAccount ? (
-          <AccountMobileHeader />
+          <div style={{ display: "flex", alignItems: "center", gap: 10, paddingTop: 4 }}>
+            <button
+              type="button"
+              onClick={() => navigate("/instructor/settings")}
+              aria-label="Back to Settings"
+              style={{
+                width: 28,
+                height: 28,
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                borderRadius: 8,
+                background: "transparent",
+                border: "none",
+                color: "#aaa",
+                cursor: "pointer",
+                flexShrink: 0,
+                padding: 0,
+              }}
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <AccountMobileHeader />
+            </div>
+          </div>
         ) : (
-          <CategoryHeader category={activeCategory} />
+          <>
+            <button
+              type="button"
+              onClick={() => navigate("/instructor/settings")}
+              className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+            >
+              <ChevronLeft className="h-4 w-4" /> Settings
+            </button>
+            <CategoryHeader category={activeCategory} />
+          </>
         )}
+
         <SectionsPane
           sections={activeCategory.sections}
           unwrapIds={isAccount ? ["profile"] : undefined}
