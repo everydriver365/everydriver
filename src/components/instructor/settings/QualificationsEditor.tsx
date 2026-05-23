@@ -830,7 +830,7 @@ function DbsCard({
       {divider}
 
       {/* Date fields */}
-      <div style={{ padding: "12px 14px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+      <div style={{ padding: "12px 14px", display: "flex", flexDirection: "column", gap: 10 }}>
         <div>
           <span style={label}>Date issued</span>
           <div style={inputWrap}>
