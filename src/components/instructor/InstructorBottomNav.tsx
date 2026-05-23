@@ -36,7 +36,7 @@ interface InstructorBottomNavProps {
 
 const ACTIVE = "#C8242C";
 const INACTIVE = "#6B6B6B";
-const FAB_BLUE = "#1E6FB8";
+const FAB_BLUE = "#072b47";
 const PAGE_BG = "#F5F4F1";
 
 export function InstructorBottomNav({ voiceState = "idle", onVoiceTap }: InstructorBottomNavProps) {
