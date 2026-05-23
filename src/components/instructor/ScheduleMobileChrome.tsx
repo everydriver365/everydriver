@@ -224,13 +224,8 @@ export function ScheduleMobileChrome({
         })}
       </div>
 
-      {/* Stats row */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
-        <StatTile value={stats.lessons} label="Lessons" color="#1a1a1f" />
-        <StatTile value={stats.scheduled} label="Scheduled" color="#2952b3" />
-        <StatTile value={stats.free} label="Free" color="#2d8a4e" />
-        <StatTile value={stats.overdue} label="Overdue" color="#c9302c" />
-      </div>
+
+
 
       {/* Date section header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 4 }}>
