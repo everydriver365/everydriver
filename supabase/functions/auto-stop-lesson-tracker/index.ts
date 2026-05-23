@@ -154,7 +154,154 @@ Deno.serve(async (req) => {
         console.error(`Route capture error for ${session.id}:`, cmsg);
       }
 
+      // --- Commute capture: home→first / last→home (best-effort) ---
+      try {
+        if (!session.lesson_id) {
+          // No linked lesson, can't determine first/last — skip silently
+        } else {
+          const dayStartIso = `${today}T00:00:00`;
+          const dayEndIso = `${today}T23:59:59`;
+          const nowIso = now.toISOString();
+
+          const { data: dayLessons } = await supabase
+            .from("scheduled_lessons")
+            .select("id, start_time, end_time, pickup_postcode, dropoff_postcode")
+            .eq("instructor_id", session.instructor_id)
+            .in("status", ["confirmed", "scheduled"])
+            .gte("start_time", dayStartIso)
+            .lte("start_time", dayEndIso)
+            .lt("end_time", nowIso)
+            .order("start_time", { ascending: true });
+
+          const lessonsList = dayLessons ?? [];
+          if (lessonsList.length > 0) {
+            const firstLesson = lessonsList[0];
+            const lastLesson = lessonsList[lessonsList.length - 1];
+            const isFirst = firstLesson.id === session.lesson_id;
+            const isLast = lastLesson.id === session.lesson_id;
+
+            if (isFirst || isLast) {
+              const { data: instructorRow } = await supabase
+                .from("instructors")
+                .select("home_postcode")
+                .eq("id", session.instructor_id)
+                .maybeSingle();
+
+              const homePc = instructorRow?.home_postcode?.trim();
+
+              if (!homePc) {
+                console.warn(
+                  `Instructor ${session.instructor_id} has no home_postcode — skipping commute capture`,
+                );
+              } else {
+                const callRoute = async (from: string, to: string) => {
+                  const url = `${Deno.env.get("SUPABASE_URL")}/functions/v1/calculate-route-distance`;
+                  const res = await fetch(url, {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                      Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+                    },
+                    body: JSON.stringify({ from_postcode: from, to_postcode: to }),
+                  });
+                  if (!res.ok) {
+                    const txt = await res.text();
+                    throw new Error(`calculate-route-distance ${res.status}: ${txt}`);
+                  }
+                  return await res.json() as { one_way_miles?: number; success?: boolean };
+                };
+
+                const insertCommute = async (
+                  from: string,
+                  to: string,
+                  purpose: "Home to first lesson" | "Last lesson to home",
+                ) => {
+                  // Idempotent check (partial unique index is the safety net)
+                  const { data: existing } = await supabase
+                    .from("mileage_logs")
+                    .select("id")
+                    .eq("instructor_id", session.instructor_id)
+                    .eq("log_date", today)
+                    .eq("purpose", purpose)
+                    .is("telematics_id", null)
+                    .maybeSingle();
+                  if (existing) return;
+
+                  let route;
+                  try {
+                    route = await callRoute(from, to);
+                  } catch (e) {
+                    console.warn(
+                      `Route lookup failed (${purpose}) for ${session.instructor_id}:`,
+                      (e as Error).message,
+                    );
+                    return;
+                  }
+
+                  const miles = Number(route?.one_way_miles);
+                  if (!route?.success || !isFinite(miles) || miles <= 0) {
+                    console.warn(
+                      `Route returned no usable distance (${purpose}) for ${session.instructor_id}`,
+                    );
+                    return;
+                  }
+                  const distanceKm = miles / 0.621371;
+
+                  const { error: insErr } = await supabase.from("mileage_logs").insert({
+                    instructor_id: session.instructor_id,
+                    telematics_id: null,
+                    vehicle_id: null,
+                    pupil_id: null,
+                    log_date: today,
+                    distance_km: distanceKm,
+                    trip_type: "business",
+                    purpose,
+                    start_location: from,
+                    end_location: to,
+                    is_auto_logged: true,
+                  });
+                  if (insErr && insErr.code !== "23505") {
+                    console.error(
+                      `Commute insert failed (${purpose}) for ${session.instructor_id}:`,
+                      insErr.message,
+                    );
+                  }
+                };
+
+                if (isFirst) {
+                  const pickupPc = firstLesson.pickup_postcode?.trim();
+                  if (!pickupPc) {
+                    console.warn(
+                      `First lesson ${firstLesson.id} has no pickup_postcode — skipping home→first`,
+                    );
+                  } else {
+                    await insertCommute(homePc, pickupPc, "Home to first lesson");
+                  }
+                }
+
+                if (isLast) {
+                  const lastStartPc =
+                    lastLesson.dropoff_postcode?.trim() ||
+                    lastLesson.pickup_postcode?.trim();
+                  if (!lastStartPc) {
+                    console.warn(
+                      `Last lesson ${lastLesson.id} has no dropoff/pickup postcode — skipping last→home`,
+                    );
+                  } else {
+                    await insertCommute(lastStartPc, homePc, "Last lesson to home");
+                  }
+                }
+              }
+            }
+          }
+        }
+      } catch (commuteErr) {
+        const cmsg = commuteErr instanceof Error ? commuteErr.message : String(commuteErr);
+        console.error(`Commute capture error for ${session.id}:`, cmsg);
+      }
+
       stopped.push({ session_id: session.id, lesson_id: ended.id });
+
     }
 
     return new Response(
