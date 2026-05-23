@@ -144,7 +144,15 @@ export function SettingsLayout({ categories, search, onSearchChange }: SettingsL
 
     const isAccount = activeCategory.id === "account";
     return (
-      <div className="space-y-4 pb-24" style={isAccount ? { background: "#F2F4F8" } : undefined}>
+      <div
+        className="space-y-4 pb-24"
+        style={
+          isAccount
+            ? { background: "#F2F4F8", margin: "0 -14px", padding: "0 16px" }
+            : undefined
+        }
+      >
+
         <button
           type="button"
           onClick={() => navigate("/instructor/settings")}
