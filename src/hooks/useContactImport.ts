@@ -82,6 +82,9 @@ export function useContactImport() {
         const phone = clean(phoneEntry?.number, 30);
         const emailEntry = pickFirst(c.emails) as { address?: string } | undefined;
         const email = clean(emailEntry?.address, 255);
+        const postal = pickFirst(c.postalAddresses) as
+          | { street?: string; city?: string; region?: string; country?: string; postcode?: string }
+          | undefined;
         const addressParts = postal
           ? [postal.street, postal.city, postal.region, postal.country].filter(Boolean)
           : [];
