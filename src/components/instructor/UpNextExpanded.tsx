@@ -687,7 +687,9 @@ export function UpNextExpanded({
             hasDestination={!!fullAddress}
             onNavigate={(e) => { e.stopPropagation(); navigateMap(); }}
             height={110}
+            hideEtaChip
           />
+
         </div>
         {/* ETA chip */}
         <div
