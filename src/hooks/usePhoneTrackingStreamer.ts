@@ -199,6 +199,7 @@ export function usePhoneTrackingStreamer({
       }
       wakeLockRef.current?.release().catch(() => {});
       wakeLockRef.current = null;
+      startedAtRef.current = 0;
     };
   }, [provider, pupilId, sessionId, minIntervalMs]);
 }
