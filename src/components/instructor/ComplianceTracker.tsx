@@ -69,9 +69,8 @@ export function ComplianceTracker({ instructorId }: ComplianceTrackerProps) {
       .select("title, hours, date")
       .eq("instructor_id", instructorId)
       .order("date", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    if (data) setLatestCPD(data as any);
+      .limit(5);
+    if (data) setRecentCPD(data as any);
   };
 
   const fetchComplianceData = async () => {
