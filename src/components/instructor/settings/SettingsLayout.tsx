@@ -324,7 +324,13 @@ function CategoryHeader({ category }: { category: SettingsCategory }) {
   );
 }
 
-function SectionsPane({ sections }: { sections: SettingsSectionDef[] }) {
+function SectionsPane({
+  sections,
+  unwrapIds,
+}: {
+  sections: SettingsSectionDef[];
+  unwrapIds?: string[];
+}) {
   const visible = sections.filter((s) => s.visible !== false);
   if (visible.length === 0) {
     return (
@@ -335,21 +341,75 @@ function SectionsPane({ sections }: { sections: SettingsSectionDef[] }) {
   }
   return (
     <div className="space-y-4">
-      {visible.map((s) => (
-        <section
-          key={s.id}
-          id={s.id}
-          className="rounded-2xl bg-card border border-border/50 p-4 sm:p-5"
+      {visible.map((s) =>
+        unwrapIds?.includes(s.id) ? (
+          <div key={s.id} id={s.id}>
+            {s.render()}
+          </div>
+        ) : (
+          <section
+            key={s.id}
+            id={s.id}
+            className="rounded-2xl bg-card border border-border/50 p-4 sm:p-5"
+          >
+            <header className="mb-3">
+              <h2 className="text-base font-semibold text-foreground">{s.title}</h2>
+              {s.description && (
+                <p className="text-xs text-muted-foreground mt-0.5">{s.description}</p>
+              )}
+            </header>
+            <div>{s.render()}</div>
+          </section>
+        ),
+      )}
+    </div>
+  );
+}
+
+function AccountMobileHeader() {
+  const FONT = "'Poppins', system-ui, sans-serif";
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 10, fontFamily: FONT }}>
+      <div
+        style={{
+          width: 36,
+          height: 36,
+          borderRadius: 10,
+          background: "#e8eefb",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+        }}
+      >
+        <UserIcon size={18} color="#2952b3" />
+      </div>
+      <div style={{ minWidth: 0, flex: 1 }}>
+        <div
+          style={{
+            fontSize: 17,
+            fontWeight: 700,
+            color: "#1a1a1f",
+            lineHeight: 1.2,
+            fontFamily: FONT,
+          }}
         >
-          <header className="mb-3">
-            <h2 className="text-base font-semibold text-foreground">{s.title}</h2>
-            {s.description && (
-              <p className="text-xs text-muted-foreground mt-0.5">{s.description}</p>
-            )}
-          </header>
-          <div>{s.render()}</div>
-        </section>
-      ))}
+          Account
+        </div>
+        <div
+          style={{
+            fontSize: 11,
+            color: "#aaa",
+            marginTop: 2,
+            fontFamily: FONT,
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+          }}
+        >
+          Profile, vehicle, photos and contact
+        </div>
+      </div>
     </div>
   );
 }
