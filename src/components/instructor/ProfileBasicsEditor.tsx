@@ -428,7 +428,60 @@ function MobileProfileBasics({
             </button>
           </div>
         </div>
+
+        <div style={divider} />
+
+        {/* Coverage (home_postcode) */}
+        <div style={{ padding: "0 14px" }}>
+          <div style={labelStyle}>Coverage</div>
+          <div style={fieldWrap}>
+            <input
+              type="text"
+              value={profile.home_postcode || ""}
+              onChange={(e) => setProfile({ ...profile, home_postcode: e.target.value })}
+              placeholder="e.g. SW1A 1AA"
+              style={inputBaseStyle}
+            />
+            <button type="button" style={micBtn} aria-label="Voice input">
+              <Mic size={14} color="#ccc" />
+            </button>
+          </div>
+        </div>
+
+        <div style={divider} />
+
+        {/* Radius (radius_miles) */}
+        <div style={{ padding: "0 14px" }}>
+          <div style={labelStyle}>Radius (mi)</div>
+          <div style={fieldWrap}>
+            <input
+              type="number"
+              inputMode="numeric"
+              value={profile.radius_miles ?? ""}
+              onChange={(e) =>
+                setProfile({
+                  ...profile,
+                  radius_miles: e.target.value ? parseInt(e.target.value, 10) : null,
+                })
+              }
+              placeholder="10"
+              style={{ ...inputBaseStyle, paddingRight: 11 }}
+            />
+          </div>
+        </div>
+
+        <div style={divider} />
+
+        {/* Special skills */}
+        <div style={{ padding: "0 14px" }}>
+          <div style={labelStyle}>Special Skills</div>
+          <SkillPills
+            value={profile.special_skills || ""}
+            onChange={(v) => setProfile({ ...profile, special_skills: v })}
+          />
+        </div>
       </div>
+
 
       {/* Save */}
       <button
