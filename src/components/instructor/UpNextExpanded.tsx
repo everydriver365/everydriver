@@ -608,10 +608,20 @@ export function UpNextExpanded({
       <style>{`
         @keyframes upnext-fade { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        .upnext-status-row { display: flex; gap: 6px; }
+        @media (max-width: 380px) {
+          .upnext-status-btn { --ub-h: 34px; --ub-fs: 11.5px; --ub-px: 8px; --ub-gap: 5px; --ub-ic: 12px; }
+        }
+        @media (max-width: 340px) {
+          .upnext-status-row { gap: 4px; }
+          .upnext-status-btn { --ub-h: 32px; --ub-fs: 11px; --ub-px: 6px; --ub-gap: 4px; --ub-ic: 11px; }
+          .upnext-status-btn--cta { flex: 1.3 !important; }
+        }
       `}</style>
 
       {/* Status buttons — Row 1 (secondary signals) */}
-      <div style={{ display: "flex", gap: 6, marginBottom: 6 }}>
+      <div className="upnext-status-row" style={{ marginBottom: 6 }}>
+
         {statusBtn({
           Icon: MapPin,
           label: "Here",
