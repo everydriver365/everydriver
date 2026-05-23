@@ -521,3 +521,81 @@ function MobileProfileBasics({
     </div>
   );
 }
+
+function SkillPills({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const FONT = "'Poppins', system-ui, sans-serif";
+  const skills = value
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+  const update = (next: string[]) => onChange(next.join(", "));
+
+  const onAdd = () => {
+    const v = typeof window !== "undefined" ? window.prompt("Add skill") : null;
+    if (v && v.trim()) update([...skills, v.trim()]);
+  };
+
+  const onRemove = (i: number) => {
+    const next = skills.slice();
+    next.splice(i, 1);
+    update(next);
+  };
+
+  return (
+    <div style={{ display: "flex", flexWrap: "wrap", gap: 5, paddingBottom: 2 }}>
+      {skills.map((s, i) => (
+        <span
+          key={`${s}-${i}`}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 4,
+            background: "#e8eefb",
+            color: "#2952b3",
+            fontSize: 11,
+            fontWeight: 500,
+            padding: "4px 10px",
+            borderRadius: 20,
+            fontFamily: FONT,
+          }}
+        >
+          {s}
+          <button
+            type="button"
+            onClick={() => onRemove(i)}
+            aria-label="Remove skill"
+            style={{
+              border: "none",
+              background: "transparent",
+              padding: 0,
+              cursor: "pointer",
+              display: "inline-flex",
+              color: "#2952b3",
+            }}
+          >
+            <XIcon size={11} strokeWidth={2} />
+          </button>
+        </span>
+      ))}
+      <button
+        type="button"
+        onClick={onAdd}
+        style={{
+          background: "#F2F4F8",
+          color: "#aaa",
+          border: "1px dashed #d0d3d8",
+          fontSize: 11,
+          fontWeight: 500,
+          padding: "4px 10px",
+          borderRadius: 20,
+          cursor: "pointer",
+          fontFamily: FONT,
+        }}
+      >
+        + Add
+      </button>
+    </div>
+  );
+}
+
