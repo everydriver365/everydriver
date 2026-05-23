@@ -148,8 +148,9 @@ export function SettingsLayout({ categories, search, onSearchChange }: SettingsL
         className="space-y-4 pb-24"
         style={
           isAccount
-            ? { background: "#F2F4F8", margin: "0 -14px", padding: "0 16px" }
+            ? { background: "#F2F4F8", margin: "0 -14px", padding: "0 10px" }
             : undefined
+
         }
       >
 
