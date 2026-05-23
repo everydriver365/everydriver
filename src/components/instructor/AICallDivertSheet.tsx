@@ -58,7 +58,14 @@ const OPTIONS: OptionDef[] = [
 ];
 
 export function AICallDivertSheet({ open, onOpenChange, state }: Props) {
+  const navigate = useNavigate();
   const currentMode = state.settings.mode;
+
+  const goToHub = () => {
+    onOpenChange(false);
+    navigate("/instructor/settings/phone-ai");
+  };
+
 
   const handleSetMode = (mode: AICallDivertMode) => {
     void state.setMode(mode);
