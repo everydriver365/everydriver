@@ -622,7 +622,7 @@ export function UpNextExpanded({
         })}
         {statusBtn({
           Icon: Send,
-          label: "On My Way",
+          label: "On Way",
           onClick: onMyWay,
           disabled: busyAction === "on_the_way",
           active: onMyWayActive,
