@@ -1309,7 +1309,7 @@ function NeedsAttentionCard({
 
   const cells: { key: Key; label: string; count: number; bg: string; valueColor: string }[] = [
     { key: "jobs",      label: "Jobs",   count: attention.jobs ?? 0,      bg: RED_TINT,     valueColor: RED },
-    { key: "tests",     label: "Tests",  count: attention.tests ?? 0,     bg: BLUE_TINT,    valueColor: BLUE },
+    { key: "tests",     label: "Tests",  count: attention.tests ?? 0,     bg: "#1d6fb9",    valueColor: "#ffffff" },
     { key: "calls",     label: "Calls",  count: attention.calls ?? 0,     bg: "transparent", valueColor: GREY_LIGHT },
     { key: "enquiries", label: "Enq's",  count: attention.enquiries ?? 0, bg: "transparent", valueColor: GREY_LIGHT },
   ];
