@@ -336,7 +336,7 @@ export function QualificationsEditor({ instructorId }: Props) {
     adi: ["adi_badge_number", "adi_badge_expiry", "adi_grade", "adi_certificate_url"],
     dbs: ["dbs_certificate_issued", "dbs_certificate_expiry", "dbs_certificate_url", "dbs_update_service_subscribed", "dbs_update_service_expiry"],
     licence: ["driving_licence_number", "driving_licence_expiry"],
-    insurance: ["insurance_provider", "insurance_policy_number", "car_insurance_expiry", "insurance_certificate_url"],
+    insurance: ["insurance_provider", "insurance_policy_number", "car_insurance_expiry", "insurance_certificate_url", "insurance_ncb_years", "insurance_company_phone", "insurance_claims_line"],
     experience: ["years_experience_adi", "additional_certifications"],
   };
 
