@@ -40,6 +40,10 @@ interface InstructorDetails {
   instructor_grade: string | null;
   cpd_certified: boolean;
   adi_code_of_practice: boolean;
+  adi_badge_number: string | null;
+  adi_badge_expiry: string | null;
+  adi_grade: string | null;
+  dbs_certificate_expiry: string | null;
   personal_website_url: string | null;
   facebook_url: string | null;
   instagram_url: string | null;
