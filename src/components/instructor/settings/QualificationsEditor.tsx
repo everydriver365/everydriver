@@ -272,8 +272,9 @@ export function QualificationsEditor({ instructorId }: Props) {
       const { data, error } = await supabase
         .from("instructors")
         .select(
-          "adi_badge_number, adi_badge_expiry, adi_grade, adi_certificate_url, dbs_certificate_issued, dbs_certificate_expiry, dbs_certificate_url, dbs_update_service_subscribed, dbs_update_service_expiry, driving_licence_number, driving_licence_expiry, insurance_provider, insurance_policy_number, car_insurance_expiry, insurance_certificate_url, years_experience_adi, additional_certifications"
+          "adi_badge_number, adi_badge_expiry, adi_grade, adi_certificate_url, dbs_certificate_issued, dbs_certificate_expiry, dbs_certificate_url, dbs_update_service_subscribed, dbs_update_service_expiry, driving_licence_number, driving_licence_expiry, insurance_provider, insurance_policy_number, car_insurance_expiry, insurance_certificate_url, insurance_ncb_years, insurance_company_phone, insurance_claims_line, years_experience_adi, additional_certifications"
         )
+
         .eq("id", instructorId)
         .single();
       if (error) {
