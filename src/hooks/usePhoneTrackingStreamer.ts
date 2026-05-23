@@ -2,6 +2,10 @@ import { useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { resolvePhoneSpeedLimit, haversineMetres } from "@/lib/phoneSpeedLimit";
 
+// iOS WKWebView / Despia detection — GPS behaves differently here
+const isIOS = typeof navigator !== "undefined" && /iPhone|iPad/.test(navigator.userAgent);
+
+
 export interface PhoneFix {
   latitude: number;
   longitude: number;
@@ -44,6 +48,7 @@ export function usePhoneTrackingStreamer({
 }: Options) {
   const watchIdRef = useRef<number | null>(null);
   const lastSentRef = useRef<number>(0);
+  const startedAtRef = useRef<number>(0);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
   const lastPointRef = useRef<{ lat: number; lng: number } | null>(null);
   const lastLimitFetchRef = useRef<{ lat: number; lng: number; at: number } | null>(null);
@@ -71,17 +76,24 @@ export function usePhoneTrackingStreamer({
       }
     })();
 
+    startedAtRef.current = Date.now();
     watchIdRef.current = navigator.geolocation.watchPosition(
       async (pos) => {
         if (cancelled) return;
         const now = Date.now();
         if (now - lastSentRef.current < minIntervalMs) return;
 
+        // iOS-only: drop the first 3s of fixes — WKWebView GPS is wildly
+        // inaccurate immediately after watchPosition starts.
+        if (isIOS && now - startedAtRef.current < 3000) return;
+
         const { latitude, longitude, speed, heading, accuracy } = pos.coords;
 
         // Drop low-accuracy fixes — these cause the zig-zag "random lines" on the
-        // trip map. Anything worse than ~35 m is unusable for a route polyline.
-        if (accuracy != null && accuracy > 35) {
+        // trip map. iOS GPS under motion is usually <15 m, so anything over 20 m
+        // is startup noise; non-iOS keeps the looser 35 m gate.
+        const accuracyGate = isIOS ? 20 : 35;
+        if (accuracy != null && accuracy > accuracyGate) {
           return;
         }
 
@@ -187,6 +199,7 @@ export function usePhoneTrackingStreamer({
       }
       wakeLockRef.current?.release().catch(() => {});
       wakeLockRef.current = null;
+      startedAtRef.current = 0;
     };
   }, [provider, pupilId, sessionId, minIntervalMs]);
 }
