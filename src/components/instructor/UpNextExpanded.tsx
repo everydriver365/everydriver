@@ -797,9 +797,9 @@ export function UpNextExpanded({
 
         <div style={{ height: 1, background: DIV, margin: "0 14px" }} />
 
-        {/* Section 3 — Conditions + Payment + Vehicle */}
+        {/* Section 3 — Conditions + Vehicle (Payment below if outstanding) */}
         <div style={{ padding: "12px 14px" }}>
-          <div style={{ display: "grid", gridTemplateColumns: isPaid ? "1fr 1fr" : "1fr 1fr 1fr", gap: 8 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
             {/* Conditions */}
             <div style={{ background: BG, borderRadius: 10, padding: 10 }}>
               <SectLabel>Conditions</SectLabel>
@@ -823,37 +823,6 @@ export function UpNextExpanded({
                 </span>
               </div>
             </div>
-
-            {/* Payment (only if outstanding) */}
-            {!isPaid && (
-              <div style={{ background: PAY_BG, border: `1px solid ${PAY_BORDER}`, borderRadius: 10, padding: 10, display: "flex", flexDirection: "column", gap: 6 }}>
-                <SectLabel color={PAY_TEXT}>Payment</SectLabel>
-                <div style={{ fontSize: 15, fontWeight: 700, color: PAY_TEXT, fontFamily: PFONT, lineHeight: 1.1 }}>£{debt.toFixed(0)}</div>
-                <div style={{ fontSize: 9, color: PAY_TEXT, opacity: 0.7, fontFamily: PFONT }}>Due before lesson</div>
-                <button
-                  type="button"
-                  onClick={chasePayment}
-                  style={{
-                    background: PAY_TEXT, color: "#fff", border: "none",
-                    borderRadius: 8, padding: "5px 6px",
-                    fontSize: 9, fontWeight: 600, cursor: "pointer", fontFamily: PFONT,
-                  }}
-                >
-                  Chase payment
-                </button>
-                <button
-                  type="button"
-                  onClick={markPaid}
-                  style={{
-                    background: "#fff", color: TEXT, border: `1px solid ${CARD_BORDER}`,
-                    borderRadius: 8, padding: "5px 6px",
-                    fontSize: 9, fontWeight: 600, cursor: "pointer", fontFamily: PFONT,
-                  }}
-                >
-                  Mark as paid
-                </button>
-              </div>
-            )}
 
             {/* Vehicle */}
             <div style={{ background: BG, borderRadius: 10, padding: 10, cursor: obdDevice ? "pointer" : "default" }} onClick={() => obdDevice && navigate("/instructor/vehicle-health")}>
@@ -879,7 +848,43 @@ export function UpNextExpanded({
               )}
             </div>
           </div>
+
+          {/* Payment (only if outstanding) — full-width below */}
+          {!isPaid && (
+            <div style={{ marginTop: 8, background: PAY_BG, border: `1px solid ${PAY_BORDER}`, borderRadius: 10, padding: 12, display: "flex", alignItems: "center", gap: 12 }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <SectLabel color={PAY_TEXT}>Payment</SectLabel>
+                <div style={{ fontSize: 18, fontWeight: 700, color: PAY_TEXT, fontFamily: PFONT, lineHeight: 1.1, marginTop: 2 }}>£{debt.toFixed(0)}</div>
+                <div style={{ fontSize: 10, color: PAY_TEXT, opacity: 0.7, fontFamily: PFONT, marginTop: 2 }}>Due before lesson</div>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6, flexShrink: 0 }}>
+                <button
+                  type="button"
+                  onClick={chasePayment}
+                  style={{
+                    background: PAY_TEXT, color: "#fff", border: "none",
+                    borderRadius: 8, padding: "7px 12px",
+                    fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: PFONT,
+                  }}
+                >
+                  Chase payment
+                </button>
+                <button
+                  type="button"
+                  onClick={markPaid}
+                  style={{
+                    background: "#fff", color: TEXT, border: `1px solid ${CARD_BORDER}`,
+                    borderRadius: 8, padding: "7px 12px",
+                    fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: PFONT,
+                  }}
+                >
+                  Mark as paid
+                </button>
+              </div>
+            </div>
+          )}
         </div>
+
 
         <div style={{ height: 1, background: DIV, margin: "0 14px" }} />
 
