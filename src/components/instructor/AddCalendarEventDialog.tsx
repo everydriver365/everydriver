@@ -156,6 +156,7 @@ export function AddCalendarEventDialog({
       .from('pupils')
       .select('id, name, phone')
       .eq('instructor_id', instructorId)
+      .is('deleted_at', null)
       .order('name');
 
     if (!error && data) {
