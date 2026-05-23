@@ -29,6 +29,9 @@ const LESSON_QUERY_KEYS = [
 
 export function invalidateLessonQueries(queryClient: QueryClient) {
   LESSON_QUERY_KEYS.forEach((k) => {
-    queryClient.invalidateQueries({ queryKey: [k] });
+    // refetchType: "all" ensures inactive queries (e.g. the home "Next Up"
+    // tile while the user is on /instructor/schedule adding a lesson) also
+    // refetch, so the tile is fresh the moment they navigate back.
+    queryClient.invalidateQueries({ queryKey: [k], refetchType: "all" });
   });
 }
