@@ -138,12 +138,8 @@ export function ScheduleMobileChrome({
           <h1 style={{ margin: 0, fontSize: 15, fontWeight: 600, color: "#1a1a1f", letterSpacing: "-0.2px" }}>
             Schedule
           </h1>
-          <TrackingPill instructorId={instructorId} navigate={navigate} />
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <CircleBtn onClick={() => setDivertSheetOpen(true)} label="Calls">
-            <Phone size={14} strokeWidth={1.8} color={aiDivert.settings.mode !== "off" ? "#1D9E75" : "#6B6B6B"} />
-          </CircleBtn>
           <CircleBtn onClick={() => navigate("/instructor/notifications")} label="Notifications" badge={notifCount}>
             <Bell size={14} strokeWidth={1.8} color="#6B6B6B" />
           </CircleBtn>
@@ -153,24 +149,9 @@ export function ScheduleMobileChrome({
           <CircleBtn onClick={() => navigate("/instructor/menu")} label="Menu">
             <Menu size={14} strokeWidth={1.8} color="#6B6B6B" />
           </CircleBtn>
-          <button
-            onClick={() => navigate("/instructor/profile")}
-            aria-label="Profile"
-            style={{
-              width: 30, height: 30, borderRadius: 15,
-              background: "#B23A3F", border: BORDER, overflow: "hidden",
-              padding: 0, cursor: "pointer", flexShrink: 0,
-              display: "flex", alignItems: "center", justifyContent: "center",
-            }}
-          >
-            {profileImageUrl ? (
-              <img src={profileImageUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-            ) : (
-              <span style={{ fontSize: 12, fontWeight: 700, color: "#fff" }}>{initial}</span>
-            )}
-          </button>
         </div>
       </div>
+
 
       {/* Month / date header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
