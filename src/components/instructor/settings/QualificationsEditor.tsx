@@ -460,13 +460,6 @@ export function QualificationsEditor({ instructorId }: Props) {
 
   return (
     <div className="pb-24" style={{ fontFamily: "Poppins, sans-serif" }}>
-      {/* Page title */}
-      <div style={{ padding: "0 2px 10px" }}>
-        <div style={{ fontSize: 16, fontWeight: 700, color: "#1a1a1f" }}>Qualifications &amp; credentials</div>
-        <div style={{ fontSize: 11, color: "#aaa", marginTop: 2 }}>
-          ADI badge, DBS licence and insurance documents
-        </div>
-      </div>
 
       {/* New ADI card (single white card with banner + 3 sections) */}
       <div style={{ background: "#fff", border: "1px solid #e0e3ea", borderRadius: 14, overflow: "hidden", marginBottom: 16 }}>
