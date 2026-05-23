@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Loader2, Camera } from "lucide-react";
+import { Loader2, Camera, Mic } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast as uiToast } from "@/hooks/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { AvatarRepositionDialog } from "./AvatarRepositionDialog";
 
 interface Props {
@@ -22,6 +23,7 @@ interface Row {
 }
 
 export function ProfileBasicsEditor({ instructorId }: Props) {
+  const isMobile = useIsMobile();
   const [profile, setProfile] = useState<Row | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -99,6 +101,22 @@ export function ProfileBasicsEditor({ instructorId }: Props) {
       <div className="flex justify-center py-8">
         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
       </div>
+    );
+  }
+
+  if (isMobile) {
+    return (
+      <MobileProfileBasics
+        profile={profile}
+        setProfile={setProfile}
+        saving={saving}
+        uploading={uploading}
+        onSave={handleSave}
+        onFileSelect={handleFileSelect}
+        pendingFile={pendingFile}
+        setPendingFile={setPendingFile}
+        onCroppedUpload={handleCroppedUpload}
+      />
     );
   }
 
@@ -181,6 +199,263 @@ export function ProfileBasicsEditor({ instructorId }: Props) {
         saving={uploading}
         onCancel={() => setPendingFile(null)}
         onConfirm={handleCroppedUpload}
+      />
+    </div>
+  );
+}
+
+// ───────────────────────── Mobile redesign ─────────────────────────
+// UI-only redesign per spec. All data bindings, handlers, and save
+// logic are passed in unchanged from the parent above.
+
+interface MobileProps {
+  profile: Row;
+  setProfile: (r: Row) => void;
+  saving: boolean;
+  uploading: boolean;
+  onSave: () => void;
+  onFileSelect: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  pendingFile: File | null;
+  setPendingFile: (f: File | null) => void;
+  onCroppedUpload: (b: Blob) => void;
+}
+
+function MobileProfileBasics({
+  profile, setProfile, saving, uploading, onSave, onFileSelect,
+  pendingFile, setPendingFile, onCroppedUpload,
+}: MobileProps) {
+  const FONT = "'Poppins', system-ui, sans-serif";
+
+  const cardStyle: React.CSSProperties = {
+    background: "#FFFFFF",
+    border: "1px solid #e0e3ea",
+    borderRadius: 14,
+    fontFamily: FONT,
+  };
+
+  const labelStyle: React.CSSProperties = {
+    fontSize: 10,
+    fontWeight: 600,
+    color: "#aaa",
+    textTransform: "uppercase",
+    letterSpacing: "0.08em",
+    marginBottom: 6,
+    fontFamily: FONT,
+  };
+
+  const inputBaseStyle: React.CSSProperties = {
+    width: "100%",
+    background: "#F2F4F8",
+    border: "1px solid #eaecee",
+    borderRadius: 8,
+    padding: "8px 36px 8px 11px",
+    fontSize: 13,
+    color: "#1a1a1f",
+    fontFamily: FONT,
+    outline: "none",
+  };
+
+  const fieldWrap: React.CSSProperties = { position: "relative" };
+
+  const micBtn: React.CSSProperties = {
+    position: "absolute",
+    right: 10,
+    top: 0,
+    height: "100%",
+    display: "flex",
+    alignItems: "center",
+    background: "transparent",
+    border: "none",
+    padding: 0,
+    cursor: "pointer",
+  };
+
+  const divider: React.CSSProperties = {
+    height: 1,
+    background: "#f0f1f4",
+    margin: "14px 14px",
+  };
+
+  return (
+    <div style={{ fontFamily: FONT, color: "#1a1a1f" }}>
+      {/* Avatar card */}
+      <div style={{ ...cardStyle, padding: 14, display: "flex", alignItems: "center", gap: 14 }}>
+        <div
+          style={{
+            width: 60, height: 60, borderRadius: "50%",
+            border: "2px solid #e8eefb",
+            overflow: "hidden", flexShrink: 0,
+            background: "#F2F4F8",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}
+        >
+          {profile.profile_image_url ? (
+            <img
+              src={profile.profile_image_url}
+              alt=""
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
+          ) : (
+            <span style={{ fontSize: 22, fontWeight: 600, color: "#2952b3" }}>
+              {profile.name?.charAt(0)?.toUpperCase() ?? "?"}
+            </span>
+          )}
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 14, fontWeight: 600, color: "#1a1a1f", lineHeight: 1.2 }}>
+            {profile.name || "Your name"}
+          </div>
+          <div style={{ fontSize: 11, color: "#aaa", marginTop: 2 }}>Driving instructor</div>
+          <label
+            htmlFor="profile-photo"
+            style={{
+              marginTop: 8,
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              background: "#F2F4F8",
+              borderRadius: 8,
+              padding: "6px 10px",
+              fontSize: 11,
+              fontWeight: 500,
+              color: "#444",
+              cursor: uploading ? "default" : "pointer",
+              opacity: uploading ? 0.6 : 1,
+              fontFamily: FONT,
+            }}
+          >
+            {uploading ? (
+              <Loader2 size={12} className="animate-spin" />
+            ) : (
+              <Camera size={12} color="#444" />
+            )}
+            Change photo
+          </label>
+          <input
+            id="profile-photo"
+            type="file"
+            accept="image/*"
+            style={{ display: "none" }}
+            onChange={onFileSelect}
+          />
+          <div style={{ fontSize: 9, color: "#ccc", marginTop: 4 }}>
+            JPG or PNG, square works best
+          </div>
+        </div>
+      </div>
+
+      {/* Profile fields card */}
+      <div style={{ ...cardStyle, marginTop: 12, padding: "14px 0" }}>
+        {/* Name */}
+        <div style={{ padding: "0 14px" }}>
+          <div style={labelStyle}>Name</div>
+          <div style={fieldWrap}>
+            <input
+              type="text"
+              value={profile.name || ""}
+              onChange={(e) => setProfile({ ...profile, name: e.target.value })}
+              style={inputBaseStyle}
+            />
+            <button type="button" style={micBtn} aria-label="Voice input">
+              <Mic size={14} color="#ccc" />
+            </button>
+          </div>
+        </div>
+
+        <div style={divider} />
+
+        {/* Email */}
+        <div style={{ padding: "0 14px" }}>
+          <div style={labelStyle}>Email</div>
+          <div style={fieldWrap}>
+            <input
+              type="email"
+              value={profile.email || ""}
+              onChange={(e) => setProfile({ ...profile, email: e.target.value })}
+              style={inputBaseStyle}
+            />
+            <button type="button" style={micBtn} aria-label="Voice input">
+              <Mic size={14} color="#ccc" />
+            </button>
+          </div>
+        </div>
+
+        <div style={divider} />
+
+        {/* Phone */}
+        <div style={{ padding: "0 14px" }}>
+          <div style={labelStyle}>Phone</div>
+          <div style={fieldWrap}>
+            <input
+              type="tel"
+              value={profile.phone || ""}
+              onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
+              style={inputBaseStyle}
+            />
+            <button type="button" style={micBtn} aria-label="Voice input">
+              <Mic size={14} color="#ccc" />
+            </button>
+          </div>
+        </div>
+
+        <div style={divider} />
+
+        {/* Bio */}
+        <div style={{ padding: "0 14px" }}>
+          <div style={labelStyle}>Bio</div>
+          <div style={fieldWrap}>
+            <textarea
+              rows={3}
+              value={profile.bio || ""}
+              onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
+              placeholder="Tell pupils about yourself..."
+              style={{ ...inputBaseStyle, resize: "vertical", minHeight: 76 }}
+            />
+            <button
+              type="button"
+              style={{ ...micBtn, top: 8, height: "auto", alignItems: "flex-start" }}
+              aria-label="Voice input"
+            >
+              <Mic size={14} color="#ccc" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Save */}
+      <button
+        type="button"
+        onClick={onSave}
+        disabled={saving}
+        style={{
+          marginTop: 14,
+          width: "100%",
+          background: "#2952b3",
+          color: "#FFFFFF",
+          border: "none",
+          borderRadius: 10,
+          padding: "12px 16px",
+          fontSize: 13,
+          fontWeight: 600,
+          fontFamily: FONT,
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 6,
+          opacity: saving ? 0.7 : 1,
+          cursor: saving ? "default" : "pointer",
+        }}
+      >
+        {saving && <Loader2 size={14} className="animate-spin" />}
+        Save changes
+      </button>
+
+      <AvatarRepositionDialog
+        open={!!pendingFile}
+        file={pendingFile}
+        saving={uploading}
+        onCancel={() => setPendingFile(null)}
+        onConfirm={onCroppedUpload}
       />
     </div>
   );
