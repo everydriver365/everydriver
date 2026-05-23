@@ -17,6 +17,8 @@ interface Props {
   /** Optional pill text (e.g. "In 25 min"). Hidden when omitted. */
   countdownLine?: string;
   height?: number;
+  /** Suppress the built-in ETA chip (when the parent renders its own). */
+  hideEtaChip?: boolean;
 }
 
 /**
@@ -32,7 +34,9 @@ export function UpNextLiveMapStrip({
   onNavigate,
   countdownLine,
   height = 110,
+  hideEtaChip = false,
 }: Props) {
+
   const [sdkLoaded, setSdkLoaded] = useState(false);
   const [destCoords, setDestCoords] = useState<{ lat: number; lng: number } | null | undefined>(undefined);
   const [routePath, setRoutePath] = useState<google.maps.LatLngLiteral[] | null>(null);
