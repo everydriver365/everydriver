@@ -78,6 +78,7 @@ Deno.serve(async (req) => {
         .insert({
           instructor_id: lesson.instructor_id,
           pupil_id: lesson.pupil_id,
+          lesson_id: lesson.id,
           started_at: now.toISOString(),
           total_distance_km: 0,
           manually_started: false,
