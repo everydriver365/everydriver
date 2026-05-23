@@ -388,142 +388,170 @@ export function QualificationsEditor({ instructorId }: Props) {
       ? { bg: "#FFFBEB", border: "#FDE68A", icon: <Clock3 size={16} className="text-amber-600" /> }
       : { bg: "#FEF2F2", border: "#FECACA", icon: <AlertTriangle size={16} className="text-red-600" /> };
 
+  // New spec colours / helpers for the ADI card
+  const adiBadgeValidSpec =
+    !!form.adi_badge_number &&
+    !!form.adi_badge_expiry &&
+    differenceInDays(parseISO(form.adi_badge_expiry || "1970-01-01"), new Date()) >= 0;
+  const adiLabel: React.CSSProperties = {
+    fontSize: 10, color: "#aaa", textTransform: "uppercase",
+    letterSpacing: "0.06em", display: "block", marginBottom: 4,
+  };
+  const adiInput: React.CSSProperties = {
+    width: "100%", background: "#F2F4F8", border: "1px solid #eaecee",
+    borderRadius: 8, padding: "7px 10px", fontSize: 13, color: "#1a1a1f",
+    outline: "none", boxSizing: "border-box", fontFamily: "Poppins, sans-serif",
+  };
+  const adiDivider = <div style={{ height: 1, background: "#f0f1f4", width: "100%" }} />;
+  const gradeIsPDI = form.adi_grade.startsWith("PDI");
+  const gradeChip = (value: "A" | "B" | "PDI", label: string, activeColor: string) => {
+    const active = value === "PDI" ? gradeIsPDI : form.adi_grade === value;
+    return (
+      <button key={value} type="button"
+        onClick={() => set("adi_grade", active ? "" : value)}
+        style={{
+          background: active ? activeColor : "#F2F4F8",
+          color: active ? "#fff" : "#1a1a1f",
+          border: "none", borderRadius: 8, padding: "7px 12px",
+          fontSize: 12, fontWeight: 600, fontFamily: "Poppins, sans-serif",
+          cursor: "pointer",
+        }}
+      >{label}</button>
+    );
+  };
+  const stageButton = (value: string, label: string) => {
+    const active = form.adi_grade === value;
+    return (
+      <button type="button"
+        onClick={() => set("adi_grade", active ? "PDI" : value)}
+        style={{
+          width: "100%",
+          background: active ? "#fbe8f5" : "#fff",
+          border: `1px solid ${active ? "#d97aa6" : "#e0e3ea"}`,
+          borderRadius: 10, padding: "9px 12px",
+          display: "flex", alignItems: "center", gap: 8,
+          cursor: "pointer", fontFamily: "Poppins, sans-serif",
+        }}>
+        <span style={{ width: 8, height: 8, borderRadius: "50%", background: active ? "#d97aa6" : "#e0e3ea", flexShrink: 0 }} />
+        <span style={{ flex: 1, textAlign: "left", fontSize: 12, fontWeight: 500, color: "#1a1a1f" }}>{label}</span>
+        {active && <CheckCircle2 size={14} color="#d97aa6" />}
+      </button>
+    );
+  };
+
   return (
-    <div className="pb-24">
-      {/* Verification status banner */}
-      <div
-        className="flex items-center gap-3 px-4 py-3 mb-5"
-        style={{ background: overallTone.bg, border: `0.5px solid ${overallTone.border}`, borderRadius: "var(--portal-radius-lg, 12px)" }}
-      >
-        {overallTone.icon}
-        <div className="flex-1 min-w-0">
-          <div className="text-[13px]" style={{ fontWeight: 500 }}>{overall.title}</div>
-          <div className="text-[12px] text-muted-foreground">{overall.sub}</div>
+    <div className="pb-24" style={{ fontFamily: "Poppins, sans-serif" }}>
+      {/* Page title */}
+      <div style={{ padding: "0 2px 10px" }}>
+        <div style={{ fontSize: 16, fontWeight: 700, color: "#1a1a1f" }}>Qualifications &amp; credentials</div>
+        <div style={{ fontSize: 11, color: "#aaa", marginTop: 2 }}>
+          ADI badge, DBS licence and insurance documents
         </div>
       </div>
 
-      <div className="space-y-4">
-        {/* ADI Badge */}
-        <CredentialCard
-          icon={<BadgeCheck size={15} className="text-[#2B7BC8]" />}
-          title="ADI badge"
-          status={adiBadgeStatus}
-          statusLabel={
-            form.adi_badge_expiry
-              ? (() => {
-                  const d = differenceInDays(parseISO(form.adi_badge_expiry), new Date());
-                  if (d < 0) return "Expired";
-                  if (d <= 90) return `${d} days left`;
-                  return `Valid · ${format(parseISO(form.adi_badge_expiry), "d MMM yyyy")}`;
-                })()
-              : undefined
-          }
-        >
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Badge number">
+      {/* New ADI card (single white card with banner + 3 sections) */}
+      <div style={{ background: "#fff", border: "1px solid #e0e3ea", borderRadius: 14, overflow: "hidden", marginBottom: 16 }}>
+        {expiredCount > 0 && (
+          <div style={{ background: "#fff8e8", borderBottom: "1px solid #fde9a0", padding: "11px 14px", display: "flex", alignItems: "flex-start", gap: 10 }}>
+            <AlertTriangle size={16} color="#f59e0b" style={{ flexShrink: 0, marginTop: 1 }} />
+            <div>
+              <div style={{ fontSize: 12, fontWeight: 600, color: "#854f0b" }}>Action needed</div>
+              <div style={{ fontSize: 10, color: "#b87a2a", marginTop: 1 }}>
+                {expiredCount} document{expiredCount === 1 ? "" : "s"} expired or missing
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ADI badge section */}
+        <div>
+          <div style={{ padding: "12px 14px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+              <BadgeCheck size={15} color="#2952b3" />
+              <span style={{ fontSize: 13, fontWeight: 600, color: "#1a1a1f" }}>ADI badge</span>
+            </div>
+            <span style={{
+              display: "inline-flex", alignItems: "center", gap: 4,
+              background: adiBadgeValidSpec ? "#e8f5ee" : "#fbe8e8",
+              color: adiBadgeValidSpec ? "#2d8a4e" : "#c9302c",
+              fontSize: 11, fontWeight: 600, padding: "3px 9px", borderRadius: 999,
+            }}>
+              {adiBadgeValidSpec ? <CheckCircle2 size={11} /> : <AlertTriangle size={11} />}
+              {adiBadgeValidSpec ? "Valid" : "Expired"}
+            </span>
+          </div>
+          <div style={{ padding: "0 14px 12px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+            <div>
+              <span style={adiLabel}>Badge number</span>
               <input
                 value={form.adi_badge_number}
                 onChange={(e) => set("adi_badge_number", e.target.value.replace(/\D/g, "").slice(0, 6))}
                 placeholder="6 digits"
                 inputMode="numeric"
-                className={inputCls}
-                style={{
-                  ...inputStyle,
-                  borderColor: !adiBadgeValid ? "#B91C1C" : "hsl(var(--border))",
-                }}
+                style={{ ...adiInput, borderColor: !adiBadgeValid ? "#c9302c" : "#eaecee" }}
               />
-            </Field>
-            <Field label="Expiry date">
+            </div>
+            <div>
+              <span style={adiLabel}>Expiry date</span>
               <input
                 type="date"
                 value={form.adi_badge_expiry}
                 onChange={(e) => set("adi_badge_expiry", e.target.value)}
-                className={inputCls}
-                style={inputStyle}
+                style={adiInput}
               />
-            </Field>
-          </div>
-          <Field label="ADI grade">
-            <div className="inline-flex p-0.5 bg-[#F3F4F6]" style={{ borderRadius: 999 }}>
-              {(["A", "B", "PDI"] as const).map((g) => {
-                const active = g === "PDI" ? form.adi_grade.startsWith("PDI") : form.adi_grade === g;
-                return (
-                  <button
-                    key={g}
-                    type="button"
-                    onClick={() => {
-                      if (g === "PDI") {
-                        set("adi_grade", active ? "" : "PDI");
-                      } else {
-                        set("adi_grade", form.adi_grade === g ? "" : g);
-                      }
-                    }}
-                    className="px-4 h-7 text-[12px] transition"
-                    style={{
-                      fontWeight: active ? 500 : 400,
-                      background: active ? "#FFFFFF" : "transparent",
-                      color: active ? "#111827" : "#6B7280",
-                      borderRadius: 999,
-                      boxShadow: active ? "0 0 0 0.5px hsl(var(--border))" : "none",
-                    }}
-                  >
-                    {g === "PDI" ? "PDI" : `Grade ${g}`}
-                  </button>
-                );
-              })}
             </div>
-          </Field>
-          {form.adi_grade.startsWith("PDI") && (
-            <Field label="Pink licence (trainee) stage" hint="Tick the trainee licence you're currently on">
-              <div className="flex flex-wrap gap-2">
-                {([
-                  { v: "PDI-1", label: "1st pink" },
-                  { v: "PDI-2", label: "2nd pink" },
-                  { v: "PDI-3", label: "3rd pink" },
-                ] as const).map((p) => {
-                  const checked = form.adi_grade === p.v;
-                  return (
-                    <button
-                      key={p.v}
-                      type="button"
-                      onClick={() => set("adi_grade", checked ? "PDI" : p.v)}
-                      className="inline-flex items-center gap-2 px-3 h-8 text-[12px] bg-white transition"
-                      style={{
-                        border: `0.5px solid ${checked ? "#EC4899" : "hsl(var(--border))"}`,
-                        background: checked ? "#FDF2F8" : "#FFFFFF",
-                        color: checked ? "#9D174D" : "#374151",
-                        fontWeight: checked ? 500 : 400,
-                        borderRadius: 999,
-                      }}
-                    >
-                      <span
-                        className="inline-flex items-center justify-center w-4 h-4"
-                        style={{
-                          border: `1px solid ${checked ? "#EC4899" : "#D1D5DB"}`,
-                          background: checked ? "#EC4899" : "#FFFFFF",
-                          borderRadius: 4,
-                          color: "#FFFFFF",
-                        }}
-                      >
-                        {checked && <CheckCircle2 size={10} strokeWidth={3} />}
-                      </span>
-                      {p.label}
-                    </button>
-                  );
-                })}
+          </div>
+        </div>
+
+        {adiDivider}
+
+        {/* ADI grade */}
+        <div>
+          <div style={{ padding: "12px 14px 8px", display: "flex", alignItems: "center", gap: 7 }}>
+            <BadgeCheck size={15} color="#2952b3" />
+            <span style={{ fontSize: 13, fontWeight: 600, color: "#1a1a1f" }}>ADI grade</span>
+          </div>
+          <div style={{ padding: "0 14px 5px" }}><span style={adiLabel}>Select your grade</span></div>
+          <div style={{ padding: "0 14px 12px", display: "flex", flexWrap: "wrap", gap: 6 }}>
+            {gradeChip("A", "Grade A", "#2952b3")}
+            {gradeChip("B", "Grade B", "#2952b3")}
+            {gradeChip("PDI", "PDI", "#6b4fc4")}
+          </div>
+        </div>
+
+        {gradeIsPDI && (
+          <>
+            {adiDivider}
+            <div>
+              <div style={{ padding: "12px 14px 8px", display: "flex", alignItems: "center", gap: 7 }}>
+                <BadgeCheck size={15} color="#2952b3" />
+                <span style={{ fontSize: 13, fontWeight: 600, color: "#1a1a1f" }}>Pink licence stage</span>
               </div>
-            </Field>
-          )}
-          <Field label="Badge certificate">
-            <FileField
-              url={form.adi_certificate_url}
-              bucket="compliance-documents"
-              pathPrefix={`${instructorId}/adi-badge`}
-              onChange={(u) => set("adi_certificate_url", u)}
-            />
-          </Field>
-          <SectionFooter sectionKey="adi" />
-        </CredentialCard>
+              <div style={{ padding: "0 14px 14px", display: "flex", flexDirection: "column", gap: 6 }}>
+                {stageButton("PDI-2", "Part 2 — Pink Badge")}
+                {stageButton("PDI-3", "Part 3 — Trainee Licence")}
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* Certificate uploader + save button preserved */}
+        <div style={{ padding: "12px 14px 14px", borderTop: "1px solid #f0f1f4" }}>
+          <span style={adiLabel}>Badge certificate</span>
+          <FileField
+            url={form.adi_certificate_url}
+            bucket="compliance-documents"
+            pathPrefix={`${instructorId}/adi-badge`}
+            onChange={(u) => set("adi_certificate_url", u)}
+          />
+          <div style={{ marginTop: 10 }}>
+            <SectionFooter sectionKey="adi" />
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-4">
+
 
         {/* DBS */}
         <CredentialCard
