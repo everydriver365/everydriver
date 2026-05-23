@@ -96,7 +96,7 @@ serve(async (req) => {
       // Get trip stats
       const { data: trips } = await supabase
         .from('lesson_telematics')
-        .select('damoov_overall_score, harsh_brake_count, speeding_events_count, started_at')
+        .select('local_score, harsh_brake_count, speeding_events_count, started_at')
         .eq('pupil_id', pupilId)
         .not('ended_at', 'is', null);
 
@@ -137,7 +137,7 @@ serve(async (req) => {
       await checkAndAward('coin_collector', (pupil?.drive_coins || 0) >= 500);
 
       if (trips && trips.length > 0) {
-        const hasPerfectScore = trips.some(t => t.damoov_overall_score >= 100);
+        const hasPerfectScore = trips.some(t => (t.local_score || 0) >= 100);
         await checkAndAward('perfect_score', hasPerfectScore);
 
         const recentTrips = trips.slice(-5);
@@ -162,8 +162,8 @@ serve(async (req) => {
 
         // Check improvement
         if (trips.length >= 3) {
-          const firstScore = trips[trips.length - 1].damoov_overall_score || 0;
-          const recentScore = trips[0].damoov_overall_score || 0;
+          const firstScore = trips[trips.length - 1].local_score || 0;
+          const recentScore = trips[0].local_score || 0;
           await checkAndAward('improving', recentScore - firstScore >= 10);
         }
       }

@@ -33,7 +33,7 @@ serve(async (req) => {
     const { data: recentTrips } = await supabase
       .from('lesson_telematics')
       .select(`
-        damoov_overall_score, damoov_braking_score, damoov_speeding_score,
+        local_score,
         harsh_brake_count, speeding_events_count, total_distance_km, started_at
       `)
       .eq('pupil_id', pupilId)
@@ -59,7 +59,7 @@ serve(async (req) => {
 
     if (messageType === 'summary' && tripData) {
       // Post-trip summary
-      const score = tripData.damoov_overall_score || tripData.local_score || 0;
+      const score = tripData.local_score || 0;
       const distance = tripData.total_distance_km?.toFixed(1) || '0';
       const harshBrakes = tripData.harsh_brake_count || 0;
       const speedingEvents = tripData.speeding_events_count || 0;
@@ -92,7 +92,7 @@ serve(async (req) => {
     } else {
       // General driving tips based on performance
       const avgScore = recentTrips?.length 
-        ? recentTrips.reduce((sum, t) => sum + (t.damoov_overall_score || 0), 0) / recentTrips.length 
+        ? recentTrips.reduce((sum, t) => sum + (t.local_score || 0), 0) / recentTrips.length 
         : 0;
       
       const totalHarshBrakes = recentTrips?.reduce((sum, t) => sum + (t.harsh_brake_count || 0), 0) || 0;

@@ -27,7 +27,7 @@ export function PupilTelematicsCard({ pupilId }: PupilTelematicsCardProps) {
       try {
         const { data: sessions } = await supabase
           .from("lesson_telematics")
-          .select("id, local_score, damoov_overall_score, created_at")
+          .select("id, local_score, created_at")
           .eq("pupil_id", pupilId)
           .order("created_at", { ascending: false })
           .limit(20);
@@ -38,7 +38,7 @@ export function PupilTelematicsCard({ pupilId }: PupilTelematicsCardProps) {
         }
 
         const scores = sessions
-          .map(s => s.local_score ?? s.damoov_overall_score)
+          .map(s => s.local_score)
           .filter((s): s is number => s != null);
         const avgScore = scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
 
