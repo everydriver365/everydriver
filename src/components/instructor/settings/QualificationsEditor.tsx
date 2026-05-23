@@ -766,7 +766,7 @@ function DbsCard({
   };
   const dateInput: React.CSSProperties = {
     width: "100%", background: "#F2F4F8", border: "1px solid #eaecee",
-    borderRadius: 8, padding: "8px 30px 8px 10px", fontSize: 13, color: "#1a1a1f",
+    borderRadius: 8, padding: "8px 10px", fontSize: 12, color: "#1a1a1f",
     outline: "none", boxSizing: "border-box", fontFamily: "Poppins, sans-serif",
   };
   const divider = <div style={{ height: 1, background: "#f0f1f4", width: "100%" }} />;
