@@ -341,6 +341,18 @@ export function QualificationsEditor({ instructorId }: Props) {
     toast.success("Saved");
   };
 
+  // Auto-persist a certificate URL field as soon as upload finishes
+  const persistCertificate = async (field: keyof Form, value: string | null) => {
+    set(field, value);
+    const { error } = await supabase.from("instructors").update({ [field]: value }).eq("id", instructorId);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    setOriginal((o) => ({ ...o, [field]: value }));
+    toast.success(value ? "Certificate uploaded" : "Certificate removed");
+  };
+
   const SectionFooter = ({ sectionKey }: { sectionKey: string }) => {
     const keys = SECTIONS[sectionKey];
     const isDirty = sectionDirty(keys);
