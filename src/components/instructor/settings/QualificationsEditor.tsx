@@ -568,7 +568,7 @@ export function QualificationsEditor({ instructorId }: Props) {
             url={form.adi_certificate_url}
             bucket="compliance-documents"
             pathPrefix={`${instructorId}/adi-badge`}
-            onChange={(u) => set("adi_certificate_url", u)}
+            onChange={(u) => persistCertificate("adi_certificate_url", u)}
           />
           <div style={{ marginTop: 10 }}>
             <SectionFooter sectionKey="adi" />
@@ -610,7 +610,7 @@ export function QualificationsEditor({ instructorId }: Props) {
               url={form.dbs_certificate_url}
               bucket="compliance-documents"
               pathPrefix={`${instructorId}/dbs`}
-              onChange={(u) => set("dbs_certificate_url", u)}
+              onChange={(u) => persistCertificate("dbs_certificate_url", u)}
             />
           </Field>
           <SectionFooter sectionKey="dbs" />
@@ -684,7 +684,7 @@ export function QualificationsEditor({ instructorId }: Props) {
               url={form.insurance_certificate_url}
               bucket="compliance-documents"
               pathPrefix={`${instructorId}/insurance`}
-              onChange={(u) => set("insurance_certificate_url", u)}
+              onChange={(u) => persistCertificate("insurance_certificate_url", u)}
             />
           </Field>
           <SectionFooter sectionKey="insurance" />
