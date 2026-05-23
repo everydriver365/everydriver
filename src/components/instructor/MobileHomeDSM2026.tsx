@@ -304,7 +304,7 @@ export function MobileHomeDSM2026({ instructorId, instructorName }: Props) {
 
         <HeroHeader
           firstName={(instructorName || instructor?.name || "").split(" ")[0]}
-          unreadCount={msgsCount}
+          unreadCount={bellAlertCount}
           nextLesson={nextLesson}
           lessonExpanded={lessonExpanded}
           onToggleLesson={() => setLessonExpanded((p) => !p)}
