@@ -620,8 +620,72 @@ export function QualificationsEditor({ instructorId }: Props) {
               onChange={(u) => persistCertificate("dbs_certificate_url", u)}
             />
           </Field>
+
+          {/* Update Service subscription */}
+          <div style={{ marginTop: 4, borderTop: "1px solid #f0f1f4", paddingTop: 12, fontFamily: "Poppins, sans-serif" }}>
+            <div
+              style={{
+                padding: "12px 14px",
+                background: "#F2F4F8",
+                border: "1px solid #eaecee",
+                borderRadius: 10,
+                display: "flex",
+                alignItems: "flex-start",
+                gap: 12,
+                cursor: "pointer",
+              }}
+              onClick={() => {
+                const next = !form.dbs_update_service_subscribed;
+                set("dbs_update_service_subscribed", next);
+                if (!next) set("dbs_update_service_expiry", "");
+              }}
+            >
+              <div
+                role="checkbox"
+                aria-checked={form.dbs_update_service_subscribed}
+                style={{
+                  width: 18,
+                  height: 18,
+                  borderRadius: 5,
+                  marginTop: 1,
+                  flexShrink: 0,
+                  background: form.dbs_update_service_subscribed ? "#2B7BC8" : "#fff",
+                  border: `1px solid ${form.dbs_update_service_subscribed ? "#2B7BC8" : "#cfd4dc"}`,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                {form.dbs_update_service_subscribed && <CheckCircle2 size={12} color="#fff" />}
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 13, fontWeight: 500, color: "#1a1a1f", lineHeight: 1.3 }}>
+                  Subscribed to DBS Update Service
+                </div>
+                <div style={{ fontSize: 11, color: "#aaa", marginTop: 2 }}>
+                  Keeps your check continuously valid
+                </div>
+              </div>
+            </div>
+
+            {form.dbs_update_service_subscribed && (
+              <div style={{ marginTop: 10 }}>
+                <Field label="Update Service expiry date">
+                  <input
+                    type="date"
+                    value={form.dbs_update_service_expiry}
+                    onChange={(e) => set("dbs_update_service_expiry", e.target.value)}
+                    className={inputCls}
+                    style={inputStyle}
+                  />
+                </Field>
+              </div>
+            )}
+          </div>
+
           <SectionFooter sectionKey="dbs" />
         </CredentialCard>
+
 
         {/* Driving licence */}
         <CredentialCard
