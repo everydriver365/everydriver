@@ -270,6 +270,8 @@ export function QualificationsEditor({ instructorId }: Props) {
           dbs_certificate_issued: (data as any).dbs_certificate_issued || "",
           dbs_certificate_expiry: data.dbs_certificate_expiry || "",
           dbs_certificate_url: (data as any).dbs_certificate_url,
+          dbs_update_service_subscribed: (data as any).dbs_update_service_subscribed ?? false,
+          dbs_update_service_expiry: (data as any).dbs_update_service_expiry || "",
           driving_licence_number: (data as any).driving_licence_number || "",
           driving_licence_expiry: (data as any).driving_licence_expiry || "",
           insurance_provider: (data as any).insurance_provider || "",
