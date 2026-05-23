@@ -716,7 +716,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
             <IOSInstallBanner />
 
             {/* Mobile Header — iOS Blue Gradient (hidden on home; DSM2026 hero replaces it) */}
-            {!isHomePage && (
+            {!isHomePage && location.pathname !== "/instructor/schedule" && (
               <MobileBlueHeader
                 instructorId={instructor?.id}
                 firstName={firstName}
