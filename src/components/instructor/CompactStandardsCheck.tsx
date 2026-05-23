@@ -193,15 +193,8 @@ export function CompactStandardsCheck({ instructorId }: CompactStandardsCheckPro
   return (
     <>
       <div style={{ fontFamily: "Poppins, sans-serif" }}>
-        {/* Page title */}
-        <div style={{ marginBottom: 12 }}>
-          <h2 style={{ fontSize: 16, fontWeight: 700, color: "#1a1a1f", margin: 0, lineHeight: 1.2 }}>
-            DVSA Standards Check
-          </h2>
-          <p style={{ fontSize: 11, color: "#aaa", margin: "2px 0 0" }}>
-            Date, result, trigger points and driving test link
-          </p>
-        </div>
+        {/* Page title rendered by settings shell */}
+
 
         {/* Card */}
         <div
