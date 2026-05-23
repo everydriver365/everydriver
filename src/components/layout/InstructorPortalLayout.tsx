@@ -717,7 +717,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
           <>
             {/* iOS Install Banner */}
             <IOSInstallBanner />
-            <MobileBackButton />
+            
 
             
 
