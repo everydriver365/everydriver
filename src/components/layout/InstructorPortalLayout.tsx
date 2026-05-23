@@ -673,13 +673,16 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
     );
   }
 
-  // Tab roots — no back button on these
+  // Only the home page has no back button; every other instructor page gets one.
+  const normalizedPath = location.pathname.replace(/\/+$/, "");
+  const isHomeRoot = normalizedPath === "/instructor";
   const tabRootPaths = ["/instructor", "/instructor/schedule", "/instructor/tracking", "/instructor/pupils", "/instructor/menu"];
   const isTabRoot = tabRootPaths.includes(location.pathname);
-  const showBackButton = !isTabRoot;
+  const showBackButton = !isHomeRoot;
   const firstName = instructor?.name?.split(" ")[0] || "Instructor";
   const headerLabel = firstName;
   const mobilePageTitle = sidebarLinks.find(l => l.href === location.pathname)?.label || "Dashboard";
+
 
   // Mobile Layout
   if (isMobile) {
