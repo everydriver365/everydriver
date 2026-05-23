@@ -31,7 +31,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { CPDLogManager } from "./CPDLogManager";
-import { CompactStandardsCheck } from "./CompactStandardsCheck";
+
 
 interface ComplianceData {
   car_mot_expiry: string | null;
@@ -196,8 +196,6 @@ export function ComplianceTracker({ instructorId }: ComplianceTrackerProps) {
         </Card>
       )}
 
-      {/* DVSA Standards Check Triggers */}
-      <CompactStandardsCheck instructorId={instructorId} />
 
       {/* CPD Progress */}
       <Card>
