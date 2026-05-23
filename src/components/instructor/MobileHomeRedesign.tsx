@@ -1817,8 +1817,9 @@ export function MobileHomeRedesign({
     onClick: () => navigate("/instructor/test-requests"),
   });
 
-  // Calls (counter to be wired later)
-  const missedCallsCount: number = 0;
+  // Calls — live missed phone calls (Famulor)
+  const { data: missedCallsCount = 0 } = useMissedCallsCount(instructorId);
+
   attentionRows.push({
     key: "calls",
     group: "urgent",
@@ -1832,8 +1833,9 @@ export function MobileHomeRedesign({
     onClick: () => navigate("/instructor/calls"),
   });
 
-  // Enquiries (counter to be wired later)
-  const enquiriesCount: number = 0;
+  // Enquiries — live new booking + course enquiries
+  const { data: enquiriesCount = 0 } = useNewEnquiriesCount(instructorId);
+
   attentionRows.push({
     key: "enquiries",
     group: "urgent",
