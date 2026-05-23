@@ -650,25 +650,8 @@ function VehicleRedesignCard({
   const vehicleName =
     [details.car_make, details.car_model].filter(Boolean).join(" ") || "Add your vehicle";
   const vehicleSub = details.car_type || "Type & colour not set";
-  const skills = (details.special_skills || "")
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
 
-  const updateSkills = (next: string[]) => {
-    setDetails({ ...details, special_skills: next.join(", ") });
-  };
 
-  const onAddSkill = () => {
-    const v = typeof window !== "undefined" ? window.prompt("Add skill") : null;
-    if (v && v.trim()) updateSkills([...skills, v.trim()]);
-  };
-
-  const onRemoveSkill = (i: number) => {
-    const next = skills.slice();
-    next.splice(i, 1);
-    updateSkills(next);
-  };
 
   const labelStyle: React.CSSProperties = {
     fontSize: 10,
