@@ -535,9 +535,9 @@ export function UpNextExpanded({
     Icon: LucideIcon; label: string; onClick: () => void; disabled?: boolean;
     active?: boolean; activeBg?: string; activeBorder?: string; activeColor?: string;
     solidBg?: string; solidBorder?: string; solidColor?: string;
-    flex?: number; shadow?: boolean;
+    flex?: number; shadow?: boolean; ctaFlex?: boolean;
   }) => {
-    const { Icon, label, onClick, disabled, active, activeBg, activeBorder, activeColor, solidBg, solidBorder, solidColor, flex = 1, shadow } = opts;
+    const { Icon, label, onClick, disabled, active, activeBg, activeBorder, activeColor, solidBg, solidBorder, solidColor, flex = 1, shadow, ctaFlex } = opts;
     const bg = solidBg ?? (active ? (activeBg || "#fff") : "#fff");
     const bd = solidBorder ?? (active ? (activeBorder || "#e3e6ec") : "#e3e6ec");
     const fg = solidColor ?? (active ? (activeColor || TEXT) : "#3a3f4a");
@@ -546,29 +546,30 @@ export function UpNextExpanded({
         type="button"
         onClick={onClick}
         disabled={disabled}
+        className={`upnext-status-btn${ctaFlex ? " upnext-status-btn--cta" : ""}`}
         style={{
           flex, minWidth: 0,
-          height: 36,
+          height: "var(--ub-h, 36px)",
           background: bg,
           border: `1px solid ${bd}`,
           borderRadius: 10,
-          padding: "0 10px",
+          padding: "0 var(--ub-px, 10px)",
           fontFamily: PFONT,
-          fontSize: 12,
+          fontSize: "var(--ub-fs, 12px)",
           fontWeight: 600,
           letterSpacing: "-0.01em",
           color: fg,
           display: "inline-flex",
           alignItems: "center",
           justifyContent: "center",
-          gap: 6,
+          gap: "var(--ub-gap, 6px)",
           cursor: disabled ? "not-allowed" : "pointer",
           opacity: disabled ? 0.45 : 1,
           boxShadow: shadow ? "0 1px 2px rgba(41,82,179,0.18)" : "none",
           transition: "background 150ms, border-color 150ms, box-shadow 150ms",
         }}
       >
-        <Icon size={13} strokeWidth={1.9} />
+        <Icon size={13} strokeWidth={1.9} style={{ width: "var(--ub-ic, 13px)", height: "var(--ub-ic, 13px)", flexShrink: 0 }} />
         <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{label}</span>
       </button>
     );
