@@ -11762,7 +11762,7 @@ export type Database = {
           {
             foreignKeyName: "mileage_logs_telematics_id_fkey"
             columns: ["telematics_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "lesson_telematics"
             referencedColumns: ["id"]
           },
