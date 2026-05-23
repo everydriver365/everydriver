@@ -110,6 +110,10 @@ export function AccountSecurityPanel() {
       setPwdError(`Use at least ${PWD_MIN} characters and include a number.`);
       return;
     }
+    if (password !== confirmPassword) {
+      setPwdError("Passwords don't match.");
+      return;
+    }
     setSavingPwd(true);
     const auth = await reauth();
     if (auth) {
