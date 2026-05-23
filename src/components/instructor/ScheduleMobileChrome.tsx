@@ -134,7 +134,19 @@ export function ScheduleMobileChrome({
     <div style={{ fontFamily: FONT, display: "flex", flexDirection: "column", gap: 12 }}>
       {/* Nav bar */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0 }}>
+          <button
+            onClick={() => navigate("/instructor")}
+            aria-label="Back to home"
+            style={{
+              width: 30, height: 30, borderRadius: 15, background: "transparent",
+              border: "none", display: "flex", alignItems: "center", justifyContent: "center",
+              padding: 0, marginLeft: -6, cursor: "pointer", flexShrink: 0,
+              WebkitTapHighlightColor: "transparent",
+            }}
+          >
+            <ChevronLeft size={20} strokeWidth={1.9} color="#1a1a1f" />
+          </button>
           <h1 style={{ margin: 0, fontSize: 15, fontWeight: 600, color: "#1a1a1f", letterSpacing: "-0.2px" }}>
             Schedule
           </h1>
