@@ -600,34 +600,15 @@ export function QualificationsEditor({ instructorId }: Props) {
 
 
 
-        {/* Driving licence */}
-        <CredentialCard
-          icon={<FileCheck2 size={15} className="text-[#2B7BC8]" />}
-          title="Driving licence"
+        {/* Driving licence — redesigned */}
+        <LicenceCard
+          form={form}
+          set={set}
           status={licenceStatus}
-        >
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Licence number">
-              <input
-                value={form.driving_licence_number}
-                onChange={(e) => set("driving_licence_number", e.target.value.toUpperCase())}
-                placeholder="e.g. SMITH901125AB9CD"
-                className={inputCls}
-                style={inputStyle}
-              />
-            </Field>
-            <Field label="Expiry date">
-              <input
-                type="date"
-                value={form.driving_licence_expiry}
-                onChange={(e) => set("driving_licence_expiry", e.target.value)}
-                className={inputCls}
-                style={inputStyle}
-              />
-            </Field>
-          </div>
-          <SectionFooter sectionKey="licence" />
-        </CredentialCard>
+          onSave={() => saveSection("licence")}
+          saving={savingSection === "licence"}
+        />
+
 
         {/* Insurance */}
         <CredentialCard
