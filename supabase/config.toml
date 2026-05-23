@@ -257,3 +257,7 @@ verify_jwt = true
 
 [functions.slot-offer-expire]
 verify_jwt = false
+
+[functions.send-dbs-update-service-reminder]
+verify_jwt = false
+
