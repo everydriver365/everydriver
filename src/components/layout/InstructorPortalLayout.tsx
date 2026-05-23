@@ -717,7 +717,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
           <>
             {/* iOS Install Banner */}
             <IOSInstallBanner />
-            <MobileBackButton />
+            
 
 
             {/* Mobile Header — iOS Blue Gradient (hidden on home; DSM2026 hero replaces it) */}
