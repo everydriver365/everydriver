@@ -320,94 +320,80 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
 
   return (
     <>
-    <Tabs defaultValue={defaultTab} className="w-full">
-      <TabsList className="grid w-full grid-cols-4">
-        <TabsTrigger value="vehicle">Vehicle</TabsTrigger>
-        <TabsTrigger value="qualifications">Qualifications</TabsTrigger>
-        <TabsTrigger value="social">Social</TabsTrigger>
-        <TabsTrigger value="gps">GPS</TabsTrigger>
-      </TabsList>
-
-      {/* Vehicle Tab */}
-      <TabsContent value="vehicle" className="space-y-4 mt-4">
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label>Car Make</Label>
-            <Input
-              placeholder="e.g. Vauxhall"
-              value={details.car_make || ""}
-              onChange={(e) => setDetails({ ...details, car_make: e.target.value })}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label>Car Model</Label>
-            <Input
-              placeholder="e.g. Corsa"
-              value={details.car_model || ""}
-              onChange={(e) => setDetails({ ...details, car_model: e.target.value })}
-            />
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <Label>Car Type / Colour</Label>
-          <Input
-            placeholder="e.g. Red Hatchback"
-            value={details.car_type || ""}
-            onChange={(e) => setDetails({ ...details, car_type: e.target.value })}
+    <MobileVehicleTabs
+      defaultTab={defaultTab === "gps" ? "vehicle" : defaultTab}
+      details={details}
+      setDetails={setDetails}
+      handleSave={handleSave}
+      saving={saving}
+      gpsContent={
+        <>
+          <GpsDevicesList
+            instructorId={instructorId}
+            refreshKey={devicesRefreshKey}
+            onAnyConnected={(c) =>
+              setGpsStatus((prev) => (prev.isConnected === c ? prev : { ...prev, isConnected: c }))
+            }
           />
-        </div>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label>Coverage Postcode</Label>
-            <Input
-              placeholder="e.g. SW1A 1AA"
-              value={details.home_postcode || ""}
-              onChange={(e) => setDetails({ ...details, home_postcode: e.target.value })}
-            />
-          </div>
+          <Card>
+            <CardContent className="p-4 space-y-3">
+              <div className="space-y-0.5">
+                <Label className="text-sm font-medium">Tracking device</Label>
+                <p className="text-xs text-muted-foreground">
+                  Choose which device reports your live location.
+                </p>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                {([
+                  { value: "off", label: "Off" },
+                  { value: "phone", label: "Phone" },
+                  { value: "hardware", label: "Hardware", disabled: !gpsStatus.isConnected },
+                ] as const).map((opt) => {
+                  const active = trackingMode === opt.value;
+                  const disabled = savingMode || ("disabled" in opt && opt.disabled);
+                  return (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      disabled={disabled}
+                      onClick={() => !active && updateTrackingMode(opt.value)}
+                      className="rounded-xl border px-3 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50"
+                      style={{
+                        borderColor: active ? "var(--portal-accent, #2B7BC8)" : "hsl(var(--border))",
+                        background: active ? "var(--portal-accent, #2B7BC8)" : "transparent",
+                        color: active ? "#fff" : "hsl(var(--foreground))",
+                      }}
+                    >
+                      {opt.label}
+                    </button>
+                  );
+                })}
+              </div>
+              {!gpsStatus.isConnected && trackingMode !== "hardware" && (
+                <p className="text-xs text-muted-foreground">
+                  Hardware option unlocks once a tracker connection is detected.
+                </p>
+              )}
+            </CardContent>
+          </Card>
 
-          <div className="space-y-2">
-            <Label>Service Radius (miles)</Label>
-            <Input
-              type="number"
-              placeholder="e.g. 10"
-              value={details.radius_miles || ""}
-              onChange={(e) => setDetails({ 
-                ...details, 
-                radius_miles: e.target.value ? parseInt(e.target.value) : null 
-              })}
-            />
-          </div>
-        </div>
+          <Button variant="outline" onClick={testConnection} disabled={testingConnection} className="w-full">
+            {testingConnection ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-2" />}
+            Test Connection
+          </Button>
 
-        <div className="space-y-2">
-          <Label>Special Skills</Label>
-          <Textarea
-            placeholder="e.g. Nervous pupil specialist, Motorway training, Refresher lessons"
-            value={details.special_skills || ""}
-            onChange={(e) => setDetails({ ...details, special_skills: e.target.value })}
-            rows={2}
-          />
-        </div>
+          <p className="text-xs text-muted-foreground text-center">
+            GPS trackers are managed via the admin panel
+          </p>
+        </>
+      }
+    >
+      {/* Legacy slot - kept empty to satisfy children prop */}
+      <></>
+    </MobileVehicleTabs>
+    <LegacyHiddenTabs>
 
-        <div className="space-y-2">
-          <Label>Additional Info</Label>
-          <Textarea
-            placeholder="Any other information you want to share..."
-            value={details.extra_info || ""}
-            onChange={(e) => setDetails({ ...details, extra_info: e.target.value })}
-            rows={3}
-          />
-        </div>
-
-        <Button onClick={handleSave} disabled={saving} className="w-full">
-          {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-          Save Vehicle Details
-        </Button>
-      </TabsContent>
 
       {/* Qualifications Tab */}
       <TabsContent value="qualifications" className="space-y-4 mt-4">
