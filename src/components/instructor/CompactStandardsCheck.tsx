@@ -2,16 +2,12 @@ import { useState, useEffect } from "react";
 import { format, subMonths, parseISO } from "date-fns";
 import {
   AlertTriangle,
-  CheckCircle2,
-  ChevronRight,
   Loader2,
-  Target,
   Pencil,
   ExternalLink,
-  CalendarClock,
+  ClipboardCheck,
+  ClipboardX,
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -30,7 +26,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -53,6 +48,8 @@ const THRESHOLDS = {
   passRate: 55,
 };
 
+const MAX_TRIGGERS = 6;
+
 const RESULT_OPTIONS: { value: string; label: string }[] = [
   { value: "pending", label: "Pending / Scheduled" },
   { value: "grade_a", label: "Grade A" },
@@ -60,23 +57,7 @@ const RESULT_OPTIONS: { value: string; label: string }[] = [
   { value: "fail", label: "Fail" },
 ];
 
-const resultLabel = (v: string | null) =>
-  RESULT_OPTIONS.find((o) => o.value === v)?.label ?? null;
-
-const resultBadgeClass = (v: string | null) => {
-  switch (v) {
-    case "grade_a":
-      return "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400";
-    case "grade_b":
-      return "bg-sky-500/10 text-sky-700 dark:text-sky-400";
-    case "fail":
-      return "bg-destructive/10 text-destructive";
-    case "pending":
-      return "bg-amber-500/10 text-amber-700 dark:text-amber-400";
-    default:
-      return "bg-muted text-muted-foreground";
-  }
-};
+const DVSA_INFO_URL = "https://www.gov.uk/check-your-adi-standards-check-result";
 
 export function CompactStandardsCheck({ instructorId }: CompactStandardsCheckProps) {
   const [metrics, setMetrics] = useState<TriggerMetrics | null>(null);
@@ -190,163 +171,205 @@ export function CompactStandardsCheck({ instructorId }: CompactStandardsCheckPro
     }
   };
 
+  const divider = <div style={{ height: 1, background: "#f0f1f4", width: "100%" }} />;
+
   if (loading) {
     return (
-      <Card>
-        <CardContent className="py-6 flex items-center justify-center">
-          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-        </CardContent>
-      </Card>
+      <div
+        style={{
+          background: "#fff", border: "1px solid #e0e3ea", borderRadius: 14,
+          padding: 24, display: "flex", justifyContent: "center",
+          fontFamily: "Poppins, sans-serif",
+        }}
+      >
+        <Loader2 size={18} className="animate-spin" color="#aaa" />
+      </div>
     );
   }
 
-  const standardsCheckRequired = triggersCount >= 3;
-  const hasWarning = triggersCount > 0 && triggersCount < 3;
+  const points = Math.min(triggersCount, MAX_TRIGGERS);
+  const pct = (points / MAX_TRIGGERS) * 100;
 
   return (
     <>
-      <Card
-        className={cn(
-          "transition-colors",
-          standardsCheckRequired && "border-destructive/50 bg-destructive/5"
-        )}
-      >
-        <CardHeader className="pb-2">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-base flex items-center gap-2">
-              <Target className="h-4 w-4 text-primary" />
-              DVSA Standards Check
-            </CardTitle>
-            <div className="flex items-center gap-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 px-2"
-                onClick={openEdit}
-              >
-                <Pencil className="h-3.5 w-3.5 mr-1" />
-                {checkAt ? "Edit" : "Log"}
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 px-2"
-                onClick={() => navigate("/instructor/test-results")}
-              >
-                Driving tests <ChevronRight className="h-3.5 w-3.5" />
-              </Button>
+      <div style={{ fontFamily: "Poppins, sans-serif" }}>
+        {/* Page title */}
+        <div style={{ marginBottom: 12 }}>
+          <h2 style={{ fontSize: 16, fontWeight: 700, color: "#1a1a1f", margin: 0, lineHeight: 1.2 }}>
+            DVSA Standards Check
+          </h2>
+          <p style={{ fontSize: 11, color: "#aaa", margin: "2px 0 0" }}>
+            Date, result, trigger points and driving test link
+          </p>
+        </div>
+
+        {/* Card */}
+        <div
+          style={{
+            background: "#fff", border: "1px solid #e0e3ea", borderRadius: 14,
+            overflow: "hidden",
+          }}
+        >
+          {/* Section header */}
+          <div style={{ padding: "13px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+              <span style={{
+                width: 34, height: 34, borderRadius: 9, background: "#e8eefb",
+                display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+              }}>
+                <ClipboardCheck size={18} color="#2952b3" />
+              </span>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: "#1a1a1f", lineHeight: 1.2 }}>
+                  DVSA Standards Check
+                </div>
+                <div style={{ fontSize: 10, color: "#aaa", marginTop: 1 }}>
+                  Track results and trigger points
+                </div>
+              </div>
+            </div>
+            <a
+              href={DVSA_INFO_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: "inline-flex", alignItems: "center", gap: 4,
+                fontSize: 11, fontWeight: 500, color: "#2952b3",
+                textDecoration: "none", flexShrink: 0,
+              }}
+            >
+              Info <ExternalLink size={11} />
+            </a>
+          </div>
+
+          {divider}
+
+          {/* Trigger points tracker */}
+          <div style={{ padding: "12px 14px 14px" }}>
+            <div style={{
+              background: "#fff8e8", border: "0.5px solid #fde9a0",
+              borderRadius: 10, padding: "12px 14px",
+            }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+                  <AlertTriangle size={14} color="#f59e0b" style={{ flexShrink: 0 }} />
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: 11, fontWeight: 600, color: "#854f0b", lineHeight: 1.2 }}>
+                      Trigger points tracker
+                    </div>
+                    <div style={{ fontSize: 10, color: "#b87a2a", marginTop: 1 }}>
+                      {points} of {MAX_TRIGGERS} trigger points
+                    </div>
+                  </div>
+                </div>
+                <div style={{ fontSize: 18, fontWeight: 700, color: "#f59e0b", flexShrink: 0 }}>
+                  {points}/{MAX_TRIGGERS}
+                </div>
+              </div>
+              <div style={{
+                height: 6, background: "#fde9a0", borderRadius: 3,
+                marginTop: 10, overflow: "hidden",
+              }}>
+                <div style={{
+                  height: "100%", width: `${pct}%`, background: "#f59e0b",
+                  borderRadius: 3, transition: "width 0.3s ease",
+                }} />
+              </div>
+              <div style={{
+                display: "flex", justifyContent: "space-between",
+                marginTop: 5, fontSize: 9, color: "#b87a2a",
+              }}>
+                <span>0 points</span>
+                <span>Check triggered at {MAX_TRIGGERS}</span>
+              </div>
             </div>
           </div>
-        </CardHeader>
 
-        <CardContent className="space-y-3">
-          {/* Recorded standards check appointment */}
-          {checkAt && (
-            <div className="flex items-center justify-between gap-2 p-2 rounded-2xl bg-muted/40 border">
-              <div className="flex items-center gap-2 min-w-0">
-                <CalendarClock className="h-4 w-4 text-muted-foreground shrink-0" />
-                <div className="min-w-0">
-                  <p className="text-sm font-medium truncate">
-                    {format(parseISO(checkAt), "EEE d MMM yyyy · HH:mm")}
-                  </p>
-                  <p className="text-[11px] text-muted-foreground">Standards Check appointment</p>
-                </div>
+          {divider}
+
+          {/* Action buttons */}
+          <div style={{ padding: "12px 14px", display: "flex", gap: 8 }}>
+            <button
+              type="button"
+              onClick={openEdit}
+              style={{
+                flex: 1, background: "#2952b3", color: "#fff", border: "none",
+                borderRadius: 10, padding: "9px", fontSize: 11, fontWeight: 600,
+                display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
+                cursor: "pointer", fontFamily: "Poppins, sans-serif",
+              }}
+            >
+              <Pencil size={12} /> Log result
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate("/instructor/test-results")}
+              style={{
+                flex: 1, background: "#F2F4F8", color: "#1a1a1f",
+                border: "1px solid #e0e3ea", borderRadius: 10, padding: "9px",
+                fontSize: 11, fontWeight: 600,
+                display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
+                cursor: "pointer", fontFamily: "Poppins, sans-serif",
+              }}
+            >
+              <ExternalLink size={12} /> Driving test link
+            </button>
+          </div>
+
+          {divider}
+
+          {/* Empty / results state */}
+          {!checkAt && !metrics ? (
+            <div style={{ padding: "28px 20px", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" }}>
+              <span style={{
+                width: 48, height: 48, borderRadius: 14, background: "#e8eefb",
+                display: "inline-flex", alignItems: "center", justifyContent: "center",
+                marginBottom: 12,
+              }}>
+                <ClipboardX size={22} color="#2952b3" />
+              </span>
+              <div style={{ fontSize: 13, fontWeight: 600, color: "#1a1a1f" }}>
+                No test results recorded
               </div>
-              {checkResult && (
-                <span
-                  className={cn(
-                    "text-[11px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap",
-                    resultBadgeClass(checkResult)
-                  )}
-                >
-                  {resultLabel(checkResult)}
-                </span>
-              )}
-            </div>
-          )}
-
-          {/* External link to gov.uk reference */}
-          <a
-            href="https://www.gov.uk/check-your-adi-standards-check-result"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-[11px] text-[#2B7BC8] hover:underline"
-          >
-            DVSA Standards Check info <ExternalLink className="h-3 w-3" />
-          </a>
-
-          {!metrics ? (
-            <div className="text-center py-2">
-              <p className="text-sm text-muted-foreground">No test results recorded</p>
-              <p className="text-xs text-muted-foreground mt-1">Log driving test results to track triggers</p>
+              <div style={{ fontSize: 11, color: "#aaa", marginTop: 4, lineHeight: 1.5, maxWidth: 280 }}>
+                Log your DVSA Standards Check results to track trigger points over time
+              </div>
             </div>
           ) : (
-            <>
-              {/* Status Banner */}
-              {standardsCheckRequired ? (
-                <div className="flex items-center gap-2 p-2 rounded-2xl bg-destructive/10">
-                  <AlertTriangle className="h-4 w-4 text-destructive" />
-                  <span className="text-sm font-medium text-destructive">Standards Check Required</span>
-                </div>
-              ) : hasWarning ? (
-                <div className="flex items-center gap-2 p-2 rounded-2xl bg-amber-500/10">
-                  <AlertTriangle className="h-4 w-4 text-amber-600" />
-                  <span className="text-sm font-medium text-amber-700 dark:text-amber-400">
-                    {triggersCount} trigger{triggersCount > 1 ? "s" : ""} met
-                  </span>
-                </div>
-              ) : (
-                <div className="flex items-center gap-2 p-2 rounded-2xl bg-emerald-500/10">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-                  <span className="text-sm font-medium text-emerald-700 dark:text-emerald-400">All metrics OK</span>
+            <div style={{ padding: "12px 14px", display: "flex", flexDirection: "column", gap: 8 }}>
+              {checkAt && (
+                <div style={{
+                  display: "flex", alignItems: "center", justifyContent: "space-between",
+                  background: "#F2F4F8", border: "1px solid #eaecee",
+                  borderRadius: 10, padding: "10px 12px", gap: 10,
+                }}>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: "#1a1a1f" }}>
+                      {format(parseISO(checkAt), "EEE d MMM yyyy · HH:mm")}
+                    </div>
+                    <div style={{ fontSize: 10, color: "#aaa", marginTop: 1 }}>
+                      Standards Check appointment
+                    </div>
+                  </div>
+                  {checkResult && (
+                    <span style={{
+                      fontSize: 10, fontWeight: 600, padding: "3px 8px", borderRadius: 999,
+                      background: "#e8eefb", color: "#2952b3", whiteSpace: "nowrap",
+                    }}>
+                      {RESULT_OPTIONS.find((o) => o.value === checkResult)?.label ?? checkResult}
+                    </span>
+                  )}
                 </div>
               )}
-
-              {/* DVSA Trigger Points */}
-              <div>
-                <p className="text-[11px] uppercase tracking-wide text-muted-foreground mb-1.5">
-                  DVSA Trigger Points (last 12 months)
-                </p>
-                <div className="grid grid-cols-2 gap-2">
-                  <TriggerIndicator
-                    label="Minor Faults"
-                    value={metrics.avgMinorFaults.toFixed(1)}
-                    threshold="<5 avg"
-                    triggered={metrics.avgMinorFaults >= THRESHOLDS.minorFaults}
-                  />
-                  <TriggerIndicator
-                    label="Serious Faults"
-                    value={metrics.avgSeriousFaults.toFixed(2)}
-                    threshold="<0.5 avg"
-                    triggered={metrics.avgSeriousFaults >= THRESHOLDS.seriousFaults}
-                  />
-                  <TriggerIndicator
-                    label="Physical Action"
-                    value={`${metrics.physicalActionRate.toFixed(0)}%`}
-                    threshold="<10%"
-                    triggered={metrics.physicalActionRate >= THRESHOLDS.physicalAction}
-                  />
-                  <TriggerIndicator
-                    label="Pass Rate"
-                    value={`${metrics.passRate.toFixed(0)}%`}
-                    threshold=">55%"
-                    triggered={metrics.passRate <= THRESHOLDS.passRate}
-                  />
+              {metrics && (
+                <div style={{ fontSize: 10, color: "#aaa", textAlign: "center" }}>
+                  Based on {metrics.totalTests} test{metrics.totalTests !== 1 ? "s" : ""} in the last 12 months
                 </div>
-              </div>
-
-              <div className="flex items-center justify-between pt-1 border-t">
-                <span className="text-xs text-muted-foreground">
-                  {metrics.totalTests} test{metrics.totalTests !== 1 ? "s" : ""} (12 months)
-                </span>
-                <Badge variant={standardsCheckRequired ? "destructive" : hasWarning ? "secondary" : "outline"}>
-                  {triggersCount}/4 triggers
-                </Badge>
-              </div>
-            </>
+              )}
+            </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogContent className="max-w-md">
@@ -391,32 +414,5 @@ export function CompactStandardsCheck({ instructorId }: CompactStandardsCheckPro
         </DialogContent>
       </Dialog>
     </>
-  );
-}
-
-function TriggerIndicator({
-  label,
-  value,
-  threshold,
-  triggered,
-}: {
-  label: string;
-  value: string;
-  threshold: string;
-  triggered: boolean;
-}) {
-  return (
-    <div
-      className={cn(
-        "p-2 rounded-2xl text-center",
-        triggered ? "bg-destructive/10" : "bg-muted/50"
-      )}
-    >
-      <p className="text-xs text-muted-foreground">{label}</p>
-      <p className={cn("text-sm font-bold", triggered ? "text-destructive" : "text-foreground")}>
-        {value}
-      </p>
-      <p className="text-[10px] text-muted-foreground">{threshold}</p>
-    </div>
   );
 }
