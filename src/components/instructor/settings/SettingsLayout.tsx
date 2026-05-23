@@ -142,8 +142,9 @@ export function SettingsLayout({ categories, search, onSearchChange }: SettingsL
       );
     }
 
+    const isAccount = activeCategory.id === "account";
     return (
-      <div className="space-y-4 pb-24">
+      <div className="space-y-4 pb-24" style={isAccount ? { background: "#F2F4F8" } : undefined}>
         <button
           type="button"
           onClick={() => navigate("/instructor/settings")}
@@ -151,8 +152,15 @@ export function SettingsLayout({ categories, search, onSearchChange }: SettingsL
         >
           <ChevronLeft className="h-4 w-4" /> Settings
         </button>
-        <CategoryHeader category={activeCategory} />
-        <SectionsPane sections={activeCategory.sections} />
+        {isAccount ? (
+          <AccountMobileHeader />
+        ) : (
+          <CategoryHeader category={activeCategory} />
+        )}
+        <SectionsPane
+          sections={activeCategory.sections}
+          unwrapIds={isAccount ? ["profile"] : undefined}
+        />
       </div>
     );
   }
