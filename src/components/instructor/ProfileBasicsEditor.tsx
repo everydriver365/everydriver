@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Loader2, Camera, Mic } from "lucide-react";
+import { Loader2, Camera, Mic, X as XIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ import { AvatarRepositionDialog } from "./AvatarRepositionDialog";
 interface Props {
   instructorId: string;
 }
+
 
 interface Row {
   name: string;
