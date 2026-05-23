@@ -17,8 +17,18 @@ export function MobileBackButton() {
   const isInstructorRoute = pathname.startsWith("/instructor");
   const normalized = pathname.replace(/\/+$/, "");
   const isHome = normalized === "/instructor";
+  // Tab roots already lack a header back button — show floating back there.
+  // Subpages get the back arrow inside MobileBlueHeader, so skip them to avoid duplication.
+  const tabRoots = new Set([
+    "/instructor/schedule",
+    "/instructor/tracking",
+    "/instructor/pupils",
+    "/instructor/menu",
+  ]);
+  const isTabRoot = tabRoots.has(normalized);
 
-  if (!isInstructorRoute || isHome) return null;
+  if (!isInstructorRoute || isHome || !isTabRoot) return null;
+
 
   return (
     <button
