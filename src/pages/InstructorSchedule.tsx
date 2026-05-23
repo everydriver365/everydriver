@@ -5,6 +5,7 @@ import { AutoTrackingIndicator } from "@/components/instructor/AutoTrackingIndic
 import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
 import { WeekTimelineView } from "@/components/instructor/WeekTimelineView";
 import { ScheduleSkeleton } from "@/components/ui/skeletons/ScheduleSkeleton";
+import { ScheduleMobileChrome } from "@/components/instructor/ScheduleMobileChrome";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { MultiDayScheduleView } from "@/components/instructor/MultiDayScheduleView";
 import { MobileMonthCalendarView } from "@/components/instructor/MobileMonthCalendarView";
