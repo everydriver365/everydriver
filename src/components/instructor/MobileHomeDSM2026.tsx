@@ -743,7 +743,7 @@ function HeroHeader(props: {
   return (
     <div
       style={{
-        backgroundColor: "#1E6FB8",
+        backgroundColor: "#072b47",
         padding: "calc(env(safe-area-inset-top, 0px) + 12px) 18px 16px",
         marginTop: "calc(-1 * env(safe-area-inset-top, 0px))",
         borderBottomLeftRadius: 20,
