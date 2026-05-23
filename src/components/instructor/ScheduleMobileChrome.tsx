@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { NavigateFunction } from "react-router-dom";
-import { Phone, Bell, Plus, Menu, RefreshCw, List, Columns3, CalendarRange } from "lucide-react";
+import { Phone, Bell, Plus, Menu, RefreshCw, List, Columns3, CalendarRange, ChevronLeft } from "lucide-react";
 import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
 import { useActiveTrackingSession } from "@/hooks/useActiveTrackingSession";
 import { useQuery } from "@tanstack/react-query";
