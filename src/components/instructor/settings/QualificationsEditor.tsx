@@ -16,6 +16,11 @@ import {
   Bell,
   Mail,
   Save,
+  ChevronDown,
+  Plus,
+  X,
+  GraduationCap,
+  IdCard,
 } from "lucide-react";
 import { differenceInDays, format, parseISO } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
