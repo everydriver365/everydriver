@@ -24,7 +24,11 @@ interface NotifyPupilRequest {
     | "en_route"
     | "arrived"
     | "running_late"
-    | "payment_reminder";
+    | "payment_reminder"
+    | "lesson_completed"
+    | "syllabus_category_complete"
+    | "test_passed";
+
   title?: string;
   body?: string;
   data?: Record<string, unknown>;
