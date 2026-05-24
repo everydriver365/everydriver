@@ -102,6 +102,25 @@ export function PupilPortalSchedule({
     },
   });
 
+  // Fetch instructor cancellation fields + name for late-cancel warning
+  const { data: instructorInfo } = useQuery({
+    queryKey: ['pupil-instructor-cancel-info', instructorId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('instructors')
+        .select('name, late_cancel_fee, late_cancel_hours, cancellation_policy_text, ai_waitlist_filling_enabled')
+        .eq('id', instructorId)
+        .single();
+      return data as {
+        name: string | null;
+        late_cancel_fee: number | null;
+        late_cancel_hours: number | null;
+        cancellation_policy_text: string | null;
+        ai_waitlist_filling_enabled: boolean | null;
+      } | null;
+    },
+  });
+
   // Fetch lessons
   const { data: lessons = [], isLoading: loading } = useQuery({
     queryKey: ['pupil-lessons', pupilId, instructorId],
@@ -121,10 +140,16 @@ export function PupilPortalSchedule({
   });
 
   const canCancelLesson = (lesson: ScheduledLesson): boolean => {
-    if (!settings?.allow_self_cancel) return false;
+    // Always allow cancel button when self-cancel is enabled; late cancels
+    // surface a warning in the dialog rather than being hidden.
+    return !!settings?.allow_self_cancel;
+  };
+
+  const isLateCancel = (lesson: ScheduledLesson): boolean => {
+    if (!settings) return false;
     const lessonDateTime = new Date(`${lesson.lesson_date}T${lesson.start_time}`);
     const cutoff = addHours(new Date(), settings.cancel_notice_hours);
-    return isAfter(lessonDateTime, cutoff);
+    return !isAfter(lessonDateTime, cutoff);
   };
 
   const canRescheduleLesson = (lesson: ScheduledLesson): boolean => {
@@ -147,12 +172,12 @@ export function PupilPortalSchedule({
 
   const confirmCancel = async () => {
     if (!selectedLesson) return;
-    
+
     setCancelling(true);
     try {
       const { error } = await supabase
         .from("scheduled_lessons")
-        .update({ 
+        .update({
           status: "cancelled",
           cancelled_by: "pupil",
           cancellation_reason: cancelReason || null,
@@ -160,6 +185,30 @@ export function PupilPortalSchedule({
         .eq("id", selectedLesson.id);
 
       if (error) throw error;
+
+      // Fetch pupil name once for instructor notification (best-effort)
+      const { data: pupilRow } = await supabase
+        .from("pupils")
+        .select("name")
+        .eq("id", pupilId)
+        .single();
+
+      // Fire-and-forget instructor notification. Google Calendar delete is
+      // handled by the existing scheduled_lessons cancellation trigger
+      // (see lesson-soft-delete-pipeline memory).
+      supabase.functions
+        .invoke("notify-instructor", {
+          body: {
+            instructorId,
+            type: "cancellation",
+            pupilName: pupilRow?.name ?? undefined,
+            lessonDate: selectedLesson.lesson_date,
+            lessonTime: selectedLesson.start_time,
+            durationMinutes: selectedLesson.duration_minutes,
+            chargeApplied: isLateCancel(selectedLesson),
+          },
+        })
+        .catch((e) => console.error("[PupilCancel] notify-instructor failed", e));
 
       queryClient.invalidateQueries({ queryKey: ['pupil-lessons'] });
       toast({ title: "Lesson cancelled", description: "Your instructor has been notified" });
