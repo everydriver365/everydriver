@@ -76,10 +76,33 @@ export function RescheduleLessonSheet({
       setSelectedDate(undefined);
       setSelectedTime(null);
       setError(null);
+      setSeriesScope("single");
       fetchAvailability();
+      (async () => {
+        const { data } = await supabase
+          .from("scheduled_lessons")
+          .select("recurrence_parent_id")
+          .eq("id", lessonId)
+          .maybeSingle();
+        const parentId =
+          (data as { recurrence_parent_id: string | null } | null)?.recurrence_parent_id ?? null;
+        setRecurrenceParentId(parentId);
+        if (parentId) {
+          const timeStr = (currentTime || "00:00:00").length === 5 ? `${currentTime}:00` : currentTime;
+          const after = new Date(`${currentDate}T${timeStr}`);
+          const ids = await getFutureSiblings(
+            supabase,
+            { id: lessonId, recurrence_parent_id: parentId },
+            after,
+          );
+          setFutureSiblingIds(ids);
+        } else {
+          setFutureSiblingIds([]);
+        }
+      })();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, instructorId]);
+  }, [open, instructorId, lessonId, currentDate, currentTime]);
 
   // Refresh Google Calendar cache for the reschedule horizon when the sheet opens.
   useGoogleCalendarRefresh({
