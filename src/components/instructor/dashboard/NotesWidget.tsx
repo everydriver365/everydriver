@@ -48,6 +48,7 @@ export function NotesWidget({ instructorId }: NotesWidgetProps) {
         .select("id, name")
         .eq("instructor_id", instructorId)
         .eq("is_active", true)
+        .is("deleted_at", null)
         .order("name");
       return (data || []) as { id: string; name: string }[];
     },
