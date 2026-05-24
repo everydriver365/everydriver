@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { Calendar, Clock, MapPin, Phone, MessageSquare, X, AlertTriangle, ArrowRight, Loader2, RefreshCw } from "lucide-react";
+import { Calendar, Clock, MapPin, Phone, MessageSquare, X, AlertTriangle, ArrowRight, Loader2, RefreshCw, ChevronDown, ChevronUp } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +13,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import SelfBookingCalendar from "./SelfBookingCalendar";
 import { checkLessonClash, describeLessonClashError } from "@/lib/lessonClashCheck";
 import { BookNewLessonButton } from "./lessons/BookNewLessonButton";
-import { CancellationPolicy } from "./lessons/CancellationPolicy";
+import { CancellationPolicyCard } from "./CancellationPolicyCard";
 import { UpcomingLessonsSection } from "./lessons/UpcomingLessonsSection";
 import { LessonHistorySection } from "./lessons/LessonHistorySection";
 import type { LessonHistoryItem } from "./lessons/LessonHistoryRow";
