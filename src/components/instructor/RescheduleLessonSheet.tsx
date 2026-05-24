@@ -65,6 +65,9 @@ export function RescheduleLessonSheet({
   const [viewMonth, setViewMonth] = useState<Date>(new Date());
   const [bufferMinutes, setBufferMinutes] = useState(0);
   const [notifyPupil, setNotifyPupil] = useState(true);
+  const [recurrenceParentId, setRecurrenceParentId] = useState<string | null>(null);
+  const [futureSiblingIds, setFutureSiblingIds] = useState<string[]>([]);
+  const [seriesScope, setSeriesScope] = useState<"single" | "series">("single");
 
   const bookingAdvanceDays = 365;
 
