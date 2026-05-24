@@ -17,6 +17,8 @@ interface SlotOffer {
   expires_at: string | null;
   status: string;
   recipient_id: string;
+  discount_type: string | null;
+  discount_value: number | null;
 }
 
 interface SlotOfferNotificationProps {
