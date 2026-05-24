@@ -1,5 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { PupilMilestones } from '@/components/pupil-portal/PupilMilestones';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { supabase } from '@/integrations/supabase/client';
@@ -30,10 +32,30 @@ export function PupilSyllabusView({ pupilId, brandColour, darkMode }: PupilSylla
   }[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
+  const [highlightedCategory, setHighlightedCategory] = useState<string | null>(null);
+  const categoryRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => {
     fetchProgress();
   }, [pupilId]);
+
+  // Deep-link: ?category=<name> scrolls to + highlights that category
+  useEffect(() => {
+    const cat = searchParams.get('category');
+    if (!cat || loading) return;
+    setExpandedCategory(cat);
+    setHighlightedCategory(cat);
+    const t = setTimeout(() => {
+      categoryRefs.current[cat]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
+    const t2 = setTimeout(() => setHighlightedCategory(null), 2400);
+    const t3 = setTimeout(() => {
+      searchParams.delete('category');
+      setSearchParams(searchParams, { replace: true });
+    }, 2500);
+    return () => { clearTimeout(t); clearTimeout(t2); clearTimeout(t3); };
+  }, [searchParams, loading]);
 
   const fetchProgress = async () => {
     try {
