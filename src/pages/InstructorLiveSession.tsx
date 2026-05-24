@@ -1483,7 +1483,7 @@ export default function InstructorLiveSession() {
   return (
     <InstructorPortalLayout>
       <div className="min-h-[calc(100dvh-120px)] -mx-4 md:mx-0 -mt-4 md:mt-0" style={{ background: "transparent" }}>
-        <div style={{ padding: "12px 10px 96px", display: "flex", flexDirection: "column", gap: 16, fontFamily: FONT_STACK }}>
+        <div style={{ padding: "12px 0 96px", display: "flex", flexDirection: "column", gap: 16, fontFamily: FONT_STACK }}>
 
           {viewMode === "fleet" ? (
             <>
