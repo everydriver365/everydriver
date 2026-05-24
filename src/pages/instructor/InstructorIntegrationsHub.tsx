@@ -290,7 +290,7 @@ export default function InstructorIntegrationsHub() {
         </div>
 
         {/* Setup steps card (collapsible) */}
-        <div style={{ backgroundColor: "#FFF", borderRadius: 12, border: "1px solid #ECEEF2", overflow: "hidden", marginBottom: 16 }}>
+        <div style={{ backgroundColor: "#FFF", borderRadius: 14, border: "0.5px solid #e0e3ea", overflow: "hidden", marginBottom: 16 }}>
           <button
             type="button"
             onClick={() => setStepsExpanded(!stepsExpanded)}
