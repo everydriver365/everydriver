@@ -255,6 +255,60 @@ export function CancelLessonDialog({
         pupilName,
       });
 
+      // ── Series cancel (only fires when user picked "Cancel this and all future")
+      //    Sibling updates are intentionally minimal: status flip + reason.
+      //    NO Google sync invoke, NO waitlist backfill, NO balance changes,
+      //    NO automations re-fired per sibling. The DB trigger remains the
+      //    safety net for Google calendar cleanup on each row.
+      if (recurrenceParentId && seriesScope === "series" && futureSiblingIds.length > 0) {
+        try {
+          const { error: siblingErr } = await supabase
+            .from("scheduled_lessons")
+            .update({
+              status: "cancelled",
+              cancelled_by: "instructor",
+              cancellation_reason: "Series cancelled by instructor",
+              cancelled_at: new Date().toISOString(),
+            } as any)
+            .in("id", futureSiblingIds);
+
+          if (siblingErr) {
+            console.error("Series cancel: sibling update failed", siblingErr);
+            toast({
+              title: "Some lessons couldn't be cancelled",
+              description: "The primary lesson was cancelled, but future series lessons failed to update.",
+              variant: "destructive",
+            });
+          } else {
+            if (notifyPupil) {
+              for (const sid of futureSiblingIds) {
+                try {
+                  await supabase.functions.invoke("notify-pupil", {
+                    body: {
+                      pupilId,
+                      type: PupilNotifyType.LESSON_CANCELLED,
+                      data: {
+                        type: PushDataType.LESSON_CANCELLED,
+                        lessonId: sid,
+                        chargeApplied: false,
+                      },
+                    },
+                  });
+                } catch (e) {
+                  console.error("Series cancel: sibling notify failed", sid, e);
+                }
+              }
+            }
+            toast({
+              title: "Lesson cancelled",
+              description: `${futureSiblingIds.length} future lesson${futureSiblingIds.length === 1 ? "" : "s"} in this series also cancelled`,
+            });
+          }
+        } catch (seriesErr) {
+          console.error("Series cancel: unexpected error", seriesErr);
+        }
+      }
+
       onCancelled();
       onOpenChange(false);
       setShowBackfill(true);
