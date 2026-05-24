@@ -17,6 +17,8 @@ interface SlotOffer {
   expires_at: string | null;
   status: string;
   recipient_id: string;
+  discount_type: string | null;
+  discount_value: number | null;
 }
 
 interface SlotOfferNotificationProps {
@@ -89,7 +91,7 @@ export function SlotOfferNotification({ pupilId, focusOfferId, onAccept }: SlotO
           claimed_at,
           declined_at,
           slot_offer:slot_offers!inner (
-            id, lesson_date, start_time, end_time, duration_mins, expires_at, status
+            id, lesson_date, start_time, end_time, duration_mins, expires_at, status, discount_type, discount_value
           )
         `)
         .eq("pupil_id", pupilId)
@@ -249,6 +251,13 @@ export function SlotOfferNotification({ pupilId, focusOfferId, onAccept }: SlotO
                       {formatTime(offer.start_time)} - {formatTime(offer.end_time)}
                     </span>
                   </div>
+                  {offer.discount_type && offer.discount_value != null && (
+                    <Badge className="bg-green-600 hover:bg-green-600 text-white text-xs">
+                      🎉 {offer.discount_type === "percentage"
+                        ? `${offer.discount_value}% off`
+                        : `£${offer.discount_value} off`} if you book now
+                    </Badge>
+                  )}
                   <p className="text-xs text-muted-foreground">
                     {offer.duration_mins} minute lesson · first to claim gets it
                   </p>

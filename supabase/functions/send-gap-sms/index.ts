@@ -127,16 +127,18 @@ const handler = async (req: Request): Promise<Response> => {
       // Generate a batch ID to group offers for this pupil in this send
       const batchId = crypto.randomUUID();
 
-      // For each slot, create a gap offer record with slot number
-      const slotOffers = [];
+      // For each slot, create a gap_offers row (SMS source of truth)
+      // AND mirror into slot_offers + slot_offer_recipients so the pupil
+      // sees the same "Grab a Gap" card in the portal with the discount.
+      const slotOffers: string[] = [];
       for (let i = 0; i < slotsToSend.length; i++) {
         const slot = slotsToSend[i];
+
         const { data: offerData, error: offerError } = await supabase
           .from("gap_offers")
           .insert({
             instructor_id: instructorId,
             pupil_id: pupil.id,
-            // Store normalized phone so inbound replies (From is E.164) can match offers
             pupil_phone: formattedPhone,
             slot_date: slot.date,
             slot_start_time: slot.startTime,
@@ -150,8 +152,46 @@ const handler = async (req: Request): Promise<Response> => {
           .select("id")
           .single();
 
-        if (!offerError && offerData) {
-          slotOffers.push(offerData.id);
+        if (offerError || !offerData) {
+          console.error("gap_offers insert failed", offerError);
+          continue;
+        }
+        slotOffers.push(offerData.id);
+
+        // Mirror into slot_offers for the in-portal Grab a Gap card.
+        const [sh, sm] = slot.startTime.split(":").map(Number);
+        const [eh, em] = slot.endTime.split(":").map(Number);
+        const durationMins = (eh * 60 + em) - (sh * 60 + sm);
+        const expiresAt = new Date(`${slot.date}T${slot.startTime}:00`).toISOString();
+
+        const { data: slotOfferRow, error: slotOfferErr } = await supabase
+          .from("slot_offers")
+          .insert({
+            instructor_id: instructorId,
+            lesson_date: slot.date,
+            start_time: slot.startTime,
+            end_time: slot.endTime,
+            duration_mins: durationMins > 0 ? durationMins : 60,
+            expires_at: expiresAt,
+            status: "open",
+            discount_type: discountType,
+            discount_value: discountValue,
+            gap_offer_id: offerData.id,
+          })
+          .select("id")
+          .single();
+
+        if (slotOfferErr || !slotOfferRow) {
+          console.error("slot_offers mirror insert failed", slotOfferErr);
+        } else {
+          const { error: recErr } = await supabase
+            .from("slot_offer_recipients")
+            .insert({
+              slot_offer_id: slotOfferRow.id,
+              pupil_id: pupil.id,
+              instructor_id: instructorId,
+            });
+          if (recErr) console.error("slot_offer_recipients insert failed", recErr);
         }
       }
 

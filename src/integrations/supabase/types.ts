@@ -16273,6 +16273,7 @@ export type Database = {
         Row: {
           amount_due: number | null
           awaiting_initial_payment: boolean
+          booking_method: string | null
           booking_status: string | null
           calendar_sync_status: string
           cancellation_note: string | null
@@ -16285,6 +16286,9 @@ export type Database = {
           clash_overridden: boolean
           created_at: string
           deleted_at: string | null
+          discount_amount: number | null
+          discount_type: string | null
+          discount_value: number | null
           dropoff_lat: number | null
           dropoff_lng: number | null
           dropoff_postcode: string | null
@@ -16329,6 +16333,7 @@ export type Database = {
         Insert: {
           amount_due?: number | null
           awaiting_initial_payment?: boolean
+          booking_method?: string | null
           booking_status?: string | null
           calendar_sync_status?: string
           cancellation_note?: string | null
@@ -16341,6 +16346,9 @@ export type Database = {
           clash_overridden?: boolean
           created_at?: string
           deleted_at?: string | null
+          discount_amount?: number | null
+          discount_type?: string | null
+          discount_value?: number | null
           dropoff_lat?: number | null
           dropoff_lng?: number | null
           dropoff_postcode?: string | null
@@ -16385,6 +16393,7 @@ export type Database = {
         Update: {
           amount_due?: number | null
           awaiting_initial_payment?: boolean
+          booking_method?: string | null
           booking_status?: string | null
           calendar_sync_status?: string
           cancellation_note?: string | null
@@ -16397,6 +16406,9 @@ export type Database = {
           clash_overridden?: boolean
           created_at?: string
           deleted_at?: string | null
+          discount_amount?: number | null
+          discount_type?: string | null
+          discount_value?: number | null
           dropoff_lat?: number | null
           dropoff_lng?: number | null
           dropoff_postcode?: string | null
@@ -17173,9 +17185,12 @@ export type Database = {
         Row: {
           claim_expires_at: string | null
           created_at: string | null
+          discount_type: string | null
+          discount_value: number | null
           duration_mins: number
           end_time: string
           expires_at: string | null
+          gap_offer_id: string | null
           id: string
           instructor_approved: boolean | null
           instructor_approved_at: string | null
@@ -17193,9 +17208,12 @@ export type Database = {
         Insert: {
           claim_expires_at?: string | null
           created_at?: string | null
+          discount_type?: string | null
+          discount_value?: number | null
           duration_mins: number
           end_time: string
           expires_at?: string | null
+          gap_offer_id?: string | null
           id?: string
           instructor_approved?: boolean | null
           instructor_approved_at?: string | null
@@ -17213,9 +17231,12 @@ export type Database = {
         Update: {
           claim_expires_at?: string | null
           created_at?: string | null
+          discount_type?: string | null
+          discount_value?: number | null
           duration_mins?: number
           end_time?: string
           expires_at?: string | null
+          gap_offer_id?: string | null
           id?: string
           instructor_approved?: boolean | null
           instructor_approved_at?: string | null
@@ -17231,6 +17252,13 @@ export type Database = {
           status?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "slot_offers_gap_offer_id_fkey"
+            columns: ["gap_offer_id"]
+            isOneToOne: false
+            referencedRelation: "gap_offers"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "slot_offers_instructor_id_fkey"
             columns: ["instructor_id"]

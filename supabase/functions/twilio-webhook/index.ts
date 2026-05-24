@@ -258,7 +258,76 @@ const handler = async (req: Request): Promise<Response> => {
 
       console.log(`Offer ${offer.id} (slot ${offer.slot_number}) updated to accepted`);
 
-      // Create the scheduled lesson
+      // Compute lesson price (pupil custom rate -> postcode rule -> instructor default)
+      // and apply the offer's discount.
+      const duration = (() => {
+        const [sh, sm] = String(offer.slot_start_time).split(":").map(Number);
+        const [eh, em] = String(offer.slot_end_time).split(":").map(Number);
+        const d = (eh * 60 + em) - (sh * 60 + sm);
+        return d > 0 ? d : 60;
+      })();
+
+      const { data: pupilRow } = await supabase
+        .from("pupils")
+        .select("postcode, custom_hourly_rate, custom_rate_90min, custom_rate_120min")
+        .eq("id", offer.pupil_id)
+        .maybeSingle();
+
+      let hourlyRate: number | null = null;
+      let baseAmount: number | null = null;
+
+      if (duration === 90 && pupilRow?.custom_rate_90min && pupilRow.custom_rate_90min > 0) {
+        baseAmount = Number(pupilRow.custom_rate_90min);
+        hourlyRate = Math.round((baseAmount * 60 / duration) * 100) / 100;
+      } else if (duration === 120 && pupilRow?.custom_rate_120min && pupilRow.custom_rate_120min > 0) {
+        baseAmount = Number(pupilRow.custom_rate_120min);
+        hourlyRate = Math.round((baseAmount * 60 / duration) * 100) / 100;
+      } else if (pupilRow?.custom_hourly_rate && pupilRow.custom_hourly_rate > 0) {
+        hourlyRate = Number(pupilRow.custom_hourly_rate);
+      }
+
+      if (hourlyRate == null && pupilRow?.postcode) {
+        const cleaned = pupilRow.postcode.replace(/\s+/g, "").toUpperCase();
+        if (cleaned.length >= 4) {
+          const outward = cleaned.slice(0, cleaned.length - 3);
+          const { data: rule } = await supabase
+            .from("instructor_postcode_rates")
+            .select("hourly_rate")
+            .eq("instructor_id", offer.instructor_id)
+            .ilike("outward_code", outward)
+            .maybeSingle();
+          if (rule?.hourly_rate && rule.hourly_rate > 0) hourlyRate = Number(rule.hourly_rate);
+        }
+      }
+
+      if (hourlyRate == null) {
+        const { data: inst } = await supabase
+          .from("instructors")
+          .select("hourly_rate")
+          .eq("id", offer.instructor_id)
+          .maybeSingle();
+        if (inst?.hourly_rate && inst.hourly_rate > 0) hourlyRate = Number(inst.hourly_rate);
+      }
+
+      if (baseAmount == null && hourlyRate != null) {
+        baseAmount = Math.round((hourlyRate * duration / 60) * 100) / 100;
+      }
+
+      let discountAmount = 0;
+      if (baseAmount != null && offer.discount_type && offer.discount_value != null) {
+        if (offer.discount_type === "percentage") {
+          discountAmount = Math.round((baseAmount * Number(offer.discount_value) / 100) * 100) / 100;
+        } else if (offer.discount_type === "fixed") {
+          discountAmount = Math.min(Number(offer.discount_value), baseAmount);
+        }
+      }
+      const finalAmount = Math.max((baseAmount ?? 0) - discountAmount, 0);
+
+      const discountNote = offer.discount_type
+        ? ` (${offer.discount_type === "percentage" ? offer.discount_value + "%" : "£" + offer.discount_value} off — £${discountAmount.toFixed(2)})`
+        : "";
+
+      // Create the scheduled lesson with price + discount + booking method
       const { data: lessonData, error: lessonError } = await supabase
         .from("scheduled_lessons")
         .insert({
@@ -266,9 +335,15 @@ const handler = async (req: Request): Promise<Response> => {
           pupil_id: offer.pupil_id,
           lesson_date: offer.slot_date,
           start_time: offer.slot_start_time,
-          end_time: offer.slot_end_time,
+          duration_minutes: duration,
           status: "scheduled",
-          notes: `Booked via SMS gap offer${offer.discount_type ? ` (${offer.discount_type === 'percentage' ? offer.discount_value + '%' : '£' + offer.discount_value} discount applied)` : ''}`,
+          notes: `Booked via SMS gap offer${discountNote}`,
+          price_per_hour: hourlyRate,
+          amount_due: finalAmount,
+          discount_type: offer.discount_type,
+          discount_value: offer.discount_value,
+          discount_amount: discountAmount,
+          booking_method: "gap_sms",
         })
         .select("id")
         .single();
@@ -276,8 +351,20 @@ const handler = async (req: Request): Promise<Response> => {
       if (lessonError) {
         console.error("Error creating lesson:", lessonError);
       } else {
-        console.log(`Created lesson ${lessonData.id} from gap offer ${offer.id}`);
-        
+        console.log(`Created lesson ${lessonData.id} from gap offer ${offer.id} (£${finalAmount})`);
+
+        // Mark mirrored slot_offer as filled so portal card disappears
+        await supabase
+          .from("slot_offers")
+          .update({
+            status: "filled",
+            pupil_id: offer.pupil_id,
+            pupil_response: "accepted",
+            pupil_responded_at: new Date().toISOString(),
+          })
+          .eq("gap_offer_id", offer.id)
+          .eq("status", "open");
+
         const date = new Date(offer.slot_date);
         const dayName = date.toLocaleDateString("en-GB", { weekday: "short" });
         const dateStr = date.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
