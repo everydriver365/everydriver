@@ -181,7 +181,7 @@ export function CancelLessonDialog({
       } finally {
         if (_syncTimer) clearTimeout(_syncTimer);
         if (_syncTimedOut) {
-          toast.message("Saved — syncing to Google in the background");
+          toast({ title: "Saved — syncing to Google in the background" });
         }
       }
 
