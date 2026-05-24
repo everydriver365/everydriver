@@ -348,7 +348,7 @@ function TwoFactorHeaderCard() {
     <Card style={{ padding: 0 }}>
       <CardHeader icon={<IconShieldCheck size={15} stroke={1.5} />} title="Two-factor authentication" right={pill} />
       <div className="settings-v2" style={{ padding: "8px 4px" }}>
-        <TwoFactorPanel />
+        <TwoFactorPanel headerless />
       </div>
     </Card>
   );

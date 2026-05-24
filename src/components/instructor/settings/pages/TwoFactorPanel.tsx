@@ -35,7 +35,7 @@ function generateRecoveryCodes(): string[] {
   return codes;
 }
 
-export function TwoFactorPanel() {
+export function TwoFactorPanel({ headerless = false }: { headerless?: boolean } = {}) {
   const [loading, setLoading] = useState(true);
   const [factor, setFactor] = useState<Factor | null>(null);
   const [unusedCount, setUnusedCount] = useState<number | null>(null);
@@ -64,12 +64,18 @@ export function TwoFactorPanel() {
 
   useEffect(() => { void refresh(); }, [refresh]);
 
+  const Wrapper: React.ElementType = headerless ? "div" : "section";
+  const wrapperClass = headerless ? "" : "sv2-card";
+
   return (
-    <section className="sv2-card">
-      <div style={{ marginBottom: 4 }}>
-        <div className="sv2-section-title">Two-factor authentication</div>
-        <div className="sv2-section-sub">Add a second step when signing in from a new device.</div>
-      </div>
+    <Wrapper className={wrapperClass}>
+      {!headerless && (
+        <div style={{ marginBottom: 4 }}>
+          <div className="sv2-section-title">Two-factor authentication</div>
+          <div className="sv2-section-sub">Add a second step when signing in from a new device.</div>
+        </div>
+      )}
+
 
       {loading ? (
         <SettingsListRow
@@ -138,7 +144,7 @@ export function TwoFactorPanel() {
         onComplete={refresh}
       />
       <RegenDialog open={regenOpen} onOpenChange={setRegenOpen} onComplete={refresh} />
-    </section>
+    </Wrapper>
   );
 }
 
