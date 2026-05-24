@@ -88,12 +88,17 @@ export function PupilChat({ pupilId, pupilName, instructorId, instructorName, on
     }
   }, [messages, isOtherTyping]);
 
-  // Mark messages as read when viewing
+  // Mark messages as read when viewing — fires on open AND whenever a new
+  // instructor message arrives via realtime while the thread is open.
   useEffect(() => {
-    if (conversationId) {
+    if (!conversationId) return;
+    const hasUnreadFromInstructor = messages.some(
+      (m) => m.sender_type === "instructor" && !m.read_at
+    );
+    if (hasUnreadFromInstructor) {
       markAsRead(pupilId);
     }
-  }, [conversationId, pupilId, markAsRead]);
+  }, [conversationId, pupilId, markAsRead, messages]);
 
   // Cleanup preview URL
   useEffect(() => {

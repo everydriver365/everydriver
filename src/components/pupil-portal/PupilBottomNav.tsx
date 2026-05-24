@@ -27,6 +27,7 @@ interface PupilBottomNavProps {
     lessons?: string | number;
     payments?: string | number;
     theory?: string | number;
+    messages?: string | number;
   };
   courseProgress?: number;
 }
@@ -62,6 +63,7 @@ export function PupilBottomNav({ activeSection, onNavigate, brandColour, wallpap
     if (id === "schedule") return badges.lessons;
     if (id === "payments") return badges.payments;
     if (id === "theory") return badges.theory;
+    if (id === "messages") return badges.messages;
     return null;
   };
 

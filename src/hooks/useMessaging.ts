@@ -247,29 +247,38 @@ export function useConversationMessages(conversationId: string | null, userType:
         },
         (payload) => {
           if (payload.eventType === "INSERT") {
-            const newMsg = payload.new as { 
-              id: string; 
-              conversation_id: string; 
-              sender_type: string; 
-              sender_id: string; 
-              content: string; 
-              read_at: string | null; 
-              created_at: string; 
+            const newMsg = payload.new as {
+              id: string;
+              conversation_id: string;
+              sender_type: string;
+              sender_id: string;
+              content: string;
+              read_at: string | null;
+              created_at: string;
+              deleted_at?: string | null;
             };
+            // Skip soft-deleted inserts
+            if (newMsg.deleted_at) return;
             setMessages((prev) => [...prev, {
               ...newMsg,
               sender_type: newMsg.sender_type as "instructor" | "pupil"
             }]);
           } else if (payload.eventType === "UPDATE") {
-            const updatedMsg = payload.new as { 
-              id: string; 
-              conversation_id: string; 
-              sender_type: string; 
-              sender_id: string; 
-              content: string; 
-              read_at: string | null; 
-              created_at: string; 
+            const updatedMsg = payload.new as {
+              id: string;
+              conversation_id: string;
+              sender_type: string;
+              sender_id: string;
+              content: string;
+              read_at: string | null;
+              created_at: string;
+              deleted_at?: string | null;
             };
+            // If a message was soft-deleted, remove it from the list
+            if (updatedMsg.deleted_at) {
+              setMessages((prev) => prev.filter((m) => m.id !== updatedMsg.id));
+              return;
+            }
             setMessages((prev) =>
               prev.map((msg) =>
                 msg.id === updatedMsg.id ? {
