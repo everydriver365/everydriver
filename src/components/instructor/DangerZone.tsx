@@ -74,38 +74,6 @@ export function DangerZone() {
       setBusy(false);
     }
   };
-    if (!mfaFactorId || mfaCode.length < 6) {
-      setError("Enter your 6-digit code.");
-      return;
-    }
-    setBusy(true);
-    setError(null);
-    try {
-      const { data: challenge, error: challengeErr } = await supabase.auth.mfa.challenge({
-        factorId: mfaFactorId,
-      });
-      if (challengeErr || !challenge) {
-        setError("Could not start MFA challenge.");
-        setBusy(false);
-        return;
-      }
-      const { error: verifyErr } = await supabase.auth.mfa.verify({
-        factorId: mfaFactorId,
-        challengeId: challenge.id,
-        code: mfaCode,
-      });
-      if (verifyErr) {
-        setError("Invalid code.");
-        setBusy(false);
-        return;
-      }
-      setStep("acknowledge");
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "MFA verification failed.");
-    } finally {
-      setBusy(false);
-    }
-  };
 
   const canSubmit = ack && confirmText === "DELETE";
 
