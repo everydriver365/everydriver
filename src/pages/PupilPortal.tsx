@@ -128,16 +128,18 @@ export default function PupilPortal() {
             );
           } else {
             // INSERT or DELETE — refetch upcoming lessons so new bookings/cancellations show up.
+            const todayStr = format(startOfToday(), "yyyy-MM-dd");
             supabase
               .from("scheduled_lessons")
-              .select("id, lesson_date, start_time, duration_minutes, status, pickup_address, pickup_postcode")
+              .select("id, lesson_date, start_time, duration_minutes, pickup_location, status, payment_status, amount_due")
               .eq("pupil_id", pupilId)
-              .gte("lesson_date", new Date().toISOString().slice(0, 10))
+              .gte("lesson_date", todayStr)
               .neq("status", "cancelled")
               .order("lesson_date", { ascending: true })
               .order("start_time", { ascending: true })
               .limit(8)
-              .then(({ data }) => { if (data) setUpcomingLessons(data); });
+              .then(({ data }) => { if (data) setUpcomingLessons(data as any); });
+
           }
         }
       )
