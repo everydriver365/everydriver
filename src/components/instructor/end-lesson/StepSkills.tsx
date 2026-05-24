@@ -8,6 +8,13 @@ import { detectDataQualityIssues } from "@/lib/detectDataQualityIssues";
 import { DVSA_SYLLABUS, SKILL_LEVELS, type SyllabusCompetency } from "@/constants/dvsaSyllabus";
 import { PostLessonReview } from "@/components/instructor/PostLessonReview";
 
+interface SyllabusChange {
+  competency_id: string;
+  pupil_id: string;
+  previous_level: number;
+  new_level: number;
+}
+
 interface StepSkillsProps {
   lessonId: string;
   pupilId: string;
@@ -16,7 +23,11 @@ interface StepSkillsProps {
   pupilPhotoUrl?: string | null;
   instructorId: string;
   onSaved: () => void;
+  /** Buffered up to the wizard; written to lesson_syllabus_updates in handleDone
+   *  with the real lesson_history.id so the FK is correct. */
+  onSyllabusChanges?: (changes: SyllabusChange[]) => void;
 }
+
 
 interface InlineTopic {
   competency: SyllabusCompetency;
@@ -38,7 +49,9 @@ export function InlineStepSkills({
   onSaved,
   onSkip,
   onSaveAndNext,
+  onSyllabusChanges,
 }: StepSkillsProps & { onSkip: () => void; onSaveAndNext: () => void }) {
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [progressMap, setProgressMap] = useState<Record<string, number>>({});
@@ -235,19 +248,19 @@ export function InlineStepSkills({
           .upsert(upserts, { onConflict: "pupil_id,competency_id" });
         if (upErr) throw upErr;
 
-        const audits = changes.map((t) => ({
-          lesson_history_id: lessonId,
-          pupil_id: pupilId,
+        // Buffer the syllabus-update rows up to the wizard. They'll be written
+        // to lesson_syllabus_updates in handleDone with the real lesson_history.id
+        // (the previous code wrote scheduled_lessons.id into lesson_history_id —
+        // wrong FK target).
+        const bufferedChanges: SyllabusChange[] = changes.map((t) => ({
           competency_id: t.competency.id,
+          pupil_id: pupilId,
           previous_level: t.previousRating ?? 0,
           new_level: t.currentRating!,
         }));
-        // lesson_history_id may be null if step runs before lesson_history insert
-        const usableAudits = audits.filter((a) => !!a.lesson_history_id);
-        if (usableAudits.length > 0) {
-          await supabase.from("lesson_syllabus_updates").insert(usableAudits as any);
-        }
+        onSyllabusChanges?.(bufferedChanges);
         toast.success(`${changes.length} skill${changes.length > 1 ? "s" : ""} updated`);
+
 
         // Fire-and-forget: check whether this upsert just completed a DVSA category.
         // The edge function inserts a milestone row and pushes the pupil on completion.
