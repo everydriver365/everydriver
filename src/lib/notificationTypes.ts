@@ -110,6 +110,7 @@ export const PupilNotifyType = {
   LESSON_COMPLETED: "lesson_completed",
   SYLLABUS_CATEGORY_COMPLETE: "syllabus_category_complete",
   TEST_PASSED: "test_passed",
+  MESSAGE: "message",
 } as const;
 
 
