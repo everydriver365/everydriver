@@ -359,7 +359,7 @@ export function AdminInstructorProfile({ instructorId, onBack, onNavigateToPupil
         supabase.from("pupils").select("*", { count: "exact", head: true }).eq("instructor_id", instructorId),
         supabase.from("instructor_subscriptions").select("plan_id, status, subscription_plans(name, slug)").eq("instructor_id", instructorId).maybeSingle(),
         supabase.from("subscription_plans").select("id, name, slug, price_monthly, max_pupils").eq("is_active", true).order("display_order"),
-        supabase.from("instructors").select("id, name, is_active").order("name"),
+        supabase.from("instructors").select("id, name, is_active").eq("is_network_placeholder", false).order("name"),
       ]);
       if (error) throw error;
       setInstructor(data as InstructorData);

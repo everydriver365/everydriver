@@ -180,7 +180,8 @@ export function AdminSettingsGrid({ onNavigate }: AdminSettingsGridProps) {
       const [instructorsRes, bookingsRes, paymentsRes] = await Promise.all([
         supabase
           .from("instructors")
-          .select("id", { count: "exact", head: true }),
+          .select("id", { count: "exact", head: true })
+          .eq("is_network_placeholder", false),
         supabase
           .from("scheduled_lessons")
           .select("id", { count: "exact", head: true }),

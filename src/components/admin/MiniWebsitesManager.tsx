@@ -88,6 +88,7 @@ export function MiniWebsitesManager() {
       const { data, error } = await supabase
         .from("instructors")
         .select("id, name, email, app_slug, website_theme, custom_domain, custom_domain_verified, is_active, created_at, brand_colour, secondary_colour, website_button_color, website_footer_bg, website_text_color, website_heading_color, website_menu_text_color, logo_url, bio, mini_website_domain_id, phone, hero_image_url, website_font, website_header_style")
+        .eq("is_network_placeholder", false)
         .not("app_slug", "is", null)
         .order("created_at", { ascending: false });
 

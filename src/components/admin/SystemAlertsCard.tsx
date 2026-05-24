@@ -47,6 +47,7 @@ export function SystemAlertsCard({ onNavigate }: SystemAlertsCardProps) {
           .from("instructors")
           .select("id", { count: "exact", head: true })
           .eq("is_active", true)
+          .eq("is_network_placeholder", false)
           .not("adi_badge_expiry", "is", null)
           .lte("adi_badge_expiry", thirtyDaysStr),
         // Insurance expiring within 30 days

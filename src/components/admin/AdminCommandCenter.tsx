@@ -160,7 +160,7 @@ export function AdminCommandCenter({ onNavigate, onCreateBespoke, onSendAlert }:
     try {
       const today = new Date().toISOString().split("T")[0];
       const [instructorsRes, bookingsRes, paymentsRes, pupilsRes, todayRes] = await Promise.all([
-        supabase.from("instructors").select("id", { count: "exact", head: true }),
+        supabase.from("instructors").select("id", { count: "exact", head: true }).eq("is_network_placeholder", false),
         supabase.from("scheduled_lessons").select("id", { count: "exact", head: true }),
         supabase.from("payment_history").select("amount"),
         supabase.from("pupils").select("id", { count: "exact", head: true }),

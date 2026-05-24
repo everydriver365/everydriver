@@ -73,6 +73,7 @@ export function AdminTrackersManager() {
       const { data, error } = await supabase
         .from("instructors")
         .select("id, name")
+        .eq("is_network_placeholder", false)
         .order("name");
       if (error) throw error;
       return data as InstructorOption[];

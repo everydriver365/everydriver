@@ -44,7 +44,8 @@ export function InstructorLeaderboard() {
       const { data: instructors } = await supabase
         .from("instructors")
         .select("id, name, profile_image_url")
-        .eq("is_active", true);
+        .eq("is_active", true)
+        .eq("is_network_placeholder", false);
 
       if (!instructors?.length) {
         setLoading(false);

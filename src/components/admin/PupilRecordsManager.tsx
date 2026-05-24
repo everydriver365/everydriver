@@ -147,6 +147,7 @@ export function PupilRecordsManager() {
         .from("instructors")
         .select("id, name")
         .eq("is_active", true)
+        .eq("is_network_placeholder", false)
         .order("name");
 
       setInstructors(instructorData || []);

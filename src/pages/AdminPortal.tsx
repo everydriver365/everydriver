@@ -236,6 +236,7 @@ export default function AdminPortal() {
       const { data, error } = await supabase
         .from("instructors")
         .select("*")
+        .eq("is_network_placeholder", false)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
