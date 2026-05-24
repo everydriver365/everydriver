@@ -19578,18 +19578,14 @@ export type Database = {
       }
       public_instructors: {
         Row: {
-          adaptations: string[] | null
-          additional_certifications: string[] | null
           adi_code_of_practice: boolean | null
           allowed_lesson_lengths: number[] | null
           app_slug: string | null
           available_from: string | null
-          bank_holiday_surcharge_amount: number | null
           bio: string | null
           booking_advance_days: number | null
           booking_mode: string | null
           brand_colour: string | null
-          bsl_signing: boolean | null
           buffer_minutes: number | null
           business_name: string | null
           cancellation_charge_percent: number | null
@@ -19612,6 +19608,7 @@ export type Database = {
           email: string | null
           extra_info: string | null
           facebook_url: string | null
+          google_review_url: string | null
           hero_image_url: string | null
           hero_overlay_color: string | null
           hero_overlay_opacity: number | null
@@ -19623,7 +19620,6 @@ export type Database = {
           instant_bank_pay_enabled: boolean | null
           instructor_grade: string | null
           is_active: boolean | null
-          is_network_placeholder: boolean | null
           klarna_enabled: boolean | null
           lat: number | null
           linkedin_url: string | null
@@ -19631,19 +19627,14 @@ export type Database = {
           location_name: string | null
           logo_url: string | null
           name: string | null
-          odd_hours_end: string | null
-          odd_hours_start: string | null
-          odd_hours_surcharge_amount: number | null
           personal_website_url: string | null
           phone: string | null
-          placeholder_district: string | null
           preferred_language: string | null
           preferred_lesson_length: number | null
           profile_image_url: string | null
           pupil_app_dark_mode: boolean | null
           pupil_app_enabled: boolean | null
           radius_miles: number | null
-          school_skim_amount: number | null
           secondary_colour: string | null
           special_skills: string | null
           twitter_url: string | null
@@ -19656,22 +19647,17 @@ export type Database = {
           website_menu_text_color: string | null
           website_text_color: string | null
           website_theme: string | null
-          weekend_surcharge_amount: number | null
           welcome_video_url: string | null
         }
         Insert: {
-          adaptations?: string[] | null
-          additional_certifications?: string[] | null
           adi_code_of_practice?: boolean | null
           allowed_lesson_lengths?: number[] | null
           app_slug?: string | null
           available_from?: string | null
-          bank_holiday_surcharge_amount?: number | null
           bio?: string | null
           booking_advance_days?: number | null
           booking_mode?: string | null
           brand_colour?: string | null
-          bsl_signing?: boolean | null
           buffer_minutes?: number | null
           business_name?: string | null
           cancellation_charge_percent?: number | null
@@ -19694,6 +19680,7 @@ export type Database = {
           email?: string | null
           extra_info?: string | null
           facebook_url?: string | null
+          google_review_url?: string | null
           hero_image_url?: string | null
           hero_overlay_color?: string | null
           hero_overlay_opacity?: number | null
@@ -19705,7 +19692,6 @@ export type Database = {
           instant_bank_pay_enabled?: boolean | null
           instructor_grade?: string | null
           is_active?: boolean | null
-          is_network_placeholder?: boolean | null
           klarna_enabled?: boolean | null
           lat?: number | null
           linkedin_url?: string | null
@@ -19713,19 +19699,14 @@ export type Database = {
           location_name?: string | null
           logo_url?: string | null
           name?: string | null
-          odd_hours_end?: string | null
-          odd_hours_start?: string | null
-          odd_hours_surcharge_amount?: number | null
           personal_website_url?: string | null
           phone?: string | null
-          placeholder_district?: string | null
           preferred_language?: string | null
           preferred_lesson_length?: number | null
           profile_image_url?: string | null
           pupil_app_dark_mode?: boolean | null
           pupil_app_enabled?: boolean | null
           radius_miles?: number | null
-          school_skim_amount?: number | null
           secondary_colour?: string | null
           special_skills?: string | null
           twitter_url?: string | null
@@ -19738,22 +19719,17 @@ export type Database = {
           website_menu_text_color?: string | null
           website_text_color?: string | null
           website_theme?: string | null
-          weekend_surcharge_amount?: number | null
           welcome_video_url?: string | null
         }
         Update: {
-          adaptations?: string[] | null
-          additional_certifications?: string[] | null
           adi_code_of_practice?: boolean | null
           allowed_lesson_lengths?: number[] | null
           app_slug?: string | null
           available_from?: string | null
-          bank_holiday_surcharge_amount?: number | null
           bio?: string | null
           booking_advance_days?: number | null
           booking_mode?: string | null
           brand_colour?: string | null
-          bsl_signing?: boolean | null
           buffer_minutes?: number | null
           business_name?: string | null
           cancellation_charge_percent?: number | null
@@ -19776,6 +19752,7 @@ export type Database = {
           email?: string | null
           extra_info?: string | null
           facebook_url?: string | null
+          google_review_url?: string | null
           hero_image_url?: string | null
           hero_overlay_color?: string | null
           hero_overlay_opacity?: number | null
@@ -19787,7 +19764,6 @@ export type Database = {
           instant_bank_pay_enabled?: boolean | null
           instructor_grade?: string | null
           is_active?: boolean | null
-          is_network_placeholder?: boolean | null
           klarna_enabled?: boolean | null
           lat?: number | null
           linkedin_url?: string | null
@@ -19795,19 +19771,14 @@ export type Database = {
           location_name?: string | null
           logo_url?: string | null
           name?: string | null
-          odd_hours_end?: string | null
-          odd_hours_start?: string | null
-          odd_hours_surcharge_amount?: number | null
           personal_website_url?: string | null
           phone?: string | null
-          placeholder_district?: string | null
           preferred_language?: string | null
           preferred_lesson_length?: number | null
           profile_image_url?: string | null
           pupil_app_dark_mode?: boolean | null
           pupil_app_enabled?: boolean | null
           radius_miles?: number | null
-          school_skim_amount?: number | null
           secondary_colour?: string | null
           special_skills?: string | null
           twitter_url?: string | null
@@ -19820,7 +19791,6 @@ export type Database = {
           website_menu_text_color?: string | null
           website_text_color?: string | null
           website_theme?: string | null
-          weekend_surcharge_amount?: number | null
           welcome_video_url?: string | null
         }
         Relationships: []
