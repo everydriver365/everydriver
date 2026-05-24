@@ -107,6 +107,7 @@ import { UpNextExpanded } from "@/components/instructor/UpNextExpanded";
 import { ScheduleTile } from "@/components/instructor/ScheduleTile";
 import { TaxEstimateTile } from "@/components/instructor/TaxEstimateTile";
 import { MTDDeadlineTile } from "@/components/instructor/MTDDeadlineTile";
+import { Tile } from "@/components/instructor/ui";
 import { RescheduleRequestsCard } from "@/components/instructor/RescheduleRequestsCard";
 import { PendingBookingsCard } from "@/components/instructor/PendingBookingsCard";
 
