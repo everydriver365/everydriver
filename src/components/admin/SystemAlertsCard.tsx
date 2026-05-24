@@ -55,6 +55,7 @@ export function SystemAlertsCard({ onNavigate }: SystemAlertsCardProps) {
           .from("instructors")
           .select("id", { count: "exact", head: true })
           .eq("is_active", true)
+          .eq("is_network_placeholder", false)
           .not("car_insurance_expiry", "is", null)
           .lte("car_insurance_expiry", thirtyDaysStr),
         // MOT expiring within 30 days
@@ -62,6 +63,7 @@ export function SystemAlertsCard({ onNavigate }: SystemAlertsCardProps) {
           .from("instructors")
           .select("id", { count: "exact", head: true })
           .eq("is_active", true)
+          .eq("is_network_placeholder", false)
           .not("car_mot_expiry", "is", null)
           .lte("car_mot_expiry", thirtyDaysStr),
         // DBS expiring within 30 days
@@ -69,6 +71,7 @@ export function SystemAlertsCard({ onNavigate }: SystemAlertsCardProps) {
           .from("instructors")
           .select("id", { count: "exact", head: true })
           .eq("is_active", true)
+          .eq("is_network_placeholder", false)
           .not("dbs_certificate_expiry", "is", null)
           .lte("dbs_certificate_expiry", thirtyDaysStr),
         // Pending payment approvals
@@ -80,7 +83,8 @@ export function SystemAlertsCard({ onNavigate }: SystemAlertsCardProps) {
         supabase
           .from("instructors")
           .select("id", { count: "exact", head: true })
-          .eq("is_active", false),
+          .eq("is_active", false)
+          .eq("is_network_placeholder", false),
         // Test slot reservations pending
         supabase
           .from("test_slot_reservations")

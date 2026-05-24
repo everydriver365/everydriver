@@ -32,7 +32,7 @@ export function useAdminTabCounts() {
         heroRes,
       ] = await Promise.all([
         supabase.from("course_templates").select("*", { count: "exact", head: true }),
-        supabase.from("instructors").select("*", { count: "exact", head: true }),
+        supabase.from("instructors").select("*", { count: "exact", head: true }).eq("is_network_placeholder", false),
         supabase.from("course_enquiries").select("*", { count: "exact", head: true }),
         supabase.from("demo_mini_website").select("*", { count: "exact", head: true }),
         supabase.from("domain_orders").select("*", { count: "exact", head: true }),
