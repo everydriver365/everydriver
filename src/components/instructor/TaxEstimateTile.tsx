@@ -2,22 +2,16 @@ import { useNavigate } from "react-router-dom";
 import { Calculator, ChevronRight } from "lucide-react";
 import { useInstructorTaxSummary } from "@/hooks/useInstructorTaxSummary";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
+import { TileCard } from "@/components/instructor/ui";
 
 interface TaxEstimateTileProps {
   instructorId: string;
 }
 
 const FONT = '"Poppins", system-ui, -apple-system, "Segoe UI", sans-serif';
-const CARD: React.CSSProperties = {
-  background: "#FFFFFF",
-  border: "1px solid #e0e3ea",
-  borderRadius: 14,
+const INNER: React.CSSProperties = {
   padding: 14,
   fontFamily: FONT,
-  width: "100%",
-  textAlign: "left",
-  display: "block",
-  cursor: "pointer",
 };
 
 function formatGBP(amount: number): string {
