@@ -73,6 +73,9 @@ export function CancelLessonDialog({
   const [cancellationNote, setCancellationNote] = useState("");
   const [focused, setFocused] = useState(false);
   const [notifyPupil, setNotifyPupil] = useState(true);
+  const [recurrenceParentId, setRecurrenceParentId] = useState<string | null>(null);
+  const [futureSiblingIds, setFutureSiblingIds] = useState<string[]>([]);
+  const [seriesScope, setSeriesScope] = useState<"single" | "series">("single");
   const { invalidatePaymentQueries } = usePaymentInvalidation();
 
   useEffect(() => {
@@ -86,13 +89,37 @@ export function CancelLessonDialog({
         setChargePercent(data.cancellation_charge_percent);
       }
     };
+    const fetchRecurrence = async () => {
+      const { data } = await supabase
+        .from("scheduled_lessons")
+        .select("recurrence_parent_id")
+        .eq("id", lessonId)
+        .maybeSingle();
+      const parentId = (data as { recurrence_parent_id: string | null } | null)?.recurrence_parent_id ?? null;
+      setRecurrenceParentId(parentId);
+      if (parentId) {
+        // Build the cutoff from this lesson's date+time
+        const timeStr = (lessonTime || "00:00:00").length === 5 ? `${lessonTime}:00` : lessonTime;
+        const after = new Date(`${lessonDate}T${timeStr}`);
+        const ids = await getFutureSiblings(
+          supabase,
+          { id: lessonId, recurrence_parent_id: parentId },
+          after,
+        );
+        setFutureSiblingIds(ids);
+      } else {
+        setFutureSiblingIds([]);
+      }
+    };
     if (open) {
       fetchPolicy();
+      fetchRecurrence();
       setSelectedReason(null);
       setCancellationNote("");
       setChargeOption("no_charge");
+      setSeriesScope("single");
     }
-  }, [open, instructorId]);
+  }, [open, instructorId, lessonId, lessonDate, lessonTime]);
 
   const fullChargeAmount = Math.round((amountDue * chargePercent / 100) * 100) / 100;
   const halfChargeAmount = Math.round((amountDue * 0.5) * 100) / 100;
