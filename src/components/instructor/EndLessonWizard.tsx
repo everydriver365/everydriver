@@ -671,7 +671,9 @@ export function EndLessonWizard({
                   onSaved={() => {}}
                   onSkip={goNext}
                   onSaveAndNext={goNext}
+                  onSyllabusChanges={(changes) => setPendingSyllabusChanges(changes)}
                 />
+
               </div>
             )}
 
