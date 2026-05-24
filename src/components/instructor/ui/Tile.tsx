@@ -7,7 +7,8 @@ type AccentColorKey = "amber" | "red";
 type VariantKey = "navigation" | "info" | "slot";
 
 export interface TileProps {
-  icon: string;
+  icon?: string;
+  iconNode?: React.ReactNode;
   iconColor?: ColorKey;
   title: string;
   subtitle?: string;
