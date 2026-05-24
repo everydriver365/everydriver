@@ -37,7 +37,7 @@ function useKenDData() {
 
   useEffect(() => {
     supabase
-      .from("instructors")
+      .from("public_instructors")
       .select("name, bio, phone, email, hourly_rate, car_type, brand_colour, secondary_colour, profile_image_url, car_image_url, home_postcode, instructor_grade, cpd_certified, business_name")
       .eq("id", INSTRUCTOR_ID)
       .single()
