@@ -142,7 +142,15 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
   ];
 
   return (
-    <MiniWebsiteLayout instructor={instructor} pageTitle="Home" pageDescription={`Book driving lessons with ${instructor.business_name || instructor.name}. Professional driving instruction to help you pass your test.`} metaTitle={page?.meta_title} metaDescription={page?.meta_description}>
+    <MiniWebsiteLayout
+      instructor={instructor}
+      pageTitle="Home"
+      pageDescription={`Book driving lessons with ${instructor.business_name || instructor.name}. Professional driving instruction to help you pass your test.`}
+      metaTitle={page?.meta_title}
+      metaDescription={page?.meta_description}
+      avgRating={avgRating ? Number(avgRating) : null}
+      reviewCount={reviews.length}
+    >
       {/* Announcement Bar - Dismissible Banner */}
       {showPromoBanner && (
         <div className="hidden md:block bg-gradient-to-r from-[#d4edda] to-[#b7dfbf] py-3 px-4 relative">
