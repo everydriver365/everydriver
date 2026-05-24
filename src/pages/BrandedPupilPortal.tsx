@@ -75,6 +75,7 @@ import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 import { ChevronDown } from "lucide-react";
 import { Drive365PupilHome } from "@/components/pupil-portal/Drive365PupilHome";
+import { TestPassCelebration } from "@/components/pupil-portal/TestPassCelebration";
 
 interface InstructorBranding {
   id: string;
