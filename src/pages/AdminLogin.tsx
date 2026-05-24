@@ -19,7 +19,7 @@ import {
   portalInputFocus,
   portalInputBlur,
 } from "@/components/auth/PortalLoginLayout";
-import { DarkMobileAuthForm } from "@/components/auth/DarkMobileAuthForm";
+import { UnifiedMobileLoginCard } from "@/components/auth/UnifiedMobileLoginCard";
 import everydriverLogo from "@/assets/ed-white-logo.png";
 import dsmLogo from "@/assets/dsm-logo.png";
 import adminHero from "@/assets/drive365-hero-driver.webp";
@@ -176,34 +176,28 @@ export default function AdminLogin() {
 
   return (
     <>
-      {/* ============== MOBILE-ONLY — shared dark navy shell ============== */}
-      <DarkMobileAuthForm
-        logoSrc={dsmLogo}
-        logoAlt="Driving School Manager"
-        title={title}
-        subtitle={subtitle}
-        email={email}
-        setEmail={setEmail}
-        password={password}
-        setPassword={setPassword}
-        showPassword={showPw}
-        setShowPassword={setShowPw}
-        rememberMe={rememberMe}
-        setRememberMe={setRememberMeState}
-        isForgot={viewMode === "forgot"}
-        onForgotToggle={switchMobileView}
-        loading={loading}
-        error={error}
-        onSubmit={handleSubmit}
-        onGoogleClick={() => {
-          const wrap = document.getElementById("mobile-admin-google");
-          wrap?.querySelector<HTMLButtonElement>("button")?.click();
+      {/* ============== MOBILE-ONLY — unified white-card login ============== */}
+      <UnifiedMobileLoginCard
+        portalName="Drive365 Admin"
+        descriptor="Administrator portal"
+        biometricScope="admin"
+        onSignIn={async (em, pw, remember) => {
+          const { error: signInError } = await signIn(em, pw);
+          if (signInError) {
+            if (isEmailNotConfirmedError(signInError)) {
+              void resendSignupConfirmation(em, `${window.location.origin}/admin/login`);
+              return { error: "Please verify your email before signing in." };
+            }
+            return { error: signInError.message };
+          }
+          setRememberMe(remember);
         }}
-        hiddenSlot={
-          <div id="mobile-admin-google" style={{ position: "absolute", width: 0, height: 0, overflow: "hidden", opacity: 0, pointerEvents: "none" }} aria-hidden="true">
-            <GoogleSignInButton redirectTo={`${window.location.origin}/auth/redirect?portal=admin`} />
-          </div>
-        }
+        onForgot={async (em) => {
+          const { error: resetError } = await supabase.auth.resetPasswordForEmail(em, {
+            redirectTo: `${window.location.origin}/reset-password?portal=admin`,
+          });
+          if (resetError) return { error: resetError.message };
+        }}
       />
 
       {/* ============== DESKTOP / TABLET ============== */}
