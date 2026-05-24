@@ -135,12 +135,15 @@ export default function ParentPortal() {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
 
   useEffect(() => {
-    const savedPhone = localStorage.getItem('parent_phone_verified');
-    if (savedPhone) {
-      setParentPhone(savedPhone);
-      setAuthStep('verified');
-      fetchChildrenData(savedPhone);
-    }
+    (async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      const phoneFromSession = (session?.user?.user_metadata as any)?.parent_phone as string | undefined;
+      if (session && phoneFromSession) {
+        setParentPhone(phoneFromSession);
+        setAuthStep('verified');
+        fetchChildrenData(phoneFromSession);
+      }
+    })();
   }, []);
 
   const handleSendOTP = async () => {
@@ -174,7 +177,13 @@ export default function ParentPortal() {
       });
       if (error) throw error;
       if (data.error) { toast.error(data.error); return; }
-      localStorage.setItem('parent_phone_verified', parentPhone.trim());
+      const tokenHash: string | undefined = data?.token_hash;
+      if (!tokenHash) throw new Error("Missing session token");
+      const { error: verifyErr } = await supabase.auth.verifyOtp({
+        token_hash: tokenHash,
+        type: "magiclink",
+      });
+      if (verifyErr) throw verifyErr;
       setAuthStep('verified');
       await fetchChildrenData(parentPhone.trim());
       toast.success("Welcome to the Parent Portal!");
