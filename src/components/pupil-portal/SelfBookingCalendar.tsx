@@ -167,37 +167,89 @@ const SelfBookingCalendar: React.FC<SelfBookingCalendarProps> = ({
       const lessonStatus = requireApproval ? 'pending' : 'scheduled';
       const pupilData = pupil as { address: string | null; postcode: string | null };
 
-      // Pre-check for clashes so the user gets a clean message instead of a raw DB error.
-      const clash = await checkLessonClash({
-        instructorId,
-        date: slot.date,
-        startTime: slot.startTime,
-        durationMinutes: selectedDuration,
-      });
-      if (clash.hardOverlap) {
-        throw new Error(clash.message ?? 'That slot is already booked. Please pick another time.');
+      const weeks = isRecurring ? recurrenceWeeks : 1;
+      const firstDate = parseISO(slot.date);
+
+      // Build dates (validate none are in the past)
+      const dates: { dateStr: string; date: Date }[] = [];
+      const nowMs = Date.now();
+      for (let i = 0; i < weeks; i++) {
+        const d = i === 0 ? firstDate : addWeeks(firstDate, i);
+        const dateStr = format(d, 'yyyy-MM-dd');
+        // Skip any generated date that resolves before now (safety net).
+        const slotMs = new Date(`${dateStr}T${slot.startTime}`).getTime();
+        if (slotMs <= nowMs) continue;
+        dates.push({ dateStr, date: d });
+      }
+      if (dates.length === 0) {
+        throw new Error('No valid future dates to book.');
       }
 
-      const { error } = await supabase
+      // Pre-check every occurrence so the user gets a clean message before any write.
+      for (const { dateStr } of dates) {
+        const clash = await checkLessonClash({
+          instructorId,
+          date: dateStr,
+          startTime: slot.startTime,
+          durationMinutes: selectedDuration,
+        });
+        if (clash.hardOverlap) {
+          const dayLabel = dates.length > 1 ? `Week of ${dateStr}: ` : '';
+          throw new Error(`${dayLabel}${clash.message ?? 'That slot is already booked. Please pick another time.'}`);
+        }
+      }
+
+      const recurrenceRule = weeks > 1 ? `WEEKLY;COUNT=${weeks}` : null;
+
+      // Insert first lesson and capture its ID — used as the recurrence_parent_id for subsequent lessons.
+      const first = dates[0];
+      const { data: firstInserted, error: firstErr } = await supabase
         .from('scheduled_lessons')
         .insert({
           instructor_id: instructorId,
           pupil_id: pupilId,
-          lesson_date: slot.date,
+          lesson_date: first.dateStr,
           start_time: slot.startTime,
           duration_minutes: selectedDuration,
           status: lessonStatus,
           booking_status: bookingStatus,
           pickup_address: pupilData.address,
           pickup_postcode: pupilData.postcode,
-        });
+          recurrence_rule: recurrenceRule,
+        })
+        .select('id')
+        .single();
 
-      if (error) {
-        const friendly = describeLessonClashError(error);
-        throw new Error(friendly ?? error.message);
+      if (firstErr) {
+        const friendly = describeLessonClashError(firstErr);
+        throw new Error(friendly ?? firstErr.message);
       }
 
-      // Notify instructor of pending request (non-blocking)
+      const parentId = (firstInserted as { id: string }).id;
+
+      // Insert remaining occurrences in a single batch, linked to parent.
+      if (dates.length > 1) {
+        const rows = dates.slice(1).map(({ dateStr }) => ({
+          instructor_id: instructorId,
+          pupil_id: pupilId,
+          lesson_date: dateStr,
+          start_time: slot.startTime,
+          duration_minutes: selectedDuration,
+          status: lessonStatus,
+          booking_status: bookingStatus,
+          pickup_address: pupilData.address,
+          pickup_postcode: pupilData.postcode,
+          recurrence_rule: recurrenceRule,
+          recurrence_parent_id: parentId,
+        }));
+        const { error: restErr } = await supabase.from('scheduled_lessons').insert(rows);
+        if (restErr) {
+          const friendly = describeLessonClashError(restErr);
+          throw new Error(friendly ?? restErr.message);
+        }
+      }
+
+      // Notify instructor of pending request(s) (non-blocking)
       if (requireApproval) {
         const { data: p } = await supabase.from('pupils').select('name').eq('id', pupilId).single();
         supabase.functions.invoke('notify-instructor', {
@@ -212,18 +264,24 @@ const SelfBookingCalendar: React.FC<SelfBookingCalendarProps> = ({
         }).catch((e) => console.error('[SelfBookingCalendar] notify-instructor', e));
       }
 
-      return bookingStatus;
+      return { bookingStatus, count: dates.length, slot };
     },
-    onSuccess: (bookingStatus) => {
+    onSuccess: ({ bookingStatus, count, slot }) => {
       queryClient.invalidateQueries({ queryKey: ['existing-bookings'] });
       setShowConfirmDialog(false);
       setSelectedSlot(null);
 
+      const dayName = format(parseISO(slot.date), 'EEEE');
+      const timeLabel = slot.startTime;
+
       if (bookingStatus === 'pending_approval') {
         toast({
-          title: 'Lesson request sent',
-          description: 'Waiting for your instructor to confirm.',
+          title: count > 1 ? `${count} lesson requests sent` : 'Lesson request sent',
+          description: count > 1
+            ? `Every ${dayName} at ${timeLabel} for ${count} weeks — waiting for confirmation.`
+            : 'Waiting for your instructor to confirm.',
         });
+        setIsRecurring(false);
         return;
       }
 
@@ -240,9 +298,12 @@ const SelfBookingCalendar: React.FC<SelfBookingCalendarProps> = ({
       setTimeout(() => setBookingSuccess(false), 3000);
 
       toast({
-        title: 'Lesson Booked! 🎉',
-        description: 'Your lesson has been confirmed.',
+        title: count > 1 ? `${count} lessons booked! 🎉` : 'Lesson Booked! 🎉',
+        description: count > 1
+          ? `Every ${dayName} at ${timeLabel} for ${count} weeks.`
+          : 'Your lesson has been confirmed.',
       });
+      setIsRecurring(false);
     },
     onError: (error) => {
       toast({
