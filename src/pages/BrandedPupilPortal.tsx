@@ -25,7 +25,7 @@ import { PupilChat } from "@/components/pupil-portal/PupilChat";
 import { ReferralCard } from "@/components/pupil-portal/ReferralCard";
 import { PushNotificationBanner } from "@/components/pupil-portal/PushNotificationBanner";
 import { usePupilOneSignalBinding } from "@/hooks/usePupilOneSignalBinding";
-import { usePupilUnreadCount } from "@/hooks/usePupilUnreadCount";
+import { usePupilInboundUnreadCount } from "@/hooks/usePupilInboundUnreadCount";
 import { PupilPortalProfileEdit } from "@/components/pupil-portal/PupilPortalProfileEdit";
 import { PupilNotes } from "@/components/pupil-portal/PupilNotes";
 import { PortalIOSInstallBanner } from "@/components/pwa/PortalIOSInstallBanner";
@@ -339,7 +339,7 @@ export default function BrandedPupilPortal() {
     : undefined;
 
   // Pupil unread message count for Messages tab badge
-  const { data: unreadMessages = 0 } = usePupilUnreadCount(instructor?.id, pupil?.id);
+  const { data: unreadMessages = 0 } = usePupilInboundUnreadCount(instructor?.id, pupil?.id);
   const messagesBadge = unreadMessages > 0 ? (unreadMessages > 99 ? "99+" : unreadMessages) : undefined;
 
   return (
