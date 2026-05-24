@@ -206,5 +206,6 @@ export function PupilFeedbackPrompt({ pupilId }: PupilFeedbackPromptProps) {
         )}
       </CardContent>
     </Card>
+    </div>
   );
 }
