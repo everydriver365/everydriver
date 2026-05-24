@@ -32,6 +32,7 @@ import drive365Logo from "@/assets/drive365-logo.png";
 import drive365LogoWhite from "@/assets/drive365-logo-white.png";
 import pupilHero from "@/assets/drive365-hero-learner.webp";
 import { MobileLoginHero } from "@/components/auth/MobileLoginHero";
+import { UnifiedMobileLoginCard } from "@/components/auth/UnifiedMobileLoginCard";
 import {
   isBiometricAvailable,
   getBiometricCredentials,
