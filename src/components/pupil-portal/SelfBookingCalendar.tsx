@@ -29,11 +29,13 @@ import {
   Sunset,
   Moon,
   Flame,
+  Repeat,
 } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { format, addDays, startOfWeek, isBefore, isToday, parseISO, isSameDay } from 'date-fns';
+import { format, addDays, addWeeks, startOfWeek, isBefore, isToday, parseISO, isSameDay } from 'date-fns';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import confetti from 'canvas-confetti';
@@ -86,6 +88,8 @@ const SelfBookingCalendar: React.FC<SelfBookingCalendarProps> = ({
   const [selectedDuration, setSelectedDuration] = useState<number>(60);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState(false);
+  const [isRecurring, setIsRecurring] = useState(false);
+  const [recurrenceWeeks, setRecurrenceWeeks] = useState<number>(4);
   const dayStripRef = useRef<HTMLDivElement>(null);
 
   const queryClient = useQueryClient();
