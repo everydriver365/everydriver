@@ -180,6 +180,8 @@ export function ConfirmSendSheet({
             sampleName={sampleRecipientName}
             sampleSlotList={slotList}
             instructorFirstName={instructorFirstName}
+            discountType={discountType}
+            discountValue={discountValue}
           />
 
           {costSummary && (
