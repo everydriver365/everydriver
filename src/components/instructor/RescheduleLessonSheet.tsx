@@ -240,9 +240,74 @@ export function RescheduleLessonSheet({
         }
       }
 
+      // ── Series reschedule: apply the same delta to each future sibling
+      let seriesAppliedCount = 0;
+      if (recurrenceParentId && seriesScope === "series" && futureSiblingIds.length > 0) {
+        try {
+          const newDateStr = format(selectedDate, "yyyy-MM-dd");
+          const oldTimeStr = (currentTime || "00:00:00").length === 5 ? `${currentTime}:00` : currentTime;
+          const newTimeStr = (selectedTime || "00:00:00").length === 5 ? `${selectedTime}:00` : selectedTime;
+          const oldDT = new Date(`${currentDate}T${oldTimeStr}`);
+          const newDT = new Date(`${newDateStr}T${newTimeStr}`);
+          const deltaMs = newDT.getTime() - oldDT.getTime();
+
+          // Fetch siblings' current date/time so we can apply the delta
+          const { data: siblings } = await supabase
+            .from("scheduled_lessons")
+            .select("id, lesson_date, start_time")
+            .in("id", futureSiblingIds);
+
+          if (siblings && siblings.length > 0) {
+            for (const s of siblings as Array<{ id: string; lesson_date: string; start_time: string }>) {
+              const sTime = s.start_time.length === 5 ? `${s.start_time}:00` : s.start_time;
+              const sDT = new Date(`${s.lesson_date}T${sTime}`);
+              const shifted = new Date(sDT.getTime() + deltaMs);
+              // Guard: never move a sibling into the past
+              if (shifted.getTime() <= Date.now()) continue;
+              const pad = (n: number) => String(n).padStart(2, "0");
+              const newSDate = `${shifted.getFullYear()}-${pad(shifted.getMonth() + 1)}-${pad(shifted.getDate())}`;
+              const newSTime = `${pad(shifted.getHours())}:${pad(shifted.getMinutes())}:${pad(shifted.getSeconds())}`;
+              const { error: upErr } = await supabase
+                .from("scheduled_lessons")
+                .update({ lesson_date: newSDate, start_time: newSTime })
+                .eq("id", s.id);
+              if (upErr) {
+                console.error("Series reschedule: sibling update failed", s.id, upErr);
+                continue;
+              }
+              seriesAppliedCount += 1;
+              if (notifyPupil) {
+                try {
+                  await supabase.functions.invoke("notify-pupil", {
+                    body: {
+                      pupilId: null,
+                      lessonId: s.id,
+                      type: PupilNotifyType.LESSON_RESCHEDULED,
+                      data: {
+                        type: PushDataType.LESSON_RESCHEDULED,
+                        lessonId: s.id,
+                        lessonDate: newSDate,
+                        lessonTime: newSTime.slice(0, 5),
+                      },
+                    },
+                  });
+                } catch (e) {
+                  console.error("Series reschedule: sibling notify failed", s.id, e);
+                }
+              }
+            }
+          }
+        } catch (seriesErr) {
+          console.error("Series reschedule: unexpected error", seriesErr);
+        }
+      }
+
       toast({
         title: "Lesson rescheduled",
-        description: `Moved to ${format(selectedDate, "EEE d MMM")} at ${selectedTime}`,
+        description:
+          seriesAppliedCount > 0
+            ? `Moved to ${format(selectedDate, "EEE d MMM")} at ${selectedTime} · ${seriesAppliedCount} future lesson${seriesAppliedCount === 1 ? "" : "s"} in this series also updated`
+            : `Moved to ${format(selectedDate, "EEE d MMM")} at ${selectedTime}`,
       });
 
       onRescheduled();
