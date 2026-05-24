@@ -344,7 +344,7 @@ export function MobileHomeDSM2026({ instructorId, instructorName }: Props) {
             <ScheduleCard instructorId={instructorId} navigate={navigate} />
           </div>
           <div className="animate-fade-in" style={{ animationDelay: "180ms", animationFillMode: "both" }}>
-            <QuickAccessCard navigate={navigate} />
+            <QuickAccessCard navigate={navigate} instructorId={instructorId} />
           </div>
           <div style={{ height: 0.5, background: "#ebebeb", margin: "2px 0" }} />
           <div className="animate-fade-in" style={{ animationDelay: "240ms", animationFillMode: "both" }}>
