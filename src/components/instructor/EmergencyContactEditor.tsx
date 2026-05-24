@@ -75,7 +75,7 @@ export function EmergencyContactEditor({
     <div className="space-y-4">
       <div className="flex items-center gap-2 text-sm font-medium">
         <Heart className="h-4 w-4 text-red-500" />
-        Emergency Contact
+        Next of Kin / Emergency Contact
       </div>
 
       <div className="grid gap-3">
