@@ -51,12 +51,14 @@ export function useAdminDashboardStats() {
       const instructorsRes = await supabase
         .from("instructors")
         .select("id", { count: "exact", head: true })
-        .eq("is_active", true);
+        .eq("is_active", true)
+        .eq("is_network_placeholder", false);
 
       // New instructors this month
       const newInstructorsRes = await supabase
         .from("instructors")
         .select("id", { count: "exact", head: true })
+        .eq("is_network_placeholder", false)
         .gte("created_at", monthStart);
 
       // Lessons today
