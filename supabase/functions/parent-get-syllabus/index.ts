@@ -6,16 +6,6 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-function cleanPhoneNumber(phone: string): string {
-  let cleaned = phone.replace(/\s+/g, "").replace(/[^0-9+]/g, "");
-  if (cleaned.startsWith("0")) {
-    cleaned = "+44" + cleaned.substring(1);
-  } else if (!cleaned.startsWith("+")) {
-    cleaned = "+44" + cleaned;
-  }
-  return cleaned;
-}
-
 serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -24,51 +14,63 @@ serve(async (req: Request) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
 
-    const body = await req.json().catch(() => null) as
-      | { parent_phone?: string; pupil_id?: string }
-      | null;
-    const parentPhoneRaw = body?.parent_phone?.toString().trim();
-    const pupilId = body?.pupil_id?.toString().trim();
-
-    if (!parentPhoneRaw || !pupilId) {
+    // JWT-based identity (parents are now real Supabase users).
+    const authHeader = req.headers.get("Authorization") || "";
+    const token = authHeader.replace(/^Bearer\s+/i, "");
+    if (!token) {
       return new Response(
-        JSON.stringify({ error: "parent_phone and pupil_id are required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
-    }
-
-    const cleanPhone = cleanPhoneNumber(parentPhoneRaw);
-    const phoneWithoutCountry = cleanPhone.replace(/^\+44/, "0");
-
-    // Verify the parent has a verified OTP on file (most recent, not expired)
-    const { data: otp } = await supabase
-      .from("parent_otp_codes")
-      .select("verified, expires_at")
-      .eq("phone", cleanPhone)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    if (!otp || !otp.verified) {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized — verify your phone again." }),
+        JSON.stringify({ error: "Missing Authorization token" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
-    // Confirm pupil belongs to this parent
-    const { data: pupil } = await supabase
+    const { data: userResp, error: userErr } = await supabaseAdmin.auth.getUser(token);
+    if (userErr || !userResp?.user) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+    const user = userResp.user;
+
+    const body = await req.json().catch(() => null) as { pupil_id?: string } | null;
+    const pupilId = body?.pupil_id?.toString().trim();
+    if (!pupilId) {
+      return new Response(
+        JSON.stringify({ error: "pupil_id is required" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    // Resolve parents.id for this auth user.
+    const { data: parentRow } = await supabaseAdmin
+      .from("parents")
+      .select("id")
+      .eq("auth_user_id", user.id)
+      .maybeSingle();
+
+    if (!parentRow) {
+      return new Response(
+        JSON.stringify({ error: "Parent profile not found" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    // Confirm pupil belongs to this parent.
+    const { data: pupil } = await supabaseAdmin
       .from("pupils")
-      .select("id, parent_phone, parent_portal_enabled")
+      .select("id, parent_user_id, parent_portal_enabled")
       .eq("id", pupilId)
       .maybeSingle();
 
     if (
       !pupil ||
       pupil.parent_portal_enabled === false ||
-      (pupil.parent_phone !== cleanPhone && pupil.parent_phone !== phoneWithoutCountry)
+      (pupil as any).parent_user_id !== parentRow.id
     ) {
       return new Response(
         JSON.stringify({ error: "Pupil not linked to this parent." }),
@@ -76,13 +78,13 @@ serve(async (req: Request) => {
       );
     }
 
-    // Fetch syllabus data
+    // Fetch syllabus data.
     const [progressRes, updatesRes] = await Promise.all([
-      supabase
+      supabaseAdmin
         .from("pupil_syllabus_progress")
         .select("competency_id, level, instructor_notes, last_practiced, updated_at")
         .eq("pupil_id", pupilId),
-      supabase
+      supabaseAdmin
         .from("lesson_syllabus_updates")
         .select("id, lesson_history_id, competency_id, previous_level, new_level, comment, created_at")
         .eq("pupil_id", pupilId)
@@ -93,7 +95,6 @@ serve(async (req: Request) => {
     const progress = progressRes.data || [];
     const updates = updatesRes.data || [];
 
-    // Readiness: % of (sum of levels) / (27 competencies * 5)
     const TOTAL_COMPETENCIES = 27;
     const earned = progress.reduce((s: number, p: any) => s + (p.level || 0), 0);
     const readiness = Math.round((earned / (TOTAL_COMPETENCIES * 5)) * 100);
