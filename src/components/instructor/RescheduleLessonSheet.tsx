@@ -17,6 +17,8 @@ import {
   type CourseAvailabilitySources,
 } from "@/lib/courseAvailability";
 import { fromMinutes } from "@/lib/availabilityEngine";
+import { getFutureSiblings } from "@/lib/recurrenceHelpers";
+import { PupilNotifyType, PushDataType } from "@/lib/notificationTypes";
 
 interface RescheduleLessonSheetProps {
   open: boolean;
