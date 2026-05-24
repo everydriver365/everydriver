@@ -253,7 +253,7 @@ const Tile: React.FC<TileProps> = ({
             flexShrink: 0,
           }}
         >
-          <i className={`ti ${icon}`} style={{ fontSize: 18, lineHeight: 1, color: iconPal.fg }} aria-hidden />
+          {iconNode ?? (icon ? <i className={`ti ${icon}`} style={{ fontSize: 18, lineHeight: 1, color: iconPal.fg }} aria-hidden /> : null)}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           {eyebrow && (
