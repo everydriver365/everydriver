@@ -17,6 +17,8 @@ import {
   type CourseAvailabilitySources,
 } from "@/lib/courseAvailability";
 import { fromMinutes } from "@/lib/availabilityEngine";
+import { getFutureSiblings } from "@/lib/recurrenceHelpers";
+import { PupilNotifyType, PushDataType } from "@/lib/notificationTypes";
 
 interface RescheduleLessonSheetProps {
   open: boolean;
@@ -63,6 +65,9 @@ export function RescheduleLessonSheet({
   const [viewMonth, setViewMonth] = useState<Date>(new Date());
   const [bufferMinutes, setBufferMinutes] = useState(0);
   const [notifyPupil, setNotifyPupil] = useState(true);
+  const [recurrenceParentId, setRecurrenceParentId] = useState<string | null>(null);
+  const [futureSiblingIds, setFutureSiblingIds] = useState<string[]>([]);
+  const [seriesScope, setSeriesScope] = useState<"single" | "series">("single");
 
   const bookingAdvanceDays = 365;
 
@@ -71,10 +76,33 @@ export function RescheduleLessonSheet({
       setSelectedDate(undefined);
       setSelectedTime(null);
       setError(null);
+      setSeriesScope("single");
       fetchAvailability();
+      (async () => {
+        const { data } = await supabase
+          .from("scheduled_lessons")
+          .select("recurrence_parent_id")
+          .eq("id", lessonId)
+          .maybeSingle();
+        const parentId =
+          (data as { recurrence_parent_id: string | null } | null)?.recurrence_parent_id ?? null;
+        setRecurrenceParentId(parentId);
+        if (parentId) {
+          const timeStr = (currentTime || "00:00:00").length === 5 ? `${currentTime}:00` : currentTime;
+          const after = new Date(`${currentDate}T${timeStr}`);
+          const ids = await getFutureSiblings(
+            supabase,
+            { id: lessonId, recurrence_parent_id: parentId },
+            after,
+          );
+          setFutureSiblingIds(ids);
+        } else {
+          setFutureSiblingIds([]);
+        }
+      })();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, instructorId]);
+  }, [open, instructorId, lessonId, currentDate, currentTime]);
 
   // Refresh Google Calendar cache for the reschedule horizon when the sheet opens.
   useGoogleCalendarRefresh({
@@ -212,9 +240,74 @@ export function RescheduleLessonSheet({
         }
       }
 
+      // ── Series reschedule: apply the same delta to each future sibling
+      let seriesAppliedCount = 0;
+      if (recurrenceParentId && seriesScope === "series" && futureSiblingIds.length > 0) {
+        try {
+          const newDateStr = format(selectedDate, "yyyy-MM-dd");
+          const oldTimeStr = (currentTime || "00:00:00").length === 5 ? `${currentTime}:00` : currentTime;
+          const newTimeStr = (selectedTime || "00:00:00").length === 5 ? `${selectedTime}:00` : selectedTime;
+          const oldDT = new Date(`${currentDate}T${oldTimeStr}`);
+          const newDT = new Date(`${newDateStr}T${newTimeStr}`);
+          const deltaMs = newDT.getTime() - oldDT.getTime();
+
+          // Fetch siblings' current date/time so we can apply the delta
+          const { data: siblings } = await supabase
+            .from("scheduled_lessons")
+            .select("id, lesson_date, start_time")
+            .in("id", futureSiblingIds);
+
+          if (siblings && siblings.length > 0) {
+            for (const s of siblings as Array<{ id: string; lesson_date: string; start_time: string }>) {
+              const sTime = s.start_time.length === 5 ? `${s.start_time}:00` : s.start_time;
+              const sDT = new Date(`${s.lesson_date}T${sTime}`);
+              const shifted = new Date(sDT.getTime() + deltaMs);
+              // Guard: never move a sibling into the past
+              if (shifted.getTime() <= Date.now()) continue;
+              const pad = (n: number) => String(n).padStart(2, "0");
+              const newSDate = `${shifted.getFullYear()}-${pad(shifted.getMonth() + 1)}-${pad(shifted.getDate())}`;
+              const newSTime = `${pad(shifted.getHours())}:${pad(shifted.getMinutes())}:${pad(shifted.getSeconds())}`;
+              const { error: upErr } = await supabase
+                .from("scheduled_lessons")
+                .update({ lesson_date: newSDate, start_time: newSTime })
+                .eq("id", s.id);
+              if (upErr) {
+                console.error("Series reschedule: sibling update failed", s.id, upErr);
+                continue;
+              }
+              seriesAppliedCount += 1;
+              if (notifyPupil) {
+                try {
+                  await supabase.functions.invoke("notify-pupil", {
+                    body: {
+                      pupilId: null,
+                      lessonId: s.id,
+                      type: PupilNotifyType.LESSON_RESCHEDULED,
+                      data: {
+                        type: PushDataType.LESSON_RESCHEDULED,
+                        lessonId: s.id,
+                        lessonDate: newSDate,
+                        lessonTime: newSTime.slice(0, 5),
+                      },
+                    },
+                  });
+                } catch (e) {
+                  console.error("Series reschedule: sibling notify failed", s.id, e);
+                }
+              }
+            }
+          }
+        } catch (seriesErr) {
+          console.error("Series reschedule: unexpected error", seriesErr);
+        }
+      }
+
       toast({
         title: "Lesson rescheduled",
-        description: `Moved to ${format(selectedDate, "EEE d MMM")} at ${selectedTime}`,
+        description:
+          seriesAppliedCount > 0
+            ? `Moved to ${format(selectedDate, "EEE d MMM")} at ${selectedTime} · ${seriesAppliedCount} future lesson${seriesAppliedCount === 1 ? "" : "s"} in this series also updated`
+            : `Moved to ${format(selectedDate, "EEE d MMM")} at ${selectedTime}`,
       });
 
       onRescheduled();
@@ -582,6 +675,31 @@ export function RescheduleLessonSheet({
                 </div>
               )}
 
+              {/* Series scope — only shown when this lesson is part of a recurrence */}
+              {recurrenceParentId && (
+                <>
+                  <SectionLabel>RECURRING LESSON</SectionLabel>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 7, marginBottom: 12 }}>
+                    <ScopeOption
+                      selected={seriesScope === "single"}
+                      onSelect={() => setSeriesScope("single")}
+                      label="Save this lesson only"
+                      subtitle="Other lessons in the series remain at their original times"
+                    />
+                    <ScopeOption
+                      selected={seriesScope === "series"}
+                      onSelect={() => setSeriesScope("series")}
+                      label="Save this and all future lessons in the series"
+                      subtitle={
+                        futureSiblingIds.length > 0
+                          ? `Applies the same time shift to ${futureSiblingIds.length} upcoming lesson${futureSiblingIds.length === 1 ? "" : "s"}`
+                          : "No future lessons remain in this series"
+                      }
+                    />
+                  </div>
+                </>
+              )}
+
               {/* Section 3: Notify pupil toggle */}
               <div
                 style={{
@@ -735,3 +853,57 @@ function LegendItem({ dot, dotBorder, label }: { dot: string; dotBorder?: string
     </div>
   );
 }
+
+function ScopeOption({
+  selected,
+  onSelect,
+  label,
+  subtitle,
+}: {
+  selected: boolean;
+  onSelect: () => void;
+  label: string;
+  subtitle: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      style={{
+        background: "#FFF",
+        border: selected ? "2px solid #3D55A1" : "0.5px solid #E0E5EE",
+        borderRadius: 14,
+        padding: 11,
+        cursor: "pointer",
+        width: "100%",
+        textAlign: "left",
+        display: "block",
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <span
+          style={{
+            width: 18,
+            height: 18,
+            borderRadius: 9,
+            background: selected ? "#3D55A1" : "transparent",
+            border: selected ? "0" : "1.5px solid #C7C7CC",
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+          }}
+        >
+          {selected && (
+            <span style={{ width: 7, height: 7, borderRadius: 4, background: "#FFF" }} />
+          )}
+        </span>
+        <span style={{ fontSize: 13, fontWeight: 700, color: "#1A1A1A", flex: 1 }}>{label}</span>
+      </div>
+      <div style={{ fontSize: 11, color: "#5B6B8A", paddingLeft: 26, marginTop: 4 }}>
+        {subtitle}
+      </div>
+    </button>
+  );
+}
+

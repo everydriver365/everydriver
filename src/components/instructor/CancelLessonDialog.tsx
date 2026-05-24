@@ -12,6 +12,7 @@ import { usePaymentInvalidation } from "@/hooks/usePaymentInvalidation";
 import { triggerAutomations } from "@/utils/triggerAutomations";
 import { format, parseISO } from "date-fns";
 import { PupilNotifyType, PushDataType } from "@/lib/notificationTypes";
+import { getFutureSiblings } from "@/lib/recurrenceHelpers";
 
 interface CancelLessonDialogProps {
   open: boolean;
@@ -72,6 +73,9 @@ export function CancelLessonDialog({
   const [cancellationNote, setCancellationNote] = useState("");
   const [focused, setFocused] = useState(false);
   const [notifyPupil, setNotifyPupil] = useState(true);
+  const [recurrenceParentId, setRecurrenceParentId] = useState<string | null>(null);
+  const [futureSiblingIds, setFutureSiblingIds] = useState<string[]>([]);
+  const [seriesScope, setSeriesScope] = useState<"single" | "series">("single");
   const { invalidatePaymentQueries } = usePaymentInvalidation();
 
   useEffect(() => {
@@ -85,13 +89,37 @@ export function CancelLessonDialog({
         setChargePercent(data.cancellation_charge_percent);
       }
     };
+    const fetchRecurrence = async () => {
+      const { data } = await supabase
+        .from("scheduled_lessons")
+        .select("recurrence_parent_id")
+        .eq("id", lessonId)
+        .maybeSingle();
+      const parentId = (data as { recurrence_parent_id: string | null } | null)?.recurrence_parent_id ?? null;
+      setRecurrenceParentId(parentId);
+      if (parentId) {
+        // Build the cutoff from this lesson's date+time
+        const timeStr = (lessonTime || "00:00:00").length === 5 ? `${lessonTime}:00` : lessonTime;
+        const after = new Date(`${lessonDate}T${timeStr}`);
+        const ids = await getFutureSiblings(
+          supabase,
+          { id: lessonId, recurrence_parent_id: parentId },
+          after,
+        );
+        setFutureSiblingIds(ids);
+      } else {
+        setFutureSiblingIds([]);
+      }
+    };
     if (open) {
       fetchPolicy();
+      fetchRecurrence();
       setSelectedReason(null);
       setCancellationNote("");
       setChargeOption("no_charge");
+      setSeriesScope("single");
     }
-  }, [open, instructorId]);
+  }, [open, instructorId, lessonId, lessonDate, lessonTime]);
 
   const fullChargeAmount = Math.round((amountDue * chargePercent / 100) * 100) / 100;
   const halfChargeAmount = Math.round((amountDue * 0.5) * 100) / 100;
@@ -226,6 +254,60 @@ export function CancelLessonDialog({
         pupilId,
         pupilName,
       });
+
+      // ── Series cancel (only fires when user picked "Cancel this and all future")
+      //    Sibling updates are intentionally minimal: status flip + reason.
+      //    NO Google sync invoke, NO waitlist backfill, NO balance changes,
+      //    NO automations re-fired per sibling. The DB trigger remains the
+      //    safety net for Google calendar cleanup on each row.
+      if (recurrenceParentId && seriesScope === "series" && futureSiblingIds.length > 0) {
+        try {
+          const { error: siblingErr } = await supabase
+            .from("scheduled_lessons")
+            .update({
+              status: "cancelled",
+              cancelled_by: "instructor",
+              cancellation_reason: "Series cancelled by instructor",
+              cancelled_at: new Date().toISOString(),
+            } as any)
+            .in("id", futureSiblingIds);
+
+          if (siblingErr) {
+            console.error("Series cancel: sibling update failed", siblingErr);
+            toast({
+              title: "Some lessons couldn't be cancelled",
+              description: "The primary lesson was cancelled, but future series lessons failed to update.",
+              variant: "destructive",
+            });
+          } else {
+            if (notifyPupil) {
+              for (const sid of futureSiblingIds) {
+                try {
+                  await supabase.functions.invoke("notify-pupil", {
+                    body: {
+                      pupilId,
+                      type: PupilNotifyType.LESSON_CANCELLED,
+                      data: {
+                        type: PushDataType.LESSON_CANCELLED,
+                        lessonId: sid,
+                        chargeApplied: false,
+                      },
+                    },
+                  });
+                } catch (e) {
+                  console.error("Series cancel: sibling notify failed", sid, e);
+                }
+              }
+            }
+            toast({
+              title: "Lesson cancelled",
+              description: `${futureSiblingIds.length} future lesson${futureSiblingIds.length === 1 ? "" : "s"} in this series also cancelled`,
+            });
+          }
+        } catch (seriesErr) {
+          console.error("Series cancel: unexpected error", seriesErr);
+        }
+      }
 
       onCancelled();
       onOpenChange(false);
@@ -471,6 +553,30 @@ export function CancelLessonDialog({
               </span>
             </div>
 
+            {/* Series scope — only shown when this lesson is part of a recurrence */}
+            {recurrenceParentId && (
+              <>
+                <SectionLabel>RECURRING LESSON</SectionLabel>
+                <ScopeOption
+                  selected={seriesScope === "single"}
+                  onSelect={() => setSeriesScope("single")}
+                  label="Cancel this lesson only"
+                  subtitle="Other lessons in the series will continue as planned"
+                />
+                <ScopeOption
+                  selected={seriesScope === "series"}
+                  onSelect={() => setSeriesScope("series")}
+                  label="Cancel this and all future lessons in the series"
+                  subtitle={
+                    futureSiblingIds.length > 0
+                      ? `This will also cancel ${futureSiblingIds.length} upcoming lesson${futureSiblingIds.length === 1 ? "" : "s"} in this series`
+                      : "No future lessons remain in this series"
+                  }
+                />
+                <div style={{ height: 6 }} />
+              </>
+            )}
+
             {/* Section 3 — Notify pupil */}
             <div
               style={{
@@ -666,3 +772,58 @@ function PolicyOption({
     </button>
   );
 }
+
+function ScopeOption({
+  selected,
+  onSelect,
+  label,
+  subtitle,
+}: {
+  selected: boolean;
+  onSelect: () => void;
+  label: string;
+  subtitle: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      style={{
+        background: "#FFF",
+        border: selected ? "2px solid #3D55A1" : "0.5px solid #E0E5EE",
+        borderRadius: 14,
+        padding: 11,
+        marginBottom: 7,
+        cursor: "pointer",
+        width: "100%",
+        textAlign: "left",
+        display: "block",
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <span
+          style={{
+            width: 18,
+            height: 18,
+            borderRadius: 9,
+            background: selected ? "#3D55A1" : "transparent",
+            border: selected ? "0" : "1.5px solid #C7C7CC",
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+          }}
+        >
+          {selected && (
+            <span style={{ width: 7, height: 7, borderRadius: 4, background: "#FFF" }} />
+          )}
+        </span>
+        <span style={{ fontSize: 13, fontWeight: 700, color: "#1A1A1A", flex: 1 }}>{label}</span>
+      </div>
+      <div style={{ fontSize: 11, color: "#5B6B8A", paddingLeft: 26, marginTop: 4 }}>
+        {subtitle}
+      </div>
+    </button>
+  );
+}
+
