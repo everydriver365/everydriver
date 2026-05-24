@@ -107,6 +107,7 @@ import { UpNextExpanded } from "@/components/instructor/UpNextExpanded";
 import { ScheduleTile } from "@/components/instructor/ScheduleTile";
 import { TaxEstimateTile } from "@/components/instructor/TaxEstimateTile";
 import { MTDDeadlineTile } from "@/components/instructor/MTDDeadlineTile";
+import { ADIBadgeTrackerTile } from "@/components/instructor/ADIBadgeTrackerTile";
 import { Tile } from "@/components/instructor/ui";
 import { RescheduleRequestsCard } from "@/components/instructor/RescheduleRequestsCard";
 import { PendingBookingsCard } from "@/components/instructor/PendingBookingsCard";
@@ -345,6 +346,20 @@ export function MobileHomeDSM2026({ instructorId, instructorName }: Props) {
           </div>
           <div className="animate-fade-in" style={{ animationDelay: "180ms", animationFillMode: "both" }}>
             <QuickAccessCard navigate={navigate} instructorId={instructorId} />
+          </div>
+          <div className="animate-fade-in" style={{ animationDelay: "200ms", animationFillMode: "both" }}>
+            <p style={{
+              fontSize: 11, fontWeight: 600, color: "#8a93a4", letterSpacing: 0.6,
+              textTransform: "uppercase", margin: "6px 4px 4px",
+              fontFamily: '"Poppins", system-ui, -apple-system, "Segoe UI", sans-serif',
+            }}>
+              At a glance
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <ADIBadgeTrackerTile instructorId={instructorId} />
+              <TaxEstimateTile instructorId={instructorId} />
+              <MTDDeadlineTile instructorId={instructorId} />
+            </div>
           </div>
           <div style={{ height: 0.5, background: "#ebebeb", margin: "2px 0" }} />
           <div className="animate-fade-in" style={{ animationDelay: "240ms", animationFillMode: "both" }}>
