@@ -662,6 +662,7 @@ export default function BrandedPupilPortal() {
           courseProgress={pupil.progress || 0}
           badges={{
             payments: paymentBadge,
+            messages: messagesBadge,
           }}
         />
       )}
