@@ -9,6 +9,7 @@ const InstructorPortalLogin = lazy(() => import("@/pages/InstructorPortalLogin")
 const InstructorPortal = lazy(() => import("@/pages/InstructorPortal"));
 const InstructorPupils = lazy(() => import("@/pages/instructor-app/InstructorPupilsRouter"));
 const PremiumPupilProfile = lazy(() => import("@/pages/PremiumPupilProfile"));
+const SyllabusHubPage = lazy(() => import("@/pages/instructor/SyllabusHubPage"));
 const InstructorSchedule = lazy(() => import("@/pages/instructor-app/InstructorScheduleRouter"));
 const InstructorEventDetails = lazy(() => import("@/pages/InstructorEventDetails"));
 const InstructorDiary = lazy(() => import("@/pages/InstructorDiary"));
@@ -166,6 +167,7 @@ export const instructorPortalRoutes = (
     <Route path="/instructor/upcoming-events-redesign" element={<UpcomingEventsRedesignDemo />} />
     <Route path="/instructor/pupils" element={<InstructorPupils />} />
     <Route path="/instructor/pupils/:pupilId" element={<PremiumPupilProfile />} />
+    <Route path="/instructor/pupils/:pupilId/syllabus" element={<SyllabusHubPage />} />
     <Route path="/instructor/schedule" element={<InstructorSchedule />} />
     <Route path="/instructor/events/:eventKey" element={<InstructorEventDetails />} />
     <Route path="/instructor/course-planner" element={<CoursePlannerPage />} />

@@ -1,4 +1,4 @@
-// DVSA Standard Driving Syllabus - 24 Key Competencies
+// DVSA Standard Driving Syllabus - 27 Key Competencies
 // Based on the official DVSA driving test marking sheet
 
 export interface SyllabusCompetency {

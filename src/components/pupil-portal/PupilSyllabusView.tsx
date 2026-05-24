@@ -21,7 +21,7 @@ interface PupilSyllabusViewProps {
 }
 
 export function PupilSyllabusView({ pupilId, brandColour, darkMode }: PupilSyllabusViewProps) {
-  const [progress, setProgress] = useState<{ competency_id: string; level: number; instructor_notes?: string | null }[]>([]);
+  const [progress, setProgress] = useState<{ competency_id: string; level: number; instructor_notes?: string | null; updated_at?: string | null }[]>([]);
   const [recentChanges, setRecentChanges] = useState<{
     competency_id: string;
     previous_level: number;
@@ -40,7 +40,7 @@ export function PupilSyllabusView({ pupilId, brandColour, darkMode }: PupilSylla
       const [progressRes, changesRes] = await Promise.all([
         supabase
           .from('pupil_syllabus_progress')
-          .select('competency_id, level, instructor_notes')
+          .select('competency_id, level, instructor_notes, updated_at')
           .eq('pupil_id', pupilId),
         supabase
           .from('lesson_syllabus_updates')
