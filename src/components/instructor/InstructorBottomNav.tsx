@@ -49,6 +49,7 @@ export function InstructorBottomNav({ voiceState = "idle", onVoiceTap }: Instruc
 
   const { data: todayOverview } = useTodayOverview(instructor?.id);
   const todayLessonCount = todayOverview?.lessonCount || 0;
+  const { data: unreadMessagesCount = 0 } = useUnreadMessagesCount(instructor?.id);
 
   useEffect(() => {
     if (!instructor?.id) return;
@@ -80,7 +81,8 @@ export function InstructorBottomNav({ voiceState = "idle", onVoiceTap }: Instruc
     let badge = 0;
     if (item.showBadge) badge = pendingJobsCount;
     if (item.isSchedule && todayLessonCount > 0) badge = todayLessonCount;
-    const showBadge = badge > 0 && !(item.isSchedule && isActive);
+    if (item.isMessages) badge = unreadMessagesCount;
+    const showBadge = badge > 0 && !(item.isSchedule && isActive) && !(item.isMessages && isActive);
     const badgeLabel = badge > 99 ? "99+" : `${badge}`;
 
     const color = isActive ? ACTIVE : INACTIVE;
