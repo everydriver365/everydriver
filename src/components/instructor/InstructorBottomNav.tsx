@@ -15,8 +15,8 @@ interface NavItem {
   icon: LucideIcon;
   path: string;
   showBadge?: boolean;
-  isTrack?: boolean;
   isSchedule?: boolean;
+  isMessages?: boolean;
 }
 
 const leftItems: NavItem[] = [
@@ -25,7 +25,7 @@ const leftItems: NavItem[] = [
 ];
 
 const rightItems: NavItem[] = [
-  { label: "Track", icon: Target, path: "/instructor/tracking", isTrack: true },
+  { label: "Messages", icon: MessageCircle, path: "/instructor/messages", isMessages: true },
   { label: "Pupils", icon: Users, path: "/instructor/pupils", showBadge: true },
 ];
 
