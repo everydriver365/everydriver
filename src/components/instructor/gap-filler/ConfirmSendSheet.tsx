@@ -42,6 +42,10 @@ export interface ConfirmSendSheetProps {
   onSecondaryResult?: () => void;
   /** Optional cost summary line, e.g. "1 SMS per recipient · 34 messages total". */
   costSummary?: ReactNode;
+  /** Discount type currently selected (for preview). */
+  discountType?: "percentage" | "fixed" | null;
+  /** Discount value currently selected (for preview). */
+  discountValue?: number | null;
 }
 
 export function ConfirmSendSheet({
@@ -61,6 +65,8 @@ export function ConfirmSendSheet({
   onPrimaryResult,
   onSecondaryResult,
   costSummary,
+  discountType,
+  discountValue,
 }: ConfirmSendSheetProps) {
   const isResult = status !== "idle";
   const dismissable = status !== "loading";
@@ -174,6 +180,8 @@ export function ConfirmSendSheet({
             sampleName={sampleRecipientName}
             sampleSlotList={slotList}
             instructorFirstName={instructorFirstName}
+            discountType={discountType}
+            discountValue={discountValue}
           />
 
           {costSummary && (

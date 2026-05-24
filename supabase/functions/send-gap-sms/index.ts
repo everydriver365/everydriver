@@ -155,8 +155,22 @@ const handler = async (req: Request): Promise<Response> => {
         }
       }
 
-      const message = customMessage || 
-        `Hi ${pupil.name}! I have some short notice lesson slots available if you want one:\n\n${slotsText}${discountText}\n\n${replyInstructions} - ${instructorName}`;
+      let message: string;
+      if (customMessage) {
+        // Respect the instructor's rendered template. If a discount was set but
+        // the template didn't include the {discount} token, append the offer
+        // line so pupils still see it.
+        const mentionsDiscount =
+          !!discountText &&
+          (customMessage.includes("% off") ||
+            customMessage.includes("£" + (discountValue ?? "")) ||
+            customMessage.includes("SPECIAL OFFER"));
+        message = discountText && !mentionsDiscount
+          ? `${customMessage}\n${discountText}`
+          : customMessage;
+      } else {
+        message = `Hi ${pupil.name}! I have some short notice lesson slots available if you want one:\n\n${slotsText}${discountText}\n\n${replyInstructions} - ${instructorName}`;
+      }
 
       try {
         const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${twilioAccountSid}/Messages.json`;
