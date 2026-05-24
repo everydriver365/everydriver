@@ -70,6 +70,8 @@ export function PupilPortalSchedule({
   const [cancelling, setCancelling] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
   const [showBooking, setShowBooking] = useState(initialShowBooking);
+  const [bookAgainPrefill, setBookAgainPrefill] = useState<{ duration: number } | null>(null);
+  const [policyExpanded, setPolicyExpanded] = useState(false);
 
   const queryClient = useQueryClient();
 
