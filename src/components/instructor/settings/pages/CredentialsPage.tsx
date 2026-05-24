@@ -16,6 +16,10 @@ import {
   IconLoader2,
   IconCheck,
   IconInfoCircle,
+  IconPencil,
+  IconCar,
+  IconFileDescription,
+  IconX,
 } from "@tabler/icons-react";
 import { differenceInDays, format, parseISO } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
@@ -702,18 +706,185 @@ export function CredentialsPage({ instructorId }: { instructorId: string }) {
         ))}
       </CardSection>
 
-      {/* Vehicle documents */}
-      <CardSection title="Vehicle documents">
-        {vehicleRows.map((r, i) => (
-          <ExpandableRow
-            key={r.id}
-            row={r}
-            isOpen={openId === r.id}
-            onToggle={() => toggle(r.id)}
-            isLast={i === vehicleRows.length - 1}
-          />
-        ))}
-      </CardSection>
+      {/* Vehicle documents — redesigned card */}
+      {(() => {
+        const vehicleDocRows = [
+          {
+            id: "mot",
+            title: "MOT Certificate",
+            subtitle: "Annual vehicle test",
+            expiry: form.car_mot_expiry || null,
+            iconBg: "#e8f5ee",
+            iconColor: "#2d8a4e",
+            Icon: IconCar,
+            body: vehicleRows[0].body,
+          },
+          {
+            id: "tax",
+            title: "Road Tax",
+            subtitle: "Vehicle excise duty",
+            expiry: form.car_tax_expiry || null,
+            iconBg: "#e8eefb",
+            iconColor: "#2952b3",
+            Icon: IconReceipt,
+            body: vehicleRows[1].body,
+          },
+        ];
+
+        const pillFor = (expiry: string | null) => {
+          if (!expiry) {
+            return { bg: "#fbe8e8", fg: "#c9302c", Icon: IconX, label: "Missing" };
+          }
+          const days = differenceInDays(parseISO(expiry), new Date());
+          if (days < 0) return { bg: "#fbe8e8", fg: "#c9302c", Icon: IconX, label: "Expired" };
+          if (days <= 60) return { bg: "#fff3e0", fg: "#d97706", Icon: IconAlertTriangle, label: "Expiring" };
+          return { bg: "#e8f5ee", fg: "#2d8a4e", Icon: IconCheck, label: "Valid" };
+        };
+
+        return (
+          <section
+            style={{
+              background: "#FFFFFF",
+              border: "0.5px solid #e0e3ea",
+              borderRadius: 14,
+              fontFamily: "Poppins, system-ui, -apple-system, sans-serif",
+              overflow: "hidden",
+            }}
+          >
+            {/* Header */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                padding: "12px 14px",
+              }}
+            >
+              <span
+                style={{
+                  width: 34,
+                  height: 34,
+                  background: "#e8eefb",
+                  borderRadius: 9,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                }}
+              >
+                <IconFileDescription size={18} color="#2952b3" stroke={2} />
+              </span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: "#1a1a1f", lineHeight: 1.2 }}>
+                  Vehicle documents
+                </div>
+                <div style={{ fontSize: 10, color: "#aaa", marginTop: 2, lineHeight: 1.2 }}>
+                  MOT, road tax and CPD logging
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => toggle("mot")}
+                style={{
+                  background: "#F2F4F8",
+                  border: "none",
+                  borderRadius: 8,
+                  padding: "6px 10px",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 5,
+                  cursor: "pointer",
+                  fontFamily: "inherit",
+                  flexShrink: 0,
+                }}
+              >
+                <IconPencil size={13} color="#666" stroke={2} />
+                <span style={{ fontSize: 11, fontWeight: 600, color: "#1a1a1f" }}>Edit dates</span>
+              </button>
+            </div>
+
+            {vehicleDocRows.map((r) => {
+              const pill = pillFor(r.expiry);
+              const PillIcon = pill.Icon;
+              const RowIcon = r.Icon;
+              const isOpen = openId === r.id;
+              return (
+                <div key={r.id} style={{ borderTop: "1px solid #f0f1f4" }}>
+                  <button
+                    type="button"
+                    onClick={() => toggle(r.id)}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = "#f8f9fb")}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                    style={{
+                      width: "100%",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 10,
+                      padding: "12px 14px",
+                      background: "transparent",
+                      border: "none",
+                      cursor: "pointer",
+                      textAlign: "left",
+                      fontFamily: "inherit",
+                      transition: "background 120ms ease",
+                    }}
+                  >
+                    <span
+                      style={{
+                        width: 34,
+                        height: 34,
+                        background: r.iconBg,
+                        borderRadius: 9,
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                      }}
+                    >
+                      <RowIcon size={18} color={r.iconColor} stroke={2} />
+                    </span>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: "#1a1a1f", lineHeight: 1.2 }}>
+                        {r.title}
+                      </div>
+                      <div style={{ fontSize: 10, color: "#aaa", marginTop: 2, lineHeight: 1.2 }}>
+                        {r.subtitle}
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4, flexShrink: 0 }}>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: "#1a1a1f", lineHeight: 1 }}>
+                        {r.expiry ? format(parseISO(r.expiry), "d MMM yyyy") : "—"}
+                      </div>
+                      <span
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 3,
+                          background: pill.bg,
+                          color: pill.fg,
+                          fontSize: 9,
+                          fontWeight: 600,
+                          padding: "2px 7px",
+                          borderRadius: 20,
+                          lineHeight: 1,
+                        }}
+                      >
+                        <PillIcon size={9} stroke={2.5} />
+                        {pill.label}
+                      </span>
+                    </div>
+                  </button>
+                  {isOpen && (
+                    <div style={{ padding: "0 14px 14px 14px" }}>
+                      {r.body}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </section>
+        );
+      })()}
 
       {/* Experience & specialisms */}
       <CardSection title="Experience & specialisms">
