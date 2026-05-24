@@ -144,7 +144,7 @@ export function TwoFactorPanel({ headerless = false }: { headerless?: boolean } 
         onComplete={refresh}
       />
       <RegenDialog open={regenOpen} onOpenChange={setRegenOpen} onComplete={refresh} />
-    </section>
+    </Wrapper>
   );
 }
 
