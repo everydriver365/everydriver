@@ -219,6 +219,7 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
         .from("pupils")
         .select("id, name, phone")
         .eq("instructor_id", instructorId)
+        .is("deleted_at", null)
         .order("name");
       if (targetedPupilIds && targetedPupilIds.length > 0) {
         q = q.in("id", targetedPupilIds);
