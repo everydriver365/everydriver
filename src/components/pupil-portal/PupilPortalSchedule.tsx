@@ -248,7 +248,7 @@ export function PupilPortalSchedule({
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => setShowBooking(false)}
+          onClick={() => { setShowBooking(false); setBookAgainPrefill(null); }}
           style={{ color: 'var(--brand-text)' }}
         >
           ← Back to Lessons
@@ -257,6 +257,7 @@ export function PupilPortalSchedule({
           pupilId={pupilId}
           instructorId={instructorId}
           brandColour={brandColour || undefined}
+          initialDuration={bookAgainPrefill?.duration}
         />
       </div>
     );
