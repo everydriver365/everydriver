@@ -54,6 +54,7 @@ const sidebarGroups: SidebarGroup[] = [
     icon: Users,
     items: [
       { key: "instructors", label: "Instructors", icon: Users },
+      { key: "network-instructors", label: "Drive365 Network", icon: MapPin },
       { key: "pupil-records", label: "Pupil Records", icon: Users },
       { key: "compliance", label: "Compliance", icon: Shield },
     ],

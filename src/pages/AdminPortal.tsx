@@ -18,6 +18,7 @@ import {
 import { InstructorForm } from "@/components/admin/InstructorForm";
 import { InstructorList } from "@/components/admin/InstructorList";
 import { InstructorManager } from "@/components/admin/InstructorManager";
+import NetworkInstructors from "@/pages/admin/NetworkInstructors";
 import { CourseManager } from "@/components/admin/CourseManager";
 import { SiteImageManager } from "@/components/admin/SiteImageManager";
 import { SiteVideoManager } from "@/components/admin/SiteVideoManager";
@@ -456,6 +457,14 @@ export default function AdminPortal() {
               onEdit={handleEdit}
               onViewProfile={(id) => { setProfileInstructorId(id); setActiveSection("instructor-profile"); }}
             />
+          </motion.div>
+        );
+
+      case "network-instructors":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
+            <NetworkInstructors />
           </motion.div>
         );
 
