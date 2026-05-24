@@ -106,18 +106,27 @@ export function PupilPortalSchedule({
   const { data: instructorInfo } = useQuery({
     queryKey: ['pupil-instructor-cancel-info', instructorId],
     queryFn: async () => {
-      const { data } = await supabase
-        .from('instructors')
-        .select('name, late_cancel_fee, late_cancel_hours, cancellation_policy_text, ai_waitlist_filling_enabled')
-        .eq('id', instructorId)
-        .single();
-      return data as {
-        name: string | null;
-        late_cancel_fee: number | null;
-        late_cancel_hours: number | null;
-        cancellation_policy_text: string | null;
-        ai_waitlist_filling_enabled: boolean | null;
-      } | null;
+      const [{ data: instr }, { data: prefs }] = await Promise.all([
+        supabase
+          .from('instructors')
+          .select('name, cancellation_policy_text, cancellation_policy_hours, cancellation_charge_percent, ai_waitlist_filling_enabled')
+          .eq('id', instructorId)
+          .single(),
+        supabase
+          .from('instructor_reminder_preferences')
+          .select('late_cancel_fee, late_cancel_hours')
+          .eq('instructor_id', instructorId)
+          .maybeSingle(),
+      ]);
+      return {
+        name: (instr as any)?.name as string | null,
+        cancellation_policy_text: (instr as any)?.cancellation_policy_text as string | null,
+        cancellation_policy_hours: (instr as any)?.cancellation_policy_hours as number | null,
+        cancellation_charge_percent: (instr as any)?.cancellation_charge_percent as number | null,
+        ai_waitlist_filling_enabled: (instr as any)?.ai_waitlist_filling_enabled as boolean | null,
+        late_cancel_fee: (prefs as any)?.late_cancel_fee as number | null,
+        late_cancel_hours: (prefs as any)?.late_cancel_hours as number | null,
+      };
     },
   });
 
