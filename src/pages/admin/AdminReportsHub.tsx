@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AdminBackButton } from "@/components/admin/AdminBackButton";
-import { AdminLayout } from "@/components/admin/AdminLayout";
+
 import { RevenueAnalytics } from "@/components/admin/RevenueAnalytics";
 import { InstructorLeaderboard } from "@/components/admin/InstructorLeaderboard";
 import { ChurnAnalyticsDashboard } from "@/components/admin/ChurnAnalyticsDashboard";
