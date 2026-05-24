@@ -27,7 +27,8 @@ interface NotifyPupilRequest {
     | "payment_reminder"
     | "lesson_completed"
     | "syllabus_category_complete"
-    | "test_passed";
+    | "test_passed"
+    | "message";
 
   title?: string;
   body?: string;
