@@ -338,6 +338,10 @@ export default function BrandedPupilPortal() {
     ? `£${Math.abs(pupil.account_balance!).toFixed(0)}`
     : undefined;
 
+  // Pupil unread message count for Messages tab badge
+  const { data: unreadMessages = 0 } = usePupilUnreadCount(instructor?.id, pupil?.id);
+  const messagesBadge = unreadMessages > 0 ? (unreadMessages > 99 ? "99+" : unreadMessages) : undefined;
+
   return (
     <div 
       className="min-h-screen transition-colors"
