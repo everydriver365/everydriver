@@ -248,7 +248,14 @@ export function InlineStepSkills({
           await supabase.from("lesson_syllabus_updates").insert(usableAudits as any);
         }
         toast.success(`${changes.length} skill${changes.length > 1 ? "s" : ""} updated`);
+
+        // Fire-and-forget: check whether this upsert just completed a DVSA category.
+        // The edge function inserts a milestone row and pushes the pupil on completion.
+        supabase.functions
+          .invoke("check-syllabus-milestones", { body: { pupilId } })
+          .catch((err) => console.error("check-syllabus-milestones invoke failed", err));
       }
+
       onSaved();
       onSaveAndNext();
     } catch (e) {

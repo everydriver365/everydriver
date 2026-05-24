@@ -24,7 +24,11 @@ interface NotifyPupilRequest {
     | "en_route"
     | "arrived"
     | "running_late"
-    | "payment_reminder";
+    | "payment_reminder"
+    | "lesson_completed"
+    | "syllabus_category_complete"
+    | "test_passed";
+
   title?: string;
   body?: string;
   data?: Record<string, unknown>;
@@ -130,6 +134,27 @@ serve(async (req: Request) => {
           notificationTitle = "Payment reminder";
           notificationBody = "You have an outstanding balance with your instructor.";
           break;
+        case "lesson_completed": {
+          const instructorName = (data as any)?.instructorName as string | undefined;
+          notificationTitle = "Lesson complete 🎉";
+          notificationBody = instructorName
+            ? `How did it go? Rate your lesson with ${instructorName}.`
+            : "How did it go? Rate your lesson.";
+          break;
+        }
+        case "syllabus_category_complete": {
+          const categoryName = (data as any)?.categoryName as string | undefined;
+          notificationTitle = "Category complete! 🏆";
+          notificationBody = categoryName
+            ? `You've mastered ${categoryName} — great progress!`
+            : "You've mastered a new category — great progress!";
+          break;
+        }
+        case "test_passed":
+          notificationTitle = "You passed! 🎉";
+          notificationBody = "Congratulations — you've passed your driving test! Share the news!";
+          break;
+
         default:
           notificationTitle = "Notification";
           notificationBody = "You have a new notification.";

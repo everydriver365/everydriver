@@ -10,8 +10,12 @@ export const PushDataType = {
   LESSON_REMINDER: "lesson_reminder",
   LESSON_EOL: "lesson_eol",
   LESSON_CHECKIN: "lesson_checkin",
+  LESSON_COMPLETED: "lesson_completed",
+  SYLLABUS_CATEGORY_COMPLETE: "syllabus_category_complete",
+  TEST_PASSED: "test_passed",
   CALENDAR_SYNC_FAILED: "calendar_sync_failed",
   GAP_FILLED: "gap_filled",
+
   PAYMENT_RECEIVED: "payment_received",
   PAYMENT_CONFIRMED: "payment_confirmed",
   PAYMENT_FAILED: "payment_failed",
@@ -68,4 +72,8 @@ export const PupilNotifyType = {
   ARRIVED: "arrived",
   RUNNING_LATE: "running_late",
   PAYMENT_REMINDER: "payment_reminder",
+  LESSON_COMPLETED: "lesson_completed",
+  SYLLABUS_CATEGORY_COMPLETE: "syllabus_category_complete",
+  TEST_PASSED: "test_passed",
 } as const;
+

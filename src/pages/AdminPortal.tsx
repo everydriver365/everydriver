@@ -378,6 +378,15 @@ export default function AdminPortal() {
                   </CardContent>
                 </Card>
               </Link>
+              <Link to="/admin/reports" className="block">
+                <Card className="hover:bg-accent/50 transition-colors cursor-pointer h-full">
+                  <CardContent className="pt-6">
+                    <div className="text-sm font-medium">Reports & analytics</div>
+                    <div className="text-xs text-muted-foreground">Revenue, leaderboard, churn, commission, compliance, retention</div>
+                  </CardContent>
+                </Card>
+              </Link>
+
               <BackfillCommuteMileageTile />
             </div>
 
