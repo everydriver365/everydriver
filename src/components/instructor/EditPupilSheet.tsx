@@ -946,6 +946,12 @@ export function EditPupilSheet({
                       placeholder="07XXX XXXXXX"
                     />
                   </InputShell>
+                  <InviteParentButton
+                    pupilId={pupil?.id ?? null}
+                    parentPhone={form.parent_phone}
+                    parentPortalEnabled={pupil?.parent_portal_enabled !== false}
+                    initialInvitedAt={pupil?.parent_invited_at ?? null}
+                  />
                 </div>
               </div>
 
@@ -1008,4 +1014,103 @@ export function EditPupilSheet({
       </SheetContent>
     </Sheet>
   );
+}
+
+/* ---------- Invite parent button ---------- */
+
+function InviteParentButton({
+  pupilId,
+  parentPhone,
+  parentPortalEnabled,
+  initialInvitedAt,
+}: {
+  pupilId: string | null;
+  parentPhone: string | null | undefined;
+  parentPortalEnabled: boolean;
+  initialInvitedAt: string | null;
+}) {
+  const [sending, setSending] = useState(false);
+  const [invitedAt, setInvitedAt] = useState<string | null>(initialInvitedAt);
+
+  useEffect(() => {
+    setInvitedAt(initialInvitedAt);
+  }, [initialInvitedAt, pupilId]);
+
+  const phoneOk = !!(parentPhone && parentPhone.replace(/\D/g, "").length >= 10);
+  const disabled = !pupilId || !phoneOk || !parentPortalEnabled || sending;
+
+  const handleClick = async () => {
+    if (!pupilId) return;
+    setSending(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("invite-parent", {
+        body: { pupil_id: pupilId },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      setInvitedAt(new Date().toISOString());
+      toast.success(`Invite sent to ${data?.sent_to ?? "parent"}`);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Could not send invite";
+      toast.error(msg);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const relativeInvited = invitedAt ? relativeTimeFrom(invitedAt) : null;
+
+  return (
+    <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+      <button
+        type="button"
+        onClick={handleClick}
+        disabled={disabled}
+        style={{
+          fontFamily: FONT_STACK,
+          fontSize: 13,
+          fontWeight: 600,
+          padding: "8px 14px",
+          borderRadius: 999,
+          border: `1px solid ${C.hairline}`,
+          background: disabled ? C.greySurface : "#EDF2FE",
+          color: disabled ? C.muted : "#3D55A1",
+          cursor: disabled ? "not-allowed" : "pointer",
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 6,
+        }}
+      >
+        {sending ? <Loader2 size={14} className="animate-spin" /> : null}
+        {sending ? "Sending…" : invitedAt ? "Resend invite" : "Invite parent"}
+      </button>
+      {!parentPortalEnabled ? (
+        <span style={{ fontSize: 12, color: C.muted, fontFamily: FONT_STACK }}>
+          Parent portal is disabled for this pupil
+        </span>
+      ) : !phoneOk ? (
+        <span style={{ fontSize: 12, color: C.muted, fontFamily: FONT_STACK }}>
+          Save a parent phone number first
+        </span>
+      ) : relativeInvited ? (
+        <span style={{ fontSize: 12, color: C.muted, fontFamily: FONT_STACK }}>
+          Last invited {relativeInvited}
+        </span>
+      ) : null}
+    </div>
+  );
+}
+
+function relativeTimeFrom(iso: string): string {
+  const then = new Date(iso).getTime();
+  if (!Number.isFinite(then)) return "";
+  const diffMs = Date.now() - then;
+  const mins = Math.round(diffMs / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins} min ago`;
+  const hours = Math.round(mins / 60);
+  if (hours < 24) return `${hours} h ago`;
+  const days = Math.round(hours / 24);
+  if (days < 7) return `${days} d ago`;
+  return new Date(iso).toLocaleDateString();
 }
