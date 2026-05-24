@@ -1564,23 +1564,40 @@ export default function InstructorUnifiedInbox() {
             <EyebrowLabel className="!m-0">Conversations</EyebrowLabel>
             <span style={{ display: "inline-flex", alignItems: "center", gap: 14 }}>
               {showBroadcastLink && (
-                <button
-                  type="button"
-                  onClick={() => setShowBroadcast(true)}
-                  style={{
-                    background: "transparent",
-                    border: "none",
-                    padding: 0,
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 4,
-                    cursor: "pointer",
-                    color: BLUE,
-                  }}
-                >
-                  <Megaphone size={12} strokeWidth={1.8} />
-                  <span style={{ fontSize: 12, fontWeight: 500 }}>Broadcast</span>
-                </button>
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setShowBroadcast(true)}
+                    style={{
+                      background: "transparent",
+                      border: "none",
+                      padding: 0,
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 4,
+                      cursor: "pointer",
+                      color: BLUE,
+                    }}
+                  >
+                    <Megaphone size={12} strokeWidth={1.8} />
+                    <span style={{ fontSize: 12, fontWeight: 500 }}>Broadcast</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowBroadcastHistory(true)}
+                    style={{
+                      background: "transparent",
+                      border: "none",
+                      padding: 0,
+                      cursor: "pointer",
+                      color: BLUE,
+                      fontSize: 12,
+                      fontWeight: 500,
+                    }}
+                  >
+                    History
+                  </button>
+                </>
               )}
               {showSelectLink && (
                 <button
