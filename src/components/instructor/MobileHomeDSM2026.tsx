@@ -2387,14 +2387,27 @@ function QuickAccessCard({ navigate, instructorId }: { navigate: ReturnType<type
                 gap: 8,
               }}
             >
-              {page.map((item) => (
-                <QATile
-                  key={item.label}
-                  item={item}
-                  active={activeRoute === item.route}
-                  onPress={() => { setActiveRoute(item.route); navigate(item.route); }}
-                />
-              ))}
+              {page.map((item) => {
+                const isPinned = pinnedLabels.includes(item.label);
+                return (
+                  <QATile
+                    key={item.label}
+                    item={item}
+                    active={activeRoute === item.route}
+                    onPress={() => { setActiveRoute(item.route); navigate(item.route); }}
+                    badgeCount={unreads[item.label] ?? 0}
+                    onLongPress={() => {
+                      const wasPinned = pinnedLabels.includes(item.label);
+                      if (!wasPinned && pinnedLabels.length >= 8) {
+                        toast.message("Pin limit reached (8). Unpin one first.");
+                        return;
+                      }
+                      togglePin(item.label);
+                      toast.success(wasPinned ? "Unpinned" : "Pinned");
+                    }}
+                  />
+                );
+              })}
             </div>
           ))}
         </div>
