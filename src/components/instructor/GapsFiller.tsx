@@ -1229,8 +1229,8 @@ function linkStyle(color: string): React.CSSProperties {
     border: "none",
     padding: 0,
     cursor: "pointer",
-    fontSize: 12,
-    fontWeight: 500,
+    fontSize: 11,
+    fontWeight: 600,
     color,
     fontFamily: FONT_STACK,
   };
