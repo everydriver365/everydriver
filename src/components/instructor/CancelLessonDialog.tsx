@@ -12,6 +12,7 @@ import { usePaymentInvalidation } from "@/hooks/usePaymentInvalidation";
 import { triggerAutomations } from "@/utils/triggerAutomations";
 import { format, parseISO } from "date-fns";
 import { PupilNotifyType, PushDataType } from "@/lib/notificationTypes";
+import { getFutureSiblings } from "@/lib/recurrenceHelpers";
 
 interface CancelLessonDialogProps {
   open: boolean;
