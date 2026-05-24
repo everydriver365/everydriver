@@ -21,8 +21,8 @@ const TileGrid: React.FC<TileGridProps> = ({
   const isList = variant === "list";
 
   const gridStyle: React.CSSProperties = isList
-    ? { display: "grid", gridTemplateColumns: "1fr", gap: 8 }
-    : { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 };
+    ? { display: "flex", flexDirection: "column", gap: 8, width: "100%" }
+    : { display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: 8, width: "100%" };
 
   const header = (label || headerRight) ? (
     <div
@@ -45,9 +45,9 @@ const TileGrid: React.FC<TileGridProps> = ({
 
   if (isQuick) {
     return (
-      <div className={className} style={{ fontFamily: FONT_STACK }}>
+      <div className={className} style={{ fontFamily: FONT_STACK, width: "100%" }}>
         {header}
-        <div style={{ background: "#ececec", borderRadius: 16, padding: 14 }}>
+        <div style={{ background: "#ececec", borderRadius: 16, padding: 14, width: "100%" }}>
           <div style={gridStyle}>{children}</div>
         </div>
       </div>
@@ -55,7 +55,7 @@ const TileGrid: React.FC<TileGridProps> = ({
   }
 
   return (
-    <div className={className} style={{ fontFamily: FONT_STACK }}>
+    <div className={className} style={{ fontFamily: FONT_STACK, width: "100%" }}>
       {header}
       <div style={gridStyle}>{children}</div>
     </div>
