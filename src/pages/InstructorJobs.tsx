@@ -251,7 +251,7 @@ export default function InstructorJobs() {
     <InstructorPortalLayout>
       <div
         className="pb-24"
-        style={{ background: "#F2F2F4", padding: 16, display: "flex", flexDirection: "column", gap: 12 }}
+        style={{ background: "#F2F2F4", padding: "16px 14px", display: "flex", flexDirection: "column", gap: 12 }}
       >
         {/* Page header card */}
         <div
