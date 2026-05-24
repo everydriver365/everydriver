@@ -56,6 +56,7 @@ export function BriefingActionModal({ actionId, instructorId, open, onClose }: B
         .select("id, name, account_balance")
         .eq("instructor_id", instructorId)
         .eq("is_active", true)
+        .is("deleted_at", null)
         .lt("account_balance", 0);
       setDebtors(
         (data || []).map((p: any) => ({ id: p.id, name: p.name, debt: Math.abs(p.account_balance || 0) }))
