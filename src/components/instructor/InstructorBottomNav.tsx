@@ -1,7 +1,8 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Home, Calendar, Target, Users, Mic, Loader2, Volume2 } from "lucide-react";
+import { Home, Calendar, MessageCircle, Users, Mic, Loader2, Volume2 } from "lucide-react";
+import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
 import { haptics } from "@/lib/haptics";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
