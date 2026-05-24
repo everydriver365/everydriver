@@ -6,6 +6,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { IOSSegmentedControl } from "@/components/ui/IOSSegmentedControl";
+import Tile from "@/components/instructor/ui/Tile";
+import TileCard from "@/components/instructor/ui/TileCard";
+import TileDivider from "@/components/instructor/ui/TileDivider";
 interface FeatureToggle {
   key: string;
   label: string;
@@ -74,38 +77,37 @@ function ToggleList({ toggles, instructorId }: { toggles: FeatureToggle[]; instr
   };
 
   return (
-    <>
+    <TileCard>
       {toggles.map((toggle, index) => {
         const currentValue = instructor?.[toggle.key as keyof typeof instructor] as boolean | null ?? toggle.defaultValue;
         const isSaving = saving === toggle.key;
 
         return (
           <div key={toggle.key}>
-            <div className="flex items-center justify-between py-3 px-1 gap-3">
-              <div className="space-y-0.5 flex-1 min-w-0">
-                <Label htmlFor={toggle.key} className="text-sm font-medium cursor-pointer">
-                  {toggle.label}
-                </Label>
-                <p className="text-xs text-muted-foreground">{toggle.description}</p>
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                {isSaving && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
-                <Switch
-                  id={toggle.key}
-                  checked={currentValue}
-                  onCheckedChange={(v) => handleToggle(toggle.key, v)}
-                  disabled={isSaving}
-                  className="data-[state=checked]:bg-[#34C759]"
-                />
-              </div>
-            </div>
-            {index < toggles.length - 1 && (
-              <div className="ml-1 border-b border-border/40" />
-            )}
+            <Tile
+              variant="info"
+              iconOptional
+              title={toggle.label}
+              subtitle={toggle.description}
+              disabled={isSaving}
+              trailing={
+                <div className="flex items-center gap-2">
+                  {isSaving && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
+                  <Switch
+                    id={toggle.key}
+                    checked={currentValue}
+                    onCheckedChange={(v) => handleToggle(toggle.key, v)}
+                    disabled={isSaving}
+                    className="data-[state=checked]:bg-[#34C759]"
+                  />
+                </div>
+              }
+            />
+            {index < toggles.length - 1 && <TileDivider />}
           </div>
         );
       })}
-    </>
+    </TileCard>
   );
 }
 
