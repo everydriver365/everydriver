@@ -1,104 +1,95 @@
-# Unified Login — Investigation Report
 
-No code changes. Findings only, followed by architecture options.
+## Build 1 — Public profile SEO + improvements
 
-## 1. Current auth flows
+Investigation deltas from your prompt:
+- `react-helmet-async` is NOT installed, but `src/hooks/useMiniWebsiteSEO.ts` already handles title, description, og:*, twitter:*, canonical, and a JSON-LD `LocalBusiness` block via direct `document.head` mutation, wired through `MiniWebsiteLayout`. Per your "do not add Helmet if an alternative exists" constraint, I'll extend that hook rather than install Helmet.
+- Several columns named in your prompt don't exist on `instructors` (`coverage_area`, `bio_short`, `profile_photo_url`, `banner_image_url`, `coverage_postcode`, `service_radius_miles`). Real columns: `bio`, `profile_image_url`, `logo_url`, `hero_image_url`, `home_postcode`, `radius_miles`. I'll use the real ones.
 
-### Instructor (`src/pages/Drive365Login.tsx`)
-- `supabase.auth.signInWithPassword({ email, password })` (line 64).
-- Also supports Google OAuth via `GoogleSignInButton` and biometric replay (`src/lib/biometricAuth.ts`) which re-runs `signInWithPassword`.
-- Session managed by `InstructorAuthContext` + Supabase session in `localStorage`.
-- MFA enforced globally by `src/components/auth/MFAGate.tsx` (TOTP via `supabase.auth.mfa`).
+### FIX 1 — SEO meta (extend existing hook, no Helmet)
 
-### Pupil (`src/pages/PupilLogin.tsx`)
-- Same path: `supabase.auth.signInWithPassword` (line 177). Real Supabase user.
-- Pupils are linked via `pupils.auth_user_id` (column exists in `types.ts`) and matched on `email`.
-- After login, `RoleRedirect.resolvePupilPath()` looks up `pupils` by email and routes to `/p/:slug` or `/pupil`.
+Edit `src/hooks/useMiniWebsiteSEO.ts`:
+- Accept new optional inputs on `SEOInstructor`: `hourly_rate`, `radius_miles`, `custom_domain`, plus `avgRating` and `reviewCount` from the caller.
+- Change `og:type` from `"website"` to `"business.business"`.
+- Canonical / `og:url`: use `https://{custom_domain}/...` when `custom_domain` is set, otherwise keep the existing `https://{slug}.drive365.co.uk/...`.
+- Keep description fallback chain; prepend rate when `bio` is missing: `"{name} is a DVSA-qualified driving instructor offering lessons from £{hourly_rate}/hr in {home_postcode}"`.
 
-### Parent (`src/pages/ParentPortal.tsx`)
-- **No Supabase auth session.** Confirmed.
-- Flow: `send-parent-otp` edge function → SMS code stored in `parent_otp_codes` table → `verify-parent-otp` → on success, `localStorage.setItem('parent_phone_verified', phone)`.
-- Identity = phone number matched against `pupils.parent_phone` (substring match, last 9 digits).
-- There is no `parents` table and no `auth.users` row for a parent.
+### FIX 2 — JSON-LD LocalBusiness extras
 
-### Admin / School
-- Same `signInWithPassword` flow, gated by `user_roles` row (`AdminAuthContext`, `SchoolAuthContext`).
-- Admin additionally forced into TOTP enrolment by `MFAGate`.
+In the same hook, extend the existing JSON-LD block:
+- Add `priceRange: "From £{hourly_rate}/hr"` when `hourly_rate` set.
+- Add `aggregateRating: { @type: "AggregateRating", ratingValue, reviewCount }` only when `reviewCount > 0`.
+- Add `areaServed` with `home_postcode` + `radius_miles` when both set.
 
-## 2. Role detection
+In `MiniWebsiteHome.tsx`: pass `avgRating` and `reviews.length` into `MiniWebsiteLayout` so the hook gets real review data. Extend `MiniWebsiteLayout` props + forward to the hook.
 
-- Canonical store: `public.user_roles` table with `app_role` enum (`admin`, `school_manager`, `instructor`, `pupil`, `moderator`, `user`) — checked via `has_role()` security-definer fn.
-- Identity links on domain tables: `instructors.auth_user_id`, `pupils.auth_user_id`, and one more table (3 `auth_user_id` columns in generated types — likely `schools`/`school_managers`).
-- `RoleRedirect` (`/auth/redirect`) already implements: read `user_roles` → if 1 role auto-route, if multiple show picker, if none fall back to email→pupils lookup.
-- Priority: admin > school_manager > instructor > pupil > moderator > user.
-- **Parents are not in `user_roles`** and not in any `auth_user_id` table.
+### FIX 3 — Google reviews link on home
 
-## 3. Existing unified-login work
+In `MiniWebsiteHome.tsx`, inside the existing star/rating cluster (~line 227): if `instructor.google_review_url` is truthy, render a subtle text link "See Google reviews →" using `target="_blank" rel="noopener noreferrer"`. Muted-foreground text-xs, no button styling, sits under the internal star rating.
 
-- `RoleRedirect.tsx` is the only piece — a post-login router, mounted at `/auth/redirect` in both `publicRoutes` and `everydriverRoutes`.
-- No `UnifiedLogin` / `LoginRouter` component exists.
-- Login screens are still per-portal: `Drive365Login`, `InstructorPortalLogin`, `PupilLogin`, `SchoolLogin`, `AdminLogin`, `RemoteSigning`.
+### FIX 4 — Areas covered section
 
-## 4. Routing entry point (`src/App.tsx`)
+In `MiniWebsiteHome.tsx`, add a compact "Areas covered" line near the hero search bar:
+- If `instructor.home_postcode` and `instructor.radius_miles`: render `"Covering {home_postcode} and {radius_miles} miles around"` as a single muted line with a `MapPin` icon.
+- No new table; uses existing columns only. One line, no card chrome.
 
-- `BrowserRouter` mounts portal route bundles. `/` → `ConditionalHome`. Host-conditional swap between `publicRoutes` and `everydriverRoutes` via `isEveryDriverHost()`.
-- No central role-aware gate at `/`; each portal owns its own login URL.
+### FIX 5 — Public instructors SELECT policy: PII findings + safe view
 
-## 5. Despia wrapper
+**Currently exposed to anon via `Active instructors publicly viewable` (SELECT *):**
 
-- `useIsNativeWrapper.ts` only detects `window.Despia` / Capacitor / RN UA. No Despia-specific auth or routing hooks anywhere in `src/`.
-- Native session persistence is handled by `sessionPersistence.ts` + biometric replay — same Supabase session model.
+Sensitive — must NOT be public:
+- `google_refresh_token`, `google_access_token`, `google_token_expires_at`
+- `square_access_token_encrypted`, `square_refresh_token_encrypted`, `square_token_expires_at`, `square_merchant_id`
+- `stripe_account_id`
+- `xero_tenant_id`, `xero_connected`
+- `tax_code`
+- `adi_badge_number`, `adi_certificate_url`
+- `gpsgate_user_id`, `gpsgate_username`
+- `home_address` (full address — postcode is fine, full address is not)
+- `auth_user_id`
+- `bonus_earned`, `school_skim_percentage`, `school_skim_amount`, `commission_payer`, `commission_split_percent`
+- `last_active_at`, `last_seen_at`, `is_online`, `last_calendar_sync`, `last_compliance_reminder_sent`
+- `adi_badge_expiry`, `dbs_certificate_expiry`, `car_insurance_expiry`, `car_mot_expiry`, `car_tax_expiry`, `cpd_hours_logged`, `cpd_year_target`
+- `data_retention_months`, `deleted_at`, `demo_mode`, `availability_paused`, `has_completed_tour`, `dark_mode_enabled`, `pupil_app_dark_mode`
+- All `*_enabled` toggles (broadcast/whatsapp/ai_*/quotes/intake/pricing/etc) — operational config, not public
+- `lat`, `lng` (precise home coordinates — postcode is enough for public)
+- `vehicle_mpg`, `fuel_cost_per_litre`, `calendar_colors`, `mini_website_domain_id`
+- `payment_qr_url*`, `truelayer_enabled`, `klarna_enabled`, `clearpay_enabled`, `cash_payments_enabled`, `instant_bank_pay_enabled`, `direct_debit_enabled`, `deposit_*`
+- `booking_advance_days`, `buffer_minutes`, `preferred_lesson_length`, `allowed_lesson_lengths`, `cancellation_*`, `booking_mode`, `tracking_mode`
+- `preferred_language`, `gender`, `available_from`
+- `payment_link_base_url`
 
-## 6. Session persistence — the core asymmetry
+Safe to keep public (drive the mini-website):
+- `id`, `name`, `business_name`, `app_slug`, `bio`, `phone`, `email` (business contact), `home_postcode`, `radius_miles`, `hourly_rate`, `profile_image_url`, `car_image_url`, `hero_image_url`, `logo_url`, `welcome_video_url`, `brand_colour`, `secondary_colour`, `website_theme`, `website_font`, `website_header_style`, `website_header_bg`, `website_button_color`, `website_footer_bg`, `website_text_color`, `website_heading_color`, `website_menu_text_color`, `hero_overlay_color`, `hero_overlay_opacity`, `hero_show_logo`, `custom_branding_enabled`, `personal_website_url`, `facebook_url`, `instagram_url`, `twitter_url`, `linkedin_url`, `google_review_url`, `instructor_grade`, `cpd_certified`, `adi_code_of_practice`, `special_skills`, `extra_info`, `car_type`, `car_make`, `car_model`, `custom_domain`, `custom_domain_verified`, `location_name`, `is_active`, `pupil_app_enabled`, `created_at`.
 
-| User | Session storage | Identity primitive |
-|---|---|---|
-| Instructor / Pupil / Admin / School | Supabase JWT in `localStorage` (auto-refresh), MFA via Supabase | `auth.users.id` |
-| Parent | `localStorage.parent_phone_verified` + DB row in `parent_otp_codes` | phone number on `pupils.parent_phone` |
+**Migration:**
+1. Create `public.public_instructor_profiles` view selecting only the safe columns above, filtered to `is_active = true AND deleted_at IS NULL`. Grant SELECT to `anon` and `authenticated`.
+2. Drop the `Active instructors publicly viewable` and `Active instructors viewable by authenticated` policies on `public.instructors`. Authenticated owner/admin policies stay intact.
+3. Find every public-context query that hits `from("instructors")` for anon reads and switch to `from("public_instructor_profiles")`. Audited callers to update:
+   - `src/pages/mini-website/MiniWebsiteHome.tsx`
+   - `src/pages/PublicBookingPortal.tsx`
+   - `src/hooks/useInstructorWebsitePages.ts` (drives `useWebsitePage`)
+   - `src/hooks/useMiniWebsiteLinks.ts`
+   - Any other public mini-website page selects (`MiniWebsiteAbout/Services/Courses/Reviews/Contact/Theory/Tests`) — sweep via `rg`.
+   Authenticated portals continue to use the `instructors` table directly (their auth-scoped policies cover them).
 
-These are fundamentally different session models. RLS for instructors/pupils relies on `auth.uid()`; parent flows currently call edge functions that resolve by phone (no `auth.uid()`).
+Risk: removing the anon policy is hard-cutover. Any missed caller will break with no-rows. I'll grep every `.from("instructors")` reading in public-route components and convert in the same migration commit so there's no gap.
 
-## 7. Options for parents in a unified login
+### Constraints honoured
 
-**Option A — Promote parents to real Supabase users**
-- Create `parents` table with `auth_user_id`, `phone`, link `pupils.parent_user_id` (in addition to / instead of `parent_phone`).
-- Auth via Supabase phone OTP (`supabase.auth.signInWithOtp({ phone })`) — native Supabase, no custom edge functions.
-- Add `parent` to `app_role` enum and `user_roles`.
-- Pro: one session model, RLS by `auth.uid()`, MFA-compatible, no `localStorage` identity.
-- Con: requires SMS provider on Supabase Auth (Twilio/Messagebird), data migration (link existing `parent_phone` rows to new `auth.users` rows on first login), rewrite of `send-parent-otp`/`verify-parent-otp` and `parent-get-syllabus` to use `auth.uid()` instead of phone.
+- Additive content only on mini-website pages (no rebuild).
+- `react-helmet-async` NOT installed — existing `useMiniWebsiteSEO` extended instead.
+- PII findings reported above; awaiting your go/no-go on the view + policy drop before I write the migration.
 
-**Option B — Keep phone OTP, unify the UI only**
-- Single login screen with three tabs / a method picker (Email+password, Phone OTP, Google).
-- Phone OTP path keeps the existing `send-parent-otp`/`verify-parent-otp` + `localStorage` flag.
-- Router treats `parent_phone_verified` as a pseudo-session and routes to `/parent` when present, else falls through to `RoleRedirect`.
-- Pro: zero schema change, fast to ship.
-- Con: two session models persist forever; harder RLS story; parent flows stay edge-function-mediated; biometric/MFA never apply to parents.
+### Output format on delivery
 
-**Recommendation:** Option A is the right long-term answer (it removes the asymmetry that's already a tripwire — see `mem://constraints/no-hardcoded-fallbacks-live-data-only` and the RLS gaps doc). Option B is acceptable only as an interim if SMS provider config is blocked.
+`FIX 1 / FIX 2 / FIX 3 / FIX 4 / FIX 5 (migration + caller swaps) / PART 6 verified clean / PART 7 deferred`
 
-## 8. Architecture for the unified screen (regardless of A or B)
+### Deferred to Build 2 (after Build 1 confirmed clean)
 
-```text
-/login (new)
-  ├─ Method picker: [Email + password] [Phone (parents)] [Google]
-  ├─ On success → navigate("/auth/redirect")
-  └─ /auth/redirect (existing RoleRedirect, extended)
-        ├─ if parent session detected → /parent
-        ├─ else read user_roles → priority routing
-        └─ multi-role → picker
-```
+Bulk messaging fan-out edge function, recipient filters, push type fix, broadcast history tab.
 
-Changes needed in `RoleRedirect` for parents:
-- **Option A:** add `parent` to ROLE_MAP/PRIORITY, route to `/parent`.
-- **Option B:** before `getUser()`, check `localStorage.parent_phone_verified` → if set, route to `/parent`.
+### Approval needed before build
 
-Per-portal login URLs can stay as deep-links (instructor app, admin) but `/login` becomes the canonical public entry.
-
-## 9. Open questions before building
-
-1. Option **A or B** for parents? (drives schema + SMS provider work)
-2. Should `/login` **replace** the per-portal login pages (Drive365Login, PupilLogin, InstructorPortalLogin), or live alongside them as the unified public entry while portal-specific URLs continue to deep-link? Recommend: keep portal URLs as aliases that redirect to `/login?portal=…` so existing bookmarks/marketing keep working.
-3. Should admin/school logins remain isolated (security posture: hide they exist) or also be reachable from `/login`? Current code hides admin behind `/admin/login`.
-4. For Option A, do we need a one-time migration UX: "We've upgraded parent accounts — verify your phone to claim your login"?
-
-Awaiting answers to 1–4 before producing an implementation plan.
+Confirm two things and I'll execute:
+1. The "Safe to keep public" column list above is correct — in particular, OK to expose business `email` and `phone` publicly (they already are, but flagging since the policy rewrite is the moment to remove them if you want).
+2. OK to hard-cutover the anon policy in the same migration that creates the view and swaps the public callers (no transitional grace period).
