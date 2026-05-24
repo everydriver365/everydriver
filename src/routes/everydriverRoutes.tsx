@@ -1,5 +1,6 @@
-import { Route } from "react-router-dom";
+import { Route, Navigate } from "react-router-dom";
 import { lazyWithRetry as lazy } from "@/utils/lazyWithRetry";
+const UnifiedLogin = lazy(() => import("@/pages/UnifiedLogin"));
 
 // EveryDriver-cloned public pages (twins of the Drive365 set).
 // These render only on EveryDriver hosts (see isEveryDriverHost in
