@@ -56,6 +56,7 @@ export function BulkSMSDialog({ instructorId, trigger }: BulkSMSDialogProps) {
         .from("pupils")
         .select("id, name, phone")
         .eq("instructor_id", instructorId)
+        .is("deleted_at", null)
         .not("phone", "is", null)
         .order("name");
 

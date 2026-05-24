@@ -81,6 +81,7 @@ export function QuickTestResultForm({
           .from("pupils")
           .select("id, name")
           .eq("instructor_id", instructorId)
+          .is("deleted_at", null)
           .order("name"),
         supabase
           .from("examiners")

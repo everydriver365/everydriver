@@ -161,6 +161,7 @@ function useGapCandidatePupils(
             .from("pupils")
             .select("id, name, status, profile_image_url, postcode, pickup_address")
             .eq("instructor_id", instructorId)
+            .is("deleted_at", null)
             .eq("status", "active"),
           supabase
             .from("instructors")

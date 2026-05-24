@@ -52,6 +52,7 @@ export function AddSubscriptionSheet({ open, onOpenChange, instructorId, onSucce
         .from("pupils")
         .select("id, name, postcode")
         .eq("instructor_id", instructorId)
+        .is("deleted_at", null)
         .eq("status", "active")
         .order("name");
 

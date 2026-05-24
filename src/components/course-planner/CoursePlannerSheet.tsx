@@ -136,6 +136,7 @@ export function CoursePlannerSheet({
       .from("pupils")
       .select("id, name")
       .eq("instructor_id", instructorId)
+      .is("deleted_at", null)
       .order("name")
       .then(({ data }) => {
         if (data) setPupils(data as any);

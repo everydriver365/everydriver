@@ -26,6 +26,7 @@ export default function InstructorNotes() {
       .from("pupils")
       .select("id, name")
       .eq("instructor_id", instructor.id)
+      .is("deleted_at", null)
       .order("name")
       .then(({ data }) => setPupils(data || []));
   }, [instructor?.id]);
