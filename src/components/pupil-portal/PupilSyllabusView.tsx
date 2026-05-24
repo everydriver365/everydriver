@@ -172,12 +172,16 @@ export function PupilSyllabusView({ pupilId, brandColour, darkMode }: PupilSylla
           return (entry?.level || 0) >= 5;
         }).length;
 
+        const isHighlighted = highlightedCategory === category;
         return (
-          <Card 
+          <Card
             key={category}
-            style={{ 
-              backgroundColor: 'var(--brand-card)', 
-              borderColor: 'var(--brand-border)' 
+            ref={(el) => { categoryRefs.current[category] = el as HTMLDivElement | null; }}
+            style={{
+              backgroundColor: 'var(--brand-card)',
+              borderColor: isHighlighted ? '#d97706' : 'var(--brand-border)',
+              boxShadow: isHighlighted ? '0 0 0 3px rgba(217,119,6,0.25)' : undefined,
+              transition: 'box-shadow 300ms, border-color 300ms',
             }}
           >
             <button
