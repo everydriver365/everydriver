@@ -1,64 +1,42 @@
-## Goal
+## What's wrong today
 
-Make sure every place where an instructor (or admin/school user) **picks a pupil to act on** hides archived pupils (`deleted_at IS NOT NULL`). The DB trigger already blocks bookings against deleted pupils, but pickers should not even surface them.
+**1. The discount never appears in the SMS to pupils.**
+`GapsFiller` always sends a `customMessage` to the `send-gap-sms` edge function. The function only appends the "🎉 SPECIAL OFFER…" line when `customMessage` is empty (`supabase/functions/send-gap-sms/index.ts` line 158). Because `GapsFiller` always supplies a rendered template, the discount line is silently dropped.
 
-## Scope
+On top of that, the template editor (`MessageTemplateEditor.tsx`) exposes only `{first_name}`, `{slot_list}`, `{instructor_first_name}` — there is no `{discount}` token, so even an instructor who wants the discount in the message can't put it there. The in-sheet preview also doesn't reflect it.
 
-In-scope = "selection" surfaces: pickers, dropdowns, search overlays, multi-select lists for bulk actions, "assign pupil" steps, booking modals, FAB quick-actions. Read-only single-pupil views (loaded by id), the dedicated Archived Pupils dialog, GDPR exports, and pupil-portal screens that load the logged-in pupil's own row are **out of scope** — they intentionally include or are restricted to one row.
+**2. Grab a Gap is a different pipeline and is NOT wired to the discount.**
+- SMS gap offers write to `gap_offers` (has `discount_type` / `discount_value`). Pupil replies via Twilio webhook; booking note records the discount but the lesson price is not adjusted.
+- The pupil-portal "Grab a Gap" UI (`SlotOfferNotification.tsx`) reads from a different table — `instructor_short_slots` — via the `claim_slot_offer` RPC. That table has no discount columns, and the offers it surfaces are not the ones created by `GapsFiller`. So a discount set in GapsFiller is invisible inside the pupil portal and never affects the claim price.
 
-## Files to fix (add `.is("deleted_at", null)` to the pupils query)
+## Plan
 
-Instructor pickers / selection surfaces:
-- `src/components/instructor/VoiceQuickAddLessonSheet.tsx`
-- `src/components/instructor/BulkSMSDialog.tsx`
-- `src/components/instructor/BroadcastMessageSheet.tsx` (if it lists pupils)
-- `src/components/instructor/BriefingActionModal.tsx`
-- `src/components/instructor/PupilNoteSheet.tsx` (pupil chooser)
-- `src/components/instructor/RecordTestResultDialog.tsx`
-- `src/components/instructor/QuickTestResultForm.tsx`
-- `src/components/instructor/GapFillCard.tsx` / `GapsFiller.tsx` (pupil picker for gap)
-- `src/components/instructor/JobOfferAlert.tsx` (when assigning)
-- `src/components/instructor/end-lesson/StepBookNext.tsx`
-- `src/components/instructor/subscriptions/AddSubscriptionSheet.tsx`
-- `src/components/instructor/bulk-ops/BulkSMSTab.tsx`
-- `src/components/instructor/bulk-ops/BulkPriceUpdateTab.tsx`
-- `src/components/instructor/dashboard/NotesWidget.tsx` (if it shows a pupil chooser)
-- `src/components/instructor/InstructorSearchOverlay.tsx` (search → tap to action)
-- `src/components/instructor/PupilRateEditor.tsx` (if list-based)
-- `src/components/instructor/EditPupilSheet.tsx` (only if it lists pupils to choose; skip if it edits the one passed in)
-- `src/pages/InstructorSendReminder.tsx`
-- `src/pages/InstructorTakePayment.tsx` (pupil picker)
-- `src/pages/InstructorNotes.tsx` (pupil chooser only)
-- `src/pages/InstructorJobs.tsx` (assign-to-pupil flow only)
+### A. Show the discount in the gap-offer SMS
 
-Course planner:
-- `src/components/course-planner/CoursePlannerSheet.tsx`
-- `src/components/course-planner/CoursePlannerForm.tsx`
+1. Add a `{discount}` token to `MessageTemplateEditor.tsx`:
+   - Add to `TEMPLATE_TOKENS`.
+   - Extend `renderTemplate(template, vars)` to substitute `{discount}` with a human string ("10% off if you book", "£5 off if you book"), or empty string when no discount selected.
+   - Show the token chip in the editor toolbar.
+2. Update `DEFAULT_TEMPLATE` in `GapsFiller.tsx` to include `{discount}` on its own line so new users get it for free; existing instructors keep their saved template, but can drop the token in.
+3. Pass `discountType` / `discountValue` into `renderTemplate` from `GapsFiller`'s per-pupil send loop and from the `ConfirmSendSheet` preview so the preview matches the SMS.
+4. In `send-gap-sms/index.ts`: when `customMessage` is provided AND a discount is set AND the message does not already mention the discount (simple `includes` check on the rendered phrase), append the same `discountText` so older saved templates without `{discount}` still show it. This preserves backward compatibility.
 
-Admin selection surfaces:
-- `src/components/admin/BespokeBookingModal.tsx`
-- `src/components/admin/ReassignPupilsDialog.tsx`
-- `src/components/admin/AdminBookingsManager.tsx` (pupil picker portion)
-- `src/components/admin/AdminCommandCenter.tsx` (search → action)
+### B. Wire Grab a Gap to the same offers + discount
 
-School selection surfaces:
-- `src/components/school/SchoolTakeBookingModal.tsx` (when wired to live data)
+The two systems should share data. Decision needed (see questions below), but the cleanest path:
 
-Shared:
-- `src/components/HeaderSearchBox.tsx` (global pupil search → action)
+1. In `send-gap-sms`, after inserting a `gap_offers` row, also publish to whatever the pupil portal listens to. Two options:
+   - **Option 1 (preferred):** Switch `SlotOfferNotification.tsx` and `claim_slot_offer` to read/claim from `gap_offers` directly (the source of truth that already has discount columns). Add `claimed_at`/`claimed_by` columns to `gap_offers` and rewrite the RPC.
+   - **Option 2 (lighter):** Keep `instructor_short_slots` for the portal, add `discount_type` / `discount_value` columns to it, and have `send-gap-sms` mirror each gap offer into `instructor_short_slots`. Risk: dual sources of truth and race conditions on claim/SMS-YES.
+2. Update `SlotOfferNotification.tsx` to render the discount badge ("10% off") on the offer card so pupils see the same incentive in-portal as in the SMS.
+3. Update `claim_slot_offer` (and the Twilio reply handler) to actually apply the discount to the resulting lesson price — today both only write a note. The lesson price should be reduced by the percentage/amount at booking time.
 
-## Verification
+### C. Verification
 
-For each touched file: confirm the query is the one feeding a chooser/multi-select (not a single-pupil-by-id read), and that adding the filter does not regress an "include archived" toggle (e.g. `ArchivedPupilsDialog`, GDPR exports, admin records manager — leave those alone).
+- Send a test gap offer with a 10% discount: the SMS preview, the SMS body, the gap_offers row, and the resulting booked lesson price all reflect the 10% off.
+- Open the pupil portal as a recipient: the Grab a Gap card shows the same discount and claiming it produces a lesson with the discounted price.
 
-## Explicitly out of scope (leave as-is)
+## Questions before I build
 
-- `src/components/instructor/pupils/ArchivedPupilsDialog.tsx`
-- `src/components/admin/PupilRecordsManager.tsx` (admin records view; needs deleted rows)
-- `src/components/instructor/DataExportManager.tsx` / `AnnualBusinessReport.tsx` / `GDPRRetentionWidget.tsx` (compliance exports)
-- All single-pupil-by-id reads (PupilPortal, BrandedPupilPortal, PremiumPupilProfile, ParentPortal, pupil-portal/*, RemoteSigning, PassReport, ExpandablePupilCard detail load, etc.)
-- Stats/aggregation hooks (`useActivePupilsCount`, `useDormantPupilsCount`, dashboards) — they already use status filters appropriate to their purpose; will spot-check but not blanket-edit.
-
-## Approach
-
-Surgical edits only — add `.is("deleted_at", null)` next to the existing `.from("pupils")` chain in each in-scope file. No behaviour changes elsewhere. After edits, grep again to confirm every in-scope picker has the filter.
+1. For the Grab-a-Gap unification, do you want **Option 1** (consolidate on `gap_offers`, retire `instructor_short_slots`) or **Option 2** (mirror data, keep both)? Option 1 is the right long-term answer but touches the pupil portal claim flow.
+2. Should the discount actually reduce the lesson price on booking (today it's only recorded as a note), or stay informational for now?
