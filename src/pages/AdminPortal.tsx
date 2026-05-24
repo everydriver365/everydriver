@@ -27,6 +27,9 @@ import { CMSManager } from "@/components/admin/CMSManager";
 import { InstructorHomepageManager } from "@/components/admin/InstructorHomepageManager";
 import { PWAConfigManager } from "@/components/admin/PWAConfigManager";
 import { BackfillCommuteMileageTile } from "@/components/admin/BackfillCommuteMileageTile";
+import { BackfillTelematicsTile } from "@/components/admin/BackfillTelematicsTile";
+import { DuplicateLessonsTile } from "@/components/admin/DuplicateLessonsTile";
+
 
 import { SiteSettingsManager } from "@/components/admin/SiteSettingsManager";
 import { InstructorAppCMSManager } from "@/components/admin/InstructorAppCMSManager";
@@ -388,6 +391,9 @@ export default function AdminPortal() {
               </Link>
 
               <BackfillCommuteMileageTile />
+              <BackfillTelematicsTile />
+              <DuplicateLessonsTile />
+
             </div>
 
             <BespokeBookingModal open={isBespokeOpen} onOpenChange={setIsBespokeOpen} />

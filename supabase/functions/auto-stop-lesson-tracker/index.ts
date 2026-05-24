@@ -59,6 +59,38 @@ Deno.serve(async (req) => {
 
       const endedAtIso = now.toISOString();
 
+      // If session has no linked lesson, attempt a confident match before stopping.
+      let resolvedLessonId: string | null = session.lesson_id ?? null;
+      if (!resolvedLessonId) {
+        const winStartMs = new Date(session.started_at).getTime() - 30 * 60 * 1000;
+        const winEndMs = now.getTime() + 30 * 60 * 1000;
+        const sessionDate = String(session.started_at).slice(0, 10);
+        const { data: candidates } = await supabase
+          .from("scheduled_lessons")
+          .select("id, start_time, duration_minutes, lesson_date")
+          .eq("instructor_id", session.instructor_id)
+          .eq("pupil_id", session.pupil_id)
+          .eq("lesson_date", sessionDate)
+          .is("deleted_at", null)
+          .neq("status", "cancelled");
+
+        const overlapping = (candidates ?? []).filter((l: any) => {
+          const ls = new Date(`${l.lesson_date}T${l.start_time}`).getTime();
+          const le = ls + (l.duration_minutes ?? 60) * 60 * 1000;
+          return ls <= winEndMs && le >= winStartMs;
+        });
+
+        if (overlapping.length === 1) {
+          resolvedLessonId = overlapping[0].id;
+          await supabase
+            .from("lesson_telematics")
+            .update({ lesson_id: resolvedLessonId })
+            .eq("id", session.id);
+        } else if (overlapping.length > 1) {
+          console.warn(`Session ${session.id}: ${overlapping.length} candidate lessons — leaving lesson_id null (ambiguous)`);
+        }
+      }
+
       // End the session — the auto_log_mileage trigger will log mileage.
       const { error: updErr } = await supabase
         .from("lesson_telematics")
@@ -69,6 +101,10 @@ Deno.serve(async (req) => {
         console.error(`Failed to stop session ${session.id}:`, updErr.message);
         continue;
       }
+
+      // Keep session in scope for downstream code that reads session.lesson_id
+      (session as any).lesson_id = resolvedLessonId;
+
 
       // Detach from any GPS device that's still pointing at this session
       await supabase

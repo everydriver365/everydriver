@@ -288,6 +288,23 @@ export default function ParentPortal() {
     toast.success("Logged out successfully");
   };
 
+  // Realtime: refetch parent dashboard when any of the linked children's lessons change.
+  useEffect(() => {
+    if (!children.length) return;
+    const pupilIds = children.map((c) => c.id);
+    const channel = supabase
+      .channel(`parent-lessons-${pupilIds.join('-').slice(0, 50)}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "scheduled_lessons", filter: `pupil_id=in.(${pupilIds.join(',')})` },
+        () => { if (parentPhone) void fetchChildrenData(parentPhone); }
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [children.map((c) => c.id).join(',')]);
+
+
   const formatTime = (timeStr: string) => {
     const [hours, minutes] = timeStr.split(":");
     const hour = parseInt(hours);

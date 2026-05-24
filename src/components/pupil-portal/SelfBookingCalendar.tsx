@@ -251,20 +251,26 @@ const SelfBookingCalendar: React.FC<SelfBookingCalendarProps> = ({
         }
       }
 
-      // Notify instructor of pending request(s) (non-blocking)
-      if (requireApproval) {
+      // Notify instructor of new booking — both confirmed and pending-approval paths.
+      try {
         const { data: p } = await supabase.from('pupils').select('name').eq('id', pupilId).single();
+        const pupilName = (p as { name?: string } | null)?.name ?? 'A pupil';
         supabase.functions.invoke('notify-instructor', {
           body: {
             instructorId,
-            type: 'booking_request',
-            pupilName: (p as { name?: string } | null)?.name ?? 'A pupil',
+            type: requireApproval ? 'booking_request' : 'new_booking',
+            pupilName,
             lessonDate: slot.date,
             lessonTime: slot.startTime,
             durationMinutes: selectedDuration,
+            lessonId: parentId,
+            note: requireApproval ? 'This booking requires your approval' : undefined,
           },
         }).catch((e) => console.error('[SelfBookingCalendar] notify-instructor', e));
+      } catch (e) {
+        console.error('[SelfBookingCalendar] notify-instructor outer', e);
       }
+
 
       return { bookingStatus, count: dates.length, slot };
     },

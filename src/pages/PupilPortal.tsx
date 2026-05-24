@@ -118,16 +118,34 @@ export default function PupilPortal() {
       .channel("pupil-lesson-status")
       .on(
         "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "scheduled_lessons", filter: `pupil_id=eq.${pupilId}` },
+        { event: "*", schema: "public", table: "scheduled_lessons", filter: `pupil_id=eq.${pupilId}` },
         (payload) => {
-          const updated = payload.new as any;
-          setUpcomingLessons(prev =>
-            prev.map(l => l.id === updated.id ? { ...l, status: updated.status } : l)
-          );
+          const eventType = (payload as any).eventType;
+          if (eventType === "UPDATE") {
+            const updated = payload.new as any;
+            setUpcomingLessons(prev =>
+              prev.map(l => l.id === updated.id ? { ...l, status: updated.status } : l)
+            );
+          } else {
+            // INSERT or DELETE — refetch upcoming lessons so new bookings/cancellations show up.
+            const todayStr = format(startOfToday(), "yyyy-MM-dd");
+            supabase
+              .from("scheduled_lessons")
+              .select("id, lesson_date, start_time, duration_minutes, pickup_location, status, payment_status, amount_due")
+              .eq("pupil_id", pupilId)
+              .gte("lesson_date", todayStr)
+              .neq("status", "cancelled")
+              .order("lesson_date", { ascending: true })
+              .order("start_time", { ascending: true })
+              .limit(8)
+              .then(({ data }) => { if (data) setUpcomingLessons(data as any); });
+
+          }
         }
       )
       .subscribe();
     return () => { supabase.removeChannel(channel); };
+
   }, [pupilId]);
 
   if (!pupilId) return <Navigate to="/drive365/login" replace />;

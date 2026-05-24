@@ -50,14 +50,35 @@ serve(async (req: Request) => {
 
     const payload = JSON.parse(rawBody);
     const eventType = payload.type;
+    const eventId = payload.event_id ?? null;
     const data = payload.data?.object;
 
-    console.log("Received Square webhook:", eventType);
+    console.log("Received Square webhook:", eventType, "event_id:", eventId);
+
+    // Idempotency: short-circuit if we've already processed this Square event id.
+    if (eventId) {
+      const { data: insertedDedup, error: dedupErr } = await supabase
+        .from("processed_square_events")
+        .insert({ event_id: eventId, event_type: eventType })
+        .select("event_id")
+        .maybeSingle();
+
+      if (dedupErr && dedupErr.code !== "23505") {
+        console.warn("processed_square_events insert error:", dedupErr.message);
+      }
+      if (!insertedDedup) {
+        console.log(`Duplicate Square webhook event ${eventId} — returning 200 without reprocessing.`);
+        return new Response(JSON.stringify({ ok: true, duplicate: true }), {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
 
     try {
       await supabase.from("webhook_delivery_log").insert({
         provider: "square",
-        event_id: payload.event_id ?? null,
+        event_id: eventId,
         event_type: eventType ?? null,
         signature_valid: !!Deno.env.get("SQUARE_WEBHOOK_SIGNATURE_KEY"),
         processed: true,
@@ -66,6 +87,7 @@ serve(async (req: Request) => {
         payload,
       });
     } catch (e) { console.warn("webhook log insert failed", e); }
+
 
     switch (eventType) {
       case "payment.completed":

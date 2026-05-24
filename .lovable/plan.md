@@ -1,53 +1,116 @@
-# Add "Invite parent" button to pupil profile
+## Booking flow fixes — critical + high + medium
 
-Today, parents self-activate by going to `/parent` and entering their phone. There's no one-tap way for an instructor to send them the link. This adds an explicit Invite action.
+Execute strictly in order. After each fix, verify build is clean before proceeding.
 
-## What you'll see
+---
 
-In **Edit pupil → Parent / guardian** section, when a `parent_phone` is saved:
+### Fix 1 — Critical: `clash_overridden` audit
 
-- A new **"Invite parent"** button next to the parent phone field
-- Tap it → sends an SMS to the parent's number with:
-  > "Hi {parent_name or "there"}, {instructor business name} has invited you to track {pupil name}'s driving lessons. Open the parent portal: {portal_url}"
-- Portal URL = the instructor's branded domain (or `https://everydriver.lovable.app`) + `/parent`
-- Toast confirms "Invite sent to {phone}", or shows error if SMS fails
-- Button is disabled when `parent_phone` is empty or `parent_portal_enabled = false`
-- Shows "Last invited {relative time}" underneath after first send
+**Investigation findings (already gathered, will report in-line during execution):**
+- Active duplicate `(instructor_id, pupil_id, lesson_date, start_time)` rows in `scheduled_lessons` (excluding cancelled/deleted/completed): **0**.
+- Rows with `clash_overridden = true AND status NOT IN (cancelled, completed) AND deleted_at IS NULL`: **0**.
+- Codebase references to `clash_overridden`: **none** in `src/**` or `supabase/functions/**`.
+- The "4 duplicates" reported in the audit narrative do not currently exist as active rows — they were either cancelled, soft-deleted, or already cleaned. Will re-run the query at execution time and post the live result; if any reappear, will surface in the admin portal flag (below) rather than auto-cancel.
 
-## Technical details
+**Action:**
+1. Re-query duplicates and `clash_overridden` rows; paste full result.
+2. Since `clash_overridden` has zero writers in code and zero active true rows, treat it as a latent legacy field. **Add a migration:** trigger `enforce_clash_override_admin_only` on `scheduled_lessons` BEFORE INSERT/UPDATE — if `NEW.clash_overridden = true` and caller is not `has_role(auth.uid(), 'admin')`, raise exception. Safe because nothing currently sets it.
+3. **Admin flag UI:** new admin tile "Duplicate active lessons" that selects from a SQL view `v_duplicate_active_lessons` grouping by `(instructor_id, pupil_id, lesson_date, start_time)` HAVING count > 1. List rows with both lesson IDs and a "Review" link. No auto-cancel.
 
-**1. New edge function: `supabase/functions/invite-parent/index.ts`**
-- Verifies caller JWT → resolves instructor via `get_instructor_id_for_user(auth.uid())`
-- Body: `{ pupil_id }` (validated with Zod)
-- Loads pupil, confirms pupil belongs to caller's instructor, and that `parent_phone` is set and `parent_portal_enabled !== false`
-- Resolves portal URL from the instructor's `custom_domain` (if `custom_domain_verified`) else `https://everydriver.lovable.app`
-- Sends SMS via existing Twilio env vars (`TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_MESSAGING_SERVICE_SID`) — same pattern as `notify-parent`
-- Records `parent_invited_at` timestamp on the pupils row
-- Returns `{ success, sent_to }`
-- CORS + 400/403/500 error shapes consistent with other functions
+---
 
-**2. Migration**
-- Add nullable column `pupils.parent_invited_at TIMESTAMPTZ`
-- No RLS changes (write done by edge function with service role)
+### Fix 2 — High: Pupil self-book notifies instructor
 
-**3. UI: `src/components/instructor/EditPupilSheet.tsx`**
-- Add small ghost button "Invite parent" inside the Parent section, right of the phone input
-- Calls `supabase.functions.invoke("invite-parent", { body: { pupil_id } })`
-- Loading state + toast on success/error
-- If `parent_invited_at` is present, render muted "Last invited {relativeTime}" below the button
+File: `src/components/pupil-portal/SelfBookingCalendar.tsx`
 
-**4. No changes to** existing parent OTP flow, `/parent` route, or `send-parent-otp`. The invite is purely a discovery link — parent still OTPs in.
+- After successful `scheduled_lessons` insert, call `supabase.functions.invoke('notify-instructor', { body: { type, ... } })` wrapped in try/catch; never block confirmation.
+- Type mapping:
+  - Confirmed booking → `type: 'new_booking'`.
+  - `require_approval = true` (status = `pending_approval`) → `type: 'new_booking'` with `note: 'This booking requires your approval'` (verify `pending_approval` is not a registered type in `notify-instructor`; if it is, use it instead).
+- Payload: pupil name, lesson_date, start_time, duration_minutes, lesson_id.
+- Verify `PendingBookingsCard.tsx` path: it's an instructor-side approve/decline view, not a booking creator — no notify needed there. If a different component creates pending bookings without notification, patch it the same way.
 
-## Out of scope
+---
 
-- WhatsApp invite (can be added later as a second button using `useSendViaWhatsApp`)
-- Bulk invite from pupils list
-- Email invite fallback
-- Tracking whether the parent has actually claimed the link
+### Fix 3 — High: Orphan `lesson_telematics` (542 rows)
 
-## Constraints respected
+**Investigation (will report inline):**
+- Inspect `auto-start-lesson-tracker/index.ts` match logic + time tolerance.
+- Inspect `auto-stop-lesson-tracker/index.ts` to confirm whether it attempts a lesson match at stop time (currently believed: no).
 
-- RLS identity via `get_instructor_id_for_user(auth.uid())`
-- Live data only — no fake "invited" state
-- UK SMS only via existing Twilio config; no new secrets requested
-- Mobile layout untouched (button added to existing Parent section, fits in both)
+**Forward fix — `auto-stop-lesson-tracker`:**
+- Before finalising the session, if `lesson_id IS NULL`, query `scheduled_lessons` where:
+  - `instructor_id = session.instructor_id`
+  - `deleted_at IS NULL AND status NOT IN ('cancelled')`
+  - `lesson_date = session.started_at::date` (Europe/London)
+  - lesson time window overlaps `[started_at − 30min, ended_at + 30min]`
+- If exactly **one** match → set `lesson_id`. If 0 or >1 → leave null, log reason.
+
+**Backfill — new edge function `backfill-telematics-lesson-ids`:**
+- Iterate `lesson_telematics WHERE lesson_id IS NULL AND ended_at IS NOT NULL`.
+- Same match logic with ±30 min tolerance. Update only on exactly one confident match.
+- Return JSON summary: `{ scanned, matched, ambiguous, no_match }`.
+- Admin caller-only (verify_jwt + role check).
+
+**Admin UI:** "Backfill telematics" tile (same pattern as the existing Backfill commute mileage tile). Shows last-run summary.
+
+---
+
+### Fix 4 — High: Square webhook idempotency
+
+- Inspect `supabase/functions/square-webhook/index.ts` for any existing `event_id` dedupe.
+- **Migration:** create `processed_square_events (event_id text primary key, event_type text, processed_at timestamptz default now())`. RLS enabled, no policies (service role only).
+- **Webhook logic:** at the top of the handler, after signature verification, attempt `INSERT ... ON CONFLICT DO NOTHING RETURNING event_id`. If no row returned → already processed → return 200 immediately. Otherwise continue.
+- Additive only — no behavioural change for first-delivery events.
+
+---
+
+### Fix 5 — Medium: Pupil portal realtime for new lessons
+
+- `src/pages/PupilPortal.tsx` line ~121 (and `PupilPortalSchedule.tsx` if it has its own subscription): change `event: 'UPDATE'` → `event: '*'` on the `scheduled_lessons` channel; keep `filter: pupil_id=eq.{pupilId}`.
+
+---
+
+### Fix 6 — Medium: Parent portal realtime
+
+- Add a subscription in `ParentPortal.tsx` to `scheduled_lessons` filtered by `pupil_id=eq.{linkedPupilId}` (from existing parent↔pupil resolution). On any event, invalidate the lessons query. Same shape as `useGlobalLessonSync`, scoped.
+
+---
+
+### Fix 7 — Medium: Pupil cancel notifies instructor
+
+- In `PupilPortalSchedule.tsx` cancel handler, after the cancel succeeds, fire `notify-instructor` with `type: 'cancellation'` + pupil name, lesson date/time. Try/catch, non-blocking.
+- Verify the pending-approval self-book path from Fix 2 already triggers a notification — if not, ensure it does.
+
+---
+
+### Fix 8 — Medium: Daily alert for failed Google Calendar syncs
+
+- Migration: add `calendar_sync_alerted_at timestamptz` to `scheduled_lessons`.
+- New edge function `check-calendar-sync-failures`:
+  - Select `scheduled_lessons WHERE calendar_sync_status = 'failed' AND updated_at < now() - interval '1 hour' AND calendar_sync_alerted_at IS NULL AND deleted_at IS NULL AND status <> 'cancelled'`.
+  - For each, call `notify-instructor` with `type: 'admin_message'` and the specified copy.
+  - Set `calendar_sync_alerted_at = now()` after sending.
+- Schedule via `cron.schedule` SQL using the `insert` tool: `0 8 * * *`.
+
+---
+
+### Hard constraints (enforced)
+
+- Fix 1: no auto-cancel; admin-flag UI only.
+- Fix 1: post live `clash_overridden` query results before any trigger migration.
+- Fix 3: backfill only on exactly one match.
+- Fix 4: `processed_square_events` migration is additive.
+- Notifications: always try/catch, never block primary action.
+- Build clean after each fix.
+
+### Reporting format
+
+Will respond per round as:
+`FIX 1 (investigation + change) / FIX 2 / FIX 3 (investigation + auto-stop + backfill) / FIX 4 / FIX 5 / FIX 6 / FIX 7 / FIX 8 / PART 9 verified clean / PART 10 deferred`.
+
+### Out of scope
+
+- DB-level `EXCLUDE USING gist` clash constraint (deferred — needs btree_gist + careful overlap operator design).
+- Timezone migration to `timestamptz` (deferred — large blast radius).
+- Backfilling existing failed-sync rows older than 1 hour at deploy time (only forward alerting).

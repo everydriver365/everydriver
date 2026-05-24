@@ -13694,6 +13694,24 @@ export type Database = {
           },
         ]
       }
+      processed_square_events: {
+        Row: {
+          event_id: string
+          event_type: string | null
+          processed_at: string
+        }
+        Insert: {
+          event_id: string
+          event_type?: string | null
+          processed_at?: string
+        }
+        Update: {
+          event_id?: string
+          event_type?: string | null
+          processed_at?: string
+        }
+        Relationships: []
+      }
       promotional_messages: {
         Row: {
           created_at: string
@@ -16385,6 +16403,7 @@ export type Database = {
           awaiting_initial_payment: boolean
           booking_method: string | null
           booking_status: string | null
+          calendar_sync_alerted_at: string | null
           calendar_sync_status: string
           cancellation_note: string | null
           cancellation_reason: string | null
@@ -16445,6 +16464,7 @@ export type Database = {
           awaiting_initial_payment?: boolean
           booking_method?: string | null
           booking_status?: string | null
+          calendar_sync_alerted_at?: string | null
           calendar_sync_status?: string
           cancellation_note?: string | null
           cancellation_reason?: string | null
@@ -16505,6 +16525,7 @@ export type Database = {
           awaiting_initial_payment?: boolean
           booking_method?: string | null
           booking_status?: string | null
+          calendar_sync_alerted_at?: string | null
           calendar_sync_status?: string
           cancellation_note?: string | null
           cancellation_reason?: string | null
@@ -19912,6 +19933,41 @@ export type Database = {
           total_lessons: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "scheduled_lessons_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      v_duplicate_active_lessons: {
+        Row: {
+          duplicate_count: number | null
+          first_created_at: string | null
+          instructor_id: string | null
+          last_created_at: string | null
+          lesson_date: string | null
+          lesson_ids: string[] | null
+          pupil_id: string | null
+          start_time: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scheduled_lessons_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scheduled_lessons_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "scheduled_lessons_pupil_id_fkey"
             columns: ["pupil_id"]
