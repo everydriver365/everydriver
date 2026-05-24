@@ -69,8 +69,11 @@ self.addEventListener("notificationclick", (event) => {
   if (!url && data.type === "test_passed") {
     url = `/pupil?celebrate=pass`;
   }
-  if (!url && (data.type === "message" || data.type === "payment_reminder")) {
-    url = `/pupil?section=${data.type === "message" ? "messages" : "payments"}`;
+  if (!url && data.type === "message") {
+    url = `/pupil?section=messages`;
+  }
+  if (!url && data.type === "payment_reminder") {
+    url = `/pupil?section=payments`;
   }
   url = url || "/instructor";
 
