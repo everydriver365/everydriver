@@ -95,6 +95,7 @@ const navGroups: NavGroup[] = [
     color: "bg-purple-500/10 text-purple-600 dark:text-purple-400",
     items: [
       { id: "instructors", label: "Instructors", icon: Users },
+      { id: "network-instructors", label: "Drive365 Network", icon: Globe },
       { id: "enquiries", label: "Enquiries & Callbacks", icon: MessageSquareText },
       { id: "messages", label: "Pupil Messages", icon: MessageCircle },
       { 

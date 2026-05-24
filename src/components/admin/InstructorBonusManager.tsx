@@ -27,6 +27,7 @@ export function InstructorBonusManager() {
         .from("instructors")
         .select("id, name, bonus_earned")
         .eq("is_active", true)
+        .eq("is_network_placeholder", false)
         .order("name");
 
       if (error) throw error;

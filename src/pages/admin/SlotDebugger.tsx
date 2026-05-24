@@ -90,6 +90,7 @@ export default function SlotDebugger() {
       const { data, error } = await supabase
         .from("instructors")
         .select("id, name, available_from, buffer_minutes, slot_increment_minutes, is_network_placeholder")
+        .eq("is_network_placeholder", false)
         .order("name");
       if (error) {
         setError(error.message);

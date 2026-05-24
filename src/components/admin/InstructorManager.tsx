@@ -139,6 +139,7 @@ export function InstructorManager({ onEdit, onViewProfile }: InstructorManagerPr
       const { data, error } = await supabase
         .from("instructors")
         .select("*")
+        .eq("is_network_placeholder", false)
         .is("deleted_at", null)
         .order("name");
 
@@ -191,6 +192,7 @@ export function InstructorManager({ onEdit, onViewProfile }: InstructorManagerPr
     const { data } = await supabase
       .from("instructors")
       .select("*")
+      .eq("is_network_placeholder", false)
       .not("deleted_at", "is", null)
       .order("deleted_at", { ascending: false });
     setDeletedInstructors((data || []) as any);

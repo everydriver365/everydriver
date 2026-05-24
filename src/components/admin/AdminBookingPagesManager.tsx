@@ -58,7 +58,7 @@ export function AdminBookingPagesManager() {
     setLoading(true);
     const [pagesRes, instrRes, schoolsRes] = await Promise.all([
       supabase.from("booking_pages").select("*").order("created_at", { ascending: false }),
-      supabase.from("instructors").select("id, name").eq("is_active", true).order("name"),
+      supabase.from("instructors").select("id, name").eq("is_active", true).eq("is_network_placeholder", false).order("name"),
       supabase.from("schools").select("id, name").order("name"),
     ]);
     if (pagesRes.data) setPages(pagesRes.data);

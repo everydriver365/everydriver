@@ -63,6 +63,7 @@ export function BookingModeOverview() {
         .from("instructors")
         .select("id, name, email, phone, profile_image_url, booking_mode, is_active")
         .eq("is_active", true)
+        .eq("is_network_placeholder", false)
         .order("name");
 
       if (instructorError) throw instructorError;

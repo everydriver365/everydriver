@@ -157,7 +157,7 @@ export function RevenueAnalytics() {
         const [paymentsRes, lessonsRes, instructorsRes, plansRes, subsRes, allSubsRes, commissionRes] = await Promise.all([
           supabase.from("payment_history").select("amount, payment_method, recorded_at, instructor_id").gte("recorded_at", sixMonthsAgo),
           supabase.from("scheduled_lessons").select("lesson_type, lesson_date, status").gte("lesson_date", sixMonthsAgo.split("T")[0]),
-          supabase.from("instructors").select("id, name"),
+          supabase.from("instructors").select("id, name").eq("is_network_placeholder", false),
           supabase.from("subscription_plans").select("id, slug, name, price_monthly").eq("is_active", true).order("display_order"),
           supabase.from("instructor_subscriptions").select("id, plan_id, status, created_at, current_period_end, billing_cycle").eq("status", "active"),
           supabase.from("instructor_subscriptions").select("id, plan_id, status, created_at, current_period_end, billing_cycle"),

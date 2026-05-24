@@ -68,6 +68,7 @@ export function ComplianceDashboard() {
         .select(
           "id, name, email, is_active, adi_badge_number, adi_badge_expiry, car_insurance_expiry, car_mot_expiry, car_tax_expiry, dbs_certificate_expiry"
         )
+        .eq("is_network_placeholder", false)
         .order("name");
 
       if (error) throw error;

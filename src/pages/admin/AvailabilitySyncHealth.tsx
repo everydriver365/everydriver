@@ -89,6 +89,7 @@ export default function AvailabilitySyncHealth() {
       const { data: instructors, error: iErr } = await supabase
         .from("instructors")
         .select("id, name, email, available_from")
+        .eq("is_network_placeholder", false)
         .order("name");
       if (iErr) throw iErr;
 

@@ -39,7 +39,7 @@ export function CommissionDashboard() {
           .select("*")
           .order("created_at", { ascending: false })
           .limit(500),
-        supabase.from("instructors").select("id, name"),
+        supabase.from("instructors").select("id, name").eq("is_network_placeholder", false),
       ]);
 
       setCommissions((commRes.data as CommissionRecord[]) || []);
