@@ -8188,6 +8188,10 @@ export type Database = {
           late_cancel_fee: number | null
           late_cancel_hours: number | null
           no_show_fee: number | null
+          payment_chase_after_days: number
+          payment_chase_enabled: boolean
+          payment_chase_interval_days: number
+          payment_chase_max_reminders: number
           push_enabled: boolean | null
           reminder_1h_enabled: boolean | null
           reminder_time: string | null
@@ -8203,6 +8207,10 @@ export type Database = {
           late_cancel_fee?: number | null
           late_cancel_hours?: number | null
           no_show_fee?: number | null
+          payment_chase_after_days?: number
+          payment_chase_enabled?: boolean
+          payment_chase_interval_days?: number
+          payment_chase_max_reminders?: number
           push_enabled?: boolean | null
           reminder_1h_enabled?: boolean | null
           reminder_time?: string | null
@@ -8218,6 +8226,10 @@ export type Database = {
           late_cancel_fee?: number | null
           late_cancel_hours?: number | null
           no_show_fee?: number | null
+          payment_chase_after_days?: number
+          payment_chase_enabled?: boolean
+          payment_chase_interval_days?: number
+          payment_chase_max_reminders?: number
           push_enabled?: boolean | null
           reminder_1h_enabled?: boolean | null
           reminder_time?: string | null
