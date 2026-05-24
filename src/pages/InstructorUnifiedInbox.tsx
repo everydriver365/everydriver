@@ -805,6 +805,7 @@ export default function InstructorUnifiedInbox() {
   const [audience, setAudience] = useState<AudienceTab>("pupils");
   const [search, setSearch] = useState("");
   const [showBroadcast, setShowBroadcast] = useState(false);
+  const [showBroadcastHistory, setShowBroadcastHistory] = useState(false);
   const [showNewChat, setShowNewChat] = useState(false);
   const [pupils, setPupils] = useState<Pupil[]>([]);
   const [pupilSearch, setPupilSearch] = useState("");
