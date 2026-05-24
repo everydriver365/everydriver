@@ -34,7 +34,7 @@ const FONT_STACK =
   '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Roboto", sans-serif';
 
 const DEFAULT_TEMPLATE =
-  "Hi {first_name}, I have some availability coming up:\n\n{slot_list}\n\nLet me know if you'd like to book any of these. Cheers, {instructor_first_name}";
+  "Hi {first_name}, I have some availability coming up:\n\n{slot_list}\n\n{discount}\n\nLet me know if you'd like to book any of these. Cheers, {instructor_first_name}";
 
 const TEMPLATE_STORAGE_KEY = "instructor.gapFiller.template.v1";
 
