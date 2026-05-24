@@ -339,7 +339,7 @@ export default function BrandedPupilPortal() {
     : undefined;
 
   // Pupil unread message count for Messages tab badge
-  const { data: unreadMessages = 0 } = usePupilUnreadCount(instructor?.id, pupil?.id);
+  const { data: unreadMessages = 0 } = usePupilInboundUnreadCount(instructor?.id, pupil?.id);
   const messagesBadge = unreadMessages > 0 ? (unreadMessages > 99 ? "99+" : unreadMessages) : undefined;
 
   return (
