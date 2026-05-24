@@ -29,13 +29,17 @@ export function ParentSyllabusOverview({ childId, childName }: ParentSyllabusOve
       setLoading(true);
       setError(null);
       try {
-        const parentPhone = localStorage.getItem("parent_phone_verified");
-        if (!parentPhone) {
+        const { data: sess } = await supabase.auth.getSession();
+        const token = sess?.session?.access_token;
+        if (!token) {
           throw new Error("Parent session not found. Please log in again.");
         }
         const { data, error: invokeErr } = await supabase.functions.invoke(
           "parent-get-syllabus",
-          { body: { parent_phone: parentPhone, pupil_id: childId } },
+          {
+            body: { pupil_id: childId },
+            headers: { Authorization: `Bearer ${token}` },
+          },
         );
         if (invokeErr) throw invokeErr;
         if (!active) return;
