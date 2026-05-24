@@ -4,10 +4,8 @@ import { GapsFiller } from "@/components/instructor/GapsFiller";
 import { WaitlistManager } from "@/components/instructor/WaitlistManager";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
-import { SegmentedControl } from "@/components/instructor/ui/SegmentedControl";
 
-const FONT_STACK =
-  '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Roboto", sans-serif';
+const FONT_STACK = 'Poppins, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
 
 type GapsTab = "gaps" | "waitlist";
 
@@ -26,55 +24,59 @@ export default function InstructorGaps() {
     );
   }
 
+  const tabs: { value: GapsTab; label: string; Icon: typeof MapPin }[] = [
+    { value: "gaps", label: "Fill gaps", Icon: MapPin },
+    { value: "waitlist", label: "Waitlist", Icon: Clock },
+  ];
+
   return (
     <InstructorPortalLayout>
       <div
         style={{
-          background: "#F2F2F4",
-          padding: 6,
+          background: "#F2F4F8",
+          padding: 12,
           minHeight: "100%",
           fontFamily: FONT_STACK,
           display: "flex",
           flexDirection: "column",
-          gap: 8,
+          gap: 14,
           overflowX: "hidden",
           maxWidth: "100%",
         }}
       >
-        {/* Page header card */}
+        {/* Page header */}
         <div
           style={{
-            background: "#FFFFFF",
-            borderRadius: 12,
-            padding: "14px 16px",
             display: "flex",
             alignItems: "center",
             gap: 12,
+            padding: "2px 2px",
           }}
         >
           <div
             style={{
-              width: 36,
-              height: 36,
+              width: 34,
+              height: 34,
               borderRadius: 10,
-              background: "#FBEAEC",
+              background: "#fbe8e8",
               display: "inline-flex",
               alignItems: "center",
               justifyContent: "center",
               flexShrink: 0,
             }}
           >
-            <MapPin size={20} strokeWidth={2} color="#C8434F" />
+            <MapPin size={18} strokeWidth={2} color="#c9302c" />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div
               style={{
-                fontSize: 11,
+                fontSize: 9,
                 fontWeight: 500,
-                color: "#6E6E73",
-                letterSpacing: 0.3,
+                color: "#999999",
+                letterSpacing: 1,
                 textTransform: "uppercase",
                 margin: "0 0 2px",
+                lineHeight: 1,
               }}
             >
               Outreach
@@ -82,10 +84,10 @@ export default function InstructorGaps() {
             <h1
               style={{
                 fontSize: 16,
-                fontWeight: 600,
-                color: "#000000",
-                letterSpacing: -0.3,
+                fontWeight: 700,
+                color: "#1a1a1f",
                 margin: 0,
+                lineHeight: 1.2,
               }}
             >
               Gaps & waitlist
@@ -93,70 +95,59 @@ export default function InstructorGaps() {
           </div>
         </div>
 
-        {/* Main content card */}
+        {/* Tab bar */}
         <div
+          role="tablist"
+          aria-label="Outreach view"
           style={{
-            background: "#FFFFFF",
+            background: "#ffffff",
+            border: "1px solid #e0e3ea",
             borderRadius: 12,
-            padding: "16px 8px 20px",
-            flex: 1,
+            padding: 3,
             display: "flex",
-            flexDirection: "column",
+            gap: 2,
           }}
         >
-          <div style={{ marginBottom: 20 }}>
-            <SegmentedControl<GapsTab>
-              value={tab}
-              onChange={setTab}
-              ariaLabel="Outreach view"
-              options={[
-                {
-                  value: "gaps",
-                  label: (
-                    <span
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: 6,
-                      }}
-                    >
-                      <MapPin
-                        size={13}
-                        strokeWidth={2}
-                        color={tab === "gaps" ? "#000000" : "#6E6E73"}
-                      />
-                      Fill gaps
-                    </span>
-                  ),
-                },
-                {
-                  value: "waitlist",
-                  label: (
-                    <span
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: 6,
-                      }}
-                    >
-                      <Clock
-                        size={13}
-                        strokeWidth={2}
-                        color={tab === "waitlist" ? "#000000" : "#6E6E73"}
-                      />
-                      Waitlist
-                    </span>
-                  ),
-                },
-              ]}
-            />
-          </div>
+          {tabs.map(({ value, label, Icon }) => {
+            const active = tab === value;
+            return (
+              <button
+                key={value}
+                role="tab"
+                aria-selected={active}
+                type="button"
+                onClick={() => setTab(value)}
+                style={{
+                  flex: 1,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 5,
+                  padding: 8,
+                  borderRadius: 9,
+                  border: "none",
+                  background: active ? "#1a1a1f" : "transparent",
+                  color: active ? "#ffffff" : "#aaaaaa",
+                  fontSize: 12,
+                  fontWeight: 500,
+                  fontFamily: FONT_STACK,
+                  cursor: "pointer",
+                  transition: "background 140ms ease, color 140ms ease",
+                  WebkitTapHighlightColor: "transparent",
+                }}
+              >
+                <Icon size={14} strokeWidth={2} color={active ? "#ffffff" : "#aaaaaa"} />
+                {label}
+              </button>
+            );
+          })}
+        </div>
 
+        {/* Tab content */}
+        <div style={{ flex: 1 }}>
           {tab === "gaps" ? (
             <GapsFiller instructorId={instructorId} />
           ) : (
-            // Wrap-only: existing WaitlistManager renders inside the new tile
-            // shell so all current waitlist + offer features keep working.
             <WaitlistManager instructorId={instructorId} />
           )}
         </div>

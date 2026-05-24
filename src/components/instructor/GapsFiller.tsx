@@ -31,7 +31,7 @@ const normalisePostcode = (pc: string | null | undefined): string | null => {
 const pairKey = (from: string, to: string) => `${from}|${to}`;
 
 const FONT_STACK =
-  '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Roboto", sans-serif';
+  'Poppins, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
 
 const DEFAULT_TEMPLATE =
   "Hi {first_name}, I have some availability coming up:\n\n{slot_list}\n\n{discount}\n\nLet me know if you'd like to book any of these. Cheers, {instructor_first_name}";
@@ -849,23 +849,22 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
   return (
     <div style={{ fontFamily: FONT_STACK }}>
       {/* Section title */}
-      <div style={{ marginBottom: 20 }}>
+      <div style={{ marginBottom: 14 }}>
         <h2
           style={{
-            fontSize: 20,
-            fontWeight: 600,
-            color: "#000000",
-            letterSpacing: -0.4,
-            margin: "0 0 6px",
-            lineHeight: 1.2,
+            fontSize: 15,
+            fontWeight: 700,
+            color: "#1a1a1f",
+            margin: "0 0 4px",
+            lineHeight: 1.25,
           }}
         >
           Fill your gaps
         </h2>
         <p
           style={{
-            fontSize: 13,
-            color: "#6E6E73",
+            fontSize: 11,
+            color: "#aaaaaa",
             lineHeight: 1.45,
             margin: 0,
           }}
@@ -874,9 +873,9 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
             ? `Send a message to ${recipientCount} pupil${
                 recipientCount === 1 ? "" : "s"
               } who fit this slot after travel time`
-            : `Send a message to all ${recipientCount} pupil${
+            : `Send a message to ${recipientCount} pupil${
                 recipientCount === 1 ? "" : "s"
-              } with phone numbers about available slots`}
+              } who fit this slot after travel time`}
         </p>
       </div>
 
@@ -892,10 +891,10 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
       >
         <span
           style={{
-            fontSize: 11,
-            fontWeight: 500,
-            color: "#6E6E73",
-            letterSpacing: 0.3,
+            fontSize: 10,
+            fontWeight: 600,
+            color: "#aaaaaa",
+            letterSpacing: 0.6,
             textTransform: "uppercase",
             whiteSpace: "nowrap",
           }}
@@ -906,19 +905,20 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
           <button
             type="button"
             onClick={selectAll}
-            style={{ ...linkStyle("#2B7BC8"), whiteSpace: "nowrap" }}
+            style={{ ...linkStyle("#2952b3"), whiteSpace: "nowrap" }}
           >
             Select all
           </button>
           <button
             type="button"
             onClick={clearAll}
-            style={{ ...linkStyle("#6E6E73"), whiteSpace: "nowrap" }}
+            style={{ ...linkStyle("#aaaaaa"), whiteSpace: "nowrap" }}
           >
             Clear
           </button>
         </div>
       </div>
+
 
       {/* Slot list */}
       {loading ? (
@@ -1229,8 +1229,8 @@ function linkStyle(color: string): React.CSSProperties {
     border: "none",
     padding: 0,
     cursor: "pointer",
-    fontSize: 12,
-    fontWeight: 500,
+    fontSize: 11,
+    fontWeight: 600,
     color,
     fontFamily: FONT_STACK,
   };
