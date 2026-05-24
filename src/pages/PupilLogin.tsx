@@ -315,163 +315,35 @@ export default function PupilLogin() {
   return (
     <>
       {showMobileNewLogin && (
-        <div
-          className="md:hidden fixed inset-0 bg-[#0F2044] text-white flex flex-col overflow-hidden z-40"
-          style={{
-            paddingTop: "calc(env(safe-area-inset-top) + 40px)",
-            paddingBottom: "calc(env(safe-area-inset-bottom) + 20px)",
-            paddingLeft: 28,
-            paddingRight: 28,
-            minHeight: "100dvh",
+        <UnifiedMobileLoginCard
+          portalName="Drive365"
+          descriptor="For pupils"
+          biometricScope="pupil"
+          onSignIn={async (em, pw, _remember) => {
+            const ok = await performLogin(em, pw);
+            if (!ok) return { error: "Could not sign you in" };
           }}
-        >
-          <style>{`
-            @media (max-height: 720px) {
-              .pl-m-brand-gap { margin-top: 28px !important; }
-              .pl-m-field-gap { margin-bottom: 10px !important; }
-              .pl-m-divider { margin-top: 16px !important; margin-bottom: 14px !important; }
-              .pl-m-welcome { font-size: 22px !important; }
-              .pl-m-root-top { padding-top: calc(env(safe-area-inset-top) + 24px) !important; }
-            }
-          `}</style>
-
-          {/* Brand */}
-          <div className="flex flex-col items-center">
-            <img src={drive365Logo} alt="Drive365" className="h-11 object-contain" />
-
-            <h1
-              className="pl-m-welcome text-white font-bold mt-7"
-              style={{ fontSize: 26, letterSpacing: "-0.6px", lineHeight: 1.1 }}
-            >
-              {slugInstructorName ? `Sign in to ${slugInstructorName}` : "Welcome back"}
-            </h1>
-            <p className="text-white/90 mt-1.5" style={{ fontSize: 14 }}>
-              Sign in to your pupil portal
-            </p>
-          </div>
-
-          {/* Form */}
-          <form onSubmit={handleLogin} className="flex flex-col mt-10 pl-m-brand-gap flex-1">
-            <label htmlFor="pl-m-email" className="text-[12px] font-semibold text-white/60 uppercase tracking-[0.6px] mb-1.5">
-              Email
-            </label>
-            <div className="relative mb-[14px] pl-m-field-gap">
-              <Mail className="absolute left-[14px] top-1/2 -translate-y-1/2 h-[18px] w-[18px] text-white" strokeWidth={1.8} />
-              <input
-                id="pl-m-email"
-                type="email"
-                inputMode="email"
-                autoComplete="email"
-                autoCapitalize="none"
-                autoCorrect="off"
-                spellCheck={false}
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full h-[50px] pl-11 pr-4 rounded-[12px] text-white text-[15px] placeholder:text-white/40 outline-none transition-colors focus:border-white/60"
-                style={{ background: "rgba(255,255,255,0.18)", border: "1px solid rgba(255,255,255,0.3)" }}
-              />
-            </div>
-
-            <label htmlFor="pl-m-password" className="text-[12px] font-semibold text-white/60 uppercase tracking-[0.6px] mb-1.5">
-              Password
-            </label>
-            <div className="relative mb-[14px] pl-m-field-gap">
-              <Lock className="absolute left-[14px] top-1/2 -translate-y-1/2 h-[18px] w-[18px] text-white" strokeWidth={1.8} />
-              <input
-                id="pl-m-password"
-                type={showPassword ? "text" : "password"}
-                autoComplete="current-password"
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full h-[50px] pl-11 pr-12 rounded-[12px] text-white text-[15px] placeholder:text-white/40 outline-none transition-colors focus:border-white/60"
-                style={{ background: "rgba(255,255,255,0.18)", border: "1px solid rgba(255,255,255,0.3)" }}
-              />
+          onForgot={async (em) => {
+            const { error } = await supabase.functions.invoke("pupil-email-auth", {
+              body: { action: "forgot_password", email: em },
+            });
+            if (error) return { error: "Could not send reset email" };
+          }}
+          footer={
+            <span style={{ fontSize: 12, color: "#888" }}>
+              New to Drive365?{" "}
               <button
                 type="button"
-                onClick={() => setShowPassword((v) => !v)}
-                aria-label={showPassword ? "Hide password" : "Show password"}
-                className="absolute right-[12px] top-1/2 -translate-y-1/2 p-1 text-white/80"
+                onClick={() => setActiveTab("register")}
+                style={{ background: "transparent", border: "none", color: "#2952B3", fontWeight: 600, cursor: "pointer", padding: 0 }}
               >
-                {showPassword ? <EyeOff className="h-[18px] w-[18px]" /> : <Eye className="h-[18px] w-[18px]" />}
+                Create account
               </button>
-            </div>
-
-            <div className="flex items-center justify-between mb-4">
-              <button type="button" onClick={() => setRememberMe((p) => !p)} className="flex items-center gap-2">
-                <span
-                  className={cn(
-                    "w-5 h-5 rounded-[5px] flex items-center justify-center transition-colors",
-                    rememberMe ? "bg-white" : "bg-transparent"
-                  )}
-                  style={{ border: "1.5px solid rgba(255,255,255,0.9)" }}
-                >
-                  {rememberMe && <Check className="h-3 w-3 text-[#0F2044]" strokeWidth={3.5} />}
-                </span>
-                <span className="text-[13px] font-medium text-white">Remember me</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setLoginView("forgot")}
-                className="text-[13px] font-semibold text-white"
-              >
-                Forgot password?
-              </button>
-            </div>
-
-            <motion.button
-              type="submit"
-              whileTap={{ scale: 0.985, opacity: 0.85 }}
-              disabled={!canSubmit || loading}
-              style={{ opacity: canSubmit && !loading ? 1 : 0.6 }}
-              className="w-full rounded-[12px] bg-white text-[#0F2044] font-bold disabled:cursor-not-allowed"
-            >
-              <span className="py-4 text-[15px] flex items-center justify-center gap-2">
-                {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Sign in"}
-              </span>
-            </motion.button>
-
-            <div className="flex items-center gap-3 mt-6 mb-5 pl-m-divider">
-              <div className="flex-1 h-px bg-white/25" />
-              <span className="text-[12px] text-white/70 uppercase" style={{ letterSpacing: "2px" }}>or</span>
-              <div className="flex-1 h-px bg-white/25" />
-            </div>
-
-            {faceIdAvailable && (
-              <button
-                type="button"
-                onClick={handleFaceIdLogin}
-                disabled={faceIdLoading || loading}
-                className="w-full rounded-[12px] bg-transparent flex items-center justify-center gap-2.5 py-3.5 transition-opacity active:opacity-80"
-                style={{ border: "1.5px solid rgba(255,255,255,0.22)" }}
-              >
-                {faceIdSuccess ? (
-                  <CheckCircle2 className="h-[22px] w-[22px] text-white" />
-                ) : (
-                  <ScanFace className="h-[22px] w-[22px] text-white" strokeWidth={1.8} />
-                )}
-                <span className="text-white text-[14px] font-semibold">
-                  {faceIdSuccess ? "Recognised — signing in" : faceIdLoading ? "Scanning…" : `Sign in with ${biometryLabel}`}
-                </span>
-              </button>
-            )}
-
-            <div className="mt-auto text-center">
-              <span className="text-[13px] text-white">
-                New to Drive365?{" "}
-                <button
-                  type="button"
-                  onClick={() => setActiveTab("register")}
-                  className="font-bold text-white"
-                >
-                  Create account
-                </button>
-              </span>
-            </div>
-          </form>
-        </div>
+            </span>
+          }
+        />
       )}
+
 
       {/* ============ DESKTOP + mobile fallback (register/forgot views) ============ */}
       <div className={cn("min-h-screen w-full bg-white flex flex-col md:flex-row", showMobileNewLogin && "hidden md:flex")}>
