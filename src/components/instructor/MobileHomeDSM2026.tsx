@@ -2513,70 +2513,30 @@ function QATile({
   item, active, onPress,
 }: { item: QAItem; active: boolean; onPress: () => void; size?: "grid" | "scroll" }) {
   const Icon = item.Icon;
-  const BORDER = "#e0e3ea";
-  const HOVER_BORDER = "#c8cdd6";
-  const HOVER_BG = "#f8f9fb";
   return (
-    <button
-      type="button"
+    <Tile
+      variant="navigation"
+      title={item.label}
       onClick={onPress}
-      onMouseEnter={(e) => {
-        const el = e.currentTarget as HTMLButtonElement;
-        el.style.borderColor = HOVER_BORDER;
-        el.style.background = HOVER_BG;
-      }}
-      onMouseLeave={(e) => {
-        const el = e.currentTarget as HTMLButtonElement;
-        el.style.borderColor = BORDER;
-        el.style.background = "#FFFFFF";
-      }}
-      style={{
-        width: "100%",
-        padding: 14,
-        backgroundColor: "#FFFFFF",
-        border: `0.5px solid ${BORDER}`,
-        borderRadius: 14,
-        cursor: "pointer",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "flex-start",
-        textAlign: "left",
-        transition: "border-color 150ms ease, background 150ms ease",
-        minWidth: 0,
-      }}
-    >
-      <span
-        style={{
-          width: 36,
-          height: 36,
-          borderRadius: 10,
-          background: item.bg,
-          display: "inline-flex",
-          alignItems: "center",
-          justifyContent: "center",
-          flexShrink: 0,
-        }}
-      >
-        <Icon size={18} strokeWidth={2} color={item.colour} />
-      </span>
-
-      <span
-        style={{
-          fontSize: 13,
-          fontWeight: 500,
-          color: "#1a1a1f",
-          fontFamily: FONT,
-          lineHeight: 1.3,
-          marginTop: 10,
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          whiteSpace: "nowrap",
-          maxWidth: "100%",
-        }}
-      >
-        {item.label}
-      </span>
-    </button>
+      ariaLabel={item.label}
+      iconNode={
+        <span
+          style={{
+            width: 36,
+            height: 36,
+            borderRadius: 10,
+            background: item.bg,
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+          }}
+        >
+          <Icon size={18} strokeWidth={2} color={item.colour} />
+        </span>
+      }
+      className={active ? "qa-tile-active" : undefined}
+    />
   );
 }
 
