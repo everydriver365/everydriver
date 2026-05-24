@@ -113,12 +113,15 @@ const Tile: React.FC<TileProps> = ({
   const isNav = variant === "navigation";
   const isSlot = variant === "slot";
 
-  // Long-press handling
+  // Long-press handling (cancels on scroll/drag movement)
   const pressTimer = useRef<number | null>(null);
   const longFired = useRef(false);
-  const handlePressStart = () => {
+  const pressStart = useRef<{ x: number; y: number } | null>(null);
+  const MOVE_THRESHOLD = 8;
+  const handlePressStart = (e: React.PointerEvent) => {
     if (!onLongPress) return;
     longFired.current = false;
+    pressStart.current = { x: e.clientX, y: e.clientY };
     pressTimer.current = window.setTimeout(() => {
       longFired.current = true;
       onLongPress();
@@ -126,6 +129,16 @@ const Tile: React.FC<TileProps> = ({
   };
   const handlePressEnd = () => {
     if (pressTimer.current !== null) {
+      window.clearTimeout(pressTimer.current);
+      pressTimer.current = null;
+    }
+    pressStart.current = null;
+  };
+  const handlePressMove = (e: React.PointerEvent) => {
+    if (!pressStart.current || pressTimer.current === null) return;
+    const dx = e.clientX - pressStart.current.x;
+    const dy = e.clientY - pressStart.current.y;
+    if (Math.hypot(dx, dy) > MOVE_THRESHOLD) {
       window.clearTimeout(pressTimer.current);
       pressTimer.current = null;
     }
