@@ -1898,6 +1898,7 @@ export default function PremiumPupilProfile() {
             {NextLesson}
             {LastLesson}
             {ProgressOverview}
+            {SyllabusCard}
             {HistoryCard}
           </Section>
           <Section title="Money">
