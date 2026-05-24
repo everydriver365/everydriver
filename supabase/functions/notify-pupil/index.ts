@@ -196,6 +196,10 @@ serve(async (req: Request) => {
           notificationTitle = "You passed! 🎉";
           notificationBody = "Congratulations — you've passed your driving test! Share the news!";
           break;
+        case "message":
+          notificationTitle = title ?? "New message";
+          notificationBody = body ?? "You have a new message from your instructor.";
+          break;
 
         default:
           notificationTitle = "Notification";
