@@ -78,6 +78,7 @@ const FONT_STACK = '"Poppins", system-ui, -apple-system, "Segoe UI", sans-serif'
 
 const Tile: React.FC<TileProps> = ({
   icon,
+  iconNode,
   iconColor = "blue",
   title,
   subtitle,
