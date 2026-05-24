@@ -31,7 +31,7 @@ function useData() {
   const [reviews, setReviews] = useState<any[]>([]);
 
   useEffect(() => {
-    supabase.from("instructors")
+    supabase.from("public_instructors")
       .select("name, business_name, bio, phone, hourly_rate, car_type, brand_colour, secondary_colour, profile_image_url, hero_image_url, home_postcode, instructor_grade, cpd_certified")
       .eq("id", INSTRUCTOR_ID).single()
       .then(({ data }) => { if (data) setInstructor(data as InstructorData); });
