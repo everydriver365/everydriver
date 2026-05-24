@@ -54,10 +54,17 @@ export function EndLessonWizard({
   const [historyId, setHistoryId] = useState<string | null>(null);
   const [pendingVoiceNoteUrl, setPendingVoiceNoteUrl] = useState<string | null>(null);
   const [updatedCompetencies, setUpdatedCompetencies] = useState<string[]>([]);
+  const [pendingSyllabusChanges, setPendingSyllabusChanges] = useState<Array<{
+    competency_id: string;
+    pupil_id: string;
+    previous_level: number;
+    new_level: number;
+  }>>([]);
   const [routeReportData, setRouteReportData] = useState<any>(null);
   const [isLastLesson, setIsLastLesson] = useState(false);
   const [claimingBonus, setClaimingBonus] = useState(false);
   const { invalidatePaymentQueries } = usePaymentInvalidation();
+
 
   useEffect(() => {
     if (open) {
@@ -68,9 +75,11 @@ export function EndLessonWizard({
       setHistoryId(null);
       setPendingVoiceNoteUrl(null);
       setUpdatedCompetencies([]);
+      setPendingSyllabusChanges([]);
       setRouteReportData(null);
       setIsLastLesson(false);
       setClaimingBonus(false);
+
       fetchInstructorRate();
     }
   }, [open]);
