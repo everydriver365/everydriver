@@ -53,8 +53,9 @@ self.addEventListener("notificationclick", (event) => {
   event.notification.close();
 
   const data = event.notification.data || {};
-  // Deep-link based on notification type when no explicit url is provided
   let url = data.url;
+
+  // Type-based fallback when no explicit url was supplied
   if (!url && (data.type === "slot_offer" || data.type === "slot_offer_cancelled") && data.offer_id) {
     url = `/?offer_id=${data.offer_id}`;
   }
@@ -70,16 +71,30 @@ self.addEventListener("notificationclick", (event) => {
   }
   url = url || "/instructor";
 
+  const isAbsolute = typeof url === "string" && /^https?:\/\//i.test(url);
+  let isSameOrigin = true;
+  if (isAbsolute) {
+    try {
+      isSameOrigin = new URL(url).origin === self.location.origin;
+    } catch (_e) {
+      isSameOrigin = false;
+    }
+  }
+
   event.waitUntil(
     clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
-      // Check if there's already a window open
+      // Cross-origin (branded custom domain) → always open a fresh window
+      if (isAbsolute && !isSameOrigin) {
+        if (clients.openWindow) return clients.openWindow(url);
+        return;
+      }
+      // Same-origin → focus existing tab if possible
       for (const client of clientList) {
         if (client.url.includes(self.location.origin) && "focus" in client) {
           client.navigate(url);
           return client.focus();
         }
       }
-      // Open a new window if none exists
       if (clients.openWindow) {
         return clients.openWindow(url);
       }

@@ -1,4 +1,4 @@
-import { Check, XCircle } from "lucide-react";
+import { Check, XCircle, RotateCcw } from "lucide-react";
 import { lessonsTokens as t } from "./tokens";
 
 export interface LessonHistoryItem {
@@ -7,14 +7,16 @@ export interface LessonHistoryItem {
   dateFormatted: string;
   timeFormatted: string;
   durationLabel: string;
+  durationMinutes?: number;
 }
 
 interface Props {
   lesson: LessonHistoryItem;
   isLast: boolean;
+  onBookAgain?: (durationMinutes: number) => void;
 }
 
-export function LessonHistoryRow({ lesson, isLast }: Props) {
+export function LessonHistoryRow({ lesson, isLast, onBookAgain }: Props) {
   const isCompleted = lesson.status === "completed";
   const isCancelled = lesson.status === "cancelled";
 
@@ -23,6 +25,8 @@ export function LessonHistoryRow({ lesson, isLast }: Props) {
   const statusColor = isCompleted ? t.green : t.red;
   const statusLabel = isCompleted ? "Completed" : "Cancelled";
   const StatusIcon = isCompleted ? Check : XCircle;
+
+  const showBookAgain = !!onBookAgain && !!lesson.durationMinutes;
 
   return (
     <div
@@ -59,6 +63,26 @@ export function LessonHistoryRow({ lesson, isLast }: Props) {
           <span style={{ fontSize: 11, fontWeight: 500, color: statusColor }}>{statusLabel}</span>
         </div>
       </div>
+
+      {showBookAgain && (
+        <button
+          type="button"
+          onClick={() => onBookAgain!(lesson.durationMinutes!)}
+          className="flex items-center gap-1 shrink-0"
+          style={{
+            alignSelf: 'center',
+            backgroundColor: t.surface,
+            color: t.navy,
+            borderRadius: 20,
+            padding: '6px 12px',
+            fontSize: 11,
+            fontWeight: 600,
+          }}
+        >
+          <RotateCcw size={11} strokeWidth={2} />
+          Book again
+        </button>
+      )}
     </div>
   );
 }

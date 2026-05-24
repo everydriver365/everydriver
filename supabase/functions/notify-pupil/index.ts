@@ -57,7 +57,7 @@ serve(async (req: Request) => {
 
     const { data: pupil, error: pupilError } = await supabase
       .from("pupils")
-      .select("name, phone, instructor_id")
+      .select("name, phone, instructor_id, instructors(app_slug, custom_domain, custom_domain_verified)")
       .eq("id", pupilId)
       .single();
 
@@ -67,6 +67,43 @@ serve(async (req: Request) => {
         { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    const instructorRel = (pupil as any).instructors ?? null;
+    const slug: string | null = instructorRel?.app_slug ?? null;
+    const customDomain: string | null = instructorRel?.custom_domain ?? null;
+    const customDomainVerified: boolean = !!instructorRel?.custom_domain_verified;
+
+    const appBase = Deno.env.get("PUPIL_APP_URL") ?? "https://drive365.co.uk";
+
+    const getPupilBaseUrl = (): string => {
+      if (customDomain && customDomainVerified) return `https://${customDomain}`;
+      if (slug) return `${appBase}/p/${slug}`;
+      return `${appBase}/pupil`;
+    };
+
+    const buildDeepLinkUrl = (t: string, baseUrl: string, d: Record<string, unknown>): string => {
+      switch (t) {
+        case "lesson_completed":
+          return `${baseUrl}?prompt=feedback`;
+        case "syllabus_category_complete": {
+          const cat = (d.category ?? d.categoryName) as string | undefined;
+          return cat ? `${baseUrl}?category=${encodeURIComponent(cat)}` : baseUrl;
+        }
+        case "test_passed":
+          return `${baseUrl}?celebrate=pass`;
+        case "slot_offer":
+        case "slot_offer_cancelled":
+          return d.offer_id ? `${baseUrl}?offer_id=${d.offer_id}` : baseUrl;
+        case "lesson_reminder":
+          return d.lesson_id ? `${baseUrl}?lesson_id=${d.lesson_id}` : baseUrl;
+        default:
+          return baseUrl;
+      }
+    };
+
+    const brandedBaseUrl = getPupilBaseUrl();
+    const deepLinkUrl = buildDeepLinkUrl(type, brandedBaseUrl, (data ?? {}) as Record<string, unknown>);
+    const pushData: Record<string, unknown> = { ...(data ?? {}), type, url: deepLinkUrl };
 
     // Build notification based on type
     let notificationTitle = title;
@@ -187,7 +224,7 @@ serve(async (req: Request) => {
               body: notificationBody,
               icon: "/favicon.png",
               badge: "/favicon.png",
-              data: data || {},
+              data: pushData,
             }
           );
 
@@ -248,26 +285,13 @@ serve(async (req: Request) => {
     // Native (Despia / OneSignal) push fan-out — runs in parallel with web push.
     // The edge function is a no-op when the pupil has no native binding.
     try {
-      const rawUrl = (data as any)?.url as string | undefined;
-      const offerId = (data as any)?.offer_id as string | undefined;
-      const appBase =
-        Deno.env.get("PUPIL_APP_URL") ?? "https://drive365.co.uk";
-      let absoluteUrl: string | undefined;
-      if (rawUrl) {
-        absoluteUrl = rawUrl.startsWith("http")
-          ? rawUrl
-          : `${appBase}${rawUrl.startsWith("/") ? "" : "/"}${rawUrl}`;
-      } else if (offerId) {
-        absoluteUrl = `${appBase}/?offer_id=${offerId}`;
-      }
-
       const despiaResp = await supabase.functions.invoke("send-despia-push", {
         body: {
           pupil_id: pupilId,
           title: notificationTitle,
           body: notificationBody,
-          url: absoluteUrl,
-          data: { type, ...(data ?? {}) },
+          url: deepLinkUrl,
+          data: pushData,
         },
       });
       if (despiaResp.error) {

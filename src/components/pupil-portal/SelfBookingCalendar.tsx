@@ -46,6 +46,7 @@ interface SelfBookingCalendarProps {
   instructorId: string;
   brandColour?: string;
   className?: string;
+  initialDuration?: number;
 }
 
 interface AvailableSlot {
@@ -81,11 +82,12 @@ const SelfBookingCalendar: React.FC<SelfBookingCalendarProps> = ({
   instructorId,
   brandColour = '#3B82F6',
   className,
+  initialDuration,
 }) => {
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date(), { weekStartsOn: 1 }));
   const [selectedDay, setSelectedDay] = useState<Date>(new Date());
   const [selectedSlot, setSelectedSlot] = useState<AvailableSlot | null>(null);
-  const [selectedDuration, setSelectedDuration] = useState<number>(60);
+  const [selectedDuration, setSelectedDuration] = useState<number>(initialDuration ?? 60);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState(false);
   const [isRecurring, setIsRecurring] = useState(false);

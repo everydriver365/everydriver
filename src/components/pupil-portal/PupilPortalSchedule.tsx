@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { Calendar, Clock, MapPin, Phone, MessageSquare, X, AlertTriangle, ArrowRight, Loader2, RefreshCw } from "lucide-react";
+import { Calendar, Clock, MapPin, Phone, MessageSquare, X, AlertTriangle, ArrowRight, Loader2, RefreshCw, ChevronDown, ChevronUp } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +13,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import SelfBookingCalendar from "./SelfBookingCalendar";
 import { checkLessonClash, describeLessonClashError } from "@/lib/lessonClashCheck";
 import { BookNewLessonButton } from "./lessons/BookNewLessonButton";
-import { CancellationPolicy } from "./lessons/CancellationPolicy";
+import { CancellationPolicyCard } from "./CancellationPolicyCard";
 import { UpcomingLessonsSection } from "./lessons/UpcomingLessonsSection";
 import { LessonHistorySection } from "./lessons/LessonHistorySection";
 import type { LessonHistoryItem } from "./lessons/LessonHistoryRow";
@@ -70,6 +70,8 @@ export function PupilPortalSchedule({
   const [cancelling, setCancelling] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
   const [showBooking, setShowBooking] = useState(initialShowBooking);
+  const [bookAgainPrefill, setBookAgainPrefill] = useState<{ duration: number } | null>(null);
+  const [policyExpanded, setPolicyExpanded] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -100,6 +102,34 @@ export function PupilPortalSchedule({
     },
   });
 
+  // Fetch instructor cancellation fields + name for late-cancel warning
+  const { data: instructorInfo } = useQuery({
+    queryKey: ['pupil-instructor-cancel-info', instructorId],
+    queryFn: async () => {
+      const [{ data: instr }, { data: prefs }] = await Promise.all([
+        supabase
+          .from('instructors')
+          .select('name, cancellation_policy_text, cancellation_policy_hours, cancellation_charge_percent, ai_waitlist_filling_enabled')
+          .eq('id', instructorId)
+          .single(),
+        supabase
+          .from('instructor_reminder_preferences')
+          .select('late_cancel_fee, late_cancel_hours')
+          .eq('instructor_id', instructorId)
+          .maybeSingle(),
+      ]);
+      return {
+        name: (instr as any)?.name as string | null,
+        cancellation_policy_text: (instr as any)?.cancellation_policy_text as string | null,
+        cancellation_policy_hours: (instr as any)?.cancellation_policy_hours as number | null,
+        cancellation_charge_percent: (instr as any)?.cancellation_charge_percent as number | null,
+        ai_waitlist_filling_enabled: (instr as any)?.ai_waitlist_filling_enabled as boolean | null,
+        late_cancel_fee: (prefs as any)?.late_cancel_fee as number | null,
+        late_cancel_hours: (prefs as any)?.late_cancel_hours as number | null,
+      };
+    },
+  });
+
   // Fetch lessons
   const { data: lessons = [], isLoading: loading } = useQuery({
     queryKey: ['pupil-lessons', pupilId, instructorId],
@@ -119,10 +149,16 @@ export function PupilPortalSchedule({
   });
 
   const canCancelLesson = (lesson: ScheduledLesson): boolean => {
-    if (!settings?.allow_self_cancel) return false;
+    // Always allow cancel button when self-cancel is enabled; late cancels
+    // surface a warning in the dialog rather than being hidden.
+    return !!settings?.allow_self_cancel;
+  };
+
+  const isLateCancel = (lesson: ScheduledLesson): boolean => {
+    if (!settings) return false;
     const lessonDateTime = new Date(`${lesson.lesson_date}T${lesson.start_time}`);
     const cutoff = addHours(new Date(), settings.cancel_notice_hours);
-    return isAfter(lessonDateTime, cutoff);
+    return !isAfter(lessonDateTime, cutoff);
   };
 
   const canRescheduleLesson = (lesson: ScheduledLesson): boolean => {
@@ -145,12 +181,12 @@ export function PupilPortalSchedule({
 
   const confirmCancel = async () => {
     if (!selectedLesson) return;
-    
+
     setCancelling(true);
     try {
       const { error } = await supabase
         .from("scheduled_lessons")
-        .update({ 
+        .update({
           status: "cancelled",
           cancelled_by: "pupil",
           cancellation_reason: cancelReason || null,
@@ -158,6 +194,30 @@ export function PupilPortalSchedule({
         .eq("id", selectedLesson.id);
 
       if (error) throw error;
+
+      // Fetch pupil name once for instructor notification (best-effort)
+      const { data: pupilRow } = await supabase
+        .from("pupils")
+        .select("name")
+        .eq("id", pupilId)
+        .single();
+
+      // Fire-and-forget instructor notification. Google Calendar delete is
+      // handled by the existing scheduled_lessons cancellation trigger
+      // (see lesson-soft-delete-pipeline memory).
+      supabase.functions
+        .invoke("notify-instructor", {
+          body: {
+            instructorId,
+            type: "cancellation",
+            pupilName: pupilRow?.name ?? undefined,
+            lessonDate: selectedLesson.lesson_date,
+            lessonTime: selectedLesson.start_time,
+            durationMinutes: selectedLesson.duration_minutes,
+            chargeApplied: isLateCancel(selectedLesson),
+          },
+        })
+        .catch((e) => console.error("[PupilCancel] notify-instructor failed", e));
 
       queryClient.invalidateQueries({ queryKey: ['pupil-lessons'] });
       toast({ title: "Lesson cancelled", description: "Your instructor has been notified" });
@@ -188,7 +248,7 @@ export function PupilPortalSchedule({
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => setShowBooking(false)}
+          onClick={() => { setShowBooking(false); setBookAgainPrefill(null); }}
           style={{ color: 'var(--brand-text)' }}
         >
           ← Back to Lessons
@@ -197,6 +257,7 @@ export function PupilPortalSchedule({
           pupilId={pupilId}
           instructorId={instructorId}
           brandColour={brandColour || undefined}
+          initialDuration={bookAgainPrefill?.duration}
         />
       </div>
     );
@@ -272,10 +333,21 @@ export function PupilPortalSchedule({
           dateFormatted,
           timeFormatted,
           durationLabel,
+          durationMinutes: h.duration_minutes,
         };
       }),
     [rawHistory]
   );
+
+  const handleBookAgain = (durationMinutes: number) => {
+    setBookAgainPrefill({ duration: durationMinutes });
+    setShowBooking(true);
+  };
+
+  const lateCancelSelected = selectedLesson ? isLateCancel(selectedLesson) : false;
+  const lateFee = instructorInfo?.late_cancel_fee ?? 0;
+  const policyText = instructorInfo?.cancellation_policy_text ?? null;
+  const policyHours = settings?.cancel_notice_hours ?? instructorInfo?.cancellation_policy_hours ?? 24;
 
   return (
     <div
@@ -293,7 +365,38 @@ export function PupilPortalSchedule({
       )}
 
       {settings?.allow_self_cancel && (
-        <CancellationPolicy cancelNoticeHours={settings.cancel_notice_hours} />
+        <div
+          style={{
+            backgroundColor: '#fff',
+            border: '1px solid #e5e7eb',
+            borderRadius: 14,
+            overflow: 'hidden',
+          }}
+        >
+          <button
+            type="button"
+            onClick={() => setPolicyExpanded((v) => !v)}
+            className="w-full flex items-center justify-between"
+            style={{
+              padding: '12px 14px',
+              fontSize: 13,
+              fontWeight: 600,
+              color: '#1f2937',
+              background: 'transparent',
+            }}
+          >
+            <span>View cancellation policy</span>
+            {policyExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+          </button>
+          {policyExpanded && (
+            <div style={{ padding: '0 10px 12px' }}>
+              <CancellationPolicyCard
+                cancelNoticeHours={policyHours}
+                brandColour={brandColour || '#1e3a5f'}
+              />
+            </div>
+          )}
+        </div>
       )}
 
       <UpcomingLessonsSection
@@ -312,6 +415,7 @@ export function PupilPortalSchedule({
         lessons={historyItems}
         loading={historyLoading}
         onViewAll={() => onViewHistory?.()}
+        onBookAgain={settings?.allow_self_booking ? handleBookAgain : undefined}
       />
 
       {/* Cancel Dialog */}
@@ -319,15 +423,42 @@ export function PupilPortalSchedule({
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-destructive" />
-              Cancel Lesson?
+              <AlertTriangle className={`h-5 w-5 ${lateCancelSelected ? 'text-amber-600' : 'text-destructive'}`} />
+              {lateCancelSelected ? 'Late cancellation' : 'Cancel Lesson?'}
             </DialogTitle>
             <DialogDescription>
-              Are you sure you want to cancel your lesson on{' '}
-              {selectedLesson && format(parseISO(selectedLesson.lesson_date), 'EEE, d MMM')} at{' '}
-              {selectedLesson && formatTime(selectedLesson.start_time)}?
+              {selectedLesson && (
+                <>
+                  Cancelling your lesson on{' '}
+                  {format(parseISO(selectedLesson.lesson_date), 'EEE, d MMM')} at{' '}
+                  {formatTime(selectedLesson.start_time)}.
+                </>
+              )}
             </DialogDescription>
           </DialogHeader>
+
+          {lateCancelSelected && (
+            <div
+              className="rounded-lg p-3 text-sm space-y-1.5"
+              style={{ backgroundColor: '#FEF3C7', border: '1px solid #FCD34D', color: '#92400E' }}
+            >
+              <p className="font-semibold">
+                You're cancelling within {settings?.cancel_notice_hours ?? policyHours} hours notice.
+              </p>
+              <p>
+                {instructorInfo?.name ?? "Your instructor"}'s cancellation policy may apply. Contact your instructor if you have questions.
+              </p>
+              {lateFee > 0 && (
+                <p className="font-medium">
+                  A late cancellation fee of £{Number(lateFee).toFixed(2)} may be charged.
+                </p>
+              )}
+              {policyText && (
+                <p className="text-xs opacity-90 pt-1">{policyText}</p>
+              )}
+            </div>
+          )}
+
           <div className="py-2">
             <label className="text-sm font-medium">Reason (optional)</label>
             <Textarea
@@ -340,14 +471,14 @@ export function PupilPortalSchedule({
           </div>
           <DialogFooter className="gap-2">
             <Button variant="outline" onClick={() => setCancelDialogOpen(false)}>
-              Keep Lesson
+              Keep lesson
             </Button>
             <Button
               variant="destructive"
               onClick={confirmCancel}
               disabled={cancelling}
             >
-              {cancelling ? "Cancelling..." : "Yes, Cancel"}
+              {cancelling ? "Cancelling..." : (lateCancelSelected ? "Cancel anyway" : "Yes, Cancel")}
             </Button>
           </DialogFooter>
         </DialogContent>

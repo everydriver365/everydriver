@@ -6,9 +6,10 @@ interface Props {
   lessons: LessonHistoryItem[];
   loading: boolean;
   onViewAll: () => void;
+  onBookAgain?: (durationMinutes: number) => void;
 }
 
-export function LessonHistorySection({ lessons, loading, onViewAll }: Props) {
+export function LessonHistorySection({ lessons, loading, onViewAll, onBookAgain }: Props) {
   const completedCount = lessons.filter((l) => l.status === "completed").length;
 
   return (
@@ -78,7 +79,7 @@ export function LessonHistorySection({ lessons, loading, onViewAll }: Props) {
           </div>
 
           {lessons.map((lesson, i) => (
-            <LessonHistoryRow key={lesson.id} lesson={lesson} isLast={i === lessons.length - 1} />
+            <LessonHistoryRow key={lesson.id} lesson={lesson} isLast={i === lessons.length - 1} onBookAgain={lesson.status === 'completed' ? onBookAgain : undefined} />
           ))}
         </div>
       )}
