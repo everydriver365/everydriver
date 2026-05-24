@@ -853,3 +853,57 @@ function LegendItem({ dot, dotBorder, label }: { dot: string; dotBorder?: string
     </div>
   );
 }
+
+function ScopeOption({
+  selected,
+  onSelect,
+  label,
+  subtitle,
+}: {
+  selected: boolean;
+  onSelect: () => void;
+  label: string;
+  subtitle: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      style={{
+        background: "#FFF",
+        border: selected ? "2px solid #3D55A1" : "0.5px solid #E0E5EE",
+        borderRadius: 14,
+        padding: 11,
+        cursor: "pointer",
+        width: "100%",
+        textAlign: "left",
+        display: "block",
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <span
+          style={{
+            width: 18,
+            height: 18,
+            borderRadius: 9,
+            background: selected ? "#3D55A1" : "transparent",
+            border: selected ? "0" : "1.5px solid #C7C7CC",
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+          }}
+        >
+          {selected && (
+            <span style={{ width: 7, height: 7, borderRadius: 4, background: "#FFF" }} />
+          )}
+        </span>
+        <span style={{ fontSize: 13, fontWeight: 700, color: "#1A1A1A", flex: 1 }}>{label}</span>
+      </div>
+      <div style={{ fontSize: 11, color: "#5B6B8A", paddingLeft: 26, marginTop: 4 }}>
+        {subtitle}
+      </div>
+    </button>
+  );
+}
+
