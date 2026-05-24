@@ -1,57 +1,67 @@
-## Why TestFlight's login screen differs from the preview
+## Goal
 
-`capacitor.config.ts` has:
+Keep the 5,796 "Drive365 Network" placeholder instructors in the database, but **segregate them in the admin portal** so they no longer pollute the main instructor list. They get their own dedicated section: **"Drive365 Network Instructors"**.
 
-```ts
-server: {
-  url: 'https://ca10d01e-cc99-4c0b-9186-351c493398b9.lovableproject.com?forceHideBadge=true',
-  cleartext: true,
-}
+## Identification rule
+
+A row is a Network placeholder iff:
+- `auth_user_id IS NULL`, **and**
+- `app_slug LIKE 'network-%'`
+
+This is exact, stable, and unique to the seeded set (5,796 rows match). Real placeholders like `home@dufosse.co.uk` ("Martin B (adi assigns)") have no `network-` slug and are unaffected.
+
+### 1. Schema marker (one tiny migration)
+
+Add a generated/derived flag so every admin query can filter cheaply and consistently:
+
+```sql
+ALTER TABLE public.instructors
+  ADD COLUMN is_network_placeholder boolean
+    GENERATED ALWAYS AS (auth_user_id IS NULL AND app_slug LIKE 'network-%') STORED;
+
+CREATE INDEX idx_instructors_network_placeholder
+  ON public.instructors (is_network_placeholder)
+  WHERE is_network_placeholder = true;
 ```
 
-That `server.url` is the Lovable **sandbox** (dev) hot-reload URL. It is meant only for local development against the in-editor sandbox. Because it's committed to the config, every TestFlight build also points the iOS WebView at that sandbox instead of loading the bundled `dist/` assets. As a result, TestFlight is rendering whatever the sandbox serves at that moment — a different build than the published `everydriver.lovable.app` you see in the preview, and almost certainly hitting Cloud **Dev** (not Production) auth, with different OAuth redirect URIs and different session state.
+No data is touched. The flag auto-recomputes on insert/update — future network seeds inherit it automatically.
 
-That's why the login screen looks/behaves differently in TestFlight vs the preview.
+### 2. Admin UI changes
 
-## Fix
+**Main instructor list** (`InstructorList`, `InstructorManager`, `AdminCommandCenter`, `InstructorLeaderboard`, `AdminLiveMapView`, `MiniWebsitesManager`, `AdminBookingPagesManager`, `AdminWebsiteManager`, `AdminInstructorPayouts`, etc.):
+- Add `.eq('is_network_placeholder', false)` to every `from('instructors')` select used by these surfaces.
+- Real instructor count drops back to the true number (currently 5 real + 2 placeholders without `auth_user_id` that aren't network).
 
-Remove the `server` block from `capacitor.config.ts` for production builds so the native app loads the bundled web assets from `dist/` (which is what gets shipped to TestFlight and the App Store).
+**New section: "Drive365 Network Instructors"**
+- New route: `/admin/network-instructors`
+- New page: `src/pages/admin/NetworkInstructors.tsx`
+- New component: `src/components/admin/NetworkInstructorsManager.tsx`
+- Lists only rows where `is_network_placeholder = true`, paginated (50/page; 5,796 total).
+- Columns: name, postcode area (derived from `home_postcode`), slug, created_at.
+- Filters: postcode prefix (e.g. "AB", "SW"), search by name.
+- Bulk actions: none initially — read-only browse + per-row "Promote to real instructor" (clears the network slug & opens the standard edit form).
+- Add nav entry in `AdminSidebar` / `AdminDesktopSidebar` under "Instructors" group, badge showing the network count.
 
-### Change
+### 3. Public/search surfaces
 
-`capacitor.config.ts` — delete the `server` block:
+Out of scope per the user's request — they stay visible in public course/postcode search exactly as today. Only the **admin portal** is segregated.
 
-```ts
-const config: CapacitorConfig = {
-  appId: 'app.lovable.ca10d01ecc994c0b9186351c493398b9',
-  appName: 'everydriver',
-  webDir: 'dist',
-  // server: { url: '...', cleartext: true }  ← REMOVED
-  ios: { ... },
-  android: { ... },
-  plugins: { ... },
-};
-```
+### 4. Verification
 
-No other code changes. No auth code changes. No route changes.
+After migration:
+- Admin "Instructors" tab shows ~5 rows (real auth-linked + non-network placeholders).
+- New "Drive365 Network Instructors" tab shows 5,796 rows, paginated.
+- Public mini-site / course search unchanged.
 
-### What the user has to do after the change
+### 5. Memory update
 
-Because the native iOS project is generated locally (not in Lovable), you must:
+Add a memory note documenting the `is_network_placeholder` flag and the rule that **every admin instructor query must filter it out** unless explicitly in the Network Instructors view.
 
-1. `git pull` the change
-2. `npm install && npm run build`
-3. `npx cap sync ios`
-4. Open `ios/App/App.xcworkspace` in Xcode
-5. Archive → upload a new TestFlight build
+## Files touched (estimate ~12)
 
-The new TestFlight build will load the same code that's bundled at build time, matching whatever was on `main` when you built — same login screen behaviour as the published web app.
-
-### If you still want hot-reload during local dev
-
-Keep the `server.url` only in a local, gitignored override (or comment it back in temporarily while developing), and always remove/comment it before building for TestFlight. The cleanest pattern is to gate it on an env var, but for now removing it outright is the correct fix for the reported symptom.
-
-### Out of scope
-
-- No changes to `MobilePortalLoginShell`, `GoogleSignInButton`, biometric auth, or any auth flow code — those are working correctly; they're just being rendered from the wrong source in TestFlight.
-- No changes to OAuth redirect URIs or Cloud auth config.
+- 1 migration
+- 1 new route file (`src/routes/adminRoutes.tsx`)
+- 1 new page + 1 new component
+- ~8 existing admin components: append `.eq('is_network_placeholder', false)` to their instructor queries
+- 1 sidebar nav entry
+- 1 memory file
