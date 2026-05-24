@@ -153,7 +153,7 @@ export default function InstructorEnquiries() {
 
   return (
     <InstructorPortalLayout>
-      <div style={{ background: "#F8F9FB", minHeight: "100%", padding: "24px 10px" }}>
+      <div style={{ background: "#F8F9FB", minHeight: "100%", padding: "24px 0" }}>
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
           <div
