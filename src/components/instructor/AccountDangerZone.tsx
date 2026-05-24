@@ -50,14 +50,32 @@ function download(content: string, filename: string) {
   URL.revokeObjectURL(url);
 }
 
-function warnIfCapped(count: number) {
-  if (count === ROW_CAP) {
-    toast({
-      title: "Export may be incomplete",
-      description:
-        "More than 1000 records exist. Contact support for a full export.",
-    });
-  }
+/**
+ * Head-only count query against a table filtered by instructor_id.
+ * Returns total row count; null if the count call errored.
+ */
+async function getTotalCount(
+  table: "pupils" | "lesson_history" | "payment_history" | "mileage_logs",
+  instructorId: string,
+): Promise<number | null> {
+  const { count, error } = await supabase
+    .from(table)
+    .select("*", { count: "exact", head: true })
+    .eq("instructor_id", instructorId);
+  if (error) return null;
+  return count ?? 0;
+}
+
+/** Append "(showing first 1000 of X records)" before the .csv extension. */
+function withTruncationSuffix(filename: string, total: number): string {
+  return filename.replace(/\.csv$/, ` (showing first ${ROW_CAP} of ${total} records).csv`);
+}
+
+function warnTruncated(total: number) {
+  toast({
+    title: "Export may be incomplete",
+    description: `${total} records exist — only the first ${ROW_CAP} are included. Contact support for a full export.`,
+  });
 }
 
 export function AccountDangerZone({ instructorId }: Props) {
