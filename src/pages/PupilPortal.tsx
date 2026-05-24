@@ -22,6 +22,7 @@ import { PupilCoachingCard } from "@/components/pupil-portal/PupilCoachingCard";
 import { PupilAIInsightsCard } from "@/components/pupil-portal/PupilAIInsightsCard";
 import { LessonStatusBadge } from "@/components/pupil-portal/LessonStatusBadge";
 import { PupilFeedbackPrompt } from "@/components/pupil-portal/PupilFeedbackPrompt";
+import { TestPassCelebration } from "@/components/pupil-portal/TestPassCelebration";
 import { LessonSummaryCard } from "@/components/pupil-portal/LessonSummaryCard";
 import { ReflectiveLog } from "@/components/pupil-portal/ReflectiveLog";
 import { InstructorLessonNotes } from "@/components/pupil-portal/InstructorLessonNotes";
@@ -201,6 +202,9 @@ export default function PupilPortal() {
 
         {/* Feedback Prompt */}
         <PupilFeedbackPrompt pupilId={pupil.id} />
+
+        {/* Test pass celebration — full-screen overlay, once-only */}
+        <TestPassCelebration pupilId={pupil.id} pupilName={pupil.name} />
 
         {/* En Route Tracker */}
         {upcomingLessons.filter(l => l.status === "en_route").map(lesson => (

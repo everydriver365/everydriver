@@ -8,6 +8,7 @@ import { PupilSyllabusView } from "@/components/pupil-portal/PupilSyllabusView";
 import { PupilProgressTimeline } from "@/components/pupil-portal/PupilProgressTimeline";
 import { TestReadinessCard } from "@/components/pupil-portal/TestReadinessCard";
 import { HoursTracker } from "@/components/pupil-portal/HoursTracker";
+import { PupilMilestones } from "@/components/pupil-portal/PupilMilestones";
 
 interface PupilPortalProgressProps {
   pupilId: string;
@@ -181,6 +182,9 @@ export function PupilPortalProgress({ pupilId, brandColour, darkMode }: PupilPor
         pupilId={pupilId}
         brandColour={brandColour}
       />
+
+      {/* Milestones */}
+      <PupilMilestones pupilId={pupilId} />
 
       {/* Encouragement */}
       <Card style={{ backgroundColor: 'var(--brand-card)', borderColor: 'var(--brand-border)' }}>

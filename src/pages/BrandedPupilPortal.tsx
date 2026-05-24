@@ -75,6 +75,7 @@ import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 import { ChevronDown } from "lucide-react";
 import { Drive365PupilHome } from "@/components/pupil-portal/Drive365PupilHome";
+import { TestPassCelebration } from "@/components/pupil-portal/TestPassCelebration";
 
 interface InstructorBranding {
   id: string;
@@ -341,6 +342,7 @@ export default function BrandedPupilPortal() {
       className="min-h-screen transition-colors"
       style={{ backgroundColor: wallpaperColor }}
     >
+      {pupil && <TestPassCelebration pupilId={pupil.id} pupilName={pupil.name} />}
       <PortalIOSInstallBanner 
         appName={instructor.name}
         storageKey={`ios-install-pupil-${instructor.id}`}

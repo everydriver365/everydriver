@@ -58,6 +58,16 @@ self.addEventListener("notificationclick", (event) => {
   if (!url && (data.type === "slot_offer" || data.type === "slot_offer_cancelled") && data.offer_id) {
     url = `/?offer_id=${data.offer_id}`;
   }
+  if (!url && data.type === "lesson_completed") {
+    url = `/pupil?prompt=feedback`;
+  }
+  if (!url && data.type === "syllabus_category_complete") {
+    const cat = data.category || data.categoryName;
+    url = cat ? `/pupil?category=${encodeURIComponent(cat)}` : `/pupil`;
+  }
+  if (!url && data.type === "test_passed") {
+    url = `/pupil?celebrate=pass`;
+  }
   url = url || "/instructor";
 
   event.waitUntil(
