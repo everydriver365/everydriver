@@ -17,7 +17,7 @@ import {
 import { AlertTriangle, ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
 
-type Step = "password" | "mfa" | "acknowledge" | "submitting";
+type Step = "password" | "acknowledge" | "submitting";
 
 export function DangerZone() {
   const { user, signOut } = useInstructorAuth();
@@ -67,23 +67,13 @@ export function DangerZone() {
         setBusy(false);
         return;
       }
-      // Check for enrolled TOTP factor
-      const { data: factorsData } = await supabase.auth.mfa.listFactors();
-      const totp = factorsData?.totp?.find((f) => f.status === "verified");
-      if (totp) {
-        setMfaFactorId(totp.id);
-        setStep("mfa");
-      } else {
-        setStep("acknowledge");
-      }
+      setStep("acknowledge");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Authentication failed.");
     } finally {
       setBusy(false);
     }
   };
-
-  const handleMfaConfirm = async () => {
     if (!mfaFactorId || mfaCode.length < 6) {
       setError("Enter your 6-digit code.");
       return;
