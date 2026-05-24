@@ -210,7 +210,7 @@ export default function InstructorTestResults() {
 
   return (
     <InstructorPortalLayout>
-      <div style={{ background: "#F8F9FB", minHeight: "100%", padding: "24px 14px" }}>
+      <div style={{ background: "#F8F9FB", minHeight: "100%", padding: "24px 10px" }}>
         {/* Page header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>

@@ -1267,7 +1267,7 @@ export default function InstructorUnifiedInbox() {
         style={{
           background: PAGE_BG,
           minHeight: "100%",
-          padding: "16px 14px",
+          padding: "16px 10px",
           display: "flex",
           flexDirection: "column",
           gap: 12,

@@ -34,7 +34,7 @@ export default function InstructorGaps() {
       <div
         style={{
           background: "#F2F4F8",
-          padding: "12px 14px",
+          padding: "12px 10px",
           minHeight: "100%",
           fontFamily: FONT_STACK,
           display: "flex",

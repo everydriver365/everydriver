@@ -327,7 +327,7 @@ export function MobileHomeDSM2026({ instructorId, instructorName }: Props) {
           instructorId={instructorId}
         />
 
-        <div style={{ padding: 14, display: "flex", flexDirection: "column", gap: 12 }}>
+        <div style={{ padding: "14px 10px", display: "flex", flexDirection: "column", gap: 12 }}>
           <div className="animate-fade-in" style={{ animationDelay: "0ms", animationFillMode: "both" }}>
             <TodayStrip stats={stats} loading={todayLoading || paymentsLoading} />
           </div>
