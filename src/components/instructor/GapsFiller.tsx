@@ -713,6 +713,8 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
               firstName,
               slotList,
               instructorFirstName,
+              discountType: discountType === "none" ? null : discountType,
+              discountValue: discountType === "none" ? null : discountValue,
             });
             try {
               const { data, error } = await supabase.functions.invoke(
