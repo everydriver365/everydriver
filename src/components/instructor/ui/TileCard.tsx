@@ -1,10 +1,11 @@
 import React from "react";
 
-type AccentColorKey = "amber" | "red";
+type AccentColorKey = "amber" | "red" | "green";
 
 const ACCENT: Record<AccentColorKey, { border: string; bg: string }> = {
   amber: { border: "#f59e0b", bg: "#fffdf5" },
   red: { border: "#c9302c", bg: "#fbe8e8" },
+  green: { border: "#2d8a4e", bg: "#f0faf4" },
 };
 
 export interface TileCardProps {
