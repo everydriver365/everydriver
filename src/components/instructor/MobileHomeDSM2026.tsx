@@ -2527,14 +2527,17 @@ function EditPinsSheet({
 }
 
 function QATile({
-  item, active, onPress,
-}: { item: QAItem; active: boolean; onPress: () => void; size?: "grid" | "scroll" }) {
+  item, active, onPress, badgeCount, onLongPress,
+}: { item: QAItem; active: boolean; onPress: () => void; size?: "grid" | "scroll"; badgeCount?: number; onLongPress?: () => void }) {
   const Icon = item.Icon;
   return (
     <Tile
       variant="navigation"
       title={item.label}
       onClick={onPress}
+      onLongPress={onLongPress}
+      badgeCount={badgeCount}
+      badgeVisible={!!badgeCount && badgeCount > 0}
       ariaLabel={item.label}
       iconNode={
         <span
