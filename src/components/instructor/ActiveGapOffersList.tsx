@@ -90,7 +90,7 @@ function OfferRow({ offer, onCancel }: { offer: SlotOfferRow; onCancel: (id: str
 
   return (
     <Tile
-      variant="list"
+      variant="info"
       icon="ti-bolt"
       iconColor={offer.status === "filled" ? "green" : offer.status === "open" ? "amber" : "grey"}
       title={title}
