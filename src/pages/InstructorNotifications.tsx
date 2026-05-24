@@ -537,7 +537,7 @@ export default function InstructorNotifications() {
   return (
     <div className="min-h-screen" style={{ background: PAGE_BG }}>
       <InstructorMobileHeader title="Notifications" showBackButton showSettings={false} />
-      <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
+      <div style={{ padding: "16px 14px", display: "flex", flexDirection: "column", gap: 12 }}>
         {HeroCard}
         {CategoriesCard}
 
