@@ -946,6 +946,12 @@ export function EditPupilSheet({
                       placeholder="07XXX XXXXXX"
                     />
                   </InputShell>
+                  <InviteParentButton
+                    pupilId={pupil?.id ?? null}
+                    parentPhone={form.parent_phone}
+                    parentPortalEnabled={pupil?.parent_portal_enabled !== false}
+                    initialInvitedAt={pupil?.parent_invited_at ?? null}
+                  />
                 </div>
               </div>
 
