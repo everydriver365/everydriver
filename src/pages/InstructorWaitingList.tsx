@@ -12,7 +12,7 @@ export default function InstructorWaitingListPage() {
 
   return (
     <InstructorPortalLayout>
-      <div style={{ background: "#F8F9FB", minHeight: "100%", padding: "24px 14px" }}>
+      <div style={{ background: "#F8F9FB", minHeight: "100%", padding: "24px 10px" }}>
         {/* Page header */}
         <div
           style={{
