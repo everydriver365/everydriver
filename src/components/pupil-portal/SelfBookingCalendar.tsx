@@ -608,6 +608,47 @@ const SelfBookingCalendar: React.FC<SelfBookingCalendarProps> = ({
                     </SelectContent>
                   </Select>
                 </div>
+
+                {/* Repeat weekly */}
+                <div
+                  style={{
+                    background: '#F2F4F8',
+                    borderRadius: 12,
+                    padding: '10px 12px',
+                    fontFamily: '"Poppins", system-ui, -apple-system, "Segoe UI", sans-serif',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <Repeat size={16} color="#2952b3" />
+                      <span style={{ fontSize: 13, fontWeight: 600, color: '#1a1a1f' }}>Repeat weekly</span>
+                    </div>
+                    <Switch checked={isRecurring} onCheckedChange={setIsRecurring} />
+                  </div>
+                  {isRecurring && selectedSlot && (
+                    <div style={{ marginTop: 10 }}>
+                      <label style={{ fontSize: 11, fontWeight: 600, color: '#5b6b8a', display: 'block', marginBottom: 6 }}>
+                        Repeat for
+                      </label>
+                      <Select
+                        value={recurrenceWeeks.toString()}
+                        onValueChange={(val) => setRecurrenceWeeks(parseInt(val))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {[2, 4, 6, 8].map((n) => (
+                            <SelectItem key={n} value={n.toString()}>{n} weeks</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <p style={{ fontSize: 11, color: '#8a93a4', marginTop: 6 }}>
+                        Books {recurrenceWeeks} lessons, every {format(parseISO(selectedSlot.date), 'EEEE')} at {selectedSlot.startTime}.
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
 
               <DialogFooter>
