@@ -56,7 +56,7 @@ export function TestPassCelebration({ pupilId, pupilName }: TestPassCelebrationP
 
         if (!alive) return;
         setTest((testRow as TestRow) || null);
-        setInstructor((instRow as InstructorRow) || null);
+        setInstructor((instRow as unknown as InstructorRow) || null);
         setVisible(true);
       } catch (e) {
         console.error("TestPassCelebration load failed", e);
