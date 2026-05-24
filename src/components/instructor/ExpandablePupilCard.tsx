@@ -115,6 +115,12 @@ interface Pupil {
   emergency_contact_name?: string | null;
   emergency_contact_phone?: string | null;
   emergency_contact_relation?: string | null;
+  date_of_birth?: string | null;
+  parent_name?: string | null;
+  parent_phone?: string | null;
+  parent_email?: string | null;
+  parent_portal_enabled?: boolean | null;
+  parent_invited_at?: string | null;
 }
 
 type PupilStatus = 'active' | 'passed' | 'inactive' | 'on_hold' | 'cancelled';
