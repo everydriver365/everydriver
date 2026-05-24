@@ -4,12 +4,10 @@ const config: CapacitorConfig = {
   appId: 'app.lovable.ca10d01ecc994c0b9186351c493398b9',
   appName: 'everydriver',
   webDir: 'dist',
-  // server.url removed — TestFlight/App Store builds must load bundled `dist/`
-  // assets, not the Lovable sandbox. Re-enable locally for hot-reload dev only.
-  // server: {
-  //   url: 'https://ca10d01e-cc99-4c0b-9186-351c493398b9.lovableproject.com?forceHideBadge=true',
-  //   cleartext: true,
-  // },
+  server: {
+    url: 'https://ca10d01e-cc99-4c0b-9186-351c493398b9.lovableproject.com?forceHideBadge=true',
+    cleartext: true,
+  },
   ios: {
     contentInset: 'always',
     backgroundColor: '#F4F7F6',
