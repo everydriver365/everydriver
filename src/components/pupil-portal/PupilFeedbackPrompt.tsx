@@ -115,6 +115,7 @@ export function PupilFeedbackPrompt({ pupilId }: PupilFeedbackPromptProps) {
   // Show Google Review prompt after high rating
   if (submitted && googleReviewUrl) {
     return (
+      <div ref={rootRef}>
       <Card className="border-emerald-200 bg-emerald-50 dark:border-emerald-900/50 dark:bg-emerald-950/30">
         <CardContent className="p-4 space-y-3 text-center">
           <p className="text-sm font-medium text-foreground">Thanks for the great feedback! ⭐</p>
@@ -140,10 +141,12 @@ export function PupilFeedbackPrompt({ pupilId }: PupilFeedbackPromptProps) {
           </div>
         </CardContent>
       </Card>
+      </div>
     );
   }
 
   return (
+    <div ref={rootRef}>
     <Card className="border-primary/20 bg-primary/5">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm flex items-center gap-2">
