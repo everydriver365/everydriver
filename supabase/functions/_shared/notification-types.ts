@@ -72,4 +72,8 @@ export const PupilNotifyType = {
   ARRIVED: "arrived",
   RUNNING_LATE: "running_late",
   PAYMENT_REMINDER: "payment_reminder",
+  LESSON_COMPLETED: "lesson_completed",
+  SYLLABUS_CATEGORY_COMPLETE: "syllabus_category_complete",
+  TEST_PASSED: "test_passed",
 } as const;
+
