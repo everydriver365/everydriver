@@ -123,20 +123,6 @@ export function InstructorBottomNav({ voiceState = "idle", onVoiceTap }: Instruc
               {badgeLabel}
             </span>
           )}
-          {item.isTrack && isTrackingActive && (
-            <span
-              style={{
-                position: "absolute",
-                top: -2,
-                right: -2,
-                width: 8,
-                height: 8,
-                borderRadius: 4,
-                background: "#10b981",
-              }}
-              className="animate-pulse"
-            />
-          )}
         </span>
         <span style={{ fontSize: 10, fontWeight: isActive ? 500 : 400, color, lineHeight: 1 }}>
           {item.label}
