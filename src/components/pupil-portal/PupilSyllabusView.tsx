@@ -21,7 +21,7 @@ interface PupilSyllabusViewProps {
 }
 
 export function PupilSyllabusView({ pupilId, brandColour, darkMode }: PupilSyllabusViewProps) {
-  const [progress, setProgress] = useState<{ competency_id: string; level: number; instructor_notes?: string | null }[]>([]);
+  const [progress, setProgress] = useState<{ competency_id: string; level: number; instructor_notes?: string | null; updated_at?: string | null }[]>([]);
   const [recentChanges, setRecentChanges] = useState<{
     competency_id: string;
     previous_level: number;
@@ -40,7 +40,7 @@ export function PupilSyllabusView({ pupilId, brandColour, darkMode }: PupilSylla
       const [progressRes, changesRes] = await Promise.all([
         supabase
           .from('pupil_syllabus_progress')
-          .select('competency_id, level, instructor_notes')
+          .select('competency_id, level, instructor_notes, updated_at')
           .eq('pupil_id', pupilId),
         supabase
           .from('lesson_syllabus_updates')
@@ -197,6 +197,14 @@ export function PupilSyllabusView({ pupilId, brandColour, darkMode }: PupilSylla
                   const level = entry?.level || 0;
                   const levelInfo = SKILL_LEVELS[level];
                   const isMastered = level >= 5;
+                  let lastPracticedLabel: string | null = null;
+                  if (entry?.updated_at) {
+                    const diffMs = Date.now() - new Date(entry.updated_at).getTime();
+                    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                    if (diffDays <= 0) lastPracticedLabel = 'Practiced today';
+                    else if (diffDays === 1) lastPracticedLabel = 'Practiced yesterday';
+                    else lastPracticedLabel = `Last practiced ${diffDays} days ago`;
+                  }
 
                   return (
                     <div 
@@ -225,6 +233,14 @@ export function PupilSyllabusView({ pupilId, brandColour, darkMode }: PupilSylla
                         {entry?.instructor_notes && (
                           <span className="text-[11px] italic block mt-0.5 truncate" style={{ color: 'var(--brand-muted)' }}>
                             "{entry.instructor_notes}"
+                          </span>
+                        )}
+                        {lastPracticedLabel && (
+                          <span
+                            className="block mt-0.5 truncate"
+                            style={{ fontSize: 10, color: '#9CA3AF' }}
+                          >
+                            {lastPracticedLabel}
                           </span>
                         )}
                       </div>
