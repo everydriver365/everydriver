@@ -15273,6 +15273,7 @@ export type Database = {
           next_lesson: string | null
           notes: string | null
           parent_email: string | null
+          parent_invited_at: string | null
           parent_name: string | null
           parent_phone: string | null
           parent_portal_enabled: boolean
@@ -15374,6 +15375,7 @@ export type Database = {
           next_lesson?: string | null
           notes?: string | null
           parent_email?: string | null
+          parent_invited_at?: string | null
           parent_name?: string | null
           parent_phone?: string | null
           parent_portal_enabled?: boolean
@@ -15475,6 +15477,7 @@ export type Database = {
           next_lesson?: string | null
           notes?: string | null
           parent_email?: string | null
+          parent_invited_at?: string | null
           parent_name?: string | null
           parent_phone?: string | null
           parent_portal_enabled?: boolean
