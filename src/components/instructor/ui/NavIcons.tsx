@@ -93,3 +93,11 @@ export function MenuNavIcon({ size = 24, ...rest }: IconProps) {
     </svg>
   );
 }
+
+export function MessagesNavIcon({ size = 24, ...rest }: IconProps) {
+  return (
+    <svg {...baseProps(size)} {...rest}>
+      <path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v8A2.5 2.5 0 0 1 17.5 17H9l-4 3.5v-14Z" />
+    </svg>
+  );
+}

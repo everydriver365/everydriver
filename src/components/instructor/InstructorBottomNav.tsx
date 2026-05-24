@@ -1,7 +1,8 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Home, Calendar, Target, Users, Mic, Loader2, Volume2 } from "lucide-react";
+import { Home, Calendar, MessageCircle, Users, Mic, Loader2, Volume2 } from "lucide-react";
+import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
 import { haptics } from "@/lib/haptics";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
@@ -14,8 +15,8 @@ interface NavItem {
   icon: LucideIcon;
   path: string;
   showBadge?: boolean;
-  isTrack?: boolean;
   isSchedule?: boolean;
+  isMessages?: boolean;
 }
 
 const leftItems: NavItem[] = [
@@ -24,7 +25,7 @@ const leftItems: NavItem[] = [
 ];
 
 const rightItems: NavItem[] = [
-  { label: "Track", icon: Target, path: "/instructor/tracking", isTrack: true },
+  { label: "Messages", icon: MessageCircle, path: "/instructor/messages", isMessages: true },
   { label: "Pupils", icon: Users, path: "/instructor/pupils", showBadge: true },
 ];
 
@@ -48,6 +49,7 @@ export function InstructorBottomNav({ voiceState = "idle", onVoiceTap }: Instruc
 
   const { data: todayOverview } = useTodayOverview(instructor?.id);
   const todayLessonCount = todayOverview?.lessonCount || 0;
+  const { data: unreadMessagesCount = 0 } = useUnreadMessagesCount(instructor?.id);
 
   useEffect(() => {
     if (!instructor?.id) return;
@@ -79,7 +81,8 @@ export function InstructorBottomNav({ voiceState = "idle", onVoiceTap }: Instruc
     let badge = 0;
     if (item.showBadge) badge = pendingJobsCount;
     if (item.isSchedule && todayLessonCount > 0) badge = todayLessonCount;
-    const showBadge = badge > 0 && !(item.isSchedule && isActive);
+    if (item.isMessages) badge = unreadMessagesCount;
+    const showBadge = badge > 0 && !(item.isSchedule && isActive) && !(item.isMessages && isActive);
     const badgeLabel = badge > 99 ? "99+" : `${badge}`;
 
     const color = isActive ? ACTIVE : INACTIVE;
@@ -119,20 +122,6 @@ export function InstructorBottomNav({ voiceState = "idle", onVoiceTap }: Instruc
             >
               {badgeLabel}
             </span>
-          )}
-          {item.isTrack && isTrackingActive && (
-            <span
-              style={{
-                position: "absolute",
-                top: -2,
-                right: -2,
-                width: 8,
-                height: 8,
-                borderRadius: 4,
-                background: "#10b981",
-              }}
-              className="animate-pulse"
-            />
           )}
         </span>
         <span style={{ fontSize: 10, fontWeight: isActive ? 500 : 400, color, lineHeight: 1 }}>

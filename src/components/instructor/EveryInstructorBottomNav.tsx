@@ -3,11 +3,13 @@ import { BottomNav, BottomNavTabConfig } from "@/components/instructor/ui/Bottom
 import {
   HomeNavIcon,
   ScheduleNavIcon,
-  TrackNavIcon,
+  MessagesNavIcon,
   MoneyNavIcon,
   PupilsNavIcon,
   MenuNavIcon,
 } from "@/components/instructor/ui/NavIcons";
+import { useInstructorAuth } from "@/context/InstructorAuthContext";
+import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
 
 /**
  * Instructor mobile bottom navigation.
@@ -16,19 +18,25 @@ import {
  * the previous implementation — this file only swaps the visual layer to
  * the premium tile design system. The "More" tab's user-visible label is
  * now "Menu" (route id stays /every-instructor/menu).
+ *
+ * Track was removed from the bottom nav (still reachable from the
+ * dashboard tile and auto-tracking indicator) and replaced with Messages,
+ * which carries a live unread-count badge.
  */
-
-const tabs: BottomNavTabConfig[] = [
-  { label: "Home", icon: HomeNavIcon, path: "/every-instructor", exact: true },
-  { label: "Schedule", icon: ScheduleNavIcon, path: "/every-instructor/schedule" },
-  { label: "Track", icon: TrackNavIcon, path: "/every-instructor/tracking" },
-  { label: "Money", icon: MoneyNavIcon, path: "/every-instructor/pay" },
-  { label: "Pupils", icon: PupilsNavIcon, path: "/every-instructor/pupils" },
-  { label: "Menu", icon: MenuNavIcon, path: "/every-instructor/menu" },
-];
 
 export function EveryInstructorBottomNav() {
   const navigate = useNavigate();
+  const { instructor } = useInstructorAuth();
+  const { data: unreadMessagesCount = 0 } = useUnreadMessagesCount(instructor?.id);
+
+  const tabs: BottomNavTabConfig[] = [
+    { label: "Home", icon: HomeNavIcon, path: "/every-instructor", exact: true },
+    { label: "Schedule", icon: ScheduleNavIcon, path: "/every-instructor/schedule" },
+    { label: "Messages", icon: MessagesNavIcon, path: "/every-instructor/messages", badge: unreadMessagesCount },
+    { label: "Money", icon: MoneyNavIcon, path: "/every-instructor/pay" },
+    { label: "Pupils", icon: PupilsNavIcon, path: "/every-instructor/pupils" },
+    { label: "Menu", icon: MenuNavIcon, path: "/every-instructor/menu" },
+  ];
 
   const handleNav = (path: string) => {
     navigate(path);
