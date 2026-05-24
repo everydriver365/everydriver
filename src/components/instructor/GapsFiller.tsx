@@ -1203,6 +1203,8 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
               } total`
             : undefined
         }
+        discountType={discountType === "none" ? null : discountType}
+        discountValue={discountType === "none" ? null : discountValue}
       />
 
       <AddLessonSheet
