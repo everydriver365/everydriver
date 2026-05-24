@@ -110,6 +110,8 @@ import { MTDDeadlineTile } from "@/components/instructor/MTDDeadlineTile";
 import { Tile } from "@/components/instructor/ui";
 import { RescheduleRequestsCard } from "@/components/instructor/RescheduleRequestsCard";
 import { PendingBookingsCard } from "@/components/instructor/PendingBookingsCard";
+import { useQuickAccessUnreads } from "@/hooks/useQuickAccessUnreads";
+import { toast } from "sonner";
 
 /* ---------------------------- Design tokens ----------------------------- */
 const T = {
@@ -342,7 +344,7 @@ export function MobileHomeDSM2026({ instructorId, instructorName }: Props) {
             <ScheduleCard instructorId={instructorId} navigate={navigate} />
           </div>
           <div className="animate-fade-in" style={{ animationDelay: "180ms", animationFillMode: "both" }}>
-            <QuickAccessCard navigate={navigate} />
+            <QuickAccessCard navigate={navigate} instructorId={instructorId} />
           </div>
           <div style={{ height: 0.5, background: "#ebebeb", margin: "2px 0" }} />
           <div className="animate-fade-in" style={{ animationDelay: "240ms", animationFillMode: "both" }}>
@@ -2183,7 +2185,8 @@ function loadPinnedLabels(): string[] {
   }
 }
 
-function QuickAccessCard({ navigate }: { navigate: ReturnType<typeof useNavigate> }) {
+function QuickAccessCard({ navigate, instructorId }: { navigate: ReturnType<typeof useNavigate>; instructorId: string }) {
+  const unreads = useQuickAccessUnreads(instructorId);
   const [activeRoute, setActiveRoute] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [searchExpanded, setSearchExpanded] = useState(false);
@@ -2384,14 +2387,27 @@ function QuickAccessCard({ navigate }: { navigate: ReturnType<typeof useNavigate
                 gap: 8,
               }}
             >
-              {page.map((item) => (
-                <QATile
-                  key={item.label}
-                  item={item}
-                  active={activeRoute === item.route}
-                  onPress={() => { setActiveRoute(item.route); navigate(item.route); }}
-                />
-              ))}
+              {page.map((item) => {
+                const isPinned = pinnedLabels.includes(item.label);
+                return (
+                  <QATile
+                    key={item.label}
+                    item={item}
+                    active={activeRoute === item.route}
+                    onPress={() => { setActiveRoute(item.route); navigate(item.route); }}
+                    badgeCount={unreads[item.label] ?? 0}
+                    onLongPress={() => {
+                      const wasPinned = pinnedLabels.includes(item.label);
+                      if (!wasPinned && pinnedLabels.length >= 8) {
+                        toast.message("Pin limit reached (8). Unpin one first.");
+                        return;
+                      }
+                      togglePin(item.label);
+                      toast.success(wasPinned ? "Unpinned" : "Pinned");
+                    }}
+                  />
+                );
+              })}
             </div>
           ))}
         </div>
@@ -2511,14 +2527,17 @@ function EditPinsSheet({
 }
 
 function QATile({
-  item, active, onPress,
-}: { item: QAItem; active: boolean; onPress: () => void; size?: "grid" | "scroll" }) {
+  item, active, onPress, badgeCount, onLongPress,
+}: { item: QAItem; active: boolean; onPress: () => void; size?: "grid" | "scroll"; badgeCount?: number; onLongPress?: () => void }) {
   const Icon = item.Icon;
   return (
     <Tile
       variant="navigation"
       title={item.label}
       onClick={onPress}
+      onLongPress={onLongPress}
+      badgeCount={badgeCount}
+      badgeVisible={!!badgeCount && badgeCount > 0}
       ariaLabel={item.label}
       iconNode={
         <span
