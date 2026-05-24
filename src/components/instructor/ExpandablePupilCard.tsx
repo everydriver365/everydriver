@@ -1303,7 +1303,21 @@ export function ExpandablePupilCard({
                 </div>
               )}
 
-              {/* Emergency Contact */}
+              {/* Parent / Guardian */}
+              <ParentDetailsEditor
+                pupilId={pupil.id}
+                pupilName={pupil.name}
+                dateOfBirth={pupil.date_of_birth}
+                initialData={{
+                  parent_name: pupil.parent_name,
+                  parent_phone: pupil.parent_phone,
+                  parent_email: pupil.parent_email,
+                  parent_portal_enabled: pupil.parent_portal_enabled,
+                  parent_invited_at: pupil.parent_invited_at,
+                }}
+              />
+
+              {/* Next of Kin / Emergency Contact */}
               <EmergencyContactEditor
                 pupilId={pupil.id}
                 initialData={{
@@ -1313,42 +1327,22 @@ export function ExpandablePupilCard({
                 }}
               />
 
-              {/* T&Cs and Signing Actions - full width stacked */}
+              {/* Terms & Conditions */}
+              {instructorId && instructorName && (
+                <PupilTermsSection
+                  pupilId={pupil.id}
+                  pupilName={pupil.name}
+                  pupilPhone={pupil.phone}
+                  pupilDateOfBirth={pupil.date_of_birth}
+                  parentName={pupil.parent_name}
+                  parentPhone={pupil.parent_phone}
+                  instructorId={instructorId}
+                  instructorName={instructorName}
+                />
+              )}
+
+              {/* Driving Report */}
               <div className="grid grid-cols-1 gap-2 pt-2 border-t border-border">
-                {onViewTerms && (
-                  <Button
-                    variant={hasSignedTerms ? "outline" : "default"}
-                    size="sm"
-                    className={`w-full ${hasSignedTerms ? "border-green-500 text-green-600" : ""}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onViewTerms(pupil);
-                    }}
-                  >
-                    {hasSignedTerms ? (
-                      <>
-                        <CheckCircle2 className="h-4 w-4 mr-2" />
-                        T&Cs Signed
-                      </>
-                    ) : (
-                      <>
-                        <FileSignature className="h-4 w-4 mr-2" />
-                        Sign T&Cs
-                      </>
-                    )}
-                  </Button>
-                )}
-                {instructorId && instructorName && !hasSignedTerms && (
-                  <SendSigningLinkButton
-                    pupilId={pupil.id}
-                    pupilName={pupil.name}
-                    pupilPhone={pupil.phone}
-                    instructorId={instructorId}
-                    instructorName={instructorName}
-                    disabled={hasSignedTerms}
-                    className="w-full"
-                  />
-                )}
                 <Button
                   variant="outline"
                   size="sm"
