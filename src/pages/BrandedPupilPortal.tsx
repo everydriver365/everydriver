@@ -144,7 +144,11 @@ const sectionTitles: Record<string, string> = {
   documents: "My Documents",
 };
 
-export default function BrandedPupilPortal() {
+interface BrandedPupilPortalProps {
+  initialSection?: ActiveSection;
+}
+
+export default function BrandedPupilPortal({ initialSection }: BrandedPupilPortalProps = {}) {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -152,7 +156,7 @@ export default function BrandedPupilPortal() {
   const [pupil, setPupil] = useState<Pupil | null>(null);
   usePupilOneSignalBinding(pupil?.id);
   const [loading, setLoading] = useState(true);
-  const [activeSection, setActiveSection] = useState<ActiveSection>('home');
+  const [activeSection, setActiveSection] = useState<ActiveSection>(initialSection ?? 'home');
   const [bookingRequested, setBookingRequested] = useState(false);
   const [notFound, setNotFound] = useState(false);
   const [darkModeOverride, setDarkModeOverride] = useState<boolean | null>(null);

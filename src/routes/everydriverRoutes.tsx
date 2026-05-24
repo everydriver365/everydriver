@@ -103,6 +103,7 @@ export const everydriverRoutes = (
     <Route path="/login" element={<UnifiedLogin />} />
     <Route path="/p/login" element={<Navigate to="/login?tab=parent" replace />} />
     <Route path="/p/:slug" element={<BrandedPupilPortal />} />
+    <Route path="/p/:slug/payments" element={<BrandedPupilPortal initialSection="payments" />} />
     <Route path="/pupil/install" element={<InstallPupil />} />
     <Route path="/reset-password" element={<ResetPassword />} />
     <Route path="/auth/redirect" element={<RoleRedirectPage />} />

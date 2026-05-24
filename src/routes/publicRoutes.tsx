@@ -129,6 +129,7 @@ export const publicRoutes = (
     <Route path="/login" element={<UnifiedLogin />} />
     <Route path="/p/login" element={<Navigate to="/login?tab=parent" replace />} />
     <Route path="/p/:slug" element={<BrandedPupilPortal />} />
+    <Route path="/p/:slug/payments" element={<BrandedPupilPortal initialSection="payments" />} />
     <Route path="/theory" element={<Theory />} />
     <Route path="/faqs" element={<FAQs />} />
     <Route path="/help" element={<Help />} />
