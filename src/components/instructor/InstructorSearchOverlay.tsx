@@ -278,6 +278,7 @@ export function InstructorSearchOverlay({ open, onOpenChange, instructorId }: Pr
         .from("pupils")
         .select("id, name")
         .eq("instructor_id", instructorId)
+        .is("deleted_at", null)
         .ilike("name", `%${q}%`)
         .limit(8);
       if (!cancelled) setPupilResults((data as any) || []);
