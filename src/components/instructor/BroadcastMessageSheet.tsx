@@ -14,6 +14,7 @@ interface Pupil {
   id: string;
   name: string;
   status: string | null;
+  account_balance: number | null;
 }
 
 interface Template {
@@ -30,13 +31,23 @@ interface BroadcastMessageSheetProps {
   instructorId: string;
 }
 
-const STATUS_FILTERS = [
+type StatusFilter = "all" | "active" | "on_hold" | "inactive" | "passed";
+type AudienceFilter = "all" | "lessons_this_week" | "outstanding_balance" | "dormant_30d";
+
+const STATUS_FILTERS: { value: StatusFilter; label: string }[] = [
   { value: "all", label: "All Pupils" },
   { value: "active", label: "Active" },
   { value: "on_hold", label: "On Hold" },
   { value: "inactive", label: "Inactive" },
   { value: "passed", label: "Passed" },
-] as const;
+];
+
+const AUDIENCE_FILTERS: { value: AudienceFilter; label: string }[] = [
+  { value: "all", label: "Everyone" },
+  { value: "lessons_this_week", label: "Lessons this week" },
+  { value: "outstanding_balance", label: "Outstanding balance" },
+  { value: "dormant_30d", label: "Not booked 30+ days" },
+];
 
 const CATEGORY_LABELS: Record<string, string> = {
   reminder: "Reminders",
@@ -48,7 +59,10 @@ const CATEGORY_LABELS: Record<string, string> = {
 export function BroadcastMessageSheet({ open, onOpenChange, instructorId }: BroadcastMessageSheetProps) {
   const [pupils, setPupils] = useState<Pupil[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [audienceFilter, setAudienceFilter] = useState<AudienceFilter>("all");
+  const [audiencePupilIds, setAudiencePupilIds] = useState<Set<string> | null>(null);
+  const [audienceLoading, setAudienceLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -56,6 +70,7 @@ export function BroadcastMessageSheet({ open, onOpenChange, instructorId }: Broa
   const [showTemplates, setShowTemplates] = useState(false);
   const [showSaveTemplate, setShowSaveTemplate] = useState(false);
   const [templateTitle, setTemplateTitle] = useState("");
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
 
   useEffect(() => {
     if (open) {
@@ -64,8 +79,11 @@ export function BroadcastMessageSheet({ open, onOpenChange, instructorId }: Broa
       setMessage("");
       setSelectedIds(new Set());
       setStatusFilter("all");
+      setAudienceFilter("all");
+      setAudiencePupilIds(null);
       setShowTemplates(false);
       setShowSaveTemplate(false);
+      setSelectedTemplateId(null);
     }
   }, [open]);
 
@@ -74,11 +92,11 @@ export function BroadcastMessageSheet({ open, onOpenChange, instructorId }: Broa
     try {
       const { data } = await supabase
         .from("pupils")
-        .select("id, name, status")
+        .select("id, name, status, account_balance")
         .eq("instructor_id", instructorId)
         .is("deleted_at", null)
         .order("name");
-      setPupils(data || []);
+      setPupils((data as Pupil[]) || []);
     } catch (e) {
       console.error("Error fetching pupils:", e);
     } finally {
@@ -98,6 +116,59 @@ export function BroadcastMessageSheet({ open, onOpenChange, instructorId }: Broa
       console.error("Error fetching templates:", e);
     }
   };
+
+  // Resolve audience filter (lessons_this_week / dormant_30d) → pupil id set
+  useEffect(() => {
+    if (!open) return;
+    if (audienceFilter === "all" || audienceFilter === "outstanding_balance") {
+      setAudiencePupilIds(null);
+      return;
+    }
+
+    let cancelled = false;
+    const run = async () => {
+      setAudienceLoading(true);
+      try {
+        const now = new Date();
+        if (audienceFilter === "lessons_this_week") {
+          const weekAhead = new Date(now.getTime() + 7 * 86400000);
+          const { data } = await supabase
+            .from("scheduled_lessons")
+            .select("pupil_id")
+            .eq("instructor_id", instructorId)
+            .gte("start_time", now.toISOString())
+            .lte("start_time", weekAhead.toISOString())
+            .is("deleted_at", null);
+          if (!cancelled) {
+            setAudiencePupilIds(new Set((data || []).map((r: any) => r.pupil_id).filter(Boolean)));
+          }
+        } else if (audienceFilter === "dormant_30d") {
+          const cutoff = new Date(now.getTime() - 30 * 86400000);
+          const { data } = await supabase
+            .from("scheduled_lessons")
+            .select("pupil_id")
+            .eq("instructor_id", instructorId)
+            .gte("start_time", cutoff.toISOString())
+            .is("deleted_at", null);
+          const active = new Set((data || []).map((r: any) => r.pupil_id).filter(Boolean));
+          if (!cancelled) {
+            // Dormant = pupil exists but NOT in the active set
+            const dormant = new Set(pupils.filter((p) => !active.has(p.id)).map((p) => p.id));
+            setAudiencePupilIds(dormant);
+          }
+        }
+      } catch (e) {
+        console.error("Audience query failed:", e);
+        if (!cancelled) setAudiencePupilIds(new Set());
+      } finally {
+        if (!cancelled) setAudienceLoading(false);
+      }
+    };
+    void run();
+    return () => {
+      cancelled = true;
+    };
+  }, [audienceFilter, open, instructorId, pupils]);
 
   const handleSaveTemplate = async () => {
     if (!templateTitle.trim() || !message.trim()) return;
@@ -135,9 +206,17 @@ export function BroadcastMessageSheet({ open, onOpenChange, instructorId }: Broa
     }
   };
 
-  const filtered = pupils.filter(p => {
-    if (statusFilter === "all") return true;
-    return (p.status || "active") === statusFilter;
+  const filtered = pupils.filter((p) => {
+    // Status filter
+    if (statusFilter !== "all" && (p.status || "active") !== statusFilter) return false;
+
+    // Audience filter
+    if (audienceFilter === "outstanding_balance") {
+      if ((p.account_balance ?? 0) >= -5) return false;
+    } else if (audiencePupilIds) {
+      if (!audiencePupilIds.has(p.id)) return false;
+    }
+    return true;
   });
 
   const toggleAll = () => {
@@ -159,62 +238,37 @@ export function BroadcastMessageSheet({ open, onOpenChange, instructorId }: Broa
     if (!message.trim() || selectedIds.size === 0) return;
     setSending(true);
 
-    let sentCount = 0;
-    let errorCount = 0;
+    try {
+      const { data, error } = await supabase.functions.invoke("broadcast-message", {
+        body: {
+          pupil_ids: Array.from(selectedIds),
+          message: message.trim(),
+          template_id: selectedTemplateId,
+        },
+      });
 
-    for (const pupilId of selectedIds) {
-      try {
-        let convId: string | null = null;
-        const { data: existing } = await supabase
-          .from("conversations")
-          .select("id")
-          .eq("instructor_id", instructorId)
-          .eq("pupil_id", pupilId)
-          .maybeSingle();
-
-        if (existing) {
-          convId = existing.id;
-        } else {
-          const { data: newConv } = await supabase
-            .from("conversations")
-            .insert({ instructor_id: instructorId, pupil_id: pupilId })
-            .select("id")
-            .single();
-          convId = newConv?.id || null;
-        }
-
-        if (!convId) { errorCount++; continue; }
-
-        const { error } = await supabase.from("messages").insert({
-          conversation_id: convId,
-          sender_type: "instructor",
-          sender_id: instructorId,
-          content: message.trim(),
-        });
-
-        if (error) { errorCount++; } else {
-          sentCount++;
-          supabase.functions.invoke("notify-pupil", {
-            body: {
-              pupilId,
-              type: "lesson_reminder",
-              title: "New Message from Instructor",
-              body: message.trim().slice(0, 80),
-            },
-          }).catch(() => {});
-        }
-      } catch {
-        errorCount++;
+      if (error) {
+        toast.error(error.message || "Broadcast failed");
+        return;
       }
-    }
 
-    setSending(false);
-    if (sentCount > 0) {
-      toast.success(`Broadcast sent to ${sentCount} pupil${sentCount > 1 ? "s" : ""} 📣`);
-      onOpenChange(false);
-    }
-    if (errorCount > 0) {
-      toast.error(`Failed to send to ${errorCount} pupil${errorCount > 1 ? "s" : ""}`);
+      const sent = (data as any)?.sent ?? 0;
+      const failed = (data as any)?.failed ?? 0;
+
+      if (sent > 0 && failed === 0) {
+        toast.success(`Broadcast sent to ${sent} pupil${sent > 1 ? "s" : ""} 📣`);
+        onOpenChange(false);
+      } else if (sent > 0 && failed > 0) {
+        toast.warning(`Sent to ${sent} pupil${sent > 1 ? "s" : ""}, ${failed} failed`);
+        onOpenChange(false);
+      } else {
+        toast.error(`Failed to send to ${failed} pupil${failed > 1 ? "s" : ""}`);
+      }
+    } catch (e: any) {
+      console.error("Broadcast error:", e);
+      toast.error(e?.message || "Broadcast failed");
+    } finally {
+      setSending(false);
     }
   };
 
@@ -256,6 +310,30 @@ export function BroadcastMessageSheet({ open, onOpenChange, instructorId }: Broa
                   className="cursor-pointer"
                   onClick={() => {
                     setStatusFilter(f.value);
+                    setSelectedIds(new Set());
+                  }}
+                >
+                  {f.label}
+                </Badge>
+              ))}
+            </div>
+          </div>
+
+          {/* Audience filter chips */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
+              <Users className="h-3.5 w-3.5" />
+              Audience
+              {audienceLoading && <Loader2 className="h-3 w-3 animate-spin" />}
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {AUDIENCE_FILTERS.map(f => (
+                <Badge
+                  key={f.value}
+                  variant={audienceFilter === f.value ? "default" : "outline"}
+                  className="cursor-pointer"
+                  onClick={() => {
+                    setAudienceFilter(f.value);
                     setSelectedIds(new Set());
                   }}
                 >
@@ -330,7 +408,11 @@ export function BroadcastMessageSheet({ open, onOpenChange, instructorId }: Broa
                         <div
                           key={t.id}
                           className="flex items-start gap-2 px-2 py-2 rounded-2xl hover:bg-muted/50 cursor-pointer group"
-                          onClick={() => { setMessage(t.body); setShowTemplates(false); }}
+                          onClick={() => {
+                            setMessage(t.body);
+                            setSelectedTemplateId(t.id);
+                            setShowTemplates(false);
+                          }}
                         >
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium">{t.title}</p>
@@ -363,7 +445,10 @@ export function BroadcastMessageSheet({ open, onOpenChange, instructorId }: Broa
             <Textarea
               placeholder="Type your broadcast message…"
               value={message}
-              onChange={e => setMessage(e.target.value)}
+              onChange={e => {
+                setMessage(e.target.value);
+                if (selectedTemplateId) setSelectedTemplateId(null);
+              }}
               rows={3}
               className="resize-none"
             />
@@ -413,11 +498,16 @@ export function BroadcastMessageSheet({ open, onOpenChange, instructorId }: Broa
               className="flex-1"
             >
               {sending ? (
-                <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                  Sending to {selectedIds.size}…
+                </>
               ) : (
-                <Send className="h-4 w-4 mr-1" />
+                <>
+                  <Send className="h-4 w-4 mr-1" />
+                  Send to {selectedIds.size} pupil{selectedIds.size !== 1 ? "s" : ""}
+                </>
               )}
-              Send to {selectedIds.size} pupil{selectedIds.size !== 1 ? "s" : ""}
             </Button>
           </div>
         </div>
