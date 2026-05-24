@@ -31,7 +31,7 @@ const normalisePostcode = (pc: string | null | undefined): string | null => {
 const pairKey = (from: string, to: string) => `${from}|${to}`;
 
 const FONT_STACK =
-  '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Roboto", sans-serif';
+  'Poppins, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
 
 const DEFAULT_TEMPLATE =
   "Hi {first_name}, I have some availability coming up:\n\n{slot_list}\n\n{discount}\n\nLet me know if you'd like to book any of these. Cheers, {instructor_first_name}";
