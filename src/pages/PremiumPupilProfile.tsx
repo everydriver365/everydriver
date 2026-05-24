@@ -1114,6 +1114,37 @@ export default function PremiumPupilProfile() {
     </button>
   );
 
+  const SyllabusCard = (
+    <button
+      onClick={() => pupil && navigate(`/instructor/pupils/${pupil.id}/syllabus`)}
+      onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.boxShadow = SHADOW_HOVER; (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-1px)"; }}
+      onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.boxShadow = SHADOW_CARD; (e.currentTarget as HTMLButtonElement).style.transform = "translateY(0)"; }}
+      style={{
+        width: "100%", textAlign: "left", padding: 20, border: `1px solid ${C.hairline}`,
+        background: C.card, borderRadius: RADIUS,
+        boxShadow: SHADOW_CARD,
+        cursor: "pointer",
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        transition: TRANSITION,
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <div style={{ width: 36, height: 36, borderRadius: 10, background: "#EDF2FE", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+          <GraduationCap size={18} color="#3D55A1" />
+        </div>
+        <div>
+          <div style={{ fontFamily: FONT, fontSize: 16, fontWeight: 600, color: C.text, letterSpacing: "-0.01em" }}>
+            DVSA syllabus
+          </div>
+          <div style={{ fontFamily: FONT, fontSize: 13, color: C.muted, marginTop: 4 }}>
+            Track 27 competencies & test readiness
+          </div>
+        </div>
+      </div>
+      <ChevronRight size={20} color={C.subtle} />
+    </button>
+  );
+
   // Generic field updater for the pupil row.
   const updatePupilField = async (patch: Record<string, any>, successMsg = "Updated") => {
     if (!pupil?.id) return;
