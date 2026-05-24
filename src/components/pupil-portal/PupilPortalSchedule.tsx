@@ -332,10 +332,21 @@ export function PupilPortalSchedule({
           dateFormatted,
           timeFormatted,
           durationLabel,
+          durationMinutes: h.duration_minutes,
         };
       }),
     [rawHistory]
   );
+
+  const handleBookAgain = (durationMinutes: number) => {
+    setBookAgainPrefill({ duration: durationMinutes });
+    setShowBooking(true);
+  };
+
+  const lateCancelSelected = selectedLesson ? isLateCancel(selectedLesson) : false;
+  const lateFee = instructorInfo?.late_cancel_fee ?? 0;
+  const policyText = instructorInfo?.cancellation_policy_text ?? null;
+  const policyHours = settings?.cancel_notice_hours ?? instructorInfo?.cancellation_policy_hours ?? 24;
 
   return (
     <div
@@ -353,7 +364,38 @@ export function PupilPortalSchedule({
       )}
 
       {settings?.allow_self_cancel && (
-        <CancellationPolicy cancelNoticeHours={settings.cancel_notice_hours} />
+        <div
+          style={{
+            backgroundColor: '#fff',
+            border: '1px solid #e5e7eb',
+            borderRadius: 14,
+            overflow: 'hidden',
+          }}
+        >
+          <button
+            type="button"
+            onClick={() => setPolicyExpanded((v) => !v)}
+            className="w-full flex items-center justify-between"
+            style={{
+              padding: '12px 14px',
+              fontSize: 13,
+              fontWeight: 600,
+              color: '#1f2937',
+              background: 'transparent',
+            }}
+          >
+            <span>View cancellation policy</span>
+            {policyExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+          </button>
+          {policyExpanded && (
+            <div style={{ padding: '0 10px 12px' }}>
+              <CancellationPolicyCard
+                cancelNoticeHours={policyHours}
+                brandColour={brandColour || '#1e3a5f'}
+              />
+            </div>
+          )}
+        </div>
       )}
 
       <UpcomingLessonsSection
@@ -372,6 +414,7 @@ export function PupilPortalSchedule({
         lessons={historyItems}
         loading={historyLoading}
         onViewAll={() => onViewHistory?.()}
+        onBookAgain={settings?.allow_self_booking ? handleBookAgain : undefined}
       />
 
       {/* Cancel Dialog */}
@@ -379,15 +422,42 @@ export function PupilPortalSchedule({
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-destructive" />
-              Cancel Lesson?
+              <AlertTriangle className={`h-5 w-5 ${lateCancelSelected ? 'text-amber-600' : 'text-destructive'}`} />
+              {lateCancelSelected ? 'Late cancellation' : 'Cancel Lesson?'}
             </DialogTitle>
             <DialogDescription>
-              Are you sure you want to cancel your lesson on{' '}
-              {selectedLesson && format(parseISO(selectedLesson.lesson_date), 'EEE, d MMM')} at{' '}
-              {selectedLesson && formatTime(selectedLesson.start_time)}?
+              {selectedLesson && (
+                <>
+                  Cancelling your lesson on{' '}
+                  {format(parseISO(selectedLesson.lesson_date), 'EEE, d MMM')} at{' '}
+                  {formatTime(selectedLesson.start_time)}.
+                </>
+              )}
             </DialogDescription>
           </DialogHeader>
+
+          {lateCancelSelected && (
+            <div
+              className="rounded-lg p-3 text-sm space-y-1.5"
+              style={{ backgroundColor: '#FEF3C7', border: '1px solid #FCD34D', color: '#92400E' }}
+            >
+              <p className="font-semibold">
+                You're cancelling within {settings?.cancel_notice_hours ?? policyHours} hours notice.
+              </p>
+              <p>
+                {instructorInfo?.name ?? "Your instructor"}'s cancellation policy may apply. Contact your instructor if you have questions.
+              </p>
+              {lateFee > 0 && (
+                <p className="font-medium">
+                  A late cancellation fee of £{Number(lateFee).toFixed(2)} may be charged.
+                </p>
+              )}
+              {policyText && (
+                <p className="text-xs opacity-90 pt-1">{policyText}</p>
+              )}
+            </div>
+          )}
+
           <div className="py-2">
             <label className="text-sm font-medium">Reason (optional)</label>
             <Textarea
@@ -400,14 +470,14 @@ export function PupilPortalSchedule({
           </div>
           <DialogFooter className="gap-2">
             <Button variant="outline" onClick={() => setCancelDialogOpen(false)}>
-              Keep Lesson
+              Keep lesson
             </Button>
             <Button
               variant="destructive"
               onClick={confirmCancel}
               disabled={cancelling}
             >
-              {cancelling ? "Cancelling..." : "Yes, Cancel"}
+              {cancelling ? "Cancelling..." : (lateCancelSelected ? "Cancel anyway" : "Yes, Cancel")}
             </Button>
           </DialogFooter>
         </DialogContent>
