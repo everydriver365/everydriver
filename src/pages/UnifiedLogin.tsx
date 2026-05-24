@@ -1,21 +1,14 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Loader2, Eye, EyeOff, Mail, Lock, Phone } from "lucide-react";
+import { Loader2, Phone } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import { UnifiedMobileLoginCard } from "@/components/auth/UnifiedMobileLoginCard";
+import { setRememberMe } from "@/lib/sessionPersistence";
 
 const FONT = `Poppins, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
-const BG = "#F2F4F8";
-const CARD_BG = "#FFFFFF";
-const BORDER = "0.5px solid #E0E3EA";
-const RADIUS = 14;
-const INPUT_RADIUS = 10;
-const PRIMARY = "#1A1A1F";
-const MUTED = "#6B7280";
-const TEXT = "#111827";
-const ERROR = "#B91C1C";
 
 function cleanUkPhone(phone: string): string {
   let c = phone.replace(/\s+/g, "").replace(/[^0-9+]/g, "");
@@ -32,14 +25,7 @@ export default function UnifiedLogin() {
   const [params] = useSearchParams();
   const [tab, setTab] = useState<Tab>(params.get("tab") === "parent" ? "parent" : "signin");
 
-  // Sign-in state
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPw, setShowPw] = useState(false);
-  const [signingIn, setSigningIn] = useState(false);
-  const [signinError, setSigninError] = useState<string | null>(null);
-
-  // Parent state
+  // Parent OTP — unchanged from previous behaviour.
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
   const [pStep, setPStep] = useState<ParentStep>("phone");
@@ -54,62 +40,30 @@ export default function UnifiedLogin() {
     return () => clearInterval(t);
   }, [pStep]);
 
-  const handleSignIn = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSigninError(null);
-    if (!email.trim() || !password) {
-      setSigninError("Enter your email and password");
-      return;
-    }
-    setSigningIn(true);
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
-        password,
-      });
-      if (error) {
-        setSigninError(error.message);
-        toast.error(error.message);
-        return;
-      }
-      navigate("/auth/redirect", { replace: true });
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Sign-in failed";
-      setSigninError(msg);
-      toast.error(msg);
-    } finally {
-      setSigningIn(false);
-    }
+  const handleSignIn = async (email: string, password: string, rememberMe: boolean) => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) return { error: error.message };
+    setRememberMe(rememberMe);
+    navigate("/auth/redirect", { replace: true });
   };
 
-  const handleForgot = async () => {
-    if (!email.trim()) {
-      toast.error("Enter your email first");
-      return;
-    }
-    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+  const handleForgot = async (email: string) => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/reset-password`,
     });
-    if (error) toast.error(error.message);
-    else toast.success("Password reset email sent");
+    if (error) return { error: error.message };
   };
 
   const handleSendCode = async () => {
     setPError(null);
-    if (!phone.trim()) {
-      setPError("Enter your phone number");
-      return;
-    }
+    if (!phone.trim()) { setPError("Enter your phone number"); return; }
     setPBusy(true);
     try {
       const { data, error } = await supabase.functions.invoke("send-parent-otp", {
         body: { phone: cleanUkPhone(phone) },
       });
       if (error) throw error;
-      if (data?.error) {
-        setPError(data.error);
-        return;
-      }
+      if (data?.error) { setPError(data.error); return; }
       setPStep("otp");
       toast.success("Verification code sent");
     } catch (err) {
@@ -121,29 +75,20 @@ export default function UnifiedLogin() {
 
   const handleVerify = async () => {
     setPError(null);
-    if (otp.length !== 6) {
-      setPError("Enter the 6-digit code");
-      return;
-    }
+    if (otp.length !== 6) { setPError("Enter the 6-digit code"); return; }
     setPBusy(true);
     try {
       const { data, error } = await supabase.functions.invoke("verify-parent-otp", {
         body: { phone: cleanUkPhone(phone), code: otp },
       });
       if (error) throw error;
-      if (data?.error) {
-        setPError(data.error);
-        return;
-      }
+      if (data?.error) { setPError(data.error); return; }
       const tokenHash: string | undefined = data?.token_hash;
       if (!tokenHash) throw new Error("Missing session token");
-
       const { error: verifyErr } = await supabase.auth.verifyOtp({
-        token_hash: tokenHash,
-        type: "magiclink",
+        token_hash: tokenHash, type: "magiclink",
       });
       if (verifyErr) throw verifyErr;
-
       navigate("/auth/redirect", { replace: true });
     } catch (err) {
       setPError(err instanceof Error ? err.message : "Verification failed");
@@ -153,53 +98,21 @@ export default function UnifiedLogin() {
   };
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: BG,
-        fontFamily: FONT,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: 20,
-      }}
-    >
-      <div
-        style={{
-          width: "100%",
-          maxWidth: 420,
-          background: CARD_BG,
-          borderRadius: RADIUS,
-          border: BORDER,
-          padding: 28,
-          boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
-        }}
-      >
-        {/* Brand */}
-        <div style={{ textAlign: "center", marginBottom: 22 }}>
-          <h1 style={{ fontSize: 22, fontWeight: 700, color: TEXT, margin: 0, letterSpacing: -0.3 }}>
-            Drive365
-          </h1>
-          <p style={{ fontSize: 13, color: MUTED, margin: "4px 0 0" }}>Sign in to your account</p>
-        </div>
-
-        {/* Tabs */}
+    <div style={{ minHeight: "100dvh", background: "#F2F4F8", fontFamily: FONT }}>
+      <div style={{ padding: "calc(env(safe-area-inset-top) + 20px) 16px 8px", display: "flex", justifyContent: "center" }}>
         <div
           style={{
             display: "grid",
             gridTemplateColumns: "1fr 1fr",
-            background: "#F1F3F7",
+            background: "#FFFFFF",
+            border: "0.5px solid #E0E3EA",
             borderRadius: 10,
             padding: 4,
-            marginBottom: 22,
+            width: "100%",
+            maxWidth: 400,
           }}
         >
-          {(
-            [
-              { id: "signin", label: "Sign in" },
-              { id: "parent", label: "Parent access" },
-            ] as { id: Tab; label: string }[]
-          ).map((t) => {
+          {([{ id: "signin", label: "Sign in" }, { id: "parent", label: "Parent access" }] as const).map((t) => {
             const active = tab === t.id;
             return (
               <button
@@ -207,14 +120,13 @@ export default function UnifiedLogin() {
                 type="button"
                 onClick={() => setTab(t.id)}
                 style={{
-                  background: active ? "#FFFFFF" : "transparent",
+                  background: active ? "#1A1A1F" : "transparent",
+                  color: active ? "#FFFFFF" : "#666",
                   border: "none",
                   borderRadius: 8,
                   padding: "8px 12px",
-                  fontSize: 13,
+                  fontSize: 12,
                   fontWeight: 600,
-                  color: active ? TEXT : MUTED,
-                  boxShadow: active ? "0 1px 2px rgba(0,0,0,0.06)" : "none",
                   cursor: "pointer",
                   fontFamily: FONT,
                 }}
@@ -224,256 +136,151 @@ export default function UnifiedLogin() {
             );
           })}
         </div>
+      </div>
 
-        {tab === "signin" ? (
-          <form onSubmit={handleSignIn} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-            <div>
-              <label style={labelStyle}>Email</label>
-              <div style={{ position: "relative" }}>
-                <Mail size={16} style={iconStyle} />
-                <input
-                  type="email"
-                  autoComplete="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
-                  style={inputStyle}
-                />
-              </div>
-            </div>
-            <div>
-              <label style={labelStyle}>Password</label>
-              <div style={{ position: "relative" }}>
-                <Lock size={16} style={iconStyle} />
-                <input
-                  type={showPw ? "text" : "password"}
-                  autoComplete="current-password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  style={{ ...inputStyle, paddingRight: 40 }}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPw((s) => !s)}
-                  style={{
-                    position: "absolute",
-                    right: 10,
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    background: "transparent",
-                    border: "none",
-                    color: MUTED,
-                    cursor: "pointer",
-                    padding: 4,
-                  }}
-                  aria-label={showPw ? "Hide password" : "Show password"}
-                >
-                  {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-              </div>
-            </div>
-
-            {signinError && <p style={errorStyle}>{signinError}</p>}
-
-            <button type="submit" disabled={signingIn} style={primaryBtnStyle(signingIn)}>
-              {signingIn ? <Loader2 size={16} className="animate-spin" /> : "Sign in"}
-            </button>
-
-            <button
-              type="button"
-              onClick={handleForgot}
-              style={{
-                background: "transparent",
-                border: "none",
-                color: MUTED,
-                fontSize: 12,
-                cursor: "pointer",
-                textAlign: "center",
-                padding: 0,
-                fontFamily: FONT,
-              }}
-            >
-              Forgot password?
-            </button>
-
-            <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "4px 0" }}>
-              <div style={{ flex: 1, height: 1, background: "#E0E3EA" }} />
-              <span style={{ fontSize: 11, color: MUTED }}>OR</span>
-              <div style={{ flex: 1, height: 1, background: "#E0E3EA" }} />
-            </div>
-
+      {tab === "signin" ? (
+        <UnifiedMobileLoginCard
+          portalName="Drive365"
+          descriptor="For instructors and pupils"
+          onSignIn={handleSignIn}
+          onForgot={handleForgot}
+          className=""
+          googleSlot={
             <GoogleSignInButton
               redirectTo={`${window.location.origin}/auth/redirect`}
               className="w-full"
             />
-          </form>
-        ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-            {pStep === "phone" ? (
-              <>
-                <div>
-                  <label style={labelStyle}>Phone number</label>
-                  <div style={{ position: "relative" }}>
-                    <Phone size={16} style={iconStyle} />
-                    <input
-                      type="tel"
-                      inputMode="tel"
-                      autoComplete="tel"
-                      placeholder="07XXX XXXXXX"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      onKeyDown={(e) => e.key === "Enter" && handleSendCode()}
-                      style={inputStyle}
-                    />
-                  </div>
-                </div>
-
-                {pError && <p style={errorStyle}>{pError}</p>}
-
-                <button
-                  type="button"
-                  onClick={handleSendCode}
-                  disabled={pBusy || !phone.trim()}
-                  style={primaryBtnStyle(pBusy || !phone.trim())}
-                >
-                  {pBusy ? <Loader2 size={16} className="animate-spin" /> : "Send code"}
-                </button>
-
-                <p style={{ fontSize: 12, color: MUTED, textAlign: "center", margin: 0 }}>
-                  Your instructor will set up your access.
-                </p>
-              </>
-            ) : (
-              <>
-                <div>
-                  <label style={labelStyle}>Verification code</label>
-                  <div style={{ display: "flex", justifyContent: "center", margin: "6px 0" }}>
-                    <InputOTP value={otp} onChange={(v) => setOtp(v)} maxLength={6}>
-                      <InputOTPGroup>
-                        <InputOTPSlot index={0} />
-                        <InputOTPSlot index={1} />
-                        <InputOTPSlot index={2} />
-                        <InputOTPSlot index={3} />
-                        <InputOTPSlot index={4} />
-                        <InputOTPSlot index={5} />
-                      </InputOTPGroup>
-                    </InputOTP>
-                  </div>
-                  <p style={{ fontSize: 12, color: MUTED, textAlign: "center", margin: 0 }}>
-                    Sent to {cleanUkPhone(phone)}
-                  </p>
-                </div>
-
-                {pError && <p style={errorStyle}>{pError}</p>}
-
-                <button
-                  type="button"
-                  onClick={handleVerify}
-                  disabled={pBusy || otp.length !== 6}
-                  style={primaryBtnStyle(pBusy || otp.length !== 6)}
-                >
-                  {pBusy ? <Loader2 size={16} className="animate-spin" /> : "Verify"}
-                </button>
-
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12 }}>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setPStep("phone");
-                      setOtp("");
-                      setPError(null);
-                    }}
-                    style={{
-                      background: "transparent",
-                      border: "none",
-                      color: MUTED,
-                      cursor: "pointer",
-                      padding: 0,
-                      fontFamily: FONT,
-                    }}
-                  >
-                    Change number
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleSendCode}
-                    disabled={resendIn > 0 || pBusy}
-                    style={{
-                      background: "transparent",
-                      border: "none",
-                      color: resendIn > 0 ? MUTED : PRIMARY,
-                      cursor: resendIn > 0 ? "not-allowed" : "pointer",
-                      padding: 0,
-                      fontFamily: FONT,
-                      fontWeight: 600,
-                    }}
-                  >
-                    {resendIn > 0 ? `Resend in ${resendIn}s` : "Resend code"}
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        )}
-      </div>
+          }
+        />
+      ) : (
+        <ParentCard
+          phone={phone}
+          setPhone={setPhone}
+          otp={otp}
+          setOtp={setOtp}
+          pStep={pStep}
+          setPStep={setPStep}
+          pBusy={pBusy}
+          pError={pError}
+          setPError={setPError}
+          resendIn={resendIn}
+          onSendCode={handleSendCode}
+          onVerify={handleVerify}
+        />
+      )}
     </div>
   );
 }
 
-const labelStyle: React.CSSProperties = {
-  display: "block",
-  fontSize: 12,
-  fontWeight: 600,
-  color: TEXT,
-  marginBottom: 6,
-};
+interface ParentCardProps {
+  phone: string;
+  setPhone: (v: string) => void;
+  otp: string;
+  setOtp: (v: string) => void;
+  pStep: ParentStep;
+  setPStep: (v: ParentStep) => void;
+  pBusy: boolean;
+  pError: string | null;
+  setPError: (v: string | null) => void;
+  resendIn: number;
+  onSendCode: () => void;
+  onVerify: () => void;
+}
 
-const inputStyle: React.CSSProperties = {
-  width: "100%",
-  height: 44,
-  padding: "0 12px 0 38px",
-  border: "0.5px solid #E0E3EA",
-  borderRadius: INPUT_RADIUS,
-  fontSize: 14,
-  color: TEXT,
-  background: "#FFFFFF",
-  outline: "none",
-  fontFamily: FONT,
-  boxSizing: "border-box",
-};
+function ParentCard(props: ParentCardProps) {
+  const { phone, setPhone, otp, setOtp, pStep, setPStep, pBusy, pError, resendIn, onSendCode, onVerify } = props;
+  return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "24px 16px", minHeight: "calc(100dvh - 100px)" }}>
+      <div style={{
+        width: "100%", maxWidth: 400, background: "#FFFFFF",
+        border: "0.5px solid #E0E3EA", borderRadius: 14, padding: 24,
+        boxShadow: "0 1px 3px rgba(0,0,0,0.04)", fontFamily: FONT,
+      }}>
+        <div style={{ textAlign: "center", marginBottom: 20 }}>
+          <img src="/app-logo.png" alt="Drive365" style={{ width: 80, height: 80, borderRadius: 18, display: "block", margin: "0 auto 12px", objectFit: "contain" }} />
+          <h1 style={{ fontSize: 20, fontWeight: 700, color: "#1A1A1F", margin: 0 }}>Parent access</h1>
+          <p style={{ fontSize: 12, color: "#AAA", margin: "4px 0 0" }}>For parents and guardians</p>
+        </div>
 
-const iconStyle: React.CSSProperties = {
-  position: "absolute",
-  left: 12,
-  top: "50%",
-  transform: "translateY(-50%)",
-  color: MUTED,
-  pointerEvents: "none",
-};
-
-const errorStyle: React.CSSProperties = {
-  fontSize: 12,
-  color: ERROR,
-  margin: 0,
-};
-
-function primaryBtnStyle(disabled: boolean): React.CSSProperties {
-  return {
-    width: "100%",
-    height: 44,
-    background: PRIMARY,
-    color: "#FFFFFF",
-    border: "none",
-    borderRadius: INPUT_RADIUS,
-    fontSize: 14,
-    fontWeight: 600,
-    cursor: disabled ? "not-allowed" : "pointer",
-    opacity: disabled ? 0.6 : 1,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    fontFamily: FONT,
-  };
+        {pStep === "phone" ? (
+          <>
+            <label style={{ display: "block", fontSize: 11, fontWeight: 600, color: "#555", marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.4px" }}>Phone number</label>
+            <div style={{ position: "relative" }}>
+              <Phone size={15} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "#888" }} />
+              <input
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel"
+                placeholder="07XXX XXXXXX"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && onSendCode()}
+                style={{
+                  width: "100%", background: "#F2F4F8", border: "1px solid #EAECEE",
+                  borderRadius: 8, padding: "10px 10px 10px 32px", fontSize: 13,
+                  fontFamily: FONT, color: "#1A1A1F", outline: "none", height: 42, boxSizing: "border-box",
+                }}
+              />
+            </div>
+            {pError && <p style={{ fontSize: 11, color: "#B91C1C", margin: "8px 0 0" }}>{pError}</p>}
+            <button
+              type="button"
+              onClick={onSendCode}
+              disabled={pBusy || !phone.trim()}
+              style={{
+                marginTop: 14, width: "100%", background: "#1A1A1F", color: "#FFF",
+                border: "none", borderRadius: 10, padding: "11px 14px", fontSize: 13, fontWeight: 600,
+                fontFamily: FONT, cursor: pBusy || !phone.trim() ? "not-allowed" : "pointer",
+                opacity: pBusy || !phone.trim() ? 0.6 : 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+              }}
+            >
+              {pBusy ? <Loader2 size={14} className="animate-spin" /> : null}
+              {pBusy ? "Sending…" : "Send code"}
+            </button>
+            <p style={{ fontSize: 11, color: "#888", textAlign: "center", margin: "12px 0 0" }}>
+              Your instructor will set up your access.
+            </p>
+          </>
+        ) : (
+          <>
+            <label style={{ display: "block", fontSize: 11, fontWeight: 600, color: "#555", marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.4px" }}>Verification code</label>
+            <div style={{ display: "flex", justifyContent: "center", margin: "6px 0" }}>
+              <InputOTP value={otp} onChange={(v) => setOtp(v)} maxLength={6}>
+                <InputOTPGroup>
+                  <InputOTPSlot index={0} />
+                  <InputOTPSlot index={1} />
+                  <InputOTPSlot index={2} />
+                  <InputOTPSlot index={3} />
+                  <InputOTPSlot index={4} />
+                  <InputOTPSlot index={5} />
+                </InputOTPGroup>
+              </InputOTP>
+            </div>
+            <p style={{ fontSize: 11, color: "#888", textAlign: "center", margin: 0 }}>Sent to your phone</p>
+            {pError && <p style={{ fontSize: 11, color: "#B91C1C", margin: "8px 0 0" }}>{pError}</p>}
+            <button
+              type="button"
+              onClick={onVerify}
+              disabled={pBusy || otp.length !== 6}
+              style={{
+                marginTop: 14, width: "100%", background: "#1A1A1F", color: "#FFF",
+                border: "none", borderRadius: 10, padding: "11px 14px", fontSize: 13, fontWeight: 600,
+                fontFamily: FONT, cursor: pBusy || otp.length !== 6 ? "not-allowed" : "pointer",
+                opacity: pBusy || otp.length !== 6 ? 0.6 : 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+              }}
+            >
+              {pBusy ? <Loader2 size={14} className="animate-spin" /> : null}
+              {pBusy ? "Verifying…" : "Verify"}
+            </button>
+            <div style={{ display: "flex", justifyContent: "space-between", marginTop: 12, fontSize: 11, fontFamily: FONT }}>
+              <button type="button" onClick={() => { setPStep("phone"); setOtp(""); }} style={{ background: "transparent", border: "none", color: "#888", cursor: "pointer", padding: 0 }}>Change number</button>
+              <button type="button" onClick={onSendCode} disabled={resendIn > 0 || pBusy} style={{ background: "transparent", border: "none", color: resendIn > 0 ? "#AAA" : "#2952B3", cursor: resendIn > 0 ? "not-allowed" : "pointer", padding: 0, fontWeight: 600 }}>
+                {resendIn > 0 ? `Resend in ${resendIn}s` : "Resend code"}
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
 }

@@ -13,7 +13,7 @@ import {
   portalInputFocus,
   portalInputBlur,
 } from "@/components/auth/PortalLoginLayout";
-import { DarkMobileAuthForm } from "@/components/auth/DarkMobileAuthForm";
+import { UnifiedMobileLoginCard } from "@/components/auth/UnifiedMobileLoginCard";
 import dsmLogo from "@/assets/dsm-logo.png";
 import schoolHero from "@/assets/drive365-hero-test-centre.jpg";
 
@@ -77,23 +77,22 @@ export default function SchoolLogin() {
 
   return (
     <>
-      <DarkMobileAuthForm
-        logoSrc={dsmLogo}
-        logoAlt="School Manager"
-        title={title}
-        subtitle={subtitle}
-        email={email}
-        setEmail={setEmail}
-        password={password}
-        setPassword={setPassword}
-        showPassword={showPw}
-        setShowPassword={setShowPw}
-        rememberMe={rememberMe}
-        setRememberMe={setRememberMeState}
-        isForgot={isForgot}
-        onForgotToggle={(v) => setView(v ? "forgot" : "login")}
-        loading={loading}
-        onSubmit={isForgot ? handleForgot : handleSubmit}
+      <UnifiedMobileLoginCard
+        portalName="Drive365 Schools"
+        descriptor="School administrator portal"
+        biometricScope="school"
+        onSignIn={async (em, pw, remember) => {
+          const { error } = await signIn(em, pw);
+          if (error) return { error: error.message };
+          setRememberMe(remember);
+          navigate("/school/dashboard");
+        }}
+        onForgot={async (em) => {
+          const { error } = await supabase.auth.resetPasswordForEmail(em, {
+            redirectTo: `${window.location.origin}/reset-password?portal=school`,
+          });
+          if (error) return { error: error.message };
+        }}
       />
 
       <div className="hidden md:block">
