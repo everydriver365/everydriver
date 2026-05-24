@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { Bell, Mail, MessageSquare, Smartphone, Clock, Loader2, Sun, UserCheck } from "lucide-react";
+import { Bell, Mail, MessageSquare, Smartphone, Clock, Loader2, Sun, UserCheck, CreditCard } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,6 +21,10 @@ interface ReminderPreferences {
   reminder_time: string;
   morning_briefing: boolean;
   auto_reengagement: boolean;
+  payment_chase_enabled: boolean;
+  payment_chase_after_days: number;
+  payment_chase_interval_days: number;
+  payment_chase_max_reminders: number;
 }
 
 const timeOptions = [
@@ -45,6 +50,10 @@ export function ReminderSettings({ instructorId }: ReminderSettingsProps) {
     reminder_time: "18:00:00",
     morning_briefing: false,
     auto_reengagement: false,
+    payment_chase_enabled: true,
+    payment_chase_after_days: 3,
+    payment_chase_interval_days: 7,
+    payment_chase_max_reminders: 3,
   });
   const [original, setOriginal] = useState<ReminderPreferences | null>(null);
   const { register, setDirty } = useOptionalSettingsDirty();
@@ -73,6 +82,10 @@ export function ReminderSettings({ instructorId }: ReminderSettingsProps) {
         reminder_time: data?.reminder_time ?? "18:00:00",
         morning_briefing: false,
         auto_reengagement: false,
+        payment_chase_enabled: (data as any)?.payment_chase_enabled ?? true,
+        payment_chase_after_days: (data as any)?.payment_chase_after_days ?? 3,
+        payment_chase_interval_days: (data as any)?.payment_chase_interval_days ?? 7,
+        payment_chase_max_reminders: (data as any)?.payment_chase_max_reminders ?? 3,
       };
 
       // Fetch instructor-level settings
@@ -297,6 +310,62 @@ export function ReminderSettings({ instructorId }: ReminderSettingsProps) {
               }
             />
           </div>
+        </div>
+
+        {/* Payment chasing */}
+        <div className="space-y-4 pt-2 border-t">
+          <p className="text-sm font-medium flex items-center gap-2">
+            <CreditCard className="h-4 w-4 text-muted-foreground" />
+            Payment chasing
+          </p>
+
+          <div className="flex items-center justify-between">
+            <Label htmlFor="chase-toggle" className="cursor-pointer">
+              Automatically chase outstanding payments
+            </Label>
+            <Switch
+              id="chase-toggle"
+              checked={preferences.payment_chase_enabled}
+              onCheckedChange={(checked) =>
+                setPreferences(p => ({ ...p, payment_chase_enabled: checked }))
+              }
+            />
+          </div>
+
+          {preferences.payment_chase_enabled && (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="space-y-1">
+                <Label className="text-xs">Start chasing after (days)</Label>
+                <Input
+                  type="number"
+                  min={1}
+                  max={14}
+                  value={preferences.payment_chase_after_days}
+                  onChange={(e) => setPreferences(p => ({ ...p, payment_chase_after_days: Math.max(1, Math.min(14, Number(e.target.value) || 1)) }))}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Remind every (days)</Label>
+                <Input
+                  type="number"
+                  min={3}
+                  max={14}
+                  value={preferences.payment_chase_interval_days}
+                  onChange={(e) => setPreferences(p => ({ ...p, payment_chase_interval_days: Math.max(3, Math.min(14, Number(e.target.value) || 7)) }))}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Stop after (reminders)</Label>
+                <Input
+                  type="number"
+                  min={1}
+                  max={5}
+                  value={preferences.payment_chase_max_reminders}
+                  onChange={(e) => setPreferences(p => ({ ...p, payment_chase_max_reminders: Math.max(1, Math.min(5, Number(e.target.value) || 3)) }))}
+                />
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Save handled by the sticky settings save bar */}

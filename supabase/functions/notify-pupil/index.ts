@@ -27,7 +27,8 @@ interface NotifyPupilRequest {
     | "payment_reminder"
     | "lesson_completed"
     | "syllabus_category_complete"
-    | "test_passed";
+    | "test_passed"
+    | "message";
 
   title?: string;
   body?: string;
@@ -96,6 +97,10 @@ serve(async (req: Request) => {
           return d.offer_id ? `${baseUrl}?offer_id=${d.offer_id}` : baseUrl;
         case "lesson_reminder":
           return d.lesson_id ? `${baseUrl}?lesson_id=${d.lesson_id}` : baseUrl;
+        case "payment_reminder":
+          return `${baseUrl}?section=payments`;
+        case "message":
+          return `${baseUrl}?section=messages`;
         default:
           return baseUrl;
       }
@@ -190,6 +195,10 @@ serve(async (req: Request) => {
         case "test_passed":
           notificationTitle = "You passed! 🎉";
           notificationBody = "Congratulations — you've passed your driving test! Share the news!";
+          break;
+        case "message":
+          notificationTitle = title ?? "New message";
+          notificationBody = body ?? "You have a new message from your instructor.";
           break;
 
         default:

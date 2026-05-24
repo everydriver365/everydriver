@@ -69,6 +69,9 @@ self.addEventListener("notificationclick", (event) => {
   if (!url && data.type === "test_passed") {
     url = `/pupil?celebrate=pass`;
   }
+  if (!url && (data.type === "message" || data.type === "payment_reminder")) {
+    url = `/pupil?section=${data.type === "message" ? "messages" : "payments"}`;
+  }
   url = url || "/instructor";
 
   const isAbsolute = typeof url === "string" && /^https?:\/\//i.test(url);
