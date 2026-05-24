@@ -17,7 +17,7 @@ import {
 import { AlertTriangle, ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
 
-type Step = "password" | "mfa" | "acknowledge" | "submitting";
+type Step = "password" | "acknowledge" | "submitting";
 
 export function DangerZone() {
   const { user, signOut } = useInstructorAuth();
@@ -26,8 +26,6 @@ export function DangerZone() {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<Step>("password");
   const [password, setPassword] = useState("");
-  const [mfaCode, setMfaCode] = useState("");
-  const [mfaFactorId, setMfaFactorId] = useState<string | null>(null);
   const [ack, setAck] = useState(false);
   const [confirmText, setConfirmText] = useState("");
   const [busy, setBusy] = useState(false);
@@ -36,8 +34,6 @@ export function DangerZone() {
   const reset = () => {
     setStep("password");
     setPassword("");
-    setMfaCode("");
-    setMfaFactorId(null);
     setAck(false);
     setConfirmText("");
     setBusy(false);
@@ -67,51 +63,9 @@ export function DangerZone() {
         setBusy(false);
         return;
       }
-      // Check for enrolled TOTP factor
-      const { data: factorsData } = await supabase.auth.mfa.listFactors();
-      const totp = factorsData?.totp?.find((f) => f.status === "verified");
-      if (totp) {
-        setMfaFactorId(totp.id);
-        setStep("mfa");
-      } else {
-        setStep("acknowledge");
-      }
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Authentication failed.");
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const handleMfaConfirm = async () => {
-    if (!mfaFactorId || mfaCode.length < 6) {
-      setError("Enter your 6-digit code.");
-      return;
-    }
-    setBusy(true);
-    setError(null);
-    try {
-      const { data: challenge, error: challengeErr } = await supabase.auth.mfa.challenge({
-        factorId: mfaFactorId,
-      });
-      if (challengeErr || !challenge) {
-        setError("Could not start MFA challenge.");
-        setBusy(false);
-        return;
-      }
-      const { error: verifyErr } = await supabase.auth.mfa.verify({
-        factorId: mfaFactorId,
-        challengeId: challenge.id,
-        code: mfaCode,
-      });
-      if (verifyErr) {
-        setError("Invalid code.");
-        setBusy(false);
-        return;
-      }
       setStep("acknowledge");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "MFA verification failed.");
+      setError(e instanceof Error ? e.message : "Authentication failed.");
     } finally {
       setBusy(false);
     }
@@ -217,28 +171,6 @@ export function DangerZone() {
               </div>
             )}
 
-            {step === "mfa" && (
-              <div className="space-y-3">
-                <Label htmlFor="dz-mfa">Enter your 6-digit authenticator code</Label>
-                <Input
-                  id="dz-mfa"
-                  inputMode="numeric"
-                  maxLength={6}
-                  value={mfaCode}
-                  onChange={(e) => setMfaCode(e.target.value.replace(/\D/g, ""))}
-                  disabled={busy}
-                />
-                {error && <p className="text-sm text-destructive">{error}</p>}
-                <div className="flex justify-end gap-2 pt-2">
-                  <Button variant="ghost" onClick={() => handleOpenChange(false)} disabled={busy}>
-                    Cancel
-                  </Button>
-                  <Button onClick={handleMfaConfirm} disabled={busy || mfaCode.length !== 6}>
-                    {busy ? "Verifying..." : "Continue"}
-                  </Button>
-                </div>
-              </div>
-            )}
 
             {(step === "acknowledge" || step === "submitting") && (
               <div className="space-y-4">

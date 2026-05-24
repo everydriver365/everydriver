@@ -10,7 +10,7 @@ import {
   IconShieldCheck, IconEye, IconEyeOff, IconSend, IconDeviceFloppy,
   IconChevronRight,
 } from "@tabler/icons-react";
-import { TwoFactorPanel } from "./TwoFactorPanel";
+
 
 // ---------- Hardcoded design tokens ----------
 const BG = "#F2F4F8";
@@ -322,37 +322,7 @@ function ChangePasswordCard() {
   );
 }
 
-// ---------- Card 4 header: 2FA status pill ----------
-function TwoFactorHeaderCard() {
-  const [enabled, setEnabled] = useState<boolean | null>(null);
-  const load = useCallback(async () => {
-    const { data, error } = await supabase.auth.mfa.listFactors();
-    if (error) { setEnabled(false); return; }
-    setEnabled(!!(data?.totp ?? []).find((f) => f.status === "verified"));
-  }, []);
-  useEffect(() => { void load(); }, [load]);
-
-  const pill = enabled === null ? null : enabled ? (
-    <span style={{
-      fontSize: 10, fontWeight: 600, padding: "2px 8px", borderRadius: 999,
-      background: GREEN_TINT, color: GREEN,
-    }}>Enabled</span>
-  ) : (
-    <span style={{
-      fontSize: 10, fontWeight: 600, padding: "2px 8px", borderRadius: 999,
-      background: "#eef0f3", color: "#888",
-    }}>Disabled</span>
-  );
-
-  return (
-    <Card style={{ padding: 0 }}>
-      <CardHeader icon={<IconShieldCheck size={15} stroke={1.5} />} title="Two-factor authentication" right={pill} />
-      <div className="settings-v2" style={{ padding: "8px 4px" }}>
-        <TwoFactorPanel headerless />
-      </div>
-    </Card>
-  );
-}
+// (Two-factor authentication has been removed project-wide.)
 
 // ---------- Card 5: Sign out everywhere ----------
 function SignOutEverywhereCard() {
@@ -415,7 +385,7 @@ export function LoginSecurityPage() {
       <SignedInCard />
       <ChangeEmailCard />
       <ChangePasswordCard />
-      <TwoFactorHeaderCard />
+      
       <SignOutEverywhereCard />
     </div>
   );

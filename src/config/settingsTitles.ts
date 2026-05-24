@@ -19,7 +19,7 @@ export const SECTION_TITLES: Record<string, string> = {
 
 export const SECTION_SUBTITLES: Record<string, string> = {
   profile:           "How learners and Drive365 identify you",
-  security:          "Password, biometrics and two-factor auth",
+  security:          "Password and biometrics",
   notifications:     "Control when and how you receive alerts",
   vehicle:           "Your car, licence number and DVSA credentials",
   hours:             "When you're available to teach",

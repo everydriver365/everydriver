@@ -32,7 +32,7 @@ interface PageDef {
 const PAGES: Record<string, PageDef> = {
   quick:           { title: "Quick settings",   subtitle: "Toggles you change often. Changes save automatically.",                            render: id => <QuickSettingsPage instructorId={id} /> },
   account:         { title: "Profile",          subtitle: "Your name, photo, contact details and bio",                                       render: id => <ProfilePage instructorId={id} /> },
-  "login-security":{ title: "Login & security", subtitle: "Email, password, two-factor authentication and active sessions",                  render: () => <LoginSecurityPage /> },
+  "login-security":{ title: "Login & security", subtitle: "Email, password and active sessions",                  render: () => <LoginSecurityPage /> },
   notifications:   { title: "Notifications",    subtitle: "Choose what to be notified about and how",                                        render: id => <NotificationsPage instructorId={id} /> },
   vehicle:         { title: "Vehicle",          subtitle: "Your teaching vehicle, MOT, road tax and insurance",                              render: id => <VehiclePage instructorId={id} /> },
   credentials:     { title: "Credentials",      subtitle: "Documents and qualifications drive365 needs to verify you. Reviewed within 24 hours, never shown to learners.", render: id => <CredentialsPage instructorId={id} /> },
