@@ -87,6 +87,10 @@ export async function getAccessToken(jwt: string): Promise<string> {
 // on every request — tokens are valid 60 min, we cache for 50.
 let _cached: { token: string; expiresAt: number } | null = null;
 
+export function invalidateGoogleTokenCache(): void {
+  _cached = null;
+}
+
 export async function getServiceAccountAccessToken(): Promise<string> {
   const email = Deno.env.get("GOOGLE_SERVICE_ACCOUNT_EMAIL");
   const key   = Deno.env.get("GOOGLE_PRIVATE_KEY");
@@ -96,6 +100,31 @@ export async function getServiceAccountAccessToken(): Promise<string> {
   const token = await getAccessToken(jwt);
   _cached = { token, expiresAt: Date.now() + 50 * 60 * 1000 };
   return token;
+}
+
+/**
+ * fetch() wrapper that uses the service-account token and transparently
+ * recovers from a 401 by invalidating the cache, re-minting once, and
+ * retrying exactly once. Never loops.
+ */
+async function googleAuthedFetch(
+  accessToken: string,
+  url: string,
+  init: RequestInit,
+): Promise<{ res: Response; tokenUsed: string }> {
+  const buildInit = (token: string): RequestInit => ({
+    ...init,
+    headers: { ...(init.headers ?? {}), Authorization: `Bearer ${token}` },
+  });
+
+  let res = await fetch(url, buildInit(accessToken));
+  if (res.status !== 401) return { res, tokenUsed: accessToken };
+
+  // Force re-mint and retry exactly once.
+  invalidateGoogleTokenCache();
+  const fresh = await getServiceAccountAccessToken();
+  res = await fetch(url, buildInit(fresh));
+  return { res, tokenUsed: fresh };
 }
 
 // ---------------------------------------------------------------------------
@@ -115,11 +144,12 @@ export async function createGoogleEvent(
   calendarId: string,
   event: GoogleEventInput,
 ): Promise<{ id: string; htmlLink?: string }> {
-  const res = await fetch(
+  const { res } = await googleAuthedFetch(
+    accessToken,
     `${CALENDAR_API}/calendars/${encodeURIComponent(calendarId)}/events`,
     {
       method: "POST",
-      headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         summary:     event.summary,
         description: event.description,
@@ -147,11 +177,12 @@ export async function updateGoogleEvent(
   if (event.start)       body.start = { dateTime: event.start, timeZone: "Europe/London" };
   if (event.end)         body.end   = { dateTime: event.end,   timeZone: "Europe/London" };
 
-  const res = await fetch(
+  const { res } = await googleAuthedFetch(
+    accessToken,
     `${CALENDAR_API}/calendars/${encodeURIComponent(calendarId)}/events/${eventId}`,
     {
       method: "PATCH",
-      headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     },
   );
@@ -163,14 +194,16 @@ export async function deleteGoogleEvent(
   calendarId: string,
   eventId: string,
 ): Promise<void> {
-  const res = await fetch(
+  const { res } = await googleAuthedFetch(
+    accessToken,
     `${CALENDAR_API}/calendars/${encodeURIComponent(calendarId)}/events/${eventId}`,
-    { method: "DELETE", headers: { Authorization: `Bearer ${accessToken}` } },
+    { method: "DELETE" },
   );
   if (!res.ok && res.status !== 404) {
     throw new Error(`Google delete event failed (${res.status}): ${await res.text()}`);
   }
 }
+
 
 // ---------------------------------------------------------------------------
 // High-level: push a single lesson to Google Calendar now
