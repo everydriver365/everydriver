@@ -1644,6 +1644,12 @@ export default function InstructorUnifiedInbox() {
         onOpenChange={setShowBroadcast}
         instructorId={instructorId}
       />
+
+      <BroadcastHistorySheet
+        open={showBroadcastHistory}
+        onOpenChange={setShowBroadcastHistory}
+        instructorId={instructorId}
+      />
     </InstructorPortalLayout>
   );
 }
