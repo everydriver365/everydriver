@@ -25,6 +25,7 @@ import { ChatWindow } from "@/components/instructor/ChatWindow";
 import { AdminChatWindow } from "@/components/instructor/AdminChatWindow";
 import { WhatsAppChat } from "@/components/instructor/WhatsAppChat";
 import { BroadcastMessageSheet } from "@/components/instructor/BroadcastMessageSheet";
+import { BroadcastHistorySheet } from "@/components/instructor/BroadcastHistorySheet";
 import { PupilPickerSheet } from "@/components/instructor/PupilPickerSheet";
 import { SegmentedControl } from "@/components/instructor/ui/SegmentedControl";
 import { SearchInput } from "@/components/instructor/ui/SearchInput";
@@ -804,6 +805,7 @@ export default function InstructorUnifiedInbox() {
   const [audience, setAudience] = useState<AudienceTab>("pupils");
   const [search, setSearch] = useState("");
   const [showBroadcast, setShowBroadcast] = useState(false);
+  const [showBroadcastHistory, setShowBroadcastHistory] = useState(false);
   const [showNewChat, setShowNewChat] = useState(false);
   const [pupils, setPupils] = useState<Pupil[]>([]);
   const [pupilSearch, setPupilSearch] = useState("");
@@ -1562,23 +1564,40 @@ export default function InstructorUnifiedInbox() {
             <EyebrowLabel className="!m-0">Conversations</EyebrowLabel>
             <span style={{ display: "inline-flex", alignItems: "center", gap: 14 }}>
               {showBroadcastLink && (
-                <button
-                  type="button"
-                  onClick={() => setShowBroadcast(true)}
-                  style={{
-                    background: "transparent",
-                    border: "none",
-                    padding: 0,
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 4,
-                    cursor: "pointer",
-                    color: BLUE,
-                  }}
-                >
-                  <Megaphone size={12} strokeWidth={1.8} />
-                  <span style={{ fontSize: 12, fontWeight: 500 }}>Broadcast</span>
-                </button>
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setShowBroadcast(true)}
+                    style={{
+                      background: "transparent",
+                      border: "none",
+                      padding: 0,
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 4,
+                      cursor: "pointer",
+                      color: BLUE,
+                    }}
+                  >
+                    <Megaphone size={12} strokeWidth={1.8} />
+                    <span style={{ fontSize: 12, fontWeight: 500 }}>Broadcast</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowBroadcastHistory(true)}
+                    style={{
+                      background: "transparent",
+                      border: "none",
+                      padding: 0,
+                      cursor: "pointer",
+                      color: BLUE,
+                      fontSize: 12,
+                      fontWeight: 500,
+                    }}
+                  >
+                    History
+                  </button>
+                </>
               )}
               {showSelectLink && (
                 <button
@@ -1623,6 +1642,12 @@ export default function InstructorUnifiedInbox() {
       <BroadcastMessageSheet
         open={showBroadcast}
         onOpenChange={setShowBroadcast}
+        instructorId={instructorId}
+      />
+
+      <BroadcastHistorySheet
+        open={showBroadcastHistory}
+        onOpenChange={setShowBroadcastHistory}
         instructorId={instructorId}
       />
     </InstructorPortalLayout>

@@ -1641,6 +1641,61 @@ export type Database = {
         }
         Relationships: []
       }
+      broadcast_log: {
+        Row: {
+          failed_count: number
+          id: string
+          instructor_id: string
+          message: string
+          recipient_count: number
+          sent_at: string
+          status: string
+          template_id: string | null
+        }
+        Insert: {
+          failed_count?: number
+          id?: string
+          instructor_id: string
+          message: string
+          recipient_count?: number
+          sent_at?: string
+          status?: string
+          template_id?: string | null
+        }
+        Update: {
+          failed_count?: number
+          id?: string
+          instructor_id?: string
+          message?: string
+          recipient_count?: number
+          sent_at?: string
+          status?: string
+          template_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "broadcast_log_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "broadcast_log_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "broadcast_log_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "broadcast_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       broadcast_templates: {
         Row: {
           body: string
