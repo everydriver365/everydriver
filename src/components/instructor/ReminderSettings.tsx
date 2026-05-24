@@ -50,6 +50,10 @@ export function ReminderSettings({ instructorId }: ReminderSettingsProps) {
     reminder_time: "18:00:00",
     morning_briefing: false,
     auto_reengagement: false,
+    payment_chase_enabled: true,
+    payment_chase_after_days: 3,
+    payment_chase_interval_days: 7,
+    payment_chase_max_reminders: 3,
   });
   const [original, setOriginal] = useState<ReminderPreferences | null>(null);
   const { register, setDirty } = useOptionalSettingsDirty();
