@@ -39,7 +39,7 @@ export default function SubmitReview() {
   useState(() => {
     if (!slug) return;
     supabase
-      .from("instructors")
+      .from("public_instructors")
       .select("id, name")
       .eq("app_slug", slug)
       .maybeSingle()
