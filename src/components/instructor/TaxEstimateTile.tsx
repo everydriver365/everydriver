@@ -35,16 +35,18 @@ export function TaxEstimateTile({ instructorId }: TaxEstimateTileProps) {
   // Don't show anything until we know whether the instructor has data.
   if (summary.loading) {
     return (
-      <div style={CARD} aria-busy="true">
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 0.6, color: "#8a93a4", textTransform: "uppercase" }}>
-            Tax estimate
-          </span>
-          <span style={{ fontSize: 10, color: "#8a93a4" }}>{summary.taxYear}</span>
+      <TileCard ariaLabel="Tax estimate loading">
+        <div style={INNER} aria-busy="true">
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 0.6, color: "#8a93a4", textTransform: "uppercase" }}>
+              Tax estimate
+            </span>
+            <span style={{ fontSize: 10, color: "#8a93a4" }}>{summary.taxYear}</span>
+          </div>
+          <div style={{ height: 28, marginTop: 8, background: "#F2F4F8", borderRadius: 6, width: "55%" }} />
+          <div style={{ height: 10, marginTop: 8, background: "#F2F4F8", borderRadius: 4, width: "40%" }} />
         </div>
-        <div style={{ height: 28, marginTop: 8, background: "#F2F4F8", borderRadius: 6, width: "55%" }} />
-        <div style={{ height: 10, marginTop: 8, background: "#F2F4F8", borderRadius: 4, width: "40%" }} />
-      </div>
+      </TileCard>
     );
   }
 
