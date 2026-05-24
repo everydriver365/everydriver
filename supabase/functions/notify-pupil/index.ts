@@ -96,6 +96,10 @@ serve(async (req: Request) => {
           return d.offer_id ? `${baseUrl}?offer_id=${d.offer_id}` : baseUrl;
         case "lesson_reminder":
           return d.lesson_id ? `${baseUrl}?lesson_id=${d.lesson_id}` : baseUrl;
+        case "payment_reminder":
+          return `${baseUrl}?section=payments`;
+        case "message":
+          return `${baseUrl}?section=messages`;
         default:
           return baseUrl;
       }
