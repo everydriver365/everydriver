@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Star, Send, Loader2, ExternalLink } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -28,10 +29,26 @@ export function PupilFeedbackPrompt({ pupilId }: PupilFeedbackPromptProps) {
   const [loading, setLoading] = useState(true);
   const [submitted, setSubmitted] = useState(false);
   const [googleReviewUrl, setGoogleReviewUrl] = useState<string | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const rootRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     fetchPending();
   }, [pupilId]);
+
+  // Deep-link: ?prompt=feedback scrolls this prompt into view when present
+  useEffect(() => {
+    if (loading || !pending) return;
+    if (searchParams.get("prompt") !== "feedback") return;
+    const t = setTimeout(() => {
+      rootRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 100);
+    const t2 = setTimeout(() => {
+      searchParams.delete("prompt");
+      setSearchParams(searchParams, { replace: true });
+    }, 800);
+    return () => { clearTimeout(t); clearTimeout(t2); };
+  }, [loading, pending, searchParams, setSearchParams]);
 
   const fetchPending = async () => {
     try {
