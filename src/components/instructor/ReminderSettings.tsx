@@ -21,6 +21,10 @@ interface ReminderPreferences {
   reminder_time: string;
   morning_briefing: boolean;
   auto_reengagement: boolean;
+  payment_chase_enabled: boolean;
+  payment_chase_after_days: number;
+  payment_chase_interval_days: number;
+  payment_chase_max_reminders: number;
 }
 
 const timeOptions = [
