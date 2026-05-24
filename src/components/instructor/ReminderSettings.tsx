@@ -82,6 +82,10 @@ export function ReminderSettings({ instructorId }: ReminderSettingsProps) {
         reminder_time: data?.reminder_time ?? "18:00:00",
         morning_briefing: false,
         auto_reengagement: false,
+        payment_chase_enabled: (data as any)?.payment_chase_enabled ?? true,
+        payment_chase_after_days: (data as any)?.payment_chase_after_days ?? 3,
+        payment_chase_interval_days: (data as any)?.payment_chase_interval_days ?? 7,
+        payment_chase_max_reminders: (data as any)?.payment_chase_max_reminders ?? 3,
       };
 
       // Fetch instructor-level settings
