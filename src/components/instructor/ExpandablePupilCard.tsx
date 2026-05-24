@@ -23,8 +23,6 @@ import {
   Send,
   Check,
   X,
-  FileSignature,
-  CheckCircle2,
   Award,
   ClipboardList,
   Car,
