@@ -91,7 +91,7 @@ export function SlotOfferNotification({ pupilId, focusOfferId, onAccept }: SlotO
           claimed_at,
           declined_at,
           slot_offer:slot_offers!inner (
-            id, lesson_date, start_time, end_time, duration_mins, expires_at, status
+            id, lesson_date, start_time, end_time, duration_mins, expires_at, status, discount_type, discount_value
           )
         `)
         .eq("pupil_id", pupilId)
