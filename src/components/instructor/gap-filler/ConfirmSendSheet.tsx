@@ -65,6 +65,8 @@ export function ConfirmSendSheet({
   onPrimaryResult,
   onSecondaryResult,
   costSummary,
+  discountType,
+  discountValue,
 }: ConfirmSendSheetProps) {
   const isResult = status !== "idle";
   const dismissable = status !== "loading";
