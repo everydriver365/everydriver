@@ -342,6 +342,7 @@ export default function BrandedPupilPortal() {
       className="min-h-screen transition-colors"
       style={{ backgroundColor: wallpaperColor }}
     >
+      {pupil && <TestPassCelebration pupilId={pupil.id} pupilName={pupil.name} />}
       <PortalIOSInstallBanner 
         appName={instructor.name}
         storageKey={`ios-install-pupil-${instructor.id}`}
