@@ -76,6 +76,7 @@ export function RoleRedirect() {
         school_manager: "school_manager",
         instructor: "instructor",
         pupil: "pupil",
+        parent: "parent",
       };
       if (hint && hintMap[hint] && userRoles.includes(hintMap[hint])) {
         await goTo(hintMap[hint]);
