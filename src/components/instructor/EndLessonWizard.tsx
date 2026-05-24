@@ -54,10 +54,17 @@ export function EndLessonWizard({
   const [historyId, setHistoryId] = useState<string | null>(null);
   const [pendingVoiceNoteUrl, setPendingVoiceNoteUrl] = useState<string | null>(null);
   const [updatedCompetencies, setUpdatedCompetencies] = useState<string[]>([]);
+  const [pendingSyllabusChanges, setPendingSyllabusChanges] = useState<Array<{
+    competency_id: string;
+    pupil_id: string;
+    previous_level: number;
+    new_level: number;
+  }>>([]);
   const [routeReportData, setRouteReportData] = useState<any>(null);
   const [isLastLesson, setIsLastLesson] = useState(false);
   const [claimingBonus, setClaimingBonus] = useState(false);
   const { invalidatePaymentQueries } = usePaymentInvalidation();
+
 
   useEffect(() => {
     if (open) {
@@ -68,9 +75,11 @@ export function EndLessonWizard({
       setHistoryId(null);
       setPendingVoiceNoteUrl(null);
       setUpdatedCompetencies([]);
+      setPendingSyllabusChanges([]);
       setRouteReportData(null);
       setIsLastLesson(false);
       setClaimingBonus(false);
+
       fetchInstructorRate();
     }
   }, [open]);
@@ -325,10 +334,9 @@ export function EndLessonWizard({
     // is truly finished. Also fire the optional feedback request that depends
     // on the new history row id.
     let historyRowId: string | null = null;
-    let feedbackRowId: string | null = null;
     let feedbackSkippedReason: string | null = null;
     let historyError: string | null = null;
-    let feedbackError: string | null = null;
+    let syllabusError: string | null = null;
 
     try {
       const { data: historyData, error: historyErr } = await supabase
@@ -336,6 +344,7 @@ export function EndLessonWizard({
         .insert({
           instructor_id: instructorId,
           pupil_id: pupilId,
+          scheduled_lesson_id: lessonId,
           lesson_date: lessonDate,
           start_time: startTime,
           duration_minutes: durationMinutes,
@@ -350,31 +359,41 @@ export function EndLessonWizard({
       if (historyData) {
         historyRowId = historyData.id;
         setHistoryId(historyData.id);
-        if (authInstructor?.lesson_feedback_enabled !== false) {
-          try {
-            const { data: fbData, error: fbErr } = await supabase
-              .from("lesson_feedback")
-              .insert({
-                lesson_history_id: historyData.id,
-                pupil_id: pupilId,
-                instructor_id: instructorId,
-              })
-              .select("id")
-              .single();
-            if (fbErr) feedbackError = fbErr.message;
-            if (fbData) feedbackRowId = fbData.id;
-          } catch (e: any) {
-            feedbackError = e?.message ?? "unknown";
-            console.error("Feedback request error:", e);
-          }
-        } else {
+
+        // Note: lesson_feedback insert is intentionally delegated to the
+        // auto_request_lesson_feedback DB trigger (idempotent ON CONFLICT).
+        // The trigger honors instructors.lesson_feedback_enabled, so no
+        // client-side gate is needed here.
+        if (authInstructor?.lesson_feedback_enabled === false) {
           feedbackSkippedReason = "feedback_disabled";
+        }
+
+        // Flush buffered syllabus updates from StepSkills now that we have a
+        // real lesson_history.id for the FK.
+        if (pendingSyllabusChanges.length > 0) {
+          try {
+            const rows = pendingSyllabusChanges.map((c) => ({
+              lesson_history_id: historyData.id,
+              pupil_id: c.pupil_id,
+              competency_id: c.competency_id,
+              previous_level: c.previous_level,
+              new_level: c.new_level,
+            }));
+            const { error: syllErr } = await supabase
+              .from("lesson_syllabus_updates")
+              .insert(rows as any);
+            if (syllErr) syllabusError = syllErr.message;
+          } catch (e: any) {
+            syllabusError = e?.message ?? "unknown";
+            console.error("Syllabus updates flush error:", e);
+          }
         }
       }
     } catch (e: any) {
       historyError = historyError ?? (e?.message ?? "unknown");
       console.error("Lesson history insert error:", e);
     }
+
 
     // Audit: write one row per affected table so admins/instructors can see
     // exactly who tapped Done, when, and what was created. Fire-and-forget.
@@ -383,8 +402,9 @@ export function EndLessonWizard({
       const meta = {
         event: "eol_done",
         lesson_history_id: historyRowId,
-        lesson_feedback_id: feedbackRowId,
         feedback_skipped_reason: feedbackSkippedReason,
+        feedback_delegated_to_trigger: true,
+        syllabus_updates_count: pendingSyllabusChanges.length,
         pupil_id: pupilId,
         pupil_name: pupilName,
         scheduled_lesson_id: lessonId,
@@ -396,25 +416,17 @@ export function EndLessonWizard({
         client_completed_at: new Date().toISOString(),
       };
 
-      await Promise.all([
-        logAudit({
-          instructorId,
-          tableName: "lesson_history",
-          recordId: historyRowId ?? lessonId,
-          action: "insert",
-          newValues: { ...meta, error: historyError },
-        }),
-        logAudit({
-          instructorId,
-          tableName: "lesson_feedback",
-          recordId: feedbackRowId ?? historyRowId ?? lessonId,
-          action: "insert",
-          newValues: { ...meta, error: feedbackError },
-        }),
-      ]);
+      await logAudit({
+        instructorId,
+        tableName: "lesson_history",
+        recordId: historyRowId ?? lessonId,
+        action: "insert",
+        newValues: { ...meta, error: historyError, syllabus_error: syllabusError },
+      });
     } catch (e) {
       console.error("EOL audit log error:", e);
     }
+
 
     onCompleted();
     onOpenChange(false);
@@ -659,7 +671,9 @@ export function EndLessonWizard({
                   onSaved={() => {}}
                   onSkip={goNext}
                   onSaveAndNext={goNext}
+                  onSyllabusChanges={(changes) => setPendingSyllabusChanges(changes)}
                 />
+
               </div>
             )}
 
