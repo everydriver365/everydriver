@@ -273,7 +273,7 @@ export default function InstructorIntegrationsHub() {
         </div>
 
         {/* Status card */}
-        <div style={{ backgroundColor: "#FFF", borderRadius: 12, border: "1px solid #ECEEF2", marginBottom: 12, padding: "16px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+        <div style={{ backgroundColor: "#FFF", borderRadius: 14, border: "0.5px solid #e0e3ea", marginBottom: 12, padding: "16px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
             <div style={{ width: 40, height: 40, borderRadius: 10, backgroundColor: activeConfig.iconBg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
               <ActiveIcon size={20} color={activeConfig.iconColor} strokeWidth={1.5} />
@@ -290,7 +290,7 @@ export default function InstructorIntegrationsHub() {
         </div>
 
         {/* Setup steps card (collapsible) */}
-        <div style={{ backgroundColor: "#FFF", borderRadius: 12, border: "1px solid #ECEEF2", overflow: "hidden", marginBottom: 16 }}>
+        <div style={{ backgroundColor: "#FFF", borderRadius: 14, border: "0.5px solid #e0e3ea", overflow: "hidden", marginBottom: 16 }}>
           <button
             type="button"
             onClick={() => setStepsExpanded(!stepsExpanded)}

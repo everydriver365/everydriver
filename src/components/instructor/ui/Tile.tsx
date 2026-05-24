@@ -7,7 +7,8 @@ type AccentColorKey = "amber" | "red";
 type VariantKey = "navigation" | "info" | "slot";
 
 export interface TileProps {
-  icon: string;
+  icon?: string;
+  iconNode?: React.ReactNode;
   iconColor?: ColorKey;
   title: string;
   subtitle?: string;
@@ -77,6 +78,7 @@ const FONT_STACK = '"Poppins", system-ui, -apple-system, "Segoe UI", sans-serif'
 
 const Tile: React.FC<TileProps> = ({
   icon,
+  iconNode,
   iconColor = "blue",
   title,
   subtitle,
@@ -251,7 +253,7 @@ const Tile: React.FC<TileProps> = ({
             flexShrink: 0,
           }}
         >
-          <i className={`ti ${icon}`} style={{ fontSize: 18, lineHeight: 1, color: iconPal.fg }} aria-hidden />
+          {iconNode ?? (icon ? <i className={`ti ${icon}`} style={{ fontSize: 18, lineHeight: 1, color: iconPal.fg }} aria-hidden /> : null)}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           {eyebrow && (

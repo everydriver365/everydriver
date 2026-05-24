@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { XCircle, Loader2 } from "lucide-react";
+import { XCircle, Loader2, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { Tile, Pill } from "@/components/instructor/ui";
 
@@ -91,7 +91,7 @@ function OfferRow({ offer, onCancel }: { offer: SlotOfferRow; onCancel: (id: str
   return (
     <Tile
       variant="info"
-      icon="ti-bolt"
+      iconNode={<Zap size={18} strokeWidth={2} color={offer.status === "filled" ? "#2d8a4e" : offer.status === "open" ? "#d97706" : "#888888"} />}
       iconColor={offer.status === "filled" ? "green" : offer.status === "open" ? "amber" : "grey"}
       title={title}
       subtitle={subtitle}

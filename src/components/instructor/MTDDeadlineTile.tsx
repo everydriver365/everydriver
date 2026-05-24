@@ -92,8 +92,8 @@ export function MTDDeadlineTile({ instructorId }: MTDDeadlineTileProps) {
     ];
     const upcoming = all.find((q) => q.deadline.getTime() > next.deadline.getTime()) ?? next;
     return (
-      <TileCard onClick={go} ariaLabel="MTD quarter submitted">
-        <div style={{ ...INNER, background: "#e8f5ee" }}>
+      <TileCard onClick={go} accentColor="green" ariaLabel="MTD quarter submitted">
+        <div style={INNER}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <span style={{ ...eyebrow, color: "#2d8a4e" }}>MTD filing</span>
             <ChevronRight size={16} color="#2d8a4e" />
