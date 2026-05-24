@@ -23,8 +23,6 @@ import {
   Send,
   Check,
   X,
-  FileSignature,
-  CheckCircle2,
   Award,
   ClipboardList,
   Car,
@@ -42,6 +40,8 @@ import {
 import { ExpandChevron } from "@/components/ui/ExpandChevron";
 import { PupilAssignmentsPanel } from "@/components/instructor/PupilAssignmentsPanel";
 import { EmergencyContactEditor } from "@/components/instructor/EmergencyContactEditor";
+import { ParentDetailsEditor } from "@/components/instructor/ParentDetailsEditor";
+import { PupilTermsSection } from "@/components/instructor/PupilTermsSection";
 import { PupilTrackingHistory } from "@/components/instructor/PupilTrackingHistory";
 import { PupilPaymentHistory } from "@/components/instructor/PupilPaymentHistory";
 import { PupilCreditBreakdown } from "@/components/instructor/PupilCreditBreakdown";
@@ -68,7 +68,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { LessonNotesTemplates } from "@/components/instructor/LessonNotesTemplates";
-import { SendSigningLinkButton } from "@/components/instructor/SendSigningLinkButton";
+
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, parseISO } from "date-fns";
@@ -115,6 +115,12 @@ interface Pupil {
   emergency_contact_name?: string | null;
   emergency_contact_phone?: string | null;
   emergency_contact_relation?: string | null;
+  date_of_birth?: string | null;
+  parent_name?: string | null;
+  parent_phone?: string | null;
+  parent_email?: string | null;
+  parent_portal_enabled?: boolean | null;
+  parent_invited_at?: string | null;
 }
 
 type PupilStatus = 'active' | 'passed' | 'inactive' | 'on_hold' | 'cancelled';
@@ -1295,7 +1301,21 @@ export function ExpandablePupilCard({
                 </div>
               )}
 
-              {/* Emergency Contact */}
+              {/* Parent / Guardian */}
+              <ParentDetailsEditor
+                pupilId={pupil.id}
+                pupilName={pupil.name}
+                dateOfBirth={pupil.date_of_birth}
+                initialData={{
+                  parent_name: pupil.parent_name,
+                  parent_phone: pupil.parent_phone,
+                  parent_email: pupil.parent_email,
+                  parent_portal_enabled: pupil.parent_portal_enabled,
+                  parent_invited_at: pupil.parent_invited_at,
+                }}
+              />
+
+              {/* Next of Kin / Emergency Contact */}
               <EmergencyContactEditor
                 pupilId={pupil.id}
                 initialData={{
@@ -1305,42 +1325,22 @@ export function ExpandablePupilCard({
                 }}
               />
 
-              {/* T&Cs and Signing Actions - full width stacked */}
+              {/* Terms & Conditions */}
+              {instructorId && instructorName && (
+                <PupilTermsSection
+                  pupilId={pupil.id}
+                  pupilName={pupil.name}
+                  pupilPhone={pupil.phone}
+                  pupilDateOfBirth={pupil.date_of_birth}
+                  parentName={pupil.parent_name}
+                  parentPhone={pupil.parent_phone}
+                  instructorId={instructorId}
+                  instructorName={instructorName}
+                />
+              )}
+
+              {/* Driving Report */}
               <div className="grid grid-cols-1 gap-2 pt-2 border-t border-border">
-                {onViewTerms && (
-                  <Button
-                    variant={hasSignedTerms ? "outline" : "default"}
-                    size="sm"
-                    className={`w-full ${hasSignedTerms ? "border-green-500 text-green-600" : ""}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onViewTerms(pupil);
-                    }}
-                  >
-                    {hasSignedTerms ? (
-                      <>
-                        <CheckCircle2 className="h-4 w-4 mr-2" />
-                        T&Cs Signed
-                      </>
-                    ) : (
-                      <>
-                        <FileSignature className="h-4 w-4 mr-2" />
-                        Sign T&Cs
-                      </>
-                    )}
-                  </Button>
-                )}
-                {instructorId && instructorName && !hasSignedTerms && (
-                  <SendSigningLinkButton
-                    pupilId={pupil.id}
-                    pupilName={pupil.name}
-                    pupilPhone={pupil.phone}
-                    instructorId={instructorId}
-                    instructorName={instructorName}
-                    disabled={hasSignedTerms}
-                    className="w-full"
-                  />
-                )}
                 <Button
                   variant="outline"
                   size="sm"

@@ -11,6 +11,11 @@ interface SendSigningLinkRequest {
   pupilId: string;
   termsId: string;
   instructorName: string;
+  // Optional: override the SMS recipient (e.g. parent_phone for under-18 co-signature)
+  recipientPhone?: string | null;
+  recipientName?: string | null;
+  // Optional: mark the resulting agreement as requiring parent signature
+  requiresParentSignature?: boolean;
 }
 
 function generateToken(length: number = 32): string {
@@ -54,9 +59,13 @@ serve(async (req) => {
       throw new Error("Pupil not found");
     }
 
-    if (!pupil?.phone) {
+    // Determine recipient: explicit override (e.g. parent) or pupil phone
+    const recipientPhone = (data.recipientPhone && data.recipientPhone.trim()) || pupil.phone;
+    const recipientName = (data.recipientName && data.recipientName.trim()) || pupil.name;
+
+    if (!recipientPhone) {
       return new Response(
-        JSON.stringify({ success: false, error: "Pupil has no phone number" }),
+        JSON.stringify({ success: false, error: "No phone number available for recipient" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -85,10 +94,14 @@ serve(async (req) => {
       throw new Error("Failed to create signing token");
     }
 
-    const signingLink = `${siteUrl}/sign/${token}`;
-    const message = `Hi ${pupil.name}, please review and sign the Terms & Conditions from ${data.instructorName}. Click here: ${signingLink}\n\nThis link expires in 7 days.`;
+    const signingLink = `${siteUrl}/sign/${token}${data.requiresParentSignature ? "?parent=1" : ""}`;
+    const greetingName = recipientName || "there";
+    const subject = data.requiresParentSignature
+      ? `please co-sign the Terms & Conditions for ${pupil.name}`
+      : `please review and sign the Terms & Conditions`;
+    const message = `Hi ${greetingName}, ${subject} from ${data.instructorName}. Click here: ${signingLink}\n\nThis link expires in 7 days.`;
 
-    console.log(`Sending signing link to ${pupil.name} at ${pupil.phone}`);
+    console.log(`Sending signing link to ${greetingName} at ${recipientPhone}`);
 
     // Check if Twilio is configured
     if (!twilioAccountSid || !twilioAuthToken || !twilioPhoneNumber) {
@@ -115,7 +128,7 @@ serve(async (req) => {
           "Content-Type": "application/x-www-form-urlencoded",
         },
         body: new URLSearchParams({
-          To: pupil.phone,
+          To: recipientPhone,
           From: twilioPhoneNumber,
           Body: message,
         }),
