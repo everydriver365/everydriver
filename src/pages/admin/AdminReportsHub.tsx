@@ -171,19 +171,18 @@ export default function AdminReportsHub() {
 
   if (active !== "overview") {
     return (
-      <AdminLayout activeSection="reports" onSectionChange={() => navigate("/admin")}>
-        <div className="space-y-4">
-          <Button variant="ghost" size="sm" onClick={() => setActive("overview")}>
-            <ChevronLeft className="h-4 w-4 mr-1" /> Back to Reports
-          </Button>
-          {renderActive()}
-        </div>
-      </AdminLayout>
+      <div className="container mx-auto p-4 md:p-6 space-y-4">
+        <Button variant="ghost" size="sm" onClick={() => setActive("overview")}>
+          <ChevronLeft className="h-4 w-4 mr-1" /> Back to Reports
+        </Button>
+        {renderActive()}
+      </div>
     );
   }
 
   return (
-    <AdminLayout activeSection="reports" onSectionChange={() => navigate("/admin")}>
+    <div className="container mx-auto p-4 md:p-6">
+
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
