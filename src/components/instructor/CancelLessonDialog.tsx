@@ -553,6 +553,30 @@ export function CancelLessonDialog({
               </span>
             </div>
 
+            {/* Series scope — only shown when this lesson is part of a recurrence */}
+            {recurrenceParentId && (
+              <>
+                <SectionLabel>RECURRING LESSON</SectionLabel>
+                <ScopeOption
+                  selected={seriesScope === "single"}
+                  onSelect={() => setSeriesScope("single")}
+                  label="Cancel this lesson only"
+                  subtitle="Other lessons in the series will continue as planned"
+                />
+                <ScopeOption
+                  selected={seriesScope === "series"}
+                  onSelect={() => setSeriesScope("series")}
+                  label="Cancel this and all future lessons in the series"
+                  subtitle={
+                    futureSiblingIds.length > 0
+                      ? `This will also cancel ${futureSiblingIds.length} upcoming lesson${futureSiblingIds.length === 1 ? "" : "s"} in this series`
+                      : "No future lessons remain in this series"
+                  }
+                />
+                <div style={{ height: 6 }} />
+              </>
+            )}
+
             {/* Section 3 — Notify pupil */}
             <div
               style={{
