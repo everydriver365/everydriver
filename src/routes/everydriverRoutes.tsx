@@ -1,5 +1,6 @@
-import { Route } from "react-router-dom";
+import { Route, Navigate } from "react-router-dom";
 import { lazyWithRetry as lazy } from "@/utils/lazyWithRetry";
+const UnifiedLogin = lazy(() => import("@/pages/UnifiedLogin"));
 
 // EveryDriver-cloned public pages (twins of the Drive365 set).
 // These render only on EveryDriver hosts (see isEveryDriverHost in
@@ -96,9 +97,11 @@ export const everydriverRoutes = (
     {/* Shared (uncloned) */}
     <Route path="/sitemap.xml" element={<SitemapRedirect />} />
     <Route path="/pupil" element={<PupilPortal />} />
-    <Route path="/pupil/login" element={<PupilLogin />} />
+    <Route path="/pupil/login" element={<Navigate to="/login" replace />} />
     <Route path="/pupil/login/:instructorSlug" element={<PupilLogin />} />
-    <Route path="/drive365/login" element={<Drive365Login />} />
+    <Route path="/drive365/login" element={<Navigate to="/login" replace />} />
+    <Route path="/login" element={<UnifiedLogin />} />
+    <Route path="/p/login" element={<Navigate to="/login?tab=parent" replace />} />
     <Route path="/p/:slug" element={<BrandedPupilPortal />} />
     <Route path="/pupil/install" element={<InstallPupil />} />
     <Route path="/reset-password" element={<ResetPassword />} />

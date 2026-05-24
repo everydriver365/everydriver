@@ -16,12 +16,13 @@ const ROLE_MAP: Record<string, RoleInfo> = {
   school_manager: { role: "school_manager", label: "School Manager", path: "/school/dashboard", icon: Building2 },
   instructor: { role: "instructor", label: "Instructor Portal", path: "/instructor", icon: Car },
   pupil: { role: "pupil", label: "Pupil Portal", path: "/pupil", icon: GraduationCap },
+  parent: { role: "parent", label: "Parent Portal", path: "/parent", icon: Users },
   moderator: { role: "moderator", label: "Moderator", path: "/admin", icon: Users },
   user: { role: "user", label: "User", path: "/", icon: GraduationCap },
 };
 
 // Role precedence when no explicit hint and user has multiple roles auto-routed.
-const ROLE_PRIORITY = ["admin", "school_manager", "instructor", "pupil", "moderator", "user"];
+const ROLE_PRIORITY = ["admin", "school_manager", "instructor", "pupil", "parent", "moderator", "user"];
 
 async function resolvePupilPath(userId: string): Promise<string> {
   const { data: { user } } = await supabase.auth.getUser();
@@ -75,6 +76,7 @@ export function RoleRedirect() {
         school_manager: "school_manager",
         instructor: "instructor",
         pupil: "pupil",
+        parent: "parent",
       };
       if (hint && hintMap[hint] && userRoles.includes(hintMap[hint])) {
         await goTo(hintMap[hint]);
