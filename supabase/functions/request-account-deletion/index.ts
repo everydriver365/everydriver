@@ -254,6 +254,7 @@ serve(async (req) => {
         scheduled_purge_at: purgeAt.toISOString(),
         contact_email_encrypted: contactEmailEncrypted,
         deleted_by: null,
+        reason,
       })
       .select("id")
       .single();
