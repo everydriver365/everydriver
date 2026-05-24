@@ -2185,7 +2185,8 @@ function loadPinnedLabels(): string[] {
   }
 }
 
-function QuickAccessCard({ navigate }: { navigate: ReturnType<typeof useNavigate> }) {
+function QuickAccessCard({ navigate, instructorId }: { navigate: ReturnType<typeof useNavigate>; instructorId: string }) {
+  const unreads = useQuickAccessUnreads(instructorId);
   const [activeRoute, setActiveRoute] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [searchExpanded, setSearchExpanded] = useState(false);
