@@ -675,6 +675,31 @@ export function RescheduleLessonSheet({
                 </div>
               )}
 
+              {/* Series scope — only shown when this lesson is part of a recurrence */}
+              {recurrenceParentId && (
+                <>
+                  <SectionLabel>RECURRING LESSON</SectionLabel>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 7, marginBottom: 12 }}>
+                    <ScopeOption
+                      selected={seriesScope === "single"}
+                      onSelect={() => setSeriesScope("single")}
+                      label="Save this lesson only"
+                      subtitle="Other lessons in the series remain at their original times"
+                    />
+                    <ScopeOption
+                      selected={seriesScope === "series"}
+                      onSelect={() => setSeriesScope("series")}
+                      label="Save this and all future lessons in the series"
+                      subtitle={
+                        futureSiblingIds.length > 0
+                          ? `Applies the same time shift to ${futureSiblingIds.length} upcoming lesson${futureSiblingIds.length === 1 ? "" : "s"}`
+                          : "No future lessons remain in this series"
+                      }
+                    />
+                  </div>
+                </>
+              )}
+
               {/* Section 3: Notify pupil toggle */}
               <div
                 style={{
