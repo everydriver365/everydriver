@@ -364,7 +364,7 @@ export default function BrandedPupilPortal() {
 
       <main className="pb-20">
         {!pupil ? (
-          <div className="p-4 max-w-md mx-auto">
+          <div className="px-2.5 py-4 max-w-md mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}

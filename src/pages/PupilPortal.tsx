@@ -176,7 +176,7 @@ export default function PupilPortal() {
       />
 
       {/* Main Content */}
-      <main className="pb-20 p-4 space-y-4">
+      <main className="pb-20 px-2.5 py-4 space-y-4">
         {/* Quick Stats */}
         <div className="grid grid-cols-2 gap-3">
           {statItems.map((stat, i) => (
