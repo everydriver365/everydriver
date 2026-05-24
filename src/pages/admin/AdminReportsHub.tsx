@@ -268,6 +268,7 @@ export default function AdminReportsHub() {
           </div>
         </section>
       </div>
-    </AdminLayout>
+    </div>
   );
+
 }
