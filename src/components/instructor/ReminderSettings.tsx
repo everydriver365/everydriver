@@ -312,6 +312,62 @@ export function ReminderSettings({ instructorId }: ReminderSettingsProps) {
           </div>
         </div>
 
+        {/* Payment chasing */}
+        <div className="space-y-4 pt-2 border-t">
+          <p className="text-sm font-medium flex items-center gap-2">
+            <CreditCard className="h-4 w-4 text-muted-foreground" />
+            Payment chasing
+          </p>
+
+          <div className="flex items-center justify-between">
+            <Label htmlFor="chase-toggle" className="cursor-pointer">
+              Automatically chase outstanding payments
+            </Label>
+            <Switch
+              id="chase-toggle"
+              checked={preferences.payment_chase_enabled}
+              onCheckedChange={(checked) =>
+                setPreferences(p => ({ ...p, payment_chase_enabled: checked }))
+              }
+            />
+          </div>
+
+          {preferences.payment_chase_enabled && (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="space-y-1">
+                <Label className="text-xs">Start chasing after (days)</Label>
+                <Input
+                  type="number"
+                  min={1}
+                  max={14}
+                  value={preferences.payment_chase_after_days}
+                  onChange={(e) => setPreferences(p => ({ ...p, payment_chase_after_days: Math.max(1, Math.min(14, Number(e.target.value) || 1)) }))}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Remind every (days)</Label>
+                <Input
+                  type="number"
+                  min={3}
+                  max={14}
+                  value={preferences.payment_chase_interval_days}
+                  onChange={(e) => setPreferences(p => ({ ...p, payment_chase_interval_days: Math.max(3, Math.min(14, Number(e.target.value) || 7)) }))}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Stop after (reminders)</Label>
+                <Input
+                  type="number"
+                  min={1}
+                  max={5}
+                  value={preferences.payment_chase_max_reminders}
+                  onChange={(e) => setPreferences(p => ({ ...p, payment_chase_max_reminders: Math.max(1, Math.min(5, Number(e.target.value) || 3)) }))}
+                />
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* Save handled by the sticky settings save bar */}
       </CardContent>
     </Card>
