@@ -80,7 +80,7 @@ export default function PublicAvailability() {
 
       // Fetch instructor details
       const { data: instructorData, error: instructorError } = await supabase
-        .from('instructors')
+        .from('public_instructors')
         .select('id, name, profile_image_url, brand_colour')
         .eq('id', shareData.instructor_id)
         .single();
