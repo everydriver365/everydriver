@@ -11,6 +11,11 @@ interface SendSigningLinkRequest {
   pupilId: string;
   termsId: string;
   instructorName: string;
+  // Optional: override the SMS recipient (e.g. parent_phone for under-18 co-signature)
+  recipientPhone?: string | null;
+  recipientName?: string | null;
+  // Optional: mark the resulting agreement as requiring parent signature
+  requiresParentSignature?: boolean;
 }
 
 function generateToken(length: number = 32): string {
