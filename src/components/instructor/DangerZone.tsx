@@ -26,8 +26,6 @@ export function DangerZone() {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<Step>("password");
   const [password, setPassword] = useState("");
-  const [mfaCode, setMfaCode] = useState("");
-  const [mfaFactorId, setMfaFactorId] = useState<string | null>(null);
   const [ack, setAck] = useState(false);
   const [confirmText, setConfirmText] = useState("");
   const [busy, setBusy] = useState(false);
@@ -36,8 +34,6 @@ export function DangerZone() {
   const reset = () => {
     setStep("password");
     setPassword("");
-    setMfaCode("");
-    setMfaFactorId(null);
     setAck(false);
     setConfirmText("");
     setBusy(false);
@@ -175,28 +171,6 @@ export function DangerZone() {
               </div>
             )}
 
-            {step === "mfa" && (
-              <div className="space-y-3">
-                <Label htmlFor="dz-mfa">Enter your 6-digit authenticator code</Label>
-                <Input
-                  id="dz-mfa"
-                  inputMode="numeric"
-                  maxLength={6}
-                  value={mfaCode}
-                  onChange={(e) => setMfaCode(e.target.value.replace(/\D/g, ""))}
-                  disabled={busy}
-                />
-                {error && <p className="text-sm text-destructive">{error}</p>}
-                <div className="flex justify-end gap-2 pt-2">
-                  <Button variant="ghost" onClick={() => handleOpenChange(false)} disabled={busy}>
-                    Cancel
-                  </Button>
-                  <Button onClick={handleMfaConfirm} disabled={busy || mfaCode.length !== 6}>
-                    {busy ? "Verifying..." : "Continue"}
-                  </Button>
-                </div>
-              </div>
-            )}
 
             {(step === "acknowledge" || step === "submitting") && (
               <div className="space-y-4">
