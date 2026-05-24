@@ -162,13 +162,29 @@ export function CancelLessonDialog({
       if (lessonError) throw lessonError;
 
       // Synchronously remove the Google Calendar event so the slot is freed
-      // immediately. The DB trigger also enqueues a deleteLesson as a safety
-      // net in case this invoke fails.
+      // immediately, but cap the wait at 5s — the DB trigger also enqueues a
+      // deleteLesson as a safety net so we never block the cancel confirmation.
+      let _syncTimer: ReturnType<typeof setTimeout> | undefined;
+      let _syncTimedOut = false;
       try {
-        await supabase.functions.invoke("sync-lesson-now", { body: { lessonId } });
+        await Promise.race([
+          supabase.functions.invoke("sync-lesson-now", { body: { lessonId } }),
+          new Promise((resolve) => {
+            _syncTimer = setTimeout(() => {
+              _syncTimedOut = true;
+              resolve(undefined);
+            }, 5_000);
+          }),
+        ]);
       } catch (syncErr) {
         console.error("CancelLessonDialog: sync-lesson-now failed", syncErr);
+      } finally {
+        if (_syncTimer) clearTimeout(_syncTimer);
+        if (_syncTimedOut) {
+          toast({ title: "Saved — syncing to Google in the background" });
+        }
       }
+
 
       if (chargeAmount > 0) {
         const newBalance = pupilBalance - chargeAmount;

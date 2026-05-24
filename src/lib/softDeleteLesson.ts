@@ -30,13 +30,22 @@ export async function softDeleteLesson(
 
   if (error) return { ok: false, error: error.message };
 
-  // Fire-and-await Google delete so the slot is freed before we return.
+  // Fire-and-await Google delete with a 5s budget. If it times out the DB
+  // trigger has already enqueued deleteLesson — the cron worker will retry.
+  let timer: ReturnType<typeof setTimeout> | undefined;
   try {
-    await supabase.functions.invoke("sync-lesson-now", { body: { lessonId } });
+    await Promise.race([
+      supabase.functions.invoke("sync-lesson-now", { body: { lessonId } }),
+      new Promise((resolve) => {
+        timer = setTimeout(resolve, 5_000);
+      }),
+    ]);
   } catch (err) {
     console.error("softDeleteLesson: sync-lesson-now invoke failed", err);
-    // Trigger has already enqueued deleteLesson — the cron worker will retry.
+  } finally {
+    if (timer) clearTimeout(timer);
   }
+
 
   return { ok: true };
 }
