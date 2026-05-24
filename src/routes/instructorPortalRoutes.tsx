@@ -158,7 +158,7 @@ function Gated({ feature, label, children }: { feature: string; label: string; c
 export const instructorPortalRoutes = (
   <>
     {/* Auth */}
-    <Route path="/instructor/login" element={<InstructorPortalLogin />} />
+    <Route path="/instructor/login" element={<Navigate to="/login" replace />} />
 
     {/* Core — always accessible */}
     <Route path="/instructor" element={<InstructorPortal />} />
