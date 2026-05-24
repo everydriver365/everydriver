@@ -12,9 +12,28 @@ export interface MessageTemplateEditorProps {
   sampleSlotList: string;
   /** Instructor first name used for the {instructor_first_name} token. */
   instructorFirstName: string;
+  /** Discount type currently selected. */
+  discountType?: "percentage" | "fixed" | null;
+  /** Discount value currently selected. */
+  discountValue?: number | null;
 }
 
-export const TEMPLATE_TOKENS = ["{first_name}", "{slot_list}", "{instructor_first_name}"] as const;
+export const TEMPLATE_TOKENS = [
+  "{first_name}",
+  "{slot_list}",
+  "{discount}",
+  "{instructor_first_name}",
+] as const;
+
+export function formatDiscountText(
+  discountType: "percentage" | "fixed" | null | undefined,
+  discountValue: number | null | undefined
+): string {
+  if (!discountType || !discountValue) return "";
+  return discountType === "percentage"
+    ? `🎉 ${discountValue}% off if you book one of these`
+    : `🎉 £${discountValue} off if you book one of these`;
+}
 
 /**
  * Renders the rendered preview by default. Tapping "Edit" reveals a textarea
@@ -23,11 +42,19 @@ export const TEMPLATE_TOKENS = ["{first_name}", "{slot_list}", "{instructor_firs
  */
 export function renderTemplate(
   template: string,
-  vars: { firstName: string; slotList: string; instructorFirstName: string }
+  vars: {
+    firstName: string;
+    slotList: string;
+    instructorFirstName: string;
+    discountType?: "percentage" | "fixed" | null;
+    discountValue?: number | null;
+  }
 ): string {
+  const discountText = formatDiscountText(vars.discountType, vars.discountValue);
   return template
     .split("{first_name}").join(vars.firstName)
     .split("{slot_list}").join(vars.slotList)
+    .split("{discount}").join(discountText)
     .split("{instructor_first_name}").join(vars.instructorFirstName);
 }
 
@@ -37,6 +64,8 @@ export function MessageTemplateEditor({
   sampleName,
   sampleSlotList,
   instructorFirstName,
+  discountType,
+  discountValue,
 }: MessageTemplateEditorProps) {
   const [editing, setEditing] = useState(false);
   const sampleFirstName = (sampleName || "").split(" ")[0] || sampleName;
@@ -44,6 +73,8 @@ export function MessageTemplateEditor({
     firstName: sampleFirstName || "there",
     slotList: sampleSlotList,
     instructorFirstName,
+    discountType,
+    discountValue,
   });
 
   const insertToken = (token: string) => {
