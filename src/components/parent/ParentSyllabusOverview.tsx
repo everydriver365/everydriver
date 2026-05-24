@@ -88,6 +88,16 @@ export function ParentSyllabusOverview({ childId, childName }: ParentSyllabusOve
   }
 
   const progressMap = Object.fromEntries(progress.map((p) => [p.competency_id, p.level]));
+  const updatedMap = Object.fromEntries(
+    progress.filter((p) => p.updated_at).map((p) => [p.competency_id, p.updated_at as string]),
+  );
+  const formatLastPracticed = (iso: string | undefined): string | null => {
+    if (!iso) return null;
+    const diffDays = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+    if (diffDays <= 0) return "Practiced today";
+    if (diffDays === 1) return "Practiced yesterday";
+    return `Last practiced ${diffDays} days ago`;
+  };
   const masteredCount = DVSA_SYLLABUS.filter((c) => (progressMap[c.id] || 0) >= 5).length;
   const score = readiness ?? 0;
   const readinessColor = score >= 80 ? "#15803D" : score >= 50 ? "#B8801F" : "#B91C1C";
@@ -246,7 +256,14 @@ export function ParentSyllabusOverview({ childId, childName }: ParentSyllabusOve
                 gap: 8,
               }}
             >
-              <span style={{ flex: 1, fontSize: 13, color: "#111827" }}>{c.name}</span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 13, color: "#111827" }}>{c.name}</div>
+                {formatLastPracticed(updatedMap[c.id]) && (
+                  <div style={{ fontSize: 10, color: "#6B7280", marginTop: 2 }}>
+                    {formatLastPracticed(updatedMap[c.id])}
+                  </div>
+                )}
+              </div>
               <span
                 style={{
                   fontSize: 11,
