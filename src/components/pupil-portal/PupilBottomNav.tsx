@@ -27,6 +27,7 @@ interface PupilBottomNavProps {
     lessons?: string | number;
     payments?: string | number;
     theory?: string | number;
+    messages?: string | number;
   };
   courseProgress?: number;
 }
