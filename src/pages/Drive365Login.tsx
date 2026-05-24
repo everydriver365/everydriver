@@ -137,7 +137,7 @@ export default function Drive365Login() {
         onSignIn={async (em, pw, remember) => {
           setRememberMe(remember);
           const ok = await performLogin(em, pw);
-          if (!ok) return { error: "Invalid email or password" };
+          if (!ok) return { error: "Could not sign you in" };
         }}
         onForgot={async (em) => {
           const { error } = await supabase.auth.resetPasswordForEmail(em, {
