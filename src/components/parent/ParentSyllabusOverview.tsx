@@ -256,7 +256,14 @@ export function ParentSyllabusOverview({ childId, childName }: ParentSyllabusOve
                 gap: 8,
               }}
             >
-              <span style={{ flex: 1, fontSize: 13, color: "#111827" }}>{c.name}</span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 13, color: "#111827" }}>{c.name}</div>
+                {formatLastPracticed(updatedMap[c.id]) && (
+                  <div style={{ fontSize: 10, color: "#6B7280", marginTop: 2 }}>
+                    {formatLastPracticed(updatedMap[c.id])}
+                  </div>
+                )}
+              </div>
               <span
                 style={{
                   fontSize: 11,
