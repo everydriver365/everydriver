@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Zap, Clock, Users, CheckCircle2, XCircle, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { XCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { Tile, Pill } from "@/components/instructor/ui";
 
 interface SlotOfferRow {
   id: string;
@@ -48,48 +48,57 @@ const useCountdown = (target: string | null) => {
 
 function OfferRow({ offer, onCancel }: { offer: SlotOfferRow; onCancel: (id: string) => void }) {
   const remaining = useCountdown(offer.status === "open" ? offer.expires_at : null);
-  const statusColor =
-    offer.status === "open" ? "bg-amber-100 text-amber-700"
-    : offer.status === "filled" ? "bg-green-100 text-green-700"
-    : "bg-zinc-100 text-zinc-600";
+
+  const title = `${formatDate(offer.lesson_date)} · ${formatTime(offer.start_time)}–${formatTime(offer.end_time)}`;
+  const subtitleParts: string[] = [`${offer.recipient_count ?? 0} notified`];
+  if (offer.status === "filled" && offer.claimer_name) subtitleParts.push(`Claimed by ${offer.claimer_name}`);
+  const subtitle = subtitleParts.join(" · ");
+
+  const eyebrow =
+    offer.status === "open" && remaining
+      ? remaining === "expired" ? "Expired" : `Expires in ${remaining}`
+      : undefined;
+
+  const pillColor: "amber" | "green" | "grey" =
+    offer.status === "open" ? "amber" : offer.status === "filled" ? "green" : "grey";
+
+  const trailing = (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
+      <Pill color={pillColor} label={offer.status} />
+      {offer.status === "open" && (
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); onCancel(offer.id); }}
+          style={{
+            background: "transparent",
+            border: "none",
+            color: "#c9302c",
+            fontSize: 11,
+            fontWeight: 600,
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 4,
+            cursor: "pointer",
+            padding: 0,
+          }}
+        >
+          <XCircle size={12} /> Cancel
+        </button>
+      )}
+    </div>
+  );
 
   return (
-    <div className="rounded-xl bg-card border border-border p-3 flex items-start gap-3">
-      <div className="h-8 w-8 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
-        <Zap className="h-4 w-4 text-amber-600" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center justify-between gap-2">
-          <p className="text-sm font-semibold text-foreground">
-            {formatDate(offer.lesson_date)} · {formatTime(offer.start_time)}–{formatTime(offer.end_time)}
-          </p>
-          <span className={`text-[10px] uppercase font-semibold px-1.5 py-0.5 rounded ${statusColor}`}>
-            {offer.status}
-          </span>
-        </div>
-        <div className="flex items-center gap-3 text-[11px] text-muted-foreground mt-1">
-          <span className="flex items-center gap-1"><Users className="h-3 w-3" /> {offer.recipient_count ?? 0} notified</span>
-          {offer.status === "open" && remaining && (
-            <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {remaining} left</span>
-          )}
-          {offer.status === "filled" && offer.claimer_name && (
-            <span className="flex items-center gap-1 text-green-700">
-              <CheckCircle2 className="h-3 w-3" /> Claimed by {offer.claimer_name}
-            </span>
-          )}
-        </div>
-        {offer.status === "open" && (
-          <Button
-            size="sm"
-            variant="ghost"
-            className="h-7 text-[11px] text-destructive hover:text-destructive mt-1 px-2"
-            onClick={() => onCancel(offer.id)}
-          >
-            <XCircle className="h-3 w-3 mr-1" /> Cancel offer
-          </Button>
-        )}
-      </div>
-    </div>
+    <Tile
+      variant="info"
+      icon="ti-bolt"
+      iconColor={offer.status === "filled" ? "green" : offer.status === "open" ? "amber" : "grey"}
+      title={title}
+      subtitle={subtitle}
+      eyebrow={eyebrow}
+      trailing={trailing}
+      selected={offer.status === "filled" || offer.status === "expired" || offer.status === "cancelled"}
+    />
   );
 }
 

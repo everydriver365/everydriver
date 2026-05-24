@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 
 type ColorKey = "blue" | "red" | "green" | "purple" | "amber" | "grey";
 type BadgeColorKey = "blue" | "green" | "amber" | "red" | "grey";
@@ -14,6 +14,8 @@ export interface TileProps {
   eyebrow?: string;
   badge?: string;
   badgeColor?: BadgeColorKey;
+  badgeCount?: number;
+  badgeVisible?: boolean;
   value?: string;
   valueColor?: ValueColorKey;
   progressPercent?: number;
@@ -23,9 +25,14 @@ export interface TileProps {
   dateNum?: string | number;
   dateMon?: string;
   dateBg?: string;
+  selected?: boolean;
+  trailing?: React.ReactNode;
   onClick?: () => void;
+  onLongPress?: () => void;
+  onSecondaryAction?: () => void;
   children?: React.ReactNode;
   className?: string;
+  ariaLabel?: string;
 }
 
 const ICON_PALETTE: Record<ColorKey, { bg: string; fg: string }> = {
@@ -76,6 +83,8 @@ const Tile: React.FC<TileProps> = ({
   eyebrow,
   badge,
   badgeColor = "blue",
+  badgeCount,
+  badgeVisible = true,
   value,
   valueColor = "dark",
   progressPercent,
@@ -85,36 +94,66 @@ const Tile: React.FC<TileProps> = ({
   dateNum,
   dateMon,
   dateBg,
+  selected = false,
+  trailing,
   onClick,
+  onLongPress,
+  onSecondaryAction,
   children,
   className,
+  ariaLabel,
 }) => {
   const iconPal = ICON_PALETTE[iconColor];
   const badgePal = BADGE_PALETTE[badgeColor];
   const valueCol = VALUE_PALETTE[valueColor];
   const progressFill = PROGRESS_FILL[valueColor];
 
-  // Base styling per variant
   const isNav = variant === "navigation";
   const isSlot = variant === "slot";
 
+  // Long-press handling
+  const pressTimer = useRef<number | null>(null);
+  const longFired = useRef(false);
+  const handlePressStart = () => {
+    if (!onLongPress) return;
+    longFired.current = false;
+    pressTimer.current = window.setTimeout(() => {
+      longFired.current = true;
+      onLongPress();
+    }, 500);
+  };
+  const handlePressEnd = () => {
+    if (pressTimer.current !== null) {
+      window.clearTimeout(pressTimer.current);
+      pressTimer.current = null;
+    }
+  };
+  const handleClick = () => {
+    if (longFired.current) return;
+    onClick?.();
+  };
+
+  // Selection overrides
+  const selectionBorder = selected ? "1px solid #2952b3" : undefined;
+  const selectionBg = selected ? "#f8fbff" : undefined;
+
   const baseStyle: React.CSSProperties = {
     position: "relative",
-    background: "#ffffff",
+    background: selectionBg ?? "#ffffff",
     borderRadius: isNav ? 12 : 14,
-    border: isNav ? "none" : "0.5px solid #e0e3ea",
+    border: selectionBorder ?? (isNav ? "none" : "0.5px solid #e0e3ea"),
     overflow: "hidden",
     fontFamily: FONT_STACK,
     textAlign: "left",
-    cursor: onClick ? "pointer" : "default",
+    cursor: onClick || onLongPress ? "pointer" : "default",
     width: "100%",
     display: "block",
     padding: 0,
+    WebkitTapHighlightColor: "transparent",
   };
 
-  // Accent override
   let accentStyle: React.CSSProperties = {};
-  if (accentColor) {
+  if (accentColor && !selected) {
     const a = ACCENT_BG[accentColor];
     accentStyle = {
       background: a.bg,
@@ -123,14 +162,33 @@ const Tile: React.FC<TileProps> = ({
     };
   }
 
-  const merged: React.CSSProperties = { ...baseStyle, ...accentStyle, ...(isSlot ? { border: "1px solid #e0e3ea" } : {}) };
+  const merged: React.CSSProperties = {
+    ...baseStyle,
+    ...accentStyle,
+    ...(isSlot && !selected ? { border: "1px solid #e0e3ea" } : {}),
+  };
 
   const innerPadding = 14;
 
-  // Slot variant: date column + body
+  const interactiveProps = {
+    onClick: handleClick,
+    onPointerDown: handlePressStart,
+    onPointerUp: handlePressEnd,
+    onPointerLeave: handlePressEnd,
+    onPointerCancel: handlePressEnd,
+    onContextMenu: onSecondaryAction
+      ? (e: React.MouseEvent) => {
+          e.preventDefault();
+          onSecondaryAction();
+        }
+      : undefined,
+    role: onClick || onLongPress ? "button" : undefined,
+    "aria-label": ariaLabel,
+  };
+
   if (isSlot) {
     return (
-      <div style={merged} className={className} onClick={onClick} role={onClick ? "button" : undefined}>
+      <div style={merged} className={className} {...interactiveProps}>
         <div style={{ display: "flex", alignItems: "stretch" }}>
           {(dateDay || dateNum || dateMon) && (
             <div
@@ -146,13 +204,14 @@ const Tile: React.FC<TileProps> = ({
                 fontFamily: FONT_STACK,
               }}
             >
-              {dateDay && <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: 0.6, textTransform: "uppercase", opacity: 0.85 }}>{dateDay}</span>}
+              {dateDay && <span style={dateLabelStyle}>{dateDay}</span>}
               {dateNum !== undefined && <span style={{ fontSize: 20, fontWeight: 700, lineHeight: 1.1 }}>{dateNum}</span>}
-              {dateMon && <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: 0.6, textTransform: "uppercase", opacity: 0.85 }}>{dateMon}</span>}
+              {dateMon && <span style={dateLabelStyle}>{dateMon}</span>}
             </div>
           )}
-          <div style={{ flex: 1, padding: innerPadding, minWidth: 0 }}>
-            {renderBody()}
+          <div style={{ flex: 1, padding: innerPadding, minWidth: 0, display: "flex", gap: 10, alignItems: "center" }}>
+            <div style={{ flex: 1, minWidth: 0 }}>{renderBody()}</div>
+            {trailing && <div style={{ flexShrink: 0 }}>{trailing}</div>}
           </div>
         </div>
         {children && <div style={{ borderTop: "1px solid #f0f1f4" }}>{children}</div>}
@@ -163,10 +222,13 @@ const Tile: React.FC<TileProps> = ({
   }
 
   return (
-    <div style={merged} className={className} onClick={onClick} role={onClick ? "button" : undefined}>
-      <div style={{ padding: innerPadding }}>
-        {renderBody()}
-        {children}
+    <div style={merged} className={className} {...interactiveProps}>
+      <div style={{ padding: innerPadding, display: "flex", gap: 10, alignItems: "center" }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          {renderBody()}
+          {children}
+        </div>
+        {trailing && <div style={{ flexShrink: 0 }}>{trailing}</div>}
       </div>
       {renderProgress()}
       {renderBadge()}
@@ -216,6 +278,34 @@ const Tile: React.FC<TileProps> = ({
   }
 
   function renderBadge() {
+    if (!badgeVisible) return null;
+    // Numeric count badge takes precedence
+    if (typeof badgeCount === "number" && badgeCount > 0) {
+      const label = badgeCount > 99 ? "99+" : String(badgeCount);
+      return (
+        <span
+          style={{
+            position: "absolute",
+            top: 6,
+            right: 6,
+            minWidth: 18,
+            height: 18,
+            padding: "0 5px",
+            borderRadius: 999,
+            background: "#c9302c",
+            color: "#ffffff",
+            fontSize: 10,
+            fontWeight: 700,
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontFamily: FONT_STACK,
+          }}
+        >
+          {label}
+        </span>
+      );
+    }
     if (!badge) return null;
     return (
       <span
@@ -248,6 +338,94 @@ const Tile: React.FC<TileProps> = ({
       </div>
     );
   }
+};
+
+const dateLabelStyle: React.CSSProperties = {
+  fontSize: 9,
+  fontWeight: 600,
+  letterSpacing: 0.6,
+  textTransform: "uppercase",
+  opacity: 0.85,
+};
+
+// ─── Pill ──────────────────────────────────────────────────────────────────
+type PillColor = "blue" | "green" | "amber" | "red" | "grey";
+
+const PILL_PALETTE: Record<PillColor, { bg: string; fg: string; dot: string }> = {
+  blue: { bg: "#e8eefb", fg: "#2952b3", dot: "#2952b3" },
+  green: { bg: "#e8f5ee", fg: "#2d8a4e", dot: "#2d8a4e" },
+  amber: { bg: "#fff3e0", fg: "#d97706", dot: "#d97706" },
+  red: { bg: "#fbe8e8", fg: "#c9302c", dot: "#c9302c" },
+  grey: { bg: "#F2F4F8", fg: "#888888", dot: "#888888" },
+};
+
+export interface PillProps {
+  color?: PillColor;
+  label: string;
+  dot?: boolean;
+  animated?: boolean;
+  onClick?: () => void;
+  ariaLabel?: string;
+  className?: string;
+}
+
+export const Pill: React.FC<PillProps> = ({
+  color = "grey",
+  label,
+  dot = false,
+  animated = false,
+  onClick,
+  ariaLabel,
+  className,
+}) => {
+  const pal = PILL_PALETTE[color];
+  const styleId = "ui-pill-pulse-keyframes";
+  // Inject keyframes once
+  if (typeof document !== "undefined" && animated && !document.getElementById(styleId)) {
+    const style = document.createElement("style");
+    style.id = styleId;
+    style.textContent = `@keyframes ui-pill-pulse { from { opacity: 0.4; } to { opacity: 1; } }`;
+    document.head.appendChild(style);
+  }
+  const Tag = onClick ? "button" : "span";
+  return (
+    <Tag
+      onClick={onClick as any}
+      aria-label={ariaLabel ?? label}
+      className={className}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 6,
+        background: pal.bg,
+        color: pal.fg,
+        borderRadius: 999,
+        padding: "4px 10px",
+        border: "none",
+        fontFamily: FONT_STACK,
+        fontSize: 11,
+        fontWeight: 600,
+        lineHeight: 1,
+        cursor: onClick ? "pointer" : "default",
+        WebkitTapHighlightColor: "transparent",
+      }}
+    >
+      {dot && (
+        <span
+          aria-hidden
+          style={{
+            width: 7,
+            height: 7,
+            borderRadius: 999,
+            background: pal.dot,
+            animation: animated ? "ui-pill-pulse 1.5s ease-in-out infinite alternate" : undefined,
+            display: "inline-block",
+          }}
+        />
+      )}
+      {label}
+    </Tag>
+  );
 };
 
 export default Tile;
