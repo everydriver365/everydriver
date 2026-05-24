@@ -34,6 +34,8 @@ export interface TileProps {
   children?: React.ReactNode;
   className?: string;
   ariaLabel?: string;
+  iconOptional?: boolean;
+  disabled?: boolean;
 }
 
 const ICON_PALETTE: Record<ColorKey, { bg: string; fg: string }> = {
@@ -104,6 +106,8 @@ const Tile: React.FC<TileProps> = ({
   children,
   className,
   ariaLabel,
+  iconOptional = false,
+  disabled = false,
 }) => {
   const iconPal = ICON_PALETTE[iconColor];
   const badgePal = BADGE_PALETTE[badgeColor];
@@ -181,6 +185,7 @@ const Tile: React.FC<TileProps> = ({
     ...baseStyle,
     ...accentStyle,
     ...(isSlot && !selected ? { border: "1px solid #e0e3ea" } : {}),
+    ...(disabled ? { opacity: 0.6, pointerEvents: "none" as const } : {}),
   };
 
   const innerPadding = 14;
@@ -254,21 +259,23 @@ const Tile: React.FC<TileProps> = ({
   function renderBody() {
     return (
       <div style={{ display: "flex", gap: 12, alignItems: "flex-start", minWidth: 0 }}>
-        <div
-          style={{
-            width: 36,
-            height: 36,
-            borderRadius: 10,
-            background: iconPal.bg,
-            color: iconPal.fg,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            flexShrink: 0,
-          }}
-        >
-          {iconNode ?? (icon ? <i className={`ti ${icon}`} style={{ fontSize: 18, lineHeight: 1, color: iconPal.fg }} aria-hidden /> : null)}
-        </div>
+        {!iconOptional && (
+          <div
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: 10,
+              background: iconPal.bg,
+              color: iconPal.fg,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}
+          >
+            {iconNode ?? (icon ? <i className={`ti ${icon}`} style={{ fontSize: 18, lineHeight: 1, color: iconPal.fg }} aria-hidden /> : null)}
+          </div>
+        )}
         <div style={{ flex: 1, minWidth: 0 }}>
           {eyebrow && (
             <div style={{ fontSize: 9, fontWeight: 600, letterSpacing: 0.6, textTransform: "uppercase", color: "#999999", marginBottom: 2 }}>
