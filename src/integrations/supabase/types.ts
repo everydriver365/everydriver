@@ -310,6 +310,7 @@ export type Database = {
           id: string
           instructor_id: string
           purge_summary: Json | null
+          reason: string | null
           requested_at: string
           revocation_results: Json | null
           scheduled_purge_at: string
@@ -327,6 +328,7 @@ export type Database = {
           id?: string
           instructor_id: string
           purge_summary?: Json | null
+          reason?: string | null
           requested_at?: string
           revocation_results?: Json | null
           scheduled_purge_at: string
@@ -344,6 +346,7 @@ export type Database = {
           id?: string
           instructor_id?: string
           purge_summary?: Json | null
+          reason?: string | null
           requested_at?: string
           revocation_results?: Json | null
           scheduled_purge_at?: string

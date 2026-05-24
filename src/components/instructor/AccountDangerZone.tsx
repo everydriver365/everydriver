@@ -50,14 +50,32 @@ function download(content: string, filename: string) {
   URL.revokeObjectURL(url);
 }
 
-function warnIfCapped(count: number) {
-  if (count === ROW_CAP) {
-    toast({
-      title: "Export may be incomplete",
-      description:
-        "More than 1000 records exist. Contact support for a full export.",
-    });
-  }
+/**
+ * Head-only count query against a table filtered by instructor_id.
+ * Returns total row count; null if the count call errored.
+ */
+async function getTotalCount(
+  table: "pupils" | "lesson_history" | "payment_history" | "mileage_logs",
+  instructorId: string,
+): Promise<number | null> {
+  const { count, error } = await supabase
+    .from(table)
+    .select("*", { count: "exact", head: true })
+    .eq("instructor_id", instructorId);
+  if (error) return null;
+  return count ?? 0;
+}
+
+/** Append "(showing first 1000 of X records)" before the .csv extension. */
+function withTruncationSuffix(filename: string, total: number): string {
+  return filename.replace(/\.csv$/, ` (showing first ${ROW_CAP} of ${total} records).csv`);
+}
+
+function warnTruncated(total: number) {
+  toast({
+    title: "Export may be incomplete",
+    description: `${total} records exist — only the first ${ROW_CAP} are included. Contact support for a full export.`,
+  });
 }
 
 export function AccountDangerZone({ instructorId }: Props) {
@@ -100,16 +118,24 @@ export function AccountDangerZone({ instructorId }: Props) {
   };
 
   const exportPupils = () => runExport("pupils", async () => {
+    const total = await getTotalCount("pupils", instructorId);
+    const truncated = total !== null && total > ROW_CAP;
+    if (truncated) warnTruncated(total!);
+
     const { data, error } = await supabase.from("pupils").select("*").eq("instructor_id", instructorId).order("name");
     if (error) throw error;
     const headers = ["name", "email", "phone", "pickup_address", "test_date", "test_centre", "lessons_completed", "prepaid_hours", "outstanding_balance", "created_at"];
     const count = data?.length || 0;
-    download(toCSV((data || []) as any, headers), `pupils-${new Date().toISOString().slice(0, 10)}.csv`);
+    const baseName = `pupils-${new Date().toISOString().slice(0, 10)}.csv`;
+    download(toCSV((data || []) as any, headers), truncated ? withTruncationSuffix(baseName, total!) : baseName);
     toast({ title: "Pupils exported", description: `${count} rows` });
-    warnIfCapped(count);
   });
 
   const exportLessons = () => runExport("lessons", async () => {
+    const total = await getTotalCount("lesson_history", instructorId);
+    const truncated = total !== null && total > ROW_CAP;
+    if (truncated) warnTruncated(total!);
+
     const { data, error } = await supabase.from("lesson_history").select("*, pupil:pupils(name)").eq("instructor_id", instructorId).order("lesson_date", { ascending: false });
     if (error) throw error;
     const rows = (data || []).map((l: any) => ({
@@ -121,12 +147,16 @@ export function AccountDangerZone({ instructorId }: Props) {
       notes: l.notes || "",
       rating: l.rating || "",
     }));
-    download(toCSV(rows, ["pupil_name", "lesson_date", "start_time", "duration_minutes", "skills_practiced", "notes", "rating"]), `lessons-${new Date().toISOString().slice(0, 10)}.csv`);
+    const baseName = `lessons-${new Date().toISOString().slice(0, 10)}.csv`;
+    download(toCSV(rows, ["pupil_name", "lesson_date", "start_time", "duration_minutes", "skills_practiced", "notes", "rating"]), truncated ? withTruncationSuffix(baseName, total!) : baseName);
     toast({ title: "Lessons exported", description: `${rows.length} rows` });
-    warnIfCapped(rows.length);
   });
 
   const exportPayments = () => runExport("payments", async () => {
+    const total = await getTotalCount("payment_history", instructorId);
+    const truncated = total !== null && total > ROW_CAP;
+    if (truncated) warnTruncated(total!);
+
     const { data, error } = await supabase.from("payment_history").select("*, pupil:pupils(name)").eq("instructor_id", instructorId).order("created_at", { ascending: false });
     if (error) throw error;
     const rows = (data || []).map((p: any) => ({
@@ -136,19 +166,24 @@ export function AccountDangerZone({ instructorId }: Props) {
       payment_method: p.payment_method || "",
       status: p.status || "",
     }));
-    download(toCSV(rows, ["date", "pupil_name", "amount", "payment_method", "status"]), `payments-${new Date().toISOString().slice(0, 10)}.csv`);
+    const baseName = `payments-${new Date().toISOString().slice(0, 10)}.csv`;
+    download(toCSV(rows, ["date", "pupil_name", "amount", "payment_method", "status"]), truncated ? withTruncationSuffix(baseName, total!) : baseName);
     toast({ title: "Payments exported", description: `${rows.length} rows` });
-    warnIfCapped(rows.length);
   });
 
   const exportMileage = () => runExport("mileage", async () => {
+    const total = await getTotalCount("mileage_logs", instructorId);
+    const truncated = total !== null && total > ROW_CAP;
+    if (truncated) warnTruncated(total!);
+
     const { data, error } = await supabase.from("mileage_logs").select("*").eq("instructor_id", instructorId).order("trip_date", { ascending: false });
     if (error) throw error;
     const count = data?.length || 0;
-    download(toCSV((data || []) as any, ["trip_date", "start_location", "end_location", "miles", "purpose", "notes"]), `mileage-${new Date().toISOString().slice(0, 10)}.csv`);
+    const baseName = `mileage-${new Date().toISOString().slice(0, 10)}.csv`;
+    download(toCSV((data || []) as any, ["trip_date", "start_location", "end_location", "miles", "purpose", "notes"]), truncated ? withTruncationSuffix(baseName, total!) : baseName);
     toast({ title: "Mileage exported", description: `${count} rows` });
-    warnIfCapped(count);
   });
+
 
   const exportRows = [
     { key: "pupils",   name: "Pupils list",   subtitle: "Names, contacts, progress",        Icon: Users,         iconBg: "#e8eefb", iconColor: "#2952b3", onClick: exportPupils },
