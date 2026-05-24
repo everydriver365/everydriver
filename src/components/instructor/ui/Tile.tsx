@@ -188,6 +188,7 @@ const Tile: React.FC<TileProps> = ({
   const interactiveProps = {
     onClick: handleClick,
     onPointerDown: handlePressStart,
+    onPointerMove: handlePressMove,
     onPointerUp: handlePressEnd,
     onPointerLeave: handlePressEnd,
     onPointerCancel: handlePressEnd,
