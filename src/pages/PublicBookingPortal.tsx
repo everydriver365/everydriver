@@ -57,7 +57,7 @@ export default function PublicBookingPortal() {
 
     if (data.page_type === "instructor" && data.instructor_id) {
       const { data: inst } = await supabase
-        .from("instructors")
+        .from("public_instructors")
         .select("id, name, phone, hourly_rate, profile_image_url, home_postcode, car_type, bio, app_slug")
         .eq("id", data.instructor_id)
         .eq("is_active", true);
