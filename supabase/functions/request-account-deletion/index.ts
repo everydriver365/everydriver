@@ -131,6 +131,15 @@ serve(async (req) => {
     }
     const token = authHeader.replace("Bearer ", "");
 
+    // Optional deletion reason from body (best-effort; ignored if body missing/invalid)
+    let reason: string | null = null;
+    try {
+      const body = await req.json();
+      if (body && typeof body.reason === "string" && body.reason.trim()) {
+        reason = body.reason.trim().slice(0, 500);
+      }
+    } catch { /* no body is fine */ }
+
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
     const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
