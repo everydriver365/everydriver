@@ -283,6 +283,8 @@ export function PupilSyllabusView({ pupilId, brandColour, darkMode }: PupilSylla
           </Card>
         );
       })}
+
+      <PupilMilestones pupilId={pupilId} />
     </div>
   );
 }
