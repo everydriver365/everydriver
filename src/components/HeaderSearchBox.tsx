@@ -55,6 +55,7 @@ export function HeaderSearchBox({ variant, instructorId }: HeaderSearchBoxProps)
           .from("pupils")
           .select("id, name, lessons_completed, progress")
           .eq("instructor_id", instructorId)
+          .is("deleted_at", null)
           .ilike("name", `%${query}%`)
           .limit(6);
 
