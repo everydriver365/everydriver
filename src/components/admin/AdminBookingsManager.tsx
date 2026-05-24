@@ -137,7 +137,7 @@ export function AdminBookingsManager() {
       if (searchQuery) {
         const lowerQuery = searchQuery.toLowerCase();
         const [pupilRes, instrRes] = await Promise.all([
-          supabase.from("pupils").select("id").ilike("name", `%${lowerQuery}%`),
+          supabase.from("pupils").select("id").is("deleted_at", null).ilike("name", `%${lowerQuery}%`),
           supabase.from("instructors").select("id").ilike("name", `%${lowerQuery}%`),
         ]);
         matchingPupilIds = (pupilRes.data || []).map((p: any) => p.id);
