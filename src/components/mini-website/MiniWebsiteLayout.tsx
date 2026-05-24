@@ -27,6 +27,13 @@ interface Instructor {
   phone?: string | null;
   email?: string | null;
   home_postcode?: string;
+  radius_miles?: number | null;
+  hourly_rate?: number | null;
+  profile_image_url?: string | null;
+  hero_image_url?: string | null;
+  bio?: string | null;
+  custom_domain?: string | null;
+  custom_domain_verified?: boolean | null;
   personal_website_url?: string | null;
   facebook_url?: string | null;
   instagram_url?: string | null;
@@ -50,15 +57,18 @@ interface MiniWebsiteLayoutProps {
   metaTitle?: string | null;
   /** Per-page meta_description override from admin CMS */
   metaDescription?: string | null;
+  /** Live aggregated review data — drives JSON-LD aggregateRating */
+  avgRating?: number | null;
+  reviewCount?: number | null;
 }
 
-export function MiniWebsiteLayout({ instructor, children, footerOverrides, pageTitle, pageDescription, metaTitle, metaDescription }: MiniWebsiteLayoutProps) {
+export function MiniWebsiteLayout({ instructor, children, footerOverrides, pageTitle, pageDescription, metaTitle, metaDescription, avgRating, reviewCount }: MiniWebsiteLayoutProps) {
   const location = useLocation();
   const slug = instructor.app_slug;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // SEO meta tags, JSON-LD, canonical URL
-  useMiniWebsiteSEO({ instructor, pageTitle, pageDescription, metaTitle, metaDescription });
+  useMiniWebsiteSEO({ instructor, pageTitle, pageDescription, metaTitle, metaDescription, avgRating, reviewCount });
 
   // Per-instructor footer contact overrides
   const FOOTER_CONTACT_OVERRIDES: Record<string, FooterOverrides> = {

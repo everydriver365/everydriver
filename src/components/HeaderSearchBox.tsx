@@ -140,7 +140,7 @@ export function HeaderSearchBox({ variant, instructorId }: HeaderSearchBoxProps)
 
       if (variant === "admin") {
         const { data: instructors } = await supabase
-          .from("instructors")
+          .from("public_instructors")
           .select("id, name, email")
           .ilike("name", `%${query}%`)
           .limit(8);

@@ -142,7 +142,15 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
   ];
 
   return (
-    <MiniWebsiteLayout instructor={instructor} pageTitle="Home" pageDescription={`Book driving lessons with ${instructor.business_name || instructor.name}. Professional driving instruction to help you pass your test.`} metaTitle={page?.meta_title} metaDescription={page?.meta_description}>
+    <MiniWebsiteLayout
+      instructor={instructor}
+      pageTitle="Home"
+      pageDescription={`Book driving lessons with ${instructor.business_name || instructor.name}. Professional driving instruction to help you pass your test.`}
+      metaTitle={page?.meta_title}
+      metaDescription={page?.meta_description}
+      avgRating={avgRating ? Number(avgRating) : null}
+      reviewCount={reviews.length}
+    >
       {/* Announcement Bar - Dismissible Banner */}
       {showPromoBanner && (
         <div className="hidden md:block bg-gradient-to-r from-[#d4edda] to-[#b7dfbf] py-3 px-4 relative">
@@ -241,9 +249,27 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                   </span>
                 </div>
               )}
+              {instructor.google_review_url && (
+                <a
+                  href={instructor.google_review_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block text-xs text-muted-foreground hover:text-foreground hover:underline mt-1"
+                >
+                  See Google reviews →
+                </a>
+              )}
               <p className="text-muted-foreground text-sm sm:text-base mt-2 sm:mt-3 max-w-lg">
                 Book direct and pass — weekly or intensive driving courses available now
               </p>
+              {instructor.home_postcode && instructor.radius_miles && (
+                <div className="flex items-center gap-1.5 mt-2 text-xs sm:text-sm text-muted-foreground">
+                  <MapPin className="h-3.5 w-3.5 shrink-0" />
+                  <span>
+                    Covering <span className="font-medium text-foreground">{instructor.home_postcode}</span> and {instructor.radius_miles} miles around
+                  </span>
+                </div>
+              )}
             </motion.div>
           </div>
 
