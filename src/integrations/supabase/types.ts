@@ -12702,6 +12702,33 @@ export type Database = {
         }
         Relationships: []
       }
+      parents: {
+        Row: {
+          auth_user_id: string | null
+          created_at: string
+          id: string
+          name: string | null
+          phone: string
+          updated_at: string
+        }
+        Insert: {
+          auth_user_id?: string | null
+          created_at?: string
+          id?: string
+          name?: string | null
+          phone: string
+          updated_at?: string
+        }
+        Update: {
+          auth_user_id?: string | null
+          created_at?: string
+          id?: string
+          name?: string | null
+          phone?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       pass_report_queue: {
         Row: {
           attempts: number
@@ -15182,6 +15209,7 @@ export type Database = {
           parent_name: string | null
           parent_phone: string | null
           parent_portal_enabled: boolean
+          parent_user_id: string | null
           pass_report_generated_at: string | null
           pass_report_url: string | null
           payment_method: string
@@ -15282,6 +15310,7 @@ export type Database = {
           parent_name?: string | null
           parent_phone?: string | null
           parent_portal_enabled?: boolean
+          parent_user_id?: string | null
           pass_report_generated_at?: string | null
           pass_report_url?: string | null
           payment_method?: string
@@ -15382,6 +15411,7 @@ export type Database = {
           parent_name?: string | null
           parent_phone?: string | null
           parent_portal_enabled?: boolean
+          parent_user_id?: string | null
           pass_report_generated_at?: string | null
           pass_report_url?: string | null
           payment_method?: string
@@ -15449,6 +15479,13 @@ export type Database = {
             columns: ["instructor_id"]
             isOneToOne: false
             referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pupils_parent_user_id_fkey"
+            columns: ["parent_user_id"]
+            isOneToOne: false
+            referencedRelation: "parents"
             referencedColumns: ["id"]
           },
           {
