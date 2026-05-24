@@ -275,8 +275,9 @@ export default function ParentPortal() {
     } catch (error) { console.error("Error fetching feedback:", error); }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     localStorage.removeItem('parent_phone_verified');
+    await supabase.auth.signOut().catch(() => undefined);
     setAuthStep('phone');
     setChildren([]);
     setActivities([]);
