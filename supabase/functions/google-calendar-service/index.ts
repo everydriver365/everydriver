@@ -551,6 +551,46 @@ Deno.serve(async (req) => {
         );
       }
 
+      // Register Google Calendar push webhook (best-effort, non-fatal)
+      try {
+        const channelId = crypto.randomUUID();
+        const channelToken = crypto.randomUUID();
+        const webhookUrl = `${Deno.env.get("SUPABASE_URL")}/functions/v1/google-calendar-webhook`;
+        const ttlSeconds = 7 * 24 * 60 * 60;
+        const watchRes = await fetch(
+          `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events/watch`,
+          {
+            method: "POST",
+            headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
+            body: JSON.stringify({
+              id: channelId, type: "web_hook", address: webhookUrl,
+              token: channelToken, params: { ttl: String(ttlSeconds) },
+            }),
+          }
+        );
+        if (watchRes.ok) {
+          const watch = await watchRes.json();
+          const expiresAt = watch?.expiration
+            ? new Date(Number(watch.expiration)).toISOString()
+            : new Date(Date.now() + ttlSeconds * 1000).toISOString();
+          await supabase.from("instructor_google_service_calendar").update({
+            webhook_channel_id: channelId,
+            webhook_resource_id: watch?.resourceId ?? null,
+            webhook_channel_token: channelToken,
+            webhook_expires_at: expiresAt,
+            webhook_last_error: null,
+          }).eq("instructor_id", instructorId);
+        } else {
+          const errText = await watchRes.text();
+          console.error("Webhook registration failed (non-fatal):", errText);
+          await supabase.from("instructor_google_service_calendar")
+            .update({ webhook_last_error: errText.slice(0, 500) })
+            .eq("instructor_id", instructorId);
+        }
+      } catch (whErr) {
+        console.error("Webhook registration threw (non-fatal):", whErr);
+      }
+
       return new Response(
         JSON.stringify({ success: true }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
