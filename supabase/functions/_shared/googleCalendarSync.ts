@@ -108,7 +108,26 @@ export async function getAccessToken(jwt: string): Promise<string> {
       assertion: jwt,
     }),
   });
-  if (!res.ok) throw new Error(`Google token exchange failed: ${await res.text()}`);
+  if (!res.ok) {
+    const body = await res.text();
+    if (res.status === 401) {
+      void raiseSyncAlert({
+        category: "auth_401",
+        severity: "critical",
+        title: "Google token exchange returned 401",
+        message: body.slice(0, 1000),
+      });
+    } else if (res.status === 429) {
+      void raiseSyncAlert({
+        category: "rate_limit_429",
+        severity: "high",
+        title: "Google token exchange rate-limited",
+        message: body.slice(0, 1000),
+        metadata: { retryAfter: res.headers.get("Retry-After") },
+      });
+    }
+    throw new Error(`Google token exchange failed (${res.status}): ${body}`);
+  }
   return ((await res.json()) as { access_token: string }).access_token;
 }
 
