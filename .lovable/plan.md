@@ -1,33 +1,34 @@
-## Goal
+## Why the previous changes didn't show up
 
-Two tweaks to the live tracking map in `src/components/instructor/tracking/SatNavLiveMap.tsx`:
+The instructor mobile home screen (`/instructor`) does **not** use `InstructorMobileHeader` or `MobileBlueHeader`. Both files I edited in earlier turns are unused on this route:
 
-1. **Top-down car icon** replaces the current blue chevron/arrow marker.
-2. **Always follow** — map locks onto the car. Dragging never breaks follow mode.
+- `InstructorPortalLayout.tsx` line 726 explicitly skips `MobileBlueHeader` when `isHomePage` is true.
+- The home view `MobileHomeDSM2026.tsx` renders its own `HeroHeader` inline (the dark navy bar in your screenshot with WDS logo, "Ken", Phone, Bell, Menu).
 
-## 1. Top-down car marker
+That's why the car icon never appeared — it was being added to a header that isn't on screen.
 
-Replace `getArrowIcon()` / `getShadowIcon()` with a single inline-SVG data-URL of a top-down car silhouette (rounded hatchback, navy `#1C2A4A` body, light grey windscreen/rear window, subtle drop shadow built into the SVG itself — no separate shadow marker needed).
+There is no SOS icon in this header either; the SOS button lives elsewhere (in the older `InstructorMobileHeader` variant), so it has also never been visible on the DSM 2026 home.
 
-- Size: ~40×72 px (rotates around centre).
-- `google.maps.Marker` keeps using `icon.rotation` via the `path` field — but since data-URL icons don't rotate natively, we'll switch to a `google.maps.Symbol` style isn't possible for raster. Instead: pre-rotate the SVG by rebuilding the data-URL each heading update (cheap — only when heading changes >2°).
-- Drop the shadow marker entirely (the SVG carries its own shadow).
-- "Inactive" state (no fix / paused) just desaturates the SVG to grey.
+## The fix
 
-## 2. Always-follow camera
+Add the Car icon to the real header — the `HeroHeader` component inside `src/components/instructor/MobileHomeDSM2026.tsx`.
 
-Currently `setFollowMode(false)` is called on `dragstart` and `zoom_changed`. We'll:
+1. Import `Car` from `lucide-react` (already imports `Phone`, `Bell`, `Menu`).
+2. In the right-side button row (around line 812-816), insert a new `HeroButton` using `Car` between the `Phone` and `Bell` buttons:
+   ```
+   <HeroButton Icon={Phone} onPress={onPhone} />
+   <HeroButton Icon={Car} onPress={onLiveTrack} />
+   <HeroButton Icon={Bell} ... />
+   <HeroButton Icon={Menu} ... />
+   ```
+3. Add an `onLiveTrack` prop to the `HeroHeader` props type (alongside `onPhone`, `onBell`, `onMenu`).
+4. In the parent (line 317-330) wire it up: `onLiveTrack={() => navigate("/instructor/live")}`.
 
-- Remove those listeners.
-- Keep `followModeRef.current = true` permanently.
-- Delete the floating "Re-centre" button (lines ~1137-1164) — no longer needed.
-- Delete the compass/recenter events the FloatingSessionTimer dispatches (they'd be no-ops). The compass button stays for visual parity but becomes inert — or we can remove it. **Question for build phase: remove compass + recentre buttons from the right-edge stack, or leave them inert?** I'll remove them to keep the stack honest.
+## Cleanup (optional but recommended)
+
+Revert the unused `Car` icon additions from `InstructorMobileHeader.tsx` and `MobileBlueHeader.tsx` so future edits don't compound the confusion. Leave the hamburger "Live Track" menu item if you still want it as a secondary entry point.
 
 ## Files touched
 
-- `src/components/instructor/tracking/SatNavLiveMap.tsx` — new marker icon, remove drag/zoom follow-off listeners, remove re-centre button.
-- `src/components/instructor/tracking/FloatingSessionTimer.tsx` — drop Compass + Crosshair buttons from the right-edge stack (mute + hazard remain).
-
-## Out of scope
-
-No backend, no GPS polling changes, no buffer/snap logic changes. Pure marker + camera-follow behaviour.
+- `src/components/instructor/MobileHomeDSM2026.tsx` — add Car button + prop wiring.
+- (optional) revert prior Car additions in `MobileBlueHeader.tsx` and the SOS-row addition in `InstructorMobileHeader.tsx`.
