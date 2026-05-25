@@ -28,7 +28,6 @@ export function isBackgroundSyncSupported(): boolean {
  */
 export async function registerGPSSync(): Promise<boolean> {
   if (!isBackgroundSyncSupported()) {
-    console.log('[BackgroundSync] Not supported');
     return false;
   }
 
@@ -36,7 +35,6 @@ export async function registerGPSSync(): Promise<boolean> {
     const registration = await navigator.serviceWorker.ready as ServiceWorkerRegistrationWithSync;
     if (registration.sync) {
       await registration.sync.register(SYNC_TAG_GPS);
-      console.log('[BackgroundSync] GPS sync registered');
       return true;
     }
     return false;
@@ -56,7 +54,6 @@ export async function registerLessonSync(): Promise<boolean> {
     const registration = await navigator.serviceWorker.ready as ServiceWorkerRegistrationWithSync;
     if (registration.sync) {
       await registration.sync.register(SYNC_TAG_LESSONS);
-      console.log('[BackgroundSync] Lesson sync registered');
       return true;
     }
     return false;
@@ -76,7 +73,6 @@ export async function registerPaymentSync(): Promise<boolean> {
     const registration = await navigator.serviceWorker.ready as ServiceWorkerRegistrationWithSync;
     if (registration.sync) {
       await registration.sync.register(SYNC_TAG_PAYMENTS);
-      console.log('[BackgroundSync] Payment sync registered');
       return true;
     }
     return false;
@@ -113,15 +109,12 @@ export function getSyncHandler(tag: string): (() => Promise<void>) | null {
   switch (tag) {
     case SYNC_TAG_GPS:
       return async () => {
-        console.log('[BackgroundSync] Syncing GPS points...');
       };
     case SYNC_TAG_LESSONS:
       return async () => {
-        console.log('[BackgroundSync] Syncing lesson notes...');
       };
     case SYNC_TAG_PAYMENTS:
       return async () => {
-        console.log('[BackgroundSync] Syncing payments...');
       };
     default:
       return null;

@@ -177,7 +177,6 @@ export default function InstructorDocumentTemplates() {
   };
 
   const handleSaveToResources = async () => {
-    console.log("Save button clicked, instructor:", instructor?.id);
     if (!instructor?.id) {
       console.error("Save failed: no instructor id");
       toast.error("Not logged in as instructor");
@@ -186,15 +185,12 @@ export default function InstructorDocumentTemplates() {
     setSaving(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      console.log("Auth user:", user?.id);
       if (!user) throw new Error("Not authenticated");
 
       const pdfBlob = generatePDF();
-      console.log("PDF generated, size:", pdfBlob.size);
       const fileName = `${title.replace(/[^a-zA-Z0-9]/g, "-").substring(0, 50)}.pdf`;
       const filePath = `${user.id}/${Date.now()}-${fileName}`;
 
-      console.log("Uploading to path:", filePath);
       const { error: uploadError, data: uploadData } = await supabase.storage
         .from("instructor-resources")
         .upload(filePath, pdfBlob, { contentType: "application/pdf" });
@@ -202,12 +198,10 @@ export default function InstructorDocumentTemplates() {
         console.error("Storage upload error:", uploadError);
         throw uploadError;
       }
-      console.log("Upload success:", uploadData);
 
       const { data: { publicUrl } } = supabase.storage
         .from("instructor-resources")
         .getPublicUrl(filePath);
-      console.log("Public URL:", publicUrl);
 
       const { error: dbError } = await supabase
         .from("instructor_resources" as any)

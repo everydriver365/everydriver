@@ -159,7 +159,6 @@ export function PostcodeAutocomplete({
 
   // Geolocation handler
   const handleGeolocation = async () => {
-    console.log('Geolocation button clicked');
     
     if (!navigator.geolocation) {
       console.error('Geolocation not supported');
@@ -172,33 +171,27 @@ export function PostcodeAutocomplete({
     }
 
     setIsLocating(true);
-    console.log('Requesting geolocation...');
     
     navigator.geolocation.getCurrentPosition(
       async (position) => {
-        console.log('Got position:', position.coords);
         try {
           const { latitude, longitude } = position.coords;
-          console.log(`Coordinates: ${latitude}, ${longitude}`);
           
           // Reverse geocode to get postcode
           const response = await fetch(
             `https://api.postcodes.io/postcodes?lon=${longitude}&lat=${latitude}&limit=1`
           );
           
-          console.log('Postcodes.io response status:', response.status);
           
           if (!response.ok) throw new Error('Failed to fetch postcode');
           
           const data = await response.json();
-          console.log('Postcodes.io data:', data);
           
           if (data.result && data.result.length > 0) {
             const result = data.result[0];
             const formattedPostcode = result.postcode;
             const areaName = result.admin_district || result.admin_ward || null;
             
-            console.log('Found postcode:', formattedPostcode, areaName);
             
             skipNextFetchRef.current = true;
             onChange(formattedPostcode);
@@ -209,7 +202,6 @@ export function PostcodeAutocomplete({
               description: `Using ${formattedPostcode}${areaName ? `, ${areaName}` : ''}`,
             });
           } else {
-            console.log('No postcode in result');
             toast({
               title: "No postcode found",
               description: "Couldn't find a postcode for your location",
