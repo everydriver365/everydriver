@@ -164,13 +164,14 @@ export function DarkMobileAuthForm({
           <div
             className="flex items-center justify-center"
             style={{
-              width: 80,
-              height: 80,
+              width: 84,
+              height: 84,
               borderRadius: 22,
-              background: "rgba(255,255,255,0.06)",
-              border: "1px solid rgba(255,255,255,0.14)",
-              backdropFilter: "blur(20px)",
-              WebkitBackdropFilter: "blur(20px)",
+              overflow: "hidden",
+              border: "1px solid rgba(255,255,255,0.20)",
+              background: brand === "drive365" ? "transparent" : "rgba(255,255,255,0.12)",
+              backdropFilter: brand === "drive365" ? undefined : "blur(20px)",
+              WebkitBackdropFilter: brand === "drive365" ? undefined : "blur(20px)",
               boxShadow:
                 "inset 0 1px 0 rgba(255,255,255,0.22), 0 12px 32px -8px rgba(0,0,0,0.55), 0 0 32px -10px rgba(59,142,240,0.35)",
             }}
@@ -178,9 +179,14 @@ export function DarkMobileAuthForm({
             <img
               src={logoSrc}
               alt={logoAlt}
-              style={{ maxHeight: Math.min(logoHeightPx * 0.7, 56), maxWidth: 60, objectFit: "contain" }}
+              style={
+                brand === "drive365"
+                  ? { width: "100%", height: "100%", objectFit: "cover" }
+                  : { maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }
+              }
             />
           </div>
+
           {title && (
             <h1
               className="fsu fsu-2"
