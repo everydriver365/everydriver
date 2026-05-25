@@ -55,41 +55,32 @@ export function MobilePortalLoginShell({
         paddingLeft: 28,
         paddingRight: 28,
         minHeight: "100dvh",
+        ...(heroSrc
+          ? {
+              backgroundImage: `linear-gradient(180deg, rgba(15,32,68,0.15) 0%, rgba(15,32,68,0.55) 55%, rgba(15,32,68,0.92) 100%), url(${heroSrc})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center top",
+              backgroundRepeat: "no-repeat",
+            }
+          : {}),
       }}
     >
       <style>{`
         @media (max-height: 720px) {
-          .mpl-brand-gap { margin-top: 28px !important; }
+          .mpl-brand-gap { margin-top: 20px !important; }
           .mpl-welcome { font-size: 22px !important; }
         }
       `}</style>
 
-      {heroSrc && (
+      <div className="flex flex-col items-center">
         <img
-          src={heroSrc}
-          alt={heroAlt || ""}
-          className="block w-screen object-cover"
-          style={{
-            marginLeft: -28,
-            marginRight: -28,
-            marginTop: "calc(-1 * (env(safe-area-inset-top) + 40px))",
-            height: "auto",
-            maxHeight: "55dvh",
-          }}
+          src={logoSrc}
+          alt={logoAlt}
+          style={{ height: logoHeightPx }}
+          className="object-contain drop-shadow-[0_2px_12px_rgba(0,0,0,0.4)]"
         />
-      )}
-
-      <div className={cn("flex flex-col items-center", heroSrc && "mt-6")}>
-        {!heroSrc && (
-          <img
-            src={logoSrc}
-            alt={logoAlt}
-            style={{ height: logoHeightPx }}
-            className="object-contain"
-          />
-        )}
         <h1
-          className="mpl-welcome text-white font-bold mt-3 text-center"
+          className="mpl-welcome text-white font-bold mt-7 text-center drop-shadow-[0_2px_10px_rgba(0,0,0,0.4)]"
           style={{ fontSize: 26, letterSpacing: "-0.6px", lineHeight: 1.1 }}
         >
           {title}
