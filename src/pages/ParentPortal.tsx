@@ -251,12 +251,12 @@ export default function ParentPortal() {
   const handleLogout = async () => {
     localStorage.removeItem('parent_phone_verified');
     await supabase.auth.signOut().catch(() => undefined);
-    setAuthStep('phone');
+    setAuthStep('login');
     setChildren([]);
     setActivities([]);
     setRecentFeedback([]);
     setParentPhone("");
-    setOtp("");
+    setParentEmail("");
     setSelectedChild(null);
     toast.success("Logged out successfully");
   };
