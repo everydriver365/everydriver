@@ -59,7 +59,7 @@ export function MobilePortalLoginShell({
           ? {
               backgroundImage: `linear-gradient(180deg, rgba(15,32,68,0.15) 0%, rgba(15,32,68,0.55) 55%, rgba(15,32,68,0.92) 100%), url(${heroSrc})`,
               backgroundSize: "cover",
-              backgroundPosition: "center top",
+              backgroundPosition: "center -60px",
               backgroundRepeat: "no-repeat",
             }
           : {}),
