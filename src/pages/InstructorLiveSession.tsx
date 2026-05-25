@@ -411,7 +411,6 @@ export default function InstructorLiveSession() {
 
       if (devicesRes.error) throw devicesRes.error;
       let allDevices = (devicesRes.data ?? []).filter((d: any) => d.is_active !== false);
-      console.log("[Tracking] instructor.id=", instructor.id, "devices direct=", devicesRes.data);
 
       // Fallback: if direct query yielded nothing, try via canonical
       // instructor identity helper. This catches school-portal / mixed
@@ -422,7 +421,6 @@ export default function InstructorLiveSession() {
         if (user?.id) {
           const { data: idRow } = await supabase.rpc("get_instructor_id_for_user", { p_user_id: user.id });
           const fallbackId = (idRow as unknown as string) || null;
-          console.log("[Tracking] fallback instructorId=", fallbackId);
           if (fallbackId && fallbackId !== instructor.id) {
             const res = await supabase
               .from("gps_devices")
@@ -431,7 +429,6 @@ export default function InstructorLiveSession() {
               .order("last_seen_at", { ascending: false, nullsFirst: false })
               .limit(20);
             allDevices = (res.data ?? []).filter((d: any) => d.is_active !== false);
-            console.log("[Tracking] fallback devices=", res.data);
           }
         }
       }
@@ -439,7 +436,6 @@ export default function InstructorLiveSession() {
       const devices = allDevices.filter((d: any) => d.tracking_provider === "radius");
       const preferred = (prefRes.data as any)?.preferred_tracking_provider as string | null;
       const hasRadius = devices.length > 0;
-      console.log("[Tracking] hasRadius=", hasRadius, "preferred=", preferred);
 
       // Hydrate the Radius device whenever one exists, regardless of the
       // saved preference, so switching tracker is instant.
@@ -856,10 +852,8 @@ export default function InstructorLiveSession() {
       try {
         if ('wakeLock' in navigator) {
           wakeLock = await navigator.wakeLock.request('screen');
-          console.log('Wake lock acquired');
         }
       } catch (err) {
-        console.log('Wake lock error:', err);
       }
     };
 
@@ -878,7 +872,6 @@ export default function InstructorLiveSession() {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       if (wakeLock) {
         wakeLock.release();
-        console.log('Wake lock released');
       }
     };
   }, []);

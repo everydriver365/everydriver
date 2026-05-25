@@ -82,7 +82,6 @@ export function KlarnaExpressButton({
 
   const initializeKlarnaButton = useCallback(() => {
     if (!containerRef.current) {
-      console.log("Klarna: Container not ready");
       return false;
     }
 
@@ -137,14 +136,12 @@ export function KlarnaExpressButton({
       return false;
     }
 
-    console.log("Klarna: Initializing with client_id, amount:", amount, "minor units:", amountInMinorUnits);
 
     try {
       const instance = klarnaButtons.init({
         client_id: KLARNA_CLIENT_ID,
       });
 
-      console.log("Klarna: Instance created, calling load...");
 
       instance.load(
         {
@@ -153,7 +150,6 @@ export function KlarnaExpressButton({
           shape: "default",
           locale: "en-GB",
           on_click: (authorize: any) => {
-            console.log("Klarna: Button clicked, authorizing with payload:", orderPayload);
             setStatus('processing');
             
             authorize(
@@ -163,10 +159,8 @@ export function KlarnaExpressButton({
               },
               orderPayload,
               (result: any) => {
-                console.log("Klarna authorization result:", JSON.stringify(result, null, 2));
                 
                 if (result.approved && result.authorization_token) {
-                  console.log("Klarna: Payment approved with token:", result.authorization_token.substring(0, 20) + "...");
                   onSuccess(result.authorization_token, merchantReference);
                 } else if (result.error) {
                   console.error("Klarna authorization error:", result.error);
@@ -176,7 +170,6 @@ export function KlarnaExpressButton({
                     : String(result.error);
                   onError(errorMsg);
                 } else {
-                  console.log("Klarna: Payment cancelled or declined, result:", result);
                   setStatus('visible');
                   onCancel();
                 }
@@ -186,7 +179,6 @@ export function KlarnaExpressButton({
         },
         (loadResult: any) => {
           const pretty = JSON.stringify(loadResult, null, 2);
-          console.log("Klarna button load result:", pretty);
           setDebugInfo(
             JSON.stringify(
               {
@@ -203,7 +195,6 @@ export function KlarnaExpressButton({
           const canRender = Boolean(loadResult?.show_button || loadResult?.show_form);
 
           if (canRender) {
-            console.log("Klarna: Button ready to display");
             setErrorMessage(null);
             setStatus('visible');
           } else {
@@ -247,14 +238,12 @@ export function KlarnaExpressButton({
 
     // Check if SDK is already loaded
     if (getKlarnaButtons()) {
-      console.log("Klarna SDK already available");
       setStatus('ready');
       return;
     }
 
     // Set up async callback
     (window as any).klarnaAsyncCallback = () => {
-      console.log("Klarna SDK loaded via async callback");
       setStatus('ready');
     };
 
@@ -270,11 +259,9 @@ export function KlarnaExpressButton({
     script.async = true;
 
     script.onload = () => {
-      console.log("Klarna script onload fired");
       // Give SDK time to initialize
       setTimeout(() => {
         if (getKlarnaButtons()) {
-          console.log("Klarna Payments Buttons now available");
           setStatus('ready');
         } else {
           console.error("Klarna SDK loaded but Payments.Buttons not available");

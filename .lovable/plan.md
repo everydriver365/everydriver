@@ -1,87 +1,63 @@
-## Goal
+## Dead code cleanup — 12 batches
 
-Fix the broken Google Calendar push sync and add a complete admin alerting system so any failure (key decode, 401, 429, webhook, orphan, stuck queue) is surfaced immediately — never silent.
+Deletion-only sweep. Every file gets a final `rg` import check before removal. Any file with even one import is skipped and reported. Build verified after each batch; stop on first failure.
 
-## Scope
+### Batch 1 — Orphan admin components (14 files)
+`src/components/admin/`: HomepageFeaturesManager, HomepageHeroManager, HomepageSectionsManager, HomepageStatsManager, HomepageTestimonialsManager, IncludedFeaturesManager, InstructorAppFeaturesManager, OnboardingWizardManager, CourseTemplateManager, AdminEmailPanel, AdminSidebar, AdminDesktopSidebar, RecentPaymentsWidget, SOSAlertsPanel.
 
-### 1. Fix the root cause (push sync)
+### Batch 2 — Orphan marketing sections (6 files)
+`src/components/instructor-features/`: ComparisonSection, ExtraFeatures, FeatureCategorySection, FeatureHero, ProductShowcase, StatsBar.
 
-- Harden `importPrivateKey` in `supabase/functions/_shared/googleCalendarSync.ts`:
-  - Strip wrapping quotes, BOM, and stray whitespace.
-  - Accept full service-account JSON OR raw PEM block.
-  - Handle both `\n` escapes and real newlines.
-  - Detect doubly base64-encoded payloads and decode one extra layer.
-  - Replace the generic `Failed to decode base64` with a clear, actionable message.
-- Replay stuck lessons: re-enqueue all `calendar_sync_status = 'failed'` rows after the fix lands.
+### Batch 3 — Orphan money subfolder (7 files)
+Delete entire `src/components/instructor/money/`.
 
-### 2. New alerting infrastructure
+### Batch 4 — Unused shadcn primitives (4 files)
+`src/components/ui/`: hover-card, menubar, navigation-menu, toggle-group.
 
-**New table `google_sync_alerts`:**
-- `id`, `instructor_id` (nullable for system-wide), `lesson_id` (nullable), `severity` (`critical` | `high` | `medium`), `category` (`key_decode` | `auth_401` | `rate_limit_429` | `webhook` | `orphan_lesson` | `queue_stuck` | `other`), `title`, `message`, `metadata` (jsonb), `resolved_at`, `resolved_by`, `created_at`.
-- RLS: admins only (`has_role(auth.uid(), 'admin')`).
-- Indexes on `(resolved_at, severity, created_at desc)`.
+### Batch 5 — Orphan custom UI primitives (8 files)
+`src/components/ui/`: AnimatedRoutes, BounceBadge, CollapsibleLargeTitle, DrawCheckmark, HapticContextMenu, QuickActionCircle, ThemeIllustration, skeletons/FinanceSkeleton.
 
-**`raiseSyncAlert` helper (`supabase/functions/_shared/raiseSyncAlert.ts`):**
-- Inserts a row into `google_sync_alerts` using the service-role client.
-- Wrapped in try/catch so a logging failure NEVER breaks the calling sync code.
-- Deduplicates: if an unresolved alert with the same `(category, instructor_id, lesson_id)` already exists in the last hour, increment its `metadata.count` instead of inserting a new one.
-- Dispatches:
-  - Email to admin via `send-transactional-email` (template `google-sync-alert`) for `critical` and `high`.
-  - Push notification to admin devices via existing `notify-admin-*` pattern for `critical` only.
+### Batch 6 — Orphan pages with no route (17 files)
+Pages listed in cleanup prompt under `src/pages/`, `src/pages/pupil/`, `src/pages/public/`, `src/pages/school-website/`, `src/pages/instructor/`.
 
-### 3. Wire alerts into every failure point
+### Batch 7 — Entire onboarding flow
+Delete `src/pages/instructor-app/onboarding/` directory.
 
-| Failure | Where | Severity |
-|---|---|---|
-| `GOOGLE_PRIVATE_KEY` decode fails | `importPrivateKey` | critical |
-| Google returns 401 (auth) | `googleCalendarSync.ts` token mint | critical |
-| Google returns 429 (rate limit) | sync call sites | high (with `Retry-After` recorded) |
-| Webhook / push channel failure | `google-calendar-service` | high |
-| Orphan lesson detected (no `google_event_id` after sync) | `process-calendar-queue` | medium |
-| Queue stuck (>50 pending older than 15 min) | new check in `check-calendar-sync-failures` | critical |
-| `service-account-not-configured` while instructor still connected | `sync-lesson-now` | high |
+### Batch 8 — Unused desktop instructor-app pages (10 files)
+All `*Desktop.tsx` + `InstructorAppHome`, `EveryDriverInstructorHome`, `InstructorProfileRouter`.
 
-### 4. 429 backoff
+### Batch 9 — Orphan hooks (12 files)
+`src/hooks/`: useAdminDashboardStats, useCancellationRequests, useFuelLog, useGPSAutoReconnect, useHeroVideo, useOfflineData, useOfflineGPSQueue, useOfflineMutation, usePremiumPlacement, useProfitAnalysis, useSkeletonMorph, useWaitlistMatching.
 
-Add `Retry-After`-aware backoff in `process-calendar-queue` so we honour Google's rate limit instead of hammering it.
+### Batch 10 — Unused npm packages
+Remove `@capacitor-community/contacts`, `@capacitor/preferences`, `@react-leaflet/core`, `phosphor-react` via `bun remove`.
 
-### 5. Admin UI
+### Batch 11 — Admin-gate lab/demo routes
+Inspect `src/routes/demoRoutes.tsx` (and any other lab routes). Wrap each `<Route>` element with the existing `ProtectedAdminRoute` guard. Non-admin visitors redirect to `/admin/login` (same behaviour as other admin routes). No deletions.
 
-New panel `src/components/admin/GoogleSyncAlertsPanel.tsx` (mounted on the admin dashboard alongside `SOSAlertsPanel` and `AdminAlerts`):
-- Red badge with unresolved count.
-- Severity-coloured rows (critical = red, high = orange, medium = amber).
-- Filters: All / Unresolved / By severity / By category.
-- Each row shows: title, message, instructor name (if any), lesson link (if any), occurrence count, first-seen + last-seen timestamps.
-- "Mark resolved" button (single + bulk).
-- Realtime subscription to `google_sync_alerts` so new failures appear without refresh.
+### Batch 12 — Strip console.logs
+Remove only `console.log(...)` lines (preserve `console.error` / `console.warn`) from:
+- `src/components/booking/KlarnaExpressButton.tsx`
+- `src/components/DomainRouter.tsx` *(corrected path — file is in components/, not pages/)*
+- `src/components/PostcodeAutocomplete.tsx`
+- `src/pages/InstructorLiveSession.tsx`
+- `src/lib/backgroundSync.ts`
+- `src/pages/InstructorDocumentTemplates.tsx`
 
-### 6. Cron
+### Explicitly NOT touched
+- `instructor/ui/PortalButton|PortalCard|SettingsRow` — flagged for design-system investigation, not deletion.
+- All edge functions — cron schedules not yet verified.
+- `LiveTrackingMap`, `GoogleLiveTrackingMap`, `WhatsAppInbox`, `WhatsAppBadge`, duplicate lesson cards / payment modals, `window.location` call sites — need individual review.
 
-- Extend `check-calendar-sync-failures-daily` to also raise alerts for:
-  - Orphan lessons (no `google_event_id`, not cancelled, in future).
-  - Stuck queue rows.
-- Add hourly run (in addition to daily) for stuck-queue detection.
+### Verification protocol per batch
+1. For each path: `rg -l --fixed-strings "<basename>" -g '!<self>'` across `src/` and `supabase/functions/`. Skip + report if any hit.
+2. Delete confirmed-orphan files (`rm`).
+3. Wait for harness build; if errors, restore the offending file from git and report.
+4. Report: deleted / skipped (with reason) / build status.
 
-## Out of scope
+### Risks
+- Basename matching can miss dynamic imports built from string concatenation. Mitigation: per-file `rg` check uses fixed-string match on the component/hook name; failures roll back via the harness build.
+- Removing packages may break files we didn't think were importing them. Mitigation: build runs after Batch 10; restore from `package.json` history if it breaks.
+- Some "orphan pages" may be linked from CMS-stored strings in the DB (not the codebase). Acceptable risk — they'll 404, easy to restore.
 
-- No changes to the pull side (`google-calendar-service` external event sync) beyond adding alert hooks.
-- No instructor-facing UI changes.
-- No schema changes to `scheduled_lessons` or `calendar_sync_queue`.
-- No replacement of service-account architecture with per-user OAuth.
-
-## Verification
-
-1. Add a test lesson on mobile — appears in Google Calendar within seconds.
-2. `calendar_sync_queue` shows no new `Failed to decode base64` rows.
-3. Force a failure (e.g. temporarily bad key in staging) → alert appears in admin panel, email arrives, push fires.
-4. Repeat the same failure 10× → single alert row with `count: 10`, not 10 rows.
-5. Mark resolved → row disappears from unresolved view.
-
-## Technical notes
-
-- `raiseSyncAlert` must use the service-role client and never `throw` — wrap the whole body in try/catch and `console.error` on failure.
-- Email template `google-sync-alert` to be scaffolded via the transactional email tool after migration approval.
-- Reuse existing `admin_alerts` realtime pattern from `SOSAlertsPanel` for the UI.
-- Dedup key: `md5(category || ':' || coalesce(instructor_id::text,'') || ':' || coalesce(lesson_id::text,''))` stored as `dedupe_key` column with partial unique index `WHERE resolved_at IS NULL`.
-
-Ready to implement once approved.
+Estimated impact: ~80 files removed, 4 packages removed, lab routes gated, ~50 `console.log` lines stripped. No behaviour change for end users.
