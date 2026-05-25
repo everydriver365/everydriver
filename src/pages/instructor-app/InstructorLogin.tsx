@@ -267,6 +267,8 @@ export default function InstructorLogin() {
       <DarkMobileAuthForm
         logoSrc={dsmLogo}
         logoAlt="Driving School Manager"
+        heroSrc={mobileLoginHero}
+        heroAlt="Driving School Manager"
         title={isForgotPassword ? "Reset password" : "Welcome back"}
         subtitle={
           isForgotPassword
