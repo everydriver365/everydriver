@@ -3,12 +3,11 @@ import {
   Play,
   AlertTriangle,
   RefreshCw,
-  Compass,
-  Crosshair,
   VolumeX,
   Volume2,
   TriangleAlert,
 } from "lucide-react";
+
 import { useCallback, useEffect, useRef, useState } from "react";
 
 interface FloatingSessionTimerProps {
@@ -291,22 +290,8 @@ export function FloatingSessionTimer({
           animate={{ x: 0, opacity: 1 }}
           transition={{ delay: 0.1, type: "spring", damping: 26, stiffness: 280 }}
         >
-          <ControlButton
-            aria-label="Compass"
-            onClick={() => {
-              window.dispatchEvent(new CustomEvent("live-map:compass"));
-            }}
-          >
-            <Compass className="h-5 w-5" style={{ color: "#1C1C1E" }} />
-          </ControlButton>
-          <ControlButton
-            aria-label="Re-centre map"
-            onClick={() => {
-              window.dispatchEvent(new CustomEvent("live-map:recentre"));
-            }}
-          >
-            <Crosshair className="h-5 w-5" style={{ color: "#1C1C1E" }} />
-          </ControlButton>
+          {/* Compass + Re-centre removed — map is always-follow. */}
+
           <ControlButton
             aria-label={muted ? "Unmute alerts" : "Mute alerts"}
             onClick={() => setMuted((m) => !m)}
