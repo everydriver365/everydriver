@@ -327,13 +327,14 @@ export default function LiveGoogleTrackingMap({ className = "", deviceId: device
     }
 
     marker.setIcon({
-      path: w.google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
-      scale: 6,
+      path: CAR_SVG_PATH,
+      scale: 1.4,
       rotation: device?.last_heading ?? 0,
       fillOpacity: 1,
       fillColor: markerColor,
       strokeColor: "white",
-      strokeWeight: 3,
+      strokeWeight: 2,
+      anchor: new w.google.maps.Point(0, 0),
     });
 
     // Update speed badge overlay
