@@ -26,6 +26,8 @@ import {
 import { DarkMobileAuthForm } from "./DarkMobileAuthForm";
 import dsmLogo from "@/assets/dsm-logo.png";
 import drive365Logo from "@/assets/drive365-logo.png";
+const drive365Icon = "/apple-touch-icon-365.png";
+
 
 type AsyncResult = { error?: string } | void;
 
