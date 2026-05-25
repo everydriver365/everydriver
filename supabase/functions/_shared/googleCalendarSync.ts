@@ -166,12 +166,35 @@ async function googleAuthedFetch(
   });
 
   let res = await fetch(url, buildInit(accessToken));
+
+  if (res.status === 429) {
+    void raiseSyncAlert({
+      category: "rate_limit_429",
+      severity: "high",
+      title: "Google Calendar API rate-limited (429)",
+      message: `URL: ${url}`,
+      metadata: { retryAfter: res.headers.get("Retry-After"), url },
+    });
+    return { res, tokenUsed: accessToken };
+  }
+
   if (res.status !== 401) return { res, tokenUsed: accessToken };
 
   // Force re-mint and retry exactly once.
   invalidateGoogleTokenCache();
   const fresh = await getServiceAccountAccessToken();
   res = await fetch(url, buildInit(fresh));
+
+  if (res.status === 401) {
+    void raiseSyncAlert({
+      category: "auth_401",
+      severity: "critical",
+      title: "Google Calendar 401 after token refresh",
+      message: `URL: ${url}. Service account may be revoked or calendar lost access.`,
+      metadata: { url },
+    });
+  }
+
   return { res, tokenUsed: fresh };
 }
 
