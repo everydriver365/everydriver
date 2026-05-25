@@ -28,6 +28,7 @@ import { UnifiedMobileLoginCard } from "@/components/auth/UnifiedMobileLoginCard
 import { cn } from "@/lib/utils";
 import dsmLogo from "@/assets/dsm-logo.png";
 import instructorHero from "@/assets/every-instructor-hero.webp";
+import mobileLoginHero from "@/assets/mobile-login-hero.png";
 
 const loginSchema = z.object({
   email: z.string().trim().email("Please enter a valid email address").max(255),
@@ -249,6 +250,8 @@ export default function InstructorPortalLogin() {
         portalName="Drive365"
         descriptor="Instructor portal"
         biometricScope="instructor"
+        heroImage={mobileLoginHero}
+        heroAlt="Drive365 instructor"
         onSignIn={async (em, pw, remember) => {
           const { error: signInError } = await signIn(em, pw);
           if (signInError) {

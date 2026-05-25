@@ -45,6 +45,10 @@ export interface UnifiedMobileLoginCardProps {
   footer?: ReactNode;
   /** Default visibility — render only on mobile by default. */
   className?: string;
+  /** Optional hero illustration rendered above the card. */
+  heroImage?: string;
+  /** Optional alt text for the hero image. */
+  heroAlt?: string;
 }
 
 const FONT = `Poppins, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
@@ -202,6 +206,8 @@ export function UnifiedMobileLoginCard({
   googleSlot,
   footer,
   className = "md:hidden",
+  heroImage,
+  heroAlt,
 }: UnifiedMobileLoginCardProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -313,12 +319,28 @@ export function UnifiedMobileLoginCard({
 
   return (
     <div className={className} style={styles.root}>
-      <div style={styles.card}>
-        <div style={styles.brand}>
-          <img src="/app-logo.png" alt={portalName} style={styles.logo} />
-          <h1 style={styles.portalName}>{portalName}</h1>
-          <p style={styles.descriptor}>{descriptor}</p>
-        </div>
+      <div style={{ width: "100%", maxWidth: 400, display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
+        {heroImage && (
+          <img
+            src={heroImage}
+            alt={heroAlt || ""}
+            style={{
+              width: "100%",
+              maxWidth: 400,
+              aspectRatio: "9 / 16",
+              maxHeight: "38vh",
+              objectFit: "cover",
+              borderRadius: 22,
+              display: "block",
+            }}
+          />
+        )}
+        <div style={{ ...styles.card, marginTop: 0 }}>
+          <div style={styles.brand}>
+            <img src="/app-logo.png" alt={portalName} style={styles.logo} />
+            <h1 style={styles.portalName}>{portalName}</h1>
+            <p style={styles.descriptor}>{descriptor}</p>
+          </div>
 
         {biometricScope && bioAvailable && (
           <button
@@ -434,6 +456,7 @@ export function UnifiedMobileLoginCard({
         )}
 
         {footer && <div style={{ marginTop: 18, textAlign: "center" }}>{footer}</div>}
+        </div>
       </div>
     </div>
   );

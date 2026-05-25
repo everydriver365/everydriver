@@ -36,14 +36,9 @@ import { ParentPushBanner } from "@/components/parent/ParentPushBanner";
 import { ParentPaymentTopUp } from "@/components/parent/ParentPaymentTopUp";
 import { ParentWelcomeTour } from "@/components/parent/ParentWelcomeTour";
 import { ParentDashboardSkeleton } from "@/components/ui/skeletons/ParentDashboardSkeleton";
-import {
-  MobilePortalLoginShell,
-  darkPortalInputClass,
-  darkPortalInputStyle,
-  darkPortalLabelClass,
-  darkPortalPrimaryBtnClass,
-} from "@/components/auth/MobilePortalLoginShell";
+import { UnifiedMobileLoginCard } from "@/components/auth/UnifiedMobileLoginCard";
 import drive365Logo from "@/assets/drive365-logo.png";
+import mobileLoginHero from "@/assets/mobile-login-hero.png";
 
 interface Child {
   id: string;
@@ -79,7 +74,7 @@ interface LessonFeedback {
   rating: number | null;
 }
 
-type AuthStep = 'phone' | 'otp' | 'verified';
+type AuthStep = 'login' | 'verified';
 type ParentSection = 'dashboard' | 'children' | 'feedback' | 'settings' | 'child-detail';
 type ChildDetailTab = 'overview' | 'lessons' | 'progress' | 'payments';
 
@@ -123,8 +118,8 @@ function TestStatusRow({ label, date, passed }: { label: string; date: string | 
 
 export default function ParentPortal() {
   const [parentPhone, setParentPhone] = useState("");
-  const [otp, setOtp] = useState("");
-  const [authStep, setAuthStep] = useState<AuthStep>('phone');
+  const [parentEmail, setParentEmail] = useState("");
+  const [authStep, setAuthStep] = useState<AuthStep>('login');
   const [loading, setLoading] = useState(false);
   const [children, setChildren] = useState<Child[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -137,71 +132,49 @@ export default function ParentPortal() {
   useEffect(() => {
     (async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      const phoneFromSession = (session?.user?.user_metadata as any)?.parent_phone as string | undefined;
-      if (session && phoneFromSession) {
+      if (!session) return;
+      const emailFromSession = session.user.email || undefined;
+      const phoneFromSession = (session.user.user_metadata as any)?.parent_phone as string | undefined;
+      if (emailFromSession) {
+        setParentEmail(emailFromSession);
+        setAuthStep('verified');
+        fetchChildrenData({ email: emailFromSession, phone: phoneFromSession });
+      } else if (phoneFromSession) {
         setParentPhone(phoneFromSession);
         setAuthStep('verified');
-        fetchChildrenData(phoneFromSession);
+        fetchChildrenData({ phone: phoneFromSession });
       }
     })();
   }, []);
 
-  const handleSendOTP = async () => {
-    if (!parentPhone.trim()) {
-      toast.error("Please enter your phone number");
-      return;
-    }
-    setLoading(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("send-parent-otp", {
-        body: { phone: parentPhone.trim() },
-      });
-      if (error) throw error;
-      if (data.error) { toast.error(data.error); return; }
-      toast.success(`Verification code sent! Found ${data.childCount} child${data.childCount > 1 ? 'ren' : ''}`);
-      setAuthStep('otp');
-    } catch (error) {
-      console.error("Error sending OTP:", error);
-      toast.error("Unable to send verification code");
-    } finally {
-      setLoading(false);
-    }
+  const handleEmailSignIn = async (email: string, password: string): Promise<{ error?: string } | void> => {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) return { error: error.message };
+    setParentEmail(email);
+    setAuthStep('verified');
+    await fetchChildrenData({ email });
+    if (data.user) toast.success("Welcome to the Parent Portal!");
   };
 
-  const handleVerifyOTP = async () => {
-    if (otp.length !== 6) { toast.error("Please enter the 6-digit code"); return; }
-    setLoading(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("verify-parent-otp", {
-        body: { phone: parentPhone.trim(), code: otp },
-      });
-      if (error) throw error;
-      if (data.error) { toast.error(data.error); return; }
-      const tokenHash: string | undefined = data?.token_hash;
-      if (!tokenHash) throw new Error("Missing session token");
-      const { error: verifyErr } = await supabase.auth.verifyOtp({
-        token_hash: tokenHash,
-        type: "magiclink",
-      });
-      if (verifyErr) throw verifyErr;
-      setAuthStep('verified');
-      await fetchChildrenData(parentPhone.trim());
-      toast.success("Welcome to the Parent Portal!");
-    } catch (error) {
-      console.error("Error verifying OTP:", error);
-      toast.error("Verification failed");
-    } finally {
-      setLoading(false);
-    }
+  const handleForgotPassword = async (email: string): Promise<{ error?: string } | void> => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    if (error) return { error: error.message };
   };
 
-  const fetchChildrenData = async (phone: string) => {
+
+  const fetchChildrenData = async (opts: { email?: string; phone?: string }) => {
     try {
-      const cleanPhone = phone.replace(/\s+/g, "");
-        const { data: pupils, error: pupilsError } = await supabase
-          .from("pupils")
-          .select("id, name, lessons_completed, progress, account_balance, prepaid_hours, test_date, test_passed, theory_test_date, theory_test_passed, instructor_id")
-          .or(`parent_phone.ilike.%${cleanPhone.slice(-9)}`);
+      const cleanPhone = opts.phone?.replace(/\s+/g, "");
+      const filters: string[] = [];
+      if (opts.email) filters.push(`parent_email.eq.${opts.email.toLowerCase()}`);
+      if (cleanPhone) filters.push(`parent_phone.ilike.%${cleanPhone.slice(-9)}`);
+      if (filters.length === 0) { setChildren([]); return; }
+      const { data: pupils, error: pupilsError } = await supabase
+        .from("pupils")
+        .select("id, name, lessons_completed, progress, account_balance, prepaid_hours, test_date, test_passed, theory_test_date, theory_test_passed, instructor_id")
+        .or(filters.join(","));
 
       if (pupilsError) throw pupilsError;
       if (!pupils || pupils.length === 0) { setChildren([]); return; }
@@ -278,12 +251,12 @@ export default function ParentPortal() {
   const handleLogout = async () => {
     localStorage.removeItem('parent_phone_verified');
     await supabase.auth.signOut().catch(() => undefined);
-    setAuthStep('phone');
+    setAuthStep('login');
     setChildren([]);
     setActivities([]);
     setRecentFeedback([]);
     setParentPhone("");
-    setOtp("");
+    setParentEmail("");
     setSelectedChild(null);
     toast.success("Logged out successfully");
   };
@@ -297,7 +270,7 @@ export default function ParentPortal() {
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "scheduled_lessons", filter: `pupil_id=in.(${pupilIds.join(',')})` },
-        () => { if (parentPhone) void fetchChildrenData(parentPhone); }
+        () => { if (parentEmail || parentPhone) void fetchChildrenData({ email: parentEmail || undefined, phone: parentPhone || undefined }); }
       )
       .subscribe();
     return () => { supabase.removeChannel(channel); };
@@ -324,101 +297,22 @@ export default function ParentPortal() {
 
   const negativeBalanceCount = children.filter(c => c.account_balance < 0).length;
 
-  // Phone entry screen
-  if (authStep === 'phone') {
+  // Login screen — email + password + Face ID
+  if (authStep === 'login') {
     return (
-      <MobilePortalLoginShell
-        logoSrc={drive365Logo}
-        logoAlt="Drive365 Parent"
-        title="Parent Portal"
-        subtitle="Sign in to monitor your child's driving progress"
-      >
-        <div className="flex flex-col flex-1">
-          <label className={darkPortalLabelClass}>Phone number</label>
-          <div className="relative mb-4">
-            <Phone className="absolute left-[14px] top-1/2 -translate-y-1/2 h-[18px] w-[18px] text-white" strokeWidth={1.8} />
-            <input
-              type="tel"
-              inputMode="tel"
-              autoComplete="tel"
-              placeholder="07XXX XXXXXX"
-              value={parentPhone}
-              onChange={(e) => setParentPhone(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSendOTP()}
-              className={darkPortalInputClass}
-              style={darkPortalInputStyle}
-            />
-          </div>
-
-          <motion.button
-            type="button"
-            whileTap={{ scale: 0.985, opacity: 0.85 }}
-            onClick={handleSendOTP}
-            disabled={loading || !parentPhone.trim()}
-            style={{ opacity: loading || !parentPhone.trim() ? 0.6 : 1 }}
-            className={darkPortalPrimaryBtnClass}
-          >
-            <span className="py-4 text-[15px] flex items-center justify-center gap-2">
-              {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Send verification code"}
-            </span>
-          </motion.button>
-
-          <p className="text-[12px] text-white/60 text-center mt-3">
-            We'll send a 6-digit code to verify your identity.
-          </p>
-        </div>
-      </MobilePortalLoginShell>
+      <UnifiedMobileLoginCard
+        className=""
+        portalName="Drive365 Parent"
+        descriptor="Monitor your child's driving progress"
+        biometricScope="parent"
+        heroImage={mobileLoginHero}
+        heroAlt="Drive365 parent portal"
+        onSignIn={async (em, pw) => handleEmailSignIn(em, pw)}
+        onForgot={async (em) => handleForgotPassword(em)}
+      />
     );
   }
 
-  // OTP verification screen
-  if (authStep === 'otp') {
-    return (
-      <MobilePortalLoginShell
-        logoSrc={drive365Logo}
-        logoAlt="Drive365 Parent"
-        title="Enter verification code"
-        subtitle={`We sent a 6-digit code to ${parentPhone}`}
-        footer={
-          <button
-            type="button"
-            onClick={() => setAuthStep('phone')}
-            className="text-[13px] font-semibold text-white"
-          >
-            Use a different number
-          </button>
-        }
-      >
-        <div className="flex flex-col flex-1 items-center">
-          <div className="my-2">
-            <InputOTP value={otp} onChange={(value) => setOtp(value)} maxLength={6}>
-              <InputOTPGroup>
-                <InputOTPSlot index={0} className="bg-white/15 border-white/30 text-white" />
-                <InputOTPSlot index={1} className="bg-white/15 border-white/30 text-white" />
-                <InputOTPSlot index={2} className="bg-white/15 border-white/30 text-white" />
-                <InputOTPSlot index={3} className="bg-white/15 border-white/30 text-white" />
-                <InputOTPSlot index={4} className="bg-white/15 border-white/30 text-white" />
-                <InputOTPSlot index={5} className="bg-white/15 border-white/30 text-white" />
-              </InputOTPGroup>
-            </InputOTP>
-          </div>
-
-          <motion.button
-            type="button"
-            whileTap={{ scale: 0.985, opacity: 0.85 }}
-            onClick={handleVerifyOTP}
-            disabled={loading || otp.length !== 6}
-            style={{ opacity: loading || otp.length !== 6 ? 0.6 : 1 }}
-            className={`${darkPortalPrimaryBtnClass} mt-6`}
-          >
-            <span className="py-4 text-[15px] flex items-center justify-center gap-2">
-              {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Verify & continue"}
-            </span>
-          </motion.button>
-        </div>
-      </MobilePortalLoginShell>
-    );
-  }
 
 
   // No children found

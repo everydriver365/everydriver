@@ -27,7 +27,8 @@ export type BiometricScope =
   | "instructor"
   | "pupil"
   | "admin"
-  | "school";
+  | "school"
+  | "parent";
 
 const SERVER_PREFIX = "app.lovable.everydriver";
 

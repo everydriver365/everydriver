@@ -31,6 +31,7 @@ import { cn } from "@/lib/utils";
 import drive365Logo from "@/assets/drive365-logo.png";
 import drive365LogoWhite from "@/assets/drive365-logo-white.png";
 import pupilHero from "@/assets/drive365-hero-learner.webp";
+import mobileLoginHero from "@/assets/mobile-login-hero.png";
 import { MobileLoginHero } from "@/components/auth/MobileLoginHero";
 import { UnifiedMobileLoginCard } from "@/components/auth/UnifiedMobileLoginCard";
 import {
@@ -320,6 +321,8 @@ export default function PupilLogin() {
           portalName="Drive365"
           descriptor="For pupils"
           biometricScope="pupil"
+          heroImage={mobileLoginHero}
+          heroAlt="Drive365 pupil"
           onSignIn={async (em, pw, _remember) => {
             const ok = await performLogin(em, pw);
             if (!ok) return { error: "Could not sign you in" };
