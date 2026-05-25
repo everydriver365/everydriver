@@ -6,6 +6,9 @@ interface Props {
   logoAlt: string;
   /** Override the rendered logo height (px). Default 44. */
   logoHeightPx?: number;
+  /** Optional hero illustration rendered above the logo. */
+  heroSrc?: string;
+  heroAlt?: string;
   title: string;
   subtitle: string;
   /** Form body. */
