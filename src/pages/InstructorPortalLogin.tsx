@@ -25,6 +25,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { MobileLoginHero } from "@/components/auth/MobileLoginHero";
 import { useClearOnDeepLink } from "@/hooks/useClearOnDeepLink";
 import { UnifiedMobileLoginCard } from "@/components/auth/UnifiedMobileLoginCard";
+import { DsmBlueMobileLogin } from "@/components/auth/DsmBlueMobileLogin";
 import { cn } from "@/lib/utils";
 import dsmLogo from "@/assets/dsm-logo.png";
 import instructorHero from "@/assets/every-instructor-hero.webp";
@@ -245,16 +246,9 @@ export default function InstructorPortalLogin() {
 
   return (
     <div className="min-h-screen bg-white lg:bg-gradient-to-br lg:from-slate-900 lg:via-slate-800 lg:to-slate-900 flex flex-col lg:flex-row">
-      {/* ============== MOBILE-ONLY — unified white-card login ============== */}
-      <UnifiedMobileLoginCard
-        portalName="DSM"
-        descriptor="Instructor portal"
-        brand="dsm"
-        subtitle="Sign in to your DSM instructor portal"
+      {/* ============== MOBILE-ONLY — DSM blue login ============== */}
+      <DsmBlueMobileLogin
         biometricScope="instructor"
-        heroImage={mobileLoginHero}
-        heroAlt="DSM instructor"
-
         onSignIn={async (em, pw, remember) => {
           const { error: signInError } = await signIn(em, pw);
           if (signInError) {
@@ -271,7 +265,7 @@ export default function InstructorPortalLogin() {
           const { error: resetError } = await resetPassword(em);
           if (resetError) return { error: resetError.message };
         }}
-        googleSlot={
+        footer={
           <GoogleSignInButton
             redirectTo={`${window.location.origin}/auth/redirect?portal=instructor`}
             className="w-full"
