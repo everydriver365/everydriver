@@ -392,27 +392,34 @@ export function SatNavLiveMap({
     return () => { cancelled = true; };
   }, [ready, latitude, longitude, upstreamRoadName, fallbackRoadName]);
 
+  // Top-down car silhouette (hatchback). Path is centred on (0,0) and points
+  // north (negative-Y is forward), so Google Maps' `rotation` rotates it
+  // around the car's centre with no offset jitter.
   const getArrowIcon = useCallback((rotation: number, active: boolean): google.maps.Symbol => ({
-    path: "M 0,-12 L -7,11 L 0,6 L 7,11 Z",
-    fillColor: active ? "#0A84FF" : "#8E8E93",
+    path:
+      "M -7,-15 C -7,-17 -5,-18 -3,-18 L 3,-18 C 5,-18 7,-17 7,-15 " +
+      "L 8,-6 L 8,12 L 7,16 C 7,17 6,18 4,18 L -4,18 C -6,18 -7,17 -7,16 " +
+      "L -8,12 L -8,-6 Z",
+    fillColor: active ? "#1C2A4A" : "#8E8E93",
     fillOpacity: 1,
     strokeColor: "#FFFFFF",
-    strokeWeight: 1.5,
-    scale: active ? 1.6 : 1.2,
+    strokeWeight: 1.4,
+    scale: active ? 1.35 : 1.1,
     rotation,
     anchor: new google.maps.Point(0, 0),
   }), []);
 
-  // Tight accuracy halo under the arrow — small blue tint, no stroke.
-  // Reads as a deliberate accuracy disc rather than a render artifact.
+  // Accuracy halo kept as a soft disc under the car for visibility on
+  // satellite/dark map styles. Tint matches the car body.
   const getShadowIcon = useCallback((active: boolean): google.maps.Symbol => ({
     path: google.maps.SymbolPath.CIRCLE,
-    fillColor: "#0A84FF",
-    fillOpacity: 0.18,
+    fillColor: "#1C2A4A",
+    fillOpacity: 0.16,
     strokeOpacity: 0,
-    scale: active ? 18 : 14,
+    scale: active ? 22 : 16,
     anchor: new google.maps.Point(0, 0),
   }), []);
+
 
   // ── Sat-nav camera helpers ──────────────────────────────────────────────
   // Zoom adapts to speed so the driver sees an appropriate amount of road.
