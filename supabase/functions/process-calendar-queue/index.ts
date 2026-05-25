@@ -14,6 +14,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { syncLessonNow } from "../_shared/googleCalendarSync.ts";
 import { sendWhatsAppTemplate } from "../_shared/whatsapp-template.ts";
+import { raiseSyncAlert } from "../_shared/raiseSyncAlert.ts";
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
