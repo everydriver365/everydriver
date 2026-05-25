@@ -50,6 +50,8 @@ interface Props {
   surface?: LoginSurface;
   /** Vertical px offset for the hero image (negative = move higher). */
   heroOffsetY?: number;
+  /** Override the default footer (sign-up link / back link). */
+  customFooter?: ReactNode;
 }
 
 export function DarkMobileAuthForm({
