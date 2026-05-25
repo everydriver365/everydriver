@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell, Plus, Menu, ChevronLeft, Phone } from "lucide-react";
+import { Bell, Plus, Menu, ChevronLeft, Phone, Car } from "lucide-react";
 import dsmLogo from "@/assets/dsm-logo.png";
 import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
 import { useAICallDivert } from "@/hooks/useAICallDivert";
@@ -123,6 +123,15 @@ export function MobileBlueHeader({
                 <Phone size={20} strokeWidth={1.9} color={divertColor} aria-hidden="true" />
               </button>
               <AutoTrackingIndicator instructorId={instructorId} />
+              <button
+                onClick={() => navigate("/instructor/live")}
+                className="flex items-center justify-center transition-transform active:scale-95"
+                style={{ width: 44, height: 44, margin: -12, WebkitTapHighlightColor: "transparent" }}
+                aria-label="Live track"
+                title="Live track"
+              >
+                <Car size={20} strokeWidth={1.7} color={ICON_BASE} aria-hidden="true" />
+              </button>
             </>
           )}
           <button
