@@ -85,6 +85,7 @@ export function DarkMobileAuthForm({
   hiddenSlot,
   surface = "dark",
   heroOffsetY = 0,
+  customFooter,
 }: Props) {
   const canSubmit = isForgot ? email.trim().length > 0 : email.trim().length > 0 && password.length > 0;
   const t = getPortalFormTokens(surface);
