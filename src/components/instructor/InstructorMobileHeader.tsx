@@ -187,7 +187,7 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
                     Settings
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate("/instructor/live")}>
-                    <MapPin className="mr-2 h-4 w-4" />
+                    <Car className="mr-2 h-4 w-4" />
                     Live Track
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setPaymentModalOpen(true)}>
