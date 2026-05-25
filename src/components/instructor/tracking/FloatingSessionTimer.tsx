@@ -277,50 +277,62 @@ export function FloatingSessionTimer({
       {/* ────────────────────────────────────────────────────────────────
           2. RIGHT-EDGE CONTROL STACK — compass / recenter / mute / hazard
           ──────────────────────────────────────────────────────────────── */}
-      <motion.div
-        className="fixed z-40"
+      <div
+        className="fixed z-50"
         style={{
           right: 12,
           top: "50%",
           transform: "translateY(-50%)",
-          display: "flex",
-          flexDirection: "column",
-          gap: 10,
         }}
-        initial={{ x: 60, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        transition={{ delay: 0.1, type: "spring", damping: 26, stiffness: 280 }}
       >
-        <ControlButton aria-label="Compass">
-          <Compass className="h-5 w-5" style={{ color: "#1C1C1E" }} />
-        </ControlButton>
-        <ControlButton aria-label="Re-centre map">
-          <Crosshair className="h-5 w-5" style={{ color: "#1C1C1E" }} />
-        </ControlButton>
-        <ControlButton
-          aria-label={muted ? "Unmute alerts" : "Mute alerts"}
-          onClick={() => setMuted((m) => !m)}
-          active={muted}
-          activeColor="#E11D2A"
+        <motion.div
+          style={{ display: "flex", flexDirection: "column", gap: 10 }}
+          initial={{ x: 60, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ delay: 0.1, type: "spring", damping: 26, stiffness: 280 }}
         >
-          {muted ? (
-            <VolumeX className="h-5 w-5" style={{ color: "#E11D2A" }} />
-          ) : (
-            <Volume2 className="h-5 w-5" style={{ color: "#1C1C1E" }} />
-          )}
-        </ControlButton>
-        <ControlButton
-          aria-label={hazardArmed ? "Disarm hazard" : "Mark hazard"}
-          onClick={() => setHazardArmed((h) => !h)}
-          active={hazardArmed}
-          activeColor="#F59E0B"
-        >
-          <TriangleAlert
-            className="h-5 w-5"
-            style={{ color: hazardArmed ? "#F59E0B" : "#1C1C1E" }}
-          />
-        </ControlButton>
-      </motion.div>
+          <ControlButton
+            aria-label="Compass"
+            onClick={() => {
+              window.dispatchEvent(new CustomEvent("live-map:compass"));
+            }}
+          >
+            <Compass className="h-5 w-5" style={{ color: "#1C1C1E" }} />
+          </ControlButton>
+          <ControlButton
+            aria-label="Re-centre map"
+            onClick={() => {
+              window.dispatchEvent(new CustomEvent("live-map:recentre"));
+            }}
+          >
+            <Crosshair className="h-5 w-5" style={{ color: "#1C1C1E" }} />
+          </ControlButton>
+          <ControlButton
+            aria-label={muted ? "Unmute alerts" : "Mute alerts"}
+            onClick={() => setMuted((m) => !m)}
+            active={muted}
+            activeColor="#E11D2A"
+          >
+            {muted ? (
+              <VolumeX className="h-5 w-5" style={{ color: "#E11D2A" }} />
+            ) : (
+              <Volume2 className="h-5 w-5" style={{ color: "#1C1C1E" }} />
+            )}
+          </ControlButton>
+          <ControlButton
+            aria-label={hazardArmed ? "Disarm hazard" : "Mark hazard"}
+            onClick={() => setHazardArmed((h) => !h)}
+            active={hazardArmed}
+            activeColor="#F59E0B"
+          >
+            <TriangleAlert
+              className="h-5 w-5"
+              style={{ color: hazardArmed ? "#F59E0B" : "#1C1C1E" }}
+            />
+          </ControlButton>
+        </motion.div>
+      </div>
+
 
       {/* ────────────────────────────────────────────────────────────────
           3. SPEED PILL — bottom-left, limit roundel + current mph
