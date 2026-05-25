@@ -72,8 +72,7 @@ export function CalendarSyncStatusTile({ instructorId }: Props) {
 
   useEffect(() => { load(); }, [load]);
 
-  const retry = async (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const retry = async () => {
     setRetrying(true);
     try {
       await supabase.functions.invoke("process-calendar-queue", { body: {} });
@@ -85,6 +84,7 @@ export function CalendarSyncStatusTile({ instructorId }: Props) {
       setRetrying(false);
     }
   };
+
 
   if (loading) {
     return (
