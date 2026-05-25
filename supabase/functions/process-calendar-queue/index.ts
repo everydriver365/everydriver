@@ -63,6 +63,16 @@ Deno.serve(async (req) => {
 
     for (const item of unique) {
       try {
+        // Per-lesson advisory lock — prevents two concurrent sync runs
+        // from creating duplicate Google Calendar events on rapid edits.
+        const { data: gotLock } = await supabase.rpc("try_lock_lesson_sync", {
+          p_lesson_id: item.lesson_id,
+        });
+        if (gotLock === false) {
+          // Another worker is processing this lesson; leave it for the next run.
+          continue;
+        }
+
         if (item.action === "syncLesson" || !item.action) {
           // Check awaiting_initial_payment before attempting sync.
           const { data: lesson } = await supabase

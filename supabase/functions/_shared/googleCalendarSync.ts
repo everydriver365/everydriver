@@ -168,15 +168,24 @@ async function googleAuthedFetch(
   let res = await fetch(url, buildInit(accessToken));
 
   if (res.status === 429) {
-    void raiseSyncAlert({
-      category: "rate_limit_429",
-      severity: "high",
-      title: "Google Calendar API rate-limited (429)",
-      message: `URL: ${url}`,
-      metadata: { retryAfter: res.headers.get("Retry-After"), url },
-    });
+    // Honour Retry-After (seconds), default 60s, cap at 120s to bound queue time.
+    const ra = parseInt(res.headers.get("Retry-After") ?? "60", 10);
+    const waitMs = Math.min(Math.max(Number.isFinite(ra) ? ra : 60, 1), 120) * 1000;
+    await new Promise((r) => setTimeout(r, waitMs));
+
+    res = await fetch(url, buildInit(accessToken));
+    if (res.status === 429) {
+      void raiseSyncAlert({
+        category: "rate_limit_429",
+        severity: "medium",
+        title: "Google Calendar still 429 after backoff",
+        message: `URL: ${url} — waited ${waitMs}ms then got 429 again.`,
+        metadata: { retryAfter: res.headers.get("Retry-After"), url, waitMs },
+      });
+    }
     return { res, tokenUsed: accessToken };
   }
+
 
   if (res.status !== 401) return { res, tokenUsed: accessToken };
 
