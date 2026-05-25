@@ -87,6 +87,7 @@ import { AdminBookingPagesManager } from "@/components/admin/AdminBookingPagesMa
 import { AccountingPartnersManager } from "@/components/admin/AccountingPartnersManager";
 import { AdminAlerts } from "@/components/admin/AdminAlerts";
 import { GoogleSyncAlertsPanel } from "@/components/admin/GoogleSyncAlertsPanel";
+import { AdminGoogleSyncDashboard } from "@/components/admin/AdminGoogleSyncDashboard";
 import { AdminTrackersManager } from "@/components/admin/AdminTrackersManager";
 
 import { useAdminTabCounts } from "@/hooks/useAdminTabCounts";
