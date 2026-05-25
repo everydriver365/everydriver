@@ -522,8 +522,9 @@ export default function AdminPortal() {
 
       case "alerts":
         return (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
             <AdminBackButton onClick={() => setActiveSection("overview")} />
+            <GoogleSyncAlertsPanel />
             <AdminAlerts />
           </motion.div>
         );
