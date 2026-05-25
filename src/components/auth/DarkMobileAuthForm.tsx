@@ -132,6 +132,30 @@ export function DarkMobileAuthForm({
           </div>
         )}
 
+        {!isForgot && biometricAvailable && onBiometric && (
+          <>
+            <button
+              type="button"
+              onClick={onBiometric}
+              disabled={biometricLoading || loading}
+              className={darkPortalGhostBtnClass}
+              style={darkPortalGhostBtnStyle}
+            >
+              {biometricLoading
+                ? <Loader2 className="h-[22px] w-[22px] animate-spin text-white" />
+                : <ScanFace className="h-[22px] w-[22px] text-white" strokeWidth={1.8} />}
+              <span className="text-white text-[14px] font-semibold">
+                {biometricLoading ? "Scanning…" : "Sign in with Face ID"}
+              </span>
+            </button>
+            <div className="flex items-center gap-3 mt-5 mb-5">
+              <div className="flex-1 h-px bg-white/25" />
+              <span className="text-[12px] text-white/70 uppercase" style={{ letterSpacing: "2px" }}>or</span>
+              <div className="flex-1 h-px bg-white/25" />
+            </div>
+          </>
+        )}
+
         <label className={darkPortalLabelClass}>Email</label>
         <div className="relative mb-[14px]">
           <Mail className="absolute left-[14px] top-1/2 -translate-y-1/2 h-[18px] w-[18px] text-white" strokeWidth={1.8} />
