@@ -25,6 +25,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { MobileLoginHero } from "@/components/auth/MobileLoginHero";
 import { useClearOnDeepLink } from "@/hooks/useClearOnDeepLink";
 import { UnifiedMobileLoginCard } from "@/components/auth/UnifiedMobileLoginCard";
+import { DsmBlueMobileLogin } from "@/components/auth/DsmBlueMobileLogin";
 import { cn } from "@/lib/utils";
 import dsmLogo from "@/assets/dsm-logo.png";
 import instructorHero from "@/assets/every-instructor-hero.webp";
