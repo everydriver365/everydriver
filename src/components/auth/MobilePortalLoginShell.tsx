@@ -81,6 +81,11 @@ export function MobilePortalLoginShell({
             className="object-contain drop-shadow-[0_2px_12px_rgba(0,0,0,0.4)]"
           />
         )}
+      </div>
+
+      {heroSrc && <div className="flex-1" />}
+
+      <div className={cn("flex flex-col items-center", !heroSrc && "mt-0")}>
         <h1
           className="mpl-welcome text-white font-bold mt-7 text-center drop-shadow-[0_2px_10px_rgba(0,0,0,0.4)]"
           style={{ fontSize: 26, letterSpacing: "-0.6px", lineHeight: 1.1 }}
@@ -92,7 +97,7 @@ export function MobilePortalLoginShell({
         </p>
       </div>
 
-      <div className="mt-10 mpl-brand-gap flex flex-col flex-1">{children}</div>
+      <div className={cn("mpl-brand-gap flex flex-col", heroSrc ? "mt-5" : "mt-10 flex-1")}>{children}</div>
 
       {footer && <div className="mt-6 text-center">{footer}</div>}
     </div>
