@@ -266,12 +266,10 @@ export default function InstructorLogin() {
     <>
       {/* ============== MOBILE-ONLY — shared dark-navy shell (matches pupil login) ============== */}
       <DarkMobileAuthForm
-        logoSrc={essexLogo}
-        logoAlt="Essex"
-        logoHeightPx={72}
-        heroSrc={mobileLoginHero}
-        heroAlt="Driving School Manager"
-        title={isForgotPassword ? "Reset password" : "Welcome"}
+        logoSrc={dsmLogo}
+        logoAlt="DSM"
+        logoHeightPx={80}
+        title={isForgotPassword ? "Reset password" : "Welcome back"}
         subtitle={
           isForgotPassword
             ? resetSent
@@ -297,9 +295,9 @@ export default function InstructorLogin() {
         biometricAvailable={biometricAvailable && !isForgotPassword}
         biometricLoading={faceIdState === "scanning"}
         onBiometric={handleBiometricLogin}
-        surface="light"
-        heroOffsetY={-50}
+        brandName="DSM"
       />
+
 
 
     <div className="hidden md:block" style={{ minHeight: "100vh", fontFamily: "Poppins, system-ui, sans-serif", background: t.surface }}>
