@@ -104,22 +104,24 @@ export function DarkMobileAuthForm({
       surface={surface}
       heroOffsetY={heroOffsetY}
       footer={
-        isForgot ? (
-          <button
-            type="button"
-            onClick={() => onForgotToggle(false)}
-            className={cn("text-[13px] font-semibold", t.textColorClass)}
-          >
-            Back to sign in
-          </button>
-        ) : signUpHref ? (
-          <span className={cn("text-[13px]", t.textColorClass)}>
-            {signUpLabel ?? "New here?"}{" "}
-            <a href={signUpHref} className={cn("font-bold", t.textColorClass)}>
-              Create account
-            </a>
-          </span>
-        ) : null
+        customFooter !== undefined
+          ? customFooter
+          : isForgot ? (
+            <button
+              type="button"
+              onClick={() => onForgotToggle(false)}
+              className={cn("text-[13px] font-semibold", t.textColorClass)}
+            >
+              Back to sign in
+            </button>
+          ) : signUpHref ? (
+            <span className={cn("text-[13px]", t.textColorClass)}>
+              {signUpLabel ?? "New here?"}{" "}
+              <a href={signUpHref} className={cn("font-bold", t.textColorClass)}>
+                Create account
+              </a>
+            </span>
+          ) : null
       }
     >
       <form onSubmit={onSubmit} className="flex flex-col flex-1">
