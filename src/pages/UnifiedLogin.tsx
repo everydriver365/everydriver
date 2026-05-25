@@ -40,6 +40,12 @@ export default function UnifiedLogin() {
     return () => clearInterval(t);
   }, [pStep]);
 
+  // Remember that this device is running the pupil app so a cold launch
+  // (e.g. native build) returns to the pupil login next time.
+  useEffect(() => {
+    import("@/lib/appVariant").then(m => m.rememberAppVariant("pupil"));
+  }, []);
+
   const handleSignIn = async (email: string, password: string, rememberMe: boolean) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) return { error: error.message };
