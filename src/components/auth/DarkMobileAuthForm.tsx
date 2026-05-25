@@ -4,27 +4,20 @@ import { AlertCircle, Check, Eye, EyeOff, Loader2, Lock, Mail, ScanFace } from "
 import { cn } from "@/lib/utils";
 import {
   MobilePortalLoginShell,
-  darkPortalGhostBtnClass,
-  darkPortalGhostBtnStyle,
-  darkPortalInputClass,
-  darkPortalInputStyle,
-  darkPortalLabelClass,
-  darkPortalPrimaryBtnClass,
+  getPortalFormTokens,
+  type LoginSurface,
 } from "./MobilePortalLoginShell";
 
 interface Props {
-  /** Portal logo image (Drive365 / DSM / EveryDriver / …) */
   logoSrc: string;
   logoAlt: string;
   logoHeightPx?: number;
-  /** Optional hero illustration shown above the logo. */
   heroSrc?: string;
   heroAlt?: string;
   title: string;
   subtitle: string;
   hideAt?: "md" | "lg";
 
-  // form state
   email: string;
   setEmail: (v: string) => void;
   password: string;
@@ -46,23 +39,19 @@ interface Props {
   signUpHref?: string;
   signUpLabel?: string;
 
-  /** Optional Face ID handler */
   onBiometric?: () => void;
   biometricAvailable?: boolean;
   biometricLoading?: boolean;
 
-  /** Optional secondary CTA below sign in — e.g. Google button trigger */
   onGoogleClick?: () => void;
-  /** Slot for hidden OAuth widget */
   hiddenSlot?: ReactNode;
+
+  /** Visual surface — dark navy (default) or light white. */
+  surface?: LoginSurface;
+  /** Vertical px offset for the hero image (negative = move higher). */
+  heroOffsetY?: number;
 }
 
-/**
- * Reusable dark-navy mobile login form shared by Drive365 pupil, DSM
- * instructor, EveryDriver admin and School portals. Render this alongside
- * the existing desktop layout — its fixed `md:hidden` (or `lg:hidden`)
- * positioning means mobile sees this shell, desktop sees the layout.
- */
 export function DarkMobileAuthForm({
   logoSrc,
   logoAlt,
@@ -92,8 +81,12 @@ export function DarkMobileAuthForm({
   biometricLoading,
   onGoogleClick,
   hiddenSlot,
+  surface = "dark",
+  heroOffsetY = 0,
 }: Props) {
   const canSubmit = isForgot ? email.trim().length > 0 : email.trim().length > 0 && password.length > 0;
+  const t = getPortalFormTokens(surface);
+  const isLight = surface === "light";
 
   return (
     <MobilePortalLoginShell
@@ -105,19 +98,21 @@ export function DarkMobileAuthForm({
       title={title}
       subtitle={subtitle}
       hideAt={hideAt}
+      surface={surface}
+      heroOffsetY={heroOffsetY}
       footer={
         isForgot ? (
           <button
             type="button"
             onClick={() => onForgotToggle(false)}
-            className="text-[13px] font-semibold text-white"
+            className={cn("text-[13px] font-semibold", t.textColorClass)}
           >
             Back to sign in
           </button>
         ) : signUpHref ? (
-          <span className="text-[13px] text-white">
+          <span className={cn("text-[13px]", t.textColorClass)}>
             {signUpLabel ?? "New here?"}{" "}
-            <a href={signUpHref} className="font-bold text-white">
+            <a href={signUpHref} className={cn("font-bold", t.textColorClass)}>
               Create account
             </a>
           </span>
@@ -126,9 +121,9 @@ export function DarkMobileAuthForm({
     >
       <form onSubmit={onSubmit} className="flex flex-col flex-1">
         {error && (
-          <div className="mb-3 rounded-[10px] px-3 py-2 flex items-start gap-2 bg-white/10 border border-white/20">
-            <AlertCircle className="h-4 w-4 mt-0.5 shrink-0 text-white" />
-            <p className="text-[12px] font-medium text-white">{error}</p>
+          <div className={cn("mb-3 rounded-[10px] px-3 py-2 flex items-start gap-2 border", t.errorBoxClass)}>
+            <AlertCircle className={cn("h-4 w-4 mt-0.5 shrink-0", t.iconColorClass)} />
+            <p className={cn("text-[12px] font-medium", t.textColorClass)}>{error}</p>
           </div>
         )}
 
@@ -138,27 +133,27 @@ export function DarkMobileAuthForm({
               type="button"
               onClick={onBiometric}
               disabled={biometricLoading || loading}
-              className={darkPortalGhostBtnClass}
-              style={darkPortalGhostBtnStyle}
+              className={t.ghostBtnClass}
+              style={t.ghostBtnStyle}
             >
               {biometricLoading
-                ? <Loader2 className="h-[22px] w-[22px] animate-spin text-white" />
-                : <ScanFace className="h-[22px] w-[22px] text-white" strokeWidth={1.8} />}
-              <span className="text-white text-[14px] font-semibold">
+                ? <Loader2 className={cn("h-[22px] w-[22px] animate-spin", t.iconColorClass)} />
+                : <ScanFace className={cn("h-[22px] w-[22px]", t.iconColorClass)} strokeWidth={1.8} />}
+              <span className={cn("text-[14px] font-semibold", t.textColorClass)}>
                 {biometricLoading ? "Scanning…" : "Sign in with Face ID"}
               </span>
             </button>
             <div className="flex items-center gap-3 mt-5 mb-5">
-              <div className="flex-1 h-px bg-white/25" />
-              <span className="text-[12px] text-white/70 uppercase" style={{ letterSpacing: "2px" }}>or</span>
-              <div className="flex-1 h-px bg-white/25" />
+              <div className={cn("flex-1 h-px", t.dividerClass)} />
+              <span className={cn("text-[12px] uppercase", t.mutedTextClass)} style={{ letterSpacing: "2px" }}>or</span>
+              <div className={cn("flex-1 h-px", t.dividerClass)} />
             </div>
           </>
         )}
 
-        <label className={darkPortalLabelClass}>Email</label>
+        <label className={t.labelClass}>Email</label>
         <div className="relative mb-[14px]">
-          <Mail className="absolute left-[14px] top-1/2 -translate-y-1/2 h-[18px] w-[18px] text-white" strokeWidth={1.8} />
+          <Mail className={cn("absolute left-[14px] top-1/2 -translate-y-1/2 h-[18px] w-[18px]", t.iconColorClass)} strokeWidth={1.8} />
           <input
             type="email"
             inputMode="email"
@@ -171,16 +166,16 @@ export function DarkMobileAuthForm({
             onChange={(e) => setEmail(e.target.value)}
             required
             disabled={loading}
-            className={darkPortalInputClass}
-            style={darkPortalInputStyle}
+            className={t.inputClass}
+            style={t.inputStyle}
           />
         </div>
 
         {!isForgot && (
           <>
-            <label className={darkPortalLabelClass}>Password</label>
+            <label className={t.labelClass}>Password</label>
             <div className="relative mb-[14px]">
-              <Lock className="absolute left-[14px] top-1/2 -translate-y-1/2 h-[18px] w-[18px] text-white" strokeWidth={1.8} />
+              <Lock className={cn("absolute left-[14px] top-1/2 -translate-y-1/2 h-[18px] w-[18px]", t.iconColorClass)} strokeWidth={1.8} />
               <input
                 type={showPassword ? "text" : "password"}
                 autoComplete="current-password"
@@ -189,14 +184,14 @@ export function DarkMobileAuthForm({
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 disabled={loading}
-                className={cn(darkPortalInputClass, "pr-12")}
-                style={darkPortalInputStyle}
+                className={cn(t.inputClass, "pr-12")}
+                style={t.inputStyle}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 aria-label={showPassword ? "Hide password" : "Show password"}
-                className="absolute right-[12px] top-1/2 -translate-y-1/2 p-1 text-white/80"
+                className={cn("absolute right-[12px] top-1/2 -translate-y-1/2 p-1", isLight ? "text-[#0F2044]/70" : "text-white/80")}
               >
                 {showPassword ? <EyeOff className="h-[18px] w-[18px]" /> : <Eye className="h-[18px] w-[18px]" />}
               </button>
@@ -208,13 +203,13 @@ export function DarkMobileAuthForm({
                   <span
                     className={cn(
                       "w-5 h-5 rounded-[5px] flex items-center justify-center transition-colors",
-                      rememberMe ? "bg-white" : "bg-transparent",
+                      rememberMe ? (isLight ? "bg-[#0F2044]" : "bg-white") : "bg-transparent",
                     )}
-                    style={{ border: "1.5px solid rgba(255,255,255,0.9)" }}
+                    style={{ border: isLight ? "1.5px solid rgba(15,32,68,0.5)" : "1.5px solid rgba(255,255,255,0.9)" }}
                   >
-                    {rememberMe && <Check className="h-3 w-3 text-[#0F2044]" strokeWidth={3.5} />}
+                    {rememberMe && <Check className={cn("h-3 w-3", isLight ? "text-white" : "text-[#0F2044]")} strokeWidth={3.5} />}
                   </span>
-                  <span className="text-[13px] font-medium text-white">Remember me</span>
+                  <span className={cn("text-[13px] font-medium", t.textColorClass)}>Remember me</span>
                 </button>
               ) : (
                 <span />
@@ -222,7 +217,7 @@ export function DarkMobileAuthForm({
               <button
                 type="button"
                 onClick={() => onForgotToggle(true)}
-                className="text-[13px] font-semibold text-white"
+                className={cn("text-[13px] font-semibold", t.textColorClass)}
               >
                 Forgot password?
               </button>
@@ -235,7 +230,7 @@ export function DarkMobileAuthForm({
           whileTap={{ scale: 0.985, opacity: 0.85 }}
           disabled={!canSubmit || loading || biometricLoading}
           style={{ opacity: canSubmit && !loading && !biometricLoading ? 1 : 0.6 }}
-          className={darkPortalPrimaryBtnClass}
+          className={t.primaryBtnClass}
         >
           <span className="py-4 text-[15px] flex items-center justify-center gap-2">
             {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : isForgot ? "Send reset link" : "Sign in"}
@@ -245,16 +240,16 @@ export function DarkMobileAuthForm({
         {!isForgot && onGoogleClick && (
           <>
             <div className="flex items-center gap-3 mt-6 mb-5">
-              <div className="flex-1 h-px bg-white/25" />
-              <span className="text-[12px] text-white/70 uppercase" style={{ letterSpacing: "2px" }}>or</span>
-              <div className="flex-1 h-px bg-white/25" />
+              <div className={cn("flex-1 h-px", t.dividerClass)} />
+              <span className={cn("text-[12px] uppercase", t.mutedTextClass)} style={{ letterSpacing: "2px" }}>or</span>
+              <div className={cn("flex-1 h-px", t.dividerClass)} />
             </div>
 
             <button
               type="button"
               onClick={onGoogleClick}
-              className={darkPortalGhostBtnClass}
-              style={darkPortalGhostBtnStyle}
+              className={t.ghostBtnClass}
+              style={t.ghostBtnStyle}
             >
               <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
                 <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.4 29.3 35.5 24 35.5c-6.4 0-11.5-5.1-11.5-11.5S17.6 12.5 24 12.5c2.9 0 5.6 1.1 7.7 2.9l5.7-5.7C33.9 6.2 29.2 4.5 24 4.5 13.2 4.5 4.5 13.2 4.5 24S13.2 43.5 24 43.5 43.5 34.8 43.5 24c0-1.2-.1-2.3-.3-3.5z"/>
@@ -262,7 +257,7 @@ export function DarkMobileAuthForm({
                 <path fill="#4CAF50" d="M24 43.5c5.1 0 9.8-1.7 13.4-4.6l-6.2-5.1c-2 1.4-4.5 2.3-7.2 2.3-5.3 0-9.7-3.1-11.3-7.4l-6.5 5C9.6 39 16.2 43.5 24 43.5z"/>
                 <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.2-4.1 5.6l6.2 5.1c.4-.3 6.6-4.8 6.6-14.7 0-1.2-.1-2.3-.3-3.5z"/>
               </svg>
-              <span className="text-white text-[14px] font-semibold">Continue with Google</span>
+              <span className={cn("text-[14px] font-semibold", t.textColorClass)}>Continue with Google</span>
             </button>
           </>
         )}

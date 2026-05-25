@@ -295,7 +295,10 @@ export default function InstructorLogin() {
         biometricAvailable={biometricAvailable && !isForgotPassword}
         biometricLoading={faceIdState === "scanning"}
         onBiometric={handleBiometricLogin}
+        surface="light"
+        heroOffsetY={-50}
       />
+
 
     <div className="hidden md:block" style={{ minHeight: "100vh", fontFamily: "Poppins, system-ui, sans-serif", background: t.surface }}>
       <style>{`@keyframes dsm365-faceid-scan { 0%,100% { opacity: 0.15 } 50% { opacity: 1 } }`}</style>
