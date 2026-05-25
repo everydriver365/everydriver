@@ -801,6 +801,7 @@ function HeroHeader(props: {
 
       {/* Stats strip (inside hero, below next lesson) */}
       <StatsStrip stats={stats} loading={statsLoading} />
+      </div>
     </div>
   );
 }
