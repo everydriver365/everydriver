@@ -36,14 +36,9 @@ import { ParentPushBanner } from "@/components/parent/ParentPushBanner";
 import { ParentPaymentTopUp } from "@/components/parent/ParentPaymentTopUp";
 import { ParentWelcomeTour } from "@/components/parent/ParentWelcomeTour";
 import { ParentDashboardSkeleton } from "@/components/ui/skeletons/ParentDashboardSkeleton";
-import {
-  MobilePortalLoginShell,
-  darkPortalInputClass,
-  darkPortalInputStyle,
-  darkPortalLabelClass,
-  darkPortalPrimaryBtnClass,
-} from "@/components/auth/MobilePortalLoginShell";
+import { UnifiedMobileLoginCard } from "@/components/auth/UnifiedMobileLoginCard";
 import drive365Logo from "@/assets/drive365-logo.png";
+import mobileLoginHero from "@/assets/mobile-login-hero.png";
 
 interface Child {
   id: string;
@@ -79,7 +74,7 @@ interface LessonFeedback {
   rating: number | null;
 }
 
-type AuthStep = 'phone' | 'otp' | 'verified';
+type AuthStep = 'login' | 'verified';
 type ParentSection = 'dashboard' | 'children' | 'feedback' | 'settings' | 'child-detail';
 type ChildDetailTab = 'overview' | 'lessons' | 'progress' | 'payments';
 
