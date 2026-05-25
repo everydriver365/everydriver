@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 
 import { useNavigate, useLocation } from "react-router-dom";
-import { ArrowLeft, ChevronLeft, Settings, Plus, PoundSterling, Bell, LogOut, Menu, User, MapPin } from "lucide-react";
+import { ArrowLeft, ChevronLeft, Settings, Plus, PoundSterling, Bell, LogOut, Menu, User, Car } from "lucide-react";
 import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -187,7 +187,7 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
                     Settings
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate("/instructor/live")}>
-                    <MapPin className="mr-2 h-4 w-4" />
+                    <Car className="mr-2 h-4 w-4" />
                     Live Track
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setPaymentModalOpen(true)}>
