@@ -60,7 +60,15 @@ export async function importPrivateKey(raw: string): Promise<CryptoKey> {
   try {
     der = Uint8Array.from(atob(padded), (c) => c.charCodeAt(0));
   } catch {
-    throw new Error("GOOGLE_PRIVATE_KEY appears malformed — re-paste the service-account JSON or PEM block (escaped \\n and surrounding quotes are stripped automatically)");
+    const msg = "GOOGLE_PRIVATE_KEY appears malformed — re-paste the service-account JSON or PEM block (escaped \\n and surrounding quotes are stripped automatically)";
+    void raiseSyncAlert({
+      category: "key_decode",
+      severity: "critical",
+      title: "GOOGLE_PRIVATE_KEY decode failed",
+      message: msg,
+      metadata: { keyLength: key.length, hasBegin: key.includes("BEGIN") },
+    });
+    throw new Error(msg);
   }
 
   return crypto.subtle.importKey(
