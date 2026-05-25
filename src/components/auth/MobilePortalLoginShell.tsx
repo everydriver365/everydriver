@@ -73,12 +73,14 @@ export function MobilePortalLoginShell({
       `}</style>
 
       <div className="flex flex-col items-center">
-        <img
-          src={logoSrc}
-          alt={logoAlt}
-          style={{ height: logoHeightPx }}
-          className="object-contain drop-shadow-[0_2px_12px_rgba(0,0,0,0.4)]"
-        />
+        {!heroSrc && (
+          <img
+            src={logoSrc}
+            alt={logoAlt}
+            style={{ height: logoHeightPx }}
+            className="object-contain drop-shadow-[0_2px_12px_rgba(0,0,0,0.4)]"
+          />
+        )}
         <h1
           className="mpl-welcome text-white font-bold mt-7 text-center drop-shadow-[0_2px_10px_rgba(0,0,0,0.4)]"
           style={{ fontSize: 26, letterSpacing: "-0.6px", lineHeight: 1.1 }}
