@@ -24,8 +24,8 @@ import {
   type BiometricScope,
 } from "@/lib/biometricAuth";
 import { DarkMobileAuthForm } from "./DarkMobileAuthForm";
-import essexLogo from "@/assets/essex-logo.png";
-import defaultMobileHero from "@/assets/mobile-login-hero.png";
+import dsmLogo from "@/assets/dsm-logo.png";
+import drive365Logo from "@/assets/drive365-logo.png";
 
 type AsyncResult = { error?: string } | void;
 
