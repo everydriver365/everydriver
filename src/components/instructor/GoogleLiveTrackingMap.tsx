@@ -9,6 +9,10 @@ import { darkMapStyle } from "@/lib/googleMapsDarkStyle";
 import { useTheme } from "@/context/ThemeContext";
 import SpeedLimitRoundel from "@/components/instructor/SpeedLimitRoundel";
 
+// Top-view car silhouette SVG path, points "up" (north). Heading rotates it.
+const CAR_SVG_PATH =
+  "M -6 -10 C -6 -12 -4 -13 0 -13 C 4 -13 6 -12 6 -10 L 6 -2 L 7 -1 L 7 8 C 7 11 5 12 0 12 C -5 12 -7 11 -7 8 L -7 -1 L -6 -2 Z";
+
 // ========== Types ==========
 type DeviceRow = {
   id: string;
@@ -181,6 +185,16 @@ export default function LiveGoogleTrackingMap({ className = "", deviceId: device
           position: center,
           map,
           title: "Live position",
+          icon: {
+            path: CAR_SVG_PATH,
+            scale: 1.4,
+            rotation: 0,
+            fillOpacity: 1,
+            fillColor: "#22c55e",
+            strokeColor: "white",
+            strokeWeight: 2,
+            anchor: new w.google.maps.Point(0, 0),
+          },
         });
 
         polylineRef.current = new w.google.maps.Polyline({
@@ -313,13 +327,14 @@ export default function LiveGoogleTrackingMap({ className = "", deviceId: device
     }
 
     marker.setIcon({
-      path: w.google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
-      scale: 6,
+      path: CAR_SVG_PATH,
+      scale: 1.4,
       rotation: device?.last_heading ?? 0,
       fillOpacity: 1,
       fillColor: markerColor,
       strokeColor: "white",
-      strokeWeight: 3,
+      strokeWeight: 2,
+      anchor: new w.google.maps.Point(0, 0),
     });
 
     // Update speed badge overlay
