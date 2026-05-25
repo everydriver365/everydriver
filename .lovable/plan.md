@@ -1,44 +1,48 @@
 ## Goal
 
-One header across the entire instructor mobile app. The navy `HeroHeader` top row from the homepage (`MobileHomeDSM2026.tsx`) becomes the single source of truth, used on every instructor route and subroute.
+The entry route (`/` and `/index`) should send users straight to the **DSM instructor login** when they're using the instructor app, and to the **pupil login** when they're using the pupil app — instead of the current marketing/landing page.
 
-## Approach
+## How "instructor app" vs "pupil app" is detected
 
-The home `HeroHeader` is actually two stacked blocks:
-1. **Top bar** — navy panel with DSM logo, first name + chevron, and the Phone / Car / Bell / Menu buttons.
-2. **Hero body** — `NextLessonCard` + `StatsStrip` (home-only context).
+The codebase has no app-variant flag — both run from the same web bundle. The reliable signal is hostname (already used everywhere):
 
-Only block 1 should be shared. Block 2 stays on home.
+- **Instructor app** = `isEveryDriverHost()` is true (everydriver.co, everydriver.co.uk, everydriver.lovable.app, plus the native Capacitor app which points at the Lovable preview URL).
+- **Pupil app** = `isDrive365Domain()` is true, `isWhitelabelDomain()` is true (e.g. winchesterdrivingschool.co.uk), or `isInstructorSubdomain()` is true (mini-website learner flow).
 
-### Steps
+For the native Capacitor build, the current `capacitor.config.ts` points at the project preview URL, which means hostname can't tell instructor vs pupil. To handle this we'll add a **persisted "last app" hint** (`localStorage.lovable_app_variant = "instructor" | "pupil"`) that is set whenever the user visits an `/instructor*` route or a `/pupil*`/`/login` route. On a cold native open we use that hint to choose the right login.
 
-1. **Extract a shared `InstructorTopBar` component** (`src/components/instructor/InstructorTopBar.tsx`) containing exactly the top row from `HeroHeader` (lines 783–820 of `MobileHomeDSM2026.tsx`). Props:
-   - `firstName`, `unreadCount`, `instructorId`
-   - `onPhone`, `onLiveTrack`, `onBell`, `onMenu`, `onProfile`
-   - Optional `pageTitle` and `onBack` — when `onBack` is set, the DSM logo position renders a back chevron and the first-name slot becomes the page title (sub-page mode). When omitted, it renders home mode (logo + name).
-   - Keeps the navy `#072b47` background, rounded bottom corners, and safe-area padding so it visually matches the home hero.
+## The change
 
-2. **Refactor `HeroHeader` in `MobileHomeDSM2026.tsx`** to render `<InstructorTopBar … />` followed by the existing `NextLessonCard` and `StatsStrip`. No visual change on home.
+1. **New helper `src/lib/appVariant.ts`** with:
+   - `getAppVariant(): "instructor" | "pupil" | "marketing"` — returns:
+     - `"instructor"` if `isEveryDriverHost()` is true, or current path starts with `/instructor`, or persisted hint is `"instructor"`.
+     - `"pupil"` if `isDrive365Domain()`, `isWhitelabelDomain()`, `isInstructorSubdomain()`, current path starts with `/pupil`/`/login`/`/booking`, or persisted hint is `"pupil"`.
+     - `"marketing"` otherwise (e.g. lovable.app preview with no hint yet — keeps current behaviour).
+   - `rememberAppVariant(variant)` — writes to localStorage.
 
-3. **Replace `MobileBlueHeader` in `InstructorPortalLayout.tsx`** (lines 726–742). On every non-home, non-schedule route render `<InstructorTopBar pageTitle={mobilePageTitle} onBack={…} … />` wired to the same navigation handlers (`/instructor/calls`, `/instructor/live`, `/instructor/notifications`, and the existing `setIsMobileMenuOpen` for Menu). The existing back-button logic (`isTabRoot ? navigate("/instructor") : navigate(-1)`) is preserved.
+2. **Persist the hint** with a tiny effect inside `ConditionalHome` (and once in `InstructorPortalLayout`) so the moment a user actually lands on `/instructor*` or `/login` we remember it for next launch.
 
-4. **Schedule page** currently also skips the header. Decide with one quick check: keep it skipped (schedule has its own chrome) or include the new bar. Default to **including** the new top bar for true consistency, unless the schedule chrome visibly conflicts — in which case leave the skip in place and note it.
+3. **Update `ConditionalHome`** (the element bound to `/` and `/index`):
+   - If `getAppVariant() === "instructor"`:
+     - If already authenticated as an instructor → `<Navigate to="/instructor" replace />`.
+     - Else → `<Navigate to="/instructor-app/login" replace />`.
+   - If `getAppVariant() === "pupil"`:
+     - If already authenticated as a pupil → `<Navigate to="/pupil" replace />` (or wherever the post-login destination is).
+     - Else → `<Navigate to="/login" replace />`.
+   - If `"marketing"` → keep the existing behaviour (renders `HomepageRedesignDemo`, EveryDriver Index, etc).
 
-5. **Leave `MobileBlueHeader.tsx` in the repo but unused** for now (don't delete in the same change — safer to verify the swap first, prune in a follow-up).
+4. **Auth checks** reuse the existing contexts (`useInstructorAuth`, and the pupil session via `supabase.auth.getSession()` — there's no dedicated pupil context). To keep things synchronous in render, do the session check inside a tiny wrapper component that shows a brief spinner until the session resolves, then navigates.
 
-### Out of scope
-
-- No changes to desktop layout.
-- No changes to SOS / Plus / QuickActions wiring — those were `MobileBlueHeader`-specific and are not part of the home hero design. If you want them surfaced on sub-pages we can add them as optional props in a follow-up.
-- No edits to existing home body, stats strip, or next-lesson card.
+5. **No changes** to login pages themselves, to the `/instructor` portal layout, or to route definitions besides `ConditionalHome`.
 
 ## Files touched
 
-- **new** `src/components/instructor/InstructorTopBar.tsx`
-- `src/components/instructor/MobileHomeDSM2026.tsx` — `HeroHeader` now composes `InstructorTopBar`
-- `src/components/layout/InstructorPortalLayout.tsx` — swap `MobileBlueHeader` for `InstructorTopBar`
+- **new** `src/lib/appVariant.ts`
+- `src/components/ConditionalHome.tsx` — variant-based redirect
+- `src/components/layout/InstructorPortalLayout.tsx` — one `useEffect` to call `rememberAppVariant("instructor")`
+- `src/pages/login/UnifiedLogin.tsx` (or wherever the pupil login lives) — one `useEffect` to call `rememberAppVariant("pupil")`
 
 ## Confirm before I build
 
-- **SOS button**: the current sub-page header has an SOS button; the home header does not. Drop it from the unified header, or add SOS as a 5th icon to the home header too?
-- **Schedule page**: include the unified header there as well (recommended for consistency), or keep skipped?
+- For the **pupil app authenticated landing**, is it `/pupil` or a different route? (I'll default to `/pupil` if you don't say.)
+- For the **native Capacitor app**, do you ship a single build for both apps (current setup), or are there separate iOS/Android builds for instructor vs pupil? If separate, we can hardcode the variant per build via a Vite env var (`VITE_APP_VARIANT`) and skip the localStorage hint — cleaner. Say which and I'll implement accordingly.
