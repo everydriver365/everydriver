@@ -266,17 +266,18 @@ export default function InstructorLogin() {
     <>
       {/* ============== MOBILE-ONLY — shared dark-navy shell (matches pupil login) ============== */}
       <DarkMobileAuthForm
-        logoSrc={dsmLogo}
-        logoAlt="Driving School Manager"
+        logoSrc={essexLogo}
+        logoAlt="Essex"
+        logoHeightPx={72}
         heroSrc={mobileLoginHero}
         heroAlt="Driving School Manager"
-        title={isForgotPassword ? "Reset password" : "Welcome back"}
+        title={isForgotPassword ? "Reset password" : "Welcome"}
         subtitle={
           isForgotPassword
             ? resetSent
               ? `We've sent a reset link to ${resetSentTo}`
               : "Enter your email and we'll send you a reset link."
-            : "Sign in to your Driving School Manager account."
+            : ""
         }
         email={email}
         setEmail={setEmail}
