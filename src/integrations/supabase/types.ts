@@ -20383,6 +20383,7 @@ export type Database = {
         Args: { p_payload: Json }
         Returns: string
       }
+      try_lock_lesson_sync: { Args: { p_lesson_id: string }; Returns: boolean }
       update_live_position:
         | {
             Args: {
