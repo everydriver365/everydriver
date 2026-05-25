@@ -207,7 +207,7 @@ export function UnifiedMobileLoginCard({
         loading={loading}
         error={error}
         onSubmit={handleSubmit}
-        biometricAvailable={Boolean(biometricScope) && bioAvailable && !isForgot}
+        biometricAvailable={Boolean(biometricScope) && !isForgot}
         biometricLoading={bioBusy}
         onBiometric={handleBiometric}
         brandName={brandName}
