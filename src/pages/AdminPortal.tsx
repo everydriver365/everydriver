@@ -87,6 +87,7 @@ import { AdminBookingPagesManager } from "@/components/admin/AdminBookingPagesMa
 import { AccountingPartnersManager } from "@/components/admin/AccountingPartnersManager";
 import { AdminAlerts } from "@/components/admin/AdminAlerts";
 import { GoogleSyncAlertsPanel } from "@/components/admin/GoogleSyncAlertsPanel";
+import { AdminGoogleSyncDashboard } from "@/components/admin/AdminGoogleSyncDashboard";
 import { AdminTrackersManager } from "@/components/admin/AdminTrackersManager";
 
 import { useAdminTabCounts } from "@/hooks/useAdminTabCounts";
@@ -526,6 +527,14 @@ export default function AdminPortal() {
             <AdminBackButton onClick={() => setActiveSection("overview")} />
             <GoogleSyncAlertsPanel />
             <AdminAlerts />
+          </motion.div>
+        );
+
+      case "google-sync":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
+            <AdminGoogleSyncDashboard />
           </motion.div>
         );
 
