@@ -185,26 +185,18 @@ export function DsmBlueMobileLogin({
           paddingBottom: 24,
         }}
       >
-        <div
+        <img
+          src={dsmLogo}
+          alt="DSM"
           style={{
-            width: 88,
-            height: 88,
-            background: "#FFFFFF",
-            borderRadius: 22,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            boxShadow:
-              "0 20px 40px -10px rgba(0,112,192,0.45), 0 0 0 1px rgba(255,255,255,0.06)",
-            padding: 12,
+            width: "auto",
+            height: 64,
+            maxWidth: "80%",
+            objectFit: "contain",
+            display: "block",
+            filter: "drop-shadow(0 8px 24px rgba(0,112,192,0.45))",
           }}
-        >
-          <img
-            src={dsmLogo}
-            alt="DSM"
-            style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }}
-          />
-        </div>
+        />
 
         <h1
           style={{
