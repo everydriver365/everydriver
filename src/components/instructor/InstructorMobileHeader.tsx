@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 
 import { useNavigate, useLocation } from "react-router-dom";
-import { ArrowLeft, ChevronLeft, Settings, Plus, PoundSterling, Bell, LogOut, Menu, User } from "lucide-react";
+import { ArrowLeft, ChevronLeft, Settings, Plus, PoundSterling, Bell, LogOut, Menu, User, MapPin } from "lucide-react";
 import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -186,10 +186,15 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
                     <Settings className="mr-2 h-4 w-4" />
                     Settings
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/instructor/live")}>
+                    <MapPin className="mr-2 h-4 w-4" />
+                    Live Track
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setPaymentModalOpen(true)}>
                     <PoundSterling className="mr-2 h-4 w-4" />
                     Take Payment
                   </DropdownMenuItem>
+
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => window.open("/pupil/login", "_blank")}>
                     <User className="mr-2 h-4 w-4" />
