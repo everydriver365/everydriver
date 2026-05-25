@@ -103,6 +103,7 @@ import { useDayLessons } from "@/hooks/useDayLessons";
 import { useInstructorPaymentsData } from "@/hooks/useInstructorPaymentsData";
 import { useRealGapSlots } from "@/hooks/useRealGapSlots";
 import { DsmLogo } from "@/components/instructor/ui/DsmLogo";
+import { InstructorTopBar } from "@/components/instructor/InstructorTopBar";
 import { UpNextExpanded } from "@/components/instructor/UpNextExpanded";
 import { ScheduleTile } from "@/components/instructor/ScheduleTile";
 import { TaxEstimateTile } from "@/components/instructor/TaxEstimateTile";
