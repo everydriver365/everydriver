@@ -12,6 +12,7 @@
 // =============================================================================
 
 import type { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { raiseSyncAlert } from "./raiseSyncAlert.ts";
 
 const CALENDAR_API = "https://www.googleapis.com/calendar/v3";
 
