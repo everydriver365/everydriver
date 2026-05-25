@@ -351,7 +351,13 @@ Deno.serve(async (req) => {
     const serviceEmail = Deno.env.get("GOOGLE_SERVICE_ACCOUNT_EMAIL");
     const privateKey = Deno.env.get("GOOGLE_PRIVATE_KEY");
 
-    const { action, instructorId, calendarId, event, eventId, timeMin, timeMax, fromDate, toDate } = await req.json();
+    const reqBody = await req.json();
+    const { action, instructorId, calendarId, event, eventId, timeMin, timeMax, fromDate, toDate } = reqBody as Record<string, any>;
+    // syncManualBlock-specific fields
+    const op: string | undefined = reqBody?.op;
+    const blockId: string | undefined = reqBody?.blockId;
+    const block: any = reqBody?.block;
+    const googleEventIdParam: string | undefined = reqBody?.googleEventId;
 
     console.log(`Google Calendar Service: ${action} for instructor ${instructorId}`);
 
