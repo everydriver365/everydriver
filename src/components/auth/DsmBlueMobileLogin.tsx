@@ -194,7 +194,7 @@ export function DsmBlueMobileLogin({
             maxWidth: "80%",
             objectFit: "contain",
             display: "block",
-            filter: "drop-shadow(0 8px 24px rgba(0,112,192,0.45))",
+            
           }}
         />
 
