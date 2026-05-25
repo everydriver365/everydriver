@@ -65,6 +65,14 @@ export function MobilePortalLoginShell({
       `}</style>
 
       <div className="flex flex-col items-center">
+        {heroSrc && (
+          <img
+            src={heroSrc}
+            alt={heroAlt || ""}
+            className="w-full max-w-[280px] object-contain mb-5"
+            style={{ height: "auto" }}
+          />
+        )}
         <img
           src={logoSrc}
           alt={logoAlt}
