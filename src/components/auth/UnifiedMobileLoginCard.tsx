@@ -45,6 +45,10 @@ export interface UnifiedMobileLoginCardProps {
   footer?: ReactNode;
   /** Default visibility — render only on mobile by default. */
   className?: string;
+  /** Optional hero illustration rendered above the card. */
+  heroImage?: string;
+  /** Optional alt text for the hero image. */
+  heroAlt?: string;
 }
 
 const FONT = `Poppins, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
