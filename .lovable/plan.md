@@ -1,48 +1,25 @@
-## Goal
+## Problem
 
-The entry route (`/` and `/index`) should send users straight to the **DSM instructor login** when they're using the instructor app, and to the **pupil login** when they're using the pupil app — instead of the current marketing/landing page.
+On the live tracking page (`/instructor/tracking`, file `src/pages/InstructorLiveSession.tsx`), the outer wrapper uses:
 
-## How "instructor app" vs "pupil app" is detected
+```tsx
+<div className="min-h-[calc(100dvh-120px)] -mx-4 md:mx-0 -mt-4 md:mt-0" ...>
+  <div style={{ padding: "12px 0 96px", ... }}>
+```
 
-The codebase has no app-variant flag — both run from the same web bundle. The reliable signal is hostname (already used everywhere):
+The `-mx-4` pulls the content 16px outside its container. Every other instructor page sits inside `InstructorPortalLayout`'s `<main>` which applies `px-2.5` (10px) horizontal gutter (line 1119 of `InstructorPortalLayout.tsx`). The negative margin overrides that gutter, so tracking-page tiles render edge-to-edge (and actually 6px past the screen edge) while the rest of the app keeps the consistent 10px inset.
 
-- **Instructor app** = `isEveryDriverHost()` is true (everydriver.co, everydriver.co.uk, everydriver.lovable.app, plus the native Capacitor app which points at the Lovable preview URL).
-- **Pupil app** = `isDrive365Domain()` is true, `isWhitelabelDomain()` is true (e.g. winchesterdrivingschool.co.uk), or `isInstructorSubdomain()` is true (mini-website learner flow).
+## Fix
 
-For the native Capacitor build, the current `capacitor.config.ts` points at the project preview URL, which means hostname can't tell instructor vs pupil. To handle this we'll add a **persisted "last app" hint** (`localStorage.lovable_app_variant = "instructor" | "pupil"`) that is set whenever the user visits an `/instructor*` route or a `/pupil*`/`/login` route. On a cold native open we use that hint to choose the right login.
+In `src/pages/InstructorLiveSession.tsx` (line ~1478), remove the negative-margin override and the inner zeroed horizontal padding so the page inherits the standard 10px gutter:
 
-## The change
+- Drop `-mx-4 md:mx-0 -mt-4 md:mt-0` from the outer wrapper.
+- Change the inner inline style `padding: "12px 0 96px"` to `padding: "12px 0 96px"` unchanged (the 0 horizontal value is now correct — gutter comes from `<main>`).
 
-1. **New helper `src/lib/appVariant.ts`** with:
-   - `getAppVariant(): "instructor" | "pupil" | "marketing"` — returns:
-     - `"instructor"` if `isEveryDriverHost()` is true, or current path starts with `/instructor`, or persisted hint is `"instructor"`.
-     - `"pupil"` if `isDrive365Domain()`, `isWhitelabelDomain()`, `isInstructorSubdomain()`, current path starts with `/pupil`/`/login`/`/booking`, or persisted hint is `"pupil"`.
-     - `"marketing"` otherwise (e.g. lovable.app preview with no hint yet — keeps current behaviour).
-   - `rememberAppVariant(variant)` — writes to localStorage.
+That's the only edit. No layout changes, no token changes, no other pages touched.
 
-2. **Persist the hint** with a tiny effect inside `ConditionalHome` (and once in `InstructorPortalLayout`) so the moment a user actually lands on `/instructor*` or `/login` we remember it for next launch.
+## Out of scope
 
-3. **Update `ConditionalHome`** (the element bound to `/` and `/index`):
-   - If `getAppVariant() === "instructor"`:
-     - If already authenticated as an instructor → `<Navigate to="/instructor" replace />`.
-     - Else → `<Navigate to="/instructor-app/login" replace />`.
-   - If `getAppVariant() === "pupil"`:
-     - If already authenticated as a pupil → `<Navigate to="/pupil" replace />` (or wherever the post-login destination is).
-     - Else → `<Navigate to="/login" replace />`.
-   - If `"marketing"` → keep the existing behaviour (renders `HomepageRedesignDemo`, EveryDriver Index, etc).
-
-4. **Auth checks** reuse the existing contexts (`useInstructorAuth`, and the pupil session via `supabase.auth.getSession()` — there's no dedicated pupil context). To keep things synchronous in render, do the session check inside a tiny wrapper component that shows a brief spinner until the session resolves, then navigates.
-
-5. **No changes** to login pages themselves, to the `/instructor` portal layout, or to route definitions besides `ConditionalHome`.
-
-## Files touched
-
-- **new** `src/lib/appVariant.ts`
-- `src/components/ConditionalHome.tsx` — variant-based redirect
-- `src/components/layout/InstructorPortalLayout.tsx` — one `useEffect` to call `rememberAppVariant("instructor")`
-- `src/pages/login/UnifiedLogin.tsx` (or wherever the pupil login lives) — one `useEffect` to call `rememberAppVariant("pupil")`
-
-## Confirm before I build
-
-- For the **pupil app authenticated landing**, is it `/pupil` or a different route? (I'll default to `/pupil` if you don't say.)
-- For the **native Capacitor app**, do you ship a single build for both apps (current setup), or are there separate iOS/Android builds for instructor vs pupil? If separate, we can hardcode the variant per build via a Vite env var (`VITE_APP_VARIANT`) and skip the localStorage hint — cleaner. Say which and I'll implement accordingly.
+- No changes to tile radius, padding, or spacing between tiles.
+- No changes to desktop layout (already correct via `md:mx-0`).
+- No changes to `InstructorPortalLayout`.
