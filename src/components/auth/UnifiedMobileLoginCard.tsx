@@ -50,7 +50,12 @@ export interface UnifiedMobileLoginCardProps {
   heroImage?: string;
   /** Optional alt text for the hero image. */
   heroAlt?: string;
+  /** Explicit brand override — picks logo + logo-block styling. */
+  brand?: "dsm" | "drive365";
+  /** Subtitle shown under the title on the sign-in view. */
+  subtitle?: string;
 }
+
 
 export function UnifiedMobileLoginCard({
   portalName,
