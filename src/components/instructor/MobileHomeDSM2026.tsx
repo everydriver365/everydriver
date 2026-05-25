@@ -15,6 +15,7 @@ import { Shimmer } from "@/components/instructor/home/Shimmer";
 import nextLessonCar from "@/assets/next-lesson-car.png";
 import {
   Phone,
+  Car,
   Bell,
   Menu,
   ChevronDown,
@@ -321,6 +322,7 @@ export function MobileHomeDSM2026({ instructorId, instructorName }: Props) {
           lessonExpanded={lessonExpanded}
           onToggleLesson={() => setLessonExpanded((p) => !p)}
           onPhone={() => navigate("/instructor/calls")}
+          onLiveTrack={() => navigate("/instructor/live")}
           onBell={() => navigate("/instructor/notifications")}
           onMenu={() => navigate("/instructor/menu")}
           onProfile={() => navigate("/instructor/profile")}
@@ -757,6 +759,7 @@ function HeroHeader(props: {
   lessonExpanded: boolean;
   onToggleLesson: () => void;
   onPhone: () => void;
+  onLiveTrack: () => void;
   onBell: () => void;
   onMenu: () => void;
   onProfile: () => void;
@@ -766,7 +769,7 @@ function HeroHeader(props: {
 }) {
   const {
     firstName, unreadCount, nextLesson, lessonExpanded,
-    onToggleLesson, onPhone, onBell, onMenu, onProfile, stats, statsLoading, instructorId,
+    onToggleLesson, onPhone, onLiveTrack, onBell, onMenu, onProfile, stats, statsLoading, instructorId,
   } = props;
 
   return (
@@ -811,6 +814,7 @@ function HeroHeader(props: {
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           <HeroButton Icon={Phone} onPress={onPhone} />
+          <HeroButton Icon={Car} onPress={onLiveTrack} />
           <HeroButton Icon={Bell} onPress={onBell} badge={unreadCount} />
           <HeroButton Icon={Menu} onPress={onMenu} />
         </div>
