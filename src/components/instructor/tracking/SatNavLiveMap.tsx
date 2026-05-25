@@ -1115,36 +1115,9 @@ export function SatNavLiveMap({
                 </div>
               )}
 
-              {/* Re-centre button — appears when user has dragged/zoomed.
-                  Sits above the FloatingSessionTimer card. */}
-              {!followMode && (
-                <button
-                  type="button"
-                  onClick={handleRecentre}
-                  className="absolute z-20"
-                  style={{
-                    right: 14,
-                    bottom: "calc(env(safe-area-inset-bottom, 0px) + 180px)",
-                    background: "rgba(255,255,255,0.78)",
-                    backdropFilter: "blur(20px) saturate(180%)",
-                    WebkitBackdropFilter: "blur(20px) saturate(180%)",
-                    border: "1px solid rgba(0,0,0,0.08)",
-                    borderRadius: 999,
-                    padding: "10px 14px",
-                    fontSize: 13,
-                    fontWeight: 600,
-                    color: "#0A84FF",
-                    boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 6,
-                    cursor: "pointer",
-                  }}
-                >
-                  <span style={{ fontSize: 14, lineHeight: 1 }}>◎</span>
-                  Re-centre
-                </button>
-              )}
+              {/* Re-centre button removed — map is now always-follow. */}
+
+
 
               {/* Overspeed banner — sits above the FloatingSessionTimer card */}
               {overspeedActive && speedMph != null && speedLimitMph != null && (
