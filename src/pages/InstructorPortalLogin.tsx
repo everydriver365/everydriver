@@ -246,8 +246,12 @@ export default function InstructorPortalLogin() {
 
   return (
     <div className="min-h-screen bg-white lg:bg-gradient-to-br lg:from-slate-900 lg:via-slate-800 lg:to-slate-900 flex flex-col lg:flex-row">
-      {/* ============== MOBILE-ONLY — DSM blue login ============== */}
-      <DsmBlueMobileLogin
+      {/* ============== MOBILE-ONLY — Unified DSM login ============== */}
+      <UnifiedMobileLoginCard
+        portalName="DSM Instructor"
+        descriptor="DSM instructor portal"
+        subtitle="Sign in to your DSM instructor portal"
+        brand="dsm"
         biometricScope="instructor"
         onSignIn={async (em, pw, remember) => {
           const { error: signInError } = await signIn(em, pw);
