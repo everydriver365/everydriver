@@ -17,6 +17,9 @@ interface Props {
   logoSrc: string;
   logoAlt: string;
   logoHeightPx?: number;
+  /** Optional hero illustration shown above the logo. */
+  heroSrc?: string;
+  heroAlt?: string;
   title: string;
   subtitle: string;
   hideAt?: "md" | "lg";
