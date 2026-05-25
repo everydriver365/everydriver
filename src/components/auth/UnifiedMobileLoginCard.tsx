@@ -319,12 +319,28 @@ export function UnifiedMobileLoginCard({
 
   return (
     <div className={className} style={styles.root}>
-      <div style={styles.card}>
-        <div style={styles.brand}>
-          <img src="/app-logo.png" alt={portalName} style={styles.logo} />
-          <h1 style={styles.portalName}>{portalName}</h1>
-          <p style={styles.descriptor}>{descriptor}</p>
-        </div>
+      <div style={{ width: "100%", maxWidth: 400, display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
+        {heroImage && (
+          <img
+            src={heroImage}
+            alt={heroAlt || ""}
+            style={{
+              width: "100%",
+              maxWidth: 400,
+              aspectRatio: "9 / 16",
+              maxHeight: "38vh",
+              objectFit: "cover",
+              borderRadius: 22,
+              display: "block",
+            }}
+          />
+        )}
+        <div style={{ ...styles.card, marginTop: 0 }}>
+          <div style={styles.brand}>
+            <img src="/app-logo.png" alt={portalName} style={styles.logo} />
+            <h1 style={styles.portalName}>{portalName}</h1>
+            <p style={styles.descriptor}>{descriptor}</p>
+          </div>
 
         {biometricScope && bioAvailable && (
           <button
