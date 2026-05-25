@@ -140,6 +140,20 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
             <OfflineSyncIndicator instructorId={instructor?.id} showDetails />
             {/* Theme toggle (sun/moon) */}
             <DSMThemeToggle />
+            {/* Live Track */}
+            <button
+              onClick={() => navigate("/instructor/live")}
+              aria-label="Start live track"
+              className="flex items-center justify-center"
+              style={{
+                width: 32,
+                height: 32,
+                borderRadius: '50%',
+                background: 'hsl(var(--dsm-tile-icon-bg))',
+              }}
+            >
+              <Car className="h-[18px] w-[18px]" style={{ color: 'hsl(var(--dsm-text))' }} strokeWidth={1.6} />
+            </button>
             {/* SOS */}
             <button
               onClick={() => setSosOpen(true)}
