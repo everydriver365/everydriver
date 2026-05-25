@@ -76,37 +76,35 @@ export function MobilePortalLoginShell({
         }
       `}</style>
 
-      <div className="flex flex-col items-center">
+      <div className="flex items-center gap-3 self-start">
         <img
           src={logoSrc}
           alt={logoAlt}
-          style={{ height: logoHeightPx }}
+          style={{ height: Math.round(logoHeightPx * 0.7) }}
           className={cn(
             "object-contain",
             isLight ? "" : "drop-shadow-[0_2px_12px_rgba(0,0,0,0.4)]",
           )}
         />
+        <h1
+          className={cn(
+            "mpl-welcome font-bold",
+            textBaseClass,
+            isLight ? "" : "drop-shadow-[0_2px_10px_rgba(0,0,0,0.4)]",
+          )}
+          style={{ fontSize: 22, letterSpacing: "-0.6px", lineHeight: 1.1 }}
+        >
+          {title}
+        </h1>
       </div>
 
       {heroSrc && <div className="flex-1" />}
 
-      <div className={cn("flex flex-col items-center", !heroSrc && "mt-0")}>
-        <h1
-          className={cn(
-            "mpl-welcome font-bold mt-7 text-center",
-            textBaseClass,
-            isLight ? "" : "drop-shadow-[0_2px_10px_rgba(0,0,0,0.4)]",
-          )}
-          style={{ fontSize: 26, letterSpacing: "-0.6px", lineHeight: 1.1 }}
-        >
-          {title}
-        </h1>
-        {subtitle && (
-          <p className={cn("mt-1.5 text-center", subTextClass)} style={{ fontSize: 14 }}>
-            {subtitle}
-          </p>
-        )}
-      </div>
+      {subtitle && (
+        <p className={cn("mt-1.5 text-center", subTextClass)} style={{ fontSize: 14 }}>
+          {subtitle}
+        </p>
+      )}
 
 
       <div className={cn("mpl-brand-gap flex flex-col", heroSrc ? "mt-5" : "mt-10 flex-1")}>{children}</div>
