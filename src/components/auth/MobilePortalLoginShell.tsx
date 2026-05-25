@@ -42,6 +42,60 @@ export function MobilePortalLoginShell({
   className,
   hideAt = "md",
 }: Props) {
+  if (heroSrc) {
+    return (
+      <div
+        className={cn(
+          hideAt === "lg" ? "lg:hidden" : "md:hidden",
+          "fixed inset-0 bg-[#0F2044] text-white flex flex-col z-40",
+          className,
+        )}
+        style={{
+          minHeight: "100dvh",
+          backgroundImage: `url(${heroSrc})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center 18%",
+          backgroundRepeat: "no-repeat",
+        }}
+      >
+        {/* Top spacer — keeps the illustration unobscured */}
+        <div className="flex-1" aria-hidden />
+
+        {/* Bottom frosted card with title + form */}
+        <div
+          className="rounded-t-[28px] flex flex-col"
+          style={{
+            background: "linear-gradient(180deg, rgba(15,32,68,0.72) 0%, rgba(15,32,68,0.96) 28%, #0F2044 100%)",
+            backdropFilter: "blur(18px)",
+            WebkitBackdropFilter: "blur(18px)",
+            paddingTop: 22,
+            paddingBottom: "calc(env(safe-area-inset-bottom) + 18px)",
+            paddingLeft: 24,
+            paddingRight: 24,
+            boxShadow: "0 -12px 40px rgba(0,0,0,0.25)",
+            borderTop: "1px solid rgba(255,255,255,0.08)",
+          }}
+        >
+          <div className="flex flex-col items-center mb-4">
+            <h1
+              className="text-white font-bold text-center"
+              style={{ fontSize: 22, letterSpacing: "-0.5px", lineHeight: 1.15 }}
+            >
+              {title}
+            </h1>
+            <p className="text-white/85 mt-1 text-center" style={{ fontSize: 13 }}>
+              {subtitle}
+            </p>
+          </div>
+
+          <div className="flex flex-col">{children}</div>
+
+          {footer && <div className="mt-4 text-center">{footer}</div>}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className={cn(
@@ -55,14 +109,6 @@ export function MobilePortalLoginShell({
         paddingLeft: 28,
         paddingRight: 28,
         minHeight: "100dvh",
-        ...(heroSrc
-          ? {
-              backgroundImage: `linear-gradient(180deg, rgba(15,32,68,0.15) 0%, rgba(15,32,68,0.55) 55%, rgba(15,32,68,0.92) 100%), url(${heroSrc})`,
-              backgroundSize: "cover",
-              backgroundPosition: "center top",
-              backgroundRepeat: "no-repeat",
-            }
-          : {}),
       }}
     >
       <style>{`
@@ -73,21 +119,14 @@ export function MobilePortalLoginShell({
       `}</style>
 
       <div className="flex flex-col items-center">
-        {!heroSrc && (
-          <img
-            src={logoSrc}
-            alt={logoAlt}
-            style={{ height: logoHeightPx }}
-            className="object-contain drop-shadow-[0_2px_12px_rgba(0,0,0,0.4)]"
-          />
-        )}
-      </div>
-
-      {heroSrc && <div className="flex-1" />}
-
-      <div className={cn("flex flex-col items-center", !heroSrc && "mt-0")}>
+        <img
+          src={logoSrc}
+          alt={logoAlt}
+          style={{ height: logoHeightPx }}
+          className="object-contain"
+        />
         <h1
-          className="mpl-welcome text-white font-bold mt-7 text-center drop-shadow-[0_2px_10px_rgba(0,0,0,0.4)]"
+          className="mpl-welcome text-white font-bold mt-7 text-center"
           style={{ fontSize: 26, letterSpacing: "-0.6px", lineHeight: 1.1 }}
         >
           {title}
@@ -97,7 +136,7 @@ export function MobilePortalLoginShell({
         </p>
       </div>
 
-      <div className={cn("mpl-brand-gap flex flex-col", heroSrc ? "mt-5" : "mt-10 flex-1")}>{children}</div>
+      <div className="mt-10 mpl-brand-gap flex flex-col flex-1">{children}</div>
 
       {footer && <div className="mt-6 text-center">{footer}</div>}
     </div>
