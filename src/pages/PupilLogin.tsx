@@ -320,9 +320,12 @@ export default function PupilLogin() {
         <UnifiedMobileLoginCard
           portalName="Drive365"
           descriptor="For pupils"
+          brand="drive365"
+          subtitle="Sign in to manage your driving lessons"
           biometricScope="pupil"
           heroImage={mobileLoginHero}
           heroAlt="Drive365 pupil"
+
           onSignIn={async (em, pw, _remember) => {
             const ok = await performLogin(em, pw);
             if (!ok) return { error: "Could not sign you in" };
