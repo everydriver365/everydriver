@@ -3,6 +3,7 @@
 // to prevent re-alerting for the same lesson.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { raiseSyncAlert } from "../_shared/raiseSyncAlert.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
