@@ -118,7 +118,7 @@ import { OfflineBanner } from "@/components/instructor/OfflineBanner";
 import { useOfflinePrefetch } from "@/hooks/useOfflinePrefetch";
 import instructorBg from "@/assets/instructor-bg-signs.png";
 import dsmLogo from "@/assets/dsm-logo.png";
-import { MobileBlueHeader } from "@/components/instructor/MobileBlueHeader";
+import { InstructorTopBar } from "@/components/instructor/InstructorTopBar";
 const sidebarGroups = [
   {
     label: "TEACHING",
@@ -722,22 +722,18 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
             
 
 
-            {/* Mobile Header — iOS Blue Gradient (hidden on home; DSM2026 hero replaces it) */}
-            {!isHomePage && location.pathname !== "/instructor/schedule" && (
-              <MobileBlueHeader
-                instructorId={instructor?.id}
+            {/* Unified mobile header — same navy bar as the DSM2026 home hero */}
+            {!isHomePage && (
+              <InstructorTopBar
                 firstName={firstName}
-                profileImageUrl={instructor?.profile_image_url}
-                isOnline={instructor?.is_active ?? true}
-                showBackButton={showBackButton}
-                showGreeting={!showBackButton}
-                surface={isHomePage ? "white" : "page"}
-                isHomePage={isHomePage}
+                unreadCount={notificationTotal}
                 pageTitle={mobilePageTitle}
-                onBack={() => (isTabRoot ? navigate("/instructor") : navigate(-1))}
-                onSOS={() => setShowSOS(true)}
-                onPlus={() => setHeaderQuickActionsOpen(true)}
+                onBack={showBackButton ? () => (isTabRoot ? navigate("/instructor") : navigate(-1)) : undefined}
+                onPhone={() => navigate("/instructor/calls")}
+                onLiveTrack={() => navigate("/instructor/live")}
+                onBell={() => navigate("/instructor/notifications")}
                 onMenu={() => setIsMobileMenuOpen(true)}
+                onProfile={() => navigate("/instructor/profile")}
               />
             )}
 

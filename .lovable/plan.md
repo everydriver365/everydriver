@@ -1,34 +1,44 @@
-## Why the previous changes didn't show up
+## Goal
 
-The instructor mobile home screen (`/instructor`) does **not** use `InstructorMobileHeader` or `MobileBlueHeader`. Both files I edited in earlier turns are unused on this route:
+One header across the entire instructor mobile app. The navy `HeroHeader` top row from the homepage (`MobileHomeDSM2026.tsx`) becomes the single source of truth, used on every instructor route and subroute.
 
-- `InstructorPortalLayout.tsx` line 726 explicitly skips `MobileBlueHeader` when `isHomePage` is true.
-- The home view `MobileHomeDSM2026.tsx` renders its own `HeroHeader` inline (the dark navy bar in your screenshot with WDS logo, "Ken", Phone, Bell, Menu).
+## Approach
 
-That's why the car icon never appeared — it was being added to a header that isn't on screen.
+The home `HeroHeader` is actually two stacked blocks:
+1. **Top bar** — navy panel with DSM logo, first name + chevron, and the Phone / Car / Bell / Menu buttons.
+2. **Hero body** — `NextLessonCard` + `StatsStrip` (home-only context).
 
-There is no SOS icon in this header either; the SOS button lives elsewhere (in the older `InstructorMobileHeader` variant), so it has also never been visible on the DSM 2026 home.
+Only block 1 should be shared. Block 2 stays on home.
 
-## The fix
+### Steps
 
-Add the Car icon to the real header — the `HeroHeader` component inside `src/components/instructor/MobileHomeDSM2026.tsx`.
+1. **Extract a shared `InstructorTopBar` component** (`src/components/instructor/InstructorTopBar.tsx`) containing exactly the top row from `HeroHeader` (lines 783–820 of `MobileHomeDSM2026.tsx`). Props:
+   - `firstName`, `unreadCount`, `instructorId`
+   - `onPhone`, `onLiveTrack`, `onBell`, `onMenu`, `onProfile`
+   - Optional `pageTitle` and `onBack` — when `onBack` is set, the DSM logo position renders a back chevron and the first-name slot becomes the page title (sub-page mode). When omitted, it renders home mode (logo + name).
+   - Keeps the navy `#072b47` background, rounded bottom corners, and safe-area padding so it visually matches the home hero.
 
-1. Import `Car` from `lucide-react` (already imports `Phone`, `Bell`, `Menu`).
-2. In the right-side button row (around line 812-816), insert a new `HeroButton` using `Car` between the `Phone` and `Bell` buttons:
-   ```
-   <HeroButton Icon={Phone} onPress={onPhone} />
-   <HeroButton Icon={Car} onPress={onLiveTrack} />
-   <HeroButton Icon={Bell} ... />
-   <HeroButton Icon={Menu} ... />
-   ```
-3. Add an `onLiveTrack` prop to the `HeroHeader` props type (alongside `onPhone`, `onBell`, `onMenu`).
-4. In the parent (line 317-330) wire it up: `onLiveTrack={() => navigate("/instructor/live")}`.
+2. **Refactor `HeroHeader` in `MobileHomeDSM2026.tsx`** to render `<InstructorTopBar … />` followed by the existing `NextLessonCard` and `StatsStrip`. No visual change on home.
 
-## Cleanup (optional but recommended)
+3. **Replace `MobileBlueHeader` in `InstructorPortalLayout.tsx`** (lines 726–742). On every non-home, non-schedule route render `<InstructorTopBar pageTitle={mobilePageTitle} onBack={…} … />` wired to the same navigation handlers (`/instructor/calls`, `/instructor/live`, `/instructor/notifications`, and the existing `setIsMobileMenuOpen` for Menu). The existing back-button logic (`isTabRoot ? navigate("/instructor") : navigate(-1)`) is preserved.
 
-Revert the unused `Car` icon additions from `InstructorMobileHeader.tsx` and `MobileBlueHeader.tsx` so future edits don't compound the confusion. Leave the hamburger "Live Track" menu item if you still want it as a secondary entry point.
+4. **Schedule page** currently also skips the header. Decide with one quick check: keep it skipped (schedule has its own chrome) or include the new bar. Default to **including** the new top bar for true consistency, unless the schedule chrome visibly conflicts — in which case leave the skip in place and note it.
+
+5. **Leave `MobileBlueHeader.tsx` in the repo but unused** for now (don't delete in the same change — safer to verify the swap first, prune in a follow-up).
+
+### Out of scope
+
+- No changes to desktop layout.
+- No changes to SOS / Plus / QuickActions wiring — those were `MobileBlueHeader`-specific and are not part of the home hero design. If you want them surfaced on sub-pages we can add them as optional props in a follow-up.
+- No edits to existing home body, stats strip, or next-lesson card.
 
 ## Files touched
 
-- `src/components/instructor/MobileHomeDSM2026.tsx` — add Car button + prop wiring.
-- (optional) revert prior Car additions in `MobileBlueHeader.tsx` and the SOS-row addition in `InstructorMobileHeader.tsx`.
+- **new** `src/components/instructor/InstructorTopBar.tsx`
+- `src/components/instructor/MobileHomeDSM2026.tsx` — `HeroHeader` now composes `InstructorTopBar`
+- `src/components/layout/InstructorPortalLayout.tsx` — swap `MobileBlueHeader` for `InstructorTopBar`
+
+## Confirm before I build
+
+- **SOS button**: the current sub-page header has an SOS button; the home header does not. Drop it from the unified header, or add SOS as a 5th icon to the home header too?
+- **Schedule page**: include the unified header there as well (recommended for consistency), or keep skipped?
