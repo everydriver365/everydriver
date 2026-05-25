@@ -435,7 +435,7 @@ export function DsmBlueMobileLogin({
           </div>
 
           {/* Face ID */}
-          {biometricScope && bioAvailable && (
+          {biometricScope && (
             <button
               type="button"
               onClick={handleBiometric}
