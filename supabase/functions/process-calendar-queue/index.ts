@@ -141,13 +141,48 @@ Deno.serve(async (req) => {
         await markProcessed(supabase, item.id);
         successCount++;
       } catch (err) {
+        const message = err instanceof Error ? err.message : "Unknown error";
         console.error(`Queue item ${item.id} failed:`, err);
         await supabase.from("scheduled_lessons")
           .update({ calendar_sync_status: "failed" })
           .eq("id", item.lesson_id);
-        await markProcessed(supabase, item.id, err instanceof Error ? err.message : "Unknown error");
+        await markProcessed(supabase, item.id, message);
+
+        void raiseSyncAlert({
+          category: "other",
+          severity: "medium",
+          title: "Calendar queue item failed",
+          message,
+          instructorId: item.instructor_id ?? null,
+          lessonId: item.lesson_id ?? null,
+          metadata: { action: item.action },
+          supabase,
+        });
+
         errorCount++;
       }
+    }
+
+    // ── Stuck queue detection ────────────────────────────────────────────
+    try {
+      const stuckCutoff = new Date(Date.now() - 15 * 60 * 1000).toISOString();
+      const { count: stuckCount } = await supabase
+        .from("calendar_sync_queue")
+        .select("id", { count: "exact", head: true })
+        .is("processed_at", null)
+        .lt("created_at", stuckCutoff);
+      if ((stuckCount ?? 0) > 50) {
+        void raiseSyncAlert({
+          category: "queue_stuck",
+          severity: "critical",
+          title: "Calendar sync queue is stuck",
+          message: `${stuckCount} unprocessed items older than 15 minutes.`,
+          metadata: { stuckCount, cutoff: stuckCutoff },
+          supabase,
+        });
+      }
+    } catch (e) {
+      console.warn("stuck queue check failed:", e);
     }
 
     // ── Purge processed items older than 7 days ───────────────────────────
