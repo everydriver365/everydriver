@@ -7533,6 +7533,11 @@ export type Database = {
           last_sync: string | null
           sync_error: string | null
           updated_at: string | null
+          webhook_channel_id: string | null
+          webhook_channel_token: string | null
+          webhook_expires_at: string | null
+          webhook_last_error: string | null
+          webhook_resource_id: string | null
         }
         Insert: {
           calendar_id: string
@@ -7543,6 +7548,11 @@ export type Database = {
           last_sync?: string | null
           sync_error?: string | null
           updated_at?: string | null
+          webhook_channel_id?: string | null
+          webhook_channel_token?: string | null
+          webhook_expires_at?: string | null
+          webhook_last_error?: string | null
+          webhook_resource_id?: string | null
         }
         Update: {
           calendar_id?: string
@@ -7553,6 +7563,11 @@ export type Database = {
           last_sync?: string | null
           sync_error?: string | null
           updated_at?: string | null
+          webhook_channel_id?: string | null
+          webhook_channel_token?: string | null
+          webhook_expires_at?: string | null
+          webhook_last_error?: string | null
+          webhook_resource_id?: string | null
         }
         Relationships: [
           {
@@ -7745,6 +7760,7 @@ export type Database = {
           color: string | null
           created_at: string
           end_datetime: string
+          google_event_id: string | null
           id: string
           instructor_id: string
           notes: string | null
@@ -7757,6 +7773,7 @@ export type Database = {
           color?: string | null
           created_at?: string
           end_datetime: string
+          google_event_id?: string | null
           id?: string
           instructor_id: string
           notes?: string | null
@@ -7769,6 +7786,7 @@ export type Database = {
           color?: string | null
           created_at?: string
           end_datetime?: string
+          google_event_id?: string | null
           id?: string
           instructor_id?: string
           notes?: string | null
