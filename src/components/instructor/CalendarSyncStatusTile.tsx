@@ -39,13 +39,14 @@ export function CalendarSyncStatusTile({ instructorId }: Props) {
   const [lastSync, setLastSync] = useState<string | null>(null);
   const [pending, setPending] = useState(0);
   const [failed, setFailed] = useState(0);
+  const [credentialBroken, setCredentialBroken] = useState(false);
   const [retrying, setRetrying] = useState(false);
 
   const load = useCallback(async () => {
     if (!instructorId) return;
     setLoading(true);
 
-    const [{ data: conn }, { count: pCount }, { count: fCount }] = await Promise.all([
+    const [{ data: conn }, { count: pCount }, { count: fCount }, { data: lastErr }] = await Promise.all([
       supabase
         .from("instructor_google_service_calendar")
         .select("last_sync, is_active")
@@ -61,12 +62,26 @@ export function CalendarSyncStatusTile({ instructorId }: Props) {
         .select("id", { count: "exact", head: true })
         .eq("instructor_id", instructorId)
         .eq("calendar_sync_status", "failed"),
+      supabase
+        .from("calendar_sync_queue")
+        .select("error, created_at")
+        .eq("instructor_id", instructorId)
+        .not("error", "is", null)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
     ]);
 
     setConnected(!!conn?.is_active);
     setLastSync(conn?.last_sync ?? null);
     setPending(pCount ?? 0);
     setFailed(fCount ?? 0);
+
+    // Classify last error: credential issues can't be fixed by retry
+    const errText = (lastErr?.error ?? "") as string;
+    const isCredential = /GOOGLE_PRIVATE_KEY|malformed|Failed to decode base64|invalid_grant|unauthorized_client|PEM|service.account|DECODER routines|ERR_OSSL/i.test(errText);
+    setCredentialBroken(isCredential && (fCount ?? 0) > 0);
+
     setLoading(false);
   }, [instructorId]);
 
@@ -125,6 +140,24 @@ export function CalendarSyncStatusTile({ instructorId }: Props) {
   }
 
   if (failed > 0) {
+    // Credential errors can't be fixed by tapping retry — show a non-tappable info state
+    if (credentialBroken) {
+      return (
+        <TileCard ariaLabel="Calendar sync credential issue">
+          <div style={INNER}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ ...eyebrow, color: "#6B7280" }}>Calendar sync</span>
+            </div>
+            <div style={{ marginTop: 6, fontSize: 15, fontWeight: 700, color: "#1F2937" }}>
+              Sync paused
+            </div>
+            <div style={{ fontSize: 11, color: "#6B7280", marginTop: 2 }}>
+              Credential issue — admin notified. {failed} lesson{failed === 1 ? "" : "s"} queued.
+            </div>
+          </div>
+        </TileCard>
+      );
+    }
     return (
       <TileCard onClick={retry} accentColor="red" ariaLabel="Calendar sync failures">
         <div style={INNER}>
