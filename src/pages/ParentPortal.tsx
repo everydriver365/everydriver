@@ -164,13 +164,17 @@ export default function ParentPortal() {
   };
 
 
-  const fetchChildrenData = async (phone: string) => {
+  const fetchChildrenData = async (opts: { email?: string; phone?: string }) => {
     try {
-      const cleanPhone = phone.replace(/\s+/g, "");
-        const { data: pupils, error: pupilsError } = await supabase
-          .from("pupils")
-          .select("id, name, lessons_completed, progress, account_balance, prepaid_hours, test_date, test_passed, theory_test_date, theory_test_passed, instructor_id")
-          .or(`parent_phone.ilike.%${cleanPhone.slice(-9)}`);
+      const cleanPhone = opts.phone?.replace(/\s+/g, "");
+      const filters: string[] = [];
+      if (opts.email) filters.push(`parent_email.eq.${opts.email.toLowerCase()}`);
+      if (cleanPhone) filters.push(`parent_phone.ilike.%${cleanPhone.slice(-9)}`);
+      if (filters.length === 0) { setChildren([]); return; }
+      const { data: pupils, error: pupilsError } = await supabase
+        .from("pupils")
+        .select("id, name, lessons_completed, progress, account_balance, prepaid_hours, test_date, test_passed, theory_test_date, theory_test_passed, instructor_id")
+        .or(filters.join(","));
 
       if (pupilsError) throw pupilsError;
       if (!pupils || pupils.length === 0) { setChildren([]); return; }
