@@ -1,63 +1,74 @@
-## Dead code cleanup — 12 batches
+## Goal
 
-Deletion-only sweep. Every file gets a final `rg` import check before removal. Any file with even one import is skipped and reported. Build verified after each batch; stop on first failure.
+Use the uploaded blue learner-car illustration as the **mobile login hero image** on:
+1. Instructor portal mobile login (`InstructorPortalLogin.tsx`)
+2. Pupil portal mobile login (`PupilLogin.tsx`)
+3. Parent portal mobile login (`ParentPortal.tsx`)
 
-### Batch 1 — Orphan admin components (14 files)
-`src/components/admin/`: HomepageFeaturesManager, HomepageHeroManager, HomepageSectionsManager, HomepageStatsManager, HomepageTestimonialsManager, IncludedFeaturesManager, InstructorAppFeaturesManager, OnboardingWizardManager, CourseTemplateManager, AdminEmailPanel, AdminSidebar, AdminDesktopSidebar, RecentPaymentsWidget, SOSAlertsPanel.
+All three mobile logins will then share the same shape: **photo hero → email + password form → "Forgot password" toggle → "Sign in with Face ID" button** (using the existing biometric pipeline that already powers Instructor and Pupil).
 
-### Batch 2 — Orphan marketing sections (6 files)
-`src/components/instructor-features/`: ComparisonSection, ExtraFeatures, FeatureCategorySection, FeatureHero, ProductShowcase, StatsBar.
+Desktop layouts are not touched.
 
-### Batch 3 — Orphan money subfolder (7 files)
-Delete entire `src/components/instructor/money/`.
+---
 
-### Batch 4 — Unused shadcn primitives (4 files)
-`src/components/ui/`: hover-card, menubar, navigation-menu, toggle-group.
+## Part 1 — Asset
 
-### Batch 5 — Orphan custom UI primitives (8 files)
-`src/components/ui/`: AnimatedRoutes, BounceBadge, CollapsibleLargeTitle, DrawCheckmark, HapticContextMenu, QuickActionCircle, ThemeIllustration, skeletons/FinanceSkeleton.
+Copy `user-uploads://mobile_login_screen_250526.png` to `src/assets/mobile-login-hero.png`. Single asset reused by all three portals so future updates only touch one file.
 
-### Batch 6 — Orphan pages with no route (17 files)
-Pages listed in cleanup prompt under `src/pages/`, `src/pages/pupil/`, `src/pages/public/`, `src/pages/school-website/`, `src/pages/instructor/`.
+## Part 2 — Instructor & Pupil (hero swap only)
 
-### Batch 7 — Entire onboarding flow
-Delete `src/pages/instructor-app/onboarding/` directory.
+Both pages already use the shared `MobileLoginHero` + `UnifiedMobileLoginCard` flow with email login, forgot password, and Face ID. Only change:
 
-### Batch 8 — Unused desktop instructor-app pages (10 files)
-All `*Desktop.tsx` + `InstructorAppHome`, `EveryDriverInstructorHome`, `InstructorProfileRouter`.
+- `src/pages/InstructorPortalLogin.tsx` — replace `import instructorHero from "@/assets/every-instructor-hero.webp"` with the new asset, pass it as `heroSrc` to `MobileLoginHero`.
+- `src/pages/PupilLogin.tsx` — replace `import pupilHero from "@/assets/drive365-hero-learner.webp"` the same way.
 
-### Batch 9 — Orphan hooks (12 files)
-`src/hooks/`: useAdminDashboardStats, useCancellationRequests, useFuelLog, useGPSAutoReconnect, useHeroVideo, useOfflineData, useOfflineGPSQueue, useOfflineMutation, usePremiumPlacement, useProfitAnalysis, useSkeletonMorph, useWaitlistMatching.
+No logic changes. Face ID, forgot-password, deep-link arrival behaviour remain identical.
 
-### Batch 10 — Unused npm packages
-Remove `@capacitor-community/contacts`, `@capacitor/preferences`, `@react-leaflet/core`, `phosphor-react` via `bun remove`.
+> Note: `src/pages/instructor-app/InstructorLogin.tsx` is the **marketing/SaaS** instructor login (not the in-app one). I'll swap its hero too for consistency since it shares the same `MobileLoginHero` component — say so if you want it left alone.
 
-### Batch 11 — Admin-gate lab/demo routes
-Inspect `src/routes/demoRoutes.tsx` (and any other lab routes). Wrap each `<Route>` element with the existing `ProtectedAdminRoute` guard. Non-admin visitors redirect to `/admin/login` (same behaviour as other admin routes). No deletions.
+## Part 3 — Parent portal: phone OTP → email + password + Face ID
 
-### Batch 12 — Strip console.logs
-Remove only `console.log(...)` lines (preserve `console.error` / `console.warn`) from:
-- `src/components/booking/KlarnaExpressButton.tsx`
-- `src/components/DomainRouter.tsx` *(corrected path — file is in components/, not pages/)*
-- `src/components/PostcodeAutocomplete.tsx`
-- `src/pages/InstructorLiveSession.tsx`
-- `src/lib/backgroundSync.ts`
-- `src/pages/InstructorDocumentTemplates.tsx`
+This is the structural change you confirmed.
 
-### Explicitly NOT touched
-- `instructor/ui/PortalButton|PortalCard|SettingsRow` — flagged for design-system investigation, not deletion.
-- All edge functions — cron schedules not yet verified.
-- `LiveTrackingMap`, `GoogleLiveTrackingMap`, `WhatsAppInbox`, `WhatsAppBadge`, duplicate lesson cards / payment modals, `window.location` call sites — need individual review.
+### Schema migration
 
-### Verification protocol per batch
-1. For each path: `rg -l --fixed-strings "<basename>" -g '!<self>'` across `src/` and `supabase/functions/`. Skip + report if any hit.
-2. Delete confirmed-orphan files (`rm`).
-3. Wait for harness build; if errors, restore the offending file from git and report.
-4. Report: deleted / skipped (with reason) / build status.
+Add `parent_email` (nullable text, lower-cased + indexed) to `public.pupils`. Keep existing `parent_phone` for backward compatibility — not dropped.
 
-### Risks
-- Basename matching can miss dynamic imports built from string concatenation. Mitigation: per-file `rg` check uses fixed-string match on the component/hook name; failures roll back via the harness build.
-- Removing packages may break files we didn't think were importing them. Mitigation: build runs after Batch 10; restore from `package.json` history if it breaks.
-- Some "orphan pages" may be linked from CMS-stored strings in the DB (not the codebase). Acceptable risk — they'll 404, easy to restore.
+### Auth flow
 
-Estimated impact: ~80 files removed, 4 packages removed, lab routes gated, ~50 `console.log` lines stripped. No behaviour change for end users.
+Replace the `MobilePortalLoginShell` phone/OTP screens with the same pattern Instructor/Pupil use:
+
+```
+MobileLoginHero  (new illustration)
+   └─ Email + password form
+         ├─ "Forgot password?" → reset-password email
+         └─ "Sign in with Face ID" (when biometrics available + credentials saved)
+```
+
+Pieces:
+
+- **Sign-in**: standard `supabase.auth.signInWithPassword({ email, password })`.
+- **Forgot password**: `supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + "/reset-password" })`. The existing `/reset-password` page is already shared across portals.
+- **Face ID**: reuse `@/lib/biometricAuth` (`isBiometricAvailable`, `saveBiometricCredentials`, `getBiometricCredentials`) exactly as Pupil/Instructor do, scoped with `biometricScope: "parent"`.
+- **Children matching after sign-in**: change `fetchChildrenData` from `pupils.parent_phone ilike …` to `pupils.parent_email = session.user.email`. Phone-based fallback kept as a secondary `or()` clause so existing parents keep working until they're migrated.
+- **First-time setup**: an empty "no children linked to this email" state with instructions to ask their instructor to add their email to the pupil record (handled in the instructor's pupil edit screen — covered in a follow-up if needed).
+
+### Files touched
+
+- `src/pages/ParentPortal.tsx` — replace `MobilePortalLoginShell` block (lines ~327–421) with `MobileLoginHero` + new email/password/Face ID form. Remove `parentPhone` / `otp` / `authStep` state for the entry flow, replace with `email` / `password` / `view: "login" | "forgot"`. Update `fetchChildrenData` to query by email first. Remove `send-parent-otp` / `verify-parent-otp` invokes.
+- Migration: `ALTER TABLE public.pupils ADD COLUMN parent_email text; CREATE INDEX idx_pupils_parent_email ON public.pupils (lower(parent_email));`.
+- RLS on `pupils` is unchanged (still controlled by instructor scope) — parents only ever read via the authenticated query.
+
+### What is NOT removed
+
+The `send-parent-otp` / `verify-parent-otp` edge functions stay deployed for now in case other surfaces (admin tools, instructor flows, etc.) still call them. They can be retired in a separate cleanup pass after we confirm no callers remain.
+
+## Part 4 — Verification
+
+- Build is clean.
+- Mobile preview at `< md`: hero photo renders on all three login screens, email + password works, "Forgot password" sends reset email, Face ID button only appears when biometrics are available and credentials were saved on a prior sign-in.
+- Desktop view (`md+`) for all three portals is visually unchanged.
+
+## Open question
+
+Want the marketing `instructor-app/InstructorLogin.tsx` hero swapped too, or only the three in-app portals?
