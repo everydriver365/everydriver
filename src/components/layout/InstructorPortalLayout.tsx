@@ -279,6 +279,11 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
   const { instructor, subscription, signOut, loading } = useInstructorAuth();
   useInstructorPresence(instructor?.id);
   usePaymentReceivedAlert(instructor?.id);
+  // Remember that this device is running the instructor app so a cold
+  // launch (e.g. native build) returns to the DSM login next time.
+  useEffect(() => {
+    import("@/lib/appVariant").then(m => m.rememberAppVariant("instructor"));
+  }, []);
   const location = useLocation();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
