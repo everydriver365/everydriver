@@ -270,7 +270,7 @@ export default function ParentPortal() {
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "scheduled_lessons", filter: `pupil_id=in.(${pupilIds.join(',')})` },
-        () => { if (parentPhone) void fetchChildrenData(parentPhone); }
+        () => { if (parentEmail || parentPhone) void fetchChildrenData({ email: parentEmail || undefined, phone: parentPhone || undefined }); }
       )
       .subscribe();
     return () => { supabase.removeChannel(channel); };
@@ -297,101 +297,22 @@ export default function ParentPortal() {
 
   const negativeBalanceCount = children.filter(c => c.account_balance < 0).length;
 
-  // Phone entry screen
-  if (authStep === 'phone') {
+  // Login screen — email + password + Face ID
+  if (authStep === 'login') {
     return (
-      <MobilePortalLoginShell
-        logoSrc={drive365Logo}
-        logoAlt="Drive365 Parent"
-        title="Parent Portal"
-        subtitle="Sign in to monitor your child's driving progress"
-      >
-        <div className="flex flex-col flex-1">
-          <label className={darkPortalLabelClass}>Phone number</label>
-          <div className="relative mb-4">
-            <Phone className="absolute left-[14px] top-1/2 -translate-y-1/2 h-[18px] w-[18px] text-white" strokeWidth={1.8} />
-            <input
-              type="tel"
-              inputMode="tel"
-              autoComplete="tel"
-              placeholder="07XXX XXXXXX"
-              value={parentPhone}
-              onChange={(e) => setParentPhone(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSendOTP()}
-              className={darkPortalInputClass}
-              style={darkPortalInputStyle}
-            />
-          </div>
-
-          <motion.button
-            type="button"
-            whileTap={{ scale: 0.985, opacity: 0.85 }}
-            onClick={handleSendOTP}
-            disabled={loading || !parentPhone.trim()}
-            style={{ opacity: loading || !parentPhone.trim() ? 0.6 : 1 }}
-            className={darkPortalPrimaryBtnClass}
-          >
-            <span className="py-4 text-[15px] flex items-center justify-center gap-2">
-              {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Send verification code"}
-            </span>
-          </motion.button>
-
-          <p className="text-[12px] text-white/60 text-center mt-3">
-            We'll send a 6-digit code to verify your identity.
-          </p>
-        </div>
-      </MobilePortalLoginShell>
+      <UnifiedMobileLoginCard
+        className=""
+        portalName="Drive365 Parent"
+        descriptor="Monitor your child's driving progress"
+        biometricScope="parent"
+        heroImage={mobileLoginHero}
+        heroAlt="Drive365 parent portal"
+        onSignIn={async (em, pw) => handleEmailSignIn(em, pw)}
+        onForgot={async (em) => handleForgotPassword(em)}
+      />
     );
   }
 
-  // OTP verification screen
-  if (authStep === 'otp') {
-    return (
-      <MobilePortalLoginShell
-        logoSrc={drive365Logo}
-        logoAlt="Drive365 Parent"
-        title="Enter verification code"
-        subtitle={`We sent a 6-digit code to ${parentPhone}`}
-        footer={
-          <button
-            type="button"
-            onClick={() => setAuthStep('phone')}
-            className="text-[13px] font-semibold text-white"
-          >
-            Use a different number
-          </button>
-        }
-      >
-        <div className="flex flex-col flex-1 items-center">
-          <div className="my-2">
-            <InputOTP value={otp} onChange={(value) => setOtp(value)} maxLength={6}>
-              <InputOTPGroup>
-                <InputOTPSlot index={0} className="bg-white/15 border-white/30 text-white" />
-                <InputOTPSlot index={1} className="bg-white/15 border-white/30 text-white" />
-                <InputOTPSlot index={2} className="bg-white/15 border-white/30 text-white" />
-                <InputOTPSlot index={3} className="bg-white/15 border-white/30 text-white" />
-                <InputOTPSlot index={4} className="bg-white/15 border-white/30 text-white" />
-                <InputOTPSlot index={5} className="bg-white/15 border-white/30 text-white" />
-              </InputOTPGroup>
-            </InputOTP>
-          </div>
-
-          <motion.button
-            type="button"
-            whileTap={{ scale: 0.985, opacity: 0.85 }}
-            onClick={handleVerifyOTP}
-            disabled={loading || otp.length !== 6}
-            style={{ opacity: loading || otp.length !== 6 ? 0.6 : 1 }}
-            className={`${darkPortalPrimaryBtnClass} mt-6`}
-          >
-            <span className="py-4 text-[15px] flex items-center justify-center gap-2">
-              {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Verify & continue"}
-            </span>
-          </motion.button>
-        </div>
-      </MobilePortalLoginShell>
-    );
-  }
 
 
   // No children found
