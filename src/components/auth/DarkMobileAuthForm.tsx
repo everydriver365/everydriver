@@ -17,6 +17,8 @@ interface Props {
   logoSrc: string;
   logoAlt: string;
   logoHeightPx?: number;
+  /** Brand controls the 84x84 logo block styling. dsm = tinted glass + contain; drive365 = transparent + cover (app-icon style). */
+  brand?: "dsm" | "drive365";
   /** @deprecated kept for API compat */
   heroSrc?: string;
   /** @deprecated kept for API compat */
@@ -62,6 +64,7 @@ interface Props {
   /** Override the "New to ..." brand name in the default footer. */
   brandName?: string;
 }
+
 
 export function DarkMobileAuthForm({
   logoSrc,
