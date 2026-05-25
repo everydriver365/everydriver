@@ -775,49 +775,21 @@ function HeroHeader(props: {
     <div
       style={{
         backgroundColor: "#072b47",
-        padding: "calc(env(safe-area-inset-top, 0px) + 12px) 18px 16px",
-        marginTop: "calc(-1 * env(safe-area-inset-top, 0px))",
         borderBottomLeftRadius: 20,
         borderBottomRightRadius: 20,
       }}
     >
-      {/* Top row */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          marginBottom: 12,
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-          <DsmLogo size={28} />
-          <button
-            type="button"
-            onClick={onProfile}
-            style={{
-              display: "flex", alignItems: "center", gap: 5,
-              background: "transparent", border: 0, padding: 0, cursor: "pointer", minWidth: 0,
-            }}
-          >
-            <span
-              style={{
-                fontSize: 16, fontWeight: 700, color: T.white,
-                fontFamily: FONT, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
-              }}
-            >
-              {firstName || "Instructor"}
-            </span>
-            <ChevronRight size={14} color="rgba(255,255,255,0.5)" strokeWidth={2.2} />
-          </button>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <HeroButton Icon={Phone} onPress={onPhone} />
-          <HeroButton Icon={Car} onPress={onLiveTrack} />
-          <HeroButton Icon={Bell} onPress={onBell} badge={unreadCount} />
-          <HeroButton Icon={Menu} onPress={onMenu} />
-        </div>
-      </div>
+      <InstructorTopBar
+        firstName={firstName}
+        unreadCount={unreadCount}
+        onPhone={onPhone}
+        onLiveTrack={onLiveTrack}
+        onBell={onBell}
+        onMenu={onMenu}
+        onProfile={onProfile}
+      />
+
+      <div style={{ padding: "0 18px 16px" }}>
 
       {/* Next lesson */}
       <NextLessonCard
