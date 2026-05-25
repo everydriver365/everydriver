@@ -247,11 +247,14 @@ export default function InstructorPortalLogin() {
     <div className="min-h-screen bg-white lg:bg-gradient-to-br lg:from-slate-900 lg:via-slate-800 lg:to-slate-900 flex flex-col lg:flex-row">
       {/* ============== MOBILE-ONLY — unified white-card login ============== */}
       <UnifiedMobileLoginCard
-        portalName="Drive365"
+        portalName="DSM"
         descriptor="Instructor portal"
+        brand="dsm"
+        subtitle="Sign in to your DSM instructor portal"
         biometricScope="instructor"
         heroImage={mobileLoginHero}
-        heroAlt="Drive365 instructor"
+        heroAlt="DSM instructor"
+
         onSignIn={async (em, pw, remember) => {
           const { error: signInError } = await signIn(em, pw);
           if (signInError) {
