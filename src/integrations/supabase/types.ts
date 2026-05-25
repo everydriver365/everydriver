@@ -20061,6 +20061,18 @@ export type Database = {
           },
         ]
       }
+      v_google_sync_credential_health: {
+        Row: {
+          credential_error_count_last_1h: number | null
+          credential_error_count_last_24h: number | null
+          failed_count_last_24h: number | null
+          is_credential_broken: boolean | null
+          latest_credential_error: string | null
+          latest_credential_error_at: string | null
+          successes_last_1h: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       audit_list_cron_jobs: {
@@ -20128,6 +20140,7 @@ export type Database = {
         Args: { p_offer_id: string; p_pupil_id: string }
         Returns: Json
       }
+      classify_sync_error: { Args: { err: string }; Returns: string }
       cleanup_expired_otp_codes: { Args: never; Returns: undefined }
       cleanup_expired_parent_otp_codes: { Args: never; Returns: undefined }
       delete_email: {
