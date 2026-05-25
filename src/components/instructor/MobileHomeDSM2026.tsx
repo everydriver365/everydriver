@@ -15,7 +15,6 @@ import { Shimmer } from "@/components/instructor/home/Shimmer";
 import nextLessonCar from "@/assets/next-lesson-car.png";
 import {
   Phone,
-  Car,
   Bell,
   Menu,
   ChevronDown,
