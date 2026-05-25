@@ -559,34 +559,10 @@ export function SatNavLiveMap({
       });
     }
 
-    // User gesture detection — turn off follow mode when the user drags or
-    // zooms the map. We only listen to `dragstart` (true user gesture) and
-    // `zoom_changed` because `center_changed` also fires from our own panTo.
-    const dropToFlat = () => {
-      if (vectorReadyRef.current && mapRef.current) {
-        mapRef.current.moveCamera({ heading: 0, tilt: 0 });
-        camHeadingRef.current = 0;
-        camTiltRef.current = 0;
-      }
-    };
-    const onDragStart = () => {
-      if (suppressFollowOffRef.current) return;
-      if (followModeRef.current) {
-        setFollowMode(false);
-        if (fullscreenRef.current) dropToFlat();
-      }
-    };
-    const onZoomChanged = () => {
-      if (suppressFollowOffRef.current) return;
-      if (followModeRef.current) {
-        setFollowMode(false);
-        if (fullscreenRef.current) dropToFlat();
-      }
-      // User took zoom control — clear so Re-centre re-applies auto-zoom.
-      lastAutoZoomRef.current = null;
-    };
-    mapListenersRef.current.push(map.addListener("dragstart", onDragStart));
-    mapListenersRef.current.push(map.addListener("zoom_changed", onZoomChanged));
+    // Always-follow mode: drag/zoom gestures no longer break follow. The
+    // camera stays locked on the car for the whole session. (Previous
+    // dragstart/zoom_changed listeners removed.)
+
 
     return () => {
       mapListenersRef.current.forEach((l) => l.remove());
