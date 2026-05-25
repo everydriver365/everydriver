@@ -50,6 +50,8 @@ interface Props {
   surface?: LoginSurface;
   /** Vertical px offset for the hero image (negative = move higher). */
   heroOffsetY?: number;
+  /** Override the default footer (sign-up link / back link). */
+  customFooter?: ReactNode;
 }
 
 export function DarkMobileAuthForm({
@@ -83,6 +85,7 @@ export function DarkMobileAuthForm({
   hiddenSlot,
   surface = "dark",
   heroOffsetY = 0,
+  customFooter,
 }: Props) {
   const canSubmit = isForgot ? email.trim().length > 0 : email.trim().length > 0 && password.length > 0;
   const t = getPortalFormTokens(surface);
@@ -101,22 +104,24 @@ export function DarkMobileAuthForm({
       surface={surface}
       heroOffsetY={heroOffsetY}
       footer={
-        isForgot ? (
-          <button
-            type="button"
-            onClick={() => onForgotToggle(false)}
-            className={cn("text-[13px] font-semibold", t.textColorClass)}
-          >
-            Back to sign in
-          </button>
-        ) : signUpHref ? (
-          <span className={cn("text-[13px]", t.textColorClass)}>
-            {signUpLabel ?? "New here?"}{" "}
-            <a href={signUpHref} className={cn("font-bold", t.textColorClass)}>
-              Create account
-            </a>
-          </span>
-        ) : null
+        customFooter !== undefined
+          ? customFooter
+          : isForgot ? (
+            <button
+              type="button"
+              onClick={() => onForgotToggle(false)}
+              className={cn("text-[13px] font-semibold", t.textColorClass)}
+            >
+              Back to sign in
+            </button>
+          ) : signUpHref ? (
+            <span className={cn("text-[13px]", t.textColorClass)}>
+              {signUpLabel ?? "New here?"}{" "}
+              <a href={signUpHref} className={cn("font-bold", t.textColorClass)}>
+                Create account
+              </a>
+            </span>
+          ) : null
       }
     >
       <form onSubmit={onSubmit} className="flex flex-col flex-1">
