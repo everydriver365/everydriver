@@ -1,48 +1,54 @@
-## Why the screen hasn't changed
+## What's actually happening
 
-Recent edits went into `src/components/auth/DsmBlueMobileLogin.tsx`, but the screen in your screenshot is rendered by **`DarkMobileAuthForm`** via `UnifiedMobileLoginCard`. `DsmBlueMobileLogin` is only used on `/instructor/login` (the portal route) and that route isn't what you're opening on Despia / TestFlight / the preview.
+The screenshot is the **Drive365 pupil login** rendered by `PupilLogin` → `UnifiedMobileLoginCard` → `DarkMobileAuthForm`. Looking at the code as it currently stands in this project:
 
-## What I'll do
+- `PupilLogin.tsx` already passes `biometricScope="pupil"` (line 325).
+- `UnifiedMobileLoginCard.tsx` already shows the Face ID button whenever `biometricScope` is set and the user isn't on the forgot-password view (we removed the `bioAvailable` gate).
+- `DarkMobileAuthForm.tsx` is the new white pill-field design.
 
-Apply the redesign to the component that actually renders on every instructor login surface.
+So in the **Lovable preview**, this screen should already show the Face ID pill under the "Log in" button. The TestFlight/Despia screenshot doesn't — which means the device is running an **older bundle**, not that the code is wrong.
 
-### 1. Rewrite `src/components/auth/DarkMobileAuthForm.tsx`
+Two independent paths can produce a stale screen on TestFlight/Despia:
 
-Replace the current dark glassmorphic layout with the white pill-field design we agreed on:
+1. **Despia / TestFlight is serving its own embedded bundle**, not the live Lovable preview. Despia wraps a snapshot of `dist/` at the moment you generated the build. New Lovable edits do not reach that snapshot until you regenerate the wrapper and re-upload to TestFlight.
+2. **The Capacitor config in this repo points at the preview URL** (`server.url` in `capacitor.config.ts`), but the TestFlight build was either uploaded before that line existed, or Apple/Despia is caching the WKWebView assets. Either way the device keeps showing the old HTML/JS.
 
-- White background (`#FFFFFF`), `#0F172A` text, `#8A96A6` muted, `#EEF1F5` field fill, `#0070C0` brand blue
-- Centered **DSM wordmark logo** at the top (84px tall, no box / no glow / no frosted tile — just the PNG)
-- "Welcome back" heading + subtitle
-- Pill-shaped email field (Mail icon, `borderRadius: 999`, height 56)
-- Pill-shaped password field (Lock icon + show/hide eye)
-- Row: **Remember Me** toggle (left) + **Forgot password?** link (right)
-- Primary **Log in** pill button in brand blue with soft shadow
-- "or" divider
-- **Face ID** pill button below (only shown when `biometricAvailable` is true) using the existing `onBiometric` handler
-- Forgot-password view: email field + "Send reset link" button + back-to-sign-in link
-- Inline error text + loading state preserved
-- Keep all existing props and the `customFooter` slot so `UnifiedMobileLoginCard` and `instructor-app/InstructorLogin` keep working unchanged
+## Plan
 
-### 2. Make sure DSM brand uses the wordmark, not the app icon
+### 1. Confirm the preview is correct (no code change)
+- Open the Lovable preview at `/login` (Drive365 pupil login) on a phone-sized viewport.
+- Verify the Face ID pill appears under "Log in" and the pill-field design matches the screenshot — minus the missing Face ID.
+- If the preview is already correct, the issue is 100% on the TestFlight/Despia side and no app code needs changing.
 
-In `UnifiedMobileLoginCard.tsx`, DSM already resolves to `dsmLogo` (the wordmark). Your screenshot is showing the rounded square icon because the unified card is currently mis-detecting brand on this route. I'll force `brand="dsm"` to flow through, and confirm the resolved logo path renders the wordmark, not the Drive365 app icon.
+### 2. Add a tiny on-screen build marker (one small code change)
+- In `DarkMobileAuthForm.tsx`, add a faint footer line under the "Contact your administrator" row showing `v + import.meta.env.VITE_BUILD_ID` (or `new Date(BUILD_TIME).toISOString().slice(0,16)` injected via Vite `define`).
+- Purpose: when the user opens TestFlight, they can read the version stamp and immediately tell whether they're on the new bundle or a cached old one. This is the fastest way to end the "is it the new build?" loop forever.
 
-### 3. Coverage
+### 3. Force WKWebView cache-bust on native loads
+- In `capacitor.config.ts`, under `server`, add `androidScheme: 'https'` and document that the user must **delete the app from the device before reinstalling from TestFlight** (otherwise WKWebView keeps the old HTML/JS until cache eviction).
+- No behavioural change to the web app; just a documented reinstall step.
 
-Because all three entry points use `DarkMobileAuthForm` (directly or through `UnifiedMobileLoginCard`), this single rewrite will update:
+### 4. Deliver clear shipping instructions to the user
+After steps 1–3, hand the user a short, ordered checklist:
 
-- `/login` (UnifiedLogin)
-- `/instructor/login` portal — I'll also switch `InstructorPortalLogin.tsx` to render `UnifiedMobileLoginCard` instead of the now-orphan `DsmBlueMobileLogin`, so all three routes look identical
-- The native instructor app (`instructor-app/InstructorLogin.tsx`)
+1. `git pull`
+2. `npm install`
+3. `npm run build`
+4. `npx cap sync ios`
+5. Open in Xcode → Product → Archive → upload to App Store Connect.
+6. Wait for TestFlight processing email.
+7. **On the device: delete the existing TestFlight app, reinstall the new build, open it.**
+8. Confirm the version stamp at the bottom of the login matches the new build.
 
-### 4. Cleanup
+If they want to skip step 5–7 every time, they can also keep `server.url` pointing at the Lovable preview in `capacitor.config.ts` for development builds only — but **Apple will likely reject** a release build that loads its entire UI from a remote `lovableproject.com` URL, so production TestFlight builds should ship the bundled `dist/`.
 
-- Leave `DsmBlueMobileLogin.tsx` in place but unused (safe to delete later if you want — say the word)
+## Files touched
 
-### Files touched
+- `src/components/auth/DarkMobileAuthForm.tsx` — add small version stamp at the bottom of the form.
+- `vite.config.ts` — `define` a `__BUILD_TIME__` constant injected at build time.
+- `capacitor.config.ts` — add `androidScheme: 'https'`, no behavioural change otherwise.
 
-- `src/components/auth/DarkMobileAuthForm.tsx` — full redesign
-- `src/components/auth/UnifiedMobileLoginCard.tsx` — minor: ensure DSM logo + subtitle pass through
-- `src/pages/InstructorPortalLogin.tsx` — swap `DsmBlueMobileLogin` → `UnifiedMobileLoginCard`
+## Out of scope
 
-No backend, no auth-logic changes — purely presentation.
+- No auth, RLS, database, or business-logic changes.
+- No design changes to the login itself — the redesign is already in place; this plan is purely about getting the existing change onto the device and proving it.
