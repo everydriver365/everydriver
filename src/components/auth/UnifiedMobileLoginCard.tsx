@@ -155,15 +155,25 @@ export function UnifiedMobileLoginCard({
     }
   };
 
+  // Logo rule: Pupil / Parent portals → Drive365 logo. All DSM portals
+  // (Admin / Schools / Instructor) → DSM logo. Fall back to pathname when
+  // portalName is ambiguous.
+  const path = typeof window !== "undefined" ? window.location.pathname : "";
+  const isDrive365Brand =
+    /parent|pupil/i.test(portalName) ||
+    /^\/(pupil|parent|p\/|drive365)/i.test(path) ||
+    portalName === "Drive365";
+  const useDsm = !isDrive365Brand;
+  const logoSrc = useDsm ? dsmLogo : drive365Logo;
+  const brandName = useDsm ? "DSM" : "Drive365";
+
   return (
     <div className={className}>
       <DarkMobileAuthForm
-        logoSrc={essexLogo}
+        logoSrc={logoSrc}
         logoAlt={portalName}
-        logoHeightPx={72}
-        heroSrc={heroImage ?? defaultMobileHero}
-        heroAlt={heroAlt || portalName}
-        title={isForgot ? "Reset password" : "Welcome"}
+        logoHeightPx={80}
+        title={isForgot ? "Reset password" : "Welcome back"}
         subtitle={isForgot ? "Enter your email and we'll send you a reset link." : ""}
         email={email}
         setEmail={setEmail}
@@ -181,8 +191,7 @@ export function UnifiedMobileLoginCard({
         biometricAvailable={Boolean(biometricScope) && bioAvailable && !isForgot}
         biometricLoading={bioBusy}
         onBiometric={handleBiometric}
-        surface="light"
-        heroOffsetY={-50}
+        brandName={brandName}
         customFooter={footer}
       />
     </div>
