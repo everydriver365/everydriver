@@ -12,6 +12,7 @@
 // =============================================================================
 
 import type { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { raiseSyncAlert } from "./raiseSyncAlert.ts";
 
 const CALENDAR_API = "https://www.googleapis.com/calendar/v3";
 
@@ -59,7 +60,15 @@ export async function importPrivateKey(raw: string): Promise<CryptoKey> {
   try {
     der = Uint8Array.from(atob(padded), (c) => c.charCodeAt(0));
   } catch {
-    throw new Error("GOOGLE_PRIVATE_KEY appears malformed — re-paste the service-account JSON or PEM block (escaped \\n and surrounding quotes are stripped automatically)");
+    const msg = "GOOGLE_PRIVATE_KEY appears malformed — re-paste the service-account JSON or PEM block (escaped \\n and surrounding quotes are stripped automatically)";
+    void raiseSyncAlert({
+      category: "key_decode",
+      severity: "critical",
+      title: "GOOGLE_PRIVATE_KEY decode failed",
+      message: msg,
+      metadata: { keyLength: key.length, hasBegin: key.includes("BEGIN") },
+    });
+    throw new Error(msg);
   }
 
   return crypto.subtle.importKey(
@@ -99,7 +108,26 @@ export async function getAccessToken(jwt: string): Promise<string> {
       assertion: jwt,
     }),
   });
-  if (!res.ok) throw new Error(`Google token exchange failed: ${await res.text()}`);
+  if (!res.ok) {
+    const body = await res.text();
+    if (res.status === 401) {
+      void raiseSyncAlert({
+        category: "auth_401",
+        severity: "critical",
+        title: "Google token exchange returned 401",
+        message: body.slice(0, 1000),
+      });
+    } else if (res.status === 429) {
+      void raiseSyncAlert({
+        category: "rate_limit_429",
+        severity: "high",
+        title: "Google token exchange rate-limited",
+        message: body.slice(0, 1000),
+        metadata: { retryAfter: res.headers.get("Retry-After") },
+      });
+    }
+    throw new Error(`Google token exchange failed (${res.status}): ${body}`);
+  }
   return ((await res.json()) as { access_token: string }).access_token;
 }
 
@@ -138,12 +166,35 @@ async function googleAuthedFetch(
   });
 
   let res = await fetch(url, buildInit(accessToken));
+
+  if (res.status === 429) {
+    void raiseSyncAlert({
+      category: "rate_limit_429",
+      severity: "high",
+      title: "Google Calendar API rate-limited (429)",
+      message: `URL: ${url}`,
+      metadata: { retryAfter: res.headers.get("Retry-After"), url },
+    });
+    return { res, tokenUsed: accessToken };
+  }
+
   if (res.status !== 401) return { res, tokenUsed: accessToken };
 
   // Force re-mint and retry exactly once.
   invalidateGoogleTokenCache();
   const fresh = await getServiceAccountAccessToken();
   res = await fetch(url, buildInit(fresh));
+
+  if (res.status === 401) {
+    void raiseSyncAlert({
+      category: "auth_401",
+      severity: "critical",
+      title: "Google Calendar 401 after token refresh",
+      message: `URL: ${url}. Service account may be revoked or calendar lost access.`,
+      metadata: { url },
+    });
+  }
+
   return { res, tokenUsed: fresh };
 }
 

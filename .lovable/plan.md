@@ -1,59 +1,87 @@
-## What's happening
+## Goal
 
-When you add a lesson in the mobile app, the row IS saved to the database, but the push to Google Calendar fails every time. The retry queue shows the exact same error on every attempt since **May 19, 2026**:
+Fix the broken Google Calendar push sync and add a complete admin alerting system so any failure (key decode, 401, 429, webhook, orphan, stuck queue) is surfaced immediately — never silent.
 
-```
-Failed to decode base64
-```
+## Scope
 
-This is thrown inside `supabase/functions/_shared/googleCalendarSync.ts` when it tries to decode the service-account private key (`GOOGLE_PRIVATE_KEY` secret) before signing the JWT used to talk to Google. Because the key can't be decoded, no access token is minted, no event is created, and the lesson stays in `calendar_sync_status = 'failed'`.
+### 1. Fix the root cause (push sync)
 
-Your Google Calendar **is still connected** (`instructor_google_service_calendar` row is active) — that's why the *pull* side (`last_sync` updated today) keeps working via a different path. Only the *push* side, which uses the service account credentials, is broken.
+- Harden `importPrivateKey` in `supabase/functions/_shared/googleCalendarSync.ts`:
+  - Strip wrapping quotes, BOM, and stray whitespace.
+  - Accept full service-account JSON OR raw PEM block.
+  - Handle both `\n` escapes and real newlines.
+  - Detect doubly base64-encoded payloads and decode one extra layer.
+  - Replace the generic `Failed to decode base64` with a clear, actionable message.
+- Replay stuck lessons: re-enqueue all `calendar_sync_status = 'failed'` rows after the fix lands.
 
-The most likely cause is that `GOOGLE_PRIVATE_KEY` was re-saved with the literal `\n` characters mangled, surrounded by extra quotes, or pasted as the entire JSON without the `private_key` field intact.
+### 2. New alerting infrastructure
 
-## Fix
+**New table `google_sync_alerts`:**
+- `id`, `instructor_id` (nullable for system-wide), `lesson_id` (nullable), `severity` (`critical` | `high` | `medium`), `category` (`key_decode` | `auth_401` | `rate_limit_429` | `webhook` | `orphan_lesson` | `queue_stuck` | `other`), `title`, `message`, `metadata` (jsonb), `resolved_at`, `resolved_by`, `created_at`.
+- RLS: admins only (`has_role(auth.uid(), 'admin')`).
+- Indexes on `(resolved_at, severity, created_at desc)`.
 
-### Step 1 — Re-add the secret (you do this)
+**`raiseSyncAlert` helper (`supabase/functions/_shared/raiseSyncAlert.ts`):**
+- Inserts a row into `google_sync_alerts` using the service-role client.
+- Wrapped in try/catch so a logging failure NEVER breaks the calling sync code.
+- Deduplicates: if an unresolved alert with the same `(category, instructor_id, lesson_id)` already exists in the last hour, increment its `metadata.count` instead of inserting a new one.
+- Dispatches:
+  - Email to admin via `send-transactional-email` (template `google-sync-alert`) for `critical` and `high`.
+  - Push notification to admin devices via existing `notify-admin-*` pattern for `critical` only.
 
-In Lovable Cloud → Secrets, update `GOOGLE_PRIVATE_KEY` with one of these forms (the loader already handles both):
+### 3. Wire alerts into every failure point
 
-- **Option A (recommended):** paste the *entire service-account JSON file contents* — the loader extracts `private_key` automatically.
-- **Option B:** paste just the `-----BEGIN PRIVATE KEY-----\n…\n-----END PRIVATE KEY-----` block with real newlines (not the escaped `\n` text).
+| Failure | Where | Severity |
+|---|---|---|
+| `GOOGLE_PRIVATE_KEY` decode fails | `importPrivateKey` | critical |
+| Google returns 401 (auth) | `googleCalendarSync.ts` token mint | critical |
+| Google returns 429 (rate limit) | sync call sites | high (with `Retry-After` recorded) |
+| Webhook / push channel failure | `google-calendar-service` | high |
+| Orphan lesson detected (no `google_event_id` after sync) | `process-calendar-queue` | medium |
+| Queue stuck (>50 pending older than 15 min) | new check in `check-calendar-sync-failures` | critical |
+| `service-account-not-configured` while instructor still connected | `sync-lesson-now` | high |
 
-Also confirm `GOOGLE_SERVICE_ACCOUNT_EMAIL` is set to the service account's email.
+### 4. 429 backoff
 
-### Step 2 — Harden the decoder (I do this)
+Add `Retry-After`-aware backoff in `process-calendar-queue` so we honour Google's rate limit instead of hammering it.
 
-Make `importPrivateKey` in `supabase/functions/_shared/googleCalendarSync.ts` more forgiving and produce a clearer error when the secret is misconfigured:
+### 5. Admin UI
 
-- Strip wrapping single/double quotes and BOMs.
-- Handle keys that arrive base64-encoded *whole* (some hosts double-encode) by detecting and decoding one extra layer.
-- Replace the generic `Failed to decode base64` with `GOOGLE_PRIVATE_KEY appears malformed — re-paste the service-account JSON or PEM block`, so future failures are obvious in the queue.
+New panel `src/components/admin/GoogleSyncAlertsPanel.tsx` (mounted on the admin dashboard alongside `SOSAlertsPanel` and `AdminAlerts`):
+- Red badge with unresolved count.
+- Severity-coloured rows (critical = red, high = orange, medium = amber).
+- Filters: All / Unresolved / By severity / By category.
+- Each row shows: title, message, instructor name (if any), lesson link (if any), occurrence count, first-seen + last-seen timestamps.
+- "Mark resolved" button (single + bulk).
+- Realtime subscription to `google_sync_alerts` so new failures appear without refresh.
 
-### Step 3 — Replay the stuck lessons
+### 6. Cron
 
-After the secret is fixed, re-queue the lessons currently marked `failed` so they sync without you re-adding them manually:
-
-```sql
-INSERT INTO calendar_sync_queue (lesson_id, instructor_id, action)
-SELECT id, instructor_id, 'syncLesson'
-FROM scheduled_lessons
-WHERE calendar_sync_status = 'failed'
-  AND deleted_at IS NULL
-  AND status <> 'cancelled';
-```
-
-The existing `process-calendar-queue` cron will pick them up on its next run.
-
-### Step 4 — Verify
-
-- Add a test lesson on the mobile app.
-- Check it appears in Google Calendar within a few seconds.
-- Check `calendar_sync_queue` shows no new `Failed to decode base64` rows.
+- Extend `check-calendar-sync-failures-daily` to also raise alerts for:
+  - Orphan lessons (no `google_event_id`, not cancelled, in future).
+  - Stuck queue rows.
+- Add hourly run (in addition to daily) for stuck-queue detection.
 
 ## Out of scope
 
-- No UI changes.
-- No changes to the connection record or the pull-side sync.
-- No schema changes.
+- No changes to the pull side (`google-calendar-service` external event sync) beyond adding alert hooks.
+- No instructor-facing UI changes.
+- No schema changes to `scheduled_lessons` or `calendar_sync_queue`.
+- No replacement of service-account architecture with per-user OAuth.
+
+## Verification
+
+1. Add a test lesson on mobile — appears in Google Calendar within seconds.
+2. `calendar_sync_queue` shows no new `Failed to decode base64` rows.
+3. Force a failure (e.g. temporarily bad key in staging) → alert appears in admin panel, email arrives, push fires.
+4. Repeat the same failure 10× → single alert row with `count: 10`, not 10 rows.
+5. Mark resolved → row disappears from unresolved view.
+
+## Technical notes
+
+- `raiseSyncAlert` must use the service-role client and never `throw` — wrap the whole body in try/catch and `console.error` on failure.
+- Email template `google-sync-alert` to be scaffolded via the transactional email tool after migration approval.
+- Reuse existing `admin_alerts` realtime pattern from `SOSAlertsPanel` for the UI.
+- Dedup key: `md5(category || ':' || coalesce(instructor_id::text,'') || ':' || coalesce(lesson_id::text,''))` stored as `dedupe_key` column with partial unique index `WHERE resolved_at IS NULL`.
+
+Ready to implement once approved.
