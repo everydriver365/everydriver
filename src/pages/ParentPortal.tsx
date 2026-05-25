@@ -118,8 +118,8 @@ function TestStatusRow({ label, date, passed }: { label: string; date: string | 
 
 export default function ParentPortal() {
   const [parentPhone, setParentPhone] = useState("");
-  const [otp, setOtp] = useState("");
-  const [authStep, setAuthStep] = useState<AuthStep>('phone');
+  const [parentEmail, setParentEmail] = useState("");
+  const [authStep, setAuthStep] = useState<AuthStep>('login');
   const [loading, setLoading] = useState(false);
   const [children, setChildren] = useState<Child[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -132,63 +132,37 @@ export default function ParentPortal() {
   useEffect(() => {
     (async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      const phoneFromSession = (session?.user?.user_metadata as any)?.parent_phone as string | undefined;
-      if (session && phoneFromSession) {
+      if (!session) return;
+      const emailFromSession = session.user.email || undefined;
+      const phoneFromSession = (session.user.user_metadata as any)?.parent_phone as string | undefined;
+      if (emailFromSession) {
+        setParentEmail(emailFromSession);
+        setAuthStep('verified');
+        fetchChildrenData({ email: emailFromSession, phone: phoneFromSession });
+      } else if (phoneFromSession) {
         setParentPhone(phoneFromSession);
         setAuthStep('verified');
-        fetchChildrenData(phoneFromSession);
+        fetchChildrenData({ phone: phoneFromSession });
       }
     })();
   }, []);
 
-  const handleSendOTP = async () => {
-    if (!parentPhone.trim()) {
-      toast.error("Please enter your phone number");
-      return;
-    }
-    setLoading(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("send-parent-otp", {
-        body: { phone: parentPhone.trim() },
-      });
-      if (error) throw error;
-      if (data.error) { toast.error(data.error); return; }
-      toast.success(`Verification code sent! Found ${data.childCount} child${data.childCount > 1 ? 'ren' : ''}`);
-      setAuthStep('otp');
-    } catch (error) {
-      console.error("Error sending OTP:", error);
-      toast.error("Unable to send verification code");
-    } finally {
-      setLoading(false);
-    }
+  const handleEmailSignIn = async (email: string, password: string): Promise<{ error?: string } | void> => {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) return { error: error.message };
+    setParentEmail(email);
+    setAuthStep('verified');
+    await fetchChildrenData({ email });
+    if (data.user) toast.success("Welcome to the Parent Portal!");
   };
 
-  const handleVerifyOTP = async () => {
-    if (otp.length !== 6) { toast.error("Please enter the 6-digit code"); return; }
-    setLoading(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("verify-parent-otp", {
-        body: { phone: parentPhone.trim(), code: otp },
-      });
-      if (error) throw error;
-      if (data.error) { toast.error(data.error); return; }
-      const tokenHash: string | undefined = data?.token_hash;
-      if (!tokenHash) throw new Error("Missing session token");
-      const { error: verifyErr } = await supabase.auth.verifyOtp({
-        token_hash: tokenHash,
-        type: "magiclink",
-      });
-      if (verifyErr) throw verifyErr;
-      setAuthStep('verified');
-      await fetchChildrenData(parentPhone.trim());
-      toast.success("Welcome to the Parent Portal!");
-    } catch (error) {
-      console.error("Error verifying OTP:", error);
-      toast.error("Verification failed");
-    } finally {
-      setLoading(false);
-    }
+  const handleForgotPassword = async (email: string): Promise<{ error?: string } | void> => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    if (error) return { error: error.message };
   };
+
 
   const fetchChildrenData = async (phone: string) => {
     try {
