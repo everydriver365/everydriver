@@ -11,6 +11,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { GoogleSyncAlertsPanel } from "@/components/admin/GoogleSyncAlertsPanel";
+import { CredentialBrokenBanner } from "@/components/admin/CredentialBrokenBanner";
 import { CheckCircle2, AlertTriangle, Plug, RefreshCw, Loader2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
@@ -198,6 +199,9 @@ export function AdminGoogleSyncDashboard() {
 
   return (
     <div className="space-y-6">
+      {/* Top — Credential broken banner (only shows when service-account key is rejected) */}
+      <CredentialBrokenBanner />
+
       {/* Section 1 — Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard label="Connected instructors" value={s?.connected} tone="blue" icon={<Plug className="h-5 w-5" />} />
