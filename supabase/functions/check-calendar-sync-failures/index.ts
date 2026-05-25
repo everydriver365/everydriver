@@ -58,10 +58,43 @@ Deno.serve(async (req) => {
       } catch (e) {
         console.error(`Failed to notify for lesson ${lesson.id}:`, (e as Error).message);
       }
+      // Also raise an admin alert per failed lesson (deduped server-side).
+      void raiseSyncAlert({
+        category: "other",
+        severity: "high",
+        title: "Lesson sync failed > 1h",
+        message: `Lesson ${lesson.id} on ${lesson.lesson_date} ${lesson.start_time} still failed after 1h.`,
+        instructorId: lesson.instructor_id,
+        lessonId: lesson.id,
+        supabase,
+      });
+    }
+
+    // ── Orphan lessons: no google_event_id but should be synced ──────────
+    const { data: orphans } = await supabase
+      .from("scheduled_lessons")
+      .select("id, instructor_id, lesson_date, start_time")
+      .is("google_event_id", null)
+      .is("deleted_at", null)
+      .neq("status", "cancelled")
+      .neq("calendar_sync_status", "no-calendar")
+      .gte("lesson_date", new Date().toISOString().slice(0, 10))
+      .limit(200);
+
+    for (const o of orphans ?? []) {
+      void raiseSyncAlert({
+        category: "orphan_lesson",
+        severity: "medium",
+        title: "Lesson has no Google event id",
+        message: `Future lesson ${o.id} (${o.lesson_date} ${o.start_time}) exists in app but not on Google Calendar.`,
+        instructorId: o.instructor_id,
+        lessonId: o.id,
+        supabase,
+      });
     }
 
     return new Response(
-      JSON.stringify({ ok: true, found: failed?.length ?? 0, notified }),
+      JSON.stringify({ ok: true, found: failed?.length ?? 0, notified, orphans: orphans?.length ?? 0 }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
     );
   } catch (err) {
