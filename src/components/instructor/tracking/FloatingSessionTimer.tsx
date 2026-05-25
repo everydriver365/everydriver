@@ -3,12 +3,11 @@ import {
   Play,
   AlertTriangle,
   RefreshCw,
-  Compass,
-  Crosshair,
   VolumeX,
   Volume2,
   TriangleAlert,
 } from "lucide-react";
+
 import { useCallback, useEffect, useRef, useState } from "react";
 
 interface FloatingSessionTimerProps {
