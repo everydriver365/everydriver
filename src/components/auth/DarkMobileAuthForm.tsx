@@ -70,6 +70,7 @@ export function DarkMobileAuthForm({
   logoSrc,
   logoAlt,
   logoHeightPx = 80,
+  brand = "dsm",
   title,
   subtitle,
   hideAt = "md",
@@ -95,6 +96,7 @@ export function DarkMobileAuthForm({
   customFooter,
   brandName,
 }: Props) {
+
   const canSubmit = isForgot ? email.trim().length > 0 : email.trim().length > 0 && password.length > 0;
   const [emailFocus, setEmailFocus] = useState(false);
   const [pwFocus, setPwFocus] = useState(false);
