@@ -456,6 +456,7 @@ export function UnifiedMobileLoginCard({
         )}
 
         {footer && <div style={{ marginTop: 18, textAlign: "center" }}>{footer}</div>}
+        </div>
       </div>
     </div>
   );
