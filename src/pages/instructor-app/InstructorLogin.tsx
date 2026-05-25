@@ -23,6 +23,7 @@ import { DarkMobileAuthForm } from "@/components/auth/DarkMobileAuthForm";
 import { useClearOnDeepLink } from "@/hooks/useClearOnDeepLink";
 import instructorHero from "@/assets/every-instructor-hero.webp";
 import mobileLoginHero from "@/assets/mobile-login-hero.png";
+import essexLogo from "@/assets/essex-logo.png";
 
 const loginSchema = z.object({
   email: z.string().trim().email("Please enter a valid email address").max(255),
