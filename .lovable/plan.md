@@ -1,45 +1,79 @@
-## Goal
+# Mobile login — correct logo per portal
 
-When the Google service-account private key is malformed/expired/rotated, surface it loudly in the admin Google Sync dashboard instead of silently piling up failed `calendar_sync_queue` rows.
+Goal: each mobile login screen renders only its assigned logo, with the styling and subtitle text spec'd in the brief. Desktop screens, auth logic, layout, fields, Face ID and Google buttons stay untouched.
 
-## What to build
+## Asset audit
 
-1. **Detect credential-class failures** in the sync queue
-   - Classify `last_error` strings into two buckets:
-     - **Credential broken** — matches `GOOGLE_PRIVATE_KEY`, `malformed`, `Failed to decode base64`, `invalid_grant`, `unauthorized_client`, `PEM`, `JWT`
-     - **Transient** — everything else (network, 5xx, rate limit)
-   - Add a SQL view `v_google_sync_credential_health` that returns:
-     - `failed_count_last_24h`
-     - `credential_error_count_last_24h`
-     - `latest_credential_error` (text + timestamp)
-     - `is_credential_broken` (boolean: true if ≥3 credential errors in last hour with no successes)
+Confirmed in the project (no new imports needed):
 
-2. **Admin banner in `AdminGoogleSyncDashboard` / `GoogleSyncAlertsPanel`**
-   - Red sticky banner at top when `is_credential_broken = true`:
-     - Title: "Google Calendar credential broken"
-     - Body: "The service-account private key is malformed or rejected by Google. No instructor calendars can sync until it's re-pasted."
-     - Shows latest error message + timestamp + failed-lesson count
-     - Button: "How to fix" → opens a small modal with step-by-step (download fresh JSON key from GCP → paste full JSON into `GOOGLE_PRIVATE_KEY` secret → click Retry All)
-     - Button: "Retry all failed" → calls existing retry edge function once key is fixed
+| Brand | File used |
+|---|---|
+| DSM logo | `src/assets/dsm-logo.png` (already imported) |
+| Drive 365 app icon | `public/apple-touch-icon-365.png` (square rounded app icon — matches "Drive 365 icon" spec; the existing `drive365-logo.png` is a wide wordmark, not an icon) |
 
-3. **Per-instructor tile state in the instructor portal**
-   - The red "Tap to retry" Google Calendar tile currently loops forever on credential errors.
-   - When the latest queue error for that instructor matches the credential pattern, show "Calendar credential issue — contact support" (grey, non-tappable) instead of red retry.
-   - Keep red "Tap to retry" only for transient errors.
+If you'd prefer the PWA tile `public/pwa-icon-365.png` instead, say so before I build — both are square Drive 365 icons; `apple-touch-icon-365.png` is the iOS-style rounded one and is the closer match to the brief.
 
-4. **Optional: lightweight alert log**
-   - Insert one row into existing `admin_alerts` table (if present) per credential-broken transition, so it shows up in the admin notifications feed. Skip if no such table exists.
+## Current bugs the brief exposes
 
-## Files to touch
+1. `UnifiedMobileLoginCard` auto-picks brand from `portalName` / pathname. `InstructorPortalLogin.tsx` passes `portalName="Drive365"`, so the instructor mobile login currently shows the Drive 365 logo — wrong, should be DSM.
+2. Pupil + Parent mobile logins currently show the Drive 365 **wordmark** inside a glass square — looks cramped and isn't the app-icon styling the brief asks for.
+3. Subtitle is hardcoded to `""` for the sign-in view, so none of the three required subtitle strings appear today.
 
-- New migration: SQL view `v_google_sync_credential_health` + helper function `public.classify_sync_error(text)`
-- `src/components/admin/GoogleSyncAlertsPanel.tsx` (or `AdminGoogleSyncDashboard.tsx`) — add banner
-- New `src/components/admin/CredentialBrokenBanner.tsx`
-- Instructor calendar sync tile component (need to locate during build) — branch on error class
-- No edge function changes — `last_error` is already populated
+## Changes (mobile only, behind `md:hidden` shell — desktop untouched)
 
-## Out of scope
+### 1. `src/components/auth/UnifiedMobileLoginCard.tsx`
 
-- Auto-rotating the key (can't be done from app code)
-- Email/SMS notifications (can be a follow-up)
-- Any change to the sync edge function itself
+- Add two new optional props: `brand?: "dsm" | "drive365"` and `subtitle?: string`.
+- Replace the path/name sniffing with an explicit prop:
+  - `brand="dsm"` → `dsmLogo` + brandName `"DSM"` + DSM logo-block styling
+  - `brand="drive365"` → `apple-touch-icon-365.png` + brandName `"Drive365"` + Drive 365 logo-block styling
+  - If `brand` is omitted, keep current auto-detection as a fallback so admin/school/unified screens behave exactly as today.
+- Pass through `subtitle` to `DarkMobileAuthForm` (instead of forcing `""` on the sign-in view).
+- Pass through `brand` so the form can switch the logo container style.
+
+### 2. `src/components/auth/DarkMobileAuthForm.tsx`
+
+Add a `brand?: "dsm" | "drive365"` prop that swaps **only** the 80×80 logo block styling, per brief:
+
+- `brand="dsm"` (or default):
+  - 84×84, `border-radius: 22px`, `overflow:hidden`
+  - `border: 1px solid rgba(255,255,255,0.20)`, `background: rgba(255,255,255,0.12)`
+  - `<img>` with `max-width:100%; max-height:100%; object-fit:contain` centered
+- `brand="drive365"`:
+  - 84×84, `border-radius: 22px`, `overflow:hidden`
+  - `border: 1px solid rgba(255,255,255,0.20)`, `background: transparent`
+  - `<img>` with `width:100%; height:100%; object-fit:cover` (so the rounded app icon fills the tile edge-to-edge like an iOS icon)
+
+Everything else in the form (title, fields, Sign In button, Face ID, footer, animations, dark blue background) is left exactly as it is.
+
+### 3. The three login pages
+
+| File | Change |
+|---|---|
+| `src/pages/InstructorPortalLogin.tsx` | Set `brand="dsm"`, `portalName="DSM"`, `subtitle="Sign in to your DSM instructor portal"`. Footer brandName already "DSM". |
+| `src/pages/instructor-app/InstructorLogin.tsx` | Same as above (this is the native mobile-app instructor login). |
+| `src/pages/PupilLogin.tsx` | Set `brand="drive365"`, `subtitle="Sign in to manage your driving lessons"`. |
+| `src/pages/ParentPortal.tsx` | Set `brand="drive365"`, `subtitle="Sign in to track your child's progress"`. |
+
+`AdminLogin`, `SchoolLogin`, `Drive365Login`, `UnifiedLogin` are intentionally **not** in scope — they keep whatever the auto-detection currently gives them.
+
+## Verification
+
+After build, on a mobile viewport:
+
+| Screen | Logo shown | Logo NOT shown | Subtitle |
+|---|---|---|---|
+| `/instructor/login` (and instructor-app login) | DSM | Drive 365 | "Sign in to your DSM instructor portal" |
+| `/pupil/login` | Drive 365 app icon | DSM | "Sign in to manage your driving lessons" |
+| `/parent/login` | Drive 365 app icon | DSM | "Sign in to track your child's progress" |
+
+No changes to desktop screens, auth flow, navigation, Google sign-in, Face ID, layout, colours, or fields.
+
+## Files touched
+
+- `src/components/auth/UnifiedMobileLoginCard.tsx`
+- `src/components/auth/DarkMobileAuthForm.tsx`
+- `src/pages/InstructorPortalLogin.tsx`
+- `src/pages/instructor-app/InstructorLogin.tsx`
+- `src/pages/PupilLogin.tsx`
+- `src/pages/ParentPortal.tsx`
