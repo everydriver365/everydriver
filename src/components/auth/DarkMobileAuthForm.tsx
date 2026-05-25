@@ -67,6 +67,8 @@ export function DarkMobileAuthForm({
   logoSrc,
   logoAlt,
   logoHeightPx = 44,
+  heroSrc,
+  heroAlt,
   title,
   subtitle,
   hideAt = "md",
