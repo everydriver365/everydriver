@@ -6,6 +6,9 @@ interface Props {
   logoAlt: string;
   /** Override the rendered logo height (px). Default 44. */
   logoHeightPx?: number;
+  /** Optional hero illustration rendered above the logo. */
+  heroSrc?: string;
+  heroAlt?: string;
   title: string;
   subtitle: string;
   /** Form body. */
@@ -30,6 +33,8 @@ export function MobilePortalLoginShell({
   logoSrc,
   logoAlt,
   logoHeightPx = 44,
+  heroSrc,
+  heroAlt,
   title,
   subtitle,
   children,
@@ -60,6 +65,14 @@ export function MobilePortalLoginShell({
       `}</style>
 
       <div className="flex flex-col items-center">
+        {heroSrc && (
+          <img
+            src={heroSrc}
+            alt={heroAlt || ""}
+            className="w-full max-w-[280px] object-contain mb-5"
+            style={{ height: "auto" }}
+          />
+        )}
         <img
           src={logoSrc}
           alt={logoAlt}

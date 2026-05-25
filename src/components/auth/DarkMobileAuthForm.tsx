@@ -17,6 +17,9 @@ interface Props {
   logoSrc: string;
   logoAlt: string;
   logoHeightPx?: number;
+  /** Optional hero illustration shown above the logo. */
+  heroSrc?: string;
+  heroAlt?: string;
   title: string;
   subtitle: string;
   hideAt?: "md" | "lg";
@@ -64,6 +67,8 @@ export function DarkMobileAuthForm({
   logoSrc,
   logoAlt,
   logoHeightPx = 44,
+  heroSrc,
+  heroAlt,
   title,
   subtitle,
   hideAt = "md",
@@ -95,6 +100,8 @@ export function DarkMobileAuthForm({
       logoSrc={logoSrc}
       logoAlt={logoAlt}
       logoHeightPx={logoHeightPx}
+      heroSrc={heroSrc}
+      heroAlt={heroAlt}
       title={title}
       subtitle={subtitle}
       hideAt={hideAt}
