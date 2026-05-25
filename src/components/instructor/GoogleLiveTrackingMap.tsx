@@ -9,6 +9,10 @@ import { darkMapStyle } from "@/lib/googleMapsDarkStyle";
 import { useTheme } from "@/context/ThemeContext";
 import SpeedLimitRoundel from "@/components/instructor/SpeedLimitRoundel";
 
+// Top-view car silhouette SVG path, points "up" (north). Heading rotates it.
+const CAR_SVG_PATH =
+  "M -6 -10 C -6 -12 -4 -13 0 -13 C 4 -13 6 -12 6 -10 L 6 -2 L 7 -1 L 7 8 C 7 11 5 12 0 12 C -5 12 -7 11 -7 8 L -7 -1 L -6 -2 Z";
+
 // ========== Types ==========
 type DeviceRow = {
   id: string;
