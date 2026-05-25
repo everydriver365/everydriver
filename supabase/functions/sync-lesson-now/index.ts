@@ -106,6 +106,19 @@ serve(async (req) => {
     } catch (syncErr) {
       const message = syncErr instanceof Error ? syncErr.message : "Unknown sync error";
       console.error(`sync-lesson-now failed for ${lessonId}:`, message);
+
+      const category = /service.account|not configured/i.test(message)
+        ? "service_account_missing"
+        : "other";
+      void raiseSyncAlert({
+        category,
+        severity: category === "service_account_missing" ? "high" : "medium",
+        title: "sync-lesson-now failed",
+        message,
+        instructorId: callerInstructorId,
+        lessonId,
+      });
+
       // Mark failed and enqueue retry so cron picks it up — caller should
       // delete the lesson row to release the slot.
       await supabase
