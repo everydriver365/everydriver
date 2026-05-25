@@ -304,9 +304,12 @@ export default function ParentPortal() {
         className=""
         portalName="Drive365 Parent"
         descriptor="Monitor your child's driving progress"
+        brand="drive365"
+        subtitle="Sign in to track your child's progress"
         biometricScope="parent"
         heroImage={mobileLoginHero}
         heroAlt="Drive365 parent portal"
+
         onSignIn={async (em, pw) => handleEmailSignIn(em, pw)}
         onForgot={async (em) => handleForgotPassword(em)}
       />
