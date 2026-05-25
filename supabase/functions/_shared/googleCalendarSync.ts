@@ -25,11 +25,24 @@ function base64url(data: Uint8Array): string {
 }
 
 export async function importPrivateKey(raw: string): Promise<CryptoKey> {
-  let key = raw?.trim() ?? "";
+  let key = (raw ?? "").replace(/^\uFEFF/, "").trim();
+
+  // Strip wrapping quotes (single or double).
+  if ((key.startsWith('"') && key.endsWith('"')) || (key.startsWith("'") && key.endsWith("'"))) {
+    key = key.slice(1, -1).trim();
+  }
 
   // Accept a full service-account JSON blob.
   if (key.startsWith("{")) {
     try { key = (JSON.parse(key) as { private_key?: string }).private_key ?? key; } catch { /* ignore */ }
+  }
+
+  // Some hosts/UIs base64-encode the whole PEM. Detect and unwrap one layer.
+  if (!key.includes("BEGIN") && /^[A-Za-z0-9+/=\s]+$/.test(key) && key.length > 200) {
+    try {
+      const decoded = atob(key.replace(/\s/g, ""));
+      if (decoded.includes("BEGIN") && decoded.includes("PRIVATE KEY")) key = decoded;
+    } catch { /* ignore */ }
   }
 
   const pem = key
@@ -38,10 +51,16 @@ export async function importPrivateKey(raw: string): Promise<CryptoKey> {
     .replace(/-----END (?:RSA )?PRIVATE KEY-----/g, "")
     .replace(/\s/g, "");
 
-  if (!pem) throw new Error("Google private key is empty or invalid");
+  if (!pem) throw new Error("GOOGLE_PRIVATE_KEY is empty — paste the service-account JSON or PEM block in Lovable Cloud secrets");
 
   const padded = pem + "=".repeat((4 - (pem.length % 4)) % 4);
-  const der    = Uint8Array.from(atob(padded), (c) => c.charCodeAt(0));
+
+  let der: Uint8Array;
+  try {
+    der = Uint8Array.from(atob(padded), (c) => c.charCodeAt(0));
+  } catch {
+    throw new Error("GOOGLE_PRIVATE_KEY appears malformed — re-paste the service-account JSON or PEM block (escaped \\n and surrounding quotes are stripped automatically)");
+  }
 
   return crypto.subtle.importKey(
     "pkcs8", der.buffer as ArrayBuffer,
@@ -49,6 +68,7 @@ export async function importPrivateKey(raw: string): Promise<CryptoKey> {
     false, ["sign"],
   );
 }
+
 
 export async function generateJWT(email: string, privateKey: string): Promise<string> {
   const now     = Math.floor(Date.now() / 1000);

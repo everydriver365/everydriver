@@ -1,67 +1,59 @@
-## Goal
+## What's happening
 
-Keep the 5,796 "Drive365 Network" placeholder instructors in the database, but **segregate them in the admin portal** so they no longer pollute the main instructor list. They get their own dedicated section: **"Drive365 Network Instructors"**.
+When you add a lesson in the mobile app, the row IS saved to the database, but the push to Google Calendar fails every time. The retry queue shows the exact same error on every attempt since **May 19, 2026**:
 
-## Identification rule
-
-A row is a Network placeholder iff:
-- `auth_user_id IS NULL`, **and**
-- `app_slug LIKE 'network-%'`
-
-This is exact, stable, and unique to the seeded set (5,796 rows match). Real placeholders like `home@dufosse.co.uk` ("Martin B (adi assigns)") have no `network-` slug and are unaffected.
-
-### 1. Schema marker (one tiny migration)
-
-Add a generated/derived flag so every admin query can filter cheaply and consistently:
-
-```sql
-ALTER TABLE public.instructors
-  ADD COLUMN is_network_placeholder boolean
-    GENERATED ALWAYS AS (auth_user_id IS NULL AND app_slug LIKE 'network-%') STORED;
-
-CREATE INDEX idx_instructors_network_placeholder
-  ON public.instructors (is_network_placeholder)
-  WHERE is_network_placeholder = true;
+```
+Failed to decode base64
 ```
 
-No data is touched. The flag auto-recomputes on insert/update — future network seeds inherit it automatically.
+This is thrown inside `supabase/functions/_shared/googleCalendarSync.ts` when it tries to decode the service-account private key (`GOOGLE_PRIVATE_KEY` secret) before signing the JWT used to talk to Google. Because the key can't be decoded, no access token is minted, no event is created, and the lesson stays in `calendar_sync_status = 'failed'`.
 
-### 2. Admin UI changes
+Your Google Calendar **is still connected** (`instructor_google_service_calendar` row is active) — that's why the *pull* side (`last_sync` updated today) keeps working via a different path. Only the *push* side, which uses the service account credentials, is broken.
 
-**Main instructor list** (`InstructorList`, `InstructorManager`, `AdminCommandCenter`, `InstructorLeaderboard`, `AdminLiveMapView`, `MiniWebsitesManager`, `AdminBookingPagesManager`, `AdminWebsiteManager`, `AdminInstructorPayouts`, etc.):
-- Add `.eq('is_network_placeholder', false)` to every `from('instructors')` select used by these surfaces.
-- Real instructor count drops back to the true number (currently 5 real + 2 placeholders without `auth_user_id` that aren't network).
+The most likely cause is that `GOOGLE_PRIVATE_KEY` was re-saved with the literal `\n` characters mangled, surrounded by extra quotes, or pasted as the entire JSON without the `private_key` field intact.
 
-**New section: "Drive365 Network Instructors"**
-- New route: `/admin/network-instructors`
-- New page: `src/pages/admin/NetworkInstructors.tsx`
-- New component: `src/components/admin/NetworkInstructorsManager.tsx`
-- Lists only rows where `is_network_placeholder = true`, paginated (50/page; 5,796 total).
-- Columns: name, postcode area (derived from `home_postcode`), slug, created_at.
-- Filters: postcode prefix (e.g. "AB", "SW"), search by name.
-- Bulk actions: none initially — read-only browse + per-row "Promote to real instructor" (clears the network slug & opens the standard edit form).
-- Add nav entry in `AdminSidebar` / `AdminDesktopSidebar` under "Instructors" group, badge showing the network count.
+## Fix
 
-### 3. Public/search surfaces
+### Step 1 — Re-add the secret (you do this)
 
-Out of scope per the user's request — they stay visible in public course/postcode search exactly as today. Only the **admin portal** is segregated.
+In Lovable Cloud → Secrets, update `GOOGLE_PRIVATE_KEY` with one of these forms (the loader already handles both):
 
-### 4. Verification
+- **Option A (recommended):** paste the *entire service-account JSON file contents* — the loader extracts `private_key` automatically.
+- **Option B:** paste just the `-----BEGIN PRIVATE KEY-----\n…\n-----END PRIVATE KEY-----` block with real newlines (not the escaped `\n` text).
 
-After migration:
-- Admin "Instructors" tab shows ~5 rows (real auth-linked + non-network placeholders).
-- New "Drive365 Network Instructors" tab shows 5,796 rows, paginated.
-- Public mini-site / course search unchanged.
+Also confirm `GOOGLE_SERVICE_ACCOUNT_EMAIL` is set to the service account's email.
 
-### 5. Memory update
+### Step 2 — Harden the decoder (I do this)
 
-Add a memory note documenting the `is_network_placeholder` flag and the rule that **every admin instructor query must filter it out** unless explicitly in the Network Instructors view.
+Make `importPrivateKey` in `supabase/functions/_shared/googleCalendarSync.ts` more forgiving and produce a clearer error when the secret is misconfigured:
 
-## Files touched (estimate ~12)
+- Strip wrapping single/double quotes and BOMs.
+- Handle keys that arrive base64-encoded *whole* (some hosts double-encode) by detecting and decoding one extra layer.
+- Replace the generic `Failed to decode base64` with `GOOGLE_PRIVATE_KEY appears malformed — re-paste the service-account JSON or PEM block`, so future failures are obvious in the queue.
 
-- 1 migration
-- 1 new route file (`src/routes/adminRoutes.tsx`)
-- 1 new page + 1 new component
-- ~8 existing admin components: append `.eq('is_network_placeholder', false)` to their instructor queries
-- 1 sidebar nav entry
-- 1 memory file
+### Step 3 — Replay the stuck lessons
+
+After the secret is fixed, re-queue the lessons currently marked `failed` so they sync without you re-adding them manually:
+
+```sql
+INSERT INTO calendar_sync_queue (lesson_id, instructor_id, action)
+SELECT id, instructor_id, 'syncLesson'
+FROM scheduled_lessons
+WHERE calendar_sync_status = 'failed'
+  AND deleted_at IS NULL
+  AND status <> 'cancelled';
+```
+
+The existing `process-calendar-queue` cron will pick them up on its next run.
+
+### Step 4 — Verify
+
+- Add a test lesson on the mobile app.
+- Check it appears in Google Calendar within a few seconds.
+- Check `calendar_sync_queue` shows no new `Failed to decode base64` rows.
+
+## Out of scope
+
+- No UI changes.
+- No changes to the connection record or the pull-side sync.
+- No schema changes.
