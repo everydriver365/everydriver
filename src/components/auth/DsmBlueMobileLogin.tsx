@@ -2,11 +2,12 @@
  * DsmBlueMobileLogin
  *
  * Mobile-only login surface for the DSM Instructor Portal.
- * Glassmorphic dark direction — visual only. Auth/forgot logic delegated to parent.
+ * Clean white minimal direction with pill inputs and brand-blue CTA.
+ * Auth/forgot logic delegated to parent.
  */
 import { useEffect, useState, type ReactNode } from "react";
 import { toast } from "sonner";
-import { Mail, Lock, Eye, EyeOff, ArrowRight, Loader2 } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
 import {
   isBiometricAvailable,
   getBiometricCredentials,
@@ -26,7 +27,9 @@ interface Props {
 }
 
 const BRAND = "#0070C0";
-const BG = "#020817";
+const FIELD_BG = "#EEF1F5";
+const MUTED = "#8A96A6";
+const TEXT = "#0F172A";
 
 export function DsmBlueMobileLogin({
   biometricScope,
@@ -125,36 +128,25 @@ export function DsmBlueMobileLogin({
     }
   };
 
-  const labelStyle: React.CSSProperties = {
-    color: "rgba(148,163,184,0.9)",
-    fontSize: 11,
-    fontWeight: 600,
-    textTransform: "uppercase",
-    letterSpacing: "1px",
-    marginLeft: 4,
-    marginBottom: 8,
-    display: "block",
-  };
-
-  const inputWrap: React.CSSProperties = {
+  const pillWrap: React.CSSProperties = {
     position: "relative",
-    background: "rgba(15,23,42,0.5)",
-    border: "1px solid rgba(255,255,255,0.1)",
-    borderRadius: 16,
+    background: FIELD_BG,
+    borderRadius: 999,
     display: "flex",
     alignItems: "center",
-    transition: "border-color 0.15s",
+    height: 56,
   };
 
-  const inputStyle: React.CSSProperties = {
+  const pillInput: React.CSSProperties = {
     width: "100%",
     background: "transparent",
     border: "none",
     outline: "none",
-    padding: "14px 16px 14px 44px",
-    fontSize: 14,
-    color: "#FFFFFF",
-    borderRadius: 16,
+    padding: "0 20px 0 50px",
+    fontSize: 15,
+    color: TEXT,
+    height: "100%",
+    borderRadius: 999,
   };
 
   return (
@@ -164,25 +156,24 @@ export function DsmBlueMobileLogin({
         position: "fixed",
         inset: 0,
         zIndex: 40,
-        background: `radial-gradient(120% 80% at 50% 0%, #0b1a3a 0%, ${BG} 60%, #000814 100%)`,
+        background: "#FFFFFF",
         overflowY: "auto",
-        paddingTop: "calc(env(safe-area-inset-top) + 40px)",
+        paddingTop: "calc(env(safe-area-inset-top) + 52px)",
         paddingLeft: 24,
         paddingRight: 24,
         paddingBottom: "calc(env(safe-area-inset-bottom) + 24px)",
         minHeight: "100dvh",
         fontFamily:
-          "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+          "-apple-system, BlinkMacSystemFont, 'SF Pro Display', Inter, 'Segoe UI', Roboto, sans-serif",
       }}
     >
-      {/* Hero */}
+      {/* Logo */}
       <div
         style={{
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          gap: 14,
-          paddingBottom: 24,
+          paddingBottom: 36,
         }}
       >
         <img
@@ -190,144 +181,99 @@ export function DsmBlueMobileLogin({
           alt="DSM"
           style={{
             width: "auto",
-            height: 64,
-            maxWidth: "80%",
+            height: 84,
+            maxWidth: "70%",
             objectFit: "contain",
             display: "block",
-            
           }}
         />
+      </div>
 
+      {/* Heading */}
+      <div style={{ textAlign: "center", marginBottom: 28 }}>
         <h1
           style={{
-            color: "#FFFFFF",
+            color: TEXT,
             fontSize: 24,
             fontWeight: 700,
             letterSpacing: "-0.4px",
             margin: 0,
-            textAlign: "center",
           }}
         >
-          {isForgot ? "Reset password" : "Instructor Portal"}
+          {isForgot ? "Reset password" : "Welcome back"}
         </h1>
         <p
           style={{
-            color: "rgba(148,163,184,0.9)",
-            fontSize: 13,
-            textAlign: "center",
-            margin: 0,
+            color: MUTED,
+            fontSize: 14,
+            margin: "6px 0 0",
           }}
         >
           {isForgot
             ? "Enter your email and we'll send you a reset link."
-            : "Welcome back, please sign in"}
+            : "Sign in to your Instructor Portal"}
         </p>
       </div>
 
-      {/* Glass Card */}
-      <div
-        style={{
-          background: "rgba(255,255,255,0.05)",
-          backdropFilter: "blur(20px)",
-          WebkitBackdropFilter: "blur(20px)",
-          border: "1px solid rgba(255,255,255,0.1)",
-          borderRadius: 24,
-          padding: 22,
-          boxShadow: "0 25px 50px -12px rgba(0,0,0,0.5)",
-        }}
-      >
-        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          {/* Email */}
-          <div>
-            <label style={labelStyle}>Email Address</label>
-            <div style={inputWrap}>
-              <Mail size={18} style={{ position: "absolute", left: 14, color: "#64748B" }} />
-              <input
-                type="email"
-                autoComplete="email"
-                inputMode="email"
-                placeholder="name@dsmportal.co.uk"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                style={inputStyle}
-              />
-            </div>
+      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+        {/* Email */}
+        <div style={pillWrap}>
+          <Mail size={18} style={{ position: "absolute", left: 20, color: MUTED }} />
+          <input
+            type="email"
+            autoComplete="email"
+            inputMode="email"
+            placeholder="email address"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            style={pillInput}
+          />
+        </div>
+
+        {/* Password */}
+        {!isForgot && (
+          <div style={pillWrap}>
+            <Lock size={18} style={{ position: "absolute", left: 20, color: MUTED }} />
+            <input
+              type={showPw ? "text" : "password"}
+              autoComplete="current-password"
+              placeholder="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              style={{ ...pillInput, paddingRight: 50 }}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPw((s) => !s)}
+              aria-label={showPw ? "Hide password" : "Show password"}
+              style={{
+                position: "absolute",
+                right: 16,
+                background: "transparent",
+                border: "none",
+                padding: 4,
+                display: "flex",
+                alignItems: "center",
+                cursor: "pointer",
+                color: MUTED,
+              }}
+            >
+              {showPw ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
           </div>
+        )}
 
-          {/* Password */}
-          {!isForgot && (
-            <div>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  marginLeft: 4,
-                  marginBottom: 8,
-                }}
-              >
-                <label
-                  style={{
-                    color: "rgba(148,163,184,0.9)",
-                    fontSize: 11,
-                    fontWeight: 600,
-                    textTransform: "uppercase",
-                    letterSpacing: "1px",
-                  }}
-                >
-                  Password
-                </label>
-                <button
-                  type="button"
-                  onClick={() => switchView(true)}
-                  style={{
-                    background: "transparent",
-                    border: "none",
-                    color: BRAND,
-                    fontSize: 11,
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    padding: 0,
-                  }}
-                >
-                  Forgot Password?
-                </button>
-              </div>
-              <div style={inputWrap}>
-                <Lock size={18} style={{ position: "absolute", left: 14, color: "#64748B" }} />
-                <input
-                  type={showPw ? "text" : "password"}
-                  autoComplete="current-password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  style={{ ...inputStyle, paddingRight: 44 }}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPw((s) => !s)}
-                  aria-label={showPw ? "Hide password" : "Show password"}
-                  style={{
-                    position: "absolute",
-                    right: 12,
-                    background: "transparent",
-                    border: "none",
-                    padding: 4,
-                    display: "flex",
-                    alignItems: "center",
-                    cursor: "pointer",
-                    color: "#64748B",
-                  }}
-                >
-                  {showPw ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Remember Me */}
-          {!isForgot && (
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginLeft: 4 }}>
+        {/* Remember + Forgot row */}
+        {!isForgot && (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "4px 8px 0",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <button
                 type="button"
                 role="switch"
@@ -336,7 +282,7 @@ export function DsmBlueMobileLogin({
                 style={{
                   width: 40,
                   height: 22,
-                  background: rememberMe ? BRAND : "#334155",
+                  background: rememberMe ? BRAND : "#CBD5E1",
                   borderRadius: 20,
                   border: "none",
                   position: "relative",
@@ -359,130 +305,143 @@ export function DsmBlueMobileLogin({
                   }}
                 />
               </button>
-              <span style={{ color: "#CBD5E1", fontSize: 13 }}>Remember session</span>
+              <span style={{ color: TEXT, fontSize: 13, fontWeight: 500 }}>Remember me</span>
             </div>
-          )}
-
-          {error && (
-            <div
-              style={{
-                background: "rgba(220,38,38,0.15)",
-                border: "1px solid rgba(248,113,113,0.3)",
-                borderRadius: 12,
-                padding: "10px 12px",
-                color: "#FCA5A5",
-                fontSize: 12,
-              }}
-            >
-              {error}
-            </div>
-          )}
-
-          <button
-            type="submit"
-            disabled={loading}
-            style={{
-              width: "100%",
-              background: BRAND,
-              color: "#FFFFFF",
-              border: "none",
-              borderRadius: 16,
-              padding: 15,
-              fontSize: 15,
-              fontWeight: 700,
-              boxShadow: "0 10px 25px -5px rgba(0,112,192,0.5)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 8,
-              cursor: loading ? "not-allowed" : "pointer",
-              transition: "background 0.15s",
-            }}
-          >
-            {loading ? (
-              <Loader2 size={18} className="animate-spin" />
-            ) : (
-              <>
-                {isForgot ? "Send reset link" : "Sign In"}
-                {!isForgot && <ArrowRight size={18} />}
-              </>
-            )}
-          </button>
-
-          {isForgot && (
             <button
               type="button"
-              onClick={() => switchView(false)}
+              onClick={() => switchView(true)}
               style={{
                 background: "transparent",
                 border: "none",
-                color: "rgba(148,163,184,0.9)",
+                color: BRAND,
                 fontSize: 13,
                 fontWeight: 600,
                 cursor: "pointer",
+                padding: 0,
               }}
             >
-              Back to sign in
+              Forgot password?
             </button>
-          )}
-        </form>
-      </div>
+          </div>
+        )}
 
+        {error && (
+          <div
+            style={{
+              background: "rgba(220,38,38,0.08)",
+              border: "1px solid rgba(220,38,38,0.2)",
+              borderRadius: 14,
+              padding: "10px 14px",
+              color: "#B91C1C",
+              fontSize: 13,
+              textAlign: "center",
+            }}
+          >
+            {error}
+          </div>
+        )}
+
+        {/* Sign In */}
+        <button
+          type="submit"
+          disabled={loading}
+          style={{
+            width: "100%",
+            background: BRAND,
+            color: "#FFFFFF",
+            border: "none",
+            borderRadius: 999,
+            padding: 17,
+            fontSize: 16,
+            fontWeight: 600,
+            boxShadow: "0 12px 28px -10px rgba(0,112,192,0.55)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 8,
+            cursor: loading ? "not-allowed" : "pointer",
+            marginTop: 24,
+          }}
+        >
+          {loading ? (
+            <Loader2 size={18} className="animate-spin" />
+          ) : (
+            <>{isForgot ? "Send reset link" : "Log in"}</>
+          )}
+        </button>
+
+        {isForgot && (
+          <button
+            type="button"
+            onClick={() => switchView(false)}
+            style={{
+              background: "transparent",
+              border: "none",
+              color: MUTED,
+              fontSize: 14,
+              fontWeight: 500,
+              cursor: "pointer",
+              marginTop: 4,
+            }}
+          >
+            Back to sign in
+          </button>
+        )}
+      </form>
+
+      {/* Face ID */}
       {!isForgot && biometricScope && (
         <>
-          {/* Divider */}
           <div
             style={{
               display: "flex",
               alignItems: "center",
-              gap: 16,
-              margin: "24px 0 16px",
+              gap: 14,
+              margin: "28px 0 18px",
             }}
           >
-            <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.1)" }} />
+            <div style={{ flex: 1, height: 1, background: "#E5E9EF" }} />
             <span
               style={{
-                color: "#64748B",
-                fontSize: 10,
-                fontWeight: 700,
+                color: MUTED,
+                fontSize: 11,
+                fontWeight: 600,
                 textTransform: "uppercase",
                 letterSpacing: "1.5px",
               }}
             >
-              Quick Access
+              or
             </span>
-            <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.1)" }} />
+            <div style={{ flex: 1, height: 1, background: "#E5E9EF" }} />
           </div>
 
-          {/* Face ID */}
           <button
             type="button"
             onClick={handleBiometric}
             disabled={bioBusy}
             style={{
               width: "100%",
-              background: "rgba(255,255,255,0.05)",
-              border: "1px solid rgba(255,255,255,0.1)",
-              borderRadius: 16,
-              padding: "14px 16px",
+              background: "#FFFFFF",
+              border: `1.5px solid ${FIELD_BG}`,
+              borderRadius: 999,
+              padding: "15px 16px",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              gap: 12,
-              color: "#FFFFFF",
-              fontSize: 14,
+              gap: 10,
+              color: TEXT,
+              fontSize: 15,
               fontWeight: 600,
               cursor: bioBusy ? "not-allowed" : "pointer",
-              transition: "background 0.15s",
             }}
           >
             <svg
-              width="26"
-              height="26"
+              width="22"
+              height="22"
               viewBox="0 0 24 24"
               fill="none"
-              stroke="#FFFFFF"
-              strokeWidth="1.7"
+              stroke={BRAND}
+              strokeWidth="1.8"
               strokeLinecap="round"
               strokeLinejoin="round"
               aria-hidden="true"
@@ -501,17 +460,15 @@ export function DsmBlueMobileLogin({
         </>
       )}
 
-      {/* Optional footer slot */}
-      {!isForgot && footer && <div style={{ marginTop: 14 }}>{footer}</div>}
+      {!isForgot && footer && <div style={{ marginTop: 16 }}>{footer}</div>}
 
-      {/* Contact administrator */}
       {!isForgot && (
         <p
           style={{
-            color: "#64748B",
+            color: MUTED,
             fontSize: 13,
             textAlign: "center",
-            marginTop: 24,
+            marginTop: 28,
           }}
         >
           Need access?{" "}
@@ -523,18 +480,6 @@ export function DsmBlueMobileLogin({
           </a>
         </p>
       )}
-
-      {/* iOS home bar indicator */}
-      <div style={{ paddingTop: 18, paddingBottom: 8, display: "flex", justifyContent: "center" }}>
-        <div
-          style={{
-            width: 100,
-            height: 4,
-            background: "rgba(255,255,255,0.15)",
-            borderRadius: 4,
-          }}
-        />
-      </div>
     </div>
   );
 }
