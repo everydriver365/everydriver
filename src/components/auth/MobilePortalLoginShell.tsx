@@ -61,7 +61,6 @@ export function MobilePortalLoginShell({
               backgroundSize: "100% auto, 100% auto",
               backgroundPosition: "top left, top left",
               backgroundRepeat: "no-repeat, no-repeat",
-              backgroundRepeat: "no-repeat",
             }
           : {}),
       }}
