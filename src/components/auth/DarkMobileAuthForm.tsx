@@ -100,6 +100,8 @@ export function DarkMobileAuthForm({
       logoSrc={logoSrc}
       logoAlt={logoAlt}
       logoHeightPx={logoHeightPx}
+      heroSrc={heroSrc}
+      heroAlt={heroAlt}
       title={title}
       subtitle={subtitle}
       hideAt={hideAt}
