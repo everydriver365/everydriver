@@ -447,9 +447,18 @@ export function DarkMobileAuthForm({
             ) : null}
           </div>
 
+          <div
+            className="text-center"
+            style={{ marginTop: 16, fontSize: 10, color: "#B0B8C4", letterSpacing: "0.04em" }}
+          >
+            build {typeof __BUILD_TIME__ !== "undefined" ? __BUILD_TIME__.slice(0, 16).replace("T", " ") : "dev"}
+          </div>
+
           {hiddenSlot}
         </form>
       </div>
     </div>
   );
 }
+
+declare const __BUILD_TIME__: string;
