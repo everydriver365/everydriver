@@ -185,6 +185,16 @@ export default function LiveGoogleTrackingMap({ className = "", deviceId: device
           position: center,
           map,
           title: "Live position",
+          icon: {
+            path: CAR_SVG_PATH,
+            scale: 1.4,
+            rotation: 0,
+            fillOpacity: 1,
+            fillColor: "#22c55e",
+            strokeColor: "white",
+            strokeWeight: 2,
+            anchor: new w.google.maps.Point(0, 0),
+          },
         });
 
         polylineRef.current = new w.google.maps.Polyline({
