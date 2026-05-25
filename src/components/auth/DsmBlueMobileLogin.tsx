@@ -182,27 +182,16 @@ export function DsmBlueMobileLogin({
           paddingBottom: 28,
         }}
       >
-        <div
+        <img
+          src={dsmLogo}
+          alt="DSM"
           style={{
-            width: 84,
-            height: 84,
-            borderRadius: 22,
-            overflow: "hidden",
-            background: "rgba(255,255,255,0.12)",
-            border: "1px solid rgba(255,255,255,0.2)",
-            boxShadow: "0 8px 24px rgba(0,0,0,0.2)",
-            padding: 10,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
+            height: 64,
+            width: "auto",
+            objectFit: "contain",
+            filter: "drop-shadow(0 4px 16px rgba(0,0,0,0.18))",
           }}
-        >
-          <img
-            src={dsmLogo}
-            alt="DSM"
-            style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }}
-          />
-        </div>
+        />
 
         <h1
           style={{
@@ -446,7 +435,7 @@ export function DsmBlueMobileLogin({
           </div>
 
           {/* Face ID */}
-          {biometricScope && bioAvailable && (
+          {biometricScope && (
             <button
               type="button"
               onClick={handleBiometric}
