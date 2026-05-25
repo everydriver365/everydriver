@@ -64,23 +64,32 @@ export function MobilePortalLoginShell({
         }
       `}</style>
 
-      <div className="flex flex-col items-center">
-        {heroSrc && (
+      {heroSrc && (
+        <img
+          src={heroSrc}
+          alt={heroAlt || ""}
+          className="block w-screen object-cover"
+          style={{
+            marginLeft: -28,
+            marginRight: -28,
+            marginTop: "calc(-1 * (env(safe-area-inset-top) + 40px))",
+            height: "auto",
+            maxHeight: "55dvh",
+          }}
+        />
+      )}
+
+      <div className={cn("flex flex-col items-center", heroSrc && "mt-6")}>
+        {!heroSrc && (
           <img
-            src={heroSrc}
-            alt={heroAlt || ""}
-            className="w-full max-w-[280px] object-contain mb-5"
-            style={{ height: "auto" }}
+            src={logoSrc}
+            alt={logoAlt}
+            style={{ height: logoHeightPx }}
+            className="object-contain"
           />
         )}
-        <img
-          src={logoSrc}
-          alt={logoAlt}
-          style={{ height: logoHeightPx }}
-          className="object-contain"
-        />
         <h1
-          className="mpl-welcome text-white font-bold mt-7 text-center"
+          className="mpl-welcome text-white font-bold mt-3 text-center"
           style={{ fontSize: 26, letterSpacing: "-0.6px", lineHeight: 1.1 }}
         >
           {title}
