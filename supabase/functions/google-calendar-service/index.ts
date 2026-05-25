@@ -1360,6 +1360,197 @@ Deno.serve(async (req) => {
         );
       }
     }
+    // ========== syncManualBlock — push instructor_manual_blocks to Google ==========
+    if (action === "syncManualBlock") {
+      try {
+        if (!instructorId) {
+          return new Response(JSON.stringify({ error: "instructorId required" }),
+            { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        }
+
+        const { data: connection } = await supabase
+          .from("instructor_google_service_calendar")
+          .select("calendar_id, is_active")
+          .eq("instructor_id", instructorId)
+          .eq("is_active", true)
+          .maybeSingle();
+
+        if (!connection) {
+          return new Response(JSON.stringify({ skipped: true, reason: "No Google Calendar connected" }),
+            { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        }
+
+        const jwt = await generateJWT(serviceEmail, privateKey);
+        const accessToken = await getAccessToken(jwt);
+
+        const summary = `[Block] ${block?.title || block?.block_type || "Unavailable"}`;
+        const description = block?.notes || `Manual block (${block?.block_type ?? "manual"})`;
+
+        if (op === "delete") {
+          if (googleEventIdParam) {
+            try {
+              await deleteEvent(accessToken, connection.calendar_id, googleEventIdParam);
+            } catch (e) {
+              console.error("[syncManualBlock] delete failed:", e);
+              const { raiseSyncAlert } = await import("../_shared/raiseSyncAlert.ts");
+              void raiseSyncAlert({
+                category: "other", severity: "medium",
+                title: "Manual block delete failed",
+                message: String(e),
+                instructorId, metadata: { blockId, googleEventId: googleEventIdParam, op: "delete" },
+                supabase,
+              });
+            }
+          }
+          return new Response(JSON.stringify({ success: true }),
+            { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        }
+
+        if (!block?.start_datetime || !block?.end_datetime) {
+          return new Response(JSON.stringify({ error: "block.start_datetime and end_datetime required" }),
+            { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        }
+
+        if (op === "update" && block.google_event_id) {
+          try {
+            await updateEvent(accessToken, connection.calendar_id, block.google_event_id, {
+              summary, description,
+              start: block.start_datetime, end: block.end_datetime,
+            });
+            return new Response(JSON.stringify({ success: true, eventId: block.google_event_id }),
+              { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+          } catch (e) {
+            console.error("[syncManualBlock] update failed, falling back to create:", e);
+            // fall through to create
+          }
+        }
+
+        // create
+        const newEventId = await createEvent(accessToken, connection.calendar_id, {
+          summary, description,
+          start: block.start_datetime, end: block.end_datetime,
+        });
+
+        await supabase
+          .from("instructor_manual_blocks")
+          .update({ google_event_id: newEventId })
+          .eq("id", blockId);
+
+        return new Response(JSON.stringify({ success: true, eventId: newEventId }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      } catch (err) {
+        console.error("syncManualBlock error:", err);
+        const { raiseSyncAlert } = await import("../_shared/raiseSyncAlert.ts");
+        void raiseSyncAlert({
+          category: "other", severity: "medium",
+          title: "Manual block sync failed",
+          message: String(err),
+          instructorId: instructorId ?? null,
+          metadata: { blockId, op },
+          supabase,
+        });
+        return new Response(JSON.stringify({ error: String(err) }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+    }
+
+    // ========== registerWebhook — events.watch for an instructor ==========
+    if (action === "registerWebhook" || action === "renewWebhook") {
+      try {
+        if (!instructorId) {
+          return new Response(JSON.stringify({ error: "instructorId required" }),
+            { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        }
+
+        const { data: connection } = await supabase
+          .from("instructor_google_service_calendar")
+          .select("calendar_id, webhook_channel_id, webhook_resource_id")
+          .eq("instructor_id", instructorId)
+          .eq("is_active", true)
+          .maybeSingle();
+
+        if (!connection) {
+          return new Response(JSON.stringify({ skipped: true, reason: "Not connected" }),
+            { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        }
+
+        const jwt = await generateJWT(serviceEmail, privateKey);
+        const accessToken = await getAccessToken(jwt);
+
+        // Best-effort stop existing channel
+        if (connection.webhook_channel_id && connection.webhook_resource_id) {
+          try {
+            await fetch("https://www.googleapis.com/calendar/v3/channels/stop", {
+              method: "POST",
+              headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
+              body: JSON.stringify({ id: connection.webhook_channel_id, resourceId: connection.webhook_resource_id }),
+            });
+          } catch { /* ignore */ }
+        }
+
+        const channelId = crypto.randomUUID();
+        const channelToken = crypto.randomUUID();
+        const webhookUrl = `${Deno.env.get("SUPABASE_URL")}/functions/v1/google-calendar-webhook`;
+        const ttlSeconds = 7 * 24 * 60 * 60; // 7 days
+
+        const watchRes = await fetch(
+          `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(connection.calendar_id)}/events/watch`,
+          {
+            method: "POST",
+            headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
+            body: JSON.stringify({
+              id: channelId,
+              type: "web_hook",
+              address: webhookUrl,
+              token: channelToken,
+              params: { ttl: String(ttlSeconds) },
+            }),
+          }
+        );
+
+        if (!watchRes.ok) {
+          const errText = await watchRes.text();
+          const { raiseSyncAlert } = await import("../_shared/raiseSyncAlert.ts");
+          void raiseSyncAlert({
+            category: "webhook",
+            severity: action === "renewWebhook" ? "critical" : "high",
+            title: "Google Calendar webhook registration failed",
+            message: errText.slice(0, 1500),
+            instructorId,
+            metadata: { status: watchRes.status },
+            supabase,
+          });
+          await supabase.from("instructor_google_service_calendar")
+            .update({ webhook_last_error: errText.slice(0, 500) })
+            .eq("instructor_id", instructorId);
+          return new Response(JSON.stringify({ success: false, error: errText }),
+            { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        }
+
+        const watch = await watchRes.json();
+        const expiresAt = watch?.expiration
+          ? new Date(Number(watch.expiration)).toISOString()
+          : new Date(Date.now() + ttlSeconds * 1000).toISOString();
+
+        await supabase.from("instructor_google_service_calendar")
+          .update({
+            webhook_channel_id: channelId,
+            webhook_resource_id: watch?.resourceId ?? null,
+            webhook_channel_token: channelToken,
+            webhook_expires_at: expiresAt,
+            webhook_last_error: null,
+          })
+          .eq("instructor_id", instructorId);
+
+        return new Response(JSON.stringify({ success: true, channelId, expiresAt }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      } catch (err) {
+        console.error("registerWebhook error:", err);
+        return new Response(JSON.stringify({ error: String(err) }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+    }
+
     return new Response(
       JSON.stringify({ error: "Unknown action" }),
       { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
