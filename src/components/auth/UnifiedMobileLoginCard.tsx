@@ -206,6 +206,8 @@ export function UnifiedMobileLoginCard({
   googleSlot,
   footer,
   className = "md:hidden",
+  heroImage,
+  heroAlt,
 }: UnifiedMobileLoginCardProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
