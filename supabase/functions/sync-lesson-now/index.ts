@@ -10,6 +10,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.89.0";
 import { z } from "https://esm.sh/zod@3.25.76";
 import { syncLessonNow } from "../_shared/googleCalendarSync.ts";
+import { raiseSyncAlert } from "../_shared/raiseSyncAlert.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
