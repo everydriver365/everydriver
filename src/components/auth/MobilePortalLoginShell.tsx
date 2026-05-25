@@ -57,9 +57,10 @@ export function MobilePortalLoginShell({
         minHeight: "100dvh",
         ...(heroSrc
           ? {
-              backgroundImage: `linear-gradient(180deg, rgba(15,32,68,0.15) 0%, rgba(15,32,68,0.55) 55%, rgba(15,32,68,0.92) 100%), url(${heroSrc})`,
-              backgroundSize: "auto 180%",
-              backgroundPosition: "center 78%",
+              backgroundImage: `linear-gradient(180deg, rgba(15,32,68,0) 0%, rgba(15,32,68,0) 45%, rgba(15,32,68,0.85) 60%, rgba(15,32,68,1) 75%), url(${heroSrc})`,
+              backgroundSize: "100% auto, 100% auto",
+              backgroundPosition: "top left, top left",
+              backgroundRepeat: "no-repeat, no-repeat",
               backgroundRepeat: "no-repeat",
             }
           : {}),
