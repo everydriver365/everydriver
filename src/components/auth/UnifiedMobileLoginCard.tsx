@@ -68,7 +68,10 @@ export function UnifiedMobileLoginCard({
   className = "md:hidden",
   heroImage: _heroImage,
   heroAlt: _heroAlt,
+  brand,
+  subtitle,
 }: UnifiedMobileLoginCardProps) {
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
