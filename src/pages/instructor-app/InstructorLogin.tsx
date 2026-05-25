@@ -269,14 +269,16 @@ export default function InstructorLogin() {
         logoSrc={dsmLogo}
         logoAlt="DSM"
         logoHeightPx={80}
+        brand="dsm"
         title={isForgotPassword ? "Reset password" : "Welcome back"}
         subtitle={
           isForgotPassword
             ? resetSent
               ? `We've sent a reset link to ${resetSentTo}`
               : "Enter your email and we'll send you a reset link."
-            : ""
+            : "Sign in to your DSM instructor portal"
         }
+
         email={email}
         setEmail={setEmail}
         password={password}

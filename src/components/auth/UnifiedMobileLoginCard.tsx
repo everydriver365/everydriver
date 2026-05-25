@@ -26,6 +26,8 @@ import {
 import { DarkMobileAuthForm } from "./DarkMobileAuthForm";
 import dsmLogo from "@/assets/dsm-logo.png";
 import drive365Logo from "@/assets/drive365-logo.png";
+const drive365Icon = "/apple-touch-icon-365.png";
+
 
 type AsyncResult = { error?: string } | void;
 
@@ -48,7 +50,12 @@ export interface UnifiedMobileLoginCardProps {
   heroImage?: string;
   /** Optional alt text for the hero image. */
   heroAlt?: string;
+  /** Explicit brand override — picks logo + logo-block styling. */
+  brand?: "dsm" | "drive365";
+  /** Subtitle shown under the title on the sign-in view. */
+  subtitle?: string;
 }
+
 
 export function UnifiedMobileLoginCard({
   portalName,
@@ -61,7 +68,10 @@ export function UnifiedMobileLoginCard({
   className = "md:hidden",
   heroImage: _heroImage,
   heroAlt: _heroAlt,
+  brand,
+  subtitle,
 }: UnifiedMobileLoginCardProps) {
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
@@ -155,16 +165,24 @@ export function UnifiedMobileLoginCard({
     }
   };
 
-  // Logo rule: Pupil / Parent portals → Drive365 logo. All DSM portals
-  // (Admin / Schools / Instructor) → DSM logo. Fall back to pathname when
-  // portalName is ambiguous.
-  const path = typeof window !== "undefined" ? window.location.pathname : "";
-  const isDrive365Brand =
-    /parent|pupil/i.test(portalName) ||
-    /^\/(pupil|parent|p\/|drive365)/i.test(path) ||
-    portalName === "Drive365";
-  const useDsm = !isDrive365Brand;
-  const logoSrc = useDsm ? dsmLogo : drive365Logo;
+  // Brand selection: explicit `brand` prop wins. Otherwise fall back to the
+  // legacy name/path sniffing so screens that haven't opted in (admin, school,
+  // unified) keep behaving exactly as before.
+  let resolvedBrand: "dsm" | "drive365";
+  if (brand) {
+    resolvedBrand = brand;
+  } else {
+    const path = typeof window !== "undefined" ? window.location.pathname : "";
+    const isDrive365Brand =
+      /parent|pupil/i.test(portalName) ||
+      /^\/(pupil|parent|p\/|drive365)/i.test(path) ||
+      portalName === "Drive365";
+    resolvedBrand = isDrive365Brand ? "drive365" : "dsm";
+  }
+
+  const useDsm = resolvedBrand === "dsm";
+  // DSM uses the wordmark logo; Drive 365 portals use the square rounded app icon.
+  const logoSrc = useDsm ? dsmLogo : brand === "drive365" ? drive365Icon : drive365Logo;
   const brandName = useDsm ? "DSM" : "Drive365";
 
   return (
@@ -173,8 +191,9 @@ export function UnifiedMobileLoginCard({
         logoSrc={logoSrc}
         logoAlt={portalName}
         logoHeightPx={80}
+        brand={resolvedBrand}
         title={isForgot ? "Reset password" : "Welcome back"}
-        subtitle={isForgot ? "Enter your email and we'll send you a reset link." : ""}
+        subtitle={isForgot ? "Enter your email and we'll send you a reset link." : (subtitle ?? "")}
         email={email}
         setEmail={setEmail}
         password={password}
@@ -197,3 +216,4 @@ export function UnifiedMobileLoginCard({
     </div>
   );
 }
+
