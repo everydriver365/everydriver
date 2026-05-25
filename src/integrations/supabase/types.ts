@@ -5423,6 +5423,72 @@ export type Database = {
         }
         Relationships: []
       }
+      google_sync_alerts: {
+        Row: {
+          category: string
+          created_at: string
+          first_seen_at: string
+          id: string
+          instructor_id: string | null
+          last_seen_at: string
+          lesson_id: string | null
+          message: string
+          metadata: Json
+          occurrence_count: number
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: string
+          title: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          first_seen_at?: string
+          id?: string
+          instructor_id?: string | null
+          last_seen_at?: string
+          lesson_id?: string | null
+          message: string
+          metadata?: Json
+          occurrence_count?: number
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity: string
+          title: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          first_seen_at?: string
+          id?: string
+          instructor_id?: string | null
+          last_seen_at?: string
+          lesson_id?: string | null
+          message?: string
+          metadata?: Json
+          occurrence_count?: number
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "google_sync_alerts_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "google_sync_alerts_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gps_battery_history: {
         Row: {
           battery_percent: number
@@ -20256,6 +20322,18 @@ export type Database = {
       purge_instructor_data: {
         Args: { p_instructor_id: string; p_sentinel_uuid: string }
         Returns: Json
+      }
+      raise_google_sync_alert: {
+        Args: {
+          p_category: string
+          p_instructor_id?: string
+          p_lesson_id?: string
+          p_message: string
+          p_metadata?: Json
+          p_severity: string
+          p_title: string
+        }
+        Returns: string
       }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
