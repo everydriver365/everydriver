@@ -77,14 +77,15 @@ export function MobilePortalLoginShell({
       `}</style>
 
       <div className="flex flex-col items-center">
-        {!heroSrc && (
-          <img
-            src={logoSrc}
-            alt={logoAlt}
-            style={{ height: logoHeightPx }}
-            className="object-contain drop-shadow-[0_2px_12px_rgba(0,0,0,0.4)]"
-          />
-        )}
+        <img
+          src={logoSrc}
+          alt={logoAlt}
+          style={{ height: logoHeightPx }}
+          className={cn(
+            "object-contain",
+            isLight ? "" : "drop-shadow-[0_2px_12px_rgba(0,0,0,0.4)]",
+          )}
+        />
       </div>
 
       {heroSrc && <div className="flex-1" />}
@@ -100,10 +101,13 @@ export function MobilePortalLoginShell({
         >
           {title}
         </h1>
-        <p className={cn("mt-1.5 text-center", subTextClass)} style={{ fontSize: 14 }}>
-          {subtitle}
-        </p>
+        {subtitle && (
+          <p className={cn("mt-1.5 text-center", subTextClass)} style={{ fontSize: 14 }}>
+            {subtitle}
+          </p>
+        )}
       </div>
+
 
       <div className={cn("mpl-brand-gap flex flex-col", heroSrc ? "mt-5" : "mt-10 flex-1")}>{children}</div>
 

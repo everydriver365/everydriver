@@ -23,6 +23,7 @@ import { DarkMobileAuthForm } from "@/components/auth/DarkMobileAuthForm";
 import { useClearOnDeepLink } from "@/hooks/useClearOnDeepLink";
 import instructorHero from "@/assets/every-instructor-hero.webp";
 import mobileLoginHero from "@/assets/mobile-login-hero.png";
+import essexLogo from "@/assets/essex-logo.png";
 
 const loginSchema = z.object({
   email: z.string().trim().email("Please enter a valid email address").max(255),
@@ -265,17 +266,18 @@ export default function InstructorLogin() {
     <>
       {/* ============== MOBILE-ONLY — shared dark-navy shell (matches pupil login) ============== */}
       <DarkMobileAuthForm
-        logoSrc={dsmLogo}
-        logoAlt="Driving School Manager"
+        logoSrc={essexLogo}
+        logoAlt="Essex"
+        logoHeightPx={72}
         heroSrc={mobileLoginHero}
         heroAlt="Driving School Manager"
-        title={isForgotPassword ? "Reset password" : "Welcome back"}
+        title={isForgotPassword ? "Reset password" : "Welcome"}
         subtitle={
           isForgotPassword
             ? resetSent
               ? `We've sent a reset link to ${resetSentTo}`
               : "Enter your email and we'll send you a reset link."
-            : "Sign in to your Driving School Manager account."
+            : ""
         }
         email={email}
         setEmail={setEmail}
