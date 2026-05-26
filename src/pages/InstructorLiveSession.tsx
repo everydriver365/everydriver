@@ -1564,7 +1564,16 @@ export default function InstructorLiveSession() {
                     lastSeenAt={mapLastSeenAt}
                     isActive={isConnected}
                     sessionId={device?.current_session_id ?? null}
+                    sourceLabel={isPhoneProvider ? "phone" : "radius"}
+                    needsAction={
+                      isPhoneProvider && locationPermissionStatus !== "granted"
+                        ? "permission"
+                        : isPhoneProvider && !phoneStreamingConfirmed
+                        ? "confirm-start"
+                        : null
+                    }
                   />
+
                 </div>
               </div>
 
