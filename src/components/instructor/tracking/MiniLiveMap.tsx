@@ -112,7 +112,8 @@ export function MiniLiveMap({ latitude, longitude, heading, lastSeenAt, isActive
     };
   }, [ready]);
 
-  // Load historical trail from session GPS points
+  // Load historical trail from session GPS points (polyline only — do NOT
+  // re-frame the map; the live position must stay dead-centre).
   useEffect(() => {
     if (!ready || !mapRef.current || !sessionId || trailLoadedRef.current === sessionId) return;
     trailLoadedRef.current = sessionId;
@@ -137,11 +138,10 @@ export function MiniLiveMap({ latitude, longitude, heading, lastSeenAt, isActive
       }
 
       polylineRef.current?.setPath(pathRef.current);
-
-      // Fit bounds to show entire trail
-      const bounds = new google.maps.LatLngBounds();
-      trail.forEach(pt => bounds.extend(pt));
-      mapRef.current.fitBounds(bounds, 40);
+      // Intentionally no fitBounds — previously this zoomed the map out to
+      // contain the whole route, which left the car at the edge/off-screen
+      // on the small mini-map card. Live position re-centring below keeps
+      // the car visible.
     })();
   }, [ready, sessionId]);
 
@@ -177,9 +177,31 @@ export function MiniLiveMap({ latitude, longitude, heading, lastSeenAt, isActive
       polylineRef.current?.setPath(pathRef.current);
     }
 
-    // Auto-follow: smooth pan to new position
-    map.panTo(pos);
+    // Auto-follow: hard re-centre so the car can never drift off the
+    // mini-map (panTo's smooth animation can be skipped/cancelled by
+    // rapid re-renders or large jumps, which previously let the marker
+    // slide to the edge of the card).
+    map.setCenter(pos);
   }, [latitude, longitude, heading, isActive, getArrowIcon]);
+
+  // Safety net: re-centre on resize and once per second between fixes so
+  // the car can never end up off-screen for long, even if a parent layout
+  // change or a missed re-render slipped through.
+  useEffect(() => {
+    if (!ready) return;
+    const recenter = () => {
+      const map = mapRef.current;
+      if (!map || latitude == null || longitude == null) return;
+      map.setCenter({ lat: latitude, lng: longitude });
+    };
+    const id = window.setInterval(recenter, 1000);
+    window.addEventListener("resize", recenter);
+    return () => {
+      window.clearInterval(id);
+      window.removeEventListener("resize", recenter);
+    };
+  }, [ready, latitude, longitude]);
+
 
   return (
     <div className="rounded-2xl border bg-card text-card-foreground shadow-sm overflow-hidden">
