@@ -493,22 +493,25 @@ export function SatNavLiveMap({
   const attachMarkerInfoWindow = useCallback((map: google.maps.Map) => {
     const marker = markerRef.current;
     if (!marker) return;
-    const listener = marker.addListener("click", () => {
+    const clickListener = marker.addListener("click", () => {
       if (!infoWindowRef.current) {
         infoWindowRef.current = new google.maps.InfoWindow();
+        infoWindowRef.current.addListener("closeclick", () => {
+          infoWindowOpenRef.current = false;
+        });
       }
       infoWindowRef.current.setContent(buildInfoHtml());
       infoWindowRef.current.open({ map, anchor: marker });
+      infoWindowOpenRef.current = true;
     });
-    mapListenersRef.current.push(listener);
+    mapListenersRef.current.push(clickListener);
   }, [buildInfoHtml]);
 
   // Live-refresh the InfoWindow content while it's open so the user sees
   // values tick as new GPS fixes arrive.
   useEffect(() => {
-    const iw = infoWindowRef.current;
-    if (iw && iw.getMap()) {
-      iw.setContent(buildInfoHtml());
+    if (infoWindowRef.current && infoWindowOpenRef.current) {
+      infoWindowRef.current.setContent(buildInfoHtml());
     }
   }, [pupilName, speedKmh, lastSeenAt, buildInfoHtml]);
 
