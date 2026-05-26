@@ -1,26 +1,36 @@
-## Why the car still shows as a small circle
+## Goal
 
-Google Maps loads marker icon URLs in a sandboxed image context that **blocks external `<image href="...">` references inside a data‑URI SVG**. The previous attempt embedded the imported `tracking-car.png` URL via `<image href>` inside the SVG data URI — Maps resolved the SVG as empty and fell back to its default dot. That's the "small circle" on screen.
+Tapping the car marker on the live Track map opens a small Google Maps InfoWindow showing **pupil name**, **current speed**, and **last update time**. Tapping the map or the InfoWindow's close button dismisses it. Content updates live while open.
 
-## Fix
+## Changes
 
-Single file: `src/components/instructor/tracking/SatNavLiveMap.tsx`.
+### 1. `src/components/instructor/tracking/SatNavLiveMap.tsx`
 
-1. Rewrite `getArrowIcon` to return a `google.maps.Icon` whose `url` is a data‑URI SVG containing a **pure inline car silhouette** (no `<image href>`, no external asset). Rotation stays handled by `<g transform="rotate(${heading} 28 28)">` so per‑frame heading updates keep working with classic `google.maps.Marker` (no `mapId` / AdvancedMarker required).
-2. Car design, top‑down, 56×56 viewport, pointing north at rotation 0:
-   - Body: rounded rect, fill `#1C2A4A`, white stroke 1px for contrast on satellite tiles.
-   - Roof panel: lighter rounded rect, fill `#2E4373`.
-   - Windshield wedge: `#A8C5E8` polygon at the front.
-   - Two wing‑mirror nubs and four wheel dots in `#0B1426`.
-   - Active opacity 1.0, inactive 0.55 (unchanged behaviour).
-   - `scaledSize: 56×56`, `anchor: (28, 28)` (unchanged).
-3. Remove the now-unused `import trackingCarUrl from "@/assets/tracking-car.png"`. The PNG file stays on disk but is no longer referenced.
+- Add optional prop `pupilName?: string | null` to `SatNavLiveMapProps`.
+- Add a ref `infoWindowRef = useRef<google.maps.InfoWindow | null>(null)` and a small helper `buildInfoHtml(pupilName, speedMph, lastSeenAt)` that returns sanitised HTML:
+  - Line 1: pupil name (or "Test route" when null).
+  - Line 2: speed in **mph** (convert from `speedKmh` using the existing imperial convention — `Math.round(speedKmh * 0.621371)`); show "—" if `speedKmh` is null.
+  - Line 3: "Updated <relative>" via `formatDistanceToNowStrict(new Date(lastSeenAt), { addSuffix: true })`; "No fix yet" if null.
+  - Inline styles only (Google strips classes): white card, 12px font, 8px padding, navy text `#1F2C4A`, 600 weight for name.
+- In the **map-init** branch (around line 577) and the **first-marker-creation** branch (around line 714) and the **alt branch** (~line 813), after creating `markerRef.current`, attach a `click` listener (track via `mapListenersRef`):
+  ```ts
+  markerRef.current.addListener("click", () => {
+    if (!infoWindowRef.current) infoWindowRef.current = new google.maps.InfoWindow();
+    infoWindowRef.current.setContent(buildInfoHtml(pupilName, speedKmh, lastSeenAt));
+    infoWindowRef.current.open({ map, anchor: markerRef.current! });
+  });
+  ```
+- Live-refresh while open: in a small `useEffect` keyed on `[pupilName, speedKmh, lastSeenAt]`, if `infoWindowRef.current` has a map (`getMap()` truthy), call `setContent(...)` so the values stay current as polls arrive.
+- Cleanup: in the existing teardown (~line 590), call `infoWindowRef.current?.close()` and null it.
 
-Everything else is untouched: shadow halo, marker creation, tween/animation loop, first‑fix seeding, camera / zoom logic, polyline trail, fullscreen routing, and all call sites of `getArrowIcon`.
+### 2. `src/pages/InstructorLiveSession.tsx`
+
+- In the fullscreen branch JSX (~line 1393), pass `pupilName={currentPupil?.name ?? null}` to `<SatNavLiveMap ... />`.
+- No other call sites touched (mini map already shows pupil name in its surrounding card).
 
 ## Out of scope
 
 - `LiveTrackingMap.tsx`, `GoogleLiveTrackingMap.tsx`, `MiniLiveMap` — not changed.
-- `InstructorLiveSession.tsx` layout — not changed.
+- Camera/follow logic, animation loop, polyline trail, shadow halo — not changed.
 - No mobile layout changes elsewhere.
-- No animation, camera, or data‑flow changes.
+- No backend / RLS / data-shape changes — uses existing props only.
