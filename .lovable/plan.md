@@ -1,32 +1,15 @@
-## What's wrong
+## Add temporary logging to reveal service account email
 
-The instructor home tile shows **"Sync paused — Credential issue — admin notified. 210 lessons queued."** even though Google Calendar sync is currently healthy. Two reasons:
+Add a one-line `console.log` to the Google Calendar JWT signing path in the relevant edge function (e.g. `process-calendar-queue` or the shared JWT helper) that prints `GOOGLE_SERVICE_ACCOUNT_EMAIL` to the function logs.
 
-1. **228 stale lesson rows** are still flagged `calendar_sync_status = 'failed' | 'pending'` from when the `GOOGLE_PRIVATE_KEY` secret was malformed (last error: 25 May). They were never retried after the key was fixed.
-2. The tile's credential-broken check looks at the **all-time latest error** on `calendar_sync_queue`. Even if the key works again today, that stale error keeps the tile red forever.
+### Steps
+1. Locate the edge function that reads `GOOGLE_SERVICE_ACCOUNT_EMAIL` (likely `process-calendar-queue` or a shared `_shared/google-jwt.ts`).
+2. Add `console.log("[debug] GOOGLE_SERVICE_ACCOUNT_EMAIL:", Deno.env.get("GOOGLE_SERVICE_ACCOUNT_EMAIL"))` near the top of the JWT build step.
+3. Trigger the queue processor once.
+4. Read edge function logs to retrieve the email value.
+5. Share it back so you can confirm the matching service account in Google Cloud Console and regenerate the correct private key.
+6. Remove the log line after the email is captured.
 
-## Fix — two parts
-
-### 1. Re-queue the 228 stuck lessons (one-off data fix)
-
-Insert fresh `calendar_sync_queue` rows for every lesson currently `failed` or `pending` for instructor `c9843b58-…e30aea`, action `syncLesson`. The existing `process-calendar-queue` cron (runs every minute, 50 lessons per run) will work through the backlog over ~5 minutes. Successful pushes flip `calendar_sync_status → synced` and the tile turns green automatically.
-
-*(Already executed during investigation — 228 rows inserted. The cron is now chewing through them.)*
-
-### 2. Tighten `CalendarSyncStatusTile.tsx` so stale errors stop tripping the alarm
-
-In `load()`, add a 24-hour `.gte("created_at", …)` filter on the `calendar_sync_queue` error lookup. If no credential-shaped error has occurred in the last 24 h, treat the credential as healthy — even if `failed > 0`, the tile will fall through to the regular red "Tap to retry" state (which actually does something) instead of the dead-end "Sync paused" state.
-
-```text
-src/components/instructor/CalendarSyncStatusTile.tsx
-  load() — calendar_sync_queue query:
-    + .gte("created_at", <now - 24h>)
-  comment updated to explain the 24h window
-```
-
-No other files touched. No schema changes. No edge-function changes.
-
-## Result
-
-- Tile clears on next mount once the queue processor drains the 228 rows.
-- Going forward, a credential outage that gets fixed will let the tile recover on its own within 24 h instead of staying red until someone manually clears state.
+### Notes
+- The email is not a sensitive secret (it ends in `iam.gserviceaccount.com` and is safe to view in logs).
+- Private key is never logged.
