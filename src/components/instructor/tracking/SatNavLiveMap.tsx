@@ -447,6 +447,70 @@ export function SatNavLiveMap({
     anchor: new google.maps.Point(0, 0),
   }), []);
 
+  // ── Marker InfoWindow ──────────────────────────────────────────────────
+  // Tap the car to see who's being tracked, current speed, and last fix age.
+  // We use refs for the latest values so the click handler (attached once
+  // per marker instance) always reads fresh data without re-binding.
+  const pupilNameRef = useRef<string | null>(pupilName);
+  const speedKmhRef = useRef<number | null>(speedKmh);
+  const lastSeenAtRef = useRef<string | null>(lastSeenAt);
+  useEffect(() => { pupilNameRef.current = pupilName; }, [pupilName]);
+  useEffect(() => { speedKmhRef.current = speedKmh; }, [speedKmh]);
+  useEffect(() => { lastSeenAtRef.current = lastSeenAt; }, [lastSeenAt]);
+
+  const escapeHtml = useCallback((s: string): string =>
+    s.replace(/[&<>"']/g, (c) => (
+      c === "&" ? "&amp;" :
+      c === "<" ? "&lt;" :
+      c === ">" ? "&gt;" :
+      c === '"' ? "&quot;" : "&#39;"
+    )), []);
+
+  const buildInfoHtml = useCallback((): string => {
+    const name = pupilNameRef.current?.trim() || "Test route";
+    const skmh = speedKmhRef.current;
+    const speedLine = skmh == null
+      ? "—"
+      : `${Math.round(skmh * 0.621371)} mph`;
+    const seen = lastSeenAtRef.current;
+    let updatedLine = "No fix yet";
+    if (seen) {
+      const d = new Date(seen);
+      if (!Number.isNaN(d.getTime())) {
+        updatedLine = `Updated ${formatDistanceToNowStrict(d, { addSuffix: true })}`;
+      }
+    }
+    return (
+      `<div style="font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',Inter,sans-serif;padding:6px 8px;min-width:140px;color:#1F2C4A;">` +
+        `<div style="font-size:13px;font-weight:600;line-height:1.2;margin-bottom:4px;">${escapeHtml(name)}</div>` +
+        `<div style="font-size:12px;line-height:1.3;color:#3D55A1;">${escapeHtml(speedLine)}</div>` +
+        `<div style="font-size:11px;line-height:1.3;color:#6B7280;margin-top:2px;">${escapeHtml(updatedLine)}</div>` +
+      `</div>`
+    );
+  }, [escapeHtml]);
+
+  const attachMarkerInfoWindow = useCallback((map: google.maps.Map) => {
+    const marker = markerRef.current;
+    if (!marker) return;
+    const listener = marker.addListener("click", () => {
+      if (!infoWindowRef.current) {
+        infoWindowRef.current = new google.maps.InfoWindow();
+      }
+      infoWindowRef.current.setContent(buildInfoHtml());
+      infoWindowRef.current.open({ map, anchor: marker });
+    });
+    mapListenersRef.current.push(listener);
+  }, [buildInfoHtml]);
+
+  // Live-refresh the InfoWindow content while it's open so the user sees
+  // values tick as new GPS fixes arrive.
+  useEffect(() => {
+    const iw = infoWindowRef.current;
+    if (iw && iw.getMap()) {
+      iw.setContent(buildInfoHtml());
+    }
+  }, [pupilName, speedKmh, lastSeenAt, buildInfoHtml]);
+
 
   // ── Sat-nav camera helpers ──────────────────────────────────────────────
   // Zoom adapts to speed so the driver sees an appropriate amount of road.
