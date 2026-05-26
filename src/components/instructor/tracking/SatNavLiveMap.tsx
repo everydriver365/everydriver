@@ -34,6 +34,19 @@ function headingToCardinal(heading: number): string {
   return COMPASS_LABELS[idx];
 }
 
+// Forward-azimuth bearing from (lat1,lng1) → (lat2,lng2). Returns 0–360°.
+// Used as a fallback for marker orientation when the device omits heading.
+function bearingBetween(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const φ1 = toRad(lat1);
+  const φ2 = toRad(lat2);
+  const Δλ = toRad(lng2 - lng1);
+  const y = Math.sin(Δλ) * Math.cos(φ2);
+  const x = Math.cos(φ1) * Math.sin(φ2) -
+            Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
+  return ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360;
+}
+
 export function SatNavLiveMap({
   latitude, longitude, heading, speedKmh, speedLimitKmh, roadName,
   lastSeenAt, isActive, sessionId, ignitionOn, dailyDistanceKm,
@@ -877,9 +890,19 @@ export function SatNavLiveMap({
 
     // Heading smoothing — only sample when actually moving; hold previous
     // smoothed value while parked so the map doesn't spin from GPS drift.
+    // Fallback: when the device omits `heading`, derive a bearing from the
+    // movement vector (prev fix → new fix) provided we've moved enough for
+    // it to be reliable (≥5 m, above GPS jitter).
+    let effectiveHeading: number | null = null;
+    if (typeof heading === "number" && Number.isFinite(heading)) {
+      effectiveHeading = ((heading % 360) + 360) % 360;
+    } else if (prev && movingFastEnough && metresFromPrev >= 5) {
+      effectiveHeading = bearingBetween(prev.lat, prev.lng, latitude, longitude);
+    }
+
     let rotation: number;
-    if (movingFastEnough && typeof heading === "number" && Number.isFinite(heading)) {
-      const raw = ((heading % 360) + 360) % 360;
+    if (movingFastEnough && effectiveHeading != null) {
+      const raw = effectiveHeading;
       headingBufferRef.current.push(raw);
       if (headingBufferRef.current.length > 5) headingBufferRef.current.shift();
 
