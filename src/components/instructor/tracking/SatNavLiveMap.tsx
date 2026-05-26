@@ -865,13 +865,59 @@ export function SatNavLiveMap({
     //    for >15s (in which case it's a real reacquisition).
     const tooFar = prev != null && metresFromPrev > 200 &&
       (lastFixTsRef.current == null || (now - lastFixTsRef.current) < 15000);
-    if (tooFar) return;
+    if (tooFar) {
+      // Reset heading buffer so reacquisition doesn't average across a jump.
+      headingBufferRef.current = [];
+      return;
+    }
+    // Reset buffer after a long signal gap — old headings are stale.
+    if (lastFixTsRef.current != null && (now - lastFixTsRef.current) > 15000) {
+      headingBufferRef.current = [];
+    }
 
-    // Heading: only adopt a new heading when actually moving; otherwise hold
-    // the previous heading so the map doesn't spin while parked.
-    const rotation = movingFastEnough
-      ? (heading ?? prev?.heading ?? 0)
-      : (prev?.heading ?? heading ?? 0);
+    // Heading smoothing — only sample when actually moving; hold previous
+    // smoothed value while parked so the map doesn't spin from GPS drift.
+    let rotation: number;
+    if (movingFastEnough && typeof heading === "number" && Number.isFinite(heading)) {
+      const raw = ((heading % 360) + 360) % 360;
+      headingBufferRef.current.push(raw);
+      if (headingBufferRef.current.length > 5) headingBufferRef.current.shift();
+
+      // Circular mean over recent samples (handles 359°/1° wrap).
+      const buf = headingBufferRef.current;
+      let candidate = raw;
+      if (buf.length >= 2) {
+        let sx = 0, sy = 0;
+        for (const d of buf) {
+          const r = (d * Math.PI) / 180;
+          sx += Math.cos(r);
+          sy += Math.sin(r);
+        }
+        candidate = ((Math.atan2(sy, sx) * 180) / Math.PI + 360) % 360;
+      }
+
+      const prevSmoothed = smoothedHeadingRef.current;
+      if (prevSmoothed == null) {
+        smoothedHeadingRef.current = candidate;
+      } else {
+        // Shortest signed delta in (-180, 180].
+        let delta = ((candidate - prevSmoothed + 540) % 360) - 180;
+        // Dead-zone: ignore sub-3° wobble.
+        if (Math.abs(delta) < 3) {
+          // hold previous
+        } else {
+          // Max-step clamp: never snap more than 25° per fix.
+          const MAX_STEP = 25;
+          if (delta > MAX_STEP) delta = MAX_STEP;
+          else if (delta < -MAX_STEP) delta = -MAX_STEP;
+          smoothedHeadingRef.current = ((prevSmoothed + delta) % 360 + 360) % 360;
+        }
+      }
+      rotation = smoothedHeadingRef.current!;
+    } else {
+      rotation = smoothedHeadingRef.current ?? prev?.heading ?? heading ?? 0;
+    }
+
 
     // Track interval between real fixes (clamped 1500–6000ms) for self-tuning smoothing
     if (lastFixTsRef.current != null) {
