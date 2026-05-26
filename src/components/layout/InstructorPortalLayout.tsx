@@ -685,7 +685,10 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
   const showBackButton = !isHomeRoot;
   const firstName = instructor?.name?.split(" ")[0] || "Instructor";
   const headerLabel = firstName;
-  const mobilePageTitle = sidebarLinks.find(l => l.href === location.pathname)?.label || "Dashboard";
+  const trackingPaths = ["/instructor/tracking", "/instructor/live", "/instructor/traccar"];
+  const mobilePageTitle = trackingPaths.some(p => location.pathname.startsWith(p))
+    ? "Track"
+    : sidebarLinks.find(l => l.href === location.pathname)?.label || "Dashboard";
 
 
   // Mobile Layout
