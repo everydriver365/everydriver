@@ -1134,6 +1134,7 @@ export function SatNavLiveMap({
     return () => {
       if (animRef.current != null) cancelAnimationFrame(animRef.current);
       animRef.current = null;
+      currentRenderRef.current = null;
     };
   }, [ready, getArrowIcon]);
 
