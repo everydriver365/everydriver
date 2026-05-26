@@ -1,23 +1,26 @@
-## Why earlier edits didn't fix it
+## Why the car still shows as a small circle
 
-You're on `/instructor/tracking?fullscreen=true` with an active session, so the page renders **`src/components/instructor/tracking/SatNavLiveMap.tsx`** (Google Maps). Previous edits in this thread touched:
+Google Maps loads marker icon URLs in a sandboxed image context that **blocks external `<image href="...">` references inside a data‑URI SVG**. The previous attempt embedded the imported `tracking-car.png` URL via `<image href>` inside the SVG data URI — Maps resolved the SVG as empty and fell back to its default dot. That's the "small circle" on screen.
 
-- `src/components/instructor/LiveTrackingMap.tsx` (Leaflet) — not mounted on this route
-- `src/components/instructor/GoogleLiveTrackingMap.tsx` — not imported anywhere
+## Fix
 
-That's why nothing changed visually. The car marker on the screen you're looking at is defined inside `SatNavLiveMap.tsx` at `getArrowIcon` (lines ~398–410) as a small dark-navy vector path — easy to miss against map tiles.
+Single file: `src/components/instructor/tracking/SatNavLiveMap.tsx`.
 
-## Fix — only edit the file that's actually rendered
+1. Rewrite `getArrowIcon` to return a `google.maps.Icon` whose `url` is a data‑URI SVG containing a **pure inline car silhouette** (no `<image href>`, no external asset). Rotation stays handled by `<g transform="rotate(${heading} 28 28)">` so per‑frame heading updates keep working with classic `google.maps.Marker` (no `mapId` / AdvancedMarker required).
+2. Car design, top‑down, 56×56 viewport, pointing north at rotation 0:
+   - Body: rounded rect, fill `#1C2A4A`, white stroke 1px for contrast on satellite tiles.
+   - Roof panel: lighter rounded rect, fill `#2E4373`.
+   - Windshield wedge: `#A8C5E8` polygon at the front.
+   - Two wing‑mirror nubs and four wheel dots in `#0B1426`.
+   - Active opacity 1.0, inactive 0.55 (unchanged behaviour).
+   - `scaledSize: 56×56`, `anchor: (28, 28)` (unchanged).
+3. Remove the now-unused `import trackingCarUrl from "@/assets/tracking-car.png"`. The PNG file stays on disk but is no longer referenced.
 
-**`src/components/instructor/tracking/SatNavLiveMap.tsx`** (no other files touched):
-
-1. Generate a top-down car PNG asset (transparent background, navy hatchback, pointing north) → `src/assets/tracking-car.png` via image generation, and import it as an ES6 module.
-2. Replace the `getArrowIcon` body so it returns a `google.maps.Icon` built from a **rotated inline SVG data URI** that embeds the imported PNG via `<image href=…>` and a `<g transform="rotate(${heading} 24 24)">`. This keeps smooth per-frame rotation working with classic `google.maps.Marker` (no `AdvancedMarkerElement` / `mapId` needed).
-3. Size: 48×48 px, anchored at centre (24,24). Active opacity 1.0, inactive 0.55 — preserving the existing active/inactive visual.
-4. Leave everything else untouched: marker creation, shadow halo, tween/animation loop, first-fix seeding, camera/zoom logic, polyline trail, the fullscreen routing in `InstructorLiveSession.tsx`, and the standard tracking layout fixes from earlier.
+Everything else is untouched: shadow halo, marker creation, tween/animation loop, first‑fix seeding, camera / zoom logic, polyline trail, fullscreen routing, and all call sites of `getArrowIcon`.
 
 ## Out of scope
 
-- `LiveTrackingMap.tsx`, `GoogleLiveTrackingMap.tsx`, `MiniLiveMap` — not changed
-- No animation, camera, or data-flow changes
-- No mobile layout changes elsewhere
+- `LiveTrackingMap.tsx`, `GoogleLiveTrackingMap.tsx`, `MiniLiveMap` — not changed.
+- `InstructorLiveSession.tsx` layout — not changed.
+- No mobile layout changes elsewhere.
+- No animation, camera, or data‑flow changes.
