@@ -400,7 +400,7 @@ export function SatNavLiveMap({
   const getArrowIcon = useCallback((rotation: number, active: boolean): google.maps.Icon => {
     const size = 56;
     const half = size / 2;
-    const opacity = active ? 1 : 0.55;
+    const opacity = active ? 0.7 : 0.4;
     // Car points "north" (up) at rotation 0. Coordinates in a 56x56 viewbox.
     const carShape =
       // body
