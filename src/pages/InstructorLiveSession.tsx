@@ -306,6 +306,15 @@ export default function InstructorLiveSession() {
   const location = useLocation();
   const isFullscreenMode = new URLSearchParams(location.search).get("fullscreen") === "true";
 
+  // Clear stale ?fullscreen=true if no session is active (e.g. after a session
+  // ended without the param being cleared). Otherwise the standard layout
+  // renders with chrome and the Start CTA sits below the fold.
+  useEffect(() => {
+    if (isFullscreenMode && !isSessionActive) {
+      navigate("/instructor/tracking", { replace: true });
+    }
+  }, [isFullscreenMode, isSessionActive, navigate]);
+
   const buildDeviceSnapshot = useCallback((gpsDevice: GPSDevice) => {
     return [
       gpsDevice.last_seen_at ?? "",
@@ -1588,7 +1597,7 @@ export default function InstructorLiveSession() {
                 )}
               </div>
 
-              <div style={{ height: 14 }} />
+              <div style={{ height: 8 }} />
 
               {/* 2. MAP — unchanged */}
               <div style={{
@@ -1596,7 +1605,7 @@ export default function InstructorLiveSession() {
                 marginBottom: 14,
                 border: "0.5px solid rgba(26,82,160,0.08)",
               }}>
-                <div style={{ height: "28vh", minHeight: 180, maxHeight: 260 }}>
+                <div style={{ height: "22vh", minHeight: 140, maxHeight: 220 }}>
                   <MiniLiveMap
                     latitude={mapLatitude}
                     longitude={mapLongitude}
