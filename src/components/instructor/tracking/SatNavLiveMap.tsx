@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNowStrict } from "date-fns";
 import { fetchGoogleMapsKey, loadGoogleMaps, callSnapToRoad } from "@/lib/googleMapsLoader";
 import { supabase } from "@/integrations/supabase/client";
+import trackingCarUrl from "@/assets/tracking-car.png";
 
 interface SatNavLiveMapProps {
   latitude: number | null;
