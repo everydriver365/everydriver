@@ -793,6 +793,7 @@ export function SatNavLiveMap({
           icon: getArrowIcon(screenHeading, isActive),
           zIndex: 999,
         });
+        attachMarkerInfoWindow(map);
       } else {
         markerRef.current.setPosition({ lat: latitude, lng: longitude });
         markerRef.current.setIcon(getArrowIcon(screenHeading, isActive));
