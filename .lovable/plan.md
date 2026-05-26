@@ -1,31 +1,23 @@
-## Problem
+## Why earlier edits didn't fix it
 
-You're on `/instructor/tracking?fullscreen=true` but no tracking session is currently active. The fullscreen branch in `InstructorLiveSession.tsx` (line 1378) only renders when **both** `isSessionActive` AND `isFullscreenMode` are true. With session inactive, the code falls through to the standard layout (line 1476) — which wraps everything in `InstructorPortalLayout` (top header + bottom nav) and stacks:
+You're on `/instructor/tracking?fullscreen=true` with an active session, so the page renders **`src/components/instructor/tracking/SatNavLiveMap.tsx`** (Google Maps). Previous edits in this thread touched:
 
-1. Header (~50px)
-2. Mini map (28vh, min 180px)
-3. Mode selector (3 rows)
-4. Tracker + Pupil tile
-5. "Start tracking" / "Start lesson" CTA
+- `src/components/instructor/LiveTrackingMap.tsx` (Leaflet) — not mounted on this route
+- `src/components/instructor/GoogleLiveTrackingMap.tsx` — not imported anywhere
 
-On a 390×584 viewport that CTA sits well below the fold, so it looks like "the page is too big and there's no track button". The `?fullscreen=true` param is a leftover from a previous session that ended without being cleared.
+That's why nothing changed visually. The car marker on the screen you're looking at is defined inside `SatNavLiveMap.tsx` at `getArrowIcon` (lines ~398–410) as a small dark-navy vector path — easy to miss against map tiles.
 
-## Fix
+## Fix — only edit the file that's actually rendered
 
-**`src/pages/InstructorLiveSession.tsx`** — two small changes, no business logic touched:
+**`src/components/instructor/tracking/SatNavLiveMap.tsx`** (no other files touched):
 
-1. **Clear stale fullscreen param.** Add a `useEffect` that, when `isFullscreenMode && !isSessionActive`, calls `navigate("/instructor/tracking", { replace: true })` so the URL no longer claims fullscreen mode once the session has ended.
-
-2. **Make the Start CTA reachable above the fold on short viewports.** In the standard-layout block (around lines 1593–1610), reduce the mini-map's height clamp from `28vh / min 180 / max 260` to roughly `22vh / min 140 / max 220`, and tighten the spacer at line 1591 from `height: 14` to `height: 8`. This brings the CTA visible on a 584px viewport without affecting larger screens.
-
-No changes to:
-- the fullscreen active-session view
-- session start/stop logic, providers, or data flow
-- `InstructorPortalLayout` chrome
-- mobile vs desktop branching anywhere else
+1. Generate a top-down car PNG asset (transparent background, navy hatchback, pointing north) → `src/assets/tracking-car.png` via image generation, and import it as an ES6 module.
+2. Replace the `getArrowIcon` body so it returns a `google.maps.Icon` built from a **rotated inline SVG data URI** that embeds the imported PNG via `<image href=…>` and a `<g transform="rotate(${heading} 24 24)">`. This keeps smooth per-frame rotation working with classic `google.maps.Marker` (no `AdvancedMarkerElement` / `mapId` needed).
+3. Size: 48×48 px, anchored at centre (24,24). Active opacity 1.0, inactive 0.55 — preserving the existing active/inactive visual.
+4. Leave everything else untouched: marker creation, shadow halo, tween/animation loop, first-fix seeding, camera/zoom logic, polyline trail, the fullscreen routing in `InstructorLiveSession.tsx`, and the standard tracking layout fixes from earlier.
 
 ## Out of scope
 
-- Redesigning the standard tracking layout
-- Any change to `LiveTrackingMap.tsx` / car icon work
-- Routing or auth changes
+- `LiveTrackingMap.tsx`, `GoogleLiveTrackingMap.tsx`, `MiniLiveMap` — not changed
+- No animation, camera, or data-flow changes
+- No mobile layout changes elsewhere

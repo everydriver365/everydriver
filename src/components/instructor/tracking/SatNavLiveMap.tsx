@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNowStrict } from "date-fns";
 import { fetchGoogleMapsKey, loadGoogleMaps, callSnapToRoad } from "@/lib/googleMapsLoader";
 import { supabase } from "@/integrations/supabase/client";
+import trackingCarUrl from "@/assets/tracking-car.png";
 
 interface SatNavLiveMapProps {
   latitude: number | null;
@@ -392,22 +393,26 @@ export function SatNavLiveMap({
     return () => { cancelled = true; };
   }, [ready, latitude, longitude, upstreamRoadName, fallbackRoadName]);
 
-  // Top-down car silhouette (hatchback). Path is centred on (0,0) and points
-  // north (negative-Y is forward), so Google Maps' `rotation` rotates it
-  // around the car's centre with no offset jitter.
-  const getArrowIcon = useCallback((rotation: number, active: boolean): google.maps.Symbol => ({
-    path:
-      "M -7,-15 C -7,-17 -5,-18 -3,-18 L 3,-18 C 5,-18 7,-17 7,-15 " +
-      "L 8,-6 L 8,12 L 7,16 C 7,17 6,18 4,18 L -4,18 C -6,18 -7,17 -7,16 " +
-      "L -8,12 L -8,-6 Z",
-    fillColor: active ? "#1C2A4A" : "#8E8E93",
-    fillOpacity: 1,
-    strokeColor: "#FFFFFF",
-    strokeWeight: 1.4,
-    scale: active ? 1.35 : 1.1,
-    rotation,
-    anchor: new google.maps.Point(0, 0),
-  }), []);
+  // Top-down car PNG marker. We embed the PNG inside an inline SVG so we can
+  // rotate it around its centre via `<g transform="rotate(...)">` — classic
+  // google.maps.Marker icons don't support rotation otherwise (without
+  // AdvancedMarkerElement / mapId). The PNG is imported as a Vite asset URL.
+  const getArrowIcon = useCallback((rotation: number, active: boolean): google.maps.Icon => {
+    const size = 56;
+    const half = size / 2;
+    const opacity = active ? 1 : 0.55;
+    const svg =
+      `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">` +
+      `<g transform="rotate(${rotation} ${half} ${half})">` +
+      `<image href="${trackingCarUrl}" x="0" y="0" width="${size}" height="${size}" opacity="${opacity}" preserveAspectRatio="xMidYMid meet"/>` +
+      `</g></svg>`;
+    return {
+      url: `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`,
+      scaledSize: new google.maps.Size(size, size),
+      anchor: new google.maps.Point(half, half),
+    };
+  }, []);
+
 
   // Accuracy halo kept as a soft disc under the car for visibility on
   // satellite/dark map styles. Tint matches the car body.
