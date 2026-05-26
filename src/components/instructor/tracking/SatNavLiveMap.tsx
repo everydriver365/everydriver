@@ -117,6 +117,11 @@ export function SatNavLiveMap({
   const targetPosRef = useRef<{ lat: number; lng: number; heading: number; t: number } | null>(null);
   const fixGapsRef = useRef<number[]>([]);
   const lastFixTsRef = useRef<number | null>(null);
+  // Heading smoothing — circular-mean buffer of recent raw headings + last
+  // emitted smoothed heading. Reduces marker/camera jitter from noisy GPS
+  // bearings without lagging real turns.
+  const headingBufferRef = useRef<number[]>([]);
+  const smoothedHeadingRef = useRef<number | null>(null);
   const isActiveRef = useRef<boolean>(isActive);
   const fullscreenRef = useRef<boolean>(fullscreen);
   isActiveRef.current = isActive;
