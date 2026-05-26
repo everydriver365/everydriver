@@ -1548,61 +1548,10 @@ export default function InstructorLiveSession() {
                 </div>
               )}
 
-              {/* 1. HEADER */}
-              <div style={{
-                background: "#FFF",
-                margin: "0 -16px 0",
-                padding: "10px 16px 12px",
-                borderBottom: "0.5px solid #F0F3F8",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}>
-                <div>
-                  <div style={{ fontSize: 22, fontWeight: 700, color: "#1A1A1A", letterSpacing: -0.4 }}>
-                    Track
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 2 }}>
-                    <span style={{ width: 6, height: 6, borderRadius: 3, background: isConnected ? "#34C759" : "#C7C7CC" }} />
-                    <span style={{ fontSize: 10, color: "#8E8E93", fontWeight: 500 }}>
-                      {isConnected
-                        ? `GPS connected${isPhoneProvider ? " · Phone" : device?.device_name ? ` · ${device.device_name}` : ""}`
-                        : isPhoneProvider ? "Phone GPS ready" : "GPS not connected"}
-                    </span>
-                  </div>
-                </div>
-                {isConnected ? (
-                  <div style={{
-                    background: "#E8F8ED", borderRadius: 20,
-                    padding: "4px 10px",
-                    display: "inline-flex", alignItems: "center", gap: 4,
-                  }}>
-                    <span style={{ width: 5, height: 5, borderRadius: 3, background: "#34C759" }} />
-                    <span style={{ fontSize: 10, fontWeight: 700, color: "#1A7A3C" }}>Live</span>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={manualReconnect}
-                    style={{
-                      background: "transparent", border: "0.5px solid #E5E5EA", borderRadius: 8,
-                      padding: "6px 10px", fontSize: 12, fontWeight: 500, color: "#2B7BC8",
-                      cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 4,
-                      fontFamily: FONT_STACK,
-                    }}
-                  >
-                    <RefreshCw size={12} strokeWidth={2} />
-                    Retry
-                  </button>
-                )}
-              </div>
-
-              <div style={{ height: 8 }} />
-
-              {/* 2. MAP — unchanged */}
+              {/* 1. MAP */}
               <div style={{
                 borderRadius: 16, overflow: "hidden",
-                marginBottom: 14,
+                marginBottom: 10,
                 border: "0.5px solid rgba(26,82,160,0.08)",
               }}>
                 <div style={{ height: "22vh", minHeight: 140, maxHeight: 220 }}>
@@ -1617,6 +1566,58 @@ export default function InstructorLiveSession() {
                   />
                 </div>
               </div>
+
+              {/* GPS status + Retry — sits under the map */}
+              <div style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 8,
+                marginBottom: 14,
+                padding: "0 2px",
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0 }}>
+                  <span style={{
+                    width: 6, height: 6, borderRadius: 3,
+                    background: isConnected ? "#34C759" : "#C7C7CC",
+                    flexShrink: 0,
+                  }} />
+                  <span style={{
+                    fontSize: 11, color: "#8E8E93", fontWeight: 500,
+                    overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                  }}>
+                    {isConnected
+                      ? `GPS connected${isPhoneProvider ? " · Phone" : device?.device_name ? ` · ${device.device_name}` : ""}`
+                      : isPhoneProvider ? "Phone GPS ready" : "GPS not connected"}
+                  </span>
+                </div>
+                {isConnected ? (
+                  <div style={{
+                    background: "#E8F8ED", borderRadius: 20,
+                    padding: "4px 10px",
+                    display: "inline-flex", alignItems: "center", gap: 4,
+                    flexShrink: 0,
+                  }}>
+                    <span style={{ width: 5, height: 5, borderRadius: 3, background: "#34C759" }} />
+                    <span style={{ fontSize: 10, fontWeight: 700, color: "#1A7A3C" }}>Live</span>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={manualReconnect}
+                    style={{
+                      background: "transparent", border: "0.5px solid #E5E5EA", borderRadius: 8,
+                      padding: "6px 10px", fontSize: 12, fontWeight: 500, color: "#2B7BC8",
+                      cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 4,
+                      fontFamily: FONT_STACK, flexShrink: 0,
+                    }}
+                  >
+                    <RefreshCw size={12} strokeWidth={2} />
+                    Retry
+                  </button>
+                )}
+              </div>
+
 
               {/* 3. MODE selector */}
               <SectionLabel label="Mode" />
