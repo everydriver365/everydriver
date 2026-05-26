@@ -13,9 +13,14 @@ interface MiniLiveMapProps {
   isActive: boolean;
   /** If provided, loads existing GPS trail from this session */
   sessionId?: string | null;
+  /** Which source feeds this map (affects empty-state copy) */
+  sourceLabel?: "phone" | "radius";
+  /** What the user must do for a fix to start arriving */
+  needsAction?: "permission" | "confirm-start" | null;
 }
 
-export function MiniLiveMap({ latitude, longitude, heading, lastSeenAt, isActive, sessionId }: MiniLiveMapProps) {
+export function MiniLiveMap({ latitude, longitude, heading, lastSeenAt, isActive, sessionId, needsAction }: MiniLiveMapProps) {
+
   const mapDivRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<google.maps.Map | null>(null);
   const markerRef = useRef<google.maps.Marker | null>(null);
