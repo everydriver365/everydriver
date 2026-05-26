@@ -420,36 +420,19 @@ export function SatNavLiveMap({
     return () => { cancelled = true; };
   }, [ready, latitude, longitude, upstreamRoadName, fallbackRoadName]);
 
-  // Top-down car silhouette as a pure inline SVG (no external image href —
-  // Google Maps' marker image sandbox blocks those, which caused the marker
-  // to render as a default dot). Rotated about its centre so per-frame
-  // heading updates work with classic google.maps.Marker (no mapId required).
+  // Blue navigation arrow marker (points "north" at rotation 0).
+  // Inline SVG so Google Maps marker sandbox doesn't block it; rotated about
+  // its centre so per-frame heading updates work with classic google.maps.Marker.
   const getArrowIcon = useCallback((rotation: number, active: boolean): google.maps.Icon => {
     const size = 56;
     const half = size / 2;
-    const opacity = active ? 0.7 : 0.4;
-    // Car points "north" (up) at rotation 0. Coordinates in a 56x56 viewbox.
-    const carShape =
-      // body
-      `<rect x="16" y="8" width="24" height="40" rx="7" ry="7" fill="#D32F2F" stroke="#ffffff" stroke-width="1.25"/>` +
-      // roof panel
-      `<rect x="19" y="18" width="18" height="22" rx="4" ry="4" fill="#8B1A1A"/>` +
-      // windshield (front, top)
-      `<polygon points="20,18 36,18 33.5,12 22.5,12" fill="#A8C5E8"/>` +
-      // rear window
-      `<polygon points="20,40 36,40 33.5,45 22.5,45" fill="#A8C5E8" opacity="0.7"/>` +
-      // wing mirrors
-      `<rect x="13.5" y="20" width="3.5" height="3" rx="1" fill="#0B1426"/>` +
-      `<rect x="39" y="20" width="3.5" height="3" rx="1" fill="#0B1426"/>` +
-      // wheels
-      `<rect x="14.5" y="14" width="2.5" height="6" rx="1" fill="#0B1426"/>` +
-      `<rect x="39" y="14" width="2.5" height="6" rx="1" fill="#0B1426"/>` +
-      `<rect x="14.5" y="36" width="2.5" height="6" rx="1" fill="#0B1426"/>` +
-      `<rect x="39" y="36" width="2.5" height="6" rx="1" fill="#0B1426"/>`;
+    const opacity = active ? 1 : 0.55;
+    const arrowShape =
+      `<path d="M28 6 L46 46 L28 38 L10 46 Z" fill="#2B7BC8" stroke="#ffffff" stroke-width="2" stroke-linejoin="round"/>`;
     const svg =
       `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">` +
       `<g transform="rotate(${rotation} ${half} ${half})" opacity="${opacity}">` +
-      carShape +
+      arrowShape +
       `</g></svg>`;
     return {
       url: `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`,
@@ -457,6 +440,7 @@ export function SatNavLiveMap({
       anchor: new google.maps.Point(half, half),
     };
   }, []);
+
 
 
   // Accuracy halo kept as a soft disc under the car for visibility on

@@ -1,15 +1,18 @@
-## Add temporary logging to reveal service account email
+## Replace car icon with blue arrow on Instructor Live Track
 
-Add a one-line `console.log` to the Google Calendar JWT signing path in the relevant edge function (e.g. `process-calendar-queue` or the shared JWT helper) that prints `GOOGLE_SERVICE_ACCOUNT_EMAIL` to the function logs.
+The car silhouette shown on `/instructor/live` is rendered as an inline SVG marker inside `SatNavLiveMap.tsx` (the `getArrowIcon` callback, lines ~423–459). Despite the function name, it currently draws a red top-down car. Replace its SVG body with a blue navigation chevron that rotates with heading.
 
-### Steps
-1. Locate the edge function that reads `GOOGLE_SERVICE_ACCOUNT_EMAIL` (likely `process-calendar-queue` or a shared `_shared/google-jwt.ts`).
-2. Add `console.log("[debug] GOOGLE_SERVICE_ACCOUNT_EMAIL:", Deno.env.get("GOOGLE_SERVICE_ACCOUNT_EMAIL"))` near the top of the JWT build step.
-3. Trigger the queue processor once.
-4. Read edge function logs to retrieve the email value.
-5. Share it back so you can confirm the matching service account in Google Cloud Console and regenerate the correct private key.
-6. Remove the log line after the email is captured.
+### Change
+In `src/components/instructor/tracking/SatNavLiveMap.tsx`, swap the multi-rect `carShape` for a single chevron path:
 
-### Notes
-- The email is not a sensitive secret (it ends in `iam.gserviceaccount.com` and is safe to view in logs).
-- Private key is never logged.
+```
+<path d="M28 6 L46 46 L28 38 L10 46 Z"
+      fill="#2B7BC8" stroke="#ffffff"
+      stroke-width="2" stroke-linejoin="round"/>
+```
+
+- Keep the 56×56 viewbox, rotation transform, and anchor so heading rotation and the accuracy halo continue to work unchanged.
+- Bump opacity to `active ? 1 : 0.55` so the arrow reads clearly (the car was deliberately faded).
+- Uses the mobile instructor blue `#2B7BC8` (Core memory) with a white outline for contrast on light/dark/satellite tiles.
+
+No other files change; the shadow disc, info window, polylines and recenter logic all stay as-is.
