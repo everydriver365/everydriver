@@ -128,6 +128,10 @@ export function SatNavLiveMap({
   const animRef = useRef<number | null>(null);
   const fromPosRef = useRef<{ lat: number; lng: number; heading: number; t: number } | null>(null);
   const targetPosRef = useRef<{ lat: number; lng: number; heading: number; t: number } | null>(null);
+  // Last rendered interpolated position — used so a new fix arriving mid-tween
+  // starts its tween from where the marker visually is, not from the previous
+  // tween's destination (which would cause a visible forward jump).
+  const currentRenderRef = useRef<{ lat: number; lng: number; heading: number } | null>(null);
   const fixGapsRef = useRef<number[]>([]);
   const lastFixTsRef = useRef<number | null>(null);
   // Heading smoothing — circular-mean buffer of recent raw headings + last

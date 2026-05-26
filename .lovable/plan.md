@@ -1,37 +1,54 @@
-## Fallback orientation when `last_heading` is null
+## Fix mid-tween jump in car-marker interpolation
 
-### Problem
-When `heading` from the device is `null`/undefined (some GPS sources, app backgrounded, or first fix after reacquisition), the current code falls back to `prev?.heading ?? 0` — meaning the marker either freezes at its old angle or points due north until a real heading arrives.
+### Current state
+`SatNavLiveMap` already has continuous interpolation: `fromPosRef` → `targetPosRef` tweened in a `requestAnimationFrame` loop with adaptive `tweenMs` (250–1200ms), `easeInOut`, and `lerpAngle`.
 
-### Approach
-Derive a bearing from the **movement vector** between the previous accepted fix and the new fix whenever:
-- `heading` is null/non-finite, AND
-- the vehicle is moving fast enough (`movingFastEnough`), AND
-- the distance moved is large enough to give a reliable bearing (≥5 m — sub-jitter)
+### Real bug
+When a new fix arrives **before the previous tween finishes** (e.g. tween was 1200ms, next fix lands at 800ms), `applyFix` sets:
 
-Feed that derived bearing through the **same smoothing pipeline** (buffer → circular mean → dead-zone → max-step clamp) so the marker behaves identically whether the bearing came from the device or was computed locally.
+```ts
+const fromBase = targetPosRef.current; // ← previous DESTINATION, not current marker pos
+fromPosRef.current = { ...fromBase, t: now };
+targetPosRef.current = { lat, lng, heading, t: now };
+```
+
+The marker is currently rendered ~⅔ of the way along the previous segment, but the new tween starts from the previous *destination*. Next frame, the marker visibly **jumps forward** to that destination before tweening to the new fix. This is exactly the "jumping between updates" the user is reporting.
+
+### Fix — start each tween from the marker's actual current position
+
+Capture the marker's live animated position (and current interpolated heading) at the moment a new fix arrives, and use that as the new `fromPos`. This gives a seamless C0-continuous path.
 
 ### Changes (single file: `src/components/instructor/tracking/SatNavLiveMap.tsx`)
 
-1. **Add helper** (module-scope, near `headingToCardinal`):
+1. **New ref** alongside `fromPosRef`/`targetPosRef`:
    ```ts
-   function bearingBetween(lat1, lng1, lat2, lng2): number
+   const currentRenderRef = useRef<{ lat: number; lng: number; heading: number } | null>(null);
    ```
-   Standard forward-azimuth formula, returns 0–360°.
+   The rAF `tick` writes the interpolated `{lat, lng, hd}` it just rendered into this ref every frame.
 
-2. **Update the heading-smoothing block** (~lines 878–919):
-   - Compute `effectiveHeading`:
-     - If `heading` is finite → use it.
-     - Else if `prev` exists, `movingFastEnough`, and `metresFromPrev >= 5` → `bearingBetween(prev.lat, prev.lng, latitude, longitude)`.
-     - Else → `null` (skip sampling this fix).
-   - Replace the `typeof heading === "number" && Number.isFinite(heading)` guard with a check on `effectiveHeading != null`.
-   - Push `effectiveHeading` into `headingBufferRef` — smoothing/dead-zone/clamp logic stays unchanged.
+2. **In `applyFix` (~line 1003)**, replace `fromBase = targetPosRef.current ?? marker.getPosition()` with:
+   ```ts
+   const fromBase = currentRenderRef.current
+     ?? targetPosRef.current
+     ?? (markerRef.current?.getPosition() ? { lat: ..., lng: ..., heading: rotation } : null);
+   ```
+   So the tween always starts from where the marker visually is right now.
 
-3. **Stationary fallback unchanged** — if not moving and no smoothed value yet, keep `prev?.heading ?? 0`.
+3. **Tween duration recalc**: when starting mid-tween, the human-perceived speed shouldn't double. Keep the existing adaptive `tweenMs` (based on `gapMs * 0.8`) — that's already correct.
+
+4. **In `tick` (~line 1066-1068)**, after computing `lat`/`lng`/`hd`, write:
+   ```ts
+   currentRenderRef.current = { lat, lng, heading: hd };
+   ```
+
+5. **Snap branches** (small-movement <3 m line 989, jump-rejection >500 m line 1008): also reset `currentRenderRef.current` to the snapped position so the next tween starts cleanly.
+
+6. **Cleanup**: null `currentRenderRef.current` in the rAF effect teardown.
 
 ### Out of scope
-- Other map components, animation loop, polyline, camera follow logic
-- Backend / `last_heading` writes
+- `LiveTrackingMap.tsx`, `GoogleLiveTrackingMap.tsx`, `MiniLiveMap` — separate components, not in scope
+- Heading smoothing (already shipped previous turn)
+- Camera follow, polyline trail, snap-to-roads
 
 ### Result
-Marker arrow points along the actual direction of travel even when the device omits `heading`, with no visible difference in smoothing behaviour between device-supplied and derived bearings.
+The car marker moves fluidly between fixes with no visible jump, even when new fixes arrive faster than the previous tween could complete.
