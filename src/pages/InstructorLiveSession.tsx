@@ -1402,6 +1402,7 @@ export default function InstructorLiveSession() {
             isActive={isConnected}
             sessionId={device.current_session_id}
             ignitionOn={device.last_ignition_status}
+            pupilName={currentPupil?.name ?? null}
             dailyDistanceKm={
               device.last_ecu_odometer_km != null && device.daily_start_ecu_odometer_km != null
                 ? device.last_ecu_odometer_km - device.daily_start_ecu_odometer_km
