@@ -45,6 +45,7 @@ export function SatNavLiveMap({
   const markerRef = useRef<google.maps.Marker | null>(null);
   const markerShadowRef = useRef<google.maps.Marker | null>(null);
   const infoWindowRef = useRef<google.maps.InfoWindow | null>(null);
+  const infoWindowOpenRef = useRef<boolean>(false);
   const polylineRef = useRef<google.maps.Polyline | null>(null);
   const polylineCasingRef = useRef<google.maps.Polyline | null>(null);
   const pathRef = useRef<google.maps.LatLng[]>([]);
