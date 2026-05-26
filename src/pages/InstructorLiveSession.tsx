@@ -306,6 +306,15 @@ export default function InstructorLiveSession() {
   const location = useLocation();
   const isFullscreenMode = new URLSearchParams(location.search).get("fullscreen") === "true";
 
+  // Clear stale ?fullscreen=true if no session is active (e.g. after a session
+  // ended without the param being cleared). Otherwise the standard layout
+  // renders with chrome and the Start CTA sits below the fold.
+  useEffect(() => {
+    if (isFullscreenMode && !isSessionActive) {
+      navigate("/instructor/tracking", { replace: true });
+    }
+  }, [isFullscreenMode, isSessionActive, navigate]);
+
   const buildDeviceSnapshot = useCallback((gpsDevice: GPSDevice) => {
     return [
       gpsDevice.last_seen_at ?? "",
