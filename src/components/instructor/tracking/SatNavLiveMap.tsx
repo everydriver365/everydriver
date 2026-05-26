@@ -890,9 +890,19 @@ export function SatNavLiveMap({
 
     // Heading smoothing — only sample when actually moving; hold previous
     // smoothed value while parked so the map doesn't spin from GPS drift.
+    // Fallback: when the device omits `heading`, derive a bearing from the
+    // movement vector (prev fix → new fix) provided we've moved enough for
+    // it to be reliable (≥5 m, above GPS jitter).
+    let effectiveHeading: number | null = null;
+    if (typeof heading === "number" && Number.isFinite(heading)) {
+      effectiveHeading = ((heading % 360) + 360) % 360;
+    } else if (prev && movingFastEnough && metresFromPrev >= 5) {
+      effectiveHeading = bearingBetween(prev.lat, prev.lng, latitude, longitude);
+    }
+
     let rotation: number;
-    if (movingFastEnough && typeof heading === "number" && Number.isFinite(heading)) {
-      const raw = ((heading % 360) + 360) % 360;
+    if (movingFastEnough && effectiveHeading != null) {
+      const raw = effectiveHeading;
       headingBufferRef.current.push(raw);
       if (headingBufferRef.current.length > 5) headingBufferRef.current.shift();
 
