@@ -1,38 +1,37 @@
-## Smooth heading rotation on SatNav live map
+## Fallback orientation when `last_heading` is null
 
 ### Problem
-`rotation` is set directly from each new `heading` fix (line ~867). Raw GPS bearings jitter ±5–15° per fix, causing the car arrow (and sat-nav camera) to twitch visibly even when driving straight.
+When `heading` from the device is `null`/undefined (some GPS sources, app backgrounded, or first fix after reacquisition), the current code falls back to `prev?.heading ?? 0` — meaning the marker either freezes at its old angle or points due north until a real heading arrives.
 
 ### Approach
-Add a circular-mean smoothing buffer for successive `last_heading` values, plus a dead-zone for tiny changes.
+Derive a bearing from the **movement vector** between the previous accepted fix and the new fix whenever:
+- `heading` is null/non-finite, AND
+- the vehicle is moving fast enough (`movingFastEnough`), AND
+- the distance moved is large enough to give a reliable bearing (≥5 m — sub-jitter)
+
+Feed that derived bearing through the **same smoothing pipeline** (buffer → circular mean → dead-zone → max-step clamp) so the marker behaves identically whether the bearing came from the device or was computed locally.
 
 ### Changes (single file: `src/components/instructor/tracking/SatNavLiveMap.tsx`)
 
-1. **New ref** alongside `fixGapsRef`:
+1. **Add helper** (module-scope, near `headingToCardinal`):
    ```ts
-   const headingBufferRef = useRef<number[]>([]); // last N raw headings
-   const smoothedHeadingRef = useRef<number | null>(null);
+   function bearingBetween(lat1, lng1, lat2, lng2): number
    ```
+   Standard forward-azimuth formula, returns 0–360°.
 
-2. **New helper** (module-scope, near `lerpAngle`):
-   - `circularMean(degrees: number[]): number` — averages sin/cos components so 359°/1° wrap correctly.
+2. **Update the heading-smoothing block** (~lines 878–919):
+   - Compute `effectiveHeading`:
+     - If `heading` is finite → use it.
+     - Else if `prev` exists, `movingFastEnough`, and `metresFromPrev >= 5` → `bearingBetween(prev.lat, prev.lng, latitude, longitude)`.
+     - Else → `null` (skip sampling this fix).
+   - Replace the `typeof heading === "number" && Number.isFinite(heading)` guard with a check on `effectiveHeading != null`.
+   - Push `effectiveHeading` into `headingBufferRef` — smoothing/dead-zone/clamp logic stays unchanged.
 
-3. **Replace the `rotation` calc** (~lines 865–869) with:
-   - Only push raw `heading` into `headingBufferRef` when `movingFastEnough` and heading is finite.
-   - Keep buffer length 5 (≈10s at 2s fixes).
-   - Compute `candidate = circularMean(buffer)` when buffer has ≥2 entries, else use raw heading.
-   - Apply **dead-zone**: if `|angleDelta(candidate, smoothedHeadingRef.current)| < 3°`, keep previous smoothed value (prevents micro-twitch).
-   - Apply **max-step clamp**: limit change to e.g. 25°/fix so a single outlier can't snap the arrow.
-   - When stationary, hold `smoothedHeadingRef.current` (no buffer update, no rotation change) — matches current behaviour.
-   - Reset buffer when `tooFar` outlier is rejected or after a >15s gap.
-   - Use `smoothedHeadingRef.current ?? prev?.heading ?? 0` as the final `rotation` value passed into `fromPosRef` / `targetPosRef` / `getArrowIcon`.
-
-4. **Animation loop unchanged** — existing `lerpAngle(from.heading, target.heading, e)` already tweens between smoothed values, so frame-to-frame motion stays continuous.
+3. **Stationary fallback unchanged** — if not moving and no smoothed value yet, keep `prev?.heading ?? 0`.
 
 ### Out of scope
-- `LiveTrackingMap.tsx`, `GoogleLiveTrackingMap.tsx`, `MiniLiveMap`
-- Camera follow logic, polyline trail, marker icon
-- Backend / data fetching
+- Other map components, animation loop, polyline, camera follow logic
+- Backend / `last_heading` writes
 
-### Expected result
-Marker arrow and sat-nav camera rotate smoothly, ignore sub-3° jitter, and can't snap >25° from a single bad fix — while still responding within ~2 fixes to a real turn.
+### Result
+Marker arrow points along the actual direction of travel even when the device omits `heading`, with no visible difference in smoothing behaviour between device-supplied and derived bearings.
