@@ -1,18 +1,37 @@
-## Replace car icon with blue arrow on Instructor Live Track
+## Problem
 
-The car silhouette shown on `/instructor/live` is rendered as an inline SVG marker inside `SatNavLiveMap.tsx` (the `getArrowIcon` callback, lines ~423–459). Despite the function name, it currently draws a red top-down car. Replace its SVG body with a blue navigation chevron that rotates with heading.
+On `/instructor/tracking` the Mini map shows "Waiting for GPS…". Charlotte (Radius tracker) is reporting fresh fixes every 30s in the DB — the page is just set to **Phone Tracking**, where coordinates come from the browser's own `geolocation` API, not the database. Until the user (a) grants location permission and (b) confirms streaming, `lastPhoneFix` is null and the map has nothing to plot.
 
-### Change
-In `src/components/instructor/tracking/SatNavLiveMap.tsx`, swap the multi-rect `carShape` for a single chevron path:
+Per the live-data-only rule I won't backfill Phone mode with Radius coordinates (that would mislabel the source). Instead, make the empty state tell the user exactly why nothing is showing and what to do.
 
-```
-<path d="M28 6 L46 46 L28 38 L10 46 Z"
-      fill="#2B7BC8" stroke="#ffffff"
-      stroke-width="2" stroke-linejoin="round"/>
-```
+## Changes
 
-- Keep the 56×56 viewbox, rotation transform, and anchor so heading rotation and the accuracy halo continue to work unchanged.
-- Bump opacity to `active ? 1 : 0.55` so the arrow reads clearly (the car was deliberately faded).
-- Uses the mobile instructor blue `#2B7BC8` (Core memory) with a white outline for contrast on light/dark/satellite tiles.
+Scope: **frontend only**, presentation copy + a small conditional. No data fetching, no business logic changes.
 
-No other files change; the shadow disc, info window, polylines and recenter logic all stay as-is.
+1. **`src/components/instructor/tracking/MiniLiveMap.tsx`**
+   - Add two optional props: `sourceLabel?: "phone" | "radius"` and `needsAction?: "permission" | "confirm-start" | null`.
+   - Replace the single "Waiting for GPS…" badge with a 3-state empty UI:
+     - `needsAction === "permission"` → "Location permission needed" + small "Enable location" hint.
+     - `needsAction === "confirm-start"` → "Tap Start tracking to begin phone GPS".
+     - Otherwise → keep current "Waiting for GPS…" badge (Radius case, no fix yet).
+   - No layout change beyond the badge slot.
+
+2. **`src/pages/InstructorLiveSession.tsx`** (the two `<MiniLiveMap …/>` sites at ~L1394 and ~L1559)
+   - Pass `sourceLabel={isPhoneProvider ? "phone" : "radius"}`.
+   - Pass `needsAction` derived from existing state already in this file:
+     - `isPhoneProvider && locationPermissionStatus !== "granted"` → `"permission"`
+     - `isPhoneProvider && locationPermissionStatus === "granted" && !phoneStreamingConfirmed` → `"confirm-start"`
+     - else → `null`.
+
+That's it — no edits to the streamer, the poller, or `SatNavLiveMap`.
+
+## Why not auto-switch to Radius
+
+The user explicitly chose Phone in the provider dropdown (saved on `instructors.preferred_tracking_provider`). Silently swapping providers or borrowing Radius coords would violate the project's live-data-only rule and hide the real state. The fix surfaces the real state clearly.
+
+## Verification
+
+- Open `/instructor/tracking` with provider = Phone, permission not yet granted → badge reads "Location permission needed".
+- Grant permission, don't tap Start → badge reads "Tap Start tracking to begin phone GPS".
+- Tap Start → first `geolocation` fix arrives, badge flips to green "Live", marker draws.
+- Switch provider to Radius (Charlotte) → badge immediately shows "Live" using `device.last_latitude/longitude` from DB.
