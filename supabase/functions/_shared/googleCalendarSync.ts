@@ -142,8 +142,6 @@ export function invalidateGoogleTokenCache(): void {
 export async function getServiceAccountAccessToken(): Promise<string> {
   const email = Deno.env.get("GOOGLE_SERVICE_ACCOUNT_EMAIL");
   const key   = Deno.env.get("GOOGLE_PRIVATE_KEY");
-  console.log("[debug] GOOGLE_SERVICE_ACCOUNT_EMAIL:", email);
-  console.log("[debug] GOOGLE_PRIVATE_KEY length:", key?.length, "starts:", key?.slice(0, 40));
   if (!email || !key) throw new Error("Google service account credentials not configured");
   if (_cached && _cached.expiresAt > Date.now() + 60_000) return _cached.token;
   const jwt   = await generateJWT(email, key);
