@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNowStrict } from "date-fns";
 import { fetchGoogleMapsKey, loadGoogleMaps, callSnapToRoad } from "@/lib/googleMapsLoader";
 import { supabase } from "@/integrations/supabase/client";
-import trackingCarUrl from "@/assets/tracking-car.png";
+
 
 interface SatNavLiveMapProps {
   latitude: number | null;
@@ -393,18 +393,36 @@ export function SatNavLiveMap({
     return () => { cancelled = true; };
   }, [ready, latitude, longitude, upstreamRoadName, fallbackRoadName]);
 
-  // Top-down car PNG marker. We embed the PNG inside an inline SVG so we can
-  // rotate it around its centre via `<g transform="rotate(...)">` — classic
-  // google.maps.Marker icons don't support rotation otherwise (without
-  // AdvancedMarkerElement / mapId). The PNG is imported as a Vite asset URL.
+  // Top-down car silhouette as a pure inline SVG (no external image href —
+  // Google Maps' marker image sandbox blocks those, which caused the marker
+  // to render as a default dot). Rotated about its centre so per-frame
+  // heading updates work with classic google.maps.Marker (no mapId required).
   const getArrowIcon = useCallback((rotation: number, active: boolean): google.maps.Icon => {
     const size = 56;
     const half = size / 2;
     const opacity = active ? 1 : 0.55;
+    // Car points "north" (up) at rotation 0. Coordinates in a 56x56 viewbox.
+    const carShape =
+      // body
+      `<rect x="16" y="8" width="24" height="40" rx="7" ry="7" fill="#1C2A4A" stroke="#ffffff" stroke-width="1.25"/>` +
+      // roof panel
+      `<rect x="19" y="18" width="18" height="22" rx="4" ry="4" fill="#2E4373"/>` +
+      // windshield (front, top)
+      `<polygon points="20,18 36,18 33.5,12 22.5,12" fill="#A8C5E8"/>` +
+      // rear window
+      `<polygon points="20,40 36,40 33.5,45 22.5,45" fill="#A8C5E8" opacity="0.7"/>` +
+      // wing mirrors
+      `<rect x="13.5" y="20" width="3.5" height="3" rx="1" fill="#0B1426"/>` +
+      `<rect x="39" y="20" width="3.5" height="3" rx="1" fill="#0B1426"/>` +
+      // wheels
+      `<rect x="14.5" y="14" width="2.5" height="6" rx="1" fill="#0B1426"/>` +
+      `<rect x="39" y="14" width="2.5" height="6" rx="1" fill="#0B1426"/>` +
+      `<rect x="14.5" y="36" width="2.5" height="6" rx="1" fill="#0B1426"/>` +
+      `<rect x="39" y="36" width="2.5" height="6" rx="1" fill="#0B1426"/>`;
     const svg =
       `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">` +
-      `<g transform="rotate(${rotation} ${half} ${half})">` +
-      `<image href="${trackingCarUrl}" x="0" y="0" width="${size}" height="${size}" opacity="${opacity}" preserveAspectRatio="xMidYMid meet"/>` +
+      `<g transform="rotate(${rotation} ${half} ${half})" opacity="${opacity}">` +
+      carShape +
       `</g></svg>`;
     return {
       url: `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`,
