@@ -200,11 +200,20 @@ export function MiniLiveMap({ latitude, longitude, heading, lastSeenAt, isActive
                 Last seen {lastSeenLabel}
               </Badge>
             ) : null
+          ) : needsAction === "permission" ? (
+            <Badge variant="secondary" className="gap-1">
+              Location permission needed
+            </Badge>
+          ) : needsAction === "confirm-start" ? (
+            <Badge variant="secondary" className="gap-1">
+              Tap Start tracking to begin phone GPS
+            </Badge>
           ) : (
             <Badge variant="secondary" className="gap-1">
               Waiting for GPS…
             </Badge>
           )}
+
         </div>
       </div>
     </div>
