@@ -1100,6 +1100,10 @@ export function SatNavLiveMap({
         marker.setIcon(getArrowIcon(screenHeading, isActiveRef.current));
         markerShadowRef.current?.setPosition({ lat, lng });
 
+        // Record the position we just rendered so the next fix that arrives
+        // mid-tween can start its tween from here (no visible jump).
+        currentRenderRef.current = { lat, lng, heading: hd };
+
         // Sat-nav camera: smoothly tilt + rotate to heading-up. Heavier
         // smoothing than the marker — a jittery world is nausea-inducing.
         if (satNavCam) {
