@@ -1,36 +1,38 @@
-## Goal
+## Smooth heading rotation on SatNav live map
 
-Tapping the car marker on the live Track map opens a small Google Maps InfoWindow showing **pupil name**, **current speed**, and **last update time**. Tapping the map or the InfoWindow's close button dismisses it. Content updates live while open.
+### Problem
+`rotation` is set directly from each new `heading` fix (line ~867). Raw GPS bearings jitter ±5–15° per fix, causing the car arrow (and sat-nav camera) to twitch visibly even when driving straight.
 
-## Changes
+### Approach
+Add a circular-mean smoothing buffer for successive `last_heading` values, plus a dead-zone for tiny changes.
 
-### 1. `src/components/instructor/tracking/SatNavLiveMap.tsx`
+### Changes (single file: `src/components/instructor/tracking/SatNavLiveMap.tsx`)
 
-- Add optional prop `pupilName?: string | null` to `SatNavLiveMapProps`.
-- Add a ref `infoWindowRef = useRef<google.maps.InfoWindow | null>(null)` and a small helper `buildInfoHtml(pupilName, speedMph, lastSeenAt)` that returns sanitised HTML:
-  - Line 1: pupil name (or "Test route" when null).
-  - Line 2: speed in **mph** (convert from `speedKmh` using the existing imperial convention — `Math.round(speedKmh * 0.621371)`); show "—" if `speedKmh` is null.
-  - Line 3: "Updated <relative>" via `formatDistanceToNowStrict(new Date(lastSeenAt), { addSuffix: true })`; "No fix yet" if null.
-  - Inline styles only (Google strips classes): white card, 12px font, 8px padding, navy text `#1F2C4A`, 600 weight for name.
-- In the **map-init** branch (around line 577) and the **first-marker-creation** branch (around line 714) and the **alt branch** (~line 813), after creating `markerRef.current`, attach a `click` listener (track via `mapListenersRef`):
-  ```ts
-  markerRef.current.addListener("click", () => {
-    if (!infoWindowRef.current) infoWindowRef.current = new google.maps.InfoWindow();
-    infoWindowRef.current.setContent(buildInfoHtml(pupilName, speedKmh, lastSeenAt));
-    infoWindowRef.current.open({ map, anchor: markerRef.current! });
-  });
-  ```
-- Live-refresh while open: in a small `useEffect` keyed on `[pupilName, speedKmh, lastSeenAt]`, if `infoWindowRef.current` has a map (`getMap()` truthy), call `setContent(...)` so the values stay current as polls arrive.
-- Cleanup: in the existing teardown (~line 590), call `infoWindowRef.current?.close()` and null it.
+1. **New ref** alongside `fixGapsRef`:
+   ```ts
+   const headingBufferRef = useRef<number[]>([]); // last N raw headings
+   const smoothedHeadingRef = useRef<number | null>(null);
+   ```
 
-### 2. `src/pages/InstructorLiveSession.tsx`
+2. **New helper** (module-scope, near `lerpAngle`):
+   - `circularMean(degrees: number[]): number` — averages sin/cos components so 359°/1° wrap correctly.
 
-- In the fullscreen branch JSX (~line 1393), pass `pupilName={currentPupil?.name ?? null}` to `<SatNavLiveMap ... />`.
-- No other call sites touched (mini map already shows pupil name in its surrounding card).
+3. **Replace the `rotation` calc** (~lines 865–869) with:
+   - Only push raw `heading` into `headingBufferRef` when `movingFastEnough` and heading is finite.
+   - Keep buffer length 5 (≈10s at 2s fixes).
+   - Compute `candidate = circularMean(buffer)` when buffer has ≥2 entries, else use raw heading.
+   - Apply **dead-zone**: if `|angleDelta(candidate, smoothedHeadingRef.current)| < 3°`, keep previous smoothed value (prevents micro-twitch).
+   - Apply **max-step clamp**: limit change to e.g. 25°/fix so a single outlier can't snap the arrow.
+   - When stationary, hold `smoothedHeadingRef.current` (no buffer update, no rotation change) — matches current behaviour.
+   - Reset buffer when `tooFar` outlier is rejected or after a >15s gap.
+   - Use `smoothedHeadingRef.current ?? prev?.heading ?? 0` as the final `rotation` value passed into `fromPosRef` / `targetPosRef` / `getArrowIcon`.
 
-## Out of scope
+4. **Animation loop unchanged** — existing `lerpAngle(from.heading, target.heading, e)` already tweens between smoothed values, so frame-to-frame motion stays continuous.
 
-- `LiveTrackingMap.tsx`, `GoogleLiveTrackingMap.tsx`, `MiniLiveMap` — not changed.
-- Camera/follow logic, animation loop, polyline trail, shadow halo — not changed.
-- No mobile layout changes elsewhere.
-- No backend / RLS / data-shape changes — uses existing props only.
+### Out of scope
+- `LiveTrackingMap.tsx`, `GoogleLiveTrackingMap.tsx`, `MiniLiveMap`
+- Camera follow logic, polyline trail, marker icon
+- Backend / data fetching
+
+### Expected result
+Marker arrow and sat-nav camera rotate smoothly, ignore sub-3° jitter, and can't snap >25° from a single bad fix — while still responding within ~2 fixes to a real turn.
