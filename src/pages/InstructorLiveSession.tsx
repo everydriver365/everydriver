@@ -1597,7 +1597,7 @@ export default function InstructorLiveSession() {
                 )}
               </div>
 
-              <div style={{ height: 14 }} />
+              <div style={{ height: 8 }} />
 
               {/* 2. MAP — unchanged */}
               <div style={{
@@ -1605,7 +1605,7 @@ export default function InstructorLiveSession() {
                 marginBottom: 14,
                 border: "0.5px solid rgba(26,82,160,0.08)",
               }}>
-                <div style={{ height: "28vh", minHeight: 180, maxHeight: 260 }}>
+                <div style={{ height: "22vh", minHeight: 140, maxHeight: 220 }}>
                   <MiniLiveMap
                     latitude={mapLatitude}
                     longitude={mapLongitude}
