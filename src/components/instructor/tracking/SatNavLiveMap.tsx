@@ -652,6 +652,7 @@ export function SatNavLiveMap({
         icon: getArrowIcon(heading ?? 0, isActive),
         zIndex: 999,
       });
+      attachMarkerInfoWindow(map);
     }
 
     // Always-follow mode: drag/zoom gestures no longer break follow. The
@@ -662,6 +663,9 @@ export function SatNavLiveMap({
     return () => {
       mapListenersRef.current.forEach((l) => l.remove());
       mapListenersRef.current = [];
+      infoWindowRef.current?.close();
+      infoWindowRef.current = null;
+      infoWindowOpenRef.current = false;
       markerRef.current?.setMap(null);
       markerRef.current = null;
       markerShadowRef.current?.setMap(null);
