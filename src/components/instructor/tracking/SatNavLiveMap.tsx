@@ -128,6 +128,10 @@ export function SatNavLiveMap({
   const animRef = useRef<number | null>(null);
   const fromPosRef = useRef<{ lat: number; lng: number; heading: number; t: number } | null>(null);
   const targetPosRef = useRef<{ lat: number; lng: number; heading: number; t: number } | null>(null);
+  // Last rendered interpolated position — used so a new fix arriving mid-tween
+  // starts its tween from where the marker visually is, not from the previous
+  // tween's destination (which would cause a visible forward jump).
+  const currentRenderRef = useRef<{ lat: number; lng: number; heading: number } | null>(null);
   const fixGapsRef = useRef<number[]>([]);
   const lastFixTsRef = useRef<number | null>(null);
   // Heading smoothing — circular-mean buffer of recent raw headings + last
@@ -993,17 +997,20 @@ export function SatNavLiveMap({
       const snapped = { lat: latitude, lng: longitude, heading: rotation, t: now };
       fromPosRef.current = snapped;
       targetPosRef.current = snapped;
+      currentRenderRef.current = { lat: latitude, lng: longitude, heading: rotation };
       return;
     }
 
     // ── Jump rejection (>500 m): snap, don't tween ───────────────────────
-    // The "from" point of the next tween must be the *previous animation's
-    // destination* (targetPosRef before this update), not the marker's
-    // current mid-tween position — otherwise the marker ping-pongs.
-    const fromBase = targetPosRef.current ?? (() => {
-      const p = markerRef.current?.getPosition();
-      return p ? { lat: p.lat(), lng: p.lng(), heading: rotation, t: now } : null;
-    })();
+    // For normal moves, start the next tween from the marker's *currently
+    // rendered* interpolated position so we don't snap forward to the
+    // previous destination when a fix lands mid-tween.
+    const fromBase = currentRenderRef.current
+      ?? targetPosRef.current
+      ?? (() => {
+        const p = markerRef.current?.getPosition();
+        return p ? { lat: p.lat(), lng: p.lng(), heading: rotation } : null;
+      })();
 
     if (fromBase && metresFromPrev > 500) {
       // GPS spike or out-of-order row — snap directly, clear tween state
@@ -1013,13 +1020,17 @@ export function SatNavLiveMap({
       const snapped = { lat: latitude, lng: longitude, heading: rotation, t: now };
       fromPosRef.current = snapped;
       targetPosRef.current = snapped;
+      currentRenderRef.current = { lat: latitude, lng: longitude, heading: rotation };
     } else {
-      // Normal tween: from = previous tween destination (or marker fallback)
+      // Normal tween: from = where the marker is rendered right now
       fromPosRef.current = fromBase
-        ? (movingFastEnough ? { ...fromBase, t: now } : { lat: latitude, lng: longitude, heading: rotation, t: now })
+        ? (movingFastEnough
+            ? { lat: fromBase.lat, lng: fromBase.lng, heading: fromBase.heading, t: now }
+            : { lat: latitude, lng: longitude, heading: rotation, t: now })
         : { lat: latitude, lng: longitude, heading: rotation, t: now };
       targetPosRef.current = { lat: latitude, lng: longitude, heading: rotation, t: now };
     }
+
 
     // Append to trail polyline only when moving AND we've travelled ≥3 m from
     // the last accepted fix. This is the single most important filter — it
@@ -1089,6 +1100,10 @@ export function SatNavLiveMap({
         marker.setIcon(getArrowIcon(screenHeading, isActiveRef.current));
         markerShadowRef.current?.setPosition({ lat, lng });
 
+        // Record the position we just rendered so the next fix that arrives
+        // mid-tween can start its tween from here (no visible jump).
+        currentRenderRef.current = { lat, lng, heading: hd };
+
         // Sat-nav camera: smoothly tilt + rotate to heading-up. Heavier
         // smoothing than the marker — a jittery world is nausea-inducing.
         if (satNavCam) {
@@ -1119,6 +1134,7 @@ export function SatNavLiveMap({
     return () => {
       if (animRef.current != null) cancelAnimationFrame(animRef.current);
       animRef.current = null;
+      currentRenderRef.current = null;
     };
   }, [ready, getArrowIcon]);
 
