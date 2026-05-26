@@ -67,6 +67,7 @@ export function CalendarSyncStatusTile({ instructorId }: Props) {
         .select("error, created_at")
         .eq("instructor_id", instructorId)
         .not("error", "is", null)
+        .gte("created_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle(),
@@ -77,7 +78,9 @@ export function CalendarSyncStatusTile({ instructorId }: Props) {
     setPending(pCount ?? 0);
     setFailed(fCount ?? 0);
 
-    // Classify last error: credential issues can't be fixed by retry
+    // Classify last error: credential issues can't be fixed by retry.
+    // Only flag as "broken" if a credential-shaped error fired within the last
+    // 24h — otherwise stale errors keep the tile red long after the key was fixed.
     const errText = (lastErr?.error ?? "") as string;
     const isCredential = /GOOGLE_PRIVATE_KEY|malformed|Failed to decode base64|invalid_grant|unauthorized_client|PEM|service.account|DECODER routines|ERR_OSSL/i.test(errText);
     setCredentialBroken(isCredential && (fCount ?? 0) > 0);
