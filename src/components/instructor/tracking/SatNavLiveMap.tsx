@@ -18,6 +18,8 @@ interface SatNavLiveMapProps {
   sessionId?: string | null;
   ignitionOn?: boolean | null;
   dailyDistanceKm?: number | null;
+  /** Pupil name for the marker InfoWindow. Null when no pupil (test route). */
+  pupilName?: string | null;
   /** When true, fills parent container instead of using fixed height */
   fullscreen?: boolean;
   className?: string;
@@ -35,12 +37,14 @@ function headingToCardinal(heading: number): string {
 export function SatNavLiveMap({
   latitude, longitude, heading, speedKmh, speedLimitKmh, roadName,
   lastSeenAt, isActive, sessionId, ignitionOn, dailyDistanceKm,
+  pupilName = null,
   fullscreen = false, className = "", onResolvedRoadName,
 }: SatNavLiveMapProps) {
   const mapDivRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<google.maps.Map | null>(null);
   const markerRef = useRef<google.maps.Marker | null>(null);
   const markerShadowRef = useRef<google.maps.Marker | null>(null);
+  const infoWindowRef = useRef<google.maps.InfoWindow | null>(null);
   const polylineRef = useRef<google.maps.Polyline | null>(null);
   const polylineCasingRef = useRef<google.maps.Polyline | null>(null);
   const pathRef = useRef<google.maps.LatLng[]>([]);
