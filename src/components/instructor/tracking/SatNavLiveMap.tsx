@@ -893,6 +893,7 @@ export function SatNavLiveMap({
         icon: getArrowIcon(0, isActive),
         zIndex: 999,
       });
+      attachMarkerInfoWindow(map);
     }
 
     // ── Adaptive tween duration ──────────────────────────────────────────
