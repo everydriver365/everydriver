@@ -404,9 +404,9 @@ export function SatNavLiveMap({
     // Car points "north" (up) at rotation 0. Coordinates in a 56x56 viewbox.
     const carShape =
       // body
-      `<rect x="16" y="8" width="24" height="40" rx="7" ry="7" fill="#1C2A4A" stroke="#ffffff" stroke-width="1.25"/>` +
+      `<rect x="16" y="8" width="24" height="40" rx="7" ry="7" fill="#D32F2F" stroke="#ffffff" stroke-width="1.25"/>` +
       // roof panel
-      `<rect x="19" y="18" width="18" height="22" rx="4" ry="4" fill="#2E4373"/>` +
+      `<rect x="19" y="18" width="18" height="22" rx="4" ry="4" fill="#8B1A1A"/>` +
       // windshield (front, top)
       `<polygon points="20,18 36,18 33.5,12 22.5,12" fill="#A8C5E8"/>` +
       // rear window
