@@ -116,6 +116,7 @@ import { RescheduleRequestsCard } from "@/components/instructor/RescheduleReques
 import { PendingBookingsCard } from "@/components/instructor/PendingBookingsCard";
 import { useQuickAccessUnreads } from "@/hooks/useQuickAccessUnreads";
 import { toast } from "sonner";
+import taxDigitalIcon from "@/assets/icons-3d/tax-digital.png";
 
 /* ---------------------------- Design tokens ----------------------------- */
 const T = {
@@ -726,7 +727,7 @@ function UnifiedInfoPanel({
         }}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-          <IconBox Icon={FileText} bg="#fff3e0" color="#d97706" />
+          <img src={taxDigitalIcon} alt="" style={{ width: 36, height: 36, objectFit: "contain", flexShrink: 0 }} />
           {mtd.enrolled && mtdDays != null && (
             <Badge bg="#fff3e0" color="#d97706">{mtdDays} days</Badge>
           )}
