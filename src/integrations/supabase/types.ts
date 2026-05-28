@@ -1793,29 +1793,35 @@ export type Database = {
       calendar_sync_queue: {
         Row: {
           action: string
+          attempt_count: number
           created_at: string
           error: string | null
           id: string
           instructor_id: string
           lesson_id: string
+          next_retry_at: string | null
           processed_at: string | null
         }
         Insert: {
           action: string
+          attempt_count?: number
           created_at?: string
           error?: string | null
           id?: string
           instructor_id: string
           lesson_id: string
+          next_retry_at?: string | null
           processed_at?: string | null
         }
         Update: {
           action?: string
+          attempt_count?: number
           created_at?: string
           error?: string | null
           id?: string
           instructor_id?: string
           lesson_id?: string
+          next_retry_at?: string | null
           processed_at?: string | null
         }
         Relationships: [
