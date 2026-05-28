@@ -186,8 +186,8 @@ export function InstructorCoursesManager({ instructorId }: InstructorCoursesMana
       setLoading(true);
       try {
         const [coursesRes, bespokeRes, templatesRes, instructorRes] = await Promise.all([
-          supabase.from("instructor_courses").select(COURSE_SELECT).eq("instructor_id", instructorId).eq("is_bespoke", false),
-          supabase.from("instructor_courses").select(BESPOKE_SELECT).eq("instructor_id", instructorId).eq("is_bespoke", true).order("created_at"),
+          supabase.from("instructor_courses").select(COURSE_SELECT).eq("instructor_id", instructorId).eq("is_bespoke", false).is("deleted_at", null),
+          supabase.from("instructor_courses").select(BESPOKE_SELECT).eq("instructor_id", instructorId).eq("is_bespoke", true).is("deleted_at", null).order("created_at"),
           supabase
             .from("course_templates")
             .select("id, course_hours, course_name, short_description, default_image_url, is_intensive")
