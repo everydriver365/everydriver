@@ -70,6 +70,7 @@ export const ICON_3D_REGISTRY = {
   lightbulb,
   sparkles,
   lock,
+  swap,
 } as const;
 
 export type Icon3DName = keyof typeof ICON_3D_REGISTRY;
