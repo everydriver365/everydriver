@@ -109,6 +109,7 @@ const Tile: React.FC<TileProps> = ({
   className,
   ariaLabel,
   iconOptional = false,
+  iconBare = false,
   disabled = false,
 }) => {
   const iconPal = ICON_PALETTE[iconColor];
