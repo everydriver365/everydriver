@@ -23,6 +23,7 @@ export default function InstructorAutomations() {
         .from("instructor_automations")
         .select("*")
         .eq("instructor_id", instructor!.id)
+        .is("deleted_at", null)
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data as Automation[];
@@ -42,7 +43,7 @@ export default function InstructorAutomations() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("instructor_automations").delete().eq("id", id);
+      const { error } = await supabase.from("instructor_automations").update({ deleted_at: new Date().toISOString(), is_active: false }).eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {

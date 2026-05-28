@@ -56,6 +56,7 @@ export function LessonPackageManager({ instructorId }: LessonPackageManagerProps
         .from("lesson_packages")
         .select("*")
         .eq("instructor_id", instructorId)
+        .is("deleted_at", null)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -127,7 +128,7 @@ export function LessonPackageManager({ instructorId }: LessonPackageManagerProps
   const handleDelete = async (pkg: LessonPackage) => {
     if (!confirm(`Delete "${pkg.name}"?`)) return;
     try {
-      const { error } = await supabase.from("lesson_packages").delete().eq("id", pkg.id);
+      const { error } = await supabase.from("lesson_packages").update({ deleted_at: new Date().toISOString(), is_active: false }).eq("id", pkg.id);
       if (error) throw error;
       toast.success("Package deleted");
       fetchPackages();

@@ -24,6 +24,7 @@ export function DigitalWaiverManager() {
         .from("digital_waivers")
         .select("*")
         .eq("instructor_id", instructor!.id)
+        .is("deleted_at", null)
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data;
@@ -81,7 +82,7 @@ export function DigitalWaiverManager() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("digital_waivers").delete().eq("id", id);
+      const { error } = await supabase.from("digital_waivers").update({ deleted_at: new Date().toISOString() }).eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {

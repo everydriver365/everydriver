@@ -45,6 +45,7 @@ export function ScheduledReportsSettings({ instructorId }: Props) {
       .from("scheduled_reports")
       .select("*")
       .eq("instructor_id", instructorId)
+      .is("deleted_at", null)
       .order("created_at", { ascending: false });
     setReports((data as ScheduledReport[]) || []);
     setLoading(false);
@@ -69,7 +70,7 @@ export function ScheduledReportsSettings({ instructorId }: Props) {
   };
 
   const deleteReport = async (id: string) => {
-    await supabase.from("scheduled_reports").delete().eq("id", id);
+    await supabase.from("scheduled_reports").update({ deleted_at: new Date().toISOString(), is_active: false }).eq("id", id);
     toast.success("Report deleted");
     fetchReports();
   };
