@@ -1,54 +1,53 @@
 ## Goal
 
-iOS-style left-swipe-to-reveal-Delete on mobile lists, starting with the instructor schedule. All deletes route through the existing **soft-delete** paths (sets `deleted_at` / `status='cancelled'`, triggers Google Calendar cleanup) — no new destructive SQL.
+Replace flat Lucide tile icons with a consistent set of 3D claymorphism PNGs (like the SketchPad / Progress Syllabus / Test Routes / 2D scenarios screenshot) across the instructor mobile app, instructor desktop portal, and pupil portal — wherever tile/menu/empty-state icons appear.
 
 ## Approach
 
-### 1. Build one reusable primitive
+1. **Generate a single cohesive 3D icon set** via `imagegen` (transparent PNGs, 512×512) in one consistent style:
+   - Soft clay/plasticine material, warm studio lighting top-left, soft contact shadow
+   - Muted, friendly palette aligned with our brand (no neon)
+   - Slight isometric tilt, ~5–10% padding so they sit nicely inside rounded tiles
+   - Saved to `src/assets/icons-3d/<name>.png`
+   - Initial batch (~30 icons) covering the most-used concepts. Examples:
+     - Schedule: `calendar`, `clock`, `calendar-plus`
+     - Pupils: `user`, `users`, `graduation-cap`, `baby`
+     - Money: `wallet`, `card`, `coins`, `receipt`, `chart-up`
+     - Vehicle: `car`, `fuel`, `route`, `map-pin`
+     - Comms: `chat`, `phone`, `bell`, `mail`
+     - Teaching: `pencils-cup` (SketchPad), `bar-chart` (Progress), `road` (Routes), `barrier` (Scenarios), `book`, `target`, `trophy`, `medal`, `star`, `shield`
+     - Tools/Admin: `settings`, `tools`, `lightbulb`, `sparkles`, `lock`
 
-Create `src/components/ui/SwipeToReveal.tsx` — a touch-driven row wrapper that mimics iOS Mail:
+2. **Build `<Icon3D name="..." size={44} />` component** at `src/components/Icon3D.tsx`:
+   - Static `name → import` map (tree-shakeable, no dynamic glob)
+   - Falls back to `<Emoji name>` (existing component) if no 3D asset exists for a name yet — guarantees no broken tiles during rollout
+   - Optional `tileBg` prop matching the screenshot's neutral card (no coloured tile behind — the icon carries its own visual weight, sits flush like in the reference)
 
-- Track `pointerdown`/`pointermove`/`pointerup` (works for touch + mouse, ignores vertical scroll via direction lock).
-- Reveal a red **Delete** action panel from the right as the user drags left.
-- Snap points: 0px (closed), -88px (action visible), -100% (full swipe = auto-delete).
-- Spring back if released below ~30% threshold.
-- Tap-outside / scroll closes any open row (only one open at a time, via lightweight context).
-- Accessibility: also expose the action via long-press → ActionAffordance fallback for non-touch and screen readers.
-- Haptic tick on snap (Capacitor `Haptics.impact({ style: Light })` when available, no-op on web).
-- Respect `prefers-reduced-motion`.
+3. **Wire it into the existing icon primitives** so most surfaces upgrade automatically:
+   - `src/components/IconTile.tsx` — accept an optional `icon3d?: string`; when present, render the 3D PNG instead of the Lucide icon, drop the coloured background, keep size slot
+   - `src/components/instructor/EmptyState.tsx` — same: optional `icon3d` prop
+   - Pupil portal `AchievementBadges.tsx` — map `icon_name` ('trophy', 'star', 'medal'...) to 3D set when available
+   - Menu list rows (Teaching Aids screen, Tools, Settings landing): swap the leading Lucide icon for `<Icon3D />`
 
-API:
-```tsx
-<SwipeToReveal
-  onDelete={() => softDeleteLesson(id)}
-  confirmLabel="Cancel lesson?"
-  confirmDescription="The pupil will be notified."
->
-  <LessonRow … />
-</SwipeToReveal>
-```
-The confirm dialog reuses the existing `AlertDialog` from `cancelDialogOpen` flow, so the destructive action still surfaces a confirm — matches iOS where Delete on important items prompts.
+4. **Apply across the apps (incremental, single PR per surface, no behaviour changes)**:
+   - Instructor mobile: dashboard tiles, Teaching Aids, Tools, Settings, Pupils list rows, Schedule empty states
+   - Instructor desktop portal: same primitives → upgrades automatically where `IconTile`/`EmptyState` are used; spot-check any hardcoded Lucide usages
+   - Pupil portal: home tiles, achievements, lesson cards, empty states
 
-### 2. Wire it into the schedule first
+5. **Out of scope (keep flat Lucide)**: inline action icons inside buttons, toolbar/header chrome, table column icons, status pills, anything <20px. 3D PNGs only shine at 32px+.
 
-`src/components/instructor/NewMobileScheduleView.tsx` — wrap each lesson / manual-block / Google-event row in `<SwipeToReveal>`. Reuse the existing cancel handler that already does the soft-delete + Google Calendar sync.
+## Technical notes
 
-### 3. Out of scope until confirmed
+- Storage: PNGs in `src/assets/icons-3d/` (Vite bundles + hashes them). No CDN, no DB lookups, fully offline.
+- File size budget: target <25KB per icon at 512×512 (transparent PNG, optimised). ~30 icons ≈ 750KB total — lazy-import per route to keep initial bundle small if it grows past that.
+- Dark mode: PNGs are colour-baked, so they work as-is on light AND dark cards (the soft clay style reads well on both). No tinting needed.
+- A11y: `<Icon3D>` renders `<img alt={label} />` with sensible default alt from the name.
+- No DB, no edge function, no migration. Pure FE.
 
-The question below decides where else to apply it on this pass.
+## Rollout order
 
-## Technical details
+1. Build component + generate first 8 icons (the ones already shown: pencils-cup, bar-chart, road, barrier + calendar, user, wallet, car). Wire into one screen as proof.
+2. Generate remaining ~22 icons in a follow-up batch.
+3. Sweep instructor mobile → desktop → pupil.
 
-**Files**
-- `src/components/ui/SwipeToReveal.tsx` (new) — pointer logic, motion, single-open context.
-- `src/components/instructor/NewMobileScheduleView.tsx` — wrap rows, no logic change.
-- (Optional follow-ups based on Q below.)
-
-**Constraints respected**
-- Mobile-only behaviour; desktop rendering unchanged (component becomes a passthrough above `md:`).
-- Existing portal radius scale (12px rows, 999px pills) preserved.
-- No new RPC; reuses the soft-delete/cancel pipeline already covered by `mem://features/booking/lesson-soft-delete-pipeline`.
-
-## Clarifying question
-
-Where else should I apply swipe-to-delete in the same pass? (Pupils list, messages, mileage/expenses entries, pinned tiles, notifications, vehicle list, etc.) I'd like a short list rather than "everywhere" so I can confirm each has a clean soft-delete path before wiring it up.
+I'll confirm with you after step 1 before generating the full set.
