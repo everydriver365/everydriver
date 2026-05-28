@@ -75,6 +75,8 @@ export const ICON_3D_REGISTRY = {
   lock,
   swap,
   "tax-doc": taxDoc,
+  "tax-calc": taxCalc,
+  "adi-badge": adiBadge,
 } as const;
 
 export type Icon3DName = keyof typeof ICON_3D_REGISTRY;
