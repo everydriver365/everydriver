@@ -80,9 +80,10 @@ Deno.serve(async (req) => {
           },
         );
 
-        // Reconcile lessons: any scheduled_lesson with google_event_id where the
-        // matching external event is gone → mark cancelled.
+        // Reconcile lessons + manual blocks: any row with a google_event_id
+        // whose matching external event is gone → cancel / delete.
         await reconcileLessons(supabase, conn.instructor_id);
+        await reconcileManualBlocks(supabase, conn.instructor_id);
       } catch (e) {
         console.error("[gcal-webhook] async sync failed:", e);
         void raiseSyncAlert({
