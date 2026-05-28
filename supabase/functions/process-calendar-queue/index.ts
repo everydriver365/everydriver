@@ -35,16 +35,22 @@ Deno.serve(async (req) => {
   );
 
   try {
-    // ── Fetch pending queue items ─────────────────────────────────────────
+    // ── Fetch pending queue items (respect next_retry_at backoff) ─────────
+    const nowIso = new Date().toISOString();
     const { data: items, error: qErr } = await supabase
       .from("calendar_sync_queue")
       .select("*")
       .is("processed_at", null)
+      .or(`next_retry_at.is.null,next_retry_at.lte.${nowIso}`)
       .order("created_at", { ascending: true })
       .limit(50);
 
     if (qErr) throw qErr;
-    if (!items?.length) return json({ success: true, processed: 0 });
+    if (!items?.length) {
+      // Even with nothing due, run the orphan sweep so stranded lessons are rescued.
+      await sweepOrphanLessons(supabase);
+      return json({ success: true, processed: 0 });
+    }
 
     // ── Deduplicate: per lesson_id keep the latest item ───────────────────
     const byLesson = new Map<string, any>();
