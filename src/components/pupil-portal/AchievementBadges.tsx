@@ -75,20 +75,26 @@ export function AchievementBadges({ pupilId, brandColour }: AchievementBadgesPro
       <CardContent>
         <div className="flex flex-wrap gap-3">
           {achievements.map((a) => {
-            const IconComp = iconMap[a.icon_name || 'award'] || Award;
+            const iconKey = a.icon_name || 'award';
+            const IconComp = iconMap[iconKey] || Award;
             const color = typeColorMap[a.achievement_type] || typeColorMap.default;
+            const has3D = hasIcon3D(iconKey);
             return (
               <div
                 key={a.id}
                 className="flex flex-col items-center gap-1 p-2 rounded-lg"
                 style={{ backgroundColor: `${color}15` }}
               >
-                <div
-                  className="h-10 w-10 rounded-full flex items-center justify-center"
-                  style={{ backgroundColor: `${color}25`, color }}
-                >
-                  <IconComp className="h-5 w-5" />
-                </div>
+                {has3D ? (
+                  <Icon3D name={iconKey} size={40} />
+                ) : (
+                  <div
+                    className="h-10 w-10 rounded-full flex items-center justify-center"
+                    style={{ backgroundColor: `${color}25`, color }}
+                  >
+                    <IconComp className="h-5 w-5" />
+                  </div>
+                )}
                 <span className="text-[10px] font-medium text-center max-w-[70px] leading-tight" style={{ color: 'var(--brand-text)' }}>
                   {a.achievement_name}
                 </span>
