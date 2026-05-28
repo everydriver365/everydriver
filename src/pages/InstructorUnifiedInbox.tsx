@@ -874,6 +874,22 @@ export default function InstructorUnifiedInbox() {
     return list.length > 0 && list.every((c) => !!(c as any).muted_at);
   }, [selectedIds, source, conversations, waConversations]);
 
+  const handleSwipeDeleteConversation = async (conversationId: string) => {
+    try {
+      const { error } = await supabase
+        .from("messages")
+        .update({ deleted_at: new Date().toISOString() })
+        .eq("conversation_id", conversationId)
+        .is("deleted_at", null);
+      if (error) throw error;
+      toast.success("Conversation cleared");
+      void fetchConversations();
+    } catch (err) {
+      console.error("Failed to delete conversation:", err);
+      toast.error("Failed to delete conversation");
+    }
+  };
+
   const handleBulkMarkRead = async () => {
     const ids = Array.from(selectedIds);
     if (!ids.length) return;
