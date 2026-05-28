@@ -1,37 +1,47 @@
-## Problem
+# Why deletes from Google Calendar don't remove items from your schedule
 
-On `/instructor/tracking` the Mini map shows "Waiting for GPS…". Charlotte (Radius tracker) is reporting fresh fixes every 30s in the DB — the page is just set to **Phone Tracking**, where coordinates come from the browser's own `geolocation` API, not the database. Until the user (a) grants location permission and (b) confirms streaming, `lastPhoneFix` is null and the map has nothing to plot.
+## Diagnosis
 
-Per the live-data-only rule I won't backfill Phone mode with Radius coordinates (that would mislabel the source). Instead, make the empty state tell the user exactly why nothing is showing and what to do.
+The push channel from Google is healthy (your last sync was minutes ago, channel valid until June 2), so notifications **are** arriving. The bug is in what we do with them.
 
-## Changes
+When Google pings us, `google-calendar-webhook` does two things:
 
-Scope: **frontend only**, presentation copy + a small conditional. No data fetching, no business logic changes.
+1. Refreshes `instructor_calendar_events` (the inbound mirror of your Google calendar) — this DOES correctly remove anything you deleted in Google.
+2. Calls `reconcileLessons(...)` to cancel any **pupil lessons** whose Google event is gone.
 
-1. **`src/components/instructor/tracking/MiniLiveMap.tsx`**
-   - Add two optional props: `sourceLabel?: "phone" | "radius"` and `needsAction?: "permission" | "confirm-start" | null`.
-   - Replace the single "Waiting for GPS…" badge with a 3-state empty UI:
-     - `needsAction === "permission"` → "Location permission needed" + small "Enable location" hint.
-     - `needsAction === "confirm-start"` → "Tap Start tracking to begin phone GPS".
-     - Otherwise → keep current "Waiting for GPS…" badge (Radius case, no fix yet).
-   - No layout change beyond the badge slot.
+Two gaps in step 2 cause your symptom:
 
-2. **`src/pages/InstructorLiveSession.tsx`** (the two `<MiniLiveMap …/>` sites at ~L1394 and ~L1559)
-   - Pass `sourceLabel={isPhoneProvider ? "phone" : "radius"}`.
-   - Pass `needsAction` derived from existing state already in this file:
-     - `isPhoneProvider && locationPermissionStatus !== "granted"` → `"permission"`
-     - `isPhoneProvider && locationPermissionStatus === "granted" && !phoneStreamingConfirmed` → `"confirm-start"`
-     - else → `null`.
+### Gap 1 — Manual blocks (busy time / personal events you added in the app) are never reconciled
 
-That's it — no edits to the streamer, the poller, or `SatNavLiveMap`.
+When you add a "block" in the app, we write a row to `instructor_manual_blocks` AND create a matching Google event. If you then delete the event in Google, nothing tells the app — the row stays and keeps appearing on the mobile schedule forever. There's no inbound handler for manual blocks at all (only the outbound `op === "delete"` path in `syncManualBlock`).
 
-## Why not auto-switch to Radius
+### Gap 2 — `reconcileLessons` only looks at lessons from today onward
 
-The user explicitly chose Phone in the provider dropdown (saved on `instructors.preferred_tracking_provider`). Silently swapping providers or borrowing Radius coords would violate the project's live-data-only rule and hide the real state. The fix surfaces the real state clearly.
+```ts
+.gte("lesson_date", new Date().toISOString().slice(0, 10))
+```
 
-## Verification
+Any past or in-progress lesson deleted in Google stays "scheduled" forever. Combined with timezone edge cases around midnight, even some "today" lessons can be missed.
 
-- Open `/instructor/tracking` with provider = Phone, permission not yet granted → badge reads "Location permission needed".
-- Grant permission, don't tap Start → badge reads "Tap Start tracking to begin phone GPS".
-- Tap Start → first `geolocation` fix arrives, badge flips to green "Live", marker draws.
-- Switch provider to Radius (Charlotte) → badge immediately shows "Live" using `device.last_latitude/longitude` from DB.
+## Fix
+
+Extend the webhook's reconciliation so a Google delete propagates back to **both** sources of schedule items:
+
+1. **Reconcile `instructor_manual_blocks`** in `google-calendar-webhook/index.ts`:
+   - Load all manual blocks for the instructor with a non-null `google_event_id` whose `end_datetime >= now()`.
+   - For any whose `google_event_id` no longer exists in the freshly-refreshed `instructor_calendar_events`, hard-delete the block (manual blocks have no soft-delete column and the schedule reads the row directly).
+   - Invalidate caches via existing realtime publication on `instructor_manual_blocks`.
+
+2. **Widen `reconcileLessons`** in the same file:
+   - Replace the `gte("lesson_date", today)` filter with a window of `lesson_date >= now() - interval '7 days'` so recently-completed and in-progress lessons are also caught.
+   - Keep the existing `status != cancelled` and `deleted_at IS NULL` guards.
+
+3. **Safety net** — add an hourly `pg_cron` job (or extend the existing renew job) that calls `google-calendar-service` with `action: "fetchExternalEvents"` for each active connection and runs the same two reconciliations. This covers the case where Google's push notification is missed (channel rotation, transient 5xx, etc.) so deletes are never stranded for more than an hour.
+
+## Files touched
+
+- `supabase/functions/google-calendar-webhook/index.ts` — add `reconcileManualBlocks(...)`, widen `reconcileLessons(...)` window.
+- `supabase/functions/renew-google-calendar-webhooks/index.ts` — also trigger a reconcile pass per instructor (or new `reconcile-google-calendar` function scheduled hourly).
+- One `cron.schedule(...)` insert via the insert tool to wire the hourly safety job.
+
+No DB schema changes, no UI changes.

@@ -80,9 +80,10 @@ Deno.serve(async (req) => {
           },
         );
 
-        // Reconcile lessons: any scheduled_lesson with google_event_id where the
-        // matching external event is gone → mark cancelled.
+        // Reconcile lessons + manual blocks: any row with a google_event_id
+        // whose matching external event is gone → cancel / delete.
         await reconcileLessons(supabase, conn.instructor_id);
+        await reconcileManualBlocks(supabase, conn.instructor_id);
       } catch (e) {
         console.error("[gcal-webhook] async sync failed:", e);
         void raiseSyncAlert({
@@ -104,7 +105,12 @@ Deno.serve(async (req) => {
 });
 
 async function reconcileLessons(supabase: any, instructorId: string) {
-  // Pull all future lessons with a google_event_id
+  // Look back 7 days as well as forward — past/in-progress lessons deleted in
+  // Google were previously stranded as "scheduled" forever.
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+    .toISOString()
+    .slice(0, 10);
+
   const { data: lessons } = await supabase
     .from("scheduled_lessons")
     .select("id, google_event_id, lesson_date, start_time, status")
@@ -112,11 +118,10 @@ async function reconcileLessons(supabase: any, instructorId: string) {
     .not("google_event_id", "is", null)
     .neq("status", "cancelled")
     .is("deleted_at", null)
-    .gte("lesson_date", new Date().toISOString().slice(0, 10));
+    .gte("lesson_date", sevenDaysAgo);
 
   if (!lessons?.length) return;
 
-  // Pull external event IDs we currently know about
   const { data: externals } = await supabase
     .from("instructor_calendar_events")
     .select("external_event_id")
@@ -124,10 +129,6 @@ async function reconcileLessons(supabase: any, instructorId: string) {
 
   const externalIds = new Set((externals ?? []).map((r: any) => r.external_event_id));
 
-  // Any lesson whose google_event_id is no longer present externally AND
-  // whose external_event_id appears nowhere → assume deleted in Google.
-  // Note: instructor_calendar_events is the inbound mirror, so a missing id
-  // after a fresh fetch is a strong signal.
   for (const l of lessons) {
     if (!externalIds.has(l.google_event_id)) {
       await supabase.from("scheduled_lessons")
@@ -136,10 +137,10 @@ async function reconcileLessons(supabase: any, instructorId: string) {
           cancelled_at: new Date().toISOString(),
           cancelled_by: "google_calendar",
           cancellation_reason: "Deleted in Google Calendar",
+          deleted_at: new Date().toISOString(),
         })
         .eq("id", l.id);
 
-      // Notify pupil + instructor (best-effort)
       try {
         await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/notify-pupil`, {
           method: "POST",
@@ -152,6 +153,41 @@ async function reconcileLessons(supabase: any, instructorId: string) {
       } catch { /* non-fatal */ }
     }
   }
+}
+
+async function reconcileManualBlocks(supabase: any, instructorId: string) {
+  // Manual blocks created in-app mirror to Google. If the instructor deletes
+  // the Google event, the block was stranded forever — remove it here.
+  const nowIso = new Date().toISOString();
+  const { data: blocks } = await supabase
+    .from("instructor_manual_blocks")
+    .select("id, google_event_id, end_datetime")
+    .eq("instructor_id", instructorId)
+    .not("google_event_id", "is", null)
+    .gte("end_datetime", nowIso);
+
+  if (!blocks?.length) return;
+
+  const { data: externals } = await supabase
+    .from("instructor_calendar_events")
+    .select("external_event_id")
+    .eq("instructor_id", instructorId);
+
+  const externalIds = new Set((externals ?? []).map((r: any) => r.external_event_id));
+
+  const toDelete = blocks
+    .filter((b: any) => !externalIds.has(b.google_event_id))
+    .map((b: any) => b.id);
+
+  if (toDelete.length === 0) return;
+
+  const { error } = await supabase
+    .from("instructor_manual_blocks")
+    .delete()
+    .in("id", toDelete);
+
+  if (error) console.error("[gcal-webhook] manual block delete error:", error);
+  else console.log(`[gcal-webhook] removed ${toDelete.length} stale manual block(s)`);
 }
 
 function ok(): Response {
