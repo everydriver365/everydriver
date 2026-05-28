@@ -63,10 +63,13 @@ export function MTDDeadlineTile({ instructorId }: MTDDeadlineTileProps) {
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <div style={{
-                width: 36, height: 36, borderRadius: 10,
-                background: "#f0edfb", display: "flex", alignItems: "center", justifyContent: "center",
+                width: 36, height: 36, borderRadius: hasIcon3D("receipt") ? 0 : 10,
+                background: hasIcon3D("receipt") ? "transparent" : "#f0edfb",
+                display: "flex", alignItems: "center", justifyContent: "center",
               }}>
-                <FileText size={18} color="#6b4fc4" />
+                {hasIcon3D("receipt")
+                  ? <Icon3D name="receipt" size={36} />
+                  : <FileText size={18} color="#6b4fc4" />}
               </div>
               <div>
                 <div style={{ fontSize: 14, fontWeight: 700, color: "#1F2937" }}>Making Tax Digital</div>
