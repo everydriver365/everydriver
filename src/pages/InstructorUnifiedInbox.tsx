@@ -1247,22 +1247,27 @@ export default function InstructorUnifiedInbox() {
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
         {filteredInApp.map((c) => (
-          <ConversationRow
+          <SwipeToReveal
             key={c.id}
-            id={c.id}
-            name={c.pupil?.name || "Unknown"}
-            preview={c.last_message_preview}
-            timestamp={c.last_message_at}
-            unreadCount={c.unread_count || 0}
-            avatarSeed={c.pupil_id || c.id}
-            avatarUrl={c.pupil?.profile_image_url}
-            muted={!!c.muted_at}
-            selectMode={selectMode}
-            selected={selectedIds.has(c.id)}
-            onPress={() => setSelectedConversation(c)}
-            onLongPress={() => enterSelectMode(c.id)}
-            onToggleSelect={() => toggleSelected(c.id)}
-          />
+            disabled={selectMode}
+            onDelete={() => handleSwipeDeleteConversation(c.id)}
+          >
+            <ConversationRow
+              id={c.id}
+              name={c.pupil?.name || "Unknown"}
+              preview={c.last_message_preview}
+              timestamp={c.last_message_at}
+              unreadCount={c.unread_count || 0}
+              avatarSeed={c.pupil_id || c.id}
+              avatarUrl={c.pupil?.profile_image_url}
+              muted={!!c.muted_at}
+              selectMode={selectMode}
+              selected={selectedIds.has(c.id)}
+              onPress={() => setSelectedConversation(c)}
+              onLongPress={() => enterSelectMode(c.id)}
+              onToggleSelect={() => toggleSelected(c.id)}
+            />
+          </SwipeToReveal>
         ))}
       </div>
     );
