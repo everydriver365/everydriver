@@ -118,6 +118,7 @@ import { useQuickAccessUnreads } from "@/hooks/useQuickAccessUnreads";
 import { toast } from "sonner";
 import taxDigitalIcon from "@/assets/icons-3d/tax-digital.png";
 import taxEstimateIcon from "@/assets/icons-3d/tax-estimate.png";
+import upcomingEventsIcon from "@/assets/icons-3d/upcoming-events.png";
 
 /* ---------------------------- Design tokens ----------------------------- */
 const T = {
@@ -577,7 +578,7 @@ function UnifiedInfoPanel({
         style={cardBase}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-          <IconBox Icon={CalendarDays} bg="#e8eefb" color="#2952b3" />
+          <img src={upcomingEventsIcon} alt="" style={{ width: 36, height: 36, objectFit: "contain", flexShrink: 0 }} />
         </div>
         <Title>Upcoming events</Title>
         <Subtitle>{eventsSubtitle}</Subtitle>
