@@ -68,7 +68,7 @@ export function MTDDeadlineTile({ instructorId }: MTDDeadlineTileProps) {
                 display: "flex", alignItems: "center", justifyContent: "center",
               }}>
                 {hasIcon3D("tax-calc")
-                  ? <Icon3D name="tax-calc" size={36} />
+                  ? <Icon3D name="tax-calc" size={44} />
                   : <FileText size={18} color="#6b4fc4" />}
               </div>
               <div>

@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ShieldCheck, ShieldAlert, Award, ChevronRight, ExternalLink } from "lucide-react";
+import { ChevronRight, ExternalLink } from "lucide-react";
 import { differenceInCalendarDays, parseISO, format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { TileCard } from "@/components/instructor/ui";
+import { Icon3D } from "@/components/Icon3D";
 
 interface ADIBadgeTrackerTileProps {
   instructorId: string;
@@ -12,6 +13,8 @@ interface ADIBadgeTrackerTileProps {
 const FONT = '"Poppins", system-ui, -apple-system, "Segoe UI", sans-serif';
 const SETTINGS_ROUTE = "/instructor/settings/account";
 const RENEW_URL = "https://www.gov.uk/renew-adi-badge";
+
+const BadgeIcon = () => <Icon3D name="adi-badge" size={44} />;
 
 interface AdiData {
   adi_badge_number: string | null;
@@ -60,7 +63,7 @@ export function ADIBadgeTrackerTile({ instructorId }: ADIBadgeTrackerTileProps) 
       <TileCard onClick={() => navigate(SETTINGS_ROUTE)} ariaLabel="Add ADI badge details">
         <div style={inner}>
           <div style={row}>
-            <IconBox bg="#f0f1f4" fg="#888888"><Award size={18} /></IconBox>
+            <BadgeIcon />
             <div style={textCol}>
               <div style={titleStyle}>ADI Badge</div>
               <div style={subStyle}>Badge details not set</div>
@@ -85,7 +88,7 @@ export function ADIBadgeTrackerTile({ instructorId }: ADIBadgeTrackerTileProps) 
       <TileCard accentColor="red" ariaLabel="ADI badge expired">
         <div style={inner}>
           <div style={row}>
-            <IconBox bg="#fbe8e8" fg="#c9302c"><ShieldAlert size={18} /></IconBox>
+            <BadgeIcon />
             <div style={textCol}>
               <div style={titleStyle}>ADI Badge — EXPIRED</div>
               <div style={subStyle}>Expired {expiryFormatted}</div>
@@ -104,7 +107,7 @@ export function ADIBadgeTrackerTile({ instructorId }: ADIBadgeTrackerTileProps) 
       <TileCard accentColor="red" ariaLabel={`ADI badge expires in ${daysLeft} days`}>
         <div style={inner}>
           <div style={row}>
-            <IconBox bg="#fbe8e8" fg="#c9302c"><ShieldAlert size={18} /></IconBox>
+            <BadgeIcon />
             <div style={textCol}>
               <div style={titleStyle}>ADI Badge — Renew now</div>
               <div style={subStyle}>Expires {expiryFormatted}</div>
@@ -123,7 +126,7 @@ export function ADIBadgeTrackerTile({ instructorId }: ADIBadgeTrackerTileProps) 
       <TileCard accentColor="amber" onClick={() => navigate(SETTINGS_ROUTE)} ariaLabel={`ADI badge expires in ${daysLeft} days`}>
         <div style={inner}>
           <div style={row}>
-            <IconBox bg="#fff3e0" fg="#d97706"><ShieldCheck size={18} /></IconBox>
+            <BadgeIcon />
             <div style={textCol}>
               <div style={titleStyle}>ADI Badge</div>
               <div style={subStyle}>Renew by {expiryFormatted}</div>
@@ -140,7 +143,7 @@ export function ADIBadgeTrackerTile({ instructorId }: ADIBadgeTrackerTileProps) 
     <TileCard onClick={() => navigate(SETTINGS_ROUTE)} ariaLabel="ADI badge valid">
       <div style={inner}>
         <div style={row}>
-          <IconBox bg="#e8eefb" fg="#2952b3"><ShieldCheck size={18} /></IconBox>
+          <BadgeIcon />
           <div style={textCol}>
             <div style={titleStyle}>ADI Badge</div>
             <div style={subStyle}>
@@ -155,16 +158,6 @@ export function ADIBadgeTrackerTile({ instructorId }: ADIBadgeTrackerTileProps) 
 }
 
 // ─── Sub-components ─────────────────────────────────────────────────────────
-function IconBox({ children, bg, fg }: { children: React.ReactNode; bg: string; fg: string }) {
-  return (
-    <div style={{
-      width: 36, height: 36, borderRadius: 9, background: bg, color: fg,
-      display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-    }}>
-      {children}
-    </div>
-  );
-}
 
 function Badge({ label, bg, fg }: { label: string; bg: string; fg: string }) {
   return (
