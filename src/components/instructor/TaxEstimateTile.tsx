@@ -83,7 +83,7 @@ export function TaxEstimateTile({ instructorId }: TaxEstimateTileProps) {
                 display: "flex", alignItems: "center", justifyContent: "center",
               }}>
                 {hasIcon3D("coins")
-                  ? <Icon3D name="coins" size={36} />
+                  ? <Icon3D name="coins" size={44} />
                   : <Calculator size={18} color="#2952b3" />}
               </div>
               <div>
