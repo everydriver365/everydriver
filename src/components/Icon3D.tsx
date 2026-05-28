@@ -34,6 +34,8 @@ import sparkles from "@/assets/icons-3d/sparkles.png";
 import lock from "@/assets/icons-3d/lock.png";
 import swap from "@/assets/icons-3d/swap.png";
 import taxDoc from "@/assets/icons-3d/tax-doc.png";
+import taxCalc from "@/assets/icons-3d/tax-calc.png";
+import adiBadge from "@/assets/icons-3d/adi-badge.png";
 
 /**
  * Registry of available 3D clay-style PNG icons.
@@ -73,6 +75,8 @@ export const ICON_3D_REGISTRY = {
   lock,
   swap,
   "tax-doc": taxDoc,
+  "tax-calc": taxCalc,
+  "adi-badge": adiBadge,
 } as const;
 
 export type Icon3DName = keyof typeof ICON_3D_REGISTRY;
