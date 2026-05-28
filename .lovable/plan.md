@@ -1,53 +1,30 @@
-## Goal
+## Why nothing changed
 
-Replace flat Lucide tile icons with a consistent set of 3D claymorphism PNGs (like the SketchPad / Progress Syllabus / Test Routes / 2D scenarios screenshot) across the instructor mobile app, instructor desktop portal, and pupil portal — wherever tile/menu/empty-state icons appear.
+The 3D icon auto-upgrade only fires inside `IconTile` and `EmptyState`. The instructor mobile dashboard (`MobileHomeDSM2026`) — which renders Upcoming events, Membership, Tax Digital, Tax estimate, Quick actions, etc. — does **not** use `IconTile`. It defines its own local `IconBox` (line ~501) plus several inline `<Icon size={...} />` blocks, all rendering raw Lucide icons. Same story for `UpcomingEventsCard`, `MTDDeadlineTile`, `TaxEstimateTile`, and `QuickActionTiles`' custom tiles.
 
-## Approach
+So the registry and mapping are correct — they just aren't reached by the surfaces the user is looking at.
 
-1. **Generate a single cohesive 3D icon set** via `imagegen` (transparent PNGs, 512×512) in one consistent style:
-   - Soft clay/plasticine material, warm studio lighting top-left, soft contact shadow
-   - Muted, friendly palette aligned with our brand (no neon)
-   - Slight isometric tilt, ~5–10% padding so they sit nicely inside rounded tiles
-   - Saved to `src/assets/icons-3d/<name>.png`
-   - Initial batch (~30 icons) covering the most-used concepts. Examples:
-     - Schedule: `calendar`, `clock`, `calendar-plus`
-     - Pupils: `user`, `users`, `graduation-cap`, `baby`
-     - Money: `wallet`, `card`, `coins`, `receipt`, `chart-up`
-     - Vehicle: `car`, `fuel`, `route`, `map-pin`
-     - Comms: `chat`, `phone`, `bell`, `mail`
-     - Teaching: `pencils-cup` (SketchPad), `bar-chart` (Progress), `road` (Routes), `barrier` (Scenarios), `book`, `target`, `trophy`, `medal`, `star`, `shield`
-     - Tools/Admin: `settings`, `tools`, `lightbulb`, `sparkles`, `lock`
+## Plan
 
-2. **Build `<Icon3D name="..." size={44} />` component** at `src/components/Icon3D.tsx`:
-   - Static `name → import` map (tree-shakeable, no dynamic glob)
-   - Falls back to `<Emoji name>` (existing component) if no 3D asset exists for a name yet — guarantees no broken tiles during rollout
-   - Optional `tileBg` prop matching the screenshot's neutral card (no coloured tile behind — the icon carries its own visual weight, sits flush like in the reference)
+1. **Upgrade `IconBox` in `MobileHomeDSM2026.tsx`** (the main tile renderer used for Upcoming events / Membership / Tax Digital / quick actions). Use `resolveIcon3D(Icon.displayName)`; when matched, render `<Icon3D size={tile} />` and drop the coloured `bg` square. Otherwise fall back to existing behaviour. Tile sizes already in component (~40–44px) — perfect for 3D.
 
-3. **Wire it into the existing icon primitives** so most surfaces upgrade automatically:
-   - `src/components/IconTile.tsx` — accept an optional `icon3d?: string`; when present, render the 3D PNG instead of the Lucide icon, drop the coloured background, keep size slot
-   - `src/components/instructor/EmptyState.tsx` — same: optional `icon3d` prop
-   - Pupil portal `AchievementBadges.tsx` — map `icon_name` ('trophy', 'star', 'medal'...) to 3D set when available
-   - Menu list rows (Teaching Aids screen, Tools, Settings landing): swap the leading Lucide icon for `<Icon3D />`
+2. **Sweep the dashboard's stand-alone tiles** to render 3D where a mapping exists:
+   - `UpcomingEventsCard.tsx` — calendar tile → 3D calendar
+   - `MTDDeadlineTile.tsx` → 3D receipt
+   - `TaxEstimateTile.tsx` → 3D coins / bar-chart
+   - `MobileHomeRedesign.tsx` IconBox (legacy variant) — same treatment as #1
 
-4. **Apply across the apps (incremental, single PR per surface, no behaviour changes)**:
-   - Instructor mobile: dashboard tiles, Teaching Aids, Tools, Settings, Pupils list rows, Schedule empty states
-   - Instructor desktop portal: same primitives → upgrades automatically where `IconTile`/`EmptyState` are used; spot-check any hardcoded Lucide usages
-   - Pupil portal: home tiles, achievements, lesson cards, empty states
+3. **`QuickActionTiles.tsx`** already uses `IconTile`, so it should be working; verify and only patch if needed.
 
-5. **Out of scope (keep flat Lucide)**: inline action icons inside buttons, toolbar/header chrome, table column icons, status pills, anything <20px. 3D PNGs only shine at 32px+.
+4. **Leave small inline icons untouched** (chevrons, 14–18px status icons, nav icons inside `<IconBox Icon={NavIcon}/>` at ~18px in the bottom nav — these are too small and should stay flat Lucide).
+
+5. **No new icons generated.** Only registry/mapping wiring. If a tile's Lucide icon has no 3D match, it stays flat — graceful fallback.
 
 ## Technical notes
 
-- Storage: PNGs in `src/assets/icons-3d/` (Vite bundles + hashes them). No CDN, no DB lookups, fully offline.
-- File size budget: target <25KB per icon at 512×512 (transparent PNG, optimised). ~30 icons ≈ 750KB total — lazy-import per route to keep initial bundle small if it grows past that.
-- Dark mode: PNGs are colour-baked, so they work as-is on light AND dark cards (the soft clay style reads well on both). No tinting needed.
-- A11y: `<Icon3D>` renders `<img alt={label} />` with sensible default alt from the name.
-- No DB, no edge function, no migration. Pure FE.
+- All edits are presentation-only in `src/components/instructor/`. No business logic touched.
+- `IconBox` signature stays the same; only its internals branch on `resolveIcon3D`.
+- The coloured `bg` prop is ignored when a 3D asset renders, matching how `IconTile` behaves.
+- Risk: `lucide-react` icons expose `displayName` on the forwardRef — already verified by the working `IconTile` auto-resolve path.
 
-## Rollout order
-
-1. Build component + generate first 8 icons (the ones already shown: pencils-cup, bar-chart, road, barrier + calendar, user, wallet, car). Wire into one screen as proof.
-2. Generate remaining ~22 icons in a follow-up batch.
-3. Sweep instructor mobile → desktop → pupil.
-
-I'll confirm with you after step 1 before generating the full set.
+After this lands, the tiles visible on `/instructor` (Upcoming events, Membership, Tax Digital, etc.) will switch to 3D claymorphism PNGs; everything without a registered match keeps the current flat Lucide look.
