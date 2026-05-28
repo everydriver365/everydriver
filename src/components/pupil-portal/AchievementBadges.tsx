@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Award, Trophy, Star, Target, BookOpen, Car, Zap, Medal } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
+import { Icon3D, hasIcon3D } from "@/components/Icon3D";
 
 interface Achievement {
   id: string;
