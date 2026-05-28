@@ -52,6 +52,7 @@ export const ICON_3D_REGISTRY = {
   user,
   users,
   "graduation-cap": graduationCap,
+  pupil,
   wallet,
   card,
   coins,
