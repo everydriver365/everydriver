@@ -161,26 +161,52 @@ Deno.serve(async (req) => {
         successCount++;
       } catch (err) {
         const message = err instanceof Error ? err.message : "Unknown error";
-        console.error(`Queue item ${item.id} failed:`, err);
-        await supabase.from("scheduled_lessons")
-          .update({ calendar_sync_status: "failed" })
-          .eq("id", item.lesson_id);
-        await markProcessed(supabase, item.id, message);
+        const attempt = (item.attempt_count ?? 0) + 1;
+        console.error(`Queue item ${item.id} failed (attempt ${attempt}/${MAX_ATTEMPTS}):`, err);
 
-        void raiseSyncAlert({
-          category: "other",
-          severity: "medium",
-          title: "Calendar queue item failed",
-          message,
-          instructorId: item.instructor_id ?? null,
-          lessonId: item.lesson_id ?? null,
-          metadata: { action: item.action },
-          supabase,
-        });
+        if (attempt >= MAX_ATTEMPTS) {
+          // Final failure — mark scheduled_lesson failed, mark queue row processed, raise alert.
+          await supabase.from("scheduled_lessons")
+            .update({ calendar_sync_status: "failed" })
+            .eq("id", item.lesson_id);
+          await supabase.from("calendar_sync_queue")
+            .update({
+              processed_at: new Date().toISOString(),
+              attempt_count: attempt,
+              error: message,
+            })
+            .eq("id", item.id);
+
+          void raiseSyncAlert({
+            category: "other",
+            severity: "medium",
+            title: "Calendar queue item failed after retries",
+            message: `${message} (after ${MAX_ATTEMPTS} attempts)`,
+            instructorId: item.instructor_id ?? null,
+            lessonId: item.lesson_id ?? null,
+            metadata: { action: item.action, attempts: attempt },
+            supabase,
+          });
+        } else {
+          // Schedule retry with backoff — do NOT mark processed.
+          const backoffMin = BACKOFF_MINUTES[Math.min(attempt - 1, BACKOFF_MINUTES.length - 1)];
+          const nextRetry = new Date(Date.now() + backoffMin * 60 * 1000).toISOString();
+          await supabase.from("calendar_sync_queue")
+            .update({
+              attempt_count: attempt,
+              next_retry_at: nextRetry,
+              error: message,
+            })
+            .eq("id", item.id);
+        }
 
         errorCount++;
       }
     }
+
+    // ── Rescue stranded lessons (no queue row at all) ────────────────────
+    await sweepOrphanLessons(supabase);
+
 
     // ── Stuck queue detection ────────────────────────────────────────────
     try {
