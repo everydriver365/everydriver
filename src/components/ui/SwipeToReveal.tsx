@@ -47,7 +47,10 @@ if (typeof window !== "undefined") {
 // ───────────────────────── Haptics (optional) ─────────────────────────
 async function lightHaptic() {
   try {
-    const mod: any = await import("@capacitor/haptics").catch(() => null);
+    // Dynamic import via variable so TS doesn't require the type when the
+    // native module isn't installed. No-op in web builds.
+    const name = "@capacitor/haptics";
+    const mod: any = await import(/* @vite-ignore */ name).catch(() => null);
     if (mod?.Haptics?.impact) await mod.Haptics.impact({ style: "LIGHT" });
   } catch {
     /* no-op */
