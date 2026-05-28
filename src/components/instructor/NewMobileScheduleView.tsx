@@ -20,6 +20,7 @@ import { PupilAvatar } from "./PupilAvatar";
 import { useLessonTravelTimes } from "@/hooks/useLessonTravelTimes";
 import { LessonCheckInBadge } from "./LessonCheckInBadge";
 import { RouteStatusBadge } from "./driving-test/RouteStatusBadge";
+import { SwipeToReveal } from "@/components/ui/SwipeToReveal";
 
 interface ScheduledLesson {
   id: string;
@@ -361,6 +362,8 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
 
               return (
                 <div key={lesson.id}>
+                  <SwipeToReveal onDelete={() => handleDeleteLesson(lesson)} actionLabel="Cancel">
+
                   <ExpandableLessonCard
                     lesson={lesson}
                     onNavigate={handleNavigate}
@@ -454,6 +457,7 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
                       </div>
                     }
                   />
+                  </SwipeToReveal>
                   {travelTime && (
                     <TravelTimeIndicator
                       durationMinutes={travelTime.durationMinutes}
