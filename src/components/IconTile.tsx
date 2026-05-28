@@ -1,5 +1,6 @@
 import { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Icon3D, hasIcon3D } from "@/components/Icon3D";
 
 const colorMap = {
   indigo:  { light: { bg: "#E8ECF1", icon: "#2A394F" }, dark: { bg: "#312E81", icon: "#C7D2FE" } },
