@@ -3,6 +3,7 @@ import { ChevronRight, FileText } from "lucide-react";
 import { useInstructorMTDStatus } from "@/hooks/useInstructorMTDStatus";
 import { getNextDeadline, getQuarterDeadlines, getCurrentTaxYear } from "@/lib/mtdDeadlines";
 import { TileCard } from "@/components/instructor/ui";
+import { Icon3D, hasIcon3D } from "@/components/Icon3D";
 
 interface MTDDeadlineTileProps {
   instructorId: string;
