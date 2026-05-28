@@ -1,5 +1,5 @@
 import { LucideIcon } from "lucide-react";
-import { Icon3D, hasIcon3D } from "@/components/Icon3D";
+import { Icon3D, resolveIcon3D } from "@/components/Icon3D";
 
 interface EmptyStateProps {
   icon: LucideIcon;
