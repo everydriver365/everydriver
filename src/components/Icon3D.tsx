@@ -6,9 +6,32 @@ import barChart from "@/assets/icons-3d/bar-chart.png";
 import road from "@/assets/icons-3d/road.png";
 import barrier from "@/assets/icons-3d/barrier.png";
 import calendar from "@/assets/icons-3d/calendar.png";
+import clock from "@/assets/icons-3d/clock.png";
 import user from "@/assets/icons-3d/user.png";
+import users from "@/assets/icons-3d/users.png";
+import graduationCap from "@/assets/icons-3d/graduation-cap.png";
 import wallet from "@/assets/icons-3d/wallet.png";
+import card from "@/assets/icons-3d/card.png";
+import coins from "@/assets/icons-3d/coins.png";
+import receipt from "@/assets/icons-3d/receipt.png";
 import car from "@/assets/icons-3d/car.png";
+import fuel from "@/assets/icons-3d/fuel.png";
+import mapPin from "@/assets/icons-3d/map-pin.png";
+import compass from "@/assets/icons-3d/compass.png";
+import chat from "@/assets/icons-3d/chat.png";
+import phone from "@/assets/icons-3d/phone.png";
+import bell from "@/assets/icons-3d/bell.png";
+import mail from "@/assets/icons-3d/mail.png";
+import book from "@/assets/icons-3d/book.png";
+import target from "@/assets/icons-3d/target.png";
+import trophy from "@/assets/icons-3d/trophy.png";
+import medal from "@/assets/icons-3d/medal.png";
+import star from "@/assets/icons-3d/star.png";
+import shield from "@/assets/icons-3d/shield.png";
+import settings from "@/assets/icons-3d/settings.png";
+import lightbulb from "@/assets/icons-3d/lightbulb.png";
+import sparkles from "@/assets/icons-3d/sparkles.png";
+import lock from "@/assets/icons-3d/lock.png";
 
 /**
  * Registry of available 3D clay-style PNG icons.
@@ -20,15 +43,127 @@ export const ICON_3D_REGISTRY = {
   road,
   barrier,
   calendar,
+  clock,
   user,
+  users,
+  "graduation-cap": graduationCap,
   wallet,
+  card,
+  coins,
+  receipt,
   car,
+  fuel,
+  "map-pin": mapPin,
+  compass,
+  chat,
+  phone,
+  bell,
+  mail,
+  book,
+  target,
+  trophy,
+  medal,
+  star,
+  shield,
+  settings,
+  lightbulb,
+  sparkles,
+  lock,
 } as const;
 
 export type Icon3DName = keyof typeof ICON_3D_REGISTRY;
 
 export function hasIcon3D(name: string): name is Icon3DName {
   return name in ICON_3D_REGISTRY;
+}
+
+/**
+ * Map common Lucide icon names (PascalCase) and emoji-name keys onto our
+ * registered 3D icons. Lets surfaces upgrade automatically without
+ * changing their existing `icon` prop.
+ */
+const LUCIDE_TO_3D: Record<string, Icon3DName> = {
+  Calendar: "calendar",
+  CalendarDays: "calendar",
+  CalendarCheck: "calendar",
+  CalendarClock: "calendar",
+  CalendarPlus: "calendar",
+  CalendarRange: "calendar",
+  Clock: "clock",
+  Timer: "clock",
+  AlarmClock: "clock",
+  User: "user",
+  UserPlus: "user",
+  UserCheck: "user",
+  Users: "users",
+  GraduationCap: "graduation-cap",
+  Wallet: "wallet",
+  CreditCard: "card",
+  Coins: "coins",
+  Banknote: "coins",
+  PoundSterling: "coins",
+  DollarSign: "coins",
+  Euro: "coins",
+  Receipt: "receipt",
+  Car: "car",
+  CarFront: "car",
+  Fuel: "fuel",
+  MapPin: "map-pin",
+  MapPinned: "map-pin",
+  Route: "road",
+  Navigation: "compass",
+  Compass: "compass",
+  Map: "compass",
+  MessageSquare: "chat",
+  MessageCircle: "chat",
+  Phone: "phone",
+  PhoneCall: "phone",
+  Smartphone: "phone",
+  Bell: "bell",
+  BellRing: "bell",
+  Mail: "mail",
+  Mails: "mail",
+  Inbox: "mail",
+  Book: "book",
+  BookOpen: "book",
+  Library: "book",
+  Target: "target",
+  Crosshair: "target",
+  Trophy: "trophy",
+  Award: "medal",
+  Medal: "medal",
+  Star: "star",
+  Shield: "shield",
+  ShieldCheck: "shield",
+  ShieldAlert: "shield",
+  Settings: "settings",
+  Settings2: "settings",
+  Cog: "settings",
+  Lightbulb: "lightbulb",
+  Sparkles: "sparkles",
+  Lock: "lock",
+  Unlock: "lock",
+  Key: "lock",
+  Construction: "barrier",
+  TrafficCone: "barrier",
+  Pencil: "pencils-cup",
+  PenTool: "pencils-cup",
+  BarChart: "bar-chart",
+  BarChart2: "bar-chart",
+  BarChart3: "bar-chart",
+  LineChart: "bar-chart",
+  TrendingUp: "bar-chart",
+};
+
+/**
+ * Resolve an arbitrary icon hint (Lucide name, kebab-case key, or already-registered name)
+ * to a 3D icon key. Returns null when no match exists.
+ */
+export function resolveIcon3D(hint: string | undefined | null): Icon3DName | null {
+  if (!hint) return null;
+  if (hasIcon3D(hint)) return hint;
+  const mapped = LUCIDE_TO_3D[hint];
+  return mapped ?? null;
 }
 
 interface Icon3DProps {
@@ -42,15 +177,16 @@ interface Icon3DProps {
 /**
  * Renders a 3D claymorphism icon as a PNG. Returns null when the name has
  * no registered asset — callers should provide their own fallback
- * (e.g. a Lucide icon) using `hasIcon3D()`.
+ * (e.g. a Lucide icon) using `hasIcon3D()` or `resolveIcon3D()`.
  */
 export function Icon3D({ name, size = 44, alt, className, style }: Icon3DProps) {
-  if (!hasIcon3D(name)) return null;
-  const src = ICON_3D_REGISTRY[name];
+  const resolved = resolveIcon3D(name);
+  if (!resolved) return null;
+  const src = ICON_3D_REGISTRY[resolved];
   return (
     <img
       src={src}
-      alt={alt ?? name}
+      alt={alt ?? resolved}
       width={size}
       height={size}
       loading="lazy"
