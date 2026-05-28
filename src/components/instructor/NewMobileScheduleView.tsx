@@ -362,6 +362,8 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
 
               return (
                 <div key={lesson.id}>
+                  <SwipeToReveal onDelete={() => handleDeleteLesson(lesson)} actionLabel="Cancel">
+
                   <ExpandableLessonCard
                     lesson={lesson}
                     onNavigate={handleNavigate}
