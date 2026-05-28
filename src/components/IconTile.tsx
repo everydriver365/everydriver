@@ -1,5 +1,6 @@
 import { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Icon3D, hasIcon3D } from "@/components/Icon3D";
 
 const colorMap = {
   indigo:  { light: { bg: "#E8ECF1", icon: "#2A394F" }, dark: { bg: "#312E81", icon: "#C7D2FE" } },
@@ -26,12 +27,25 @@ interface IconTileProps {
   color?: IconTileColor;
   size?: IconTileSize;
   className?: string;
+  /** Optional 3D icon name — when registered, replaces the Lucide icon and removes the coloured tile background. */
+  icon3d?: string;
 }
 
-export function IconTile({ icon: Icon, color = "neutral", size = "md", className }: IconTileProps) {
+export function IconTile({ icon: Icon, color = "neutral", size = "md", className, icon3d }: IconTileProps) {
   const { tile, icon: iconSize } = sizeMap[size];
   const lightColors = colorMap[color].light;
   const darkColors = colorMap[color].dark;
+
+  if (icon3d && hasIcon3D(icon3d)) {
+    return (
+      <div
+        className={cn("flex items-center justify-center shrink-0", className)}
+        style={{ width: tile, height: tile }}
+      >
+        <Icon3D name={icon3d} size={tile} />
+      </div>
+    );
+  }
 
   return (
     <div
