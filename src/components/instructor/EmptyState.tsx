@@ -1,4 +1,5 @@
 import { LucideIcon } from "lucide-react";
+import { Icon3D, hasIcon3D } from "@/components/Icon3D";
 
 interface EmptyStateProps {
   icon: LucideIcon;
@@ -6,6 +7,8 @@ interface EmptyStateProps {
   subtitle?: string;
   iconBg?: string;
   iconColor?: string;
+  /** Optional 3D icon name — when registered, replaces the Lucide icon and removes the coloured background. */
+  icon3d?: string;
 }
 
 export function EmptyState({
