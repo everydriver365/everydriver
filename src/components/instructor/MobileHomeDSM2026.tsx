@@ -118,6 +118,7 @@ import { useQuickAccessUnreads } from "@/hooks/useQuickAccessUnreads";
 import { toast } from "sonner";
 import taxDigitalIcon from "@/assets/icons-3d/tax-digital.png";
 import taxEstimateIcon from "@/assets/icons-3d/tax-estimate.png";
+import upcomingEventsIcon from "@/assets/icons-3d/upcoming-events.png";
 
 /* ---------------------------- Design tokens ----------------------------- */
 const T = {
