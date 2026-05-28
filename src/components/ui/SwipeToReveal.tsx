@@ -184,7 +184,14 @@ export function SwipeToReveal({
     const current = x.get();
 
     if (current <= -width * FULL_SWIPE_THRESHOLD) {
-      // Full swipe — trigger delete, animate out.
+      // Full swipe — confirm if requested, otherwise fire.
+      if (confirm) {
+        const msg = confirm.body ? `${confirm.title}\n\n${confirm.body}` : confirm.title;
+        if (!window.confirm(msg)) {
+          close();
+          return;
+        }
+      }
       await animate(x, -width, { duration: 0.18 }).then(() => undefined);
       void lightHaptic();
       try {
@@ -206,6 +213,10 @@ export function SwipeToReveal({
 
   const handleActionClick = async () => {
     void lightHaptic();
+    if (confirm) {
+      const msg = confirm.body ? `${confirm.title}\n\n${confirm.body}` : confirm.title;
+      if (!window.confirm(msg)) return;
+    }
     try {
       await onDelete();
     } finally {
@@ -238,11 +249,14 @@ export function SwipeToReveal({
           type="button"
           onClick={handleActionClick}
           tabIndex={isOpen ? 0 : -1}
-          aria-label={actionLabel}
-          className="flex-1 flex flex-col items-center justify-center gap-1 bg-destructive text-destructive-foreground active:bg-destructive/90 focus:outline-none"
+          aria-label={label}
+          className={cn(
+            "flex-1 flex flex-col items-center justify-center gap-1 focus:outline-none",
+            variant.bg,
+          )}
         >
-          <Trash2 className="h-5 w-5" />
-          <span className="text-[11px] font-semibold">{actionLabel}</span>
+          <Icon className="h-5 w-5" />
+          <span className="text-[11px] font-semibold">{label}</span>
         </button>
       </motion.div>
 
