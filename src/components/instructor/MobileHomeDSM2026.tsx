@@ -2544,6 +2544,7 @@ function QATile({
   item, active, onPress, badgeCount, onLongPress,
 }: { item: QAItem; active: boolean; onPress: () => void; size?: "grid" | "scroll"; badgeCount?: number; onLongPress?: () => void }) {
   const Icon = item.Icon;
+  const resolved3D = resolveIcon3D((Icon as { displayName?: string }).displayName);
   return (
     <Tile
       variant="navigation"
@@ -2554,20 +2555,35 @@ function QATile({
       badgeVisible={!!badgeCount && badgeCount > 0}
       ariaLabel={item.label}
       iconNode={
-        <span
-          style={{
-            width: 36,
-            height: 36,
-            borderRadius: 10,
-            background: item.bg,
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            flexShrink: 0,
-          }}
-        >
-          <Icon size={18} strokeWidth={2} color={item.colour} />
-        </span>
+        resolved3D ? (
+          <span
+            style={{
+              width: 36,
+              height: 36,
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}
+          >
+            <Icon3D name={resolved3D} size={36} />
+          </span>
+        ) : (
+          <span
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: 10,
+              background: item.bg,
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}
+          >
+            <Icon size={18} strokeWidth={2} color={item.colour} />
+          </span>
+        )
       }
       className={active ? "qa-tile-active" : undefined}
     />

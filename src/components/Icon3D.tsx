@@ -32,6 +32,7 @@ import settings from "@/assets/icons-3d/settings.png";
 import lightbulb from "@/assets/icons-3d/lightbulb.png";
 import sparkles from "@/assets/icons-3d/sparkles.png";
 import lock from "@/assets/icons-3d/lock.png";
+import swap from "@/assets/icons-3d/swap.png";
 
 /**
  * Registry of available 3D clay-style PNG icons.
@@ -69,6 +70,7 @@ export const ICON_3D_REGISTRY = {
   lightbulb,
   sparkles,
   lock,
+  swap,
 } as const;
 
 export type Icon3DName = keyof typeof ICON_3D_REGISTRY;
@@ -146,6 +148,12 @@ const LUCIDE_TO_3D: Record<string, Icon3DName> = {
   Lock: "lock",
   Unlock: "lock",
   Key: "lock",
+  Repeat: "swap",
+  Repeat2: "swap",
+  RefreshCw: "swap",
+  RefreshCcw: "swap",
+  ArrowLeftRight: "swap",
+  ArrowRightLeft: "swap",
   Construction: "barrier",
   TrafficCone: "barrier",
   Pencil: "pencils-cup",
