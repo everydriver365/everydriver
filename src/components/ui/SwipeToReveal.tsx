@@ -1,7 +1,9 @@
 /**
  * SwipeToReveal — iOS Mail-style left swipe to reveal a Delete action.
  *
- * - Touch-first (also supports mouse), direction-locked so vertical scrolls pass through.
+ * - Touch-first (native touch listeners) so it works in iOS WKWebView (Capacitor/Despia).
+ *   Falls back to mouse events for desktop/editor preview.
+ * - Direction-locked so vertical scrolls pass through.
  * - Snap points: closed (0), open (-actionWidth), full-swipe (auto-trigger past threshold).
  * - Only one row open at a time (global context).
  * - Tapping anywhere closes any open row.
@@ -11,7 +13,7 @@
  */
 
 import * as React from "react";
-import { motion, useMotionValue, useAnimation, useTransform, animate } from "framer-motion";
+import { motion, useMotionValue, useTransform, animate } from "framer-motion";
 import { Trash2, X, Archive } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -28,7 +30,6 @@ type Closer = () => void;
 const openersRef = { current: new Set<Closer>() };
 
 function registerOpen(close: Closer) {
-  // Close any other open row before this one opens.
   openersRef.current.forEach((c) => {
     if (c !== close) c();
   });
@@ -55,8 +56,6 @@ if (typeof window !== "undefined") {
 // ───────────────────────── Haptics (optional) ─────────────────────────
 async function lightHaptic() {
   try {
-    // Dynamic import via variable so TS doesn't require the type when the
-    // native module isn't installed. No-op in web builds.
     const name = "@capacitor/haptics";
     const mod: any = await import(/* @vite-ignore */ name).catch(() => null);
     if (mod?.Haptics?.impact) await mod.Haptics.impact({ style: "LIGHT" });
@@ -66,30 +65,13 @@ async function lightHaptic() {
 }
 
 // ───────────────────────── Component ─────────────────────────
-/**
- * Standard recipe for any deletable row:
- *
- *   <SwipeToReveal onDelete={() => softDelete(row.id)} actionLabel="Delete">
- *     <Row />
- *   </SwipeToReveal>
- *
- * If the row itself is rendered as a `<button>` (e.g. tap-to-open), add
- * `data-swipe-pass` to that button so the swipe gesture isn't swallowed.
- */
 export interface SwipeToRevealProps {
-  /** Called after the user confirms (full swipe OR tap on the action button). */
   onDelete: () => void | Promise<void>;
-  /** Resting reveal width in pixels. iOS default ≈ 88. */
   actionWidth?: number;
-  /** Label on the action button. Defaults to the variant's default label. */
   actionLabel?: string;
-  /** Visual variant. Default "delete". */
   actionVariant?: SwipeActionVariant;
-  /** Optional confirm step: shows a native confirm() before firing onDelete. */
   confirm?: { title: string; body?: string } | null;
-  /** Disable the swipe behaviour entirely (renders children only). */
   disabled?: boolean;
-  /** Wrapper className passthrough. */
   className?: string;
   children: React.ReactNode;
 }
@@ -108,83 +90,99 @@ export function SwipeToReveal({
   const label = actionLabel ?? variant.defaultLabel;
   const Icon = variant.Icon;
   const x = useMotionValue(0);
-  const controls = useAnimation();
   const [isOpen, setIsOpen] = React.useState(false);
-  const startXRef = React.useRef(0);
-  const startYRef = React.useRef(0);
-  const lockedRef = React.useRef<"horizontal" | "vertical" | null>(null);
-  const draggingRef = React.useRef(false);
+  const isOpenRef = React.useRef(false);
+  const fgRef = React.useRef<HTMLDivElement>(null);
   const prefersReduced =
     typeof window !== "undefined" &&
     window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
-  const FULL_SWIPE_THRESHOLD = 0.55; // proportion of container width
+  const FULL_SWIPE_THRESHOLD = 0.55;
+
+  React.useEffect(() => {
+    isOpenRef.current = isOpen;
+  }, [isOpen]);
 
   const close = React.useCallback(() => {
     setIsOpen(false);
+    isOpenRef.current = false;
     animate(x, 0, { type: prefersReduced ? "tween" : "spring", stiffness: 500, damping: 40 });
   }, [x, prefersReduced]);
 
   const open = React.useCallback(() => {
-    if (isOpen) return;
+    if (isOpenRef.current) return;
     setIsOpen(true);
+    isOpenRef.current = true;
     registerOpen(close);
     void lightHaptic();
     animate(x, -actionWidth, { type: prefersReduced ? "tween" : "spring", stiffness: 500, damping: 40 });
-  }, [x, actionWidth, prefersReduced, close, isOpen]);
+  }, [x, actionWidth, prefersReduced, close]);
 
   React.useEffect(() => () => unregister(close), [close]);
 
-  // Pointer handlers (touch + mouse via Pointer Events).
-  const onPointerDown = (e: React.PointerEvent) => {
-    if (disabled) return;
-    // Don't start a swipe from interactive children.
-    const target = e.target as HTMLElement;
-    const interactive = target.closest("a,input,textarea,select,[role='button'],[data-no-swipe]");
-    const leafButton = target.closest("button");
-    const passThrough = target.closest("[data-swipe-pass]");
-    if (interactive) return;
-    if (leafButton && !passThrough) return;
+  // Shared gesture state — works for both touch and mouse paths.
+  const startXRef = React.useRef(0);
+  const startYRef = React.useRef(0);
+  const lockedRef = React.useRef<"horizontal" | "vertical" | null>(null);
+  const draggingRef = React.useRef(false);
+
+  // Should this gesture start? Mirrors the original skip rules.
+  const shouldIgnoreTarget = React.useCallback((target: EventTarget | null) => {
+    const el = target as HTMLElement | null;
+    if (!el) return true;
+    const interactive = el.closest("a,input,textarea,select,[role='button'],[data-no-swipe]");
+    if (interactive) return true;
+    const leafButton = el.closest("button");
+    const passThrough = el.closest("[data-swipe-pass]");
+    if (leafButton && !passThrough) return true;
+    return false;
+  }, []);
+
+  const beginGesture = React.useCallback((clientX: number, clientY: number) => {
     draggingRef.current = true;
-    startXRef.current = e.clientX;
-    startYRef.current = e.clientY;
+    startXRef.current = clientX;
+    startYRef.current = clientY;
     lockedRef.current = null;
-    (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
-  };
+  }, []);
 
-  const onPointerMove = (e: React.PointerEvent) => {
-    if (!draggingRef.current || disabled) return;
-    const dx = e.clientX - startXRef.current;
-    const dy = e.clientY - startYRef.current;
+  const moveGesture = React.useCallback((clientX: number, clientY: number): "horizontal" | "vertical" | "pending" => {
+    if (!draggingRef.current) return "pending";
+    const dx = clientX - startXRef.current;
+    const dy = clientY - startYRef.current;
 
-    // Direction lock after 6px of movement.
     if (lockedRef.current === null) {
-      if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
+      if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return "pending";
       lockedRef.current = Math.abs(dx) > Math.abs(dy) ? "horizontal" : "vertical";
       if (lockedRef.current === "vertical") {
         draggingRef.current = false;
-        return;
+        return "vertical";
       }
     }
-    if (lockedRef.current !== "horizontal") return;
+    if (lockedRef.current !== "horizontal") return "pending";
 
-    // Translate. Only left-drag past 0; small right-drag rubber-bands.
-    const base = isOpen ? -actionWidth : 0;
+    const base = isOpenRef.current ? -actionWidth : 0;
     let next = base + dx;
     if (next > 0) next = next * 0.25;
     x.set(next);
-  };
+    return "horizontal";
+  }, [actionWidth, x]);
 
-  const onPointerUp = async (e: React.PointerEvent) => {
-    if (!draggingRef.current) return;
+  const endGesture = React.useCallback(async () => {
+    if (!draggingRef.current && lockedRef.current !== "horizontal") {
+      // never engaged or vertical-locked — nothing to do.
+      draggingRef.current = false;
+      lockedRef.current = null;
+      return;
+    }
     draggingRef.current = false;
-    try { (e.currentTarget as HTMLElement).releasePointerCapture?.(e.pointerId); } catch {}
+    const wasHorizontal = lockedRef.current === "horizontal";
+    lockedRef.current = null;
+    if (!wasHorizontal) return;
 
-    const width = (e.currentTarget as HTMLElement).offsetWidth || 1;
+    const width = fgRef.current?.offsetWidth || 1;
     const current = x.get();
 
     if (current <= -width * FULL_SWIPE_THRESHOLD) {
-      // Full swipe — confirm if requested, otherwise fire.
       if (confirm) {
         const msg = confirm.body ? `${confirm.title}\n\n${confirm.body}` : confirm.title;
         if (!window.confirm(msg)) {
@@ -199,6 +197,7 @@ export function SwipeToReveal({
       } finally {
         unregister(close);
         setIsOpen(false);
+        isOpenRef.current = false;
       }
       return;
     }
@@ -209,6 +208,76 @@ export function SwipeToReveal({
       unregister(close);
       close();
     }
+  }, [actionWidth, close, confirm, onDelete, open, x]);
+
+  // ─── Native touch listeners (iOS WKWebView reliable path) ───────────────
+  React.useEffect(() => {
+    const el = fgRef.current;
+    if (!el || disabled) return;
+
+    const onTouchStart = (e: TouchEvent) => {
+      if (e.touches.length !== 1) return;
+      if (shouldIgnoreTarget(e.target)) return;
+      const t = e.touches[0];
+      beginGesture(t.clientX, t.clientY);
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (!draggingRef.current && lockedRef.current !== "horizontal") return;
+      if (e.touches.length !== 1) return;
+      const t = e.touches[0];
+      const result = moveGesture(t.clientX, t.clientY);
+      if (result === "horizontal" && e.cancelable) {
+        // Stop WKWebView from stealing the gesture as a vertical scroll
+        // once we've committed to horizontal.
+        e.preventDefault();
+      }
+    };
+
+    const onTouchEnd = () => {
+      void endGesture();
+    };
+
+    const onTouchCancel = () => {
+      draggingRef.current = false;
+      lockedRef.current = null;
+      // Snap back to current open/closed state.
+      animate(x, isOpenRef.current ? -actionWidth : 0, {
+        type: prefersReduced ? "tween" : "spring",
+        stiffness: 500,
+        damping: 40,
+      });
+    };
+
+    el.addEventListener("touchstart", onTouchStart, { passive: true });
+    el.addEventListener("touchmove", onTouchMove, { passive: false });
+    el.addEventListener("touchend", onTouchEnd, { passive: true });
+    el.addEventListener("touchcancel", onTouchCancel, { passive: true });
+
+    return () => {
+      el.removeEventListener("touchstart", onTouchStart);
+      el.removeEventListener("touchmove", onTouchMove);
+      el.removeEventListener("touchend", onTouchEnd);
+      el.removeEventListener("touchcancel", onTouchCancel);
+    };
+  }, [disabled, shouldIgnoreTarget, beginGesture, moveGesture, endGesture, x, actionWidth, prefersReduced]);
+
+  // ─── Mouse listeners (desktop / editor preview) ─────────────────────────
+  const onMouseDown = (e: React.MouseEvent) => {
+    if (disabled) return;
+    if (shouldIgnoreTarget(e.target)) return;
+    beginGesture(e.clientX, e.clientY);
+
+    const onMove = (ev: MouseEvent) => {
+      moveGesture(ev.clientX, ev.clientY);
+    };
+    const onUp = () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+      void endGesture();
+    };
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
   };
 
   const handleActionClick = async () => {
@@ -222,6 +291,7 @@ export function SwipeToReveal({
     } finally {
       unregister(close);
       setIsOpen(false);
+      isOpenRef.current = false;
       x.set(0);
     }
   };
@@ -262,13 +332,10 @@ export function SwipeToReveal({
 
       {/* Foreground content layer */}
       <motion.div
-        animate={controls}
-        style={{ x }}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerCancel={onPointerUp}
-        className="relative touch-pan-y"
+        ref={fgRef}
+        style={{ x, touchAction: "pan-y" }}
+        onMouseDown={onMouseDown}
+        className="relative"
       >
         {children}
       </motion.div>
