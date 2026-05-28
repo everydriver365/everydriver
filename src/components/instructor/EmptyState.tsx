@@ -17,7 +17,9 @@ export function EmptyState({
   subtitle,
   iconBg = "#F1ECFA",
   iconColor = "#8A5BC9",
+  icon3d,
 }: EmptyStateProps) {
+  const use3D = icon3d && hasIcon3D(icon3d);
   return (
     <div
       className="flex flex-col items-center text-center"
@@ -29,19 +31,23 @@ export function EmptyState({
         gap: 12,
       }}
     >
-      <div
-        style={{
-          width: 48,
-          height: 48,
-          borderRadius: 12,
-          background: iconBg,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <Icon size={24} strokeWidth={2} color={iconColor} />
-      </div>
+      {use3D ? (
+        <Icon3D name={icon3d!} size={56} />
+      ) : (
+        <div
+          style={{
+            width: 48,
+            height: 48,
+            borderRadius: 12,
+            background: iconBg,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Icon size={24} strokeWidth={2} color={iconColor} />
+        </div>
+      )}
       <div>
         <div
           style={{
