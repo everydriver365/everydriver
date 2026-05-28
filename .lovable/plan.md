@@ -1,71 +1,33 @@
-# Why swipe-to-delete doesn't work in the schedule
+# Why the messaging screen shows a giant red "Delete" stripe
 
-`NewMobileScheduleView` wraps each lesson row in `<SwipeToReveal>`, but the child is an `<ExpandableLessonCard>` that already has two things which kill the outer swipe:
+In `SwipeToReveal` (`src/components/ui/SwipeToReveal.tsx`), the red Delete action layer is rendered as an `absolute inset-y-0 right-0` button with `width: 88` **at all times**, sitting behind the foreground row.
 
-## Cause 1 — the card is its own draggable
-`ExpandableLessonCard` (line 238–245) has its own `motion.div` with:
-```tsx
-drag={onDelete ? "x" : false}
-dragConstraints={{ left: -120, right: 0 }}
-```
-Because the schedule passes `onDelete={handleDeleteLesson}` to the card (line 379), Framer Motion's drag handler swallows every horizontal pointer gesture before `SwipeToReveal`'s pointer handlers ever see it. The card's own "swipe to reveal a red Trash background" runs instead — but it never finishes the delete in the way the user expects, because the schedule also wraps it in `SwipeToReveal`, which never engages.
+That works for the schedule because the lesson cards have solid backgrounds covering it. But on the messaging screen, `ConversationRow` (`src/pages/InstructorUnifiedInbox.tsx` line 206) uses:
 
-## Cause 2 — the entire collapsed card is a `<button>`
-Line 291:
-```tsx
-<button onClick={() => !isDragging && setIsExpanded(!isExpanded)} className="w-full text-left">
-  {renderCustomCollapsed ?? …}
-</button>
-```
-And `SwipeToReveal.onPointerDown` (line 116) explicitly bails out when the touch target is inside a button/link:
 ```ts
-if (target.closest("button,a,input,textarea,select,[role='button']")) return;
+background: rowBg, // "transparent" for read, non-selected rows
 ```
-So even if Cause 1 were fixed, the swipe would still be ignored because the whole row counts as a button.
+
+So the red action layer shows through the transparent foreground — producing the always-visible red strip on the right of every conversation. It doesn't respond to taps because the foreground row (a full-width `<button>`) is on top of it and absorbs the click.
 
 # Fix
 
-Make the schedule use **one** swipe system, not two. `SwipeToReveal` is the standard one across the app (inbox, etc.), so keep that and switch the card off.
+Make the action layer invisible while the row is closed and fade it in as the user drags. This is one local change to `SwipeToReveal` — every consumer benefits, no per-row background hack needed.
 
-### 1. `src/components/instructor/NewMobileScheduleView.tsx`
-Where `<ExpandableLessonCard>` is rendered inside `<SwipeToReveal>` (line 367–459), stop passing `onDelete` to the card so the card's internal drag is disabled:
-```diff
-- onDelete={handleDeleteLesson}
-+ // onDelete handled by outer SwipeToReveal
-```
-(The `<SwipeToReveal onDelete={…}>` on line 365 keeps the delete action.)
+### `src/components/ui/SwipeToReveal.tsx`
+- Import `useTransform` from `framer-motion`.
+- Derive `actionOpacity = useTransform(x, [-actionWidth * 0.1, 0], [1, 0], { clamp: true })`.
+- Wrap the action button in a `motion.div` (or apply `style={{ opacity: actionOpacity }}` to the existing wrapper) and also set `pointerEvents` to `'auto'` when open and `'none'` when closed so it can't intercept taps while invisible.
 
-### 2. `src/components/ui/SwipeToReveal.tsx`
-Relax the pointer-down guard so a tap on a "wrapper button" (whose only job is to toggle expand) doesn't kill the swipe. Replace line 116 with a check that only bails for **leaf** interactive controls:
-```ts
-const interactive = target.closest("a,input,textarea,select,[role='button'],[data-no-swipe]");
-const isLeafButton = target.closest("button") && !target.closest("[data-swipe-pass]");
-if (interactive || isLeafButton) return;
-```
-Then add `data-swipe-pass` to the collapsed `<button>` in `ExpandableLessonCard.tsx` line 291 so it opts into pass-through:
-```diff
-- <button onClick={() => !isDragging && setIsExpanded(!isExpanded)} className="w-full text-left">
-+ <button
-+   data-swipe-pass
-+   onClick={() => !isDragging && setIsExpanded(!isExpanded)}
-+   className="w-full text-left"
-+ >
-```
-Net effect: tap still expands the card, vertical scroll still works, horizontal drag is now captured by `SwipeToReveal` and reveals the Cancel action.
-
-### 3. (Optional cleanup, recommended)
-In `ExpandableLessonCard.tsx`, since the schedule no longer passes `onDelete`, the in-card red Trash background (line 229–236) and drag state (line 238–252) become dead code in that callsite. They're still used by `MultiDayScheduleView`, so leave the code in place but verify nothing else regresses.
+No other files need to change. Behaviour stays identical when swiping; the only difference is the action layer is hidden at rest.
 
 # Verification
 
-1. Open `/instructor/schedule` on mobile viewport.
-2. Swipe a lesson row left → red "Cancel" action slides in.
-3. Tap "Cancel" or full-swipe → `handleDeleteLesson` runs (existing cancel flow).
-4. Tap the row (no swipe) → card still expands/collapses.
-5. Vertical scroll of the list still works.
-6. Confirm `MultiDayScheduleView` (which still uses the card's internal drag) is unaffected.
+1. `/instructor/messages` — red strip is gone on every conversation row.
+2. Swipe a row left → red Delete fades in and snaps open, just like before.
+3. Tap Delete or full-swipe → soft-delete still runs (`handleSwipeDeleteConversation`).
+4. `/instructor/schedule` — swipe Cancel still works (the schedule rows have solid backgrounds so visually unchanged).
 
 # Out of scope
-
-- Not changing the desktop `MultiDayScheduleView` behaviour.
-- Not changing the actual cancel logic — only the gesture that triggers it.
+- Not changing `ConversationRow` styling.
+- Not changing the delete handler.
