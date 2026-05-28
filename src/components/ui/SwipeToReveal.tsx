@@ -113,7 +113,11 @@ export function SwipeToReveal({
     if (disabled) return;
     // Don't start a swipe from interactive children.
     const target = e.target as HTMLElement;
-    if (target.closest("button,a,input,textarea,select,[role='button']")) return;
+    const interactive = target.closest("a,input,textarea,select,[role='button'],[data-no-swipe]");
+    const leafButton = target.closest("button");
+    const passThrough = target.closest("[data-swipe-pass]");
+    if (interactive) return;
+    if (leafButton && !passThrough) return;
     draggingRef.current = true;
     startXRef.current = e.clientX;
     startYRef.current = e.clientY;
