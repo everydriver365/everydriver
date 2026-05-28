@@ -43,6 +43,7 @@ import {
   DialogContent,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { SwipeToReveal } from "@/components/ui/SwipeToReveal";
 import { toast } from "sonner";
 
 const PAGE_BG = "#F2F2F4";
@@ -873,6 +874,22 @@ export default function InstructorUnifiedInbox() {
     return list.length > 0 && list.every((c) => !!(c as any).muted_at);
   }, [selectedIds, source, conversations, waConversations]);
 
+  const handleSwipeDeleteConversation = async (conversationId: string) => {
+    try {
+      const { error } = await supabase
+        .from("messages")
+        .update({ deleted_at: new Date().toISOString() })
+        .eq("conversation_id", conversationId)
+        .is("deleted_at", null);
+      if (error) throw error;
+      toast.success("Conversation cleared");
+      void fetchConversations();
+    } catch (err) {
+      console.error("Failed to delete conversation:", err);
+      toast.error("Failed to delete conversation");
+    }
+  };
+
   const handleBulkMarkRead = async () => {
     const ids = Array.from(selectedIds);
     if (!ids.length) return;
@@ -1230,22 +1247,27 @@ export default function InstructorUnifiedInbox() {
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
         {filteredInApp.map((c) => (
-          <ConversationRow
+          <SwipeToReveal
             key={c.id}
-            id={c.id}
-            name={c.pupil?.name || "Unknown"}
-            preview={c.last_message_preview}
-            timestamp={c.last_message_at}
-            unreadCount={c.unread_count || 0}
-            avatarSeed={c.pupil_id || c.id}
-            avatarUrl={c.pupil?.profile_image_url}
-            muted={!!c.muted_at}
-            selectMode={selectMode}
-            selected={selectedIds.has(c.id)}
-            onPress={() => setSelectedConversation(c)}
-            onLongPress={() => enterSelectMode(c.id)}
-            onToggleSelect={() => toggleSelected(c.id)}
-          />
+            disabled={selectMode}
+            onDelete={() => handleSwipeDeleteConversation(c.id)}
+          >
+            <ConversationRow
+              id={c.id}
+              name={c.pupil?.name || "Unknown"}
+              preview={c.last_message_preview}
+              timestamp={c.last_message_at}
+              unreadCount={c.unread_count || 0}
+              avatarSeed={c.pupil_id || c.id}
+              avatarUrl={c.pupil?.profile_image_url}
+              muted={!!c.muted_at}
+              selectMode={selectMode}
+              selected={selectedIds.has(c.id)}
+              onPress={() => setSelectedConversation(c)}
+              onLongPress={() => enterSelectMode(c.id)}
+              onToggleSelect={() => toggleSelected(c.id)}
+            />
+          </SwipeToReveal>
         ))}
       </div>
     );
