@@ -36,13 +36,15 @@ export function IconTile({ icon: Icon, color = "neutral", size = "md", className
   const lightColors = colorMap[color].light;
   const darkColors = colorMap[color].dark;
 
-  if (icon3d && hasIcon3D(icon3d)) {
+  // Auto-resolve: explicit icon3d wins, otherwise fall back to the Lucide icon's displayName.
+  const resolved = resolveIcon3D(icon3d) ?? resolveIcon3D((Icon as { displayName?: string }).displayName);
+  if (resolved) {
     return (
       <div
         className={cn("flex items-center justify-center shrink-0", className)}
         style={{ width: tile, height: tile }}
       >
-        <Icon3D name={icon3d} size={tile} />
+        <Icon3D name={resolved} size={tile} />
       </div>
     );
   }
