@@ -263,21 +263,27 @@ const Tile: React.FC<TileProps> = ({
     return (
       <div style={{ display: "flex", gap: 12, alignItems: "flex-start", minWidth: 0 }}>
         {!iconOptional && (
-          <div
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: 10,
-              background: iconPal.bg,
-              color: iconPal.fg,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              flexShrink: 0,
-            }}
-          >
-            {iconNode ?? (icon ? <i className={`ti ${icon}`} style={{ fontSize: 18, lineHeight: 1, color: iconPal.fg }} aria-hidden /> : null)}
-          </div>
+          iconBare ? (
+            <div style={{ width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              {iconNode}
+            </div>
+          ) : (
+            <div
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: 10,
+                background: iconPal.bg,
+                color: iconPal.fg,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
+            >
+              {iconNode ?? (icon ? <i className={`ti ${icon}`} style={{ fontSize: 18, lineHeight: 1, color: iconPal.fg }} aria-hidden /> : null)}
+            </div>
+          )
         )}
         <div style={{ flex: 1, minWidth: 0 }}>
           {eyebrow && (
