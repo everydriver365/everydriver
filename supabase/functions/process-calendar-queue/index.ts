@@ -248,6 +248,55 @@ async function markProcessed(supabase: any, id: string, error?: string) {
     .eq("id", id);
 }
 
+/**
+ * Rescue lessons that are stuck in calendar_sync_status='pending'|'failed' but have
+ * NO unprocessed queue row. This catches lessons whose enqueue silently failed
+ * or whose queue row was burned through retries during a credential outage.
+ * Looks at the next 60 days; enqueues a fresh syncLesson item for each.
+ */
+async function sweepOrphanLessons(supabase: any) {
+  try {
+    const today = new Date().toISOString().slice(0, 10);
+    const horizon = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+
+    const { data: stuck, error: sErr } = await supabase
+      .from("scheduled_lessons")
+      .select("id, instructor_id")
+      .is("deleted_at", null)
+      .eq("status", "scheduled")
+      .gte("lesson_date", today)
+      .lte("lesson_date", horizon)
+      .in("calendar_sync_status", ["pending", "failed"])
+      .limit(200);
+
+    if (sErr) { console.warn("orphan sweep query failed:", sErr); return; }
+    if (!stuck?.length) return;
+
+    const lessonIds = stuck.map((l: any) => l.id);
+    const { data: existing } = await supabase
+      .from("calendar_sync_queue")
+      .select("lesson_id")
+      .in("lesson_id", lessonIds)
+      .is("processed_at", null);
+
+    const queued = new Set((existing ?? []).map((r: any) => r.lesson_id));
+    const orphans = stuck.filter((l: any) => !queued.has(l.id));
+    if (!orphans.length) return;
+
+    const rows = orphans.map((l: any) => ({
+      lesson_id: l.id,
+      instructor_id: l.instructor_id,
+      action: "syncLesson",
+    }));
+    const { error: iErr } = await supabase.from("calendar_sync_queue").insert(rows);
+    if (iErr) console.warn("orphan sweep insert failed:", iErr);
+    else console.log(`[orphan-sweep] re-enqueued ${rows.length} stranded lessons`);
+  } catch (e) {
+    console.warn("orphan sweep error:", e);
+  }
+}
+
+
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
     status,
