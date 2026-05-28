@@ -35,6 +35,8 @@ export interface TileProps {
   className?: string;
   ariaLabel?: string;
   iconOptional?: boolean;
+  /** When true, render iconNode without the coloured 36×36 background wrapper. Use for 3D PNG icons. */
+  iconBare?: boolean;
   disabled?: boolean;
 }
 
