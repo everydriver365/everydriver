@@ -63,7 +63,7 @@ export function ADIBadgeTrackerTile({ instructorId }: ADIBadgeTrackerTileProps) 
       <TileCard onClick={() => navigate(SETTINGS_ROUTE)} ariaLabel="Add ADI badge details">
         <div style={inner}>
           <div style={row}>
-            <IconBox bg="#f0f1f4" fg="#888888"><Award size={18} /></IconBox>
+            <BadgeIcon />
             <div style={textCol}>
               <div style={titleStyle}>ADI Badge</div>
               <div style={subStyle}>Badge details not set</div>
@@ -88,7 +88,7 @@ export function ADIBadgeTrackerTile({ instructorId }: ADIBadgeTrackerTileProps) 
       <TileCard accentColor="red" ariaLabel="ADI badge expired">
         <div style={inner}>
           <div style={row}>
-            <IconBox bg="#fbe8e8" fg="#c9302c"><ShieldAlert size={18} /></IconBox>
+            <BadgeIcon />
             <div style={textCol}>
               <div style={titleStyle}>ADI Badge — EXPIRED</div>
               <div style={subStyle}>Expired {expiryFormatted}</div>
@@ -107,7 +107,7 @@ export function ADIBadgeTrackerTile({ instructorId }: ADIBadgeTrackerTileProps) 
       <TileCard accentColor="red" ariaLabel={`ADI badge expires in ${daysLeft} days`}>
         <div style={inner}>
           <div style={row}>
-            <IconBox bg="#fbe8e8" fg="#c9302c"><ShieldAlert size={18} /></IconBox>
+            <BadgeIcon />
             <div style={textCol}>
               <div style={titleStyle}>ADI Badge — Renew now</div>
               <div style={subStyle}>Expires {expiryFormatted}</div>
@@ -126,7 +126,7 @@ export function ADIBadgeTrackerTile({ instructorId }: ADIBadgeTrackerTileProps) 
       <TileCard accentColor="amber" onClick={() => navigate(SETTINGS_ROUTE)} ariaLabel={`ADI badge expires in ${daysLeft} days`}>
         <div style={inner}>
           <div style={row}>
-            <IconBox bg="#fff3e0" fg="#d97706"><ShieldCheck size={18} /></IconBox>
+            <BadgeIcon />
             <div style={textCol}>
               <div style={titleStyle}>ADI Badge</div>
               <div style={subStyle}>Renew by {expiryFormatted}</div>
@@ -143,7 +143,7 @@ export function ADIBadgeTrackerTile({ instructorId }: ADIBadgeTrackerTileProps) 
     <TileCard onClick={() => navigate(SETTINGS_ROUTE)} ariaLabel="ADI badge valid">
       <div style={inner}>
         <div style={row}>
-          <IconBox bg="#e8eefb" fg="#2952b3"><ShieldCheck size={18} /></IconBox>
+          <BadgeIcon />
           <div style={textCol}>
             <div style={titleStyle}>ADI Badge</div>
             <div style={subStyle}>
