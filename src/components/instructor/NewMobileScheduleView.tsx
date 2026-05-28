@@ -376,7 +376,7 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
                     sendingMessage={sendingMessage}
                     cardColor={lessonColors[lesson.id] || "bg-card"}
                     onColorChange={(color) => handleColorChange(lesson.id, color)}
-                    onDelete={handleDeleteLesson}
+                    // onDelete handled by outer SwipeToReveal — don't enable in-card drag
                     renderCustomCollapsed={
                       <div className={`rounded-2xl border p-4 space-y-2 ${
                         lesson.lesson_type === 'driving_test' 

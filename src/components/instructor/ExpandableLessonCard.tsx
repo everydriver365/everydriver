@@ -289,6 +289,7 @@ export function ExpandableLessonCard({
 
         {/* Main Card - Collapsed View */}
         <button
+          data-swipe-pass
           onClick={() => !isDragging && setIsExpanded(!isExpanded)}
           className="w-full text-left"
         >
