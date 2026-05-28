@@ -1,47 +1,44 @@
-# Why deletes from Google Calendar don't remove items from your schedule
+## Why the 0900 lesson is still there
 
-## Diagnosis
+The lesson at 09:00 today (`b3839320…`) was created on **May 6** with `calendar_sync_status = 'pending'` and **was never pushed to Google Calendar** — its `google_event_id` is `NULL`. So whatever you deleted in Google this morning wasn't this lesson; the app and Google were never linked for it. The reconcile job correctly skipped it (no Google ID to compare).
 
-The push channel from Google is healthy (your last sync was minutes ago, channel valid until June 2), so notifications **are** arriving. The bug is in what we do with them.
+Diagnosis turned up two real problems:
 
-When Google pings us, `google-calendar-webhook` does two things:
+1. **17 lessons across the next 30 days are stuck** (`12 pending`, `5 failed`) and the 0900 lesson is one of them.
+2. On **2026-05-26**, the calendar queue logged **211 consecutive failures** with `invalid_grant: Invalid JWT Signature` — the Google service-account JWT signing broke for a window. Those queue rows were marked `processed` with an error and never retried, stranding the lessons. New webhooks are healthy now, but nothing pulls the stragglers forward.
+3. The 0900 lesson has **zero rows in `calendar_sync_queue`** — so even a working queue worker would never touch it. There's no orphan-rescue path.
 
-1. Refreshes `instructor_calendar_events` (the inbound mirror of your Google calendar) — this DOES correctly remove anything you deleted in Google.
-2. Calls `reconcileLessons(...)` to cancel any **pupil lessons** whose Google event is gone.
+## Plan
 
-Two gaps in step 2 cause your symptom:
+### 1. One-off backfill (immediate)
 
-### Gap 1 — Manual blocks (busy time / personal events you added in the app) are never reconciled
+- Find every `scheduled_lessons` row with `deleted_at IS NULL`, `lesson_date >= today`, `status = 'scheduled'`, and `calendar_sync_status IN ('pending','failed')`.
+- Insert a fresh `syncLesson` row into `calendar_sync_queue` for each (dedupe-safe: queue already dedupes per-lesson on the next run).
+- Manually invoke `process-calendar-queue` once and confirm `google_event_id` populates for the 0900 lesson and the rest.
 
-When you add a "block" in the app, we write a row to `instructor_manual_blocks` AND create a matching Google event. If you then delete the event in Google, nothing tells the app — the row stays and keeps appearing on the mobile schedule forever. There's no inbound handler for manual blocks at all (only the outbound `op === "delete"` path in `syncManualBlock`).
+### 2. Make the queue self-healing
 
-### Gap 2 — `reconcileLessons` only looks at lessons from today onward
+Edit `supabase/functions/process-calendar-queue/index.ts`:
 
-```ts
-.gte("lesson_date", new Date().toISOString().slice(0, 10))
-```
+- **Add retry semantics.** Add `attempt_count` + `next_retry_at` columns to `calendar_sync_queue` (migration). On failure, don't mark processed — increment `attempt_count`, set `next_retry_at = now() + backoff` (e.g. 1m, 5m, 30m, 2h, 6h). Only mark processed after `attempt_count >= 6`. Queue fetch filter becomes `processed_at IS NULL AND (next_retry_at IS NULL OR next_retry_at <= now())`.
+- **Add orphan sweep.** Before returning, query `scheduled_lessons` where `deleted_at IS NULL`, `lesson_date BETWEEN today AND today+30`, `status = 'scheduled'`, `calendar_sync_status IN ('pending','failed')`, and **no unprocessed queue row exists**. Enqueue a fresh `syncLesson` row for each. This is what catches the 0900-style orphans permanently.
+- **Reduce noisy alerts.** Only `raiseSyncAlert` after final retry exhaustion, not on every transient failure (today the May-26 outage would have raised 211 alerts).
 
-Any past or in-progress lesson deleted in Google stays "scheduled" forever. Combined with timezone edge cases around midnight, even some "today" lessons can be missed.
+### 3. Verify the cron
 
-## Fix
+- Confirm a `pg_cron` job invokes `process-calendar-queue` (suspect cadence; the May-26 backlog suggests it ran but couldn't recover). If missing or > every 5 minutes, schedule it `*/2 * * * *`.
 
-Extend the webhook's reconciliation so a Google delete propagates back to **both** sources of schedule items:
+## Technical details
 
-1. **Reconcile `instructor_manual_blocks`** in `google-calendar-webhook/index.ts`:
-   - Load all manual blocks for the instructor with a non-null `google_event_id` whose `end_datetime >= now()`.
-   - For any whose `google_event_id` no longer exists in the freshly-refreshed `instructor_calendar_events`, hard-delete the block (manual blocks have no soft-delete column and the schedule reads the row directly).
-   - Invalidate caches via existing realtime publication on `instructor_manual_blocks`.
+**Files**
+- `supabase/functions/process-calendar-queue/index.ts` — retry logic + orphan sweep + alert gating.
+- `supabase/migrations/<timestamp>_calendar_queue_retry.sql` — add `attempt_count int default 0`, `next_retry_at timestamptz`.
+- `supabase/insert` — one-off `INSERT INTO calendar_sync_queue` backfill for the 17 stuck lessons.
+- `supabase/insert` — `cron.schedule(...)` if the existing job is missing or too slow.
 
-2. **Widen `reconcileLessons`** in the same file:
-   - Replace the `gte("lesson_date", today)` filter with a window of `lesson_date >= now() - interval '7 days'` so recently-completed and in-progress lessons are also caught.
-   - Keep the existing `status != cancelled` and `deleted_at IS NULL` guards.
+**Files NOT touched**
+- `google-calendar-webhook/index.ts`, `reconcile-google-calendar/index.ts` — the inbound-delete fix from the previous turn is correct; the issue here is outbound and queue mechanics.
+- `sync-lesson-now`, `_shared/googleCalendarSync.ts` — sync logic itself works; the May-26 JWT outage was credential-side.
 
-3. **Safety net** — add an hourly `pg_cron` job (or extend the existing renew job) that calls `google-calendar-service` with `action: "fetchExternalEvents"` for each active connection and runs the same two reconciliations. This covers the case where Google's push notification is missed (channel rotation, transient 5xx, etc.) so deletes are never stranded for more than an hour.
-
-## Files touched
-
-- `supabase/functions/google-calendar-webhook/index.ts` — add `reconcileManualBlocks(...)`, widen `reconcileLessons(...)` window.
-- `supabase/functions/renew-google-calendar-webhooks/index.ts` — also trigger a reconcile pass per instructor (or new `reconcile-google-calendar` function scheduled hourly).
-- One `cron.schedule(...)` insert via the insert tool to wire the hourly safety job.
-
-No DB schema changes, no UI changes.
+**Out of scope (ask if wanted)**
+- UI badge in the schedule for "not synced to Google" so silent failures become visible to the instructor.

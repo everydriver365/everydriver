@@ -22,6 +22,9 @@ const CORS = {
 };
 
 const STALE_PAYMENT_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+const MAX_ATTEMPTS = 6;
+// Backoff schedule per attempt (minutes). After MAX_ATTEMPTS the item is marked processed with the last error.
+const BACKOFF_MINUTES = [1, 5, 30, 120, 360, 1440];
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: CORS });
@@ -32,16 +35,22 @@ Deno.serve(async (req) => {
   );
 
   try {
-    // ── Fetch pending queue items ─────────────────────────────────────────
+    // ── Fetch pending queue items (respect next_retry_at backoff) ─────────
+    const nowIso = new Date().toISOString();
     const { data: items, error: qErr } = await supabase
       .from("calendar_sync_queue")
       .select("*")
       .is("processed_at", null)
+      .or(`next_retry_at.is.null,next_retry_at.lte.${nowIso}`)
       .order("created_at", { ascending: true })
       .limit(50);
 
     if (qErr) throw qErr;
-    if (!items?.length) return json({ success: true, processed: 0 });
+    if (!items?.length) {
+      // Even with nothing due, run the orphan sweep so stranded lessons are rescued.
+      await sweepOrphanLessons(supabase);
+      return json({ success: true, processed: 0 });
+    }
 
     // ── Deduplicate: per lesson_id keep the latest item ───────────────────
     const byLesson = new Map<string, any>();
@@ -152,26 +161,52 @@ Deno.serve(async (req) => {
         successCount++;
       } catch (err) {
         const message = err instanceof Error ? err.message : "Unknown error";
-        console.error(`Queue item ${item.id} failed:`, err);
-        await supabase.from("scheduled_lessons")
-          .update({ calendar_sync_status: "failed" })
-          .eq("id", item.lesson_id);
-        await markProcessed(supabase, item.id, message);
+        const attempt = (item.attempt_count ?? 0) + 1;
+        console.error(`Queue item ${item.id} failed (attempt ${attempt}/${MAX_ATTEMPTS}):`, err);
 
-        void raiseSyncAlert({
-          category: "other",
-          severity: "medium",
-          title: "Calendar queue item failed",
-          message,
-          instructorId: item.instructor_id ?? null,
-          lessonId: item.lesson_id ?? null,
-          metadata: { action: item.action },
-          supabase,
-        });
+        if (attempt >= MAX_ATTEMPTS) {
+          // Final failure — mark scheduled_lesson failed, mark queue row processed, raise alert.
+          await supabase.from("scheduled_lessons")
+            .update({ calendar_sync_status: "failed" })
+            .eq("id", item.lesson_id);
+          await supabase.from("calendar_sync_queue")
+            .update({
+              processed_at: new Date().toISOString(),
+              attempt_count: attempt,
+              error: message,
+            })
+            .eq("id", item.id);
+
+          void raiseSyncAlert({
+            category: "other",
+            severity: "medium",
+            title: "Calendar queue item failed after retries",
+            message: `${message} (after ${MAX_ATTEMPTS} attempts)`,
+            instructorId: item.instructor_id ?? null,
+            lessonId: item.lesson_id ?? null,
+            metadata: { action: item.action, attempts: attempt },
+            supabase,
+          });
+        } else {
+          // Schedule retry with backoff — do NOT mark processed.
+          const backoffMin = BACKOFF_MINUTES[Math.min(attempt - 1, BACKOFF_MINUTES.length - 1)];
+          const nextRetry = new Date(Date.now() + backoffMin * 60 * 1000).toISOString();
+          await supabase.from("calendar_sync_queue")
+            .update({
+              attempt_count: attempt,
+              next_retry_at: nextRetry,
+              error: message,
+            })
+            .eq("id", item.id);
+        }
 
         errorCount++;
       }
     }
+
+    // ── Rescue stranded lessons (no queue row at all) ────────────────────
+    await sweepOrphanLessons(supabase);
+
 
     // ── Stuck queue detection ────────────────────────────────────────────
     try {
@@ -212,6 +247,55 @@ async function markProcessed(supabase: any, id: string, error?: string) {
     .update({ processed_at: new Date().toISOString(), ...(error ? { error } : {}) })
     .eq("id", id);
 }
+
+/**
+ * Rescue lessons that are stuck in calendar_sync_status='pending'|'failed' but have
+ * NO unprocessed queue row. This catches lessons whose enqueue silently failed
+ * or whose queue row was burned through retries during a credential outage.
+ * Looks at the next 60 days; enqueues a fresh syncLesson item for each.
+ */
+async function sweepOrphanLessons(supabase: any) {
+  try {
+    const today = new Date().toISOString().slice(0, 10);
+    const horizon = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+
+    const { data: stuck, error: sErr } = await supabase
+      .from("scheduled_lessons")
+      .select("id, instructor_id")
+      .is("deleted_at", null)
+      .eq("status", "scheduled")
+      .gte("lesson_date", today)
+      .lte("lesson_date", horizon)
+      .in("calendar_sync_status", ["pending", "failed"])
+      .limit(200);
+
+    if (sErr) { console.warn("orphan sweep query failed:", sErr); return; }
+    if (!stuck?.length) return;
+
+    const lessonIds = stuck.map((l: any) => l.id);
+    const { data: existing } = await supabase
+      .from("calendar_sync_queue")
+      .select("lesson_id")
+      .in("lesson_id", lessonIds)
+      .is("processed_at", null);
+
+    const queued = new Set((existing ?? []).map((r: any) => r.lesson_id));
+    const orphans = stuck.filter((l: any) => !queued.has(l.id));
+    if (!orphans.length) return;
+
+    const rows = orphans.map((l: any) => ({
+      lesson_id: l.id,
+      instructor_id: l.instructor_id,
+      action: "syncLesson",
+    }));
+    const { error: iErr } = await supabase.from("calendar_sync_queue").insert(rows);
+    if (iErr) console.warn("orphan sweep insert failed:", iErr);
+    else console.log(`[orphan-sweep] re-enqueued ${rows.length} stranded lessons`);
+  } catch (e) {
+    console.warn("orphan sweep error:", e);
+  }
+}
+
 
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
