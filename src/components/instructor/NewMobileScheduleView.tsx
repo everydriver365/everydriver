@@ -457,6 +457,7 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
                       </div>
                     }
                   />
+                  </SwipeToReveal>
                   {travelTime && (
                     <TravelTimeIndicator
                       durationMinutes={travelTime.durationMinutes}
