@@ -3,6 +3,7 @@ import { Calculator, ChevronRight } from "lucide-react";
 import { useInstructorTaxSummary } from "@/hooks/useInstructorTaxSummary";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { TileCard } from "@/components/instructor/ui";
+import { Icon3D, hasIcon3D } from "@/components/Icon3D";
 
 interface TaxEstimateTileProps {
   instructorId: string;
