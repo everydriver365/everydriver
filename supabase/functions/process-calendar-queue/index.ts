@@ -22,6 +22,9 @@ const CORS = {
 };
 
 const STALE_PAYMENT_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+const MAX_ATTEMPTS = 6;
+// Backoff schedule per attempt (minutes). After MAX_ATTEMPTS the item is marked processed with the last error.
+const BACKOFF_MINUTES = [1, 5, 30, 120, 360, 1440];
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: CORS });
