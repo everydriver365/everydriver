@@ -95,6 +95,8 @@ const LUCIDE_TO_3D: Record<string, Icon3DName> = {
   User: "user",
   UserPlus: "user",
   UserCheck: "user",
+  IdCard: "user",
+  Contact: "user",
   Users: "users",
   GraduationCap: "graduation-cap",
   Wallet: "wallet",

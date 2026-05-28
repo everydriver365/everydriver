@@ -3,6 +3,7 @@ import { Calculator, ChevronRight } from "lucide-react";
 import { useInstructorTaxSummary } from "@/hooks/useInstructorTaxSummary";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { TileCard } from "@/components/instructor/ui";
+import { Icon3D, hasIcon3D } from "@/components/Icon3D";
 
 interface TaxEstimateTileProps {
   instructorId: string;
@@ -77,10 +78,13 @@ export function TaxEstimateTile({ instructorId }: TaxEstimateTileProps) {
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 10 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <div style={{
-                width: 36, height: 36, borderRadius: 10,
-                background: "#EDF2FE", display: "flex", alignItems: "center", justifyContent: "center",
+                width: 36, height: 36, borderRadius: hasIcon3D("coins") ? 0 : 10,
+                background: hasIcon3D("coins") ? "transparent" : "#EDF2FE",
+                display: "flex", alignItems: "center", justifyContent: "center",
               }}>
-                <Calculator size={18} color="#2952b3" />
+                {hasIcon3D("coins")
+                  ? <Icon3D name="coins" size={36} />
+                  : <Calculator size={18} color="#2952b3" />}
               </div>
               <div>
                 <div style={{ fontSize: 14, fontWeight: 700, color: "#1F2937" }}>Set up tax tracking</div>

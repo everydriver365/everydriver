@@ -11,6 +11,7 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { PullToRefresh } from "@/components/instructor/home/PullToRefresh";
+import { Icon3D, resolveIcon3D } from "@/components/Icon3D";
 import { Shimmer } from "@/components/instructor/home/Shimmer";
 import nextLessonCar from "@/assets/next-lesson-car.png";
 import {
@@ -485,22 +486,41 @@ function UnifiedInfoPanel({
     Icon: LucideIcon;
     bg: string;
     color: string;
-  }) => (
-    <div
-      style={{
-        width: 36,
-        height: 36,
-        borderRadius: 10,
-        background: bg,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        flexShrink: 0,
-      }}
-    >
-      <Icon size={18} color={color} />
-    </div>
-  );
+  }) => {
+    const resolved = resolveIcon3D((Icon as { displayName?: string }).displayName);
+    if (resolved) {
+      return (
+        <div
+          style={{
+            width: 36,
+            height: 36,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+          }}
+        >
+          <Icon3D name={resolved} size={36} />
+        </div>
+      );
+    }
+    return (
+      <div
+        style={{
+          width: 36,
+          height: 36,
+          borderRadius: 10,
+          background: bg,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+        }}
+      >
+        <Icon size={18} color={color} />
+      </div>
+    );
+  };
 
   const Title = ({ children }: { children: React.ReactNode }) => (
     <div style={{ fontSize: 13, fontWeight: 500, color: "#1a1a1f", marginTop: 10 }}>
