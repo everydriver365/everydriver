@@ -2554,20 +2554,10 @@ function QATile({
       badgeCount={badgeCount}
       badgeVisible={!!badgeCount && badgeCount > 0}
       ariaLabel={item.label}
+      iconBare={!!resolved3D}
       iconNode={
         resolved3D ? (
-          <span
-            style={{
-              width: 36,
-              height: 36,
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              flexShrink: 0,
-            }}
-          >
-            <Icon3D name={resolved3D} size={36} />
-          </span>
+          <Icon3D name={resolved3D} size={36} />
         ) : (
           <span
             style={{
