@@ -19,7 +19,7 @@ export function EmptyState({
   iconColor = "#8A5BC9",
   icon3d,
 }: EmptyStateProps) {
-  const use3D = icon3d && hasIcon3D(icon3d);
+  const resolved = resolveIcon3D(icon3d) ?? resolveIcon3D((Icon as { displayName?: string }).displayName);
   return (
     <div
       className="flex flex-col items-center text-center"
@@ -31,8 +31,8 @@ export function EmptyState({
         gap: 12,
       }}
     >
-      {use3D ? (
-        <Icon3D name={icon3d!} size={56} />
+      {resolved ? (
+        <Icon3D name={resolved} size={56} />
       ) : (
         <div
           style={{
