@@ -11,7 +11,7 @@
  */
 
 import * as React from "react";
-import { motion, useMotionValue, useAnimation, animate } from "framer-motion";
+import { motion, useMotionValue, useAnimation, useTransform, animate } from "framer-motion";
 import { Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -197,10 +197,14 @@ export function SwipeToReveal({
       data-swipe-reveal
       className={cn("relative overflow-hidden rounded-2xl", className)}
     >
-      {/* Action layer (behind) */}
-      <div
+      {/* Action layer (behind) — hidden at rest, fades in as the user drags */}
+      <motion.div
         className="absolute inset-y-0 right-0 flex items-stretch"
-        style={{ width: actionWidth }}
+        style={{
+          width: actionWidth,
+          opacity: useTransform(x, [-actionWidth * 0.1, 0], [1, 0], { clamp: true }),
+          pointerEvents: isOpen ? "auto" : "none",
+        }}
         aria-hidden={!isOpen}
       >
         <button
@@ -213,7 +217,7 @@ export function SwipeToReveal({
           <Trash2 className="h-5 w-5" />
           <span className="text-[11px] font-semibold">{actionLabel}</span>
         </button>
-      </div>
+      </motion.div>
 
       {/* Foreground content layer */}
       <motion.div
