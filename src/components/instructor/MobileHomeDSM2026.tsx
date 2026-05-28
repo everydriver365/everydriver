@@ -116,6 +116,7 @@ import { RescheduleRequestsCard } from "@/components/instructor/RescheduleReques
 import { PendingBookingsCard } from "@/components/instructor/PendingBookingsCard";
 import { useQuickAccessUnreads } from "@/hooks/useQuickAccessUnreads";
 import { toast } from "sonner";
+import taxDigitalIcon from "@/assets/icons-3d/tax-digital.png";
 
 /* ---------------------------- Design tokens ----------------------------- */
 const T = {
