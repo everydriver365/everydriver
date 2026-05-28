@@ -1,33 +1,77 @@
-# Why the messaging screen shows a giant red "Delete" stripe
+# iOS-style swipe-to-delete across instructor / pupil / parent apps
 
-In `SwipeToReveal` (`src/components/ui/SwipeToReveal.tsx`), the red Delete action layer is rendered as an `absolute inset-y-0 right-0` button with `width: 88` **at all times**, sitting behind the foreground row.
+Yes — totally achievable, and we're already most of the way there. `SwipeToReveal` (the iOS-Mail-style component used in Inbox and Schedule) is the only primitive needed. The job is **rolling it out consistently** across the three portals' mobile list surfaces and standardising the destructive action.
 
-That works for the schedule because the lesson cards have solid backgrounds covering it. But on the messaging screen, `ConversationRow` (`src/pages/InstructorUnifiedInbox.tsx` line 206) uses:
+This plan covers the *gesture* (swipe → red action → tap or full-swipe to confirm). Hard vs soft delete is already settled (we soft-delete everything instructor-facing).
 
-```ts
-background: rowBg, // "transparent" for read, non-selected rows
+## Approach
+
+One shared primitive, one rule per row: any mobile list whose row represents a deletable record gets wrapped in `<SwipeToReveal>`. No bespoke gesture code per page.
+
+### 1. Harden the primitive (`src/components/ui/SwipeToReveal.tsx`)
+- Already has: pointer events, direction lock, single-open coordinator, haptics, fade-in action layer, reduced-motion support, button pass-through via `data-swipe-pass`.
+- Add small extensions so it covers every case we'll hit:
+  - **`actionVariant`** prop: `"delete" | "cancel" | "archive"` controlling label, icon (Trash2 / X / Archive) and colour (destructive / amber / muted). Default `"delete"`.
+  - **`secondaryAction`** prop (optional): `{ label, icon, color, onAction }` so a row can reveal *two* buttons (e.g. Archive + Delete) like iOS Mail. Renders left of the primary; widens reveal width automatically.
+  - **`onSwipeOpenChange`** callback so parent lists can dim other UI when a row is open (nice-to-have).
+  - **`confirm`** prop (optional): `{ title, body, confirmLabel }` — when set, full-swipe/tap shows the existing `AlertDialog` instead of firing immediately. Used for irreversible actions.
+
+### 2. Standard "delete row" recipe
+Document one pattern in `src/components/ui/SwipeToReveal.tsx` JSDoc so every consumer does the same thing:
+```tsx
+<SwipeToReveal
+  onDelete={() => softDelete(row.id)}
+  actionLabel="Delete"
+  confirm={{ title: "Delete X?", body: "...", confirmLabel: "Delete" }}
+>
+  <Row ... />
+</SwipeToReveal>
 ```
+Plus the existing `data-swipe-pass` rule on any wrapper `<button>` inside the row.
 
-So the red action layer shows through the transparent foreground — producing the always-visible red strip on the right of every conversation. It doesn't respond to taps because the foreground row (a full-width `<button>`) is on top of it and absorbs the click.
+### 3. Roll-out surfaces
 
-# Fix
+Wrap each of these row types in `<SwipeToReveal>`. All edits are presentational — no business-logic changes. Soft-delete handlers already exist for everything in the "instructor CRM" set from the previous loop.
 
-Make the action layer invisible while the row is closed and fade it in as the user drags. This is one local change to `SwipeToReveal` — every consumer benefits, no per-row background hack needed.
+**Instructor portal (mobile)**
+- Messages — done.
+- Schedule lessons — done.
+- Pupils list (`InstructorPupils`) → swipe → Archive pupil (sets `archived_at`).
+- Notes (`useNotes` rows in Notes drawer/page) → swipe → soft-delete.
+- Documents (Document Vault rows) → swipe → soft-delete.
+- Courses (`InstructorCoursesManager` cards on mobile) → swipe → soft-delete.
+- Discount codes, Lesson packages, Digital waivers, Saved annotations, Geofences, Scheduled reports, Automations, Workflows → swipe → soft-delete (each row already wired for soft-delete).
+- Locations, Routes, Resources, Availability windows/rules → swipe → soft-delete.
 
-### `src/components/ui/SwipeToReveal.tsx`
-- Import `useTransform` from `framer-motion`.
-- Derive `actionOpacity = useTransform(x, [-actionWidth * 0.1, 0], [1, 0], { clamp: true })`.
-- Wrap the action button in a `motion.div` (or apply `style={{ opacity: actionOpacity }}` to the existing wrapper) and also set `pointerEvents` to `'auto'` when open and `'none'` when closed so it can't intercept taps while invisible.
+**Pupil portal (mobile)**
+- Pupil inbox conversations → swipe → soft-delete (mirrors instructor inbox).
+- Pupil notifications / activity feed → swipe → "Dismiss" (`actionVariant="archive"`).
+- Saved courses / favourites → swipe → Remove.
 
-No other files need to change. Behaviour stays identical when swiping; the only difference is the action layer is hidden at rest.
+**Parent portal (mobile)**
+- Linked children list → swipe → "Unlink" (`actionVariant="cancel"`, with confirm).
+- Parent inbox messages → swipe → soft-delete.
+- Notification feed → swipe → Dismiss.
 
-# Verification
+### 4. Desktop behaviour
+`SwipeToReveal` already no-ops above `md`. Desktop keeps the existing inline kebab/Delete buttons — we don't change that. So no desktop regressions; this is a purely mobile UX uplift.
 
-1. `/instructor/messages` — red strip is gone on every conversation row.
-2. Swipe a row left → red Delete fades in and snaps open, just like before.
-3. Tap Delete or full-swipe → soft-delete still runs (`handleSwipeDeleteConversation`).
-4. `/instructor/schedule` — swipe Cancel still works (the schedule rows have solid backgrounds so visually unchanged).
+### 5. QA pass per portal
+For each portal:
+1. Mobile viewport (390×844).
+2. Swipe each list type → red action reveals correctly, no bleed-through (fade-in is already shipped).
+3. Tap confirms; full-swipe triggers without confirm UNLESS `confirm` is set.
+4. Only one row open at a time (coordinator already handles this).
+5. Vertical scroll still works (direction lock already handles this).
+6. Tap to open the row's main action still works (button pass-through already handles this).
+7. Desktop unaffected.
 
-# Out of scope
-- Not changing `ConversationRow` styling.
-- Not changing the delete handler.
+## Out of scope
+- No backend changes — all required `deleted_at` / `is_active` columns are already in place from the previous "make all deletes soft" migration.
+- No new icons or design tokens beyond what shadcn/lucide already give us.
+- Doesn't touch the chat thread itself (per-message delete is a separate UX).
+
+## Effort
+Primitive extension: small. Rollout: ~15–20 list components, each a 3-line wrap. Realistically one focused build pass per portal.
+
+Want me to ship it portal-by-portal (starting with Instructor since most lists live there) or all in one go?

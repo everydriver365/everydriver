@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { FolderLock, Upload, FileText, Eye, Trash2, Download, Search } from "lucide-react";
+import { SwipeToReveal } from "@/components/ui/SwipeToReveal";
 import { toast } from "sonner";
 import { format } from "date-fns";
 
@@ -133,29 +134,35 @@ export function DocumentVault({ instructorId }: { instructorId: string }) {
       {/* Document list */}
       <div className="grid gap-3">
         {filtered.map((doc: any) => (
-          <Card key={doc.id}>
-            <CardContent className="p-4 flex items-center gap-3">
-              <div className="h-10 w-10 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
-                <FileText className="h-5 w-5 text-primary" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-sm truncate">{doc.title}</p>
-                <div className="flex gap-2 items-center mt-0.5">
-                  <Badge variant="secondary" className="text-xs">{categoryLabels[doc.category] || doc.category}</Badge>
-                  <span className="text-xs text-muted-foreground">{formatSize(doc.file_size_bytes)}</span>
-                  <span className="text-xs text-muted-foreground">{format(new Date(doc.created_at), "dd MMM yy")}</span>
+          <SwipeToReveal
+            key={doc.id}
+            onDelete={() => deleteMutation.mutateAsync(doc.id)}
+            confirm={{ title: `Delete “${doc.title}”?`, body: "This document will be moved to the trash." }}
+          >
+            <Card>
+              <CardContent className="p-4 flex items-center gap-3">
+                <div className="h-10 w-10 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
+                  <FileText className="h-5 w-5 text-primary" />
                 </div>
-              </div>
-              <div className="flex gap-1">
-                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => window.open(doc.file_url, "_blank")}>
-                  <Eye className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => deleteMutation.mutate(doc.id)}>
-                  <Trash2 className="h-4 w-4 text-destructive" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-sm truncate">{doc.title}</p>
+                  <div className="flex gap-2 items-center mt-0.5">
+                    <Badge variant="secondary" className="text-xs">{categoryLabels[doc.category] || doc.category}</Badge>
+                    <span className="text-xs text-muted-foreground">{formatSize(doc.file_size_bytes)}</span>
+                    <span className="text-xs text-muted-foreground">{format(new Date(doc.created_at), "dd MMM yy")}</span>
+                  </div>
+                </div>
+                <div className="flex gap-1">
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => window.open(doc.file_url, "_blank")}>
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 hidden md:inline-flex" onClick={() => deleteMutation.mutate(doc.id)}>
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </SwipeToReveal>
         ))}
         {filtered.length === 0 && <p className="text-sm text-muted-foreground text-center py-6">No documents found</p>}
       </div>
