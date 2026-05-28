@@ -34,6 +34,7 @@ export function SavedAnnotationsDrawer({ open, onOpenChange, instructorId, onLoa
       .from("doodlepads")
       .select("*")
       .eq("instructor_id", instructorId)
+      .is("deleted_at", null)
       .order("updated_at", { ascending: false });
 
     if (!error && data) setItems(data as SavedDoodlepad[]);
@@ -45,7 +46,7 @@ export function SavedAnnotationsDrawer({ open, onOpenChange, instructorId, onLoa
   }, [open]); // eslint-disable-line
 
   const handleDelete = async (id: string) => {
-    const { error } = await supabase.from("doodlepads").delete().eq("id", id);
+    const { error } = await supabase.from("doodlepads").update({ deleted_at: new Date().toISOString() }).eq("id", id);
     if (error) {
       toast.error("Failed to delete");
     } else {

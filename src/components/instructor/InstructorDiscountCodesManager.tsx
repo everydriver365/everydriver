@@ -79,6 +79,7 @@ export function InstructorDiscountCodesManager({ instructorId }: Props) {
       .from("instructor_discount_codes")
       .select("*")
       .eq("instructor_id", instructorId)
+      .is("deleted_at", null)
       .order("created_at", { ascending: false });
     if (data) setCodes(data);
     setLoading(false);
@@ -147,7 +148,7 @@ export function InstructorDiscountCodesManager({ instructorId }: Props) {
 
   const handleDelete = async () => {
     if (!deleteId) return;
-    await supabase.from("instructor_discount_codes").delete().eq("id", deleteId);
+    await supabase.from("instructor_discount_codes").update({ deleted_at: new Date().toISOString(), is_active: false }).eq("id", deleteId);
     setDeleteId(null);
     fetchCodes();
     toast({ title: "Code deleted" });

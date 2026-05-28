@@ -76,6 +76,7 @@ export function WorkflowBuilder() {
         .from("automation_workflows")
         .select("*")
         .eq("instructor_id", instructor!.id)
+        .is("deleted_at", null)
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data as unknown as Workflow[];
@@ -92,7 +93,7 @@ export function WorkflowBuilder() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("automation_workflows").delete().eq("id", id);
+      const { error } = await supabase.from("automation_workflows").update({ deleted_at: new Date().toISOString(), is_active: false }).eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {

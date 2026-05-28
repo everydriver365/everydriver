@@ -38,6 +38,7 @@ export function DocumentVault({ instructorId }: { instructorId: string }) {
         .from("document_vault")
         .select("*")
         .eq("instructor_id", instructorId)
+        .is("deleted_at", null)
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data || [];
@@ -79,7 +80,7 @@ export function DocumentVault({ instructorId }: { instructorId: string }) {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      await supabase.from("document_vault").delete().eq("id", id);
+      await supabase.from("document_vault").update({ deleted_at: new Date().toISOString() }).eq("id", id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["document-vault"] });

@@ -167,7 +167,7 @@ export function BespokeCourseDialog({
     if (!confirm("Delete this bespoke course? Pupils will no longer be able to book it.")) return;
     setSaving(true);
     try {
-      const { error } = await supabase.from("instructor_courses").delete().eq("id", initial.id);
+      const { error } = await supabase.from("instructor_courses").update({ deleted_at: new Date().toISOString(), is_active: false }).eq("id", initial.id);
       if (error) throw error;
       toast.success("Bespoke course removed");
       onDeleted?.(initial.id);

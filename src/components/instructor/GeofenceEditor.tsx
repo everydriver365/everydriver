@@ -45,6 +45,7 @@ export function GeofenceEditor({ instructorId }: GeofenceEditorProps) {
       .from("geofences")
       .select("*")
       .eq("instructor_id", instructorId)
+      .is("deleted_at", null)
       .order("created_at", { ascending: false });
     setFences((data as Geofence[]) || []);
     setLoading(false);
@@ -105,7 +106,7 @@ export function GeofenceEditor({ instructorId }: GeofenceEditorProps) {
   };
 
   const deleteFence = async (id: string) => {
-    await supabase.from("geofences").delete().eq("id", id);
+    await supabase.from("geofences").update({ deleted_at: new Date().toISOString(), is_active: false }).eq("id", id);
     toast.success("Geofence deleted");
     fetchFences();
   };
