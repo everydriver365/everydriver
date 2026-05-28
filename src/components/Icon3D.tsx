@@ -10,6 +10,7 @@ import clock from "@/assets/icons-3d/clock.png";
 import user from "@/assets/icons-3d/user.png";
 import users from "@/assets/icons-3d/users.png";
 import graduationCap from "@/assets/icons-3d/graduation-cap.png";
+import pupil from "@/assets/icons-3d/pupil.png";
 import wallet from "@/assets/icons-3d/wallet.png";
 import card from "@/assets/icons-3d/card.png";
 import coins from "@/assets/icons-3d/coins.png";
@@ -51,6 +52,7 @@ export const ICON_3D_REGISTRY = {
   user,
   users,
   "graduation-cap": graduationCap,
+  pupil,
   wallet,
   card,
   coins,
@@ -107,6 +109,8 @@ const LUCIDE_TO_3D: Record<string, Icon3DName> = {
   Contact: "user",
   Users: "users",
   GraduationCap: "graduation-cap",
+  Pupil: "pupil",
+  Pupils: "pupil",
   Wallet: "wallet",
   CreditCard: "card",
   Coins: "coins",
