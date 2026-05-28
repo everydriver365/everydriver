@@ -72,6 +72,7 @@ export const ICON_3D_REGISTRY = {
   sparkles,
   lock,
   swap,
+  "tax-doc": taxDoc,
 } as const;
 
 export type Icon3DName = keyof typeof ICON_3D_REGISTRY;
