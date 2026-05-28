@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ShieldCheck, ShieldAlert, Award, ChevronRight, ExternalLink } from "lucide-react";
+import { ChevronRight, ExternalLink } from "lucide-react";
 import { differenceInCalendarDays, parseISO, format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { TileCard } from "@/components/instructor/ui";
+import { Icon3D } from "@/components/Icon3D";
 
 interface ADIBadgeTrackerTileProps {
   instructorId: string;
@@ -12,6 +13,8 @@ interface ADIBadgeTrackerTileProps {
 const FONT = '"Poppins", system-ui, -apple-system, "Segoe UI", sans-serif';
 const SETTINGS_ROUTE = "/instructor/settings/account";
 const RENEW_URL = "https://www.gov.uk/renew-adi-badge";
+
+const BadgeIcon = () => <Icon3D name="adi-badge" size={44} />;
 
 interface AdiData {
   adi_badge_number: string | null;
