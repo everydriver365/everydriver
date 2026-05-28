@@ -12,8 +12,16 @@
 
 import * as React from "react";
 import { motion, useMotionValue, useAnimation, useTransform, animate } from "framer-motion";
-import { Trash2 } from "lucide-react";
+import { Trash2, X, Archive } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+// Variant → label / icon / colour class mapping. Keep tokens (no raw hex).
+const VARIANTS = {
+  delete: { Icon: Trash2, defaultLabel: "Delete", bg: "bg-destructive text-destructive-foreground active:bg-destructive/90" },
+  cancel: { Icon: X,      defaultLabel: "Cancel", bg: "bg-amber-500 text-white active:bg-amber-600" },
+  archive:{ Icon: Archive,defaultLabel: "Archive",bg: "bg-muted-foreground text-background active:bg-muted-foreground/90" },
+} as const;
+export type SwipeActionVariant = keyof typeof VARIANTS;
 
 // ───────────────────────── Single-open coordinator ─────────────────────────
 type Closer = () => void;
@@ -58,13 +66,27 @@ async function lightHaptic() {
 }
 
 // ───────────────────────── Component ─────────────────────────
+/**
+ * Standard recipe for any deletable row:
+ *
+ *   <SwipeToReveal onDelete={() => softDelete(row.id)} actionLabel="Delete">
+ *     <Row />
+ *   </SwipeToReveal>
+ *
+ * If the row itself is rendered as a `<button>` (e.g. tap-to-open), add
+ * `data-swipe-pass` to that button so the swipe gesture isn't swallowed.
+ */
 export interface SwipeToRevealProps {
-  /** Called after the user confirms (full swipe OR tap on Delete). */
+  /** Called after the user confirms (full swipe OR tap on the action button). */
   onDelete: () => void | Promise<void>;
   /** Resting reveal width in pixels. iOS default ≈ 88. */
   actionWidth?: number;
-  /** Label on the action button. */
+  /** Label on the action button. Defaults to the variant's default label. */
   actionLabel?: string;
+  /** Visual variant. Default "delete". */
+  actionVariant?: SwipeActionVariant;
+  /** Optional confirm step: shows a native confirm() before firing onDelete. */
+  confirm?: { title: string; body?: string } | null;
   /** Disable the swipe behaviour entirely (renders children only). */
   disabled?: boolean;
   /** Wrapper className passthrough. */
@@ -75,11 +97,16 @@ export interface SwipeToRevealProps {
 export function SwipeToReveal({
   onDelete,
   actionWidth = 88,
-  actionLabel = "Delete",
+  actionLabel,
+  actionVariant = "delete",
+  confirm = null,
   disabled = false,
   className,
   children,
 }: SwipeToRevealProps) {
+  const variant = VARIANTS[actionVariant];
+  const label = actionLabel ?? variant.defaultLabel;
+  const Icon = variant.Icon;
   const x = useMotionValue(0);
   const controls = useAnimation();
   const [isOpen, setIsOpen] = React.useState(false);
