@@ -33,6 +33,7 @@ import lightbulb from "@/assets/icons-3d/lightbulb.png";
 import sparkles from "@/assets/icons-3d/sparkles.png";
 import lock from "@/assets/icons-3d/lock.png";
 import swap from "@/assets/icons-3d/swap.png";
+import taxDoc from "@/assets/icons-3d/tax-doc.png";
 
 /**
  * Registry of available 3D clay-style PNG icons.
