@@ -43,6 +43,7 @@ import {
   DialogContent,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { SwipeToReveal } from "@/components/ui/SwipeToReveal";
 import { toast } from "sonner";
 
 const PAGE_BG = "#F2F2F4";
