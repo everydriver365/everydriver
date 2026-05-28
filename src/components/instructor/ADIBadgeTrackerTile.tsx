@@ -158,16 +158,6 @@ export function ADIBadgeTrackerTile({ instructorId }: ADIBadgeTrackerTileProps) 
 }
 
 // ─── Sub-components ─────────────────────────────────────────────────────────
-function IconBox({ children, bg, fg }: { children: React.ReactNode; bg: string; fg: string }) {
-  return (
-    <div style={{
-      width: 36, height: 36, borderRadius: 9, background: bg, color: fg,
-      display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-    }}>
-      {children}
-    </div>
-  );
-}
 
 function Badge({ label, bg, fg }: { label: string; bg: string; fg: string }) {
   return (
