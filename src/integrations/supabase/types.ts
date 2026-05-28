@@ -1027,6 +1027,7 @@ export type Database = {
       automation_workflows: {
         Row: {
           created_at: string
+          deleted_at: string | null
           id: string
           instructor_id: string
           is_active: boolean
@@ -1037,6 +1038,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          deleted_at?: string | null
           id?: string
           instructor_id: string
           is_active?: boolean
@@ -1047,6 +1049,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          deleted_at?: string | null
           id?: string
           instructor_id?: string
           is_active?: boolean
@@ -3308,6 +3311,7 @@ export type Database = {
         Row: {
           content_html: string
           created_at: string
+          deleted_at: string | null
           id: string
           instructor_id: string
           is_active: boolean
@@ -3319,6 +3323,7 @@ export type Database = {
         Insert: {
           content_html?: string
           created_at?: string
+          deleted_at?: string | null
           id?: string
           instructor_id: string
           is_active?: boolean
@@ -3330,6 +3335,7 @@ export type Database = {
         Update: {
           content_html?: string
           created_at?: string
+          deleted_at?: string | null
           id?: string
           instructor_id?: string
           is_active?: boolean
@@ -3471,6 +3477,7 @@ export type Database = {
         Row: {
           category: string
           created_at: string
+          deleted_at: string | null
           description: string | null
           file_size_bytes: number | null
           file_type: string | null
@@ -3484,6 +3491,7 @@ export type Database = {
         Insert: {
           category?: string
           created_at?: string
+          deleted_at?: string | null
           description?: string | null
           file_size_bytes?: number | null
           file_type?: string | null
@@ -3497,6 +3505,7 @@ export type Database = {
         Update: {
           category?: string
           created_at?: string
+          deleted_at?: string | null
           description?: string | null
           file_size_bytes?: number | null
           file_type?: string | null
@@ -3608,6 +3617,7 @@ export type Database = {
           center_lat: number
           center_lng: number
           created_at: string
+          deleted_at: string | null
           id: string
           instructor_id: string
           name: string
@@ -3619,6 +3629,7 @@ export type Database = {
           center_lat?: number
           center_lng?: number
           created_at?: string
+          deleted_at?: string | null
           id?: string
           instructor_id: string
           name?: string
@@ -3630,6 +3641,7 @@ export type Database = {
           center_lat?: number
           center_lng?: number
           created_at?: string
+          deleted_at?: string | null
           id?: string
           instructor_id?: string
           name?: string
@@ -5084,6 +5096,7 @@ export type Database = {
           alert_on_enter: boolean
           alert_on_exit: boolean
           created_at: string
+          deleted_at: string | null
           id: string
           instructor_id: string
           is_active: boolean
@@ -5099,6 +5112,7 @@ export type Database = {
           alert_on_enter?: boolean
           alert_on_exit?: boolean
           created_at?: string
+          deleted_at?: string | null
           id?: string
           instructor_id: string
           is_active?: boolean
@@ -5114,6 +5128,7 @@ export type Database = {
           alert_on_enter?: boolean
           alert_on_exit?: boolean
           created_at?: string
+          deleted_at?: string | null
           id?: string
           instructor_id?: string
           is_active?: boolean
@@ -6427,6 +6442,7 @@ export type Database = {
           action_config: Json
           action_type: Database["public"]["Enums"]["automation_action"]
           created_at: string
+          deleted_at: string | null
           id: string
           instructor_id: string
           is_active: boolean
@@ -6438,6 +6454,7 @@ export type Database = {
           action_config?: Json
           action_type: Database["public"]["Enums"]["automation_action"]
           created_at?: string
+          deleted_at?: string | null
           id?: string
           instructor_id: string
           is_active?: boolean
@@ -6449,6 +6466,7 @@ export type Database = {
           action_config?: Json
           action_type?: Database["public"]["Enums"]["automation_action"]
           created_at?: string
+          deleted_at?: string | null
           id?: string
           instructor_id?: string
           is_active?: boolean
@@ -6879,6 +6897,7 @@ export type Database = {
           course_name: string
           created_at: string
           custom_features: string[] | null
+          deleted_at: string | null
           discounted_price: number | null
           display_order: number | null
           duration_days: number | null
@@ -6906,6 +6925,7 @@ export type Database = {
           course_name: string
           created_at?: string
           custom_features?: string[] | null
+          deleted_at?: string | null
           discounted_price?: number | null
           display_order?: number | null
           duration_days?: number | null
@@ -6933,6 +6953,7 @@ export type Database = {
           course_name?: string
           created_at?: string
           custom_features?: string[] | null
+          deleted_at?: string | null
           discounted_price?: number | null
           display_order?: number | null
           duration_days?: number | null
@@ -7080,6 +7101,7 @@ export type Database = {
           applies_to: string | null
           code: string
           created_at: string | null
+          deleted_at: string | null
           description: string | null
           discount_type: string
           discount_value: number
@@ -7096,6 +7118,7 @@ export type Database = {
           applies_to?: string | null
           code: string
           created_at?: string | null
+          deleted_at?: string | null
           description?: string | null
           discount_type?: string
           discount_value?: number
@@ -7112,6 +7135,7 @@ export type Database = {
           applies_to?: string | null
           code?: string
           created_at?: string | null
+          deleted_at?: string | null
           description?: string | null
           discount_type?: string
           discount_value?: number
@@ -10692,6 +10716,7 @@ export type Database = {
       lesson_packages: {
         Row: {
           created_at: string
+          deleted_at: string | null
           description: string | null
           id: string
           instructor_id: string
@@ -10703,6 +10728,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          deleted_at?: string | null
           description?: string | null
           id?: string
           instructor_id: string
@@ -10714,6 +10740,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          deleted_at?: string | null
           description?: string | null
           id?: string
           instructor_id?: string
@@ -16727,6 +16754,7 @@ export type Database = {
         Row: {
           config: Json | null
           created_at: string
+          deleted_at: string | null
           email: string
           frequency: string
           id: string
@@ -16739,6 +16767,7 @@ export type Database = {
         Insert: {
           config?: Json | null
           created_at?: string
+          deleted_at?: string | null
           email: string
           frequency?: string
           id?: string
@@ -16751,6 +16780,7 @@ export type Database = {
         Update: {
           config?: Json | null
           created_at?: string
+          deleted_at?: string | null
           email?: string
           frequency?: string
           id?: string

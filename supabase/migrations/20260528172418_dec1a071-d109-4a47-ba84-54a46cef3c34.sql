@@ -1,0 +1,21 @@
+ALTER TABLE public.document_vault              ADD COLUMN IF NOT EXISTS deleted_at timestamptz;
+ALTER TABLE public.instructor_courses          ADD COLUMN IF NOT EXISTS deleted_at timestamptz;
+ALTER TABLE public.digital_waivers             ADD COLUMN IF NOT EXISTS deleted_at timestamptz;
+ALTER TABLE public.lesson_packages             ADD COLUMN IF NOT EXISTS deleted_at timestamptz;
+ALTER TABLE public.instructor_discount_codes   ADD COLUMN IF NOT EXISTS deleted_at timestamptz;
+ALTER TABLE public.automation_workflows        ADD COLUMN IF NOT EXISTS deleted_at timestamptz;
+ALTER TABLE public.instructor_automations      ADD COLUMN IF NOT EXISTS deleted_at timestamptz;
+ALTER TABLE public.doodlepads                  ADD COLUMN IF NOT EXISTS deleted_at timestamptz;
+ALTER TABLE public.geofences                   ADD COLUMN IF NOT EXISTS deleted_at timestamptz;
+ALTER TABLE public.scheduled_reports           ADD COLUMN IF NOT EXISTS deleted_at timestamptz;
+
+CREATE INDEX IF NOT EXISTS idx_document_vault_deleted_at            ON public.document_vault (deleted_at) WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_instructor_courses_deleted_at        ON public.instructor_courses (deleted_at) WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_digital_waivers_deleted_at           ON public.digital_waivers (deleted_at) WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_lesson_packages_deleted_at           ON public.lesson_packages (deleted_at) WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_instructor_discount_codes_deleted_at ON public.instructor_discount_codes (deleted_at) WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_automation_workflows_deleted_at      ON public.automation_workflows (deleted_at) WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_instructor_automations_deleted_at    ON public.instructor_automations (deleted_at) WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_doodlepads_deleted_at                ON public.doodlepads (deleted_at) WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_geofences_deleted_at                 ON public.geofences (deleted_at) WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_scheduled_reports_deleted_at         ON public.scheduled_reports (deleted_at) WHERE deleted_at IS NULL;
