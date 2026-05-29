@@ -81,6 +81,7 @@ import satNav from "@/assets/icons-3d/sat-nav.png";
 import rates from "@/assets/icons-3d/rates.png";
 import findMyCar from "@/assets/icons-3d/find-my-car.png";
 import findNearby from "@/assets/icons-3d/find-nearby.png";
+import locations from "@/assets/icons-3d/locations.png";
 
 /**
  * Registry of available 3D clay-style PNG icons.
@@ -167,6 +168,7 @@ export const ICON_3D_REGISTRY = {
   rates,
   "find-my-car": findMyCar,
   "find-nearby": findNearby,
+  locations,
 } as const;
 
 export type Icon3DName = keyof typeof ICON_3D_REGISTRY;
