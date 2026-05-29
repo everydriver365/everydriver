@@ -213,11 +213,12 @@ export function QuickAccessHybrid({ instructorId }: QuickAccessHybridProps) {
             >
               <div
                 style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
-                  gap: "14px 10px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 2,
                 }}
               >
+
                 {searchResults.map((tile) => (
                   <CompactTile
                     key={tile.id}
