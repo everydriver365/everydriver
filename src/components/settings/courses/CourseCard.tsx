@@ -22,6 +22,7 @@ interface Props {
 export function CourseCard({ course, onToggle, onEdit, onOffer }: Props) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: course.id });
   const accent = !course.visible ? tokens.border : (ACCENT[course.type] ?? tokens.blue);
+  const isMobile = useIsMobile();
 
   return (
     <div
@@ -40,13 +41,25 @@ export function CourseCard({ course, onToggle, onEdit, onOffer }: Props) {
       }}
     >
       <div style={{ height: 3, background: accent }} />
-      <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 18px" }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: isMobile ? "flex-start" : "center",
+          gap: isMobile ? 10 : 14,
+          padding: isMobile ? "12px 12px" : "14px 18px",
+          flexWrap: isMobile ? "wrap" : "nowrap",
+        }}
+      >
         {/* Drag handle */}
         <div
           {...attributes}
           {...listeners}
           aria-label="Drag to reorder"
-          style={{ display: "flex", flexDirection: "column", gap: 3, cursor: "grab", padding: "0 4px", touchAction: "none" }}
+          style={{
+            display: "flex", flexDirection: "column", gap: 3,
+            cursor: "grab", padding: isMobile ? "6px 4px 0" : "0 4px",
+            touchAction: "none", flexShrink: 0,
+          }}
         >
           {[0, 1, 2].map((i) => (
             <div key={i} style={{ width: 16, height: 2, background: tokens.disabled, borderRadius: 1 }} />
@@ -56,7 +69,12 @@ export function CourseCard({ course, onToggle, onEdit, onOffer }: Props) {
         {/* Info */}
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-            <span style={{ fontSize: 14, fontWeight: 600, color: tokens.navy, overflow: "hidden", textOverflow: "ellipsis" }}>
+            <span
+              style={{
+                fontSize: 14, fontWeight: 600, color: tokens.navy,
+                wordBreak: "break-word",
+              }}
+            >
               {course.name}
             </span>
             <HoursBadge hours={course.hours} disabled={!course.visible} />
@@ -76,7 +94,7 @@ export function CourseCard({ course, onToggle, onEdit, onOffer }: Props) {
 
         {/* Price */}
         {course.price != null && course.price > 0 && (
-          <div style={{ textAlign: "right", flexShrink: 0 }}>
+          <div style={{ textAlign: "right", flexShrink: 0, alignSelf: isMobile ? "center" : "auto" }}>
             <div style={{ fontSize: 15, fontWeight: 700, color: tokens.navy }}>
               £{course.price.toLocaleString()}
             </div>
@@ -87,22 +105,33 @@ export function CourseCard({ course, onToggle, onEdit, onOffer }: Props) {
         )}
 
         {/* Controls */}
-        <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+        <div
+          style={{
+            display: "flex", alignItems: "center", gap: 8, flexShrink: 0,
+            width: isMobile ? "100%" : "auto",
+            justifyContent: isMobile ? "space-between" : "flex-end",
+            borderTop: isMobile ? `1px solid ${tokens.border}` : "none",
+            paddingTop: isMobile ? 10 : 0,
+            marginTop: isMobile ? 4 : 0,
+          }}
+        >
           <OfferButton active={course.hasOffer} disabled={!course.visible} onPress={onOffer} />
-          <button
-            type="button"
-            aria-label="Edit course"
-            onClick={onEdit}
-            style={{
-              width: 32, height: 32, borderRadius: 7,
-              border: `1.5px solid ${tokens.border}`, background: tokens.white,
-              color: tokens.muted, display: "inline-flex",
-              alignItems: "center", justifyContent: "center", cursor: "pointer",
-            }}
-          >
-            <Pencil size={14} />
-          </button>
-          <CourseToggle value={course.visible} onChange={onToggle} />
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <button
+              type="button"
+              aria-label="Edit course"
+              onClick={onEdit}
+              style={{
+                width: 36, height: 36, borderRadius: 8,
+                border: `1.5px solid ${tokens.border}`, background: tokens.white,
+                color: tokens.muted, display: "inline-flex",
+                alignItems: "center", justifyContent: "center", cursor: "pointer",
+              }}
+            >
+              <Pencil size={14} />
+            </button>
+            <CourseToggle value={course.visible} onChange={onToggle} />
+          </div>
         </div>
       </div>
     </div>
