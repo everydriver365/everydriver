@@ -2724,7 +2724,7 @@ export function QATile({
             src={findSlotIconImg}
             alt=""
             aria-hidden="true"
-            style={{ width: 56, height: 56, objectFit: "contain", display: "block" }}
+            style={{ width: 72, height: 72, objectFit: "contain", display: "block" }}
           />
         ) : resolved3D ? (
           <Icon3D name={resolved3D} size={86} />
