@@ -118,6 +118,11 @@ export function InstructorTopBar({
             {!isSubpage && (
               <ChevronRight size={14} color="rgba(255,255,255,0.5)" strokeWidth={2.2} />
             )}
+            {!isSubpage && statusDot ? (
+              <span style={{ marginLeft: 6, display: "inline-flex", alignItems: "center" }}>
+                {statusDot}
+              </span>
+            ) : null}
           </button>
         </div>
 
