@@ -49,7 +49,7 @@ export const TILE_TONE: Record<TileTone, { bg: string; fg: string }> = {
  * verbatim from the previous SwipeableQuickAccess implementation.
  */
 export const QUICK_ACCESS_TILES: QuickAccessTile[] = [
-  { id: "course-planner",   title: "Course planner",   subtitle: "Plan to test day",      icon: GraduationCap,   tone: "purple", route: "/instructor/course-planner" },
+  { id: "course-planner",   title: "Course planner",   subtitle: "Plan to test day",      icon: CoursePlannerIcon,   tone: "purple", route: "/instructor/course-planner" },
   { id: "schedule",         title: "Schedule",         subtitle: "Your agenda",           icon: CalendarDays,    tone: "blue",   route: "/instructor/schedule" },
   { id: "accessibility",    title: "Accessibility",    subtitle: "Text size",             icon: Accessibility,   tone: "grey",   route: "/instructor/accessibility" },
   { id: "pupils",           title: "Pupils",           subtitle: "Manage learners",       icon: Users,           tone: "green",  route: "/instructor/pupils" },
