@@ -31,6 +31,7 @@ import { YourPlanIcon } from "@/components/instructor/quickAccess/yourPlanIcon";
 import { EarningsIcon } from "@/components/instructor/quickAccess/earningsIcon";
 import { WeeklyReportIcon } from "@/components/instructor/quickAccess/weeklyReportIcon";
 import { TrackLessonIcon } from "@/components/instructor/quickAccess/trackLessonIcon";
+import { EndOfDayIcon } from "@/components/instructor/quickAccess/endOfDayIcon";
 import { TasksDueIcon } from "@/components/instructor/quickAccess/tasksDueIcon";
 import { LessonHistoryIcon } from "@/components/instructor/quickAccess/lessonHistoryIcon";
 import { ReferralsIcon } from "@/components/instructor/quickAccess/referralsIcon";
@@ -2244,7 +2245,7 @@ export const QUICK_ACCESS: QAItem[] = [
   { label: "Earnings",        Icon: EarningsIcon,     ...NAVY_BG, route: "/instructor/month-end" },
   { label: "Weekly report",   Icon: WeeklyReportIcon, ...BLUE_BG, route: "/instructor/weekly-report" },
   { label: "Tasks due",       Icon: TasksDueIcon,     ...RED_BG,  route: "/instructor/outstanding-tasks" },
-  { label: "End of day",      Icon: Moon,             ...GREY_BG, route: "/instructor/end-of-day" },
+  { label: "End of day",      Icon: EndOfDayIcon,     ...GREY_BG, route: "/instructor/end-of-day" },
   // Row 3 — Vehicle & location
   { label: "Vehicle",         Icon: VehicleIcon,      ...BLUE_BG, route: "/instructor/vehicle-health" },
   { label: "GPS tracking",    Icon: GpsTrackingIcon,  ...BLUE_BG, route: "/instructor/tracking" },
