@@ -4,6 +4,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { tokens, type CourseRow } from "./tokens";
 import { HoursBadge, TransmissionBadge, TypeBadge } from "./Badges";
 import { OfferButton, CourseToggle } from "./Controls";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const ACCENT: Record<string, string> = {
   intensive: tokens.red,
