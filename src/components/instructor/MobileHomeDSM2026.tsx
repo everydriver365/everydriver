@@ -20,6 +20,7 @@ import { PlanBillingIcon } from "@/components/instructor/quickAccess/planBilling
 import { LabFeaturesIcon } from "@/components/instructor/quickAccess/labFeaturesIcon";
 import { CpdIcon } from "@/components/instructor/quickAccess/cpdIcon";
 import { MyCoursesIcon } from "@/components/instructor/quickAccess/myCoursesIcon";
+import { DrivingTestsIcon } from "@/components/instructor/quickAccess/drivingTestsIcon";
 import { Shimmer } from "@/components/instructor/home/Shimmer";
 import nextLessonCar from "@/assets/next-lesson-car.png";
 import {
@@ -2174,7 +2175,7 @@ const QUICK_ACCESS: QAItem[] = [
   { label: "How pupils book", Icon: HowPupilsBookIcon, ...BLUE_BG, route: "/instructor/settings/how-pupils-book" },
   { label: "Pupils",          Icon: Users,            ...BLUE_BG, route: "/instructor/pupils" },
   { label: "Payments",        Icon: CreditCard,       ...BLUE_BG, route: "/instructor/payments" },
-  { label: "Driving Tests",   Icon: Car,              ...RED_BG,  route: "/instructor/test-requests" },
+  { label: "Driving Tests",   Icon: DrivingTestsIcon, ...RED_BG,  route: "/instructor/test-requests" },
   { label: "Lesson history",  Icon: BookOpen,         ...BLUE_BG, route: "/instructor/pupils" },
   { label: "Find slot",       Icon: Search,           ...BLUE_BG, route: "/instructor/gaps" },
   { label: "Next slot",       Icon: ArrowRight,       ...NAVY_BG, route: "/instructor/gaps" },
