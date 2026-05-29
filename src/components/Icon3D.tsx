@@ -82,6 +82,7 @@ export const ICON_3D_REGISTRY = {
   "tax-calc": taxCalc,
   "adi-badge": adiBadge,
   "course-planner": coursePlanner,
+  "waiting-list": waitingList,
 } as const;
 
 export type Icon3DName = keyof typeof ICON_3D_REGISTRY;
