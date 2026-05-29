@@ -67,6 +67,7 @@ import productivity from "@/assets/icons-3d/productivity.png";
 import support from "@/assets/icons-3d/support.png";
 import appearance from "@/assets/icons-3d/appearance.png";
 import insights from "@/assets/icons-3d/insights.png";
+import nextSlot from "@/assets/icons-3d/next-slot.png";
 
 /**
  * Registry of available 3D clay-style PNG icons.
@@ -139,6 +140,7 @@ export const ICON_3D_REGISTRY = {
   support,
   appearance,
   insights,
+  "next-slot": nextSlot,
 } as const;
 
 export type Icon3DName = keyof typeof ICON_3D_REGISTRY;
