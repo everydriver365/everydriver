@@ -118,6 +118,7 @@ export const ICON_3D_REGISTRY = {
   "gps-tracking": gpsTracking,
   expenses,
   security,
+  pending,
 } as const;
 
 export type Icon3DName = keyof typeof ICON_3D_REGISTRY;
