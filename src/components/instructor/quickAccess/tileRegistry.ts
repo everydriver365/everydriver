@@ -8,6 +8,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { CoursePlannerIcon } from "./coursePlannerIcon";
+import { EarningsIcon } from "./earningsIcon";
 
 /**
  * Stable tile identifiers for the Quick Access section. These IDs are
@@ -76,7 +77,7 @@ export const QUICK_ACCESS_TILES: QuickAccessTile[] = [
   { id: "expenses",         title: "Expenses",         subtitle: "Track costs",           icon: Receipt,         tone: "amber",  route: "/instructor/expenses",          requiredFeature: "expense_tracking" },
   { id: "nearby-adis",      title: "Nearby ADIs",      subtitle: "Friends map",           icon: Users,           tone: "green",  route: "/instructor/nearby-friends" },
   { id: "find-colleague",   title: "Find colleague",   subtitle: "School fleet",          icon: Users,           tone: "green",  route: "/instructor/fleet-map?mode=colleagues" },
-  { id: "earnings",         title: "Earnings",         subtitle: "Month end",             icon: FileBarChart,    tone: "amber",  route: "/instructor/month-end",         requiredFeature: "payment_tracking" },
+  { id: "earnings",         title: "Earnings",         subtitle: "Month end",             icon: EarningsIcon,    tone: "amber",  route: "/instructor/month-end",         requiredFeature: "payment_tracking" },
   { id: "weekly-report",    title: "Weekly report",    subtitle: "AI summary",            icon: BarChart3,       tone: "purple", route: "/instructor/weekly-report" },
   { id: "tasks-due",        title: "Tasks due",        subtitle: "Outstanding",           icon: ClipboardCheck,  tone: "amber",  route: "/instructor/outstanding-tasks" },
   { id: "end-of-day",       title: "End of day",       subtitle: "Day summary",           icon: Moon,            tone: "grey",   route: "/instructor/end-of-day" },
