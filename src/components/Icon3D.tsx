@@ -38,6 +38,7 @@ import taxDoc from "@/assets/icons-3d/tax-doc.png";
 import taxCalc from "@/assets/icons-3d/tax-calc.png";
 import adiBadge from "@/assets/icons-3d/adi-badge.png";
 import coursePlanner from "@/assets/icons-3d/course-planner.png";
+import waitingList from "@/assets/icons-3d/waiting-list.png";
 
 /**
  * Registry of available 3D clay-style PNG icons.
@@ -81,6 +82,7 @@ export const ICON_3D_REGISTRY = {
   "tax-calc": taxCalc,
   "adi-badge": adiBadge,
   "course-planner": coursePlanner,
+  "waiting-list": waitingList,
 } as const;
 
 export type Icon3DName = keyof typeof ICON_3D_REGISTRY;
