@@ -34,6 +34,7 @@ import { TrackLessonIcon } from "@/components/instructor/quickAccess/trackLesson
 import { EndOfDayIcon } from "@/components/instructor/quickAccess/endOfDayIcon";
 import { SatNavIcon } from "@/components/instructor/quickAccess/satNavIcon";
 import { RatesIcon } from "@/components/instructor/quickAccess/ratesIcon";
+import { FindMyCarIcon } from "@/components/instructor/quickAccess/findMyCarIcon";
 import { TasksDueIcon } from "@/components/instructor/quickAccess/tasksDueIcon";
 import { LessonHistoryIcon } from "@/components/instructor/quickAccess/lessonHistoryIcon";
 import { ReferralsIcon } from "@/components/instructor/quickAccess/referralsIcon";
@@ -2253,7 +2254,7 @@ export const QUICK_ACCESS: QAItem[] = [
   { label: "GPS tracking",    Icon: GpsTrackingIcon,  ...BLUE_BG, route: "/instructor/tracking" },
   { label: "Track lesson",    Icon: TrackLessonIcon,  ...RED_BG,  route: "/instructor/tracking" },
   { label: "Sat nav",         Icon: SatNavIcon,       ...BLUE_BG, route: "/instructor/satnav" },
-  { label: "Find my car",     Icon: Car,              ...BLUE_BG, route: "/instructor/find-my-car" },
+  { label: "Find my car",     Icon: FindMyCarIcon,    ...BLUE_BG, route: "/instructor/find-my-car" },
   { label: "Find fuel",       Icon: Fuel,             ...BLUE_BG, route: "/instructor/fuel" },
   { label: "Find nearby",     Icon: MapPin,           ...BLUE_BG, route: "/instructor/find-nearby" },
   { label: "Locations",       Icon: MapPinned,        ...BLUE_BG, route: "/instructor/locations" },
