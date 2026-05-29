@@ -14,6 +14,7 @@ import { PullToRefresh } from "@/components/instructor/home/PullToRefresh";
 import { Icon3D, resolveIcon3D } from "@/components/Icon3D";
 import availableIconImg from "@/assets/available-icon.png";
 import fillGapIconImg from "@/assets/fill-gap-icon.png";
+import findSlotIconImg from "@/assets/find-slot-icon.png";
 import { CoursePlannerIcon } from "@/components/instructor/quickAccess/coursePlannerIcon";
 import { WaitingListIcon } from "@/components/instructor/quickAccess/waitingListIcon";
 import { FillGapsIcon } from "@/components/instructor/quickAccess/fillGapsIcon";
@@ -2692,6 +2693,7 @@ export function QATile({
   const resolved3D = resolveIcon3D((Icon as { displayName?: string }).displayName);
   const isAvailabilityTile = item.label === "Availability";
   const isFillGapsTile = item.label === "Fill gaps";
+  const isFindSlotTile = item.label === "Find slot";
   return (
     <Tile
       variant="navigation"
@@ -2701,7 +2703,7 @@ export function QATile({
       badgeCount={badgeCount}
       badgeVisible={!!badgeCount && badgeCount > 0}
       ariaLabel={item.label}
-      iconBare={!!resolved3D || isAvailabilityTile || isFillGapsTile}
+      iconBare={!!resolved3D || isAvailabilityTile || isFillGapsTile || isFindSlotTile}
       iconNode={
         isAvailabilityTile ? (
           <img
@@ -2713,6 +2715,13 @@ export function QATile({
         ) : isFillGapsTile ? (
           <img
             src={fillGapIconImg}
+            alt=""
+            aria-hidden="true"
+            style={{ width: 56, height: 56, objectFit: "contain", display: "block" }}
+          />
+        ) : isFindSlotTile ? (
+          <img
+            src={findSlotIconImg}
             alt=""
             aria-hidden="true"
             style={{ width: 56, height: 56, objectFit: "contain", display: "block" }}
