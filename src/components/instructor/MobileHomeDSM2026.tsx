@@ -14,6 +14,7 @@ import { PullToRefresh } from "@/components/instructor/home/PullToRefresh";
 import { Icon3D, resolveIcon3D } from "@/components/Icon3D";
 import { CoursePlannerIcon } from "@/components/instructor/quickAccess/coursePlannerIcon";
 import { WaitingListIcon } from "@/components/instructor/quickAccess/waitingListIcon";
+import { FillGapsIcon } from "@/components/instructor/quickAccess/fillGapsIcon";
 import { Shimmer } from "@/components/instructor/home/Shimmer";
 import nextLessonCar from "@/assets/next-lesson-car.png";
 import {
@@ -2174,7 +2175,7 @@ const QUICK_ACCESS: QAItem[] = [
   { label: "Next slot",       Icon: ArrowRight,       ...NAVY_BG, route: "/instructor/gaps" },
   { label: "Course planner",  Icon: CoursePlannerIcon, ...BLUE_BG, route: "/instructor/course-planner" },
   { label: "Waiting list",    Icon: WaitingListIcon,  ...RED_BG,  route: "/instructor/waiting-list" },
-  { label: "Fill gaps",       Icon: Plus,             ...NAVY_BG, route: "/instructor/gaps" },
+  { label: "Fill gaps",       Icon: FillGapsIcon,     ...NAVY_BG, route: "/instructor/gaps" },
   { label: "Test swap",       Icon: Repeat2,          ...RED_BG,  route: "/instructor/test-requests" },
   { label: "Standards",       Icon: ShieldCheck,      ...BLUE_BG, route: "/instructor/standards-check" },
   { label: "CPD",             Icon: Award,            ...NAVY_BG, route: "/instructor/cpd" },
