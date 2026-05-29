@@ -24,6 +24,7 @@ import { DrivingTestsIcon } from "@/components/instructor/quickAccess/drivingTes
 import { StandardsIcon } from "@/components/instructor/quickAccess/standardsIcon";
 import { FindSlotIcon } from "@/components/instructor/quickAccess/findSlotIcon";
 import { LessonHistoryIcon } from "@/components/instructor/quickAccess/lessonHistoryIcon";
+import { ReferralsIcon } from "@/components/instructor/quickAccess/referralsIcon";
 import { Shimmer } from "@/components/instructor/home/Shimmer";
 import nextLessonCar from "@/assets/next-lesson-car.png";
 import {
@@ -2197,7 +2198,7 @@ const QUICK_ACCESS: QAItem[] = [
   { label: "Expenses",        Icon: Receipt,          ...NAVY_BG, route: "/instructor/expenses" },
   { label: "Tax",             Icon: Calculator,       ...NAVY_BG, route: "/instructor/tax" },
   { label: "Reviews",         Icon: Star,             ...RED_BG,  route: "/instructor/reviews" },
-  { label: "Referrals",       Icon: Share2,           ...RED_BG,  route: "/instructor/payments?tab=bonus" },
+  { label: "Referrals",       Icon: ReferralsIcon,    ...RED_BG,  route: "/instructor/payments?tab=bonus" },
   { label: "Fees",            Icon: Info,             ...BLUE_BG, route: "/instructor/payments?tab=fees" },
   { label: "Plan & billing",  Icon: PlanBillingIcon,  ...NAVY_BG, route: "/instructor/settings/plan-billing" },
   { label: "Vehicle",         Icon: Car,              ...BLUE_BG, route: "/instructor/vehicle-health" },
