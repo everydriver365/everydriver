@@ -2191,7 +2191,7 @@ const QUICK_ACCESS: QAItem[] = [
   { label: "Reviews",         Icon: Star,             ...RED_BG,  route: "/instructor/reviews" },
   { label: "Referrals",       Icon: Share2,           ...RED_BG,  route: "/instructor/payments?tab=bonus" },
   { label: "Fees",            Icon: Info,             ...BLUE_BG, route: "/instructor/payments?tab=fees" },
-  { label: "Plan & billing",  Icon: FileSpreadsheet,  ...NAVY_BG, route: "/instructor/settings/plan-billing" },
+  { label: "Plan & billing",  Icon: PlanBillingIcon,  ...NAVY_BG, route: "/instructor/settings/plan-billing" },
   { label: "Vehicle",         Icon: Car,              ...BLUE_BG, route: "/instructor/vehicle-health" },
   { label: "GPS tracking",    Icon: MapPin,           ...BLUE_BG, route: "/instructor/tracking" },
   { label: "Telephony",       Icon: Phone,            ...NAVY_BG, route: "/instructor/settings/phone-ai" },
