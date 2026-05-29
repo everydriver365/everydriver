@@ -1,6 +1,7 @@
 import { ChevronLeft, Plus, Check, BookOpen, Loader2 } from "lucide-react";
 import { tokens } from "./tokens";
 import type { ReactNode } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export function BackLink({ onPress }: { onPress: () => void }) {
   return (
@@ -57,43 +58,54 @@ export function Breadcrumb({
 export function PageHeaderCard({
   title, subtitle, actions,
 }: { title: string; subtitle: string; actions: ReactNode }) {
+  const isMobile = useIsMobile();
   return (
     <div
       style={{
-        display: "flex", alignItems: "center", gap: 16,
-        padding: "20px 24px", borderRadius: 14, background: tokens.white,
+        display: "flex", alignItems: "center", gap: 14,
+        padding: isMobile ? "14px 14px" : "20px 24px", borderRadius: 14, background: tokens.white,
         border: `1px solid ${tokens.border}`, marginTop: 16,
+        flexWrap: "wrap",
       }}
     >
       <div
         style={{
-          width: 48, height: 48, borderRadius: 12,
+          width: isMobile ? 40 : 48, height: isMobile ? 40 : 48, borderRadius: 12,
           background: tokens.blueLight, color: tokens.blue,
           display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
         }}
       >
-        <BookOpen size={22} />
+        <BookOpen size={isMobile ? 18 : 22} />
       </div>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <h1 style={{ fontSize: 18, fontWeight: 700, color: tokens.navy, margin: 0 }}>{title}</h1>
-        <p style={{ fontSize: 13, color: tokens.mid, margin: "2px 0 0" }}>{subtitle}</p>
+      <div style={{ flex: 1, minWidth: 140 }}>
+        <h1 style={{ fontSize: isMobile ? 16 : 18, fontWeight: 700, color: tokens.navy, margin: 0, lineHeight: 1.25 }}>{title}</h1>
+        <p style={{ fontSize: isMobile ? 12 : 13, color: tokens.mid, margin: "3px 0 0", lineHeight: 1.4 }}>{subtitle}</p>
       </div>
-      <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>{actions}</div>
+      <div
+        style={{
+          display: "flex", gap: 8, flexShrink: 0,
+          width: isMobile ? "100%" : "auto",
+        }}
+      >
+        {actions}
+      </div>
     </div>
   );
 }
 
 export function AddButton({ onPress }: { onPress: () => void }) {
+  const isMobile = useIsMobile();
   return (
     <button
       type="button"
       onClick={onPress}
       style={{
-        display: "inline-flex", alignItems: "center", gap: 6,
-        padding: "9px 14px", borderRadius: 8,
+        display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
+        padding: "10px 14px", borderRadius: 8,
         border: `1.5px solid ${tokens.border}`, background: tokens.white,
         color: tokens.navy, fontSize: 13, fontWeight: 600,
         cursor: "pointer", fontFamily: "inherit", transition: "border-color 0.15s",
+        flex: isMobile ? 1 : undefined, minHeight: 40,
       }}
       onMouseEnter={(e) => (e.currentTarget.style.borderColor = tokens.blue)}
       onMouseLeave={(e) => (e.currentTarget.style.borderColor = tokens.border)}
@@ -107,6 +119,7 @@ export function AddButton({ onPress }: { onPress: () => void }) {
 export function SaveButton({
   isDirty, saving, onPress,
 }: { isDirty: boolean; saving: boolean; onPress: () => void }) {
+  const isMobile = useIsMobile();
   const enabled = isDirty && !saving;
   return (
     <button
@@ -114,11 +127,12 @@ export function SaveButton({
       onClick={enabled ? onPress : undefined}
       disabled={!enabled}
       style={{
-        display: "inline-flex", alignItems: "center", gap: 6,
-        padding: "9px 16px", borderRadius: 8, border: "none",
+        display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
+        padding: "10px 16px", borderRadius: 8, border: "none",
         background: enabled ? tokens.red : tokens.disabled,
         color: tokens.white, fontSize: 13, fontWeight: 600,
         cursor: enabled ? "pointer" : "not-allowed", fontFamily: "inherit",
+        flex: isMobile ? 1 : undefined, minHeight: 40,
       }}
     >
       {saving ? (
