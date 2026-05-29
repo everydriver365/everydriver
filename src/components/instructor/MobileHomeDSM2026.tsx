@@ -767,7 +767,7 @@ function UnifiedInfoPanel({
                 >
                   {formatCurrencyCompact(tax.projectedLiability, { decimals: false })}
                 </div>
-                <Subtitle>Projected liability</Subtitle>
+                <Subtitle>Projected liability · {tax.taxYear}</Subtitle>
               </>
             ) : (
               <>
@@ -782,12 +782,12 @@ function UnifiedInfoPanel({
                 >
                   —
                 </div>
-                <Subtitle>No data yet</Subtitle>
+                <Subtitle>No data yet · {tax.taxYear}</Subtitle>
               </>
             )}
           </div>
-          <Badge bg="#e8eefb" color="#2952b3">{tax.taxYear}</Badge>
         </div>
+
         {tax.hasAnyPayments && (
           <div
             style={{
