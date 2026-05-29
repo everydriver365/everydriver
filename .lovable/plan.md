@@ -1,23 +1,41 @@
-## Problem
-On the Despia TestFlight build (WKWebView), left-swipe-to-Cancel on Schedule rows never fires. `SwipeToReveal` uses Pointer Events + `setPointerCapture` on a `<motion.div>` wrapping a native `<button data-swipe-pass>`. In iOS WKWebView, calling `setPointerCapture` on a parent in response to a `pointerdown` originating inside a native `<button>` is silently ignored, so subsequent `pointermove`/`pointerup` never reach the handler — the row doesn't translate at all. Works fine in mobile Safari and the Lovable preview, which is why it shipped.
+## Goal
 
-Affects every consumer of `SwipeToReveal` (Schedule rows via `NewMobileScheduleView`, document rows via `DocumentVault`).
+Every tile across the instructor app should render as:
 
-## Fix
-Rewrite only the gesture layer in `src/components/ui/SwipeToReveal.tsx`. No public API changes, no caller changes.
+```text
+┌────────────────────────────┐
+│ [icon]  Title              │
+│         Subtitle / value   │
+└────────────────────────────┘
+```
 
-- Replace `onPointerDown/Move/Up/Cancel` with native `touchstart` / `touchmove` / `touchend` / `touchcancel` listeners attached imperatively in `useEffect` on the foreground element. Register `touchmove` with `{ passive: false }` so we can `preventDefault()` once horizontal lock is confirmed (prevents the WKWebView from stealing the gesture as a vertical scroll).
-- Drop `setPointerCapture` entirely; track the gesture in refs.
-- Keep a separate `mousedown/mousemove/mouseup` path on `window` for desktop/editor preview so swipe still works there.
-- Preserve every existing behaviour: 6 px direction lock, vertical-pass-through, right-drag rubber band, 55 % full-swipe threshold, snap-to-open at 40 % of `actionWidth`, single-open coordinator, prefers-reduced-motion, optional Capacitor haptic.
-- Preserve the existing skip rules: ignore gestures starting on `a, input, textarea, select, [role='button'], [data-no-swipe]`, and on any inner `<button>` that is not inside `[data-swipe-pass]`.
+Icon on the left, text block vertically centered next to it. Badges (Active / counts / year chips) move to the far right, also vertically centered.
 
-## Verification
-- Lovable preview: left-swipe a schedule row reveals Cancel; full-swipe confirms delete; vertical scroll on a row still scrolls the list (lock intact); tap outside closes any open row.
-- Despia TestFlight: same behaviours work on Schedule and on `DocumentVault` rows; light haptic fires on snap.
-- No regressions in `DocumentVault` or any other current consumer.
+## Surfaces to update
 
-## Files touched
-- `src/components/ui/SwipeToReveal.tsx` — gesture layer rewrite only.
+The instructor app currently has several tile-rendering systems. I'll touch each:
 
-No DB migrations, no edge functions, no other components.
+1. **Home info cards** — `MobileHomeDSM2026.tsx` (`cardBase`, all Card 1..N blocks: Upcoming events, Membership, Tax estimate, MTD, etc.)
+2. **Quick Access grid** — `quickAccess/QuickAccessSwipeablePaged.tsx`, `QuickAccessHybrid.tsx`, `SwipeableQuickAccess.tsx`, `tileRegistry.ts` consumers
+3. **Quick Actions** — `HomeQuickActions.tsx`, `QuickActionTiles.tsx`, `QuickActionRow.tsx`, `QuickActionsDrawer.tsx`, `QuickActionsPopoverMenu.tsx`, `DesktopQuickActionBar.tsx`
+4. **Standalone tiles** — `MTDDeadlineTile.tsx`, `TaxEstimateTile.tsx`, `ADIBadgeTrackerTile.tsx`
+5. **Dashboard widgets** — `dashboardV3/HybridDashboard.tsx`, `DashboardLayoutManager.tsx`
+6. **Alternate home variants** — `BestMateHomeView`, `AppStyleHomeView`, `CleanHomeView`, `CompactHomeView`, `LockScreenHomeView`, `PremiumIOSHomeView`, `SettingsV2HomeView`, `WidgetsHomeView`, `InstructorMobileHome`
+
+## Implementation approach
+
+- Convert each tile's outer container from `flexDirection: "column"` to `flexDirection: "row"` with `alignItems: "center"` and `gap: 12`.
+- Wrap the existing Title + Subtitle/value in a flex-column "text" block with `flex: 1, minWidth: 0` so long text truncates rather than pushing the icon.
+- Badges stay top-right today; move them inline to the right edge, vertically centered (`marginLeft: "auto"`).
+- Where a tile shows large numeric values stacked under the title, keep that stack inside the text block.
+- Keep all colours, fonts, hover states, icon sizes, and routing untouched.
+
+## Out of scope
+
+- No changes to settings rows (already horizontal), navigation bars, schedule lesson rows, message rows, or the pupil/parent/school portals.
+- No layout changes to desktop-only views beyond the tiles listed.
+- No new icons, no copy changes.
+
+## Risk note
+
+This is a wide refactor — ~15 files. Each tile block is hand-styled, so the change is per-block, not a single shared component swap. I'll verify visually on the /instructor home preview after each major file.
