@@ -16,6 +16,7 @@ import { CoursePlannerIcon } from "@/components/instructor/quickAccess/coursePla
 import { WaitingListIcon } from "@/components/instructor/quickAccess/waitingListIcon";
 import { FillGapsIcon } from "@/components/instructor/quickAccess/fillGapsIcon";
 import { HowPupilsBookIcon } from "@/components/instructor/quickAccess/howPupilsBookIcon";
+import { PlanBillingIcon } from "@/components/instructor/quickAccess/planBillingIcon";
 import { Shimmer } from "@/components/instructor/home/Shimmer";
 import nextLessonCar from "@/assets/next-lesson-car.png";
 import {
