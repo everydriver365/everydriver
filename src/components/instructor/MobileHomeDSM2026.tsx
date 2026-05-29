@@ -169,6 +169,7 @@ import { ScheduleTile } from "@/components/instructor/ScheduleTile";
 import { TaxEstimateTile } from "@/components/instructor/TaxEstimateTile";
 import { MTDDeadlineTile } from "@/components/instructor/MTDDeadlineTile";
 import { CalendarSyncStatusTile } from "@/components/instructor/CalendarSyncStatusTile";
+import { CalendarSyncDot } from "@/components/instructor/CalendarSyncDot";
 import { ADIBadgeTrackerTile } from "@/components/instructor/ADIBadgeTrackerTile";
 import { Tile } from "@/components/instructor/ui";
 import { RescheduleRequestsCard } from "@/components/instructor/RescheduleRequestsCard";
