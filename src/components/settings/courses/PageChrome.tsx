@@ -94,16 +94,18 @@ export function PageHeaderCard({
 }
 
 export function AddButton({ onPress }: { onPress: () => void }) {
+  const isMobile = useIsMobile();
   return (
     <button
       type="button"
       onClick={onPress}
       style={{
-        display: "inline-flex", alignItems: "center", gap: 6,
-        padding: "9px 14px", borderRadius: 8,
+        display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
+        padding: "10px 14px", borderRadius: 8,
         border: `1.5px solid ${tokens.border}`, background: tokens.white,
         color: tokens.navy, fontSize: 13, fontWeight: 600,
         cursor: "pointer", fontFamily: "inherit", transition: "border-color 0.15s",
+        flex: isMobile ? 1 : undefined, minHeight: 40,
       }}
       onMouseEnter={(e) => (e.currentTarget.style.borderColor = tokens.blue)}
       onMouseLeave={(e) => (e.currentTarget.style.borderColor = tokens.border)}
@@ -117,6 +119,7 @@ export function AddButton({ onPress }: { onPress: () => void }) {
 export function SaveButton({
   isDirty, saving, onPress,
 }: { isDirty: boolean; saving: boolean; onPress: () => void }) {
+  const isMobile = useIsMobile();
   const enabled = isDirty && !saving;
   return (
     <button
@@ -124,11 +127,12 @@ export function SaveButton({
       onClick={enabled ? onPress : undefined}
       disabled={!enabled}
       style={{
-        display: "inline-flex", alignItems: "center", gap: 6,
-        padding: "9px 16px", borderRadius: 8, border: "none",
+        display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
+        padding: "10px 16px", borderRadius: 8, border: "none",
         background: enabled ? tokens.red : tokens.disabled,
         color: tokens.white, fontSize: 13, fontWeight: 600,
         cursor: enabled ? "pointer" : "not-allowed", fontFamily: "inherit",
+        flex: isMobile ? 1 : undefined, minHeight: 40,
       }}
     >
       {saving ? (
