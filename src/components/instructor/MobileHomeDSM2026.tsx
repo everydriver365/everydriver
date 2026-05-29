@@ -2201,7 +2201,7 @@ export const QUICK_ACCESS: QAItem[] = [
   { label: "My courses",      Icon: MyCoursesIcon,    ...BLUE_BG, route: "/instructor/course-planner" },
   // Row 2
   { label: "Take payment",    Icon: TakePaymentIcon,  ...BLUE_BG, route: "/instructor/pay" },
-  { label: "Pending",         Icon: Clock,            ...RED_BG,  route: "/instructor/payments?tab=pending" },
+  { label: "Pending",         Icon: PendingIcon,      ...RED_BG,  route: "/instructor/payments?tab=pending" },
   { label: "Expenses",        Icon: ExpensesIcon,     ...NAVY_BG, route: "/instructor/expenses" },
   { label: "Tax",             Icon: Calculator,       ...NAVY_BG, route: "/instructor/tax" },
   { label: "Reviews",         Icon: Star,             ...RED_BG,  route: "/instructor/reviews" },
