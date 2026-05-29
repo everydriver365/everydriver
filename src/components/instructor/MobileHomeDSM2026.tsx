@@ -727,12 +727,11 @@ function UnifiedInfoPanel({
           <img src={membershipIcon} alt="" style={{ width: 36, height: 36, objectFit: "contain", flexShrink: 0 }} />
           <div style={cardTextStyle}>
             <Title>Membership</Title>
-            <Subtitle>
-              {planName}
-              <br />
-              {renewLabel}
-            </Subtitle>
+            <Subtitle>{planName}</Subtitle>
+            <Subtitle>{renewLabel}</Subtitle>
           </div>
+        </div>
+        <div style={footerRowStyle}>
           {membershipActive ? (
             <Badge bg="#e8f5ee" color="#2d8a4e">Active</Badge>
           ) : (
@@ -750,6 +749,7 @@ function UnifiedInfoPanel({
         onMouseLeave={unhover("#fff")}
         style={cardBase}
       >
+
         <div style={cardRowStyle}>
           <img src={taxEstimateIcon} alt="" style={{ width: 36, height: 36, objectFit: "contain", flexShrink: 0 }} />
           <div style={cardTextStyle}>
