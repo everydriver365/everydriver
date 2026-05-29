@@ -35,6 +35,7 @@ import { EndOfDayIcon } from "@/components/instructor/quickAccess/endOfDayIcon";
 import { SatNavIcon } from "@/components/instructor/quickAccess/satNavIcon";
 import { RatesIcon } from "@/components/instructor/quickAccess/ratesIcon";
 import { FindMyCarIcon } from "@/components/instructor/quickAccess/findMyCarIcon";
+import { FindNearbyIcon } from "@/components/instructor/quickAccess/findNearbyIcon";
 import { TasksDueIcon } from "@/components/instructor/quickAccess/tasksDueIcon";
 import { LessonHistoryIcon } from "@/components/instructor/quickAccess/lessonHistoryIcon";
 import { ReferralsIcon } from "@/components/instructor/quickAccess/referralsIcon";
@@ -2256,7 +2257,7 @@ export const QUICK_ACCESS: QAItem[] = [
   { label: "Sat nav",         Icon: SatNavIcon,       ...BLUE_BG, route: "/instructor/satnav" },
   { label: "Find my car",     Icon: FindMyCarIcon,    ...BLUE_BG, route: "/instructor/find-my-car" },
   { label: "Find fuel",       Icon: Fuel,             ...BLUE_BG, route: "/instructor/fuel" },
-  { label: "Find nearby",     Icon: MapPin,           ...BLUE_BG, route: "/instructor/find-nearby" },
+  { label: "Find nearby",     Icon: FindNearbyIcon,   ...BLUE_BG, route: "/instructor/find-nearby" },
   { label: "Locations",       Icon: MapPinned,        ...BLUE_BG, route: "/instructor/locations" },
   // Row 4 — Telephony & reporting
   { label: "Telephony",       Icon: TelephonyIcon,    ...NAVY_BG, route: "/instructor/settings/phone-ai" },

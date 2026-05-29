@@ -15,6 +15,7 @@ import { TrackLessonIcon } from "./trackLessonIcon";
 import { EndOfDayIcon } from "./endOfDayIcon";
 import { SatNavIcon } from "./satNavIcon";
 import { FindMyCarIcon } from "./findMyCarIcon";
+import { FindNearbyIcon } from "./findNearbyIcon";
 
 /**
  * Stable tile identifiers for the Quick Access section. These IDs are
@@ -74,7 +75,7 @@ export const QUICK_ACCESS_TILES: QuickAccessTile[] = [
   { id: "tests",            title: "Tests",            subtitle: "Swap requests",         icon: ArrowLeftRight,  tone: "blue",   route: "/instructor/test-requests" },
   { id: "standards-check",  title: "Standards check",  subtitle: "DVSA triggers",         icon: Target,          tone: "purple", route: "/instructor/standards-check" },
   { id: "messages",         title: "Messages",         subtitle: "Chat",                  icon: MessageSquare,   tone: "green",  route: "/instructor/messages" },
-  { id: "find-nearby",      title: "Find nearby",      subtitle: "Toilets, food & more",  icon: MapPin,          tone: "blue",   route: "/instructor/find-nearby" },
+  { id: "find-nearby",      title: "Find nearby",      subtitle: "Toilets, food & more",  icon: FindNearbyIcon,  tone: "blue",   route: "/instructor/find-nearby" },
   { id: "locations",        title: "Locations",        subtitle: "Saved places",          icon: MapPinned,       tone: "blue",   route: "/instructor/locations" },
   { id: "cpd-log",          title: "CPD log",          subtitle: "Training hours",        icon: BookOpen,        tone: "purple", route: "/instructor/cpd" },
   { id: "settings",         title: "Settings",         subtitle: "Preferences",           icon: Settings,        tone: "grey",   route: "/instructor/settings" },
