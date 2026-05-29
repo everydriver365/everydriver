@@ -11,6 +11,7 @@ import { CoursePlannerIcon } from "./coursePlannerIcon";
 import { EarningsIcon } from "./earningsIcon";
 import { WeeklyReportIcon } from "./weeklyReportIcon";
 import { TasksDueIcon } from "./tasksDueIcon";
+import { TrackLessonIcon } from "./trackLessonIcon";
 
 /**
  * Stable tile identifiers for the Quick Access section. These IDs are
@@ -56,7 +57,7 @@ export const QUICK_ACCESS_TILES: QuickAccessTile[] = [
   { id: "schedule",         title: "Schedule",         subtitle: "Your agenda",           icon: CalendarDays,    tone: "blue",   route: "/instructor/schedule" },
   { id: "accessibility",    title: "Accessibility",    subtitle: "Text size",             icon: Accessibility,   tone: "grey",   route: "/instructor/accessibility" },
   { id: "pupils",           title: "Pupils",           subtitle: "Manage learners",       icon: Users,           tone: "green",  route: "/instructor/pupils" },
-  { id: "track-lesson",     title: "Track lesson",     subtitle: "Start GPS",             icon: MapPin,          tone: "red",    route: "/instructor/tracking",          requiredFeature: "telematics" },
+  { id: "track-lesson",     title: "Track lesson",     subtitle: "Start GPS",             icon: TrackLessonIcon, tone: "red",    route: "/instructor/tracking",          requiredFeature: "telematics" },
   { id: "take-payment",     title: "Take payment",     subtitle: "Record a payment",      icon: PoundSterling,   tone: "amber",  route: "/instructor/pay",               requiredFeature: "payment_tracking" },
   { id: "sat-nav",          title: "Sat nav",          subtitle: "Navigation",            icon: Navigation,      tone: "blue",   route: "/instructor/satnav",            requiredFeature: "telematics" },
   { id: "find-my-car",      title: "Find my car",      subtitle: "Last position",         icon: Car,             tone: "blue",   route: "/instructor/find-my-car",       requiredFeature: "telematics" },
