@@ -34,6 +34,7 @@ export const everyInstructorRoutes = (
   <>
     <Route path="/every-instructor" element={<EveryInstructorHome />} />
     <Route path="/every-instructor/quick-actions/edit" element={<EveryInstructorQuickActionsEdit />} />
+    <Route path="/every-instructor/quick-access/all" element={<InstructorQuickAccessAll />} />
     <Route path="/every-instructor/schedule" element={<InstructorSchedule />} />
     <Route path="/every-instructor/pupils" element={<InstructorPupils />} />
     <Route path="/every-instructor/pupils/:pupilId" element={<InstructorPupils />} />
