@@ -33,6 +33,7 @@ import { WeeklyReportIcon } from "@/components/instructor/quickAccess/weeklyRepo
 import { TrackLessonIcon } from "@/components/instructor/quickAccess/trackLessonIcon";
 import { EndOfDayIcon } from "@/components/instructor/quickAccess/endOfDayIcon";
 import { SatNavIcon } from "@/components/instructor/quickAccess/satNavIcon";
+import { RatesIcon } from "@/components/instructor/quickAccess/ratesIcon";
 import { TasksDueIcon } from "@/components/instructor/quickAccess/tasksDueIcon";
 import { LessonHistoryIcon } from "@/components/instructor/quickAccess/lessonHistoryIcon";
 import { ReferralsIcon } from "@/components/instructor/quickAccess/referralsIcon";
@@ -2230,7 +2231,7 @@ export const QUICK_ACCESS: QAItem[] = [
   { label: "Test swap",       Icon: Repeat2,          ...RED_BG,  route: "/instructor/test-requests" },
   { label: "Standards",       Icon: StandardsIcon,    ...BLUE_BG, route: "/instructor/standards-check" },
   { label: "CPD",             Icon: CpdIcon,          ...NAVY_BG, route: "/instructor/cpd" },
-  { label: "Rates",           Icon: MapPin,           ...BLUE_BG, route: "/instructor/locations" },
+  { label: "Rates",           Icon: RatesIcon,        ...BLUE_BG, route: "/instructor/locations" },
   { label: "Availability",    Icon: CalendarCheck,    ...BLUE_BG, route: "/instructor/availability" },
   { label: "My courses",      Icon: MyCoursesIcon,    ...BLUE_BG, route: "/instructor/course-planner" },
   // Row 2 — Money

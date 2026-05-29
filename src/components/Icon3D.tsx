@@ -78,6 +78,7 @@ import tasksDue from "@/assets/icons-3d/tasks-due.png";
 import trackLesson from "@/assets/icons-3d/track-lesson.png";
 import endOfDay from "@/assets/icons-3d/end-of-day.png";
 import satNav from "@/assets/icons-3d/sat-nav.png";
+import rates from "@/assets/icons-3d/rates.png";
 
 /**
  * Registry of available 3D clay-style PNG icons.
@@ -161,6 +162,7 @@ export const ICON_3D_REGISTRY = {
   "track-lesson": trackLesson,
   "end-of-day": endOfDay,
   "sat-nav": satNav,
+  rates,
 } as const;
 
 export type Icon3DName = keyof typeof ICON_3D_REGISTRY;
