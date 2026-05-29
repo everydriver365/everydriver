@@ -18,6 +18,7 @@ import { FillGapsIcon } from "@/components/instructor/quickAccess/fillGapsIcon";
 import { HowPupilsBookIcon } from "@/components/instructor/quickAccess/howPupilsBookIcon";
 import { PlanBillingIcon } from "@/components/instructor/quickAccess/planBillingIcon";
 import { LabFeaturesIcon } from "@/components/instructor/quickAccess/labFeaturesIcon";
+import { CpdIcon } from "@/components/instructor/quickAccess/cpdIcon";
 import { Shimmer } from "@/components/instructor/home/Shimmer";
 import nextLessonCar from "@/assets/next-lesson-car.png";
 import {
@@ -2181,7 +2182,7 @@ const QUICK_ACCESS: QAItem[] = [
   { label: "Fill gaps",       Icon: FillGapsIcon,     ...NAVY_BG, route: "/instructor/gaps" },
   { label: "Test swap",       Icon: Repeat2,          ...RED_BG,  route: "/instructor/test-requests" },
   { label: "Standards",       Icon: ShieldCheck,      ...BLUE_BG, route: "/instructor/standards-check" },
-  { label: "CPD",             Icon: Award,            ...NAVY_BG, route: "/instructor/cpd" },
+  { label: "CPD",             Icon: CpdIcon,          ...NAVY_BG, route: "/instructor/cpd" },
   { label: "Rates",           Icon: MapPin,           ...BLUE_BG, route: "/instructor/locations" },
   { label: "Availability",    Icon: CalendarCheck,    ...BLUE_BG, route: "/instructor/availability" },
   { label: "My courses",      Icon: LayoutGrid,       ...BLUE_BG, route: "/instructor/course-planner" },
