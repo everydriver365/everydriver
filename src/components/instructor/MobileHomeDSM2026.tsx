@@ -2178,7 +2178,7 @@ const QUICK_ACCESS: QAItem[] = [
   { label: "Pupils",          Icon: Users,            ...BLUE_BG, route: "/instructor/pupils" },
   { label: "Payments",        Icon: CreditCard,       ...BLUE_BG, route: "/instructor/payments" },
   { label: "Driving Tests",   Icon: DrivingTestsIcon, ...RED_BG,  route: "/instructor/test-requests" },
-  { label: "Lesson history",  Icon: BookOpen,         ...BLUE_BG, route: "/instructor/pupils" },
+  { label: "Lesson history",  Icon: LessonHistoryIcon, ...BLUE_BG, route: "/instructor/pupils" },
   { label: "Find slot",       Icon: FindSlotIcon,     ...BLUE_BG, route: "/instructor/gaps" },
   { label: "Next slot",       Icon: ArrowRight,       ...NAVY_BG, route: "/instructor/gaps" },
   { label: "Course planner",  Icon: CoursePlannerIcon, ...BLUE_BG, route: "/instructor/course-planner" },
