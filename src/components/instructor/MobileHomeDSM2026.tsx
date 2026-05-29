@@ -37,6 +37,7 @@ import { TaxIcon } from "@/components/instructor/quickAccess/taxIcon";
 import { VehicleIcon } from "@/components/instructor/quickAccess/vehicleIcon";
 import { TelephonyIcon, CallAnsweringIcon } from "@/components/instructor/quickAccess/telephonyIcon";
 import { ReportingIcon } from "@/components/instructor/quickAccess/reportingIcon";
+import { TodoIcon } from "@/components/instructor/quickAccess/todoIcon";
 import { Shimmer } from "@/components/instructor/home/Shimmer";
 import nextLessonCar from "@/assets/next-lesson-car.png";
 import {
@@ -2218,7 +2219,7 @@ export const QUICK_ACCESS: QAItem[] = [
   { label: "Telephony",       Icon: TelephonyIcon,    ...NAVY_BG, route: "/instructor/settings/phone-ai" },
   { label: "Call answering",  Icon: CallAnsweringIcon, ...NAVY_BG, route: "/instructor/settings/phone-ai" },
   { label: "Reporting",       Icon: ReportingIcon,    ...BLUE_BG, route: "/instructor/income" },
-  { label: "To do",           Icon: CheckSquare,      ...GREY_BG, route: "/instructor/notifications" },
+  { label: "To do",           Icon: TodoIcon,         ...GREY_BG, route: "/instructor/notifications" },
   { label: "Productivity",    Icon: Zap,              ...BLUE_BG, route: "/instructor/income" },
   { label: "People & growth", Icon: Users,            ...BLUE_BG, route: "/instructor/pupils" },
   { label: "Support",         Icon: HelpCircle,       ...RED_BG,  route: "/instructor/settings" },
