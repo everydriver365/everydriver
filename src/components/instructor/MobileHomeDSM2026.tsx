@@ -31,6 +31,7 @@ import { TakePaymentIcon } from "@/components/instructor/quickAccess/takePayment
 import { GpsTrackingIcon } from "@/components/instructor/quickAccess/gpsTrackingIcon";
 import { ExpensesIcon } from "@/components/instructor/quickAccess/expensesIcon";
 import { SecurityIcon } from "@/components/instructor/quickAccess/securityIcon";
+import { PendingIcon } from "@/components/instructor/quickAccess/pendingIcon";
 import { Shimmer } from "@/components/instructor/home/Shimmer";
 import nextLessonCar from "@/assets/next-lesson-car.png";
 import {
