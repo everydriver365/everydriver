@@ -1,18 +1,40 @@
-## Quick Access grid → 2 wide × 3 high (6 tiles per page)
+# Why the home tile shows sync issues
 
-Change the Quick Access section on the instructor home (`src/components/instructor/MobileHomeDSM2026.tsx`) so each swipeable page shows 6 tiles (2 columns × 3 rows) instead of the current 4 (2×2).
+The "Calendar sync" tile on `/instructor` (`src/components/instructor/CalendarSyncStatusTile.tsx`) counts every `scheduled_lessons` row where `calendar_sync_status = 'failed'` (or `'pending'`) for the instructor — with no other filters.
 
-### Changes
+For your account there are **209** such rows, but **all 209 are cancelled** and **203 are soft‑deleted**. They're leftovers from lessons that were removed; the sync failure flag was never cleared. That's why your schedule + next slot look right (those don't read `calendar_sync_status`) but the tile screams red.
 
-1. **Page size** (line 2366): `const VISIBLE = 4;` → `const VISIBLE = 6;`
-   - This is what controls how many tiles fit per swipeable page; the grid is already `repeat(2, 1fr)`, so 6 items naturally become 2×3.
+The same blind count also exists in the pending branch, and the credential‑broken classifier keys off whether `failed > 0`, so today a pile of stale cancelled rows can also flip the tile into "Sync paused / credential issue".
 
-2. **Default pins** (line 2305): trim `DEFAULT_PIN_LABELS` from 7 entries down to 6 so first-time users see one full page rather than a near-full page + a single orphan tile on page 2. Proposed order (keeps the most-used actions):
-   - Schedule, Pupils, Test swap, Payments, Availability, Find slot
-   - (Drops "Settings" from defaults — still reachable from the bottom nav / "All" view.)
+## Fix
 
-### Out of scope
+Scope the two counts on the tile to lessons that actually matter:
 
-- No change to tile size, tile content, icons, or long-press pin behaviour.
-- No change to the 8-pin upper cap, the Edit sheet, or `/instructor/quick-access` ("All") page (which already renders a single full grid, not paged).
-- No change to desktop/other portals.
+```ts
+// pending
+.eq("calendar_sync_status", "pending")
+.is("deleted_at", null)
+.neq("status", "cancelled")
+
+// failed
+.eq("calendar_sync_status", "failed")
+.is("deleted_at", null)
+.neq("status", "cancelled")
+```
+
+File: `src/components/instructor/CalendarSyncStatusTile.tsx` (the two count queries inside `load()`).
+
+No DB migration, no change to the sync pipeline, no change elsewhere on the home screen. After the fix the tile will read **0 failed / 0 pending → "Synced"** for your account, matching what the rest of the dashboard already shows.
+
+## Optional follow‑up (only if you want it)
+
+One‑off cleanup so future tiles/queries aren't polluted:
+
+```sql
+update scheduled_lessons
+set calendar_sync_status = 'no-calendar'
+where calendar_sync_status in ('failed','pending')
+  and (status = 'cancelled' or deleted_at is not null);
+```
+
+Say the word and I'll include it as a migration; otherwise I'll just ship the tile fix.
