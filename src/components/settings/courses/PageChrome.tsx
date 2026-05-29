@@ -58,29 +58,35 @@ export function Breadcrumb({
 export function PageHeaderCard({
   title, subtitle, actions,
 }: { title: string; subtitle: string; actions: ReactNode }) {
+  const isMobile = useIsMobile();
   return (
     <div
       style={{
         display: "flex", alignItems: "center", gap: 14,
-        padding: "16px 18px", borderRadius: 14, background: tokens.white,
+        padding: isMobile ? "14px 14px" : "20px 24px", borderRadius: 14, background: tokens.white,
         border: `1px solid ${tokens.border}`, marginTop: 16,
         flexWrap: "wrap",
       }}
     >
       <div
         style={{
-          width: 44, height: 44, borderRadius: 12,
+          width: isMobile ? 40 : 48, height: isMobile ? 40 : 48, borderRadius: 12,
           background: tokens.blueLight, color: tokens.blue,
           display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
         }}
       >
-        <BookOpen size={20} />
+        <BookOpen size={isMobile ? 18 : 22} />
       </div>
-      <div style={{ flex: 1, minWidth: 160 }}>
-        <h1 style={{ fontSize: 17, fontWeight: 700, color: tokens.navy, margin: 0, lineHeight: 1.25 }}>{title}</h1>
-        <p style={{ fontSize: 12.5, color: tokens.mid, margin: "3px 0 0", lineHeight: 1.4 }}>{subtitle}</p>
+      <div style={{ flex: 1, minWidth: 140 }}>
+        <h1 style={{ fontSize: isMobile ? 16 : 18, fontWeight: 700, color: tokens.navy, margin: 0, lineHeight: 1.25 }}>{title}</h1>
+        <p style={{ fontSize: isMobile ? 12 : 13, color: tokens.mid, margin: "3px 0 0", lineHeight: 1.4 }}>{subtitle}</p>
       </div>
-      <div style={{ display: "flex", gap: 8, flexShrink: 0, flexWrap: "wrap", width: "100%", justifyContent: "flex-end" }} className="hpb-actions">
+      <div
+        style={{
+          display: "flex", gap: 8, flexShrink: 0,
+          width: isMobile ? "100%" : "auto",
+        }}
+      >
         {actions}
       </div>
     </div>
