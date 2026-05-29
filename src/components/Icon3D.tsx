@@ -73,6 +73,7 @@ import logTestResult from "@/assets/icons-3d/log-test-result.png";
 import planAhead from "@/assets/icons-3d/plan-ahead.png";
 import yourPlan from "@/assets/icons-3d/your-plan.png";
 import earnings from "@/assets/icons-3d/earnings.png";
+import weeklyReport from "@/assets/icons-3d/weekly-report.png";
 
 /**
  * Registry of available 3D clay-style PNG icons.
@@ -151,6 +152,7 @@ export const ICON_3D_REGISTRY = {
   "plan-ahead": planAhead,
   "your-plan": yourPlan,
   earnings,
+  "weekly-report": weeklyReport,
 } as const;
 
 export type Icon3DName = keyof typeof ICON_3D_REGISTRY;
