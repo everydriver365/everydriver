@@ -527,7 +527,7 @@ function UnifiedInfoPanel({
   };
 
   const Title = ({ children }: { children: React.ReactNode }) => (
-    <div style={{ fontSize: 13, fontWeight: 500, color: "#1a1a1f", marginTop: 10 }}>
+    <div style={{ fontSize: 13, fontWeight: 500, color: "#1a1a1f" }}>
       {children}
     </div>
   );
@@ -537,6 +537,22 @@ function UnifiedInfoPanel({
       {children}
     </div>
   );
+
+  // Row layout used at the top of every info card: icon left, text block
+  // vertically centered to the right of it, optional badge at far right.
+  const cardRowStyle: React.CSSProperties = {
+    display: "flex",
+    alignItems: "center",
+    gap: 12,
+  };
+  const cardTextStyle: React.CSSProperties = {
+    flex: 1,
+    minWidth: 0,
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+  };
+
 
   const Badge = ({
     bg,
