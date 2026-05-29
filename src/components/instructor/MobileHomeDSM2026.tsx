@@ -22,6 +22,7 @@ import { CpdIcon } from "@/components/instructor/quickAccess/cpdIcon";
 import { MyCoursesIcon } from "@/components/instructor/quickAccess/myCoursesIcon";
 import { DrivingTestsIcon } from "@/components/instructor/quickAccess/drivingTestsIcon";
 import { StandardsIcon } from "@/components/instructor/quickAccess/standardsIcon";
+import { FindSlotIcon } from "@/components/instructor/quickAccess/findSlotIcon";
 import { Shimmer } from "@/components/instructor/home/Shimmer";
 import nextLessonCar from "@/assets/next-lesson-car.png";
 import {
@@ -2178,7 +2179,7 @@ const QUICK_ACCESS: QAItem[] = [
   { label: "Payments",        Icon: CreditCard,       ...BLUE_BG, route: "/instructor/payments" },
   { label: "Driving Tests",   Icon: DrivingTestsIcon, ...RED_BG,  route: "/instructor/test-requests" },
   { label: "Lesson history",  Icon: BookOpen,         ...BLUE_BG, route: "/instructor/pupils" },
-  { label: "Find slot",       Icon: Search,           ...BLUE_BG, route: "/instructor/gaps" },
+  { label: "Find slot",       Icon: FindSlotIcon,     ...BLUE_BG, route: "/instructor/gaps" },
   { label: "Next slot",       Icon: ArrowRight,       ...NAVY_BG, route: "/instructor/gaps" },
   { label: "Course planner",  Icon: CoursePlannerIcon, ...BLUE_BG, route: "/instructor/course-planner" },
   { label: "Waiting list",    Icon: WaitingListIcon,  ...RED_BG,  route: "/instructor/waiting-list" },
