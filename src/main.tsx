@@ -32,14 +32,29 @@ if (import.meta.env.DEV) {
 }
 
 // When the app is loaded inside a native wrapper (Despia / Capacitor / WebView)
-// unregister any service workers so cached assets and Web Push handlers from a
-// previous browser visit don't interfere with the wrapped app. Native push and
-// asset delivery are handled by the wrapper itself.
+// unregister any service workers AND clear Cache Storage so cached assets from
+// a previous browser/PWA visit don't pin the wrapper to a stale bundle.
+// Native push and asset delivery are handled by the wrapper itself.
 if (typeof window !== "undefined" && detectNativeWrapper()) {
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker.getRegistrations().then((regs) => {
       regs.forEach((r) => r.unregister().catch(() => {}));
     }).catch(() => {});
+  }
+  if ("caches" in window) {
+    caches.keys().then((keys) => {
+      keys.forEach((k) => caches.delete(k).catch(() => {}));
+    }).catch(() => {});
+  }
+  // Expose build time for in-app diagnostics — check `window.__BUILD_TIME__`
+  // in the WebView console to confirm which bundle is actually running.
+  try {
+    (window as unknown as { __BUILD_TIME__?: string }).__BUILD_TIME__ =
+      typeof __BUILD_TIME__ === "string" ? __BUILD_TIME__ : undefined;
+    // eslint-disable-next-line no-console
+    console.info("[build]", (window as unknown as { __BUILD_TIME__?: string }).__BUILD_TIME__);
+  } catch {
+    /* ignore */
   }
 }
 
