@@ -583,7 +583,15 @@ function UnifiedInfoPanel({
   };
 
   const Title = ({ children }: { children: React.ReactNode }) => (
-    <div style={{ fontSize: 13, fontWeight: 500, color: "#1a1a1f" }}>
+    <div
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: "#1a1a1f",
+        lineHeight: 1.2,
+        whiteSpace: "normal",
+      }}
+    >
       {children}
     </div>
   );
@@ -599,7 +607,7 @@ function UnifiedInfoPanel({
   const cardRowStyle: React.CSSProperties = {
     display: "flex",
     alignItems: "center",
-    gap: 12,
+    gap: 10,
   };
   const cardTextStyle: React.CSSProperties = {
     flex: 1,
@@ -608,6 +616,13 @@ function UnifiedInfoPanel({
     flexDirection: "column",
     justifyContent: "center",
   };
+
+  const footerRowStyle: React.CSSProperties = {
+    display: "flex",
+    justifyContent: "flex-end",
+    marginTop: 8,
+  };
+
 
 
   const Badge = ({
