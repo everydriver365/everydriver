@@ -28,6 +28,7 @@ import { ReferralsIcon } from "@/components/instructor/quickAccess/referralsIcon
 import { FeesIcon } from "@/components/instructor/quickAccess/feesIcon";
 import { WorkingHoursIcon } from "@/components/instructor/quickAccess/workingHoursIcon";
 import { TakePaymentIcon } from "@/components/instructor/quickAccess/takePaymentIcon";
+import { GpsTrackingIcon } from "@/components/instructor/quickAccess/gpsTrackingIcon";
 import { Shimmer } from "@/components/instructor/home/Shimmer";
 import nextLessonCar from "@/assets/next-lesson-car.png";
 import {
@@ -2205,7 +2206,7 @@ const QUICK_ACCESS: QAItem[] = [
   { label: "Fees",            Icon: FeesIcon,         ...BLUE_BG, route: "/instructor/payments?tab=fees" },
   { label: "Plan & billing",  Icon: PlanBillingIcon,  ...NAVY_BG, route: "/instructor/settings/plan-billing" },
   { label: "Vehicle",         Icon: Car,              ...BLUE_BG, route: "/instructor/vehicle-health" },
-  { label: "GPS tracking",    Icon: MapPin,           ...BLUE_BG, route: "/instructor/tracking" },
+  { label: "GPS tracking",    Icon: GpsTrackingIcon,  ...BLUE_BG, route: "/instructor/tracking" },
   { label: "Telephony",       Icon: Phone,            ...NAVY_BG, route: "/instructor/settings/phone-ai" },
   { label: "Call answering",  Icon: PhoneCall,        ...NAVY_BG, route: "/instructor/settings/phone-ai" },
   { label: "Reporting",       Icon: TrendingUp,       ...BLUE_BG, route: "/instructor/income" },
