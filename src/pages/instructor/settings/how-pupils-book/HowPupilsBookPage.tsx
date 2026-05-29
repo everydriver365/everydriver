@@ -11,6 +11,8 @@ import {
 import { CoursesSection } from "@/components/settings/courses/CoursesSection";
 import { tokens, type CourseRow } from "@/components/settings/courses/tokens";
 import { BespokeCourseDialog, type BespokeCourse } from "@/components/instructor/BespokeCourseDialog";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { MobileHowPupilsBookView } from "./MobileHowPupilsBookView";
 
 const COURSE_SELECT =
   "id, course_hours, course_name, short_description, duration_days, available_weekdays, available_from, available_to, is_active, offer_active, discounted_price, is_bespoke, is_intensive, price_mode, flat_price, hourly_rate_override, display_order, created_at";
