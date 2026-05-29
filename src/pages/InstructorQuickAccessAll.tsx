@@ -1,126 +1,23 @@
-import { useMemo } from "react";
+import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
-import { toast } from "sonner";
+import { QUICK_ACCESS, QATile } from "@/components/instructor/MobileHomeDSM2026";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
-import {
-  QUICK_ACCESS_TILES,
-  type QuickAccessTile,
-} from "@/components/instructor/quickAccess/tileRegistry";
-import { RichTileCard } from "@/components/instructor/quickAccess/QuickAccessTiles";
+import { useQuickAccessUnreads } from "@/hooks/useQuickAccessUnreads";
 import { haptics } from "@/lib/haptics";
 
 const FONT = '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif';
 const BG = "#F4F7F6";
-const MUTED = "#6E6E73";
-
-// Group tiles by category. Order here is the display order.
-const CATEGORY_ORDER: Array<{ label: string; ids: string[] }> = [
-  {
-    label: "Lessons",
-    ids: [
-      "schedule",
-      "course-planner",
-      "plan-ahead",
-      "availability",
-      "fill-gaps",
-      "track-lesson",
-    ],
-  },
-  {
-    label: "Pupils",
-    ids: [
-      "pupils",
-      "messages",
-      "log-test-result",
-      "tests",
-      "standards-check",
-      "cpd-log",
-      "waiting-room",
-    ],
-  },
-  {
-    label: "Money",
-    ids: [
-      "take-payment",
-      "earnings",
-      "expenses",
-      "weekly-report",
-      "tasks-due",
-      "end-of-day",
-      "referrals",
-    ],
-  },
-  {
-    label: "Vehicle",
-    ids: [
-      "find-my-car",
-      "vehicle-health",
-      "find-fuel",
-      "sat-nav",
-      "find-nearby",
-      "locations",
-    ],
-  },
-  {
-    label: "Network",
-    ids: ["nearby-adis", "find-colleague", "platform-updates"],
-  },
-  {
-    label: "Admin",
-    ids: ["your-plan", "settings", "accessibility", "to-do", "call-answering"],
-  },
-];
 
 export default function InstructorQuickAccessAll() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { subscription } = useInstructorAuth();
-  const features = subscription?.features || [];
+  const { instructor } = useInstructorAuth();
+  const unreads = useQuickAccessUnreads(instructor?.id ?? "");
+  const [activeRoute, setActiveRoute] = useState<string | null>(null);
 
   const isEvery = location.pathname.startsWith("/every-instructor");
   const backTo = isEvery ? "/every-instructor" : "/instructor";
-
-  const tilesById = useMemo(() => {
-    const map: Record<string, QuickAccessTile> = {};
-    QUICK_ACCESS_TILES.forEach((t) => {
-      map[t.id] = t;
-    });
-    return map;
-  }, []);
-
-  // Collect categorised IDs; remaining tiles go into "More".
-  const sections = useMemo(() => {
-    const seen = new Set<string>();
-    const cats = CATEGORY_ORDER.map((cat) => {
-      const tiles = cat.ids
-        .map((id) => {
-          seen.add(id);
-          return tilesById[id];
-        })
-        .filter(Boolean) as QuickAccessTile[];
-      return { label: cat.label, tiles };
-    });
-    const remaining = QUICK_ACCESS_TILES.filter((t) => !seen.has(t.id));
-    if (remaining.length > 0) {
-      cats.push({ label: "More", tiles: remaining });
-    }
-    return cats.filter((s) => s.tiles.length > 0);
-  }, [tilesById]);
-
-  const isLocked = (tile: QuickAccessTile) =>
-    tile.requiredFeature ? !features.includes(tile.requiredFeature) : false;
-
-  const handleTap = (tile: QuickAccessTile) => {
-    haptics.selection();
-    if (isLocked(tile)) {
-      toast.info(`${tile.title} requires a plan upgrade`, {
-        action: { label: "View plans", onClick: () => navigate("/instructor/plans") },
-      });
-      return;
-    }
-    navigate(tile.route);
-  };
 
   return (
     <div
@@ -166,36 +63,28 @@ export default function InstructorQuickAccessAll() {
         </span>
       </div>
 
-      <main style={{ padding: "12px 16px 96px" }}>
-        {sections.map((section) => (
-          <section key={section.label} style={{ marginBottom: 20 }}>
-            <div
-              style={{
-                fontSize: 10,
-                fontWeight: 700,
-                color: MUTED,
-                letterSpacing: 1.2,
-                textTransform: "uppercase",
-                margin: "8px 2px 8px",
+      <main style={{ padding: "16px 16px 96px" }}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+            gap: 8,
+          }}
+        >
+          {QUICK_ACCESS.map((item) => (
+            <QATile
+              key={item.label}
+              item={item}
+              active={activeRoute === item.route}
+              onPress={() => {
+                haptics.selection();
+                setActiveRoute(item.route);
+                navigate(item.route);
               }}
-            >
-              {section.label}
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {section.tiles.map((tile) => (
-                <RichTileCard
-                  key={tile.id}
-                  icon={tile.icon}
-                  tone={tile.tone}
-                  title={tile.title}
-                  subtitle={tile.subtitle}
-                  onPress={() => handleTap(tile)}
-                  locked={isLocked(tile)}
-                />
-              ))}
-            </div>
-          </section>
-        ))}
+              badgeCount={unreads[item.label] ?? 0}
+            />
+          ))}
+        </div>
       </main>
     </div>
   );
