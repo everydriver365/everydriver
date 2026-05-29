@@ -32,6 +32,7 @@ import { GpsTrackingIcon } from "@/components/instructor/quickAccess/gpsTracking
 import { ExpensesIcon } from "@/components/instructor/quickAccess/expensesIcon";
 import { SecurityIcon } from "@/components/instructor/quickAccess/securityIcon";
 import { PendingIcon } from "@/components/instructor/quickAccess/pendingIcon";
+import { ReviewsIcon } from "@/components/instructor/quickAccess/reviewsIcon";
 import { Shimmer } from "@/components/instructor/home/Shimmer";
 import nextLessonCar from "@/assets/next-lesson-car.png";
 import {
@@ -2204,7 +2205,7 @@ export const QUICK_ACCESS: QAItem[] = [
   { label: "Pending",         Icon: PendingIcon,      ...RED_BG,  route: "/instructor/payments?tab=pending" },
   { label: "Expenses",        Icon: ExpensesIcon,     ...NAVY_BG, route: "/instructor/expenses" },
   { label: "Tax",             Icon: Calculator,       ...NAVY_BG, route: "/instructor/tax" },
-  { label: "Reviews",         Icon: Star,             ...RED_BG,  route: "/instructor/reviews" },
+  { label: "Reviews",         Icon: ReviewsIcon,      ...RED_BG,  route: "/instructor/reviews" },
   { label: "Referrals",       Icon: ReferralsIcon,    ...RED_BG,  route: "/instructor/payments?tab=bonus" },
   { label: "Fees",            Icon: FeesIcon,         ...BLUE_BG, route: "/instructor/payments?tab=fees" },
   { label: "Plan & billing",  Icon: PlanBillingIcon,  ...NAVY_BG, route: "/instructor/settings/plan-billing" },

@@ -120,6 +120,7 @@ export const ICON_3D_REGISTRY = {
   expenses,
   security,
   pending,
+  reviews,
 } as const;
 
 export type Icon3DName = keyof typeof ICON_3D_REGISTRY;
