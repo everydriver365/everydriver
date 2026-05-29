@@ -147,29 +147,31 @@ export function CompactTile({
       style={{
         background: "transparent",
         border: 0,
-        padding: 0,
+        padding: "6px 4px",
         display: "flex",
-        flexDirection: "column",
+        flexDirection: "row",
         alignItems: "center",
-        gap: 6,
+        gap: 12,
         position: "relative",
         cursor: "pointer",
         opacity: locked ? 0.55 : 1,
+        width: "100%",
+        textAlign: "left",
       }}
     >
-      <div style={{ position: "relative" }}>
+      <div style={{ position: "relative", flexShrink: 0 }}>
         <div
           style={{
-            width: 44,
-            height: 44,
-            borderRadius: 11,
+            width: 36,
+            height: 36,
+            borderRadius: 10,
             background: palette.bg,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
           }}
         >
-          <Icon size={20} strokeWidth={1.8} color={palette.fg} />
+          <Icon size={18} strokeWidth={1.8} color={palette.fg} />
         </div>
         {showBadge && (
           <span
@@ -191,32 +193,28 @@ export function CompactTile({
             {alertCount! > 99 ? "99+" : alertCount}
           </span>
         )}
-        {rightAccessory && (
-          <span
-            style={{
-              position: "absolute",
-              top: -4,
-              right: -4,
-            }}
-          >
-            {rightAccessory}
-          </span>
-        )}
       </div>
       <span
         style={{
-          fontSize: 10,
+          flex: 1,
+          minWidth: 0,
+          fontSize: 14,
           color: "#000000",
-          textAlign: "center",
-          lineHeight: 1.2,
-          maxWidth: 64,
+          lineHeight: 1.3,
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
         }}
       >
         {label}
       </span>
+      {rightAccessory && (
+        <span style={{ marginLeft: "auto", flexShrink: 0 }}>{rightAccessory}</span>
+      )}
     </button>
   );
 }
+
 
 interface PersistentSearchBarProps {
   value: string;
