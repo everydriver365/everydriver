@@ -177,7 +177,7 @@ export default function HowPupilsBookPage() {
     { label: "Dashboard", href: "/instructor" },
     { label: "Settings", href: "/instructor/settings" },
     { label: "Pupils & bookings", href: "/instructor/settings" },
-    { label: "How pupils book", active: true },
+    { label: "My Advertised Courses", active: true },
   ];
 
   const openEdit = (id: string) => {
@@ -249,7 +249,7 @@ export default function HowPupilsBookPage() {
         <Breadcrumb items={breadcrumbItems} onNavigate={(href) => navigate(href)} />
 
         <PageHeaderCard
-          title="How pupils book"
+          title="My Advertised Courses"
           subtitle="Choose the courses, prices and rules pupils see when booking with you."
           actions={
             <>

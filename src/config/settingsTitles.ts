@@ -6,7 +6,7 @@ export const SECTION_TITLES: Record<string, string> = {
   hours:             "Working hours",
   rates:             "Rates & coverage",
   lessons:           "Lesson types & durations",
-  "how-book":        "How pupils book",
+  "how-book":        "My Advertised Courses",
   cancellation:      "Cancellation policy",
   waiting:           "Waiting list & fill gaps",
   "payment-methods": "Payment methods",

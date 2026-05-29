@@ -38,7 +38,7 @@ export const SIDEBAR_SECTIONS: SidebarSectionConfig[] = [
     id: "bookings",
     label: "Pupils & bookings",
     items: [
-      { id: "how-book",     label: "How pupils book",     iconBg: "#E6F1FB", iconColour: "#1A52A0", icon: "users" },
+      { id: "how-book",     label: "My Advertised Courses",     iconBg: "#E6F1FB", iconColour: "#1A52A0", icon: "users" },
       { id: "cancellation", label: "Cancellation policy", iconBg: "#E8EDF6", iconColour: "#0F2044", icon: "x-circle" },
       { id: "waiting",      label: "Waiting list",        iconBg: "#E8EDF6", iconColour: "#0F2044", icon: "list", countKey: "waitingCount" },
     ],

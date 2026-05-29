@@ -2238,7 +2238,7 @@ export const QUICK_ACCESS: QAItem[] = [
   { label: "Schedule",        Icon: CalendarIcon,     ...BLUE_BG, route: "/instructor/schedule" },
   { label: "Plan ahead",      Icon: PlanAheadIcon,    ...NAVY_BG, route: "/instructor/diary" },
   { label: "Working hours",   Icon: WorkingHoursIcon, ...BLUE_BG, route: "/instructor/availability" },
-  { label: "How pupils book", Icon: HowPupilsBookIcon, ...BLUE_BG, route: "/instructor/settings/how-pupils-book" },
+  { label: "My Advertised Courses", Icon: HowPupilsBookIcon, ...BLUE_BG, route: "/instructor/settings/how-pupils-book" },
   { label: "Pupils",          Icon: Users,            ...BLUE_BG, route: "/instructor/pupils" },
   { label: "Messages",        Icon: MessageSquare,    ...BLUE_BG, route: "/instructor/messages" },
   { label: "Waiting room",    Icon: WaitingRoomIcon,  ...NAVY_BG, route: "/instructor/waiting-room" },
