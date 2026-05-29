@@ -2689,6 +2689,7 @@ export function QATile({
 }: { item: QAItem; active: boolean; onPress: () => void; size?: "grid" | "scroll"; badgeCount?: number; onLongPress?: () => void }) {
   const Icon = item.Icon;
   const resolved3D = resolveIcon3D((Icon as { displayName?: string }).displayName);
+  const isAvailabilityTile = item.label === "Availability";
   return (
     <Tile
       variant="navigation"
@@ -2698,9 +2699,16 @@ export function QATile({
       badgeCount={badgeCount}
       badgeVisible={!!badgeCount && badgeCount > 0}
       ariaLabel={item.label}
-      iconBare={!!resolved3D}
+      iconBare={!!resolved3D || isAvailabilityTile}
       iconNode={
-        resolved3D ? (
+        isAvailabilityTile ? (
+          <img
+            src={availableIconImg}
+            alt=""
+            aria-hidden="true"
+            style={{ width: 56, height: 56, objectFit: "contain", display: "block" }}
+          />
+        ) : resolved3D ? (
           <Icon3D name={resolved3D} size={86} />
         ) : (
           <span
