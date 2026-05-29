@@ -12,6 +12,7 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { PullToRefresh } from "@/components/instructor/home/PullToRefresh";
 import { Icon3D, resolveIcon3D } from "@/components/Icon3D";
+import { CoursePlannerIcon } from "@/components/instructor/quickAccess/coursePlannerIcon";
 import { Shimmer } from "@/components/instructor/home/Shimmer";
 import nextLessonCar from "@/assets/next-lesson-car.png";
 import {
