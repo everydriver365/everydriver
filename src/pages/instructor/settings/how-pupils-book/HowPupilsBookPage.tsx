@@ -63,6 +63,7 @@ function priceFor(c: InstructorCourseRow, hourlyRate: number | null): number | n
 
 export default function HowPupilsBookPage() {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [instructorId, setInstructorId] = useState<string | null>(null);
   const [hourlyRate, setHourlyRate] = useState<number | null>(null);
   const [rawCourses, setRawCourses] = useState<InstructorCourseRow[]>([]);
