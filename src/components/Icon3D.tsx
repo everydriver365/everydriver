@@ -52,6 +52,7 @@ import lessonHistory from "@/assets/icons-3d/lesson-history.png";
 import referrals from "@/assets/icons-3d/referrals.png";
 import fees from "@/assets/icons-3d/fees.png";
 import workingHours from "@/assets/icons-3d/working-hours.png";
+import takePayment from "@/assets/icons-3d/take-payment.png";
 
 /**
  * Registry of available 3D clay-style PNG icons.
@@ -109,6 +110,7 @@ export const ICON_3D_REGISTRY = {
   referrals,
   fees,
   "working-hours": workingHours,
+  "take-payment": takePayment,
 } as const;
 
 export type Icon3DName = keyof typeof ICON_3D_REGISTRY;
