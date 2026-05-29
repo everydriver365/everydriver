@@ -10,6 +10,7 @@ import {
 import { CoursePlannerIcon } from "./coursePlannerIcon";
 import { EarningsIcon } from "./earningsIcon";
 import { WeeklyReportIcon } from "./weeklyReportIcon";
+import { TasksDueIcon } from "./tasksDueIcon";
 
 /**
  * Stable tile identifiers for the Quick Access section. These IDs are
@@ -80,7 +81,7 @@ export const QUICK_ACCESS_TILES: QuickAccessTile[] = [
   { id: "find-colleague",   title: "Find colleague",   subtitle: "School fleet",          icon: Users,           tone: "green",  route: "/instructor/fleet-map?mode=colleagues" },
   { id: "earnings",         title: "Earnings",         subtitle: "Month end",             icon: EarningsIcon,    tone: "amber",  route: "/instructor/month-end",         requiredFeature: "payment_tracking" },
   { id: "weekly-report",    title: "Weekly report",    subtitle: "AI summary",            icon: WeeklyReportIcon, tone: "purple", route: "/instructor/weekly-report" },
-  { id: "tasks-due",        title: "Tasks due",        subtitle: "Outstanding",           icon: ClipboardCheck,  tone: "amber",  route: "/instructor/outstanding-tasks" },
+  { id: "tasks-due",        title: "Tasks due",        subtitle: "Outstanding",           icon: TasksDueIcon,    tone: "amber",  route: "/instructor/outstanding-tasks" },
   { id: "end-of-day",       title: "End of day",       subtitle: "Day summary",           icon: Moon,            tone: "grey",   route: "/instructor/end-of-day" },
   { id: "waiting-room",     title: "Waiting room",     subtitle: "Weekly Zoom",           icon: Users,           tone: "green",  route: "/instructor/waiting-room" },
   { id: "platform-updates", title: "Platform updates", subtitle: "News & ideas",          icon: Megaphone,       tone: "grey",   route: "/instructor/platform-updates" },
