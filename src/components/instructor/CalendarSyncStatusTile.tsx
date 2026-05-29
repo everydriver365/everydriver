@@ -56,12 +56,16 @@ export function CalendarSyncStatusTile({ instructorId }: Props) {
         .from("scheduled_lessons")
         .select("id", { count: "exact", head: true })
         .eq("instructor_id", instructorId)
-        .eq("calendar_sync_status", "pending"),
+        .eq("calendar_sync_status", "pending")
+        .is("deleted_at", null)
+        .neq("status", "cancelled"),
       supabase
         .from("scheduled_lessons")
         .select("id", { count: "exact", head: true })
         .eq("instructor_id", instructorId)
-        .eq("calendar_sync_status", "failed"),
+        .eq("calendar_sync_status", "failed")
+        .is("deleted_at", null)
+        .neq("status", "cancelled"),
       supabase
         .from("calendar_sync_queue")
         .select("error, created_at")
