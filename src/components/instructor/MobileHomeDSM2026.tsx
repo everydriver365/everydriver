@@ -2179,7 +2179,7 @@ const QUICK_ACCESS: QAItem[] = [
   { label: "CPD",             Icon: Award,            ...NAVY_BG, route: "/instructor/cpd" },
   { label: "Rates",           Icon: MapPin,           ...BLUE_BG, route: "/instructor/locations" },
   { label: "Availability",    Icon: CalendarCheck,    ...BLUE_BG, route: "/instructor/availability" },
-  { label: "My courses",      Icon: CoursePlannerIcon, ...BLUE_BG, route: "/instructor/course-planner" },
+  { label: "My courses",      Icon: LayoutGrid,       ...BLUE_BG, route: "/instructor/course-planner" },
   // Row 2
   { label: "Take payment",    Icon: Upload,           ...BLUE_BG, route: "/instructor/pay" },
   { label: "Pending",         Icon: Clock,            ...RED_BG,  route: "/instructor/payments?tab=pending" },
