@@ -206,6 +206,7 @@ export const instructorPortalRoutes = (
     <Route path="/instructor-app/website/domain" element={<InstructorDomainWizard />} />
     <Route path="/settings/plan" element={<Navigate to="/instructor/settings/plan-billing" replace />} />
     <Route path="/instructor/billing" element={<Navigate to="/instructor/settings/plan-billing" replace />} />
+    <Route path="/instructor/membership" element={<Navigate to="/instructor/settings/plan-billing" replace />} />
     <Route path="/instructor/settings/modules" element={<InstructorModules />} />
 
     {/* Jobs & scheduling */}
