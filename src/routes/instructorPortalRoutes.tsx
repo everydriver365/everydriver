@@ -171,6 +171,8 @@ export const instructorPortalRoutes = (
     <Route path="/instructor/pupils/:pupilId" element={<PremiumPupilProfile />} />
     <Route path="/instructor/pupils/:pupilId/syllabus" element={<SyllabusHubPage />} />
     <Route path="/instructor/schedule" element={<InstructorSchedule />} />
+    <Route path="/instructor/events" element={<UpcomingEventsRedesignDemo />} />
+    <Route path="/instructor/events/new" element={<Navigate to="/instructor/schedule?action=add" replace />} />
     <Route path="/instructor/events/:eventKey" element={<InstructorEventDetails />} />
     <Route path="/instructor/course-planner" element={<CoursePlannerPage />} />
     <Route path="/instructor/diary" element={<InstructorDiary />} />
