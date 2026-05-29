@@ -108,18 +108,8 @@ export function CalendarSyncStatusTile({ instructorId }: Props) {
   };
 
 
-  if (loading) {
-    return (
-      <TileCard ariaLabel="Calendar sync loading">
-        <div style={INNER} aria-busy="true">
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <span style={eyebrow}>Calendar sync</span>
-          </div>
-          <div style={{ height: 22, marginTop: 8, background: "#F2F4F8", borderRadius: 6, width: "60%" }} />
-        </div>
-      </TileCard>
-    );
-  }
+  // Hide entirely while loading — the header dot is the at-a-glance signal.
+  if (loading) return null;
 
   if (!connected) {
     return (
@@ -183,37 +173,8 @@ export function CalendarSyncStatusTile({ instructorId }: Props) {
     );
   }
 
-  if (pending > 0) {
-    return (
-      <TileCard accentColor="amber" ariaLabel="Calendar sync pending">
-        <div style={INNER}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <span style={{ ...eyebrow, color: "#92400e" }}>Calendar sync</span>
-          </div>
-          <div style={{ marginTop: 6, fontSize: 16, fontWeight: 600, color: "#1F2937" }}>
-            {pending} lesson{pending === 1 ? "" : "s"} pending
-          </div>
-          <div style={{ fontSize: 11, color: "#b45309", marginTop: 2 }}>Syncing shortly…</div>
-        </div>
-      </TileCard>
-    );
-  }
-
-  return (
-    <TileCard accentColor="green" ariaLabel="Calendar synced">
-      <div style={INNER}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <span style={{ ...eyebrow, color: "#2d8a4e" }}>Calendar sync</span>
-        </div>
-        <div style={{ marginTop: 6, fontSize: 16, fontWeight: 700, color: "#1F2937" }}>
-          Synced
-        </div>
-        <div style={{ fontSize: 11, color: "#6B7280", marginTop: 2 }}>
-          {formatRelative(lastSync)}
-        </div>
-      </div>
-    </TileCard>
-  );
+  // Pending-only and fully-synced states: hide the tile; header dot conveys status.
+  return null;
 }
 
 export default CalendarSyncStatusTile;
