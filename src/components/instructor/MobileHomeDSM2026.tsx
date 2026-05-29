@@ -15,6 +15,7 @@ import { Icon3D, resolveIcon3D } from "@/components/Icon3D";
 import { CoursePlannerIcon } from "@/components/instructor/quickAccess/coursePlannerIcon";
 import { WaitingListIcon } from "@/components/instructor/quickAccess/waitingListIcon";
 import { FillGapsIcon } from "@/components/instructor/quickAccess/fillGapsIcon";
+import { HowPupilsBookIcon } from "@/components/instructor/quickAccess/howPupilsBookIcon";
 import { Shimmer } from "@/components/instructor/home/Shimmer";
 import nextLessonCar from "@/assets/next-lesson-car.png";
 import {
@@ -2166,7 +2167,7 @@ const QUICK_ACCESS: QAItem[] = [
   // Row 1
   { label: "Schedule",        Icon: CalendarIcon,     ...BLUE_BG, route: "/instructor/schedule" },
   { label: "Working hours",   Icon: Clock,            ...BLUE_BG, route: "/instructor/availability" },
-  { label: "How pupils book", Icon: FileText,         ...BLUE_BG, route: "/instructor/settings/how-pupils-book" },
+  { label: "How pupils book", Icon: HowPupilsBookIcon, ...BLUE_BG, route: "/instructor/settings/how-pupils-book" },
   { label: "Pupils",          Icon: Users,            ...BLUE_BG, route: "/instructor/pupils" },
   { label: "Payments",        Icon: CreditCard,       ...BLUE_BG, route: "/instructor/payments" },
   { label: "Driving Tests",   Icon: Car,              ...RED_BG,  route: "/instructor/test-requests" },

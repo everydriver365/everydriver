@@ -40,6 +40,7 @@ import adiBadge from "@/assets/icons-3d/adi-badge.png";
 import coursePlanner from "@/assets/icons-3d/course-planner.png";
 import waitingList from "@/assets/icons-3d/waiting-list.png";
 import fillGaps from "@/assets/icons-3d/fill-gaps.png";
+import howPupilsBook from "@/assets/icons-3d/how-pupils-book.png";
 
 /**
  * Registry of available 3D clay-style PNG icons.
@@ -85,6 +86,7 @@ export const ICON_3D_REGISTRY = {
   "course-planner": coursePlanner,
   "waiting-list": waitingList,
   "fill-gaps": fillGaps,
+  "how-pupils-book": howPupilsBook,
 } as const;
 
 export type Icon3DName = keyof typeof ICON_3D_REGISTRY;
