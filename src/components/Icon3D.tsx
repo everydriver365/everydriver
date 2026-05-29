@@ -64,6 +64,7 @@ import telephony from "@/assets/icons-3d/telephony.png";
 import reporting from "@/assets/icons-3d/reporting.png";
 import todo from "@/assets/icons-3d/todo.png";
 import productivity from "@/assets/icons-3d/productivity.png";
+import support from "@/assets/icons-3d/support.png";
 
 /**
  * Registry of available 3D clay-style PNG icons.
@@ -133,6 +134,7 @@ export const ICON_3D_REGISTRY = {
   reporting,
   todo,
   productivity,
+  support,
 } as const;
 
 export type Icon3DName = keyof typeof ICON_3D_REGISTRY;
