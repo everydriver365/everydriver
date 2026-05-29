@@ -827,7 +827,7 @@ function UnifiedInfoPanel({
         <div style={cardRowStyle}>
           <img src={taxDigitalIcon} alt="" style={{ width: 36, height: 36, objectFit: "contain", flexShrink: 0 }} />
           <div style={cardTextStyle}>
-            <Title>Tax Digital</Title>
+            <Title>Making Tax Digital</Title>
             {mtd.enrolled && mtdDeadline ? (
               <>
                 <div
@@ -860,10 +860,13 @@ function UnifiedInfoPanel({
               </>
             )}
           </div>
-          {mtd.enrolled && mtdDays != null && (
-            <Badge bg="#fff3e0" color="#d97706">{mtdDays} days</Badge>
-          )}
         </div>
+        {mtd.enrolled && mtdDays != null && (
+          <div style={footerRowStyle}>
+            <Badge bg="#fff3e0" color="#d97706">{mtdDays} days</Badge>
+          </div>
+        )}
+
       </div>
     </div>
   );
