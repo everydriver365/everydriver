@@ -1,4 +1,5 @@
 // Force Vite dev server restart
+declare const __BUILD_TIME__: string;
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
