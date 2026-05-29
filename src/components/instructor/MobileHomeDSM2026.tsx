@@ -21,6 +21,7 @@ import { LabFeaturesIcon } from "@/components/instructor/quickAccess/labFeatures
 import { CpdIcon } from "@/components/instructor/quickAccess/cpdIcon";
 import { MyCoursesIcon } from "@/components/instructor/quickAccess/myCoursesIcon";
 import { DrivingTestsIcon } from "@/components/instructor/quickAccess/drivingTestsIcon";
+import { StandardsIcon } from "@/components/instructor/quickAccess/standardsIcon";
 import { Shimmer } from "@/components/instructor/home/Shimmer";
 import nextLessonCar from "@/assets/next-lesson-car.png";
 import {
@@ -2183,7 +2184,7 @@ const QUICK_ACCESS: QAItem[] = [
   { label: "Waiting list",    Icon: WaitingListIcon,  ...RED_BG,  route: "/instructor/waiting-list" },
   { label: "Fill gaps",       Icon: FillGapsIcon,     ...NAVY_BG, route: "/instructor/gaps" },
   { label: "Test swap",       Icon: Repeat2,          ...RED_BG,  route: "/instructor/test-requests" },
-  { label: "Standards",       Icon: ShieldCheck,      ...BLUE_BG, route: "/instructor/standards-check" },
+  { label: "Standards",       Icon: StandardsIcon,    ...BLUE_BG, route: "/instructor/standards-check" },
   { label: "CPD",             Icon: CpdIcon,          ...NAVY_BG, route: "/instructor/cpd" },
   { label: "Rates",           Icon: MapPin,           ...BLUE_BG, route: "/instructor/locations" },
   { label: "Availability",    Icon: CalendarCheck,    ...BLUE_BG, route: "/instructor/availability" },

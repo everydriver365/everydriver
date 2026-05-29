@@ -46,6 +46,7 @@ import labFeatures from "@/assets/icons-3d/lab-features.png";
 import cpd from "@/assets/icons-3d/cpd.png";
 import myCourses from "@/assets/icons-3d/my-courses.png";
 import drivingTests from "@/assets/icons-3d/driving-tests.png";
+import standards from "@/assets/icons-3d/standards.png";
 
 /**
  * Registry of available 3D clay-style PNG icons.
@@ -97,6 +98,7 @@ export const ICON_3D_REGISTRY = {
   cpd,
   "my-courses": myCourses,
   "driving-tests": drivingTests,
+  standards,
 } as const;
 
 export type Icon3DName = keyof typeof ICON_3D_REGISTRY;
