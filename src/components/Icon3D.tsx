@@ -56,6 +56,7 @@ import takePayment from "@/assets/icons-3d/take-payment.png";
 import gpsTracking from "@/assets/icons-3d/gps-tracking.png";
 import expenses from "@/assets/icons-3d/expenses.png";
 import security from "@/assets/icons-3d/security.png";
+import pending from "@/assets/icons-3d/pending.png";
 
 /**
  * Registry of available 3D clay-style PNG icons.
