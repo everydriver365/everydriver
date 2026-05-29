@@ -2691,6 +2691,7 @@ export function QATile({
   const Icon = item.Icon;
   const resolved3D = resolveIcon3D((Icon as { displayName?: string }).displayName);
   const isAvailabilityTile = item.label === "Availability";
+  const isFillGapsTile = item.label === "Fill gaps";
   return (
     <Tile
       variant="navigation"
@@ -2700,11 +2701,18 @@ export function QATile({
       badgeCount={badgeCount}
       badgeVisible={!!badgeCount && badgeCount > 0}
       ariaLabel={item.label}
-      iconBare={!!resolved3D || isAvailabilityTile}
+      iconBare={!!resolved3D || isAvailabilityTile || isFillGapsTile}
       iconNode={
         isAvailabilityTile ? (
           <img
             src={availableIconImg}
+            alt=""
+            aria-hidden="true"
+            style={{ width: 56, height: 56, objectFit: "contain", display: "block" }}
+          />
+        ) : isFillGapsTile ? (
+          <img
+            src={fillGapIconImg}
             alt=""
             aria-hidden="true"
             style={{ width: 56, height: 56, objectFit: "contain", display: "block" }}
