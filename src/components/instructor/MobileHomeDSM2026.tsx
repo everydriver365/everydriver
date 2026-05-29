@@ -23,6 +23,7 @@ import { MyCoursesIcon } from "@/components/instructor/quickAccess/myCoursesIcon
 import { DrivingTestsIcon } from "@/components/instructor/quickAccess/drivingTestsIcon";
 import { StandardsIcon } from "@/components/instructor/quickAccess/standardsIcon";
 import { FindSlotIcon } from "@/components/instructor/quickAccess/findSlotIcon";
+import { LessonHistoryIcon } from "@/components/instructor/quickAccess/lessonHistoryIcon";
 import { Shimmer } from "@/components/instructor/home/Shimmer";
 import nextLessonCar from "@/assets/next-lesson-car.png";
 import {
