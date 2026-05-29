@@ -26,6 +26,7 @@ import { FindSlotIcon } from "@/components/instructor/quickAccess/findSlotIcon";
 import { NextSlotIcon } from "@/components/instructor/quickAccess/nextSlotIcon";
 import { WaitingRoomIcon } from "@/components/instructor/quickAccess/waitingRoomIcon";
 import { LogTestResultIcon } from "@/components/instructor/quickAccess/logTestResultIcon";
+import { PlanAheadIcon } from "@/components/instructor/quickAccess/planAheadIcon";
 import { LessonHistoryIcon } from "@/components/instructor/quickAccess/lessonHistoryIcon";
 import { ReferralsIcon } from "@/components/instructor/quickAccess/referralsIcon";
 import { FeesIcon } from "@/components/instructor/quickAccess/feesIcon";
@@ -2204,7 +2205,7 @@ const GREY_BG = { bg: T.surface,   colour: "#6B7280" };
 export const QUICK_ACCESS: QAItem[] = [
   // Row 1 — Lessons & scheduling
   { label: "Schedule",        Icon: CalendarIcon,     ...BLUE_BG, route: "/instructor/schedule" },
-  { label: "Plan ahead",      Icon: Lightbulb,        ...NAVY_BG, route: "/instructor/diary" },
+  { label: "Plan ahead",      Icon: PlanAheadIcon,    ...NAVY_BG, route: "/instructor/diary" },
   { label: "Working hours",   Icon: WorkingHoursIcon, ...BLUE_BG, route: "/instructor/availability" },
   { label: "How pupils book", Icon: HowPupilsBookIcon, ...BLUE_BG, route: "/instructor/settings/how-pupils-book" },
   { label: "Pupils",          Icon: Users,            ...BLUE_BG, route: "/instructor/pupils" },
