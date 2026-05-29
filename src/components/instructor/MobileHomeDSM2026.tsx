@@ -19,6 +19,7 @@ import { HowPupilsBookIcon } from "@/components/instructor/quickAccess/howPupils
 import { PlanBillingIcon } from "@/components/instructor/quickAccess/planBillingIcon";
 import { LabFeaturesIcon } from "@/components/instructor/quickAccess/labFeaturesIcon";
 import { CpdIcon } from "@/components/instructor/quickAccess/cpdIcon";
+import { MyCoursesIcon } from "@/components/instructor/quickAccess/myCoursesIcon";
 import { Shimmer } from "@/components/instructor/home/Shimmer";
 import nextLessonCar from "@/assets/next-lesson-car.png";
 import {
@@ -2185,7 +2186,7 @@ const QUICK_ACCESS: QAItem[] = [
   { label: "CPD",             Icon: CpdIcon,          ...NAVY_BG, route: "/instructor/cpd" },
   { label: "Rates",           Icon: MapPin,           ...BLUE_BG, route: "/instructor/locations" },
   { label: "Availability",    Icon: CalendarCheck,    ...BLUE_BG, route: "/instructor/availability" },
-  { label: "My courses",      Icon: LayoutGrid,       ...BLUE_BG, route: "/instructor/course-planner" },
+  { label: "My courses",      Icon: MyCoursesIcon,    ...BLUE_BG, route: "/instructor/course-planner" },
   // Row 2
   { label: "Take payment",    Icon: Upload,           ...BLUE_BG, route: "/instructor/pay" },
   { label: "Pending",         Icon: Clock,            ...RED_BG,  route: "/instructor/payments?tab=pending" },
