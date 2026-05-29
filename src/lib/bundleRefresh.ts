@@ -84,15 +84,23 @@ async function hardReload(): Promise<void> {
   window.location.replace(url.toString());
 }
 
-async function checkForNewBundle(reason: string): Promise<void> {
+async function checkForNewBundle(reason: string, bypassThrottle = false): Promise<void> {
   // Throttle checks so we don't hammer the network on rapid resume/visibility
-  // events from the OS.
-  try {
-    const last = Number(sessionStorage.getItem(CHECK_KEY) || "0");
-    if (Date.now() - last < THROTTLE_MS) return;
-    sessionStorage.setItem(CHECK_KEY, String(Date.now()));
-  } catch {
-    /* ignore */
+  // events from the OS. Wrapped apps can bypass to update ASAP.
+  if (!bypassThrottle) {
+    try {
+      const last = Number(sessionStorage.getItem(CHECK_KEY) || "0");
+      if (Date.now() - last < THROTTLE_MS) return;
+      sessionStorage.setItem(CHECK_KEY, String(Date.now()));
+    } catch {
+      /* ignore */
+    }
+  } else {
+    try {
+      sessionStorage.setItem(CHECK_KEY, String(Date.now()));
+    } catch {
+      /* ignore */
+    }
   }
 
   if (!bootSignature) return; // dev mode or unknown — never reload
@@ -114,20 +122,34 @@ export function installBundleRefresh(): void {
   // In dev (no hashed bundle) just bail — Vite HMR handles freshness.
   if (!bootSignature) return;
 
+  const isNative = !!Capacitor?.isNativePlatform?.();
+  const isWrapped =
+    isNative ||
+    (typeof window !== "undefined" &&
+      (window.matchMedia?.("(display-mode: standalone)").matches ||
+        // @ts-expect-error iOS Safari standalone flag
+        window.navigator?.standalone === true));
+
+  // Check shortly after boot so a stale wrapper bundle updates without
+  // needing a resume or login event.
+  setTimeout(() => {
+    void checkForNewBundle("boot", isWrapped);
+  }, isWrapped ? 1500 : 5000);
+
   // Web: tab becomes visible again (covers PWA install + browser tabs).
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible") {
-      void checkForNewBundle("visibilitychange");
+      void checkForNewBundle("visibilitychange", isWrapped);
     }
   });
 
   // Native: Capacitor app resume.
-  if (Capacitor?.isNativePlatform?.()) {
+  if (isNative) {
     App.addListener("appStateChange", ({ isActive }) => {
-      if (isActive) void checkForNewBundle("appStateChange");
+      if (isActive) void checkForNewBundle("appStateChange", true);
     }).catch(() => {});
     App.addListener("resume", () => {
-      void checkForNewBundle("resume");
+      void checkForNewBundle("resume", true);
     }).catch(() => {});
   }
 }
