@@ -527,7 +527,7 @@ function UnifiedInfoPanel({
   };
 
   const Title = ({ children }: { children: React.ReactNode }) => (
-    <div style={{ fontSize: 13, fontWeight: 500, color: "#1a1a1f", marginTop: 10 }}>
+    <div style={{ fontSize: 13, fontWeight: 500, color: "#1a1a1f" }}>
       {children}
     </div>
   );
@@ -537,6 +537,22 @@ function UnifiedInfoPanel({
       {children}
     </div>
   );
+
+  // Row layout used at the top of every info card: icon left, text block
+  // vertically centered to the right of it, optional badge at far right.
+  const cardRowStyle: React.CSSProperties = {
+    display: "flex",
+    alignItems: "center",
+    gap: 12,
+  };
+  const cardTextStyle: React.CSSProperties = {
+    flex: 1,
+    minWidth: 0,
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+  };
+
 
   const Badge = ({
     bg,
@@ -578,12 +594,14 @@ function UnifiedInfoPanel({
         onMouseLeave={unhover("#fff")}
         style={cardBase}
       >
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <div style={cardRowStyle}>
           <img src={upcomingEventsIcon} alt="" style={{ width: 36, height: 36, objectFit: "contain", flexShrink: 0 }} />
+          <div style={cardTextStyle}>
+            <Title>Upcoming events</Title>
+            <Subtitle>{eventsSubtitle}</Subtitle>
+          </div>
         </div>
-        <Title>Upcoming events</Title>
-        <Subtitle>{eventsSubtitle}</Subtitle>
-        <div style={{ display: "flex", gap: 10, marginTop: 6 }}>
+        <div style={{ display: "flex", gap: 10, marginTop: 8 }}>
           <button
             type="button"
             onClick={(e) => {
@@ -634,20 +652,22 @@ function UnifiedInfoPanel({
         onMouseLeave={unhover("#fff")}
         style={cardBase}
       >
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <div style={cardRowStyle}>
           <img src={membershipIcon} alt="" style={{ width: 36, height: 36, objectFit: "contain", flexShrink: 0 }} />
+          <div style={cardTextStyle}>
+            <Title>Membership</Title>
+            <Subtitle>
+              {planName}
+              <br />
+              {renewLabel}
+            </Subtitle>
+          </div>
           {membershipActive ? (
             <Badge bg="#e8f5ee" color="#2d8a4e">Active</Badge>
           ) : (
             <Badge bg="#eef0f3" color="#7a8190">Inactive</Badge>
           )}
         </div>
-        <Title>Membership</Title>
-        <Subtitle>
-          {planName}
-          <br />
-          {renewLabel}
-        </Subtitle>
       </div>
 
       {/* Card 3 — Tax estimate */}
@@ -659,58 +679,62 @@ function UnifiedInfoPanel({
         onMouseLeave={unhover("#fff")}
         style={cardBase}
       >
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <div style={cardRowStyle}>
           <img src={taxEstimateIcon} alt="" style={{ width: 36, height: 36, objectFit: "contain", flexShrink: 0 }} />
+          <div style={cardTextStyle}>
+            <Title>Tax estimate</Title>
+            {tax.hasAnyPayments ? (
+              <>
+                <div
+                  style={{
+                    fontSize: 17,
+                    fontWeight: 600,
+                    color: "#1a1a1f",
+                    marginTop: 2,
+                    lineHeight: 1.1,
+                  }}
+                >
+                  {formatCurrencyCompact(tax.projectedLiability, { decimals: false })}
+                </div>
+                <Subtitle>Projected liability</Subtitle>
+              </>
+            ) : (
+              <>
+                <div
+                  style={{
+                    fontSize: 17,
+                    fontWeight: 600,
+                    color: "#1a1a1f",
+                    marginTop: 2,
+                    lineHeight: 1.1,
+                  }}
+                >
+                  —
+                </div>
+                <Subtitle>No data yet</Subtitle>
+              </>
+            )}
+          </div>
           <Badge bg="#e8eefb" color="#2952b3">{tax.taxYear}</Badge>
         </div>
-        <Title>Tax estimate</Title>
-        {tax.hasAnyPayments ? (
-          <>
+        {tax.hasAnyPayments && (
+          <div
+            style={{
+              height: 2,
+              background: "#eef1f8",
+              borderRadius: 999,
+              overflow: "hidden",
+              marginTop: 8,
+            }}
+          >
             <div
               style={{
-                fontSize: 17,
-                fontWeight: 600,
-                color: "#1a1a1f",
-                marginTop: 6,
-                lineHeight: 1.1,
+                width: `${taxYearProgressPct}%`,
+                height: "100%",
+                background: "#2952b3",
               }}
-            >
-              {formatCurrencyCompact(tax.projectedLiability, { decimals: false })}
-            </div>
-            <Subtitle>Projected liability</Subtitle>
-            <div
-              style={{
-                height: 2,
-                background: "#eef1f8",
-                borderRadius: 999,
-                overflow: "hidden",
-                marginTop: 8,
-              }}
-            >
-              <div
-                style={{
-                  width: `${taxYearProgressPct}%`,
-                  height: "100%",
-                  background: "#2952b3",
-                }}
-              />
-            </div>
-          </>
-        ) : (
-          <>
-            <div
-              style={{
-                fontSize: 17,
-                fontWeight: 600,
-                color: "#1a1a1f",
-                marginTop: 6,
-                lineHeight: 1.1,
-              }}
-            >
-              —
-            </div>
-            <Subtitle>No data yet</Subtitle>
-          </>
+            />
+          </div>
         )}
       </div>
 
@@ -729,48 +753,51 @@ function UnifiedInfoPanel({
           borderLeft: mtdLeftBorder,
         }}
       >
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <div style={cardRowStyle}>
           <img src={taxDigitalIcon} alt="" style={{ width: 36, height: 36, objectFit: "contain", flexShrink: 0 }} />
+          <div style={cardTextStyle}>
+            <Title>Tax Digital</Title>
+            {mtd.enrolled && mtdDeadline ? (
+              <>
+                <div
+                  style={{
+                    fontSize: 17,
+                    fontWeight: 600,
+                    color: mtdValueColor,
+                    marginTop: 2,
+                    lineHeight: 1.1,
+                  }}
+                >
+                  {format(mtdDeadline.deadline, "d MMM")}
+                </div>
+                <Subtitle>Q{mtdDeadline.quarter} filing deadline</Subtitle>
+              </>
+            ) : (
+              <>
+                <div
+                  style={{
+                    fontSize: 17,
+                    fontWeight: 600,
+                    color: "#1a1a1f",
+                    marginTop: 2,
+                    lineHeight: 1.1,
+                  }}
+                >
+                  —
+                </div>
+                <Subtitle>Not enrolled</Subtitle>
+              </>
+            )}
+          </div>
           {mtd.enrolled && mtdDays != null && (
             <Badge bg="#fff3e0" color="#d97706">{mtdDays} days</Badge>
           )}
         </div>
-        <Title>Tax Digital</Title>
-        {mtd.enrolled && mtdDeadline ? (
-          <>
-            <div
-              style={{
-                fontSize: 17,
-                fontWeight: 600,
-                color: mtdValueColor,
-                marginTop: 6,
-                lineHeight: 1.1,
-              }}
-            >
-              {format(mtdDeadline.deadline, "d MMM")}
-            </div>
-            <Subtitle>Q{mtdDeadline.quarter} filing deadline</Subtitle>
-          </>
-        ) : (
-          <>
-            <div
-              style={{
-                fontSize: 17,
-                fontWeight: 600,
-                color: "#1a1a1f",
-                marginTop: 6,
-                lineHeight: 1.1,
-              }}
-            >
-              —
-            </div>
-            <Subtitle>Not enrolled</Subtitle>
-          </>
-        )}
       </div>
     </div>
   );
 }
+
 
 
 /* ============================== Hero header ============================= */
