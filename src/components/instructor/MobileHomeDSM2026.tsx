@@ -119,6 +119,7 @@ import { toast } from "sonner";
 import taxDigitalIcon from "@/assets/icons-3d/tax-digital.png";
 import taxEstimateIcon from "@/assets/icons-3d/tax-estimate.png";
 import upcomingEventsIcon from "@/assets/icons-3d/upcoming-events.png";
+import membershipIcon from "@/assets/icons-3d/membership.png";
 
 /* ---------------------------- Design tokens ----------------------------- */
 const T = {
@@ -634,7 +635,7 @@ function UnifiedInfoPanel({
         style={cardBase}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-          <IconBox Icon={IdCard} bg="#f0edfb" color="#6b4fc4" />
+          <img src={membershipIcon} alt="" style={{ width: 36, height: 36, objectFit: "contain", flexShrink: 0 }} />
           {membershipActive ? (
             <Badge bg="#e8f5ee" color="#2d8a4e">Active</Badge>
           ) : (
