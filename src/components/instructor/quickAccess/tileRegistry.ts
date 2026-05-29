@@ -7,6 +7,7 @@ import {
   Megaphone, GraduationCap, Accessibility, Phone,
   type LucideIcon,
 } from "lucide-react";
+import { CoursePlannerIcon } from "./coursePlannerIcon";
 
 /**
  * Stable tile identifiers for the Quick Access section. These IDs are
