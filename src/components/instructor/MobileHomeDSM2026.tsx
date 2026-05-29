@@ -2178,7 +2178,7 @@ const RED_BG  = { bg: T.redLight,  colour: T.red };
 const NAVY_BG = { bg: "#E8EDF6",   colour: T.navy };
 const GREY_BG = { bg: T.surface,   colour: "#6B7280" };
 
-const QUICK_ACCESS: QAItem[] = [
+export const QUICK_ACCESS: QAItem[] = [
   // Row 1
   { label: "Schedule",        Icon: CalendarIcon,     ...BLUE_BG, route: "/instructor/schedule" },
   { label: "Working hours",   Icon: WorkingHoursIcon, ...BLUE_BG, route: "/instructor/availability" },
@@ -2607,7 +2607,7 @@ function EditPinsSheet({
   );
 }
 
-function QATile({
+export function QATile({
   item, active, onPress, badgeCount, onLongPress,
 }: { item: QAItem; active: boolean; onPress: () => void; size?: "grid" | "scroll"; badgeCount?: number; onLongPress?: () => void }) {
   const Icon = item.Icon;
