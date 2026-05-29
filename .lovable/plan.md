@@ -1,34 +1,18 @@
-## Problem
+## Quick Access grid → 2 wide × 3 high (6 tiles per page)
 
-The 2-up cards in the "At a glance" grid (`MobileHomeDSM2026.tsx`, lines ~636–854) put a 36px icon, a flex text column, and a coloured badge all on one horizontal row. At 390px viewport each card is ~177px wide, so:
+Change the Quick Access section on the instructor home (`src/components/instructor/MobileHomeDSM2026.tsx`) so each swipeable page shows 6 tiles (2 columns × 3 rows) instead of the current 4 (2×2).
 
-- "Membership" truncates to "Member…" and the "Active/Inactive" badge eats the rest of the row.
-- "Tax estimate" wraps the title onto two lines, the "2026/27" badge floats awkwardly, and "No data yet" wraps to three lines.
-- "Tax Digital" truncates to "Tax Digit…" with the same badge collision; "Not enrolled" gets squeezed.
+### Changes
 
-(Upcoming events is fine because it has no inline badge.)
+1. **Page size** (line 2366): `const VISIBLE = 4;` → `const VISIBLE = 6;`
+   - This is what controls how many tiles fit per swipeable page; the grid is already `repeat(2, 1fr)`, so 6 items naturally become 2×3.
 
-## Fix
+2. **Default pins** (line 2305): trim `DEFAULT_PIN_LABELS` from 7 entries down to 6 so first-time users see one full page rather than a near-full page + a single orphan tile on page 2. Proposed order (keeps the most-used actions):
+   - Schedule, Pupils, Test swap, Payments, Availability, Find slot
+   - (Drops "Settings" from defaults — still reachable from the bottom nav / "All" view.)
 
-Rework the three problem tiles so the title row gets the full card width and the badge moves to a dedicated spot, matching the visual rhythm of Upcoming events. No data, routing or business logic changes — purely layout/typography inside `MobileHomeDSM2026.tsx`.
+### Out of scope
 
-1. **Shared row tweak**: in `cardRowStyle` drop the icon→text gap from 12 → 10, and have all three cards render the badge on a second line (right-aligned, under the text) instead of as a third flex child. This frees the entire title line for the label.
-
-2. **Membership card** (lines 702–727):
-   - Remove the forced `<br/>` between `planName` and `renewLabel`; let them sit on one line with `·` separator (or wrap naturally if long).
-   - Move the Active/Inactive `Badge` to a small footer row under the text (same pattern as Upcoming events' "+ Add / See all" row), right-aligned.
-
-3. **Tax estimate card** (lines 729–795):
-   - Move the `{tax.taxYear}` (e.g. "2026/27") badge out of the icon row and place it inline next to the projected-liability value (smaller, muted) — or under "Projected liability". This stops it from squeezing the title.
-   - Keep the progress bar where it is.
-
-4. **Tax Digital card** (lines 797–852):
-   - Rename the title from "Tax Digital" to "Making Tax Digital" — but render it with `fontSize: 13` and allow it to wrap to two lines (remove any nowrap). On a full-width title row it fits comfortably.
-   - Move the orange "{n} days" badge to a footer row under the date/subtitle, right-aligned, same as Membership.
-
-5. **Title style**: bump `Title` from `fontWeight: 500` to `600` and ensure `whiteSpace: "normal"` so the longer labels read as a single clear line rather than truncating with an ellipsis.
-
-## Out of scope
-
-- Icons, colours, routes, the "Upcoming events" card, the cards above (lessons today / outstanding / needs attention), and the MTD logic in `useInstructorMTDStatus`.
-- No changes to `MTDDeadlineTile.tsx` (that's a different surface).
+- No change to tile size, tile content, icons, or long-press pin behaviour.
+- No change to the 8-pin upper cap, the Edit sheet, or `/instructor/quick-access` ("All") page (which already renders a single full grid, not paged).
+- No change to desktop/other portals.

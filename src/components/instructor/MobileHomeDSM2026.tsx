@@ -2309,7 +2309,6 @@ const DEFAULT_PIN_LABELS = [
   "Payments",
   "Availability",
   "Find slot",
-  "Settings",
 ];
 const PINS_STORAGE_KEY = "dsm2026:quickaccess:pins";
 
@@ -2363,7 +2362,7 @@ function QuickAccessCard({ navigate, instructorId }: { navigate: ReturnType<type
     }
   };
 
-  const VISIBLE = 4;
+  const VISIBLE = 6;
   const BORDER = "#e0e3ea";
   const OUTER_BG = "#F2F4F8";
   const CHARCOAL = "#1a1a1f";
