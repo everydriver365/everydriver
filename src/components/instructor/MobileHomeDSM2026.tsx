@@ -23,6 +23,7 @@ import { MyCoursesIcon } from "@/components/instructor/quickAccess/myCoursesIcon
 import { DrivingTestsIcon } from "@/components/instructor/quickAccess/drivingTestsIcon";
 import { StandardsIcon } from "@/components/instructor/quickAccess/standardsIcon";
 import { FindSlotIcon } from "@/components/instructor/quickAccess/findSlotIcon";
+import { NextSlotIcon } from "@/components/instructor/quickAccess/nextSlotIcon";
 import { LessonHistoryIcon } from "@/components/instructor/quickAccess/lessonHistoryIcon";
 import { ReferralsIcon } from "@/components/instructor/quickAccess/referralsIcon";
 import { FeesIcon } from "@/components/instructor/quickAccess/feesIcon";
@@ -2199,7 +2200,7 @@ export const QUICK_ACCESS: QAItem[] = [
   { label: "Driving Tests",   Icon: DrivingTestsIcon, ...RED_BG,  route: "/instructor/test-requests" },
   { label: "Lesson history",  Icon: LessonHistoryIcon, ...BLUE_BG, route: "/instructor/pupils" },
   { label: "Find slot",       Icon: FindSlotIcon,     ...BLUE_BG, route: "/instructor/gaps" },
-  { label: "Next slot",       Icon: ArrowRight,       ...NAVY_BG, route: "/instructor/gaps" },
+  { label: "Next slot",       Icon: NextSlotIcon,     ...NAVY_BG, route: "/instructor/gaps" },
   { label: "Course planner",  Icon: CoursePlannerIcon, ...BLUE_BG, route: "/instructor/course-planner" },
   { label: "Waiting list",    Icon: WaitingListIcon,  ...RED_BG,  route: "/instructor/waiting-list" },
   { label: "Fill gaps",       Icon: FillGapsIcon,     ...NAVY_BG, route: "/instructor/gaps" },
