@@ -583,7 +583,15 @@ function UnifiedInfoPanel({
   };
 
   const Title = ({ children }: { children: React.ReactNode }) => (
-    <div style={{ fontSize: 13, fontWeight: 500, color: "#1a1a1f" }}>
+    <div
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: "#1a1a1f",
+        lineHeight: 1.2,
+        whiteSpace: "normal",
+      }}
+    >
       {children}
     </div>
   );
@@ -599,7 +607,7 @@ function UnifiedInfoPanel({
   const cardRowStyle: React.CSSProperties = {
     display: "flex",
     alignItems: "center",
-    gap: 12,
+    gap: 10,
   };
   const cardTextStyle: React.CSSProperties = {
     flex: 1,
@@ -608,6 +616,13 @@ function UnifiedInfoPanel({
     flexDirection: "column",
     justifyContent: "center",
   };
+
+  const footerRowStyle: React.CSSProperties = {
+    display: "flex",
+    justifyContent: "flex-end",
+    marginTop: 8,
+  };
+
 
 
   const Badge = ({
@@ -712,12 +727,11 @@ function UnifiedInfoPanel({
           <img src={membershipIcon} alt="" style={{ width: 36, height: 36, objectFit: "contain", flexShrink: 0 }} />
           <div style={cardTextStyle}>
             <Title>Membership</Title>
-            <Subtitle>
-              {planName}
-              <br />
-              {renewLabel}
-            </Subtitle>
+            <Subtitle>{planName}</Subtitle>
+            <Subtitle>{renewLabel}</Subtitle>
           </div>
+        </div>
+        <div style={footerRowStyle}>
           {membershipActive ? (
             <Badge bg="#e8f5ee" color="#2d8a4e">Active</Badge>
           ) : (
@@ -735,6 +749,7 @@ function UnifiedInfoPanel({
         onMouseLeave={unhover("#fff")}
         style={cardBase}
       >
+
         <div style={cardRowStyle}>
           <img src={taxEstimateIcon} alt="" style={{ width: 36, height: 36, objectFit: "contain", flexShrink: 0 }} />
           <div style={cardTextStyle}>
@@ -752,7 +767,7 @@ function UnifiedInfoPanel({
                 >
                   {formatCurrencyCompact(tax.projectedLiability, { decimals: false })}
                 </div>
-                <Subtitle>Projected liability</Subtitle>
+                <Subtitle>Projected liability · {tax.taxYear}</Subtitle>
               </>
             ) : (
               <>
@@ -767,12 +782,12 @@ function UnifiedInfoPanel({
                 >
                   —
                 </div>
-                <Subtitle>No data yet</Subtitle>
+                <Subtitle>No data yet · {tax.taxYear}</Subtitle>
               </>
             )}
           </div>
-          <Badge bg="#e8eefb" color="#2952b3">{tax.taxYear}</Badge>
         </div>
+
         {tax.hasAnyPayments && (
           <div
             style={{
@@ -812,7 +827,7 @@ function UnifiedInfoPanel({
         <div style={cardRowStyle}>
           <img src={taxDigitalIcon} alt="" style={{ width: 36, height: 36, objectFit: "contain", flexShrink: 0 }} />
           <div style={cardTextStyle}>
-            <Title>Tax Digital</Title>
+            <Title>Making Tax Digital</Title>
             {mtd.enrolled && mtdDeadline ? (
               <>
                 <div
@@ -845,10 +860,13 @@ function UnifiedInfoPanel({
               </>
             )}
           </div>
-          {mtd.enrolled && mtdDays != null && (
-            <Badge bg="#fff3e0" color="#d97706">{mtdDays} days</Badge>
-          )}
         </div>
+        {mtd.enrolled && mtdDays != null && (
+          <div style={footerRowStyle}>
+            <Badge bg="#fff3e0" color="#d97706">{mtdDays} days</Badge>
+          </div>
+        )}
+
       </div>
     </div>
   );
