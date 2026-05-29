@@ -58,6 +58,7 @@ import expenses from "@/assets/icons-3d/expenses.png";
 import security from "@/assets/icons-3d/security.png";
 import pending from "@/assets/icons-3d/pending.png";
 import reviews from "@/assets/icons-3d/reviews.png";
+import tax from "@/assets/icons-3d/tax.png";
 
 /**
  * Registry of available 3D clay-style PNG icons.
@@ -121,6 +122,7 @@ export const ICON_3D_REGISTRY = {
   security,
   pending,
   reviews,
+  tax,
 } as const;
 
 export type Icon3DName = keyof typeof ICON_3D_REGISTRY;
