@@ -25,6 +25,7 @@ import { StandardsIcon } from "@/components/instructor/quickAccess/standardsIcon
 import { FindSlotIcon } from "@/components/instructor/quickAccess/findSlotIcon";
 import { NextSlotIcon } from "@/components/instructor/quickAccess/nextSlotIcon";
 import { WaitingRoomIcon } from "@/components/instructor/quickAccess/waitingRoomIcon";
+import { LogTestResultIcon } from "@/components/instructor/quickAccess/logTestResultIcon";
 import { LessonHistoryIcon } from "@/components/instructor/quickAccess/lessonHistoryIcon";
 import { ReferralsIcon } from "@/components/instructor/quickAccess/referralsIcon";
 import { FeesIcon } from "@/components/instructor/quickAccess/feesIcon";
@@ -2211,7 +2212,7 @@ export const QUICK_ACCESS: QAItem[] = [
   { label: "Waiting room",    Icon: WaitingRoomIcon,  ...NAVY_BG, route: "/instructor/waiting-room" },
   { label: "Payments",        Icon: CreditCard,       ...BLUE_BG, route: "/instructor/payments" },
   { label: "Driving Tests",   Icon: DrivingTestsIcon, ...RED_BG,  route: "/instructor/test-requests" },
-  { label: "Log test result", Icon: ClipboardCheck,   ...NAVY_BG, route: "/instructor/test-results" },
+  { label: "Log test result", Icon: LogTestResultIcon, ...NAVY_BG, route: "/instructor/test-results" },
   { label: "Lesson history",  Icon: LessonHistoryIcon, ...BLUE_BG, route: "/instructor/pupils" },
   { label: "Find slot",       Icon: FindSlotIcon,     ...BLUE_BG, route: "/instructor/gaps" },
   { label: "Next slot",       Icon: NextSlotIcon,     ...NAVY_BG, route: "/instructor/gaps" },

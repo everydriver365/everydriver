@@ -69,6 +69,7 @@ import appearance from "@/assets/icons-3d/appearance.png";
 import insights from "@/assets/icons-3d/insights.png";
 import nextSlot from "@/assets/icons-3d/next-slot.png";
 import waitingRoom from "@/assets/icons-3d/waiting-room.png";
+import logTestResult from "@/assets/icons-3d/log-test-result.png";
 
 /**
  * Registry of available 3D clay-style PNG icons.
@@ -143,6 +144,7 @@ export const ICON_3D_REGISTRY = {
   insights,
   "next-slot": nextSlot,
   "waiting-room": waitingRoom,
+  "log-test-result": logTestResult,
 } as const;
 
 export type Icon3DName = keyof typeof ICON_3D_REGISTRY;
