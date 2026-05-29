@@ -5,7 +5,10 @@ const config: CapacitorConfig = {
   appName: 'everydriver',
   webDir: 'dist',
   server: {
-    url: 'https://ca10d01e-cc99-4c0b-9186-351c493398b9.lovableproject.com?forceHideBadge=true',
+    // Point the native wrapper at the PUBLISHED app, not the sandbox preview.
+    // This way Despia/TestFlight pick up every Lovable Publish automatically
+    // (combined with the bundle-refresh logic in src/lib/bundleRefresh.ts).
+    url: 'https://everydriver.lovable.app',
     cleartext: true,
     androidScheme: 'https',
     iosScheme: 'https',
