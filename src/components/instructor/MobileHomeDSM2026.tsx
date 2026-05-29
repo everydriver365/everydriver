@@ -916,6 +916,7 @@ function HeroHeader(props: {
         onBell={onBell}
         onMenu={onMenu}
         onProfile={onProfile}
+        statusDot={<CalendarSyncDot instructorId={instructorId} />}
       />
 
       <div style={{ padding: "0 18px 16px" }}>
