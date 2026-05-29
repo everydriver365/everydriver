@@ -27,6 +27,7 @@ import { NextSlotIcon } from "@/components/instructor/quickAccess/nextSlotIcon";
 import { WaitingRoomIcon } from "@/components/instructor/quickAccess/waitingRoomIcon";
 import { LogTestResultIcon } from "@/components/instructor/quickAccess/logTestResultIcon";
 import { PlanAheadIcon } from "@/components/instructor/quickAccess/planAheadIcon";
+import { YourPlanIcon } from "@/components/instructor/quickAccess/yourPlanIcon";
 import { LessonHistoryIcon } from "@/components/instructor/quickAccess/lessonHistoryIcon";
 import { ReferralsIcon } from "@/components/instructor/quickAccess/referralsIcon";
 import { FeesIcon } from "@/components/instructor/quickAccess/feesIcon";
@@ -2235,7 +2236,7 @@ export const QUICK_ACCESS: QAItem[] = [
   { label: "Referrals",       Icon: ReferralsIcon,    ...RED_BG,  route: "/instructor/payments?tab=bonus" },
   { label: "Fees",            Icon: FeesIcon,         ...BLUE_BG, route: "/instructor/payments?tab=fees" },
   { label: "Plan & billing",  Icon: PlanBillingIcon,  ...NAVY_BG, route: "/instructor/settings/plan-billing" },
-  { label: "Your plan",       Icon: Crown,            ...GREY_BG, route: "/instructor/plans" },
+  { label: "Your plan",       Icon: YourPlanIcon,     ...GREY_BG, route: "/instructor/plans" },
   { label: "Earnings",        Icon: FileBarChart,     ...NAVY_BG, route: "/instructor/month-end" },
   { label: "Weekly report",   Icon: BarChart3,        ...BLUE_BG, route: "/instructor/weekly-report" },
   { label: "Tasks due",       Icon: ClipboardCheck,   ...RED_BG,  route: "/instructor/outstanding-tasks" },
