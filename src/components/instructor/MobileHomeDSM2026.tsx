@@ -102,6 +102,15 @@ import {
   Inbox,
   IdCard,
   Check,
+  Lightbulb,
+  ClipboardCheck,
+  FileBarChart,
+  BarChart3,
+  Moon,
+  Fuel,
+  MapPinned,
+  Megaphone,
+  Crown,
   type LucideIcon,
 } from "lucide-react";
 import { format, addDays, getWeek, isSameDay, parse, parseISO } from "date-fns";
@@ -2191,13 +2200,17 @@ const NAVY_BG = { bg: "#E8EDF6",   colour: T.navy };
 const GREY_BG = { bg: T.surface,   colour: "#6B7280" };
 
 export const QUICK_ACCESS: QAItem[] = [
-  // Row 1
+  // Row 1 — Lessons & scheduling
   { label: "Schedule",        Icon: CalendarIcon,     ...BLUE_BG, route: "/instructor/schedule" },
+  { label: "Plan ahead",      Icon: Lightbulb,        ...NAVY_BG, route: "/instructor/diary" },
   { label: "Working hours",   Icon: WorkingHoursIcon, ...BLUE_BG, route: "/instructor/availability" },
   { label: "How pupils book", Icon: HowPupilsBookIcon, ...BLUE_BG, route: "/instructor/settings/how-pupils-book" },
   { label: "Pupils",          Icon: Users,            ...BLUE_BG, route: "/instructor/pupils" },
+  { label: "Messages",        Icon: MessageSquare,    ...BLUE_BG, route: "/instructor/messages" },
+  { label: "Waiting room",    Icon: Users,            ...NAVY_BG, route: "/instructor/waiting-room" },
   { label: "Payments",        Icon: CreditCard,       ...BLUE_BG, route: "/instructor/payments" },
   { label: "Driving Tests",   Icon: DrivingTestsIcon, ...RED_BG,  route: "/instructor/test-requests" },
+  { label: "Log test result", Icon: ClipboardCheck,   ...NAVY_BG, route: "/instructor/test-results" },
   { label: "Lesson history",  Icon: LessonHistoryIcon, ...BLUE_BG, route: "/instructor/pupils" },
   { label: "Find slot",       Icon: FindSlotIcon,     ...BLUE_BG, route: "/instructor/gaps" },
   { label: "Next slot",       Icon: NextSlotIcon,     ...NAVY_BG, route: "/instructor/gaps" },
@@ -2210,7 +2223,7 @@ export const QUICK_ACCESS: QAItem[] = [
   { label: "Rates",           Icon: MapPin,           ...BLUE_BG, route: "/instructor/locations" },
   { label: "Availability",    Icon: CalendarCheck,    ...BLUE_BG, route: "/instructor/availability" },
   { label: "My courses",      Icon: MyCoursesIcon,    ...BLUE_BG, route: "/instructor/course-planner" },
-  // Row 2
+  // Row 2 — Money
   { label: "Take payment",    Icon: TakePaymentIcon,  ...BLUE_BG, route: "/instructor/pay" },
   { label: "Pending",         Icon: PendingIcon,      ...RED_BG,  route: "/instructor/payments?tab=pending" },
   { label: "Expenses",        Icon: ExpensesIcon,     ...NAVY_BG, route: "/instructor/expenses" },
@@ -2219,14 +2232,32 @@ export const QUICK_ACCESS: QAItem[] = [
   { label: "Referrals",       Icon: ReferralsIcon,    ...RED_BG,  route: "/instructor/payments?tab=bonus" },
   { label: "Fees",            Icon: FeesIcon,         ...BLUE_BG, route: "/instructor/payments?tab=fees" },
   { label: "Plan & billing",  Icon: PlanBillingIcon,  ...NAVY_BG, route: "/instructor/settings/plan-billing" },
+  { label: "Your plan",       Icon: Crown,            ...GREY_BG, route: "/instructor/plans" },
+  { label: "Earnings",        Icon: FileBarChart,     ...NAVY_BG, route: "/instructor/month-end" },
+  { label: "Weekly report",   Icon: BarChart3,        ...BLUE_BG, route: "/instructor/weekly-report" },
+  { label: "Tasks due",       Icon: ClipboardCheck,   ...RED_BG,  route: "/instructor/outstanding-tasks" },
+  { label: "End of day",      Icon: Moon,             ...GREY_BG, route: "/instructor/end-of-day" },
+  // Row 3 — Vehicle & location
   { label: "Vehicle",         Icon: VehicleIcon,      ...BLUE_BG, route: "/instructor/vehicle-health" },
   { label: "GPS tracking",    Icon: GpsTrackingIcon,  ...BLUE_BG, route: "/instructor/tracking" },
+  { label: "Track lesson",    Icon: MapPin,           ...RED_BG,  route: "/instructor/tracking" },
+  { label: "Sat nav",         Icon: NavIcon,          ...BLUE_BG, route: "/instructor/satnav" },
+  { label: "Find my car",     Icon: Car,              ...BLUE_BG, route: "/instructor/find-my-car" },
+  { label: "Find fuel",       Icon: Fuel,             ...BLUE_BG, route: "/instructor/fuel" },
+  { label: "Find nearby",     Icon: MapPin,           ...BLUE_BG, route: "/instructor/find-nearby" },
+  { label: "Locations",       Icon: MapPinned,        ...BLUE_BG, route: "/instructor/locations" },
+  // Row 4 — Telephony & reporting
   { label: "Telephony",       Icon: TelephonyIcon,    ...NAVY_BG, route: "/instructor/settings/phone-ai" },
   { label: "Call answering",  Icon: CallAnsweringIcon, ...NAVY_BG, route: "/instructor/settings/phone-ai" },
   { label: "Reporting",       Icon: ReportingIcon,    ...BLUE_BG, route: "/instructor/income" },
   { label: "To do",           Icon: TodoIcon,         ...GREY_BG, route: "/instructor/notifications" },
   { label: "Productivity",    Icon: ProductivityIcon, ...BLUE_BG, route: "/instructor/income" },
   { label: "People & growth", Icon: Users,            ...BLUE_BG, route: "/instructor/pupils" },
+  // Row 5 — Network
+  { label: "Nearby ADIs",     Icon: Users,            ...GREY_BG, route: "/instructor/nearby-friends" },
+  { label: "Find colleague",  Icon: Users,            ...GREY_BG, route: "/instructor/fleet-map?mode=colleagues" },
+  { label: "Platform updates", Icon: Megaphone,       ...GREY_BG, route: "/instructor/platform-updates" },
+  // Row 6 — Account
   { label: "Support",         Icon: SupportIcon,      ...RED_BG,  route: "/instructor/settings" },
   { label: "Profile",         Icon: UserIcon,         ...RED_BG,  route: "/instructor/profile" },
   { label: "Security",        Icon: SecurityIcon,     ...NAVY_BG, route: "/instructor/settings" },
