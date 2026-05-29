@@ -1,6 +1,7 @@
 import { ChevronLeft, Plus, Check, BookOpen, Loader2 } from "lucide-react";
 import { tokens } from "./tokens";
 import type { ReactNode } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export function BackLink({ onPress }: { onPress: () => void }) {
   return (
