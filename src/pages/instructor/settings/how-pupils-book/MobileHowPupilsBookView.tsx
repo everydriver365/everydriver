@@ -248,7 +248,7 @@ export function MobileHowPupilsBookView({
           </button>
           <div style={{ flex: 1 }} />
           <span style={{ color: C.ink, fontSize: 15, fontWeight: 800, textAlign: "right" }}>
-            How pupils book
+            My Advertised Courses
           </span>
         </div>
 
@@ -275,7 +275,7 @@ export function MobileHowPupilsBookView({
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <h1 style={{ color: C.ink, fontSize: 17, fontWeight: 800, margin: 0, marginBottom: 5, lineHeight: 1.25 }}>
-                How pupils book
+                My Advertised Courses
               </h1>
               <p style={{ color: C.mid, fontSize: 13, lineHeight: 1.6, margin: 0 }}>
                 Choose the courses, prices and rules pupils see when booking with you.

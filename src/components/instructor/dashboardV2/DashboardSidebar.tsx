@@ -45,7 +45,7 @@ const SECTIONS: NavSection[] = [
     { label: "CPD", to: "/instructor/cpd", icon: Award },
     { label: "Working hours", to: "/instructor/settings/working-hours", icon: Clock },
     { label: "Rates & coverage", to: "/instructor/settings/rates-coverage", icon: MapPin },
-    { label: "How pupils book", to: "/instructor/settings/how-pupils-book", icon: BookOpenCheck },
+    { label: "My Advertised Courses", to: "/instructor/settings/how-pupils-book", icon: BookOpenCheck },
     { label: "Discounts & packages", to: "/instructor/settings/discounts-packages", icon: Tag },
   ]},
   { label: "My Courses", items: [

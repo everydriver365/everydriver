@@ -90,8 +90,8 @@ export const AREA_GROUPS: AreaGroup[] = [
         pulls: [G("bookings", "courses")],
       },
       {
-        id: "how-pupils-book", label: "How pupils book",
-        title: "How pupils book", description: "Booking mode, deposits and intake questions.",
+        id: "how-pupils-book", label: "My Advertised Courses",
+        title: "My Advertised Courses", description: "Booking mode, deposits and intake questions.",
         icon: ShoppingBag, iconBg: "#FEF3C7", iconColor: "#92400E",
         pulls: [
           G("bookings", "booking-mode"),
