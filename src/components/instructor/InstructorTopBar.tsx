@@ -28,6 +28,8 @@ export interface InstructorTopBarProps {
   /** When provided, shows a back chevron and renders `pageTitle` in place of the name. */
   onBack?: () => void;
   pageTitle?: string;
+  /** Optional small indicator (e.g. calendar sync dot) shown next to the name on home. */
+  statusDot?: React.ReactNode;
 }
 
 export function InstructorTopBar({
@@ -40,6 +42,7 @@ export function InstructorTopBar({
   onProfile,
   onBack,
   pageTitle,
+  statusDot,
 }: InstructorTopBarProps) {
   const isSubpage = typeof onBack === "function";
 
@@ -115,6 +118,11 @@ export function InstructorTopBar({
             {!isSubpage && (
               <ChevronRight size={14} color="rgba(255,255,255,0.5)" strokeWidth={2.2} />
             )}
+            {!isSubpage && statusDot ? (
+              <span style={{ marginLeft: 6, display: "inline-flex", alignItems: "center" }}>
+                {statusDot}
+              </span>
+            ) : null}
           </button>
         </div>
 

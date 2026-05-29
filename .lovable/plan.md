@@ -1,40 +1,29 @@
-# Why the home tile shows sync issues
+# Calendar sync: collapse to a header dot
 
-The "Calendar sync" tile on `/instructor` (`src/components/instructor/CalendarSyncStatusTile.tsx`) counts every `scheduled_lessons` row where `calendar_sync_status = 'failed'` (or `'pending'`) for the instructor — with no other filters.
+Replace the always-on "Calendar sync" tile on the mobile home with a tiny status dot in the header. The full tile only appears when there's an actionable problem.
 
-For your account there are **209** such rows, but **all 209 are cancelled** and **203 are soft‑deleted**. They're leftovers from lessons that were removed; the sync failure flag was never cleared. That's why your schedule + next slot look right (those don't read `calendar_sync_status`) but the tile screams red.
+## Changes
 
-The same blind count also exists in the pending branch, and the credential‑broken classifier keys off whether `failed > 0`, so today a pile of stale cancelled rows can also flip the tile into "Sync paused / credential issue".
+**1. `src/components/instructor/CalendarSyncDot.tsx` (new)**
+Small component that runs the same query as the current tile (connected? failed > 0? credential broken?) and renders a 8px dot:
+- green — connected, no failed lessons
+- red — failed > 0 or credential broken
+- grey — not connected
+- hidden while loading
+Sits inline next to the instructor's first name in the top bar. No label, no tap behaviour (the tile below handles retry).
 
-## Fix
+**2. `src/components/instructor/InstructorTopBar.tsx`**
+Add optional `statusDot?: React.ReactNode` prop, rendered between the name and the chevron. Subpages don't pass it, so they're unchanged.
 
-Scope the two counts on the tile to lessons that actually matter:
+**3. `src/components/instructor/MobileHomeDSM2026.tsx`**
+- Pass `<CalendarSyncDot instructorId={…} />` into `HeroHeader` → `InstructorTopBar`.
+- Keep `<CalendarSyncStatusTile />` in the "At a glance" stack — it self-hides in the happy path now (see #4).
 
-```ts
-// pending
-.eq("calendar_sync_status", "pending")
-.is("deleted_at", null)
-.neq("status", "cancelled")
+**4. `src/components/instructor/CalendarSyncStatusTile.tsx`**
+Return `null` for the synced state and the pending-only state. Only render the tile when:
+- not connected, OR
+- failed > 0 (retry tile / credential-broken tile)
 
-// failed
-.eq("calendar_sync_status", "failed")
-.is("deleted_at", null)
-.neq("status", "cancelled")
-```
+Pending lessons are transient and don't deserve a tile; they'll surface as red on the dot only if they fail.
 
-File: `src/components/instructor/CalendarSyncStatusTile.tsx` (the two count queries inside `load()`).
-
-No DB migration, no change to the sync pipeline, no change elsewhere on the home screen. After the fix the tile will read **0 failed / 0 pending → "Synced"** for your account, matching what the rest of the dashboard already shows.
-
-## Optional follow‑up (only if you want it)
-
-One‑off cleanup so future tiles/queries aren't polluted:
-
-```sql
-update scheduled_lessons
-set calendar_sync_status = 'no-calendar'
-where calendar_sync_status in ('failed','pending')
-  and (status = 'cancelled' or deleted_at is not null);
-```
-
-Say the word and I'll include it as a migration; otherwise I'll just ship the tile fix.
+No DB or sync-pipeline changes. Mobile-only update (desktop schedule tile, if any, isn't touched).
