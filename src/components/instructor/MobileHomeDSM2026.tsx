@@ -560,7 +560,7 @@ function UnifiedInfoPanel({
             flexShrink: 0,
           }}
         >
-          <Icon3D name={resolved} size={96} />
+          <Icon3D name={resolved} size={86} />
         </div>
       );
     }
@@ -2683,7 +2683,7 @@ export function QATile({
       iconBare={!!resolved3D}
       iconNode={
         resolved3D ? (
-          <Icon3D name={resolved3D} size={96} />
+          <Icon3D name={resolved3D} size={86} />
         ) : (
           <span
             style={{
