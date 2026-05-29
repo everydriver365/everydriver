@@ -14,6 +14,7 @@ import { PullToRefresh } from "@/components/instructor/home/PullToRefresh";
 import { Icon3D, resolveIcon3D } from "@/components/Icon3D";
 import availableIconImg from "@/assets/available-icon.png";
 import fillGapIconImg from "@/assets/fill-gap-icon.png";
+import findSlotIconImg from "@/assets/find-slot-icon.png";
 import { CoursePlannerIcon } from "@/components/instructor/quickAccess/coursePlannerIcon";
 import { WaitingListIcon } from "@/components/instructor/quickAccess/waitingListIcon";
 import { FillGapsIcon } from "@/components/instructor/quickAccess/fillGapsIcon";
