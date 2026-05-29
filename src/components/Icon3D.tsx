@@ -76,6 +76,7 @@ import earnings from "@/assets/icons-3d/earnings.png";
 import weeklyReport from "@/assets/icons-3d/weekly-report.png";
 import tasksDue from "@/assets/icons-3d/tasks-due.png";
 import trackLesson from "@/assets/icons-3d/track-lesson.png";
+import endOfDay from "@/assets/icons-3d/end-of-day.png";
 
 /**
  * Registry of available 3D clay-style PNG icons.
@@ -157,6 +158,7 @@ export const ICON_3D_REGISTRY = {
   "weekly-report": weeklyReport,
   "tasks-due": tasksDue,
   "track-lesson": trackLesson,
+  "end-of-day": endOfDay,
 } as const;
 
 export type Icon3DName = keyof typeof ICON_3D_REGISTRY;

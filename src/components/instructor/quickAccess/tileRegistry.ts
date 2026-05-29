@@ -12,6 +12,7 @@ import { EarningsIcon } from "./earningsIcon";
 import { WeeklyReportIcon } from "./weeklyReportIcon";
 import { TasksDueIcon } from "./tasksDueIcon";
 import { TrackLessonIcon } from "./trackLessonIcon";
+import { EndOfDayIcon } from "./endOfDayIcon";
 
 /**
  * Stable tile identifiers for the Quick Access section. These IDs are
@@ -83,7 +84,7 @@ export const QUICK_ACCESS_TILES: QuickAccessTile[] = [
   { id: "earnings",         title: "Earnings",         subtitle: "Month end",             icon: EarningsIcon,    tone: "amber",  route: "/instructor/month-end",         requiredFeature: "payment_tracking" },
   { id: "weekly-report",    title: "Weekly report",    subtitle: "AI summary",            icon: WeeklyReportIcon, tone: "purple", route: "/instructor/weekly-report" },
   { id: "tasks-due",        title: "Tasks due",        subtitle: "Outstanding",           icon: TasksDueIcon,    tone: "amber",  route: "/instructor/outstanding-tasks" },
-  { id: "end-of-day",       title: "End of day",       subtitle: "Day summary",           icon: Moon,            tone: "grey",   route: "/instructor/end-of-day" },
+  { id: "end-of-day",       title: "End of day",       subtitle: "Day summary",           icon: EndOfDayIcon,    tone: "grey",   route: "/instructor/end-of-day" },
   { id: "waiting-room",     title: "Waiting room",     subtitle: "Weekly Zoom",           icon: Users,           tone: "green",  route: "/instructor/waiting-room" },
   { id: "platform-updates", title: "Platform updates", subtitle: "News & ideas",          icon: Megaphone,       tone: "grey",   route: "/instructor/platform-updates" },
   { id: "call-answering",   title: "Call answering",   subtitle: "Divert mode",           icon: Phone,           tone: "blue",   route: "/instructor/settings/phone-ai" },
