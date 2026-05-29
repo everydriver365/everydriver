@@ -17,6 +17,7 @@ import { SatNavIcon } from "./satNavIcon";
 import { FindMyCarIcon } from "./findMyCarIcon";
 import { FindNearbyIcon } from "./findNearbyIcon";
 import { LocationsIcon } from "./locationsIcon";
+import { FindColleagueIcon } from "./findColleagueIcon";
 
 /**
  * Stable tile identifiers for the Quick Access section. These IDs are
@@ -84,7 +85,7 @@ export const QUICK_ACCESS_TILES: QuickAccessTile[] = [
   { id: "availability",     title: "Availability",     subtitle: "Working hours",         icon: Clock,           tone: "blue",   route: "/instructor/availability" },
   { id: "expenses",         title: "Expenses",         subtitle: "Track costs",           icon: Receipt,         tone: "amber",  route: "/instructor/expenses",          requiredFeature: "expense_tracking" },
   { id: "nearby-adis",      title: "Nearby ADIs",      subtitle: "Friends map",           icon: Users,           tone: "green",  route: "/instructor/nearby-friends" },
-  { id: "find-colleague",   title: "Find colleague",   subtitle: "School fleet",          icon: Users,           tone: "green",  route: "/instructor/fleet-map?mode=colleagues" },
+  { id: "find-colleague",   title: "Find colleague",   subtitle: "School fleet",          icon: FindColleagueIcon, tone: "green",  route: "/instructor/fleet-map?mode=colleagues" },
   { id: "earnings",         title: "Earnings",         subtitle: "Month end",             icon: EarningsIcon,    tone: "amber",  route: "/instructor/month-end",         requiredFeature: "payment_tracking" },
   { id: "weekly-report",    title: "Weekly report",    subtitle: "AI summary",            icon: WeeklyReportIcon, tone: "purple", route: "/instructor/weekly-report" },
   { id: "tasks-due",        title: "Tasks due",        subtitle: "Outstanding",           icon: TasksDueIcon,    tone: "amber",  route: "/instructor/outstanding-tasks" },
