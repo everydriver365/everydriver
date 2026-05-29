@@ -179,7 +179,10 @@ export default function HowPupilsBookPage() {
 
   return (
     <InstructorPortalLayout>
-      <div style={{ padding: "32px 40px", fontFamily: "Poppins, inherit", maxWidth: 1100, margin: "0 auto" }}>
+      <div
+        className="hpb-page"
+        style={{ fontFamily: "Poppins, inherit", maxWidth: 1100, margin: "0 auto", padding: "clamp(16px, 4vw, 32px) clamp(14px, 4vw, 40px)" }}
+      >
         <BackLink onPress={() => navigate("/instructor/settings")} />
         <Breadcrumb items={breadcrumbItems} onNavigate={(href) => navigate(href)} />
 
