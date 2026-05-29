@@ -37,6 +37,7 @@ import { RatesIcon } from "@/components/instructor/quickAccess/ratesIcon";
 import { FindMyCarIcon } from "@/components/instructor/quickAccess/findMyCarIcon";
 import { FindNearbyIcon } from "@/components/instructor/quickAccess/findNearbyIcon";
 import { LocationsIcon } from "@/components/instructor/quickAccess/locationsIcon";
+import { FindColleagueIcon } from "@/components/instructor/quickAccess/findColleagueIcon";
 import { TasksDueIcon } from "@/components/instructor/quickAccess/tasksDueIcon";
 import { LessonHistoryIcon } from "@/components/instructor/quickAccess/lessonHistoryIcon";
 import { ReferralsIcon } from "@/components/instructor/quickAccess/referralsIcon";
@@ -2269,7 +2270,7 @@ export const QUICK_ACCESS: QAItem[] = [
   { label: "People & growth", Icon: Users,            ...BLUE_BG, route: "/instructor/pupils" },
   // Row 5 — Network
   { label: "Nearby ADIs",     Icon: Users,            ...GREY_BG, route: "/instructor/nearby-friends" },
-  { label: "Find colleague",  Icon: Users,            ...GREY_BG, route: "/instructor/fleet-map?mode=colleagues" },
+  { label: "Find colleague",  Icon: FindColleagueIcon, ...GREY_BG, route: "/instructor/fleet-map?mode=colleagues" },
   { label: "Platform updates", Icon: Megaphone,       ...GREY_BG, route: "/instructor/platform-updates" },
   // Row 6 — Account
   { label: "Support",         Icon: SupportIcon,      ...RED_BG,  route: "/instructor/settings" },
