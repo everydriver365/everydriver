@@ -29,6 +29,7 @@ import { FeesIcon } from "@/components/instructor/quickAccess/feesIcon";
 import { WorkingHoursIcon } from "@/components/instructor/quickAccess/workingHoursIcon";
 import { TakePaymentIcon } from "@/components/instructor/quickAccess/takePaymentIcon";
 import { GpsTrackingIcon } from "@/components/instructor/quickAccess/gpsTrackingIcon";
+import { ExpensesIcon } from "@/components/instructor/quickAccess/expensesIcon";
 import { Shimmer } from "@/components/instructor/home/Shimmer";
 import nextLessonCar from "@/assets/next-lesson-car.png";
 import {
@@ -2199,7 +2200,7 @@ const QUICK_ACCESS: QAItem[] = [
   // Row 2
   { label: "Take payment",    Icon: TakePaymentIcon,  ...BLUE_BG, route: "/instructor/pay" },
   { label: "Pending",         Icon: Clock,            ...RED_BG,  route: "/instructor/payments?tab=pending" },
-  { label: "Expenses",        Icon: Receipt,          ...NAVY_BG, route: "/instructor/expenses" },
+  { label: "Expenses",        Icon: ExpensesIcon,     ...NAVY_BG, route: "/instructor/expenses" },
   { label: "Tax",             Icon: Calculator,       ...NAVY_BG, route: "/instructor/tax" },
   { label: "Reviews",         Icon: Star,             ...RED_BG,  route: "/instructor/reviews" },
   { label: "Referrals",       Icon: ReferralsIcon,    ...RED_BG,  route: "/instructor/payments?tab=bonus" },
