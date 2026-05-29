@@ -261,7 +261,7 @@ const Tile: React.FC<TileProps> = ({
 
   function renderBody() {
     return (
-      <div style={{ display: "flex", gap: 12, alignItems: "flex-start", minWidth: 0 }}>
+      <div style={{ display: "flex", gap: 12, alignItems: "center", minWidth: 0 }}>
         {!iconOptional && (
           iconBare ? (
             <div style={{ width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
