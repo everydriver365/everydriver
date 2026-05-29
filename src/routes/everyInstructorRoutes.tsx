@@ -4,6 +4,7 @@ import { lazyWithRetry as lazy } from "@/utils/lazyWithRetry";
 // Home
 const EveryInstructorHome = lazy(() => import("@/pages/EveryInstructorHome"));
 const EveryInstructorQuickActionsEdit = lazy(() => import("@/pages/EveryInstructorQuickActionsEdit"));
+const InstructorQuickAccessAll = lazy(() => import("@/pages/InstructorQuickAccessAll"));
 
 // Reuse existing pages — they render inside EveryInstructorLayout via their own wrappers,
 // but for now we route to the same underlying components.
@@ -33,6 +34,7 @@ export const everyInstructorRoutes = (
   <>
     <Route path="/every-instructor" element={<EveryInstructorHome />} />
     <Route path="/every-instructor/quick-actions/edit" element={<EveryInstructorQuickActionsEdit />} />
+    <Route path="/every-instructor/quick-access/all" element={<InstructorQuickAccessAll />} />
     <Route path="/every-instructor/schedule" element={<InstructorSchedule />} />
     <Route path="/every-instructor/pupils" element={<InstructorPupils />} />
     <Route path="/every-instructor/pupils/:pupilId" element={<InstructorPupils />} />

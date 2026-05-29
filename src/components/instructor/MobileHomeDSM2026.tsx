@@ -2343,17 +2343,34 @@ function QuickAccessCard({ navigate, instructorId }: { navigate: ReturnType<type
             <Search size={12} color={searchExpanded ? "#fff" : MUTED} strokeWidth={2} />
           </button>
         </div>
-        <button
-          type="button"
-          onClick={() => setEditOpen(true)}
-          style={{
-            background: "transparent", border: 0, cursor: "pointer",
-            fontSize: 13, fontWeight: 600, color: ACTION_BLUE, fontFamily: FONT,
-            padding: 0,
-          }}
-        >
-          Edit pins
-        </button>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 14 }}>
+          <button
+            type="button"
+            onClick={() => navigate(
+              typeof window !== "undefined" && window.location.pathname.startsWith("/every-instructor")
+                ? "/every-instructor/quick-access/all"
+                : "/instructor/quick-access/all"
+            )}
+            style={{
+              background: "transparent", border: 0, cursor: "pointer",
+              fontSize: 13, fontWeight: 600, color: ACTION_BLUE, fontFamily: FONT,
+              padding: 0,
+            }}
+          >
+            See all
+          </button>
+          <button
+            type="button"
+            onClick={() => setEditOpen(true)}
+            style={{
+              background: "transparent", border: 0, cursor: "pointer",
+              fontSize: 13, fontWeight: 600, color: ACTION_BLUE, fontFamily: FONT,
+              padding: 0,
+            }}
+          >
+            Edit pins
+          </button>
+        </div>
       </div>
 
       {/* Expandable Search */}
