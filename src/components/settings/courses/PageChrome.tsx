@@ -60,25 +60,28 @@ export function PageHeaderCard({
   return (
     <div
       style={{
-        display: "flex", alignItems: "center", gap: 16,
-        padding: "20px 24px", borderRadius: 14, background: tokens.white,
+        display: "flex", alignItems: "center", gap: 14,
+        padding: "16px 18px", borderRadius: 14, background: tokens.white,
         border: `1px solid ${tokens.border}`, marginTop: 16,
+        flexWrap: "wrap",
       }}
     >
       <div
         style={{
-          width: 48, height: 48, borderRadius: 12,
+          width: 44, height: 44, borderRadius: 12,
           background: tokens.blueLight, color: tokens.blue,
           display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
         }}
       >
-        <BookOpen size={22} />
+        <BookOpen size={20} />
       </div>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <h1 style={{ fontSize: 18, fontWeight: 700, color: tokens.navy, margin: 0 }}>{title}</h1>
-        <p style={{ fontSize: 13, color: tokens.mid, margin: "2px 0 0" }}>{subtitle}</p>
+      <div style={{ flex: 1, minWidth: 160 }}>
+        <h1 style={{ fontSize: 17, fontWeight: 700, color: tokens.navy, margin: 0, lineHeight: 1.25 }}>{title}</h1>
+        <p style={{ fontSize: 12.5, color: tokens.mid, margin: "3px 0 0", lineHeight: 1.4 }}>{subtitle}</p>
       </div>
-      <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>{actions}</div>
+      <div style={{ display: "flex", gap: 8, flexShrink: 0, flexWrap: "wrap", width: "100%", justifyContent: "flex-end" }} className="hpb-actions">
+        {actions}
+      </div>
     </div>
   );
 }
