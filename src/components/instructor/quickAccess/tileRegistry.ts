@@ -13,6 +13,7 @@ import { WeeklyReportIcon } from "./weeklyReportIcon";
 import { TasksDueIcon } from "./tasksDueIcon";
 import { TrackLessonIcon } from "./trackLessonIcon";
 import { EndOfDayIcon } from "./endOfDayIcon";
+import { SatNavIcon } from "./satNavIcon";
 
 /**
  * Stable tile identifiers for the Quick Access section. These IDs are
@@ -60,7 +61,7 @@ export const QUICK_ACCESS_TILES: QuickAccessTile[] = [
   { id: "pupils",           title: "Pupils",           subtitle: "Manage learners",       icon: Users,           tone: "green",  route: "/instructor/pupils" },
   { id: "track-lesson",     title: "Track lesson",     subtitle: "Start GPS",             icon: TrackLessonIcon, tone: "red",    route: "/instructor/tracking",          requiredFeature: "telematics" },
   { id: "take-payment",     title: "Take payment",     subtitle: "Record a payment",      icon: PoundSterling,   tone: "amber",  route: "/instructor/pay",               requiredFeature: "payment_tracking" },
-  { id: "sat-nav",          title: "Sat nav",          subtitle: "Navigation",            icon: Navigation,      tone: "blue",   route: "/instructor/satnav",            requiredFeature: "telematics" },
+  { id: "sat-nav",          title: "Sat nav",          subtitle: "Navigation",            icon: SatNavIcon,      tone: "blue",   route: "/instructor/satnav",            requiredFeature: "telematics" },
   { id: "find-my-car",      title: "Find my car",      subtitle: "Last position",         icon: Car,             tone: "blue",   route: "/instructor/find-my-car",       requiredFeature: "telematics" },
   { id: "plan-ahead",       title: "Plan ahead",       subtitle: "Tomorrow",              icon: Lightbulb,       tone: "purple", route: "/instructor/diary" },
   { id: "your-plan",        title: "Your plan",        subtitle: "Subscription",          icon: Crown,           tone: "grey",   route: "/instructor/plans" },
