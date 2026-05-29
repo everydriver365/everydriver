@@ -30,6 +30,7 @@ import { WorkingHoursIcon } from "@/components/instructor/quickAccess/workingHou
 import { TakePaymentIcon } from "@/components/instructor/quickAccess/takePaymentIcon";
 import { GpsTrackingIcon } from "@/components/instructor/quickAccess/gpsTrackingIcon";
 import { ExpensesIcon } from "@/components/instructor/quickAccess/expensesIcon";
+import { SecurityIcon } from "@/components/instructor/quickAccess/securityIcon";
 import { Shimmer } from "@/components/instructor/home/Shimmer";
 import nextLessonCar from "@/assets/next-lesson-car.png";
 import {
@@ -2216,7 +2217,7 @@ const QUICK_ACCESS: QAItem[] = [
   { label: "People & growth", Icon: Users,            ...BLUE_BG, route: "/instructor/pupils" },
   { label: "Support",         Icon: HelpCircle,       ...RED_BG,  route: "/instructor/settings" },
   { label: "Profile",         Icon: UserIcon,         ...RED_BG,  route: "/instructor/profile" },
-  { label: "Security",        Icon: Lock,             ...NAVY_BG, route: "/instructor/settings" },
+  { label: "Security",        Icon: SecurityIcon,     ...NAVY_BG, route: "/instructor/settings" },
   { label: "Appearance",      Icon: Sliders,          ...GREY_BG, route: "/instructor/settings" },
   { label: "Lab features",    Icon: LabFeaturesIcon,  ...BLUE_BG, route: "/instructor/settings" },
   { label: "Accessibility",   Icon: UserCheck,        ...NAVY_BG, route: "/instructor/settings/accessibility" },
