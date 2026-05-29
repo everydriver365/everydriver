@@ -42,6 +42,7 @@ import waitingList from "@/assets/icons-3d/waiting-list.png";
 import fillGaps from "@/assets/icons-3d/fill-gaps.png";
 import howPupilsBook from "@/assets/icons-3d/how-pupils-book.png";
 import planBilling from "@/assets/icons-3d/plan-billing.png";
+import labFeatures from "@/assets/icons-3d/lab-features.png";
 
 /**
  * Registry of available 3D clay-style PNG icons.
@@ -89,6 +90,7 @@ export const ICON_3D_REGISTRY = {
   "fill-gaps": fillGaps,
   "how-pupils-book": howPupilsBook,
   "plan-billing": planBilling,
+  "lab-features": labFeatures,
 } as const;
 
 export type Icon3DName = keyof typeof ICON_3D_REGISTRY;

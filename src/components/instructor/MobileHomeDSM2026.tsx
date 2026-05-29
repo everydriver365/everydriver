@@ -17,6 +17,7 @@ import { WaitingListIcon } from "@/components/instructor/quickAccess/waitingList
 import { FillGapsIcon } from "@/components/instructor/quickAccess/fillGapsIcon";
 import { HowPupilsBookIcon } from "@/components/instructor/quickAccess/howPupilsBookIcon";
 import { PlanBillingIcon } from "@/components/instructor/quickAccess/planBillingIcon";
+import { LabFeaturesIcon } from "@/components/instructor/quickAccess/labFeaturesIcon";
 import { Shimmer } from "@/components/instructor/home/Shimmer";
 import nextLessonCar from "@/assets/next-lesson-car.png";
 import {
@@ -2205,7 +2206,7 @@ const QUICK_ACCESS: QAItem[] = [
   { label: "Profile",         Icon: UserIcon,         ...RED_BG,  route: "/instructor/profile" },
   { label: "Security",        Icon: Lock,             ...NAVY_BG, route: "/instructor/settings" },
   { label: "Appearance",      Icon: Sliders,          ...GREY_BG, route: "/instructor/settings" },
-  { label: "Lab features",    Icon: FlaskConical,     ...BLUE_BG, route: "/instructor/settings" },
+  { label: "Lab features",    Icon: LabFeaturesIcon,  ...BLUE_BG, route: "/instructor/settings" },
   { label: "Accessibility",   Icon: UserCheck,        ...NAVY_BG, route: "/instructor/settings/accessibility" },
   { label: "Insights",        Icon: BarChart2,        ...BLUE_BG, route: "/instructor/income" },
   { label: "Settings",        Icon: SettingsIcon,     ...GREY_BG, route: "/instructor/settings" },
