@@ -15,6 +15,7 @@ const InstructorEventDetails = lazy(() => import("@/pages/InstructorEventDetails
 const InstructorDiary = lazy(() => import("@/pages/InstructorDiary"));
 
 const InstructorSettingsHub = lazy(() => import("@/pages/instructor/InstructorSettingsHub"));
+const RewardsPage = lazy(() => import("@/pages/instructor/RewardsPage"));
 const HowPupilsBookPage = lazy(() => import("@/pages/instructor/settings/how-pupils-book/HowPupilsBookPage"));
 const InstructorNotifications = lazy(() => import("@/pages/InstructorNotifications"));
 const InstallInstructor = lazy(() => import("@/pages/InstallInstructor"));
@@ -163,6 +164,8 @@ export const instructorPortalRoutes = (
 
     {/* Core — always accessible */}
     <Route path="/instructor" element={<InstructorPortal />} />
+    <Route path="/rewards" element={<RewardsPage />} />
+    <Route path="/instructor/rewards" element={<RewardsPage />} />
     <Route path="/instructor/quick-access/all" element={<InstructorQuickAccessAll />} />
     <Route path="/instructor/icon-preview" element={<IconPreviewPage />} />
     <Route path="/instructor/quick-actions-redesign" element={<QuickActionsRedesignDemo />} />
