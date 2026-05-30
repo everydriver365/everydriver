@@ -28,6 +28,7 @@ import { PUPIL_SOURCE_OPTIONS } from "@/components/instructor/pupils/AddPupilShe
 import { AddPupilSheet } from "@/components/instructor/pupils/AddPupilSheet";
 import { ImportPupilsCsvDialog } from "@/components/instructor/pupils/ImportPupilsCsvDialog";
 import { ArchivedPupilsDialog } from "@/components/instructor/pupils/ArchivedPupilsDialog";
+import { ArchivePupilDialog } from "@/components/instructor/pupils/ArchivePupilDialog";
 import { AddLessonSheet } from "@/components/instructor/AddLessonSheet";
 import { PupilPaymentsManager } from "@/components/instructor/PupilPaymentsManager";
 import { usePupilLessonHistory } from "@/hooks/usePupilLessonHistory";
