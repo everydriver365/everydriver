@@ -170,6 +170,7 @@ export const instructorPortalRoutes = (
     <Route path="/instructor/rewards" element={<RewardsPage />} />
     <Route path="/instructor/rewards/explainer" element={<RewardsExplainerPage />} />
     <Route path="/instructor/rewards/leaderboard" element={<RewardsLeaderboardPage />} />
+    <Route path="/instructor/quick-access/all" element={<InstructorQuickAccessAll />} />
     <Route path="/instructor/icon-preview" element={<IconPreviewPage />} />
     <Route path="/instructor/quick-actions-redesign" element={<QuickActionsRedesignDemo />} />
     <Route path="/instructor/upcoming-events-redesign" element={<UpcomingEventsRedesignDemo />} />
