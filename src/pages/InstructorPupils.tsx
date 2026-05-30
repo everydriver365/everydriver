@@ -535,20 +535,11 @@ export default function InstructorPupils() {
     }
   };
 
-  const handleDeletePupil = async (pupil: Pupil) => {
-    if (!confirm(`Are you sure you want to remove ${pupil.name}?`)) return;
-
-    try {
-      const { softDelete } = await import("@/lib/auditLogger");
-      await softDelete("pupils", pupil.id, instructorId || "", { name: pupil.name });
-
-      toast.success("Pupil removed");
-      fetchPupils();
-    } catch (error) {
-      console.error("Error deleting pupil:", error);
-      toast.error("Failed to remove pupil");
-    }
+  const [archiveTarget, setArchiveTarget] = useState<Pupil | null>(null);
+  const handleDeletePupil = (pupil: Pupil) => {
+    setArchiveTarget(pupil);
   };
+
 
   const handleUpdateProgress = async (pupil: Pupil, increment: number) => {
     const newLessons = (pupil.lessons_completed || 0) + increment;
