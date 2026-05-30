@@ -267,7 +267,7 @@ export function CourseBonusTile({ instructorId }: CourseBonusTileProps) {
             </div>
             <ChevronRight size={16} color="#9CA3AF" />
           </div>
-          {renderLoyaltyStrip()}
+          {renderLoyaltySection()}
         </div>
       </TileCard>
     );
@@ -287,7 +287,7 @@ export function CourseBonusTile({ instructorId }: CourseBonusTileProps) {
         <div style={{ fontSize: 11, color: "#6B7280", marginTop: 2 }}>
           {count} course{count === 1 ? "" : "s"} completed · £{BONUS_PER_COURSE} each
         </div>
-        {renderLoyaltyStrip()}
+        {renderLoyaltySection()}
       </div>
     </TileCard>
   );
