@@ -168,6 +168,7 @@ import { UpNextExpanded } from "@/components/instructor/UpNextExpanded";
 import { ScheduleTile } from "@/components/instructor/ScheduleTile";
 import { TaxEstimateTile } from "@/components/instructor/TaxEstimateTile";
 import { MTDDeadlineTile } from "@/components/instructor/MTDDeadlineTile";
+import { CourseBonusTile } from "@/components/instructor/CourseBonusTile";
 import { CalendarSyncStatusTile } from "@/components/instructor/CalendarSyncStatusTile";
 import { CalendarSyncDot } from "@/components/instructor/CalendarSyncDot";
 import { ADIBadgeTrackerTile } from "@/components/instructor/ADIBadgeTrackerTile";
@@ -426,7 +427,7 @@ export function MobileHomeDSM2026({ instructorId, instructorName }: Props) {
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               <ADIBadgeTrackerTile instructorId={instructorId} />
               <TaxEstimateTile instructorId={instructorId} />
-              <MTDDeadlineTile instructorId={instructorId} />
+              <CourseBonusTile instructorId={instructorId} />
               <CalendarSyncStatusTile instructorId={instructorId} />
             </div>
           </div>
