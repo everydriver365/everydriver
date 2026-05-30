@@ -2333,6 +2333,39 @@ export type Database = {
           },
         ]
       }
+      course_activity_log: {
+        Row: {
+          action: string
+          actor_name: string | null
+          actor_user_id: string | null
+          created_at: string
+          details: Json
+          id: string
+          instructor_id: string
+          pupil_id: string
+        }
+        Insert: {
+          action: string
+          actor_name?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          details?: Json
+          id?: string
+          instructor_id: string
+          pupil_id: string
+        }
+        Update: {
+          action?: string
+          actor_name?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          details?: Json
+          id?: string
+          instructor_id?: string
+          pupil_id?: string
+        }
+        Relationships: []
+      }
       course_enquiries: {
         Row: {
           additional_notes: string | null
