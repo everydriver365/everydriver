@@ -1,7 +1,8 @@
 import { useEffect, useState, useCallback } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Loader2, Undo2, Archive } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Loader2, Undo2, Archive, Trash2, AlertTriangle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { archiveReasonLabel } from "./ArchivePupilDialog";
