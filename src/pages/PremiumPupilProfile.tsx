@@ -645,6 +645,19 @@ export default function PremiumPupilProfile() {
         >
           <Edit3 size={14} /> Edit
         </button>
+        <button
+          onClick={() => setArchiveOpen(true)}
+          aria-label="Archive pupil"
+          style={{
+            background: C.card, border: `1px solid ${C.hairline}`, borderRadius: 14,
+            padding: "9px 12px", display: "flex", alignItems: "center", gap: 6,
+            fontFamily: FONT, fontSize: 14, fontWeight: 600, color: "#C8434F",
+            boxShadow: SHADOW_CARD, cursor: "pointer",
+            transition: TRANSITION,
+          }}
+        >
+          <Archive size={14} />
+        </button>
       </div>
     </div>
   );
