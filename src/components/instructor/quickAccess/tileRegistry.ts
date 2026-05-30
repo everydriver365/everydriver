@@ -4,7 +4,7 @@ import {
   Wrench, Fuel, ClipboardCheck, ArrowLeftRight, Target,
   MessageSquare, MapPinned, BookOpen, Settings,
   Gift, Clock, Receipt, FileBarChart, BarChart3, Moon,
-  Megaphone, GraduationCap, Accessibility, Phone,
+  Megaphone, GraduationCap, Accessibility, Phone, Trophy,
   type LucideIcon,
 } from "lucide-react";
 import { CoursePlannerIcon } from "./coursePlannerIcon";
@@ -94,6 +94,7 @@ export const QUICK_ACCESS_TILES: QuickAccessTile[] = [
   { id: "waiting-room",     title: "Waiting room",     subtitle: "Weekly Zoom",           icon: Users,           tone: "green",  route: "/instructor/waiting-room" },
   { id: "platform-updates", title: "Platform updates", subtitle: "News & ideas",          icon: PlatformUpdatesIcon, tone: "grey",   route: "/instructor/platform-updates" },
   { id: "call-answering",   title: "Call answering",   subtitle: "Divert mode",           icon: Phone,           tone: "blue",   route: "/instructor/settings/phone-ai" },
+  { id: "rewards",          title: "DSM Pro Rewards",  subtitle: "Tier, points & badges", icon: Trophy,          tone: "amber",  route: "/instructor/rewards" },
 ];
 
 export const QUICK_ACCESS_TILES_BY_ID: Record<string, QuickAccessTile> =

@@ -4,6 +4,7 @@ import { ChevronRight, Trophy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { TileCard } from "@/components/instructor/ui";
 import { Icon3D, hasIcon3D } from "@/components/Icon3D";
+import { TIER_THRESHOLDS, nextTier, tierForPoints, type Tier } from "@/constants/rewardsConfig";
 
 interface CourseBonusTileProps {
   instructorId: string;
@@ -11,6 +12,7 @@ interface CourseBonusTileProps {
 
 const FONT = '"Poppins", system-ui, -apple-system, "Segoe UI", sans-serif';
 const ROUTE = "/instructor/payments?tab=bonus";
+const REWARDS_ROUTE = "/instructor/rewards";
 const BONUS_PER_COURSE = 50;
 
 const INNER: React.CSSProperties = { padding: 14, fontFamily: FONT };
@@ -23,9 +25,15 @@ const eyebrow: React.CSSProperties = {
   textTransform: "uppercase",
 };
 
+interface LoyaltyData {
+  total_points: number;
+  tier: Tier;
+}
+
 export function CourseBonusTile({ instructorId }: CourseBonusTileProps) {
   const navigate = useNavigate();
   const [count, setCount] = useState<number | null>(null);
+  const [loyalty, setLoyalty] = useState<LoyaltyData | null>(null);
 
   useEffect(() => {
     if (!instructorId) return;
@@ -45,7 +53,20 @@ export function CourseBonusTile({ instructorId }: CourseBonusTileProps) {
       setCount(c ?? 0);
     };
 
+    const fetchLoyalty = async () => {
+      const seasonYear = new Date().getUTCFullYear();
+      const { data } = await supabase
+        .from("instructor_points")
+        .select("total_points, tier")
+        .eq("instructor_id", instructorId)
+        .eq("season_year", seasonYear)
+        .maybeSingle();
+      if (!active) return;
+      setLoyalty((data as LoyaltyData) ?? null);
+    };
+
     fetchCount();
+    fetchLoyalty();
 
     const channel = supabase
       .channel(`course-bonus-${instructorId}`)
@@ -59,6 +80,16 @@ export function CourseBonusTile({ instructorId }: CourseBonusTileProps) {
         },
         () => fetchCount(),
       )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "instructor_points",
+          filter: `instructor_id=eq.${instructorId}`,
+        },
+        () => fetchLoyalty(),
+      )
       .subscribe();
 
     return () => {
@@ -68,6 +99,78 @@ export function CourseBonusTile({ instructorId }: CourseBonusTileProps) {
   }, [instructorId]);
 
   const go = () => navigate(ROUTE);
+  const goRewards = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigate(REWARDS_ROUTE);
+  };
+
+  // Loyalty strip — shown in earned & empty states once we have loyalty data
+  const renderLoyaltyStrip = () => {
+    const total = loyalty?.total_points ?? 0;
+    const currentTier = loyalty?.tier ?? tierForPoints(total);
+    const next = currentTier === "suspended" ? null : nextTier(currentTier);
+    const tierDef = currentTier === "suspended"
+      ? { emoji: "⏸️", label: "Suspended" }
+      : TIER_THRESHOLDS[currentTier as Exclude<Tier, "suspended">];
+    const nextDef = next ? TIER_THRESHOLDS[next] : null;
+    const baseMin = TIER_THRESHOLDS[currentTier as Exclude<Tier, "suspended">]?.min ?? 0;
+    const progressPct = nextDef
+      ? Math.min(100, Math.max(0, ((total - baseMin) / (nextDef.min - baseMin)) * 100))
+      : 100;
+    const ptsToNext = nextDef ? Math.max(0, nextDef.min - total) : 0;
+
+    return (
+      <button
+        onClick={goRewards}
+        style={{
+          marginTop: 12,
+          width: "100%",
+          textAlign: "left",
+          background: "linear-gradient(135deg, #1E4D9B 0%, #0A3070 100%)",
+          borderRadius: 12,
+          padding: "10px 12px",
+          border: "none",
+          cursor: "pointer",
+          fontFamily: FONT,
+        }}
+        aria-label={`DSM Pro Rewards — ${tierDef.label}, ${total} points`}
+      >
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span style={{ color: "#fff", fontSize: 12, fontWeight: 700 }}>
+            {tierDef.emoji} {tierDef.label}
+          </span>
+          <span style={{ color: "rgba(255,255,255,0.85)", fontSize: 11, fontWeight: 600 }}>
+            {total.toLocaleString()} pts
+          </span>
+        </div>
+        <div
+          style={{
+            marginTop: 6,
+            height: 4,
+            width: "100%",
+            background: "rgba(255,255,255,0.2)",
+            borderRadius: 999,
+            overflow: "hidden",
+          }}
+        >
+          <div
+            style={{
+              height: "100%",
+              width: `${progressPct}%`,
+              background: "#fff",
+              borderRadius: 999,
+              transition: "width 200ms ease",
+            }}
+          />
+        </div>
+        <div style={{ marginTop: 4, fontSize: 10, color: "rgba(255,255,255,0.7)" }}>
+          {nextDef
+            ? `${ptsToNext.toLocaleString()} pts to ${nextDef.label}`
+            : "Top tier — keep it up!"}
+        </div>
+      </button>
+    );
+  };
 
   // ─── Loading ─────────────────────────────────────────────
   if (count === null) {
@@ -87,7 +190,7 @@ export function CourseBonusTile({ instructorId }: CourseBonusTileProps) {
 
   const total = count * BONUS_PER_COURSE;
 
-  // ─── Empty state ─────────────────────────────────────────
+  // ─── Empty bonus state ───────────────────────────────────
   if (count === 0) {
     return (
       <TileCard onClick={go} ariaLabel="Course and loyalty bonus">
@@ -116,12 +219,13 @@ export function CourseBonusTile({ instructorId }: CourseBonusTileProps) {
                   Course &amp; Loyalty Bonus
                 </div>
                 <div style={{ fontSize: 11, color: "#6B7280" }}>
-                  Earn £50 for every intensive course completed
+                  Earn £50 per course · plus DSM Pro Rewards points
                 </div>
               </div>
             </div>
             <ChevronRight size={16} color="#9CA3AF" />
           </div>
+          {renderLoyaltyStrip()}
         </div>
       </TileCard>
     );
@@ -141,6 +245,7 @@ export function CourseBonusTile({ instructorId }: CourseBonusTileProps) {
         <div style={{ fontSize: 11, color: "#6B7280", marginTop: 2 }}>
           {count} course{count === 1 ? "" : "s"} completed · £{BONUS_PER_COURSE} each
         </div>
+        {renderLoyaltyStrip()}
       </div>
     </TileCard>
   );
