@@ -8,6 +8,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { archiveReasonLabel } from "./ArchivePupilDialog";
 
 interface ArchivedPupil {
   id: string;
@@ -15,6 +16,8 @@ interface ArchivedPupil {
   phone: string | null;
   email: string | null;
   deleted_at: string;
+  archive_reason: string | null;
+  archive_note: string | null;
 }
 
 interface Props {
