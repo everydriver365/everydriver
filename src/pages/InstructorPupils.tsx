@@ -727,10 +727,11 @@ export default function InstructorPupils() {
             {(() => {
               const overdueCount = pupils.filter((p) => (p.account_balance ?? 0) < 0).length;
               const summaryStats = [
-                { value: stats.active, label: "Active",  colour: "#0F2044" },
-                { value: overdueCount, label: "Overdue", colour: overdueCount > 0 ? "#CC2229" : "#0F2044" },
-                { value: lessonsToday, label: "Today",   colour: "#0F2044" },
-                { value: stats.passed, label: "Passed",  colour: "#0F2044" },
+                { value: stats.active, label: "Active",   colour: "#0F2044" },
+                { value: overdueCount, label: "Overdue",  colour: overdueCount > 0 ? "#CC2229" : "#0F2044" },
+                { value: lessonsToday, label: "Today",    colour: "#0F2044" },
+                { value: stats.passed, label: "Passed",   colour: "#0F2044" },
+                { value: archivedCount, label: "Archived", colour: "#0F2044" },
               ];
               return summaryStats.map((s, i, arr) => (
                 <div key={s.label} style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
