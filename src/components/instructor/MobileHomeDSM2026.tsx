@@ -2729,7 +2729,7 @@ export function QATile({
             style={{ width: 72, height: 72, objectFit: "contain", display: "block" }}
           />
         ) : resolved3D ? (
-          <Icon3D name={resolved3D} size={86} />
+          <Icon3D name={resolved3D} size={77} />
         ) : (
           <span
             style={{
