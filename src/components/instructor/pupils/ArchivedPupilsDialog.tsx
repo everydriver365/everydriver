@@ -76,6 +76,32 @@ export function ArchivedPupilsDialog({ open, onOpenChange, instructorId, onChang
     onChanged?.();
   };
 
+  const openDelete = (p: ArchivedPupil) => {
+    setDeleteTarget(p);
+    setConfirmText("");
+  };
+
+  const handlePermanentDelete = async () => {
+    if (!deleteTarget) return;
+    if (confirmText.trim().toLowerCase() !== deleteTarget.name.trim().toLowerCase()) return;
+    setDeleting(true);
+    const { error } = await supabase.rpc("delete_pupil_permanently", { p_pupil_id: deleteTarget.id });
+    setDeleting(false);
+    if (error) {
+      toast.error(`Could not delete: ${error.message}`);
+      return;
+    }
+    toast.success(`${deleteTarget.name} permanently deleted`);
+    setRows((prev) => prev.filter((r) => r.id !== deleteTarget.id));
+    setDeleteTarget(null);
+    setConfirmText("");
+    onChanged?.();
+  };
+
+  const confirmMatches =
+    !!deleteTarget &&
+    confirmText.trim().toLowerCase() === deleteTarget.name.trim().toLowerCase();
+
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
@@ -133,11 +159,72 @@ export function ArchivedPupilsDialog({ open, onOpenChange, instructorId, onChang
                       )}
                       Restore
                     </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => openDelete(p)}
+                      className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                      aria-label={`Permanently delete ${p.name}`}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
                   </div>
                 </div>
               ))}
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={!!deleteTarget}
+        onOpenChange={(o) => { if (!o && !deleting) { setDeleteTarget(null); setConfirmText(""); } }}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-destructive">
+              <AlertTriangle className="h-4 w-4" /> Permanently delete {deleteTarget?.name}?
+            </DialogTitle>
+            <DialogDescription>
+              This cannot be undone. The pupil record will be removed forever.
+              Lesson history, payments and notes linked to them may also be lost.
+              Restoring from archive will no longer be possible.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-2 py-1">
+            <label className="text-xs font-semibold tracking-wider uppercase text-muted-foreground">
+              Type <span className="text-foreground">{deleteTarget?.name}</span> to confirm
+            </label>
+            <Input
+              autoFocus
+              value={confirmText}
+              onChange={(e) => setConfirmText(e.target.value)}
+              placeholder={deleteTarget?.name ?? ""}
+              disabled={deleting}
+            />
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => { setDeleteTarget(null); setConfirmText(""); }}
+              disabled={deleting}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handlePermanentDelete}
+              disabled={!confirmMatches || deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? (
+                <><Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> Deleting…</>
+              ) : (
+                <><Trash2 className="h-4 w-4 mr-1.5" /> Delete forever</>
+              )}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </>
