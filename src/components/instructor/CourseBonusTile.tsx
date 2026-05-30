@@ -1,34 +1,40 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronRight, ChevronDown, Trophy } from "lucide-react";
+import { ChevronRight, ChevronDown, ChevronUp, Trophy, Medal } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { TileCard } from "@/components/instructor/ui";
-import { Icon3D, hasIcon3D } from "@/components/Icon3D";
 import { TIER_THRESHOLDS, nextTier, tierForPoints, type Tier } from "@/constants/rewardsConfig";
 
 interface CourseBonusTileProps {
   instructorId: string;
 }
 
-const FONT = '"Poppins", system-ui, -apple-system, "Segoe UI", sans-serif';
 const ROUTE = "/instructor/payments?tab=bonus";
 const REWARDS_ROUTE = "/instructor/rewards";
-const BONUS_PER_COURSE = 50;
-
-const INNER: React.CSSProperties = { padding: 14, fontFamily: FONT };
-
-const eyebrow: React.CSSProperties = {
-  fontSize: 10,
-  fontWeight: 700,
-  letterSpacing: 0.6,
-  color: "#8a93a4",
-  textTransform: "uppercase",
-};
 
 interface LoyaltyData {
   total_points: number;
   tier: Tier;
 }
+
+// Tier badge palette (per spec)
+const TIER_BADGE: Record<string, { bg: string; fg: string; label: string }> = {
+  bronze:   { bg: "#FEF3C7", fg: "#92400E", label: "Bronze" },
+  silver:   { bg: "#F3F4F6", fg: "#374151", label: "Silver" },
+  gold:     { bg: "#FEF9C3", fg: "#713F12", label: "Gold" },
+  platinum: { bg: "#EDE9FE", fg: "#4C1D95", label: "Platinum" },
+  elite:    { bg: "#0A3070", fg: "#FFFFFF", label: "Elite" },
+  suspended:{ bg: "#F3F4F6", fg: "#6B7280", label: "Suspended" },
+};
+
+// Design tokens with fallbacks
+const C = {
+  bgPrimary:   "var(--color-background-primary, #FFFFFF)",
+  bgSecondary: "var(--color-background-secondary, #F9FAFB)",
+  textPrimary: "var(--color-text-primary, #111827)",
+  textSecondary: "var(--color-text-secondary, #6B7280)",
+  borderTertiary: "var(--color-border-tertiary, #E5E7EB)",
+  radiusLg: "var(--border-radius-lg, 12px)",
+};
 
 export function CourseBonusTile({ instructorId }: CourseBonusTileProps) {
   const navigate = useNavigate();
@@ -71,26 +77,14 @@ export function CourseBonusTile({ instructorId }: CourseBonusTileProps) {
 
     const channel = supabase
       .channel(`course-bonus-${instructorId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "pupils",
-          filter: `instructor_id=eq.${instructorId}`,
-        },
-        () => fetchCount(),
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "instructor_points",
-          filter: `instructor_id=eq.${instructorId}`,
-        },
-        () => fetchLoyalty(),
-      )
+      .on("postgres_changes", {
+        event: "*", schema: "public", table: "pupils",
+        filter: `instructor_id=eq.${instructorId}`,
+      }, () => fetchCount())
+      .on("postgres_changes", {
+        event: "*", schema: "public", table: "instructor_points",
+        filter: `instructor_id=eq.${instructorId}`,
+      }, () => fetchLoyalty())
       .subscribe();
 
     return () => {
@@ -100,196 +94,167 @@ export function CourseBonusTile({ instructorId }: CourseBonusTileProps) {
   }, [instructorId]);
 
   const go = () => navigate(ROUTE);
-  const goRewards = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    navigate(REWARDS_ROUTE);
-  };
-
   const toggleExpanded = (e: React.MouseEvent) => {
     e.stopPropagation();
     setExpanded((v) => !v);
   };
 
-  // Expandable loyalty section — collapsed by default, opens on tap
-  const renderLoyaltySection = () => {
-    const total = loyalty?.total_points ?? 0;
-    const currentTier = loyalty?.tier ?? tierForPoints(total);
-    const next = currentTier === "suspended" ? null : nextTier(currentTier);
-    const tierDef = currentTier === "suspended"
-      ? { emoji: "⏸️", label: "Suspended" }
-      : TIER_THRESHOLDS[currentTier as Exclude<Tier, "suspended">];
-    const nextDef = next ? TIER_THRESHOLDS[next] : null;
-    const baseMin = TIER_THRESHOLDS[currentTier as Exclude<Tier, "suspended">]?.min ?? 0;
-    const progressPct = nextDef
-      ? Math.min(100, Math.max(0, ((total - baseMin) / (nextDef.min - baseMin)) * 100))
-      : 100;
-    const ptsToNext = nextDef ? Math.max(0, nextDef.min - total) : 0;
+  // Loyalty calc
+  const totalPts = loyalty?.total_points ?? 0;
+  const currentTier: Tier = loyalty?.tier ?? tierForPoints(totalPts);
+  const tierKey = currentTier in TIER_BADGE ? currentTier : "bronze";
+  const badge = TIER_BADGE[tierKey];
+  const next = currentTier === "suspended" ? null : nextTier(currentTier);
+  const baseMin = currentTier === "suspended" ? 0 : (TIER_THRESHOLDS[currentTier as Exclude<Tier, "suspended">]?.min ?? 0);
+  const nextDef = next ? TIER_THRESHOLDS[next] : null;
+  const progressPct = nextDef
+    ? Math.min(100, Math.max(0, ((totalPts - baseMin) / (nextDef.min - baseMin)) * 100))
+    : 100;
+  const ptsToNext = nextDef ? Math.max(0, nextDef.min - totalPts) : 0;
+  const isElite = currentTier === "elite";
 
-    return (
-      <div style={{ marginTop: 10, borderTop: "1px solid #F0F1F4", paddingTop: 10 }}>
-        <button
-          onClick={toggleExpanded}
-          aria-expanded={expanded}
-          aria-controls="loyalty-panel"
+  return (
+    <div
+      style={{
+        background: C.bgPrimary,
+        borderRadius: C.radiusLg,
+        border: `0.5px solid ${C.borderTertiary}`,
+        overflow: "hidden",
+        boxShadow: "none",
+      }}
+    >
+      {/* ── Top row: title + chevron-right (navigates) ── */}
+      <button
+        onClick={go}
+        aria-label="Course and loyalty bonus"
+        style={{
+          width: "100%",
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          padding: "14px 16px",
+          background: "transparent",
+          border: "none",
+          cursor: "pointer",
+          textAlign: "left",
+        }}
+      >
+        <Trophy size={20} color="#B45309" style={{ flexShrink: 0 }} strokeWidth={1.75} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 14, fontWeight: 500, color: C.textPrimary, lineHeight: 1.2 }}>
+            Course &amp; loyalty bonus
+          </div>
+          <div style={{ fontSize: 12, color: C.textSecondary, marginTop: 1, lineHeight: 1.3 }}>
+            £50 per course · Plus rewards points
+          </div>
+        </div>
+        <ChevronRight size={16} color={C.textSecondary} style={{ flexShrink: 0 }} />
+      </button>
+
+      {/* ── Tier row: medal + label + badge + toggle chevron ── */}
+      <button
+        onClick={toggleExpanded}
+        aria-expanded={expanded}
+        aria-controls="loyalty-drawer"
+        style={{
+          width: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "10px 16px",
+          background: "transparent",
+          border: "none",
+          borderTop: `0.5px solid ${C.borderTertiary}`,
+          cursor: "pointer",
+          textAlign: "left",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <Medal size={14} color="#B45309" strokeWidth={1.75} />
+          <span style={{ fontSize: 12, fontWeight: 500, color: C.textPrimary }}>
+            DSM Pro Rewards
+          </span>
+          <span
+            style={{
+              background: badge.bg,
+              color: badge.fg,
+              fontSize: 11,
+              fontWeight: 500,
+              padding: "2px 8px",
+              borderRadius: 20,
+              lineHeight: 1.4,
+            }}
+          >
+            {badge.label}
+          </span>
+        </div>
+        {expanded ? (
+          <ChevronUp size={16} color={C.textSecondary} />
+        ) : (
+          <ChevronDown size={16} color={C.textSecondary} />
+        )}
+      </button>
+
+      {/* ── Expandable drawer ── */}
+      {expanded && (
+        <div
+          id="loyalty-drawer"
           style={{
-            width: "100%",
+            background: C.bgSecondary,
+            borderTop: `0.5px solid ${C.borderTertiary}`,
+            padding: "12px 16px",
             display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            background: "transparent",
-            border: "none",
-            padding: 0,
-            cursor: "pointer",
-            fontFamily: FONT,
+            flexDirection: "column",
+            gap: 8,
           }}
         >
-          <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 700, color: "#1E4D9B" }}>
-            <Trophy size={12} color="#1E4D9B" />
-            DSM Pro Rewards · {tierDef.emoji} {tierDef.label}
-          </span>
-          <ChevronDown
-            size={14}
-            color="#8a93a4"
-            style={{
-              transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
-              transition: "transform 200ms ease",
-            }}
-          />
-        </button>
+          {/* Current points */}
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12 }}>
+            <span style={{ color: C.textSecondary }}>Current points</span>
+            <span style={{ color: C.textPrimary, fontWeight: 500 }}>
+              {totalPts.toLocaleString()} pts
+            </span>
+          </div>
 
-        {expanded && (
-          <button
-            id="loyalty-panel"
-            onClick={goRewards}
+          {/* Next tier */}
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12 }}>
+            <span style={{ color: C.textSecondary }}>Next tier</span>
+            {isElite ? (
+              <span style={{ color: "#059669", fontWeight: 500 }}>
+                You've reached Elite — top tier!
+              </span>
+            ) : nextDef ? (
+              <span style={{ color: "#B45309", fontWeight: 500 }}>
+                {nextDef.label} — {ptsToNext.toLocaleString()} pts away
+              </span>
+            ) : (
+              <span style={{ color: C.textSecondary }}>—</span>
+            )}
+          </div>
+
+          {/* Progress bar */}
+          <div
             style={{
-              marginTop: 10,
-              width: "100%",
-              textAlign: "left",
-              background: "linear-gradient(135deg, #1E4D9B 0%, #0A3070 100%)",
-              borderRadius: 12,
-              padding: "10px 12px",
-              border: "none",
-              cursor: "pointer",
-              fontFamily: FONT,
+              background: C.borderTertiary,
+              borderRadius: 4,
+              height: 4,
+              overflow: "hidden",
+              marginTop: 2,
             }}
-            aria-label={`Open DSM Pro Rewards — ${tierDef.label}, ${total} points`}
           >
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span style={{ color: "#fff", fontSize: 12, fontWeight: 700 }}>
-                {tierDef.emoji} {tierDef.label}
-              </span>
-              <span style={{ color: "rgba(255,255,255,0.85)", fontSize: 11, fontWeight: 600 }}>
-                {total.toLocaleString()} pts
-              </span>
-            </div>
             <div
               style={{
-                marginTop: 6,
-                height: 4,
-                width: "100%",
-                background: "rgba(255,255,255,0.2)",
-                borderRadius: 999,
-                overflow: "hidden",
+                background: "#D97706",
+                height: "100%",
+                width: `${progressPct}%`,
+                borderRadius: 4,
+                transition: "width 0.3s ease",
               }}
-            >
-              <div
-                style={{
-                  height: "100%",
-                  width: `${progressPct}%`,
-                  background: "#fff",
-                  borderRadius: 999,
-                  transition: "width 200ms ease",
-                }}
-              />
-            </div>
-            <div style={{ marginTop: 4, fontSize: 10, color: "rgba(255,255,255,0.7)" }}>
-              {nextDef
-                ? `${ptsToNext.toLocaleString()} pts to ${nextDef.label}`
-                : "Top tier — keep it up!"}
-            </div>
-          </button>
-        )}
-      </div>
-    );
-  };
-
-
-  // ─── Loading ─────────────────────────────────────────────
-  if (count === null) {
-    return (
-      <TileCard ariaLabel="Course bonus loading">
-        <div style={INNER} aria-busy="true">
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <span style={eyebrow}>Course &amp; Loyalty Bonus</span>
-            <span style={{ fontSize: 10, color: "#8a93a4" }}>&nbsp;</span>
+            />
           </div>
-          <div style={{ height: 22, marginTop: 8, background: "#F2F4F8", borderRadius: 6, width: "60%" }} />
-          <div style={{ height: 10, marginTop: 8, background: "#F2F4F8", borderRadius: 4, width: "45%" }} />
         </div>
-      </TileCard>
-    );
-  }
-
-  const total = count * BONUS_PER_COURSE;
-
-  // ─── Empty bonus state ───────────────────────────────────
-  if (count === 0) {
-    return (
-      <TileCard onClick={go} ariaLabel="Course and loyalty bonus">
-        <div style={INNER}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <div
-                style={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: hasIcon3D("trophy") ? 0 : 10,
-                  background: hasIcon3D("trophy") ? "transparent" : "#FEF3C7",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                {hasIcon3D("trophy") ? (
-                  <Icon3D name="trophy" size={44} />
-                ) : (
-                  <Trophy size={18} color="#92400e" />
-                )}
-              </div>
-              <div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: "#1F2937" }}>
-                  Course &amp; Loyalty Bonus
-                </div>
-                <div style={{ fontSize: 11, color: "#6B7280" }}>
-                  Earn £50 per course · plus DSM Pro Rewards points
-                </div>
-              </div>
-            </div>
-            <ChevronRight size={16} color="#9CA3AF" />
-          </div>
-          {renderLoyaltySection()}
-        </div>
-      </TileCard>
-    );
-  }
-
-  // ─── Earned ──────────────────────────────────────────────
-  return (
-    <TileCard onClick={go} accentColor="green" ariaLabel={`${count} course bonuses earned, total £${total}`}>
-      <div style={INNER}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <span style={{ ...eyebrow, color: "#2d8a4e" }}>Course &amp; Loyalty Bonus</span>
-          <ChevronRight size={16} color="#2d8a4e" />
-        </div>
-        <div style={{ marginTop: 6, fontSize: 22, fontWeight: 800, color: "#1F2937", letterSpacing: -0.3 }}>
-          £{total.toLocaleString("en-GB")}
-        </div>
-        <div style={{ fontSize: 11, color: "#6B7280", marginTop: 2 }}>
-          {count} course{count === 1 ? "" : "s"} completed · £{BONUS_PER_COURSE} each
-        </div>
-        {renderLoyaltySection()}
-      </div>
-    </TileCard>
+      )}
+    </div>
   );
 }
 
