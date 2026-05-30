@@ -40,6 +40,9 @@ export function ArchivedPupilsDialog({ open, onOpenChange, instructorId, onChang
   const [rows, setRows] = useState<ArchivedPupil[]>([]);
   const [loading, setLoading] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<ArchivedPupil | null>(null);
+  const [confirmText, setConfirmText] = useState("");
+  const [deleting, setDeleting] = useState(false);
 
   const fetchArchived = useCallback(async () => {
     if (!instructorId) { setRows([]); return; }
