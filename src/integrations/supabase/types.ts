@@ -20117,6 +20117,10 @@ export type Database = {
       }
     }
     Functions: {
+      archive_pupil: {
+        Args: { p_note?: string; p_pupil_id: string; p_reason: string }
+        Returns: undefined
+      }
       audit_list_cron_jobs: {
         Args: never
         Returns: {
@@ -20434,6 +20438,7 @@ export type Database = {
         Args: { p_requester_signup_id: string; p_target_signup_id: string }
         Returns: string
       }
+      restore_pupil: { Args: { p_pupil_id: string }; Returns: undefined }
       submit_public_test_swap_signup: {
         Args: { p_payload: Json }
         Returns: string

@@ -1,78 +1,89 @@
-# Archive pupil with reason
+# Fix archive RLS + guarantee no hard deletes
 
-Today, archiving a pupil is wired up on the desktop pupils list only (soft-delete via `pupils.deleted_at`). This plan adds an **Archive** action with a captured **reason** everywhere a pupil appears as a tile, and surfaces the reason in the Archived Pupils dialog.
+## What's happening
 
-## Scope
+`ArchivePupilDialog` does a direct `supabase.from("pupils").update({ deleted_at, archive_reason, archive_note })`. The `pupils` table has two competing UPDATE policies:
 
-1. **Mobile pupil list tile** (`src/pages/InstructorPupils.tsx`) — add an Archive action (long-press / kebab) that opens a reason sheet, then soft-archives.
-2. **Desktop pupil tile** (`src/pages/instructor-app/InstructorPupilsDesktop.tsx`) — existing Archive button now opens the same reason dialog before soft-archiving (currently archives with no reason).
-3. **Pupil detail page** (`src/pages/PremiumPupilProfile.tsx`) — add an "Archive pupil" item in the header overflow menu, opening the reason dialog and returning the user to the pupils list after success.
-4. **Archived Pupils dialog** (`src/components/instructor/pupils/ArchivedPupilsDialog.tsx`) — show the reason under each archived pupil and include it in the restore confirmation.
+- `Instructors update own pupils` — requires `instructor_id = get_instructor_id_for_user(auth.uid())`
+- `Pupils can update their own row` — requires `auth_user_id = auth.uid()`
 
-Out of scope: bulk archive, separate "paused vs archived" states, admin-level reason analytics.
+If the logged-in account isn't perfectly resolved to the pupil's owning instructor (e.g. a school owner, an admin not yet seeded into `user_roles`, or an instructor whose `auth_user_id` link is stale), the `WITH CHECK` fails and Postgres returns `new row violates row-level security policy for table "pupils"`. The current pupil `Susanna Wright` belongs to instructor `Ken D` (`auth_user_id 023c4e27…`). Any other signed-in user trips the policy.
 
-## Reason capture UX
+Also the user wants a guarantee that pupil records are never hard-deleted.
 
-A single reusable `ArchivePupilDialog` component:
+## Plan
 
-- **Preset reasons** (radio chips, instructor-friendly):
-  - Passed test
-  - Stopped lessons / lost contact
-  - Switched instructor
-  - Moved away
-  - Behaviour / safeguarding
-  - Duplicate record
-  - Other
-- **Free-text note** (optional, up to 280 chars; required when "Other" is selected).
-- Primary action **Archive pupil**, secondary **Cancel**.
-- Confirms with a toast: "Archived {name} — restore from Archived list."
+### 1. New SECURITY DEFINER RPC `public.archive_pupil`
 
-The dialog is shared between mobile, desktop and detail page so behaviour stays consistent.
-
-## Data model
-
-Reuse existing soft-delete column `pupils.deleted_at`. Add two new nullable columns:
-
-- `archive_reason text` — preset code (e.g. `passed_test`, `stopped`, `switched`, `moved`, `behaviour`, `duplicate`, `other`).
-- `archive_note text` — optional free-text detail.
-
-Both clear to NULL on restore. No backfill needed.
-
-Migration:
+Replaces the direct UPDATE from the client. Centralises the authorisation check and bypasses the dual-policy edge case.
 
 ```sql
-ALTER TABLE public.pupils
-  ADD COLUMN archive_reason text,
-  ADD COLUMN archive_note   text;
+create or replace function public.archive_pupil(
+  p_pupil_id uuid,
+  p_reason   text,
+  p_note     text default null
+) returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_caller_instructor uuid;
+  v_pupil_instructor  uuid;
+begin
+  if p_reason is null or length(trim(p_reason)) = 0 then
+    raise exception 'Archive reason is required';
+  end if;
+
+  select instructor_id into v_pupil_instructor
+  from public.pupils where id = p_pupil_id;
+
+  if v_pupil_instructor is null then
+    raise exception 'Pupil not found';
+  end if;
+
+  v_caller_instructor := public.get_instructor_id_for_user(auth.uid());
+
+  if not (
+       v_caller_instructor = v_pupil_instructor
+       or public.has_role(auth.uid(), 'admin'::app_role)
+     ) then
+    raise exception 'Not authorised to archive this pupil';
+  end if;
+
+  update public.pupils
+     set deleted_at     = coalesce(deleted_at, now()),
+         archive_reason = p_reason,
+         archive_note   = nullif(trim(coalesce(p_note,'')), '')
+   where id = p_pupil_id;
+end;
+$$;
+
+grant execute on function public.archive_pupil(uuid, text, text) to authenticated;
 ```
 
-RLS unchanged — existing instructor-scoped policies on `pupils` already gate updates.
+A matching `public.restore_pupil(p_pupil_id uuid)` RPC will clear `deleted_at`, `archive_reason`, `archive_note` with the same authorisation check, so the Archived list's restore button is RLS-safe too.
 
-## Implementation outline
+### 2. Lock down hard deletes on `pupils`
 
-**New file** `src/components/instructor/pupils/ArchivePupilDialog.tsx`
-- Props: `open`, `onOpenChange`, `pupil: { id; name }`, `onArchived?()`.
-- On confirm: `update pupils set deleted_at = now(), archive_reason, archive_note where id = :id` then invalidates the pupils list query.
+Drop the `Instructors delete own pupils` policy and revoke DELETE so the table can only be soft-archived through the RPC. Admins keep access via `service_role` if ever needed.
 
-**Mobile list** (`InstructorPupils.tsx`)
-- Add a small kebab/overflow icon to each pupil tile (or a swipe-left action — pick kebab to stay consistent with iOS list patterns in this app).
-- Menu items: "Edit" (if not already), "Archive…".
-- "Archive…" opens `ArchivePupilDialog`.
+```sql
+drop policy if exists "Instructors delete own pupils" on public.pupils;
+revoke delete on public.pupils from authenticated, anon;
+```
 
-**Desktop list** (`InstructorPupilsDesktop.tsx`)
-- Replace the current direct soft-delete on the Archive confirm (around the existing `AlertDialog` near line 1588) with `ArchivePupilDialog`. Remove the old plain confirm alert.
+(`service_role` retains DELETE for emergency admin tooling; no UI path triggers it.)
 
-**Detail page** (`PremiumPupilProfile.tsx`)
-- Add an overflow menu in the header with an "Archive pupil…" item that opens `ArchivePupilDialog`. After success, navigate back to `/instructor/pupils`.
+### 3. Frontend wiring
 
-**Archived dialog** (`ArchivedPupilsDialog.tsx`)
-- Select `archive_reason, archive_note` alongside existing fields.
-- Render a small label under each row: e.g. *"Reason: Passed test"* (with the optional note in parentheses).
-- On restore, also set `archive_reason = null, archive_note = null`.
+- `src/components/instructor/pupils/ArchivePupilDialog.tsx` — replace the `.from("pupils").update(...)` call with `supabase.rpc("archive_pupil", { p_pupil_id, p_reason, p_note })`.
+- `src/components/instructor/pupils/ArchivedPupilsDialog.tsx` — replace the restore UPDATE with `supabase.rpc("restore_pupil", { p_pupil_id })`.
 
-## Technical notes
+No other UI changes; the dialog UX, preset reasons, and note field stay identical.
 
-- Reason codes live in a single const map (`ARCHIVE_REASONS`) in `ArchivePupilDialog.tsx`, also imported by `ArchivedPupilsDialog.tsx` for label rendering.
-- All Supabase writes go through the existing client; no edge function needed.
-- The mobile tile menu uses the existing `Sheet` + button pattern already used elsewhere in the instructor mobile app, keeping radii and tokens per the DSM design memory.
-- Migration must run before code is merged; the new columns are nullable so old code continues to work.
+## Result
+
+- Archive succeeds for any legitimate owner (instructor of record) or admin, regardless of which of the two UPDATE policies would otherwise match.
+- Records are soft-archived only — `deleted_at`, `archive_reason`, `archive_note` are stamped; no row is ever removed from `pupils`. Hard delete is no longer reachable from the client.
+- Restore path is symmetric and RLS-safe.
