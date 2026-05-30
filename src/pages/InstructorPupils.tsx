@@ -311,6 +311,14 @@ export default function InstructorPupils() {
 
       if (error) throw error;
       setPupils(data || []);
+
+      // Archived count (separate query — main list excludes deleted_at)
+      const { count: archCount } = await supabase
+        .from("pupils")
+        .select("id", { count: "exact", head: true })
+        .eq("instructor_id", instructorId)
+        .not("deleted_at", "is", null);
+      setArchivedCount(archCount || 0);
     } catch (error) {
       console.error("Error fetching pupils:", error);
       toast.error("Failed to load pupils");
