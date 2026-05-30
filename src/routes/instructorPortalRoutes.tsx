@@ -37,6 +37,8 @@ const InstructorReports = lazy(() => import("@/pages/instructor-app/InstructorRe
 // Jobs & scheduling
 const InstructorJobs = lazy(() => import("@/pages/InstructorJobs"));
 const CoursePlannerPage = lazy(() => import("@/pages/instructor/CoursePlannerPage"));
+const InstructorCourseSummariesPage = lazy(() => import("@/pages/instructor/InstructorCourseSummariesPage"));
+const InstructorCourseSummaryDetailPage = lazy(() => import("@/pages/instructor/InstructorCourseSummaryDetailPage"));
 const InstructorPendingScheduling = lazy(() => import("@/pages/InstructorPendingScheduling"));
 const InstructorQuickAvailability = lazy(() => import("@/pages/instructor-app/InstructorAvailabilityRouter"));
 const InstructorAvailabilityWindows = lazy(() => import("@/pages/InstructorAvailabilityWindows"));
@@ -182,6 +184,8 @@ export const instructorPortalRoutes = (
     <Route path="/instructor/events/new" element={<Navigate to="/instructor/schedule?action=add" replace />} />
     <Route path="/instructor/events/:eventKey" element={<InstructorEventDetails />} />
     <Route path="/instructor/course-planner" element={<CoursePlannerPage />} />
+    <Route path="/instructor/course-summaries" element={<InstructorCourseSummariesPage />} />
+    <Route path="/instructor/course-summaries/:pupilId" element={<InstructorCourseSummaryDetailPage />} />
     <Route path="/instructor/diary" element={<InstructorDiary />} />
     {/* Legacy hubs → unified Settings hub (V3 slugs) */}
     <Route path="/instructor/menu" element={<Navigate to="/instructor/settings" replace />} />
