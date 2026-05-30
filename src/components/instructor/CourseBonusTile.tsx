@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronRight, Trophy } from "lucide-react";
+import { ChevronRight, ChevronDown, Trophy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { TileCard } from "@/components/instructor/ui";
 import { Icon3D, hasIcon3D } from "@/components/Icon3D";
