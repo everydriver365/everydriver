@@ -370,7 +370,7 @@ export function PupilCourseSummary({ pupilId, onBack, backHref }: Props) {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
-              <Row label="Address" value={pupil.pickup_address || pupil.address_fallback || "—"} />
+              <Row label="Address" value={pupil.pickup_address || "—"} />
               <Row label="Postcode" value={pupil.pickup_postcode || pupil.postcode || "—"} />
               <Row
                 label="what3words"
