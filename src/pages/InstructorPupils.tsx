@@ -153,6 +153,7 @@ export default function InstructorPupils() {
   };
   
   const [pupils, setPupils] = useState<Pupil[]>([]);
+  const [archivedCount, setArchivedCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedPupil, setSelectedPupil] = useState<Pupil | null>(null);
@@ -310,6 +311,14 @@ export default function InstructorPupils() {
 
       if (error) throw error;
       setPupils(data || []);
+
+      // Archived count (separate query — main list excludes deleted_at)
+      const { count: archCount } = await supabase
+        .from("pupils")
+        .select("id", { count: "exact", head: true })
+        .eq("instructor_id", instructorId)
+        .not("deleted_at", "is", null);
+      setArchivedCount(archCount || 0);
     } catch (error) {
       console.error("Error fetching pupils:", error);
       toast.error("Failed to load pupils");
@@ -718,10 +727,11 @@ export default function InstructorPupils() {
             {(() => {
               const overdueCount = pupils.filter((p) => (p.account_balance ?? 0) < 0).length;
               const summaryStats = [
-                { value: stats.active, label: "Active",  colour: "#0F2044" },
-                { value: overdueCount, label: "Overdue", colour: overdueCount > 0 ? "#CC2229" : "#0F2044" },
-                { value: lessonsToday, label: "Today",   colour: "#0F2044" },
-                { value: stats.passed, label: "Passed",  colour: "#0F2044" },
+                { value: stats.active, label: "Active",   colour: "#0F2044" },
+                { value: overdueCount, label: "Overdue",  colour: overdueCount > 0 ? "#CC2229" : "#0F2044" },
+                { value: lessonsToday, label: "Today",    colour: "#0F2044" },
+                { value: stats.passed, label: "Passed",   colour: "#0F2044" },
+                { value: archivedCount, label: "Archived", colour: "#0F2044" },
               ];
               return summaryStats.map((s, i, arr) => (
                 <div key={s.label} style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
