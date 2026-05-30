@@ -15361,6 +15361,8 @@ export type Database = {
         Row: {
           account_balance: number | null
           address: string | null
+          archive_note: string | null
+          archive_reason: string | null
           auth_user_id: string | null
           balance_due_date: string | null
           best_driving_score: number | null
@@ -15463,6 +15465,8 @@ export type Database = {
         Insert: {
           account_balance?: number | null
           address?: string | null
+          archive_note?: string | null
+          archive_reason?: string | null
           auth_user_id?: string | null
           balance_due_date?: string | null
           best_driving_score?: number | null
@@ -15565,6 +15569,8 @@ export type Database = {
         Update: {
           account_balance?: number | null
           address?: string | null
+          archive_note?: string | null
+          archive_reason?: string | null
           auth_user_id?: string | null
           balance_due_date?: string | null
           best_driving_score?: number | null
