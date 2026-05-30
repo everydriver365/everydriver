@@ -24,6 +24,7 @@ const AvailabilityTester = lazy(() => import("@/pages/admin/AvailabilityTester")
 const SlotDebugger = lazy(() => import("@/pages/admin/SlotDebugger"));
 const AdminReportsHub = lazy(() => import("@/pages/admin/AdminReportsHub"));
 const NetworkInstructors = lazy(() => import("@/pages/admin/NetworkInstructors"));
+const AdminRewards = lazy(() => import("@/pages/admin/AdminRewards"));
 
 
 export const adminRoutes = (
