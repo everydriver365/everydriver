@@ -1583,26 +1583,16 @@ export default function InstructorPupilsDesktop() {
         </DialogContent>
       </Dialog>
 
-      <AlertDialog open={!!deleteTarget} onOpenChange={(o) => { if (!o) setDeleteTarget(null); }}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Archive pupil?</AlertDialogTitle>
-            <AlertDialogDescription>
-              <strong>{deleteTarget?.name}</strong> will be moved to your Archived list. Lesson history, payments and notes are preserved — you can restore them at any time from the Archived button at the top of the page.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={(e) => { e.preventDefault(); handleConfirmDelete(); }}
-              disabled={deleting}
-              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
-            >
-              {deleting ? "Deleting…" : "Delete"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ArchivePupilDialog
+        open={!!deleteTarget}
+        onOpenChange={(o) => { if (!o) setDeleteTarget(null); }}
+        pupil={deleteTarget}
+        onArchived={() => {
+          if (deleteTarget && openId === deleteTarget.id) setOpenId(null);
+          setDeleteTarget(null);
+          setReloadTick(t => t + 1);
+        }}
+      />
 
       {/* Lesson history dialog */}
       <LessonHistoryDialog
