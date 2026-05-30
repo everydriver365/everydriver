@@ -146,7 +146,7 @@ export function CourseBonusTile({ instructorId }: CourseBonusTileProps) {
             Course &amp; loyalty bonus
           </div>
           <div style={{ fontSize: 12, color: C.textSecondary, marginTop: 1, lineHeight: 1.3 }}>
-            £50 per course · Plus rewards points
+            £50 per course · Rewards points
           </div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
