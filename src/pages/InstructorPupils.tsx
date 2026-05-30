@@ -54,6 +54,7 @@ import {
   Banknote,
   Send,
   X,
+  Archive,
 } from "lucide-react";
 
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
@@ -85,6 +86,7 @@ import { SegmentedControl } from "@/components/instructor/ui/SegmentedControl";
 import { StatCard } from "@/components/instructor/ui/StatCard";
 import { SearchInput } from "@/components/instructor/ui/SearchInput";
 import { ArchivePupilDialog } from "@/components/instructor/pupils/ArchivePupilDialog";
+import { ArchivedPupilsDialog } from "@/components/instructor/pupils/ArchivedPupilsDialog";
 
 interface Pupil {
   id: string;
@@ -161,6 +163,7 @@ export default function InstructorPupils() {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isImportOpen, setIsImportOpen] = useState(false);
+  const [isArchivedOpen, setIsArchivedOpen] = useState(false);
   const [isScheduleOpen, setIsScheduleOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isDrivingReportOpen, setIsDrivingReportOpen] = useState(false);
@@ -701,27 +704,25 @@ export default function InstructorPupils() {
           minHeight: "calc(100dvh - 56px)",
         }}
       >
-        {/* SummaryBar — live stats + Add pupil (Import CSV moved to Settings → Data & import) */}
+        {/* SummaryBar — live stats + actions (Import CSV moved to Settings → Data & import) */}
         <div
           style={{
             background: "#FFFFFF",
-            padding: "10px 12px",
+            padding: "10px 12px 12px",
             borderBottom: "1px solid #F2F4F8",
             display: "flex",
+            flexDirection: "column",
             alignItems: "center",
-            justifyContent: "space-between",
-            gap: 8,
+            gap: 10,
           }}
         >
           <div
             style={{
               display: "flex",
               alignItems: "center",
-              gap: 10,
-              minWidth: 0,
-              flex: 1,
-              overflowX: "auto",
-              scrollbarWidth: "none",
+              justifyContent: "space-between",
+              gap: 4,
+              width: "100%",
             }}
           >
             {(() => {
@@ -731,11 +732,10 @@ export default function InstructorPupils() {
                 { value: overdueCount, label: "Overdue",  colour: overdueCount > 0 ? "#CC2229" : "#0F2044" },
                 { value: lessonsToday, label: "Today",    colour: "#0F2044" },
                 { value: stats.passed, label: "Passed",   colour: "#0F2044" },
-                { value: archivedCount, label: "Archived", colour: "#0F2044" },
               ];
               return summaryStats.map((s, i, arr) => (
-                <div key={s.label} style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 1 }}>
+                <div key={s.label} style={{ display: "flex", alignItems: "center", gap: 4, flex: 1, minWidth: 0 }}>
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 1, flex: 1, minWidth: 0 }}>
                     <span
                       style={{
                         fontSize: 15, fontWeight: 800, color: s.colour,
@@ -756,32 +756,63 @@ export default function InstructorPupils() {
                     </span>
                   </div>
                   {i < arr.length - 1 && (
-                    <div style={{ width: 1, height: 22, background: "#F2F4F8" }} />
+                    <div style={{ width: 1, height: 22, background: "#F2F4F8", flexShrink: 0 }} />
                   )}
                 </div>
               ));
             })()}
           </div>
-          <button
-            type="button"
-            onClick={() => setIsAddOpen(true)}
+          <div
             style={{
-              background: "#0F2044",
-              borderRadius: 8,
-              padding: "6px 10px",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 4,
-              border: "none",
-              cursor: "pointer",
-              flexShrink: 0,
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: 8,
+              width: "100%",
             }}
           >
-            <Plus size={11} color="#FFFFFF" strokeWidth={2.5} />
-            <span style={{ fontSize: 11, fontWeight: 700, color: "#FFFFFF", fontFamily: "Poppins, sans-serif" }}>
-              Add pupil
-            </span>
-          </button>
+            <button
+              type="button"
+              onClick={() => setIsArchivedOpen(true)}
+              style={{
+                background: "#F2F4F8",
+                borderRadius: 12,
+                padding: "9px 10px",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 6,
+                border: "none",
+                cursor: "pointer",
+                minWidth: 0,
+              }}
+            >
+              <Archive size={13} color="#0F2044" strokeWidth={2.2} />
+              <span style={{ fontSize: 12, fontWeight: 700, color: "#0F2044", fontFamily: "Poppins, sans-serif" }}>
+                Archived ({archivedCount})
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsAddOpen(true)}
+              style={{
+                background: "#0F2044",
+                borderRadius: 12,
+                padding: "9px 10px",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 6,
+                border: "none",
+                cursor: "pointer",
+                minWidth: 0,
+              }}
+            >
+              <Plus size={13} color="#FFFFFF" strokeWidth={2.5} />
+              <span style={{ fontSize: 12, fontWeight: 700, color: "#FFFFFF", fontFamily: "Poppins, sans-serif" }}>
+                Add pupil
+              </span>
+            </button>
+          </div>
         </div>
 
 
@@ -1173,6 +1204,12 @@ export default function InstructorPupils() {
         onOpenChange={(o) => { if (!o) setArchiveTarget(null); }}
         pupil={archiveTarget ? { id: archiveTarget.id, name: archiveTarget.name } : null}
         onArchived={() => { setArchiveTarget(null); fetchPupils(); }}
+      />
+      <ArchivedPupilsDialog
+        open={isArchivedOpen}
+        onOpenChange={setIsArchivedOpen}
+        instructorId={instructorId}
+        onChanged={fetchPupils}
       />
     </InstructorPortalLayout>
   );
