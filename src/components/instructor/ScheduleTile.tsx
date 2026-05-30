@@ -177,7 +177,7 @@ export function ScheduleTile({ lessons, onAddLesson, onFillGaps, onLessonClick }
             gap: 10,
           }}
         >
-          <CalendarOff size={28} color="#C7C7CC" strokeWidth={1.75} />
+          <CalendarOff size={24} color="#C7C7CC" strokeWidth={1.75} />
           <div style={{ fontSize: 13, color: C.muted, fontWeight: 500, textAlign: "center" }}>
             Nothing scheduled for {tab === "today" ? "today" : "tomorrow"}
           </div>
