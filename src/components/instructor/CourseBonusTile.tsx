@@ -10,6 +10,7 @@ interface CourseBonusTileProps {
 
 const ROUTE = "/instructor/payments?tab=bonus";
 const REWARDS_ROUTE = "/instructor/rewards";
+const BONUS_PER_COURSE = 50;
 
 interface LoyaltyData {
   total_points: number;
