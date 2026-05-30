@@ -4,7 +4,7 @@ import {
   Wrench, Fuel, ClipboardCheck, ArrowLeftRight, Target,
   MessageSquare, MapPinned, BookOpen, Settings,
   Gift, Clock, Receipt, FileBarChart, BarChart3, Moon,
-  Megaphone, GraduationCap, Accessibility, Phone,
+  Megaphone, GraduationCap, Accessibility, Phone, Trophy,
   type LucideIcon,
 } from "lucide-react";
 import { CoursePlannerIcon } from "./coursePlannerIcon";
