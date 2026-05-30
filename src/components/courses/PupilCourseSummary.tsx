@@ -679,8 +679,3 @@ function AttendanceIcon({ status }: { status: string | null }) {
   return <Clock className="h-4 w-4" style={{ color: "#B45309" }} />;
 }
 
-// pupils table doesn't expose `address` everywhere typed, but the DB has a generic `address` column.
-// Avoid TS error if we ever drop it by widening here.
-declare module "react" {
-  interface Pupil { address_fallback?: string | null; }
-}
