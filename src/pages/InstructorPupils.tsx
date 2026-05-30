@@ -54,6 +54,7 @@ import {
   Banknote,
   Send,
   X,
+  Archive,
 } from "lucide-react";
 
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
@@ -85,6 +86,7 @@ import { SegmentedControl } from "@/components/instructor/ui/SegmentedControl";
 import { StatCard } from "@/components/instructor/ui/StatCard";
 import { SearchInput } from "@/components/instructor/ui/SearchInput";
 import { ArchivePupilDialog } from "@/components/instructor/pupils/ArchivePupilDialog";
+import { ArchivedPupilsDialog } from "@/components/instructor/pupils/ArchivedPupilsDialog";
 
 interface Pupil {
   id: string;
@@ -161,6 +163,7 @@ export default function InstructorPupils() {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isImportOpen, setIsImportOpen] = useState(false);
+  const [isArchivedOpen, setIsArchivedOpen] = useState(false);
   const [isScheduleOpen, setIsScheduleOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isDrivingReportOpen, setIsDrivingReportOpen] = useState(false);
