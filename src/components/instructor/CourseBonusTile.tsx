@@ -194,11 +194,16 @@ export function CourseBonusTile({ instructorId }: CourseBonusTileProps) {
             {badge.label}
           </span>
         </div>
-        {expanded ? (
-          <ChevronUp size={16} color={C.textSecondary} />
-        ) : (
-          <ChevronDown size={16} color={C.textSecondary} />
-        )}
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <span style={{ fontSize: 12, fontWeight: 600, color: C.textPrimary }}>
+            {totalPts.toLocaleString()} pts
+          </span>
+          {expanded ? (
+            <ChevronUp size={16} color={C.textSecondary} />
+          ) : (
+            <ChevronDown size={16} color={C.textSecondary} />
+          )}
+        </div>
       </button>
 
       {/* ── Expandable drawer ── */}
