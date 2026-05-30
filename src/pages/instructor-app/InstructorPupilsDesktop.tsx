@@ -637,23 +637,9 @@ export default function InstructorPupilsDesktop() {
     setReloadTick(t => t + 1);
   };
 
-  // ---- Delete pupil (soft delete) ----
+  // ---- Archive pupil (soft delete via ArchivePupilDialog) ----
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
-  const [deleting, setDeleting] = useState(false);
 
-  const handleConfirmDelete = async () => {
-    if (!deleteTarget) return;
-    setDeleting(true);
-    const { error } = await supabase.from("pupils")
-      .update({ deleted_at: new Date().toISOString() })
-      .eq("id", deleteTarget.id);
-    setDeleting(false);
-    if (error) { toast.error(`Could not delete: ${error.message}`); return; }
-    toast.success(`Removed ${deleteTarget.name}`);
-    if (openId === deleteTarget.id) setOpenId(null);
-    setDeleteTarget(null);
-    setReloadTick(t => t + 1);
-  };
 
   // ---- Lesson history dialog ----
   const [historyPupil, setHistoryPupil] = useState<{ id: string; name: string } | null>(null);
