@@ -165,6 +165,8 @@ export function NotificationsPage({ instructorId }: { instructorId: string }) {
           </div>
         </div>
       </section>
+
+      <RewardsSettingsCard instructorId={instructorId} />
     </>
   );
 }
