@@ -696,15 +696,25 @@ export default function InstructorPupils() {
         <div
           style={{
             background: "#FFFFFF",
-            padding: "10px 18px",
+            padding: "10px 12px",
             borderBottom: "1px solid #F2F4F8",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            gap: 10,
+            gap: 8,
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 14, minWidth: 0, flex: 1 }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              minWidth: 0,
+              flex: 1,
+              overflowX: "auto",
+              scrollbarWidth: "none",
+            }}
+          >
             {(() => {
               const overdueCount = pupils.filter((p) => (p.account_balance ?? 0) < 0).length;
               const summaryStats = [
@@ -714,11 +724,11 @@ export default function InstructorPupils() {
                 { value: stats.passed, label: "Passed",  colour: "#0F2044" },
               ];
               return summaryStats.map((s, i, arr) => (
-                <div key={s.label} style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                <div key={s.label} style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
                   <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 1 }}>
                     <span
                       style={{
-                        fontSize: 16, fontWeight: 800, color: s.colour,
+                        fontSize: 15, fontWeight: 800, color: s.colour,
                         lineHeight: 1.1, fontFamily: "Poppins, sans-serif",
                         fontVariantNumeric: "tabular-nums",
                       }}
@@ -728,7 +738,7 @@ export default function InstructorPupils() {
                     <span
                       style={{
                         fontSize: 9, fontWeight: 600, color: "#9CA3AF",
-                        textTransform: "uppercase", letterSpacing: 0.5,
+                        textTransform: "uppercase", letterSpacing: 0.4,
                         fontFamily: "Poppins, sans-serif",
                       }}
                     >
@@ -736,7 +746,7 @@ export default function InstructorPupils() {
                     </span>
                   </div>
                   {i < arr.length - 1 && (
-                    <div style={{ width: 1, height: 28, background: "#F2F4F8" }} />
+                    <div style={{ width: 1, height: 22, background: "#F2F4F8" }} />
                   )}
                 </div>
               ));
@@ -748,7 +758,7 @@ export default function InstructorPupils() {
             style={{
               background: "#0F2044",
               borderRadius: 8,
-              padding: "6px 12px",
+              padding: "6px 10px",
               display: "inline-flex",
               alignItems: "center",
               gap: 4,
@@ -763,6 +773,7 @@ export default function InstructorPupils() {
             </span>
           </button>
         </div>
+
 
         {/* SearchBar — pill input, no filter tabs */}
         <div style={{ background: "#FFFFFF", padding: "8px 14px", borderBottom: "1px solid #F2F4F8" }}>
