@@ -47,14 +47,11 @@ export function ArchivePupilDialog({ open, onOpenChange, pupil, onArchived }: Pr
   const handleConfirm = async () => {
     if (!pupil || !canSubmit) return;
     setSaving(true);
-    const { error } = await supabase
-      .from("pupils")
-      .update({
-        deleted_at: new Date().toISOString(),
-        archive_reason: reason,
-        archive_note: note.trim() || null,
-      })
-      .eq("id", pupil.id);
+    const { error } = await supabase.rpc("archive_pupil", {
+      p_pupil_id: pupil.id,
+      p_reason: reason,
+      p_note: note.trim() || null,
+    });
     setSaving(false);
     if (error) {
       toast.error(`Could not archive: ${error.message}`);
