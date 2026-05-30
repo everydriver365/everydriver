@@ -425,7 +425,6 @@ export function MobileHomeDSM2026({ instructorId, instructorName }: Props) {
               At a glance
             </p>
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              <ADIBadgeTrackerTile instructorId={instructorId} />
               <TaxEstimateTile instructorId={instructorId} />
               <CourseBonusTile instructorId={instructorId} />
               <CalendarSyncStatusTile instructorId={instructorId} />
