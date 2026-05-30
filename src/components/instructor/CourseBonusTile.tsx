@@ -34,6 +34,7 @@ export function CourseBonusTile({ instructorId }: CourseBonusTileProps) {
   const navigate = useNavigate();
   const [count, setCount] = useState<number | null>(null);
   const [loyalty, setLoyalty] = useState<LoyaltyData | null>(null);
+  const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
     if (!instructorId) return;
