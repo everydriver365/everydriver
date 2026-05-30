@@ -1146,6 +1146,13 @@ export default function InstructorPupils() {
           instructorId={instructorId}
         />
       )}
+
+      <ArchivePupilDialog
+        open={!!archiveTarget}
+        onOpenChange={(o) => { if (!o) setArchiveTarget(null); }}
+        pupil={archiveTarget ? { id: archiveTarget.id, name: archiveTarget.name } : null}
+        onArchived={() => { setArchiveTarget(null); fetchPupils(); }}
+      />
     </InstructorPortalLayout>
   );
 }
