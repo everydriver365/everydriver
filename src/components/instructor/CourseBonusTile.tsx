@@ -10,6 +10,7 @@ interface CourseBonusTileProps {
 
 const ROUTE = "/instructor/payments?tab=bonus";
 const REWARDS_ROUTE = "/instructor/rewards";
+const BONUS_PER_COURSE = 50;
 
 interface LoyaltyData {
   total_points: number;
@@ -148,7 +149,12 @@ export function CourseBonusTile({ instructorId }: CourseBonusTileProps) {
             £50 per course · Plus rewards points
           </div>
         </div>
-        <ChevronRight size={16} color={C.textSecondary} style={{ flexShrink: 0 }} />
+        <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+          <span style={{ fontSize: 15, fontWeight: 600, color: "#B45309", letterSpacing: -0.2 }}>
+            £{((count ?? 0) * BONUS_PER_COURSE).toLocaleString("en-GB")}
+          </span>
+          <ChevronRight size={16} color={C.textSecondary} />
+        </div>
       </button>
 
       {/* ── Tier row: medal + label + badge + toggle chevron ── */}
@@ -188,11 +194,16 @@ export function CourseBonusTile({ instructorId }: CourseBonusTileProps) {
             {badge.label}
           </span>
         </div>
-        {expanded ? (
-          <ChevronUp size={16} color={C.textSecondary} />
-        ) : (
-          <ChevronDown size={16} color={C.textSecondary} />
-        )}
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <span style={{ fontSize: 12, fontWeight: 600, color: C.textPrimary }}>
+            {totalPts.toLocaleString()} pts
+          </span>
+          {expanded ? (
+            <ChevronUp size={16} color={C.textSecondary} />
+          ) : (
+            <ChevronDown size={16} color={C.textSecondary} />
+          )}
+        </div>
       </button>
 
       {/* ── Expandable drawer ── */}
