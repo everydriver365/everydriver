@@ -128,7 +128,15 @@ export function ArchivedPupilsDialog({ open, onOpenChange, instructorId, onChang
                     </div>
                     <div className="text-[11px] text-muted-foreground mt-0.5">
                       Removed {formatDeletedAt(p.deleted_at)}
+                      {p.archive_reason && (
+                        <> · Reason: {archiveReasonLabel(p.archive_reason)}</>
+                      )}
                     </div>
+                    {p.archive_note && (
+                      <div className="text-[11px] text-muted-foreground mt-0.5 italic truncate">
+                        "{p.archive_note}"
+                      </div>
+                    )}
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <Button
