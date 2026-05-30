@@ -164,6 +164,8 @@ export const instructorPortalRoutes = (
 
     {/* Core — always accessible */}
     <Route path="/instructor" element={<InstructorPortal />} />
+    <Route path="/rewards" element={<RewardsPage />} />
+    <Route path="/instructor/rewards" element={<RewardsPage />} />
     <Route path="/instructor/quick-access/all" element={<InstructorQuickAccessAll />} />
     <Route path="/instructor/icon-preview" element={<IconPreviewPage />} />
     <Route path="/instructor/quick-actions-redesign" element={<QuickActionsRedesignDemo />} />
