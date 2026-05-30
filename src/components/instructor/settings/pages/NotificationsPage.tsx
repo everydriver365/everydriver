@@ -3,6 +3,7 @@ import { useInstructorNotificationSettings, type CategoryKey, type DeliveryCaden
 import { playNotificationSound } from "@/hooks/useMessageSound";
 import { useSettingsDirty } from "../SettingsDirtyContext";
 import { useState } from "react";
+import { RewardsSettingsCard } from "../RewardsSettingsCard";
 
 const CADENCE_OPTIONS: { value: DeliveryCadence; label: string }[] = [
   { value: "real_time",      label: "Real time" },
