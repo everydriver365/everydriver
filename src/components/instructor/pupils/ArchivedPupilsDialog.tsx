@@ -39,7 +39,6 @@ export function ArchivedPupilsDialog({ open, onOpenChange, instructorId, onChang
   const [rows, setRows] = useState<ArchivedPupil[]>([]);
   const [loading, setLoading] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
-  const [purgeTarget, setPurgeTarget] = useState<ArchivedPupil | null>(null);
 
   const fetchArchived = useCallback(async () => {
     if (!instructorId) { setRows([]); return; }
@@ -65,29 +64,11 @@ export function ArchivedPupilsDialog({ open, onOpenChange, instructorId, onChang
 
   const handleRestore = async (p: ArchivedPupil) => {
     setBusyId(p.id);
-    const { error } = await supabase
-      .from("pupils")
-      .update({ deleted_at: null, archive_reason: null, archive_note: null })
-      .eq("id", p.id);
+    const { error } = await supabase.rpc("restore_pupil", { p_pupil_id: p.id });
     setBusyId(null);
     if (error) { toast.error(`Could not restore: ${error.message}`); return; }
     toast.success(`Restored ${p.name}`);
     setRows((prev) => prev.filter((r) => r.id !== p.id));
-    onChanged?.();
-  };
-
-  const handlePurge = async () => {
-    if (!purgeTarget) return;
-    setBusyId(purgeTarget.id);
-    const { error } = await supabase
-      .from("pupils")
-      .delete()
-      .eq("id", purgeTarget.id);
-    setBusyId(null);
-    if (error) { toast.error(`Could not delete permanently: ${error.message}`); return; }
-    toast.success(`Permanently deleted ${purgeTarget.name}`);
-    setRows((prev) => prev.filter((r) => r.id !== purgeTarget.id));
-    setPurgeTarget(null);
     onChanged?.();
   };
 
