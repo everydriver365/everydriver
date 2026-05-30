@@ -71,7 +71,7 @@ export function ArchivedPupilsDialog({ open, onOpenChange, instructorId, onChang
     setBusyId(p.id);
     const { error } = await supabase
       .from("pupils")
-      .update({ deleted_at: null })
+      .update({ deleted_at: null, archive_reason: null, archive_note: null })
       .eq("id", p.id);
     setBusyId(null);
     if (error) { toast.error(`Could not restore: ${error.message}`); return; }
