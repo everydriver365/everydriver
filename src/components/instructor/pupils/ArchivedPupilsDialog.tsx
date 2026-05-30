@@ -129,16 +129,6 @@ export function ArchivedPupilsDialog({ open, onOpenChange, instructorId, onChang
                       )}
                       Restore
                     </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => setPurgeTarget(p)}
-                      disabled={busyId === p.id}
-                      className="text-destructive hover:text-destructive"
-                      aria-label="Delete permanently"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
                   </div>
                 </div>
               ))}
@@ -146,27 +136,6 @@ export function ArchivedPupilsDialog({ open, onOpenChange, instructorId, onChang
           )}
         </DialogContent>
       </Dialog>
-
-      <AlertDialog open={!!purgeTarget} onOpenChange={(o) => !o && setPurgeTarget(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete {purgeTarget?.name} permanently?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This cannot be undone. The pupil record will be removed for good.
-              Lesson history and payment records linked to this pupil may also be removed.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handlePurge}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Delete permanently
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </>
   );
 }
