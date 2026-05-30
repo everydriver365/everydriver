@@ -8,7 +8,7 @@ interface CourseBonusTileProps {
   instructorId: string;
 }
 
-const ROUTE = "/instructor/payments?tab=bonus";
+const ROUTE = "/instructor/rewards/explainer";
 const REWARDS_ROUTE = "/instructor/rewards/explainer";
 const BONUS_PER_COURSE = 50;
 
