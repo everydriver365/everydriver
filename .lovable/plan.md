@@ -1,75 +1,42 @@
-# DSM Pro Rewards — Build Plan
+## Plan: DSM Pro Rewards explainer page
 
-A loyalty/leaderboard system for instructors with Drive 365-branded pupil-facing badges. Fully additive: no existing tables, routes, or components modified.
+Two new mobile-only pages, no existing files modified except routes + the single "View rewards →" link.
 
-Given the size (6 new tables, 3 edge functions, ~15 components, 2 new pages, admin panel, pupil pages), I'll deliver this in **5 sequential phases** so each is reviewable and the preview stays working between them.
+### New files
 
-## Phase 1 — Database foundation
+1. **`src/pages/instructor/RewardsExplainerPage.tsx`** — the full scrolling explainer per spec
+   - Sections: header bar, hero banner (gradient `#1E4D9B → #0A3070`), "How you earn points" (3 cards: Course / Lesson / Compliance), "Points deductions" card, "Your tiers" (5 stacked cards with active highlight), "Year-end prize" gradient card, "How it's kept fair" card, bottom CTA → leaderboard + support link.
+   - Pulls current tier + total points live from `instructor_points` (current season) for the signed-in instructor via `useInstructorAuth` — no fallbacks; if missing show "🥉 Bronze · 0 pts" only when the row genuinely doesn't exist yet (empty state, not a hardcoded default).
+   - Sources point rules, tier thresholds, tier rewards, and emoji from existing `src/constants/rewardsConfig.ts` (extended only with any missing copy strings the spec lists that aren't already there) — point amounts in the UI are derived from `POINT_RULES`/`TIER_THRESHOLDS`/`TIER_REWARDS` rather than re-hardcoded.
+   - Lucide equivalents for the spec's Tabler icons: `ArrowLeft`, `Trophy`, `GraduationCap` (school), `Car`, `ShieldCheck`, `AlertTriangle`, `Info`, `Check`, `Calendar`.
+   - Back button uses `navigate(-1)`.
 
-One migration creating:
-- `instructor_points` (running total + tier per season)
-- `instructor_point_transactions` (audit trail, pending/confirmed/reversed)
-- `instructor_badges` (8 badge types, permanent flag for champion)
-- `leaderboard_seasons` (seeded with 2026)
-- `instructor_rewards` (claim + fulfilment tracking)
-- `instructor_complaints` (investigation workflow, held points)
-- Adds 3 columns to `instructors`: `show_on_leaderboard`, `notify_tier_change`, `notify_badge_earned`
-- All indexes from spec
-- Full RLS: instructors read their own rows; admins read all; writes via SECURITY DEFINER RPCs only
-- GRANTs for authenticated + service_role on every new table
+2. **`src/pages/instructor/RewardsLeaderboardPage.tsx`** — standalone mobile leaderboard
+   - Lifts the existing Leaderboard tab logic out of `RewardsPage.tsx` (re-implemented, not imported, so the existing page stays untouched).
+   - Same query: top 50 from `instructor_points` for current season, joined to `instructors`, filtered `is_network_placeholder = false` and `show_on_leaderboard = true`.
+   - Header bar matches the explainer page; back button → `navigate(-1)`.
 
-Also creates `src/constants/rewardsConfig.ts` with `POINT_RULES`, `TIER_THRESHOLDS`, `TIER_REWARDS`, `BADGE_DEFINITIONS`, `SEASON_PRIZES` exactly as specified.
+### Route changes (`src/routes/instructorPortalRoutes.tsx`)
 
-## Phase 2 — Edge functions + cron
+Add two new routes alongside the existing `/instructor/rewards` (which stays as-is, pointing at the current 4-tab `RewardsPage`):
 
-- `award-instructor-points` — validates `is_network_placeholder = false`, inserts transaction, upserts points, recalculates tier (with 30-day grace + monthly-only downgrades), triggers badge check + notifications, clamps at 0.
-- `check-instructor-badges` — evaluates all 8 conditions, inserts new badges, sends notification.
-- `process-rewards-cron` — daily: compliance ±points, loyalty milestones (idempotent), streaks; monthly: tier downgrades after grace.
-- `notify-rewards` — thin wrapper around existing `send-push-notification` + `process-email-queue` for the 7 reward notification types.
-- Registers daily pg_cron via `supabase--insert` (uses real project URL/anon key).
+- `/instructor/rewards/explainer` → `RewardsExplainerPage`
+- `/instructor/rewards/leaderboard` → `RewardsLeaderboardPage`
 
-## Phase 3 — Instructor dashboard surface
+Both also added under the no-prefix variants if the existing file mirrors them.
 
-- `LoyaltyTile` (gradient #1E4D9B → #0A3070, tier + points + progress to next tier + 3 mini stats, tappable → `/rewards`).
-- `PointsActivity` (last 10 transactions, emoji per category, amber "Under review" for pending).
-- Mounts both into `InstructorPortal.tsx` and `MobileHomeDSM2026` below the existing stats row only (no other layout changes).
+### Single existing-component edit
 
-## Phase 4 — Full rewards page + instructor settings
+`src/components/instructor/CourseBonusTile.tsx` — change only the destination of the "View rewards →" link from `/instructor/rewards` to `/instructor/rewards/explainer`. No other changes to that tile.
 
-- New route `/rewards` → `src/pages/instructor/RewardsPage.tsx` with 4 tabs: My Rewards / Leaderboard / Badges / Points History. Leaderboard anonymises by default and respects `show_on_leaderboard`; always filters `is_network_placeholder = false`; shows top 20 + own position.
-- Adds "DSM Pro Rewards" section to existing instructor settings page with the 3 toggles.
-- Reward claim button → inserts `instructor_rewards` row (tier-gated client + server side).
+### Styling notes
 
-## Phase 5 — Admin panel + Drive 365 pupil surfaces
+- Mobile only — wrapped in the standard instructor mobile portal container; no desktop breakpoint work.
+- All semantic colours via `var(--color-*)` tokens already used elsewhere in the portal; brand DSM blue `#1E4D9B`, gold `#FCD34D`, red `#D12E2E`, green `#059669`, amber `#B45309` inlined per spec.
+- Radii use the project's mobile scale (`12px` cards, pills `999px`) per the instructor radius memory.
+- No dark backgrounds outside the hero and year-end prize cards. Flat — no shadows/gradients elsewhere.
 
-Admin (route `/admin/rewards`, nav entry in `AdminPortal.tsx`):
-- Overview / Leaderboard / Rewards fulfilment / Complaints / Season Management tabs
-- Manual point award, CSV export, mark-fulfilled, uphold/dismiss complaints (reverses held points), close season + GoCardless payout trigger reusing `gocardless-instant-bank-pay`.
+### Out of scope
 
-Drive 365 pupil-facing (Drive 365 blue #0070C0, **no DSM branding, no points/ranks shown**):
-- `Drive365TierBadge` on `MiniWebsiteHome` next to `VerifiedProBadge` (Silver+ only).
-- `Drive365AchievementBadges` below — pupil-relevant badges only (five_star, pass_machine, on_a_roll, compliant, loyal_pro, champion).
-- New route `/rewards` in `everydriverRoutes.tsx` → `RewardsExplainerPage` (hero + 5 tier cards in pupil language + dynamic stats + trust statement).
-
-## Cross-cutting rules enforced everywhere
-
-- `.eq("is_network_placeholder", false)` on every instructor query (per project memory).
-- Live data only — no fallbacks; empty states where data is missing (e.g. `driving_test_results` currently empty).
-- EOL proxy: presence of linked `lesson_syllabus_updates` row.
-- Loyalty points idempotent (check existing transaction before insert).
-- Points clamped ≥ 0; tier downgrades only on 1st of month after 30-day grace.
-- 3 upheld complaints in a year → tier `suspended` + admin alert.
-- All payouts via GoCardless (no Stripe).
-
-## Technical notes
-
-- Adds `tier_drop_grace_period_until timestamptz` to `instructor_points` and a `suspended` value to its tier CHECK constraint (small additions vs. the spec, needed to implement the fairness rules).
-- Badge check for `compliant` requires "valid for 3+ months" — implemented by recording first-valid date in a transaction note and comparing on each daily cron run.
-- All new tables use SECURITY DEFINER RPCs for writes; client never writes points/badges/transactions directly.
-- Existing files touched (additive only): `InstructorPortal.tsx`, `MobileHomeDSM2026.tsx`, instructor settings page, `MiniWebsiteHome.tsx`, `everydriverRoutes.tsx`, `adminRoutes.tsx`, `AdminPortal.tsx` nav.
-
-## Open questions before I start
-
-1. **Settings page target** — which file is the current instructor settings page you want the 3 toggles added to? (There are multiple candidates under `src/pages/` and `src/components/settings/`.)
-2. **Scope confirmation** — happy with the 5-phase delivery, or do you want it all in one mega-commit?
-3. **Champion badge** — should `is_permanent = true` champions also show on Drive 365 mini-website even after the season closes? (Spec implies yes — confirming.)
+- No DB migrations, no edge functions, no changes to `RewardsPage.tsx`, `LoyaltyTile`, `PointsActivity`, admin pages, or any pupil-facing surface.
+- Desktop layout untouched.
