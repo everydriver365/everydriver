@@ -2003,6 +2003,16 @@ export default function PremiumPupilProfile() {
         instructorId={instructorId || null}
       />
 
+      <ArchivePupilDialog
+        open={archiveOpen}
+        onOpenChange={setArchiveOpen}
+        pupil={pupil ? { id: pupil.id, name: pupil.name } : null}
+        onArchived={() => {
+          queryClient.invalidateQueries({ queryKey: ["pupil", pupil?.id] });
+          navigate("/instructor/pupils");
+        }}
+      />
+
       <PupilNoteSheet
         open={noteOpen}
         onOpenChange={setNoteOpen}
