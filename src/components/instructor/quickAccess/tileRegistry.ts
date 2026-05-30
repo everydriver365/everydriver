@@ -95,6 +95,7 @@ export const QUICK_ACCESS_TILES: QuickAccessTile[] = [
   { id: "platform-updates", title: "Platform updates", subtitle: "News & ideas",          icon: PlatformUpdatesIcon, tone: "grey",   route: "/instructor/platform-updates" },
   { id: "call-answering",   title: "Call answering",   subtitle: "Divert mode",           icon: Phone,           tone: "blue",   route: "/instructor/settings/phone-ai" },
   { id: "rewards",          title: "DSM Pro Rewards",  subtitle: "Tier, points & badges", icon: Trophy,          tone: "amber",  route: "/instructor/rewards" },
+  { id: "adi-badge",        title: "ADI badge",        subtitle: "Renewal & grade",       icon: ShieldCheck,     tone: "green",  route: "/instructor/settings/account" },
 ];
 
 export const QUICK_ACCESS_TILES_BY_ID: Record<string, QuickAccessTile> =
