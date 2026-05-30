@@ -50,7 +50,7 @@ export function ArchivedPupilsDialog({ open, onOpenChange, instructorId, onChang
     setLoading(true);
     const { data, error } = await supabase
       .from("pupils")
-      .select("id, name, phone, email, deleted_at")
+      .select("id, name, phone, email, deleted_at, archive_reason, archive_note")
       .eq("instructor_id", instructorId)
       .not("deleted_at", "is", null)
       .order("deleted_at", { ascending: false });
