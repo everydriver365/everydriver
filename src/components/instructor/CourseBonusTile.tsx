@@ -105,8 +105,13 @@ export function CourseBonusTile({ instructorId }: CourseBonusTileProps) {
     navigate(REWARDS_ROUTE);
   };
 
-  // Loyalty strip — shown in earned & empty states once we have loyalty data
-  const renderLoyaltyStrip = () => {
+  const toggleExpanded = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setExpanded((v) => !v);
+  };
+
+  // Expandable loyalty section — collapsed by default, opens on tap
+  const renderLoyaltySection = () => {
     const total = loyalty?.total_points ?? 0;
     const currentTier = loyalty?.tier ?? tierForPoints(total);
     const next = currentTier === "suspended" ? null : nextTier(currentTier);
@@ -121,57 +126,93 @@ export function CourseBonusTile({ instructorId }: CourseBonusTileProps) {
     const ptsToNext = nextDef ? Math.max(0, nextDef.min - total) : 0;
 
     return (
-      <button
-        onClick={goRewards}
-        style={{
-          marginTop: 12,
-          width: "100%",
-          textAlign: "left",
-          background: "linear-gradient(135deg, #1E4D9B 0%, #0A3070 100%)",
-          borderRadius: 12,
-          padding: "10px 12px",
-          border: "none",
-          cursor: "pointer",
-          fontFamily: FONT,
-        }}
-        aria-label={`DSM Pro Rewards — ${tierDef.label}, ${total} points`}
-      >
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <span style={{ color: "#fff", fontSize: 12, fontWeight: 700 }}>
-            {tierDef.emoji} {tierDef.label}
-          </span>
-          <span style={{ color: "rgba(255,255,255,0.85)", fontSize: 11, fontWeight: 600 }}>
-            {total.toLocaleString()} pts
-          </span>
-        </div>
-        <div
+      <div style={{ marginTop: 10, borderTop: "1px solid #F0F1F4", paddingTop: 10 }}>
+        <button
+          onClick={toggleExpanded}
+          aria-expanded={expanded}
+          aria-controls="loyalty-panel"
           style={{
-            marginTop: 6,
-            height: 4,
             width: "100%",
-            background: "rgba(255,255,255,0.2)",
-            borderRadius: 999,
-            overflow: "hidden",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            background: "transparent",
+            border: "none",
+            padding: 0,
+            cursor: "pointer",
+            fontFamily: FONT,
           }}
         >
-          <div
+          <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 700, color: "#1E4D9B" }}>
+            <Trophy size={12} color="#1E4D9B" />
+            DSM Pro Rewards · {tierDef.emoji} {tierDef.label}
+          </span>
+          <ChevronDown
+            size={14}
+            color="#8a93a4"
             style={{
-              height: "100%",
-              width: `${progressPct}%`,
-              background: "#fff",
-              borderRadius: 999,
-              transition: "width 200ms ease",
+              transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
+              transition: "transform 200ms ease",
             }}
           />
-        </div>
-        <div style={{ marginTop: 4, fontSize: 10, color: "rgba(255,255,255,0.7)" }}>
-          {nextDef
-            ? `${ptsToNext.toLocaleString()} pts to ${nextDef.label}`
-            : "Top tier — keep it up!"}
-        </div>
-      </button>
+        </button>
+
+        {expanded && (
+          <button
+            id="loyalty-panel"
+            onClick={goRewards}
+            style={{
+              marginTop: 10,
+              width: "100%",
+              textAlign: "left",
+              background: "linear-gradient(135deg, #1E4D9B 0%, #0A3070 100%)",
+              borderRadius: 12,
+              padding: "10px 12px",
+              border: "none",
+              cursor: "pointer",
+              fontFamily: FONT,
+            }}
+            aria-label={`Open DSM Pro Rewards — ${tierDef.label}, ${total} points`}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ color: "#fff", fontSize: 12, fontWeight: 700 }}>
+                {tierDef.emoji} {tierDef.label}
+              </span>
+              <span style={{ color: "rgba(255,255,255,0.85)", fontSize: 11, fontWeight: 600 }}>
+                {total.toLocaleString()} pts
+              </span>
+            </div>
+            <div
+              style={{
+                marginTop: 6,
+                height: 4,
+                width: "100%",
+                background: "rgba(255,255,255,0.2)",
+                borderRadius: 999,
+                overflow: "hidden",
+              }}
+            >
+              <div
+                style={{
+                  height: "100%",
+                  width: `${progressPct}%`,
+                  background: "#fff",
+                  borderRadius: 999,
+                  transition: "width 200ms ease",
+                }}
+              />
+            </div>
+            <div style={{ marginTop: 4, fontSize: 10, color: "rgba(255,255,255,0.7)" }}>
+              {nextDef
+                ? `${ptsToNext.toLocaleString()} pts to ${nextDef.label}`
+                : "Top tier — keep it up!"}
+            </div>
+          </button>
+        )}
+      </div>
     );
   };
+
 
   // ─── Loading ─────────────────────────────────────────────
   if (count === null) {
