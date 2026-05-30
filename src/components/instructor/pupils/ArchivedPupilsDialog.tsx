@@ -8,6 +8,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { archiveReasonLabel } from "./ArchivePupilDialog";
 
 interface ArchivedPupil {
   id: string;
@@ -15,6 +16,8 @@ interface ArchivedPupil {
   phone: string | null;
   email: string | null;
   deleted_at: string;
+  archive_reason: string | null;
+  archive_note: string | null;
 }
 
 interface Props {
@@ -47,7 +50,7 @@ export function ArchivedPupilsDialog({ open, onOpenChange, instructorId, onChang
     setLoading(true);
     const { data, error } = await supabase
       .from("pupils")
-      .select("id, name, phone, email, deleted_at")
+      .select("id, name, phone, email, deleted_at, archive_reason, archive_note")
       .eq("instructor_id", instructorId)
       .not("deleted_at", "is", null)
       .order("deleted_at", { ascending: false });
@@ -68,7 +71,7 @@ export function ArchivedPupilsDialog({ open, onOpenChange, instructorId, onChang
     setBusyId(p.id);
     const { error } = await supabase
       .from("pupils")
-      .update({ deleted_at: null })
+      .update({ deleted_at: null, archive_reason: null, archive_note: null })
       .eq("id", p.id);
     setBusyId(null);
     if (error) { toast.error(`Could not restore: ${error.message}`); return; }
@@ -125,7 +128,15 @@ export function ArchivedPupilsDialog({ open, onOpenChange, instructorId, onChang
                     </div>
                     <div className="text-[11px] text-muted-foreground mt-0.5">
                       Removed {formatDeletedAt(p.deleted_at)}
+                      {p.archive_reason && (
+                        <> · Reason: {archiveReasonLabel(p.archive_reason)}</>
+                      )}
                     </div>
+                    {p.archive_note && (
+                      <div className="text-[11px] text-muted-foreground mt-0.5 italic truncate">
+                        "{p.archive_note}"
+                      </div>
+                    )}
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <Button

@@ -84,6 +84,7 @@ import { InstructorPageHeader } from "@/components/instructor/InstructorPageHead
 import { SegmentedControl } from "@/components/instructor/ui/SegmentedControl";
 import { StatCard } from "@/components/instructor/ui/StatCard";
 import { SearchInput } from "@/components/instructor/ui/SearchInput";
+import { ArchivePupilDialog } from "@/components/instructor/pupils/ArchivePupilDialog";
 
 interface Pupil {
   id: string;
@@ -534,20 +535,11 @@ export default function InstructorPupils() {
     }
   };
 
-  const handleDeletePupil = async (pupil: Pupil) => {
-    if (!confirm(`Are you sure you want to remove ${pupil.name}?`)) return;
-
-    try {
-      const { softDelete } = await import("@/lib/auditLogger");
-      await softDelete("pupils", pupil.id, instructorId || "", { name: pupil.name });
-
-      toast.success("Pupil removed");
-      fetchPupils();
-    } catch (error) {
-      console.error("Error deleting pupil:", error);
-      toast.error("Failed to remove pupil");
-    }
+  const [archiveTarget, setArchiveTarget] = useState<Pupil | null>(null);
+  const handleDeletePupil = (pupil: Pupil) => {
+    setArchiveTarget(pupil);
   };
+
 
   const handleUpdateProgress = async (pupil: Pupil, increment: number) => {
     const newLessons = (pupil.lessons_completed || 0) + increment;
@@ -1154,6 +1146,13 @@ export default function InstructorPupils() {
           instructorId={instructorId}
         />
       )}
+
+      <ArchivePupilDialog
+        open={!!archiveTarget}
+        onOpenChange={(o) => { if (!o) setArchiveTarget(null); }}
+        pupil={archiveTarget ? { id: archiveTarget.id, name: archiveTarget.name } : null}
+        onArchived={() => { setArchiveTarget(null); fetchPupils(); }}
+      />
     </InstructorPortalLayout>
   );
 }

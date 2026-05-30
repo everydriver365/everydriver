@@ -7,7 +7,7 @@ import {
   ArrowLeft, Phone, MessageSquare, Navigation, CalendarPlus, Edit3,
   Clock, MapPin, GraduationCap, Star, FileText, PoundSterling, Plus,
   ChevronRight, Mail, AlertCircle, Loader2, User, MoreHorizontal,
-  Eye, Glasses, Check, X,
+  Eye, Glasses, Check, X, Archive,
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -17,6 +17,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { PupilAvatar } from "@/components/instructor/PupilAvatar";
 import { EditPupilSheet } from "@/components/instructor/EditPupilSheet";
+import { ArchivePupilDialog } from "@/components/instructor/pupils/ArchivePupilDialog";
 import { PupilNoteSheet } from "@/components/instructor/PupilNoteSheet";
 import { AddLessonSheet } from "@/components/instructor/AddLessonSheet";
 import { LessonHistory } from "@/components/instructor/LessonHistory";
@@ -494,6 +495,7 @@ export default function PremiumPupilProfile() {
   const termsState = terms?.state ?? "required";
 
   const [editOpen, setEditOpen] = useState(false);
+  const [archiveOpen, setArchiveOpen] = useState(false);
   const [noteOpen, setNoteOpen] = useState(false);
   const [addLessonOpen, setAddLessonOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
@@ -642,6 +644,19 @@ export default function PremiumPupilProfile() {
           }}
         >
           <Edit3 size={14} /> Edit
+        </button>
+        <button
+          onClick={() => setArchiveOpen(true)}
+          aria-label="Archive pupil"
+          style={{
+            background: C.card, border: `1px solid ${C.hairline}`, borderRadius: 14,
+            padding: "9px 12px", display: "flex", alignItems: "center", gap: 6,
+            fontFamily: FONT, fontSize: 14, fontWeight: 600, color: "#C8434F",
+            boxShadow: SHADOW_CARD, cursor: "pointer",
+            transition: TRANSITION,
+          }}
+        >
+          <Archive size={14} />
         </button>
       </div>
     </div>
@@ -1986,6 +2001,16 @@ export default function PremiumPupilProfile() {
         onOpenChange={setEditOpen}
         pupil={pupil}
         instructorId={instructorId || null}
+      />
+
+      <ArchivePupilDialog
+        open={archiveOpen}
+        onOpenChange={setArchiveOpen}
+        pupil={pupil ? { id: pupil.id, name: pupil.name } : null}
+        onArchived={() => {
+          queryClient.invalidateQueries({ queryKey: ["pupil", pupil?.id] });
+          navigate("/instructor/pupils");
+        }}
       />
 
       <PupilNoteSheet

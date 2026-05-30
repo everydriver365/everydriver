@@ -17,10 +17,8 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutocomplete";
-import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
-  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+// AlertDialog imports removed — archive confirmation now uses ArchivePupilDialog
+
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Pencil, Trash2, Upload, Archive } from "lucide-react";
 import { buildPupilUpdatePayload } from "./pupilEditPayload";
@@ -28,6 +26,7 @@ import { PUPIL_SOURCE_OPTIONS } from "@/components/instructor/pupils/AddPupilShe
 import { AddPupilSheet } from "@/components/instructor/pupils/AddPupilSheet";
 import { ImportPupilsCsvDialog } from "@/components/instructor/pupils/ImportPupilsCsvDialog";
 import { ArchivedPupilsDialog } from "@/components/instructor/pupils/ArchivedPupilsDialog";
+import { ArchivePupilDialog } from "@/components/instructor/pupils/ArchivePupilDialog";
 import { AddLessonSheet } from "@/components/instructor/AddLessonSheet";
 import { PupilPaymentsManager } from "@/components/instructor/PupilPaymentsManager";
 import { usePupilLessonHistory } from "@/hooks/usePupilLessonHistory";
@@ -638,23 +637,9 @@ export default function InstructorPupilsDesktop() {
     setReloadTick(t => t + 1);
   };
 
-  // ---- Delete pupil (soft delete) ----
+  // ---- Archive pupil (soft delete via ArchivePupilDialog) ----
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
-  const [deleting, setDeleting] = useState(false);
 
-  const handleConfirmDelete = async () => {
-    if (!deleteTarget) return;
-    setDeleting(true);
-    const { error } = await supabase.from("pupils")
-      .update({ deleted_at: new Date().toISOString() })
-      .eq("id", deleteTarget.id);
-    setDeleting(false);
-    if (error) { toast.error(`Could not delete: ${error.message}`); return; }
-    toast.success(`Removed ${deleteTarget.name}`);
-    if (openId === deleteTarget.id) setOpenId(null);
-    setDeleteTarget(null);
-    setReloadTick(t => t + 1);
-  };
 
   // ---- Lesson history dialog ----
   const [historyPupil, setHistoryPupil] = useState<{ id: string; name: string } | null>(null);
@@ -1582,26 +1567,16 @@ export default function InstructorPupilsDesktop() {
         </DialogContent>
       </Dialog>
 
-      <AlertDialog open={!!deleteTarget} onOpenChange={(o) => { if (!o) setDeleteTarget(null); }}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Archive pupil?</AlertDialogTitle>
-            <AlertDialogDescription>
-              <strong>{deleteTarget?.name}</strong> will be moved to your Archived list. Lesson history, payments and notes are preserved — you can restore them at any time from the Archived button at the top of the page.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={(e) => { e.preventDefault(); handleConfirmDelete(); }}
-              disabled={deleting}
-              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
-            >
-              {deleting ? "Deleting…" : "Delete"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ArchivePupilDialog
+        open={!!deleteTarget}
+        onOpenChange={(o) => { if (!o) setDeleteTarget(null); }}
+        pupil={deleteTarget}
+        onArchived={() => {
+          if (deleteTarget && openId === deleteTarget.id) setOpenId(null);
+          setDeleteTarget(null);
+          setReloadTick(t => t + 1);
+        }}
+      />
 
       {/* Lesson history dialog */}
       <LessonHistoryDialog
