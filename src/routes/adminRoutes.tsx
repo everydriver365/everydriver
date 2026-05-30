@@ -130,6 +130,10 @@ export const adminRoutes = (
       path="/admin/network-instructors"
       element={<ProtectedAdminRoute><NetworkInstructors /></ProtectedAdminRoute>}
     />
+    <Route
+      path="/admin/rewards"
+      element={<ProtectedAdminRoute><AdminRewards /></ProtectedAdminRoute>}
+    />
   </>
 );
 
