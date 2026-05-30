@@ -84,6 +84,7 @@ import { InstructorPageHeader } from "@/components/instructor/InstructorPageHead
 import { SegmentedControl } from "@/components/instructor/ui/SegmentedControl";
 import { StatCard } from "@/components/instructor/ui/StatCard";
 import { SearchInput } from "@/components/instructor/ui/SearchInput";
+import { ArchivePupilDialog } from "@/components/instructor/pupils/ArchivePupilDialog";
 
 interface Pupil {
   id: string;
