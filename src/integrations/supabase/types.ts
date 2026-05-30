@@ -6491,6 +6491,54 @@ export type Database = {
           },
         ]
       }
+      instructor_badges: {
+        Row: {
+          badge_emoji: string
+          badge_key: string
+          badge_label: string
+          earned_at: string
+          id: string
+          instructor_id: string
+          is_permanent: boolean
+          season_year: number
+        }
+        Insert: {
+          badge_emoji: string
+          badge_key: string
+          badge_label: string
+          earned_at?: string
+          id?: string
+          instructor_id: string
+          is_permanent?: boolean
+          season_year?: number
+        }
+        Update: {
+          badge_emoji?: string
+          badge_key?: string
+          badge_label?: string
+          earned_at?: string
+          id?: string
+          instructor_id?: string
+          is_permanent?: boolean
+          season_year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_badges_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_badges_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       instructor_bank_details: {
         Row: {
           account_holder_name: string
@@ -6882,6 +6930,60 @@ export type Database = {
             foreignKeyName: "instructor_calendar_tokens_instructor_id_fkey"
             columns: ["instructor_id"]
             isOneToOne: true
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      instructor_complaints: {
+        Row: {
+          complaint_text: string | null
+          created_at: string
+          id: string
+          instructor_id: string
+          investigated_by: string | null
+          points_deducted: number
+          points_held: number
+          raised_by: string | null
+          resolved_at: string | null
+          status: string
+        }
+        Insert: {
+          complaint_text?: string | null
+          created_at?: string
+          id?: string
+          instructor_id: string
+          investigated_by?: string | null
+          points_deducted?: number
+          points_held?: number
+          raised_by?: string | null
+          resolved_at?: string | null
+          status?: string
+        }
+        Update: {
+          complaint_text?: string | null
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          investigated_by?: string | null
+          points_deducted?: number
+          points_held?: number
+          raised_by?: string | null
+          resolved_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_complaints_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_complaints_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
             referencedRelation: "public_instructors"
             referencedColumns: ["id"]
           },
@@ -8135,6 +8237,111 @@ export type Database = {
         }
         Relationships: []
       }
+      instructor_point_transactions: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          instructor_id: string
+          notes: string | null
+          points: number
+          reason: string
+          reference_id: string | null
+          season_year: number
+          status: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          id?: string
+          instructor_id: string
+          notes?: string | null
+          points: number
+          reason: string
+          reference_id?: string | null
+          season_year?: number
+          status?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          notes?: string | null
+          points?: number
+          reason?: string
+          reference_id?: string | null
+          season_year?: number
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_point_transactions_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_point_transactions_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      instructor_points: {
+        Row: {
+          created_at: string
+          id: string
+          instructor_id: string
+          season_year: number
+          tier: string
+          tier_drop_grace_period_until: string | null
+          tier_updated_at: string | null
+          total_points: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          instructor_id: string
+          season_year?: number
+          tier?: string
+          tier_drop_grace_period_until?: string | null
+          tier_updated_at?: string | null
+          total_points?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          season_year?: number
+          tier?: string
+          tier_drop_grace_period_until?: string | null
+          tier_updated_at?: string | null
+          total_points?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_points_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_points_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       instructor_postcode_rates: {
         Row: {
           created_at: string
@@ -8508,6 +8715,60 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      instructor_rewards: {
+        Row: {
+          claimed_at: string
+          fulfilled_at: string | null
+          fulfilled_by: string | null
+          id: string
+          instructor_id: string
+          notes: string | null
+          reward_key: string
+          reward_label: string
+          status: string
+          tier_required: string
+        }
+        Insert: {
+          claimed_at?: string
+          fulfilled_at?: string | null
+          fulfilled_by?: string | null
+          id?: string
+          instructor_id: string
+          notes?: string | null
+          reward_key: string
+          reward_label: string
+          status?: string
+          tier_required: string
+        }
+        Update: {
+          claimed_at?: string
+          fulfilled_at?: string | null
+          fulfilled_by?: string | null
+          id?: string
+          instructor_id?: string
+          notes?: string | null
+          reward_key?: string
+          reward_label?: string
+          status?: string
+          tier_required?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_rewards_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_rewards_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       instructor_standards_check: {
         Row: {
@@ -9727,6 +9988,8 @@ export type Database = {
           mot_certificate_url: string | null
           motability_friendly: boolean
           name: string
+          notify_badge_earned: boolean
+          notify_tier_change: boolean
           odd_hours_end: string
           odd_hours_start: string
           odd_hours_surcharge_amount: number
@@ -9756,6 +10019,7 @@ export type Database = {
           secondary_colour: string | null
           settings_sidebar_order: Json | null
           share_lesson_notes_with_pupil: boolean
+          show_on_leaderboard: boolean
           sidebar_critical: Json | null
           sidebar_pinned: Json | null
           slot_increment_minutes: number
@@ -9946,6 +10210,8 @@ export type Database = {
           mot_certificate_url?: string | null
           motability_friendly?: boolean
           name: string
+          notify_badge_earned?: boolean
+          notify_tier_change?: boolean
           odd_hours_end?: string
           odd_hours_start?: string
           odd_hours_surcharge_amount?: number
@@ -9975,6 +10241,7 @@ export type Database = {
           secondary_colour?: string | null
           settings_sidebar_order?: Json | null
           share_lesson_notes_with_pupil?: boolean
+          show_on_leaderboard?: boolean
           sidebar_critical?: Json | null
           sidebar_pinned?: Json | null
           slot_increment_minutes?: number
@@ -10165,6 +10432,8 @@ export type Database = {
           mot_certificate_url?: string | null
           motability_friendly?: boolean
           name?: string
+          notify_badge_earned?: boolean
+          notify_tier_change?: boolean
           odd_hours_end?: string
           odd_hours_start?: string
           odd_hours_surcharge_amount?: number
@@ -10194,6 +10463,7 @@ export type Database = {
           secondary_colour?: string | null
           settings_sidebar_order?: Json | null
           share_lesson_notes_with_pupil?: boolean
+          show_on_leaderboard?: boolean
           sidebar_critical?: Json | null
           sidebar_pinned?: Json | null
           slot_increment_minutes?: number
@@ -10334,6 +10604,60 @@ export type Database = {
             columns: ["pupil_id"]
             isOneToOne: false
             referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leaderboard_seasons: {
+        Row: {
+          created_at: string
+          end_date: string
+          id: string
+          prize_1st: number
+          prize_2nd: number
+          prize_3rd: number
+          season_year: number
+          start_date: string
+          status: string
+          winner_instructor_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          end_date: string
+          id?: string
+          prize_1st?: number
+          prize_2nd?: number
+          prize_3rd?: number
+          season_year: number
+          start_date: string
+          status?: string
+          winner_instructor_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          end_date?: string
+          id?: string
+          prize_1st?: number
+          prize_2nd?: number
+          prize_3rd?: number
+          season_year?: number
+          start_date?: string
+          status?: string
+          winner_instructor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leaderboard_seasons_winner_instructor_id_fkey"
+            columns: ["winner_instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leaderboard_seasons_winner_instructor_id_fkey"
+            columns: ["winner_instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
             referencedColumns: ["id"]
           },
         ]
