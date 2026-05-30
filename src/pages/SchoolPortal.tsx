@@ -25,6 +25,7 @@ import SchoolBrandingSection from "@/components/school/SchoolBrandingSection";
 import SchoolBookingPageSection from "@/components/school/SchoolBookingPageSection";
 import SchoolNotificationsSection from "@/components/school/SchoolNotificationsSection";
 import SchoolCoursesSection from "@/components/school/SchoolCoursesSection";
+import SchoolCourseSummariesSection from "@/components/school/SchoolCourseSummariesSection";
 import SchoolBNPLSection from "@/components/school/SchoolBNPLSection";
 import SchoolPaymentGatewaysSection from "@/components/school/SchoolPaymentGatewaysSection";
 import SchoolEnquiriesSection from "@/components/school/SchoolEnquiriesSection";
@@ -127,6 +128,8 @@ export default function SchoolPortal() {
         return <SchoolCalendarSection instructorIds={instructorIds} />;
       case "courses":
         return <SchoolCoursesSection schoolId={school.id} instructorIds={instructorIds} />;
+      case "course-summaries":
+        return <SchoolCourseSummariesSection instructorIds={instructorIds} />;
       case "enquiries":
         return <SchoolEnquiriesSection instructorIds={instructorIds} />;
       case "messages":
