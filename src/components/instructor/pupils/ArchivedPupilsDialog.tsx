@@ -1,13 +1,9 @@
 import { useEffect, useState, useCallback } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Loader2, Undo2, Archive, Trash2 } from "lucide-react";
+import { Loader2, Undo2, Archive } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
-  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { archiveReasonLabel } from "./ArchivePupilDialog";
 
 interface ArchivedPupil {
@@ -43,7 +39,6 @@ export function ArchivedPupilsDialog({ open, onOpenChange, instructorId, onChang
   const [rows, setRows] = useState<ArchivedPupil[]>([]);
   const [loading, setLoading] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
-  const [purgeTarget, setPurgeTarget] = useState<ArchivedPupil | null>(null);
 
   const fetchArchived = useCallback(async () => {
     if (!instructorId) { setRows([]); return; }
@@ -69,29 +64,11 @@ export function ArchivedPupilsDialog({ open, onOpenChange, instructorId, onChang
 
   const handleRestore = async (p: ArchivedPupil) => {
     setBusyId(p.id);
-    const { error } = await supabase
-      .from("pupils")
-      .update({ deleted_at: null, archive_reason: null, archive_note: null })
-      .eq("id", p.id);
+    const { error } = await supabase.rpc("restore_pupil", { p_pupil_id: p.id });
     setBusyId(null);
     if (error) { toast.error(`Could not restore: ${error.message}`); return; }
     toast.success(`Restored ${p.name}`);
     setRows((prev) => prev.filter((r) => r.id !== p.id));
-    onChanged?.();
-  };
-
-  const handlePurge = async () => {
-    if (!purgeTarget) return;
-    setBusyId(purgeTarget.id);
-    const { error } = await supabase
-      .from("pupils")
-      .delete()
-      .eq("id", purgeTarget.id);
-    setBusyId(null);
-    if (error) { toast.error(`Could not delete permanently: ${error.message}`); return; }
-    toast.success(`Permanently deleted ${purgeTarget.name}`);
-    setRows((prev) => prev.filter((r) => r.id !== purgeTarget.id));
-    setPurgeTarget(null);
     onChanged?.();
   };
 
@@ -152,16 +129,6 @@ export function ArchivedPupilsDialog({ open, onOpenChange, instructorId, onChang
                       )}
                       Restore
                     </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => setPurgeTarget(p)}
-                      disabled={busyId === p.id}
-                      className="text-destructive hover:text-destructive"
-                      aria-label="Delete permanently"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
                   </div>
                 </div>
               ))}
@@ -169,27 +136,6 @@ export function ArchivedPupilsDialog({ open, onOpenChange, instructorId, onChang
           )}
         </DialogContent>
       </Dialog>
-
-      <AlertDialog open={!!purgeTarget} onOpenChange={(o) => !o && setPurgeTarget(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete {purgeTarget?.name} permanently?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This cannot be undone. The pupil record will be removed for good.
-              Lesson history and payment records linked to this pupil may also be removed.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handlePurge}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Delete permanently
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </>
   );
 }
