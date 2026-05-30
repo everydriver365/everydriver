@@ -153,6 +153,7 @@ export default function InstructorPupils() {
   };
   
   const [pupils, setPupils] = useState<Pupil[]>([]);
+  const [archivedCount, setArchivedCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedPupil, setSelectedPupil] = useState<Pupil | null>(null);
