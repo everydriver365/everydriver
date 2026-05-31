@@ -53,6 +53,10 @@ serve(async (req: Request) => {
           "MERCHANT_PROFILE_READ",
           "ORDERS_WRITE",
           "ORDERS_READ",
+          "INVOICES_WRITE",
+          "INVOICES_READ",
+          "CUSTOMERS_WRITE",
+          "CUSTOMERS_READ",
         ].join("+");
 
         const authorizeUrl = `${baseUrl}/oauth2/authorize?client_id=${appId}&scope=${scopes}&session=false&state=${encodeURIComponent(state)}&redirect_uri=${encodeURIComponent(redirect_uri)}`;
