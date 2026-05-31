@@ -61,7 +61,7 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
   const [recipientEmail, setRecipientEmail] = useState("");
   const [dueDate, setDueDate] = useState(todayPlus(7));
   const [description, setDescription] = useState("");
-  const [serviceFeePounds, setServiceFeePounds] = useState("0");
+  const [serviceFeePounds, setServiceFeePounds] = useState("1");
   const [items, setItems] = useState<LineItemInput[]>([
     { name: "Driving lesson", quantity: 1, amount_pounds: "" },
   ]);
