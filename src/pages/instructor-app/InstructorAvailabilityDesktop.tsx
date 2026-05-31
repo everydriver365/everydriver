@@ -19,6 +19,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
+import { StandardIntensiveHours } from "@/components/instructor/StandardIntensiveHours";
+
 
 // ---------- types ----------
 type Window = { start: string; end: string };
