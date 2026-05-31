@@ -337,6 +337,9 @@ export function useInstructorPaymentsData(instructorId: string | undefined): Pay
           stats: {
             receivedMonth,
             receivedCount: monthTx.length,
+            grossMonth,
+            refundsMonth,
+            refundsCount: refundTx.length,
             outstanding: outstandingTotal,
             outstandingPupils: outstanding.length,
             nextPayout: +pendingPayout.toFixed(2),
