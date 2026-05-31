@@ -147,6 +147,7 @@ export function PupilCourseSummary({ pupilId, onBack, backHref }: Props) {
   const [activity, setActivity] = useState<ActivityRow[]>([]);
   const [working, setWorking] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [invoiceOpen, setInvoiceOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
