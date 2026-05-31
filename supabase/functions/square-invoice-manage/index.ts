@@ -160,7 +160,7 @@ serve(async (req) => {
 
     // ====== CREATE ======
     if (body.action === "create") {
-      const { pupil_id, recipient_email, recipient_name, line_items, service_fee_cents = 0, due_date, description, accepted_payment_methods } = body;
+      const { pupil_id, recipient_email, recipient_name, line_items, service_fee_cents = 0, due_date, description, accepted_payment_methods, klarna_enabled } = body;
 
       // Build accepted methods — card is always on (Square requires at least one).
       const apm = {
