@@ -88,6 +88,8 @@ export function CreateQuoteDialog({ scope, instructorId, onCreated }: Props) {
           .from("pupils")
           .select("id, name, email, phone, postcode")
           .eq("instructor_id", targetInstructor)
+          .eq("status", "active")
+          .is("deleted_at", null)
           .order("name", { ascending: true })
           .limit(500);
         setPupils((data as PupilOption[]) || []);
