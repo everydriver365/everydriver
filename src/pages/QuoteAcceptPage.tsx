@@ -9,7 +9,7 @@ import { Loader2, Check, Clock, FileText, AlertTriangle, X, Phone, Mail, MapPin 
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { Helmet } from "react-helmet-async";
+
 
 interface QuoteData {
   id: string;
