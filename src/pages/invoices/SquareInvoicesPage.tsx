@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Download, ExternalLink, FileDown, RefreshCw, Search, Trash2, X } from "lucide-react";
+import { ArrowLeft, Download, ExternalLink, FileDown, RefreshCw, RotateCw, Search, Trash2, X } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -95,6 +95,8 @@ export default function SquareInvoicesPage({ scope }: { scope: Scope }) {
   const [clearpayFilter, setClearpayFilter] = useState<"all" | "offered">("all");
   const [pendingDelete, setPendingDelete] = useState<InvoiceRow | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [syncingId, setSyncingId] = useState<string | null>(null);
+
 
 
 
@@ -155,9 +157,59 @@ export default function SquareInvoicesPage({ scope }: { scope: Scope }) {
     }
   };
 
+  const syncOne = async (invoiceRowId: string, silent = false) => {
+    const { data, error: e } = await supabase.functions.invoke("square-invoice-manage", {
+      body: { action: "sync_status", invoice_row_id: invoiceRowId },
+    });
+    if (e) {
+      if (!silent) toast({ title: "Sync failed", description: e.message, variant: "destructive" });
+      return null;
+    }
+    return data as { success: boolean; status: string; changed: boolean; credited: boolean } | null;
+  };
+
+  const handleManualSync = async (row: InvoiceRow) => {
+    setSyncingId(row.id);
+    try {
+      const res = await syncOne(row.id);
+      if (res) {
+        if (res.changed) {
+          toast({
+            title: "Invoice updated",
+            description: `Status is now ${res.status}${res.credited ? " · pupil credited" : ""}.`,
+          });
+        } else {
+          toast({ title: "No change", description: `Square still reports ${res.status}.` });
+        }
+        await load();
+      }
+    } finally {
+      setSyncingId(null);
+    }
+  };
+
+  const refreshAndSync = async () => {
+    await load();
+    // After reload, sync any still-open invoices from Square in parallel (cap 10).
+    const open = (rows.length ? rows : []).filter((r) =>
+      ["unpaid", "sent", "partially_paid", "draft", "overdue"].includes(r.status)
+    );
+    // Use latest rows after load via functional set — re-pull from state via a microtask
+    // (we operate on what's on screen; capped to avoid hammering).
+    const toSync = open.slice(0, 10);
+    if (toSync.length === 0) return;
+    const results = await Promise.all(toSync.map((r) => syncOne(r.id, true)));
+    const changedCount = results.filter((r) => r?.changed).length;
+    if (changedCount > 0) {
+      toast({ title: "Synced with Square", description: `${changedCount} invoice${changedCount === 1 ? "" : "s"} updated.` });
+      await load();
+    }
+  };
+
   useEffect(() => {
     load();
   }, []);
+
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -306,10 +358,11 @@ export default function SquareInvoicesPage({ scope }: { scope: Scope }) {
               <FileDown className="h-4 w-4 mr-1" />
               Export CSV
             </Button>
-            <Button onClick={load} disabled={loading} size="sm" variant="outline">
+            <Button onClick={refreshAndSync} disabled={loading} size="sm" variant="outline" title="Reload and pull live status from Square">
               <RefreshCw className={`h-4 w-4 mr-1 ${loading ? "animate-spin" : ""}`} />
               Refresh
             </Button>
+
 
           </div>
         </div>
@@ -557,6 +610,18 @@ export default function SquareInvoicesPage({ scope }: { scope: Scope }) {
                                 </a>
                               </Button>
                             )}
+                            {!["paid", "cancelled", "canceled", "refunded"].includes(r.status) && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                title="Sync status from Square"
+                                disabled={syncingId === r.id}
+                                onClick={() => handleManualSync(r)}
+                              >
+                                <RotateCw className={`h-3.5 w-3.5 ${syncingId === r.id ? "animate-spin" : ""}`} />
+                              </Button>
+                            )}
+
                             {(() => {
                               const isPaid = r.status === "paid";
                               const canDelete = !isPaid || scope === "admin";

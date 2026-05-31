@@ -1,34 +1,44 @@
-# Soft-delete invoices
+## What's happening
 
-Add the ability to remove an invoice from the instructor/admin Invoices list without losing the underlying record or Square history.
+Kenneth's invoice (`inv:0-ChD3ECCz78_V-xeZ1thOULPzEPMI`, £2.00, created 10:38 today) is still `unpaid` in our DB even though it's paid in Square.
 
-## Behaviour
+Looking at `webhook_delivery_log`, Square is delivering `payment.updated` / `payment.completed` events, but **no `invoice.payment_made` events are arriving**. Our webhook already has the right `invoice.payment_made` handler (square-webhook lines 445-502) — the events just aren't being sent.
 
-- Each invoice row gets a **Delete** action (in the row's overflow menu).
-- Clicking it opens a **confirmation dialog** ("Delete this invoice? It will be hidden from your list but kept for your records and on Square.") with **Cancel / Delete** buttons.
-- On confirm: stamps `deleted_at = now()` and `deleted_by = auth.uid()` on `square_invoices`. The Square invoice itself is **not** cancelled — this is a local hide only.
-- Deleted invoices disappear from the list immediately (we filter `deleted_at IS NULL`).
-- **Guard:** paid invoices cannot be deleted (so pupil balance / payment_history stays auditable). The menu item is disabled with a tooltip "Paid invoices cannot be deleted". Admins can still delete paid ones.
-- No new "Trash" view in this pass — restore is admin-only via DB if needed. Can add a Trash tab later if you want.
+Two problems compound this:
 
-## Technical
+1. **`payment.updated`** is received but never tries to match a `square_invoices` row. It only matches via `payment_intents`, so invoice payments slip through.
+2. The user has no way to force a sync from the UI — Refresh only re-reads our DB.
 
-1. **Migration** — add to `public.square_invoices`:
-   - `deleted_at timestamptz`
-   - `deleted_by uuid`
-   - partial index `(issuer_instructor_id) WHERE deleted_at IS NULL`
-   - RLS: add update policy allowing the issuing instructor (via `get_instructor_id_for_user(auth.uid())`) to set `deleted_at`, and admins to soft-delete any.
+Separately: this invoice was created with `recipient_pupil_id = null`, so even when we do mark it paid, the pupil-balance credit will be skipped. That's a CreateInvoiceDialog bug to look at after the immediate fix.
 
-2. **`SquareInvoicesPage.tsx`**
-   - Add `.is("deleted_at", null)` to the load query.
-   - Add row action → `AlertDialog` confirm → `update({ deleted_at: new Date().toISOString(), deleted_by: user.id })`.
-   - Optimistic remove from `rows`, toast on success/failure.
-   - Hide/disable the action for `status === 'paid'` unless `scope === 'admin'`.
+## Plan
 
-3. No edge-function changes. Webhook continues to update the row by `square_invoice_id` even when soft-deleted (so if a late payment lands, the record stays consistent — just hidden).
+### 1. Webhook fallback: match invoices via `payment.updated`
+In `supabase/functions/square-webhook/index.ts`, inside the existing `payment.completed` / `payment.updated` case, after the `payment_intents` lookup fails, add:
+- If `orderId` is set, look up `square_invoices` by `square_order_id = orderId` (only rows with `status != 'paid'` and `deleted_at is null`).
+- If found, run the same update + credit logic that `invoice.payment_made` runs (set `status='paid'`, `paid_at=now`, `last_event_at=now`; if `recipient_pupil_id` present and `issuer_type='instructor'`, call `increment_pupil_balance` and insert a `payment_history` row keyed by `external_payment_ref = square:<paymentId>` for idempotency).
+- Then `break` so the rest of the payment path doesn't double-process.
+
+This makes paid-invoice auto-update work even without `invoice.*` subscriptions.
+
+### 2. On-demand sync action
+Add a new action `sync_status` to `supabase/functions/square-invoice-manage/index.ts`:
+- Input: `{ action: "sync_status", invoice_id }`.
+- Auth: same as existing actions (instructor/admin own the row).
+- Fetches `/v2/invoices/{square_invoice_id}` from Square, maps `status` (`PAID`→`paid`, `CANCELED`→`cancelled`, `REFUNDED`→`refunded`, `UNPAID`→`unpaid`, `PARTIALLY_PAID`→`partially_paid`, `PUBLISHED`→`sent`).
+- Updates the `square_invoices` row and runs the same credit-pupil logic on transition into `paid` (idempotent by `external_payment_ref`).
+
+### 3. UI: per-row Sync + auto-sync on Refresh
+In `src/pages/invoices/SquareInvoicesPage.tsx`:
+- Add a small "Sync" icon button on each non-`paid`, non-`cancelled` row that calls `sync_status` for that invoice, then reloads.
+- On the existing Refresh button: after reloading rows, fire `sync_status` in parallel for any rows still `unpaid` / `sent` / `partially_paid` (cap at ~10 to avoid hammering), then reload again. Show a subtle toast if any moved to `paid`.
+
+### 4. Docs/setup note (no code)
+At the end of the response, tell the user to add these events to their Square webhook subscription so future invoices auto-update without needing Refresh: `invoice.payment_made`, `invoice.published`, `invoice.updated`, `invoice.canceled`, `invoice.refunded`. The webhook handler already supports all of them.
 
 ## Out of scope
+- Fixing why `recipient_pupil_id` is null on creation (separate follow-up).
+- Backfilling old paid-but-not-synced invoices (the Refresh+sync pass will handle them as soon as the user visits the page).
 
-- Hard delete / purge.
-- Restore UI (DB-only for now).
-- Cancelling the invoice on Square (separate "Cancel" action already exists / can be added separately).
+## Immediate side-effect
+Once shipped, hitting Refresh on the invoices page will mark Kenneth's invoice as paid (and credit his balance if `recipient_pupil_id` gets set; otherwise it just marks paid).

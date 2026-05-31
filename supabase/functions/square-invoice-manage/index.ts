@@ -39,11 +39,17 @@ interface ActionBody {
   invoice_row_id: string;
 }
 
+interface SyncStatusBody {
+  action: "sync_status";
+  invoice_row_id: string;
+}
+
 interface ListLocationsBody {
   action: "list_locations";
 }
 
-type Body = CreateBody | ActionBody | ListLocationsBody;
+type Body = CreateBody | ActionBody | SyncStatusBody | ListLocationsBody;
+
 
 function ok(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -499,6 +505,97 @@ serve(async (req) => {
         .eq("id", row.id);
       return ok({ success: true });
     }
+    // ====== SYNC STATUS (pull live from Square) ======
+    if (body.action === "sync_status") {
+      const { data: row, error: rowErr } = await supabase
+        .from("square_invoices")
+        .select("*")
+        .eq("id", body.invoice_row_id)
+        .maybeSingle();
+      if (rowErr || !row) return err("Invoice not found", 404);
+
+      const ownsRow =
+        (row.issuer_type === "instructor" && row.issuer_instructor_id === instructor?.id) ||
+        (row.issuer_type === "school" && isAdmin) ||
+        isAdmin;
+      if (!ownsRow) return err("Not authorised for this invoice", 403);
+
+      let squareToken = "";
+      if (row.issuer_type === "instructor" && instructor?.square_access_token_encrypted) {
+        squareToken = instructor.square_access_token_encrypted;
+      } else if (row.issuer_type === "school") {
+        squareToken = Deno.env.get("SQUARE_ACCESS_TOKEN") || "";
+      }
+      if (!squareToken) return err("Square credentials unavailable", 500);
+      if (!row.square_invoice_id) return err("Missing Square invoice id", 400);
+
+      const getRes = await squareFetch(`/v2/invoices/${row.square_invoice_id}`, squareToken);
+      if (!getRes.ok) return err("Failed to fetch invoice from Square", 502, getRes.json);
+      const invoice = getRes.json?.invoice;
+      const sqStatus = String(invoice?.status || "").toUpperCase();
+      const statusMap: Record<string, string> = {
+        PAID: "paid",
+        CANCELED: "cancelled",
+        CANCELLED: "cancelled",
+        REFUNDED: "refunded",
+        UNPAID: "unpaid",
+        PARTIALLY_PAID: "partially_paid",
+        PARTIALLY_REFUNDED: "partially_refunded",
+        PUBLISHED: "sent",
+        SCHEDULED: "sent",
+        DRAFT: "draft",
+        FAILED: "failed",
+      };
+      const newStatus = statusMap[sqStatus] || row.status;
+
+      const updates: Record<string, unknown> = {
+        status: newStatus,
+        last_event_at: new Date().toISOString(),
+      };
+      if (newStatus === "paid" && !row.paid_at) updates.paid_at = new Date().toISOString();
+      if (newStatus === "cancelled" && !row.cancelled_at) updates.cancelled_at = new Date().toISOString();
+
+      await supabase.from("square_invoices").update(updates).eq("id", row.id);
+
+      let credited = false;
+      if (
+        newStatus === "paid" &&
+        row.status !== "paid" &&
+        row.issuer_type === "instructor" &&
+        row.recipient_pupil_id &&
+        row.amount_cents > 0
+      ) {
+        const externalRef = `square-invoice:${row.square_invoice_id}`;
+        const { data: existing } = await supabase
+          .from("payment_history")
+          .select("id")
+          .eq("external_payment_ref", externalRef)
+          .maybeSingle();
+        if (!existing) {
+          const amountPounds = row.amount_cents / 100;
+          try {
+            await supabase.rpc("increment_pupil_balance", {
+              p_pupil_id: row.recipient_pupil_id,
+              p_amount: amountPounds,
+            });
+            await supabase.from("payment_history").insert({
+              pupil_id: row.recipient_pupil_id,
+              instructor_id: row.issuer_instructor_id,
+              amount: amountPounds,
+              payment_method: "Square",
+              external_payment_ref: externalRef,
+              notes: `Square invoice payment (${row.square_invoice_id}) — synced`,
+            });
+            credited = true;
+          } catch (e) {
+            console.error("[square-invoice] credit pupil on sync failed", e);
+          }
+        }
+      }
+
+      return ok({ success: true, status: newStatus, changed: newStatus !== row.status, credited });
+    }
+
 
     // ====== LIST LOCATIONS ======
     if (body.action === "list_locations") {
