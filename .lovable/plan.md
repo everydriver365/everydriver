@@ -1,25 +1,26 @@
-# Remove app-wide dictation mic + fix collapsed input layouts
+The invoice is not sending because the connected Square account token does not currently have the required `CUSTOMERS_WRITE` permission. The latest backend log shows Square rejecting customer creation with:
 
-## Root cause
-`src/components/ui/input.tsx` was customised to:
-1. Default `enableDictation = true` → every text input renders a mic button inside it.
-2. Wrap the native `<input>` in `<div className="relative flex items-center w-full">` so the mic icon can be absolutely positioned. But `className` (with grid utilities like `col-span-6`) is forwarded to the inner `<input>`, not the wrapper div — so in grid layouts (e.g. invoice line items) all inputs collapse into the first grid track and render as ~40px squares.
+`INSUFFICIENT_SCOPES: The merchant must authorize your application for CUSTOMERS_WRITE`
 
-Result on `/instructor/invoices` New invoice → Line items: three tiny boxes stacked at left under the NAME column, each with a mic icon.
+The code already requests `CUSTOMERS_WRITE` for new Square connections, so the likely issue is that the existing Square connection was authorised before that scope was added. Existing OAuth tokens do not automatically gain new permissions.
 
-## Fix
-Replace `src/components/ui/input.tsx` with the standard shadcn Input primitive:
+Plan:
 
-- No wrapper div, no dictation button, no `enableDictation`/`dictationLang` props.
-- `className` applies directly to `<input>` — grid utilities work again.
-- Keeps the same `forwardRef`, displayName, default styling, and exported `InputProps` (with the two extra props removed) so existing imports continue to compile.
+1. Update the Square invoice backend error handling
+   - Detect Square `INSUFFICIENT_SCOPES` errors when creating/searching customers, orders, invoices, or publishing invoices.
+   - Return a clear actionable message instead of the generic “Failed to create Square customer”.
 
-Delete the now-unused dictation helper to avoid drift: `src/components/ui/dictation-button.tsx` (verified used only by the Input wrapper).
+2. Improve the invoice UI feedback
+   - When this specific error is returned, show the instructor a message telling them to reconnect Square from the invoice page.
+   - Keep the existing send flow unchanged for correctly authorised accounts.
 
-## Out of scope
-- No changes to individual dialogs/forms — fixing the Input primitive transparently restores correct layout everywhere and removes the mic across the app.
-- No mobile-layout changes.
-- Speech-to-text inside `AddLessonSheet` / `VoiceQuickAddLessonSheet` (those use their own voice flows, not the Input's DictationButton) remains untouched.
+3. Make reconnection the recovery path
+   - The existing “Manage” / disconnect-reconnect Square controls can be used to reauthorise Square with the current scope list.
+   - After reconnecting, invoice sending should proceed because the new token will include `CUSTOMERS_WRITE`.
 
-## Technical notes
-- I'll first grep for any direct usage of `enableDictation` / `dictationLang` props or imports of `dictation-button` outside the Input file. If any non-Input consumer exists, I'll keep `dictation-button.tsx` and only strip the dictation wrapper out of `Input`. Otherwise the file is deleted.
+Technical detail:
+
+- Current failing endpoint: `square-invoice-manage`
+- Current Square rejection: `403 AUTHENTICATION_ERROR / INSUFFICIENT_SCOPES`
+- Required scope: `CUSTOMERS_WRITE`
+- Existing OAuth scope list already includes `CUSTOMERS_WRITE`, so no new scope needs to be added; the instructor needs a fresh OAuth grant.

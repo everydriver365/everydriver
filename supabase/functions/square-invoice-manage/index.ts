@@ -65,8 +65,21 @@ async function squareFetch(path: string, token: string, init: RequestInit = {}) 
   return { ok: res.ok, status: res.status, json, text };
 }
 
+function isInsufficientScopes(json: any): boolean {
+  const errors = json?.errors;
+  if (!Array.isArray(errors)) return false;
+  return errors.some((e: any) => e?.code === "INSUFFICIENT_SCOPES");
+}
+
+const RECONNECT_MSG =
+  "Your Square connection is missing required permissions. Please disconnect and reconnect Square from the invoices page, then try again.";
+
 // Find or create a Square customer by email
-async function findOrCreateCustomer(token: string, email: string, name: string): Promise<string | null> {
+async function findOrCreateCustomer(
+  token: string,
+  email: string,
+  name: string,
+): Promise<{ id: string | null; insufficientScopes?: boolean; raw?: unknown }> {
   const parts = (name || "").trim().split(/\s+/);
   const given = parts[0] || "Customer";
   const family = parts.slice(1).join(" ") || undefined;
@@ -76,7 +89,10 @@ async function findOrCreateCustomer(token: string, email: string, name: string):
     method: "POST",
     body: JSON.stringify({ query: { filter: { email_address: { exact: email } } } }),
   });
-  if (search.ok && search.json?.customers?.[0]?.id) return search.json.customers[0].id;
+  if (search.ok && search.json?.customers?.[0]?.id) return { id: search.json.customers[0].id };
+  if (!search.ok && isInsufficientScopes(search.json)) {
+    return { id: null, insufficientScopes: true, raw: search.json };
+  }
 
   // Create
   const create = await squareFetch("/v2/customers", token, {
@@ -88,9 +104,12 @@ async function findOrCreateCustomer(token: string, email: string, name: string):
       email_address: email,
     }),
   });
-  if (create.ok && create.json?.customer?.id) return create.json.customer.id;
+  if (create.ok && create.json?.customer?.id) return { id: create.json.customer.id };
   console.error("[square-invoice] create customer failed", create.status, create.json);
-  return null;
+  if (isInsufficientScopes(create.json)) {
+    return { id: null, insufficientScopes: true, raw: create.json };
+  }
+  return { id: null, raw: create.json };
 }
 
 serve(async (req) => {
@@ -166,8 +185,10 @@ serve(async (req) => {
       }
 
       // Find/create customer
-      const customerId = await findOrCreateCustomer(squareToken, recipient_email, recipient_name);
-      if (!customerId) return err("Failed to create Square customer", 502);
+      const customerResult = await findOrCreateCustomer(squareToken, recipient_email, recipient_name);
+      if (customerResult.insufficientScopes) return err(RECONNECT_MSG, 403, customerResult.raw);
+      const customerId = customerResult.id;
+      if (!customerId) return err("Failed to create Square customer", 502, customerResult.raw);
 
       // Build order line items
       const orderLineItems = line_items.map((li) => ({
@@ -197,6 +218,7 @@ serve(async (req) => {
       });
       if (!orderRes.ok || !orderRes.json?.order?.id) {
         console.error("[square-invoice] order create failed", orderRes.status, orderRes.json);
+        if (isInsufficientScopes(orderRes.json)) return err(RECONNECT_MSG, 403, orderRes.json);
         return err("Failed to create Square order", 502, orderRes.json);
       }
       const orderId = orderRes.json.order.id;
@@ -233,6 +255,7 @@ serve(async (req) => {
       });
       if (!invoiceRes.ok || !invoiceRes.json?.invoice?.id) {
         console.error("[square-invoice] invoice create failed", invoiceRes.status, invoiceRes.json);
+        if (isInsufficientScopes(invoiceRes.json)) return err(RECONNECT_MSG, 403, invoiceRes.json);
         return err("Failed to create Square invoice", 502, invoiceRes.json);
       }
       const invoice = invoiceRes.json.invoice;
@@ -247,6 +270,7 @@ serve(async (req) => {
       });
       if (!pubRes.ok) {
         console.error("[square-invoice] publish failed", pubRes.status, pubRes.json);
+        if (isInsufficientScopes(pubRes.json)) return err(RECONNECT_MSG, 403, pubRes.json);
         return err("Failed to publish Square invoice", 502, pubRes.json);
       }
       const publishedInvoice = pubRes.json.invoice || invoice;
