@@ -188,6 +188,7 @@ export default function SquareInvoicesPage({ scope }: { scope: Scope }) {
       "klarna_status",
       "klarna_last_error",
       "klarna_last_error_at",
+      "clearpay_enabled",
       "paid_at",
       "sent_at",
       "cancelled_at",
