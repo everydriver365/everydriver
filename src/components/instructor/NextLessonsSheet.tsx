@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronRight, MapPin, X, CalendarOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -82,7 +83,7 @@ export function NextLessonsSheet({ open, onClose, instructorId, onLessonClick }:
     },
   });
 
-  if (!mounted) return null;
+  if (!mounted || typeof document === "undefined") return null;
 
   // Group by date
   const groups = lessons.reduce<Record<string, Row[]>>((acc, l) => {
@@ -101,7 +102,7 @@ export function NextLessonsSheet({ open, onClose, instructorId, onLessonClick }:
     return `${DAYS[dt.getDay()]} ${dt.getDate()} ${MONTHS[dt.getMonth()]}`;
   };
 
-  return (
+  return createPortal((
     <div
       style={{
         position: "fixed",
@@ -129,7 +130,8 @@ export function NextLessonsSheet({ open, onClose, instructorId, onLessonClick }:
           left: 0,
           right: 0,
           bottom: 0,
-          top: "10vh",
+          height: "90dvh",
+          maxHeight: "90dvh",
           background: "#FFFFFF",
           borderTopLeftRadius: 22,
           borderTopRightRadius: 22,
@@ -172,7 +174,7 @@ export function NextLessonsSheet({ open, onClose, instructorId, onLessonClick }:
         </div>
 
         {/* Body */}
-        <div style={{ flex: 1, minHeight: 0, overflowY: "auto", WebkitOverflowScrolling: "touch", padding: "0 14px 24px" }}>
+        <div style={{ flex: 1, minHeight: 0, overflowY: "auto", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch", padding: "0 12px calc(18px + env(safe-area-inset-bottom))" }}>
           {isLoading ? (
             <div style={{ padding: 40, textAlign: "center", color: C.muted, fontSize: 13 }}>
               Loading…
@@ -282,7 +284,7 @@ export function NextLessonsSheet({ open, onClose, instructorId, onLessonClick }:
         </div>
       </div>
     </div>
-  );
+  ), document.body);
 }
 
 export default NextLessonsSheet;
