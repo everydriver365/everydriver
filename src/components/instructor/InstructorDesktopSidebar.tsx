@@ -46,6 +46,7 @@ const sidebarGroups = [
     items: [
       { href: "/instructor/pay", label: "Payments", icon: CreditCard },
       { href: "/instructor/invoices", label: "Invoices", icon: FileSpreadsheet },
+      { href: "/instructor/quotes", label: "Quotes", icon: FileText },
       { href: "/instructor/accounts", label: "Accounts", icon: Wallet },
       { href: "/instructor/expenses", label: "Expenses", icon: Receipt },
     ],
