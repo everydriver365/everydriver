@@ -358,10 +358,11 @@ export default function SquareInvoicesPage({ scope }: { scope: Scope }) {
               <FileDown className="h-4 w-4 mr-1" />
               Export CSV
             </Button>
-            <Button onClick={load} disabled={loading} size="sm" variant="outline">
+            <Button onClick={refreshAndSync} disabled={loading} size="sm" variant="outline" title="Reload and pull live status from Square">
               <RefreshCw className={`h-4 w-4 mr-1 ${loading ? "animate-spin" : ""}`} />
               Refresh
             </Button>
+
 
           </div>
         </div>
