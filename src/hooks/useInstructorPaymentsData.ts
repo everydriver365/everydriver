@@ -61,7 +61,7 @@ export interface PaymentsData {
   refresh: () => void;
 }
 
-const FEE_RATE = 0.0175;
+
 
 function normalizeMethod(m: string | null): PaymentMethod {
   const v = (m || "").toLowerCase();
