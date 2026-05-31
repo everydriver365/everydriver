@@ -65,8 +65,21 @@ async function squareFetch(path: string, token: string, init: RequestInit = {}) 
   return { ok: res.ok, status: res.status, json, text };
 }
 
+function isInsufficientScopes(json: any): boolean {
+  const errors = json?.errors;
+  if (!Array.isArray(errors)) return false;
+  return errors.some((e: any) => e?.code === "INSUFFICIENT_SCOPES");
+}
+
+const RECONNECT_MSG =
+  "Your Square connection is missing required permissions. Please disconnect and reconnect Square from the invoices page, then try again.";
+
 // Find or create a Square customer by email
-async function findOrCreateCustomer(token: string, email: string, name: string): Promise<string | null> {
+async function findOrCreateCustomer(
+  token: string,
+  email: string,
+  name: string,
+): Promise<{ id: string | null; insufficientScopes?: boolean; raw?: unknown }> {
   const parts = (name || "").trim().split(/\s+/);
   const given = parts[0] || "Customer";
   const family = parts.slice(1).join(" ") || undefined;
@@ -76,7 +89,10 @@ async function findOrCreateCustomer(token: string, email: string, name: string):
     method: "POST",
     body: JSON.stringify({ query: { filter: { email_address: { exact: email } } } }),
   });
-  if (search.ok && search.json?.customers?.[0]?.id) return search.json.customers[0].id;
+  if (search.ok && search.json?.customers?.[0]?.id) return { id: search.json.customers[0].id };
+  if (!search.ok && isInsufficientScopes(search.json)) {
+    return { id: null, insufficientScopes: true, raw: search.json };
+  }
 
   // Create
   const create = await squareFetch("/v2/customers", token, {
@@ -88,9 +104,12 @@ async function findOrCreateCustomer(token: string, email: string, name: string):
       email_address: email,
     }),
   });
-  if (create.ok && create.json?.customer?.id) return create.json.customer.id;
+  if (create.ok && create.json?.customer?.id) return { id: create.json.customer.id };
   console.error("[square-invoice] create customer failed", create.status, create.json);
-  return null;
+  if (isInsufficientScopes(create.json)) {
+    return { id: null, insufficientScopes: true, raw: create.json };
+  }
+  return { id: null, raw: create.json };
 }
 
 serve(async (req) => {
