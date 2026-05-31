@@ -74,11 +74,35 @@ export function LessonLengthBufferEditor({ instructorId }: Props) {
           throw error;
         }
         setOriginal(draft);
+        toast({ title: "Lesson length saved" });
       },
       reset: () => setDraft(original),
     });
     return () => register("lesson-length", null);
   }, [draft, original, register, instructorId]);
+
+  const handleSave = async () => {
+    if (!draft) return;
+    setSaving(true);
+    try {
+      const { error } = await supabase.from("instructors").update({
+        buffer_minutes: draft.buffer_minutes,
+        preferred_lesson_length: draft.preferred_lesson_length,
+        allowed_lesson_lengths: draft.allowed_lesson_lengths,
+        auto_block_bank_holidays: draft.auto_block_bank_holidays,
+      }).eq("id", instructorId);
+      if (error) {
+        toast({ title: "Couldn't save", description: error.message, variant: "destructive" });
+        return;
+      }
+      setOriginal(draft);
+      toast({ title: "Lesson length saved" });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleCancel = () => setDraft(original);
 
   const toggleLength = (n: number) => {
     setDraft(p => {
