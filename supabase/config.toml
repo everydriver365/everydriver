@@ -268,3 +268,6 @@ verify_jwt = false
 verify_jwt = false
 
 
+
+[functions.klarna-invoice-webhook]
+verify_jwt = false
