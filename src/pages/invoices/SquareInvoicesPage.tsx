@@ -115,6 +115,7 @@ export default function SquareInvoicesPage({ scope }: { scope: Scope }) {
            instructor:instructors!square_invoices_issuer_instructor_id_fkey(id,name,logo_url),
            pupil:pupils!square_invoices_recipient_pupil_id_fkey(id,name)`
         )
+        .is("deleted_at", null)
         .order("created_at", { ascending: false })
         .limit(500);
       if (err) throw err;
