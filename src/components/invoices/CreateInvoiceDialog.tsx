@@ -208,6 +208,7 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
         card: true,
         buy_now_pay_later: allowClearpay,
       },
+      klarna_enabled: allowKlarna && instructorKlarnaEnabled,
     };
   };
 
