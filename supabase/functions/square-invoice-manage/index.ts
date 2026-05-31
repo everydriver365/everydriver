@@ -306,7 +306,12 @@ serve(async (req) => {
             const siteUrl = Deno.env.get("SITE_URL") || "https://everydriver.lovable.app";
             const merchantRef = publishedInvoice.invoice_number || publishedInvoice.id;
             const amountMinor = Math.max(50, Math.round(totalCents)); // already in pence
-            const klarnaPayload = {
+            const klarnaAuth = "Basic " + btoa(`${klarnaUser}:${klarnaPass}`);
+
+            // Step 1: create a Klarna Payments session (Payments API v1).
+            // This replaces the legacy Checkout v3 flow, which is no longer
+            // enabled by default on live EU merchant accounts and returns 401.
+            const paymentPayload = {
               purchase_country: "GB",
               purchase_currency: "GBP",
               locale: "en-GB",
@@ -322,27 +327,54 @@ serve(async (req) => {
                 total_amount: amountMinor,
                 total_tax_amount: 0,
               }],
-              merchant_urls: {
-                terms: `${siteUrl}/terms`,
-                checkout: `${siteUrl}/invoices`,
-                confirmation: `${siteUrl}/invoices?klarna_paid=1`,
-                push: `${supabaseUrl}/functions/v1/klarna-invoice-webhook?klarna_order_id={checkout.order.id}`,
-              },
               merchant_reference1: merchantRef,
             };
-            const klarnaAuth = "Basic " + btoa(`${klarnaUser}:${klarnaPass}`);
-            const kres = await fetch(`${klarnaBase}/checkout/v3/orders`, {
+            const pres = await fetch(`${klarnaBase}/payments/v1/sessions`, {
               method: "POST",
               headers: { Authorization: klarnaAuth, "Content-Type": "application/json" },
-              body: JSON.stringify(klarnaPayload),
+              body: JSON.stringify(paymentPayload),
             });
-            const kjson = await kres.json().catch(() => null) as any;
-            if (kres.ok && kjson?.order_id) {
-              klarnaOrderId = kjson.order_id;
-              klarnaPayUrl = kjson.redirect_url || `https://pay.klarna.com/eu/hpp/payments/${kjson.order_id}`;
+            const pjson = await pres.json().catch(() => null) as any;
+            if (!pres.ok || !pjson?.session_id) {
+              klarnaError =
+                pjson?.error_messages?.[0] ||
+                `Klarna payments session failed (HTTP ${pres.status})`;
+              console.error("[square-invoice] klarna payments session failed", pres.status, pjson);
             } else {
-              klarnaError = kjson?.error_messages?.[0] || `Klarna error ${kres.status}`;
-              console.error("[square-invoice] klarna order failed", kres.status, kjson);
+              // Step 2: wrap that payment session in a Hosted Payment Page session
+              // so the buyer gets a hosted URL we can email/share.
+              const hppPayload = {
+                payment_session_url: `${klarnaBase}/payments/v1/sessions/${pjson.session_id}`,
+                merchant_urls: {
+                  success: `${siteUrl}/invoices?klarna_paid=1&session_id={{session_id}}`,
+                  cancel: `${siteUrl}/invoices?klarna_cancelled=1`,
+                  back: `${siteUrl}/invoices`,
+                  failure: `${siteUrl}/invoices?klarna_failed=1`,
+                  error: `${siteUrl}/invoices?klarna_error=1`,
+                  status_update: `${supabaseUrl}/functions/v1/klarna-invoice-webhook?session_id={{session_id}}`,
+                },
+                options: {
+                  place_order_mode: "PLACE_ORDER",
+                  payment_method_categories: ["pay_later", "pay_over_time"],
+                },
+              };
+              const hres = await fetch(`${klarnaBase}/hpp/v1/sessions`, {
+                method: "POST",
+                headers: { Authorization: klarnaAuth, "Content-Type": "application/json" },
+                body: JSON.stringify(hppPayload),
+              });
+              const hjson = await hres.json().catch(() => null) as any;
+              if (hres.ok && hjson?.redirect_url && hjson?.session_id) {
+                // Store the HPP session id as our "order id"; the webhook polls
+                // /hpp/v1/sessions/{id} to learn status and the final order_id.
+                klarnaOrderId = hjson.session_id;
+                klarnaPayUrl = hjson.redirect_url;
+              } else {
+                klarnaError =
+                  hjson?.error_messages?.[0] ||
+                  `Klarna HPP session failed (HTTP ${hres.status})`;
+                console.error("[square-invoice] klarna hpp session failed", hres.status, hjson);
+              }
             }
           }
         } catch (e) {
