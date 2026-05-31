@@ -2219,6 +2219,7 @@ function ScheduleCard({
       onAddLesson={() => navigate("/instructor/schedule?add=1")}
       onFillGaps={() => navigate("/instructor/gaps")}
       onLessonClick={(id) => navigate(`/instructor/schedule?lesson=${id}`)}
+      onViewNext={() => navigate("/instructor/schedule")}
     />
   );
 }
