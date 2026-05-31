@@ -135,6 +135,7 @@ export function CoursePlannerForm({
       .from("pupils")
       .select("id, name, phone, email, profile_image_url")
       .eq("instructor_id", instructorId)
+      .eq("status", "active")
       .is("deleted_at", null)
       .order("name")
       .then(({ data }) => { if (data) setPupils(data as any); });
