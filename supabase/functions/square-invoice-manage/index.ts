@@ -185,8 +185,10 @@ serve(async (req) => {
       }
 
       // Find/create customer
-      const customerId = await findOrCreateCustomer(squareToken, recipient_email, recipient_name);
-      if (!customerId) return err("Failed to create Square customer", 502);
+      const customerResult = await findOrCreateCustomer(squareToken, recipient_email, recipient_name);
+      if (customerResult.insufficientScopes) return err(RECONNECT_MSG, 403, customerResult.raw);
+      const customerId = customerResult.id;
+      if (!customerId) return err("Failed to create Square customer", 502, customerResult.raw);
 
       // Build order line items
       const orderLineItems = line_items.map((li) => ({
