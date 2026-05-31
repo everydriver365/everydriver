@@ -39,6 +39,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 // Settings tile content components
 import { CMSImageUpload } from "@/components/admin/CMSImageUpload";
+import { VideoUploadField } from "@/pages/instructor-app/onboarding/components/VideoUploadField";
+
 import { WorkingHoursEditor } from "@/components/admin/WorkingHoursEditor";
 import { CancellationPolicyEditor } from "@/components/instructor/CancellationPolicyEditor";
 import { NoShowPolicySettings } from "@/components/instructor/NoShowPolicySettings";
