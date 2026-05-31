@@ -150,7 +150,7 @@ export function PupilCourseSummary({ pupilId, onBack, backHref }: Props) {
     setLoading(true);
     const { data: pupilRow } = await supabase
       .from("pupils")
-      .select("id,name,email,phone,postcode,pickup_address,pickup_postcode,what3words,course_type,course_status,account_balance,test_date,test_time,test_passed,transmission_type,special_needs,medical_notes,intensive_hours_paid,prepaid_hours,custom_hourly_rate,instructor_id,notes")
+      .select("id,name,email,phone,postcode,pickup_address,pickup_postcode,what3words,address,course_type,course_status,account_balance,test_date,test_time,test_passed,transmission_type,special_needs,medical_notes,intensive_hours_paid,prepaid_hours,custom_hourly_rate,instructor_id,notes,date_of_birth,driver_number,theory_test_passed,theory_test_date,previous_experience,preferred_duration_minutes")
       .eq("id", pupilId)
       .maybeSingle();
     if (!pupilRow) { setPupil(null); setLoading(false); return; }
