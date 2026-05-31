@@ -131,6 +131,30 @@ export default function SquareInvoicesPage({ scope }: { scope: Scope }) {
     }
   };
 
+  const confirmDelete = async () => {
+    if (!pendingDelete) return;
+    setDeleting(true);
+    const id = pendingDelete.id;
+    try {
+      const { data: userRes } = await supabase.auth.getUser();
+      const { error: err } = await supabase
+        .from("square_invoices")
+        .update({
+          deleted_at: new Date().toISOString(),
+          deleted_by: userRes?.user?.id ?? null,
+        })
+        .eq("id", id);
+      if (err) throw err;
+      setRows((prev) => prev.filter((x) => x.id !== id));
+      toast({ title: "Invoice deleted", description: "It's hidden from your list. The Square record is preserved." });
+      setPendingDelete(null);
+    } catch (e: any) {
+      toast({ title: "Couldn't delete invoice", description: e?.message, variant: "destructive" });
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   useEffect(() => {
     load();
   }, []);
