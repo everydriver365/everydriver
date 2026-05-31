@@ -158,6 +158,85 @@ export default function SquareInvoicesPage({ scope }: { scope: Scope }) {
     return { count, outstanding, paid, fees };
   }, [filtered]);
 
+  const exportCsv = () => {
+    if (filtered.length === 0) {
+      toast({ title: "Nothing to export", description: "No invoices match the current filters." });
+      return;
+    }
+    const esc = (v: unknown) => {
+      if (v === null || v === undefined) return "";
+      const s = String(v).replace(/\r?\n/g, " ");
+      return /[",]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+    const headers = [
+      "created_at",
+      "due_date",
+      "recipient_name",
+      "recipient_email",
+      "pupil_name",
+      "instructor_name",
+      "issuer_type",
+      "description",
+      "currency",
+      "amount",
+      "service_fee",
+      "square_status",
+      "klarna_enabled",
+      "klarna_status",
+      "klarna_last_error",
+      "klarna_last_error_at",
+      "paid_at",
+      "sent_at",
+      "cancelled_at",
+      "square_invoice_id",
+      "public_url",
+      "klarna_pay_url",
+    ];
+    const lines = [headers.join(",")];
+    for (const r of filtered) {
+      lines.push(
+        [
+          r.created_at,
+          r.due_date ?? "",
+          r.recipient_name ?? "",
+          r.recipient_email ?? "",
+          r.pupil?.name ?? "",
+          r.instructor?.name ?? "",
+          r.issuer_type,
+          r.description ?? "",
+          r.currency,
+          ((r.amount_cents || 0) / 100).toFixed(2),
+          ((r.service_fee_cents || 0) / 100).toFixed(2),
+          r.status,
+          r.klarna_enabled ? "true" : "false",
+          r.klarna_status ?? "",
+          r.klarna_last_error ?? "",
+          r.klarna_last_error_at ?? "",
+          r.paid_at ?? "",
+          r.sent_at ?? "",
+          r.cancelled_at ?? "",
+          r.square_invoice_id ?? "",
+          r.public_url ?? "",
+          r.klarna_pay_url ?? "",
+        ]
+          .map(esc)
+          .join(","),
+      );
+    }
+    const blob = new Blob(["\uFEFF" + lines.join("\n")], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `invoices-${scope}-${format(new Date(), "yyyy-MM-dd-HHmm")}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast({ title: "Exported", description: `${filtered.length} invoice${filtered.length === 1 ? "" : "s"} written to CSV.` });
+  };
+
+
+
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto space-y-6">
