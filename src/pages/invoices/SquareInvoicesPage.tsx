@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/select";
 import { InvoiceStatusBadge } from "@/components/invoices/InvoiceStatusBadge";
 import { toast } from "@/hooks/use-toast";
+import { generateInvoicePdf } from "@/lib/invoices/generateInvoicePdf";
 
 type Scope = "admin" | "instructor";
 
