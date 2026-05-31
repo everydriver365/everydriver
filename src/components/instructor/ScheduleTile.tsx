@@ -52,7 +52,7 @@ function sameDay(a: Date, b: Date) {
   return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 }
 
-export function ScheduleTile({ lessons, onAddLesson, onFillGaps, onLessonClick }: ScheduleTileProps) {
+export function ScheduleTile({ lessons, onAddLesson, onFillGaps, onLessonClick, onViewNext }: ScheduleTileProps) {
   const [tab, setTab] = useState<"today" | "tomorrow">("today");
 
   const { todayDate, tomorrowDate, todayLessons, tomorrowLessons } = useMemo(() => {
