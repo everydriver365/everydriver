@@ -172,7 +172,7 @@ export function NextLessonsSheet({ open, onClose, instructorId, onLessonClick }:
         </div>
 
         {/* Body */}
-        <div style={{ overflowY: "auto", padding: "0 14px 24px" }}>
+        <div style={{ flex: 1, minHeight: 0, overflowY: "auto", WebkitOverflowScrolling: "touch", padding: "0 14px 24px" }}>
           {isLoading ? (
             <div style={{ padding: 40, textAlign: "center", color: C.muted, fontSize: 13 }}>
               Loading…
