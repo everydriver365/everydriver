@@ -1,50 +1,66 @@
 ## Diagnosis
 
-The "Net Received" figure is wrong because `payment_history` contains **non-payment ledger rows** that are being counted as refunds.
+For the current instructor (`1b49d152…`) this month, the input data is:
 
-Recent rows in the database for the current month:
-
-| amount | method | notes |
+| amount | method | status (after fix) |
 |---|---|---|
-| −£810 | `Lesson Charge` | "NI" |
-| −£787.50 | `Lesson Charge` | "Nat INtensive" |
-| −£1,045 | `Lesson Charge` | "Nat Intensive" |
-| −£38 | `Cash` | "Refund — twat" |
+| +£38 | Square | paid |
+| +£38 | Cash | paid |
+| −£38 | Cash | refunded |
 
-Only the last one is an actual refund. The three `Lesson Charge` rows are **balance-ledger debits** (pupil owes instructor for a booked lesson block) — never money moving in or out.
+And `platform_fees` for the month: **0 rows**.
 
-`normalizeStatus` flags them as `"refunded"` because `amount < 0`, so they:
-- inflate `refundsMonth` by £2,642.50
-- subtract from `receivedMonth`
-- also get mis-classified as `card` method (since `normalizeMethod` defaults unknowns to `"card"`), polluting card totals and the fee calculation
+The current fee calc (`useInstructorPaymentsData.ts:245-259`) does:
+
+```ts
+cardMonth = monthTx.filter(method==="card").reduce(...)   // includes refunds
+feesMonth = max(0, cardMonth) * 0.0175 + platformFeesTotal
+effectiveFeeRate = feesMonth / receivedMonth * 100        // divides by NET
+```
+
+Three problems baked in:
+
+1. **`cardMonth` is net of refunds**, but real gateway fees are charged on **gross** card volume. Refunding rarely returns the full fee. Using net under-states fees when there are no refunds and over-states the rebate when there are.
+2. **`FEE_RATE = 1.75%` is hardcoded.** This is a guess layered on top of `platform_fees` rows, which already record the *actual* fee per transaction. When `platform_fees` has the row, the 1.75% estimate **double-counts**. When it doesn't, we invent a number that has no basis. Both violate the project's "live data only" rule (mem://constraints/no-hardcoded-fallbacks-live-data-only).
+3. **`effectiveFeeRate` divides by `receivedMonth` (net)**, so a £38 payment fully refunded would show an infinite/spiked effective rate. It should be `fees ÷ gross card` to be meaningful, or hidden when gross card is 0.
+
+A related side-issue: the loading-state stub initialises `effectiveFeeRate: FEE_RATE * 100` (1.75%) — a hardcoded value rendered before any data arrives. Should be 0.
 
 ## Fix
 
 ### `src/hooks/useInstructorPaymentsData.ts`
 
-1. **Filter `Lesson Charge` rows out at source.** After fetching `paymentsRes.data`, drop any row whose `payment_method` matches `/lesson\s*charge/i` (case-insensitive, tolerant to spacing). These are ledger entries, not payments — they should never appear in the payments page transactions, stats, cash-flow, or fee calculations.
+1. **Drop the 1.75% estimate entirely.** `feesMonth` becomes just the sum of `platform_fees.amount` for the month (which already includes `booking_fee`, `transaction_fee`, uplift, etc.).
+   - If `platform_fees` is the source of truth for actual gateway/platform fees, this gives a real, reconcilable number.
+   - If a payment method ever bypasses `platform_fees` insertion (e.g. legacy Square rows), the fees figure will read £0 for that period — that's the correct empty/needs-setup signal per the live-data rule, not a fabricated estimate.
 
-   Apply the same filter to `recentPaymentsRes`/`txByPupil` queries that feed pending payouts and pupil rollups (lines ~290 and ~328), so they stay consistent.
+2. **Recompute `effectiveFeeRate` against gross card volume**, not net received:
+   ```ts
+   const grossCardMonth = paidTx.filter(t => t.method === "card")
+     .reduce((s, t) => s + t.amount, 0);
+   const effectiveFeeRate = grossCardMonth > 0
+     ? +((feesMonth / grossCardMonth) * 100).toFixed(2)
+     : 0;
+   ```
+   This is what an instructor reads as "the % I'm paying on card sales".
 
-2. **Tighten `normalizeStatus`'s refund detection** as a defensive belt-and-braces: treat a row as `"refunded"` only when one of:
-   - `payout_status` ∈ {`refunded`, `partially_refunded`}, OR
-   - `notes` contains the word "refund", OR
-   - `amount < 0` **AND** the row's `payment_method` is a recognised payment channel (card/cash/bank), not a ledger label.
+3. **Remove hardcoded `FEE_RATE * 100`** from the loading-state stub; initialise `effectiveFeeRate: 0`.
 
-   This ensures any future ledger-style entries don't get pulled in.
+4. **Delete the now-unused `FEE_RATE` constant** (or keep it only inside YTD calc — see below).
 
-3. No change to `grossMonth` / `refundsMonth` / `receivedMonth` formulas — once the noise rows are gone, they'll be correct.
+5. **YTD service-fees row (`feesYearToDate`)** currently also uses `cardYtd * FEE_RATE + platformYtd`. Apply the same fix: just use `platform_fees` rows since `taxYearStart`. Drop the card×1.75% estimate.
 
-### Verification
+### What the user will see after the fix
 
-Expected after fix, for the current month sample above:
-- Gross = £38 (the one Square payment)
-- Refunds = £38 (the cash refund)
-- Net Received = £0
+For this instructor's current month (no `platform_fees` rows, one card payment of £38 with no refund-of-card):
+- **Fees** £0.00
+- **Effective rate** 0%
+
+When real platform_fees rows exist (the other test instructor has £3 of platform_fees), Fees will read £3.00 against whatever gross card volume the month has.
 
 ## Out of scope
-- No DB migration. The `Lesson Charge` rows are legitimate balance-ledger entries used elsewhere (pupil balance) — they just don't belong on the Payments page.
-- No change to the cash-flow chart shape, outstanding logic, or fee tiers beyond the consequence of removing these rows from the input set.
+- No DB writes. If you want estimated fees in the absence of `platform_fees` rows, that's a separate "back-fill" story.
+- No change to Outstanding, Next Payout, Cash Flow, transactions list.
 
 ## Question
-Confirm: it's safe to assume any `payment_history` row with `payment_method = "Lesson Charge"` is a balance-ledger entry that should be excluded from the Payments page, right? (If you sometimes use that label for real payments, tell me and I'll switch to a different exclusion key, e.g. exclude by `notes` pattern or a flag column.)
+Are you happy to switch fees to **actual recorded `platform_fees` only** (correct but reads £0 where the platform never wrote a row), or do you want me to keep an estimated fallback in some form (e.g. only when `platform_fees` is empty)?

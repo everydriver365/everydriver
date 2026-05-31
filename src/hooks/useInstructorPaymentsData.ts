@@ -61,7 +61,7 @@ export interface PaymentsData {
   refresh: () => void;
 }
 
-const FEE_RATE = 0.0175;
+
 
 function normalizeMethod(m: string | null): PaymentMethod {
   const v = (m || "").toLowerCase();
@@ -161,7 +161,7 @@ export function useInstructorPaymentsData(instructorId: string | undefined): Pay
       grossMonth: 0, refundsMonth: 0, refundsCount: 0,
       outstanding: 0, outstandingPupils: 0,
       nextPayout: 0, nextPayoutDate: "—",
-      feesMonth: 0, effectiveFeeRate: FEE_RATE * 100,
+      feesMonth: 0, effectiveFeeRate: 0,
       feesYearToDate: 0, feesYearLabel: "",
       platformFeesMonth: 0, platformBookingFeesMonth: 0,
       platformTransactionFeesMonth: 0, platformUpliftFeesMonth: 0,
@@ -242,7 +242,7 @@ export function useInstructorPaymentsData(instructorId: string | undefined): Pay
         const grossMonth = +paidTx.reduce((s, t) => s + t.amount, 0).toFixed(2);
         const refundsMonth = +Math.abs(refundTx.reduce((s, t) => s + t.amount, 0)).toFixed(2);
         const receivedMonth = +(grossMonth - refundsMonth).toFixed(2);
-        const cardMonth = monthTx.filter(t => t.method === "card").reduce((s, t) => s + t.amount, 0);
+        const grossCardMonth = paidTx.filter(t => t.method === "card").reduce((s, t) => s + t.amount, 0);
         const platformFeesRows = (platformFeesMonthRes.data || []) as any[];
         const platformFeesMonthTotal = platformFeesRows
           .reduce((s: number, r: any) => s + Number(r.amount || 0), 0);
@@ -255,8 +255,8 @@ export function useInstructorPaymentsData(instructorId: string | undefined): Pay
         const platformUpliftFeesMonth = platformFeesRows
           .filter((r) => /uplift/i.test(r.kind || ""))
           .reduce((s, r) => s + Number(r.amount || 0), 0);
-        const feesMonth = +((Math.max(0, cardMonth) * FEE_RATE) + platformFeesMonthTotal).toFixed(2);
-        const effectiveFeeRate = receivedMonth > 0 ? +((feesMonth / receivedMonth) * 100).toFixed(2) : 0;
+        const feesMonth = +platformFeesMonthTotal.toFixed(2);
+        const effectiveFeeRate = grossCardMonth > 0 ? +((feesMonth / grossCardMonth) * 100).toFixed(2) : 0;
 
         // Pending payout = card payments captured but NOT yet transferred (excl. refunded)
         const pendingPayout = rawPayments
@@ -309,31 +309,15 @@ export function useInstructorPaymentsData(instructorId: string | undefined): Pay
         const taxYearStart = new Date(taxYearStartYear, 3, 6, 0, 0, 0, 0);
         const feesYearLabel = `${taxYearStartYear}/${String((taxYearStartYear + 1) % 100).padStart(2, "0")}`;
 
-        const [ytdRes, ytdPlatformFeesRes] = await Promise.all([
-          supabase
-            .from("payment_history")
-            .select("amount, payment_method, notes, payout_status, recorded_at")
-            .eq("instructor_id", instructorId)
-            .is("deleted_at", null)
-            .gte("recorded_at", taxYearStart.toISOString())
-            .gt("amount", 0),
-          supabase
-            .from("platform_fees")
-            .select("amount")
-            .eq("instructor_id", instructorId)
-            .gte("created_at", taxYearStart.toISOString()),
-        ]);
+        const ytdPlatformFeesRes = await supabase
+          .from("platform_fees")
+          .select("amount")
+          .eq("instructor_id", instructorId)
+          .gte("created_at", taxYearStart.toISOString());
 
         const platformYtd = (ytdPlatformFeesRes.data || [])
           .reduce((s: number, r: any) => s + Number(r.amount || 0), 0);
-        let feesYearToDate = 0;
-        if (!ytdRes.error && ytdRes.data) {
-          const cardYtd = ytdRes.data
-            .filter((p: any) => normalizeMethod(p.payment_method) === "card"
-              && normalizeStatus(Number(p.amount), p.notes, p.payout_status, p.payment_method) === "paid")
-            .reduce((s: number, p: any) => s + Number(p.amount || 0), 0);
-          feesYearToDate = +((cardYtd * FEE_RATE) + platformYtd).toFixed(2);
-        }
+        const feesYearToDate = +platformYtd.toFixed(2);
 
         if (cancelled) return;
         setState({
