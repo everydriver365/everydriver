@@ -133,6 +133,7 @@ export default function SquareInvoicesPage({ scope }: { scope: Scope }) {
           if (!r.klarna_enabled || r.klarna_status !== klarnaFilter) return false;
         }
       }
+      if (clearpayFilter === "offered" && !r.clearpay_enabled) return false;
       if (!q) return true;
       return (
         r.recipient_name?.toLowerCase().includes(q) ||
