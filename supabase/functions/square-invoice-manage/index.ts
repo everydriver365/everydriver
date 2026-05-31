@@ -500,6 +500,32 @@ serve(async (req) => {
       return ok({ success: true });
     }
 
+    // ====== LIST LOCATIONS ======
+    if (body.action === "list_locations") {
+      let squareToken: string;
+      if (instructor?.id && instructor?.square_access_token_encrypted) {
+        squareToken = instructor.square_access_token_encrypted;
+      } else if (isAdmin) {
+        squareToken = Deno.env.get("SQUARE_ACCESS_TOKEN") || "";
+        if (!squareToken) return err("Platform Square account is not configured", 500);
+      } else {
+        return err("Connect your Square account before listing locations", 400);
+      }
+      const locRes = await squareFetch("/v2/locations", squareToken);
+      if (!locRes.ok) return err("Failed to fetch Square locations", 400, locRes.json);
+      const locations = (locRes.json?.locations || [])
+        .filter((l: any) => l.status === "ACTIVE")
+        .map((l: any) => ({
+          id: l.id,
+          name: l.name,
+          address: [l.address?.address_line_1, l.address?.locality, l.address?.postal_code]
+            .filter(Boolean)
+            .join(", "),
+          is_main: !!l.merchant_id && l.type === "PHYSICAL",
+        }));
+      return ok({ locations });
+    }
+
     return err("Unknown action");
   } catch (e) {
     console.error("[square-invoice] fatal", e);
