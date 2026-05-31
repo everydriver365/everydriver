@@ -455,8 +455,32 @@ export function PupilCourseSummary({ pupilId, onBack, backHref }: Props) {
               {working === "reminder-email" ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-2" /> : <Send className="h-3.5 w-3.5 mr-2" />}
               Email reminder
             </Button>
+            <Button
+              size="sm"
+              disabled={!pupil.email}
+              onClick={() => setInvoiceOpen(true)}
+              title={pupil.email ? `Send Square invoice to ${pupil.email}` : "Add an email to send an invoice"}
+              style={{ backgroundColor: "#2D3FE7", color: "white" }}
+            >
+              <FileText className="h-3.5 w-3.5 mr-2" />
+              Send invoice
+            </Button>
           </div>
         </div>
+      )}
+
+      {pupil && (
+        <SendInvoiceDialog
+          open={invoiceOpen}
+          onOpenChange={setInvoiceOpen}
+          pupilId={pupil.id}
+          recipientEmail={pupil.email || ""}
+          recipientName={pupil.name}
+          defaultAmount={totals.outstanding}
+          defaultDescription={`Outstanding balance — ${pupil.name}`}
+          instructorId={pupil.instructor_id}
+          includeServiceFee={!isAdmin}
+        />
       )}
 
       <div className="grid gap-4" style={{ gridTemplateColumns: "320px 280px 1fr 220px" }}>
