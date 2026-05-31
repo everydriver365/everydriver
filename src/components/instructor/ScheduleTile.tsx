@@ -12,6 +12,7 @@ export interface Lesson {
 
 interface ScheduleTileProps {
   lessons: Lesson[];
+  nextLessons?: Lesson[];
   onAddLesson: () => void;
   onFillGaps: () => void;
   onLessonClick: (id: string) => void;
