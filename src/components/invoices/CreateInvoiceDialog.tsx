@@ -245,9 +245,12 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
 
         {step === "form" ? (
           <div className="space-y-4">
-            {pupils.length > 0 && (
-              <div className="space-y-1.5">
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
                 <Label>Pupil (optional)</Label>
+                <QuickAddPupilButton onCreated={handlePupilCreated} />
+              </div>
+              {pupils.length > 0 ? (
                 <Select value={pupilId} onValueChange={onSelectPupil}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select a pupil to pre-fill" />
@@ -261,8 +264,12 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
-            )}
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  No current pupils — add one above, or enter recipient details manually.
+                </p>
+              )}
+            </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
