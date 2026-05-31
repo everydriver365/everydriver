@@ -647,6 +647,52 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
               </div>
             )}
 
+            <div className="px-5 py-3 border-t">
+              <div className="text-xs uppercase tracking-wide text-muted-foreground mb-2">
+                Payment methods
+              </div>
+              <ul className="space-y-1.5 text-sm">
+                <li className="flex items-start gap-2">
+                  <span className="mt-0.5 inline-flex items-center rounded-md border bg-background px-1.5 py-0.5 text-[10px] font-semibold tracking-wide">
+                    CARD
+                  </span>
+                  <span className="text-muted-foreground">
+                    Debit or credit card via Square (Visa, Mastercard, Amex).
+                  </span>
+                </li>
+                {allowKlarna && instructorKlarnaEnabled && (
+                  <li className="flex items-start gap-2">
+                    <span className="mt-0.5 inline-flex items-center rounded-md border border-pink-200 bg-pink-50 px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-pink-700">
+                      KLARNA
+                    </span>
+                    <span className="text-muted-foreground">
+                      Pay in 3 or pay later — eligibility decided by Klarna at checkout.
+                    </span>
+                  </li>
+                )}
+                {allowClearpay && (
+                  <li className="flex items-start gap-2">
+                    <span className="mt-0.5 inline-flex items-center rounded-md border border-sky-200 bg-sky-50 px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-sky-700">
+                      CLEARPAY
+                    </span>
+                    <span className="text-muted-foreground">
+                      Pay in 3 instalments — eligibility decided by Clearpay at checkout.
+                    </span>
+                  </li>
+                )}
+                {showBank && buildBankBlock() && (
+                  <li className="flex items-start gap-2">
+                    <span className="mt-0.5 inline-flex items-center rounded-md border bg-background px-1.5 py-0.5 text-[10px] font-semibold tracking-wide">
+                      BANK
+                    </span>
+                    <span className="text-muted-foreground">
+                      Manual bank transfer using the details below.
+                    </span>
+                  </li>
+                )}
+              </ul>
+            </div>
+
             {showBank && buildBankBlock() && (
               <div className="px-5 py-3 border-t">
                 <div className="text-xs uppercase tracking-wide text-muted-foreground mb-1">
