@@ -30,6 +30,7 @@ export function LessonLengthBufferEditor({ instructorId }: Props) {
   const [original, setOriginal] = useState<Row | null>(null);
   const [draft, setDraft] = useState<Row | null>(null);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const { register, setDirty } = useSettingsDirty();
 
   useEffect(() => {
@@ -73,11 +74,35 @@ export function LessonLengthBufferEditor({ instructorId }: Props) {
           throw error;
         }
         setOriginal(draft);
+        toast({ title: "Lesson length saved" });
       },
       reset: () => setDraft(original),
     });
     return () => register("lesson-length", null);
   }, [draft, original, register, instructorId]);
+
+  const handleSave = async () => {
+    if (!draft) return;
+    setSaving(true);
+    try {
+      const { error } = await supabase.from("instructors").update({
+        buffer_minutes: draft.buffer_minutes,
+        preferred_lesson_length: draft.preferred_lesson_length,
+        allowed_lesson_lengths: draft.allowed_lesson_lengths,
+        auto_block_bank_holidays: draft.auto_block_bank_holidays,
+      }).eq("id", instructorId);
+      if (error) {
+        toast({ title: "Couldn't save", description: error.message, variant: "destructive" });
+        return;
+      }
+      setOriginal(draft);
+      toast({ title: "Lesson length saved" });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleCancel = () => setDraft(original);
 
   const toggleLength = (n: number) => {
     setDraft(p => {
@@ -164,6 +189,29 @@ export function LessonLengthBufferEditor({ instructorId }: Props) {
           />
         </button>
       </div>
+
+      {dirty && (
+        <div className="flex items-center justify-end gap-2 pt-2 border-t">
+          <span className="mr-auto text-xs text-muted-foreground">Unsaved changes</span>
+          <button
+            type="button"
+            onClick={handleCancel}
+            disabled={saving}
+            className="px-3 py-1.5 rounded-lg text-xs border bg-background hover:bg-muted transition-colors disabled:opacity-50"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={saving}
+            className="px-3 py-1.5 rounded-lg text-xs text-white transition-colors disabled:opacity-60"
+            style={{ background: "#2B7BC8" }}
+          >
+            {saving ? "Saving…" : "Save changes"}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
