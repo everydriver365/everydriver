@@ -126,7 +126,7 @@ export function LessonLengthBufferEditor({ instructorId }: Props) {
             onChange={e => setDraft(p => p && ({ ...p, preferred_lesson_length: Number(e.target.value) }))}
             className="mt-1 w-full rounded-xl border bg-background px-3 py-2 text-sm"
           >
-            {LENGTHS.map(n => <option key={n} value={n}>{n} min</option>)}
+            {LENGTHS.map(n => <option key={n} value={n}>{formatLength(n)}</option>)}
           </select>
         </label>
 
