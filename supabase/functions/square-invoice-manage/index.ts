@@ -408,13 +408,31 @@ serve(async (req) => {
         }
       }
 
+      // Auto-resolve pupil by email if caller did not pass one. Lets the
+      // paid-invoice webhook auto-credit the pupil's balance.
+      let resolvedPupilId: string | null = pupil_id || null;
+      if (!resolvedPupilId && issuerInstructorId && recipient_email) {
+        try {
+          const { data: matchedPupil } = await supabase
+            .from("pupils")
+            .select("id")
+            .eq("instructor_id", issuerInstructorId)
+            .ilike("email", recipient_email.trim())
+            .is("deleted_at", null)
+            .maybeSingle();
+          if ((matchedPupil as any)?.id) resolvedPupilId = (matchedPupil as any).id;
+        } catch (e) {
+          console.warn("[square-invoice] pupil auto-match failed", e);
+        }
+      }
+
       // Insert row
       const { data: row, error: insertErr } = await supabase
         .from("square_invoices")
         .insert({
           issuer_type: issuerType,
           issuer_instructor_id: issuerInstructorId,
-          recipient_pupil_id: pupil_id || null,
+          recipient_pupil_id: resolvedPupilId,
           recipient_email,
           recipient_name,
           square_invoice_id: publishedInvoice.id,
