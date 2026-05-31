@@ -59,14 +59,13 @@ serve(async (req) => {
     }
 
     const status = String(korder.status || "").toUpperCase();
-    // AUTHORIZED / PART_CAPTURED / CAPTURED all count as "buyer paid" for our purposes.
-    const buyerPaid = ["AUTHORIZED", "PART_CAPTURED", "CAPTURED"].includes(status);
-    if (!buyerPaid) {
-      console.log("[klarna-invoice-webhook] non-paid status, skipping", orderId, status);
-      return new Response(JSON.stringify({ ok: true, status }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    // Map Klarna order status → our klarna_status
+    let klarnaStatus: "pending" | "paid" | "failed" | "cancelled" = "pending";
+    if (["AUTHORIZED", "PART_CAPTURED", "CAPTURED"].includes(status)) klarnaStatus = "paid";
+    else if (status === "CANCELLED") klarnaStatus = "cancelled";
+    else if (status === "EXPIRED" || status === "CLOSED") klarnaStatus = "failed";
+
+    const buyerPaid = klarnaStatus === "paid";
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
