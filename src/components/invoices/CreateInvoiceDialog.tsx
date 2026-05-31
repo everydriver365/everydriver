@@ -61,7 +61,7 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
   const [recipientEmail, setRecipientEmail] = useState("");
   const [dueDate, setDueDate] = useState(todayPlus(7));
   const [description, setDescription] = useState("");
-  const [serviceFeePounds, setServiceFeePounds] = useState("0");
+  const [serviceFeePounds, setServiceFeePounds] = useState("1");
   const [items, setItems] = useState<LineItemInput[]>([
     { name: "Driving lesson", quantity: 1, amount_pounds: "" },
   ]);
@@ -144,7 +144,7 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
     setRecipientEmail("");
     setDueDate(todayPlus(7));
     setDescription("");
-    setServiceFeePounds("0");
+    setServiceFeePounds("1");
     setItems([{ name: "Driving lesson", quantity: 1, amount_pounds: "" }]);
     setStep("form");
   };
@@ -416,6 +416,9 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
                   value={serviceFeePounds}
                   onChange={(e) => setServiceFeePounds(e.target.value)}
                 />
+                <p className="text-xs text-muted-foreground">
+                  Platform Service Fee is £1 per invoice.
+                </p>
               </div>
             </div>
 
