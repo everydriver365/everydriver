@@ -18009,6 +18009,9 @@ export type Database = {
           id: string
           issuer_instructor_id: string | null
           issuer_type: string
+          klarna_enabled: boolean
+          klarna_order_id: string | null
+          klarna_pay_url: string | null
           last_event_at: string | null
           line_items: Json
           paid_at: string | null
@@ -18036,6 +18039,9 @@ export type Database = {
           id?: string
           issuer_instructor_id?: string | null
           issuer_type: string
+          klarna_enabled?: boolean
+          klarna_order_id?: string | null
+          klarna_pay_url?: string | null
           last_event_at?: string | null
           line_items?: Json
           paid_at?: string | null
@@ -18063,6 +18069,9 @@ export type Database = {
           id?: string
           issuer_instructor_id?: string | null
           issuer_type?: string
+          klarna_enabled?: boolean
+          klarna_order_id?: string | null
+          klarna_pay_url?: string | null
           last_event_at?: string | null
           line_items?: Json
           paid_at?: string | null

@@ -72,6 +72,8 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
   const [bankAccountNumber, setBankAccountNumber] = useState("");
   const [bankReference, setBankReference] = useState("");
   const [allowClearpay, setAllowClearpay] = useState(false);
+  const [allowKlarna, setAllowKlarna] = useState(false);
+  const [instructorKlarnaEnabled, setInstructorKlarnaEnabled] = useState(false);
 
   useEffect(() => {
     try {
@@ -104,8 +106,27 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
       } catch {
         // non-fatal
       }
+      // Fetch instructor klarna_enabled flag (instructor scope only)
+      if (scope === "instructor") {
+        try {
+          const { data: auth } = await supabase.auth.getUser();
+          const uid = auth.user?.id;
+          if (uid) {
+            const { data: ins } = await supabase
+              .from("instructors")
+              .select("klarna_enabled")
+              .eq("auth_user_id", uid)
+              .maybeSingle();
+            setInstructorKlarnaEnabled(!!(ins as any)?.klarna_enabled);
+          }
+        } catch {
+          // non-fatal
+        }
+      } else {
+        setInstructorKlarnaEnabled(true);
+      }
     })();
-  }, [open]);
+  }, [open, scope]);
 
   const handlePupilCreated = (p: QuickAddedPupil) => {
     setPupils((arr) => [{ id: p.id, name: p.name, email: p.email }, ...arr]);
@@ -187,6 +208,7 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
         card: true,
         buy_now_pay_later: allowClearpay,
       },
+      klarna_enabled: allowKlarna && instructorKlarnaEnabled,
     };
   };
 
@@ -231,9 +253,13 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
         // ignore
       }
 
+      const klarnaErr = (data as any)?.klarna_error;
       toast({
         title: "Invoice sent",
-        description: `Emailed to ${recipientEmail}`,
+        description: klarnaErr
+          ? `Emailed to ${recipientEmail}. Klarna link failed: ${klarnaErr}`
+          : `Emailed to ${recipientEmail}`,
+        variant: klarnaErr ? "destructive" : "default",
       });
       reset();
       setOpen(false);
@@ -498,6 +524,21 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
                 </div>
                 <Switch checked={allowClearpay} onCheckedChange={setAllowClearpay} />
               </div>
+              {instructorKlarnaEnabled ? (
+                <div className="flex items-center justify-between rounded-md bg-muted/40 px-3 py-2">
+                  <div>
+                    <div className="text-sm font-medium">Klarna — pay in 3 / pay later</div>
+                    <div className="text-xs text-muted-foreground">
+                      Sends a separate Klarna payment link alongside the Square invoice. Eligibility decided by Klarna.
+                    </div>
+                  </div>
+                  <Switch checked={allowKlarna} onCheckedChange={setAllowKlarna} />
+                </div>
+              ) : (
+                <p className="text-[11px] text-muted-foreground px-1">
+                  Enable Klarna in your payment settings to offer it on invoices.
+                </p>
+              )}
             </div>
 
             <div className="flex items-center justify-between rounded-md border bg-muted/40 px-3 py-2 text-sm">

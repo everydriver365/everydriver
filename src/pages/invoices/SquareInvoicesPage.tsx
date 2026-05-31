@@ -32,6 +32,8 @@ interface InvoiceRow {
   recipient_email: string | null;
   square_invoice_id: string | null;
   public_url: string | null;
+  klarna_pay_url?: string | null;
+  klarna_enabled?: boolean | null;
   status: string;
   amount_cents: number;
   service_fee_cents: number;
@@ -341,6 +343,23 @@ export default function SquareInvoicesPage({ scope }: { scope: Scope }) {
                                 <a href={r.public_url} target="_blank" rel="noreferrer">
                                   <ExternalLink className="h-3.5 w-3.5" />
                                 </a>
+                              </Button>
+                            )}
+                            {r.klarna_pay_url && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                title="Copy Klarna pay link"
+                                onClick={async () => {
+                                  try {
+                                    await navigator.clipboard.writeText(r.klarna_pay_url!);
+                                    toast({ title: "Klarna link copied" });
+                                  } catch {
+                                    toast({ title: "Couldn't copy link", variant: "destructive" });
+                                  }
+                                }}
+                              >
+                                <span className="text-[10px] font-semibold tracking-wide text-pink-600">Klarna</span>
                               </Button>
                             )}
                           </div>
