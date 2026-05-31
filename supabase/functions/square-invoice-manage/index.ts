@@ -300,6 +300,7 @@ serve(async (req) => {
           square_order_id: orderId,
           public_url: publishedInvoice.public_url || null,
           square_location_id: locationId,
+          accepted_payment_methods: apm,
           status: (publishedInvoice.status || "UNPAID").toLowerCase(),
           amount_cents: totalCents,
           service_fee_cents,
