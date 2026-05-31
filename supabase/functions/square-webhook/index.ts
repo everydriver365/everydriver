@@ -412,34 +412,96 @@ serve(async (req: Request) => {
         break;
       }
 
+      case "invoice.created":
+      case "invoice.published":
+      case "invoice.updated":
+      case "invoice.canceled":
+      case "invoice.refunded":
       case "invoice.payment_made": {
         const invoice = data?.invoice;
+        const squareInvoiceId = invoice?.id;
         const subscriptionId = invoice?.subscription_id;
-        const customerId = invoice?.primary_recipient?.customer_id;
 
-        if (!subscriptionId) break;
-
-        console.log(`Payment made for subscription: ${subscriptionId}`);
-
-        // Find and update subscription
-        const { data: sub } = await supabase
-          .from("instructor_subscriptions")
-          .select("id")
-          .eq("square_subscription_id", subscriptionId)
-          .maybeSingle();
-
-        if (sub) {
-          // Extend subscription period by 30 days
-          await supabase
+        // Subscription-renewal invoice path (existing behaviour)
+        if (subscriptionId && eventType === "invoice.payment_made") {
+          console.log(`Payment made for subscription: ${subscriptionId}`);
+          const { data: sub } = await supabase
             .from("instructor_subscriptions")
-            .update({
-              status: "active",
-              current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-            })
-            .eq("id", sub.id);
+            .select("id")
+            .eq("square_subscription_id", subscriptionId)
+            .maybeSingle();
+          if (sub) {
+            await supabase
+              .from("instructor_subscriptions")
+              .update({
+                status: "active",
+                current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+              })
+              .eq("id", sub.id);
+          }
+          break;
+        }
+
+        // square_invoices row path (instructor/admin issued invoices)
+        if (!squareInvoiceId) break;
+        const { data: row } = await supabase
+          .from("square_invoices")
+          .select("id, recipient_pupil_id, amount_cents, currency, status, issuer_type, issuer_instructor_id")
+          .eq("square_invoice_id", squareInvoiceId)
+          .maybeSingle();
+        if (!row) {
+          console.log(`No square_invoices row for ${squareInvoiceId}`);
+          break;
+        }
+
+        const updates: Record<string, unknown> = { last_event_at: new Date().toISOString() };
+        if (eventType === "invoice.payment_made") {
+          updates.status = "paid";
+          updates.paid_at = new Date().toISOString();
+        } else if (eventType === "invoice.canceled") {
+          updates.status = "cancelled";
+          updates.cancelled_at = new Date().toISOString();
+        } else if (eventType === "invoice.refunded") {
+          updates.status = "refunded";
+        } else if (eventType === "invoice.published") {
+          updates.status = "sent";
+          updates.sent_at = updates.sent_at || new Date().toISOString();
+        } else {
+          const sqStatus = String(invoice?.status || "").toLowerCase();
+          if (sqStatus) updates.status = sqStatus;
+        }
+
+        await supabase.from("square_invoices").update(updates).eq("id", row.id);
+
+        // Credit pupil balance on paid (instructor invoices only)
+        if (
+          eventType === "invoice.payment_made" &&
+          row.status !== "paid" &&
+          row.issuer_type === "instructor" &&
+          row.recipient_pupil_id &&
+          row.amount_cents > 0
+        ) {
+          const amountPounds = row.amount_cents / 100;
+          try {
+            await supabase.rpc("increment_pupil_balance", {
+              p_pupil_id: row.recipient_pupil_id,
+              p_amount: amountPounds,
+            });
+            await supabase.from("payment_history").insert({
+              pupil_id: row.recipient_pupil_id,
+              instructor_id: row.issuer_instructor_id,
+              amount: amountPounds,
+              payment_method: "Square",
+              external_payment_ref: `square-invoice:${squareInvoiceId}`,
+              notes: `Square invoice payment (${squareInvoiceId})`,
+            });
+          } catch (e) {
+            console.error("Failed to credit pupil for invoice payment", e);
+          }
         }
         break;
       }
+
 
       case "invoice.payment_failed": {
         const invoice = data?.invoice;

@@ -9955,6 +9955,7 @@ export type Database = {
           dbs_update_service_expiry: string | null
           dbs_update_service_reminder_sent_at: string | null
           dbs_update_service_subscribed: boolean
+          default_invoice_due_days: number
           deleted_at: string | null
           demo_mode: boolean | null
           deposit_amount: number | null
@@ -10177,6 +10178,7 @@ export type Database = {
           dbs_update_service_expiry?: string | null
           dbs_update_service_reminder_sent_at?: string | null
           dbs_update_service_subscribed?: boolean
+          default_invoice_due_days?: number
           deleted_at?: string | null
           demo_mode?: boolean | null
           deposit_amount?: number | null
@@ -10399,6 +10401,7 @@ export type Database = {
           dbs_update_service_expiry?: string | null
           dbs_update_service_reminder_sent_at?: string | null
           dbs_update_service_subscribed?: boolean
+          default_invoice_due_days?: number
           deleted_at?: string | null
           demo_mode?: boolean | null
           deposit_amount?: number | null
@@ -17992,6 +17995,109 @@ export type Database = {
           speed_limit_kmh?: number
         }
         Relationships: []
+      }
+      square_invoices: {
+        Row: {
+          amount_cents: number
+          cancelled_at: string | null
+          created_at: string
+          created_by: string | null
+          currency: string
+          description: string | null
+          due_date: string | null
+          id: string
+          issuer_instructor_id: string | null
+          issuer_type: string
+          last_event_at: string | null
+          line_items: Json
+          paid_at: string | null
+          public_url: string | null
+          recipient_email: string | null
+          recipient_name: string | null
+          recipient_pupil_id: string | null
+          sent_at: string | null
+          service_fee_cents: number
+          square_invoice_id: string | null
+          square_location_id: string | null
+          square_order_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount_cents?: number
+          cancelled_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          issuer_instructor_id?: string | null
+          issuer_type: string
+          last_event_at?: string | null
+          line_items?: Json
+          paid_at?: string | null
+          public_url?: string | null
+          recipient_email?: string | null
+          recipient_name?: string | null
+          recipient_pupil_id?: string | null
+          sent_at?: string | null
+          service_fee_cents?: number
+          square_invoice_id?: string | null
+          square_location_id?: string | null
+          square_order_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          cancelled_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          issuer_instructor_id?: string | null
+          issuer_type?: string
+          last_event_at?: string | null
+          line_items?: Json
+          paid_at?: string | null
+          public_url?: string | null
+          recipient_email?: string | null
+          recipient_name?: string | null
+          recipient_pupil_id?: string | null
+          sent_at?: string | null
+          service_fee_cents?: number
+          square_invoice_id?: string | null
+          square_location_id?: string | null
+          square_order_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "square_invoices_issuer_instructor_id_fkey"
+            columns: ["issuer_instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "square_invoices_issuer_instructor_id_fkey"
+            columns: ["issuer_instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "square_invoices_recipient_pupil_id_fkey"
+            columns: ["recipient_pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       subscription_payments: {
         Row: {
