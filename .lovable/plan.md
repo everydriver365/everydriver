@@ -1,63 +1,25 @@
-# Hide non-current/deleted pupils in selectors + allow adding a new pupil inline
+# Remove app-wide dictation mic + fix collapsed input layouts
 
-## What "current pupil" means
-Based on the `pupils` schema:
-- `deleted_at IS NULL` (not soft-deleted)
-- `status = 'active'` (not `inactive` / archived)
+## Root cause
+`src/components/ui/input.tsx` was customised to:
+1. Default `enableDictation = true` → every text input renders a mic button inside it.
+2. Wrap the native `<input>` in `<div className="relative flex items-center w-full">` so the mic icon can be absolutely positioned. But `className` (with grid utilities like `col-span-6`) is forwarded to the inner `<input>`, not the wrapper div — so in grid layouts (e.g. invoice line items) all inputs collapse into the first grid track and render as ~40px squares.
 
-These two filters together = "current pupil". Every dropdown/picker that lets the user choose a pupil should apply both.
+Result on `/instructor/invoices` New invoice → Line items: three tiny boxes stacked at left under the NAME column, each with a mic icon.
 
-## Selectors to update
-These components query `pupils` and present a chooser UI but currently don't filter properly:
+## Fix
+Replace `src/components/ui/input.tsx` with the standard shadcn Input primitive:
 
-1. `src/components/invoices/CreateInvoiceDialog.tsx` — no filter at all
-2. `src/components/quotes/CreateQuoteDialog.tsx` — no filter at all
-3. `src/components/instructor/PupilSelector.tsx` — has `deleted_at`, missing status
-4. `src/components/instructor/PupilPickerDialog.tsx` / `PupilPickerSheet.tsx`
-5. `src/components/instructor/ui/PupilSelectorRow.tsx`
-6. `src/components/instructor/AddLessonSheet.tsx`
-7. `src/components/instructor/AddCalendarEventDialog.tsx`
-8. `src/components/instructor/DrivingTestStartDialog.tsx`
-9. `src/components/instructor/QuickTestResultForm.tsx`
-10. `src/components/instructor/PupilProgressReportGenerator.tsx`
-11. `src/components/instructor/RefundModal.tsx`
-12. `src/components/instructor/VoiceQuickAddLessonSheet.tsx`
-13. `src/components/instructor/subscriptions/AddSubscriptionSheet.tsx`
-14. `src/components/instructor/tracking/SessionStartPanel.tsx`
-15. `src/components/instructor/dashboard/NotesWidget.tsx`
-16. `src/components/instructor/CertificationTracker.tsx`
-17. `src/components/instructor/LovableTracker.tsx`
-18. `src/components/course-planner/CoursePlannerForm.tsx`
-19. `src/components/test-requests/TestRequestForm.tsx`
-20. `src/components/school/SchoolTakePaymentModal.tsx`
-21. `src/pages/InstructorLiveSession.tsx`, `InstructorTestResults.tsx`, `InstructorSendReminder.tsx`, `InstructorTakePayment.tsx`, `instructor-app/InstructorPaymentsDesktop.tsx`
+- No wrapper div, no dictation button, no `enableDictation`/`dictationLang` props.
+- `className` applies directly to `<input>` — grid utilities work again.
+- Keeps the same `forwardRef`, displayName, default styling, and exported `InputProps` (with the two extra props removed) so existing imports continue to compile.
 
-For each, add `.eq("status", "active").is("deleted_at", null)` to the pupil list query.
-
-Excluded from this change (intentional — they need to surface all/archived pupils for management): admin pupil records manager, reassign-pupils dialog, instructor Pupils list page, reports/analytics, payment reconciliation, and any history/portal/back-office views.
-
-## Add new pupil inline
-
-Create one shared lightweight component:
-
-`src/components/instructor/pupils/QuickAddPupilButton.tsx`
-- Small "+ New pupil" button that opens a compact dialog
-- Fields: name (required), email, phone, source (optional select)
-- Inserts into `pupils` with `instructor_id = get_instructor_id_for_user(auth.uid())`, `status = 'active'`, `scheduling_status = 'unscheduled'`
-- On success, returns the new pupil via `onCreated(pupil)` and shows a toast
-- Admin scope variant: accepts an `instructorId` prop; when present, uses that as the new pupil's `instructor_id` (admin must already have selected an instructor in the parent dialog)
-
-Wire `QuickAddPupilButton` into the selector header of every dialog listed above so the user can add a pupil without leaving the flow. On create, the parent appends the new pupil to its local list and auto-selects it.
-
-For the heavyweight `PupilPickerSheet` / `PupilPickerDialog` (instructor browse-style picker), add the same trigger in the sheet header.
+Delete the now-unused dictation helper to avoid drift: `src/components/ui/dictation-button.tsx` (verified used only by the Input wrapper).
 
 ## Out of scope
-- No mobile layout changes
-- No schema migration (status + deleted_at already exist)
-- No admin-side "all pupils" management list changes
-- No changes to the full `AddPupilSheet` (kept for the dedicated Pupils page)
+- No changes to individual dialogs/forms — fixing the Input primitive transparently restores correct layout everywhere and removes the mic across the app.
+- No mobile-layout changes.
+- Speech-to-text inside `AddLessonSheet` / `VoiceQuickAddLessonSheet` (those use their own voice flows, not the Input's DictationButton) remains untouched.
 
 ## Technical notes
-- New pupil insert relies on existing RLS: `instructor_id = public.get_instructor_id_for_user(auth.uid())` for instructor scope; admin scope uses the explicitly selected `instructorId`.
-- `QuickAddPupilButton` is purely additive — no existing AddPupilSheet behavior changes.
-- All filters use the same two predicates so behavior is uniform.
+- I'll first grep for any direct usage of `enableDictation` / `dictationLang` props or imports of `dictation-button` outside the Input file. If any non-Input consumer exists, I'll keep `dictation-button.tsx` and only strip the dictation wrapper out of `Input`. Otherwise the file is deleted.
