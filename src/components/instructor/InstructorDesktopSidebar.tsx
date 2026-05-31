@@ -4,7 +4,7 @@ import {
   Home, Calendar, CalendarClock, ClipboardList, Users, Award, Briefcase,
   CreditCard, Wallet, Receipt, MessageCircle, ShieldCheck, Headphones,
   MapPin, Navigation, FileText, Globe, Globe2, Radio, Settings,
-  LogOut, Car, Camera, Pin, ChevronDown, Lock, CalendarSearch, Upload, Search,
+  LogOut, Car, Camera, Pin, ChevronDown, Lock, CalendarSearch, Upload, Search, FileSpreadsheet,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent,
@@ -46,6 +46,7 @@ const sidebarGroups = [
     items: [
       { href: "/instructor/pay", label: "Payments", icon: CreditCard },
       { href: "/instructor/accounts", label: "Accounts", icon: Wallet },
+      { href: "/instructor/invoices", label: "Invoices", icon: FileSpreadsheet },
       { href: "/instructor/expenses", label: "Expenses", icon: Receipt },
     ],
   },
