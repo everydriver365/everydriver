@@ -92,6 +92,58 @@ function isInsufficientScopes(json: any): boolean {
   return errors.some((e: any) => e?.code === "INSUFFICIENT_SCOPES");
 }
 
+// Per-country allowlist of `accepted_payment_methods` keys that Square will
+// actually honour on an invoice. Anything not in this set is silently dropped
+// before the create call so Square never returns a BAD_REQUEST for an
+// unsupported method (e.g. bank_account in GB, cash_app_pay outside US).
+// Source: Square Invoices API country availability matrix.
+const SQUARE_INVOICE_METHODS_BY_COUNTRY: Record<string, ReadonlyArray<keyof AcceptedPaymentMethods>> = {
+  US: ["card", "square_gift_card", "bank_account", "buy_now_pay_later", "cash_app_pay"],
+  CA: ["card", "square_gift_card"],
+  GB: ["card", "buy_now_pay_later"],
+  IE: ["card", "buy_now_pay_later"],
+  AU: ["card", "buy_now_pay_later"],
+  FR: ["card"],
+  ES: ["card"],
+  JP: ["card"],
+};
+const DEFAULT_SUPPORTED_METHODS: ReadonlyArray<keyof AcceptedPaymentMethods> = ["card"];
+
+function sanitizeAcceptedPaymentMethods(
+  requested: AcceptedPaymentMethods | undefined,
+  countryCode: string | null | undefined,
+): { apm: Record<string, boolean>; dropped: string[] } {
+  const country = (countryCode || "").toUpperCase();
+  const allowed = new Set(SQUARE_INVOICE_METHODS_BY_COUNTRY[country] ?? DEFAULT_SUPPORTED_METHODS);
+  // Card is mandatory — Square requires at least one accepted method.
+  const apm: Record<string, boolean> = {
+    card: true,
+    square_gift_card: false,
+    bank_account: false,
+    buy_now_pay_later: false,
+    cash_app_pay: false,
+  };
+  const dropped: string[] = [];
+  const keys: Array<keyof AcceptedPaymentMethods> = [
+    "card",
+    "square_gift_card",
+    "bank_account",
+    "buy_now_pay_later",
+    "cash_app_pay",
+  ];
+  for (const k of keys) {
+    const wanted = !!requested?.[k];
+    if (!wanted) continue;
+    if (allowed.has(k)) {
+      apm[k] = true;
+    } else {
+      dropped.push(k);
+    }
+  }
+  return { apm, dropped };
+}
+
+
 const RECONNECT_MSG =
   "Your Square connection is missing required permissions. Please disconnect and reconnect Square from the invoices page, then try again.";
 
