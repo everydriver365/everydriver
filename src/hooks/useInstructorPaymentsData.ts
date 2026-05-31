@@ -225,7 +225,7 @@ export function useInstructorPaymentsData(instructorId: string | undefined): Pay
             forText: shortFor(p.notes, method, amount),
             note: p.notes ?? null,
             amount,
-            status: normalizeStatus(amount, p.notes, p.payout_status),
+            status: normalizeStatus(amount, p.notes, p.payout_status, p.payment_method),
           };
         });
 
