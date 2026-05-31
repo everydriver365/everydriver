@@ -769,26 +769,97 @@ serve(async (req: Request) => {
           break;
         }
 
-        // Idempotency: skip if we already recorded this refund
-        const { data: existing } = await supabase
+        // Idempotency: prefer external_payment_ref, fall back to legacy notes match
+        const refundRef = `square-refund:${refundId}`;
+        const { data: existingByRef } = await supabase
+          .from("payment_history")
+          .select("id")
+          .eq("external_payment_ref", refundRef)
+          .maybeSingle();
+        const { data: existingLegacy } = existingByRef ? { data: null } : await supabase
           .from("payment_history")
           .select("id")
           .ilike("notes", `%Refund ${refundId}%`)
           .limit(1)
           .maybeSingle();
-        if (existing) {
+        if (existingByRef || existingLegacy) {
           console.log(`Refund ${refundId} already recorded, skipping`);
           break;
         }
 
-        // Find the original payment_history row via the Square payment id stored in notes
-        const { data: original } = await supabase
-          .from("payment_history")
-          .select("id, instructor_id, pupil_id, amount")
-          .ilike("notes", `%${originalPaymentId}%`)
-          .order("recorded_at", { ascending: false })
-          .limit(1)
-          .maybeSingle();
+        // Find the original payment_history row.
+        // 1) Try canonical external_payment_ref = square:<paymentId> (Checkout/wallet path)
+        let original: { id: string; instructor_id: string | null; pupil_id: string | null; amount: number | null } | null = null;
+        let matchedInvoiceId: string | null = null;
+
+        {
+          const { data: byRef } = await supabase
+            .from("payment_history")
+            .select("id, instructor_id, pupil_id, amount")
+            .eq("external_payment_ref", `square:${originalPaymentId}`)
+            .maybeSingle();
+          if (byRef) original = byRef;
+        }
+
+        // 2) Fallback: look up Square payment to find an invoice/order it belongs to,
+        // then match payment_history.external_payment_ref = square-invoice:<invoiceId>
+        if (!original) {
+          try {
+            const SQUARE_TOKEN = Deno.env.get("SQUARE_ACCESS_TOKEN");
+            const SQUARE_ENV = Deno.env.get("SQUARE_ENVIRONMENT") === "production" ? "production" : "sandbox";
+            const SQUARE_HOST = SQUARE_ENV === "production"
+              ? "https://connect.squareup.com"
+              : "https://connect.squareupsandbox.com";
+            if (SQUARE_TOKEN) {
+              const payRes = await fetch(`${SQUARE_HOST}/v2/payments/${originalPaymentId}`, {
+                headers: { Authorization: `Bearer ${SQUARE_TOKEN}`, "Square-Version": "2024-12-18" },
+              });
+              if (payRes.ok) {
+                const payJson = await payRes.json();
+                const invoiceId: string | undefined = payJson?.payment?.invoice_id;
+                const orderId: string | undefined = payJson?.payment?.order_id;
+                if (invoiceId) {
+                  const { data: byInv } = await supabase
+                    .from("payment_history")
+                    .select("id, instructor_id, pupil_id, amount")
+                    .eq("external_payment_ref", `square-invoice:${invoiceId}`)
+                    .maybeSingle();
+                  if (byInv) { original = byInv; matchedInvoiceId = invoiceId; }
+                }
+                // Last-resort: resolve invoice via order id on square_invoices
+                if (!original && orderId) {
+                  const { data: invRow } = await supabase
+                    .from("square_invoices")
+                    .select("square_invoice_id, recipient_pupil_id, issuer_instructor_id")
+                    .eq("square_order_id", orderId)
+                    .maybeSingle();
+                  if (invRow?.square_invoice_id) {
+                    const { data: byInv } = await supabase
+                      .from("payment_history")
+                      .select("id, instructor_id, pupil_id, amount")
+                      .eq("external_payment_ref", `square-invoice:${invRow.square_invoice_id}`)
+                      .maybeSingle();
+                    if (byInv) { original = byInv; matchedInvoiceId = invRow.square_invoice_id; }
+                  }
+                }
+              }
+            }
+          } catch (e) {
+            console.warn("refund lookup via Square API failed:", e);
+          }
+        }
+
+        // 3) Legacy fallback by notes (pre-external_payment_ref payments)
+        if (!original) {
+          const { data: byNotes } = await supabase
+            .from("payment_history")
+            .select("id, instructor_id, pupil_id, amount")
+            .ilike("notes", `%${originalPaymentId}%`)
+            .order("recorded_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          if (byNotes) original = byNotes;
+        }
 
         if (!original) {
           console.warn(`Refund ${refundId}: no matching payment for ${originalPaymentId}`);
@@ -797,7 +868,7 @@ serve(async (req: Request) => {
 
         const fullRefund = Math.abs(Number(original.amount || 0) - refundAmount) < 0.01;
 
-        // Insert a negative payment_history row tagged with refund id
+        // Insert a negative payment_history row tagged with refund id (idempotent ref)
         const { error: insErr } = await supabase.from("payment_history").insert({
           instructor_id: original.instructor_id,
           pupil_id: original.pupil_id,
@@ -805,21 +876,44 @@ serve(async (req: Request) => {
           payment_method: "Square Refund",
           payment_type: "refund",
           payout_status: "refunded",
-          notes: `Refund ${refundId} for payment ${originalPaymentId}${fullRefund ? " (full)" : " (partial)"}`,
+          external_payment_ref: refundRef,
+          notes: `Refund ${refundId} for payment ${originalPaymentId}${matchedInvoiceId ? ` (invoice ${matchedInvoiceId})` : ""}${fullRefund ? " (full)" : " (partial)"}`,
         });
         if (insErr) console.error("Refund insert failed:", insErr);
 
         // Decrement pupil balance
-        await supabase.rpc("increment_pupil_balance", {
-          p_pupil_id: original.pupil_id,
-          p_amount: -Math.abs(refundAmount),
-        });
+        if (original.pupil_id) {
+          await supabase.rpc("increment_pupil_balance", {
+            p_pupil_id: original.pupil_id,
+            p_amount: -Math.abs(refundAmount),
+          });
+        }
 
         // Mark original as refunded (or partially refunded)
         await supabase
           .from("payment_history")
           .update({ payout_status: fullRefund ? "refunded" : "partially_refunded" })
           .eq("id", original.id);
+
+        // If this refund traced back to an invoice, also update square_invoices
+        if (matchedInvoiceId) {
+          const { data: invRow } = await supabase
+            .from("square_invoices")
+            .select("id, amount_cents, refund_amount_cents")
+            .eq("square_invoice_id", matchedInvoiceId)
+            .maybeSingle();
+          if (invRow) {
+            const newRefundCents = (invRow.refund_amount_cents || 0) + Math.round(refundAmount * 100);
+            const isFullyRefunded = newRefundCents >= (invRow.amount_cents || 0);
+            await supabase.from("square_invoices").update({
+              status: isFullyRefunded ? "refunded" : "partially_refunded",
+              refunded_at: new Date().toISOString(),
+              refund_amount_cents: newRefundCents,
+              last_event_at: new Date().toISOString(),
+            }).eq("id", invRow.id);
+          }
+        }
+
 
         // Notify instructor
         try {
