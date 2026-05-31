@@ -487,6 +487,8 @@ export default function InstructorLiveSession() {
         .from("pupils")
         .select("id, name")
         .eq("instructor_id", instructor.id)
+        .eq("status", "active")
+        .is("deleted_at", null)
         .order("name");
       
       if (pupilError) throw pupilError;
