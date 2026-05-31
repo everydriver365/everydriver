@@ -89,7 +89,7 @@ export function QuickAddPupilButton({
 
       const { data, error } = await supabase
         .from("pupils")
-        .insert(payload)
+        .insert(payload as any)
         .select("id, name, email, phone, postcode")
         .single();
       if (error) throw error;
