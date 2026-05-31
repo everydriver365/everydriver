@@ -212,6 +212,20 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
       if (error) throw error;
       if ((data as any)?.error) throw new Error((data as any).error);
 
+      try {
+        localStorage.setItem(
+          bankStorageKey,
+          JSON.stringify({
+            enabled: showBank,
+            name: bankAccountName,
+            sort: bankSortCode,
+            number: bankAccountNumber,
+          }),
+        );
+      } catch {
+        // ignore
+      }
+
       toast({
         title: "Invoice sent",
         description: `Emailed to ${recipientEmail}`,
