@@ -129,7 +129,7 @@ export function NextLessonsSheet({ open, onClose, instructorId, onLessonClick }:
           left: 0,
           right: 0,
           bottom: 0,
-          maxHeight: "85vh",
+          top: "10vh",
           background: "#FFFFFF",
           borderTopLeftRadius: 22,
           borderTopRightRadius: 22,
@@ -138,6 +138,7 @@ export function NextLessonsSheet({ open, onClose, instructorId, onLessonClick }:
           transition: "transform 220ms cubic-bezier(.2,.8,.2,1)",
           display: "flex",
           flexDirection: "column",
+          minHeight: 0,
         }}
       >
         {/* Grabber */}
