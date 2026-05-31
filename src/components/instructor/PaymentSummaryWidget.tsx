@@ -29,16 +29,21 @@ export function PaymentSummaryWidget({ instructorId, instructorName, compact = f
 
   const fetchPaymentStats = async () => {
     try {
-      // Get start of current month
+      // Current month window
       const now = new Date();
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+      const startOfNextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1).toISOString();
 
-      // Fetch payments this month
+      // Fetch payments this month — only money actually received:
+      // exclude soft-deleted, exclude negative rows (lesson charges / refunds).
       const { data: payments, error: paymentsError } = await supabase
         .from("payment_history")
         .select("amount")
         .eq("instructor_id", instructorId)
-        .gte("recorded_at", startOfMonth);
+        .is("deleted_at", null)
+        .gt("amount", 0)
+        .gte("recorded_at", startOfMonth)
+        .lt("recorded_at", startOfNextMonth);
 
       if (paymentsError) throw paymentsError;
 
@@ -50,7 +55,7 @@ export function PaymentSummaryWidget({ instructorId, instructorName, compact = f
 
       if (pupilsError) throw pupilsError;
 
-      const totalThisMonth = payments?.reduce((sum, p) => sum + Number(p.amount), 0) || 0;
+      const totalThisMonth = payments?.reduce((sum, p) => sum + Math.max(0, Number(p.amount) || 0), 0) || 0;
       const paymentsCount = payments?.length || 0;
       
       // Outstanding = sum of negative balances (pupils who owe money)
