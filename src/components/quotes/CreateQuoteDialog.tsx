@@ -85,7 +85,7 @@ export function CreateQuoteDialog({ scope, instructorId, onCreated }: Props) {
       if (targetInstructor) {
         const { data } = await supabase
           .from("pupils")
-          .select("id, name, email, phone, home_postcode")
+          .select("id, name, email, phone, postcode")
           .eq("instructor_id", targetInstructor)
           .order("name", { ascending: true })
           .limit(500);
@@ -127,7 +127,7 @@ export function CreateQuoteDialog({ scope, instructorId, onCreated }: Props) {
       pupil_name: p.name || f.pupil_name,
       email: p.email || f.email,
       phone: p.phone || f.phone,
-      postcode: p.home_postcode || f.postcode,
+      postcode: p.postcode || f.postcode,
     }));
   };
 
