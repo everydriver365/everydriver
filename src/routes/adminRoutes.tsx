@@ -141,6 +141,10 @@ export const adminRoutes = (
       path="/admin/invoices"
       element={<ProtectedAdminRoute><AdminSquareInvoices /></ProtectedAdminRoute>}
     />
+    <Route
+      path="/admin/quotes"
+      element={<ProtectedAdminRoute><AdminQuotes /></ProtectedAdminRoute>}
+    />
   </>
 );
 
