@@ -21,7 +21,7 @@ import { useToast } from "@/hooks/use-toast";
 import { logCourseActivity } from "@/lib/courseActivityLog";
 import {
   Loader2, Mail, Phone, MapPin, CheckCircle2, Clock, XCircle,
-  AlertTriangle, Star, ArrowLeft, Copy, Undo2, History,
+  AlertTriangle, Star, ArrowLeft, Copy, Undo2, History, MessageSquare, Send,
 } from "lucide-react";
 
 type Props = {
@@ -313,6 +313,51 @@ export function PupilCourseSummary({ pupilId, onBack, backHref }: Props) {
     }
   }, [pupil, lessons, toast, load]);
 
+  // ---------- Payment reminder ----------
+  const sendReminder = useCallback(async (method: "sms" | "email") => {
+    if (!pupil || !instructor) return;
+    if (method === "sms" && !pupil.phone) {
+      toast({ title: "No phone on file", description: "Add a phone number to text this pupil.", variant: "destructive" });
+      return;
+    }
+    if (method === "email" && !pupil.email) {
+      toast({ title: "No email on file", description: "Add an email to message this pupil.", variant: "destructive" });
+      return;
+    }
+    setWorking(`reminder-${method}`);
+    try {
+      const { data, error } = await supabase.functions.invoke("send-payment-reminder", {
+        body: {
+          instructorId: instructor.id,
+          instructorName: instructor.name,
+          pupilIds: [pupil.id],
+          method,
+        },
+      });
+      if (error) throw error;
+      const result = data as { sent?: number; emailSent?: number; failed?: number; details?: { error?: string }[] };
+      const ok = (result.sent || 0) + (result.emailSent || 0);
+      if (ok > 0) {
+        await logCourseActivity({
+          pupilId: pupil.id,
+          instructorId: pupil.instructor_id,
+          action: "reminder_sent",
+          details: { method, amount: totals.outstanding },
+        });
+        toast({ title: method === "sms" ? "Text reminder sent" : "Email reminder sent", description: `${pupil.name} · ${fmt(totals.outstanding)}` });
+        load();
+      } else {
+        const errMsg = result.details?.[0]?.error || "No message was sent";
+        throw new Error(errMsg);
+      }
+    } catch (e) {
+      toast({ title: "Reminder failed", description: (e as Error).message, variant: "destructive" });
+    } finally {
+      setWorking(null);
+    }
+  }, [pupil, instructor, totals.outstanding, toast, load]);
+
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -360,13 +405,37 @@ export function PupilCourseSummary({ pupilId, onBack, backHref }: Props) {
 
       {/* Outstanding banner */}
       {totals.outstanding > 0 && (
-        <div style={{ backgroundColor: "#FEF2F2", border: "1px solid #FECACA", borderLeft: "4px solid #C0271F", borderRadius: 12, padding: "14px 20px" }} className="flex items-center justify-between">
+        <div style={{ backgroundColor: "#FEF2F2", border: "1px solid #FECACA", borderLeft: "4px solid #C0271F", borderRadius: 12, padding: "14px 20px" }} className="flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-3">
             <AlertTriangle className="h-5 w-5" style={{ color: "#C0271F" }} />
             <div>
               <div style={{ color: "#C0271F", fontSize: 14, fontWeight: 600 }}>Outstanding balance — {fmt(totals.outstanding)}</div>
-              <div style={{ fontSize: 12, color: "#9CA3AF" }}>{pupil.name}</div>
+              <div style={{ fontSize: 12, color: "#9CA3AF" }}>{pupil.name} — send a reminder</div>
             </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={working === "reminder-sms" || !pupil.phone}
+              onClick={() => sendReminder("sms")}
+              title={pupil.phone ? `Text ${pupil.phone}` : "No phone on file"}
+              className="bg-white"
+            >
+              {working === "reminder-sms" ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-2" /> : <MessageSquare className="h-3.5 w-3.5 mr-2" />}
+              Text reminder
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={working === "reminder-email" || !pupil.email}
+              onClick={() => sendReminder("email")}
+              title={pupil.email ? `Email ${pupil.email}` : "No email on file"}
+              className="bg-white"
+            >
+              {working === "reminder-email" ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-2" /> : <Send className="h-3.5 w-3.5 mr-2" />}
+              Email reminder
+            </Button>
           </div>
         </div>
       )}
