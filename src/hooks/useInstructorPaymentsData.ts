@@ -33,6 +33,9 @@ export interface CashFlowBucket {
 export interface PaymentsStats {
   receivedMonth: number;
   receivedCount: number;
+  grossMonth: number;
+  refundsMonth: number;
+  refundsCount: number;
   outstanding: number;
   outstandingPupils: number;
   nextPayout: number;
