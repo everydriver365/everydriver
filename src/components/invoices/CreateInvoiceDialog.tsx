@@ -557,6 +557,17 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
               </div>
             )}
 
+            {showBank && buildBankBlock() && (
+              <div className="px-5 py-3 border-t">
+                <div className="text-xs uppercase tracking-wide text-muted-foreground mb-1">
+                  Pay by bank transfer
+                </div>
+                <pre className="text-xs text-foreground whitespace-pre-wrap font-sans">
+{buildBankBlock()}
+                </pre>
+              </div>
+            )}
+
             <div className="px-5 py-3 border-t text-xs text-muted-foreground">
               An email with a secure payment link will be sent to{" "}
               <span className="font-medium text-foreground">{recipientEmail}</span> from Square.
