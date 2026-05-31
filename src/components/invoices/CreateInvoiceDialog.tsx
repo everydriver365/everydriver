@@ -72,6 +72,8 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
         const { data } = await supabase
           .from("pupils")
           .select("id, name, email")
+          .eq("status", "active")
+          .is("deleted_at", null)
           .order("name", { ascending: true })
           .limit(500);
         setPupils((data as PupilOption[]) || []);
@@ -80,6 +82,13 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
       }
     })();
   }, [open]);
+
+  const handlePupilCreated = (p: QuickAddedPupil) => {
+    setPupils((arr) => [{ id: p.id, name: p.name, email: p.email }, ...arr]);
+    setPupilId(p.id);
+    if (p.name) setRecipientName(p.name);
+    if (p.email) setRecipientEmail(p.email);
+  };
 
   const onSelectPupil = (id: string) => {
     setPupilId(id);
