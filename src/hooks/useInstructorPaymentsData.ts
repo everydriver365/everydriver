@@ -330,7 +330,7 @@ export function useInstructorPaymentsData(instructorId: string | undefined): Pay
         if (!ytdRes.error && ytdRes.data) {
           const cardYtd = ytdRes.data
             .filter((p: any) => normalizeMethod(p.payment_method) === "card"
-              && normalizeStatus(Number(p.amount), p.notes, p.payout_status) === "paid")
+              && normalizeStatus(Number(p.amount), p.notes, p.payout_status, p.payment_method) === "paid")
             .reduce((s: number, p: any) => s + Number(p.amount || 0), 0);
           feesYearToDate = +((cardYtd * FEE_RATE) + platformYtd).toFixed(2);
         }
