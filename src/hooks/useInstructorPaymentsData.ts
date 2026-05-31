@@ -242,7 +242,7 @@ export function useInstructorPaymentsData(instructorId: string | undefined): Pay
         const grossMonth = +paidTx.reduce((s, t) => s + t.amount, 0).toFixed(2);
         const refundsMonth = +Math.abs(refundTx.reduce((s, t) => s + t.amount, 0)).toFixed(2);
         const receivedMonth = +(grossMonth - refundsMonth).toFixed(2);
-        const cardMonth = monthTx.filter(t => t.method === "card").reduce((s, t) => s + t.amount, 0);
+        const grossCardMonth = paidTx.filter(t => t.method === "card").reduce((s, t) => s + t.amount, 0);
         const platformFeesRows = (platformFeesMonthRes.data || []) as any[];
         const platformFeesMonthTotal = platformFeesRows
           .reduce((s: number, r: any) => s + Number(r.amount || 0), 0);
@@ -255,8 +255,8 @@ export function useInstructorPaymentsData(instructorId: string | undefined): Pay
         const platformUpliftFeesMonth = platformFeesRows
           .filter((r) => /uplift/i.test(r.kind || ""))
           .reduce((s, r) => s + Number(r.amount || 0), 0);
-        const feesMonth = +((Math.max(0, cardMonth) * FEE_RATE) + platformFeesMonthTotal).toFixed(2);
-        const effectiveFeeRate = receivedMonth > 0 ? +((feesMonth / receivedMonth) * 100).toFixed(2) : 0;
+        const feesMonth = +platformFeesMonthTotal.toFixed(2);
+        const effectiveFeeRate = grossCardMonth > 0 ? +((feesMonth / grossCardMonth) * 100).toFixed(2) : 0;
 
         // Pending payout = card payments captured but NOT yet transferred (excl. refunded)
         const pendingPayout = rawPayments
