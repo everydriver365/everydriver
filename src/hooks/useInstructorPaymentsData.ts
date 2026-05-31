@@ -161,7 +161,7 @@ export function useInstructorPaymentsData(instructorId: string | undefined): Pay
       grossMonth: 0, refundsMonth: 0, refundsCount: 0,
       outstanding: 0, outstandingPupils: 0,
       nextPayout: 0, nextPayoutDate: "—",
-      feesMonth: 0, effectiveFeeRate: FEE_RATE * 100,
+      feesMonth: 0, effectiveFeeRate: 0,
       feesYearToDate: 0, feesYearLabel: "",
       platformFeesMonth: 0, platformBookingFeesMonth: 0,
       platformTransactionFeesMonth: 0, platformUpliftFeesMonth: 0,
