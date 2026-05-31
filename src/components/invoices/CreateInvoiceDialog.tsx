@@ -246,6 +246,7 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
         bank_account: !!bankBlock,
       },
       klarna_enabled: allowKlarna && instructorKlarnaEnabled,
+      location_id: locationId || null,
     };
   };
 
