@@ -319,6 +319,7 @@ export function AddLessonSheet({
       .from('pupils')
       .select('id, name, phone, address, postcode, source')
       .eq('instructor_id', instructorId)
+      .eq('status', 'active')
       .is('deleted_at', null)
       .order('name');
     if (!error && data) setPupils(data);
