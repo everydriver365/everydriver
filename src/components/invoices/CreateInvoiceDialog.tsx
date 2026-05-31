@@ -520,6 +520,21 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
                 </div>
                 <Switch checked={allowClearpay} onCheckedChange={setAllowClearpay} />
               </div>
+              {instructorKlarnaEnabled ? (
+                <div className="flex items-center justify-between rounded-md bg-muted/40 px-3 py-2">
+                  <div>
+                    <div className="text-sm font-medium">Klarna — pay in 3 / pay later</div>
+                    <div className="text-xs text-muted-foreground">
+                      Sends a separate Klarna payment link alongside the Square invoice. Eligibility decided by Klarna.
+                    </div>
+                  </div>
+                  <Switch checked={allowKlarna} onCheckedChange={setAllowKlarna} />
+                </div>
+              ) : (
+                <p className="text-[11px] text-muted-foreground px-1">
+                  Enable Klarna in your payment settings to offer it on invoices.
+                </p>
+              )}
             </div>
 
             <div className="flex items-center justify-between rounded-md border bg-muted/40 px-3 py-2 text-sm">
