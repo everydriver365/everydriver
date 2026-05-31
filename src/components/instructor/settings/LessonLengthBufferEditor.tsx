@@ -189,6 +189,29 @@ export function LessonLengthBufferEditor({ instructorId }: Props) {
           />
         </button>
       </div>
+
+      {dirty && (
+        <div className="flex items-center justify-end gap-2 pt-2 border-t">
+          <span className="mr-auto text-xs text-muted-foreground">Unsaved changes</span>
+          <button
+            type="button"
+            onClick={handleCancel}
+            disabled={saving}
+            className="px-3 py-1.5 rounded-lg text-xs border bg-background hover:bg-muted transition-colors disabled:opacity-50"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={saving}
+            className="px-3 py-1.5 rounded-lg text-xs text-white transition-colors disabled:opacity-60"
+            style={{ background: "#2B7BC8" }}
+          >
+            {saving ? "Saving…" : "Save changes"}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
