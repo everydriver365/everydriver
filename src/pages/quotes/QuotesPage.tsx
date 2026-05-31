@@ -119,12 +119,12 @@ export default function QuotesPage({ scope }: { scope: Scope }) {
     let pendingValue = 0;
     let acceptedValue = 0;
     for (const r of filtered) {
-      if (r.status === "pending") {
-        pending += 1;
-        pendingValue += Number(r.price) || 0;
-      } else if (r.status === "accepted") {
+      if (r.status === "accepted") {
         accepted += 1;
-        acceptedValue += Number(r.price) || 0;
+        acceptedValue += Number(r.price_pence) || 0;
+      } else if (["draft", "sent", "viewed"].includes(r.status)) {
+        pending += 1;
+        pendingValue += Number(r.price_pence) || 0;
       }
     }
     return { count: filtered.length, pending, accepted, pendingValue, acceptedValue };
