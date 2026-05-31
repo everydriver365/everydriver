@@ -23,6 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
+import { QuickAddPupilButton, type QuickAddedPupil } from "@/components/instructor/pupils/QuickAddPupilButton";
 
 interface PupilOption {
   id: string;
@@ -71,6 +72,8 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
         const { data } = await supabase
           .from("pupils")
           .select("id, name, email")
+          .eq("status", "active")
+          .is("deleted_at", null)
           .order("name", { ascending: true })
           .limit(500);
         setPupils((data as PupilOption[]) || []);
@@ -79,6 +82,13 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
       }
     })();
   }, [open]);
+
+  const handlePupilCreated = (p: QuickAddedPupil) => {
+    setPupils((arr) => [{ id: p.id, name: p.name, email: p.email }, ...arr]);
+    setPupilId(p.id);
+    if (p.name) setRecipientName(p.name);
+    if (p.email) setRecipientEmail(p.email);
+  };
 
   const onSelectPupil = (id: string) => {
     setPupilId(id);
@@ -235,9 +245,12 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
 
         {step === "form" ? (
           <div className="space-y-4">
-            {pupils.length > 0 && (
-              <div className="space-y-1.5">
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
                 <Label>Pupil (optional)</Label>
+                <QuickAddPupilButton onCreated={handlePupilCreated} />
+              </div>
+              {pupils.length > 0 ? (
                 <Select value={pupilId} onValueChange={onSelectPupil}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select a pupil to pre-fill" />
@@ -251,8 +264,12 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
-            )}
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  No current pupils — add one above, or enter recipient details manually.
+                </p>
+              )}
+            </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">

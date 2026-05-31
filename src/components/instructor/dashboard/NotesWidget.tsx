@@ -47,7 +47,7 @@ export function NotesWidget({ instructorId }: NotesWidgetProps) {
       const { data } = await (supabase.from("pupils") as any)
         .select("id, name")
         .eq("instructor_id", instructorId)
-        .eq("is_active", true)
+        .eq("status", "active")
         .is("deleted_at", null)
         .order("name");
       return (data || []) as { id: string; name: string }[];

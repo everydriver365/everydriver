@@ -1,44 +1,63 @@
-## Goal
-On the invoices page (instructor scope), show the user's Square connection status, and when not connected gate the "New invoice" flow behind a connect step that offers both **Connect Square** and the existing **affiliate signup link** (`https://squareup.com/i/EVERYDRIVE`).
+# Hide non-current/deleted pupils in selectors + allow adding a new pupil inline
 
-The pieces already exist:
-- `SquareConnectSettings` component handles the full OAuth + disconnect flow and already includes the affiliate signup link with the "free processing on the first £1,000" message.
-- `useInstructorAuth()` exposes the current `instructor` object (with `square_merchant_id`, `square_connected_at`) and `refreshInstructor`.
-- The `square-invoice-manage` edge function already returns "Connect your Square account before sending invoices" when an instructor without credentials tries to send.
+## What "current pupil" means
+Based on the `pupils` schema:
+- `deleted_at IS NULL` (not soft-deleted)
+- `status = 'active'` (not `inactive` / archived)
 
-So this is a UI surfacing task — no edge function or schema changes.
+These two filters together = "current pupil". Every dropdown/picker that lets the user choose a pupil should apply both.
 
-## Behaviour
+## Selectors to update
+These components query `pupils` and present a chooser UI but currently don't filter properly:
 
-### Admin scope
-Unchanged — admin uses the platform Square keys, so no connect step applies.
+1. `src/components/invoices/CreateInvoiceDialog.tsx` — no filter at all
+2. `src/components/quotes/CreateQuoteDialog.tsx` — no filter at all
+3. `src/components/instructor/PupilSelector.tsx` — has `deleted_at`, missing status
+4. `src/components/instructor/PupilPickerDialog.tsx` / `PupilPickerSheet.tsx`
+5. `src/components/instructor/ui/PupilSelectorRow.tsx`
+6. `src/components/instructor/AddLessonSheet.tsx`
+7. `src/components/instructor/AddCalendarEventDialog.tsx`
+8. `src/components/instructor/DrivingTestStartDialog.tsx`
+9. `src/components/instructor/QuickTestResultForm.tsx`
+10. `src/components/instructor/PupilProgressReportGenerator.tsx`
+11. `src/components/instructor/RefundModal.tsx`
+12. `src/components/instructor/VoiceQuickAddLessonSheet.tsx`
+13. `src/components/instructor/subscriptions/AddSubscriptionSheet.tsx`
+14. `src/components/instructor/tracking/SessionStartPanel.tsx`
+15. `src/components/instructor/dashboard/NotesWidget.tsx`
+16. `src/components/instructor/CertificationTracker.tsx`
+17. `src/components/instructor/LovableTracker.tsx`
+18. `src/components/course-planner/CoursePlannerForm.tsx`
+19. `src/components/test-requests/TestRequestForm.tsx`
+20. `src/components/school/SchoolTakePaymentModal.tsx`
+21. `src/pages/InstructorLiveSession.tsx`, `InstructorTestResults.tsx`, `InstructorSendReminder.tsx`, `InstructorTakePayment.tsx`, `instructor-app/InstructorPaymentsDesktop.tsx`
 
-### Instructor scope
-At the top of the invoices page, render a `SquareConnectionBanner` card:
+For each, add `.eq("status", "active").is("deleted_at", null)` to the pupil list query.
 
-- **Connected** (`square_merchant_id` present):
-  - Compact green status row: "Square connected · Merchant {id} · since {date}"
-  - Small "Manage" link that expands an inline `SquareConnectSettings` (reconnect / disconnect controls)
-  - `New invoice` button stays enabled
-- **Not connected**:
-  - Heading: "Connect Square to send invoices"
-  - One-liner explaining invoices are issued through the instructor's own Square account
-  - Two CTAs side-by-side, reusing the same handlers as `SquareConnectSettings`:
-    - Primary: `Connect Square account` (calls `square-oauth` `authorize`, opens popup)
-    - Secondary: `Create a Square account` → opens `https://squareup.com/i/EVERYDRIVE` in a new tab, plus the existing "free processing on the first £1,000" microcopy
-  - `New invoice` button is **disabled** with a tooltip "Connect Square first"
+Excluded from this change (intentional — they need to surface all/archived pupils for management): admin pupil records manager, reassign-pupils dialog, instructor Pupils list page, reports/analytics, payment reconciliation, and any history/portal/back-office views.
 
-### Refresh after OAuth completes
-The existing `SquareCallback` page sends a `postMessage` (or simply updates the DB) when the popup finishes. The banner listens for `window` `message` events of type `square-oauth-success` (matching what `SquareCallback` already emits — confirmed in build mode) and calls `refreshInstructor()` so the banner flips to the connected state without a manual reload.
+## Add new pupil inline
 
-If no postMessage exists, fall back to polling `instructor.square_merchant_id` every few seconds while the popup is open (Promise-based, stops on connect or after 2 minutes).
+Create one shared lightweight component:
 
-## Files
+`src/components/instructor/pupils/QuickAddPupilButton.tsx`
+- Small "+ New pupil" button that opens a compact dialog
+- Fields: name (required), email, phone, source (optional select)
+- Inserts into `pupils` with `instructor_id = get_instructor_id_for_user(auth.uid())`, `status = 'active'`, `scheduling_status = 'unscheduled'`
+- On success, returns the new pupil via `onCreated(pupil)` and shows a toast
+- Admin scope variant: accepts an `instructorId` prop; when present, uses that as the new pupil's `instructor_id` (admin must already have selected an instructor in the parent dialog)
 
-- `src/components/invoices/SquareConnectionBanner.tsx` — new component containing the banner logic above. Reuses connect/disconnect logic by composing `SquareConnectSettings` for the "Manage" expand area, and inlining a slimmer connect CTA + affiliate link for the not-connected state.
-- `src/pages/invoices/SquareInvoicesPage.tsx` —
-  - When `scope === "instructor"`, fetch the current instructor via `useInstructorAuth()` and render `<SquareConnectionBanner>` above the summary cards.
-  - Pass `squareConnected` boolean into `CreateInvoiceDialog` so the button can be disabled when not connected.
-- `src/components/invoices/CreateInvoiceDialog.tsx` — add optional `disabled` prop (default `false`); when true, render the trigger button disabled with a `title="Connect Square first"`.
+Wire `QuickAddPupilButton` into the selector header of every dialog listed above so the user can add a pupil without leaving the flow. On create, the parent appends the new pupil to its local list and auto-selects it.
 
-No backend changes, no migrations, no new edge functions. No mobile layout changes (rule: don't touch mobile unless asked) — the banner uses the existing desktop card styling already on the page.
+For the heavyweight `PupilPickerSheet` / `PupilPickerDialog` (instructor browse-style picker), add the same trigger in the sheet header.
+
+## Out of scope
+- No mobile layout changes
+- No schema migration (status + deleted_at already exist)
+- No admin-side "all pupils" management list changes
+- No changes to the full `AddPupilSheet` (kept for the dedicated Pupils page)
+
+## Technical notes
+- New pupil insert relies on existing RLS: `instructor_id = public.get_instructor_id_for_user(auth.uid())` for instructor scope; admin scope uses the explicitly selected `instructorId`.
+- `QuickAddPupilButton` is purely additive — no existing AddPupilSheet behavior changes.
+- All filters use the same two predicates so behavior is uniform.

@@ -26,6 +26,7 @@ export function PupilSelector({ instructorId, value, onChange, disabled }: Pupil
           .from("pupils")
           .select("id, name")
           .eq("instructor_id", instructorId)
+          .eq("status", "active")
           .is("deleted_at", null)
           .order("name");
 
