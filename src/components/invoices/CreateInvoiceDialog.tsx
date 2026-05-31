@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+
 import {
   Dialog,
   DialogContent,
@@ -298,30 +298,35 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
                   <Plus className="h-3.5 w-3.5 mr-1" /> Add line
                 </Button>
               </div>
+              <div className="grid grid-cols-12 gap-2 px-1 text-[11px] uppercase tracking-wide text-muted-foreground">
+                <div className="col-span-6">Name</div>
+                <div className="col-span-2 text-right">Quantity</div>
+                <div className="col-span-3 text-right">Value (£)</div>
+                <div className="col-span-1" />
+              </div>
               <div className="space-y-2">
                 {items.map((it, i) => (
                   <div key={i} className="grid grid-cols-12 gap-2 items-start">
                     <Input
                       className="col-span-6"
-                      placeholder="Description"
+                      placeholder="e.g. Driving lesson"
                       value={it.name}
                       onChange={(e) => updateItem(i, { name: e.target.value })}
                     />
                     <Input
-                      className="col-span-2"
+                      className="col-span-2 text-right"
                       type="number"
                       min={1}
                       step={1}
-                      placeholder="Qty"
                       value={it.quantity}
                       onChange={(e) => updateItem(i, { quantity: Number(e.target.value) || 1 })}
                     />
                     <Input
-                      className="col-span-3"
+                      className="col-span-3 text-right"
                       type="number"
                       min={0}
                       step="0.01"
-                      placeholder="Unit £"
+                      placeholder="0.00"
                       value={it.amount_pounds}
                       onChange={(e) => updateItem(i, { amount_pounds: e.target.value })}
                     />
@@ -340,6 +345,7 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
                 ))}
               </div>
             </div>
+
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
@@ -362,15 +368,8 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
               </div>
             </div>
 
-            <div className="space-y-1.5">
-              <Label>Description / note (optional)</Label>
-              <Textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Visible to the recipient on the invoice"
-                rows={3}
-              />
-            </div>
+
+
 
             <div className="flex items-center justify-between rounded-md border bg-muted/40 px-3 py-2 text-sm">
               <span className="text-muted-foreground">Total</span>
