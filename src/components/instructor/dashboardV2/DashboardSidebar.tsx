@@ -50,6 +50,7 @@ const SECTIONS: NavSection[] = [
   ]},
   { label: "My Courses", items: [
     { label: "My Courses", to: "/instructor/settings/my-courses", icon: BookOpenCheck },
+    { label: "Course Summaries", to: "/instructor/course-summaries", icon: ClipboardList },
   ]},
   { label: "Vehicle & Tracking", items: [
     { label: "Live Tracking", to: "/instructor/tracking", icon: MapPin, moduleId: "telematics" },
