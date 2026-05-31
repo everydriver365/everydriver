@@ -557,6 +557,26 @@ export default function SquareInvoicesPage({ scope }: { scope: Scope }) {
                                 </a>
                               </Button>
                             )}
+                            {(() => {
+                              const isPaid = r.status === "paid";
+                              const canDelete = !isPaid || scope === "admin";
+                              return (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  title={
+                                    canDelete
+                                      ? "Delete invoice (hides from list, Square record preserved)"
+                                      : "Paid invoices cannot be deleted"
+                                  }
+                                  disabled={!canDelete}
+                                  onClick={() => setPendingDelete(r)}
+                                  className="text-destructive hover:text-destructive"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </Button>
+                              );
+                            })()}
                           </div>
                         </td>
                       </tr>
