@@ -3,7 +3,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { useOptionalSettingsDirty as useSettingsDirty } from "./useOptionalSettingsDirty";
 import { toast } from "@/hooks/use-toast";
 
-const LENGTHS = [60, 90, 120];
+const LENGTHS = [60, 90, 120, 180, 240, 300, 360, 420, 480];
+
+const formatLength = (n: number) => {
+  if (n < 60) return `${n} min`;
+  const h = n / 60;
+  return `${h} hr${h === 1 ? "" : "s"}`;
+};
 
 interface Row {
   buffer_minutes: number | null;
