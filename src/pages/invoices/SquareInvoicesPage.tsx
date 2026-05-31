@@ -18,6 +18,8 @@ import { InvoiceStatusBadge } from "@/components/invoices/InvoiceStatusBadge";
 import { toast } from "@/hooks/use-toast";
 import { generateInvoicePdf } from "@/lib/invoices/generateInvoicePdf";
 import { CreateInvoiceDialog } from "@/components/invoices/CreateInvoiceDialog";
+import { SquareConnectionBanner } from "@/components/invoices/SquareConnectionBanner";
+import { useInstructorAuth } from "@/context/InstructorAuthContext";
 
 type Scope = "admin" | "instructor";
 
