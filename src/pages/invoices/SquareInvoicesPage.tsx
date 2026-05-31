@@ -322,9 +322,9 @@ export default function SquareInvoicesPage({ scope }: { scope: Scope }) {
                               variant="ghost"
                               size="sm"
                               title="Download PDF"
-                              onClick={() => {
+                              onClick={async () => {
                                 try {
-                                  generateInvoicePdf(r);
+                                  await generateInvoicePdf(r);
                                 } catch (e: any) {
                                   toast({
                                     title: "Couldn't generate PDF",
