@@ -508,10 +508,26 @@ export default function InstructorMenu() {
               <CMSImageUpload value={profile?.car_image_url || null} onChange={async (url) => { try { const { error } = await supabase.from("instructors").update({ car_image_url: url }).eq("id", instructorId); if (error) throw error; setProfile(prev => prev ? { ...prev, car_image_url: url } : null); uiToast({ title: "Car photo updated" }); } catch { uiToast({ title: "Error", variant: "destructive" }); } }} bucket="instructor-images" folder={instructorId} label="" />
             </div>
             <div className="space-y-2">
-              <div className="flex items-center gap-2 mb-2"><Video className="h-4 w-4 text-muted-foreground" /><Label className="text-sm font-medium">Welcome Video URL</Label></div>
-              <Input placeholder="https://youtube.com/watch?v=..." value={profile?.welcome_video_url || ""} onChange={(e) => setProfile(prev => prev ? { ...prev, welcome_video_url: e.target.value } : null)} />
-              <Button size="sm" variant="outline" onClick={async () => { try { const { error } = await supabase.from("instructors").update({ welcome_video_url: profile?.welcome_video_url }).eq("id", instructorId); if (error) throw error; uiToast({ title: "Video URL saved" }); } catch { uiToast({ title: "Error", variant: "destructive" }); } }}>Save Video URL</Button>
+              <div className="flex items-center gap-2 mb-2"><Video className="h-4 w-4 text-muted-foreground" /><Label className="text-sm font-medium">Welcome Video</Label></div>
+              <VideoUploadField
+                label="Welcome Video"
+                value={profile?.welcome_video_url || null}
+                instructorId={instructorId}
+                folder="welcome-video"
+                helpText="Upload a short welcome video for your profile (max 50MB)."
+                onChange={async (url) => {
+                  try {
+                    const { error } = await supabase.from("instructors").update({ welcome_video_url: url }).eq("id", instructorId);
+                    if (error) throw error;
+                    setProfile(prev => prev ? { ...prev, welcome_video_url: url } : null);
+                    uiToast({ title: url ? "Welcome video saved" : "Welcome video removed" });
+                  } catch {
+                    uiToast({ title: "Error", variant: "destructive" });
+                  }
+                }}
+              />
             </div>
+
             <div className="space-y-2">
               <div className="flex items-center gap-2 mb-2"><Award className="h-4 w-4 text-muted-foreground" /><Label className="text-sm font-medium">ADI Certificate</Label></div>
               <CMSImageUpload value={profile?.adi_certificate_url || null} onChange={async (url) => { try { const { error } = await supabase.from("instructors").update({ adi_certificate_url: url }).eq("id", instructorId); if (error) throw error; setProfile(prev => prev ? { ...prev, adi_certificate_url: url } : null); uiToast({ title: "Certificate uploaded" }); } catch { uiToast({ title: "Error", variant: "destructive" }); } }} bucket="instructor-images" folder={instructorId} label="" />
