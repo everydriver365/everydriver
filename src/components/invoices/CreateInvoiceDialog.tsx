@@ -49,6 +49,7 @@ function todayPlus(days: number) {
 
 export function CreateInvoiceDialog({ onCreated, scope }: Props) {
   const [open, setOpen] = useState(false);
+  const [step, setStep] = useState<"form" | "preview">("form");
   const [submitting, setSubmitting] = useState(false);
   const [pupils, setPupils] = useState<PupilOption[]>([]);
   const [pupilId, setPupilId] = useState<string>("none");
