@@ -21,7 +21,7 @@ import { useToast } from "@/hooks/use-toast";
 import { logCourseActivity } from "@/lib/courseActivityLog";
 import {
   Loader2, Mail, Phone, MapPin, CheckCircle2, Clock, XCircle,
-  AlertTriangle, Star, ArrowLeft, Copy, Undo2, History,
+  AlertTriangle, Star, ArrowLeft, Copy, Undo2, History, MessageSquare, Send,
 } from "lucide-react";
 
 type Props = {
