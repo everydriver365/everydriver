@@ -255,6 +255,7 @@ serve(async (req) => {
       });
       if (!invoiceRes.ok || !invoiceRes.json?.invoice?.id) {
         console.error("[square-invoice] invoice create failed", invoiceRes.status, invoiceRes.json);
+        if (isInsufficientScopes(invoiceRes.json)) return err(RECONNECT_MSG, 403, invoiceRes.json);
         return err("Failed to create Square invoice", 502, invoiceRes.json);
       }
       const invoice = invoiceRes.json.invoice;
