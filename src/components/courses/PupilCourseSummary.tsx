@@ -641,17 +641,35 @@ function EditRow({
   type?: "text" | "date" | "address";
   placeholder?: string;
 }) {
+  const stacked = type === "address";
+  if (stacked) {
+    return (
+      <div className="space-y-1 min-w-0">
+        <span className="text-[11px] uppercase tracking-wider text-muted-foreground">{label}</span>
+        <div className="min-w-0 break-words">
+          <InlineEditField
+            value={value}
+            onSave={onSave}
+            type={type}
+            placeholder={placeholder}
+            emptyText={placeholder || "—"}
+            textClassName="break-words whitespace-normal"
+          />
+        </div>
+      </div>
+    );
+  }
   return (
-    <div className="flex items-center justify-between gap-2">
+    <div className="flex items-center justify-between gap-2 min-w-0">
       <span className="text-[11px] uppercase tracking-wider text-muted-foreground shrink-0">{label}</span>
-      <div className="flex-1 max-w-[60%]">
+      <div className="flex-1 min-w-0 max-w-[60%]">
         <InlineEditField
           value={value}
           onSave={onSave}
           type={type ?? "text"}
           placeholder={placeholder}
           emptyText={placeholder || "—"}
-          textClassName="text-right"
+          textClassName="text-right truncate block"
         />
       </div>
     </div>
