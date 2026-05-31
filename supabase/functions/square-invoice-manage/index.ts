@@ -30,6 +30,7 @@ interface CreateBody {
   due_date: string; // YYYY-MM-DD
   description?: string;
   accepted_payment_methods?: AcceptedPaymentMethods;
+  klarna_enabled?: boolean;
 }
 
 interface ActionBody {
