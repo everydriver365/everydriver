@@ -1,0 +1,1 @@
+ALTER TABLE public.square_invoices ADD COLUMN IF NOT EXISTS accepted_payment_methods jsonb;

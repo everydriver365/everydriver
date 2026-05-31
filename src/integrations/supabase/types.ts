@@ -17998,6 +17998,7 @@ export type Database = {
       }
       square_invoices: {
         Row: {
+          accepted_payment_methods: Json | null
           amount_cents: number
           cancelled_at: string | null
           created_at: string
@@ -18024,6 +18025,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          accepted_payment_methods?: Json | null
           amount_cents?: number
           cancelled_at?: string | null
           created_at?: string
@@ -18050,6 +18052,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          accepted_payment_methods?: Json | null
           amount_cents?: number
           cancelled_at?: string | null
           created_at?: string
