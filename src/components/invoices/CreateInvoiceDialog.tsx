@@ -416,6 +416,9 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
                   value={serviceFeePounds}
                   onChange={(e) => setServiceFeePounds(e.target.value)}
                 />
+                <p className="text-xs text-muted-foreground">
+                  Platform Service Fee is £1 per invoice.
+                </p>
               </div>
             </div>
 
