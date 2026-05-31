@@ -176,10 +176,13 @@ serve(async (req) => {
       // Build accepted methods — card is always on (Square requires at least one).
       // Bank transfer is not collected by Square in the UK, but we persist the
       // choice so our invoice record and preview reflect the enabled method.
+      // Square UK does not support bank_account as a Square-collected payment
+      // method on invoices. We still surface manual bank-transfer details in
+      // the invoice description, but must NOT send bank_account=true to Square.
       const apm = {
         card: true,
         square_gift_card: false,
-        bank_account: !!accepted_payment_methods?.bank_account,
+        bank_account: false,
         buy_now_pay_later: !!accepted_payment_methods?.buy_now_pay_later,
         cash_app_pay: false,
       };
