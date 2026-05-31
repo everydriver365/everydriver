@@ -71,6 +71,7 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
   const [bankSortCode, setBankSortCode] = useState("");
   const [bankAccountNumber, setBankAccountNumber] = useState("");
   const [bankReference, setBankReference] = useState("");
+  const [allowClearpay, setAllowClearpay] = useState(false);
 
   useEffect(() => {
     try {
