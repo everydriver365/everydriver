@@ -368,15 +368,8 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
               </div>
             </div>
 
-            <div className="space-y-1.5">
-              <Label>Description / note (optional)</Label>
-              <Textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Visible to the recipient on the invoice"
-                rows={3}
-              />
-            </div>
+
+
 
             <div className="flex items-center justify-between rounded-md border bg-muted/40 px-3 py-2 text-sm">
               <span className="text-muted-foreground">Total</span>
