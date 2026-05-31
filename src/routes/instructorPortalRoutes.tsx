@@ -29,6 +29,7 @@ const InstructorAccessibilitySettings = lazy(() => import("@/pages/instructor/In
 const InstructorVerificationPage = lazy(() => import("@/pages/instructor/InstructorVerificationPage"));
 const InstructorModules = lazy(() => import("@/pages/instructor-app/InstructorModules"));
 const InstructorSquareInvoices = lazy(() => import("@/pages/instructor/InstructorSquareInvoices"));
+const InstructorQuotes = lazy(() => import("@/pages/instructor/InstructorQuotes"));
 
 const InstructorMySite = lazy(() => import("@/pages/instructor-app/InstructorMySite"));
 const InstructorWebsiteEditor = lazy(() => import("@/pages/instructor-app/InstructorWebsiteEditor"));
@@ -249,6 +250,7 @@ export const instructorPortalRoutes = (
     <Route path="/instructor/accounting-callback" element={<AccountingCallback />} />
     <Route path="/instructor/square-callback" element={<SquareCallback />} />
     <Route path="/instructor/invoices" element={<InstructorSquareInvoices />} />
+    <Route path="/instructor/quotes" element={<InstructorQuotes />} />
 
 
     {/* Communication — always accessible */}
