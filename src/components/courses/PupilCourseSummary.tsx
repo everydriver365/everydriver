@@ -34,6 +34,7 @@ type Pupil = {
   id: string; name: string; email: string | null; phone: string | null;
   postcode: string | null; pickup_address: string | null;
   pickup_postcode: string | null; what3words: string | null;
+  address: string | null;
   course_type: string | null; course_status: string | null;
   account_balance: number | null; test_date: string | null;
   test_time: string | null; test_passed: boolean | null;
@@ -41,6 +42,10 @@ type Pupil = {
   medical_notes: string | null; intensive_hours_paid: number | null;
   prepaid_hours: number | null; custom_hourly_rate: number | null;
   instructor_id: string; notes: string | null;
+  date_of_birth: string | null; driver_number: string | null;
+  theory_test_passed: boolean | null; theory_test_date: string | null;
+  previous_experience: string | null;
+  preferred_duration_minutes: number | null;
 };
 
 type Lesson = {
@@ -145,7 +150,7 @@ export function PupilCourseSummary({ pupilId, onBack, backHref }: Props) {
     setLoading(true);
     const { data: pupilRow } = await supabase
       .from("pupils")
-      .select("id,name,email,phone,postcode,pickup_address,pickup_postcode,what3words,course_type,course_status,account_balance,test_date,test_time,test_passed,transmission_type,special_needs,medical_notes,intensive_hours_paid,prepaid_hours,custom_hourly_rate,instructor_id,notes")
+      .select("id,name,email,phone,postcode,pickup_address,pickup_postcode,what3words,address,course_type,course_status,account_balance,test_date,test_time,test_passed,transmission_type,special_needs,medical_notes,intensive_hours_paid,prepaid_hours,custom_hourly_rate,instructor_id,notes,date_of_birth,driver_number,theory_test_passed,theory_test_date,previous_experience,preferred_duration_minutes")
       .eq("id", pupilId)
       .maybeSingle();
     if (!pupilRow) { setPupil(null); setLoading(false); return; }
@@ -322,8 +327,8 @@ export function PupilCourseSummary({ pupilId, onBack, backHref }: Props) {
   return (
     <div className="p-6 space-y-4" style={{ backgroundColor: "#F4F7F6", minHeight: "100%" }}>
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
           {(onBack || backHref) && (backHref ? (
             <Link to={backHref} className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
               <ArrowLeft className="h-4 w-4" /> Back
@@ -335,6 +340,21 @@ export function PupilCourseSummary({ pupilId, onBack, backHref }: Props) {
           ))}
           <h1 className="text-xl font-bold">{pupil.name}'s course</h1>
           <StatusBadge status={pupil.course_status || "scheduled"} />
+        </div>
+        <div className="flex items-center gap-4 text-xs text-muted-foreground">
+          {pupil.phone && (
+            <a href={`tel:${pupil.phone}`} className="flex items-center gap-1.5 hover:text-foreground">
+              <Phone className="h-3.5 w-3.5" /> {pupil.phone}
+            </a>
+          )}
+          {pupil.email && (
+            <a href={`mailto:${pupil.email}`} className="flex items-center gap-1.5 hover:text-foreground">
+              <Mail className="h-3.5 w-3.5" /> {pupil.email}
+            </a>
+          )}
+          {!pupil.phone && !pupil.email && (
+            <span className="italic">No contact details on file</span>
+          )}
         </div>
       </div>
 
@@ -362,13 +382,23 @@ export function PupilCourseSummary({ pupilId, onBack, backHref }: Props) {
                 <Stat label="Attended" value={String(totals.attendedCount)} />
                 <Stat label="Hours" value={totals.totalHours.toFixed(1)} />
               </div>
-              <EditRow label="Course type" value={pupil.course_type ?? ""} onSave={(v) => updatePupilField("course_type", v || null)} />
+              <EditRow label="Course type" value={pupil.course_type ?? ""} placeholder={pupil.intensive_hours_paid && pupil.intensive_hours_paid > 0 ? "Intensive" : "—"} onSave={(v) => updatePupilField("course_type", v || null)} />
               <EditRow label="Transmission" value={pupil.transmission_type ?? ""} onSave={(v) => updatePupilField("transmission_type", v || null)} />
               <EditRow label="Course status" value={pupil.course_status ?? ""} onSave={(v) => updatePupilField("course_status", v || null)} />
               <EditRow label="Hourly rate" value={pupil.custom_hourly_rate ? String(pupil.custom_hourly_rate) : ""} placeholder={instructor?.hourly_rate ? String(instructor.hourly_rate) : "—"} onSave={(v) => updatePupilField("custom_hourly_rate", v ? String(Number(v)) : null)} />
               <EditRow label="Test date" type="date" value={pupil.test_date ?? ""} onSave={(v) => updatePupilField("test_date", v || null)} />
               <EditRow label="Test time" value={pupil.test_time ?? ""} placeholder="HH:MM" onSave={(v) => updatePupilField("test_time", v || null)} />
+              <Row label="Theory test" value={pupil.theory_test_passed ? `Passed${pupil.theory_test_date ? ` · ${fmtDate(pupil.theory_test_date)}` : ""}` : "Not passed"} />
               <Row label="Prepaid hours" value={String(pupil.prepaid_hours ?? 0)} />
+              {Number(pupil.intensive_hours_paid ?? 0) > 0 && (
+                <Row label="Intensive hours" value={Number(pupil.intensive_hours_paid).toFixed(1)} />
+              )}
+              {pupil.previous_experience && (
+                <Row label="Experience" value={pupil.previous_experience} />
+              )}
+              {pupil.preferred_duration_minutes && (
+                <Row label="Preferred slot" value={`${pupil.preferred_duration_minutes} min`} />
+              )}
             </CardContent>
           </Card>
 
@@ -377,9 +407,14 @@ export function PupilCourseSummary({ pupilId, onBack, backHref }: Props) {
               <CardTitle className="text-base flex items-center gap-2"><MapPin className="h-4 w-4" /> Pick-up location</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
-              <EditRow label="Address" type="address" value={pupil.pickup_address ?? ""} onSave={(v) => updatePupilField("pickup_address", v || null)} />
-              <EditRow label="Postcode" value={pupil.pickup_postcode ?? pupil.postcode ?? ""} onSave={(v) => updatePupilField("pickup_postcode", v || null)} />
+              <EditRow label="Address" type="address" value={pupil.pickup_address ?? pupil.address ?? ""} placeholder={pupil.address ?? "Add pick-up address"} onSave={(v) => updatePupilField("pickup_address", v || null)} />
+              <EditRow label="Postcode" value={pupil.pickup_postcode ?? pupil.postcode ?? ""} placeholder={pupil.postcode ?? "Postcode"} onSave={(v) => updatePupilField("pickup_postcode", v || null)} />
               <EditRow label="what3words" value={pupil.what3words ?? ""} placeholder="word.word.word" onSave={(v) => updatePupilField("what3words", v || null)} />
+              {!pupil.pickup_address && pupil.address && (
+                <div className="text-[10px] text-muted-foreground italic pt-1">
+                  Using home address as pick-up. Edit to override.
+                </div>
+              )}
               <div className="pt-2 border-t">
                 <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">Notes</div>
                 <InlineEditField
