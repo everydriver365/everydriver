@@ -1,35 +1,44 @@
 ## Goal
-Insert a confirmation/preview step in the "New invoice" dialog so you can review exactly what will be sent before the email goes out.
+On the invoices page (instructor scope), show the user's Square connection status, and when not connected gate the "New invoice" flow behind a connect step that offers both **Connect Square** and the existing **affiliate signup link** (`https://squareup.com/i/EVERYDRIVE`).
 
-## Flow
-```
-Form step  ──►  [Preview invoice]  ──►  Preview step  ──►  [Send invoice]
-                                          │
-                                          └►  [Back to edit]
-```
+The pieces already exist:
+- `SquareConnectSettings` component handles the full OAuth + disconnect flow and already includes the affiliate signup link with the "free processing on the first £1,000" message.
+- `useInstructorAuth()` exposes the current `instructor` object (with `square_merchant_id`, `square_connected_at`) and `refreshInstructor`.
+- The `square-invoice-manage` edge function already returns "Connect your Square account before sending invoices" when an instructor without credentials tries to send.
 
-Currently `Send invoice` calls the edge function directly. After this change, the primary button on the form becomes `Preview invoice` and the actual send only happens from the preview step.
+So this is a UI surfacing task — no edge function or schema changes.
 
-## Preview step contents
-A branded, read-only rendering of the invoice that mirrors what the recipient will see:
-- Header: "Invoice" + issuer label (instructor business name for instructor scope, "Platform" for admin scope)
-- Bill to: recipient name + email (and pupil tag if a pupil was selected)
-- Due date + today's issue date
-- Line items table: description, qty, unit price, line total
-- Service Fee row (only if > 0, labelled exactly "Service Fee" per UK compliance)
-- Total in GBP
-- Description / note block (if provided)
-- Small footer note: "An email with a secure payment link will be sent to {recipient_email} from Square."
+## Behaviour
 
-Rendered inside the existing `DialogContent` so it stays in one modal (no extra route or new page).
+### Admin scope
+Unchanged — admin uses the platform Square keys, so no connect step applies.
 
-## Step switching
-- Local `step` state in `CreateInvoiceDialog`: `"form" | "preview"`.
-- `Preview invoice` button validates the form (same checks currently inside `submit`) and switches to `"preview"` on success; validation errors keep the existing toasts.
-- Preview step footer: `Back to edit` (returns to form, keeps all values) and `Send invoice` (runs the existing edge-function call).
-- Closing the dialog or successful send resets `step` back to `"form"` along with the existing field reset.
+### Instructor scope
+At the top of the invoices page, render a `SquareConnectionBanner` card:
 
-## Files touched
-- `src/components/invoices/CreateInvoiceDialog.tsx` — add step state, split current body into a form view and a new preview view, move the send call behind the preview's Send button, update the footer buttons per step.
+- **Connected** (`square_merchant_id` present):
+  - Compact green status row: "Square connected · Merchant {id} · since {date}"
+  - Small "Manage" link that expands an inline `SquareConnectSettings` (reconnect / disconnect controls)
+  - `New invoice` button stays enabled
+- **Not connected**:
+  - Heading: "Connect Square to send invoices"
+  - One-liner explaining invoices are issued through the instructor's own Square account
+  - Two CTAs side-by-side, reusing the same handlers as `SquareConnectSettings`:
+    - Primary: `Connect Square account` (calls `square-oauth` `authorize`, opens popup)
+    - Secondary: `Create a Square account` → opens `https://squareup.com/i/EVERYDRIVE` in a new tab, plus the existing "free processing on the first £1,000" microcopy
+  - `New invoice` button is **disabled** with a tooltip "Connect Square first"
 
-No backend, edge function, or schema changes. No changes to the invoices list page or PDF generator.
+### Refresh after OAuth completes
+The existing `SquareCallback` page sends a `postMessage` (or simply updates the DB) when the popup finishes. The banner listens for `window` `message` events of type `square-oauth-success` (matching what `SquareCallback` already emits — confirmed in build mode) and calls `refreshInstructor()` so the banner flips to the connected state without a manual reload.
+
+If no postMessage exists, fall back to polling `instructor.square_merchant_id` every few seconds while the popup is open (Promise-based, stops on connect or after 2 minutes).
+
+## Files
+
+- `src/components/invoices/SquareConnectionBanner.tsx` — new component containing the banner logic above. Reuses connect/disconnect logic by composing `SquareConnectSettings` for the "Manage" expand area, and inlining a slimmer connect CTA + affiliate link for the not-connected state.
+- `src/pages/invoices/SquareInvoicesPage.tsx` —
+  - When `scope === "instructor"`, fetch the current instructor via `useInstructorAuth()` and render `<SquareConnectionBanner>` above the summary cards.
+  - Pass `squareConnected` boolean into `CreateInvoiceDialog` so the button can be disabled when not connected.
+- `src/components/invoices/CreateInvoiceDialog.tsx` — add optional `disabled` prop (default `false`); when true, render the trigger button disabled with a `title="Connect Square first"`.
+
+No backend changes, no migrations, no new edge functions. No mobile layout changes (rule: don't touch mobile unless asked) — the banner uses the existing desktop card styling already on the page.

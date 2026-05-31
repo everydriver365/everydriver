@@ -18,6 +18,8 @@ import { InvoiceStatusBadge } from "@/components/invoices/InvoiceStatusBadge";
 import { toast } from "@/hooks/use-toast";
 import { generateInvoicePdf } from "@/lib/invoices/generateInvoicePdf";
 import { CreateInvoiceDialog } from "@/components/invoices/CreateInvoiceDialog";
+import { SquareConnectionBanner } from "@/components/invoices/SquareConnectionBanner";
+import { useInstructorAuth } from "@/context/InstructorAuthContext";
 
 type Scope = "admin" | "instructor";
 
@@ -72,6 +74,12 @@ export default function SquareInvoicesPage({ scope }: { scope: Scope }) {
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("all");
   const [issuerFilter, setIssuerFilter] = useState<"all" | "instructor" | "school">("all");
+
+  const { instructor, refreshInstructor } = useInstructorAuth();
+  const instructorId = (instructor as any)?.id ?? null;
+  const squareMerchantId = (instructor as any)?.square_merchant_id ?? null;
+  const squareConnectedAt = (instructor as any)?.square_connected_at ?? null;
+  const squareConnected = scope === "admin" ? true : !!squareMerchantId;
 
   const backHref = scope === "admin" ? "/admin" : "/instructor";
   const backLabel = scope === "admin" ? "Admin" : "Portal";
@@ -150,13 +158,27 @@ export default function SquareInvoicesPage({ scope }: { scope: Scope }) {
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <CreateInvoiceDialog scope={scope} onCreated={load} />
+            <CreateInvoiceDialog
+              scope={scope}
+              onCreated={load}
+              disabled={!squareConnected}
+              disabledReason="Connect your Square account first"
+            />
             <Button onClick={load} disabled={loading} size="sm" variant="outline">
               <RefreshCw className={`h-4 w-4 mr-1 ${loading ? "animate-spin" : ""}`} />
               Refresh
             </Button>
           </div>
         </div>
+
+        {scope === "instructor" && instructorId && (
+          <SquareConnectionBanner
+            instructorId={instructorId}
+            squareMerchantId={squareMerchantId}
+            squareConnectedAt={squareConnectedAt}
+            onUpdate={refreshInstructor}
+          />
+        )}
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <SummaryCard label="Invoices" value={totals.count.toString()} />

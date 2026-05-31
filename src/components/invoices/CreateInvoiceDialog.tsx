@@ -39,6 +39,8 @@ interface LineItemInput {
 interface Props {
   onCreated?: () => void;
   scope: "admin" | "instructor";
+  disabled?: boolean;
+  disabledReason?: string;
 }
 
 function todayPlus(days: number) {
@@ -47,7 +49,7 @@ function todayPlus(days: number) {
   return d.toISOString().slice(0, 10);
 }
 
-export function CreateInvoiceDialog({ onCreated, scope }: Props) {
+export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason }: Props) {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<"form" | "preview">("form");
   const [submitting, setSubmitting] = useState(false);
@@ -213,7 +215,7 @@ export function CreateInvoiceDialog({ onCreated, scope }: Props) {
       }}
     >
       <DialogTrigger asChild>
-        <Button size="sm">
+        <Button size="sm" disabled={disabled} title={disabled ? disabledReason : undefined}>
           <Plus className="h-4 w-4 mr-1" /> New invoice
         </Button>
       </DialogTrigger>
