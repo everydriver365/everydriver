@@ -71,6 +71,7 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
   const [bankSortCode, setBankSortCode] = useState("");
   const [bankAccountNumber, setBankAccountNumber] = useState("");
   const [bankReference, setBankReference] = useState("");
+  const [allowClearpay, setAllowClearpay] = useState(false);
 
   useEffect(() => {
     try {
@@ -182,6 +183,10 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
       service_fee_cents: Math.max(0, Math.round(Number(serviceFeePounds) * 100) || 0),
       due_date: dueDate,
       description: fullDescription || undefined,
+      accepted_payment_methods: {
+        card: true,
+        buy_now_pay_later: allowClearpay,
+      },
     };
   };
 
@@ -468,6 +473,31 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
                   </div>
                 </div>
               )}
+            </div>
+
+            <div className="rounded-md border p-3 space-y-3">
+              <div>
+                <Label className="text-sm">Payment methods</Label>
+                <p className="text-xs text-muted-foreground">
+                  Choose which options the pupil can use on the Square payment page. Card is always enabled.
+                </p>
+              </div>
+              <div className="flex items-center justify-between rounded-md bg-muted/40 px-3 py-2">
+                <div>
+                  <div className="text-sm font-medium">Card</div>
+                  <div className="text-xs text-muted-foreground">Visa, Mastercard, Amex</div>
+                </div>
+                <Switch checked disabled />
+              </div>
+              <div className="flex items-center justify-between rounded-md bg-muted/40 px-3 py-2">
+                <div>
+                  <div className="text-sm font-medium">Clearpay — pay in 3</div>
+                  <div className="text-xs text-muted-foreground">
+                    Buyer eligibility and order amount are decided by Clearpay at checkout.
+                  </div>
+                </div>
+                <Switch checked={allowClearpay} onCheckedChange={setAllowClearpay} />
+              </div>
             </div>
 
             <div className="flex items-center justify-between rounded-md border bg-muted/40 px-3 py-2 text-sm">

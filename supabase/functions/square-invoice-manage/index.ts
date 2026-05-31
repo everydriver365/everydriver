@@ -12,6 +12,14 @@ interface LineItem {
   amount_cents: number; // unit price in cents
 }
 
+interface AcceptedPaymentMethods {
+  card?: boolean;
+  buy_now_pay_later?: boolean;
+  bank_account?: boolean;
+  square_gift_card?: boolean;
+  cash_app_pay?: boolean;
+}
+
 interface CreateBody {
   action: "create";
   pupil_id?: string | null;
@@ -21,6 +29,7 @@ interface CreateBody {
   service_fee_cents?: number;
   due_date: string; // YYYY-MM-DD
   description?: string;
+  accepted_payment_methods?: AcceptedPaymentMethods;
 }
 
 interface ActionBody {
@@ -150,7 +159,16 @@ serve(async (req) => {
 
     // ====== CREATE ======
     if (body.action === "create") {
-      const { pupil_id, recipient_email, recipient_name, line_items, service_fee_cents = 0, due_date, description } = body;
+      const { pupil_id, recipient_email, recipient_name, line_items, service_fee_cents = 0, due_date, description, accepted_payment_methods } = body;
+
+      // Build accepted methods — card is always on (Square requires at least one).
+      const apm = {
+        card: true,
+        square_gift_card: false,
+        bank_account: false,
+        buy_now_pay_later: !!accepted_payment_methods?.buy_now_pay_later,
+        cash_app_pay: false,
+      };
 
       if (!recipient_email || !recipient_name) return err("recipient_email and recipient_name required");
       if (!Array.isArray(line_items) || line_items.length === 0) return err("At least one line item required");
@@ -241,13 +259,7 @@ serve(async (req) => {
               },
             ],
             delivery_method: "EMAIL",
-            accepted_payment_methods: {
-              card: true,
-              square_gift_card: false,
-              bank_account: false,
-              buy_now_pay_later: false,
-              cash_app_pay: false,
-            },
+            accepted_payment_methods: apm,
             title: description || "Driving lessons invoice",
             description: description || "Thank you for booking with us.",
           },
@@ -288,6 +300,7 @@ serve(async (req) => {
           square_order_id: orderId,
           public_url: publishedInvoice.public_url || null,
           square_location_id: locationId,
+          accepted_payment_methods: apm,
           status: (publishedInvoice.status || "UNPAID").toLowerCase(),
           amount_cents: totalCents,
           service_fee_cents,
