@@ -171,6 +171,9 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
       toast({ title: "Due date is required", variant: "destructive" });
       return null;
     }
+    const bankBlock = buildBankBlock();
+    const fullDescription = [description.trim(), bankBlock].filter(Boolean).join("\n\n");
+
     return {
       pupil_id: pupilId !== "none" ? pupilId : null,
       recipient_email: recipientEmail.trim(),
@@ -178,8 +181,19 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
       line_items: cleanItems,
       service_fee_cents: Math.max(0, Math.round(Number(serviceFeePounds) * 100) || 0),
       due_date: dueDate,
-      description: description.trim() || undefined,
+      description: fullDescription || undefined,
     };
+  };
+
+  const buildBankBlock = () => {
+    if (!showBank) return "";
+    const lines: string[] = [];
+    if (bankAccountName.trim()) lines.push(`Account name: ${bankAccountName.trim()}`);
+    if (bankSortCode.trim()) lines.push(`Sort code: ${bankSortCode.trim()}`);
+    if (bankAccountNumber.trim()) lines.push(`Account number: ${bankAccountNumber.trim()}`);
+    if (bankReference.trim()) lines.push(`Reference: ${bankReference.trim()}`);
+    if (lines.length === 0) return "";
+    return ["Bank transfer details:", ...lines].join("\n");
   };
 
   const goPreview = () => {
