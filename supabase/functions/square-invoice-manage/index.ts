@@ -12,6 +12,14 @@ interface LineItem {
   amount_cents: number; // unit price in cents
 }
 
+interface AcceptedPaymentMethods {
+  card?: boolean;
+  buy_now_pay_later?: boolean;
+  bank_account?: boolean;
+  square_gift_card?: boolean;
+  cash_app_pay?: boolean;
+}
+
 interface CreateBody {
   action: "create";
   pupil_id?: string | null;
@@ -21,6 +29,7 @@ interface CreateBody {
   service_fee_cents?: number;
   due_date: string; // YYYY-MM-DD
   description?: string;
+  accepted_payment_methods?: AcceptedPaymentMethods;
 }
 
 interface ActionBody {
