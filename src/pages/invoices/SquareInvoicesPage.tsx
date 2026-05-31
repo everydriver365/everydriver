@@ -75,6 +75,12 @@ export default function SquareInvoicesPage({ scope }: { scope: Scope }) {
   const [status, setStatus] = useState("all");
   const [issuerFilter, setIssuerFilter] = useState<"all" | "instructor" | "school">("all");
 
+  const { instructor, refreshInstructor } = useInstructorAuth();
+  const instructorId = (instructor as any)?.id ?? null;
+  const squareMerchantId = (instructor as any)?.square_merchant_id ?? null;
+  const squareConnectedAt = (instructor as any)?.square_connected_at ?? null;
+  const squareConnected = scope === "admin" ? true : !!squareMerchantId;
+
   const backHref = scope === "admin" ? "/admin" : "/instructor";
   const backLabel = scope === "admin" ? "Admin" : "Portal";
 
