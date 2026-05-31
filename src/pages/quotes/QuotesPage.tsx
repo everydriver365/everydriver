@@ -23,6 +23,7 @@ type Scope = "admin" | "instructor";
 
 interface QuoteRow {
   id: string;
+  quote_ref: string;
   instructor_id: string;
   pupil_name: string;
   email: string | null;
@@ -31,26 +32,29 @@ interface QuoteRow {
   course_type: string | null;
   total_hours: number | null;
   price: number;
+  price_pence: number;
   deposit_amount: number | null;
+  deposit_pence: number;
   status: string;
   token: string;
   expires_at: string | null;
+  valid_until: string | null;
   accepted_at: string | null;
   created_at: string;
   instructor?: { id: string; name: string | null } | null;
 }
 
-const STATUS_OPTIONS = ["all", "pending", "accepted", "expired", "cancelled"];
+const STATUS_OPTIONS = ["all", "draft", "sent", "viewed", "accepted", "declined", "expired", "cancelled"];
 
-function fmtMoney(n: number) {
-  return new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP" }).format(n || 0);
+function fmtMoney(pence: number) {
+  return new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP" }).format((pence || 0) / 100);
 }
 
 function statusTone(s: string) {
   if (s === "accepted") return "bg-emerald-500/10 text-emerald-700 border-emerald-500/30";
-  if (s === "expired" || s === "cancelled")
-    return "bg-muted text-muted-foreground border-muted";
-  return "bg-amber-500/10 text-amber-700 border-amber-500/30";
+  if (s === "sent" || s === "viewed") return "bg-blue-500/10 text-blue-700 border-blue-500/30";
+  if (s === "draft") return "bg-amber-500/10 text-amber-700 border-amber-500/30";
+  return "bg-muted text-muted-foreground border-muted";
 }
 
 export default function QuotesPage({ scope }: { scope: Scope }) {
