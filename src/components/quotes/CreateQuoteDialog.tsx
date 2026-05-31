@@ -32,7 +32,7 @@ interface PupilOption {
   name: string | null;
   email: string | null;
   phone: string | null;
-  home_postcode: string | null;
+  postcode: string | null;
 }
 
 interface Props {
