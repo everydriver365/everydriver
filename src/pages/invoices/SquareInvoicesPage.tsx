@@ -235,6 +235,19 @@ export default function SquareInvoicesPage({ scope }: { scope: Scope }) {
                     ))}
                   </SelectContent>
                 </Select>
+                <Select value={klarnaFilter} onValueChange={(v) => setKlarnaFilter(v as any)}>
+                  <SelectTrigger className="h-9 w-[160px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All (Klarna + non)</SelectItem>
+                    <SelectItem value="any">Klarna: any</SelectItem>
+                    <SelectItem value="pending">Klarna: pending</SelectItem>
+                    <SelectItem value="paid">Klarna: paid</SelectItem>
+                    <SelectItem value="failed">Klarna: failed</SelectItem>
+                    <SelectItem value="cancelled">Klarna: cancelled</SelectItem>
+                  </SelectContent>
+                </Select>
                 {scope === "admin" && (
                   <Select value={issuerFilter} onValueChange={(v) => setIssuerFilter(v as any)}>
                     <SelectTrigger className="h-9 w-[150px]">
@@ -247,6 +260,7 @@ export default function SquareInvoicesPage({ scope }: { scope: Scope }) {
                     </SelectContent>
                   </Select>
                 )}
+
               </div>
             </div>
           </CardHeader>
