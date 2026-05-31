@@ -25,6 +25,8 @@ const SlotDebugger = lazy(() => import("@/pages/admin/SlotDebugger"));
 const AdminReportsHub = lazy(() => import("@/pages/admin/AdminReportsHub"));
 const NetworkInstructors = lazy(() => import("@/pages/admin/NetworkInstructors"));
 const AdminRewards = lazy(() => import("@/pages/admin/AdminRewards"));
+const AdminSquareInvoices = lazy(() => import("@/pages/admin/AdminSquareInvoices"));
+
 
 
 export const adminRoutes = (
@@ -133,6 +135,10 @@ export const adminRoutes = (
     <Route
       path="/admin/rewards"
       element={<ProtectedAdminRoute><AdminRewards /></ProtectedAdminRoute>}
+    />
+    <Route
+      path="/admin/invoices"
+      element={<ProtectedAdminRoute><AdminSquareInvoices /></ProtectedAdminRoute>}
     />
   </>
 );

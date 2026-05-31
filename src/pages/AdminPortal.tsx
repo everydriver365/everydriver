@@ -385,6 +385,14 @@ export default function AdminPortal() {
                   </CardContent>
                 </Card>
               </Link>
+              <Link to="/admin/invoices" className="block">
+                <Card className="hover:bg-accent/50 transition-colors cursor-pointer h-full">
+                  <CardContent className="pt-6">
+                    <div className="text-sm font-medium">Square Invoices</div>
+                    <div className="text-xs text-muted-foreground">All invoices across instructors & platform — status, amounts, fees</div>
+                  </CardContent>
+                </Card>
+              </Link>
               <Link to="/admin/reports" className="block">
                 <Card className="hover:bg-accent/50 transition-colors cursor-pointer h-full">
                   <CardContent className="pt-6">
