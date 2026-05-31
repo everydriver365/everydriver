@@ -1,43 +1,61 @@
-# Add Instructor Logo to Invoice PDF
+# Choose Allowed Payment Methods When Creating an Invoice
 
-## What changes
-Show the instructor's logo (from `instructors.logo_url`) in the header of the PDF produced by `generateInvoicePdf`. If the instructor has no logo, fall back to the current text-only header (no change in appearance).
+## Today
+`supabase/functions/square-invoice-manage/index.ts` (line 244) hardcodes:
+```
+accepted_payment_methods: { card: true, square_gift_card: false, bank_account: false }
+```
+So every Square invoice only accepts card. The user has no choice.
+
+## Goal
+Let the instructor pick which methods the pupil can pay with, per invoice. Square's Invoices API supports four flags on `accepted_payment_methods`:
+- `card` (debit/credit)
+- `bank_account` (ACH — **US only**; not usable for UK GBP invoices, so we hide it)
+- `square_gift_card`
+- `buy_now_pay_later` (Afterpay/Clearpay — eligibility depends on seller location & invoice amount)
+
+For a UK/GBP driving-school audience the meaningful toggles are **Card** and **Clearpay (BNPL)**. We'll show those two. (Gift cards and ACH are not useful here — leave off by default; we can add later if requested.)
 
 ## Scope
-- File: `src/lib/invoices/generateInvoicePdf.ts`
-- File: `src/pages/invoices/SquareInvoicesPage.tsx` (pass `logo_url` through)
+- `src/components/invoices/CreateInvoiceDialog.tsx` — add a "Payment methods" section with two toggles (Card, Clearpay). Card defaults on; Clearpay defaults off. Card cannot be turned off (Square requires ≥1 method; we enforce in UI).
+- `src/hooks/useSquareInvoices.ts` (or wherever the create call lives) — pass `acceptedPaymentMethods` through to the edge function payload.
+- `supabase/functions/square-invoice-manage/index.ts` — accept an optional `accepted_payment_methods` object on the create action and forward it to Square; fall back to `{ card: true }` if absent.
+- DB: add `accepted_payment_methods jsonb` column to `square_invoices` so we can display what was offered on each row (read-only badge in the list).
 
-Square's hosted invoice page is **not** changed — that branding is controlled in the Square Dashboard (Account & Settings → Business → add a logo there to brand the emailed invoice).
+## UX in the dialog
+Under the amount/description, a small card:
+> **Payment methods**
+> - [x] Card (Visa, Mastercard, Amex)
+> - [ ] Clearpay — pay in 3 (eligible orders only)
+>
+> Helper: "Clearpay availability is decided by the buyer's eligibility and the order amount."
 
-## Implementation
+## List view
+On the invoice rows in `SquareInvoicesPage`, show a tiny "Card • Clearpay" caption next to the amount when `accepted_payment_methods` has more than one entry. Pure UI; no schema impact beyond the new column.
 
-1. **Extend `InvoicePdfInput`**
-   Add `instructor?.logo_url?: string | null` alongside `name`.
-
-2. **Fetch the image as a data URL inside `generateInvoicePdf`**
-   - Make the function `async`.
-   - If `logo_url` is set, `fetch()` it, read as Blob, convert to base64 data URL.
-   - Use jsPDF's `doc.addImage(dataUrl, 'PNG'|'JPEG', x, y, w, h)`.
-   - Detect format from the response `content-type` (default PNG). SVG logos are skipped (jsPDF can't render SVG); we'd fall back to the text header. If many instructor logos are SVG, we can rasterize via a canvas — flag this and I'll add it.
-
-3. **Header layout**
-   - Logo: top-left at `(margin, 40)`, max 120pt wide × 48pt tall, preserving aspect ratio.
-   - Shift the "INVOICE" title to the right side (top-right) when a logo is present; keep it top-left when no logo.
-   - Invoice number + issued date stay under the title.
-   - Status pill moves to the same right column under "INVOICE" so it doesn't collide.
-
-4. **Pass the logo through from the page**
-   `SquareInvoicesPage` already has the instructor row in scope (it filters invoices by instructor). Add `logo_url` to the object passed into `generateInvoicePdf({ ..., instructor: { name, logo_url } })`.
-
-5. **Handle await**
-   Update the click handler that calls `n(r)` to `await n(r)` (or `.then()`); show a toast on failure.
-
-## Edge cases
-- CORS: instructor logos are served from Supabase storage (public bucket) which sends permissive CORS — `fetch` + `blob()` works in the browser.
-- Missing/broken URL: catch the fetch error and proceed with the text-only header.
-- Very tall logos: clamp to 48pt height, scale width proportionally.
+## Implementation notes
+1. **Migration**
+   ```sql
+   ALTER TABLE public.square_invoices
+     ADD COLUMN IF NOT EXISTS accepted_payment_methods jsonb;
+   ```
+2. **Edge function payload (create branch ~line 236)**
+   ```ts
+   const apm = body.accepted_payment_methods ?? { card: true };
+   // ensure card is always true (Square requires at least one)
+   apm.card = true;
+   payment_requests: [...],
+   accepted_payment_methods: apm,
+   ```
+   After Square returns success, persist `apm` into the new `square_invoices.accepted_payment_methods` column.
+3. **Dialog state**
+   ```ts
+   const [methods, setMethods] = useState({ card: true, buy_now_pay_later: false });
+   ```
+   Pass through on submit.
+4. **Validation**: if everything is off, force `card: true` before sending.
 
 ## Out of scope
-- Square-hosted invoice branding (Dashboard-controlled).
-- Email template branding.
-- Adding a logo uploader (instructors already have `logo_url` via the existing branding/profile settings).
+- ACH/bank transfer (US-only via Square; UK instructors use the existing GoCardless flow instead).
+- Square gift cards (not relevant to UK driving schools today).
+- Adding Klarna directly into Square invoices (Square doesn't expose Klarna as an invoice payment method — only Clearpay/Afterpay).
