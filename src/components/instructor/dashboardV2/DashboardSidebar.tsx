@@ -286,6 +286,7 @@ export function DashboardSidebar({ collapsed, onToggle, userInitials, userName, 
     "/instructor/pay",
     "/instructor/settings/discounts-packages",
     "/instructor/test-results",
+    "/instructor/course-summaries",
   ];
   const [critical, setCritical] = useState<string[]>([]);
   const [criticalLoaded, setCriticalLoaded] = useState(false);
