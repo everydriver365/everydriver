@@ -111,12 +111,15 @@ export function CreateInvoiceDialog({ onCreated, scope }: Props) {
     setDescription("");
     setServiceFeePounds("0");
     setItems([{ name: "Driving lesson", quantity: 1, amount_pounds: "" }]);
+    setStep("form");
   };
 
-  const submit = async () => {
+  // Validate inputs and return the normalized payload for the edge function.
+  // Returns null when validation fails (and shows a toast).
+  const buildPayload = () => {
     if (!recipientEmail || !recipientName) {
       toast({ title: "Recipient name and email are required", variant: "destructive" });
-      return;
+      return null;
     }
     const cleanItems = items
       .filter((it) => it.name.trim() && Number(it.amount_pounds) > 0)
@@ -127,26 +130,35 @@ export function CreateInvoiceDialog({ onCreated, scope }: Props) {
       }));
     if (cleanItems.length === 0) {
       toast({ title: "Add at least one line item with an amount", variant: "destructive" });
-      return;
+      return null;
     }
     if (!dueDate) {
       toast({ title: "Due date is required", variant: "destructive" });
-      return;
+      return null;
     }
+    return {
+      pupil_id: pupilId !== "none" ? pupilId : null,
+      recipient_email: recipientEmail.trim(),
+      recipient_name: recipientName.trim(),
+      line_items: cleanItems,
+      service_fee_cents: Math.max(0, Math.round(Number(serviceFeePounds) * 100) || 0),
+      due_date: dueDate,
+      description: description.trim() || undefined,
+    };
+  };
+
+  const goPreview = () => {
+    if (buildPayload()) setStep("preview");
+  };
+
+  const submit = async () => {
+    const payload = buildPayload();
+    if (!payload) return;
 
     setSubmitting(true);
     try {
       const { data, error } = await supabase.functions.invoke("square-invoice-manage", {
-        body: {
-          action: "create",
-          pupil_id: pupilId !== "none" ? pupilId : null,
-          recipient_email: recipientEmail.trim(),
-          recipient_name: recipientName.trim(),
-          line_items: cleanItems,
-          service_fee_cents: Math.max(0, Math.round(Number(serviceFeePounds) * 100) || 0),
-          due_date: dueDate,
-          description: description.trim() || undefined,
-        },
+        body: { action: "create", ...payload },
       });
       if (error) throw error;
       if ((data as any)?.error) throw new Error((data as any).error);
@@ -168,6 +180,27 @@ export function CreateInvoiceDialog({ onCreated, scope }: Props) {
       setSubmitting(false);
     }
   };
+
+  // Preview-only derived values
+  const fmtGBP = (n: number) =>
+    new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP" }).format(n);
+
+  const previewItems = useMemo(
+    () =>
+      items
+        .filter((it) => it.name.trim() && Number(it.amount_pounds) > 0)
+        .map((it) => {
+          const qty = Math.max(1, Math.floor(Number(it.quantity) || 1));
+          const unit = Number(it.amount_pounds) || 0;
+          return { name: it.name.trim(), qty, unit, line: qty * unit };
+        }),
+    [items],
+  );
+  const previewFee = Math.max(0, Number(serviceFeePounds) || 0);
+  const previewSubtotal = previewItems.reduce((s, it) => s + it.line, 0);
+  const previewTotal = previewSubtotal + previewFee;
+  const issuerLabel = scope === "admin" ? "Platform" : "Your Square account";
+
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
