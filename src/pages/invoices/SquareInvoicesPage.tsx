@@ -43,7 +43,7 @@ interface InvoiceRow {
   cancelled_at: string | null;
   last_event_at: string | null;
   created_at: string;
-  instructor?: { id: string; name: string | null } | null;
+  instructor?: { id: string; name: string | null; logo_url: string | null } | null;
   pupil?: { id: string; name: string | null } | null;
 }
 
