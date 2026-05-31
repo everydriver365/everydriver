@@ -606,6 +606,29 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
               {isLoading ? <SkeletonBlock width={160} height={12} /> : subtitle}
             </span>
           </div>
+          <button
+            type="button"
+            onClick={() => navigate("/instructor/schedule")}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 2,
+              background: "transparent",
+              border: "none",
+              padding: 0,
+              marginTop: 2,
+              color: IOS.systemBlue,
+              fontSize: 13,
+              fontWeight: 500,
+              fontFamily: IOS_FONT,
+              cursor: "pointer",
+              flexShrink: 0,
+            }}
+            aria-label="View next lessons"
+          >
+            Next Lessons
+            <ChevronRight size={14} color={IOS.systemBlue} />
+          </button>
         </div>
 
         {/* SEGMENTED CONTROL */}
