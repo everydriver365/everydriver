@@ -2194,6 +2194,7 @@ function ScheduleCard({
 }: { instructorId: string; navigate: ReturnType<typeof useNavigate> }) {
   const today = new Date();
   const { data: dayLessons = [] } = useDayLessons(instructorId, today);
+  const [nextOpen, setNextOpen] = useState(false);
 
   const lessons = useMemo(() => {
     const dateStr = format(today, "yyyy-MM-dd");
@@ -2214,13 +2215,21 @@ function ScheduleCard({
   }, [dayLessons]);
 
   return (
-    <ScheduleTile
-      lessons={lessons}
-      onAddLesson={() => navigate("/instructor/schedule?add=1")}
-      onFillGaps={() => navigate("/instructor/gaps")}
-      onLessonClick={(id) => navigate(`/instructor/schedule?lesson=${id}`)}
-      onViewNext={() => navigate("/instructor/schedule")}
-    />
+    <>
+      <ScheduleTile
+        lessons={lessons}
+        onAddLesson={() => navigate("/instructor/schedule?add=1")}
+        onFillGaps={() => navigate("/instructor/gaps")}
+        onLessonClick={(id) => navigate(`/instructor/schedule?lesson=${id}`)}
+        onViewNext={() => setNextOpen(true)}
+      />
+      <NextLessonsSheet
+        open={nextOpen}
+        onClose={() => setNextOpen(false)}
+        instructorId={instructorId}
+        onLessonClick={(id) => navigate(`/instructor/schedule?lesson=${id}`)}
+      />
+    </>
   );
 }
 
