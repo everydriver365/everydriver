@@ -72,6 +72,8 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
   const [bankAccountNumber, setBankAccountNumber] = useState("");
   const [bankReference, setBankReference] = useState("");
   const [allowClearpay, setAllowClearpay] = useState(false);
+  const [allowKlarna, setAllowKlarna] = useState(false);
+  const [instructorKlarnaEnabled, setInstructorKlarnaEnabled] = useState(false);
 
   useEffect(() => {
     try {
