@@ -296,7 +296,7 @@ export function useInstructorPaymentsData(instructorId: string | undefined): Pay
         const cashFlow = buildCashFlow(
           rawPayments
             .filter((p: any) => {
-              const status = normalizeStatus(Number(p.amount), p.notes, p.payout_status);
+              const status = normalizeStatus(Number(p.amount), p.notes, p.payout_status, p.payment_method);
               return Number(p.amount) > 0 && status === "paid";
             })
             .map((p: any) => ({ recorded_at: p.recorded_at, amount: Number(p.amount) }))
