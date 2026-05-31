@@ -145,6 +145,23 @@ export function PupilCourseSummary({ pupilId, onBack, backHref }: Props) {
   const [rating, setRating] = useState<{ avg: number; count: number } | null>(null);
   const [activity, setActivity] = useState<ActivityRow[]>([]);
   const [working, setWorking] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("role", "admin")
+        .maybeSingle();
+      if (!cancelled) setIsAdmin(!!data);
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   const load = useCallback(async () => {
     setLoading(true);
