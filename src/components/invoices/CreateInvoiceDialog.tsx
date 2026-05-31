@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 
 import {
   Dialog,
@@ -64,6 +65,28 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
   const [items, setItems] = useState<LineItemInput[]>([
     { name: "Driving lesson", quantity: 1, amount_pounds: "" },
   ]);
+  const bankStorageKey = `invoice-bank-details-${scope}`;
+  const [showBank, setShowBank] = useState(false);
+  const [bankAccountName, setBankAccountName] = useState("");
+  const [bankSortCode, setBankSortCode] = useState("");
+  const [bankAccountNumber, setBankAccountNumber] = useState("");
+  const [bankReference, setBankReference] = useState("");
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(bankStorageKey);
+      if (raw) {
+        const v = JSON.parse(raw);
+        setBankAccountName(v.name || "");
+        setBankSortCode(v.sort || "");
+        setBankAccountNumber(v.number || "");
+        if (v.enabled) setShowBank(true);
+      }
+    } catch {
+      // ignore
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -148,6 +171,9 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
       toast({ title: "Due date is required", variant: "destructive" });
       return null;
     }
+    const bankBlock = buildBankBlock();
+    const fullDescription = [description.trim(), bankBlock].filter(Boolean).join("\n\n");
+
     return {
       pupil_id: pupilId !== "none" ? pupilId : null,
       recipient_email: recipientEmail.trim(),
@@ -155,8 +181,19 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
       line_items: cleanItems,
       service_fee_cents: Math.max(0, Math.round(Number(serviceFeePounds) * 100) || 0),
       due_date: dueDate,
-      description: description.trim() || undefined,
+      description: fullDescription || undefined,
     };
+  };
+
+  const buildBankBlock = () => {
+    if (!showBank) return "";
+    const lines: string[] = [];
+    if (bankAccountName.trim()) lines.push(`Account name: ${bankAccountName.trim()}`);
+    if (bankSortCode.trim()) lines.push(`Sort code: ${bankSortCode.trim()}`);
+    if (bankAccountNumber.trim()) lines.push(`Account number: ${bankAccountNumber.trim()}`);
+    if (bankReference.trim()) lines.push(`Reference: ${bankReference.trim()}`);
+    if (lines.length === 0) return "";
+    return ["Bank transfer details:", ...lines].join("\n");
   };
 
   const goPreview = () => {
@@ -174,6 +211,20 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
       });
       if (error) throw error;
       if ((data as any)?.error) throw new Error((data as any).error);
+
+      try {
+        localStorage.setItem(
+          bankStorageKey,
+          JSON.stringify({
+            enabled: showBank,
+            name: bankAccountName,
+            sort: bankSortCode,
+            number: bankAccountNumber,
+          }),
+        );
+      } catch {
+        // ignore
+      }
 
       toast({
         title: "Invoice sent",
@@ -368,8 +419,53 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
               </div>
             </div>
 
-
-
+            <div className="rounded-md border p-3 space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label className="text-sm">Show bank details on invoice</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Appended to the invoice notes so the recipient can pay by bank transfer.
+                  </p>
+                </div>
+                <Switch checked={showBank} onCheckedChange={setShowBank} />
+              </div>
+              {showBank && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1.5 sm:col-span-2">
+                    <Label>Account name</Label>
+                    <Input
+                      value={bankAccountName}
+                      onChange={(e) => setBankAccountName(e.target.value)}
+                      placeholder="e.g. J Smith Driving School"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Sort code</Label>
+                    <Input
+                      value={bankSortCode}
+                      onChange={(e) => setBankSortCode(e.target.value)}
+                      placeholder="00-00-00"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Account number</Label>
+                    <Input
+                      value={bankAccountNumber}
+                      onChange={(e) => setBankAccountNumber(e.target.value)}
+                      placeholder="12345678"
+                    />
+                  </div>
+                  <div className="space-y-1.5 sm:col-span-2">
+                    <Label>Payment reference (optional)</Label>
+                    <Input
+                      value={bankReference}
+                      onChange={(e) => setBankReference(e.target.value)}
+                      placeholder="e.g. pupil name or invoice number"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
 
             <div className="flex items-center justify-between rounded-md border bg-muted/40 px-3 py-2 text-sm">
               <span className="text-muted-foreground">Total</span>
@@ -458,6 +554,17 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
             {description && (
               <div className="px-5 py-3 border-t text-xs text-muted-foreground whitespace-pre-wrap">
                 {description}
+              </div>
+            )}
+
+            {showBank && buildBankBlock() && (
+              <div className="px-5 py-3 border-t">
+                <div className="text-xs uppercase tracking-wide text-muted-foreground mb-1">
+                  Pay by bank transfer
+                </div>
+                <pre className="text-xs text-foreground whitespace-pre-wrap font-sans">
+{buildBankBlock()}
+                </pre>
               </div>
             )}
 
