@@ -193,18 +193,25 @@ serve(async (req) => {
         issuerType = "instructor";
         issuerInstructorId = instructor.id;
         squareToken = instructor.square_access_token_encrypted;
-        // Look up the instructor's Square location
+        // Look up the instructor's Square locations
         const locRes = await squareFetch("/v2/locations", squareToken);
         if (!locRes.ok) {
           return err("Failed to fetch Square locations for your account. Please reconnect Square.", 400, locRes.json);
         }
-        const mainLoc = locRes.json?.locations?.find((l: any) => l.status === "ACTIVE") || locRes.json?.locations?.[0];
-        if (!mainLoc?.id) return err("No active Square location found on your account");
-        locationId = mainLoc.id;
+        const locations: any[] = locRes.json?.locations || [];
+        let chosen: any = null;
+        if (requestedLocationId) {
+          chosen = locations.find((l) => l.id === requestedLocationId && l.status === "ACTIVE");
+          if (!chosen) return err("Selected Square location is not available on your account", 400);
+        } else {
+          chosen = locations.find((l) => l.status === "ACTIVE") || locations[0];
+        }
+        if (!chosen?.id) return err("No active Square location found on your account");
+        locationId = chosen.id;
       } else if (isAdmin) {
         issuerType = "school";
         squareToken = Deno.env.get("SQUARE_ACCESS_TOKEN") || "";
-        locationId = Deno.env.get("SQUARE_LOCATION_ID") || "";
+        locationId = requestedLocationId || Deno.env.get("SQUARE_LOCATION_ID") || "";
         if (!squareToken || !locationId) return err("Platform Square account is not configured", 500);
       } else {
         return err("Connect your Square account before sending invoices", 400);
