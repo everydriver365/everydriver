@@ -222,6 +222,7 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
       accepted_payment_methods: {
         card: true,
         buy_now_pay_later: allowClearpay,
+        bank_account: !!bankBlock,
       },
       klarna_enabled: allowKlarna && instructorKlarnaEnabled,
     };

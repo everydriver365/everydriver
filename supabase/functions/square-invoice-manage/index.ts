@@ -163,10 +163,12 @@ serve(async (req) => {
       const { pupil_id, recipient_email, recipient_name, line_items, service_fee_cents = 0, due_date, description, accepted_payment_methods, klarna_enabled } = body;
 
       // Build accepted methods — card is always on (Square requires at least one).
+      // Bank transfer is not collected by Square in the UK, but we persist the
+      // choice so our invoice record and preview reflect the enabled method.
       const apm = {
         card: true,
         square_gift_card: false,
-        bank_account: false,
+        bank_account: !!accepted_payment_methods?.bank_account,
         buy_now_pay_later: !!accepted_payment_methods?.buy_now_pay_later,
         cash_app_pay: false,
       };
@@ -287,6 +289,11 @@ serve(async (req) => {
         return err("Failed to publish Square invoice", 502, pubRes.json);
       }
       const publishedInvoice = pubRes.json.invoice || invoice;
+      const payableStatuses = new Set(["UNPAID", "PARTIALLY_PAID"]);
+      if (!payableStatuses.has(String(publishedInvoice.status || "").toUpperCase())) {
+        console.error("[square-invoice] invoice published but not payable", publishedInvoice.status, publishedInvoice.id);
+        return err("Square created the invoice, but it is not payable yet. Please check online invoice payments are enabled in Square and try again.", 502, publishedInvoice);
+      }
 
       // ===== Optional Klarna pay-link (parallel to Square) =====
       let klarnaPayUrl: string | null = null;
