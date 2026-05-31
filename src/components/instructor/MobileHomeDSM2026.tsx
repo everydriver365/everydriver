@@ -2202,9 +2202,9 @@ function ScheduleCard({
   const { data: todayLessons = [] } = useDayLessons(instructorId, today);
   const { data: tomorrowLessons = [] } = useDayLessons(instructorId, tomorrow);
 
-  const dayAfterTomorrowStr = useMemo(() => format(addDays(new Date(), 2), "yyyy-MM-dd"), []);
+  const tomorrowStr = useMemo(() => format(addDays(new Date(), 1), "yyyy-MM-dd"), []);
   const { data: nextRows = [] } = useQuery({
-    queryKey: ["schedule-tile-next", instructorId, dayAfterTomorrowStr],
+    queryKey: ["schedule-tile-next", instructorId, tomorrowStr],
     enabled: !!instructorId,
     staleTime: 60 * 1000,
     queryFn: async () => {
@@ -2214,10 +2214,10 @@ function ScheduleCard({
         .eq("instructor_id", instructorId)
         .is("deleted_at", null)
         .neq("status", "cancelled")
-        .gte("lesson_date", dayAfterTomorrowStr)
+        .gte("lesson_date", tomorrowStr)
         .order("lesson_date", { ascending: true })
         .order("start_time", { ascending: true })
-        .limit(5);
+        .limit(100);
       if (error) throw error;
       return data || [];
     },

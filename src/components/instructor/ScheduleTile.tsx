@@ -74,7 +74,7 @@ export function ScheduleTile({ lessons, nextLessons = [], onAddLesson, onFillGap
       tomorrowDate: tomorrow,
       todayLessons: sorted.filter((l) => sameDay(l._start, today)),
       tomorrowLessons: sorted.filter((l) => sameDay(l._start, tomorrow)),
-      nextLessonsSorted: decorate(nextLessons).slice(0, 5),
+      nextLessonsSorted: decorate(nextLessons),
     };
   }, [lessons, nextLessons]);
 
