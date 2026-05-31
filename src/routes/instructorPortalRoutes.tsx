@@ -29,6 +29,7 @@ const InstructorAccessibilitySettings = lazy(() => import("@/pages/instructor/In
 const InstructorVerificationPage = lazy(() => import("@/pages/instructor/InstructorVerificationPage"));
 const InstructorModules = lazy(() => import("@/pages/instructor-app/InstructorModules"));
 const InstructorSquareInvoices = lazy(() => import("@/pages/instructor/InstructorSquareInvoices"));
+const InstructorQuotes = lazy(() => import("@/pages/instructor/InstructorQuotes"));
 
 const InstructorMySite = lazy(() => import("@/pages/instructor-app/InstructorMySite"));
 const InstructorWebsiteEditor = lazy(() => import("@/pages/instructor-app/InstructorWebsiteEditor"));
