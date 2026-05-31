@@ -259,10 +259,15 @@ export default function SquareInvoicesPage({ scope }: { scope: Scope }) {
               disabled={!squareConnected}
               disabledReason="Connect your Square account first"
             />
+            <Button onClick={exportCsv} size="sm" variant="outline" disabled={loading || filtered.length === 0} title="Export filtered invoices to CSV">
+              <FileDown className="h-4 w-4 mr-1" />
+              Export CSV
+            </Button>
             <Button onClick={load} disabled={loading} size="sm" variant="outline">
               <RefreshCw className={`h-4 w-4 mr-1 ${loading ? "animate-spin" : ""}`} />
               Refresh
             </Button>
+
           </div>
         </div>
 
