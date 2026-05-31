@@ -1,80 +1,42 @@
-## Square Invoices — instructor & admin desktop portals
+## Goal
+On `/instructor/pay`, surface a breakdown of this month's money: **Gross paid**, **Refunded**, and **Net received** — instead of the single "Received" figure that silently nets refunds.
 
-Adds invoicing on top of the existing Square integration (payments, wallet, subscriptions, refunds, OAuth, webhooks). Desktop portals only — mobile untouched.
+## Changes
 
----
+### 1. `src/hooks/useInstructorPaymentsData.ts`
+Compute two additional figures alongside existing `receivedMonth`:
+- `grossMonth` = sum of `monthTx` rows with `status === "paid"` (positive amounts only)
+- `refundsMonth` = absolute sum of `monthTx` rows with `status === "refunded"` (stored as negatives → report as positive)
+- Keep `receivedMonth` = `grossMonth − refundsMonth` (same value as today, just expressed clearly)
 
-## Sending account rules (confirmed)
+Add to `PaymentsStats`:
+```ts
+grossMonth: number;
+refundsMonth: number;
+refundsCount: number;
+```
 
-- **Instructor portal** → invoice is sent from the **instructor's own connected Square account** (`instructors.square_merchant_id` + per-instructor OAuth tokens). Money lands in their Square balance.
-- **Admin / school portal** → invoice is sent from the **platform Square account** already configured via the existing `SQUARE_ACCESS_TOKEN` / `SQUARE_LOCATION_ID` / `SQUARE_APPLICATION_ID` secrets. No new secrets needed.
-- If an instructor hasn't connected Square, the "Send Invoice" button is disabled with a tooltip linking to Settings → Payments.
+Initialise them to 0 in the loading-state object.
 
----
+### 2. `src/pages/instructor-app/InstructorPaymentsDesktop.tsx` (desktop `/instructor/pay`)
+Replace the single emerald "RECEIVED" StatCard (line 258) with the three-figure breakdown. Two options — I'll go with **A** unless you prefer B:
 
-## Service Fee (confirmed)
+**A. Keep 4-card row, replace Received with a stacked "Money in" card**
+One emerald `StatCard` titled `MONEY IN · {MONTH}` whose `value` is the **Net** figure, with a two-line `sub` showing:
+`Gross £X · Refunds −£Y · {n} payments`
 
-UK Service Fee line is auto-added to instructor invoices using the existing `useAdminFee` / tiered service fee logic, exactly like checkout. Labelled **"Service Fee"** per UK compliance memory. Admin/school invoices do not add it (school billing is separate).
+Pros: preserves existing 4-column layout, no other tiles move.
 
-## Due date (confirmed)
+**B. Expand to 5 tiles**
+Separate `GROSS`, `REFUNDS` (rose), `NET RECEIVED` (emerald) cards, plus existing Outstanding / Next payout / Fees. Requires switching grid from `grid-cols-4` to `grid-cols-5` (or wrapping).
 
-Configurable per invoice in the Send dialog. Defaults to **7 days** from send. Instructors can also set their preferred default in Settings → Payments (`instructors.default_invoice_due_days`).
-
----
-
-## What the user sees
-
-### Instructor desktop portal
-- **"Send Invoice"** button on:
-  - Pupil course summary page (next to "Send Reminder")
-  - Payment history rows
-  - Accounts / In-Out page (bulk: invoice all pupils with outstanding balance)
-- Dialog pre-fills: pupil name + email, line items (hours × rate, top-up), Service Fee line, due date (editable date picker, defaults to instructor's default), optional message
-- Status pill per invoice: Draft / Sent / Viewed / Paid / Overdue / Cancelled — with "View in Square" link and Resend / Cancel actions
-- Paid invoices auto-credit the pupil balance via `increment_pupil_balance` RPC
-
-### Admin desktop portal
-- New **Invoices** section under `/admin` with a sidebar entry
-- List of all school-issued invoices (filters: status, date range, recipient, amount)
-- Per-row actions: view, resend, cancel, refund (uses existing `square-refund`)
-- Read-only view of instructor-issued invoices for audit/support — admin cannot send on the instructor's behalf
-
----
-
-## What we build
-
-### 1. Database
-**New table** `public.square_invoices`
-- `issuer_type` ('instructor' | 'school'), `issuer_instructor_id` (nullable)
-- `recipient_pupil_id` (nullable), `recipient_email`, `recipient_name`
-- `square_invoice_id`, `square_order_id`, `public_url`, `square_location_id`
-- `status`, `amount_cents`, `service_fee_cents`, `currency`, `due_date`, `description`, `line_items` jsonb
-- `sent_at`, `paid_at`, `cancelled_at`, `last_event_at`
-- RLS: instructor sees own (`get_instructor_id_for_user(auth.uid())`), admin sees all (`has_role`), pupil sees own
-- GRANTs to `authenticated` + `service_role`
-
-**New column** `instructors.default_invoice_due_days int default 7`
-
-### 2. Edge functions (new)
-- `square-create-invoice` — picks instructor tokens (caller is instructor) or platform `SQUARE_ACCESS_TOKEN` (caller is admin); creates Order → Invoice → publishes; adds Service Fee line for instructor invoices; inserts row
-- `square-cancel-invoice` — cancels draft/unpaid
-- `square-resend-invoice` — republish/resend email
-
-**Extend `square-webhook`** to handle `invoice.created`, `invoice.published`, `invoice.payment_made`, `invoice.canceled`, `invoice.refunded` → update row and call `increment_pupil_balance` on paid (instructor invoices only).
-
-### 3. Square OAuth scope bump
-Add `INVOICES_WRITE` + `INVOICES_READ` to `square-oauth` scope list. Instructors with existing connections are prompted to **reconnect once** the first time they try to send an invoice.
-
-### 4. Frontend (desktop, `md:` and above)
-- `SendInvoiceDialog.tsx` — shared dialog with due-date picker and Service Fee preview
-- `InvoiceStatusBadge.tsx` — shared status pill
-- Instructor: hooks added to `PupilCourseSummary.tsx`, `InstructorAccounts.tsx`, `InstructorInOut.tsx`
-- Admin: new `AdminInvoicesPage.tsx` + route + sidebar entry
-- Settings → Payments: new "Default invoice due days" field
-
----
+### 3. Mobile parity
+`MoneyStack` / `MobileHomeDSM2026` currently only show `paymentsCount` + total. Mirror the chosen desktop treatment in `src/components/instructor/dashboardV2/MoneyStack.tsx` so the figures match across devices (small secondary line under the headline number).
 
 ## Out of scope
-- Mobile layouts (per mobile-update policy)
-- Recurring/subscription invoices (existing Square subscriptions handle this)
-- Admin sending on behalf of an instructor (explicitly excluded — admin uses platform account only)
+- No DB/schema changes — refunds already live in `payment_history` as negative `amount` rows.
+- No change to YTD service-fees row, cash-flow chart, transactions list, or export logic.
+- Pending/failed rows continue to be excluded.
+
+## Question
+Go with **A (compact, same 4-tile row)** or **B (5 separate tiles)**?
