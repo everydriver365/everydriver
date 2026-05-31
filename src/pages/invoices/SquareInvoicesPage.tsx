@@ -77,6 +77,8 @@ export default function SquareInvoicesPage({ scope }: { scope: Scope }) {
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("all");
   const [issuerFilter, setIssuerFilter] = useState<"all" | "instructor" | "school">("all");
+  const [klarnaFilter, setKlarnaFilter] = useState<"all" | "any" | "pending" | "paid" | "failed" | "cancelled">("all");
+
 
   const { instructor, refreshInstructor } = useInstructorAuth();
   const instructorId = (instructor as any)?.id ?? null;
