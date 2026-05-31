@@ -15,6 +15,7 @@ interface ScheduleTileProps {
   onAddLesson: () => void;
   onFillGaps: () => void;
   onLessonClick: (id: string) => void;
+  onViewNext?: () => void;
 }
 
 const C = {
