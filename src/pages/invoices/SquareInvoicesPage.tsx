@@ -43,7 +43,7 @@ interface InvoiceRow {
   cancelled_at: string | null;
   last_event_at: string | null;
   created_at: string;
-  instructor?: { id: string; name: string | null } | null;
+  instructor?: { id: string; name: string | null; logo_url: string | null } | null;
   pupil?: { id: string; name: string | null } | null;
 }
 
@@ -92,7 +92,7 @@ export default function SquareInvoicesPage({ scope }: { scope: Scope }) {
         .from("square_invoices")
         .select(
           `*,
-           instructor:instructors!square_invoices_issuer_instructor_id_fkey(id,name),
+           instructor:instructors!square_invoices_issuer_instructor_id_fkey(id,name,logo_url),
            pupil:pupils!square_invoices_recipient_pupil_id_fkey(id,name)`
         )
         .order("created_at", { ascending: false })
@@ -322,9 +322,9 @@ export default function SquareInvoicesPage({ scope }: { scope: Scope }) {
                               variant="ghost"
                               size="sm"
                               title="Download PDF"
-                              onClick={() => {
+                              onClick={async () => {
                                 try {
-                                  generateInvoicePdf(r);
+                                  await generateInvoicePdf(r);
                                 } catch (e: any) {
                                   toast({
                                     title: "Couldn't generate PDF",

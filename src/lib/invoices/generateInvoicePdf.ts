@@ -17,8 +17,40 @@ export interface InvoicePdfInput {
   recipient_name: string | null;
   recipient_email: string | null;
   public_url: string | null;
-  instructor?: { name: string | null } | null;
+  instructor?: { name: string | null; logo_url?: string | null } | null;
   pupil?: { name: string | null } | null;
+}
+
+async function loadLogo(
+  url: string
+): Promise<{ dataUrl: string; format: "PNG" | "JPEG"; width: number; height: number } | null> {
+  try {
+    const res = await fetch(url, { mode: "cors" });
+    if (!res.ok) return null;
+    const contentType = (res.headers.get("content-type") || "").toLowerCase();
+    if (contentType.includes("svg")) return null; // jsPDF can't render SVG
+    const blob = await res.blob();
+    const dataUrl: string = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(blob);
+    });
+    const { width, height } = await new Promise<{ width: number; height: number }>(
+      (resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve({ width: img.naturalWidth, height: img.naturalHeight });
+        img.onerror = () => reject(new Error("image load failed"));
+        img.src = dataUrl;
+      }
+    );
+    const format: "PNG" | "JPEG" = contentType.includes("jpeg") || contentType.includes("jpg")
+      ? "JPEG"
+      : "PNG";
+    return { dataUrl, format, width, height };
+  } catch {
+    return null;
+  }
 }
 
 function money(cents: number, currency = "GBP") {
@@ -36,28 +68,50 @@ function fmtDate(iso: string | null) {
   }
 }
 
-export function generateInvoicePdf(inv: InvoicePdfInput) {
+export async function generateInvoicePdf(inv: InvoicePdfInput) {
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   const pageWidth = doc.internal.pageSize.getWidth();
   const margin = 48;
 
+  // Optional instructor logo (top-left)
+  const logo = inv.instructor?.logo_url ? await loadLogo(inv.instructor.logo_url) : null;
+  let titleX = margin;
+  let titleAlign: "left" | "right" = "left";
+  if (logo) {
+    const maxW = 140;
+    const maxH = 56;
+    const ratio = logo.width / logo.height;
+    let w = maxW;
+    let h = w / ratio;
+    if (h > maxH) {
+      h = maxH;
+      w = h * ratio;
+    }
+    doc.addImage(logo.dataUrl, logo.format, margin, 36, w, h);
+    titleX = pageWidth - margin;
+    titleAlign = "right";
+  }
+
   // Header
   doc.setFont("helvetica", "bold");
   doc.setFontSize(22);
-  doc.text("INVOICE", margin, 64);
+  doc.text("INVOICE", titleX, 64, { align: titleAlign });
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
   doc.setTextColor(110);
   const invoiceRef = inv.square_invoice_id || inv.id;
-  doc.text(`Invoice #${invoiceRef}`, margin, 82);
-  doc.text(`Issued ${fmtDate(inv.sent_at || inv.created_at)}`, margin, 96);
+  doc.text(`Invoice #${invoiceRef}`, titleX, 82, { align: titleAlign });
+  doc.text(`Issued ${fmtDate(inv.sent_at || inv.created_at)}`, titleX, 96, { align: titleAlign });
 
-  // Status pill (top right)
+  // Status pill — opposite side of the title, or right side when no logo
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
   doc.setTextColor(20);
-  doc.text(inv.status.toUpperCase(), pageWidth - margin, 64, { align: "right" });
+  const statusX = logo ? margin : pageWidth - margin;
+  const statusAlign: "left" | "right" = logo ? "left" : "right";
+  const statusY = logo ? 112 : 64;
+  doc.text(inv.status.toUpperCase(), statusX, statusY, { align: statusAlign });
 
   // From / To block
   const fromName = inv.instructor?.name || "Instructor";
