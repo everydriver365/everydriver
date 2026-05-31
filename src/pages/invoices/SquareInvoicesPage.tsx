@@ -37,6 +37,7 @@ interface InvoiceRow {
   klarna_status?: "pending" | "paid" | "failed" | "cancelled" | null;
   klarna_last_error?: string | null;
   klarna_last_error_at?: string | null;
+  clearpay_enabled?: boolean | null;
 
   status: string;
   amount_cents: number;
