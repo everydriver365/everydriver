@@ -218,6 +218,7 @@ serve(async (req) => {
       });
       if (!orderRes.ok || !orderRes.json?.order?.id) {
         console.error("[square-invoice] order create failed", orderRes.status, orderRes.json);
+        if (isInsufficientScopes(orderRes.json)) return err(RECONNECT_MSG, 403, orderRes.json);
         return err("Failed to create Square order", 502, orderRes.json);
       }
       const orderId = orderRes.json.order.id;
