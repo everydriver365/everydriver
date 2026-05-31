@@ -111,7 +111,7 @@ export function LessonLengthBufferEditor({ instructorId }: Props) {
                   borderColor: on ? "#2B7BC8" : "hsl(var(--border))",
                 }}
               >
-                {n} min
+                {formatLength(n)}
               </button>
             );
           })}
