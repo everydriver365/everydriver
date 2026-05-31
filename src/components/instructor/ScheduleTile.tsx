@@ -15,6 +15,7 @@ interface ScheduleTileProps {
   onAddLesson: () => void;
   onFillGaps: () => void;
   onLessonClick: (id: string) => void;
+  onViewNext?: () => void;
 }
 
 const C = {
@@ -51,7 +52,7 @@ function sameDay(a: Date, b: Date) {
   return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 }
 
-export function ScheduleTile({ lessons, onAddLesson, onFillGaps, onLessonClick }: ScheduleTileProps) {
+export function ScheduleTile({ lessons, onAddLesson, onFillGaps, onLessonClick, onViewNext }: ScheduleTileProps) {
   const [tab, setTab] = useState<"today" | "tomorrow">("today");
 
   const { todayDate, tomorrowDate, todayLessons, tomorrowLessons } = useMemo(() => {
@@ -120,16 +121,50 @@ export function ScheduleTile({ lessons, onAddLesson, onFillGaps, onLessonClick }
       {/* Header kicker */}
       <div
         style={{
-          fontSize: 10,
-          color: C.muted,
-          letterSpacing: "1.2px",
-          fontWeight: 600,
-          textTransform: "uppercase",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 8,
           marginBottom: 10,
         }}
       >
-        {kicker}
+        <div
+          style={{
+            fontSize: 10,
+            color: C.muted,
+            letterSpacing: "1.2px",
+            fontWeight: 600,
+            textTransform: "uppercase",
+          }}
+        >
+          {kicker}
+        </div>
+        {onViewNext && (
+          <button
+            type="button"
+            onClick={onViewNext}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 2,
+              background: "transparent",
+              border: 0,
+              padding: 0,
+              color: C.blue,
+              fontSize: 12,
+              fontWeight: 600,
+              fontFamily: FONT,
+              cursor: "pointer",
+              flexShrink: 0,
+            }}
+            aria-label="View next lessons"
+          >
+            Next Lessons
+            <ChevronRight size={14} color={C.blue} />
+          </button>
+        )}
       </div>
+
 
       {/* Segmented day selector */}
       <div
