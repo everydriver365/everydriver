@@ -147,30 +147,6 @@ export function ScheduleTile({ lessons, nextLessons = [], onAddLesson, onFillGap
         >
           {kicker}
         </div>
-        {onViewNext && (
-          <button
-            type="button"
-            onClick={onViewNext}
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 2,
-              background: "transparent",
-              border: 0,
-              padding: 0,
-              color: C.blue,
-              fontSize: 12,
-              fontWeight: 600,
-              fontFamily: FONT,
-              cursor: "pointer",
-              flexShrink: 0,
-            }}
-            aria-label="View next lessons"
-          >
-            Next Lessons
-            <ChevronRight size={14} color={C.blue} />
-          </button>
-        )}
       </div>
 
 
@@ -187,6 +163,7 @@ export function ScheduleTile({ lessons, nextLessons = [], onAddLesson, onFillGap
       >
         {renderPill("today", "Today", todayDate)}
         {renderPill("tomorrow", "Tomorrow", tomorrowDate)}
+        {renderPill("next", "Next", null)}
       </div>
 
 
