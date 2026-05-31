@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, ExternalLink, RefreshCw, Search, X } from "lucide-react";
+import { ArrowLeft, Download, ExternalLink, RefreshCw, Search, X } from "lucide-react";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/select";
 import { InvoiceStatusBadge } from "@/components/invoices/InvoiceStatusBadge";
 import { toast } from "@/hooks/use-toast";
+import { generateInvoicePdf } from "@/lib/invoices/generateInvoicePdf";
 
 type Scope = "admin" | "instructor";
 
@@ -290,17 +291,33 @@ export default function SquareInvoicesPage({ scope }: { scope: Scope }) {
                           <InvoiceStatusBadge status={r.status} />
                         </td>
                         <td className="py-2 pr-3 text-right">
-                          {r.public_url && (
-                            <Button asChild variant="ghost" size="sm">
-                              <a
-                                href={r.public_url}
-                                target="_blank"
-                                rel="noreferrer"
-                              >
-                                <ExternalLink className="h-3.5 w-3.5" />
-                              </a>
+                          <div className="flex items-center justify-end gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              title="Download PDF"
+                              onClick={() => {
+                                try {
+                                  generateInvoicePdf(r);
+                                } catch (e: any) {
+                                  toast({
+                                    title: "Couldn't generate PDF",
+                                    description: e?.message,
+                                    variant: "destructive",
+                                  });
+                                }
+                              }}
+                            >
+                              <Download className="h-3.5 w-3.5" />
                             </Button>
-                          )}
+                            {r.public_url && (
+                              <Button asChild variant="ghost" size="sm" title="Open Square invoice">
+                                <a href={r.public_url} target="_blank" rel="noreferrer">
+                                  <ExternalLink className="h-3.5 w-3.5" />
+                                </a>
+                              </Button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     ))}
