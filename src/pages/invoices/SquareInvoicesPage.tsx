@@ -92,7 +92,7 @@ export default function SquareInvoicesPage({ scope }: { scope: Scope }) {
         .from("square_invoices")
         .select(
           `*,
-           instructor:instructors!square_invoices_issuer_instructor_id_fkey(id,name),
+           instructor:instructors!square_invoices_issuer_instructor_id_fkey(id,name,logo_url),
            pupil:pupils!square_invoices_recipient_pupil_id_fkey(id,name)`
         )
         .order("created_at", { ascending: false })
