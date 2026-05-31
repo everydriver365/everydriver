@@ -419,8 +419,53 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
               </div>
             </div>
 
-
-
+            <div className="rounded-md border p-3 space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label className="text-sm">Show bank details on invoice</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Appended to the invoice notes so the recipient can pay by bank transfer.
+                  </p>
+                </div>
+                <Switch checked={showBank} onCheckedChange={setShowBank} />
+              </div>
+              {showBank && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1.5 sm:col-span-2">
+                    <Label>Account name</Label>
+                    <Input
+                      value={bankAccountName}
+                      onChange={(e) => setBankAccountName(e.target.value)}
+                      placeholder="e.g. J Smith Driving School"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Sort code</Label>
+                    <Input
+                      value={bankSortCode}
+                      onChange={(e) => setBankSortCode(e.target.value)}
+                      placeholder="00-00-00"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Account number</Label>
+                    <Input
+                      value={bankAccountNumber}
+                      onChange={(e) => setBankAccountNumber(e.target.value)}
+                      placeholder="12345678"
+                    />
+                  </div>
+                  <div className="space-y-1.5 sm:col-span-2">
+                    <Label>Payment reference (optional)</Label>
+                    <Input
+                      value={bankReference}
+                      onChange={(e) => setBankReference(e.target.value)}
+                      placeholder="e.g. pupil name or invoice number"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
 
             <div className="flex items-center justify-between rounded-md border bg-muted/40 px-3 py-2 text-sm">
               <span className="text-muted-foreground">Total</span>
