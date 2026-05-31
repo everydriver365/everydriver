@@ -585,15 +585,21 @@ export function PupilCourseSummary({ pupilId, onBack, backHref }: Props) {
                   <div className="pt-3 border-t space-y-2">
                     <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Payment breakdown</div>
                     <Row label="Total collected" value={fmt(totals.totalCollected)} />
-                    <Row label="School skim %" value={`${instructor.school_skim_percentage ?? 0}%`} />
-                    <Row label="School profit" value={fmt(totals.schoolProfit)} />
+                    {isAdmin && (
+                      <>
+                        <Row label="School skim %" value={`${instructor.school_skim_percentage ?? 0}%`} />
+                        <Row label="School profit" value={fmt(totals.schoolProfit)} />
+                      </>
+                    )}
                     <Row label="Paid to instructor" value={fmt(totals.paidToInstructor)} />
                     {totals.totalRefunded > 0 && <Row label="Refunded" value={<span style={{ color: "#C0271F" }}>{fmt(totals.totalRefunded)}</span>} />}
                   </div>
-                  <div style={{ backgroundColor: "#F0FDF4", color: "#059669", fontWeight: 700, padding: 10, borderRadius: 8, fontSize: 13 }} className="flex items-center justify-between">
-                    <span>School profit</span>
-                    <span style={{ fontSize: 16 }}>{fmt(totals.schoolProfit)}</span>
-                  </div>
+                  {isAdmin && (
+                    <div style={{ backgroundColor: "#F0FDF4", color: "#059669", fontWeight: 700, padding: 10, borderRadius: 8, fontSize: 13 }} className="flex items-center justify-between">
+                      <span>School profit</span>
+                      <span style={{ fontSize: 16 }}>{fmt(totals.schoolProfit)}</span>
+                    </div>
+                  )}
                 </>
               ) : <div className="text-sm text-muted-foreground">No instructor assigned.</div>}
             </CardContent>
