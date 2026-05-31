@@ -17,8 +17,40 @@ export interface InvoicePdfInput {
   recipient_name: string | null;
   recipient_email: string | null;
   public_url: string | null;
-  instructor?: { name: string | null } | null;
+  instructor?: { name: string | null; logo_url?: string | null } | null;
   pupil?: { name: string | null } | null;
+}
+
+async function loadLogo(
+  url: string
+): Promise<{ dataUrl: string; format: "PNG" | "JPEG"; width: number; height: number } | null> {
+  try {
+    const res = await fetch(url, { mode: "cors" });
+    if (!res.ok) return null;
+    const contentType = (res.headers.get("content-type") || "").toLowerCase();
+    if (contentType.includes("svg")) return null; // jsPDF can't render SVG
+    const blob = await res.blob();
+    const dataUrl: string = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(blob);
+    });
+    const { width, height } = await new Promise<{ width: number; height: number }>(
+      (resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve({ width: img.naturalWidth, height: img.naturalHeight });
+        img.onerror = () => reject(new Error("image load failed"));
+        img.src = dataUrl;
+      }
+    );
+    const format: "PNG" | "JPEG" = contentType.includes("jpeg") || contentType.includes("jpg")
+      ? "JPEG"
+      : "PNG";
+    return { dataUrl, format, width, height };
+  } catch {
+    return null;
+  }
 }
 
 function money(cents: number, currency = "GBP") {
