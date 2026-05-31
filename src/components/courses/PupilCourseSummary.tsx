@@ -313,6 +313,51 @@ export function PupilCourseSummary({ pupilId, onBack, backHref }: Props) {
     }
   }, [pupil, lessons, toast, load]);
 
+  // ---------- Payment reminder ----------
+  const sendReminder = useCallback(async (method: "sms" | "email") => {
+    if (!pupil || !instructor) return;
+    if (method === "sms" && !pupil.phone) {
+      toast({ title: "No phone on file", description: "Add a phone number to text this pupil.", variant: "destructive" });
+      return;
+    }
+    if (method === "email" && !pupil.email) {
+      toast({ title: "No email on file", description: "Add an email to message this pupil.", variant: "destructive" });
+      return;
+    }
+    setWorking(`reminder-${method}`);
+    try {
+      const { data, error } = await supabase.functions.invoke("send-payment-reminder", {
+        body: {
+          instructorId: instructor.id,
+          instructorName: instructor.name,
+          pupilIds: [pupil.id],
+          method,
+        },
+      });
+      if (error) throw error;
+      const result = data as { sent?: number; emailSent?: number; failed?: number; details?: { error?: string }[] };
+      const ok = (result.sent || 0) + (result.emailSent || 0);
+      if (ok > 0) {
+        await logCourseActivity({
+          pupilId: pupil.id,
+          instructorId: pupil.instructor_id,
+          action: "reminder_sent",
+          details: { method, amount: totals.outstanding },
+        });
+        toast({ title: method === "sms" ? "Text reminder sent" : "Email reminder sent", description: `${pupil.name} · ${fmt(totals.outstanding)}` });
+        load();
+      } else {
+        const errMsg = result.details?.[0]?.error || "No message was sent";
+        throw new Error(errMsg);
+      }
+    } catch (e) {
+      toast({ title: "Reminder failed", description: (e as Error).message, variant: "destructive" });
+    } finally {
+      setWorking(null);
+    }
+  }, [pupil, instructor, totals.outstanding, toast, load]);
+
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
