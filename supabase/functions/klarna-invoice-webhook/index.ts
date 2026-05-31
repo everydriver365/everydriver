@@ -42,13 +42,16 @@ serve(async (req) => {
 
   try {
     const url = new URL(req.url);
+    // Klarna HPP sends `session_id` on status updates. We also accept the
+    // legacy `klarna_order_id` / `order_id` keys for backwards compatibility.
     orderId =
+      url.searchParams.get("session_id") ||
       url.searchParams.get("klarna_order_id") ||
       url.searchParams.get("order_id") ||
       url.searchParams.get("id");
 
     if (!orderId) {
-      return new Response(JSON.stringify({ error: "missing klarna_order_id" }), {
+      return new Response(JSON.stringify({ error: "missing session_id" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -70,27 +73,29 @@ serve(async (req) => {
       : "https://api.klarna.com";
     const klarnaAuth = "Basic " + btoa(`${klarnaUser}:${klarnaPass}`);
 
-    const kres = await fetch(`${klarnaBase}/ordermanagement/v1/orders/${orderId}`, {
+    // Fetch HPP session status. Possible status values:
+    //   CREATED, IN_PROGRESS, COMPLETED, DISABLED, ERROR
+    const kres = await fetch(`${klarnaBase}/hpp/v1/sessions/${orderId}`, {
       headers: { Authorization: klarnaAuth, "Content-Type": "application/json" },
     });
-    const korder = (await kres.json().catch(() => null)) as any;
-    if (!kres.ok || !korder) {
-      const msg = `Klarna order fetch failed (HTTP ${kres.status}): ${
-        korder ? JSON.stringify(korder).slice(0, 500) : "no body"
+    const ksession = (await kres.json().catch(() => null)) as any;
+    if (!kres.ok || !ksession) {
+      const msg = `Klarna HPP session fetch failed (HTTP ${kres.status}): ${
+        ksession ? JSON.stringify(ksession).slice(0, 500) : "no body"
       }`;
       console.error("[klarna-invoice-webhook]", msg);
       await recordError(orderId, msg);
-      return new Response(JSON.stringify({ error: "klarna order fetch failed" }), {
+      return new Response(JSON.stringify({ error: "klarna session fetch failed" }), {
         status: 502,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const status = String(korder.status || "").toUpperCase();
+    const status = String(ksession.status || "").toUpperCase();
     let klarnaStatus: "pending" | "paid" | "failed" | "cancelled" = "pending";
-    if (["AUTHORIZED", "PART_CAPTURED", "CAPTURED"].includes(status)) klarnaStatus = "paid";
-    else if (status === "CANCELLED") klarnaStatus = "cancelled";
-    else if (status === "EXPIRED" || status === "CLOSED") klarnaStatus = "failed";
+    if (status === "COMPLETED") klarnaStatus = "paid";
+    else if (status === "DISABLED") klarnaStatus = "cancelled";
+    else if (status === "ERROR") klarnaStatus = "failed";
 
     const buyerPaid = klarnaStatus === "paid";
 
