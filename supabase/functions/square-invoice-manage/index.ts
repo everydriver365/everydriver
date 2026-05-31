@@ -31,6 +31,7 @@ interface CreateBody {
   description?: string;
   accepted_payment_methods?: AcceptedPaymentMethods;
   klarna_enabled?: boolean;
+  location_id?: string | null;
 }
 
 interface ActionBody {
@@ -38,7 +39,11 @@ interface ActionBody {
   invoice_row_id: string;
 }
 
-type Body = CreateBody | ActionBody;
+interface ListLocationsBody {
+  action: "list_locations";
+}
+
+type Body = CreateBody | ActionBody | ListLocationsBody;
 
 function ok(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -160,7 +165,7 @@ serve(async (req) => {
 
     // ====== CREATE ======
     if (body.action === "create") {
-      const { pupil_id, recipient_email, recipient_name, line_items, service_fee_cents = 0, due_date, description, accepted_payment_methods, klarna_enabled } = body;
+      const { pupil_id, recipient_email, recipient_name, line_items, service_fee_cents = 0, due_date, description, accepted_payment_methods, klarna_enabled, location_id: requestedLocationId } = body;
 
       // Build accepted methods — card is always on (Square requires at least one).
       // Bank transfer is not collected by Square in the UK, but we persist the
@@ -188,18 +193,25 @@ serve(async (req) => {
         issuerType = "instructor";
         issuerInstructorId = instructor.id;
         squareToken = instructor.square_access_token_encrypted;
-        // Look up the instructor's Square location
+        // Look up the instructor's Square locations
         const locRes = await squareFetch("/v2/locations", squareToken);
         if (!locRes.ok) {
           return err("Failed to fetch Square locations for your account. Please reconnect Square.", 400, locRes.json);
         }
-        const mainLoc = locRes.json?.locations?.find((l: any) => l.status === "ACTIVE") || locRes.json?.locations?.[0];
-        if (!mainLoc?.id) return err("No active Square location found on your account");
-        locationId = mainLoc.id;
+        const locations: any[] = locRes.json?.locations || [];
+        let chosen: any = null;
+        if (requestedLocationId) {
+          chosen = locations.find((l) => l.id === requestedLocationId && l.status === "ACTIVE");
+          if (!chosen) return err("Selected Square location is not available on your account", 400);
+        } else {
+          chosen = locations.find((l) => l.status === "ACTIVE") || locations[0];
+        }
+        if (!chosen?.id) return err("No active Square location found on your account");
+        locationId = chosen.id;
       } else if (isAdmin) {
         issuerType = "school";
         squareToken = Deno.env.get("SQUARE_ACCESS_TOKEN") || "";
-        locationId = Deno.env.get("SQUARE_LOCATION_ID") || "";
+        locationId = requestedLocationId || Deno.env.get("SQUARE_LOCATION_ID") || "";
         if (!squareToken || !locationId) return err("Platform Square account is not configured", 500);
       } else {
         return err("Connect your Square account before sending invoices", 400);
@@ -486,6 +498,32 @@ serve(async (req) => {
         .update({ sent_at: new Date().toISOString(), last_event_at: new Date().toISOString() })
         .eq("id", row.id);
       return ok({ success: true });
+    }
+
+    // ====== LIST LOCATIONS ======
+    if (body.action === "list_locations") {
+      let squareToken: string;
+      if (instructor?.id && instructor?.square_access_token_encrypted) {
+        squareToken = instructor.square_access_token_encrypted;
+      } else if (isAdmin) {
+        squareToken = Deno.env.get("SQUARE_ACCESS_TOKEN") || "";
+        if (!squareToken) return err("Platform Square account is not configured", 500);
+      } else {
+        return err("Connect your Square account before listing locations", 400);
+      }
+      const locRes = await squareFetch("/v2/locations", squareToken);
+      if (!locRes.ok) return err("Failed to fetch Square locations", 400, locRes.json);
+      const locations = (locRes.json?.locations || [])
+        .filter((l: any) => l.status === "ACTIVE")
+        .map((l: any) => ({
+          id: l.id,
+          name: l.name,
+          address: [l.address?.address_line_1, l.address?.locality, l.address?.postal_code]
+            .filter(Boolean)
+            .join(", "),
+          is_main: !!l.merchant_id && l.type === "PHYSICAL",
+        }));
+      return ok({ locations });
     }
 
     return err("Unknown action");

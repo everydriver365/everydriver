@@ -74,6 +74,9 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
   const [allowClearpay, setAllowClearpay] = useState(false);
   const [allowKlarna, setAllowKlarna] = useState(false);
   const [instructorKlarnaEnabled, setInstructorKlarnaEnabled] = useState(false);
+  const [locations, setLocations] = useState<Array<{ id: string; name: string; address: string }>>([]);
+  const [locationId, setLocationId] = useState<string>("");
+  const [locationsLoading, setLocationsLoading] = useState(false);
 
   useEffect(() => {
     try {
@@ -137,6 +140,24 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
         }
       } else {
         setInstructorKlarnaEnabled(true);
+      }
+
+      // Fetch Square locations for selector
+      setLocationsLoading(true);
+      try {
+        const { data: locData, error: locErr } = await supabase.functions.invoke(
+          "square-invoice-manage",
+          { body: { action: "list_locations" } },
+        );
+        if (!locErr && Array.isArray((locData as any)?.locations)) {
+          const list = (locData as any).locations as Array<{ id: string; name: string; address: string }>;
+          setLocations(list);
+          if (list.length > 0) setLocationId((prev) => prev || list[0].id);
+        }
+      } catch {
+        // non-fatal — backend will fall back to the default location
+      } finally {
+        setLocationsLoading(false);
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -225,6 +246,7 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
         bank_account: !!bankBlock,
       },
       klarna_enabled: allowKlarna && instructorKlarnaEnabled,
+      location_id: locationId || null,
     };
   };
 
@@ -468,6 +490,28 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
                 </p>
               </div>
             </div>
+
+            {locations.length > 1 && (
+              <div className="space-y-1.5">
+                <Label>Send from Square location</Label>
+                <Select value={locationId} onValueChange={setLocationId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={locationsLoading ? "Loading locations…" : "Select a location"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {locations.map((l) => (
+                      <SelectItem key={l.id} value={l.id}>
+                        {l.name}
+                        {l.address ? ` — ${l.address}` : ""}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  The invoice will appear under this location in your Square dashboard.
+                </p>
+              </div>
+            )}
 
             <div className="rounded-md border p-3 space-y-3">
               <div>
