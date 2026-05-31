@@ -215,7 +215,7 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
       }}
     >
       <DialogTrigger asChild>
-        <Button size="sm">
+        <Button size="sm" disabled={disabled} title={disabled ? disabledReason : undefined}>
           <Plus className="h-4 w-4 mr-1" /> New invoice
         </Button>
       </DialogTrigger>
