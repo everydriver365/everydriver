@@ -70,11 +70,14 @@ function normalizeMethod(m: string | null): PaymentMethod {
   return "card";
 }
 
-function normalizeStatus(amount: number, notes: string | null, payoutStatus?: string | null): PaymentStatus {
+function normalizeStatus(amount: number, notes: string | null, payoutStatus?: string | null, paymentMethod?: string | null): PaymentStatus {
   const n = (notes || "").toLowerCase();
   const ps = (payoutStatus || "").toLowerCase();
+  const pm = (paymentMethod || "").toLowerCase();
+  const isRecognisedChannel = /cash|bank|gocardless|transfer|card|square|sumup|klarna|clearpay/.test(pm);
   if (ps === "refunded" || ps === "partially_refunded") return "refunded";
-  if (amount < 0 || n.includes("refund")) return "refunded";
+  if (n.includes("refund")) return "refunded";
+  if (amount < 0 && isRecognisedChannel) return "refunded";
   if (n.includes("failed") || n.includes("declined")) return "failed";
   if (ps === "pending" || n.includes("pending") || n.includes("awaiting payment")) return "pending";
   return "paid";
@@ -207,7 +210,9 @@ export function useInstructorPaymentsData(instructorId: string | undefined): Pay
         if (paymentsRes.error) throw paymentsRes.error;
         if (pupilsRes.error) throw pupilsRes.error;
 
-        const rawPayments = paymentsRes.data || [];
+        // Exclude balance-ledger rows (e.g. "Lesson Charge") — they aren't money in/out.
+        const isLedgerRow = (m: string | null) => /lesson\s*charge/i.test(m || "");
+        const rawPayments = (paymentsRes.data || []).filter((p: any) => !isLedgerRow(p.payment_method));
         const transactions: PaymentTx[] = rawPayments.map((p: any) => {
           const amount = Number(p.amount || 0);
           const method = normalizeMethod(p.payment_method);
@@ -220,7 +225,7 @@ export function useInstructorPaymentsData(instructorId: string | undefined): Pay
             forText: shortFor(p.notes, method, amount),
             note: p.notes ?? null,
             amount,
-            status: normalizeStatus(amount, p.notes, p.payout_status),
+            status: normalizeStatus(amount, p.notes, p.payout_status, p.payment_method),
           };
         });
 
@@ -291,7 +296,7 @@ export function useInstructorPaymentsData(instructorId: string | undefined): Pay
         const cashFlow = buildCashFlow(
           rawPayments
             .filter((p: any) => {
-              const status = normalizeStatus(Number(p.amount), p.notes, p.payout_status);
+              const status = normalizeStatus(Number(p.amount), p.notes, p.payout_status, p.payment_method);
               return Number(p.amount) > 0 && status === "paid";
             })
             .map((p: any) => ({ recorded_at: p.recorded_at, amount: Number(p.amount) }))
@@ -325,7 +330,7 @@ export function useInstructorPaymentsData(instructorId: string | undefined): Pay
         if (!ytdRes.error && ytdRes.data) {
           const cardYtd = ytdRes.data
             .filter((p: any) => normalizeMethod(p.payment_method) === "card"
-              && normalizeStatus(Number(p.amount), p.notes, p.payout_status) === "paid")
+              && normalizeStatus(Number(p.amount), p.notes, p.payout_status, p.payment_method) === "paid")
             .reduce((s: number, p: any) => s + Number(p.amount || 0), 0);
           feesYearToDate = +((cardYtd * FEE_RATE) + platformYtd).toFixed(2);
         }
