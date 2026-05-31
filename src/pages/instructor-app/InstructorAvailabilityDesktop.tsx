@@ -1201,6 +1201,17 @@ export default function InstructorAvailabilityDesktop() {
           <>
             <WeeklyHoursCard weekly={weekly} setWeekly={setWeekly} avgRate={38} />
 
+            {instructor?.id && (
+              <StandardIntensiveHours
+                instructorId={instructor.id}
+                variant="desktop"
+                onChanged={() => {
+                  hydrated.current = false;
+                  queryClient.invalidateQueries({ queryKey: ["availability-page", instructor.id] });
+                }}
+              />
+            )}
+
             <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 10, marginBottom: 14 }}>
               <TimeOffCard items={timeOff} onAdd={addTimeOff} onUpdate={updateTimeOff} onDelete={deleteTimeOff} />
               <BookingRulesCard rules={rules} setRules={setRules} />
@@ -1209,6 +1220,7 @@ export default function InstructorAvailabilityDesktop() {
             <FourWeekPreview weekly={weekly} timeOff={timeOff} />
           </>
         )}
+
       </div>
     </DashboardShell>
   );
