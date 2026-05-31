@@ -145,6 +145,23 @@ export function PupilCourseSummary({ pupilId, onBack, backHref }: Props) {
   const [rating, setRating] = useState<{ avg: number; count: number } | null>(null);
   const [activity, setActivity] = useState<ActivityRow[]>([]);
   const [working, setWorking] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("role", "admin")
+        .maybeSingle();
+      if (!cancelled) setIsAdmin(!!data);
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -568,15 +585,21 @@ export function PupilCourseSummary({ pupilId, onBack, backHref }: Props) {
                   <div className="pt-3 border-t space-y-2">
                     <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Payment breakdown</div>
                     <Row label="Total collected" value={fmt(totals.totalCollected)} />
-                    <Row label="School skim %" value={`${instructor.school_skim_percentage ?? 0}%`} />
-                    <Row label="School profit" value={fmt(totals.schoolProfit)} />
+                    {isAdmin && (
+                      <>
+                        <Row label="School skim %" value={`${instructor.school_skim_percentage ?? 0}%`} />
+                        <Row label="School profit" value={fmt(totals.schoolProfit)} />
+                      </>
+                    )}
                     <Row label="Paid to instructor" value={fmt(totals.paidToInstructor)} />
                     {totals.totalRefunded > 0 && <Row label="Refunded" value={<span style={{ color: "#C0271F" }}>{fmt(totals.totalRefunded)}</span>} />}
                   </div>
-                  <div style={{ backgroundColor: "#F0FDF4", color: "#059669", fontWeight: 700, padding: 10, borderRadius: 8, fontSize: 13 }} className="flex items-center justify-between">
-                    <span>School profit</span>
-                    <span style={{ fontSize: 16 }}>{fmt(totals.schoolProfit)}</span>
-                  </div>
+                  {isAdmin && (
+                    <div style={{ backgroundColor: "#F0FDF4", color: "#059669", fontWeight: 700, padding: 10, borderRadius: 8, fontSize: 13 }} className="flex items-center justify-between">
+                      <span>School profit</span>
+                      <span style={{ fontSize: 16 }}>{fmt(totals.schoolProfit)}</span>
+                    </div>
+                  )}
                 </>
               ) : <div className="text-sm text-muted-foreground">No instructor assigned.</div>}
             </CardContent>
@@ -591,7 +614,7 @@ export function PupilCourseSummary({ pupilId, onBack, backHref }: Props) {
               <div className="grid grid-cols-2 gap-3">
                 <BigStat label="Total collected" value={fmt(totals.totalCollected)} />
                 <BigStat label="Paid to instructor" value={fmt(totals.paidToInstructor)} />
-                <BigStat label="School profit" value={fmt(totals.schoolProfit)} accent="#059669" />
+                {isAdmin && <BigStat label="School profit" value={fmt(totals.schoolProfit)} accent="#059669" />}
                 <BigStat label="Outstanding" value={fmt(totals.outstanding)} accent={totals.outstanding > 0 ? "#C0271F" : undefined} />
               </div>
               {totals.totalRefunded > 0 && (
