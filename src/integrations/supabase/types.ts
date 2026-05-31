@@ -16265,66 +16265,199 @@ export type Database = {
           },
         ]
       }
-      quotes: {
+      quote_activity_log: {
         Row: {
-          accepted_at: string | null
-          course_type: string | null
+          actor_id: string | null
+          actor_type: string
           created_at: string
-          deposit_amount: number | null
-          email: string | null
-          expires_at: string | null
+          event: string
+          id: string
+          metadata: Json
+          quote_id: string
+        }
+        Insert: {
+          actor_id?: string | null
+          actor_type: string
+          created_at?: string
+          event: string
+          id?: string
+          metadata?: Json
+          quote_id: string
+        }
+        Update: {
+          actor_id?: string | null
+          actor_type?: string
+          created_at?: string
+          event?: string
+          id?: string
+          metadata?: Json
+          quote_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quote_activity_log_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quote_bookings: {
+        Row: {
+          accepted_at: string
+          created_at: string
+          deposit_pence: number
           id: string
           instructor_id: string
-          package_details: string | null
-          phone: string | null
-          postcode: string | null
-          price: number
+          price_pence: number
+          pupil_email: string | null
+          pupil_id: string | null
           pupil_name: string
-          schedule_notes: string | null
-          status: string
-          token: string
+          pupil_phone: string | null
+          pupil_postcode: string | null
+          quote_id: string
+          status: Database["public"]["Enums"]["quote_booking_status"]
           total_hours: number | null
           updated_at: string
         }
         Insert: {
-          accepted_at?: string | null
-          course_type?: string | null
+          accepted_at?: string
           created_at?: string
-          deposit_amount?: number | null
-          email?: string | null
-          expires_at?: string | null
+          deposit_pence?: number
           id?: string
           instructor_id: string
-          package_details?: string | null
-          phone?: string | null
-          postcode?: string | null
-          price: number
+          price_pence?: number
+          pupil_email?: string | null
+          pupil_id?: string | null
           pupil_name: string
-          schedule_notes?: string | null
-          status?: string
-          token?: string
+          pupil_phone?: string | null
+          pupil_postcode?: string | null
+          quote_id: string
+          status?: Database["public"]["Enums"]["quote_booking_status"]
           total_hours?: number | null
           updated_at?: string
         }
         Update: {
+          accepted_at?: string
+          created_at?: string
+          deposit_pence?: number
+          id?: string
+          instructor_id?: string
+          price_pence?: number
+          pupil_email?: string | null
+          pupil_id?: string | null
+          pupil_name?: string
+          pupil_phone?: string | null
+          pupil_postcode?: string | null
+          quote_id?: string
+          status?: Database["public"]["Enums"]["quote_booking_status"]
+          total_hours?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quote_bookings_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: true
+            referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quotes: {
+        Row: {
+          accepted_at: string | null
+          cancelled_at: string | null
+          course_type: string | null
+          created_at: string
+          decline_reason: string | null
+          declined_at: string | null
+          deposit_amount: number | null
+          deposit_pence: number
+          email: string | null
+          expires_at: string | null
+          id: string
+          instructor_id: string
+          last_reminder_at: string | null
+          package_details: string | null
+          phone: string | null
+          postcode: string | null
+          price: number
+          price_pence: number
+          pupil_name: string
+          quote_ref: string
+          schedule_notes: string | null
+          sent_at: string | null
+          status: Database["public"]["Enums"]["quote_status"]
+          terms: string | null
+          token: string
+          total_hours: number | null
+          updated_at: string
+          valid_until: string | null
+          viewed_at: string | null
+        }
+        Insert: {
           accepted_at?: string | null
+          cancelled_at?: string | null
           course_type?: string | null
           created_at?: string
+          decline_reason?: string | null
+          declined_at?: string | null
           deposit_amount?: number | null
+          deposit_pence?: number
+          email?: string | null
+          expires_at?: string | null
+          id?: string
+          instructor_id: string
+          last_reminder_at?: string | null
+          package_details?: string | null
+          phone?: string | null
+          postcode?: string | null
+          price: number
+          price_pence?: number
+          pupil_name: string
+          quote_ref?: string
+          schedule_notes?: string | null
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["quote_status"]
+          terms?: string | null
+          token?: string
+          total_hours?: number | null
+          updated_at?: string
+          valid_until?: string | null
+          viewed_at?: string | null
+        }
+        Update: {
+          accepted_at?: string | null
+          cancelled_at?: string | null
+          course_type?: string | null
+          created_at?: string
+          decline_reason?: string | null
+          declined_at?: string | null
+          deposit_amount?: number | null
+          deposit_pence?: number
           email?: string | null
           expires_at?: string | null
           id?: string
           instructor_id?: string
+          last_reminder_at?: string | null
           package_details?: string | null
           phone?: string | null
           postcode?: string | null
           price?: number
+          price_pence?: number
           pupil_name?: string
+          quote_ref?: string
           schedule_notes?: string | null
-          status?: string
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["quote_status"]
+          terms?: string | null
           token?: string
           total_hours?: number | null
           updated_at?: string
+          valid_until?: string | null
+          viewed_at?: string | null
         }
         Relationships: [
           {
@@ -16930,6 +17063,7 @@ export type Database = {
           prepaid_hours_used: number | null
           price_per_hour: number | null
           pupil_id: string
+          quote_booking_id: string | null
           recurrence_parent_id: string | null
           recurrence_rule: string | null
           reminder_1h_sent_at: string | null
@@ -16991,6 +17125,7 @@ export type Database = {
           prepaid_hours_used?: number | null
           price_per_hour?: number | null
           pupil_id: string
+          quote_booking_id?: string | null
           recurrence_parent_id?: string | null
           recurrence_rule?: string | null
           reminder_1h_sent_at?: string | null
@@ -17052,6 +17187,7 @@ export type Database = {
           prepaid_hours_used?: number | null
           price_per_hour?: number | null
           pupil_id?: string
+          quote_booking_id?: string | null
           recurrence_parent_id?: string | null
           recurrence_rule?: string | null
           reminder_1h_sent_at?: string | null
@@ -17091,6 +17227,13 @@ export type Database = {
             columns: ["pupil_id"]
             isOneToOne: false
             referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scheduled_lessons_quote_booking_id_fkey"
+            columns: ["quote_booking_id"]
+            isOneToOne: false
+            referencedRelation: "quote_bookings"
             referencedColumns: ["id"]
           },
           {
@@ -20616,6 +20759,32 @@ export type Database = {
       }
     }
     Functions: {
+      accept_quote_by_token: {
+        Args: { p_metadata?: Json; p_token: string }
+        Returns: {
+          accepted_at: string
+          created_at: string
+          deposit_pence: number
+          id: string
+          instructor_id: string
+          price_pence: number
+          pupil_email: string | null
+          pupil_id: string | null
+          pupil_name: string
+          pupil_phone: string | null
+          pupil_postcode: string | null
+          quote_id: string
+          status: Database["public"]["Enums"]["quote_booking_status"]
+          total_hours: number | null
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "quote_bookings"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       archive_pupil: {
         Args: { p_note?: string; p_pupil_id: string; p_reason: string }
         Returns: undefined
@@ -20688,6 +20857,46 @@ export type Database = {
       classify_sync_error: { Args: { err: string }; Returns: string }
       cleanup_expired_otp_codes: { Args: never; Returns: undefined }
       cleanup_expired_parent_otp_codes: { Args: never; Returns: undefined }
+      decline_quote_by_token: {
+        Args: { p_reason?: string; p_token: string }
+        Returns: {
+          accepted_at: string | null
+          cancelled_at: string | null
+          course_type: string | null
+          created_at: string
+          decline_reason: string | null
+          declined_at: string | null
+          deposit_amount: number | null
+          deposit_pence: number
+          email: string | null
+          expires_at: string | null
+          id: string
+          instructor_id: string
+          last_reminder_at: string | null
+          package_details: string | null
+          phone: string | null
+          postcode: string | null
+          price: number
+          price_pence: number
+          pupil_name: string
+          quote_ref: string
+          schedule_notes: string | null
+          sent_at: string | null
+          status: Database["public"]["Enums"]["quote_status"]
+          terms: string | null
+          token: string
+          total_hours: number | null
+          updated_at: string
+          valid_until: string | null
+          viewed_at: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "quotes"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
@@ -20700,6 +20909,7 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      expire_stale_quotes: { Args: never; Returns: number }
       generate_calendar_share_token: { Args: never; Returns: string }
       generate_domain_verification_token: { Args: never; Returns: string }
       generate_referral_code: { Args: never; Returns: string }
@@ -20890,6 +21100,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      mark_quote_viewed_by_token: {
+        Args: { p_token: string }
+        Returns: undefined
+      }
       move_to_dlq: {
         Args: {
           dlq_name: string
@@ -21046,6 +21260,19 @@ export type Database = {
         | "active"
         | "test_passed"
         | "lost"
+      quote_booking_status:
+        | "pending_schedule"
+        | "partially_scheduled"
+        | "fully_scheduled"
+        | "cancelled"
+      quote_status:
+        | "draft"
+        | "sent"
+        | "viewed"
+        | "accepted"
+        | "declined"
+        | "expired"
+        | "cancelled"
       school_role: "school_owner" | "school_admin" | "instructor"
       service_type:
         | "oil_change"
@@ -21218,6 +21445,21 @@ export const Constants = {
         "active",
         "test_passed",
         "lost",
+      ],
+      quote_booking_status: [
+        "pending_schedule",
+        "partially_scheduled",
+        "fully_scheduled",
+        "cancelled",
+      ],
+      quote_status: [
+        "draft",
+        "sent",
+        "viewed",
+        "accepted",
+        "declined",
+        "expired",
+        "cancelled",
       ],
       school_role: ["school_owner", "school_admin", "instructor"],
       service_type: [

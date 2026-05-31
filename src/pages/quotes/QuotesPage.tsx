@@ -23,6 +23,7 @@ type Scope = "admin" | "instructor";
 
 interface QuoteRow {
   id: string;
+  quote_ref: string;
   instructor_id: string;
   pupil_name: string;
   email: string | null;
@@ -31,26 +32,29 @@ interface QuoteRow {
   course_type: string | null;
   total_hours: number | null;
   price: number;
+  price_pence: number;
   deposit_amount: number | null;
+  deposit_pence: number;
   status: string;
   token: string;
   expires_at: string | null;
+  valid_until: string | null;
   accepted_at: string | null;
   created_at: string;
   instructor?: { id: string; name: string | null } | null;
 }
 
-const STATUS_OPTIONS = ["all", "pending", "accepted", "expired", "cancelled"];
+const STATUS_OPTIONS = ["all", "draft", "sent", "viewed", "accepted", "declined", "expired", "cancelled"];
 
-function fmtMoney(n: number) {
-  return new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP" }).format(n || 0);
+function fmtMoney(pence: number) {
+  return new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP" }).format((pence || 0) / 100);
 }
 
 function statusTone(s: string) {
   if (s === "accepted") return "bg-emerald-500/10 text-emerald-700 border-emerald-500/30";
-  if (s === "expired" || s === "cancelled")
-    return "bg-muted text-muted-foreground border-muted";
-  return "bg-amber-500/10 text-amber-700 border-amber-500/30";
+  if (s === "sent" || s === "viewed") return "bg-blue-500/10 text-blue-700 border-blue-500/30";
+  if (s === "draft") return "bg-amber-500/10 text-amber-700 border-amber-500/30";
+  return "bg-muted text-muted-foreground border-muted";
 }
 
 export default function QuotesPage({ scope }: { scope: Scope }) {
@@ -115,12 +119,12 @@ export default function QuotesPage({ scope }: { scope: Scope }) {
     let pendingValue = 0;
     let acceptedValue = 0;
     for (const r of filtered) {
-      if (r.status === "pending") {
-        pending += 1;
-        pendingValue += Number(r.price) || 0;
-      } else if (r.status === "accepted") {
+      if (r.status === "accepted") {
         accepted += 1;
-        acceptedValue += Number(r.price) || 0;
+        acceptedValue += Number(r.price_pence) || 0;
+      } else if (["draft", "sent", "viewed"].includes(r.status)) {
+        pending += 1;
+        pendingValue += Number(r.price_pence) || 0;
       }
     }
     return { count: filtered.length, pending, accepted, pendingValue, acceptedValue };
@@ -233,10 +237,17 @@ export default function QuotesPage({ scope }: { scope: Scope }) {
                     </tr>
                   </thead>
                   <tbody>
-                    {filtered.map((r) => (
-                      <tr key={r.id} className="border-b last:border-0 hover:bg-muted/30">
+                    {filtered.map((r) => {
+                      const detailHref = scope === "admin" ? `/admin/quotes/${r.id}` : `/instructor/quotes/${r.id}`;
+                      return (
+                      <tr
+                        key={r.id}
+                        className="border-b last:border-0 hover:bg-muted/30 cursor-pointer"
+                        onClick={() => { window.location.href = detailHref; }}
+                      >
                         <td className="py-2 pr-3 whitespace-nowrap text-xs text-muted-foreground">
-                          {format(new Date(r.created_at), "d MMM yyyy")}
+                          <div>{format(new Date(r.created_at), "d MMM yyyy")}</div>
+                          <div className="opacity-70">{r.quote_ref}</div>
                         </td>
                         <td className="py-2 pr-3">
                           <div className="font-medium">{r.pupil_name}</div>
@@ -258,17 +269,17 @@ export default function QuotesPage({ scope }: { scope: Scope }) {
                           {r.total_hours ?? "—"}
                         </td>
                         <td className="py-2 pr-3 text-right font-medium whitespace-nowrap">
-                          {fmtMoney(Number(r.price))}
+                          {fmtMoney(r.price_pence || Math.round((Number(r.price) || 0) * 100))}
                         </td>
                         <td className="py-2 pr-3 whitespace-nowrap text-xs text-muted-foreground">
-                          {r.expires_at ? format(new Date(r.expires_at), "d MMM") : "—"}
+                          {(r.valid_until || r.expires_at) ? format(new Date((r.valid_until || r.expires_at)!), "d MMM") : "—"}
                         </td>
                         <td className="py-2 pr-3">
                           <Badge variant="outline" className={statusTone(r.status)}>
                             {r.status}
                           </Badge>
                         </td>
-                        <td className="py-2 pr-3 text-right">
+                        <td className="py-2 pr-3 text-right" onClick={(e) => e.stopPropagation()}>
                           <div className="flex items-center justify-end gap-1">
                             <Button
                               variant="ghost"
@@ -290,7 +301,8 @@ export default function QuotesPage({ scope }: { scope: Scope }) {
                           </div>
                         </td>
                       </tr>
-                    ))}
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
