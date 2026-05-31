@@ -158,13 +158,27 @@ export default function SquareInvoicesPage({ scope }: { scope: Scope }) {
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <CreateInvoiceDialog scope={scope} onCreated={load} />
+            <CreateInvoiceDialog
+              scope={scope}
+              onCreated={load}
+              disabled={!squareConnected}
+              disabledReason="Connect your Square account first"
+            />
             <Button onClick={load} disabled={loading} size="sm" variant="outline">
               <RefreshCw className={`h-4 w-4 mr-1 ${loading ? "animate-spin" : ""}`} />
               Refresh
             </Button>
           </div>
         </div>
+
+        {scope === "instructor" && instructorId && (
+          <SquareConnectionBanner
+            instructorId={instructorId}
+            squareMerchantId={squareMerchantId}
+            squareConnectedAt={squareConnectedAt}
+            onUpdate={refreshInstructor}
+          />
+        )}
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <SummaryCard label="Invoices" value={totals.count.toString()} />
