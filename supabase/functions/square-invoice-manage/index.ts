@@ -408,6 +408,7 @@ serve(async (req) => {
           last_event_at: new Date().toISOString(),
           created_by: userId,
           klarna_enabled: klarnaOn,
+          clearpay_enabled: apm.buy_now_pay_later,
           klarna_pay_url: klarnaPayUrl,
           klarna_order_id: klarnaOrderId,
           klarna_status: klarnaOn ? (klarnaPayUrl ? "pending" : "failed") : null,

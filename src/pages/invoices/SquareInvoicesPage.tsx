@@ -37,6 +37,7 @@ interface InvoiceRow {
   klarna_status?: "pending" | "paid" | "failed" | "cancelled" | null;
   klarna_last_error?: string | null;
   klarna_last_error_at?: string | null;
+  clearpay_enabled?: boolean | null;
 
   status: string;
   amount_cents: number;
@@ -81,6 +82,7 @@ export default function SquareInvoicesPage({ scope }: { scope: Scope }) {
   const [status, setStatus] = useState("all");
   const [issuerFilter, setIssuerFilter] = useState<"all" | "instructor" | "school">("all");
   const [klarnaFilter, setKlarnaFilter] = useState<"all" | "any" | "pending" | "paid" | "failed" | "cancelled">("all");
+  const [clearpayFilter, setClearpayFilter] = useState<"all" | "offered">("all");
 
 
   const { instructor, refreshInstructor } = useInstructorAuth();
@@ -131,6 +133,7 @@ export default function SquareInvoicesPage({ scope }: { scope: Scope }) {
           if (!r.klarna_enabled || r.klarna_status !== klarnaFilter) return false;
         }
       }
+      if (clearpayFilter === "offered" && !r.clearpay_enabled) return false;
       if (!q) return true;
       return (
         r.recipient_name?.toLowerCase().includes(q) ||
@@ -141,7 +144,7 @@ export default function SquareInvoicesPage({ scope }: { scope: Scope }) {
         r.square_invoice_id?.toLowerCase().includes(q)
       );
     });
-  }, [rows, query, status, issuerFilter, klarnaFilter, scope]);
+  }, [rows, query, status, issuerFilter, klarnaFilter, clearpayFilter, scope]);
 
 
   const totals = useMemo(() => {
@@ -185,6 +188,7 @@ export default function SquareInvoicesPage({ scope }: { scope: Scope }) {
       "klarna_status",
       "klarna_last_error",
       "klarna_last_error_at",
+      "clearpay_enabled",
       "paid_at",
       "sent_at",
       "cancelled_at",
@@ -212,6 +216,7 @@ export default function SquareInvoicesPage({ scope }: { scope: Scope }) {
           r.klarna_status ?? "",
           r.klarna_last_error ?? "",
           r.klarna_last_error_at ?? "",
+          r.clearpay_enabled ? "true" : "false",
           r.paid_at ?? "",
           r.sent_at ?? "",
           r.cancelled_at ?? "",
@@ -335,6 +340,15 @@ export default function SquareInvoicesPage({ scope }: { scope: Scope }) {
                     <SelectItem value="cancelled">Klarna: cancelled</SelectItem>
                   </SelectContent>
                 </Select>
+                <Select value={clearpayFilter} onValueChange={(v) => setClearpayFilter(v as any)}>
+                  <SelectTrigger className="h-9 w-[160px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All (Clearpay + non)</SelectItem>
+                    <SelectItem value="offered">Clearpay: offered</SelectItem>
+                  </SelectContent>
+                </Select>
                 {scope === "admin" && (
                   <Select value={issuerFilter} onValueChange={(v) => setIssuerFilter(v as any)}>
                     <SelectTrigger className="h-9 w-[150px]">
@@ -445,6 +459,21 @@ export default function SquareInvoicesPage({ scope }: { scope: Scope }) {
                                 title="Klarna Hosted Payment Page status"
                               >
                                 Klarna · {r.klarna_status}
+                              </span>
+                            )}
+                            {r.clearpay_enabled && (
+                              <span
+                                className={
+                                  "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium border " +
+                                  (r.status === "paid"
+                                    ? "bg-green-50 text-green-700 border-green-200"
+                                    : r.status === "canceled" || r.status === "cancelled"
+                                    ? "bg-muted text-muted-foreground border-border"
+                                    : "bg-sky-50 text-sky-700 border-sky-200")
+                                }
+                                title="Clearpay (Afterpay) was offered on this invoice. Final payment status follows the Square invoice."
+                              >
+                                Clearpay · {r.status === "paid" ? "paid" : r.status === "canceled" || r.status === "cancelled" ? "cancelled" : "offered"}
                               </span>
                             )}
                             {r.klarna_last_error && (
