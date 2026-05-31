@@ -18025,6 +18025,8 @@ export type Database = {
           recipient_email: string | null
           recipient_name: string | null
           recipient_pupil_id: string | null
+          refund_amount_cents: number
+          refunded_at: string | null
           sent_at: string | null
           service_fee_cents: number
           square_invoice_id: string | null
@@ -18061,6 +18063,8 @@ export type Database = {
           recipient_email?: string | null
           recipient_name?: string | null
           recipient_pupil_id?: string | null
+          refund_amount_cents?: number
+          refunded_at?: string | null
           sent_at?: string | null
           service_fee_cents?: number
           square_invoice_id?: string | null
@@ -18097,6 +18101,8 @@ export type Database = {
           recipient_email?: string | null
           recipient_name?: string | null
           recipient_pupil_id?: string | null
+          refund_amount_cents?: number
+          refunded_at?: string | null
           sent_at?: string | null
           service_fee_cents?: number
           square_invoice_id?: string | null
