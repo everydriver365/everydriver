@@ -166,6 +166,7 @@ import { DsmLogo } from "@/components/instructor/ui/DsmLogo";
 import { InstructorTopBar } from "@/components/instructor/InstructorTopBar";
 import { UpNextExpanded } from "@/components/instructor/UpNextExpanded";
 import { ScheduleTile } from "@/components/instructor/ScheduleTile";
+import { NextLessonsSheet } from "@/components/instructor/NextLessonsSheet";
 import { TaxEstimateTile } from "@/components/instructor/TaxEstimateTile";
 import { MTDDeadlineTile } from "@/components/instructor/MTDDeadlineTile";
 import { CourseBonusTile } from "@/components/instructor/CourseBonusTile";
@@ -2194,6 +2195,7 @@ function ScheduleCard({
 }: { instructorId: string; navigate: ReturnType<typeof useNavigate> }) {
   const today = new Date();
   const { data: dayLessons = [] } = useDayLessons(instructorId, today);
+  const [nextOpen, setNextOpen] = useState(false);
 
   const lessons = useMemo(() => {
     const dateStr = format(today, "yyyy-MM-dd");
@@ -2214,13 +2216,21 @@ function ScheduleCard({
   }, [dayLessons]);
 
   return (
-    <ScheduleTile
-      lessons={lessons}
-      onAddLesson={() => navigate("/instructor/schedule?add=1")}
-      onFillGaps={() => navigate("/instructor/gaps")}
-      onLessonClick={(id) => navigate(`/instructor/schedule?lesson=${id}`)}
-      onViewNext={() => navigate("/instructor/schedule")}
-    />
+    <>
+      <ScheduleTile
+        lessons={lessons}
+        onAddLesson={() => navigate("/instructor/schedule?add=1")}
+        onFillGaps={() => navigate("/instructor/gaps")}
+        onLessonClick={(id) => navigate(`/instructor/schedule?lesson=${id}`)}
+        onViewNext={() => setNextOpen(true)}
+      />
+      <NextLessonsSheet
+        open={nextOpen}
+        onClose={() => setNextOpen(false)}
+        instructorId={instructorId}
+        onLessonClick={(id) => navigate(`/instructor/schedule?lesson=${id}`)}
+      />
+    </>
   );
 }
 
