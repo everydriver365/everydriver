@@ -767,11 +767,14 @@ export default function InstructorQuickAvailability() {
             </>
           )}
 
-          <div style={{ fontSize: 10, color: "#8E8E93", textAlign: "center", padding: "0 16px", marginTop: 4 }}>
+          <div style={{ fontSize: 10, color: "#8E8E93", textAlign: "center", padding: "0 16px", marginTop: 4, marginBottom: 14 }}>
             Changes here override your default working hours and Google Calendar sync.
           </div>
+
+          {instructorId && <StandardIntensiveHours instructorId={instructorId} variant="mobile" />}
         </div>
       </div>
+
 
       {/* Edit Sheet */}
       <Sheet open={!!editingDate} onOpenChange={(open) => !open && setEditingDate(null)}>
