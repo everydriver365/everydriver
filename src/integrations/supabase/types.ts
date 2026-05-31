@@ -18001,6 +18001,7 @@ export type Database = {
           accepted_payment_methods: Json | null
           amount_cents: number
           cancelled_at: string | null
+          clearpay_enabled: boolean
           created_at: string
           created_by: string | null
           currency: string
@@ -18034,6 +18035,7 @@ export type Database = {
           accepted_payment_methods?: Json | null
           amount_cents?: number
           cancelled_at?: string | null
+          clearpay_enabled?: boolean
           created_at?: string
           created_by?: string | null
           currency?: string
@@ -18067,6 +18069,7 @@ export type Database = {
           accepted_payment_methods?: Json | null
           amount_cents?: number
           cancelled_at?: string | null
+          clearpay_enabled?: boolean
           created_at?: string
           created_by?: string | null
           currency?: string
