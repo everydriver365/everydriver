@@ -106,7 +106,7 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
       } catch {
         // non-fatal
       }
-      // Fetch instructor klarna_enabled flag (instructor scope only)
+      // Fetch instructor klarna_enabled flag + saved bank details (instructor scope only)
       if (scope === "instructor") {
         try {
           const { data: auth } = await supabase.auth.getUser();
@@ -114,10 +114,23 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
           if (uid) {
             const { data: ins } = await supabase
               .from("instructors")
-              .select("klarna_enabled")
+              .select("id, klarna_enabled")
               .eq("auth_user_id", uid)
               .maybeSingle();
             setInstructorKlarnaEnabled(!!(ins as any)?.klarna_enabled);
+            const instructorId = (ins as any)?.id;
+            if (instructorId) {
+              const { data: bank } = await supabase
+                .from("instructor_bank_details")
+                .select("account_holder_name, sort_code, account_number")
+                .eq("instructor_id", instructorId)
+                .maybeSingle();
+              if (bank) {
+                if (!bankAccountName) setBankAccountName((bank as any).account_holder_name || "");
+                if (!bankSortCode) setBankSortCode((bank as any).sort_code || "");
+                if (!bankAccountNumber) setBankAccountNumber((bank as any).account_number || "");
+              }
+            }
           }
         } catch {
           // non-fatal
@@ -126,7 +139,9 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
         setInstructorKlarnaEnabled(true);
       }
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, scope]);
+
 
   const handlePupilCreated = (p: QuickAddedPupil) => {
     setPupils((arr) => [{ id: p.id, name: p.name, email: p.email }, ...arr]);
