@@ -288,6 +288,69 @@ serve(async (req) => {
       }
       const publishedInvoice = pubRes.json.invoice || invoice;
 
+      // ===== Optional Klarna pay-link (parallel to Square) =====
+      let klarnaPayUrl: string | null = null;
+      let klarnaOrderId: string | null = null;
+      let klarnaError: string | null = null;
+      const klarnaOn = !!klarna_enabled;
+
+      if (klarnaOn) {
+        try {
+          const klarnaUser = Deno.env.get("KLARNA_API_USERNAME");
+          const klarnaPass = Deno.env.get("KLARNA_API_PASSWORD");
+          if (!klarnaUser || !klarnaPass) {
+            klarnaError = "Klarna credentials not configured";
+          } else {
+            const isSandbox = Deno.env.get("KLARNA_SANDBOX") === "true";
+            const klarnaBase = isSandbox ? "https://api.playground.klarna.com" : "https://api.klarna.com";
+            const siteUrl = Deno.env.get("SITE_URL") || "https://everydriver.lovable.app";
+            const merchantRef = publishedInvoice.invoice_number || publishedInvoice.id;
+            const amountMinor = Math.max(50, Math.round(totalCents)); // already in pence
+            const klarnaPayload = {
+              purchase_country: "GB",
+              purchase_currency: "GBP",
+              locale: "en-GB",
+              order_amount: amountMinor,
+              order_tax_amount: 0,
+              order_lines: [{
+                type: "digital",
+                reference: merchantRef,
+                name: (description || "Driving lessons invoice").slice(0, 255),
+                quantity: 1,
+                unit_price: amountMinor,
+                tax_rate: 0,
+                total_amount: amountMinor,
+                total_tax_amount: 0,
+              }],
+              merchant_urls: {
+                terms: `${siteUrl}/terms`,
+                checkout: `${siteUrl}/invoices`,
+                confirmation: `${siteUrl}/invoices`,
+                push: `${siteUrl}/invoices`,
+              },
+              merchant_reference1: merchantRef,
+            };
+            const klarnaAuth = "Basic " + btoa(`${klarnaUser}:${klarnaPass}`);
+            const kres = await fetch(`${klarnaBase}/checkout/v3/orders`, {
+              method: "POST",
+              headers: { Authorization: klarnaAuth, "Content-Type": "application/json" },
+              body: JSON.stringify(klarnaPayload),
+            });
+            const kjson = await kres.json().catch(() => null) as any;
+            if (kres.ok && kjson?.order_id) {
+              klarnaOrderId = kjson.order_id;
+              klarnaPayUrl = kjson.redirect_url || `https://pay.klarna.com/eu/hpp/payments/${kjson.order_id}`;
+            } else {
+              klarnaError = kjson?.error_messages?.[0] || `Klarna error ${kres.status}`;
+              console.error("[square-invoice] klarna order failed", kres.status, kjson);
+            }
+          }
+        } catch (e) {
+          klarnaError = e instanceof Error ? e.message : String(e);
+          console.error("[square-invoice] klarna exception", e);
+        }
+      }
+
       // Insert row
       const { data: row, error: insertErr } = await supabase
         .from("square_invoices")
@@ -312,6 +375,9 @@ serve(async (req) => {
           sent_at: new Date().toISOString(),
           last_event_at: new Date().toISOString(),
           created_by: userId,
+          klarna_enabled: klarnaOn,
+          klarna_pay_url: klarnaPayUrl,
+          klarna_order_id: klarnaOrderId,
         })
         .select()
         .single();
@@ -321,7 +387,7 @@ serve(async (req) => {
         return err("Invoice sent but failed to store record", 500, insertErr.message);
       }
 
-      return ok({ success: true, invoice: row, public_url: publishedInvoice.public_url });
+      return ok({ success: true, invoice: row, public_url: publishedInvoice.public_url, klarna_pay_url: klarnaPayUrl, klarna_error: klarnaError });
     }
 
     // ====== CANCEL / RESEND ======
