@@ -34,6 +34,7 @@ type Pupil = {
   id: string; name: string; email: string | null; phone: string | null;
   postcode: string | null; pickup_address: string | null;
   pickup_postcode: string | null; what3words: string | null;
+  address: string | null;
   course_type: string | null; course_status: string | null;
   account_balance: number | null; test_date: string | null;
   test_time: string | null; test_passed: boolean | null;
@@ -41,6 +42,10 @@ type Pupil = {
   medical_notes: string | null; intensive_hours_paid: number | null;
   prepaid_hours: number | null; custom_hourly_rate: number | null;
   instructor_id: string; notes: string | null;
+  date_of_birth: string | null; driver_number: string | null;
+  theory_test_passed: boolean | null; theory_test_date: string | null;
+  previous_experience: string | null;
+  preferred_duration_minutes: number | null;
 };
 
 type Lesson = {
