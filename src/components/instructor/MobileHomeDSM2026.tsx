@@ -2201,7 +2201,27 @@ function ScheduleCard({
   }, []);
   const { data: todayLessons = [] } = useDayLessons(instructorId, today);
   const { data: tomorrowLessons = [] } = useDayLessons(instructorId, tomorrow);
-  const [nextOpen, setNextOpen] = useState(false);
+
+  const dayAfterTomorrowStr = useMemo(() => format(addDays(new Date(), 2), "yyyy-MM-dd"), []);
+  const { data: nextRows = [] } = useQuery({
+    queryKey: ["schedule-tile-next", instructorId, dayAfterTomorrowStr],
+    enabled: !!instructorId,
+    staleTime: 60 * 1000,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("scheduled_lessons")
+        .select("id, lesson_date, start_time, duration_minutes, lesson_type, pickup_postcode, pupil_id, pupils:pupil_id(name)")
+        .eq("instructor_id", instructorId)
+        .is("deleted_at", null)
+        .neq("status", "cancelled")
+        .gte("lesson_date", dayAfterTomorrowStr)
+        .order("lesson_date", { ascending: true })
+        .order("start_time", { ascending: true })
+        .limit(5);
+      if (error) throw error;
+      return data || [];
+    },
+  });
 
   const lessons = useMemo(() => {
     const mapDay = (dayLessons: any[], dateObj: Date) => {
@@ -2223,24 +2243,33 @@ function ScheduleCard({
     return [...mapDay(todayLessons, today), ...mapDay(tomorrowLessons, tomorrow)];
   }, [todayLessons, tomorrowLessons]);
 
+  const nextLessons = useMemo(() => {
+    return (nextRows as any[]).map((l) => {
+      const startISO = `${l.lesson_date}T${l.start_time}`;
+      const startMs = new Date(startISO).getTime();
+      const endISO = new Date(startMs + (l.duration_minutes || 60) * 60000).toISOString();
+      return {
+        id: l.id,
+        startTime: startISO,
+        endTime: endISO,
+        studentName: l.pupils?.name || "Unknown",
+        lessonType: l.lesson_type || "Standard",
+        postcode: l.pickup_postcode || "",
+      };
+    });
+  }, [nextRows]);
+
   return (
-    <>
-      <ScheduleTile
-        lessons={lessons}
-        onAddLesson={() => navigate("/instructor/schedule?add=1")}
-        onFillGaps={() => navigate("/instructor/gaps")}
-        onLessonClick={(id) => navigate(`/instructor/schedule?lesson=${id}`)}
-        onViewNext={() => setNextOpen(true)}
-      />
-      <NextLessonsSheet
-        open={nextOpen}
-        onClose={() => setNextOpen(false)}
-        instructorId={instructorId}
-        onLessonClick={(id) => navigate(`/instructor/schedule?lesson=${id}`)}
-      />
-    </>
+    <ScheduleTile
+      lessons={lessons}
+      nextLessons={nextLessons}
+      onAddLesson={() => navigate("/instructor/schedule?add=1")}
+      onFillGaps={() => navigate("/instructor/gaps")}
+      onLessonClick={(id) => navigate(`/instructor/schedule?lesson=${id}`)}
+    />
   );
 }
+
 
 
 /* ============================== Quick access ============================ */
