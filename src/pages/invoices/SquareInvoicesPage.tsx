@@ -17,6 +17,7 @@ import {
 import { InvoiceStatusBadge } from "@/components/invoices/InvoiceStatusBadge";
 import { toast } from "@/hooks/use-toast";
 import { generateInvoicePdf } from "@/lib/invoices/generateInvoicePdf";
+import { CreateInvoiceDialog } from "@/components/invoices/CreateInvoiceDialog";
 
 type Scope = "admin" | "instructor";
 
