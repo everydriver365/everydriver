@@ -393,6 +393,14 @@ export default function AdminPortal() {
                   </CardContent>
                 </Card>
               </Link>
+              <Link to="/admin/quotes" className="block">
+                <Card className="hover:bg-accent/50 transition-colors cursor-pointer h-full">
+                  <CardContent className="pt-6">
+                    <div className="text-sm font-medium">Quotes</div>
+                    <div className="text-xs text-muted-foreground">All quotes across instructors — send new, copy link, track status</div>
+                  </CardContent>
+                </Card>
+              </Link>
               <Link to="/admin/reports" className="block">
                 <Card className="hover:bg-accent/50 transition-colors cursor-pointer h-full">
                   <CardContent className="pt-6">
