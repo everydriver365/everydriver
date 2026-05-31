@@ -325,8 +325,8 @@ serve(async (req) => {
               merchant_urls: {
                 terms: `${siteUrl}/terms`,
                 checkout: `${siteUrl}/invoices`,
-                confirmation: `${siteUrl}/invoices`,
-                push: `${siteUrl}/invoices`,
+                confirmation: `${siteUrl}/invoices?klarna_paid=1`,
+                push: `${supabaseUrl}/functions/v1/klarna-invoice-webhook?klarna_order_id={checkout.order.id}`,
               },
               merchant_reference1: merchantRef,
             };
