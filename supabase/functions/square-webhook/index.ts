@@ -195,9 +195,63 @@ serve(async (req: Request) => {
         }
 
         if (!pupilId || !instructorId) {
+          // Fallback: this payment may belong to a Square Invoice we issued.
+          // Look up square_invoices by order_id and mark paid + credit.
+          if (orderId) {
+            const { data: invRow } = await supabase
+              .from("square_invoices")
+              .select("id, recipient_pupil_id, amount_cents, status, issuer_type, issuer_instructor_id, square_invoice_id")
+              .eq("square_order_id", orderId)
+              .is("deleted_at", null)
+              .maybeSingle();
+            if (invRow) {
+              const invUpdates: Record<string, unknown> = {
+                status: "paid",
+                paid_at: new Date().toISOString(),
+                last_event_at: new Date().toISOString(),
+              };
+              await supabase.from("square_invoices").update(invUpdates).eq("id", invRow.id);
+
+              if (
+                invRow.status !== "paid" &&
+                invRow.issuer_type === "instructor" &&
+                invRow.recipient_pupil_id &&
+                invRow.amount_cents > 0
+              ) {
+                const externalRef = `square-invoice:${invRow.square_invoice_id}`;
+                const { data: dupe } = await supabase
+                  .from("payment_history")
+                  .select("id")
+                  .eq("external_payment_ref", externalRef)
+                  .maybeSingle();
+                if (!dupe) {
+                  const amountPounds = invRow.amount_cents / 100;
+                  try {
+                    await supabase.rpc("increment_pupil_balance", {
+                      p_pupil_id: invRow.recipient_pupil_id,
+                      p_amount: amountPounds,
+                    });
+                    await supabase.from("payment_history").insert({
+                      pupil_id: invRow.recipient_pupil_id,
+                      instructor_id: invRow.issuer_instructor_id,
+                      amount: amountPounds,
+                      payment_method: "Square",
+                      external_payment_ref: externalRef,
+                      notes: `Square invoice payment (${invRow.square_invoice_id}) via payment.updated`,
+                    });
+                  } catch (e) {
+                    console.error("Failed to credit pupil for invoice payment (payment.updated path)", e);
+                  }
+                }
+              }
+              console.log(`payment.updated matched square_invoices row ${invRow.id} via order ${orderId}`);
+              break;
+            }
+          }
           console.log("payment.completed: could not match to a pupil/instructor, skipping");
           break;
         }
+
 
         // Idempotency: lookup by external_payment_ref (preferred), with notes-based legacy fallback
         const { data: existingByRef } = await supabase
