@@ -2194,26 +2194,34 @@ function ScheduleCard({
   instructorId, navigate,
 }: { instructorId: string; navigate: ReturnType<typeof useNavigate> }) {
   const today = new Date();
-  const { data: dayLessons = [] } = useDayLessons(instructorId, today);
+  const tomorrow = useMemo(() => {
+    const t = new Date();
+    t.setDate(t.getDate() + 1);
+    return t;
+  }, []);
+  const { data: todayLessons = [] } = useDayLessons(instructorId, today);
+  const { data: tomorrowLessons = [] } = useDayLessons(instructorId, tomorrow);
   const [nextOpen, setNextOpen] = useState(false);
 
   const lessons = useMemo(() => {
-    const dateStr = format(today, "yyyy-MM-dd");
-    return dayLessons.map((l) => {
-      // l.startTime is "HH:mm:ss" from the DB — combine with today's date.
-      const startISO = `${dateStr}T${l.startTime}`;
-      const startMs = new Date(startISO).getTime();
-      const endISO = new Date(startMs + (l.durationMinutes || 60) * 60000).toISOString();
-      return {
-        id: l.id,
-        startTime: startISO,
-        endTime: endISO,
-        studentName: l.pupilName,
-        lessonType: l.lessonType,
-        postcode: l.pickupPostcode || "",
-      };
-    });
-  }, [dayLessons]);
+    const mapDay = (dayLessons: any[], dateObj: Date) => {
+      const dateStr = format(dateObj, "yyyy-MM-dd");
+      return dayLessons.map((l) => {
+        const startISO = `${dateStr}T${l.startTime}`;
+        const startMs = new Date(startISO).getTime();
+        const endISO = new Date(startMs + (l.durationMinutes || 60) * 60000).toISOString();
+        return {
+          id: l.id,
+          startTime: startISO,
+          endTime: endISO,
+          studentName: l.pupilName,
+          lessonType: l.lessonType,
+          postcode: l.pickupPostcode || "",
+        };
+      });
+    };
+    return [...mapDay(todayLessons, today), ...mapDay(tomorrowLessons, tomorrow)];
+  }, [todayLessons, tomorrowLessons]);
 
   return (
     <>
