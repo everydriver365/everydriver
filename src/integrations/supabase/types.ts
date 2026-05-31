@@ -16417,7 +16417,7 @@ export type Database = {
           price: number
           price_pence?: number
           pupil_name: string
-          quote_ref: string
+          quote_ref?: string
           schedule_notes?: string | null
           sent_at?: string | null
           status?: Database["public"]["Enums"]["quote_status"]
