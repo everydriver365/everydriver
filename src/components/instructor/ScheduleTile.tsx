@@ -53,34 +53,40 @@ function sameDay(a: Date, b: Date) {
   return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 }
 
-export function ScheduleTile({ lessons, onAddLesson, onFillGaps, onLessonClick, onViewNext }: ScheduleTileProps) {
-  const [tab, setTab] = useState<"today" | "tomorrow">("today");
+export function ScheduleTile({ lessons, nextLessons = [], onAddLesson, onFillGaps, onLessonClick }: ScheduleTileProps) {
+  const [tab, setTab] = useState<"today" | "tomorrow" | "next">("today");
 
-  const { todayDate, tomorrowDate, todayLessons, tomorrowLessons } = useMemo(() => {
+  const { todayDate, tomorrowDate, todayLessons, tomorrowLessons, nextLessonsSorted } = useMemo(() => {
     const today = new Date();
     const tomorrow = new Date(today);
     tomorrow.setDate(today.getDate() + 1);
 
-    const sorted = lessons
-      .slice()
-      .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
-      .map((l) => ({ ...l, _start: new Date(l.startTime), _end: new Date(l.endTime) }));
+    const decorate = (arr: Lesson[]) =>
+      arr
+        .slice()
+        .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
+        .map((l) => ({ ...l, _start: new Date(l.startTime), _end: new Date(l.endTime) }));
+
+    const sorted = decorate(lessons);
 
     return {
       todayDate: today,
       tomorrowDate: tomorrow,
       todayLessons: sorted.filter((l) => sameDay(l._start, today)),
       tomorrowLessons: sorted.filter((l) => sameDay(l._start, tomorrow)),
+      nextLessonsSorted: decorate(nextLessons).slice(0, 5),
     };
-  }, [lessons]);
+  }, [lessons, nextLessons]);
 
-  const active = tab === "today" ? todayLessons : tomorrowLessons;
-  const headerDate = tab === "today" ? todayDate : tomorrowDate;
-  const kicker = `SCHEDULE · ${DAYS[headerDate.getDay()]} ${headerDate.getDate()} ${MONTHS[headerDate.getMonth()].toUpperCase()}`;
+  const active =
+    tab === "today" ? todayLessons : tab === "tomorrow" ? tomorrowLessons : nextLessonsSorted;
+  const headerDate = tab === "today" ? todayDate : tab === "tomorrow" ? tomorrowDate : todayDate;
+  const kicker =
+    tab === "next"
+      ? "SCHEDULE · NEXT LESSONS"
+      : `SCHEDULE · ${DAYS[headerDate.getDay()]} ${headerDate.getDate()} ${MONTHS[headerDate.getMonth()].toUpperCase()}`;
 
-  const fmtPill = (d: Date) => `${d.getDate()} ${MONTHS[d.getMonth()]}`;
-
-  const renderPill = (key: "today" | "tomorrow", label: string, date: Date) => {
+  const renderPill = (key: "today" | "tomorrow" | "next", label: string, date: Date | null) => {
     const isActive = tab === key;
     return (
       <button
@@ -102,11 +108,12 @@ export function ScheduleTile({ lessons, onAddLesson, onFillGaps, onLessonClick, 
         }}
       >
         <div style={{ fontSize: 11, fontWeight: 500 }}>
-          {label} / {date.getDate()} {MONTHS[date.getMonth()]}
+          {date ? `${label} / ${date.getDate()} ${MONTHS[date.getMonth()]}` : label}
         </div>
       </button>
     );
   };
+
 
   return (
     <div
