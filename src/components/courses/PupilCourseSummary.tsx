@@ -405,13 +405,37 @@ export function PupilCourseSummary({ pupilId, onBack, backHref }: Props) {
 
       {/* Outstanding banner */}
       {totals.outstanding > 0 && (
-        <div style={{ backgroundColor: "#FEF2F2", border: "1px solid #FECACA", borderLeft: "4px solid #C0271F", borderRadius: 12, padding: "14px 20px" }} className="flex items-center justify-between">
+        <div style={{ backgroundColor: "#FEF2F2", border: "1px solid #FECACA", borderLeft: "4px solid #C0271F", borderRadius: 12, padding: "14px 20px" }} className="flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-3">
             <AlertTriangle className="h-5 w-5" style={{ color: "#C0271F" }} />
             <div>
               <div style={{ color: "#C0271F", fontSize: 14, fontWeight: 600 }}>Outstanding balance — {fmt(totals.outstanding)}</div>
-              <div style={{ fontSize: 12, color: "#9CA3AF" }}>{pupil.name}</div>
+              <div style={{ fontSize: 12, color: "#9CA3AF" }}>{pupil.name} — send a reminder</div>
             </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={working === "reminder-sms" || !pupil.phone}
+              onClick={() => sendReminder("sms")}
+              title={pupil.phone ? `Text ${pupil.phone}` : "No phone on file"}
+              className="bg-white"
+            >
+              {working === "reminder-sms" ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-2" /> : <MessageSquare className="h-3.5 w-3.5 mr-2" />}
+              Text reminder
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={working === "reminder-email" || !pupil.email}
+              onClick={() => sendReminder("email")}
+              title={pupil.email ? `Email ${pupil.email}` : "No email on file"}
+              className="bg-white"
+            >
+              {working === "reminder-email" ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-2" /> : <Send className="h-3.5 w-3.5 mr-2" />}
+              Email reminder
+            </Button>
           </div>
         </div>
       )}
