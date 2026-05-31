@@ -610,6 +610,18 @@ export default function SquareInvoicesPage({ scope }: { scope: Scope }) {
                                 </a>
                               </Button>
                             )}
+                            {!["paid", "cancelled", "canceled", "refunded"].includes(r.status) && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                title="Sync status from Square"
+                                disabled={syncingId === r.id}
+                                onClick={() => handleManualSync(r)}
+                              >
+                                <RotateCw className={`h-3.5 w-3.5 ${syncingId === r.id ? "animate-spin" : ""}`} />
+                              </Button>
+                            )}
+
                             {(() => {
                               const isPaid = r.status === "paid";
                               const canDelete = !isPaid || scope === "admin";
