@@ -99,7 +99,6 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const supabase = createClient(supabaseUrl, serviceKey);
 
     // Auth: who is calling?
@@ -107,11 +106,11 @@ serve(async (req) => {
     const token = authHeader.replace(/^Bearer\s+/i, "");
     if (!token) return err("Missing authorization", 401);
 
-    const userClient = createClient(supabaseUrl, anonKey, {
-      global: { headers: { Authorization: authHeader } },
-    });
-    const { data: userData, error: userErr } = await userClient.auth.getUser();
-    if (userErr || !userData?.user) return err("Unauthorized", 401);
+    const { data: userData, error: userErr } = await supabase.auth.getUser(token);
+    if (userErr || !userData?.user) {
+      console.error("[square-invoice] auth.getUser failed", userErr);
+      return err("Unauthorized", 401);
+    }
     const userId = userData.user.id;
 
     // Resolve role: admin or instructor
