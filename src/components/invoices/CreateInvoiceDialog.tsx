@@ -480,7 +480,6 @@ export function CreateInvoiceDialog({ onCreated, scope }: Props) {
             </>
           )}
         </DialogFooter>
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
