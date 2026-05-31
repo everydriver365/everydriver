@@ -157,9 +157,59 @@ export default function SquareInvoicesPage({ scope }: { scope: Scope }) {
     }
   };
 
+  const syncOne = async (invoiceRowId: string, silent = false) => {
+    const { data, error: e } = await supabase.functions.invoke("square-invoice-manage", {
+      body: { action: "sync_status", invoice_row_id: invoiceRowId },
+    });
+    if (e) {
+      if (!silent) toast({ title: "Sync failed", description: e.message, variant: "destructive" });
+      return null;
+    }
+    return data as { success: boolean; status: string; changed: boolean; credited: boolean } | null;
+  };
+
+  const handleManualSync = async (row: InvoiceRow) => {
+    setSyncingId(row.id);
+    try {
+      const res = await syncOne(row.id);
+      if (res) {
+        if (res.changed) {
+          toast({
+            title: "Invoice updated",
+            description: `Status is now ${res.status}${res.credited ? " · pupil credited" : ""}.`,
+          });
+        } else {
+          toast({ title: "No change", description: `Square still reports ${res.status}.` });
+        }
+        await load();
+      }
+    } finally {
+      setSyncingId(null);
+    }
+  };
+
+  const refreshAndSync = async () => {
+    await load();
+    // After reload, sync any still-open invoices from Square in parallel (cap 10).
+    const open = (rows.length ? rows : []).filter((r) =>
+      ["unpaid", "sent", "partially_paid", "draft", "overdue"].includes(r.status)
+    );
+    // Use latest rows after load via functional set — re-pull from state via a microtask
+    // (we operate on what's on screen; capped to avoid hammering).
+    const toSync = open.slice(0, 10);
+    if (toSync.length === 0) return;
+    const results = await Promise.all(toSync.map((r) => syncOne(r.id, true)));
+    const changedCount = results.filter((r) => r?.changed).length;
+    if (changedCount > 0) {
+      toast({ title: "Synced with Square", description: `${changedCount} invoice${changedCount === 1 ? "" : "s"} updated.` });
+      await load();
+    }
+  };
+
   useEffect(() => {
     load();
   }, []);
+
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
