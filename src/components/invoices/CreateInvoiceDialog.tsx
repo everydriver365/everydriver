@@ -141,6 +141,24 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
       } else {
         setInstructorKlarnaEnabled(true);
       }
+
+      // Fetch Square locations for selector
+      setLocationsLoading(true);
+      try {
+        const { data: locData, error: locErr } = await supabase.functions.invoke(
+          "square-invoice-manage",
+          { body: { action: "list_locations" } },
+        );
+        if (!locErr && Array.isArray((locData as any)?.locations)) {
+          const list = (locData as any).locations as Array<{ id: string; name: string; address: string }>;
+          setLocations(list);
+          if (list.length > 0) setLocationId((prev) => prev || list[0].id);
+        }
+      } catch {
+        // non-fatal — backend will fall back to the default location
+      } finally {
+        setLocationsLoading(false);
+      }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, scope]);
