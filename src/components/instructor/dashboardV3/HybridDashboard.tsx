@@ -16,6 +16,7 @@ import { useNextLessonDetails } from "@/hooks/useNextLessonDetails";
 import { supabase } from "@/integrations/supabase/client";
 import { SendAllRemindersDialog } from "@/components/instructor/payments/SendAllRemindersDialog";
 import { formatCurrencyCompact, truncateName } from "@/lib/formatters";
+import { InvoiceStatusStrip } from "./InvoiceStatusStrip";
 
 interface Pupil {
   id: string;
@@ -681,6 +682,8 @@ export function HybridDashboard({ instructorId, instructorName, pupils, todaysLe
           hoursTaught={hoursThisWeek}
         />
       </div>
+
+      <InvoiceStatusStrip instructorId={instructorId} />
 
       <FunctionTilesGrid tiles={tiles} />
     </div>
