@@ -508,15 +508,29 @@ serve(async (req: Request) => {
           break;
         }
 
+        const wasPaid = row.status === "paid";
         const updates: Record<string, unknown> = { last_event_at: new Date().toISOString() };
+        let shouldReverseCredit = false;
+
         if (eventType === "invoice.payment_made") {
           updates.status = "paid";
           updates.paid_at = new Date().toISOString();
         } else if (eventType === "invoice.canceled") {
-          updates.status = "cancelled";
-          updates.cancelled_at = new Date().toISOString();
+          // If invoice was already paid, treat cancel as a full refund
+          if (wasPaid) {
+            updates.status = "refunded";
+            updates.refunded_at = new Date().toISOString();
+            updates.refund_amount_cents = row.amount_cents;
+            shouldReverseCredit = true;
+          } else {
+            updates.status = "cancelled";
+            updates.cancelled_at = new Date().toISOString();
+          }
         } else if (eventType === "invoice.refunded") {
           updates.status = "refunded";
+          updates.refunded_at = new Date().toISOString();
+          updates.refund_amount_cents = row.amount_cents;
+          shouldReverseCredit = wasPaid;
         } else if (eventType === "invoice.published") {
           updates.status = "sent";
           updates.sent_at = updates.sent_at || new Date().toISOString();
@@ -530,7 +544,7 @@ serve(async (req: Request) => {
         // Credit pupil balance on paid (instructor invoices only)
         if (
           eventType === "invoice.payment_made" &&
-          row.status !== "paid" &&
+          !wasPaid &&
           row.issuer_type === "instructor" &&
           row.recipient_pupil_id &&
           row.amount_cents > 0
@@ -551,6 +565,69 @@ serve(async (req: Request) => {
             });
           } catch (e) {
             console.error("Failed to credit pupil for invoice payment", e);
+          }
+        }
+
+        // Reverse pupil credit on refund / cancel-after-paid (instructor invoices only)
+        if (
+          shouldReverseCredit &&
+          row.issuer_type === "instructor" &&
+          row.recipient_pupil_id &&
+          row.amount_cents > 0
+        ) {
+          const refundRef = `square-invoice-refund:${squareInvoiceId}`;
+          const { data: dupeRefund } = await supabase
+            .from("payment_history")
+            .select("id")
+            .eq("external_payment_ref", refundRef)
+            .maybeSingle();
+
+          if (!dupeRefund) {
+            const amountPounds = row.amount_cents / 100;
+            try {
+              await supabase.rpc("increment_pupil_balance", {
+                p_pupil_id: row.recipient_pupil_id,
+                p_amount: -amountPounds,
+              });
+              await supabase.from("payment_history").insert({
+                pupil_id: row.recipient_pupil_id,
+                instructor_id: row.issuer_instructor_id,
+                amount: -amountPounds,
+                payment_method: "Square Refund",
+                payment_type: "refund",
+                payout_status: "refunded",
+                external_payment_ref: refundRef,
+                notes: `Square invoice refund (${squareInvoiceId}) via ${eventType}`,
+              });
+
+              // Mark the original invoice-payment row as refunded
+              await supabase
+                .from("payment_history")
+                .update({ payout_status: "refunded" })
+                .eq("external_payment_ref", `square-invoice:${squareInvoiceId}`);
+
+              // Notify instructor
+              try {
+                await fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json", "Authorization": `Bearer ${supabaseServiceKey}` },
+                  body: JSON.stringify({
+                    instructorId: row.issuer_instructor_id,
+                    category: NotifyCategory.PAYMENT,
+                    importance: NotifyImportance.IMPORTANT,
+                    pupilId: row.recipient_pupil_id,
+                    notification: {
+                      title: "↩️ Invoice refunded",
+                      body: `£${amountPounds.toFixed(2)} refunded on invoice ${squareInvoiceId}`,
+                      tag: `invoice-refund-${squareInvoiceId}`,
+                      data: { type: PushDataType.REFUND, pupilId: row.recipient_pupil_id, amount: amountPounds },
+                    },
+                  }),
+                });
+              } catch (e) { console.error("Invoice refund notification error:", e); }
+            } catch (e) {
+              console.error("Failed to reverse pupil credit for invoice refund", e);
+            }
           }
         }
         break;
