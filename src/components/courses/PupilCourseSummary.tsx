@@ -327,8 +327,8 @@ export function PupilCourseSummary({ pupilId, onBack, backHref }: Props) {
   return (
     <div className="p-6 space-y-4" style={{ backgroundColor: "#F4F7F6", minHeight: "100%" }}>
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
           {(onBack || backHref) && (backHref ? (
             <Link to={backHref} className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
               <ArrowLeft className="h-4 w-4" /> Back
@@ -340,6 +340,21 @@ export function PupilCourseSummary({ pupilId, onBack, backHref }: Props) {
           ))}
           <h1 className="text-xl font-bold">{pupil.name}'s course</h1>
           <StatusBadge status={pupil.course_status || "scheduled"} />
+        </div>
+        <div className="flex items-center gap-4 text-xs text-muted-foreground">
+          {pupil.phone && (
+            <a href={`tel:${pupil.phone}`} className="flex items-center gap-1.5 hover:text-foreground">
+              <Phone className="h-3.5 w-3.5" /> {pupil.phone}
+            </a>
+          )}
+          {pupil.email && (
+            <a href={`mailto:${pupil.email}`} className="flex items-center gap-1.5 hover:text-foreground">
+              <Mail className="h-3.5 w-3.5" /> {pupil.email}
+            </a>
+          )}
+          {!pupil.phone && !pupil.email && (
+            <span className="italic">No contact details on file</span>
+          )}
         </div>
       </div>
 
