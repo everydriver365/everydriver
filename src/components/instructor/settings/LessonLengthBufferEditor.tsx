@@ -3,7 +3,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { useOptionalSettingsDirty as useSettingsDirty } from "./useOptionalSettingsDirty";
 import { toast } from "@/hooks/use-toast";
 
-const LENGTHS = [60, 90, 120];
+const LENGTHS = [60, 90, 120, 180, 240, 300, 360, 420, 480];
+
+const formatLength = (n: number) => {
+  if (n < 60) return `${n} min`;
+  const h = n / 60;
+  return `${h} hr${h === 1 ? "" : "s"}`;
+};
 
 interface Row {
   buffer_minutes: number | null;
@@ -105,7 +111,7 @@ export function LessonLengthBufferEditor({ instructorId }: Props) {
                   borderColor: on ? "#2B7BC8" : "hsl(var(--border))",
                 }}
               >
-                {n} min
+                {formatLength(n)}
               </button>
             );
           })}
@@ -120,7 +126,7 @@ export function LessonLengthBufferEditor({ instructorId }: Props) {
             onChange={e => setDraft(p => p && ({ ...p, preferred_lesson_length: Number(e.target.value) }))}
             className="mt-1 w-full rounded-xl border bg-background px-3 py-2 text-sm"
           >
-            {LENGTHS.map(n => <option key={n} value={n}>{n} min</option>)}
+            {LENGTHS.map(n => <option key={n} value={n}>{formatLength(n)}</option>)}
           </select>
         </label>
 
