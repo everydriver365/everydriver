@@ -250,6 +250,7 @@ export const instructorPortalRoutes = (
     <Route path="/instructor/accounting-callback" element={<AccountingCallback />} />
     <Route path="/instructor/square-callback" element={<SquareCallback />} />
     <Route path="/instructor/invoices" element={<InstructorSquareInvoices />} />
+    <Route path="/instructor/quotes" element={<InstructorQuotes />} />
 
 
     {/* Communication — always accessible */}
