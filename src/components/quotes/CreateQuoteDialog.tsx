@@ -268,7 +268,23 @@ export function CreateQuoteDialog({ scope, instructorId, onCreated }: Props) {
 
             {issuerInstructorId && (
               <div className="space-y-1.5">
-                <Label>Existing pupil (optional)</Label>
+                <div className="flex items-center justify-between">
+                  <Label>Existing pupil (optional)</Label>
+                  <QuickAddPupilButton
+                    instructorId={issuerInstructorId}
+                    onCreated={(p: QuickAddedPupil) => {
+                      setPupils((arr) => [p, ...arr]);
+                      setPupilId(p.id);
+                      setForm((f) => ({
+                        ...f,
+                        pupil_name: p.name || f.pupil_name,
+                        email: p.email || f.email,
+                        phone: p.phone || f.phone,
+                        postcode: p.postcode || f.postcode,
+                      }));
+                    }}
+                  />
+                </div>
                 <Select value={pupilId} onValueChange={onPickPupil}>
                   <SelectTrigger>
                     <SelectValue />
