@@ -95,6 +95,8 @@ export default function SquareInvoicesPage({ scope }: { scope: Scope }) {
   const [clearpayFilter, setClearpayFilter] = useState<"all" | "offered">("all");
   const [pendingDelete, setPendingDelete] = useState<InvoiceRow | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [syncingId, setSyncingId] = useState<string | null>(null);
+
 
 
 
