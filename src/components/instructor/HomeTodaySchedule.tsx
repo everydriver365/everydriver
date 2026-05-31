@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { format, parse, addDays } from "date-fns";
 import { useTodayOverview } from "@/hooks/useTodayOverview";
 import { useDayLessons } from "@/hooks/useDayLessons";
@@ -433,6 +433,7 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
   const [wizardLesson, setWizardLesson] = useState<TodayLesson | null>(null);
   const [wizardBalance, setWizardBalance] = useState<number>(0);
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   // Re-tick every 30s so live/completed transitions render in real time.
   const [tickNow, setTickNow] = useState<Date>(new Date());
@@ -872,7 +873,7 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
           onClose={() => setNextOpen(false)}
           instructorId={instructorId}
           onLessonClick={(id) => {
-            window.location.href = `/instructor/schedule?lesson=${id}`;
+            navigate(`/instructor/schedule?lesson=${id}`);
           }}
         />
       )}
