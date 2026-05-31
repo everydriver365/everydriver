@@ -166,6 +166,7 @@ import { DsmLogo } from "@/components/instructor/ui/DsmLogo";
 import { InstructorTopBar } from "@/components/instructor/InstructorTopBar";
 import { UpNextExpanded } from "@/components/instructor/UpNextExpanded";
 import { ScheduleTile } from "@/components/instructor/ScheduleTile";
+import { NextLessonsSheet } from "@/components/instructor/NextLessonsSheet";
 import { TaxEstimateTile } from "@/components/instructor/TaxEstimateTile";
 import { MTDDeadlineTile } from "@/components/instructor/MTDDeadlineTile";
 import { CourseBonusTile } from "@/components/instructor/CourseBonusTile";
