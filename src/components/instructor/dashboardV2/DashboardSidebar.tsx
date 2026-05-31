@@ -50,6 +50,7 @@ const SECTIONS: NavSection[] = [
   ]},
   { label: "My Courses", items: [
     { label: "My Courses", to: "/instructor/settings/my-courses", icon: BookOpenCheck },
+    { label: "Course Summaries", to: "/instructor/course-summaries", icon: ClipboardList },
   ]},
   { label: "Vehicle & Tracking", items: [
     { label: "Live Tracking", to: "/instructor/tracking", icon: MapPin, moduleId: "telematics" },
@@ -285,6 +286,7 @@ export function DashboardSidebar({ collapsed, onToggle, userInitials, userName, 
     "/instructor/pay",
     "/instructor/settings/discounts-packages",
     "/instructor/test-results",
+    "/instructor/course-summaries",
   ];
   const [critical, setCritical] = useState<string[]>([]);
   const [criticalLoaded, setCriticalLoaded] = useState(false);
@@ -310,7 +312,18 @@ export function DashboardSidebar({ collapsed, onToggle, userInitials, userName, 
       }
       if (cancelled) return;
       if (dbCritical && dbCritical.length > 0) {
-        setCritical(dbCritical);
+        // One-time merge: ensure Course Summaries appears in Critical for existing instructors.
+        const COURSE_SUMMARIES = "/instructor/course-summaries";
+        if (!dbCritical.includes(COURSE_SUMMARIES)) {
+          const merged = [...dbCritical, COURSE_SUMMARIES];
+          setCritical(merged);
+          try { localStorage.setItem(CRITICAL_KEY, JSON.stringify(merged)); } catch {}
+          try {
+            await supabase.from("instructors").update({ sidebar_critical: merged }).eq("id", instructorId!);
+          } catch {}
+        } else {
+          setCritical(dbCritical);
+        }
       } else if (dbRowExists && dbCritical && dbCritical.length === 0) {
         // Existing row with empty list — first-time seed.
         setCritical(DEFAULT_CRITICAL);
