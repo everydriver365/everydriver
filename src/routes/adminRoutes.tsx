@@ -27,6 +27,7 @@ const NetworkInstructors = lazy(() => import("@/pages/admin/NetworkInstructors")
 const AdminRewards = lazy(() => import("@/pages/admin/AdminRewards"));
 const AdminSquareInvoices = lazy(() => import("@/pages/admin/AdminSquareInvoices"));
 const AdminQuotes = lazy(() => import("@/pages/admin/AdminQuotes"));
+const AdminQuoteDetail = lazy(() => import("@/pages/admin/AdminQuoteDetail"));
 
 
 
@@ -144,6 +145,10 @@ export const adminRoutes = (
     <Route
       path="/admin/quotes"
       element={<ProtectedAdminRoute><AdminQuotes /></ProtectedAdminRoute>}
+    />
+    <Route
+      path="/admin/quotes/:id"
+      element={<ProtectedAdminRoute><AdminQuoteDetail /></ProtectedAdminRoute>}
     />
   </>
 );
