@@ -683,6 +683,8 @@ export function HybridDashboard({ instructorId, instructorName, pupils, todaysLe
         />
       </div>
 
+      <InvoiceStatusStrip instructorId={instructorId} />
+
       <FunctionTilesGrid tiles={tiles} />
     </div>
   );
