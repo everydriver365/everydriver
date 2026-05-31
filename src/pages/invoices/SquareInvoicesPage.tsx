@@ -149,10 +149,13 @@ export default function SquareInvoicesPage({ scope }: { scope: Scope }) {
               {scope === "admin" ? "All issuers" : "Your invoices"}
             </span>
           </div>
-          <Button onClick={load} disabled={loading} size="sm" variant="outline">
-            <RefreshCw className={`h-4 w-4 mr-1 ${loading ? "animate-spin" : ""}`} />
-            Refresh
-          </Button>
+          <div className="flex items-center gap-2">
+            <CreateInvoiceDialog scope={scope} onCreated={load} />
+            <Button onClick={load} disabled={loading} size="sm" variant="outline">
+              <RefreshCw className={`h-4 w-4 mr-1 ${loading ? "animate-spin" : ""}`} />
+              Refresh
+            </Button>
+          </div>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
