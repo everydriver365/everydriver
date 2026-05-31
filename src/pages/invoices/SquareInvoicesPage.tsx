@@ -588,6 +588,37 @@ export default function SquareInvoicesPage({ scope }: { scope: Scope }) {
           </CardContent>
         </Card>
       </div>
+
+      <AlertDialog open={!!pendingDelete} onOpenChange={(o) => !o && !deleting && setPendingDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this invoice?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {pendingDelete ? (
+                <>
+                  This will hide the invoice for{" "}
+                  <strong>{pendingDelete.pupil?.name || pendingDelete.recipient_name || "this recipient"}</strong>
+                  {" "}({fmtMoney(pendingDelete.amount_cents, pendingDelete.currency)}) from your list.
+                  The record is kept for your accounts and the Square invoice itself is not cancelled.
+                </>
+              ) : null}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={deleting}
+              onClick={(e) => {
+                e.preventDefault();
+                confirmDelete();
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? "Deleting…" : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
