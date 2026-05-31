@@ -382,13 +382,23 @@ export function PupilCourseSummary({ pupilId, onBack, backHref }: Props) {
                 <Stat label="Attended" value={String(totals.attendedCount)} />
                 <Stat label="Hours" value={totals.totalHours.toFixed(1)} />
               </div>
-              <EditRow label="Course type" value={pupil.course_type ?? ""} onSave={(v) => updatePupilField("course_type", v || null)} />
+              <EditRow label="Course type" value={pupil.course_type ?? ""} placeholder={pupil.intensive_hours_paid && pupil.intensive_hours_paid > 0 ? "Intensive" : "—"} onSave={(v) => updatePupilField("course_type", v || null)} />
               <EditRow label="Transmission" value={pupil.transmission_type ?? ""} onSave={(v) => updatePupilField("transmission_type", v || null)} />
               <EditRow label="Course status" value={pupil.course_status ?? ""} onSave={(v) => updatePupilField("course_status", v || null)} />
               <EditRow label="Hourly rate" value={pupil.custom_hourly_rate ? String(pupil.custom_hourly_rate) : ""} placeholder={instructor?.hourly_rate ? String(instructor.hourly_rate) : "—"} onSave={(v) => updatePupilField("custom_hourly_rate", v ? String(Number(v)) : null)} />
               <EditRow label="Test date" type="date" value={pupil.test_date ?? ""} onSave={(v) => updatePupilField("test_date", v || null)} />
               <EditRow label="Test time" value={pupil.test_time ?? ""} placeholder="HH:MM" onSave={(v) => updatePupilField("test_time", v || null)} />
+              <Row label="Theory test" value={pupil.theory_test_passed ? `Passed${pupil.theory_test_date ? ` · ${fmtDate(pupil.theory_test_date)}` : ""}` : "Not passed"} />
               <Row label="Prepaid hours" value={String(pupil.prepaid_hours ?? 0)} />
+              {Number(pupil.intensive_hours_paid ?? 0) > 0 && (
+                <Row label="Intensive hours" value={Number(pupil.intensive_hours_paid).toFixed(1)} />
+              )}
+              {pupil.previous_experience && (
+                <Row label="Experience" value={pupil.previous_experience} />
+              )}
+              {pupil.preferred_duration_minutes && (
+                <Row label="Preferred slot" value={`${pupil.preferred_duration_minutes} min`} />
+              )}
             </CardContent>
           </Card>
 
@@ -397,9 +407,14 @@ export function PupilCourseSummary({ pupilId, onBack, backHref }: Props) {
               <CardTitle className="text-base flex items-center gap-2"><MapPin className="h-4 w-4" /> Pick-up location</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
-              <EditRow label="Address" type="address" value={pupil.pickup_address ?? ""} onSave={(v) => updatePupilField("pickup_address", v || null)} />
-              <EditRow label="Postcode" value={pupil.pickup_postcode ?? pupil.postcode ?? ""} onSave={(v) => updatePupilField("pickup_postcode", v || null)} />
+              <EditRow label="Address" type="address" value={pupil.pickup_address ?? pupil.address ?? ""} placeholder={pupil.address ?? "Add pick-up address"} onSave={(v) => updatePupilField("pickup_address", v || null)} />
+              <EditRow label="Postcode" value={pupil.pickup_postcode ?? pupil.postcode ?? ""} placeholder={pupil.postcode ?? "Postcode"} onSave={(v) => updatePupilField("pickup_postcode", v || null)} />
               <EditRow label="what3words" value={pupil.what3words ?? ""} placeholder="word.word.word" onSave={(v) => updatePupilField("what3words", v || null)} />
+              {!pupil.pickup_address && pupil.address && (
+                <div className="text-[10px] text-muted-foreground italic pt-1">
+                  Using home address as pick-up. Edit to override.
+                </div>
+              )}
               <div className="pt-2 border-t">
                 <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">Notes</div>
                 <InlineEditField
