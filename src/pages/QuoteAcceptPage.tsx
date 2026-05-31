@@ -70,6 +70,12 @@ export default function QuoteAcceptPage() {
     })();
   }, [token]);
 
+  useEffect(() => {
+    if (quote && instructor) {
+      document.title = `Quote ${quote.quote_ref} · ${instructor.business_name || instructor.name || "Drive365"}`;
+    }
+  }, [quote, instructor]);
+
   const handleAccept = async () => {
     if (!token) return;
     setBusy("accept");
