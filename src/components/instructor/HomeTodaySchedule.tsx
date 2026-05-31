@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { format, parse, addDays } from "date-fns";
 import { useTodayOverview } from "@/hooks/useTodayOverview";
 import { useDayLessons } from "@/hooks/useDayLessons";
@@ -7,6 +7,7 @@ import { useDayLessonHistory, eolKey } from "@/hooks/useDayLessonHistory";
 import { AddLessonSheet } from "@/components/instructor/AddLessonSheet";
 import { AppointmentTile } from "@/components/instructor/AppointmentTile";
 import { EndLessonWizard } from "@/components/instructor/EndLessonWizard";
+import { NextLessonsSheet } from "@/components/instructor/NextLessonsSheet";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { a11yPx } from "@/lib/a11yScale";
@@ -428,10 +429,10 @@ function ConflictBanner({ time }: { time: string }) {
 export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
   const [tab, setTab] = useState<"today" | "tomorrow">("today");
   const [addOpen, setAddOpen] = useState(false);
+  const [nextOpen, setNextOpen] = useState(false);
   const [wizardLesson, setWizardLesson] = useState<TodayLesson | null>(null);
   const [wizardBalance, setWizardBalance] = useState<number>(0);
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
 
   // Re-tick every 30s so live/completed transitions render in real time.
   const [tickNow, setTickNow] = useState<Date>(new Date());
@@ -608,7 +609,7 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
           </div>
           <button
             type="button"
-            onClick={() => navigate("/instructor/schedule")}
+            onClick={() => setNextOpen(true)}
             style={{
               display: "inline-flex",
               alignItems: "center",
@@ -861,6 +862,17 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
             queryClient.invalidateQueries({ queryKey: ["today-remaining-lessons"] });
             queryClient.invalidateQueries({ queryKey: ["today-overview"] });
             queryClient.invalidateQueries({ queryKey: ["day-lessons"] });
+          }}
+        />
+      )}
+
+      {instructorId && (
+        <NextLessonsSheet
+          open={nextOpen}
+          onClose={() => setNextOpen(false)}
+          instructorId={instructorId}
+          onLessonClick={(id) => {
+            window.location.href = `/instructor/schedule?lesson=${id}`;
           }}
         />
       )}
