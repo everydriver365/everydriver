@@ -20759,6 +20759,32 @@ export type Database = {
       }
     }
     Functions: {
+      accept_quote_by_token: {
+        Args: { p_metadata?: Json; p_token: string }
+        Returns: {
+          accepted_at: string
+          created_at: string
+          deposit_pence: number
+          id: string
+          instructor_id: string
+          price_pence: number
+          pupil_email: string | null
+          pupil_id: string | null
+          pupil_name: string
+          pupil_phone: string | null
+          pupil_postcode: string | null
+          quote_id: string
+          status: Database["public"]["Enums"]["quote_booking_status"]
+          total_hours: number | null
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "quote_bookings"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       archive_pupil: {
         Args: { p_note?: string; p_pupil_id: string; p_reason: string }
         Returns: undefined
@@ -20831,6 +20857,46 @@ export type Database = {
       classify_sync_error: { Args: { err: string }; Returns: string }
       cleanup_expired_otp_codes: { Args: never; Returns: undefined }
       cleanup_expired_parent_otp_codes: { Args: never; Returns: undefined }
+      decline_quote_by_token: {
+        Args: { p_reason?: string; p_token: string }
+        Returns: {
+          accepted_at: string | null
+          cancelled_at: string | null
+          course_type: string | null
+          created_at: string
+          decline_reason: string | null
+          declined_at: string | null
+          deposit_amount: number | null
+          deposit_pence: number
+          email: string | null
+          expires_at: string | null
+          id: string
+          instructor_id: string
+          last_reminder_at: string | null
+          package_details: string | null
+          phone: string | null
+          postcode: string | null
+          price: number
+          price_pence: number
+          pupil_name: string
+          quote_ref: string
+          schedule_notes: string | null
+          sent_at: string | null
+          status: Database["public"]["Enums"]["quote_status"]
+          terms: string | null
+          token: string
+          total_hours: number | null
+          updated_at: string
+          valid_until: string | null
+          viewed_at: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "quotes"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
@@ -20843,6 +20909,7 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      expire_stale_quotes: { Args: never; Returns: number }
       generate_calendar_share_token: { Args: never; Returns: string }
       generate_domain_verification_token: { Args: never; Returns: string }
       generate_referral_code: { Args: never; Returns: string }
@@ -21031,6 +21098,10 @@ export type Database = {
           p_metadata?: Json
           p_notes?: string
         }
+        Returns: undefined
+      }
+      mark_quote_viewed_by_token: {
+        Args: { p_token: string }
         Returns: undefined
       }
       move_to_dlq: {
