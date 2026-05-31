@@ -216,6 +216,7 @@ export default function SquareInvoicesPage({ scope }: { scope: Scope }) {
           r.klarna_status ?? "",
           r.klarna_last_error ?? "",
           r.klarna_last_error_at ?? "",
+          r.clearpay_enabled ? "true" : "false",
           r.paid_at ?? "",
           r.sent_at ?? "",
           r.cancelled_at ?? "",
