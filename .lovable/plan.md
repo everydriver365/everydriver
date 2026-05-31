@@ -1,42 +1,50 @@
-## Goal
-On `/instructor/pay`, surface a breakdown of this month's money: **Gross paid**, **Refunded**, and **Net received** — instead of the single "Received" figure that silently nets refunds.
+## Diagnosis
 
-## Changes
+The "Net Received" figure is wrong because `payment_history` contains **non-payment ledger rows** that are being counted as refunds.
 
-### 1. `src/hooks/useInstructorPaymentsData.ts`
-Compute two additional figures alongside existing `receivedMonth`:
-- `grossMonth` = sum of `monthTx` rows with `status === "paid"` (positive amounts only)
-- `refundsMonth` = absolute sum of `monthTx` rows with `status === "refunded"` (stored as negatives → report as positive)
-- Keep `receivedMonth` = `grossMonth − refundsMonth` (same value as today, just expressed clearly)
+Recent rows in the database for the current month:
 
-Add to `PaymentsStats`:
-```ts
-grossMonth: number;
-refundsMonth: number;
-refundsCount: number;
-```
+| amount | method | notes |
+|---|---|---|
+| −£810 | `Lesson Charge` | "NI" |
+| −£787.50 | `Lesson Charge` | "Nat INtensive" |
+| −£1,045 | `Lesson Charge` | "Nat Intensive" |
+| −£38 | `Cash` | "Refund — twat" |
 
-Initialise them to 0 in the loading-state object.
+Only the last one is an actual refund. The three `Lesson Charge` rows are **balance-ledger debits** (pupil owes instructor for a booked lesson block) — never money moving in or out.
 
-### 2. `src/pages/instructor-app/InstructorPaymentsDesktop.tsx` (desktop `/instructor/pay`)
-Replace the single emerald "RECEIVED" StatCard (line 258) with the three-figure breakdown. Two options — I'll go with **A** unless you prefer B:
+`normalizeStatus` flags them as `"refunded"` because `amount < 0`, so they:
+- inflate `refundsMonth` by £2,642.50
+- subtract from `receivedMonth`
+- also get mis-classified as `card` method (since `normalizeMethod` defaults unknowns to `"card"`), polluting card totals and the fee calculation
 
-**A. Keep 4-card row, replace Received with a stacked "Money in" card**
-One emerald `StatCard` titled `MONEY IN · {MONTH}` whose `value` is the **Net** figure, with a two-line `sub` showing:
-`Gross £X · Refunds −£Y · {n} payments`
+## Fix
 
-Pros: preserves existing 4-column layout, no other tiles move.
+### `src/hooks/useInstructorPaymentsData.ts`
 
-**B. Expand to 5 tiles**
-Separate `GROSS`, `REFUNDS` (rose), `NET RECEIVED` (emerald) cards, plus existing Outstanding / Next payout / Fees. Requires switching grid from `grid-cols-4` to `grid-cols-5` (or wrapping).
+1. **Filter `Lesson Charge` rows out at source.** After fetching `paymentsRes.data`, drop any row whose `payment_method` matches `/lesson\s*charge/i` (case-insensitive, tolerant to spacing). These are ledger entries, not payments — they should never appear in the payments page transactions, stats, cash-flow, or fee calculations.
 
-### 3. Mobile parity
-`MoneyStack` / `MobileHomeDSM2026` currently only show `paymentsCount` + total. Mirror the chosen desktop treatment in `src/components/instructor/dashboardV2/MoneyStack.tsx` so the figures match across devices (small secondary line under the headline number).
+   Apply the same filter to `recentPaymentsRes`/`txByPupil` queries that feed pending payouts and pupil rollups (lines ~290 and ~328), so they stay consistent.
+
+2. **Tighten `normalizeStatus`'s refund detection** as a defensive belt-and-braces: treat a row as `"refunded"` only when one of:
+   - `payout_status` ∈ {`refunded`, `partially_refunded`}, OR
+   - `notes` contains the word "refund", OR
+   - `amount < 0` **AND** the row's `payment_method` is a recognised payment channel (card/cash/bank), not a ledger label.
+
+   This ensures any future ledger-style entries don't get pulled in.
+
+3. No change to `grossMonth` / `refundsMonth` / `receivedMonth` formulas — once the noise rows are gone, they'll be correct.
+
+### Verification
+
+Expected after fix, for the current month sample above:
+- Gross = £38 (the one Square payment)
+- Refunds = £38 (the cash refund)
+- Net Received = £0
 
 ## Out of scope
-- No DB/schema changes — refunds already live in `payment_history` as negative `amount` rows.
-- No change to YTD service-fees row, cash-flow chart, transactions list, or export logic.
-- Pending/failed rows continue to be excluded.
+- No DB migration. The `Lesson Charge` rows are legitimate balance-ledger entries used elsewhere (pupil balance) — they just don't belong on the Payments page.
+- No change to the cash-flow chart shape, outstanding logic, or fee tiers beyond the consequence of removing these rows from the input set.
 
 ## Question
-Go with **A (compact, same 4-tile row)** or **B (5 separate tiles)**?
+Confirm: it's safe to assume any `payment_history` row with `payment_method = "Lesson Charge"` is a balance-ledger entry that should be excluded from the Payments page, right? (If you sometimes use that label for real payments, tell me and I'll switch to a different exclusion key, e.g. exclude by `notes` pattern or a flag column.)
