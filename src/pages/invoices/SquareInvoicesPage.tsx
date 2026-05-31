@@ -34,6 +34,7 @@ interface InvoiceRow {
   public_url: string | null;
   klarna_pay_url?: string | null;
   klarna_enabled?: boolean | null;
+  klarna_status?: "pending" | "paid" | "failed" | "cancelled" | null;
   status: string;
   amount_cents: number;
   service_fee_cents: number;
@@ -316,7 +317,26 @@ export default function SquareInvoicesPage({ scope }: { scope: Scope }) {
                           {r.due_date ? format(new Date(r.due_date), "d MMM") : "—"}
                         </td>
                         <td className="py-2 pr-3">
-                          <InvoiceStatusBadge status={r.status} />
+                          <div className="flex flex-col items-start gap-1">
+                            <InvoiceStatusBadge status={r.status} />
+                            {r.klarna_enabled && r.klarna_status && (
+                              <span
+                                className={
+                                  "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium border " +
+                                  (r.klarna_status === "paid"
+                                    ? "bg-green-50 text-green-700 border-green-200"
+                                    : r.klarna_status === "failed"
+                                    ? "bg-red-50 text-red-700 border-red-200"
+                                    : r.klarna_status === "cancelled"
+                                    ? "bg-muted text-muted-foreground border-border"
+                                    : "bg-amber-50 text-amber-700 border-amber-200")
+                                }
+                                title="Klarna Hosted Payment Page status"
+                              >
+                                Klarna · {r.klarna_status}
+                              </span>
+                            )}
+                          </div>
                         </td>
                         <td className="py-2 pr-3 text-right">
                           <div className="flex items-center justify-end gap-1">

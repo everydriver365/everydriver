@@ -378,6 +378,7 @@ serve(async (req) => {
           klarna_enabled: klarnaOn,
           klarna_pay_url: klarnaPayUrl,
           klarna_order_id: klarnaOrderId,
+          klarna_status: klarnaOn ? (klarnaPayUrl ? "pending" : "failed") : null,
         })
         .select()
         .single();
