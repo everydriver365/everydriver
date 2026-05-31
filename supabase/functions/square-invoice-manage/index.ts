@@ -225,20 +225,6 @@ serve(async (req) => {
     if (body.action === "create") {
       const { pupil_id, recipient_email, recipient_name, line_items, service_fee_cents = 0, due_date, description, accepted_payment_methods, klarna_enabled, location_id: requestedLocationId } = body;
 
-      // Build accepted methods — card is always on (Square requires at least one).
-      // Bank transfer is not collected by Square in the UK, but we persist the
-      // choice so our invoice record and preview reflect the enabled method.
-      // Square UK does not support bank_account as a Square-collected payment
-      // method on invoices. We still surface manual bank-transfer details in
-      // the invoice description, but must NOT send bank_account=true to Square.
-      const apm = {
-        card: true,
-        square_gift_card: false,
-        bank_account: false,
-        buy_now_pay_later: !!accepted_payment_methods?.buy_now_pay_later,
-        cash_app_pay: false,
-      };
-
       if (!recipient_email || !recipient_name) return err("recipient_email and recipient_name required");
       if (!Array.isArray(line_items) || line_items.length === 0) return err("At least one line item required");
       if (!due_date) return err("due_date required");
@@ -247,6 +233,7 @@ serve(async (req) => {
       let issuerType: "instructor" | "school";
       let squareToken: string;
       let locationId: string;
+      let locationCountry: string | null = null;
       let issuerInstructorId: string | null = null;
 
       if (instructor?.id && instructor?.square_access_token_encrypted) {
@@ -269,14 +256,36 @@ serve(async (req) => {
         }
         if (!chosen?.id) return err("No active Square location found on your account");
         locationId = chosen.id;
+        locationCountry = chosen.country || null;
       } else if (isAdmin) {
         issuerType = "school";
         squareToken = Deno.env.get("SQUARE_ACCESS_TOKEN") || "";
         locationId = requestedLocationId || Deno.env.get("SQUARE_LOCATION_ID") || "";
         if (!squareToken || !locationId) return err("Platform Square account is not configured", 500);
+        // Fetch the platform location to learn its country so we sanitize
+        // accepted_payment_methods accurately rather than guessing.
+        const locRes = await squareFetch(`/v2/locations/${locationId}`, squareToken);
+        if (locRes.ok && locRes.json?.location?.country) {
+          locationCountry = locRes.json.location.country;
+        }
       } else {
         return err("Connect your Square account before sending invoices", 400);
       }
+
+      // Preflight: drop any accepted_payment_methods Square won't accept for
+      // this location's country (e.g. bank_account in GB). Prevents BAD_REQUEST
+      // from /v2/invoices. Card stays on — Square requires at least one method.
+      const { apm, dropped: droppedMethods } = sanitizeAcceptedPaymentMethods(
+        accepted_payment_methods,
+        locationCountry,
+      );
+      if (droppedMethods.length > 0) {
+        console.warn(
+          "[square-invoice] dropped unsupported payment methods",
+          { country: locationCountry, dropped: droppedMethods },
+        );
+      }
+
 
       // Find/create customer
       const customerResult = await findOrCreateCustomer(squareToken, recipient_email, recipient_name);
