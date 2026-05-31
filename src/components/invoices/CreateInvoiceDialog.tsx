@@ -253,9 +253,13 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
         // ignore
       }
 
+      const klarnaErr = (data as any)?.klarna_error;
       toast({
         title: "Invoice sent",
-        description: `Emailed to ${recipientEmail}`,
+        description: klarnaErr
+          ? `Emailed to ${recipientEmail}. Klarna link failed: ${klarnaErr}`
+          : `Emailed to ${recipientEmail}`,
+        variant: klarnaErr ? "destructive" : "default",
       });
       reset();
       setOpen(false);
