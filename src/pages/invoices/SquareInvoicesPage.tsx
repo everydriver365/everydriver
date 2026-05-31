@@ -32,6 +32,8 @@ interface InvoiceRow {
   recipient_email: string | null;
   square_invoice_id: string | null;
   public_url: string | null;
+  klarna_pay_url?: string | null;
+  klarna_enabled?: boolean | null;
   status: string;
   amount_cents: number;
   service_fee_cents: number;
