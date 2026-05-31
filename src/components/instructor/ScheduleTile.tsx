@@ -12,6 +12,7 @@ export interface Lesson {
 
 interface ScheduleTileProps {
   lessons: Lesson[];
+  nextLessons?: Lesson[];
   onAddLesson: () => void;
   onFillGaps: () => void;
   onLessonClick: (id: string) => void;
@@ -52,34 +53,40 @@ function sameDay(a: Date, b: Date) {
   return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 }
 
-export function ScheduleTile({ lessons, onAddLesson, onFillGaps, onLessonClick, onViewNext }: ScheduleTileProps) {
-  const [tab, setTab] = useState<"today" | "tomorrow">("today");
+export function ScheduleTile({ lessons, nextLessons = [], onAddLesson, onFillGaps, onLessonClick }: ScheduleTileProps) {
+  const [tab, setTab] = useState<"today" | "tomorrow" | "next">("today");
 
-  const { todayDate, tomorrowDate, todayLessons, tomorrowLessons } = useMemo(() => {
+  const { todayDate, tomorrowDate, todayLessons, tomorrowLessons, nextLessonsSorted } = useMemo(() => {
     const today = new Date();
     const tomorrow = new Date(today);
     tomorrow.setDate(today.getDate() + 1);
 
-    const sorted = lessons
-      .slice()
-      .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
-      .map((l) => ({ ...l, _start: new Date(l.startTime), _end: new Date(l.endTime) }));
+    const decorate = (arr: Lesson[]) =>
+      arr
+        .slice()
+        .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
+        .map((l) => ({ ...l, _start: new Date(l.startTime), _end: new Date(l.endTime) }));
+
+    const sorted = decorate(lessons);
 
     return {
       todayDate: today,
       tomorrowDate: tomorrow,
       todayLessons: sorted.filter((l) => sameDay(l._start, today)),
       tomorrowLessons: sorted.filter((l) => sameDay(l._start, tomorrow)),
+      nextLessonsSorted: decorate(nextLessons).slice(0, 5),
     };
-  }, [lessons]);
+  }, [lessons, nextLessons]);
 
-  const active = tab === "today" ? todayLessons : tomorrowLessons;
-  const headerDate = tab === "today" ? todayDate : tomorrowDate;
-  const kicker = `SCHEDULE · ${DAYS[headerDate.getDay()]} ${headerDate.getDate()} ${MONTHS[headerDate.getMonth()].toUpperCase()}`;
+  const active =
+    tab === "today" ? todayLessons : tab === "tomorrow" ? tomorrowLessons : nextLessonsSorted;
+  const headerDate = tab === "today" ? todayDate : tab === "tomorrow" ? tomorrowDate : todayDate;
+  const kicker =
+    tab === "next"
+      ? "SCHEDULE · NEXT LESSONS"
+      : `SCHEDULE · ${DAYS[headerDate.getDay()]} ${headerDate.getDate()} ${MONTHS[headerDate.getMonth()].toUpperCase()}`;
 
-  const fmtPill = (d: Date) => `${d.getDate()} ${MONTHS[d.getMonth()]}`;
-
-  const renderPill = (key: "today" | "tomorrow", label: string, date: Date) => {
+  const renderPill = (key: "today" | "tomorrow" | "next", label: string, date: Date | null) => {
     const isActive = tab === key;
     return (
       <button
@@ -101,11 +108,12 @@ export function ScheduleTile({ lessons, onAddLesson, onFillGaps, onLessonClick, 
         }}
       >
         <div style={{ fontSize: 11, fontWeight: 500 }}>
-          {label} / {date.getDate()} {MONTHS[date.getMonth()]}
+          {date ? `${label} / ${date.getDate()} ${MONTHS[date.getMonth()]}` : label}
         </div>
       </button>
     );
   };
+
 
   return (
     <div
@@ -139,30 +147,6 @@ export function ScheduleTile({ lessons, onAddLesson, onFillGaps, onLessonClick, 
         >
           {kicker}
         </div>
-        {onViewNext && (
-          <button
-            type="button"
-            onClick={onViewNext}
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 2,
-              background: "transparent",
-              border: 0,
-              padding: 0,
-              color: C.blue,
-              fontSize: 12,
-              fontWeight: 600,
-              fontFamily: FONT,
-              cursor: "pointer",
-              flexShrink: 0,
-            }}
-            aria-label="View next lessons"
-          >
-            Next Lessons
-            <ChevronRight size={14} color={C.blue} />
-          </button>
-        )}
       </div>
 
 
@@ -179,6 +163,7 @@ export function ScheduleTile({ lessons, onAddLesson, onFillGaps, onLessonClick, 
       >
         {renderPill("today", "Today", todayDate)}
         {renderPill("tomorrow", "Tomorrow", tomorrowDate)}
+        {renderPill("next", "Next", null)}
       </div>
 
 
@@ -214,11 +199,20 @@ export function ScheduleTile({ lessons, onAddLesson, onFillGaps, onLessonClick, 
         >
           <CalendarOff size={24} color="#C7C7CC" strokeWidth={1.75} />
           <div style={{ fontSize: 13, color: C.muted, fontWeight: 500, textAlign: "center" }}>
-            Nothing scheduled for {tab === "today" ? "today" : "tomorrow"}
+            {tab === "next"
+              ? "No upcoming lessons"
+              : `Nothing scheduled for ${tab === "today" ? "today" : "tomorrow"}`}
           </div>
         </div>
       ) : (
-        <div className="flex flex-col" style={{ gap: 10 }}>
+        <div
+          className="flex flex-col"
+          style={
+            tab === "next"
+              ? { gap: 10, maxHeight: 260, overflowY: "auto", WebkitOverflowScrolling: "touch", overscrollBehavior: "contain", paddingRight: 2 }
+              : { gap: 10 }
+          }
+        >
           {active.map((l) => (
             <button
               key={l.id}
@@ -234,18 +228,21 @@ export function ScheduleTile({ lessons, onAddLesson, onFillGaps, onLessonClick, 
                 display: "flex",
                 alignItems: "center",
                 gap: 14,
+                flexShrink: 0,
               }}
               onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.borderColor = C.blue; }}
               onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.borderColor = C.border; }}
             >
 
               {/* Time col */}
-              <div style={{ width: 52, flexShrink: 0 }}>
+              <div style={{ width: 56, flexShrink: 0 }}>
                 <div style={{ fontSize: 20, fontWeight: 700, color: C.charcoal, lineHeight: 1.05, letterSpacing: "-0.3px" }}>
                   {fmtHM(l._start)}
                 </div>
-                <div style={{ fontSize: 12, color: C.muted, marginTop: 4, fontWeight: 500 }}>
-                  {fmtDuration(l._start.getTime(), l._end.getTime())}
+                <div style={{ fontSize: 11, color: C.muted, marginTop: 4, fontWeight: 600, letterSpacing: "0.3px", textTransform: "uppercase" }}>
+                  {tab === "next"
+                    ? `${DAYS[l._start.getDay()]} ${l._start.getDate()} ${MONTHS[l._start.getMonth()]}`
+                    : fmtDuration(l._start.getTime(), l._end.getTime())}
                 </div>
               </div>
               {/* Blue divider */}
@@ -285,6 +282,7 @@ export function ScheduleTile({ lessons, onAddLesson, onFillGaps, onLessonClick, 
           ))}
         </div>
       )}
+
 
       {/* Footer */}
       <div className="flex" style={{ gap: 8, marginTop: 12 }}>
