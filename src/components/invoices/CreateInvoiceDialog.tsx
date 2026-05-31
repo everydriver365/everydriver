@@ -65,6 +65,28 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
   const [items, setItems] = useState<LineItemInput[]>([
     { name: "Driving lesson", quantity: 1, amount_pounds: "" },
   ]);
+  const bankStorageKey = `invoice-bank-details-${scope}`;
+  const [showBank, setShowBank] = useState(false);
+  const [bankAccountName, setBankAccountName] = useState("");
+  const [bankSortCode, setBankSortCode] = useState("");
+  const [bankAccountNumber, setBankAccountNumber] = useState("");
+  const [bankReference, setBankReference] = useState("");
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(bankStorageKey);
+      if (raw) {
+        const v = JSON.parse(raw);
+        setBankAccountName(v.name || "");
+        setBankSortCode(v.sort || "");
+        setBankAccountNumber(v.number || "");
+        if (v.enabled) setShowBank(true);
+      }
+    } catch {
+      // ignore
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (!open) return;
