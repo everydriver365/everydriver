@@ -22,6 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { QuickAddPupilButton, type QuickAddedPupil } from "@/components/instructor/pupils/QuickAddPupilButton";
 
 interface InstructorOption {
   id: string;
