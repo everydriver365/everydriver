@@ -33,6 +33,9 @@ export interface CashFlowBucket {
 export interface PaymentsStats {
   receivedMonth: number;
   receivedCount: number;
+  grossMonth: number;
+  refundsMonth: number;
+  refundsCount: number;
   outstanding: number;
   outstandingPupils: number;
   nextPayout: number;
@@ -152,6 +155,7 @@ export function useInstructorPaymentsData(instructorId: string | undefined): Pay
     error: null,
     stats: {
       receivedMonth: 0, receivedCount: 0,
+      grossMonth: 0, refundsMonth: 0, refundsCount: 0,
       outstanding: 0, outstandingPupils: 0,
       nextPayout: 0, nextPayoutDate: "—",
       feesMonth: 0, effectiveFeeRate: FEE_RATE * 100,
@@ -228,7 +232,11 @@ export function useInstructorPaymentsData(instructorId: string | undefined): Pay
           new Date(t.dateTime) >= monthStart &&
           (t.status === "paid" || t.status === "refunded")
         );
-        const receivedMonth = monthTx.reduce((s, t) => s + t.amount, 0);
+        const paidTx = monthTx.filter(t => t.status === "paid");
+        const refundTx = monthTx.filter(t => t.status === "refunded");
+        const grossMonth = +paidTx.reduce((s, t) => s + t.amount, 0).toFixed(2);
+        const refundsMonth = +Math.abs(refundTx.reduce((s, t) => s + t.amount, 0)).toFixed(2);
+        const receivedMonth = +(grossMonth - refundsMonth).toFixed(2);
         const cardMonth = monthTx.filter(t => t.method === "card").reduce((s, t) => s + t.amount, 0);
         const platformFeesRows = (platformFeesMonthRes.data || []) as any[];
         const platformFeesMonthTotal = platformFeesRows
@@ -329,6 +337,9 @@ export function useInstructorPaymentsData(instructorId: string | undefined): Pay
           stats: {
             receivedMonth,
             receivedCount: monthTx.length,
+            grossMonth,
+            refundsMonth,
+            refundsCount: refundTx.length,
             outstanding: outstandingTotal,
             outstandingPupils: outstanding.length,
             nextPayout: +pendingPayout.toFixed(2),
