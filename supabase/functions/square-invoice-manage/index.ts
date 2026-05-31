@@ -31,6 +31,7 @@ interface CreateBody {
   description?: string;
   accepted_payment_methods?: AcceptedPaymentMethods;
   klarna_enabled?: boolean;
+  location_id?: string | null;
 }
 
 interface ActionBody {
@@ -38,7 +39,11 @@ interface ActionBody {
   invoice_row_id: string;
 }
 
-type Body = CreateBody | ActionBody;
+interface ListLocationsBody {
+  action: "list_locations";
+}
+
+type Body = CreateBody | ActionBody | ListLocationsBody;
 
 function ok(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), {
