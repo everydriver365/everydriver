@@ -207,7 +207,9 @@ export function useInstructorPaymentsData(instructorId: string | undefined): Pay
         if (paymentsRes.error) throw paymentsRes.error;
         if (pupilsRes.error) throw pupilsRes.error;
 
-        const rawPayments = paymentsRes.data || [];
+        // Exclude balance-ledger rows (e.g. "Lesson Charge") — they aren't money in/out.
+        const isLedgerRow = (m: string | null) => /lesson\s*charge/i.test(m || "");
+        const rawPayments = (paymentsRes.data || []).filter((p: any) => !isLedgerRow(p.payment_method));
         const transactions: PaymentTx[] = rawPayments.map((p: any) => {
           const amount = Number(p.amount || 0);
           const method = normalizeMethod(p.payment_method);
