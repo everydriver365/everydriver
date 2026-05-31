@@ -109,6 +109,8 @@ export default function LovableTracker() {
         .from('pupils')
         .select('id, name')
         .eq('instructor_id', instructorId)
+        .eq('status', 'active')
+        .is('deleted_at', null)
         .order('name');
       if (data) setPupils(data);
     };
