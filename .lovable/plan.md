@@ -1,66 +1,35 @@
-## Diagnosis
+## Goal
+Insert a confirmation/preview step in the "New invoice" dialog so you can review exactly what will be sent before the email goes out.
 
-For the current instructor (`1b49d152…`) this month, the input data is:
-
-| amount | method | status (after fix) |
-|---|---|---|
-| +£38 | Square | paid |
-| +£38 | Cash | paid |
-| −£38 | Cash | refunded |
-
-And `platform_fees` for the month: **0 rows**.
-
-The current fee calc (`useInstructorPaymentsData.ts:245-259`) does:
-
-```ts
-cardMonth = monthTx.filter(method==="card").reduce(...)   // includes refunds
-feesMonth = max(0, cardMonth) * 0.0175 + platformFeesTotal
-effectiveFeeRate = feesMonth / receivedMonth * 100        // divides by NET
+## Flow
+```
+Form step  ──►  [Preview invoice]  ──►  Preview step  ──►  [Send invoice]
+                                          │
+                                          └►  [Back to edit]
 ```
 
-Three problems baked in:
+Currently `Send invoice` calls the edge function directly. After this change, the primary button on the form becomes `Preview invoice` and the actual send only happens from the preview step.
 
-1. **`cardMonth` is net of refunds**, but real gateway fees are charged on **gross** card volume. Refunding rarely returns the full fee. Using net under-states fees when there are no refunds and over-states the rebate when there are.
-2. **`FEE_RATE = 1.75%` is hardcoded.** This is a guess layered on top of `platform_fees` rows, which already record the *actual* fee per transaction. When `platform_fees` has the row, the 1.75% estimate **double-counts**. When it doesn't, we invent a number that has no basis. Both violate the project's "live data only" rule (mem://constraints/no-hardcoded-fallbacks-live-data-only).
-3. **`effectiveFeeRate` divides by `receivedMonth` (net)**, so a £38 payment fully refunded would show an infinite/spiked effective rate. It should be `fees ÷ gross card` to be meaningful, or hidden when gross card is 0.
+## Preview step contents
+A branded, read-only rendering of the invoice that mirrors what the recipient will see:
+- Header: "Invoice" + issuer label (instructor business name for instructor scope, "Platform" for admin scope)
+- Bill to: recipient name + email (and pupil tag if a pupil was selected)
+- Due date + today's issue date
+- Line items table: description, qty, unit price, line total
+- Service Fee row (only if > 0, labelled exactly "Service Fee" per UK compliance)
+- Total in GBP
+- Description / note block (if provided)
+- Small footer note: "An email with a secure payment link will be sent to {recipient_email} from Square."
 
-A related side-issue: the loading-state stub initialises `effectiveFeeRate: FEE_RATE * 100` (1.75%) — a hardcoded value rendered before any data arrives. Should be 0.
+Rendered inside the existing `DialogContent` so it stays in one modal (no extra route or new page).
 
-## Fix
+## Step switching
+- Local `step` state in `CreateInvoiceDialog`: `"form" | "preview"`.
+- `Preview invoice` button validates the form (same checks currently inside `submit`) and switches to `"preview"` on success; validation errors keep the existing toasts.
+- Preview step footer: `Back to edit` (returns to form, keeps all values) and `Send invoice` (runs the existing edge-function call).
+- Closing the dialog or successful send resets `step` back to `"form"` along with the existing field reset.
 
-### `src/hooks/useInstructorPaymentsData.ts`
+## Files touched
+- `src/components/invoices/CreateInvoiceDialog.tsx` — add step state, split current body into a form view and a new preview view, move the send call behind the preview's Send button, update the footer buttons per step.
 
-1. **Drop the 1.75% estimate entirely.** `feesMonth` becomes just the sum of `platform_fees.amount` for the month (which already includes `booking_fee`, `transaction_fee`, uplift, etc.).
-   - If `platform_fees` is the source of truth for actual gateway/platform fees, this gives a real, reconcilable number.
-   - If a payment method ever bypasses `platform_fees` insertion (e.g. legacy Square rows), the fees figure will read £0 for that period — that's the correct empty/needs-setup signal per the live-data rule, not a fabricated estimate.
-
-2. **Recompute `effectiveFeeRate` against gross card volume**, not net received:
-   ```ts
-   const grossCardMonth = paidTx.filter(t => t.method === "card")
-     .reduce((s, t) => s + t.amount, 0);
-   const effectiveFeeRate = grossCardMonth > 0
-     ? +((feesMonth / grossCardMonth) * 100).toFixed(2)
-     : 0;
-   ```
-   This is what an instructor reads as "the % I'm paying on card sales".
-
-3. **Remove hardcoded `FEE_RATE * 100`** from the loading-state stub; initialise `effectiveFeeRate: 0`.
-
-4. **Delete the now-unused `FEE_RATE` constant** (or keep it only inside YTD calc — see below).
-
-5. **YTD service-fees row (`feesYearToDate`)** currently also uses `cardYtd * FEE_RATE + platformYtd`. Apply the same fix: just use `platform_fees` rows since `taxYearStart`. Drop the card×1.75% estimate.
-
-### What the user will see after the fix
-
-For this instructor's current month (no `platform_fees` rows, one card payment of £38 with no refund-of-card):
-- **Fees** £0.00
-- **Effective rate** 0%
-
-When real platform_fees rows exist (the other test instructor has £3 of platform_fees), Fees will read £3.00 against whatever gross card volume the month has.
-
-## Out of scope
-- No DB writes. If you want estimated fees in the absence of `platform_fees` rows, that's a separate "back-fill" story.
-- No change to Outstanding, Next Payout, Cash Flow, transactions list.
-
-## Question
-Are you happy to switch fees to **actual recorded `platform_fees` only** (correct but reads £0 where the platform never wrote a row), or do you want me to keep an estimated fallback in some form (e.g. only when `platform_fees` is empty)?
+No backend, edge function, or schema changes. No changes to the invoices list page or PDF generator.
