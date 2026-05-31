@@ -159,7 +159,16 @@ serve(async (req) => {
 
     // ====== CREATE ======
     if (body.action === "create") {
-      const { pupil_id, recipient_email, recipient_name, line_items, service_fee_cents = 0, due_date, description } = body;
+      const { pupil_id, recipient_email, recipient_name, line_items, service_fee_cents = 0, due_date, description, accepted_payment_methods } = body;
+
+      // Build accepted methods — card is always on (Square requires at least one).
+      const apm = {
+        card: true,
+        square_gift_card: false,
+        bank_account: false,
+        buy_now_pay_later: !!accepted_payment_methods?.buy_now_pay_later,
+        cash_app_pay: false,
+      };
 
       if (!recipient_email || !recipient_name) return err("recipient_email and recipient_name required");
       if (!Array.isArray(line_items) || line_items.length === 0) return err("At least one line item required");
