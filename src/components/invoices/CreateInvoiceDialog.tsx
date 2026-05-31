@@ -74,6 +74,9 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
   const [allowClearpay, setAllowClearpay] = useState(false);
   const [allowKlarna, setAllowKlarna] = useState(false);
   const [instructorKlarnaEnabled, setInstructorKlarnaEnabled] = useState(false);
+  const [locations, setLocations] = useState<Array<{ id: string; name: string; address: string }>>([]);
+  const [locationId, setLocationId] = useState<string>("");
+  const [locationsLoading, setLocationsLoading] = useState(false);
 
   useEffect(() => {
     try {
