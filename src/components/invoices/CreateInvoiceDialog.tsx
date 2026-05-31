@@ -491,6 +491,28 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
               </div>
             </div>
 
+            {locations.length > 1 && (
+              <div className="space-y-1.5">
+                <Label>Send from Square location</Label>
+                <Select value={locationId} onValueChange={setLocationId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={locationsLoading ? "Loading locations…" : "Select a location"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {locations.map((l) => (
+                      <SelectItem key={l.id} value={l.id}>
+                        {l.name}
+                        {l.address ? ` — ${l.address}` : ""}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  The invoice will appear under this location in your Square dashboard.
+                </p>
+              </div>
+            )}
+
             <div className="rounded-md border p-3 space-y-3">
               <div>
                 <Label className="text-sm">Payment methods</Label>
