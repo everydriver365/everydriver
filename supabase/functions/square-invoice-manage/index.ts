@@ -39,11 +39,17 @@ interface ActionBody {
   invoice_row_id: string;
 }
 
+interface SyncStatusBody {
+  action: "sync_status";
+  invoice_row_id: string;
+}
+
 interface ListLocationsBody {
   action: "list_locations";
 }
 
-type Body = CreateBody | ActionBody | ListLocationsBody;
+type Body = CreateBody | ActionBody | SyncStatusBody | ListLocationsBody;
+
 
 function ok(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), {
