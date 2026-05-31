@@ -461,6 +461,21 @@ export default function SquareInvoicesPage({ scope }: { scope: Scope }) {
                                 Klarna · {r.klarna_status}
                               </span>
                             )}
+                            {r.clearpay_enabled && (
+                              <span
+                                className={
+                                  "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium border " +
+                                  (r.status === "paid"
+                                    ? "bg-green-50 text-green-700 border-green-200"
+                                    : r.status === "canceled" || r.status === "cancelled"
+                                    ? "bg-muted text-muted-foreground border-border"
+                                    : "bg-sky-50 text-sky-700 border-sky-200")
+                                }
+                                title="Clearpay (Afterpay) was offered on this invoice. Final payment status follows the Square invoice."
+                              >
+                                Clearpay · {r.status === "paid" ? "paid" : r.status === "canceled" || r.status === "cancelled" ? "cancelled" : "offered"}
+                              </span>
+                            )}
                             {r.klarna_last_error && (
                               <span
                                 className="max-w-[260px] truncate text-[10px] text-red-700"
