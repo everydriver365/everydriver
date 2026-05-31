@@ -106,8 +106,27 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
       } catch {
         // non-fatal
       }
+      // Fetch instructor klarna_enabled flag (instructor scope only)
+      if (scope === "instructor") {
+        try {
+          const { data: auth } = await supabase.auth.getUser();
+          const uid = auth.user?.id;
+          if (uid) {
+            const { data: ins } = await supabase
+              .from("instructors")
+              .select("klarna_enabled")
+              .eq("auth_user_id", uid)
+              .maybeSingle();
+            setInstructorKlarnaEnabled(!!(ins as any)?.klarna_enabled);
+          }
+        } catch {
+          // non-fatal
+        }
+      } else {
+        setInstructorKlarnaEnabled(true);
+      }
     })();
-  }, [open]);
+  }, [open, scope]);
 
   const handlePupilCreated = (p: QuickAddedPupil) => {
     setPupils((arr) => [{ id: p.id, name: p.name, email: p.email }, ...arr]);
