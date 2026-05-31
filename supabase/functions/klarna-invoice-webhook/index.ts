@@ -74,7 +74,7 @@ serve(async (req) => {
 
     const { data: row, error: rowErr } = await supabase
       .from("square_invoices")
-      .select("id, status, paid_at")
+      .select("id, status, paid_at, klarna_status")
       .eq("klarna_order_id", orderId)
       .maybeSingle();
 
@@ -87,26 +87,24 @@ serve(async (req) => {
     }
     if (!row) {
       console.warn("[klarna-invoice-webhook] no matching invoice for order", orderId);
-      // Return 200 anyway so Klarna does not retry forever.
       return new Response(JSON.stringify({ ok: true, matched: false }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    if (row.paid_at || row.status === "paid") {
-      return new Response(JSON.stringify({ ok: true, alreadyPaid: true }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    const nowIso = new Date().toISOString();
+    const update: Record<string, unknown> = {
+      klarna_status: klarnaStatus,
+      last_event_at: nowIso,
+    };
+    if (buyerPaid && !row.paid_at && row.status !== "paid") {
+      update.status = "paid";
+      update.paid_at = nowIso;
     }
 
-    const nowIso = new Date().toISOString();
     const { error: updErr } = await supabase
       .from("square_invoices")
-      .update({
-        status: "paid",
-        paid_at: nowIso,
-        last_event_at: nowIso,
-      })
+      .update(update)
       .eq("id", row.id);
 
     if (updErr) {
@@ -117,7 +115,7 @@ serve(async (req) => {
       });
     }
 
-    return new Response(JSON.stringify({ ok: true, paid: true }), {
+    return new Response(JSON.stringify({ ok: true, klarna_status: klarnaStatus }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
