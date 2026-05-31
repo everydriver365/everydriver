@@ -121,6 +121,13 @@ export default function SquareInvoicesPage({ scope }: { scope: Scope }) {
     return rows.filter((r) => {
       if (status !== "all" && r.status !== status) return false;
       if (scope === "admin" && issuerFilter !== "all" && r.issuer_type !== issuerFilter) return false;
+      if (klarnaFilter !== "all") {
+        if (klarnaFilter === "any") {
+          if (!r.klarna_enabled) return false;
+        } else {
+          if (!r.klarna_enabled || r.klarna_status !== klarnaFilter) return false;
+        }
+      }
       if (!q) return true;
       return (
         r.recipient_name?.toLowerCase().includes(q) ||
@@ -131,7 +138,8 @@ export default function SquareInvoicesPage({ scope }: { scope: Scope }) {
         r.square_invoice_id?.toLowerCase().includes(q)
       );
     });
-  }, [rows, query, status, issuerFilter, scope]);
+  }, [rows, query, status, issuerFilter, klarnaFilter, scope]);
+
 
   const totals = useMemo(() => {
     let count = filtered.length;
