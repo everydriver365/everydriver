@@ -237,10 +237,17 @@ export default function QuotesPage({ scope }: { scope: Scope }) {
                     </tr>
                   </thead>
                   <tbody>
-                    {filtered.map((r) => (
-                      <tr key={r.id} className="border-b last:border-0 hover:bg-muted/30">
+                    {filtered.map((r) => {
+                      const detailHref = scope === "admin" ? `/admin/quotes/${r.id}` : `/instructor/quotes/${r.id}`;
+                      return (
+                      <tr
+                        key={r.id}
+                        className="border-b last:border-0 hover:bg-muted/30 cursor-pointer"
+                        onClick={() => { window.location.href = detailHref; }}
+                      >
                         <td className="py-2 pr-3 whitespace-nowrap text-xs text-muted-foreground">
-                          {format(new Date(r.created_at), "d MMM yyyy")}
+                          <div>{format(new Date(r.created_at), "d MMM yyyy")}</div>
+                          <div className="opacity-70">{r.quote_ref}</div>
                         </td>
                         <td className="py-2 pr-3">
                           <div className="font-medium">{r.pupil_name}</div>
@@ -262,17 +269,17 @@ export default function QuotesPage({ scope }: { scope: Scope }) {
                           {r.total_hours ?? "—"}
                         </td>
                         <td className="py-2 pr-3 text-right font-medium whitespace-nowrap">
-                          {fmtMoney(Number(r.price))}
+                          {fmtMoney(r.price_pence || Math.round((Number(r.price) || 0) * 100))}
                         </td>
                         <td className="py-2 pr-3 whitespace-nowrap text-xs text-muted-foreground">
-                          {r.expires_at ? format(new Date(r.expires_at), "d MMM") : "—"}
+                          {(r.valid_until || r.expires_at) ? format(new Date((r.valid_until || r.expires_at)!), "d MMM") : "—"}
                         </td>
                         <td className="py-2 pr-3">
                           <Badge variant="outline" className={statusTone(r.status)}>
                             {r.status}
                           </Badge>
                         </td>
-                        <td className="py-2 pr-3 text-right">
+                        <td className="py-2 pr-3 text-right" onClick={(e) => e.stopPropagation()}>
                           <div className="flex items-center justify-end gap-1">
                             <Button
                               variant="ghost"
@@ -294,7 +301,8 @@ export default function QuotesPage({ scope }: { scope: Scope }) {
                           </div>
                         </td>
                       </tr>
-                    ))}
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
