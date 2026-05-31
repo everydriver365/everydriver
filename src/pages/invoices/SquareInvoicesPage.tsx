@@ -345,6 +345,23 @@ export default function SquareInvoicesPage({ scope }: { scope: Scope }) {
                                 </a>
                               </Button>
                             )}
+                            {r.klarna_pay_url && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                title="Copy Klarna pay link"
+                                onClick={async () => {
+                                  try {
+                                    await navigator.clipboard.writeText(r.klarna_pay_url!);
+                                    toast({ title: "Klarna link copied" });
+                                  } catch {
+                                    toast({ title: "Couldn't copy link", variant: "destructive" });
+                                  }
+                                }}
+                              >
+                                <span className="text-[10px] font-semibold tracking-wide text-pink-600">Klarna</span>
+                              </Button>
+                            )}
                           </div>
                         </td>
                       </tr>
