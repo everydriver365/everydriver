@@ -77,6 +77,8 @@ export default function SquareInvoicesPage({ scope }: { scope: Scope }) {
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("all");
   const [issuerFilter, setIssuerFilter] = useState<"all" | "instructor" | "school">("all");
+  const [klarnaFilter, setKlarnaFilter] = useState<"all" | "any" | "pending" | "paid" | "failed" | "cancelled">("all");
+
 
   const { instructor, refreshInstructor } = useInstructorAuth();
   const instructorId = (instructor as any)?.id ?? null;
@@ -119,6 +121,13 @@ export default function SquareInvoicesPage({ scope }: { scope: Scope }) {
     return rows.filter((r) => {
       if (status !== "all" && r.status !== status) return false;
       if (scope === "admin" && issuerFilter !== "all" && r.issuer_type !== issuerFilter) return false;
+      if (klarnaFilter !== "all") {
+        if (klarnaFilter === "any") {
+          if (!r.klarna_enabled) return false;
+        } else {
+          if (!r.klarna_enabled || r.klarna_status !== klarnaFilter) return false;
+        }
+      }
       if (!q) return true;
       return (
         r.recipient_name?.toLowerCase().includes(q) ||
@@ -129,7 +138,8 @@ export default function SquareInvoicesPage({ scope }: { scope: Scope }) {
         r.square_invoice_id?.toLowerCase().includes(q)
       );
     });
-  }, [rows, query, status, issuerFilter, scope]);
+  }, [rows, query, status, issuerFilter, klarnaFilter, scope]);
+
 
   const totals = useMemo(() => {
     let count = filtered.length;
@@ -225,6 +235,19 @@ export default function SquareInvoicesPage({ scope }: { scope: Scope }) {
                     ))}
                   </SelectContent>
                 </Select>
+                <Select value={klarnaFilter} onValueChange={(v) => setKlarnaFilter(v as any)}>
+                  <SelectTrigger className="h-9 w-[160px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All (Klarna + non)</SelectItem>
+                    <SelectItem value="any">Klarna: any</SelectItem>
+                    <SelectItem value="pending">Klarna: pending</SelectItem>
+                    <SelectItem value="paid">Klarna: paid</SelectItem>
+                    <SelectItem value="failed">Klarna: failed</SelectItem>
+                    <SelectItem value="cancelled">Klarna: cancelled</SelectItem>
+                  </SelectContent>
+                </Select>
                 {scope === "admin" && (
                   <Select value={issuerFilter} onValueChange={(v) => setIssuerFilter(v as any)}>
                     <SelectTrigger className="h-9 w-[150px]">
@@ -237,6 +260,7 @@ export default function SquareInvoicesPage({ scope }: { scope: Scope }) {
                     </SelectContent>
                   </Select>
                 )}
+
               </div>
             </div>
           </CardHeader>
