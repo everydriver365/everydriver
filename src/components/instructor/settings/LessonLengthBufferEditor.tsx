@@ -30,6 +30,7 @@ export function LessonLengthBufferEditor({ instructorId }: Props) {
   const [original, setOriginal] = useState<Row | null>(null);
   const [draft, setDraft] = useState<Row | null>(null);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const { register, setDirty } = useSettingsDirty();
 
   useEffect(() => {
