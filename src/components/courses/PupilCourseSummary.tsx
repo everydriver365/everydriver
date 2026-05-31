@@ -614,7 +614,7 @@ export function PupilCourseSummary({ pupilId, onBack, backHref }: Props) {
               <div className="grid grid-cols-2 gap-3">
                 <BigStat label="Total collected" value={fmt(totals.totalCollected)} />
                 <BigStat label="Paid to instructor" value={fmt(totals.paidToInstructor)} />
-                <BigStat label="School profit" value={fmt(totals.schoolProfit)} accent="#059669" />
+                {isAdmin && <BigStat label="School profit" value={fmt(totals.schoolProfit)} accent="#059669" />}
                 <BigStat label="Outstanding" value={fmt(totals.outstanding)} accent={totals.outstanding > 0 ? "#C0271F" : undefined} />
               </div>
               {totals.totalRefunded > 0 && (
