@@ -270,6 +270,7 @@ serve(async (req) => {
       });
       if (!pubRes.ok) {
         console.error("[square-invoice] publish failed", pubRes.status, pubRes.json);
+        if (isInsufficientScopes(pubRes.json)) return err(RECONNECT_MSG, 403, pubRes.json);
         return err("Failed to publish Square invoice", 502, pubRes.json);
       }
       const publishedInvoice = pubRes.json.invoice || invoice;
