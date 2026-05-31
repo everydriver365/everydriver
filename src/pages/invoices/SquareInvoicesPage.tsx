@@ -34,6 +34,7 @@ interface InvoiceRow {
   public_url: string | null;
   klarna_pay_url?: string | null;
   klarna_enabled?: boolean | null;
+  klarna_status?: "pending" | "paid" | "failed" | "cancelled" | null;
   status: string;
   amount_cents: number;
   service_fee_cents: number;
