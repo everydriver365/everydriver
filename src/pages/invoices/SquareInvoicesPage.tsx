@@ -144,7 +144,7 @@ export default function SquareInvoicesPage({ scope }: { scope: Scope }) {
         r.square_invoice_id?.toLowerCase().includes(q)
       );
     });
-  }, [rows, query, status, issuerFilter, klarnaFilter, scope]);
+  }, [rows, query, status, issuerFilter, klarnaFilter, clearpayFilter, scope]);
 
 
   const totals = useMemo(() => {
