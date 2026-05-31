@@ -1,6 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Download, ExternalLink, FileDown, RefreshCw, Search, X } from "lucide-react";
+import { ArrowLeft, Download, ExternalLink, FileDown, RefreshCw, Search, Trash2, X } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -83,6 +93,9 @@ export default function SquareInvoicesPage({ scope }: { scope: Scope }) {
   const [issuerFilter, setIssuerFilter] = useState<"all" | "instructor" | "school">("all");
   const [klarnaFilter, setKlarnaFilter] = useState<"all" | "any" | "pending" | "paid" | "failed" | "cancelled">("all");
   const [clearpayFilter, setClearpayFilter] = useState<"all" | "offered">("all");
+  const [pendingDelete, setPendingDelete] = useState<InvoiceRow | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
 
 
   const { instructor, refreshInstructor } = useInstructorAuth();
@@ -105,6 +118,7 @@ export default function SquareInvoicesPage({ scope }: { scope: Scope }) {
            instructor:instructors!square_invoices_issuer_instructor_id_fkey(id,name,logo_url),
            pupil:pupils!square_invoices_recipient_pupil_id_fkey(id,name)`
         )
+        .is("deleted_at", null)
         .order("created_at", { ascending: false })
         .limit(500);
       if (err) throw err;
@@ -114,6 +128,30 @@ export default function SquareInvoicesPage({ scope }: { scope: Scope }) {
       toast({ title: "Failed to load invoices", description: e?.message, variant: "destructive" });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const confirmDelete = async () => {
+    if (!pendingDelete) return;
+    setDeleting(true);
+    const id = pendingDelete.id;
+    try {
+      const { data: userRes } = await supabase.auth.getUser();
+      const { error: err } = await supabase
+        .from("square_invoices")
+        .update({
+          deleted_at: new Date().toISOString(),
+          deleted_by: userRes?.user?.id ?? null,
+        })
+        .eq("id", id);
+      if (err) throw err;
+      setRows((prev) => prev.filter((x) => x.id !== id));
+      toast({ title: "Invoice deleted", description: "It's hidden from your list. The Square record is preserved." });
+      setPendingDelete(null);
+    } catch (e: any) {
+      toast({ title: "Couldn't delete invoice", description: e?.message, variant: "destructive" });
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -519,6 +557,26 @@ export default function SquareInvoicesPage({ scope }: { scope: Scope }) {
                                 </a>
                               </Button>
                             )}
+                            {(() => {
+                              const isPaid = r.status === "paid";
+                              const canDelete = !isPaid || scope === "admin";
+                              return (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  title={
+                                    canDelete
+                                      ? "Delete invoice (hides from list, Square record preserved)"
+                                      : "Paid invoices cannot be deleted"
+                                  }
+                                  disabled={!canDelete}
+                                  onClick={() => setPendingDelete(r)}
+                                  className="text-destructive hover:text-destructive"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </Button>
+                              );
+                            })()}
                           </div>
                         </td>
                       </tr>
@@ -530,6 +588,37 @@ export default function SquareInvoicesPage({ scope }: { scope: Scope }) {
           </CardContent>
         </Card>
       </div>
+
+      <AlertDialog open={!!pendingDelete} onOpenChange={(o) => !o && !deleting && setPendingDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this invoice?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {pendingDelete ? (
+                <>
+                  This will hide the invoice for{" "}
+                  <strong>{pendingDelete.pupil?.name || pendingDelete.recipient_name || "this recipient"}</strong>
+                  {" "}({fmtMoney(pendingDelete.amount_cents, pendingDelete.currency)}) from your list.
+                  The record is kept for your accounts and the Square invoice itself is not cancelled.
+                </>
+              ) : null}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={deleting}
+              onClick={(e) => {
+                e.preventDefault();
+                confirmDelete();
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? "Deleting…" : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

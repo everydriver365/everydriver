@@ -1,29 +1,34 @@
-# Fix: Square invoice has no Pay button on the hosted page
+# Soft-delete invoices
 
-## Symptom
-Pupil receives the Square invoice email, opens the hosted Square page, but sees no payment method selector and no Pay button. Card, Clearpay, Klarna and Bank were all toggled on when sending.
+Add the ability to remove an invoice from the instructor/admin Invoices list without losing the underlying record or Square history.
 
-## Likely causes (in order of likelihood)
-1. **Invoice was published but Square treats it as preview only.** Our `payment_requests[0]` uses `automatic_payment_source: "NONE"` and we never explicitly tell Square the request is buyer-payable. When Square's hosted page renders an invoice where the only request type is `BALANCE` with no `card_payment_methods` or `payment_methods` array on the request, and the merchant location hasn't toggled "Accept invoice payments online", Square hides the Pay button and shows the invoice as view-only.
-2. **`accepted_payment_methods` on the invoice currently only sets `card` + `buy_now_pay_later`.** Bank transfer and any other rails are off. If, for this merchant, card is disabled at the Square account level (online card not activated), no method remains and the page becomes view-only.
-3. **Invoice status not `UNPAID`/`PARTIALLY_PAID`.** If it lands as `SCHEDULED` (future scheduled date) or `DRAFT` (publish silently failed), the public URL shows a preview without Pay.
+## Behaviour
 
-## Investigation (read-only, first)
-1. Pull the most recent row from `square_invoices` for this instructor — capture `square_invoice_id`, `status`, `public_url`, `accepted_payment_methods` we sent.
-2. Call Square GET `/v2/invoices/{id}` with the instructor's token to see Square's authoritative `status`, `accepted_payment_methods`, and `payment_requests[0]`.
-3. Open the `public_url` and confirm whether the Pay button is missing because of (a) status, (b) accepted methods, or (c) merchant-level online payments not activated.
+- Each invoice row gets a **Delete** action (in the row's overflow menu).
+- Clicking it opens a **confirmation dialog** ("Delete this invoice? It will be hidden from your list but kept for your records and on Square.") with **Cancel / Delete** buttons.
+- On confirm: stamps `deleted_at = now()` and `deleted_by = auth.uid()` on `square_invoices`. The Square invoice itself is **not** cancelled — this is a local hide only.
+- Deleted invoices disappear from the list immediately (we filter `deleted_at IS NULL`).
+- **Guard:** paid invoices cannot be deleted (so pupil balance / payment_history stays auditable). The menu item is disabled with a tooltip "Paid invoices cannot be deleted". Admins can still delete paid ones.
+- No new "Trash" view in this pass — restore is admin-only via DB if needed. Can add a Trash tab later if you want.
 
-## Fix (after diagnosis confirms cause)
-Edit `supabase/functions/square-invoice-manage/index.ts` create flow:
+## Technical
 
-- Default `apm.card` stays `true`, but also surface `bank_account: true` when the caller passes it (today bank is hardcoded `false` even when the dialog toggle is on — that is a real bug independent of the Pay-button issue).
-- Ensure the publish step actually runs and the response status is `UNPAID`. If Square returns `DRAFT` because `scheduled_at` is unset, omit `scheduled_at` (we already do) and check we send the correct `version` to `/publish`. Log and surface a clear error to the dialog if publish fails so the instructor sees it instead of getting a half-published invoice.
-- If diagnosis shows (cause 1) the merchant has not enabled "Accept invoice payments online" in their Square dashboard, the edge function will return a clear actionable error ("Enable online invoice payments in Square → Settings → Invoices") instead of silently sending an unpayable invoice.
+1. **Migration** — add to `public.square_invoices`:
+   - `deleted_at timestamptz`
+   - `deleted_by uuid`
+   - partial index `(issuer_instructor_id) WHERE deleted_at IS NULL`
+   - RLS: add update policy allowing the issuing instructor (via `get_instructor_id_for_user(auth.uid())`) to set `deleted_at`, and admins to soft-delete any.
+
+2. **`SquareInvoicesPage.tsx`**
+   - Add `.is("deleted_at", null)` to the load query.
+   - Add row action → `AlertDialog` confirm → `update({ deleted_at: new Date().toISOString(), deleted_by: user.id })`.
+   - Optimistic remove from `rows`, toast on success/failure.
+   - Hide/disable the action for `status === 'paid'` unless `scope === 'admin'`.
+
+3. No edge-function changes. Webhook continues to update the row by `square_invoice_id` even when soft-deleted (so if a late payment lands, the record stays consistent — just hidden).
 
 ## Out of scope
-- No UI changes to the Create Invoice dialog (Klarna/Clearpay toggles stay as they are).
-- No changes to Klarna pay link generation or the webhook.
-- No DB schema changes.
 
-## Deliverable
-After the investigation step I will report exactly which cause applies and apply only the minimal code change required, plus add the missing `bank_account` pass-through.
+- Hard delete / purge.
+- Restore UI (DB-only for now).
+- Cancelling the invoice on Square (separate "Cancel" action already exists / can be added separately).
