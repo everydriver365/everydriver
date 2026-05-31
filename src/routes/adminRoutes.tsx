@@ -26,6 +26,7 @@ const AdminReportsHub = lazy(() => import("@/pages/admin/AdminReportsHub"));
 const NetworkInstructors = lazy(() => import("@/pages/admin/NetworkInstructors"));
 const AdminRewards = lazy(() => import("@/pages/admin/AdminRewards"));
 const AdminSquareInvoices = lazy(() => import("@/pages/admin/AdminSquareInvoices"));
+const AdminQuotes = lazy(() => import("@/pages/admin/AdminQuotes"));
 
 
 
