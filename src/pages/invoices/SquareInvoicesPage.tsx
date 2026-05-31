@@ -340,7 +340,15 @@ export default function SquareInvoicesPage({ scope }: { scope: Scope }) {
                     <SelectItem value="cancelled">Klarna: cancelled</SelectItem>
                   </SelectContent>
                 </Select>
-                {scope === "admin" && (
+                <Select value={clearpayFilter} onValueChange={(v) => setClearpayFilter(v as any)}>
+                  <SelectTrigger className="h-9 w-[160px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All (Clearpay + non)</SelectItem>
+                    <SelectItem value="offered">Clearpay: offered</SelectItem>
+                  </SelectContent>
+                </Select>
                   <Select value={issuerFilter} onValueChange={(v) => setIssuerFilter(v as any)}>
                     <SelectTrigger className="h-9 w-[150px]">
                       <SelectValue />
