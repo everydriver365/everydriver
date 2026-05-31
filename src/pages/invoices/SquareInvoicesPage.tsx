@@ -35,6 +35,9 @@ interface InvoiceRow {
   klarna_pay_url?: string | null;
   klarna_enabled?: boolean | null;
   klarna_status?: "pending" | "paid" | "failed" | "cancelled" | null;
+  klarna_last_error?: string | null;
+  klarna_last_error_at?: string | null;
+
   status: string;
   amount_cents: number;
   service_fee_cents: number;
@@ -360,8 +363,22 @@ export default function SquareInvoicesPage({ scope }: { scope: Scope }) {
                                 Klarna · {r.klarna_status}
                               </span>
                             )}
+                            {r.klarna_last_error && (
+                              <span
+                                className="max-w-[260px] truncate text-[10px] text-red-700"
+                                title={
+                                  r.klarna_last_error +
+                                  (r.klarna_last_error_at
+                                    ? ` — ${format(new Date(r.klarna_last_error_at), "d MMM HH:mm")}`
+                                    : "")
+                                }
+                              >
+                                ⚠ {r.klarna_last_error}
+                              </span>
+                            )}
                           </div>
                         </td>
+
                         <td className="py-2 pr-3 text-right">
                           <div className="flex items-center justify-end gap-1">
                             <Button
