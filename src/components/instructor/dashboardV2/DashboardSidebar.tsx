@@ -15,7 +15,7 @@ import {
   Crosshair, LayoutGrid, Eye, Camera, UsersRound, Building2,
   MailPlus, LifeBuoy, MessagesSquare, Hash, HelpCircle, RefreshCw,
   Heart, Activity, Settings as SettingsIcon, Pin, PinOff,
-  User, Lock, Bell, MessageCircle, Palette, Database, Phone, Tag, ShieldCheck,
+  User, Lock, Bell, MessageCircle, Palette, Database, Phone, Tag, ShieldCheck, FileSpreadsheet,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -76,6 +76,7 @@ const SECTIONS: NavSection[] = [
   { label: "Business", items: [
     { label: "Take Payment", to: "/instructor/take-payment", icon: Banknote, moduleId: "payments" },
     { label: "Payments", to: "/instructor/pay", icon: CreditCard, moduleId: "payments" },
+    { label: "Invoices", to: "/instructor/invoices", icon: FileSpreadsheet, moduleId: "payments" },
     { label: "Pending", to: "/instructor/pending-scheduling", icon: Clock },
     { label: "Expenses", to: "/instructor/expenses", icon: Coins },
     { label: "Tax", to: "/instructor/tax", icon: Receipt },
