@@ -4,6 +4,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { format, addWeeks, subWeeks, startOfWeek, addDays, subDays, isSameDay, startOfDay, startOfMonth, endOfMonth } from "date-fns";
 import { ChevronLeft, ChevronRight, Calendar, Plus, Trash2, Pencil, X } from "lucide-react";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
+import { StandardIntensiveHours } from "@/components/instructor/StandardIntensiveHours";
+
 import { AvailabilityRulesManager } from "@/components/instructor/AvailabilityRulesManager";
 import { AvailableFromCard } from "@/components/instructor/AvailableFromCard";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
@@ -765,11 +767,14 @@ export default function InstructorQuickAvailability() {
             </>
           )}
 
-          <div style={{ fontSize: 10, color: "#8E8E93", textAlign: "center", padding: "0 16px", marginTop: 4 }}>
+          <div style={{ fontSize: 10, color: "#8E8E93", textAlign: "center", padding: "0 16px", marginTop: 4, marginBottom: 14 }}>
             Changes here override your default working hours and Google Calendar sync.
           </div>
+
+          {instructorId && <StandardIntensiveHours instructorId={instructorId} variant="mobile" />}
         </div>
       </div>
+
 
       {/* Edit Sheet */}
       <Sheet open={!!editingDate} onOpenChange={(open) => !open && setEditingDate(null)}>
