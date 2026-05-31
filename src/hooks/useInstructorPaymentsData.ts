@@ -155,6 +155,7 @@ export function useInstructorPaymentsData(instructorId: string | undefined): Pay
     error: null,
     stats: {
       receivedMonth: 0, receivedCount: 0,
+      grossMonth: 0, refundsMonth: 0, refundsCount: 0,
       outstanding: 0, outstandingPupils: 0,
       nextPayout: 0, nextPayoutDate: "—",
       feesMonth: 0, effectiveFeeRate: FEE_RATE * 100,
