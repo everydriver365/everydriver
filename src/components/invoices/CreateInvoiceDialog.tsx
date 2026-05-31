@@ -183,6 +183,10 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
       service_fee_cents: Math.max(0, Math.round(Number(serviceFeePounds) * 100) || 0),
       due_date: dueDate,
       description: fullDescription || undefined,
+      accepted_payment_methods: {
+        card: true,
+        buy_now_pay_later: allowClearpay,
+      },
     };
   };
 
