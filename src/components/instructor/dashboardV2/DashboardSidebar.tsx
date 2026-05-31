@@ -77,6 +77,7 @@ const SECTIONS: NavSection[] = [
     { label: "Take Payment", to: "/instructor/take-payment", icon: Banknote, moduleId: "payments" },
     { label: "Payments", to: "/instructor/pay", icon: CreditCard, moduleId: "payments" },
     { label: "Invoices", to: "/instructor/invoices", icon: FileSpreadsheet, moduleId: "payments" },
+    { label: "Quotes", to: "/instructor/quotes", icon: FileText, moduleId: "payments" },
     { label: "Pending", to: "/instructor/pending-scheduling", icon: Clock },
     { label: "Expenses", to: "/instructor/expenses", icon: Coins },
     { label: "Tax", to: "/instructor/tax", icon: Receipt },
