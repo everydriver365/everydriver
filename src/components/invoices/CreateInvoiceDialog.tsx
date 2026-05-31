@@ -144,7 +144,7 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
     setRecipientEmail("");
     setDueDate(todayPlus(7));
     setDescription("");
-    setServiceFeePounds("0");
+    setServiceFeePounds("1");
     setItems([{ name: "Driving lesson", quantity: 1, amount_pounds: "" }]);
     setStep("form");
   };
