@@ -140,11 +140,6 @@ export default function QuoteAcceptPage() {
 
   return (
     <div className="min-h-screen bg-muted/40 flex items-start justify-center p-4 pt-8 pb-16">
-      <Helmet>
-        <title>Quote {quote.quote_ref} · {businessName}</title>
-        <meta name="robots" content="noindex,nofollow" />
-        <meta name="description" content={`Driving lesson quote from ${businessName}`} />
-      </Helmet>
 
       <div className="w-full max-w-xl space-y-4">
         {/* Instructor header */}
