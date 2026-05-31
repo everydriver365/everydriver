@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { createClient } from "npm:@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -99,6 +99,7 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const supabase = createClient(supabaseUrl, serviceKey);
 
     // Auth: who is calling?
@@ -106,12 +107,15 @@ serve(async (req) => {
     const token = authHeader.replace(/^Bearer\s+/i, "");
     if (!token) return err("Missing authorization", 401);
 
-    const { data: userData, error: userErr } = await supabase.auth.getUser(token);
-    if (userErr || !userData?.user) {
-      console.error("[square-invoice] auth.getUser failed", userErr);
+    const authClient = createClient(supabaseUrl, anonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: claimsData, error: userErr } = await authClient.auth.getClaims(token);
+    if (userErr || !claimsData?.claims?.sub) {
+      console.error("[square-invoice] auth.getClaims failed", userErr);
       return err("Unauthorized", 401);
     }
-    const userId = userData.user.id;
+    const userId = claimsData.claims.sub;
 
     // Resolve role: admin or instructor
     const [{ data: roleRow }, { data: instructorRow }] = await Promise.all([
