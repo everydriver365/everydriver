@@ -28,6 +28,8 @@ const UpcomingEventsRedesignDemo = lazy(() => import("@/pages/instructor/Upcomin
 const InstructorAccessibilitySettings = lazy(() => import("@/pages/instructor/InstructorAccessibilitySettings"));
 const InstructorVerificationPage = lazy(() => import("@/pages/instructor/InstructorVerificationPage"));
 const InstructorModules = lazy(() => import("@/pages/instructor-app/InstructorModules"));
+const InstructorSquareInvoices = lazy(() => import("@/pages/instructor/InstructorSquareInvoices"));
+
 const InstructorMySite = lazy(() => import("@/pages/instructor-app/InstructorMySite"));
 const InstructorWebsiteEditor = lazy(() => import("@/pages/instructor-app/InstructorWebsiteEditor"));
 const InstructorDomainWizard = lazy(() => import("@/pages/instructor-app/InstructorDomainWizard"));
@@ -246,6 +248,8 @@ export const instructorPortalRoutes = (
     <Route path="/instructor/month-end" element={<Gated feature="payment_tracking" label="Month End"><MonthEndReview /></Gated>} />
     <Route path="/instructor/accounting-callback" element={<AccountingCallback />} />
     <Route path="/instructor/square-callback" element={<SquareCallback />} />
+    <Route path="/instructor/invoices" element={<InstructorSquareInvoices />} />
+
 
     {/* Communication — always accessible */}
     <Route path="/instructor/messages" element={<InstructorMessages />} />
