@@ -198,7 +198,7 @@ export function NextLessonsSheet({ open, onClose, instructorId, onLessonClick }:
             </div>
           ) : (
             dateKeys.map((dateStr) => (
-              <div key={dateStr} style={{ marginBottom: 14 }}>
+              <div key={dateStr} style={{ marginBottom: 10 }}>
                 <div
                   style={{
                     fontSize: 10,
@@ -206,12 +206,12 @@ export function NextLessonsSheet({ open, onClose, instructorId, onLessonClick }:
                     letterSpacing: "1.2px",
                     fontWeight: 600,
                     textTransform: "uppercase",
-                    padding: "10px 4px 8px",
+                    padding: "8px 4px 6px",
                   }}
                 >
                   {fmtDateHeader(dateStr)} · {groups[dateStr].length} lesson{groups[dateStr].length === 1 ? "" : "s"}
                 </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                   {groups[dateStr].map((l) => {
                     const [hh, mm] = l.start_time.split(":");
                     return (
@@ -223,53 +223,55 @@ export function NextLessonsSheet({ open, onClose, instructorId, onLessonClick }:
                         style={{
                           background: C.outerBg,
                           border: `1px solid ${C.border}`,
-                          borderRadius: 12,
-                          padding: "14px",
+                          borderRadius: 10,
+                          padding: "8px 10px",
                           cursor: "pointer",
                           display: "flex",
                           alignItems: "center",
-                          gap: 14,
+                          gap: 10,
                         }}
                       >
-                        <div style={{ width: 52, flexShrink: 0 }}>
-                          <div style={{ fontSize: 20, fontWeight: 700, color: C.charcoal, lineHeight: 1.05, letterSpacing: "-0.3px" }}>
+                        <div style={{ width: 44, flexShrink: 0 }}>
+                          <div style={{ fontSize: 15, fontWeight: 700, color: C.charcoal, lineHeight: 1.1, letterSpacing: "-0.2px" }}>
                             {hh}:{mm}
                           </div>
-                          <div style={{ fontSize: 12, color: C.muted, marginTop: 4, fontWeight: 500 }}>
+                          <div style={{ fontSize: 10, color: C.muted, marginTop: 2, fontWeight: 500 }}>
                             {fmtDuration(l.duration_minutes || 60)}
                           </div>
                         </div>
                         <div
                           className="flex-shrink-0 self-stretch"
-                          style={{ width: 2.5, background: C.blue, minHeight: 40, borderRadius: 2 }}
+                          style={{ width: 2, background: C.blue, minHeight: 28, borderRadius: 2 }}
                         />
                         <div className="flex-1 min-w-0">
-                          <div style={{ fontSize: 15, fontWeight: 700, color: C.charcoal, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                          <div style={{ fontSize: 13, fontWeight: 600, color: C.charcoal, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                             {l.pupils?.name || "Pupil"}
                           </div>
-                          <div style={{ fontSize: 13, color: C.muted, marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                            {l.lesson_type}
-                          </div>
-                          {l.pickup_postcode && (
-                            <div
-                              className="inline-flex items-center"
-                              style={{
-                                marginTop: 6,
-                                background: C.blueTint,
-                                color: C.blue,
-                                borderRadius: 999,
-                                padding: "3px 8px",
-                                fontSize: 11,
-                                fontWeight: 600,
-                                gap: 4,
-                              }}
-                            >
-                              <MapPin size={11} strokeWidth={2.5} color={C.blue} />
-                              {l.pickup_postcode}
+                          <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 1 }}>
+                            <div style={{ fontSize: 11, color: C.muted, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", flex: 1, minWidth: 0 }}>
+                              {l.lesson_type}
                             </div>
-                          )}
+                            {l.pickup_postcode && (
+                              <div
+                                className="inline-flex items-center"
+                                style={{
+                                  background: C.blueTint,
+                                  color: C.blue,
+                                  borderRadius: 999,
+                                  padding: "1px 6px",
+                                  fontSize: 10,
+                                  fontWeight: 600,
+                                  gap: 3,
+                                  flexShrink: 0,
+                                }}
+                              >
+                                <MapPin size={9} strokeWidth={2.5} color={C.blue} />
+                                {l.pickup_postcode}
+                              </div>
+                            )}
+                          </div>
                         </div>
-                        <ChevronRight size={20} color={C.chevron} className="flex-shrink-0" strokeWidth={2.5} />
+                        <ChevronRight size={16} color={C.chevron} className="flex-shrink-0" strokeWidth={2.5} />
                       </button>
                     );
                   })}
