@@ -304,7 +304,17 @@ export function EditPupilSheet({
         theory_test_date: form.theory_test_date || null,
         theory_test_centre_id: form.theory_test_centre_id || null,
         theory_cert_number: form.theory_cert_number?.trim() || null,
+        // Practical (driving) test
+        test_passed:
+          form.practical_status === "passed" ? true
+          : form.practical_status === "failed" ? false
+          : null,
+        test_date: form.practical_status === "booked" ? (form.test_date || null) : (form.practical_status === "none" ? null : (form.test_date || null)),
+        test_time: form.practical_status === "booked" ? (form.test_time || null) : null,
+        test_centre_id: (form.practical_status === "booked" || form.practical_status === "passed" || form.practical_status === "failed") ? (form.test_centre_id || null) : null,
+        test_result_date: (form.practical_status === "passed" || form.practical_status === "failed") ? (form.test_result_date || null) : null,
       };
+
 
       const { error } = await supabase
         .from("pupils")
