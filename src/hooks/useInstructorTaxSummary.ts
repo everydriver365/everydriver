@@ -151,8 +151,14 @@ export function useInstructorTaxSummary(instructorId: string | undefined): Instr
         (s: number, e: any) => s + Number(e.amount),
         0,
       );
+      // Defensive cap: reject implausible single-trip distances (>500 km)
+      // so a stray GPS-jump row can never inflate the HMRC mileage deduction.
       const totalBusinessMiles = (mileageRes.data || []).reduce(
-        (s: number, l: any) => s + Number(l.distance_km) * KM_TO_MILES,
+        (s: number, l: any) => {
+          const km = Number(l.distance_km);
+          if (!isFinite(km) || km <= 0 || km > 500) return s;
+          return s + km * KM_TO_MILES;
+        },
         0,
       );
       const mileageDeduction = calculateHmrcMileageDeduction(totalBusinessMiles);
