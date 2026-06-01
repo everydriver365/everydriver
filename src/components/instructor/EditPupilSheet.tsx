@@ -266,6 +266,14 @@ export function EditPupilSheet({
         intensive_hours_paid: isIntensive ? toNumOrNull(form.intensive_hours_paid) : null,
         intensive_course_payout: isIntensive ? toNumOrNull(form.intensive_course_payout) : null,
         intensive_pupil_payment: isIntensive ? toNumOrNull(form.intensive_pupil_payment) : null,
+        // Theory test
+        theory_test_passed:
+          form.theory_status === "passed" ? true
+          : form.theory_status === "failed" ? false
+          : null,
+        theory_test_date: form.theory_test_date || null,
+        theory_test_centre_id: form.theory_test_centre_id || null,
+        theory_cert_number: form.theory_cert_number?.trim() || null,
       };
 
       const { error } = await supabase
