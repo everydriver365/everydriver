@@ -491,9 +491,69 @@ export function StepPayment({
                 }}
               />
             )}
+
+            {/* Section: Other settlement options */}
+            <div
+              style={{
+                fontSize: 11,
+                fontWeight: 500,
+                color: C.muted,
+                letterSpacing: 0.3,
+                textTransform: "uppercase",
+                margin: "20px 0 8px",
+              }}
+            >
+              Other
+            </div>
+
+            <div
+              style={{
+                background: C.bg,
+                border: `0.5px solid ${C.hairline}`,
+                borderRadius: 12,
+                overflow: "hidden",
+              }}
+            >
+              {[
+                { kind: "no_payment_due" as const, label: "No payment due", sub: "Comp this lesson", Icon: Gift },
+                { kind: "included_in_package" as const, label: "Included in package", sub: "Already paid up front", Icon: Package },
+              ].map((opt, i) => {
+                const Icon = opt.Icon;
+                return (
+                  <button
+                    key={opt.kind}
+                    type="button"
+                    onClick={() => recordSettlement(opt.kind)}
+                    disabled={saving}
+                    style={{
+                      width: "100%",
+                      background: "transparent",
+                      border: "none",
+                      borderTop: i === 0 ? "none" : `0.5px solid ${C.hairline}`,
+                      padding: "12px 14px",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 12,
+                      cursor: saving ? "not-allowed" : "pointer",
+                      opacity: saving ? 0.5 : 1,
+                      textAlign: "left",
+                      fontFamily: FONT_STACK,
+                    }}
+                  >
+                    <Icon size={18} strokeWidth={1.8} color={C.link} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 14, fontWeight: 500, color: C.text }}>{opt.label}</div>
+                      <div style={{ fontSize: 11, color: C.muted, marginTop: 1 }}>{opt.sub}</div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
           </>
         )}
       </div>
+
+
 
       {/* Footer: Skip + Record & next */}
       <div
