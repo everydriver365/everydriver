@@ -41,9 +41,9 @@ interface StepPaymentProps {
 }
 
 const METHODS = [
-  { value: "cash", label: "Cash", Icon: Banknote },
-  { value: "card", label: "Card", Icon: CreditCard },
-  { value: "bank_transfer", label: "Transfer", Icon: ArrowLeftRight },
+  { value: "Cash", label: "Cash", Icon: Banknote },
+  { value: "Square", label: "Card", Icon: CreditCard },
+  { value: "Bank Transfer", label: "Transfer", Icon: ArrowLeftRight },
 ] as const;
 
 function needsNameReview(name: string): boolean {
