@@ -1010,6 +1010,81 @@ export default function PremiumPupilProfile() {
     );
   })();
 
+  const DrivingTest = (() => {
+    const pDate = (pupil as any)?.test_date as string | null | undefined;
+    const pTime = (pupil as any)?.test_time as string | null | undefined;
+    const pPassed = (pupil as any)?.test_passed as boolean | null | undefined;
+    const pResultDate = (pupil as any)?.test_result_date as string | null | undefined;
+    const today = format(new Date(), "yyyy-MM-dd");
+    let status: "passed" | "failed" | "booked" | "none" = "none";
+    if (pPassed === true) status = "passed";
+    else if (pDate && pDate >= today) status = "booked";
+    else if (pPassed === false) status = "failed";
+
+    const iconBg =
+      status === "passed" ? `${C.green}18`
+      : status === "failed" ? `${C.red}18`
+      : status === "booked" ? `${C.accent}18`
+      : C.surface;
+    const iconFg =
+      status === "passed" ? C.green
+      : status === "failed" ? C.red
+      : status === "booked" ? C.accent
+      : C.muted;
+    const Icon = status === "passed" ? Check : status === "failed" ? X : status === "booked" ? CalendarPlus : Car;
+
+    const title =
+      status === "passed" ? "Passed"
+      : status === "failed" ? "Not passed"
+      : status === "booked" ? "Booked"
+      : "Add driving test";
+
+    const subtitleParts: string[] = [];
+    if (status === "passed") {
+      if (pResultDate) subtitleParts.push(format(parseISO(pResultDate), "d MMM yyyy"));
+    } else if (status === "failed") {
+      subtitleParts.push(pResultDate ? `Last attempt ${format(parseISO(pResultDate), "d MMM yyyy")}` : "Awaiting retake");
+    } else if (status === "booked" && pDate) {
+      subtitleParts.push(format(parseISO(pDate), "EEE d MMM"));
+      if (pTime) subtitleParts.push(pTime.slice(0, 5));
+      if (practicalCentre?.name) subtitleParts.push(practicalCentre.name);
+      else if (practicalCentreId) subtitleParts.push("Loading centre…");
+    } else {
+      subtitleParts.push("Tap to record booking");
+    }
+
+    return (
+      <Card>
+        <div style={{ fontFamily: FONT, fontSize: 17, color: C.text, fontWeight: 600, letterSpacing: "-0.01em", marginBottom: 10 }}>
+          Driving test
+        </div>
+        <button
+          onClick={() => setEditOpen(true)}
+          style={{
+            display: "flex", alignItems: "center", gap: 12,
+            width: "100%", background: "transparent", border: "none",
+            padding: 0, cursor: "pointer", textAlign: "left",
+          }}
+        >
+          <div style={{ width: 48, height: 48, borderRadius: 12, background: iconBg, color: iconFg, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <Icon size={20} />
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontFamily: FONT, fontSize: 15, fontWeight: 600, color: C.text }}>
+              {title}
+            </div>
+            <div style={{ fontFamily: FONT, fontSize: 12, color: C.muted, marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+              {subtitleParts.join(" · ")}
+            </div>
+          </div>
+          <ChevronRight size={18} color={C.subtle} />
+        </button>
+      </Card>
+    );
+  })();
+
+
+
 
 
   const NotesCard = (
