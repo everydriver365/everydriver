@@ -2239,6 +2239,8 @@ function ScheduleCard({
           studentName: l.pupilName,
           lessonType: l.lessonType,
           postcode: l.pickupPostcode || "",
+          pupilId: l.pupilId,
+          status: l.status,
         };
       });
     };
