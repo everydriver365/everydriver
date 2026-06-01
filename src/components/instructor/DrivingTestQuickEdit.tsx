@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -8,6 +8,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
@@ -21,6 +22,20 @@ interface Props {
   onSaved?: () => void;
 }
 
+type Centre = { id: string; name: string; postcode: string | null; lat: number | null; lng: number | null };
+
+function haversineMiles(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const R = 6371; // km
+  const dLat = toRad(b.lat - a.lat);
+  const dLng = toRad(b.lng - a.lng);
+  const s =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLng / 2) ** 2;
+  const km = 2 * R * Math.asin(Math.sqrt(s));
+  return km * 0.621371;
+}
+
 export function DrivingTestQuickEdit({ open, onOpenChange, pupil, onSaved }: Props) {
   const qc = useQueryClient();
   const [status, setStatus] = useState<Status>("none");
@@ -29,7 +44,14 @@ export function DrivingTestQuickEdit({ open, onOpenChange, pupil, onSaved }: Pro
   const [centreId, setCentreId] = useState<string>("");
   const [resultDate, setResultDate] = useState<string>("");
   const [saving, setSaving] = useState(false);
-  const [centres, setCentres] = useState<Array<{ id: string; name: string; postcode: string | null }>>([]);
+  const [centres, setCentres] = useState<Centre[]>([]);
+
+  // Postcode + radius filter state
+  const [postcode, setPostcode] = useState<string>("");
+  const [radius, setRadius] = useState<number>(20);
+  const [showAll, setShowAll] = useState<boolean>(false);
+  const [origin, setOrigin] = useState<{ lat: number; lng: number } | null>(null);
+  const [geocodeError, setGeocodeError] = useState<boolean>(false);
 
   useEffect(() => {
     if (!open || !pupil) return;
@@ -44,6 +66,11 @@ export function DrivingTestQuickEdit({ open, onOpenChange, pupil, onSaved }: Pro
     setTime(pupil.test_time ? String(pupil.test_time).slice(0, 5) : "");
     setCentreId(pupil.test_centre_id || "");
     setResultDate(pupil.test_result_date || "");
+    setPostcode((pupil.home_postcode || "").toUpperCase());
+    setRadius(20);
+    setShowAll(false);
+    setOrigin(null);
+    setGeocodeError(false);
   }, [open, pupil?.id]);
 
   useEffect(() => {
@@ -52,13 +79,76 @@ export function DrivingTestQuickEdit({ open, onOpenChange, pupil, onSaved }: Pro
     (async () => {
       const { data } = await supabase
         .from("test_centres")
-        .select("id, name, postcode")
+        .select("id, name, postcode, lat, lng")
         .eq("is_active", true)
         .order("name");
       if (!cancelled) setCentres((data || []) as any);
     })();
     return () => { cancelled = true; };
   }, [open]);
+
+  // Debounced postcode geocoding via postcodes.io
+  useEffect(() => {
+    if (!open) return;
+    const pc = postcode.trim();
+    if (!pc) { setOrigin(null); setGeocodeError(false); return; }
+    let cancelled = false;
+    const t = setTimeout(async () => {
+      try {
+        const res = await fetch(`https://api.postcodes.io/postcodes/${encodeURIComponent(pc)}`);
+        if (!res.ok) { if (!cancelled) { setOrigin(null); setGeocodeError(true); } return; }
+        const json = await res.json();
+        const lat = json?.result?.latitude;
+        const lng = json?.result?.longitude;
+        if (!cancelled) {
+          if (typeof lat === "number" && typeof lng === "number") {
+            setOrigin({ lat, lng });
+            setGeocodeError(false);
+          } else {
+            setOrigin(null);
+            setGeocodeError(true);
+          }
+        }
+      } catch {
+        if (!cancelled) { setOrigin(null); setGeocodeError(true); }
+      }
+    }, 400);
+    return () => { cancelled = true; clearTimeout(t); };
+  }, [postcode, open]);
+
+  const rankedCentres = useMemo(() => {
+    if (!origin) {
+      // Alphabetical fallback, no distances
+      return centres.map((c) => ({ ...c, distance: null as number | null }));
+    }
+    const withDist = centres.map((c) => {
+      const distance =
+        c.lat != null && c.lng != null
+          ? haversineMiles(origin, { lat: Number(c.lat), lng: Number(c.lng) })
+          : null;
+      return { ...c, distance };
+    });
+    withDist.sort((a, b) => {
+      if (a.distance == null && b.distance == null) return a.name.localeCompare(b.name);
+      if (a.distance == null) return 1;
+      if (b.distance == null) return -1;
+      return a.distance - b.distance;
+    });
+    return withDist;
+  }, [centres, origin]);
+
+  const visibleCentres = useMemo(() => {
+    if (!origin || showAll) return rankedCentres;
+    const filtered = rankedCentres.filter(
+      (c) => c.distance != null && c.distance <= radius,
+    );
+    // Always keep the currently-selected centre visible at the top
+    if (centreId && !filtered.find((c) => c.id === centreId)) {
+      const selected = rankedCentres.find((c) => c.id === centreId);
+      if (selected) return [selected, ...filtered];
+    }
+    return filtered;
+  }, [rankedCentres, origin, showAll, radius, centreId]);
 
   const save = async () => {
     if (!pupil) return;
@@ -109,18 +199,16 @@ export function DrivingTestQuickEdit({ open, onOpenChange, pupil, onSaved }: Pro
           </div>
 
           {status === "booked" && (
-            <>
-              <div className="grid grid-cols-2 gap-2">
-                <div className="space-y-1.5">
-                  <Label>Date</Label>
-                  <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Time</Label>
-                  <Input type="time" value={time} onChange={(e) => setTime(e.target.value)} />
-                </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1.5">
+                <Label>Date</Label>
+                <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
               </div>
-            </>
+              <div className="space-y-1.5">
+                <Label>Time</Label>
+                <Input type="time" value={time} onChange={(e) => setTime(e.target.value)} />
+              </div>
+            </div>
           )}
 
           {(status === "passed" || status === "failed") && (
@@ -131,17 +219,63 @@ export function DrivingTestQuickEdit({ open, onOpenChange, pupil, onSaved }: Pro
           )}
 
           {(status === "booked" || status === "passed" || status === "failed") && (
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label>Test centre</Label>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Near postcode</Label>
+                  <Input
+                    value={postcode}
+                    onChange={(e) => setPostcode(e.target.value.toUpperCase())}
+                    placeholder="e.g. SO22 6AB"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">
+                    Within {radius} mi
+                  </Label>
+                  <div className="pt-3">
+                    <Slider
+                      min={5}
+                      max={50}
+                      step={5}
+                      value={[radius]}
+                      onValueChange={(v) => setRadius(v[0])}
+                      disabled={showAll || !origin}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {geocodeError && postcode.trim() && (
+                <p className="text-xs text-muted-foreground">
+                  Couldn't locate postcode — showing all centres.
+                </p>
+              )}
+
               <Select value={centreId || "__none__"} onValueChange={(v) => setCentreId(v === "__none__" ? "" : v)}>
                 <SelectTrigger><SelectValue placeholder="Select a centre…" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="__none__">— None —</SelectItem>
-                  {centres.map((c) => (
+                  {visibleCentres.map((c) => (
                     <SelectItem key={c.id} value={c.id}>
-                      {c.name}{c.postcode ? ` · ${c.postcode}` : ""}
+                      {c.name}
+                      {c.postcode ? ` · ${c.postcode}` : ""}
+                      {c.distance != null ? ` · ${c.distance.toFixed(1)} mi` : ""}
                     </SelectItem>
                   ))}
+                  {origin && !showAll && (
+                    <div className="px-2 py-1.5">
+                      <button
+                        type="button"
+                        onClick={(e) => { e.preventDefault(); setShowAll(true); }}
+                        className="text-xs text-primary hover:underline w-full text-left"
+                      >
+                        Show all centres
+                      </button>
+                    </div>
+                  )}
                 </SelectContent>
               </Select>
             </div>
