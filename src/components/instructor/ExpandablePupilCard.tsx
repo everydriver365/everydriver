@@ -106,6 +106,10 @@ interface Pupil {
   account_balance?: number | null;
   prepaid_hours?: number | null;
   test_date?: string | null;
+  test_time?: string | null;
+  test_centre_id?: string | null;
+  test_centre?: { id: string; name: string } | null;
+  test_passed?: boolean | null;
   payment_type?: string | null;
   deposit_paid?: number | null;
   balance_due_date?: string | null;
@@ -838,15 +842,25 @@ export function ExpandablePupilCard({
                 </div>
               )}
 
-              {/* Test Date if set */}
-              {pupil.test_date && (
-                <div className="flex items-center gap-2 text-sm bg-primary/5 rounded-2xl p-2">
-                  <Calendar className="h-4 w-4 text-primary" />
-                  <span>Test: {new Date(pupil.test_date).toLocaleDateString("en-GB", { 
-                    weekday: "short", day: "numeric", month: "short" 
-                  })}</span>
+              {/* Driving test status */}
+              {pupil.test_passed === true ? (
+                <div className="flex items-center gap-2 text-sm bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 rounded-2xl p-2">
+                  <Check className="h-4 w-4 shrink-0" />
+                  <span>Driving test passed</span>
                 </div>
-              )}
+              ) : pupil.test_date ? (
+                <div className="flex items-center gap-2 text-sm bg-primary/5 rounded-2xl p-2">
+                  <Calendar className="h-4 w-4 text-primary shrink-0" />
+                  <span className="truncate">
+                    Test: {new Date(pupil.test_date).toLocaleDateString("en-GB", {
+                      weekday: "short", day: "numeric", month: "short"
+                    })}
+                    {pupil.test_time ? ` · ${String(pupil.test_time).slice(0, 5)}` : ""}
+                    {pupil.test_centre?.name ? ` · ${pupil.test_centre.name}` : ""}
+                  </span>
+                </div>
+              ) : null}
+
 
               {/* Notes */}
               {pupil.notes && (
