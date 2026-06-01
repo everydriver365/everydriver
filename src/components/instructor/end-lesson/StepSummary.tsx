@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
-import { Mic, Plus } from "lucide-react";
-import { useVoiceToText } from "@/hooks/useVoiceToText";
+import { useState } from "react";
+import { Mic, Loader2, Plus } from "lucide-react";
+import { useDictation } from "@/hooks/useDictation";
 import { VoiceNoteRecorder } from "./VoiceNoteRecorder";
 import { UserAvatar } from "@/components/instructor/UserAvatar";
 import { titleCaseName } from "@/lib/titleCase";
@@ -213,14 +213,14 @@ export function StepSummary({
   lessonType = "Standard lesson",
   onPaymentRecorded,
 }: StepSummaryProps) {
-  const { isListening, transcript, isSupported, startListening, stopListening } = useVoiceToText();
+  const { isRecording, isTranscribing, isSupported, toggle } = useDictation({
+    onTranscript: (text) => {
+      const next = notes && notes.trim().length > 0 ? `${notes.trim()} ${text}` : text;
+      onNotesChange(next);
+    },
+  });
   const [recordPaymentOpen, setRecordPaymentOpen] = useState(false);
   const [showAttach, setShowAttach] = useState(false);
-
-  // Sync voice transcript into notes (additive)
-  useEffect(() => {
-    if (transcript) onNotesChange(transcript);
-  }, [transcript]);
 
   const balanceAfter = balanceBefore - lessonCost;
   const dueNow = balanceAfter < 0 ? Math.abs(balanceAfter) : 0;
@@ -233,9 +233,8 @@ export function StepSummary({
   const showReview = needsNameReview(pupilName);
 
   const handleDictate = () => {
-    if (!isSupported) return;
-    if (isListening) stopListening();
-    else startListening();
+    if (!isSupported || isTranscribing) return;
+    void toggle();
   };
 
   return (
@@ -383,25 +382,31 @@ export function StepSummary({
               <button
                 type="button"
                 onClick={handleDictate}
+                disabled={isTranscribing}
                 style={{
                   background: "#FFFFFF",
                   border: `0.5px solid ${C.hairline}`,
                   borderRadius: 8,
                   padding: "7px 14px",
-                  cursor: "pointer",
+                  cursor: isTranscribing ? "default" : "pointer",
                   display: "inline-flex",
                   alignItems: "center",
                   gap: 6,
                   fontFamily: FONT_STACK,
                   fontSize: 13,
                   fontWeight: 500,
-                  color: isListening ? C.red : C.link,
+                  color: isRecording ? C.red : isTranscribing ? C.muted : C.link,
                   appearance: "none",
                   WebkitAppearance: "none",
+                  opacity: isTranscribing ? 0.7 : 1,
                 }}
               >
-                <Mic size={14} strokeWidth={1.5} />
-                {isListening ? "Listening…" : "Dictate"}
+                {isTranscribing ? (
+                  <Loader2 size={14} strokeWidth={1.5} className="animate-spin" />
+                ) : (
+                  <Mic size={14} strokeWidth={1.5} />
+                )}
+                {isRecording ? "Tap to stop" : isTranscribing ? "Transcribing…" : "Dictate"}
               </button>
             ) : (
               <span />
