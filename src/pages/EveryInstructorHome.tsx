@@ -415,6 +415,23 @@ export default function EveryInstructorHome() {
   const now = new Date();
   const pendingJobs = usePendingJobsCount();
   const { data: unreadMessages = 0 } = useUnreadMessagesCount(instructor?.id);
+  const queryClient = useQueryClient();
+  const [rerunningId, setRerunningId] = useState<string | null>(null);
+
+  const handleRerunEol = async (lessonId: string) => {
+    setRerunningId(lessonId);
+    try {
+      const { error } = await supabase.rpc("close_lesson_telematics", { p_lesson_id: lessonId });
+      if (error) throw error;
+      toast({ title: "EOL reconciliation triggered", description: "Telematics row closed and recomputed." });
+      queryClient.invalidateQueries({ queryKey: ["day-lesson-history"] });
+      queryClient.invalidateQueries({ queryKey: ["today-remaining-lessons"] });
+    } catch (e: any) {
+      toast({ title: "Re-run failed", description: e?.message ?? "Unknown error", variant: "destructive" });
+    } finally {
+      setRerunningId(null);
+    }
+  };
 
   const greeting = (() => {
     const h = new Date().getHours();
