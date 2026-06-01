@@ -432,17 +432,26 @@ export default function EveryInstructorHome() {
       {/* ── Today's Schedule ────────────────── */}
       {lessons && lessons.length > 0 && (
         <Section title="Today's Schedule" moreRoute="/every-instructor/schedule">
-          {lessons.map((l) => (
-            <LessonCard
-              key={l.id}
-              name={l.pupilName}
-              time={l.startTime?.slice(0, 5) || ""}
-              location={l.pickupLocation || l.pickupPostcode}
-              initials={l.pupilInitials}
-              profileImage={l.pupilProfileImageUrl}
-              onClick={() => navigate(`/every-instructor/pupils/${l.pupilId}`)}
-            />
-          ))}
+          {lessons.map((l) => {
+            const [hh, mm] = (l.startTime || "00:00").split(":").map(Number);
+            const end = new Date();
+            end.setHours(hh || 0, (mm || 0) + (l.durationMinutes || 60), 0, 0);
+            const isFinished = l.status === "completed" || end.getTime() <= now.getTime();
+            const eolDone = eolDoneKeys.has(eolKey(l.pupilId, l.startTime));
+            return (
+              <LessonCard
+                key={l.id}
+                name={l.pupilName}
+                time={l.startTime?.slice(0, 5) || ""}
+                location={l.pickupLocation || l.pickupPostcode}
+                initials={l.pupilInitials}
+                profileImage={l.pupilProfileImageUrl}
+                isFinished={isFinished}
+                eolDone={eolDone}
+                onClick={() => navigate(`/every-instructor/pupils/${l.pupilId}`)}
+              />
+            );
+          })}
         </Section>
       )}
 
