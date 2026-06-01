@@ -12,6 +12,33 @@ import { Slider } from "@/components/ui/slider";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { MapContainer, TileLayer, Marker, CircleMarker, Tooltip, useMap } from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+
+// Fix Leaflet's default marker icons (Vite bundling issue) — run once at module load
+if (typeof window !== "undefined" && !(L.Icon.Default.prototype as any)._lovablePatched) {
+  delete (L.Icon.Default.prototype as any)._getIconUrl;
+  L.Icon.Default.mergeOptions({
+    iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+    iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+    shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+  });
+  (L.Icon.Default.prototype as any)._lovablePatched = true;
+}
+
+function FitBounds({ points }: { points: Array<[number, number]> }) {
+  const map = useMap();
+  useEffect(() => {
+    if (!points.length) return;
+    if (points.length === 1) {
+      map.setView(points[0], 12);
+      return;
+    }
+    map.fitBounds(points as any, { padding: [24, 24], maxZoom: 13 });
+  }, [map, JSON.stringify(points)]);
+  return null;
+}
 
 type Status = "none" | "booked" | "passed" | "failed";
 
