@@ -401,7 +401,11 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug, onNavigat
                 <Car size={18} color={NAVY} strokeWidth={1.8} />
                 <div className="flex-1 min-w-0 pr-16">
                   <div className="text-[13px] font-semibold" style={{ color: TEXT }}>Driving Test</div>
-                  {dt ? (
+                  {pupilExtras?.test_passed === true ? (
+                    <div style={{ color: "#059669", fontSize: 11, fontWeight: 600, lineHeight: 1.35 }}>
+                      Passed
+                    </div>
+                  ) : dt ? (
                     <div style={{ color: MUTED, fontSize: 11, fontWeight: 500, lineHeight: 1.35 }}>
                       {pupilExtras?.test_centres?.name && (
                         <div className="truncate">{pupilExtras.test_centres.name}</div>
@@ -411,11 +415,16 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug, onNavigat
                         {pupilExtras?.test_time ? ` · ${String(pupilExtras.test_time).slice(0, 5)}` : ""}
                       </div>
                     </div>
+                  ) : pupilExtras?.test_passed === false ? (
+                    <div style={{ color: MUTED, fontSize: 11, fontWeight: 500, lineHeight: 1.35 }}>
+                      Awaiting retake
+                    </div>
                   ) : (
                     <div style={{ color: MUTED, fontSize: 11, fontWeight: 500, lineHeight: 1.35 }}>
                       Not booked
                     </div>
                   )}
+
                 </div>
               </button>
               {dt && dtDays !== null && dtDays >= 0 && (

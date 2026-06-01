@@ -1,66 +1,36 @@
-## Goal
+## Driving Test tile + cross-surface display
 
-Add a **Theory Test** tile to the instructor's pupil profile (`PremiumPupilProfile.tsx`) that renders one of four states from live DB data, and add inputs in `EditPupilSheet` so the instructor can set those fields.
+All required fields already exist on `pupils`: `test_date`, `test_time`, `test_centre_id`, `test_passed`, `test_result_date`. No DB migration needed. `test_centres` table is the live list.
 
-## Tile states
+### 1. `PremiumPupilProfile.tsx` — new `DrivingTest` tile
+Add a `Card` block between the existing `TheoryTest` tile and `ProgressOverview` (mirrors theory tile pattern). States:
+- **Passed** — green check + `test_result_date`
+- **Not passed** — red X + `test_result_date` (when `test_passed = false` and no future `test_date`)
+- **Booked** — calendar icon + `test_date` (EEE d MMM), `test_time` (HH:MM), centre `name` + `postcode` from `test_centres` (live query by `test_centre_id`)
+- **Not booked** — empty CTA "Book practical test"
 
-```
-┌──────────────────────────────────────────────┐
-│ Theory test                                  │
-│ ─────────────────────────────────────────────│
-│ ✓ Passed            12 Mar 2026   (green)    │   ← theory_test_passed = true
-│ ✕ Not passed        last attempt 12 Mar      │   ← theory_test_passed = false
-│ 📅 Booked            14 Jul 2026 · Southampton│  ← passed null + future date
-│ + Add theory test                            │   ← no data
-└──────────────────────────────────────────────┘
-```
+Tap behaviour: opens `EditPupilSheet` (existing `editOpen` state). Also keep the existing small inline `EditableRow` fields for date/time below (unchanged).
 
-Logic:
-- `theory_test_passed = true` → "Passed" + `theory_test_date` (green/check).
-- `theory_test_passed = false` → "Not passed" + `theory_test_date` if present (amber/red).
-- `theory_test_passed IS NULL` AND `theory_test_date >= today` → "Booked" + date + centre name from `theory_test_centres`.
-- Nothing set → empty CTA that opens the EditPupilSheet on the Theory section.
+Add a `useQuery(["test-centre", pupil.test_centre_id])` returning `name, postcode`.
 
-Tile placement: directly below the existing "Test readiness" / "Next lesson" cluster, before `LastLesson`, matching the existing `Card` styling.
+### 2. `EditPupilSheet.tsx` — new "Practical test" section
+Placed directly under the existing "Theory test" section. Fields:
+- Status select: Not booked / Booked / Passed / Not passed
+- Date input (`test_date`)
+- Time input HH:MM (`test_time`)
+- Centre select from `test_centres` where `is_active = true`, ordered by `name` (live list)
+- Result date (`test_result_date`) shown only when status = Passed/Not passed
 
-## DB changes
+Save payload maps to: `test_date`, `test_time`, `test_centre_id`, `test_passed` (true/false/null), `test_result_date`. Hydrate `practical_status` from pupil on load (same pattern as theory).
 
-1. **New table `public.theory_test_centres`** — UK Pearson VUE theory centres:
-   - `id uuid pk default gen_random_uuid()`
-   - `name text not null`
-   - `address text`, `postcode text`
-   - `lat numeric`, `lng numeric`
-   - `is_active boolean not null default true`
-   - `created_at timestamptz default now()`
-   - Grants: `SELECT` to `anon, authenticated`; `ALL` to `service_role`. RLS on, policy "Anyone can view active theory centres" `USING (is_active = true)`.
+### 3. `ExpandablePupilCard.tsx` — surface on the pupil list
+The card already imports `test_date`. Add a small badge row in the collapsed header when `test_date` is in the future: calendar icon + `EEE d MMM` + `HH:MM` + centre name (from a batched centre lookup already used elsewhere, or extend the existing query to join `test_centre_id` → name). Pass `pupil.test_time` and `test_centre_id` through the existing select.
 
-2. **Add column** `pupils.theory_test_centre_id uuid` referencing `public.theory_test_centres(id) ON DELETE SET NULL`. No other pupil schema changes — `theory_test_date`, `theory_test_passed`, `theory_cert_number` already exist.
+### 4. `BrandedPupilPortal.tsx` — pupil-facing display
+Extend the pupil select to also fetch `test_time`, `test_centre_id`, `test_passed`, `test_result_date`. Add a compact "Driving test" card near the existing `hasTestBooked` usage (PortalCard styling) showing the same four states as the profile tile, read-only. Centre `name + postcode` resolved via a single `test_centres` lookup. No edit controls.
 
-3. **Seed** a starter set of major UK theory test centres (London, Manchester, Birmingham, Southampton, Bristol, Leeds, Glasgow, Cardiff, Newcastle, Liverpool, Sheffield, Nottingham, etc. — ~30 rows) via a follow-up `insert` call. List can be expanded later.
-
-## Frontend changes
-
-`src/pages/PremiumPupilProfile.tsx`:
-- Add a query `["theory-centre", pupil.theory_test_centre_id]` (only when id present) returning `name, postcode` from `theory_test_centres`.
-- Add `TheoryTest` `Card` block with the four-state rendering above. Tap → opens `EditPupilSheet` (re-use existing `editOpen` state).
-- Use existing colour tokens: green=`C.green`, amber=`C.amber`, accent=`C.accent`, muted=`C.muted`. Icons: `GraduationCap`, `Check`, `X`, `Calendar`.
-
-`src/components/instructor/EditPupilSheet.tsx`:
-- New section "Theory test" with:
-  - **Status** select: Not taken / Booked / Passed / Not passed.
-  - **Date** input (`type=date`) — labelled "Test date" or "Date booked" depending on status.
-  - **Theory centre** searchable Select populated from `theory_test_centres` (visible when status = Booked or Passed).
-  - **Certificate number** text input (visible when status = Passed) — maps to existing `theory_cert_number`.
-- Save mapping: Status drives `theory_test_passed` (`true` / `false` / `null`), date → `theory_test_date`, centre → `theory_test_centre_id`, cert → `theory_cert_number`.
-
-## Out of scope
-
-- No changes to pupil portal, parent portal, instructor dashboard tiles, or syllabus hub.
-- No changes to practical-test logic, `test_centres`, `test_centre_id`, or EOL flow.
-- No realtime; tile refetches on the existing pupil-profile invalidation key after edit.
-- No new admin UI for managing the centre list (seed via migration / insert tool only).
-
-## Technical notes
-
-- The `pupils` row already comes back from `usePupil` — no schema-altering refactor needed; just one extra optional select to fetch centre name when `theory_test_centre_id` is set.
-- TS types regenerate automatically after the migration; no manual edits to `src/integrations/supabase/types.ts`.
+### Out of scope
+- No DB schema changes, no migration, no RLS changes.
+- No changes to `UpcomingTestsView`, `QuickTestResultForm`, `TestDayPrep`, `driving_tests` history rows.
+- No mobile layout restructuring beyond adding the tile/badge in existing flows.
+- No instructor dashboard widget changes (UpcomingTestsView already exists).

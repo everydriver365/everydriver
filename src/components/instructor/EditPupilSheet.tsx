@@ -198,8 +198,14 @@ export function EditPupilSheet({
         : pupil.theory_test_passed === false ? "failed"
         : pupil.theory_test_date ? "booked"
         : "none";
-      setForm({ ...pupil, theory_status });
-      setInitial({ ...pupil, theory_status });
+      const today = new Date().toISOString().slice(0, 10);
+      const practical_status =
+        pupil.test_passed === true ? "passed"
+        : (pupil.test_date && pupil.test_date >= today) ? "booked"
+        : pupil.test_passed === false ? "failed"
+        : "none";
+      setForm({ ...pupil, theory_status, practical_status });
+      setInitial({ ...pupil, theory_status, practical_status });
       setPostcodeManual(false);
       setFocused(null);
     }
@@ -207,18 +213,22 @@ export function EditPupilSheet({
 
   // Load theory test centres list
   const [theoryCentres, setTheoryCentres] = useState<Array<{ id: string; name: string; postcode: string | null }>>([]);
+  const [practicalCentres, setPracticalCentres] = useState<Array<{ id: string; name: string; postcode: string | null }>>([]);
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const { data } = await supabase
-        .from("theory_test_centres")
-        .select("id, name, postcode")
-        .eq("is_active", true)
-        .order("name");
-      if (!cancelled) setTheoryCentres((data || []) as any);
+      const [theory, practical] = await Promise.all([
+        supabase.from("theory_test_centres").select("id, name, postcode").eq("is_active", true).order("name"),
+        supabase.from("test_centres").select("id, name, postcode").eq("is_active", true).order("name"),
+      ]);
+      if (!cancelled) {
+        setTheoryCentres((theory.data || []) as any);
+        setPracticalCentres((practical.data || []) as any);
+      }
     })();
     return () => { cancelled = true; };
   }, []);
+
 
   // Computed
   const dirty = useMemo(() => {
@@ -294,7 +304,17 @@ export function EditPupilSheet({
         theory_test_date: form.theory_test_date || null,
         theory_test_centre_id: form.theory_test_centre_id || null,
         theory_cert_number: form.theory_cert_number?.trim() || null,
+        // Practical (driving) test
+        test_passed:
+          form.practical_status === "passed" ? true
+          : form.practical_status === "failed" ? false
+          : null,
+        test_date: form.practical_status === "booked" ? (form.test_date || null) : (form.practical_status === "none" ? null : (form.test_date || null)),
+        test_time: form.practical_status === "booked" ? (form.test_time || null) : null,
+        test_centre_id: (form.practical_status === "booked" || form.practical_status === "passed" || form.practical_status === "failed") ? (form.test_centre_id || null) : null,
+        test_result_date: (form.practical_status === "passed" || form.practical_status === "failed") ? (form.test_result_date || null) : null,
       };
+
 
       const { error } = await supabase
         .from("pupils")
@@ -1076,6 +1096,96 @@ export function EditPupilSheet({
                 )}
               </div>
             </div>
+
+            {/* Practical (driving) test */}
+            <div style={{ marginTop: 16, paddingTop: 16, borderTop: `0.5px solid ${C.hairline}` }}>
+              <Eyebrow>Driving test status</Eyebrow>
+              <InputShell focused={focused === "practical_status"}>
+                <select
+                  style={{ ...baseInputStyle, fontSize: 14, appearance: "none" }}
+                  value={form.practical_status || "none"}
+                  onChange={(e) => setForm({ ...form, practical_status: e.target.value })}
+                  onFocus={() => setFocused("practical_status")}
+                  onBlur={() => setFocused(null)}
+                >
+                  <option value="none">Not booked</option>
+                  <option value="booked">Booked</option>
+                  <option value="passed">Passed</option>
+                  <option value="failed">Not passed</option>
+                </select>
+              </InputShell>
+
+              {form.practical_status === "booked" && (
+                <>
+                  <div style={{ marginTop: 12 }}>
+                    <Eyebrow>Test date</Eyebrow>
+                    <InputShell focused={focused === "test_date"}>
+                      <input
+                        style={{ ...baseInputStyle, fontSize: 14 }}
+                        type="date"
+                        value={form.test_date || ""}
+                        onChange={(e) => setForm({ ...form, test_date: e.target.value })}
+                        onFocus={() => setFocused("test_date")}
+                        onBlur={() => setFocused(null)}
+                      />
+                    </InputShell>
+                  </div>
+                  <div style={{ marginTop: 12 }}>
+                    <Eyebrow>Test time</Eyebrow>
+                    <InputShell focused={focused === "test_time"}>
+                      <input
+                        style={{ ...baseInputStyle, fontSize: 14 }}
+                        type="time"
+                        value={form.test_time ? String(form.test_time).slice(0, 5) : ""}
+                        onChange={(e) => setForm({ ...form, test_time: e.target.value })}
+                        onFocus={() => setFocused("test_time")}
+                        onBlur={() => setFocused(null)}
+                      />
+                    </InputShell>
+                  </div>
+                </>
+              )}
+
+              {(form.practical_status === "passed" || form.practical_status === "failed") && (
+                <div style={{ marginTop: 12 }}>
+                  <Eyebrow>Result date</Eyebrow>
+                  <InputShell focused={focused === "test_result_date"}>
+                    <input
+                      style={{ ...baseInputStyle, fontSize: 14 }}
+                      type="date"
+                      value={form.test_result_date || ""}
+                      onChange={(e) => setForm({ ...form, test_result_date: e.target.value })}
+                      onFocus={() => setFocused("test_result_date")}
+                      onBlur={() => setFocused(null)}
+                    />
+                  </InputShell>
+                </div>
+              )}
+
+              {(form.practical_status === "booked" || form.practical_status === "passed" || form.practical_status === "failed") && (
+                <div style={{ marginTop: 12 }}>
+                  <Eyebrow>Test centre</Eyebrow>
+                  <InputShell focused={focused === "test_centre_id"}>
+                    <select
+                      style={{ ...baseInputStyle, fontSize: 14, appearance: "none" }}
+                      value={form.test_centre_id || ""}
+                      onChange={(e) => setForm({ ...form, test_centre_id: e.target.value || null })}
+                      onFocus={() => setFocused("test_centre_id")}
+                      onBlur={() => setFocused(null)}
+                    >
+                      <option value="">Select a centre…</option>
+                      {practicalCentres.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.name}{c.postcode ? ` · ${c.postcode}` : ""}
+                        </option>
+                      ))}
+                    </select>
+                  </InputShell>
+                </div>
+              )}
+            </div>
+
+
 
 
             {/* Lesson rates (1hr / 1.5hr / 2hr) */}
