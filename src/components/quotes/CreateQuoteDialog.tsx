@@ -395,7 +395,18 @@ export function CreateQuoteDialog({ scope, instructorId, onCreated }: Props) {
                 placeholder="Suggested times…"
               />
             </div>
-            <DialogFooter>
+            <DialogFooter className="flex-col sm:flex-row sm:items-center gap-2">
+              {!canSubmit && (
+                <p className="text-xs text-muted-foreground mr-auto">
+                  {!issuerInstructorId
+                    ? "Pick an instructor to continue."
+                    : !form.pupil_name.trim()
+                    ? "Enter a pupil name."
+                    : !(Number(form.price) > 0)
+                    ? "Enter a price greater than £0."
+                    : ""}
+                </p>
+              )}
               <Button variant="outline" onClick={() => setOpen(false)}>
                 Cancel
               </Button>
@@ -408,6 +419,7 @@ export function CreateQuoteDialog({ scope, instructorId, onCreated }: Props) {
                 Create quote
               </Button>
             </DialogFooter>
+
           </div>
         )}
       </DialogContent>
