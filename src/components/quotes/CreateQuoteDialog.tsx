@@ -136,26 +136,47 @@ export function CreateQuoteDialog({ scope, instructorId, onCreated }: Props) {
     }));
   };
 
+  const [resolvedInstructorId, setResolvedInstructorId] = useState<string | null>(
+    scope === "instructor" ? instructorId ?? null : null
+  );
+
+  // For instructor scope, resolve the issuer id from auth if the prop is missing
+  useEffect(() => {
+    if (!open || scope !== "instructor") return;
+    if (resolvedInstructorId) return;
+    (async () => {
+      const { data: userData } = await supabase.auth.getUser();
+      const uid = userData.user?.id;
+      if (!uid) return;
+      const { data, error } = await supabase.rpc("get_instructor_id_for_user", { p_user_id: uid });
+      if (!error && data) setResolvedInstructorId(data as string);
+    })();
+  }, [open, scope, resolvedInstructorId]);
+
   const issuerInstructorId =
-    scope === "instructor" ? instructorId ?? null : selectedInstructorId;
+    scope === "instructor"
+      ? instructorId ?? resolvedInstructorId
+      : selectedInstructorId;
 
   const canSubmit = useMemo(() => {
+    const hasIssuer = scope === "instructor" ? true : !!issuerInstructorId;
     return (
-      !!issuerInstructorId &&
+      hasIssuer &&
       form.pupil_name.trim().length > 0 &&
       Number(form.price) > 0
     );
-  }, [issuerInstructorId, form.pupil_name, form.price]);
+  }, [scope, issuerInstructorId, form.pupil_name, form.price]);
 
   const submit = async () => {
     if (!issuerInstructorId) {
-      toast.error("Pick an instructor");
+      toast.error(scope === "instructor" ? "Could not identify your instructor account" : "Pick an instructor");
       return;
     }
     if (!form.pupil_name || !form.price) {
       toast.error("Pupil name and price are required");
       return;
     }
+
     setSubmitting(true);
     try {
       const expiresAt = new Date();
@@ -398,7 +419,7 @@ export function CreateQuoteDialog({ scope, instructorId, onCreated }: Props) {
             <DialogFooter className="flex-col sm:flex-row sm:items-center gap-2">
               {!canSubmit && (
                 <p className="text-xs text-muted-foreground mr-auto">
-                  {!issuerInstructorId
+                  {scope === "admin" && !issuerInstructorId
                     ? "Pick an instructor to continue."
                     : !form.pupil_name.trim()
                     ? "Enter a pupil name."
@@ -407,6 +428,7 @@ export function CreateQuoteDialog({ scope, instructorId, onCreated }: Props) {
                     : ""}
                 </p>
               )}
+
               <Button variant="outline" onClick={() => setOpen(false)}>
                 Cancel
               </Button>
