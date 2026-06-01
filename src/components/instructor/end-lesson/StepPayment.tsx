@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Loader2, Plus, Banknote, CreditCard, ArrowLeftRight } from "lucide-react";
+import { Loader2, Plus, Banknote, CreditCard, ArrowLeftRight, Gift, Package } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { usePaymentInvalidation } from "@/hooks/usePaymentInvalidation";
