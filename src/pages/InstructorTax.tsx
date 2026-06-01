@@ -1,12 +1,21 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { format, startOfYear, endOfYear, subYears, parseISO } from "date-fns";
-import { Calculator, Calendar, ChevronLeft, ChevronRight, PoundSterling, Receipt, TrendingUp, FileText, AlertCircle } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import {
+  Calculator,
+  ChevronLeft,
+  ChevronRight,
+  PoundSterling,
+  Receipt,
+  TrendingUp,
+  FileText,
+  Info,
+  ArrowRight,
+  ReceiptText,
+} from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { PageSkeleton } from "@/components/ui/skeletons/PageSkeleton";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
@@ -40,7 +49,8 @@ const BASIC_RATE_THRESHOLD = 50270;
 export default function InstructorTax() {
   const { instructor } = useInstructorAuth();
   const instructorId = instructor?.id;
-  
+  const navigate = useNavigate();
+
   const [selectedYear, setSelectedYear] = useState(new Date());
   const [summary, setSummary] = useState<TaxSummary | null>(null);
   const [expenseBreakdown, setExpenseBreakdown] = useState<ExpenseBreakdown[]>([]);
@@ -175,123 +185,250 @@ export default function InstructorTax() {
   return (
     <InstructorPortalLayout>
       <div className="space-y-4 pb-24">
-        <div>
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-              <Calculator className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-            </div>
-            <h1 className="text-xl font-bold">Tax Summary</h1>
-          </div>
-          <p className="text-sm text-muted-foreground mt-1">Estimated tax liability</p>
-        </div>
-
-        {/* Year Selector */}
-        <div className="flex items-center justify-between bg-muted/50 rounded-lg p-2">
-          <Button variant="ghost" size="icon" onClick={() => navigateYear("prev")}>
-            <ChevronLeft className="h-5 w-5" />
-          </Button>
-          <div className="flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-            <span className="font-medium">Tax Year {getTaxYear()}</span>
-          </div>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={() => navigateYear("next")}
-            disabled={selectedYear.getFullYear() >= new Date().getFullYear()}
-          >
-            <ChevronRight className="h-5 w-5" />
-          </Button>
-        </div>
-
-        <Alert>
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription className="text-xs">
-            These are estimates only. Consult an accountant for accurate tax advice.
-          </AlertDescription>
-        </Alert>
-
-        {/* Summary Cards */}
         {loading ? (
-          <div className="space-y-3">
-            <Skeleton className="h-28 rounded-xl" />
-            <div className="grid grid-cols-2 gap-3">
-              <Skeleton className="h-24 rounded-xl" />
-              <Skeleton className="h-24 rounded-xl" />
-            </div>
-          </div>
+          <Skeleton className="h-[420px] rounded-[12px]" />
         ) : (
-          <>
-            {/* Total Tax Liability */}
-            <Card className="bg-gradient-to-br from-purple-500/10 to-violet-500/10 border-purple-500/30">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <Calculator className="h-4 w-4 text-purple-600" />
-                  <span className="text-sm text-muted-foreground">Estimated Total Tax Due</span>
+          (() => {
+            const liability = summary?.totalLiability ?? 0;
+            const taxable = summary?.taxableIncome ?? 0;
+            const withinAllowance = taxable <= PERSONAL_ALLOWANCE;
+            const liabilityColor = liability <= 0 ? "#059669" : "#D12E2E";
+            const barColor = withinAllowance ? "#059669" : "#D12E2E";
+            const barPct = Math.min(100, (taxable / PERSONAL_ALLOWANCE) * 100);
+            return (
+              <div
+                style={{
+                  background: "#FFFFFF",
+                  border: "0.5px solid #E5E7EB",
+                  borderRadius: 12,
+                  overflow: "hidden",
+                }}
+              >
+                {/* Section 1 — Header */}
+                <div
+                  style={{
+                    padding: 16,
+                    borderBottom: "0.5px solid #F3F4F6",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+                    <ReceiptText size={18} color="#6B7280" style={{ marginTop: 2 }} aria-hidden />
+                    <div>
+                      <div style={{ fontSize: 15, fontWeight: 500, color: "#0A0E27", lineHeight: 1.2 }}>
+                        Tax summary
+                      </div>
+                      <div style={{ fontSize: 12, color: "#9CA3AF", marginTop: 2 }}>
+                        Estimated tax liability
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <button
+                      type="button"
+                      onClick={() => navigateYear("prev")}
+                      aria-label="Previous tax year"
+                      style={{
+                        background: "transparent",
+                        border: 0,
+                        padding: 4,
+                        cursor: "pointer",
+                        display: "inline-flex",
+                      }}
+                    >
+                      <ChevronLeft size={14} color="#9CA3AF" />
+                    </button>
+                    <span style={{ fontSize: 12, color: "#6B7280", minWidth: 78, textAlign: "center" }}>
+                      {getTaxYear()}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => navigateYear("next")}
+                      disabled={selectedYear.getFullYear() >= new Date().getFullYear()}
+                      aria-label="Next tax year"
+                      style={{
+                        background: "transparent",
+                        border: 0,
+                        padding: 4,
+                        cursor: selectedYear.getFullYear() >= new Date().getFullYear() ? "default" : "pointer",
+                        display: "inline-flex",
+                        opacity: selectedYear.getFullYear() >= new Date().getFullYear() ? 0.4 : 1,
+                      }}
+                    >
+                      <ChevronRight size={14} color="#9CA3AF" />
+                    </button>
+                  </div>
                 </div>
-                <p className="text-3xl font-bold text-purple-600">
-                  {formatCurrency(summary?.totalLiability || 0)}
-                </p>
-                <div className="flex gap-4 mt-2 text-xs text-muted-foreground">
-                  <span>Income Tax: {formatCurrency(summary?.estimatedTax || 0)}</span>
-                  <span>Class 2 + 4 NI: {formatCurrency(summary?.estimatedNI || 0)}</span>
-                </div>
-              </CardContent>
-            </Card>
 
-            {/* Income & Expenses */}
-            <div className="grid grid-cols-2 gap-3">
-              <Card className="bg-gradient-to-br from-emerald-500/5 to-green-500/5">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2 mb-1">
-                    <TrendingUp className="h-4 w-4 text-emerald-600" />
-                    <span className="text-xs text-muted-foreground">Total Income</span>
-                  </div>
-                  <p className="text-xl font-bold text-emerald-600">
-                    {formatCurrency(summary?.totalIncome || 0)}
-                  </p>
-                </CardContent>
-              </Card>
-              
-              <Card className="bg-gradient-to-br from-orange-500/5 to-amber-500/5">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Receipt className="h-4 w-4 text-orange-600" />
-                    <span className="text-xs text-muted-foreground">Deductions</span>
-                  </div>
-                  <p className="text-xl font-bold text-orange-600">
-                    {formatCurrency(summary?.totalExpenses || 0)}
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Taxable Income */}
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <PoundSterling className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">Taxable Profit</span>
-                  </div>
-                  <span className="font-bold">{formatCurrency(summary?.taxableIncome || 0)}</span>
+                {/* Section 2 — Disclaimer */}
+                <div
+                  style={{
+                    padding: "12px 16px",
+                    background: "#F9FAFB",
+                    borderBottom: "0.5px solid #F3F4F6",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                  }}
+                >
+                  <Info size={13} color="#9CA3AF" aria-hidden />
+                  <span style={{ fontSize: 11, color: "#9CA3AF" }}>
+                    Estimates only — consult an accountant for accurate advice
+                  </span>
                 </div>
-                <Progress 
-                  value={Math.min(100, ((summary?.taxableIncome || 0) / BASIC_RATE_THRESHOLD) * 100)} 
-                  className="h-2"
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  {(summary?.taxableIncome || 0) <= PERSONAL_ALLOWANCE 
-                    ? "Within personal allowance"
-                    : (summary?.taxableIncome || 0) <= BASIC_RATE_THRESHOLD
-                      ? "Basic rate band"
-                      : "Higher rate band"
-                  }
-                </p>
-              </CardContent>
-            </Card>
-          </>
+
+                {/* Section 3 — Total tax due */}
+                <div style={{ padding: 16, borderBottom: "0.5px solid #F3F4F6" }}>
+                  <div
+                    style={{
+                      fontSize: 11,
+                      color: "#9CA3AF",
+                      textTransform: "uppercase",
+                      letterSpacing: 0.5,
+                      marginBottom: 6,
+                    }}
+                  >
+                    Estimated total tax due
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 32,
+                      fontWeight: 500,
+                      letterSpacing: -1,
+                      color: liabilityColor,
+                      lineHeight: 1.1,
+                    }}
+                  >
+                    {formatCurrency(liability)}
+                  </div>
+                  <div style={{ display: "flex", gap: 16, marginTop: 8, flexWrap: "wrap" }}>
+                    <span style={{ fontSize: 11, color: "#9CA3AF" }}>
+                      Income tax:{" "}
+                      <span style={{ color: "#0A0E27", fontWeight: 500 }}>
+                        {formatCurrency(summary?.estimatedTax ?? 0)}
+                      </span>
+                    </span>
+                    <span style={{ fontSize: 11, color: "#9CA3AF" }}>
+                      Class 2 + 4 NI:{" "}
+                      <span style={{ color: "#0A0E27", fontWeight: 500 }}>
+                        {formatCurrency(summary?.estimatedNI ?? 0)}
+                      </span>
+                    </span>
+                  </div>
+                </div>
+
+                {/* Section 4 — Income / Deductions */}
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    borderBottom: "0.5px solid #F3F4F6",
+                  }}
+                >
+                  <div style={{ padding: "14px 16px", borderRight: "0.5px solid #F3F4F6" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
+                      <TrendingUp size={14} color="#059669" aria-hidden />
+                      <span style={{ fontSize: 11, color: "#9CA3AF" }}>Total income</span>
+                    </div>
+                    <div style={{ fontSize: 18, fontWeight: 500, color: "#059669" }}>
+                      {formatCurrency(summary?.totalIncome ?? 0)}
+                    </div>
+                  </div>
+                  <div style={{ padding: "14px 16px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
+                      <Receipt size={14} color="#F59E0B" aria-hidden />
+                      <span style={{ fontSize: 11, color: "#9CA3AF" }}>Deductions</span>
+                    </div>
+                    <div style={{ fontSize: 18, fontWeight: 500, color: "#F59E0B" }}>
+                      {formatCurrency(summary?.totalExpenses ?? 0)}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Section 5 — Taxable profit */}
+                <div style={{ padding: "14px 16px", borderTop: "0.5px solid #F3F4F6" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      marginBottom: 8,
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                      <PoundSterling size={14} color="#9CA3AF" aria-hidden />
+                      <span style={{ fontSize: 12, color: "#9CA3AF" }}>Taxable profit</span>
+                    </div>
+                    <span style={{ fontSize: 15, fontWeight: 500, color: "#0A0E27" }}>
+                      {formatCurrency(taxable)}
+                    </span>
+                  </div>
+                  <div
+                    style={{
+                      height: 4,
+                      background: "#F3F4F6",
+                      borderRadius: 4,
+                      overflow: "hidden",
+                      marginBottom: 6,
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: `${barPct}%`,
+                        height: "100%",
+                        background: barColor,
+                        borderRadius: 4,
+                        transition: "width 0.3s ease",
+                      }}
+                    />
+                  </div>
+                  <div style={{ fontSize: 11, color: withinAllowance ? "#9CA3AF" : "#D12E2E" }}>
+                    {withinAllowance
+                      ? `Within personal allowance (${formatCurrency(PERSONAL_ALLOWANCE)})`
+                      : "Exceeds personal allowance — tax is due"}
+                  </div>
+                </div>
+
+                {/* Section 6 — Action */}
+                <div
+                  style={{
+                    padding: "12px 16px",
+                    background: "#F9FAFB",
+                    borderTop: "0.5px solid #F3F4F6",
+                  }}
+                >
+                  <button
+                    type="button"
+                    onClick={() => navigate("/instructor/accounts")}
+                    style={{
+                      width: "100%",
+                      background: "#FFFFFF",
+                      border: "0.5px solid #E5E7EB",
+                      borderRadius: 8,
+                      padding: "10px 14px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      fontSize: 13,
+                      fontWeight: 500,
+                      color: "#0A0E27",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                      <Calculator size={14} color="#6B7280" aria-hidden />
+                      View full tax report
+                    </span>
+                    <ArrowRight size={14} color="#9CA3AF" aria-hidden />
+                  </button>
+                </div>
+              </div>
+            );
+          })()
         )}
+
 
         {/* Expense Breakdown */}
         {!loading && expenseBreakdown.length > 0 && (
