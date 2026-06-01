@@ -209,7 +209,7 @@ export function CreateQuoteDialog({ scope, instructorId, onCreated }: Props) {
       const { data, error } = await supabase
         .from("quotes")
         .insert({
-          instructor_id: issuerInstructorId,
+          instructor_id: issuer,
           pupil_name: form.pupil_name,
           email: form.email || null,
           phone: form.phone || null,
