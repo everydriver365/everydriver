@@ -27,6 +27,7 @@ import { EveryInstructorLayout } from "@/components/layout/EveryInstructorLayout
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { useTodayOverview } from "@/hooks/useTodayOverview";
 import { useTodayRemainingLessons } from "@/hooks/useTodayRemainingLessons";
+import { useDayLessonHistory, eolKey } from "@/hooks/useDayLessonHistory";
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
 import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
