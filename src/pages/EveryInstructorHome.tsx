@@ -22,6 +22,7 @@ import {
   Accessibility,
   Check,
   AlertCircle,
+  RotateCw,
 } from "lucide-react";
 import { EveryInstructorLayout } from "@/components/layout/EveryInstructorLayout";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
@@ -32,7 +33,10 @@ import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
 import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import heroImage from "@/assets/every-instructor-hero.webp";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
+import { useQueryClient } from "@tanstack/react-query";
 import { loadQuickActionsPrefs } from "@/lib/quickActionsPrefs";
 import { QUICK_ACTIONS_BY_ID, TILE_TONE } from "@/lib/quickActionsCatalog";
 
@@ -176,6 +180,8 @@ function LessonCard({
   isFinished,
   eolDone,
   onClick,
+  onRerunEol,
+  rerunning,
 }: {
   name: string;
   time: string;
@@ -185,6 +191,8 @@ function LessonCard({
   isFinished?: boolean;
   eolDone?: boolean;
   onClick: () => void;
+  onRerunEol?: () => void;
+  rerunning?: boolean;
 }) {
   const headerBg = isFinished
     ? "linear-gradient(135deg, #64748B, #475569)"
@@ -213,7 +221,7 @@ function LessonCard({
         </div>
       </div>
       {isFinished && (
-        <div className="px-3.5 pt-2.5 flex items-center gap-1.5">
+        <div className="px-3.5 pt-2.5 flex items-center gap-1.5 flex-wrap">
           <span
             className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold text-white"
             style={{ background: "#64748B" }}
@@ -230,6 +238,23 @@ function LessonCard({
           </span>
         </div>
       )}
+      {isFinished && !eolDone && onRerunEol && (
+        <div className="px-3.5 pt-2">
+          <button
+            type="button"
+            disabled={rerunning}
+            onClick={(e) => {
+              e.stopPropagation();
+              onRerunEol();
+            }}
+            className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold text-white disabled:opacity-60"
+            style={{ background: "#0F172A" }}
+          >
+            <RotateCw className={`h-3 w-3 ${rerunning ? "animate-spin" : ""}`} />
+            {rerunning ? "Re-running…" : "Re-run EOL"}
+          </button>
+        </div>
+      )}
       {location && (
         <div className="px-3.5 py-2.5 flex items-center gap-1.5 text-[12px] text-gray-400">
           <MapPin className="h-3.5 w-3.5 shrink-0" />
@@ -239,6 +264,8 @@ function LessonCard({
     </motion.div>
   );
 }
+
+
 
 
 /* ── iOS Grouped List Row for Quick Actions ──────────── */
@@ -388,6 +415,23 @@ export default function EveryInstructorHome() {
   const now = new Date();
   const pendingJobs = usePendingJobsCount();
   const { data: unreadMessages = 0 } = useUnreadMessagesCount(instructor?.id);
+  const queryClient = useQueryClient();
+  const [rerunningId, setRerunningId] = useState<string | null>(null);
+
+  const handleRerunEol = async (lessonId: string) => {
+    setRerunningId(lessonId);
+    try {
+      const { error } = await supabase.rpc("close_lesson_telematics", { p_lesson_id: lessonId });
+      if (error) throw error;
+      toast({ title: "EOL reconciliation triggered", description: "Telematics row closed and recomputed." });
+      queryClient.invalidateQueries({ queryKey: ["day-lesson-history"] });
+      queryClient.invalidateQueries({ queryKey: ["today-remaining-lessons"] });
+    } catch (e: any) {
+      toast({ title: "Re-run failed", description: e?.message ?? "Unknown error", variant: "destructive" });
+    } finally {
+      setRerunningId(null);
+    }
+  };
 
   const greeting = (() => {
     const h = new Date().getHours();
@@ -448,6 +492,8 @@ export default function EveryInstructorHome() {
                 profileImage={l.pupilProfileImageUrl}
                 isFinished={isFinished}
                 eolDone={eolDone}
+                onRerunEol={() => handleRerunEol(l.id)}
+                rerunning={rerunningId === l.id}
                 onClick={() => navigate(`/every-instructor/pupils/${l.pupilId}`)}
               />
             );
