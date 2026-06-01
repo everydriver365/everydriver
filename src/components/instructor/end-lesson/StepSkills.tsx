@@ -241,7 +241,7 @@ export function InlineStepSkills({
           pupil_id: pupilId,
           competency_id: t.competency.id,
           level: t.currentRating!,
-          instructor_id: instructorId,
+          last_practiced: new Date().toISOString().slice(0, 10),
         }));
         const { error: upErr } = await supabase
           .from("pupil_syllabus_progress")
