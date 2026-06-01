@@ -419,7 +419,7 @@ export function CreateQuoteDialog({ scope, instructorId, onCreated }: Props) {
             <DialogFooter className="flex-col sm:flex-row sm:items-center gap-2">
               {!canSubmit && (
                 <p className="text-xs text-muted-foreground mr-auto">
-                  {!issuerInstructorId
+                  {scope === "admin" && !issuerInstructorId
                     ? "Pick an instructor to continue."
                     : !form.pupil_name.trim()
                     ? "Enter a pupil name."
@@ -428,6 +428,7 @@ export function CreateQuoteDialog({ scope, instructorId, onCreated }: Props) {
                     : ""}
                 </p>
               )}
+
               <Button variant="outline" onClick={() => setOpen(false)}>
                 Cancel
               </Button>
