@@ -1,38 +1,59 @@
-## Why it fails today
+## Problem
 
-The end-of-lesson **Take payment** step (`StepPayment.tsx`) inserts into `payment_history` with `payment_method` set to lowercase tokens — `"cash"`, `"card"`, `"bank_transfer"`. The DB has a `validate_payment_method` trigger that only allows a fixed set of Title-Case labels: `Cash`, `Bank Transfer`, `Square`, `GoCardless …`, `Klarna`, `Clearpay`, `SumUp`, `Lesson Charge`, `Free`, `Refund`, `Adjustment`, `Voucher`, etc. Every insert from EOL therefore raises `check_violation` → toast "Failed to record payment". (RLS is fine — both insert policy and `get_instructor_id_for_user` work.)
+The **Dictate** button in the End-of-Lesson → Summary step uses the browser's `webkitSpeechRecognition` API (`useVoiceToText`). That API:
 
-## Changes
+- is **not supported in iOS WKWebView / the Capacitor wrapper** used for the instructor mobile app — so taps do nothing, or the button is hidden entirely
+- silently fails on permission denials with no toast
+- on the second issue, `useEffect` overwrites whatever the instructor already typed in the notes box with the latest transcript
 
-### 1. Fix the payment-method mapping (frontend only)
+Net result: dictation appears broken on the device the user is actually testing on.
 
-In `src/components/instructor/end-lesson/StepPayment.tsx`:
+## Fix
 
-- Change the `METHODS` segmented control values so each option carries the exact DB-allowed label:
-  - Cash → `"Cash"`
-  - Card → `"Square"` (this is the canonical card label the trigger accepts and is consistent with `record-payment` edge function)
-  - Transfer → `"Bank Transfer"`
-- Pass that label straight through as `payment_method` (no further normalisation needed).
+Swap the unreliable browser API for **ElevenLabs Scribe** (already documented as the supported STT path in this project). Record audio in the browser/webview with `MediaRecorder`, POST the blob to a new edge function, return the transcript.
 
-No schema change; the trigger already accepts these.
+### 1. New edge function `transcribe-audio`
 
-### 2. Add "No payment due" and "Included in package" settlement options
+- Accepts `multipart/form-data` with an `audio` file
+- Verifies the caller's JWT (instructor must be signed in)
+- Calls `https://api.elevenlabs.io/v1/speech-to-text` with `model_id=scribe_v2`, `language_code=eng`, `diarize=false`, `tag_audio_events=false`
+- Returns `{ text }`
+- Requires `ELEVENLABS_API_KEY` secret — will prompt the user to add it if missing
+- `verify_jwt = true` (default), CORS headers set
 
-Same file. Below the amount/method block (or as a small secondary row), add two tertiary buttons: **No payment due** and **Included in package**. Picking either bypasses the amount input and writes a settlement row instead of a normal payment:
+### 2. New hook `useDictation`
 
-- **No payment due** — lesson is comped. Insert one row with `amount = lessonCost`, `payment_method = "Free"`, `payment_type = "adjustment"`, `notes = "No payment due — recorded at end of lesson"`, plus `increment_pupil_balance(+lessonCost)`. This cancels out the `Lesson Charge` the wizard always posts, so the pupil's balance ends unchanged.
-- **Included in package** — pupil already paid up front. Insert with `amount = lessonCost`, `payment_method = "Voucher"`, `payment_type = "lesson_payment"`, `notes = "Included in package"`, plus `increment_pupil_balance(+lessonCost)`. Same net effect on balance, but kept as a lesson_payment so reporting still treats it as paid.
+- `start()` → request mic, start `MediaRecorder` (webm/opus, falls back to mp4 on iOS)
+- `stop()` → finalise blob, POST to `transcribe-audio`, resolve with `text`
+- Exposes `{ isRecording, isTranscribing, start, stop, toggle, isSupported }`
+- `isSupported = !!navigator.mediaDevices?.getUserMedia` (true on iOS WKWebView)
+- Surfaces errors via `sonner` toast (permission denied, network, API error)
 
-Both share the existing `handleRecord` plumbing: same `payment_history` insert + `increment_pupil_balance` RPC + `invalidatePaymentQueries` + `onPaymentRecorded()` advance. Disable them while `saving`. Skip the amount validation for these two (`canRecord` only gates the manual Cash/Card/Transfer path).
+### 3. `StepSummary.tsx`
 
-UI: keep it iOS-clean — show the two options as a `.portal-list`-style pair of full-width rows under a small "Other" section header, with subtle icons (e.g. `Gift` for No payment due, `Package` for Included in package). No new colours; use existing `C.muted` / `C.link` tokens.
+- Replace `useVoiceToText` with `useDictation`
+- On `toggle`: if recording, stop and **append** the returned transcript to existing notes (`onNotesChange((notes ? notes.trim() + " " : "") + text)`) instead of overwriting
+- Button states: `Dictate` → `Listening… (tap to stop)` → spinner `Transcribing…`
+- Remove the `useEffect` that overwrote notes
 
-### 3. Nothing else changes
+### 4. Capacitor mic permission
 
-- `EndLessonWizard.tsx` still inserts the `Lesson Charge` debit; the two new settlement rows offset it.
-- No DB migration, no RLS change, no edge-function change.
-- Admin TakePayment / record-payment edge function already use the correct labels, so they're unaffected.
+- iOS `Info.plist` already needs `NSMicrophoneUsageDescription`. If missing, add it via the existing native config so the OS prompt fires the first time.
+
+## Out of scope
+
+- No change to `useVoiceToText` consumers elsewhere (kept for backwards compat).
+- No DB / RLS changes.
+- No change to the EOL payment flow shipped earlier.
 
 ## Files touched
 
-- `src/components/instructor/end-lesson/StepPayment.tsx` — relabel methods, add two settlement actions and their handler.
+- `supabase/functions/transcribe-audio/index.ts` (new)
+- `supabase/config.toml` (register function, default `verify_jwt = true` — no block needed)
+- `src/hooks/useDictation.ts` (new)
+- `src/components/instructor/end-lesson/StepSummary.tsx` (swap hook, append-not-replace)
+- `ios/App/App/Info.plist` if `NSMicrophoneUsageDescription` missing
+
+## Prerequisite
+
+You'll be prompted to paste an **ElevenLabs API key** before the edge function will work. Want me to proceed on that basis?
