@@ -148,7 +148,7 @@ export function CreateQuoteDialog({ scope, instructorId, onCreated }: Props) {
       const { data: userData } = await supabase.auth.getUser();
       const uid = userData.user?.id;
       if (!uid) return;
-      const { data, error } = await supabase.rpc("get_instructor_id_for_user", { _user_id: uid });
+      const { data, error } = await supabase.rpc("get_instructor_id_for_user", { p_user_id: uid });
       if (!error && data) setResolvedInstructorId(data as string);
     })();
   }, [open, scope, resolvedInstructorId]);
