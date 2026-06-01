@@ -178,6 +178,9 @@ export function StepPayment({
     } finally {
       setSaving(false);
     }
+  };
+
+
 
   // Outstanding label / colour mapping
   const balLabel = "Outstanding";
