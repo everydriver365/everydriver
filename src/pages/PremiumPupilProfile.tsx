@@ -513,6 +513,18 @@ export default function PremiumPupilProfile() {
     },
   });
   const { data: stats } = usePupilLessonStats(pupilId);
+  const { data: syllabusProgress = [] } = useQuery({
+    queryKey: ["pupil-syllabus", pupilId],
+    enabled: !!pupilId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("pupil_syllabus_progress")
+        .select("competency_id, level")
+        .eq("pupil_id", pupilId!);
+      if (error) throw error;
+      return (data || []) as { competency_id: string; level: number }[];
+    },
+  });
   const { data: notes = [] } = usePupilNotes(pupilId);
   const { data: documents = [] } = usePupilDocuments(pupilId);
   const { data: terms } = usePupilTermsStatus(pupilId);
