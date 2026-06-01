@@ -110,12 +110,13 @@ export function CreateQuoteDialog({ scope, instructorId, onCreated }: Props) {
       postcode: "",
       course_type: "",
       package_details: "",
-      total_hours: 10,
-      price: 0,
-      deposit_amount: 0,
+      total_hours: "",
+      price: "",
+      deposit_amount: "",
       schedule_notes: "",
       expires_days: 7,
     });
+
     if (scope === "admin") setSelectedInstructorId(null);
   };
 
