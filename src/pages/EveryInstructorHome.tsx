@@ -384,6 +384,8 @@ export default function EveryInstructorHome() {
   const { instructor } = useInstructorAuth();
   const { data: overview } = useTodayOverview(instructor?.id);
   const { data: lessons } = useTodayRemainingLessons(instructor?.id);
+  const { data: eolDoneKeys = new Set<string>() } = useDayLessonHistory(instructor?.id, new Date());
+  const now = new Date();
   const pendingJobs = usePendingJobsCount();
   const { data: unreadMessages = 0 } = useUnreadMessagesCount(instructor?.id);
 
