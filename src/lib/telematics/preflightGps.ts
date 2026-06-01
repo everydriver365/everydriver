@@ -21,8 +21,9 @@ export async function preflightGps(): Promise<PreflightResult> {
 
   if (isNative) {
     try {
-      // Dynamic import so web builds don't choke on missing native plugin
-      const { Geolocation } = await import("@capacitor/geolocation");
+      // Dynamic import via variable so TypeScript doesn't require the optional plugin's types
+      const modName = "@capacitor/geolocation";
+      const { Geolocation } = await (new Function("m", "return import(m)") as any)(modName);
       const perms = await Geolocation.checkPermissions();
       if (perms.location !== "granted") {
         return {
