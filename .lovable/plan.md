@@ -1,28 +1,38 @@
 ## Problem
 
-On `/instructor/pupils/:pupilId` (PremiumPupilProfile), the "Last lesson" tile is empty for this pupil even though they have a completed lesson today.
+The "Test readiness" card on the instructor pupil profile (`PremiumPupilProfile.tsx`) is driven by `pupils.progress` — a manually-set column that is rarely (never) updated. For Joseph Thorne it reads `0`, even though he has 4 DVSA competencies in progress and 1 completed lesson.
 
-Root cause: `usePupilLessonStats` (src/pages/PremiumPupilProfile.tsx ~L354) reads `lastLesson` only from `lesson_history`. That row is only written when EOL is fully completed. The pupil here has a `scheduled_lessons` row with `status='completed'` for today but no `lesson_history` entry yet, so the tile renders the "No previous lessons yet" empty state.
+The rest of the app already has a correct formula in `src/components/instructor/TestReadinessScore.tsx`:
 
-## Fix
+```
+syllabusPercent = mastered (level≥5) / 27 competencies
+hoursPercent    = min(100, completedLessons / 45 * 100)
+levelPercent    = avg(level across tracked competencies) / 5 * 100
+readiness       = round(syllabusPercent*0.4 + hoursPercent*0.3 + levelPercent*0.3)
+```
 
-Update `usePupilLessonStats` to compute `lastLesson` from whichever of the two sources is most recent:
+The profile page should use the same formula so the number, progress bar, status label ("Ready for test" / "Building confidence" / "Early stage"), the `StatPill` "Progress", and the AI bullet copy at L1676/1681 all reflect real data.
 
-1. Add a fourth query alongside the existing three:
-   ```ts
-   supabase
-     .from("scheduled_lessons")
-     .select("id, lesson_date, start_time, duration_minutes, pickup_postcode, lesson_type, status")
-     .eq("pupil_id", pupilId!)
-     .eq("status", "completed")
-     .order("lesson_date", { ascending: false })
-     .order("start_time", { ascending: false })
-     .limit(1)
-   ```
-2. Pick the more recent of `lesson_history[0]` and the completed `scheduled_lessons[0]` (compare by `lesson_date`, then `start_time`) and return it as `lastLesson`. Tag the source so the UI can read the right optional fields.
-3. Tile (L795–840) already conditionally renders `rating`, `skills_practiced`, and `notes`, so when the fallback row comes from `scheduled_lessons` it will show date + relative time correctly and just omit the missing fields. Add a small subtitle line for the scheduled-lessons fallback showing duration / postcode so the tile doesn't look bare.
+## Plan
+
+1. **Fetch syllabus progress + completed lesson count for the pupil** in `PremiumPupilProfile.tsx`:
+   - Query `pupil_syllabus_progress` (`competency_id`, `level`) for `pupil_id`.
+   - Use existing `stats.totalLessons` (already computed) — or, if it includes scheduled future rows, derive `completedLessons` from the existing `lesson_history` count + completed `scheduled_lessons`.
+
+2. **Replace the `progressPct` `useMemo`** (L601–605) with the weighted formula above, returning `null` only when there is genuinely no data (no syllabus rows AND no completed lessons), so the "Progress not yet recorded" state still appears for brand-new pupils.
+
+3. **Keep all downstream consumers unchanged** — `StatsRow`, `ProgressOverview` bar/label, AI bullets at L1676/1681, and the L1908 share card all read `progressPct` and will pick up the new value automatically.
+
+4. **Leave `pupils.progress` column alone** — no DB write, no migration. We just stop trusting a stale column on this surface. Other surfaces that already use `TestReadinessScore` are unaffected.
 
 ## Out of scope
 
-- No DB writes, no EOL flow changes, no RLS changes.
-- No other tiles or pages.
+- No DB schema changes, no backfill of `pupils.progress`.
+- No changes to the syllabus hub, pupil portal readiness card, or instructor dashboard tiles.
+- No edits to the EOL / lesson-completion flow.
+
+## Technical notes
+
+- File: `src/pages/PremiumPupilProfile.tsx` only.
+- Add one `useQuery` for `pupil_syllabus_progress` keyed on `["pupil-syllabus", pupilId]`, and import `DVSA_SYLLABUS` from `@/constants/dvsaSyllabus` for the denominator (27).
+- Guard against empty arrays to avoid `NaN`.

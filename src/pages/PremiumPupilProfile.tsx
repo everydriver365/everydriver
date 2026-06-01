@@ -27,6 +27,7 @@ import { PupilRateEditor } from "@/components/instructor/PupilRateEditor";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import { DVSA_SYLLABUS } from "@/constants/dvsaSyllabus";
 
 /* ──────────────────────────── design tokens ──────────────────────────── */
 const FONT =
@@ -512,6 +513,18 @@ export default function PremiumPupilProfile() {
     },
   });
   const { data: stats } = usePupilLessonStats(pupilId);
+  const { data: syllabusProgress = [] } = useQuery({
+    queryKey: ["pupil-syllabus", pupilId],
+    enabled: !!pupilId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("pupil_syllabus_progress")
+        .select("competency_id, level")
+        .eq("pupil_id", pupilId!);
+      if (error) throw error;
+      return (data || []) as { competency_id: string; level: number }[];
+    },
+  });
   const { data: notes = [] } = usePupilNotes(pupilId);
   const { data: documents = [] } = usePupilDocuments(pupilId);
   const { data: terms } = usePupilTermsStatus(pupilId);
@@ -598,11 +611,24 @@ export default function PremiumPupilProfile() {
     } finally { setSavingField(null); }
   };
 
+  const completedLessons = stats?.totalLessons ?? 0;
   const progressPct = useMemo(() => {
-    const v = pupil?.progress;
-    if (typeof v !== "number") return null;
-    return Math.max(0, Math.min(100, Math.round(v)));
-  }, [pupil?.progress]);
+    const totalCompetencies = DVSA_SYLLABUS.length;
+    const hasSyllabus = syllabusProgress.length > 0;
+    const hasLessons = completedLessons > 0;
+    if (!hasSyllabus && !hasLessons) return null;
+
+    const masteredCount = syllabusProgress.filter((p) => p.level >= 5).length;
+    const syllabusPercent = totalCompetencies > 0 ? (masteredCount / totalCompetencies) * 100 : 0;
+    const hoursPercent = Math.min(100, (completedLessons / 45) * 100);
+    const avgLevel = hasSyllabus
+      ? syllabusProgress.reduce((s, p) => s + p.level, 0) / syllabusProgress.length
+      : 0;
+    const levelPercent = (avgLevel / 5) * 100;
+
+    const readiness = Math.round(syllabusPercent * 0.4 + hoursPercent * 0.3 + levelPercent * 0.3);
+    return Math.max(0, Math.min(100, readiness));
+  }, [syllabusProgress, completedLessons]);
 
   const handleCall = () => pupil?.phone && (window.location.href = `tel:${pupil.phone}`);
   const handleMessage = () =>
