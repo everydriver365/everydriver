@@ -2116,6 +2116,7 @@ export default function PremiumPupilProfile() {
             <Section title="Lessons & progress">
               {NextLesson}
               {LastLesson}
+              {TheoryTest}
               {ProgressOverview}
               {SyllabusCard}
               {HistoryCard}
