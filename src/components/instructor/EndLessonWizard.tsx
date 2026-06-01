@@ -162,8 +162,10 @@ export function EndLessonWizard({
     setCompleting(true);
 
     try {
-      // 1. Mark lesson complete
+      // 1. Mark lesson complete (trigger closes any open lesson_telematics row)
       await supabase.from("scheduled_lessons").update({ status: "completed" }).eq("id", lessonId);
+      // Belt-and-braces: also call RPC client-side in case the trigger is ever bypassed
+      await supabase.rpc("close_lesson_telematics" as any, { p_lesson_id: lessonId });
 
       // Upload voice note if recorded
       let voiceNoteUrl: string | null = null;
