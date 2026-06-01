@@ -845,52 +845,69 @@ export default function PremiumPupilProfile() {
     <Card>
       <div style={{ fontFamily: FONT, fontSize: 17, color: C.text, fontWeight: 600, letterSpacing: "-0.01em", marginBottom: 10 }}>
         Last lesson
-          </div>
-          {stats.lastLesson._source === "scheduled" && (
-            <div style={{ marginTop: 4, fontFamily: FONT, fontSize: 12, color: C.muted }}>
-              {stats.lastLesson.start_time && `${stats.lastLesson.start_time.slice(0, 5)} · `}
-              {(stats.lastLesson.duration_minutes / 60).toFixed(1)}h
-              {stats.lastLesson.pickup_postcode && ` · ${stats.lastLesson.pickup_postcode}`}
-            </div>
-          )}
+      </div>
       {stats?.lastLesson ? (
-        <div>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-            <div style={{ fontFamily: FONT, fontSize: 15, fontWeight: 600, color: C.text }}>
+        <button
+          onClick={() => navigate(`/instructor/schedule?date=${stats.lastLesson!.lesson_date}`)}
+          style={{
+            display: "flex", alignItems: "center", gap: 12,
+            width: "100%", background: "transparent", border: "none",
+            padding: "4px 0", cursor: "pointer", textAlign: "left",
+            fontFamily: FONT,
+          }}
+        >
+          {/* Time column */}
+          <div style={{ flexShrink: 0, minWidth: 50, display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
+            <span style={{ fontSize: 14, fontWeight: 500, color: C.text, letterSpacing: "-0.1px", fontVariantNumeric: "tabular-nums" }}>
+              {stats.lastLesson.start_time ? stats.lastLesson.start_time.slice(0, 5) : "—"}
+            </span>
+            {stats.lastLesson.duration_minutes ? (
+              <span style={{ fontSize: 11, color: C.muted, marginTop: 1, fontVariantNumeric: "tabular-nums" }}>
+                {(stats.lastLesson.duration_minutes / 60).toFixed(1)}h
+              </span>
+            ) : null}
+          </div>
+
+          {/* Accent bar */}
+          <div style={{ flexShrink: 0, width: 3, height: 36, borderRadius: 2, backgroundColor: C.accent }} />
+
+          {/* Title + subtitle */}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 14, fontWeight: 500, color: C.text, letterSpacing: "-0.1px", margin: "0 0 1px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+              {format(parseISO(stats.lastLesson.lesson_date), "EEE, d MMM")}
+              {" · "}
               {formatDistanceToNow(parseISO(stats.lastLesson.lesson_date), { addSuffix: true })}
             </div>
-            {stats.lastLesson.rating && (
-              <div style={{ display: "flex", gap: 2 }}>
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star
-                    key={i}
-                    size={12}
-                    style={{
-                      fill: i < (stats.lastLesson!.rating || 0) ? C.amber : "transparent",
-                      color: i < (stats.lastLesson!.rating || 0) ? C.amber : C.subtle,
-                    }}
-                  />
-                ))}
-              </div>
-            )}
+            <div style={{ fontSize: 12, color: C.muted, margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+              {[
+                stats.lastLesson.pickup_postcode,
+                stats.lastLesson.lesson_type,
+                stats.lastLesson.skills_practiced?.length
+                  ? `${stats.lastLesson.skills_practiced.length} skill${stats.lastLesson.skills_practiced.length === 1 ? "" : "s"}`
+                  : null,
+                stats.lastLesson.notes ? "Notes" : null,
+              ].filter(Boolean).join(" · ") || "Completed"}
+            </div>
           </div>
-          {stats.lastLesson.skills_practiced && stats.lastLesson.skills_practiced.length > 0 && (
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
-              {stats.lastLesson.skills_practiced.slice(0, 4).map((s: string) => (
-                <span key={s} style={{
-                  fontFamily: FONT, fontSize: 11, fontWeight: 500,
-                  padding: "3px 8px", borderRadius: 999,
-                  background: C.surface, color: C.muted,
-                }}>{s}</span>
+
+          {/* Trailing rating */}
+          {stats.lastLesson.rating ? (
+            <div style={{ display: "flex", gap: 2, flexShrink: 0 }}>
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Star
+                  key={i}
+                  size={11}
+                  style={{
+                    fill: i < (stats.lastLesson!.rating || 0) ? C.amber : "transparent",
+                    color: i < (stats.lastLesson!.rating || 0) ? C.amber : C.subtle,
+                  }}
+                />
               ))}
             </div>
-          )}
-          {stats.lastLesson.notes && (
-            <div style={{ marginTop: 10, fontFamily: FONT, fontSize: 13, color: C.text, lineHeight: 1.45 }}>
-              {stats.lastLesson.notes}
-            </div>
-          )}
-        </div>
+          ) : null}
+
+          <ChevronRight style={{ width: 12, height: 12, color: C.muted, flexShrink: 0, strokeWidth: 1.6 }} />
+        </button>
       ) : (
         <Empty text="No previous lessons yet" />
       )}
