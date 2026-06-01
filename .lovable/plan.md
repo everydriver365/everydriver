@@ -1,39 +1,28 @@
-## Goal
+## Problem
 
-On the instructor mobile home page (`/instructor` → `EveryInstructorHome`), the "Today's Schedule" rail currently treats every lesson identically. Once a lesson's scheduled end time has passed, the card should clearly show it as **Completed**, and indicate whether the **End-of-Lesson (EOL)** procedure has been done.
+On `/instructor/pupils/:pupilId` (PremiumPupilProfile), the "Last lesson" tile is empty for this pupil even though they have a completed lesson today.
 
-## Scope
+Root cause: `usePupilLessonStats` (src/pages/PremiumPupilProfile.tsx ~L354) reads `lastLesson` only from `lesson_history`. That row is only written when EOL is fully completed. The pupil here has a `scheduled_lessons` row with `status='completed'` for today but no `lesson_history` entry yet, so the tile renders the "No previous lessons yet" empty state.
 
-Frontend only. One file: `src/pages/EveryInstructorHome.tsx`. No DB / backend / business-logic changes.
+## Fix
 
-## Changes
+Update `usePupilLessonStats` to compute `lastLesson` from whichever of the two sources is most recent:
 
-### 1. Wire EOL-completed keys into the page
-- Import `useDayLessonHistory` + `eolKey` from `@/hooks/useDayLessonHistory` (already used by `HomeTodaySchedule` / `TodayLessonsList`, so this is the established pattern).
-- In `EveryInstructorHome`, call `useDayLessonHistory(instructor?.id, new Date())` to get the `Set<string>` of EOL-completed `pupilId|HH:MM:SS` keys.
-
-### 2. Derive lesson completion state per card
-For each lesson rendered in the "Today's Schedule" map:
-- `isFinished` = `status === "completed"` OR `startTime + durationMinutes` is in the past (using `new Date()` compared to today's date + start_time).
-- `eolDone` = `eolKeys.has(eolKey(pupilId, startTime))`.
-
-Pass both to `LessonCard`.
-
-### 3. Update `LessonCard` visuals
-Extend props with `isFinished?: boolean` and `eolDone?: boolean`.
-
-- **Not finished** (current behaviour): keep the blue→indigo gradient header.
-- **Finished**: switch the header gradient to a muted slate (`linear-gradient(135deg, #64748B, #475569)`), reduce the card body opacity slightly (≈0.85), and render a small pill in the header row:
-  - `eolDone === true` → green pill, check icon, label "EOL done" (bg `#10B981`).
-  - `eolDone === false` → amber pill, alert icon, label "EOL pending" (bg `#F59E0B`).
-
-Pill sits next to the time line (or under the name) — small, 10–11px, white text, `rounded-full px-2 py-0.5`. Uses existing lucide icons (`Check`, `AlertCircle`) already available in the project.
-
-### 4. Keep ordering and existing behaviour
-- Do **not** filter completed lessons out — they remain in the rail so the instructor can see what's done vs. upcoming at a glance.
-- Tap behaviour unchanged (still navigates to the pupil).
+1. Add a fourth query alongside the existing three:
+   ```ts
+   supabase
+     .from("scheduled_lessons")
+     .select("id, lesson_date, start_time, duration_minutes, pickup_postcode, lesson_type, status")
+     .eq("pupil_id", pupilId!)
+     .eq("status", "completed")
+     .order("lesson_date", { ascending: false })
+     .order("start_time", { ascending: false })
+     .limit(1)
+   ```
+2. Pick the more recent of `lesson_history[0]` and the completed `scheduled_lessons[0]` (compare by `lesson_date`, then `start_time`) and return it as `lastLesson`. Tag the source so the UI can read the right optional fields.
+3. Tile (L795–840) already conditionally renders `rating`, `skills_practiced`, and `notes`, so when the fallback row comes from `scheduled_lessons` it will show date + relative time correctly and just omit the missing fields. Add a small subtitle line for the scheduled-lessons fallback showing duration / postcode so the tile doesn't look bare.
 
 ## Out of scope
-- No changes to `TodayLessonsList` / `HomeTodaySchedule` (those already display EOL state in other views).
-- No changes to the underlying queries, RLS, or `lesson_history` writes.
-- No layout/typography changes elsewhere on the page.
+
+- No DB writes, no EOL flow changes, no RLS changes.
+- No other tiles or pages.
