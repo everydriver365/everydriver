@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Loader2, Plus, Banknote, CreditCard, ArrowLeftRight } from "lucide-react";
+import { Loader2, Plus, Banknote, CreditCard, ArrowLeftRight, Gift, Package } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { usePaymentInvalidation } from "@/hooks/usePaymentInvalidation";
@@ -41,9 +41,9 @@ interface StepPaymentProps {
 }
 
 const METHODS = [
-  { value: "cash", label: "Cash", Icon: Banknote },
-  { value: "card", label: "Card", Icon: CreditCard },
-  { value: "bank_transfer", label: "Transfer", Icon: ArrowLeftRight },
+  { value: "Cash", label: "Cash", Icon: Banknote },
+  { value: "Square", label: "Card", Icon: CreditCard },
+  { value: "Bank Transfer", label: "Transfer", Icon: ArrowLeftRight },
 ] as const;
 
 function needsNameReview(name: string): boolean {
@@ -88,7 +88,7 @@ export function StepPayment({
   const credit = balanceAfterLesson > 0 ? balanceAfterLesson : 0;
 
   const [amount, setAmount] = useState(outstanding > 0 ? outstanding.toFixed(2) : "");
-  const [method, setMethod] = useState<string>("cash");
+  const [method, setMethod] = useState<string>("Cash");
   const [saving, setSaving] = useState(false);
   const [focused, setFocused] = useState(false);
   const [showNote, setShowNote] = useState(false);
@@ -138,6 +138,49 @@ export function StepPayment({
       setSaving(false);
     }
   };
+
+  const recordSettlement = async (
+    kind: "no_payment_due" | "included_in_package",
+  ) => {
+    if (saving) return;
+    if (!lessonCost || lessonCost <= 0) {
+      toast.error("Lesson has no cost to settle");
+      return;
+    }
+    setSaving(true);
+    try {
+      const isComp = kind === "no_payment_due";
+      const { error: hErr } = await (supabase as any).from("payment_history").insert({
+        pupil_id: pupilId,
+        instructor_id: instructorId,
+        amount: lessonCost,
+        payment_method: isComp ? "Free" : "Voucher",
+        payment_type: isComp ? "adjustment" : "lesson_payment",
+        notes: isComp
+          ? "No payment due — recorded at end of lesson"
+          : "Included in package",
+        lesson_id: lessonId ?? null,
+      });
+      if (hErr) throw hErr;
+
+      const { error: balErr } = await supabase.rpc("increment_pupil_balance", {
+        p_pupil_id: pupilId,
+        p_amount: lessonCost,
+      });
+      if (balErr) throw balErr;
+
+      toast.success(isComp ? "Marked as no payment due" : "Marked as included in package");
+      invalidatePaymentQueries({ pupilId, instructorId });
+      onPaymentRecorded();
+    } catch (e) {
+      console.error(e);
+      toast.error("Failed to record");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+
 
   // Outstanding label / colour mapping
   const balLabel = "Outstanding";
@@ -448,9 +491,69 @@ export function StepPayment({
                 }}
               />
             )}
+
+            {/* Section: Other settlement options */}
+            <div
+              style={{
+                fontSize: 11,
+                fontWeight: 500,
+                color: C.muted,
+                letterSpacing: 0.3,
+                textTransform: "uppercase",
+                margin: "20px 0 8px",
+              }}
+            >
+              Other
+            </div>
+
+            <div
+              style={{
+                background: C.bg,
+                border: `0.5px solid ${C.hairline}`,
+                borderRadius: 12,
+                overflow: "hidden",
+              }}
+            >
+              {[
+                { kind: "no_payment_due" as const, label: "No payment due", sub: "Comp this lesson", Icon: Gift },
+                { kind: "included_in_package" as const, label: "Included in package", sub: "Already paid up front", Icon: Package },
+              ].map((opt, i) => {
+                const Icon = opt.Icon;
+                return (
+                  <button
+                    key={opt.kind}
+                    type="button"
+                    onClick={() => recordSettlement(opt.kind)}
+                    disabled={saving}
+                    style={{
+                      width: "100%",
+                      background: "transparent",
+                      border: "none",
+                      borderTop: i === 0 ? "none" : `0.5px solid ${C.hairline}`,
+                      padding: "12px 14px",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 12,
+                      cursor: saving ? "not-allowed" : "pointer",
+                      opacity: saving ? 0.5 : 1,
+                      textAlign: "left",
+                      fontFamily: FONT_STACK,
+                    }}
+                  >
+                    <Icon size={18} strokeWidth={1.8} color={C.link} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 14, fontWeight: 500, color: C.text }}>{opt.label}</div>
+                      <div style={{ fontSize: 11, color: C.muted, marginTop: 1 }}>{opt.sub}</div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
           </>
         )}
       </div>
+
+
 
       {/* Footer: Skip + Record & next */}
       <div
