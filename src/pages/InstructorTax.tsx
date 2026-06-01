@@ -49,13 +49,12 @@ const BASIC_RATE_THRESHOLD = 50270;
 export default function InstructorTax() {
   const { instructor } = useInstructorAuth();
   const instructorId = instructor?.id;
-  
+  const navigate = useNavigate();
+
   const [selectedYear, setSelectedYear] = useState(new Date());
   const [summary, setSummary] = useState<TaxSummary | null>(null);
   const [expenseBreakdown, setExpenseBreakdown] = useState<ExpenseBreakdown[]>([]);
   const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
     if (instructorId) {
       fetchTaxData();
     }
