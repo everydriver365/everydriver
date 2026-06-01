@@ -2202,6 +2202,7 @@ function ScheduleCard({
   }, []);
   const { data: todayLessons = [] } = useDayLessons(instructorId, today);
   const { data: tomorrowLessons = [] } = useDayLessons(instructorId, tomorrow);
+  const { data: eolDoneKeys = new Set<string>() } = useDayLessonHistory(instructorId, today);
 
   const tomorrowStr = useMemo(() => format(addDays(new Date(), 1), "yyyy-MM-dd"), []);
   const { data: nextRows = [] } = useQuery({
