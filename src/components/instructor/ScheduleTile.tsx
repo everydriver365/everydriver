@@ -1,5 +1,6 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Plus, RefreshCw, ChevronRight, MapPin, CalendarOff } from "lucide-react";
+import { eolKey } from "@/hooks/useDayLessonHistory";
 
 export interface Lesson {
   id: string;
@@ -8,6 +9,8 @@ export interface Lesson {
   studentName: string;
   lessonType: string;
   postcode: string;
+  pupilId?: string;
+  status?: string;
 }
 
 interface ScheduleTileProps {
@@ -17,6 +20,7 @@ interface ScheduleTileProps {
   onFillGaps: () => void;
   onLessonClick: (id: string) => void;
   onViewNext?: () => void;
+  eolDoneKeys?: Set<string>;
 }
 
 const C = {
@@ -28,6 +32,10 @@ const C = {
   blue: "#2952b3",
   blueTint: "#E6ECF8",
   green: "#2d8a4e",
+  greenAccent: "#1D9E75",
+  greenTint: "#E6F4EE",
+  amber: "#D97706",
+  amberTint: "#FEF3E2",
   chevron: "#B5B9C2",
   trackBg: "#F2F4F8",
   hover: "#e8e9ed",
@@ -53,8 +61,13 @@ function sameDay(a: Date, b: Date) {
   return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 }
 
-export function ScheduleTile({ lessons, nextLessons = [], onAddLesson, onFillGaps, onLessonClick }: ScheduleTileProps) {
+export function ScheduleTile({ lessons, nextLessons = [], onAddLesson, onFillGaps, onLessonClick, eolDoneKeys }: ScheduleTileProps) {
   const [tab, setTab] = useState<"today" | "tomorrow" | "next">("today");
+  const [nowMs, setNowMs] = useState(() => Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNowMs(Date.now()), 30_000);
+    return () => clearInterval(id);
+  }, []);
 
   const { todayDate, tomorrowDate, todayLessons, tomorrowLessons, nextLessonsSorted } = useMemo(() => {
     const today = new Date();
@@ -213,7 +226,15 @@ export function ScheduleTile({ lessons, nextLessons = [], onAddLesson, onFillGap
               : { gap: 10 }
           }
         >
-          {active.map((l) => (
+          {active.map((l) => {
+            const isToday = tab === "today";
+            const isPast = isToday && l._end.getTime() <= nowMs;
+            const startHMS = l._start.toTimeString().slice(0, 8); // HH:MM:SS in local time
+            const eolDone =
+              isPast && !!l.pupilId && !!eolDoneKeys && eolDoneKeys.has(eolKey(l.pupilId, startHMS));
+            const dividerColor = eolDone ? C.greenAccent : isPast ? C.amber : C.blue;
+            const showEolPill = isPast;
+            return (
             <button
               key={l.id}
               type="button"
@@ -229,6 +250,7 @@ export function ScheduleTile({ lessons, nextLessons = [], onAddLesson, onFillGap
                 alignItems: "center",
                 gap: 14,
                 flexShrink: 0,
+                opacity: isPast ? 0.62 : 1,
               }}
               onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.borderColor = C.blue; }}
               onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.borderColor = C.border; }}
@@ -245,10 +267,10 @@ export function ScheduleTile({ lessons, nextLessons = [], onAddLesson, onFillGap
                     : fmtDuration(l._start.getTime(), l._end.getTime())}
                 </div>
               </div>
-              {/* Blue divider */}
+              {/* Divider (blue / green / amber) */}
               <div
                 className="flex-shrink-0 self-stretch"
-                style={{ width: 2.5, background: C.blue, minHeight: 40, borderRadius: 2 }}
+                style={{ width: 2.5, background: dividerColor, minHeight: 40, borderRadius: 2 }}
               />
               {/* Info col */}
               <div className="flex-1 min-w-0">
@@ -258,28 +280,48 @@ export function ScheduleTile({ lessons, nextLessons = [], onAddLesson, onFillGap
                 <div style={{ fontSize: 13, color: C.muted, marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                   {l.lessonType}
                 </div>
-                {l.postcode && (
-                  <div
-                    className="inline-flex items-center"
-                    style={{
-                      marginTop: 6,
-                      background: C.blueTint,
-                      color: C.blue,
-                      borderRadius: 999,
-                      padding: "3px 8px",
-                      fontSize: 11,
-                      fontWeight: 600,
-                      gap: 4,
-                    }}
-                  >
-                    <MapPin size={11} strokeWidth={2.5} color={C.blue} />
-                    {l.postcode}
-                  </div>
-                )}
+                <div className="flex items-center" style={{ gap: 6, flexWrap: "wrap" }}>
+                  {l.postcode && (
+                    <div
+                      className="inline-flex items-center"
+                      style={{
+                        marginTop: 6,
+                        background: C.blueTint,
+                        color: C.blue,
+                        borderRadius: 999,
+                        padding: "3px 8px",
+                        fontSize: 11,
+                        fontWeight: 600,
+                        gap: 4,
+                      }}
+                    >
+                      <MapPin size={11} strokeWidth={2.5} color={C.blue} />
+                      {l.postcode}
+                    </div>
+                  )}
+                  {showEolPill && (
+                    <div
+                      className="inline-flex items-center"
+                      style={{
+                        marginTop: 6,
+                        background: eolDone ? C.greenTint : C.amberTint,
+                        color: eolDone ? C.greenAccent : C.amber,
+                        borderRadius: 999,
+                        padding: "3px 8px",
+                        fontSize: 11,
+                        fontWeight: 700,
+                        letterSpacing: "0.2px",
+                      }}
+                    >
+                      {eolDone ? "EOL ✓" : "EOL needed"}
+                    </div>
+                  )}
+                </div>
               </div>
               <ChevronRight size={20} color={C.chevron} className="flex-shrink-0" strokeWidth={2.5} />
             </button>
-          ))}
+            );
+          })}
         </div>
       )}
 

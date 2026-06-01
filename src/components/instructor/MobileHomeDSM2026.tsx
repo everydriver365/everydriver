@@ -160,6 +160,7 @@ import { useInstructorTaxSummary } from "@/hooks/useInstructorTaxSummary";
 import { useInstructorMTDStatus } from "@/hooks/useInstructorMTDStatus";
 import { formatCurrencyCompact } from "@/lib/formatters";
 import { useDayLessons } from "@/hooks/useDayLessons";
+import { useDayLessonHistory } from "@/hooks/useDayLessonHistory";
 import { useInstructorPaymentsData } from "@/hooks/useInstructorPaymentsData";
 import { useRealGapSlots } from "@/hooks/useRealGapSlots";
 import { DsmLogo } from "@/components/instructor/ui/DsmLogo";
@@ -2201,6 +2202,7 @@ function ScheduleCard({
   }, []);
   const { data: todayLessons = [] } = useDayLessons(instructorId, today);
   const { data: tomorrowLessons = [] } = useDayLessons(instructorId, tomorrow);
+  const { data: eolDoneKeys = new Set<string>() } = useDayLessonHistory(instructorId, today);
 
   const tomorrowStr = useMemo(() => format(addDays(new Date(), 1), "yyyy-MM-dd"), []);
   const { data: nextRows = [] } = useQuery({
@@ -2237,6 +2239,8 @@ function ScheduleCard({
           studentName: l.pupilName,
           lessonType: l.lessonType,
           postcode: l.pickupPostcode || "",
+          pupilId: l.pupilId,
+          status: l.status,
         };
       });
     };
@@ -2266,6 +2270,7 @@ function ScheduleCard({
       onAddLesson={() => navigate("/instructor/schedule?add=1")}
       onFillGaps={() => navigate("/instructor/gaps")}
       onLessonClick={(id) => navigate(`/instructor/schedule?lesson=${id}`)}
+      eolDoneKeys={eolDoneKeys}
     />
   );
 }
