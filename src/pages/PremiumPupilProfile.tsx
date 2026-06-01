@@ -2159,6 +2159,7 @@ export default function PremiumPupilProfile() {
             {NextLesson}
             {LastLesson}
             {TheoryTest}
+            {DrivingTest}
             {ProgressOverview}
             {SyllabusCard}
             {HistoryCard}
@@ -2207,6 +2208,7 @@ export default function PremiumPupilProfile() {
               {NextLesson}
               {LastLesson}
               {TheoryTest}
+              {DrivingTest}
               {ProgressOverview}
               {SyllabusCard}
               {HistoryCard}
