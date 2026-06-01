@@ -1,38 +1,66 @@
-## Problem
+## Goal
 
-The "Test readiness" card on the instructor pupil profile (`PremiumPupilProfile.tsx`) is driven by `pupils.progress` — a manually-set column that is rarely (never) updated. For Joseph Thorne it reads `0`, even though he has 4 DVSA competencies in progress and 1 completed lesson.
+Add a **Theory Test** tile to the instructor's pupil profile (`PremiumPupilProfile.tsx`) that renders one of four states from live DB data, and add inputs in `EditPupilSheet` so the instructor can set those fields.
 
-The rest of the app already has a correct formula in `src/components/instructor/TestReadinessScore.tsx`:
+## Tile states
 
 ```
-syllabusPercent = mastered (level≥5) / 27 competencies
-hoursPercent    = min(100, completedLessons / 45 * 100)
-levelPercent    = avg(level across tracked competencies) / 5 * 100
-readiness       = round(syllabusPercent*0.4 + hoursPercent*0.3 + levelPercent*0.3)
+┌──────────────────────────────────────────────┐
+│ Theory test                                  │
+│ ─────────────────────────────────────────────│
+│ ✓ Passed            12 Mar 2026   (green)    │   ← theory_test_passed = true
+│ ✕ Not passed        last attempt 12 Mar      │   ← theory_test_passed = false
+│ 📅 Booked            14 Jul 2026 · Southampton│  ← passed null + future date
+│ + Add theory test                            │   ← no data
+└──────────────────────────────────────────────┘
 ```
 
-The profile page should use the same formula so the number, progress bar, status label ("Ready for test" / "Building confidence" / "Early stage"), the `StatPill` "Progress", and the AI bullet copy at L1676/1681 all reflect real data.
+Logic:
+- `theory_test_passed = true` → "Passed" + `theory_test_date` (green/check).
+- `theory_test_passed = false` → "Not passed" + `theory_test_date` if present (amber/red).
+- `theory_test_passed IS NULL` AND `theory_test_date >= today` → "Booked" + date + centre name from `theory_test_centres`.
+- Nothing set → empty CTA that opens the EditPupilSheet on the Theory section.
 
-## Plan
+Tile placement: directly below the existing "Test readiness" / "Next lesson" cluster, before `LastLesson`, matching the existing `Card` styling.
 
-1. **Fetch syllabus progress + completed lesson count for the pupil** in `PremiumPupilProfile.tsx`:
-   - Query `pupil_syllabus_progress` (`competency_id`, `level`) for `pupil_id`.
-   - Use existing `stats.totalLessons` (already computed) — or, if it includes scheduled future rows, derive `completedLessons` from the existing `lesson_history` count + completed `scheduled_lessons`.
+## DB changes
 
-2. **Replace the `progressPct` `useMemo`** (L601–605) with the weighted formula above, returning `null` only when there is genuinely no data (no syllabus rows AND no completed lessons), so the "Progress not yet recorded" state still appears for brand-new pupils.
+1. **New table `public.theory_test_centres`** — UK Pearson VUE theory centres:
+   - `id uuid pk default gen_random_uuid()`
+   - `name text not null`
+   - `address text`, `postcode text`
+   - `lat numeric`, `lng numeric`
+   - `is_active boolean not null default true`
+   - `created_at timestamptz default now()`
+   - Grants: `SELECT` to `anon, authenticated`; `ALL` to `service_role`. RLS on, policy "Anyone can view active theory centres" `USING (is_active = true)`.
 
-3. **Keep all downstream consumers unchanged** — `StatsRow`, `ProgressOverview` bar/label, AI bullets at L1676/1681, and the L1908 share card all read `progressPct` and will pick up the new value automatically.
+2. **Add column** `pupils.theory_test_centre_id uuid` referencing `public.theory_test_centres(id) ON DELETE SET NULL`. No other pupil schema changes — `theory_test_date`, `theory_test_passed`, `theory_cert_number` already exist.
 
-4. **Leave `pupils.progress` column alone** — no DB write, no migration. We just stop trusting a stale column on this surface. Other surfaces that already use `TestReadinessScore` are unaffected.
+3. **Seed** a starter set of major UK theory test centres (London, Manchester, Birmingham, Southampton, Bristol, Leeds, Glasgow, Cardiff, Newcastle, Liverpool, Sheffield, Nottingham, etc. — ~30 rows) via a follow-up `insert` call. List can be expanded later.
+
+## Frontend changes
+
+`src/pages/PremiumPupilProfile.tsx`:
+- Add a query `["theory-centre", pupil.theory_test_centre_id]` (only when id present) returning `name, postcode` from `theory_test_centres`.
+- Add `TheoryTest` `Card` block with the four-state rendering above. Tap → opens `EditPupilSheet` (re-use existing `editOpen` state).
+- Use existing colour tokens: green=`C.green`, amber=`C.amber`, accent=`C.accent`, muted=`C.muted`. Icons: `GraduationCap`, `Check`, `X`, `Calendar`.
+
+`src/components/instructor/EditPupilSheet.tsx`:
+- New section "Theory test" with:
+  - **Status** select: Not taken / Booked / Passed / Not passed.
+  - **Date** input (`type=date`) — labelled "Test date" or "Date booked" depending on status.
+  - **Theory centre** searchable Select populated from `theory_test_centres` (visible when status = Booked or Passed).
+  - **Certificate number** text input (visible when status = Passed) — maps to existing `theory_cert_number`.
+- Save mapping: Status drives `theory_test_passed` (`true` / `false` / `null`), date → `theory_test_date`, centre → `theory_test_centre_id`, cert → `theory_cert_number`.
 
 ## Out of scope
 
-- No DB schema changes, no backfill of `pupils.progress`.
-- No changes to the syllabus hub, pupil portal readiness card, or instructor dashboard tiles.
-- No edits to the EOL / lesson-completion flow.
+- No changes to pupil portal, parent portal, instructor dashboard tiles, or syllabus hub.
+- No changes to practical-test logic, `test_centres`, `test_centre_id`, or EOL flow.
+- No realtime; tile refetches on the existing pupil-profile invalidation key after edit.
+- No new admin UI for managing the centre list (seed via migration / insert tool only).
 
 ## Technical notes
 
-- File: `src/pages/PremiumPupilProfile.tsx` only.
-- Add one `useQuery` for `pupil_syllabus_progress` keyed on `["pupil-syllabus", pupilId]`, and import `DVSA_SYLLABUS` from `@/constants/dvsaSyllabus` for the denominator (27).
-- Guard against empty arrays to avoid `NaN`.
+- The `pupils` row already comes back from `usePupil` — no schema-altering refactor needed; just one extra optional select to fetch centre name when `theory_test_centre_id` is set.
+- TS types regenerate automatically after the migration; no manual edits to `src/integrations/supabase/types.ts`.
