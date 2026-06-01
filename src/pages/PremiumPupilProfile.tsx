@@ -17,6 +17,8 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { PupilAvatar } from "@/components/instructor/PupilAvatar";
 import { EditPupilSheet } from "@/components/instructor/EditPupilSheet";
+import { TheoryTestQuickEdit } from "@/components/instructor/TheoryTestQuickEdit";
+import { DrivingTestQuickEdit } from "@/components/instructor/DrivingTestQuickEdit";
 import { ArchivePupilDialog } from "@/components/instructor/pupils/ArchivePupilDialog";
 import { PupilNoteSheet } from "@/components/instructor/PupilNoteSheet";
 import { AddLessonSheet } from "@/components/instructor/AddLessonSheet";
