@@ -1097,6 +1097,96 @@ export function EditPupilSheet({
               </div>
             </div>
 
+            {/* Practical (driving) test */}
+            <div style={{ marginTop: 16, paddingTop: 16, borderTop: `0.5px solid ${C.hairline}` }}>
+              <Eyebrow>Driving test status</Eyebrow>
+              <InputShell focused={focused === "practical_status"}>
+                <select
+                  style={{ ...baseInputStyle, fontSize: 14, appearance: "none" }}
+                  value={form.practical_status || "none"}
+                  onChange={(e) => setForm({ ...form, practical_status: e.target.value })}
+                  onFocus={() => setFocused("practical_status")}
+                  onBlur={() => setFocused(null)}
+                >
+                  <option value="none">Not booked</option>
+                  <option value="booked">Booked</option>
+                  <option value="passed">Passed</option>
+                  <option value="failed">Not passed</option>
+                </select>
+              </InputShell>
+
+              {form.practical_status === "booked" && (
+                <>
+                  <div style={{ marginTop: 12 }}>
+                    <Eyebrow>Test date</Eyebrow>
+                    <InputShell focused={focused === "test_date"}>
+                      <input
+                        style={{ ...baseInputStyle, fontSize: 14 }}
+                        type="date"
+                        value={form.test_date || ""}
+                        onChange={(e) => setForm({ ...form, test_date: e.target.value })}
+                        onFocus={() => setFocused("test_date")}
+                        onBlur={() => setFocused(null)}
+                      />
+                    </InputShell>
+                  </div>
+                  <div style={{ marginTop: 12 }}>
+                    <Eyebrow>Test time</Eyebrow>
+                    <InputShell focused={focused === "test_time"}>
+                      <input
+                        style={{ ...baseInputStyle, fontSize: 14 }}
+                        type="time"
+                        value={form.test_time ? String(form.test_time).slice(0, 5) : ""}
+                        onChange={(e) => setForm({ ...form, test_time: e.target.value })}
+                        onFocus={() => setFocused("test_time")}
+                        onBlur={() => setFocused(null)}
+                      />
+                    </InputShell>
+                  </div>
+                </>
+              )}
+
+              {(form.practical_status === "passed" || form.practical_status === "failed") && (
+                <div style={{ marginTop: 12 }}>
+                  <Eyebrow>Result date</Eyebrow>
+                  <InputShell focused={focused === "test_result_date"}>
+                    <input
+                      style={{ ...baseInputStyle, fontSize: 14 }}
+                      type="date"
+                      value={form.test_result_date || ""}
+                      onChange={(e) => setForm({ ...form, test_result_date: e.target.value })}
+                      onFocus={() => setFocused("test_result_date")}
+                      onBlur={() => setFocused(null)}
+                    />
+                  </InputShell>
+                </div>
+              )}
+
+              {(form.practical_status === "booked" || form.practical_status === "passed" || form.practical_status === "failed") && (
+                <div style={{ marginTop: 12 }}>
+                  <Eyebrow>Test centre</Eyebrow>
+                  <InputShell focused={focused === "test_centre_id"}>
+                    <select
+                      style={{ ...baseInputStyle, fontSize: 14, appearance: "none" }}
+                      value={form.test_centre_id || ""}
+                      onChange={(e) => setForm({ ...form, test_centre_id: e.target.value || null })}
+                      onFocus={() => setFocused("test_centre_id")}
+                      onBlur={() => setFocused(null)}
+                    >
+                      <option value="">Select a centre…</option>
+                      {practicalCentres.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.name}{c.postcode ? ` · ${c.postcode}` : ""}
+                        </option>
+                      ))}
+                    </select>
+                  </InputShell>
+                </div>
+              )}
+            </div>
+
+
+
 
             {/* Lesson rates (1hr / 1.5hr / 2hr) */}
             {pupil && (
