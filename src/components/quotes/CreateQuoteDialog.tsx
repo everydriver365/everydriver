@@ -62,12 +62,13 @@ export function CreateQuoteDialog({ scope, instructorId, onCreated }: Props) {
     postcode: "",
     course_type: "",
     package_details: "",
-    total_hours: 10,
-    price: 0,
-    deposit_amount: 0,
+    total_hours: "" as number | "",
+    price: "" as number | "",
+    deposit_amount: "" as number | "",
     schedule_notes: "",
     expires_days: 7,
   });
+
 
   useEffect(() => {
     if (!open) return;
