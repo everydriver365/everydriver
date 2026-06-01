@@ -17,6 +17,8 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { PupilAvatar } from "@/components/instructor/PupilAvatar";
 import { EditPupilSheet } from "@/components/instructor/EditPupilSheet";
+import { TheoryTestQuickEdit } from "@/components/instructor/TheoryTestQuickEdit";
+import { DrivingTestQuickEdit } from "@/components/instructor/DrivingTestQuickEdit";
 import { ArchivePupilDialog } from "@/components/instructor/pupils/ArchivePupilDialog";
 import { PupilNoteSheet } from "@/components/instructor/PupilNoteSheet";
 import { AddLessonSheet } from "@/components/instructor/AddLessonSheet";
@@ -560,6 +562,8 @@ export default function PremiumPupilProfile() {
   const termsState = terms?.state ?? "required";
 
   const [editOpen, setEditOpen] = useState(false);
+  const [theoryEditOpen, setTheoryEditOpen] = useState(false);
+  const [drivingEditOpen, setDrivingEditOpen] = useState(false);
   const [archiveOpen, setArchiveOpen] = useState(false);
   const [noteOpen, setNoteOpen] = useState(false);
   const [addLessonOpen, setAddLessonOpen] = useState(false);
@@ -986,7 +990,7 @@ export default function PremiumPupilProfile() {
           Theory test
         </div>
         <button
-          onClick={() => setEditOpen(true)}
+          onClick={() => setTheoryEditOpen(true)}
           style={{
             display: "flex", alignItems: "center", gap: 12,
             width: "100%", background: "transparent", border: "none",
@@ -1059,7 +1063,7 @@ export default function PremiumPupilProfile() {
           Driving test
         </div>
         <button
-          onClick={() => setEditOpen(true)}
+          onClick={() => setDrivingEditOpen(true)}
           style={{
             display: "flex", alignItems: "center", gap: 12,
             width: "100%", background: "transparent", border: "none",
@@ -2252,6 +2256,21 @@ export default function PremiumPupilProfile() {
         pupil={pupil}
         instructorId={instructorId || null}
       />
+
+      <TheoryTestQuickEdit
+        open={theoryEditOpen}
+        onOpenChange={setTheoryEditOpen}
+        pupil={pupil}
+        onSaved={() => queryClient.invalidateQueries({ queryKey: ["pupil-profile", pupil?.id, instructorId] })}
+      />
+
+      <DrivingTestQuickEdit
+        open={drivingEditOpen}
+        onOpenChange={setDrivingEditOpen}
+        pupil={pupil}
+        onSaved={() => queryClient.invalidateQueries({ queryKey: ["pupil-profile", pupil?.id, instructorId] })}
+      />
+
 
       <ArchivePupilDialog
         open={archiveOpen}
