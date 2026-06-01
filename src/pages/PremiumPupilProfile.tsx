@@ -27,6 +27,7 @@ import { PupilRateEditor } from "@/components/instructor/PupilRateEditor";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import { DVSA_SYLLABUS } from "@/constants/dvsaSyllabus";
 
 /* ──────────────────────────── design tokens ──────────────────────────── */
 const FONT =
