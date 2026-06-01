@@ -1,5 +1,6 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Plus, RefreshCw, ChevronRight, MapPin, CalendarOff } from "lucide-react";
+import { eolKey } from "@/hooks/useDayLessonHistory";
 
 export interface Lesson {
   id: string;
@@ -8,6 +9,8 @@ export interface Lesson {
   studentName: string;
   lessonType: string;
   postcode: string;
+  pupilId?: string;
+  status?: string;
 }
 
 interface ScheduleTileProps {
@@ -17,6 +20,7 @@ interface ScheduleTileProps {
   onFillGaps: () => void;
   onLessonClick: (id: string) => void;
   onViewNext?: () => void;
+  eolDoneKeys?: Set<string>;
 }
 
 const C = {
