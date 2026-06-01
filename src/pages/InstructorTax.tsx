@@ -55,6 +55,8 @@ export default function InstructorTax() {
   const [summary, setSummary] = useState<TaxSummary | null>(null);
   const [expenseBreakdown, setExpenseBreakdown] = useState<ExpenseBreakdown[]>([]);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
     if (instructorId) {
       fetchTaxData();
     }
