@@ -173,6 +173,8 @@ function LessonCard({
   location,
   initials,
   profileImage,
+  isFinished,
+  eolDone,
   onClick,
 }: {
   name: string;
@@ -180,17 +182,24 @@ function LessonCard({
   location?: string | null;
   initials: string;
   profileImage?: string | null;
+  isFinished?: boolean;
+  eolDone?: boolean;
   onClick: () => void;
 }) {
+  const headerBg = isFinished
+    ? "linear-gradient(135deg, #64748B, #475569)"
+    : "linear-gradient(135deg, #007AFF, #5856D6)";
+
   return (
     <motion.div
       whileTap={{ scale: 0.97 }}
       onClick={onClick}
       className="snap-start shrink-0 w-[220px] rounded-2xl overflow-hidden cursor-pointer bg-white ios-shadow-elevated"
+      style={{ opacity: isFinished ? 0.92 : 1 }}
     >
       <div
         className="p-4 flex items-center gap-3"
-        style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+        style={{ background: headerBg }}
       >
         <Avatar className="h-11 w-11 ring-2 ring-white/40" style={{ backdropFilter: "blur(8px)" }}>
           <AvatarImage src={profileImage || undefined} />
@@ -203,6 +212,24 @@ function LessonCard({
           <p className="text-[12px] text-white/80">{time}</p>
         </div>
       </div>
+      {isFinished && (
+        <div className="px-3.5 pt-2.5 flex items-center gap-1.5">
+          <span
+            className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold text-white"
+            style={{ background: "#64748B" }}
+          >
+            <Check className="h-3 w-3" />
+            Completed
+          </span>
+          <span
+            className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold text-white"
+            style={{ background: eolDone ? "#10B981" : "#F59E0B" }}
+          >
+            {eolDone ? <Check className="h-3 w-3" /> : <AlertCircle className="h-3 w-3" />}
+            {eolDone ? "EOL done" : "EOL pending"}
+          </span>
+        </div>
+      )}
       {location && (
         <div className="px-3.5 py-2.5 flex items-center gap-1.5 text-[12px] text-gray-400">
           <MapPin className="h-3.5 w-3.5 shrink-0" />
@@ -212,6 +239,7 @@ function LessonCard({
     </motion.div>
   );
 }
+
 
 /* ── iOS Grouped List Row for Quick Actions ──────────── */
 function QuickActionRow({
