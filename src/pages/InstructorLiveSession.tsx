@@ -930,6 +930,21 @@ export default function InstructorLiveSession() {
       setDrivingTestDetails(testDetails);
     }
 
+    // Pre-flight GPS check — warn (don't block) if background tracking is unlikely to work
+    if (isPhoneProvider) {
+      try {
+        const { preflightGps } = await import("@/lib/telematics/preflightGps");
+        const pf = await preflightGps();
+        if (!pf.ok && pf.severity !== "ok") {
+          toast({
+            title: pf.severity === "hard" ? "Tracking may not record" : "Heads up",
+            description: pf.reason,
+            variant: pf.severity === "hard" ? "destructive" : "default",
+          });
+        }
+      } catch {/* non-blocking */}
+    }
+
     setIsStarting(true);
     try {
       // Create telematics session (pupil_id can be null for test routes)

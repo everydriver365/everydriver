@@ -20857,6 +20857,10 @@ export type Database = {
       classify_sync_error: { Args: { err: string }; Returns: string }
       cleanup_expired_otp_codes: { Args: never; Returns: undefined }
       cleanup_expired_parent_otp_codes: { Args: never; Returns: undefined }
+      close_lesson_telematics: {
+        Args: { p_lesson_id: string }
+        Returns: string
+      }
       decline_quote_by_token: {
         Args: { p_reason?: string; p_token: string }
         Returns: {
