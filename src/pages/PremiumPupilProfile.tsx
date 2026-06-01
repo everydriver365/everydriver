@@ -990,7 +990,7 @@ export default function PremiumPupilProfile() {
           Theory test
         </div>
         <button
-          onClick={() => setEditOpen(true)}
+          onClick={() => setTheoryEditOpen(true)}
           style={{
             display: "flex", alignItems: "center", gap: 12,
             width: "100%", background: "transparent", border: "none",
@@ -1063,7 +1063,7 @@ export default function PremiumPupilProfile() {
           Driving test
         </div>
         <button
-          onClick={() => setEditOpen(true)}
+          onClick={() => setDrivingEditOpen(true)}
           style={{
             display: "flex", alignItems: "center", gap: 12,
             width: "100%", background: "transparent", border: "none",
