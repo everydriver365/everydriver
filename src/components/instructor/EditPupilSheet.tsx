@@ -193,12 +193,32 @@ export function EditPupilSheet({
 
   useEffect(() => {
     if (pupil) {
-      setForm({ ...pupil });
-      setInitial({ ...pupil });
+      const theory_status =
+        pupil.theory_test_passed === true ? "passed"
+        : pupil.theory_test_passed === false ? "failed"
+        : pupil.theory_test_date ? "booked"
+        : "none";
+      setForm({ ...pupil, theory_status });
+      setInitial({ ...pupil, theory_status });
       setPostcodeManual(false);
       setFocused(null);
     }
   }, [pupil?.id]);
+
+  // Load theory test centres list
+  const [theoryCentres, setTheoryCentres] = useState<Array<{ id: string; name: string; postcode: string | null }>>([]);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("theory_test_centres")
+        .select("id, name, postcode")
+        .eq("is_active", true)
+        .order("name");
+      if (!cancelled) setTheoryCentres((data || []) as any);
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   // Computed
   const dirty = useMemo(() => {
@@ -266,6 +286,14 @@ export function EditPupilSheet({
         intensive_hours_paid: isIntensive ? toNumOrNull(form.intensive_hours_paid) : null,
         intensive_course_payout: isIntensive ? toNumOrNull(form.intensive_course_payout) : null,
         intensive_pupil_payment: isIntensive ? toNumOrNull(form.intensive_pupil_payment) : null,
+        // Theory test
+        theory_test_passed:
+          form.theory_status === "passed" ? true
+          : form.theory_status === "failed" ? false
+          : null,
+        theory_test_date: form.theory_test_date || null,
+        theory_test_centre_id: form.theory_test_centre_id || null,
+        theory_cert_number: form.theory_cert_number?.trim() || null,
       };
 
       const { error } = await supabase
@@ -973,7 +1001,82 @@ export function EditPupilSheet({
                   Parent signature required on T&amp;Cs for pupils under 18
                 </HelperText>
               </div>
+
+              {/* Theory test */}
+              <div style={{ marginTop: 16, paddingTop: 16, borderTop: `0.5px solid ${C.hairline}` }}>
+                <Eyebrow>Theory test status</Eyebrow>
+                <InputShell focused={focused === "theory_status"}>
+                  <select
+                    style={{ ...baseInputStyle, fontSize: 14, appearance: "none" }}
+                    value={form.theory_status || "none"}
+                    onChange={(e) => setForm({ ...form, theory_status: e.target.value })}
+                    onFocus={() => setFocused("theory_status")}
+                    onBlur={() => setFocused(null)}
+                  >
+                    <option value="none">Not taken</option>
+                    <option value="booked">Booked</option>
+                    <option value="passed">Passed</option>
+                    <option value="failed">Not passed</option>
+                  </select>
+                </InputShell>
+
+                {(form.theory_status === "booked" || form.theory_status === "passed" || form.theory_status === "failed") && (
+                  <div style={{ marginTop: 12 }}>
+                    <Eyebrow>{form.theory_status === "booked" ? "Date booked" : "Test date"}</Eyebrow>
+                    <InputShell focused={focused === "theory_test_date"}>
+                      <input
+                        style={{ ...baseInputStyle, fontSize: 14 }}
+                        type="date"
+                        value={form.theory_test_date || ""}
+                        onChange={(e) => setForm({ ...form, theory_test_date: e.target.value })}
+                        onFocus={() => setFocused("theory_test_date")}
+                        onBlur={() => setFocused(null)}
+                      />
+                    </InputShell>
+                  </div>
+                )}
+
+                {(form.theory_status === "booked" || form.theory_status === "passed") && (
+                  <div style={{ marginTop: 12 }}>
+                    <Eyebrow>Theory centre</Eyebrow>
+                    <InputShell focused={focused === "theory_test_centre_id"}>
+                      <select
+                        style={{ ...baseInputStyle, fontSize: 14, appearance: "none" }}
+                        value={form.theory_test_centre_id || ""}
+                        onChange={(e) => setForm({ ...form, theory_test_centre_id: e.target.value || null })}
+                        onFocus={() => setFocused("theory_test_centre_id")}
+                        onBlur={() => setFocused(null)}
+                      >
+                        <option value="">Select a centre…</option>
+                        {theoryCentres.map((c) => (
+                          <option key={c.id} value={c.id}>
+                            {c.name}{c.postcode ? ` · ${c.postcode}` : ""}
+                          </option>
+                        ))}
+                      </select>
+                    </InputShell>
+                  </div>
+                )}
+
+                {form.theory_status === "passed" && (
+                  <div style={{ marginTop: 12 }}>
+                    <Eyebrow>Certificate number</Eyebrow>
+                    <InputShell focused={focused === "theory_cert_number"}>
+                      <input
+                        style={{ ...baseInputStyle, fontSize: 14 }}
+                        type="text"
+                        placeholder="Optional"
+                        value={form.theory_cert_number || ""}
+                        onChange={(e) => setForm({ ...form, theory_cert_number: e.target.value })}
+                        onFocus={() => setFocused("theory_cert_number")}
+                        onBlur={() => setFocused(null)}
+                      />
+                    </InputShell>
+                  </div>
+                )}
+              </div>
             </div>
+
 
             {/* Lesson rates (1hr / 1.5hr / 2hr) */}
             {pupil && (

@@ -525,6 +525,20 @@ export default function PremiumPupilProfile() {
       return (data || []) as { competency_id: string; level: number }[];
     },
   });
+  const theoryCentreId = (pupil as any)?.theory_test_centre_id as string | null | undefined;
+  const { data: theoryCentre } = useQuery({
+    queryKey: ["theory-centre", theoryCentreId],
+    enabled: !!theoryCentreId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("theory_test_centres")
+        .select("id, name, postcode")
+        .eq("id", theoryCentreId!)
+        .maybeSingle();
+      if (error) throw error;
+      return data as { id: string; name: string; postcode: string | null } | null;
+    },
+  });
   const { data: notes = [] } = usePupilNotes(pupilId);
   const { data: documents = [] } = usePupilDocuments(pupilId);
   const { data: terms } = usePupilTermsStatus(pupilId);
@@ -913,6 +927,75 @@ export default function PremiumPupilProfile() {
       )}
     </Card>
   );
+
+  const TheoryTest = (() => {
+    const tDate = (pupil as any)?.theory_test_date as string | null | undefined;
+    const tPassed = (pupil as any)?.theory_test_passed as boolean | null | undefined;
+    const today = format(new Date(), "yyyy-MM-dd");
+    let status: "passed" | "failed" | "booked" | "none" = "none";
+    if (tPassed === true) status = "passed";
+    else if (tPassed === false) status = "failed";
+    else if (tDate && tDate >= today) status = "booked";
+
+    const iconBg =
+      status === "passed" ? `${C.green}18`
+      : status === "failed" ? `${C.red}18`
+      : status === "booked" ? `${C.accent}18`
+      : C.surface;
+    const iconFg =
+      status === "passed" ? C.green
+      : status === "failed" ? C.red
+      : status === "booked" ? C.accent
+      : C.muted;
+    const Icon = status === "passed" ? Check : status === "failed" ? X : status === "booked" ? CalendarPlus : GraduationCap;
+
+    const dateLabel = tDate ? format(parseISO(tDate), "d MMM yyyy") : null;
+    const title =
+      status === "passed" ? "Passed"
+      : status === "failed" ? "Not passed"
+      : status === "booked" ? "Booked"
+      : "Add theory test";
+    const subtitleParts: string[] = [];
+    if (status === "passed" && dateLabel) subtitleParts.push(dateLabel);
+    if (status === "failed") subtitleParts.push(dateLabel ? `Last attempt ${dateLabel}` : "Awaiting retake");
+    if (status === "booked") {
+      if (dateLabel) subtitleParts.push(dateLabel);
+      if (theoryCentre?.name) subtitleParts.push(theoryCentre.name);
+      else if (theoryCentreId) subtitleParts.push("Loading centre…");
+    }
+    if (status === "none") subtitleParts.push("Tap to record status");
+
+    return (
+      <Card>
+        <div style={{ fontFamily: FONT, fontSize: 17, color: C.text, fontWeight: 600, letterSpacing: "-0.01em", marginBottom: 10 }}>
+          Theory test
+        </div>
+        <button
+          onClick={() => setEditOpen(true)}
+          style={{
+            display: "flex", alignItems: "center", gap: 12,
+            width: "100%", background: "transparent", border: "none",
+            padding: 0, cursor: "pointer", textAlign: "left",
+          }}
+        >
+          <div style={{ width: 48, height: 48, borderRadius: 12, background: iconBg, color: iconFg, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <Icon size={20} />
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontFamily: FONT, fontSize: 15, fontWeight: 600, color: C.text }}>
+              {title}
+            </div>
+            <div style={{ fontFamily: FONT, fontSize: 12, color: C.muted, marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+              {subtitleParts.join(" · ")}
+            </div>
+          </div>
+          <ChevronRight size={18} color={C.subtle} />
+        </button>
+      </Card>
+    );
+  })();
+
+
 
   const NotesCard = (
     <Card>
@@ -1985,6 +2068,7 @@ export default function PremiumPupilProfile() {
           <Section title="Lessons & progress">
             {NextLesson}
             {LastLesson}
+            {TheoryTest}
             {ProgressOverview}
             {SyllabusCard}
             {HistoryCard}
@@ -2032,6 +2116,7 @@ export default function PremiumPupilProfile() {
             <Section title="Lessons & progress">
               {NextLesson}
               {LastLesson}
+              {TheoryTest}
               {ProgressOverview}
               {SyllabusCard}
               {HistoryCard}

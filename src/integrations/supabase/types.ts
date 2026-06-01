@@ -15808,6 +15808,7 @@ export type Database = {
           test_result_date: string | null
           test_time: string | null
           theory_cert_number: string | null
+          theory_test_centre_id: string | null
           theory_test_date: string | null
           theory_test_passed: boolean | null
           total_distance_km: number | null
@@ -15912,6 +15913,7 @@ export type Database = {
           test_result_date?: string | null
           test_time?: string | null
           theory_cert_number?: string | null
+          theory_test_centre_id?: string | null
           theory_test_date?: string | null
           theory_test_passed?: boolean | null
           total_distance_km?: number | null
@@ -16016,6 +16018,7 @@ export type Database = {
           test_result_date?: string | null
           test_time?: string | null
           theory_cert_number?: string | null
+          theory_test_centre_id?: string | null
           theory_test_date?: string | null
           theory_test_passed?: boolean | null
           total_distance_km?: number | null
@@ -16071,6 +16074,13 @@ export type Database = {
             columns: ["test_centre_id"]
             isOneToOne: false
             referencedRelation: "test_centres"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pupils_theory_test_centre_id_fkey"
+            columns: ["theory_test_centre_id"]
+            isOneToOne: false
+            referencedRelation: "theory_test_centres"
             referencedColumns: ["id"]
           },
         ]
@@ -19554,6 +19564,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      theory_test_centres: {
+        Row: {
+          address: string | null
+          created_at: string
+          id: string
+          is_active: boolean
+          lat: number | null
+          lng: number | null
+          name: string
+          postcode: string | null
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          lat?: number | null
+          lng?: number | null
+          name: string
+          postcode?: string | null
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          lat?: number | null
+          lng?: number | null
+          name?: string
+          postcode?: string | null
+        }
+        Relationships: []
       }
       tile_health_checks: {
         Row: {
