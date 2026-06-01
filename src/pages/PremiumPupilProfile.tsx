@@ -562,6 +562,8 @@ export default function PremiumPupilProfile() {
   const termsState = terms?.state ?? "required";
 
   const [editOpen, setEditOpen] = useState(false);
+  const [theoryEditOpen, setTheoryEditOpen] = useState(false);
+  const [drivingEditOpen, setDrivingEditOpen] = useState(false);
   const [archiveOpen, setArchiveOpen] = useState(false);
   const [noteOpen, setNoteOpen] = useState(false);
   const [addLessonOpen, setAddLessonOpen] = useState(false);
