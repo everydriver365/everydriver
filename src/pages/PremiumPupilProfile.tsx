@@ -600,23 +600,7 @@ export default function PremiumPupilProfile() {
     } finally { setSavingField(null); }
   };
 
-  const saveHours = async () => {
-    if (!pupil) return;
-    const next = parseFloat(hoursDraft);
-    if (isNaN(next) || next < 0) { toast.error("Enter a valid number"); return; }
-    setSavingField("hours");
-    try {
-      const { error } = await supabase.from("pupils")
-        .update({ prepaid_hours: next })
-        .eq("id", pupil.id);
-      if (error) throw error;
-      toast.success("Prepaid hours updated");
-      setEditHours(false);
-      queryClient.invalidateQueries({ queryKey: ["pupil-profile", pupil.id, instructorId] });
-    } catch (e) {
-      console.error(e); toast.error("Failed to update hours");
-    } finally { setSavingField(null); }
-  };
+
 
   const amountDue = Math.max(0, -balance);
 
