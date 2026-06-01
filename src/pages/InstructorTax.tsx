@@ -42,6 +42,31 @@ interface ExpenseBreakdown {
 const PERSONAL_ALLOWANCE = 12570;
 const BASIC_RATE_THRESHOLD = 50270;
 
+// Expense Breakdown — fixed category list and colour map for visual consistency.
+const ALL_EXPENSE_CATEGORIES = [
+  "Mileage Allowance",
+  "Fuel",
+  "Vehicle Maintenance",
+  "Insurance",
+  "Training Materials",
+  "Office Supplies",
+  "Marketing",
+  "Tolls & Parking",
+  "Other",
+];
+
+const CATEGORY_COLORS: Record<string, string> = {
+  "Mileage Allowance": "#1E4D9B",
+  "Fuel": "#059669",
+  "Vehicle Maintenance": "#F59E0B",
+  "Insurance": "#0891B2",
+  "Training Materials": "#7C3AED",
+  "Office Supplies": "#DB2777",
+  "Marketing": "#EA580C",
+  "Tolls & Parking": "#9CA3AF",
+  "Other": "#6B7280",
+};
+
 // Tax + NI maths now live in src/lib/ukTax.ts (single source of truth — includes
 // PA taper, Class 2 NI, and London-timezone tax-year boundaries).
 
