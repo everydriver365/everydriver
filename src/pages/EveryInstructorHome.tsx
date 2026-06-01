@@ -492,6 +492,8 @@ export default function EveryInstructorHome() {
                 profileImage={l.pupilProfileImageUrl}
                 isFinished={isFinished}
                 eolDone={eolDone}
+                onRerunEol={() => handleRerunEol(l.id)}
+                rerunning={rerunningId === l.id}
                 onClick={() => navigate(`/every-instructor/pupils/${l.pupilId}`)}
               />
             );
