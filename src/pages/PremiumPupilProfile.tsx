@@ -571,11 +571,9 @@ export default function PremiumPupilProfile() {
   const [paymentsOpen, setPaymentsOpen] = useState(false);
   const [editBalance, setEditBalance] = useState(false);
   const [balanceDraft, setBalanceDraft] = useState("");
-  const [editHours, setEditHours] = useState(false);
-  const [hoursDraft, setHoursDraft] = useState("");
   const [editAmountDue, setEditAmountDue] = useState(false);
   const [amountDueDraft, setAmountDueDraft] = useState("");
-  const [savingField, setSavingField] = useState<null | "balance" | "hours" | "amountDue">(null);
+  const [savingField, setSavingField] = useState<null | "balance" | "amountDue">(null);
 
   const status = (pupil?.status as string) || "active";
   const balance = pupil?.account_balance ?? 0;
