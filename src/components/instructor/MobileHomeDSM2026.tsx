@@ -160,6 +160,7 @@ import { useInstructorTaxSummary } from "@/hooks/useInstructorTaxSummary";
 import { useInstructorMTDStatus } from "@/hooks/useInstructorMTDStatus";
 import { formatCurrencyCompact } from "@/lib/formatters";
 import { useDayLessons } from "@/hooks/useDayLessons";
+import { useDayLessonHistory } from "@/hooks/useDayLessonHistory";
 import { useInstructorPaymentsData } from "@/hooks/useInstructorPaymentsData";
 import { useRealGapSlots } from "@/hooks/useRealGapSlots";
 import { DsmLogo } from "@/components/instructor/ui/DsmLogo";
