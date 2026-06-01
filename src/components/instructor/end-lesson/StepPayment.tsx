@@ -139,6 +139,46 @@ export function StepPayment({
     }
   };
 
+  const recordSettlement = async (
+    kind: "no_payment_due" | "included_in_package",
+  ) => {
+    if (saving) return;
+    if (!lessonCost || lessonCost <= 0) {
+      toast.error("Lesson has no cost to settle");
+      return;
+    }
+    setSaving(true);
+    try {
+      const isComp = kind === "no_payment_due";
+      const { error: hErr } = await (supabase as any).from("payment_history").insert({
+        pupil_id: pupilId,
+        instructor_id: instructorId,
+        amount: lessonCost,
+        payment_method: isComp ? "Free" : "Voucher",
+        payment_type: isComp ? "adjustment" : "lesson_payment",
+        notes: isComp
+          ? "No payment due — recorded at end of lesson"
+          : "Included in package",
+        lesson_id: lessonId ?? null,
+      });
+      if (hErr) throw hErr;
+
+      const { error: balErr } = await supabase.rpc("increment_pupil_balance", {
+        p_pupil_id: pupilId,
+        p_amount: lessonCost,
+      });
+      if (balErr) throw balErr;
+
+      toast.success(isComp ? "Marked as no payment due" : "Marked as included in package");
+      invalidatePaymentQueries({ pupilId, instructorId });
+      onPaymentRecorded();
+    } catch (e) {
+      console.error(e);
+      toast.error("Failed to record");
+    } finally {
+      setSaving(false);
+    }
+
   // Outstanding label / colour mapping
   const balLabel = "Outstanding";
   let balText: string;
