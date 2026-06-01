@@ -62,7 +62,7 @@ function sameDay(a: Date, b: Date) {
   return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 }
 
-export function ScheduleTile({ lessons, nextLessons = [], onAddLesson, onFillGaps, onLessonClick, eolDoneKeys }: ScheduleTileProps) {
+export function ScheduleTile({ lessons, nextLessons = [], onAddLesson, onFillGaps, onLessonClick, onEolClick, eolDoneKeys }: ScheduleTileProps) {
   const [tab, setTab] = useState<"today" | "tomorrow" | "next">("today");
   const [nowMs, setNowMs] = useState(() => Date.now());
   useEffect(() => {
