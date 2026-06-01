@@ -347,7 +347,7 @@ export function CreateQuoteDialog({ scope, instructorId, onCreated }: Props) {
                 <Input
                   type="number"
                   value={form.total_hours}
-                  onChange={(e) => update("total_hours", Number(e.target.value))}
+                  onChange={(e) => update("total_hours", e.target.value === "" ? "" : Number(e.target.value))}
                 />
               </div>
               <div className="space-y-1.5">
@@ -355,7 +355,8 @@ export function CreateQuoteDialog({ scope, instructorId, onCreated }: Props) {
                 <Input
                   type="number"
                   value={form.price}
-                  onChange={(e) => update("price", Number(e.target.value))}
+                  placeholder="0.00"
+                  onChange={(e) => update("price", e.target.value === "" ? "" : Number(e.target.value))}
                 />
               </div>
               <div className="space-y-1.5">
@@ -363,7 +364,7 @@ export function CreateQuoteDialog({ scope, instructorId, onCreated }: Props) {
                 <Input
                   type="number"
                   value={form.deposit_amount}
-                  onChange={(e) => update("deposit_amount", Number(e.target.value))}
+                  onChange={(e) => update("deposit_amount", e.target.value === "" ? "" : Number(e.target.value))}
                 />
               </div>
               <div className="space-y-1.5">
@@ -375,6 +376,7 @@ export function CreateQuoteDialog({ scope, instructorId, onCreated }: Props) {
                 />
               </div>
             </div>
+
             <div className="space-y-1.5">
               <Label>Package details</Label>
               <Textarea
