@@ -2257,6 +2257,21 @@ export default function PremiumPupilProfile() {
         instructorId={instructorId || null}
       />
 
+      <TheoryTestQuickEdit
+        open={theoryEditOpen}
+        onOpenChange={setTheoryEditOpen}
+        pupil={pupil}
+        onSaved={() => queryClient.invalidateQueries({ queryKey: ["pupil-profile", pupil?.id, instructorId] })}
+      />
+
+      <DrivingTestQuickEdit
+        open={drivingEditOpen}
+        onOpenChange={setDrivingEditOpen}
+        pupil={pupil}
+        onSaved={() => queryClient.invalidateQueries({ queryKey: ["pupil-profile", pupil?.id, instructorId] })}
+      />
+
+
       <ArchivePupilDialog
         open={archiveOpen}
         onOpenChange={setArchiveOpen}
