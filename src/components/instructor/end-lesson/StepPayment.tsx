@@ -88,7 +88,7 @@ export function StepPayment({
   const credit = balanceAfterLesson > 0 ? balanceAfterLesson : 0;
 
   const [amount, setAmount] = useState(outstanding > 0 ? outstanding.toFixed(2) : "");
-  const [method, setMethod] = useState<string>("cash");
+  const [method, setMethod] = useState<string>("Cash");
   const [saving, setSaving] = useState(false);
   const [focused, setFocused] = useState(false);
   const [showNote, setShowNote] = useState(false);
