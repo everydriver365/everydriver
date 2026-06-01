@@ -1303,51 +1303,39 @@ export default function PremiumPupilProfile() {
         </div>
         <div style={{ flex: 1, minWidth: 100 }}>
           <div style={{ fontFamily: FONT, fontSize: 11, color: C.muted, textTransform: "uppercase", letterSpacing: "0.3px", fontWeight: 500 }}>
-            Prepaid hours
+            Prebooked hours
           </div>
-          {editHours ? (
-            <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4 }}>
-              <input
-                autoFocus
-                type="number"
-                step="0.5"
-                min="0"
-                value={hoursDraft}
-                onChange={(e) => setHoursDraft(e.target.value)}
-                style={{
-                  width: 80, fontFamily: FONT, fontSize: 18, fontWeight: 600,
-                  border: `1px solid ${C.hairline}`, borderRadius: 8, padding: "4px 8px",
-                  fontVariantNumeric: "tabular-nums", outline: "none",
-                }}
-              />
-              <button onClick={saveHours} disabled={savingField === "hours"}
-                style={{ background: "transparent", border: "none", color: C.green, cursor: "pointer", padding: 4 }}>
-                <Check size={18} />
-              </button>
-              <button onClick={() => setEditHours(false)}
-                style={{ background: "transparent", border: "none", color: C.muted, cursor: "pointer", padding: 4 }}>
-                <X size={18} />
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={() => { setHoursDraft(String(pupil.prepaid_hours ?? 0)); setEditHours(true); }}
-              title="Tap to edit"
-              style={{
-                background: "transparent", border: "none", padding: 0, cursor: "pointer",
-                textAlign: "left", marginTop: 2,
-                fontFamily: FONT, fontSize: 22, fontWeight: 700, color: C.text,
-                fontVariantNumeric: "tabular-nums",
-              }}
-            >
-              {(pupil.prepaid_hours ?? 0).toFixed(1)}
-            </button>
-          )}
-          {pupil.payment_type && (
-            <div style={{ fontFamily: FONT, fontSize: 11, color: C.muted, marginTop: 2, textTransform: "capitalize" }}>
-              {String(pupil.payment_type).replace(/_/g, " ")}
-            </div>
-          )}
+          {(() => {
+            const prepaid = Number(pupil.prepaid_hours ?? 0);
+            const intensive = Number((pupil as any).intensive_hours_paid ?? 0);
+            const total = prepaid + intensive;
+            let sub = "";
+            if (intensive > 0 && prepaid > 0) {
+              sub = `Intensive ${intensive.toFixed(1)} · Prepaid ${prepaid.toFixed(1)}`;
+            } else if (intensive > 0) {
+              sub = "Intensive course";
+            } else if (prepaid > 0) {
+              sub = pupil.payment_type ? String(pupil.payment_type).replace(/_/g, " ") : "Prepaid";
+            } else {
+              sub = "Nothing prebooked";
+            }
+            return (
+              <>
+                <div
+                  style={{
+                    marginTop: 2,
+                    fontFamily: FONT, fontSize: 22, fontWeight: 700, color: C.text,
+                    fontVariantNumeric: "tabular-nums",
+                  }}
+                >
+                  {total.toFixed(1)}
+                </div>
+                <div style={{ fontFamily: FONT, fontSize: 11, color: C.muted, marginTop: 2, textTransform: "capitalize" }}>
+                  {sub}
+                </div>
+              </>
+            );
+          })()}
         </div>
       </div>
     </Card>
