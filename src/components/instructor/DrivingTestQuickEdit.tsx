@@ -12,6 +12,33 @@ import { Slider } from "@/components/ui/slider";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { MapContainer, TileLayer, Marker, CircleMarker, Tooltip, useMap } from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+
+// Fix Leaflet's default marker icons (Vite bundling issue) — run once at module load
+if (typeof window !== "undefined" && !(L.Icon.Default.prototype as any)._lovablePatched) {
+  delete (L.Icon.Default.prototype as any)._getIconUrl;
+  L.Icon.Default.mergeOptions({
+    iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+    iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+    shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+  });
+  (L.Icon.Default.prototype as any)._lovablePatched = true;
+}
+
+function FitBounds({ points }: { points: Array<[number, number]> }) {
+  const map = useMap();
+  useEffect(() => {
+    if (!points.length) return;
+    if (points.length === 1) {
+      map.setView(points[0], 12);
+      return;
+    }
+    map.fitBounds(points as any, { padding: [24, 24], maxZoom: 13 });
+  }, [map, JSON.stringify(points)]);
+  return null;
+}
 
 type Status = "none" | "booked" | "passed" | "failed";
 
@@ -253,6 +280,57 @@ export function DrivingTestQuickEdit({ open, onOpenChange, pupil, onSaved }: Pro
                   Couldn't locate postcode — showing all centres.
                 </p>
               )}
+
+              {origin && (() => {
+                const topCentres = visibleCentres
+                  .filter((c) => c.lat != null && c.lng != null)
+                  .slice(0, 5);
+                const points: Array<[number, number]> = [
+                  [origin.lat, origin.lng],
+                  ...topCentres.map((c) => [Number(c.lat), Number(c.lng)] as [number, number]),
+                ];
+                return (
+                  <div className="relative h-40 w-full overflow-hidden rounded-xl border">
+                    <MapContainer
+                      center={[origin.lat, origin.lng]}
+                      zoom={11}
+                      scrollWheelZoom={false}
+                      style={{ height: "100%", width: "100%" }}
+                      attributionControl={false}
+                    >
+                      <TileLayer
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                      />
+                      <CircleMarker
+                        center={[origin.lat, origin.lng]}
+                        radius={7}
+                        pathOptions={{ color: "hsl(var(--primary))", fillColor: "hsl(var(--primary))", fillOpacity: 0.9, weight: 2 }}
+                      >
+                        <Tooltip>Home</Tooltip>
+                      </CircleMarker>
+                      {topCentres.map((c) => (
+                        <Marker
+                          key={c.id}
+                          position={[Number(c.lat), Number(c.lng)]}
+                          eventHandlers={{ click: () => setCentreId(c.id) }}
+                        >
+                          <Tooltip>
+                            {c.name}{c.distance != null ? ` · ${c.distance.toFixed(1)} mi` : ""}
+                          </Tooltip>
+                        </Marker>
+                      ))}
+                      <FitBounds points={points} />
+                    </MapContainer>
+                    {topCentres.length === 0 && (
+                      <div className="pointer-events-none absolute inset-x-0 bottom-1 mx-auto w-fit rounded-md bg-background/90 px-2 py-0.5 text-[11px] text-muted-foreground shadow">
+                        No centres within {radius} mi
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+
 
               <Select value={centreId || "__none__"} onValueChange={(v) => setCentreId(v === "__none__" ? "" : v)}>
                 <SelectTrigger><SelectValue placeholder="Select a centre…" /></SelectTrigger>
