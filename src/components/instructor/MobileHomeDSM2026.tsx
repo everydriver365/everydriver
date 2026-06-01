@@ -2265,15 +2265,65 @@ function ScheduleCard({
     });
   }, [nextRows]);
 
+  const queryClient = useQueryClient();
+  const [wizardLesson, setWizardLesson] = useState<TodayLesson | null>(null);
+  const [wizardBalance, setWizardBalance] = useState<number>(0);
+  const [wizardDate, setWizardDate] = useState<Date>(today);
+
+  const openEol = async (id: string) => {
+    const fromToday = todayLessons.find((l) => l.id === id);
+    const fromTomorrow = tomorrowLessons.find((l) => l.id === id);
+    const lesson = fromToday || fromTomorrow;
+    if (!lesson) return;
+    setWizardDate(fromToday ? today : tomorrow);
+    let balance = 0;
+    try {
+      const { data } = await supabase
+        .from("pupils")
+        .select("account_balance")
+        .eq("id", lesson.pupilId)
+        .single();
+      balance = Number(data?.account_balance ?? 0);
+    } catch {
+      balance = 0;
+    }
+    setWizardBalance(balance);
+    setWizardLesson(lesson);
+  };
+
   return (
-    <ScheduleTile
-      lessons={lessons}
-      nextLessons={nextLessons}
-      onAddLesson={() => navigate("/instructor/schedule?add=1")}
-      onFillGaps={() => navigate("/instructor/gaps")}
-      onLessonClick={(id) => navigate(`/instructor/schedule?lesson=${id}`)}
-      eolDoneKeys={eolDoneKeys}
-    />
+    <>
+      <ScheduleTile
+        lessons={lessons}
+        nextLessons={nextLessons}
+        onAddLesson={() => navigate("/instructor/schedule?add=1")}
+        onFillGaps={() => navigate("/instructor/gaps")}
+        onLessonClick={(id) => navigate(`/instructor/schedule?lesson=${id}`)}
+        onEolClick={openEol}
+        eolDoneKeys={eolDoneKeys}
+      />
+      {wizardLesson && (
+        <EndLessonWizard
+          open={!!wizardLesson}
+          onOpenChange={(open) => { if (!open) setWizardLesson(null); }}
+          lessonId={wizardLesson.id}
+          pupilId={wizardLesson.pupilId}
+          pupilName={wizardLesson.pupilName}
+          instructorId={instructorId}
+          durationMinutes={wizardLesson.durationMinutes}
+          lessonDate={format(wizardDate, "yyyy-MM-dd")}
+          startTime={wizardLesson.startTime}
+          currentBalance={wizardBalance}
+          onCompleted={() => {
+            setWizardLesson(null);
+            queryClient.invalidateQueries({ queryKey: ["day-lessons"] });
+            queryClient.invalidateQueries({ queryKey: ["day-lesson-history"] });
+            queryClient.invalidateQueries({ queryKey: ["today-overview"] });
+            queryClient.invalidateQueries({ queryKey: ["today-remaining-lessons"] });
+          }}
+        />
+      )}
+    </>
   );
 }
 
