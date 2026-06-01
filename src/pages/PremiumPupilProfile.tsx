@@ -525,6 +525,20 @@ export default function PremiumPupilProfile() {
       return (data || []) as { competency_id: string; level: number }[];
     },
   });
+  const theoryCentreId = (pupil as any)?.theory_test_centre_id as string | null | undefined;
+  const { data: theoryCentre } = useQuery({
+    queryKey: ["theory-centre", theoryCentreId],
+    enabled: !!theoryCentreId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("theory_test_centres")
+        .select("id, name, postcode")
+        .eq("id", theoryCentreId!)
+        .maybeSingle();
+      if (error) throw error;
+      return data as { id: string; name: string; postcode: string | null } | null;
+    },
+  });
   const { data: notes = [] } = usePupilNotes(pupilId);
   const { data: documents = [] } = usePupilDocuments(pupilId);
   const { data: terms } = usePupilTermsStatus(pupilId);
