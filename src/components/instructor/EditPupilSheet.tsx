@@ -198,8 +198,14 @@ export function EditPupilSheet({
         : pupil.theory_test_passed === false ? "failed"
         : pupil.theory_test_date ? "booked"
         : "none";
-      setForm({ ...pupil, theory_status });
-      setInitial({ ...pupil, theory_status });
+      const today = new Date().toISOString().slice(0, 10);
+      const practical_status =
+        pupil.test_passed === true ? "passed"
+        : (pupil.test_date && pupil.test_date >= today) ? "booked"
+        : pupil.test_passed === false ? "failed"
+        : "none";
+      setForm({ ...pupil, theory_status, practical_status });
+      setInitial({ ...pupil, theory_status, practical_status });
       setPostcodeManual(false);
       setFocused(null);
     }
@@ -207,18 +213,22 @@ export function EditPupilSheet({
 
   // Load theory test centres list
   const [theoryCentres, setTheoryCentres] = useState<Array<{ id: string; name: string; postcode: string | null }>>([]);
+  const [practicalCentres, setPracticalCentres] = useState<Array<{ id: string; name: string; postcode: string | null }>>([]);
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const { data } = await supabase
-        .from("theory_test_centres")
-        .select("id, name, postcode")
-        .eq("is_active", true)
-        .order("name");
-      if (!cancelled) setTheoryCentres((data || []) as any);
+      const [theory, practical] = await Promise.all([
+        supabase.from("theory_test_centres").select("id, name, postcode").eq("is_active", true).order("name"),
+        supabase.from("test_centres").select("id, name, postcode").eq("is_active", true).order("name"),
+      ]);
+      if (!cancelled) {
+        setTheoryCentres((theory.data || []) as any);
+        setPracticalCentres((practical.data || []) as any);
+      }
     })();
     return () => { cancelled = true; };
   }, []);
+
 
   // Computed
   const dirty = useMemo(() => {
