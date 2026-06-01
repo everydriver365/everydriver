@@ -20,11 +20,14 @@ import {
   Flame,
   Zap,
   Accessibility,
+  Check,
+  AlertCircle,
 } from "lucide-react";
 import { EveryInstructorLayout } from "@/components/layout/EveryInstructorLayout";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { useTodayOverview } from "@/hooks/useTodayOverview";
 import { useTodayRemainingLessons } from "@/hooks/useTodayRemainingLessons";
+import { useDayLessonHistory, eolKey } from "@/hooks/useDayLessonHistory";
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
 import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -170,6 +173,8 @@ function LessonCard({
   location,
   initials,
   profileImage,
+  isFinished,
+  eolDone,
   onClick,
 }: {
   name: string;
@@ -177,17 +182,24 @@ function LessonCard({
   location?: string | null;
   initials: string;
   profileImage?: string | null;
+  isFinished?: boolean;
+  eolDone?: boolean;
   onClick: () => void;
 }) {
+  const headerBg = isFinished
+    ? "linear-gradient(135deg, #64748B, #475569)"
+    : "linear-gradient(135deg, #007AFF, #5856D6)";
+
   return (
     <motion.div
       whileTap={{ scale: 0.97 }}
       onClick={onClick}
       className="snap-start shrink-0 w-[220px] rounded-2xl overflow-hidden cursor-pointer bg-white ios-shadow-elevated"
+      style={{ opacity: isFinished ? 0.92 : 1 }}
     >
       <div
         className="p-4 flex items-center gap-3"
-        style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+        style={{ background: headerBg }}
       >
         <Avatar className="h-11 w-11 ring-2 ring-white/40" style={{ backdropFilter: "blur(8px)" }}>
           <AvatarImage src={profileImage || undefined} />
@@ -200,6 +212,24 @@ function LessonCard({
           <p className="text-[12px] text-white/80">{time}</p>
         </div>
       </div>
+      {isFinished && (
+        <div className="px-3.5 pt-2.5 flex items-center gap-1.5">
+          <span
+            className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold text-white"
+            style={{ background: "#64748B" }}
+          >
+            <Check className="h-3 w-3" />
+            Completed
+          </span>
+          <span
+            className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold text-white"
+            style={{ background: eolDone ? "#10B981" : "#F59E0B" }}
+          >
+            {eolDone ? <Check className="h-3 w-3" /> : <AlertCircle className="h-3 w-3" />}
+            {eolDone ? "EOL done" : "EOL pending"}
+          </span>
+        </div>
+      )}
       {location && (
         <div className="px-3.5 py-2.5 flex items-center gap-1.5 text-[12px] text-gray-400">
           <MapPin className="h-3.5 w-3.5 shrink-0" />
@@ -209,6 +239,7 @@ function LessonCard({
     </motion.div>
   );
 }
+
 
 /* ── iOS Grouped List Row for Quick Actions ──────────── */
 function QuickActionRow({
@@ -353,6 +384,8 @@ export default function EveryInstructorHome() {
   const { instructor } = useInstructorAuth();
   const { data: overview } = useTodayOverview(instructor?.id);
   const { data: lessons } = useTodayRemainingLessons(instructor?.id);
+  const { data: eolDoneKeys = new Set<string>() } = useDayLessonHistory(instructor?.id, new Date());
+  const now = new Date();
   const pendingJobs = usePendingJobsCount();
   const { data: unreadMessages = 0 } = useUnreadMessagesCount(instructor?.id);
 
@@ -399,17 +432,26 @@ export default function EveryInstructorHome() {
       {/* ── Today's Schedule ────────────────── */}
       {lessons && lessons.length > 0 && (
         <Section title="Today's Schedule" moreRoute="/every-instructor/schedule">
-          {lessons.map((l) => (
-            <LessonCard
-              key={l.id}
-              name={l.pupilName}
-              time={l.startTime?.slice(0, 5) || ""}
-              location={l.pickupLocation || l.pickupPostcode}
-              initials={l.pupilInitials}
-              profileImage={l.pupilProfileImageUrl}
-              onClick={() => navigate(`/every-instructor/pupils/${l.pupilId}`)}
-            />
-          ))}
+          {lessons.map((l) => {
+            const [hh, mm] = (l.startTime || "00:00").split(":").map(Number);
+            const end = new Date();
+            end.setHours(hh || 0, (mm || 0) + (l.durationMinutes || 60), 0, 0);
+            const isFinished = l.status === "completed" || end.getTime() <= now.getTime();
+            const eolDone = eolDoneKeys.has(eolKey(l.pupilId, l.startTime));
+            return (
+              <LessonCard
+                key={l.id}
+                name={l.pupilName}
+                time={l.startTime?.slice(0, 5) || ""}
+                location={l.pickupLocation || l.pickupPostcode}
+                initials={l.pupilInitials}
+                profileImage={l.pupilProfileImageUrl}
+                isFinished={isFinished}
+                eolDone={eolDone}
+                onClick={() => navigate(`/every-instructor/pupils/${l.pupilId}`)}
+              />
+            );
+          })}
         </Section>
       )}
 
