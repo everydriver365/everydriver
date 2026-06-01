@@ -1,12 +1,21 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { format, startOfYear, endOfYear, subYears, parseISO } from "date-fns";
-import { Calculator, Calendar, ChevronLeft, ChevronRight, PoundSterling, Receipt, TrendingUp, FileText, AlertCircle } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import {
+  Calculator,
+  ChevronLeft,
+  ChevronRight,
+  PoundSterling,
+  Receipt,
+  TrendingUp,
+  FileText,
+  Info,
+  ArrowRight,
+  ReceiptText,
+} from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { PageSkeleton } from "@/components/ui/skeletons/PageSkeleton";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
