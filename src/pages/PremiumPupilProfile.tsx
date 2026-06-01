@@ -819,7 +819,14 @@ export default function PremiumPupilProfile() {
     <Card>
       <div style={{ fontFamily: FONT, fontSize: 17, color: C.text, fontWeight: 600, letterSpacing: "-0.01em", marginBottom: 10 }}>
         Last lesson
-      </div>
+          </div>
+          {stats.lastLesson._source === "scheduled" && (
+            <div style={{ marginTop: 4, fontFamily: FONT, fontSize: 12, color: C.muted }}>
+              {stats.lastLesson.start_time && `${stats.lastLesson.start_time.slice(0, 5)} · `}
+              {(stats.lastLesson.duration_minutes / 60).toFixed(1)}h
+              {stats.lastLesson.pickup_postcode && ` · ${stats.lastLesson.pickup_postcode}`}
+            </div>
+          )}
       {stats?.lastLesson ? (
         <div>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
