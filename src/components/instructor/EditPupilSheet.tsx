@@ -193,12 +193,32 @@ export function EditPupilSheet({
 
   useEffect(() => {
     if (pupil) {
-      setForm({ ...pupil });
-      setInitial({ ...pupil });
+      const theory_status =
+        pupil.theory_test_passed === true ? "passed"
+        : pupil.theory_test_passed === false ? "failed"
+        : pupil.theory_test_date ? "booked"
+        : "none";
+      setForm({ ...pupil, theory_status });
+      setInitial({ ...pupil, theory_status });
       setPostcodeManual(false);
       setFocused(null);
     }
   }, [pupil?.id]);
+
+  // Load theory test centres list
+  const [theoryCentres, setTheoryCentres] = useState<Array<{ id: string; name: string; postcode: string | null }>>([]);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("theory_test_centres")
+        .select("id, name, postcode")
+        .eq("is_active", true)
+        .order("name");
+      if (!cancelled) setTheoryCentres((data || []) as any);
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   // Computed
   const dirty = useMemo(() => {
