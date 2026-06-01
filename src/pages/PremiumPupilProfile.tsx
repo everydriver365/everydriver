@@ -357,7 +357,7 @@ function usePupilLessonStats(pupilId: string | undefined) {
     enabled: !!pupilId,
     queryFn: async () => {
       const today = format(new Date(), "yyyy-MM-dd");
-      const [pastRes, nextRes, lastRes] = await Promise.all([
+      const [pastRes, nextRes, lastHistoryRes, lastCompletedRes] = await Promise.all([
         supabase
           .from("scheduled_lessons")
           .select("id, duration_minutes, lesson_date, status", { count: "exact", head: false })
@@ -376,9 +376,18 @@ function usePupilLessonStats(pupilId: string | undefined) {
           .limit(1),
         supabase
           .from("lesson_history")
-          .select("id, lesson_date, duration_minutes, notes, rating, skills_practiced")
+          .select("id, lesson_date, start_time, duration_minutes, notes, rating, skills_practiced")
           .eq("pupil_id", pupilId!)
           .order("lesson_date", { ascending: false })
+          .order("start_time", { ascending: false })
+          .limit(1),
+        supabase
+          .from("scheduled_lessons")
+          .select("id, lesson_date, start_time, duration_minutes, pickup_postcode, lesson_type, status")
+          .eq("pupil_id", pupilId!)
+          .eq("status", "completed")
+          .order("lesson_date", { ascending: false })
+          .order("start_time", { ascending: false })
           .limit(1),
       ]);
 
@@ -386,11 +395,25 @@ function usePupilLessonStats(pupilId: string | undefined) {
       const totalLessons = past.length;
       const totalMinutes = past.reduce((s, l: any) => s + (l.duration_minutes || 0), 0);
 
+      const historyRow: any = lastHistoryRes.data?.[0] || null;
+      const completedRow: any = lastCompletedRes.data?.[0] || null;
+      const sortKey = (r: any) => r ? `${r.lesson_date} ${r.start_time ?? ""}` : "";
+      let lastLesson: any = null;
+      if (historyRow && completedRow) {
+        lastLesson = sortKey(completedRow) > sortKey(historyRow)
+          ? { ...completedRow, _source: "scheduled" }
+          : { ...historyRow, _source: "history" };
+      } else if (historyRow) {
+        lastLesson = { ...historyRow, _source: "history" };
+      } else if (completedRow) {
+        lastLesson = { ...completedRow, _source: "scheduled" };
+      }
+
       return {
         totalLessons,
         totalHours: Math.round((totalMinutes / 60) * 10) / 10,
         nextLesson: nextRes.data?.[0] || null,
-        lastLesson: lastRes.data?.[0] || null,
+        lastLesson,
       };
     },
   });
@@ -796,7 +819,14 @@ export default function PremiumPupilProfile() {
     <Card>
       <div style={{ fontFamily: FONT, fontSize: 17, color: C.text, fontWeight: 600, letterSpacing: "-0.01em", marginBottom: 10 }}>
         Last lesson
-      </div>
+          </div>
+          {stats.lastLesson._source === "scheduled" && (
+            <div style={{ marginTop: 4, fontFamily: FONT, fontSize: 12, color: C.muted }}>
+              {stats.lastLesson.start_time && `${stats.lastLesson.start_time.slice(0, 5)} · `}
+              {(stats.lastLesson.duration_minutes / 60).toFixed(1)}h
+              {stats.lastLesson.pickup_postcode && ` · ${stats.lastLesson.pickup_postcode}`}
+            </div>
+          )}
       {stats?.lastLesson ? (
         <div>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
