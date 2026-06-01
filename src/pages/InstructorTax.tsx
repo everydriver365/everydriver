@@ -457,40 +457,261 @@ export default function InstructorTax() {
 
 
         {/* Expense Breakdown */}
-        {!loading && expenseBreakdown.length > 0 && (
-          <div className="space-y-3">
-            <h2 className="font-semibold flex items-center gap-2">
-              <FileText className="h-4 w-4" />
-              Expense Breakdown
-            </h2>
-            
-            {expenseBreakdown.map((item) => (
-              <Card key={item.category}>
-                <CardContent className="p-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-medium text-sm">{item.category}</span>
-                    <span className="font-semibold">{formatCurrency(item.amount)}</span>
-                  </div>
-                  <Progress value={item.percentage} className="h-1.5" />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {item.percentage.toFixed(1)}% of total expenses
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
+        {!loading && (
+          <div
+            style={{
+              background: "#FFFFFF",
+              border: "0.5px solid #E5E7EB",
+              borderRadius: 12,
+              overflow: "hidden",
+            }}
+          >
+            {(() => {
+              const knownSet = new Set(ALL_EXPENSE_CATEGORIES);
+              const extras = expenseBreakdown.filter(
+                (e) => !knownSet.has(e.category)
+              );
+              const allCategories = ALL_EXPENSE_CATEGORIES.map((cat) => {
+                const found = expenseBreakdown.find(
+                  (e) => e.category === cat
+                );
+                return { category: cat, amount: found?.amount ?? 0 };
+              });
+              extras.forEach((e) =>
+                allCategories.push({ category: e.category, amount: e.amount })
+              );
+              allCategories.sort((a, b) => b.amount - a.amount);
 
-        {!loading && expenseBreakdown.length === 0 && (
-          <Card>
-            <CardContent className="py-8 text-center">
-              <Receipt className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
-              <p className="text-muted-foreground">No expenses recorded for this tax year</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Recording expenses reduces your tax liability
-              </p>
-            </CardContent>
-          </Card>
+              const totalExpenses = allCategories.reduce(
+                (sum, c) => sum + c.amount,
+                0
+              );
+
+              return (
+                <>
+                  {/* Section 1 — Header */}
+                  <div
+                    style={{
+                      padding: "14px 16px",
+                      borderBottom: "0.5px solid #F3F4F6",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                      }}
+                    >
+                      <Receipt
+                        size={18}
+                        color="#6B7280"
+                        aria-hidden
+                      />
+                      <span
+                        style={{
+                          fontSize: 15,
+                          fontWeight: 500,
+                          color: "#0A0E27",
+                        }}
+                      >
+                        Expense breakdown
+                      </span>
+                    </div>
+                    <span style={{ fontSize: 12, color: "#6B7280" }}>
+                      {getTaxYear()}
+                    </span>
+                  </div>
+
+                  {/* Section 2 — Total expenses bar */}
+                  <div
+                    style={{
+                      padding: "12px 16px",
+                      background: "#F9FAFB",
+                      borderBottom: "0.5px solid #F3F4F6",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <span style={{ fontSize: 11, color: "#9CA3AF" }}>
+                      Total expenses
+                    </span>
+                    <span
+                      style={{
+                        fontSize: 15,
+                        fontWeight: 500,
+                        color: "#0A0E27",
+                      }}
+                    >
+                      {formatCurrency(totalExpenses)}
+                    </span>
+                  </div>
+
+                  {/* Section 3 — Category rows */}
+                  {allCategories.map((cat, idx) => {
+                    const hasAmount = cat.amount > 0;
+                    const color =
+                      CATEGORY_COLORS[cat.category] || "#6B7280";
+                    const pct =
+                      totalExpenses > 0
+                        ? Math.round((cat.amount / totalExpenses) * 100)
+                        : 0;
+                    const barWidth =
+                      totalExpenses > 0
+                        ? `${Math.min(
+                            Math.round(
+                              (cat.amount / totalExpenses) * 100
+                            ),
+                            100
+                          )}%`
+                        : "0%";
+                    const isLast = idx === allCategories.length - 1;
+
+                    return (
+                      <div
+                        key={cat.category}
+                        style={{
+                          padding: "14px 16px",
+                          borderBottom: isLast
+                            ? "none"
+                            : "0.5px solid #F3F4F6",
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 8,
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 8,
+                            }}
+                          >
+                            <div
+                              style={{
+                                width: 8,
+                                height: 8,
+                                borderRadius: "50%",
+                                background: color,
+                                flexShrink: 0,
+                              }}
+                            />
+                            <span
+                              style={{
+                                fontSize: 13,
+                                color: hasAmount ? "#0A0E27" : "#9CA3AF",
+                              }}
+                            >
+                              {cat.category}
+                            </span>
+                          </div>
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "baseline",
+                              gap: 8,
+                            }}
+                          >
+                            <span
+                              style={{
+                                fontSize: 13,
+                                fontWeight: 500,
+                                color: hasAmount ? "#0A0E27" : "#9CA3AF",
+                              }}
+                            >
+                              {formatCurrency(cat.amount)}
+                            </span>
+                            <span
+                              style={{ fontSize: 11, color: "#9CA3AF" }}
+                            >
+                              {pct}%
+                            </span>
+                          </div>
+                        </div>
+                        <div
+                          style={{
+                            height: 4,
+                            background: "#F3F4F6",
+                            borderRadius: 4,
+                            overflow: "hidden",
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: barWidth,
+                              height: "100%",
+                              background: color,
+                              borderRadius: 4,
+                              transition: "width 0.3s ease",
+                            }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {/* Section 4 — Action button */}
+                  <div
+                    style={{
+                      padding: "12px 16px",
+                      background: "#F9FAFB",
+                      borderTop: "0.5px solid #F3F4F6",
+                    }}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => navigate("/instructor/expenses")}
+                      style={{
+                        width: "100%",
+                        background: "#FFFFFF",
+                        border: "0.5px solid #E5E7EB",
+                        borderRadius: 8,
+                        padding: "10px 14px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        fontSize: 13,
+                        fontWeight: 500,
+                        color: "#0A0E27",
+                        cursor: "pointer",
+                      }}
+                    >
+                      <span
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 8,
+                        }}
+                      >
+                        <Plus
+                          size={14}
+                          color="#6B7280"
+                          aria-hidden
+                        />
+                        Add an expense
+                      </span>
+                      <ArrowRight
+                        size={14}
+                        color="#9CA3AF"
+                        aria-hidden
+                      />
+                    </button>
+                  </div>
+                </>
+              );
+            })()}
+          </div>
         )}
       </div>
     </InstructorPortalLayout>
