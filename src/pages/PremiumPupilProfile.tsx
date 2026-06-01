@@ -539,6 +539,21 @@ export default function PremiumPupilProfile() {
       return data as { id: string; name: string; postcode: string | null } | null;
     },
   });
+  const practicalCentreId = (pupil as any)?.test_centre_id as string | null | undefined;
+  const { data: practicalCentre } = useQuery({
+    queryKey: ["practical-centre", practicalCentreId],
+    enabled: !!practicalCentreId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("test_centres")
+        .select("id, name, postcode")
+        .eq("id", practicalCentreId!)
+        .maybeSingle();
+      if (error) throw error;
+      return data as { id: string; name: string; postcode: string | null } | null;
+    },
+  });
+
   const { data: notes = [] } = usePupilNotes(pupilId);
   const { data: documents = [] } = usePupilDocuments(pupilId);
   const { data: terms } = usePupilTermsStatus(pupilId);
