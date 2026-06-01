@@ -141,15 +141,33 @@ export function CreateQuoteDialog({ scope, instructorId, onCreated }: Props) {
   );
 
   // For instructor scope, resolve the issuer id from auth if the prop is missing
+  const resolveInstructorId = async (): Promise<string | null> => {
+    const { data: userData } = await supabase.auth.getUser();
+    const uid = userData.user?.id;
+    console.log("[CreateQuoteDialog] resolveInstructorId auth uid", uid);
+    if (!uid) return null;
+    const { data: rpcData, error: rpcErr } = await supabase.rpc(
+      "get_instructor_id_for_user",
+      { p_user_id: uid }
+    );
+    console.log("[CreateQuoteDialog] rpc result", { rpcData, rpcErr });
+    if (!rpcErr && rpcData) return rpcData as string;
+    // Direct fallback
+    const { data: row, error: rowErr } = await supabase
+      .from("instructors")
+      .select("id")
+      .eq("auth_user_id", uid)
+      .maybeSingle();
+    console.log("[CreateQuoteDialog] direct fallback", { row, rowErr });
+    return row?.id ?? null;
+  };
+
   useEffect(() => {
     if (!open || scope !== "instructor") return;
     if (resolvedInstructorId) return;
     (async () => {
-      const { data: userData } = await supabase.auth.getUser();
-      const uid = userData.user?.id;
-      if (!uid) return;
-      const { data, error } = await supabase.rpc("get_instructor_id_for_user", { p_user_id: uid });
-      if (!error && data) setResolvedInstructorId(data as string);
+      const id = await resolveInstructorId();
+      if (id) setResolvedInstructorId(id);
     })();
   }, [open, scope, resolvedInstructorId]);
 
@@ -168,7 +186,12 @@ export function CreateQuoteDialog({ scope, instructorId, onCreated }: Props) {
   }, [scope, issuerInstructorId, form.pupil_name, form.price]);
 
   const submit = async () => {
-    if (!issuerInstructorId) {
+    let issuer = issuerInstructorId;
+    if (!issuer && scope === "instructor") {
+      issuer = await resolveInstructorId();
+      if (issuer) setResolvedInstructorId(issuer);
+    }
+    if (!issuer) {
       toast.error(scope === "instructor" ? "Could not identify your instructor account" : "Pick an instructor");
       return;
     }
@@ -176,6 +199,7 @@ export function CreateQuoteDialog({ scope, instructorId, onCreated }: Props) {
       toast.error("Pupil name and price are required");
       return;
     }
+
 
     setSubmitting(true);
     try {
