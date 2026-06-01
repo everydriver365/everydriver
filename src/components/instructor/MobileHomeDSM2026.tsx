@@ -161,6 +161,8 @@ import { useInstructorMTDStatus } from "@/hooks/useInstructorMTDStatus";
 import { formatCurrencyCompact } from "@/lib/formatters";
 import { useDayLessons } from "@/hooks/useDayLessons";
 import { useDayLessonHistory } from "@/hooks/useDayLessonHistory";
+import { EndLessonWizard } from "@/components/instructor/EndLessonWizard";
+import type { TodayLesson } from "@/hooks/useTodayRemainingLessons";
 import { useInstructorPaymentsData } from "@/hooks/useInstructorPaymentsData";
 import { useRealGapSlots } from "@/hooks/useRealGapSlots";
 import { DsmLogo } from "@/components/instructor/ui/DsmLogo";
