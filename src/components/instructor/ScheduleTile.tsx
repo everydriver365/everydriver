@@ -301,21 +301,30 @@ export function ScheduleTile({ lessons, nextLessons = [], onAddLesson, onFillGap
                     </div>
                   )}
                   {showEolPill && (
-                    <div
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (onEolClick) onEolClick(l.id);
+                        else onLessonClick(l.id);
+                      }}
                       className="inline-flex items-center"
                       style={{
                         marginTop: 6,
                         background: eolDone ? C.greenTint : C.amberTint,
                         color: eolDone ? C.greenAccent : C.amber,
+                        border: 0,
                         borderRadius: 999,
                         padding: "3px 8px",
                         fontSize: 11,
                         fontWeight: 700,
                         letterSpacing: "0.2px",
+                        cursor: "pointer",
+                        fontFamily: FONT,
                       }}
                     >
                       {eolDone ? "EOL ✓" : "EOL needed"}
-                    </div>
+                    </button>
                   )}
                 </div>
               </div>
