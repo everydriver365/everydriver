@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Radio, Car, MapPin, RefreshCw, Plus, Shield, ShieldAlert, Wrench, Fuel, Flame } from "lucide-react";
+import { Radio, Car, MapPin, RefreshCw, Plus, Shield, ShieldAlert, Wrench, Fuel, Flame, Activity } from "lucide-react";
 import { InstructorPageHeader } from "@/components/instructor/InstructorPageHeader";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
+import { GeotabTab } from "@/components/instructor/vehicle-health/GeotabTab";
+import { useActiveTrackingProvider } from "@/hooks/useActiveTrackingProvider";
 import { EnhancedDeviceStatusCard } from "@/components/instructor/vehicle-health/EnhancedDeviceStatusCard";
 import { BatteryHistoryChart } from "@/components/instructor/vehicle-health/BatteryHistoryChart";
 import { IgnitionEventsLog } from "@/components/instructor/vehicle-health/IgnitionEventsLog";
