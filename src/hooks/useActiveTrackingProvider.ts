@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-export type TrackingProvider = "radius" | "phone" | null;
+export type TrackingProvider = "radius" | "phone" | "geotab" | null;
 
 // Hardware providers (phone is always available — it's the device itself).
-const HARDWARE_PROVIDERS: Exclude<TrackingProvider, null>[] = ["radius"];
+const HARDWARE_PROVIDERS: Exclude<TrackingProvider, null>[] = ["radius", "geotab"];
 
 export function useActiveTrackingProvider(instructorId: string | null | undefined) {
   const [activeProvider, setActiveProvider] = useState<TrackingProvider>(null);
+  const [hasGeotab, setHasGeotab] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -38,6 +39,8 @@ export function useActiveTrackingProvider(instructorId: string | null | undefine
         ),
       ];
 
+      setHasGeotab(hardwareProviders.includes("geotab"));
+
       // Phone is always an option (the instructor's device itself).
       const allProviders: TrackingProvider[] = ["phone", ...(hardwareProviders as TrackingProvider[])];
       const preference = (instRes.data?.preferred_tracking_provider as TrackingProvider) ?? null;
@@ -57,5 +60,5 @@ export function useActiveTrackingProvider(instructorId: string | null | undefine
     fetchProvider();
   }, [instructorId]);
 
-  return { activeProvider, isLoading };
+  return { activeProvider, hasGeotab, isLoading };
 }
