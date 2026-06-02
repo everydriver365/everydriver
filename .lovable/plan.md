@@ -1,31 +1,34 @@
-# Prebooked hours on mobile pupil record
+# Fix: Top Edit button changes not reflected on Pupil Record
 
-On the DSM mobile pupil profile (`/instructor/pupils/:pupilId` → `src/pages/PremiumPupilProfile.tsx`), the financial summary card currently shows two cells: **Amount due** and **Prepaid hours**. The "Prepaid hours" cell reads `pupil.prepaid_hours` only, so for intensive pupils like Joseph (`prepaid_hours = 0`, `intensive_hours_paid = 42.50`) it incorrectly shows `0.0`.
+## Root cause
+
+The top **Edit** button on the mobile pupil record opens `EditPupilSheet`. On save it only invalidates `["next-lesson-details"]` and calls `onSaved?.()` — but `PremiumPupilProfile` never passes an `onSaved` handler. The page's tiles are driven by `["pupil-profile", pupilId, instructorId]`, which is never invalidated, so the UI shows stale data until a manual refresh.
+
+Inline `EditableRow` saves and the Theory/Driving test sheets work correctly because they invalidate that exact query key.
 
 ## Change
 
-Replace the "Prepaid hours" cell with a **Prebooked hours** cell that shows the total hours the pupil has actually bought.
+Single-line wiring fix in `src/pages/PremiumPupilProfile.tsx` (around line 2366) — pass `onSaved` to `EditPupilSheet` so the pupil-profile query is invalidated after a save:
 
-- **Label:** `Prebooked hours`
-- **Value:** `(pupil.prepaid_hours ?? 0) + (pupil.intensive_hours_paid ?? 0)`, formatted with `.toFixed(1)`
-- **Sub-line (under value):**
-  - If `intensive_hours_paid > 0` and `prepaid_hours > 0`: `Intensive 42.5 · Prepaid 5.0`
-  - If only `intensive_hours_paid > 0`: `Intensive course`
-  - If only `prepaid_hours > 0`: keep the existing `payment_type` capitalised line
-  - If both are 0: `Nothing prebooked`
+```tsx
+<EditPupilSheet
+  open={editOpen}
+  onOpenChange={setEditOpen}
+  pupil={pupil}
+  instructorId={instructorId || null}
+  onSaved={() =>
+    queryClient.invalidateQueries({
+      queryKey: ["pupil-profile", pupil?.id, instructorId],
+    })
+  }
+/>
+```
 
-For Joseph this renders `42.5` with sub-line `Intensive course`.
-
-## Editing behaviour
-
-The current cell is tap-to-edit and writes back to `prepaid_hours`. Since the new value is a derived total across two fields, **drop the inline edit** on this cell — editing intensive/prepaid hours stays in the existing Edit Pupil sheet (`EditPupilSheet.tsx`) and Add Pupil flow, which already handle both fields. This keeps a single source of truth and avoids ambiguity about which field a tap-edit would mutate.
-
-## Scope
-
-- Only `src/pages/PremiumPupilProfile.tsx` is touched.
-- No schema changes, no data backfill, no other components, no desktop changes.
-- Existing `saveHours`, `editHours`, `hoursDraft` state for that cell is removed (unused after the edit affordance is dropped).
+No business logic, schema, or other component changes. Mobile layout untouched.
 
 ## Verification
 
-After the change, Joseph (`53011379-5cf6-4385-9e9c-544d3e9ae961`) shows `Prebooked hours 42.5` with sub-line `Intensive course`, and a regular learner with `prepaid_hours = 10` continues to show `10.0`.
+- Open a pupil record on the mobile instructor app.
+- Tap top **Edit**, change a field (e.g. phone, postcode, notes), save.
+- Confirm the corresponding tile updates immediately without a manual refresh.
+- Confirm inline edits and Theory/Driving test edits still work as before.
