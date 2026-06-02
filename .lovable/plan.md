@@ -1,71 +1,57 @@
-## Goal
+# Intensive-only instructor mode
 
-Replace hardcoded "4.9 (127 reviews)" and per-component review fetches with a single live source so course cards, instructor profiles/search tiles, and mini-websites all show the same rating.
+Today instructors can toggle individual 08:00–12:00 / 13:00–17:00 cells via `StandardIntensiveHours`, and tick `offers_intensive` in onboarding — but nothing stops a pupil booking a 1-hour weekly lesson in those windows. This plan adds a proper "Intensive only" mode.
 
-## Approach
+## What changes for the instructor
 
-### 1. Single source of truth (DB view)
+A new **"Intensive only mode"** card on the Availability page (just above `StandardIntensiveHours`), with:
 
-Add a Postgres view `public.instructor_rating_summary`:
+- A single switch: **Only accept intensive / semi-intensive bookings**
+- When turned ON:
+  - All Mon–Sun 08:00–12:00 and 13:00–17:00 cells are auto-enabled (one-tap setup)
+  - Weekly lesson durations are hidden from pupil booking surfaces
+  - Course catalogue is filtered to `intensive` + `semi_intensive` only
+  - A small "Intensive only" pill shows on the instructor's mini-website and profile cards
+- When turned OFF: behaviour reverts to today's mixed mode (no destructive changes to existing windows).
 
-- `instructor_id`
-- `avg_rating` (numeric, 1 dp)
-- `total_reviews` (int)
-- `last_review_at` (timestamptz)
+## What changes for pupils
 
-Counts only rows from `course_reviews` where `is_visible = true` and `moderation_status = 'approved'`. Grant `SELECT` to `anon` and `authenticated` (public-facing — same trust surface as the existing inline queries on mini-sites).
+- Booking flow / mini-website / course cards for that instructor show only intensive + semi-intensive products.
+- Weekly duration picker is suppressed for intensive-only instructors.
+- "New instructor" / rating badges unchanged.
 
-### 2. Shared React hook
+## Technical
 
-`src/hooks/useInstructorRating.ts`:
+1. **DB migration**
+   - Add `instructors.intensive_only boolean NOT NULL DEFAULT false`.
+   - Mirror to `public_instructors` view if it's a view (re-create) so pupil surfaces can read it without auth.
 
-- `useInstructorRating(instructorId)` — single instructor, returns `{ avgRating, totalReviews, lastReviewAt, isLoading }`.
-- `useInstructorRatings(instructorIds[])` — batch fetch for lists (course search, directory).
+2. **Profile hook**
+   - Extend `useInstructorProfile` to return `intensive_only`.
 
-Both query the view above via `supabase.from('instructor_rating_summary')`. 5-min stale time.
+3. **New component** `src/components/instructor/IntensiveOnlyToggleCard.tsx`
+   - Reads/writes `instructors.intensive_only`.
+   - On enable: calls a helper that upserts the 14 standard cells into `availability_windows` and mirrors via `mirrorAwToIwh` (same path `StandardIntensiveHours` uses).
+   - Toast confirms; emits `onChanged` so `StandardIntensiveHours` refetches.
 
-### 3. Display rules (consistent everywhere)
+4. **Wire into Availability page** (`InstructorAvailabilityWindows.tsx`)
+   - Render `IntensiveOnlyToggleCard` above `AvailabilityWindowsManager` and `StandardIntensiveHours`.
 
-- `total_reviews >= 3` → show `★ 4.8 · 42 reviews`
-- `total_reviews < 3` → show "New instructor" pill, no numeric score
-- Round avg to 1 dp; render filled/half/empty stars
-- Always show review count alongside the score
-- No invented data; if the hook returns nothing, render the "New" state (per project Live Data rule)
+5. **Booking-side filtering** (live data only, no fallbacks)
+   - In course-listing queries used by `CourseCard` / `DynamicCourseCard` / mini-website course lists / `SchoolBookingPage`, when the instructor has `intensive_only = true`, filter `course.type in ('intensive','semi_intensive')`.
+   - In any duration-picker that loads `lesson_durations` for a weekly booking flow, short-circuit with an "Intensive only — choose a course below" empty state when the flag is on.
 
-### 4. Surfaces to wire
+6. **Mini-website / profile badge**
+   - Add a small "Intensive only" pill next to the instructor's name on `InstructorMiniWebsite`, `MiniWebsiteHome`, and `InstructorTile` when the flag is true.
 
-**Course cards** — replace hardcoded rating on:
-- `src/components/CourseCard.tsx` (back-of-card "4.9 (127 reviews)")
-- `src/components/courses/DynamicCourseCard.tsx`
-- `src/components/courses/IOSCourseCard.tsx` (if it shows a rating)
+## Out of scope
 
-**Instructor profiles / search tiles** — add a rating row under the name on:
-- `InstructorTile`, `InstructorCard`, `InstructorDirectory` (whichever currently exist)
-- `AccessibleInstructorProfile` — swap its inline query for the hook
-
-**Mini-websites** — swap inline queries for the shared hook (no visible change, just consistent counts):
-- `InstructorMiniWebsite`
-- `mini-website/MiniWebsiteHome`
-- `Reviews`
-- `BookingSummary`, `PupilCourseSummary`
-
-**School pages** (`SchoolBookingPage` + school website pages) — stop reading stale `instructors.average_rating` / `total_reviews`; use the hook instead.
-
-### 5. Out of scope (for this change)
-
-- Pulling Google Place ratings via edge function (can be added later as `google_avg_rating` / `google_total_reviews` columns + combined display).
-- Changing the moderation workflow in `InstructorReviews.tsx`.
-- Any mobile instructor-app layout changes (per project mobile-update policy).
-
-## Technical notes
-
-- View is read-only and depends only on `course_reviews`; no new RLS to author beyond `GRANT SELECT`.
-- Hook uses React Query so all surfaces share a cache — updating a review (instructor moderation) can later `invalidateQueries(['instructor-rating', id])` for instant refresh; not wired in this pass.
-- Stars rendered with `lucide-react`'s `Star` (filled + half via overlay or `fill-amber-400` partial).
+- No changes to mobile layouts beyond the new card on the existing Availability page (per mobile-update policy — this is settings, not a layout change).
+- No changes to payments, syllabus, or scheduler logic.
+- No data backfill — existing instructors stay at `false`.
 
 ## Verification
 
-- Open a course card on the public site → see real rating (or "New instructor") instead of `4.9 (127)`.
-- Open an instructor profile and the same instructor's mini-website → rating + review count match exactly.
-- Submit a new approved review → after refresh, count increments on all surfaces.
-- Instructor with `< 3` reviews shows "New instructor" everywhere, never a number.
+- Toggle ON → 14 cells appear in `StandardIntensiveHours`; pupil booking page for that instructor shows only intensive/semi-intensive; "Intensive only" pill visible on mini-website.
+- Toggle OFF → flag flips, cells are NOT auto-removed (instructor keeps the schedule they chose), pupil surfaces show full catalogue again.
+- Existing instructors unaffected on first load (default false).
