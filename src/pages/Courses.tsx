@@ -409,6 +409,43 @@ export default function Courses() {
   
   // Track if we've done initial search from URL
   const hasSearchedFromUrl = useRef(false);
+  const loadedPlaceholderDistrictsRef = useRef<Set<string>>(new Set());
+
+  const fetchAllRows = useCallback(async <T,>(
+    build: () => any,
+  ): Promise<{ data: T[]; error: any }> => {
+    const PAGE = 1000;
+    const all: T[] = [];
+    let from = 0;
+    while (true) {
+      const { data, error } = await build().range(from, from + PAGE - 1);
+      if (error) return { data: all, error };
+      const rows = (data || []) as T[];
+      all.push(...rows);
+      if (rows.length < PAGE) break;
+      from += PAGE;
+      if (from > 100000) break; // hard safety stop
+    }
+    return { data: all, error: null };
+  }, []);
+
+  const fetchCoursesForInstructorIds = useCallback(async (ids: string[]): Promise<InstructorCourse[]> => {
+    const COURSE_CHUNK = 200;
+    const coursesAll: InstructorCourse[] = [];
+    for (let i = 0; i < ids.length; i += COURSE_CHUNK) {
+      const chunk = ids.slice(i, i + COURSE_CHUNK);
+      const res = await fetchAllRows<InstructorCourse>(() =>
+        supabase
+          .from("instructor_courses")
+          .select("*")
+          .eq("is_active", true)
+          .in("instructor_id", chunk),
+      );
+      if (res.error) throw res.error;
+      coursesAll.push(...res.data);
+    }
+    return coursesAll;
+  }, [fetchAllRows]);
 
   // Helper to check if a date has availability (uses shared resolver including
   // Google Calendar busy events + existing scheduled lessons + manual blocks).
@@ -647,8 +684,34 @@ export default function Courses() {
       // Jump to the next available date for instructors in the searched area
       const fullGeoCache = { ...geoCache, ...result.geoCache };
       const radiusMiles = parseInt(radius);
+      let coursesForSearch = instructorCourses;
+      if (district && !loadedPlaceholderDistrictsRef.current.has(district)) {
+        const placeholderIds = instructors
+          .filter((instructor) => instructor.is_network_placeholder && instructor.placeholder_district === district)
+          .map((instructor) => instructor.id)
+          .filter(Boolean);
+        if (placeholderIds.length > 0) {
+          const placeholderCourses = await fetchCoursesForInstructorIds(placeholderIds);
+          if (placeholderCourses.length > 0) {
+            coursesForSearch = [...instructorCourses, ...placeholderCourses];
+            setInstructorCourses((current) => {
+              const seen = new Set(current.map((course) => `${course.instructor_id}:${course.course_hours}`));
+              const next = [...current];
+              for (const course of placeholderCourses) {
+                const key = `${course.instructor_id}:${course.course_hours}`;
+                if (!seen.has(key)) {
+                  seen.add(key);
+                  next.push(course);
+                }
+              }
+              return next;
+            });
+          }
+        }
+        loadedPlaceholderDistrictsRef.current.add(district);
+      }
       const instructorIds = new Set(
-        instructorCourses.filter((c) => c.is_active).map((c) => c.instructor_id)
+        coursesForSearch.filter((c) => c.is_active).map((c) => c.instructor_id)
       );
 
       const instructorsNearby = instructors.filter((instructor) => {
@@ -786,29 +849,8 @@ export default function Courses() {
     try {
       const whitelabelSlug = getWhitelabelInstructorSlug();
 
-      // PostgREST enforces a server-side max-rows of 1000, so `limit`/`range`
-      // alone cannot return more. Paginate explicitly so districts with many
-      // network placeholders aren't silently truncated.
-      const PAGE = 1000;
-      const fetchAll = async <T,>(
-        build: () => any,
-      ): Promise<{ data: T[]; error: any }> => {
-        const all: T[] = [];
-        let from = 0;
-        while (true) {
-          const { data, error } = await build().range(from, from + PAGE - 1);
-          if (error) return { data: all, error };
-          const rows = (data || []) as T[];
-          all.push(...rows);
-          if (rows.length < PAGE) break;
-          from += PAGE;
-          if (from > 100000) break; // hard safety stop
-        }
-        return { data: all, error: null };
-      };
-
       const [instructorsRes, templatesRes] = await Promise.all([
-        fetchAll<any>(() => {
+        fetchAllRows<any>(() => {
           const q = supabase.from("public_instructors").select("*").eq("is_active", true);
           return whitelabelSlug ? q.eq("app_slug", whitelabelSlug) : q;
         }),
@@ -822,29 +864,14 @@ export default function Courses() {
       if (templatesRes.error) throw templatesRes.error;
 
       const loadedInstructors = instructorsRes.data || [];
-      const instructorIds = loadedInstructors.map((i: any) => i.id).filter(Boolean);
       const realInstructorIds = loadedInstructors
         .filter((i: any) => !i.is_network_placeholder)
         .map((i: any) => i.id)
         .filter(Boolean);
 
-      // Fetch courses scoped to the loaded instructors. Chunk the IN(...)
-      // list to keep PostgREST URL length under limits.
-      const COURSE_CHUNK = 200;
-      const coursesAll: any[] = [];
-      for (let i = 0; i < instructorIds.length; i += COURSE_CHUNK) {
-        const chunk = instructorIds.slice(i, i + COURSE_CHUNK);
-        const res = await fetchAll<any>(() =>
-          supabase
-            .from("instructor_courses")
-            .select("*")
-            .eq("is_active", true)
-            .in("instructor_id", chunk),
-        );
-        if (res.error) throw res.error;
-        coursesAll.push(...res.data);
-      }
-      const coursesRes = { data: coursesAll, error: null as any };
+      // Initial load must stay scoped to real instructors only. Placeholder
+      // courses are fetched lazily per searched postcode district.
+      const coursesAll = await fetchCoursesForInstructorIds(realInstructorIds);
       const firstMonth = startOfDay(new Date());
       const lastMonthOption = monthOptions[monthOptions.length - 1];
       const [lastYear, lastMonth] = lastMonthOption.value.split("-").map(Number);
@@ -864,7 +891,7 @@ export default function Courses() {
       const loadedManualBlocks = loadedAvailabilitySources.manualBlocks;
 
       setInstructors(loadedInstructors);
-      setInstructorCourses(coursesRes.data || []);
+      setInstructorCourses(coursesAll || []);
       setCourseTemplates(templatesRes.data || []);
       setWorkingHourRows(loadedWorkingHourRows);
       setAvailabilityWindowRows(loadedAvailabilityWindowRows);
