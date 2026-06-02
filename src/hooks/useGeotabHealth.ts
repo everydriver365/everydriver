@@ -58,8 +58,9 @@ export function useGeotabHealth(instructorId: string | null | undefined) {
       if (active.length === 0) return EMPTY;
 
       const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const since7d = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
-      const [faultRes, harshRes, impactRes] = await Promise.all([
+      const [faultRes, harshRes, impactRes, clipsRes] = await Promise.all([
         supabase
           .from("geotab_fault_codes")
           .select("id", { count: "exact", head: true })
@@ -76,11 +77,17 @@ export function useGeotabHealth(instructorId: string | null | undefined) {
           .eq("instructor_id", instructorId)
           .eq("acknowledged", false)
           .gte("event_time", since24h),
+        supabase
+          .from("dashcam_media")
+          .select("id", { count: "exact", head: true })
+          .eq("instructor_id", instructorId)
+          .gte("captured_at", since7d),
       ]);
 
       const activeFaults = faultRes.count ?? 0;
       const harshEvents24h = harshRes.count ?? 0;
       const unacknowledgedImpacts24h = impactRes.count ?? 0;
+      const recentClips7d = clipsRes.count ?? 0;
 
       const deduction =
         Math.min(activeFaults * 8, 40) +
@@ -95,6 +102,7 @@ export function useGeotabHealth(instructorId: string | null | undefined) {
         activeFaults,
         harshEvents24h,
         unacknowledgedImpacts24h,
+        recentClips7d,
         deviceName: primary?.device_name ?? null,
         lastSeenAt: primary?.last_seen_at ?? null,
       };
