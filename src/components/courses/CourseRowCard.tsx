@@ -110,6 +110,7 @@ export function CourseRowCard({
       {/* Body */}
       <div className="flex min-w-0 flex-1 flex-col justify-center gap-1.5 px-4 py-3">
         <h3 className="truncate text-sm sm:text-[15px] font-bold leading-tight text-slate-900">{courseTitle}</h3>
+        <InstructorRatingBadge instructorId={instructor.id} hideWhenNew />
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] sm:text-[12px] text-slate-500">
           <span className="flex items-center gap-1">
             <Settings2 className="h-3 w-3 text-slate-400" />
