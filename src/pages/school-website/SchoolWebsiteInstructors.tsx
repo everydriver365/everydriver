@@ -73,13 +73,9 @@ export default function SchoolWebsiteInstructors() {
                             </div>
                           )}
                           <h3 className="font-semibold text-lg">{inst.name}</h3>
-                          {inst.average_rating && (
-                            <div className="flex items-center gap-1 text-sm text-amber-500 mt-1">
-                              <Star className="h-4 w-4 fill-current" />
-                              {inst.average_rating.toFixed(1)}
-                              {inst.total_reviews ? <span className="text-muted-foreground">({inst.total_reviews} reviews)</span> : null}
-                            </div>
-                          )}
+                          <div className="mt-1">
+                            <InstructorRatingBadge instructorId={inst.id} hideWhenNew />
+                          </div>
                           {inst.postcode && (
                             <div className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
                               <MapPin className="h-3.5 w-3.5" /> {inst.postcode}

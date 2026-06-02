@@ -8,6 +8,7 @@ import {
   ChevronRight,
   Heart,
 } from "lucide-react";
+import { InstructorRatingBadge } from "@/components/ratings/InstructorRatingBadge";
 import courseHours10 from "@/assets/course-hours-10.png";
 import courseHours20 from "@/assets/course-hours-20.png";
 import courseHours30 from "@/assets/course-hours-30.png";
