@@ -1,34 +1,23 @@
-# Fix: Top Edit button changes not reflected on Pupil Record
-
-## Root cause
-
-The top **Edit** button on the mobile pupil record opens `EditPupilSheet`. On save it only invalidates `["next-lesson-details"]` and calls `onSaved?.()` — but `PremiumPupilProfile` never passes an `onSaved` handler. The page's tiles are driven by `["pupil-profile", pupilId, instructorId]`, which is never invalidated, so the UI shows stale data until a manual refresh.
-
-Inline `EditableRow` saves and the Theory/Driving test sheets work correctly because they invalidate that exact query key.
-
 ## Change
 
-Single-line wiring fix in `src/pages/PremiumPupilProfile.tsx` (around line 2366) — pass `onSaved` to `EditPupilSheet` so the pupil-profile query is invalidated after a save:
+In `src/pages/PremiumPupilProfile.tsx` (line 2371), replace the `onSaved` handler on `EditPupilSheet` to:
+
+1. Invalidate the `["pupil-profile", pupil?.id, instructorId]` query (as today).
+2. Immediately call `queryClient.refetchQueries({ queryKey: ["pupil-profile", pupil?.id, instructorId], type: "active" })` and `await` it, so the tile data is forcibly re-fetched from the server even if the invalidation alone doesn't trigger a refetch (e.g. query not considered stale, mounted but inactive, or focus-based refetch disabled).
 
 ```tsx
-<EditPupilSheet
-  open={editOpen}
-  onOpenChange={setEditOpen}
-  pupil={pupil}
-  instructorId={instructorId || null}
-  onSaved={() =>
-    queryClient.invalidateQueries({
-      queryKey: ["pupil-profile", pupil?.id, instructorId],
-    })
-  }
-/>
+onSaved={async () => {
+  const key = ["pupil-profile", pupil?.id, instructorId];
+  await queryClient.invalidateQueries({ queryKey: key });
+  await queryClient.refetchQueries({ queryKey: key, type: "active" });
+}}
 ```
 
-No business logic, schema, or other component changes. Mobile layout untouched.
+No other components, no schema, no business logic, no mobile layout changes.
 
 ## Verification
 
 - Open a pupil record on the mobile instructor app.
-- Tap top **Edit**, change a field (e.g. phone, postcode, notes), save.
-- Confirm the corresponding tile updates immediately without a manual refresh.
-- Confirm inline edits and Theory/Driving test edits still work as before.
+- Tap top **Edit**, change a field, save.
+- Confirm the tile reflects the new value without any manual refresh.
+- Confirm inline edits and Theory/Driving test edits still behave as before.
