@@ -81,7 +81,7 @@ export function useGeotabHealth(instructorId: string | null | undefined) {
           .from("dashcam_media")
           .select("id", { count: "exact", head: true })
           .eq("instructor_id", instructorId)
-          .gte("captured_at", since7d),
+          .gte("recorded_at", since7d),
       ]);
 
       const activeFaults = faultRes.count ?? 0;
