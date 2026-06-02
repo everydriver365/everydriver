@@ -6,6 +6,7 @@ import { Loader2, MapPin, Star, Phone, Mail, Clock } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { InstructorRatingBadge } from "@/components/ratings/InstructorRatingBadge";
 
 interface SchoolData {
   id: string;
