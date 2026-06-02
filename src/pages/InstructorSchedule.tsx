@@ -15,6 +15,7 @@ import { CalendarEventSheet } from "@/components/instructor/CalendarEventSheet";
 import { ScheduleFAB } from "@/components/instructor/ScheduleFAB";
 import { WeeklySummaryWidget } from "@/components/instructor/WeeklySummaryWidget";
 import { ActiveGapOffersList } from "@/components/instructor/ActiveGapOffersList";
+import { VehicleHealthGeotabTile } from "@/components/instructor/VehicleHealthGeotabTile";
 import { AddLessonSheet } from "@/components/instructor/AddLessonSheet";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { useInstructorCalendar, type CalendarEvent } from "@/hooks/useInstructorCalendar";
