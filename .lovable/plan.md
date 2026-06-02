@@ -1,57 +1,41 @@
-# Intensive-only instructor mode
+# Fix: courses page not displaying
 
-Today instructors can toggle individual 08:00–12:00 / 13:00–17:00 cells via `StandardIntensiveHours`, and tick `offers_intensive` in onboarding — but nothing stops a pupil booking a 1-hour weekly lesson in those windows. This plan adds a proper "Intensive only" mode.
+## Root cause
 
-## What changes for the instructor
+In `src/pages/Courses.tsx` (`fetchData`, ~line 810), `instructor_courses` is fetched globally:
 
-A new **"Intensive only mode"** card on the Availability page (just above `StandardIntensiveHours`), with:
+```ts
+fetchAll(() => supabase.from("instructor_courses").select("*").eq("is_active", true))
+```
 
-- A single switch: **Only accept intensive / semi-intensive bookings**
-- When turned ON:
-  - All Mon–Sun 08:00–12:00 and 13:00–17:00 cells are auto-enabled (one-tap setup)
-  - Weekly lesson durations are hidden from pupil booking surfaces
-  - Course catalogue is filtered to `intensive` + `semi_intensive` only
-  - A small "Intensive only" pill shows on the instructor's mini-website and profile cards
-- When turned OFF: behaviour reverts to today's mixed mode (no destructive changes to existing windows).
+With ~5,796 network-placeholder instructors seeded into `public_instructors`, this pulls **27,000+ rows** in 27 paginated round-trips (visible in the network log: offsets 24000/25000/26000…). The page blows past its query budget, the React state never settles in a reasonable time, and no `CourseRowCard`s render.
 
-## What changes for pupils
+Same risk applies to `instructor_postcode_rates` (already correctly scoped) — the courses fetch is the outlier.
 
-- Booking flow / mini-website / course cards for that instructor show only intensive + semi-intensive products.
-- Weekly duration picker is suppressed for intensive-only instructors.
-- "New instructor" / rating badges unchanged.
+## Fix
 
-## Technical
+Sequence the loads so courses are scoped to the instructors we actually display:
 
-1. **DB migration**
-   - Add `instructors.intensive_only boolean NOT NULL DEFAULT false`.
-   - Mirror to `public_instructors` view if it's a view (re-create) so pupil surfaces can read it without auth.
+1. Fetch `public_instructors` (paginated, filtered by `app_slug` when whitelabel) and `course_templates` in parallel — these are bounded.
+2. Derive `instructorIds` from the result.
+3. Then fetch `instructor_courses` with `.in("instructor_id", instructorIds).eq("is_active", true)`, chunked into batches of 200 IDs to stay under PostgREST URL length limits, each paginated to 1000 rows.
+4. Keep the existing `loadCourseAvailabilitySources` call (already scoped to `realInstructorIds`).
 
-2. **Profile hook**
-   - Extend `useInstructorProfile` to return `intensive_only`.
+This drops the courses fetch from ~27k rows / 27 requests to a few hundred rows in 1–2 requests per district view.
 
-3. **New component** `src/components/instructor/IntensiveOnlyToggleCard.tsx`
-   - Reads/writes `instructors.intensive_only`.
-   - On enable: calls a helper that upserts the 14 standard cells into `availability_windows` and mirrors via `mirrorAwToIwh` (same path `StandardIntensiveHours` uses).
-   - Toast confirms; emits `onChanged` so `StandardIntensiveHours` refetches.
+## Technical details
 
-4. **Wire into Availability page** (`InstructorAvailabilityWindows.tsx`)
-   - Render `IntensiveOnlyToggleCard` above `AvailabilityWindowsManager` and `StandardIntensiveHours`.
+- Add a small helper `fetchCoursesForInstructors(ids: string[])` inside `fetchData` that chunks `ids` (size 200), runs `fetchAll` per chunk with `.in("instructor_id", chunk)`, and concatenates results.
+- Replace the current parallel `coursesRes` entry. Restructure the `Promise.all` so step 1 (instructors + templates) resolves first, then step 3 runs.
+- Preserve existing error handling: if any chunk errors, surface it the same way `coursesRes.error` is handled today.
+- No schema / RLS / UI changes. `CourseRowCard` and downstream filtering stay untouched.
 
-5. **Booking-side filtering** (live data only, no fallbacks)
-   - In course-listing queries used by `CourseCard` / `DynamicCourseCard` / mini-website course lists / `SchoolBookingPage`, when the instructor has `intensive_only = true`, filter `course.type in ('intensive','semi_intensive')`.
-   - In any duration-picker that loads `lesson_durations` for a weekly booking flow, short-circuit with an "Intensive only — choose a course below" empty state when the flag is on.
+## Files
 
-6. **Mini-website / profile badge**
-   - Add a small "Intensive only" pill next to the instructor's name on `InstructorMiniWebsite`, `MiniWebsiteHome`, and `InstructorTile` when the flag is true.
-
-## Out of scope
-
-- No changes to mobile layouts beyond the new card on the existing Availability page (per mobile-update policy — this is settings, not a layout change).
-- No changes to payments, syllabus, or scheduler logic.
-- No data backfill — existing instructors stay at `false`.
+- `src/pages/Courses.tsx` — restructure `fetchData` only.
 
 ## Verification
 
-- Toggle ON → 14 cells appear in `StandardIntensiveHours`; pupil booking page for that instructor shows only intensive/semi-intensive; "Intensive only" pill visible on mini-website.
-- Toggle OFF → flag flips, cells are NOT auto-removed (instructor keeps the schedule they chose), pupil surfaces show full catalogue again.
-- Existing instructors unaffected on first load (default false).
+- Reload `/courses`: network panel should show ≤ a couple of `instructor_courses` requests instead of 27.
+- QueryBudget warning ("19 queries in 2000ms") for `/courses` should disappear.
+- Course cards render for the default postcode/date.
