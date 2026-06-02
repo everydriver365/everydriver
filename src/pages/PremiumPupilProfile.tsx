@@ -2448,6 +2448,20 @@ export default function PremiumPupilProfile() {
           )}
         </DialogContent>
       </Dialog>
+
+      {instructorId && (
+        <RecordPaymentModal
+          open={recordPaymentOpen}
+          onOpenChange={setRecordPaymentOpen}
+          pupilId={pupil.id}
+          pupilName={pupil.name}
+          instructorId={instructorId}
+          currentBalance={balance}
+          onPaymentRecorded={() =>
+            queryClient.invalidateQueries({ queryKey: ["pupil-profile", pupil.id, instructorId] })
+          }
+        />
+      )}
     </InstructorPortalLayout>
   );
 }
