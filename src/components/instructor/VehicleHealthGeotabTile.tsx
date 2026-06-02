@@ -53,8 +53,27 @@ export function VehicleHealthGeotabTile({ instructorId }: Props) {
       ariaLabel="Vehicle health (Geotab)"
     >
       <div style={INNER}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <span style={eyebrow}>Vehicle health</span>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+          <div style={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
+            <span style={eyebrow}>Vehicle health</span>
+            {data.deviceName && (
+              <span
+                style={{
+                  fontSize: 10,
+                  fontWeight: 600,
+                  color: "#6B7280",
+                  marginTop: 2,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                  maxWidth: 220,
+                }}
+                title={data.deviceName}
+              >
+                Geotab · {data.deviceName}
+              </span>
+            )}
+          </div>
           <ChevronRight size={16} color="#8a93a4" />
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 8 }}>
