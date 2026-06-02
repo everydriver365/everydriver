@@ -10,6 +10,8 @@ export interface GeotabHealthSummary {
   harshEvents24h: number;
   /** Unacknowledged impact events in last 24h. */
   unacknowledgedImpacts24h: number;
+  /** Dashcam clips recorded in last 7d (for the Video shortcut). */
+  recentClips7d: number;
   deviceName: string | null;
   lastSeenAt: string | null;
 }
@@ -20,6 +22,7 @@ const EMPTY: GeotabHealthSummary = {
   activeFaults: 0,
   harshEvents24h: 0,
   unacknowledgedImpacts24h: 0,
+  recentClips7d: 0,
   deviceName: null,
   lastSeenAt: null,
 };
