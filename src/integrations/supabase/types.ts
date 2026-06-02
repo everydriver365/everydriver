@@ -10001,6 +10001,7 @@ export type Database = {
           insurance_policy_number: string | null
           insurance_provider: string | null
           intake_questions_enabled: boolean | null
+          intensive_only: boolean
           is_active: boolean
           is_founding_instructor: boolean
           is_network_placeholder: boolean
@@ -10224,6 +10225,7 @@ export type Database = {
           insurance_policy_number?: string | null
           insurance_provider?: string | null
           intake_questions_enabled?: boolean | null
+          intensive_only?: boolean
           is_active?: boolean
           is_founding_instructor?: boolean
           is_network_placeholder?: boolean
@@ -10447,6 +10449,7 @@ export type Database = {
           insurance_policy_number?: string | null
           insurance_provider?: string | null
           intake_questions_enabled?: boolean | null
+          intensive_only?: boolean
           is_active?: boolean
           is_founding_instructor?: boolean
           is_network_placeholder?: boolean

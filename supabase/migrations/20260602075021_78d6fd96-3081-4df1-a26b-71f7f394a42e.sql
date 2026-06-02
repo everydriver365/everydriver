@@ -1,0 +1,1 @@
+ALTER TABLE public.instructors ADD COLUMN IF NOT EXISTS intensive_only boolean NOT NULL DEFAULT false;
