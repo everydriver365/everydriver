@@ -174,6 +174,7 @@ import { TaxEstimateTile } from "@/components/instructor/TaxEstimateTile";
 import { MTDDeadlineTile } from "@/components/instructor/MTDDeadlineTile";
 import { CourseBonusTile } from "@/components/instructor/CourseBonusTile";
 import { CalendarSyncStatusTile } from "@/components/instructor/CalendarSyncStatusTile";
+import { VehicleHealthGeotabTile } from "@/components/instructor/VehicleHealthGeotabTile";
 import { CalendarSyncDot } from "@/components/instructor/CalendarSyncDot";
 import { ADIBadgeTrackerTile } from "@/components/instructor/ADIBadgeTrackerTile";
 import { Tile } from "@/components/instructor/ui";
