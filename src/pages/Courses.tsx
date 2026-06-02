@@ -766,7 +766,8 @@ export default function Courses() {
 
       // Final fallback: search all instructors with active courses so the grid still renders
       if (!firstAvailable && !hasPlaceholderNearby) {
-        const allWithCourses = instructors.filter((i) => instructorIds.has(i.id));
+        const allIds = new Set(coursesForSearch.filter((c) => c.is_active).map((c) => c.instructor_id));
+        const allWithCourses = instructors.filter((i) => allIds.has(i.id));
         firstAvailable = findFirstAvailableDate(allWithCourses, availabilitySources);
         if (firstAvailable) {
           usedFallback = true;
