@@ -40,11 +40,24 @@ export default function InstructorVehicleHealth() {
   const { unacknowledgedCount, refetch: refetchSecurity } = useVehicleSecurity();
   const { upcomingReminders } = useVehicleService();
   useAutoMaintenanceSetup();
+  const { hasGeotab } = useActiveTrackingProvider(instructor?.id);
   const [activeTab, setActiveTab] = useState(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get("tab") === "geotab") return "geotab";
     if (location.hash === "#faults") return "live";
     if (location.hash === "#compliance") return "compliance";
     return "fleet";
   });
+
+  // If the user lands on /vehicle-health?tab=geotab before hasGeotab resolves,
+  // keep the selection sticky so it doesn't snap back to "fleet" on first paint.
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get("tab") === "geotab" && hasGeotab && activeTab !== "geotab") {
+      setActiveTab("geotab");
+    }
+  }, [hasGeotab, location.search]);
+
   
   const [linkingDevice, setLinkingDevice] = useState<GPSDeviceHealth | null>(null);
   const [showAddVehicle, setShowAddVehicle] = useState(false);
