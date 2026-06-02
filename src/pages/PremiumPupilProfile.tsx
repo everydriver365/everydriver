@@ -1179,16 +1179,31 @@ export default function PremiumPupilProfile() {
         <div style={{ fontFamily: FONT, fontSize: 17, color: C.text, fontWeight: 600, letterSpacing: "-0.01em" }}>
           Payments
         </div>
-        <button
-          onClick={() => setPaymentsOpen(true)}
-          style={{
-            background: "transparent", border: "none", color: C.accent,
-            fontFamily: FONT, fontSize: 13, fontWeight: 600, cursor: "pointer",
-          }}
-        >
-          View all
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <button
+            onClick={() => setRecordPaymentOpen(true)}
+            style={{
+              background: C.accent, border: "none", color: "#FFFFFF",
+              fontFamily: FONT, fontSize: 13, fontWeight: 600, cursor: "pointer",
+              padding: "6px 12px", borderRadius: 10,
+              display: "inline-flex", alignItems: "center", gap: 4,
+            }}
+          >
+            <Plus size={14} /> Add
+          </button>
+          <button
+            onClick={() => setPaymentsOpen(true)}
+            style={{
+              background: "transparent", border: "none", color: C.accent,
+              fontFamily: FONT, fontSize: 13, fontWeight: 600, cursor: "pointer",
+              padding: "6px 8px",
+            }}
+          >
+            View all
+          </button>
+        </div>
       </div>
+
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
         <div style={{ flex: 1, minWidth: 100 }}>
           <div style={{ fontFamily: FONT, fontSize: 11, color: C.muted, textTransform: "uppercase", letterSpacing: "0.3px", fontWeight: 500 }}>
