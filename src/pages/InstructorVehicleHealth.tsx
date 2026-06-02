@@ -146,6 +146,12 @@ export default function InstructorVehicleHealth() {
                 <Flame className="h-3.5 w-3.5 shrink-0" />
                 <span className="hidden xs:inline sm:inline">Speed</span>
               </TabsTrigger>
+              {hasGeotab && (
+                <TabsTrigger value="geotab" className="text-xs px-2 sm:px-3 gap-1 whitespace-nowrap">
+                  <Activity className="h-3.5 w-3.5 shrink-0" />
+                  <span className="hidden xs:inline sm:inline">Geotab</span>
+                </TabsTrigger>
+              )}
             </TabsList>
           </div>
 
