@@ -684,8 +684,34 @@ export default function Courses() {
       // Jump to the next available date for instructors in the searched area
       const fullGeoCache = { ...geoCache, ...result.geoCache };
       const radiusMiles = parseInt(radius);
+      let coursesForSearch = instructorCourses;
+      if (district && !loadedPlaceholderDistrictsRef.current.has(district)) {
+        const placeholderIds = instructors
+          .filter((instructor) => instructor.is_network_placeholder && instructor.placeholder_district === district)
+          .map((instructor) => instructor.id)
+          .filter(Boolean);
+        if (placeholderIds.length > 0) {
+          const placeholderCourses = await fetchCoursesForInstructorIds(placeholderIds);
+          if (placeholderCourses.length > 0) {
+            coursesForSearch = [...instructorCourses, ...placeholderCourses];
+            setInstructorCourses((current) => {
+              const seen = new Set(current.map((course) => `${course.instructor_id}:${course.course_hours}`));
+              const next = [...current];
+              for (const course of placeholderCourses) {
+                const key = `${course.instructor_id}:${course.course_hours}`;
+                if (!seen.has(key)) {
+                  seen.add(key);
+                  next.push(course);
+                }
+              }
+              return next;
+            });
+          }
+        }
+        loadedPlaceholderDistrictsRef.current.add(district);
+      }
       const instructorIds = new Set(
-        instructorCourses.filter((c) => c.is_active).map((c) => c.instructor_id)
+        coursesForSearch.filter((c) => c.is_active).map((c) => c.instructor_id)
       );
 
       const instructorsNearby = instructors.filter((instructor) => {
