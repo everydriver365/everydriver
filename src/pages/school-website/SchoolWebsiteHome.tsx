@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import SchoolWebsiteLayout from "./SchoolWebsiteLayout";
+import { InstructorRatingBadge } from "@/components/ratings/InstructorRatingBadge";
 
 interface ContentBlock {
   type: "text" | "features";
@@ -165,13 +166,9 @@ export default function SchoolWebsiteHome() {
                             )}
                             <div className="flex-1 min-w-0">
                               <h3 className="font-semibold truncate">{inst.name}</h3>
-                              {inst.average_rating && (
-                                <div className="flex items-center gap-1 text-sm text-amber-500">
-                                  <Star className="h-3.5 w-3.5 fill-current" />
-                                  {inst.average_rating.toFixed(1)}
-                                  {inst.total_reviews ? <span className="text-muted-foreground">({inst.total_reviews})</span> : null}
-                                </div>
-                              )}
+                              <div className="mt-0.5">
+                                <InstructorRatingBadge instructorId={inst.id} hideWhenNew />
+                              </div>
                               {inst.postcode && (
                                 <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
                                   <MapPin className="h-3 w-3" /> {inst.postcode}

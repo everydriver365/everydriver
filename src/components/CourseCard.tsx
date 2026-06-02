@@ -136,10 +136,7 @@ export function CourseCard({ course }: CourseCardProps) {
               </Avatar>
               <div>
                 <div className="font-medium text-primary-foreground">{course.instructor}</div>
-                <div className="flex items-center gap-1 text-xs text-primary-foreground/70">
-                  <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                  <span>4.9 (127 reviews)</span>
-                </div>
+                <div className="text-xs text-primary-foreground/70">Verified instructor</div>
               </div>
             </div>
 
