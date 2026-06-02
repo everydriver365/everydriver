@@ -7,9 +7,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Smartphone, Radio } from "lucide-react";
+import { Smartphone, Radio, Car } from "lucide-react";
 
-export type TrackingProviderChoice = "phone" | "radius";
+export type TrackingProviderChoice = "phone" | "radius" | "geotab";
 
 interface TrackingProviderDropdownProps {
   instructorId: string;
@@ -21,10 +21,9 @@ interface TrackingProviderDropdownProps {
 }
 
 /**
- * Dropdown allowing the instructor to choose between phone GPS tracking
- * and the Radius hardware tracker. Persists the choice to
- * `instructors.preferred_tracking_provider` so the rest of the app can
- * honour the preference.
+ * Dropdown allowing the instructor to choose between phone GPS tracking,
+ * a Radius hardware tracker, or a Geotab telematics device. Persists the
+ * choice to `instructors.preferred_tracking_provider`.
  */
 export function TrackingProviderDropdown({
   instructorId,
@@ -34,28 +33,20 @@ export function TrackingProviderDropdown({
 }: TrackingProviderDropdownProps) {
   const [hasRadiusDevice, setHasRadiusDevice] = useState(!!radiusDevice);
   const [radiusDeviceName, setRadiusDeviceName] = useState<string | null>(radiusDevice?.name ?? null);
+  const [hasGeotabDevice, setHasGeotabDevice] = useState(false);
+  const [geotabDeviceName, setGeotabDeviceName] = useState<string | null>(null);
 
   useEffect(() => {
-    // If parent already hydrated the device info, mirror it and skip the query.
-    if (radiusDevice) {
-      setHasRadiusDevice(true);
-      setRadiusDeviceName(radiusDevice.name);
-      return;
-    }
     if (!instructorId) return;
     let cancelled = false;
     (async () => {
-      // Pull all of this instructor's devices and check client-side. Avoids
-      // edge cases where filtering by tracking_provider in the request hides
-      // rows under certain RLS auth contexts.
+      // Pull all of this instructor's devices and classify client-side.
       let { data } = await supabase
         .from("gps_devices")
         .select("id, device_name, device_identifier, tracking_provider, is_active, last_seen_at")
         .eq("instructor_id", instructorId)
         .order("last_seen_at", { ascending: false, nullsFirst: false });
 
-      // Fallback via the canonical instructor identity helper if the direct
-      // query returned nothing (e.g. school-portal auth contexts).
       if (!data || data.length === 0) {
         const { data: idRow } = await supabase
           .rpc("get_instructor_id_for_user", { p_user_id: (await supabase.auth.getUser()).data.user?.id });
@@ -73,11 +64,24 @@ export function TrackingProviderDropdown({
       const radiusDevices = (data ?? []).filter(
         (d: any) => d.tracking_provider === "radius" && d.is_active !== false,
       );
-      if (!cancelled) {
+      const geotabDevices = (data ?? []).filter(
+        (d: any) => d.tracking_provider === "geotab" && d.is_active !== false,
+      );
+
+      if (cancelled) return;
+
+      if (!radiusDevice) {
         setHasRadiusDevice(radiusDevices.length > 0);
         const first = radiusDevices[0] as any;
         setRadiusDeviceName(first ? (first.device_name || first.device_identifier || null) : null);
+      } else {
+        setHasRadiusDevice(true);
+        setRadiusDeviceName(radiusDevice.name);
       }
+
+      setHasGeotabDevice(geotabDevices.length > 0);
+      const firstGeotab = geotabDevices[0] as any;
+      setGeotabDeviceName(firstGeotab ? (firstGeotab.device_name || firstGeotab.device_identifier || null) : null);
     })();
     return () => {
       cancelled = true;
@@ -85,7 +89,7 @@ export function TrackingProviderDropdown({
   }, [instructorId, radiusDevice?.id, radiusDevice?.name]);
 
   const handleChange = async (next: string) => {
-    const choice = (next === "radius" ? "radius" : "phone") as TrackingProviderChoice;
+    const choice = (next === "radius" || next === "geotab" ? next : "phone") as TrackingProviderChoice;
     onChange(choice);
     await supabase
       .from("instructors")
@@ -113,7 +117,16 @@ export function TrackingProviderDropdown({
               : "Radius tracker (no device linked)"}
           </span>
         </SelectItem>
+        <SelectItem value="geotab" disabled={!hasGeotabDevice}>
+          <span className="flex items-center gap-2">
+            <Car className="h-4 w-4" />
+            {hasGeotabDevice
+              ? `Geotab${geotabDeviceName ? ` · ${geotabDeviceName}` : ""}`
+              : "Geotab (no device linked)"}
+          </span>
+        </SelectItem>
       </SelectContent>
     </Select>
   );
 }
+
