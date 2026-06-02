@@ -865,7 +865,7 @@ export default function Courses() {
       const loadedManualBlocks = loadedAvailabilitySources.manualBlocks;
 
       setInstructors(loadedInstructors);
-      setInstructorCourses(coursesRes.data || []);
+      setInstructorCourses(coursesAll || []);
       setCourseTemplates(templatesRes.data || []);
       setWorkingHourRows(loadedWorkingHourRows);
       setAvailabilityWindowRows(loadedAvailabilityWindowRows);
