@@ -2368,6 +2368,7 @@ export default function PremiumPupilProfile() {
         onOpenChange={setEditOpen}
         pupil={pupil}
         instructorId={instructorId || null}
+        onSaved={() => queryClient.invalidateQueries({ queryKey: ["pupil-profile", pupil?.id, instructorId] })}
       />
 
       <TheoryTestQuickEdit
