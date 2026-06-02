@@ -685,7 +685,44 @@ export default function Courses() {
       const fullGeoCache = { ...geoCache, ...result.geoCache };
       const radiusMiles = parseInt(radius);
       let coursesForSearch = instructorCourses;
-      if (district && !loadedPlaceholderDistrictsRef.current.has(district)) {
+
+      const computeNearby = (courses: InstructorCourse[]) => {
+        const ids = new Set(courses.filter((c) => c.is_active).map((c) => c.instructor_id));
+        return instructors.filter((instructor) => {
+          if (!ids.has(instructor.id)) return false;
+
+          if (instructor.is_network_placeholder) {
+            return !!district && instructor.placeholder_district === district;
+          }
+
+          if (!location) return false;
+
+          const instructorPostcode = instructor.home_postcode.replace(/\s+/g, "").toUpperCase();
+          const cached = fullGeoCache[instructorPostcode];
+          const instructorLocation = cached
+            ?? ((instructor as any).lat != null && (instructor as any).lng != null
+              ? { lat: Number((instructor as any).lat), lng: Number((instructor as any).lng) }
+              : null);
+          if (!instructorLocation) return false;
+
+          const distance = calculateDistance(
+            location.lat,
+            location.lng,
+            instructorLocation.lat,
+            instructorLocation.lng,
+          );
+
+          return distance <= radiusMiles;
+        });
+      };
+
+      // Step 1: real instructors only (initial fetch).
+      let instructorsNearby = computeNearby(coursesForSearch);
+      const hasRealMatch = instructorsNearby.some((i) => !i.is_network_placeholder);
+
+      // Step 2: lazily fall back to network placeholders only when no real
+      // instructor covers the searched area.
+      if (!hasRealMatch && district && !loadedPlaceholderDistrictsRef.current.has(district)) {
         const placeholderIds = instructors
           .filter((instructor) => instructor.is_network_placeholder && instructor.placeholder_district === district)
           .map((instructor) => instructor.id)
@@ -709,37 +746,8 @@ export default function Courses() {
           }
         }
         loadedPlaceholderDistrictsRef.current.add(district);
+        instructorsNearby = computeNearby(coursesForSearch);
       }
-      const instructorIds = new Set(
-        coursesForSearch.filter((c) => c.is_active).map((c) => c.instructor_id)
-      );
-
-      const instructorsNearby = instructors.filter((instructor) => {
-        if (!instructorIds.has(instructor.id)) return false;
-
-        if (instructor.is_network_placeholder) {
-          return !!district && instructor.placeholder_district === district;
-        }
-
-        if (!location) return false;
-
-        const instructorPostcode = instructor.home_postcode.replace(/\s+/g, "").toUpperCase();
-        const cached = fullGeoCache[instructorPostcode];
-        const instructorLocation = cached
-          ?? ((instructor as any).lat != null && (instructor as any).lng != null
-            ? { lat: Number((instructor as any).lat), lng: Number((instructor as any).lng) }
-            : null);
-        if (!instructorLocation) return false;
-
-        const distance = calculateDistance(
-          location.lat,
-          location.lng,
-          instructorLocation.lat,
-          instructorLocation.lng
-        );
-
-        return distance <= radiusMiles;
-      });
 
       // If only placeholders match, treat today as the first "available" date —
       // they're enquiry-only so the standard availability resolver returns nothing.
@@ -758,7 +766,8 @@ export default function Courses() {
 
       // Final fallback: search all instructors with active courses so the grid still renders
       if (!firstAvailable && !hasPlaceholderNearby) {
-        const allWithCourses = instructors.filter((i) => instructorIds.has(i.id));
+        const allIds = new Set(coursesForSearch.filter((c) => c.is_active).map((c) => c.instructor_id));
+        const allWithCourses = instructors.filter((i) => allIds.has(i.id));
         firstAvailable = findFirstAvailableDate(allWithCourses, availabilitySources);
         if (firstAvailable) {
           usedFallback = true;
