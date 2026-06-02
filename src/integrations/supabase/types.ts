@@ -5477,6 +5477,39 @@ export type Database = {
         }
         Relationships: []
       }
+      geotab_sync_cursors: {
+        Row: {
+          created_at: string
+          cursor_name: string
+          id: string
+          instructor_id: string
+          last_error: string | null
+          last_from_version: string | null
+          last_run_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          cursor_name: string
+          id?: string
+          instructor_id: string
+          last_error?: string | null
+          last_from_version?: string | null
+          last_run_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          cursor_name?: string
+          id?: string
+          instructor_id?: string
+          last_error?: string | null
+          last_from_version?: string | null
+          last_run_at?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       google_sync_alerts: {
         Row: {
           category: string
