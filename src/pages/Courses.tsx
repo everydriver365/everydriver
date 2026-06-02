@@ -807,14 +807,11 @@ export default function Courses() {
         return { data: all, error: null };
       };
 
-      const [instructorsRes, coursesRes, templatesRes] = await Promise.all([
+      const [instructorsRes, templatesRes] = await Promise.all([
         fetchAll<any>(() => {
           const q = supabase.from("public_instructors").select("*").eq("is_active", true);
           return whitelabelSlug ? q.eq("app_slug", whitelabelSlug) : q;
         }),
-        fetchAll<any>(() =>
-          supabase.from("instructor_courses").select("*").eq("is_active", true),
-        ),
         supabase
           .from("course_templates")
           .select("course_hours, course_name, default_image_url, is_popular, features, is_intensive")
@@ -822,7 +819,6 @@ export default function Courses() {
       ]);
 
       if (instructorsRes.error) throw instructorsRes.error;
-      if (coursesRes.error) throw coursesRes.error;
       if (templatesRes.error) throw templatesRes.error;
 
       const loadedInstructors = instructorsRes.data || [];
@@ -831,6 +827,24 @@ export default function Courses() {
         .filter((i: any) => !i.is_network_placeholder)
         .map((i: any) => i.id)
         .filter(Boolean);
+
+      // Fetch courses scoped to the loaded instructors. Chunk the IN(...)
+      // list to keep PostgREST URL length under limits.
+      const COURSE_CHUNK = 200;
+      const coursesAll: any[] = [];
+      for (let i = 0; i < instructorIds.length; i += COURSE_CHUNK) {
+        const chunk = instructorIds.slice(i, i + COURSE_CHUNK);
+        const res = await fetchAll<any>(() =>
+          supabase
+            .from("instructor_courses")
+            .select("*")
+            .eq("is_active", true)
+            .in("instructor_id", chunk),
+        );
+        if (res.error) throw res.error;
+        coursesAll.push(...res.data);
+      }
+      const coursesRes = { data: coursesAll, error: null as any };
       const firstMonth = startOfDay(new Date());
       const lastMonthOption = monthOptions[monthOptions.length - 1];
       const [lastYear, lastMonth] = lastMonthOption.value.split("-").map(Number);
