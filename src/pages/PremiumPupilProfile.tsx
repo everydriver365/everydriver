@@ -25,6 +25,7 @@ import { AddLessonSheet } from "@/components/instructor/AddLessonSheet";
 import { LessonHistory } from "@/components/instructor/LessonHistory";
 import { PupilPaymentHistory } from "@/components/instructor/PupilPaymentHistory";
 import { PupilPaymentsManager } from "@/components/instructor/PupilPaymentsManager";
+import { RecordPaymentModal } from "@/components/instructor/RecordPaymentModal";
 import { PupilRateEditor } from "@/components/instructor/PupilRateEditor";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -569,6 +570,7 @@ export default function PremiumPupilProfile() {
   const [addLessonOpen, setAddLessonOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [paymentsOpen, setPaymentsOpen] = useState(false);
+  const [recordPaymentOpen, setRecordPaymentOpen] = useState(false);
   const [editBalance, setEditBalance] = useState(false);
   const [balanceDraft, setBalanceDraft] = useState("");
   const [editAmountDue, setEditAmountDue] = useState(false);
@@ -1177,16 +1179,31 @@ export default function PremiumPupilProfile() {
         <div style={{ fontFamily: FONT, fontSize: 17, color: C.text, fontWeight: 600, letterSpacing: "-0.01em" }}>
           Payments
         </div>
-        <button
-          onClick={() => setPaymentsOpen(true)}
-          style={{
-            background: "transparent", border: "none", color: C.accent,
-            fontFamily: FONT, fontSize: 13, fontWeight: 600, cursor: "pointer",
-          }}
-        >
-          View all
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <button
+            onClick={() => setRecordPaymentOpen(true)}
+            style={{
+              background: C.accent, border: "none", color: "#FFFFFF",
+              fontFamily: FONT, fontSize: 13, fontWeight: 600, cursor: "pointer",
+              padding: "6px 12px", borderRadius: 10,
+              display: "inline-flex", alignItems: "center", gap: 4,
+            }}
+          >
+            <Plus size={14} /> Add
+          </button>
+          <button
+            onClick={() => setPaymentsOpen(true)}
+            style={{
+              background: "transparent", border: "none", color: C.accent,
+              fontFamily: FONT, fontSize: 13, fontWeight: 600, cursor: "pointer",
+              padding: "6px 8px",
+            }}
+          >
+            View all
+          </button>
+        </div>
       </div>
+
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
         <div style={{ flex: 1, minWidth: 100 }}>
           <div style={{ fontFamily: FONT, fontSize: 11, color: C.muted, textTransform: "uppercase", letterSpacing: "0.3px", fontWeight: 500 }}>
@@ -1477,11 +1494,137 @@ export default function PremiumPupilProfile() {
         }}
       />
       <EditableRow
+        icon={User} label="Sex" value={(pupil as any).sex ?? null}
+        type="select"
+        options={[
+          { value: "male", label: "Male" },
+          { value: "female", label: "Female" },
+          { value: "other", label: "Other" },
+          { value: "prefer_not_to_say", label: "Prefer not to say" },
+        ]}
+        onSave={(v) => updatePupilField({ sex: v }, "Sex updated")}
+      />
+      <EditableRow
+        icon={Car} label="Transmission" value={(pupil as any).transmission_type ?? null}
+        type="select"
+        options={[
+          { value: "manual", label: "Manual" },
+          { value: "automatic", label: "Automatic" },
+        ]}
+        onSave={(v) => updatePupilField({ transmission_type: v }, "Transmission updated")}
+      />
+      <EditableRow
+        icon={MapPin} label="what3words" value={(pupil as any).what3words ?? null} placeholder="///word.word.word"
+        onSave={(v) => updatePupilField({ what3words: v }, "what3words updated")}
+      />
+      <EditableRow
+        icon={MapPin} label="Pickup address" value={(pupil as any).pickup_address ?? null} placeholder="Default pickup"
+        onSave={(v) => updatePupilField({ pickup_address: v }, "Pickup updated")}
+      />
+      <EditableRow
+        icon={MapPin} label="Pickup postcode" value={(pupil as any).pickup_postcode ?? null} placeholder="Postcode"
+        onSave={(v) => updatePupilField({ pickup_postcode: v ? v.toUpperCase() : v }, "Pickup postcode updated")}
+      />
+      <EditableRow
+        icon={GraduationCap} label="Previous experience" value={(pupil as any).previous_experience ?? null} placeholder="e.g. 10 hours"
+        onSave={(v) => updatePupilField({ previous_experience: v }, "Experience updated")}
+      />
+      <EditableRow
+        icon={FileText} label="Driver number" value={(pupil as any).driver_number ?? null} placeholder="DVLA driver number"
+        onSave={(v) => updatePupilField({ driver_number: v }, "Driver number updated")}
+      />
+      <EditableRow
+        icon={FileText} label="DVLA check code" value={(pupil as any).dvla_check_code ?? null} placeholder="e.g. ab12-cd34-ef56"
+        onSave={(v) => updatePupilField({ dvla_check_code: v }, "Check code updated")}
+      />
+      <EditableRow
+        icon={FileText} label="Theory cert number" value={(pupil as any).theory_cert_number ?? null} placeholder="Theory pass number"
+        onSave={(v) => updatePupilField({ theory_cert_number: v }, "Theory cert updated")}
+      />
+      <EditableRow
+        icon={AlertCircle} label="Special needs" value={(pupil as any).special_needs ?? null} placeholder="Any accessibility needs"
+        onSave={(v) => updatePupilField({ special_needs: v }, "Special needs updated")}
+      />
+      <EditableRow
+        icon={FileText} label="Medical notes" value={(pupil as any).medical_notes ?? null} placeholder="Medical info"
+        onSave={(v) => updatePupilField({ medical_notes: v }, "Medical notes updated")}
+      />
+      <EditableRow
+        icon={User} label="Emergency contact relation" value={(pupil as any).emergency_contact_relation ?? null} placeholder="e.g. Parent"
+        onSave={(v) => updatePupilField({ emergency_contact_relation: v }, "Relation updated")}
+      />
+      <EditableRow
+        icon={User} label="Parent name" value={(pupil as any).parent_name ?? null} placeholder="Parent name"
+        onSave={(v) => updatePupilField({ parent_name: v }, "Parent updated")}
+      />
+      <EditableRow
+        icon={Phone} label="Parent phone" value={(pupil as any).parent_phone ?? null} type="tel" placeholder="07XXX XXXXXX"
+        onSave={(v) => updatePupilField({ parent_phone: v }, "Parent phone updated")}
+      />
+      <EditableRow
+        icon={Mail} label="Parent email" value={(pupil as any).parent_email ?? null} type="email" placeholder="parent@example.com"
+        onSave={(v) => updatePupilField({ parent_email: v }, "Parent email updated")}
+      />
+      <EditableRow
+        icon={PoundSterling} label="Custom hourly rate" value={(pupil as any).custom_hourly_rate != null ? String((pupil as any).custom_hourly_rate) : null} placeholder={`Default £${instructorRate ?? 40}`}
+        onSave={(v) => {
+          if (v == null) return updatePupilField({ custom_hourly_rate: null }, "Rate cleared");
+          const n = Number(v);
+          if (!Number.isFinite(n) || n < 0) { toast.error("Enter a valid rate"); return; }
+          return updatePupilField({ custom_hourly_rate: n }, "Rate updated");
+        }}
+      />
+      <EditableRow
+        icon={Clock} label="Preferred lesson length (min)"
+        value={(pupil as any).preferred_duration_minutes != null ? String((pupil as any).preferred_duration_minutes) : null}
+        type="select"
+        options={[
+          { value: "60", label: "60 min" },
+          { value: "90", label: "90 min" },
+          { value: "120", label: "120 min" },
+        ]}
+        onSave={(v) => updatePupilField({ preferred_duration_minutes: v ? Number(v) : null }, "Lesson length updated")}
+      />
+      <EditableRow
+        icon={PoundSterling} label="Payment type" value={(pupil as any).payment_type ?? null}
+        type="select"
+        options={[
+          { value: "pay_as_you_go", label: "Pay as you go" },
+          { value: "prepaid", label: "Prepaid" },
+          { value: "intensive", label: "Intensive course" },
+          { value: "block", label: "Block booking" },
+        ]}
+        onSave={(v) => updatePupilField({ payment_type: v }, "Payment type updated")}
+      />
+      <EditableRow
+        icon={PoundSterling} label="Payment method" value={(pupil as any).payment_method ?? "tbc"}
+        type="select"
+        options={[
+          { value: "tbc", label: "To be confirmed" },
+          { value: "cash", label: "Cash" },
+          { value: "card", label: "Card" },
+          { value: "bank_transfer", label: "Bank transfer" },
+        ]}
+        onSave={(v) => updatePupilField({ payment_method: v ?? "tbc" }, "Payment method updated")}
+      />
+      <EditableRow
+        icon={MessageSquare} label="Communication preference" value={(pupil as any).communication_preference ?? "sms"}
+        type="select"
+        options={[
+          { value: "sms", label: "SMS" },
+          { value: "whatsapp", label: "WhatsApp" },
+          { value: "email", label: "Email" },
+          { value: "call", label: "Phone call" },
+        ]}
+        onSave={(v) => updatePupilField({ communication_preference: v ?? "sms" }, "Preference updated")}
+      />
+      <EditableRow
         icon={FileText} label="Notes" value={pupil.notes ?? null} placeholder="Add a note"
         onSave={(v) => updatePupilField({ notes: v }, "Notes updated")}
       />
     </Card>
   );
+
 
   const eyesightChecked = (pupil as any).eyesight_checked as boolean | null | undefined;
   const needsGlasses = (pupil as any).needs_glasses as boolean | null | undefined;
@@ -2305,6 +2448,20 @@ export default function PremiumPupilProfile() {
           )}
         </DialogContent>
       </Dialog>
+
+      {instructorId && (
+        <RecordPaymentModal
+          open={recordPaymentOpen}
+          onOpenChange={setRecordPaymentOpen}
+          pupilId={pupil.id}
+          pupilName={pupil.name}
+          instructorId={instructorId}
+          currentBalance={balance}
+          onPaymentRecorded={() =>
+            queryClient.invalidateQueries({ queryKey: ["pupil-profile", pupil.id, instructorId] })
+          }
+        />
+      )}
     </InstructorPortalLayout>
   );
 }
