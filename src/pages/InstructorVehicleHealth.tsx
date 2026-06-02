@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Radio, Car, MapPin, RefreshCw, Plus, Shield, ShieldAlert, Wrench, Fuel, Flame } from "lucide-react";
+import { Radio, Car, MapPin, RefreshCw, Plus, Shield, ShieldAlert, Wrench, Fuel, Flame, Activity } from "lucide-react";
 import { InstructorPageHeader } from "@/components/instructor/InstructorPageHeader";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
+import { GeotabTab } from "@/components/instructor/vehicle-health/GeotabTab";
+import { useActiveTrackingProvider } from "@/hooks/useActiveTrackingProvider";
 import { EnhancedDeviceStatusCard } from "@/components/instructor/vehicle-health/EnhancedDeviceStatusCard";
 import { BatteryHistoryChart } from "@/components/instructor/vehicle-health/BatteryHistoryChart";
 import { IgnitionEventsLog } from "@/components/instructor/vehicle-health/IgnitionEventsLog";
@@ -38,11 +40,24 @@ export default function InstructorVehicleHealth() {
   const { unacknowledgedCount, refetch: refetchSecurity } = useVehicleSecurity();
   const { upcomingReminders } = useVehicleService();
   useAutoMaintenanceSetup();
+  const { hasGeotab } = useActiveTrackingProvider(instructor?.id);
   const [activeTab, setActiveTab] = useState(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get("tab") === "geotab") return "geotab";
     if (location.hash === "#faults") return "live";
     if (location.hash === "#compliance") return "compliance";
     return "fleet";
   });
+
+  // If the user lands on /vehicle-health?tab=geotab before hasGeotab resolves,
+  // keep the selection sticky so it doesn't snap back to "fleet" on first paint.
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get("tab") === "geotab" && hasGeotab && activeTab !== "geotab") {
+      setActiveTab("geotab");
+    }
+  }, [hasGeotab, location.search]);
+
   
   const [linkingDevice, setLinkingDevice] = useState<GPSDeviceHealth | null>(null);
   const [showAddVehicle, setShowAddVehicle] = useState(false);
@@ -82,7 +97,7 @@ export default function InstructorVehicleHealth() {
         {/* Tabs - Horizontally scrollable on mobile */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="overflow-x-auto no-scrollbar -mx-4 px-4">
-            <TabsList className="inline-flex w-auto min-w-full sm:grid sm:w-full sm:grid-cols-8 gap-1">
+            <TabsList className={`inline-flex w-auto min-w-full sm:grid sm:w-full ${hasGeotab ? "sm:grid-cols-9" : "sm:grid-cols-8"} gap-1`}>
               <TabsTrigger value="compliance" className="text-xs px-2 sm:px-3 gap-1 whitespace-nowrap">
                 <Shield className="h-3.5 w-3.5 shrink-0" />
                 <span className="hidden xs:inline sm:inline">DVSA</span>
@@ -131,6 +146,12 @@ export default function InstructorVehicleHealth() {
                 <Flame className="h-3.5 w-3.5 shrink-0" />
                 <span className="hidden xs:inline sm:inline">Speed</span>
               </TabsTrigger>
+              {hasGeotab && (
+                <TabsTrigger value="geotab" className="text-xs px-2 sm:px-3 gap-1 whitespace-nowrap">
+                  <Activity className="h-3.5 w-3.5 shrink-0" />
+                  <span className="hidden xs:inline sm:inline">Geotab</span>
+                </TabsTrigger>
+              )}
             </TabsList>
           </div>
 
@@ -227,6 +248,13 @@ export default function InstructorVehicleHealth() {
           <TabsContent value="heatmap" className="mt-4">
             <SpeedHeatmapTab />
           </TabsContent>
+
+          {/* Geotab Tab — only mounted when the instructor has an active Geotab device */}
+          {hasGeotab && instructor?.id && (
+            <TabsContent value="geotab" className="mt-4">
+              <GeotabTab instructorId={instructor.id} />
+            </TabsContent>
+          )}
         </Tabs>
       </div>
 
