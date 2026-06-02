@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { ChevronRight, ShieldCheck, AlertTriangle, ShieldAlert } from "lucide-react";
+import { ChevronRight, ShieldCheck, AlertTriangle, ShieldAlert, Video } from "lucide-react";
 import { TileCard } from "@/components/instructor/ui";
 import { useGeotabHealth } from "@/hooks/useGeotabHealth";
 
@@ -98,6 +98,35 @@ export function VehicleHealthGeotabTile({ instructorId }: Props) {
             </div>
           </div>
         </div>
+        {data.recentClips7d > 0 && (
+          <div style={{ marginTop: 10, display: "flex" }}>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate("/instructor/vehicle-health?tab=geotab&sub=video");
+              }}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                padding: "6px 10px",
+                borderRadius: 999,
+                background: "#EDF2FE",
+                color: "#3D55A1",
+                fontSize: 11,
+                fontWeight: 600,
+                border: "none",
+                cursor: "pointer",
+                fontFamily: FONT,
+              }}
+              aria-label="Open dashcam video"
+            >
+              <Video size={12} />
+              Video · {data.recentClips7d} clip{data.recentClips7d === 1 ? "" : "s"}
+            </button>
+          </div>
+        )}
       </div>
     </TileCard>
   );

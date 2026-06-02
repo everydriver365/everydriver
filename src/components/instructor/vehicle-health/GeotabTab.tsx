@@ -553,7 +553,14 @@ function VideoSection({ instructorId }: Props) {
 
 export function GeotabTab({ instructorId }: Props) {
   const qc = useQueryClient();
-  const [sub, setSub] = useState("overview");
+  const initialSub = (() => {
+    if (typeof window === "undefined") return "overview";
+    const s = new URLSearchParams(window.location.search).get("sub");
+    return ["overview", "driver", "faults", "impacts", "fuel", "video"].includes(s ?? "")
+      ? (s as string)
+      : "overview";
+  })();
+  const [sub, setSub] = useState(initialSub);
 
   const triggerPoll = async () => {
     try {
