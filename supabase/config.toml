@@ -162,6 +162,12 @@ verify_jwt = false
 [functions.geotab-media-download]
 verify_jwt = false
 
+[functions.geotab-auth]
+verify_jwt = false
+
+[functions.geotab-status]
+verify_jwt = false
+
 [functions.public-courses]
 verify_jwt = false
 
