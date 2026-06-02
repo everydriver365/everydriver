@@ -248,6 +248,13 @@ export default function InstructorVehicleHealth() {
           <TabsContent value="heatmap" className="mt-4">
             <SpeedHeatmapTab />
           </TabsContent>
+
+          {/* Geotab Tab — only mounted when the instructor has an active Geotab device */}
+          {hasGeotab && instructor?.id && (
+            <TabsContent value="geotab" className="mt-4">
+              <GeotabTab instructorId={instructor.id} />
+            </TabsContent>
+          )}
         </Tabs>
       </div>
 
