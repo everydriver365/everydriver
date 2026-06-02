@@ -20466,6 +20466,30 @@ export type Database = {
           },
         ]
       }
+      instructor_rating_summary: {
+        Row: {
+          avg_rating: number | null
+          instructor_id: string | null
+          last_review_at: string | null
+          total_reviews: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_reviews_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_reviews_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       public_instructors: {
         Row: {
           adi_code_of_practice: boolean | null
