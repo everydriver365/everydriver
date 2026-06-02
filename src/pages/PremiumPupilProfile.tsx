@@ -570,6 +570,7 @@ export default function PremiumPupilProfile() {
   const [addLessonOpen, setAddLessonOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [paymentsOpen, setPaymentsOpen] = useState(false);
+  const [recordPaymentOpen, setRecordPaymentOpen] = useState(false);
   const [editBalance, setEditBalance] = useState(false);
   const [balanceDraft, setBalanceDraft] = useState("");
   const [editAmountDue, setEditAmountDue] = useState(false);
