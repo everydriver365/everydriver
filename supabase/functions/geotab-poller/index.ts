@@ -28,15 +28,15 @@ async function getCreds(supabase: SupabaseClient, forceRefresh = false) {
   const userName = Deno.env.get("GEOTAB_USERNAME")!;
   const password = Deno.env.get("GEOTAB_PASSWORD")!;
   const database = Deno.env.get("GEOTAB_DATABASE")!;
+  const cacheKey = `${userName}::${database}`;
   if (!forceRefresh) {
     const { data } = await supabase
       .from("geotab_session_cache")
-      .select("server, session_id, expires_at")
-      .eq("user_name", userName)
-      .eq("database", database)
+      .select("server_url, session_id, expires_at")
+      .eq("id", cacheKey)
       .maybeSingle();
     if (data?.session_id && data?.expires_at && new Date(data.expires_at) > new Date()) {
-      return { server: data.server as string, database, userName, sessionId: data.session_id as string };
+      return { server: data.server_url as string, database, userName, sessionId: data.session_id as string };
     }
   }
   let server = "my.geotab.com";
@@ -48,14 +48,12 @@ async function getCreds(supabase: SupabaseClient, forceRefresh = false) {
   const sessionId = r?.credentials?.sessionId;
   await supabase.from("geotab_session_cache").upsert(
     {
-      user_name: userName,
-      database,
-      server,
+      id: cacheKey,
+      server_url: server,
       session_id: sessionId,
       expires_at: new Date(Date.now() + 1000 * 60 * 60 * 12).toISOString(),
-      updated_at: new Date().toISOString(),
     },
-    { onConflict: "user_name,database" },
+    { onConflict: "id" },
   );
   return { server, database, userName, sessionId };
 }

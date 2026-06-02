@@ -43,15 +43,16 @@ export async function authenticateGeotab(
     throw new Error("Missing GEOTAB_USERNAME / GEOTAB_PASSWORD / GEOTAB_DATABASE secrets");
   }
 
+  const cacheKey = `${userName}::${database}`;
+
   if (!opts.forceRefresh) {
     const { data: cached } = await supabase
       .from("geotab_session_cache")
-      .select("server, session_id, expires_at")
-      .eq("user_name", userName)
-      .eq("database", database)
+      .select("server_url, session_id, expires_at")
+      .eq("id", cacheKey)
       .maybeSingle();
     if (cached?.session_id && cached?.expires_at && new Date(cached.expires_at) > new Date()) {
-      return { server: cached.server, database, userName, sessionId: cached.session_id };
+      return { server: cached.server_url, database, userName, sessionId: cached.session_id };
     }
   }
 
@@ -70,14 +71,12 @@ export async function authenticateGeotab(
     .from("geotab_session_cache")
     .upsert(
       {
-        user_name: userName,
-        database,
-        server,
+        id: cacheKey,
+        server_url: server,
         session_id: sessionId,
         expires_at: expiresAt,
-        updated_at: new Date().toISOString(),
       },
-      { onConflict: "user_name,database" },
+      { onConflict: "id" },
     );
 
   return { server, database, userName, sessionId };
