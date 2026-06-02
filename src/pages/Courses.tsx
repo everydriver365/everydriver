@@ -409,6 +409,43 @@ export default function Courses() {
   
   // Track if we've done initial search from URL
   const hasSearchedFromUrl = useRef(false);
+  const loadedPlaceholderDistrictsRef = useRef<Set<string>>(new Set());
+
+  const fetchAllRows = useCallback(async <T,>(
+    build: () => any,
+  ): Promise<{ data: T[]; error: any }> => {
+    const PAGE = 1000;
+    const all: T[] = [];
+    let from = 0;
+    while (true) {
+      const { data, error } = await build().range(from, from + PAGE - 1);
+      if (error) return { data: all, error };
+      const rows = (data || []) as T[];
+      all.push(...rows);
+      if (rows.length < PAGE) break;
+      from += PAGE;
+      if (from > 100000) break; // hard safety stop
+    }
+    return { data: all, error: null };
+  }, []);
+
+  const fetchCoursesForInstructorIds = useCallback(async (ids: string[]): Promise<InstructorCourse[]> => {
+    const COURSE_CHUNK = 200;
+    const coursesAll: InstructorCourse[] = [];
+    for (let i = 0; i < ids.length; i += COURSE_CHUNK) {
+      const chunk = ids.slice(i, i + COURSE_CHUNK);
+      const res = await fetchAllRows<InstructorCourse>(() =>
+        supabase
+          .from("instructor_courses")
+          .select("*")
+          .eq("is_active", true)
+          .in("instructor_id", chunk),
+      );
+      if (res.error) throw res.error;
+      coursesAll.push(...res.data);
+    }
+    return coursesAll;
+  }, [fetchAllRows]);
 
   // Helper to check if a date has availability (uses shared resolver including
   // Google Calendar busy events + existing scheduled lessons + manual blocks).
