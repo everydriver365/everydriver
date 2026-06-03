@@ -6,7 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format, isFuture, parseISO, differenceInDays } from "date-fns";
 import { CompactPaymentBadges } from "@/components/payments/PaymentMessaging";
+import { InstructorSignalRow } from "@/components/courses/variants/InstructorSignalRow";
 import { computeOfferStatus } from "@/lib/courseOffer";
+
 
 interface DynamicCourseCardProps {
   instructor: {
@@ -252,6 +254,24 @@ export function DynamicCourseCard({
                   With <span className="font-medium text-primary">{instructor.name}</span>
                 </span>
               </div>
+
+              {/* Trust strip — live rating, Verified Pro chip, top review */}
+              <div className="flex items-start gap-2 rounded-lg border border-border/60 bg-muted/30 px-2.5 py-2">
+                <Avatar className="h-7 w-7 flex-shrink-0">
+                  <AvatarImage src={instructor.profile_image_url || undefined} alt={instructor.name} />
+                  <AvatarFallback className="text-[10px] font-semibold">
+                    {instructor.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
+                  </AvatarFallback>
+                </Avatar>
+                <InstructorSignalRow
+                  instructorId={instructor.id}
+                  tone="light"
+                  showSnippet
+                  snippetClamp={1}
+                  className="min-w-0 flex-1"
+                />
+              </div>
+
 
               {/* Price */}
               <div className="flex items-center gap-2 text-foreground">
