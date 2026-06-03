@@ -167,6 +167,9 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
     manualBlocks: [], bookedLessonGeo: [],
   });
   const [premiumPlacements, setPremiumPlacements] = useState<{ instructor_id: string; placement_type: string; priority_score: number }[]>([]);
+  // Cache of placeholder courses already fetched per district so re-searching
+  // the same area doesn't refetch.
+  const placeholderCoursesByDistrict = useMemo(() => new Map<string, InstructorCourse[]>(), []);
 
 
   const monthOptions = useMemo(() => getMonthOptions(), []);
