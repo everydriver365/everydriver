@@ -21,6 +21,7 @@ const EDAbout = lazy(() => import("@/pages/everydriver/About"));
 const EDContact = lazy(() => import("@/pages/everydriver/Contact"));
 const EDReviews = lazy(() => import("@/pages/everydriver/Reviews"));
 const EDFranchise = lazy(() => import("@/pages/everydriver/FranchisePage"));
+const CourseCardsDemo = lazy(() => import("@/pages/design/CourseCardsDemo"));
 
 // Drive365 surface — when path starts /drive365, render the real Drive365
 // pages even on the EveryDriver host. "Drive365 must go to Drive365."
