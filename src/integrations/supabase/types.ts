@@ -5268,6 +5268,7 @@ export type Database = {
           detected_at: string
           device_id: string | null
           fault_code: string
+          geotab_fault_id: string | null
           id: string
           instructor_id: string | null
           is_active: boolean | null
@@ -5281,6 +5282,7 @@ export type Database = {
           detected_at: string
           device_id?: string | null
           fault_code: string
+          geotab_fault_id?: string | null
           id?: string
           instructor_id?: string | null
           is_active?: boolean | null
@@ -5294,6 +5296,7 @@ export type Database = {
           detected_at?: string
           device_id?: string | null
           fault_code?: string
+          geotab_fault_id?: string | null
           id?: string
           instructor_id?: string | null
           is_active?: boolean | null
@@ -5446,6 +5449,55 @@ export type Database = {
           },
           {
             foreignKeyName: "geotab_impact_events_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      geotab_odometer_snapshots: {
+        Row: {
+          captured_at: string
+          created_at: string
+          device_id: string
+          id: string
+          instructor_id: string
+          odometer_km: number
+        }
+        Insert: {
+          captured_at?: string
+          created_at?: string
+          device_id: string
+          id?: string
+          instructor_id: string
+          odometer_km: number
+        }
+        Update: {
+          captured_at?: string
+          created_at?: string
+          device_id?: string
+          id?: string
+          instructor_id?: string
+          odometer_km?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "geotab_odometer_snapshots_device_id_fkey"
+            columns: ["device_id"]
+            isOneToOne: false
+            referencedRelation: "gps_devices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "geotab_odometer_snapshots_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "geotab_odometer_snapshots_instructor_id_fkey"
             columns: ["instructor_id"]
             isOneToOne: false
             referencedRelation: "public_instructors"
@@ -5657,7 +5709,10 @@ export type Database = {
           last_is_speeding: boolean | null
           last_latitude: number | null
           last_longitude: number | null
+          last_odometer_km: number | null
           last_panic_pressed: boolean | null
+          last_position_lat: number | null
+          last_position_lng: number | null
           last_road_name: string | null
           last_seen_at: string | null
           last_speed_kmh: number | null
@@ -5706,7 +5761,10 @@ export type Database = {
           last_is_speeding?: boolean | null
           last_latitude?: number | null
           last_longitude?: number | null
+          last_odometer_km?: number | null
           last_panic_pressed?: boolean | null
+          last_position_lat?: number | null
+          last_position_lng?: number | null
           last_road_name?: string | null
           last_seen_at?: string | null
           last_speed_kmh?: number | null
@@ -5755,7 +5813,10 @@ export type Database = {
           last_is_speeding?: boolean | null
           last_latitude?: number | null
           last_longitude?: number | null
+          last_odometer_km?: number | null
           last_panic_pressed?: boolean | null
+          last_position_lat?: number | null
+          last_position_lng?: number | null
           last_road_name?: string | null
           last_seen_at?: string | null
           last_speed_kmh?: number | null
