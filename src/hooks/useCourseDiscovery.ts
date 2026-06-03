@@ -469,8 +469,43 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
               (i) => i.is_network_placeholder && i.placeholder_district === district,
             );
 
+        // Lazy-fetch placeholder courses for this district. Placeholders are
+        // intentionally excluded from the upfront fetch (otherwise we'd be
+        // pulling ~26k rows on every page load). We cache per-district so a
+        // repeat search costs nothing.
+        const placeholderIdsInDistrict = instructors
+          .filter((i) => i.is_network_placeholder && i.placeholder_district === district)
+          .map((i) => i.id);
+        if (placeholderIdsInDistrict.length > 0 && !placeholderCoursesByDistrict.has(district)) {
+          const { data: phCourses, error: phErr } = await supabase
+            .from("instructor_courses")
+            .select("*")
+            .eq("is_active", true)
+            .in("instructor_id", placeholderIdsInDistrict);
+          if (phErr) {
+            console.error("Placeholder course fetch failed:", phErr);
+            toast({
+              title: "Couldn't load nearby courses",
+              description: "Please try again.",
+              variant: "destructive",
+            });
+          } else {
+            const rows = (phCourses || []) as InstructorCourse[];
+            placeholderCoursesByDistrict.set(district, rows);
+            setInstructorCourses((prev) => {
+              const existingIds = new Set(prev.map((c) => `${c.instructor_id}:${c.course_hours}`));
+              const merged = [...prev];
+              for (const r of rows) {
+                const key = `${r.instructor_id}:${r.course_hours}`;
+                if (!existingIds.has(key)) merged.push(r);
+              }
+              return merged;
+            });
+          }
+        }
+
         if (instructorsNearby.length > 0) {
-          const firstAvailable = findFirstAvailableDate(instructorsNearby, sources);
+          const firstAvailable = firstDateForArea(instructorsNearby, sources);
           if (firstAvailable) {
             setSelectedMonth(firstAvailable.month);
             setSelectedDate(firstAvailable.date);
@@ -485,6 +520,7 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
       setIsSearching(false);
     }
   };
+
 
   const clearSearch = () => {
     setPostcode("");
