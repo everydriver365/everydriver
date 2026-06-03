@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { useCourseDiscovery, type CourseTypeFilter } from "@/hooks/useCourseDiscovery";
-import { CourseSearchHeader } from "@/components/courses/CourseSearchHeader";
+import { Drive365SearchHeader } from "@/components/courses/Drive365SearchHeader";
 import { SidebarCalendar } from "@/components/courses/SidebarCalendar";
 import { CourseGrid } from "@/components/courses/CourseGrid";
 import { Button } from "@/components/ui/button";
@@ -77,7 +77,7 @@ export default function CourseResults({
 
   return (
     <MainLayout>
-      <CourseSearchHeader
+      <Drive365SearchHeader
         title={title}
         postcode={postcode}
         setPostcode={setPostcode}
