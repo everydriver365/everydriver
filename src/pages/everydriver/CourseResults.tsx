@@ -1,5 +1,6 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import { ShieldCheck } from "lucide-react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { useCourseDiscovery, type CourseTypeFilter } from "@/hooks/useCourseDiscovery";
 import { Drive365SearchHeader } from "@/components/courses/Drive365SearchHeader";
