@@ -50,17 +50,7 @@ export function Drive365SearchHeader({
     <>
       {/* Top navy bar with brand + search pill */}
       <div className="hidden md:block bg-[#0A2B6B]">
-        <div className="mx-auto max-w-7xl h-16 px-8 flex items-center gap-6">
-          {/* DRIVE / 365 split logo */}
-          <a href="/" className="flex items-baseline gap-1.5 shrink-0 select-none">
-            <span className="text-white font-extrabold tracking-[-0.5px] text-[22px] leading-none">
-              DRIVE
-            </span>
-            <span className="text-[#D12E2E] font-extrabold tracking-[-0.5px] text-[22px] leading-none">
-              365
-            </span>
-          </a>
-
+        <div className="mx-auto max-w-7xl h-16 px-8 flex items-center">
           {/* White pill search */}
           <form
             onSubmit={(e) => {
