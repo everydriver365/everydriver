@@ -1363,7 +1363,7 @@ export default function Courses({ restrictToInstructorIds, title: titleProp, emb
 
       {/* Two Column Layout: Calendar + Courses */}
       <section className="container py-8">
-        {!searchedPostcode ? (
+        {!embedded && !searchedPostcode ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

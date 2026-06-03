@@ -1,21 +1,21 @@
-## Make Richard Chapman cash-only
+## Show Chapman's courses without requiring a postcode
 
-Update Richard Chapman's instructor payment settings so pupils only see Cash at checkout.
+**Diagnosis:** `/booking/chapmans` renders fine and both Chapman instructors load, but the embedded course explorer shows its "Enter your postcode" empty state. The public `/courses` page gates the course grid behind `searchedPostcode`, and that gate fires inside the booking-page embed too — even though the embed is already scoped to just Richard + Ken.
 
-**Instructor:** Richard Chapman (`1b49d152-1088-4587-8f80-b325ba41c1af`)
+**Fix (1 line, `src/pages/Courses.tsx` ~line 1366):**
 
-**Changes (data only, no code):**
-1. Enable cash payments (`accept_cash = true`, or equivalent flag on his instructor/settings row).
-2. Disable Klarna (`klarna_enabled = false`).
-3. Disable Clearpay (`clearpay_enabled = false`).
-4. Leave Square and Payment QR off (already off).
+Change the empty-state condition from:
+```tsx
+{!searchedPostcode ? ( …Enter your postcode… ) : ( …grid… )}
+```
+to:
+```tsx
+{!embedded && !searchedPostcode ? ( …Enter your postcode… ) : ( …grid… )}
+```
 
-**How:**
-- First run a quick `SELECT` to confirm the exact column names on Richard's settings row (cash / Klarna / Clearpay toggles live on `instructors` or `instructor_payment_settings` — need to verify before updating).
-- Then run a single `UPDATE` via the insert tool flipping those three flags.
+**Why this is safe**
+- `relevantInstructors` already falls back to the full `instructors` list when no postcode/userLocation is set (line 547), and that list is already restricted to the booking page's instructors (line 889). So skipping the gate just shows their courses for the first available date — exactly what's expected on a school booking page.
+- Distance/nearest sorting silently no-ops without a userLocation (lines 1121-1124), so no breakage.
+- The standalone `/courses` page is unaffected (`embedded` defaults to `false`).
 
-**Result at checkout for Richard:**
-- ✅ Cash
-- ❌ Klarna, Clearpay, Card, Bank, QR
-
-No frontend code changes. No migrations. No effect on Ken D or any other instructor.
+No DB changes, no other files touched.
