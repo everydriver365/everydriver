@@ -1360,8 +1360,8 @@ export default function Courses() {
         ) : (
         <div className="flex flex-col gap-8 lg:flex-row">
           {/* Left Column: Calendar + Instructors */}
-          <div className="w-full lg:w-80 lg:flex-shrink-0">
-            <div className="sticky top-20 space-y-4 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto lg:pr-1">
+          <div className="w-full lg:w-80 lg:flex-shrink-0 lg:self-start">
+            <div className="space-y-4 lg:max-h-none lg:overflow-visible">
               <SidebarCalendar
                 selectedMonth={selectedMonth}
                 setSelectedMonth={setSelectedMonth}
@@ -1460,15 +1460,14 @@ export default function Courses() {
                 )}
               </div>
 
-              {/* Pass Promise card — list view only */}
-              {isListMode && (
-                <div
-                  className="relative overflow-hidden p-4"
-                  style={{
-                    background: "#0F2044",
-                    borderRadius: 4,
-                  }}
-                >
+              {/* Pass Promise card */}
+              <div
+                className="relative overflow-hidden p-4"
+                style={{
+                  background: "#0F2044",
+                  borderRadius: 4,
+                }}
+              >
                   <div
                     className="pointer-events-none absolute -right-6 -top-6 h-24 w-24"
                     style={{
@@ -1492,8 +1491,7 @@ export default function Courses() {
                       </div>
                     </div>
                   </div>
-                </div>
-              )}
+              </div>
               {/* Instructors Filter Tile */}
               {availableInstructorsForFilter.length > 0 && (
                 <div className="rounded-xl border bg-card p-4 shadow-sm">
