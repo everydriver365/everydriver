@@ -6,6 +6,7 @@ import { isWhitelabelDomain } from "@/lib/whitelabel";
 // Learner-facing pages
 const Index = lazy(() => import("@/pages/Index"));
 const Courses = lazy(() => import("@/pages/Courses"));
+const CourseResults = lazy(() => import("@/pages/everydriver/CourseResults"));
 const CourseCardsDemo = lazy(() => import("@/pages/design/CourseCardsDemo"));
 const WhitelabelCourses = lazy(() => import("@/pages/WhitelabelCourses"));
 const WhitelabelAreaPage = lazy(() => import("@/pages/WhitelabelAreaPage"));
