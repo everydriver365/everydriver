@@ -108,7 +108,7 @@ export default function PublicBookingPortal() {
     () => new Set(instructors.map((i) => i.id)),
     [instructors],
   );
-  const { filteredCourses } = useCourseDiscovery("all", null);
+  const { filteredCourses } = useCourseDiscovery("all", undefined);
   const pageCourses = useMemo(
     () => filteredCourses.filter((c) => instructorIdSet.has(c.instructor.id)),
     [filteredCourses, instructorIdSet],
