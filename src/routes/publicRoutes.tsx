@@ -120,7 +120,7 @@ export const publicRoutes = (
     <Route path="/accessible/trackers" element={<AccessibleTrackers />} />
 
     {/* Learner-facing routes */}
-    <Route path="/courses" element={isWhitelabelDomain() ? <WhitelabelCourses /> : <Courses />} />
+    <Route path="/courses" element={isWhitelabelDomain() ? <WhitelabelCourses /> : <CourseResults />} />
     <Route path="/design/course-cards" element={<CourseCardsDemo />} />
     <Route path="/areas/:slug" element={<WhitelabelAreaPage />} />
     <Route path="/book/:instructorId" element={<BookingSummary />} />
