@@ -244,7 +244,7 @@ export function EDCourseList({ courses }: EDCourseListProps) {
                 <div className="text-[22px] font-extrabold text-[#0A0E27] tracking-[-0.5px] leading-none">
                   £{Math.round(final).toLocaleString()}
                 </div>
-                <div className="text-[10px] text-[#9CA3AF]">£{perHour}/hr</div>
+                
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -331,9 +331,6 @@ export function EDCourseList({ courses }: EDCourseListProps) {
                     }}
                   >
                     £{Math.round(final).toLocaleString()}
-                  </div>
-                  <div style={{ fontSize: 11, color: TEXT_GREY, marginTop: 2 }}>
-                    £{perHour}/hr
                   </div>
                 </div>
               </div>
