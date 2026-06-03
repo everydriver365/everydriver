@@ -1,6 +1,6 @@
 // Geotab 1-min poller — fetches incremental data per Geotab-linked device and
 // upserts into the geotab_* tables. Trip rows backfill scheduled_lessons.geotab_trip_id.
-// Uses geotab_sync_cursors to remember fromDate per (device_id, cursor_name).
+// Uses geotab_sync_cursors to remember fromVersion per (device_id, cursor_name).
 import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
@@ -93,7 +93,7 @@ async function setCursor(
   supabase: SupabaseClient,
   instructorId: string,
   name: string,
-  value: string,
+  value: string | null,
   error: string | null = null,
 ) {
   await supabase.from("geotab_sync_cursors").upsert(
@@ -144,6 +144,58 @@ interface DeviceRow {
   device_name: string | null;
 }
 
+/**
+ * Live device status: odometer, last position, last comm time.
+ * Updates `gps_devices` + records an odometer snapshot.
+ */
+async function pollDeviceStatus(supabase: SupabaseClient, device: DeviceRow) {
+  const cursorName = `status:${device.geotab_device_id}`;
+  let result: any;
+  try {
+    result = await call<any>(supabase, "Get", "DeviceStatusInfo", {
+      search: { deviceSearch: { id: device.geotab_device_id } },
+    });
+  } catch (err) {
+    await setCursor(supabase, device.instructor_id, cursorName, null, (err as Error).message);
+    return { status: 0 };
+  }
+
+  const rows: any[] = Array.isArray(result) ? result : (result?.data ?? []);
+  const info = rows[0];
+  if (!info) {
+    await setCursor(supabase, device.instructor_id, cursorName, null, "no status");
+    return { status: 0 };
+  }
+
+  const odometerM: number | null = typeof info.odometer === "number" ? info.odometer : null;
+  const odometerKm = odometerM !== null ? odometerM / 1000 : null;
+  const lat: number | null = info.latitude ?? null;
+  const lng: number | null = info.longitude ?? null;
+  const lastComm: string | null = info.dateTime ?? null;
+
+  const update: Record<string, unknown> = { updated_at: new Date().toISOString() };
+  if (lastComm) update.last_seen_at = lastComm;
+  if (odometerKm !== null) update.last_odometer_km = odometerKm;
+  if (lat !== null) update.last_position_lat = lat;
+  if (lng !== null) update.last_position_lng = lng;
+  if (typeof info.speed === "number") update.last_speed_kmh = info.speed;
+  if (typeof info.isDriving === "boolean") update.last_ignition_status = info.isDriving;
+
+  await supabase.from("gps_devices").update(update).eq("id", device.id);
+
+  if (odometerKm !== null) {
+    await supabase.from("geotab_odometer_snapshots").insert({
+      instructor_id: device.instructor_id,
+      device_id: device.id,
+      odometer_km: odometerKm,
+      captured_at: lastComm ?? new Date().toISOString(),
+    });
+  }
+
+  await setCursor(supabase, device.instructor_id, cursorName, lastComm ?? new Date().toISOString());
+  return { status: 1 };
+}
+
 async function pollExceptions(supabase: SupabaseClient, device: DeviceRow) {
   const cursorName = `exception:${device.geotab_device_id}`;
   const fromVer = await getCursor(supabase, device.instructor_id, cursorName);
@@ -155,7 +207,6 @@ async function pollExceptions(supabase: SupabaseClient, device: DeviceRow) {
   if (fromVer) {
     (params as any).fromVersion = fromVer;
   } else {
-    // First run: last 24 h
     (params.search as any).fromDate = new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString();
     (params.search as any).toDate = new Date().toISOString();
   }
@@ -164,7 +215,7 @@ async function pollExceptions(supabase: SupabaseClient, device: DeviceRow) {
   try {
     result = await call<any>(supabase, "GetFeed", "ExceptionEvent", params);
   } catch (err) {
-    await setCursor(supabase, device.instructor_id, cursorName, fromVer ?? "", (err as Error).message);
+    await setCursor(supabase, device.instructor_id, cursorName, null, (err as Error).message);
     return { fetched: 0, exceptions: 0, impacts: 0 };
   }
 
@@ -177,10 +228,8 @@ async function pollExceptions(supabase: SupabaseClient, device: DeviceRow) {
     const startedAt = ev.activeFrom ?? ev.dateTime ?? null;
     const endedAt = ev.activeTo ?? null;
     const eventId = String(ev.id ?? "");
-
     if (!eventId || !startedAt) continue;
 
-    // Driver-behaviour row (every exception goes here for the timeline)
     const { error: dErr } = await supabase.from("geotab_driver_events").upsert(
       {
         instructor_id: device.instructor_id,
@@ -197,7 +246,6 @@ async function pollExceptions(supabase: SupabaseClient, device: DeviceRow) {
     );
     if (!dErr) driverRows++;
 
-    // Impact passes are flagged separately
     if (isImpactRule(ruleName)) {
       const { error: iErr } = await supabase.from("geotab_impact_events").upsert(
         {
@@ -240,34 +288,74 @@ async function pollFaults(supabase: SupabaseClient, device: DeviceRow) {
   try {
     result = await call<any>(supabase, "GetFeed", "FaultData", params);
   } catch (err) {
-    await setCursor(supabase, device.instructor_id, cursorName, fromVer ?? "", (err as Error).message);
+    // Reset cursor so next run starts from a fresh 30-day window
+    await setCursor(supabase, device.instructor_id, cursorName, null, (err as Error).message);
     return { faults: 0 };
   }
 
   const faults: any[] = result?.data ?? [];
+
+  // Resolve Diagnostic references in one batched call
+  const diagIds = Array.from(
+    new Set(
+      faults
+        .map((f) => f.diagnostic?.id)
+        .filter((id): id is string => typeof id === "string" && id.length > 0),
+    ),
+  );
+  const diagMap = new Map<string, { code: string | null; name: string | null }>();
+  if (diagIds.length > 0) {
+    try {
+      const diagRes = await call<any>(supabase, "Get", "Diagnostic", {
+        search: { ids: diagIds },
+      });
+      const list: any[] = Array.isArray(diagRes) ? diagRes : (diagRes?.data ?? []);
+      for (const d of list) {
+        diagMap.set(d.id, {
+          code: d.code ?? d.faultResetMode ?? d.id ?? null,
+          name: d.name ?? null,
+        });
+      }
+    } catch (_) {
+      // fall through — we'll use whatever inline data exists
+    }
+  }
+
   let count = 0;
   for (const f of faults) {
-    const code = f.diagnostic?.code ?? f.diagnostic?.name ?? null;
-    const description = f.diagnostic?.name ?? null;
+    const diagId: string | null = f.diagnostic?.id ?? null;
+    const resolved = diagId ? diagMap.get(diagId) : null;
+    const code =
+      f.diagnostic?.code ??
+      resolved?.code ??
+      f.diagnostic?.name ??
+      resolved?.name ??
+      diagId ??
+      null;
+    const description = resolved?.name ?? f.diagnostic?.name ?? null;
     const detectedAt = f.dateTime ?? null;
     const state: string | undefined = f.faultState;
-    if (!code || !detectedAt) continue;
+    const eventId = String(f.id ?? "");
+    if (!code || !detectedAt || !eventId) continue;
 
-    // Active by default; if Geotab reports inactive we mark resolved.
     const isActive = state !== "Inactive";
 
-    await supabase.from("geotab_fault_codes").insert({
-      instructor_id: device.instructor_id,
-      device_id: device.id,
-      fault_code: String(code),
-      description,
-      severity: f.severity ?? null,
-      source: f.controller?.name ?? null,
-      detected_at: detectedAt,
-      resolved_at: isActive ? null : detectedAt,
-      is_active: isActive,
-    });
-    count++;
+    const { error } = await supabase.from("geotab_fault_codes").upsert(
+      {
+        instructor_id: device.instructor_id,
+        device_id: device.id,
+        geotab_fault_id: eventId,
+        fault_code: String(code),
+        description,
+        severity: f.severity ?? null,
+        source: f.controller?.name ?? "geotab",
+        detected_at: detectedAt,
+        resolved_at: isActive ? null : detectedAt,
+        is_active: isActive,
+      },
+      { onConflict: "device_id,geotab_fault_id" },
+    );
+    if (!error) count++;
   }
 
   if (result?.toVersion) {
@@ -296,12 +384,13 @@ async function pollTrips(supabase: SupabaseClient, device: DeviceRow) {
   try {
     result = await call<any>(supabase, "GetFeed", "Trip", params);
   } catch (err) {
-    await setCursor(supabase, device.instructor_id, cursorName, fromVer ?? "", (err as Error).message);
-    return { trips: 0, backfilled: 0 };
+    await setCursor(supabase, device.instructor_id, cursorName, null, (err as Error).message);
+    return { trips: 0, backfilled: 0, fuelRows: 0 };
   }
 
   const trips: any[] = result?.data ?? [];
   let backfilled = 0;
+  let fuelRows = 0;
 
   for (const t of trips) {
     const tripId: string | undefined = t.id;
@@ -309,11 +398,10 @@ async function pollTrips(supabase: SupabaseClient, device: DeviceRow) {
     const stopTime: string | undefined = t.stop;
     if (!tripId || !startTime || !stopTime) continue;
 
-    // Backfill any scheduled_lesson for this instructor whose time window
-    // overlaps the trip and which doesn't yet have a geotab_trip_id.
+    // Lesson backfill
     const { data: lessons } = await supabase
       .from("scheduled_lessons")
-      .select("id, start_time, end_time, geotab_trip_id")
+      .select("id")
       .eq("instructor_id", device.instructor_id)
       .is("geotab_trip_id", null)
       .gte("end_time", startTime)
@@ -326,13 +414,49 @@ async function pollTrips(supabase: SupabaseClient, device: DeviceRow) {
         .eq("id", (lesson as any).id);
       backfilled++;
     }
+
+    // Trip-derived fuel/distance row (fallback when no FuelTransaction)
+    const distanceKm: number | null =
+      typeof t.distance === "number" ? t.distance : null;
+    const fuelLitres: number | null =
+      typeof t.fuelUsed === "number" && t.fuelUsed > 0
+        ? t.fuelUsed
+        : typeof t.averageFuelUsed === "number" && distanceKm
+          ? (t.averageFuelUsed * distanceKm) / 100
+          : null;
+    if (distanceKm && distanceKm > 0) {
+      const lp100 =
+        fuelLitres && distanceKm > 0 ? (fuelLitres * 100) / distanceKm : null;
+      // We key on (instructor_id, device_id, trip_end) to avoid dupes — but no
+      // unique constraint exists; check for existing first.
+      const { data: existing } = await supabase
+        .from("geotab_fuel_usage")
+        .select("id")
+        .eq("instructor_id", device.instructor_id)
+        .eq("device_id", device.id)
+        .eq("trip_end", stopTime)
+        .limit(1)
+        .maybeSingle();
+      if (!existing) {
+        const { error } = await supabase.from("geotab_fuel_usage").insert({
+          instructor_id: device.instructor_id,
+          device_id: device.id,
+          trip_start: startTime,
+          trip_end: stopTime,
+          distance_km: distanceKm,
+          fuel_used_litres: fuelLitres,
+          litres_per_100km: lp100,
+        });
+        if (!error) fuelRows++;
+      }
+    }
   }
 
   if (result?.toVersion) {
     await setCursor(supabase, device.instructor_id, cursorName, String(result.toVersion));
   }
 
-  return { trips: trips.length, backfilled };
+  return { trips: trips.length, backfilled, fuelRows };
 }
 
 // ---------- HTTP entrypoint ----------
@@ -356,7 +480,8 @@ Deno.serve(async (req) => {
 
     const report: any[] = [];
     for (const d of (devices ?? []) as DeviceRow[]) {
-      const [ex, fa, tr] = await Promise.all([
+      const [st, ex, fa, tr] = await Promise.all([
+        pollDeviceStatus(supabase, d),
         pollExceptions(supabase, d),
         pollFaults(supabase, d),
         pollTrips(supabase, d),
@@ -364,6 +489,7 @@ Deno.serve(async (req) => {
       report.push({
         deviceId: d.geotab_device_id,
         name: d.device_name,
+        ...st,
         ...ex,
         ...fa,
         ...tr,
