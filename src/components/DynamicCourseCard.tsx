@@ -6,7 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format, isFuture, parseISO, differenceInDays } from "date-fns";
 import { CompactPaymentBadges } from "@/components/payments/PaymentMessaging";
+import { InstructorSignalRow } from "@/components/courses/variants/InstructorSignalRow";
 import { computeOfferStatus } from "@/lib/courseOffer";
+
 
 interface DynamicCourseCardProps {
   instructor: {
