@@ -1360,19 +1360,21 @@ export default function Courses() {
         ) : (
         <div className="flex flex-col gap-8 lg:flex-row">
           {/* Left Column: Calendar + Instructors */}
-          <div className="w-full lg:sticky lg:top-20 lg:max-h-[calc(100vh-6rem)] lg:w-80 lg:flex-shrink-0 lg:self-start lg:overflow-y-auto lg:pr-1">
+          <div className="w-full lg:w-80 lg:flex-shrink-0">
             <div className="space-y-4">
-              <SidebarCalendar
-                selectedMonth={selectedMonth}
-                setSelectedMonth={setSelectedMonth}
-                selectedDate={selectedDate}
-                availableDates={availableDatesInMonth}
-                courseCounts={courseCountsInMonth}
-                onSelectDate={setSelectedDate}
-                loading={loading}
-                monthOptions={monthOptions}
-                hideCounts={isListMode}
-              />
+              <div className="lg:sticky lg:top-20 lg:z-10">
+                <SidebarCalendar
+                  selectedMonth={selectedMonth}
+                  setSelectedMonth={setSelectedMonth}
+                  selectedDate={selectedDate}
+                  availableDates={availableDatesInMonth}
+                  courseCounts={courseCountsInMonth}
+                  onSelectDate={setSelectedDate}
+                  loading={loading}
+                  monthOptions={monthOptions}
+                  hideCounts={isListMode}
+                />
+              </div>
 
               {/* Desktop-only refinement filters (under the calendar) */}
               <div className="hidden lg:block rounded-xl border bg-card p-4 shadow-sm space-y-5">
