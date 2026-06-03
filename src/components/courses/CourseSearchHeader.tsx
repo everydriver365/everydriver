@@ -51,8 +51,10 @@ export function CourseSearchHeader({
   activeFilter,
   setActiveFilter,
   onMoreFilters,
+  variant = "default",
 }: CourseSearchHeaderProps) {
   const showFilters = Boolean(activeFilter && setActiveFilter);
+  const isChapmans = variant === "chapmans";
 
   const handleSearch = () => {
     if (typeof document !== "undefined") {
