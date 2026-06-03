@@ -189,6 +189,7 @@ export const publicRoutes = (
     <Route path="/quote/:token" element={<QuoteAcceptPage />} />
     <Route path="/pay/:instructorId" element={<PublicPaymentPage />} />
     <Route path="/booking/:slug" element={<PublicBookingPortal />} />
+    <Route path="/bookings/:slug" element={<RedirectToBooking />} />
     <Route path="/school/:slug" element={<SchoolWebsiteHome />} />
     <Route path="/school/:slug/about" element={<SchoolWebsiteAbout />} />
     <Route path="/school/:slug/instructors" element={<SchoolWebsiteInstructors />} />
