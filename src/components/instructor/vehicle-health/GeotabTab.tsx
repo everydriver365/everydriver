@@ -66,6 +66,7 @@ function severityColor(s: string | null | undefined) {
 /* ─────────── Overview ─────────── */
 
 function OverviewSection({ instructorId }: Props) {
+  const qc = useQueryClient();
   const { data: health } = useGeotabHealth(instructorId);
 
   const { data: lastSync } = useQuery({
@@ -114,6 +115,26 @@ function OverviewSection({ instructorId }: Props) {
     },
   });
 
+  const syncMutation = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.functions.invoke("geotab-poller");
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["geotab-health", instructorId] });
+      qc.invalidateQueries({ queryKey: ["geotab-last-sync", instructorId] });
+      qc.invalidateQueries({ queryKey: ["geotab-fault-codes", instructorId] });
+      qc.invalidateQueries({ queryKey: ["geotab-driver-events", instructorId] });
+      qc.invalidateQueries({ queryKey: ["geotab-impacts", instructorId] });
+      qc.invalidateQueries({ queryKey: ["geotab-fuel", instructorId] });
+      qc.invalidateQueries({ queryKey: ["geotab-latest-impact", instructorId] });
+      qc.invalidateQueries({ queryKey: ["geotab-latest-fuel", instructorId] });
+      toast({ title: "Geotab synced" });
+    },
+    onError: (e: any) =>
+      toast({ title: "Sync failed", description: e?.message, variant: "destructive" }),
+  });
+
   const score = health?.score ?? 100;
   const accent =
     score >= 85 ? { bg: "#E8F3E8", fg: "#3B8B3B" } :
@@ -145,6 +166,41 @@ function OverviewSection({ instructorId }: Props) {
             ) : (
               <ShieldAlert className="h-7 w-7" style={{ color: accent.fg }} />
             )}
+          </div>
+        </div>
+      </Card>
+
+      <Card>
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
+            Vehicle
+          </p>
+          <Car className="h-4 w-4 text-muted-foreground" />
+        </div>
+        <div className="grid grid-cols-3 gap-3">
+          <div>
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Odometer</p>
+            <p className="text-lg font-bold text-gray-900 mt-0.5">
+              {health?.odometerMiles != null
+                ? `${Math.round(health.odometerMiles).toLocaleString()} mi`
+                : "—"}
+            </p>
+          </div>
+          <div>
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Last 7d</p>
+            <p className="text-lg font-bold text-gray-900 mt-0.5">
+              {health?.last7dMiles != null
+                ? `${Math.round(health.last7dMiles).toLocaleString()} mi`
+                : "—"}
+            </p>
+          </div>
+          <div>
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Seen</p>
+            <p className="text-lg font-bold text-gray-900 mt-0.5">
+              {health?.lastSeenAt
+                ? formatDistanceToNow(new Date(health.lastSeenAt), { addSuffix: false })
+                : "—"}
+            </p>
           </div>
         </div>
       </Card>
@@ -188,7 +244,7 @@ function OverviewSection({ instructorId }: Props) {
 
       <Card>
         <div className="flex items-center justify-between">
-          <div>
+          <div className="min-w-0 flex-1">
             <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
               Last sync
             </p>
@@ -201,7 +257,15 @@ function OverviewSection({ instructorId }: Props) {
               <p className="text-xs text-red-600 mt-1 line-clamp-2">{lastSync.last_error}</p>
             )}
           </div>
-          <Activity className="h-5 w-5 text-muted-foreground" />
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => syncMutation.mutate()}
+            disabled={syncMutation.isPending}
+          >
+            <RefreshCw className={`h-3.5 w-3.5 mr-1 ${syncMutation.isPending ? "animate-spin" : ""}`} />
+            Sync now
+          </Button>
         </div>
       </Card>
     </div>
