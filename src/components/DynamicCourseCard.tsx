@@ -253,6 +253,24 @@ export function DynamicCourseCard({
                 </span>
               </div>
 
+              {/* Trust strip — live rating, Verified Pro chip, top review */}
+              <div className="flex items-start gap-2 rounded-lg border border-border/60 bg-muted/30 px-2.5 py-2">
+                <Avatar className="h-7 w-7 flex-shrink-0">
+                  <AvatarImage src={instructor.profile_image_url || undefined} alt={instructor.name} />
+                  <AvatarFallback className="text-[10px] font-semibold">
+                    {instructor.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
+                  </AvatarFallback>
+                </Avatar>
+                <InstructorSignalRow
+                  instructorId={instructor.id}
+                  tone="light"
+                  showSnippet
+                  snippetClamp={1}
+                  className="min-w-0 flex-1"
+                />
+              </div>
+
+
               {/* Price */}
               <div className="flex items-center gap-2 text-foreground">
                 <PoundSterling className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
