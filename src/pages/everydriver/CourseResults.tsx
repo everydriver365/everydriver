@@ -76,6 +76,19 @@ export default function CourseResults({
     setSearchParams(params, { replace: true });
   };
 
+  const [lessonTimes, setLessonTimes] = useState<"all" | "daytime" | "evenings_weekends">("all");
+
+  const matchInstructors = useMemo(() => {
+    const seen = new Map<string, { instructor: typeof filteredCourses[number]["instructor"]; distance?: number; carType: string }>();
+    for (const c of filteredCourses) {
+      if (!c.instructor || seen.has(c.instructor.id)) continue;
+      const ct = (c.instructor.car_type || "").toLowerCase();
+      const carType = ct.includes("auto") && !ct.includes("manual") ? "Automatic" : ct.includes("manual") && !ct.includes("auto") ? "Manual" : "Manual & Auto";
+      seen.set(c.instructor.id, { instructor: c.instructor, distance: c.distance, carType });
+    }
+    return Array.from(seen.values()).slice(0, 8);
+  }, [filteredCourses]);
+
   return (
     <MainLayout>
       <Drive365SearchHeader
