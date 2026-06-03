@@ -4223,6 +4223,51 @@ export type Database = {
           },
         ]
       }
+      external_booking_allowlist: {
+        Row: {
+          created_at: string
+          id: string
+          instructor_id: string
+          is_active: boolean
+          notes: string | null
+          partner_key: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          instructor_id: string
+          is_active?: boolean
+          notes?: string | null
+          partner_key: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          is_active?: boolean
+          notes?: string | null
+          partner_key?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "external_booking_allowlist_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "external_booking_allowlist_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       famulor_call_logs: {
         Row: {
           agent_name: string | null
@@ -21093,6 +21138,18 @@ export type Database = {
         }[]
       }
       get_auth_user_id_by_email: { Args: { p_email: string }; Returns: string }
+      get_external_instructor_busy_blocks: {
+        Args: {
+          p_from: string
+          p_instructor_id: string
+          p_partner_key: string
+          p_to: string
+        }
+        Returns: {
+          end_at: string
+          start_at: string
+        }[]
+      }
       get_instructor_id_for_user: {
         Args: { p_user_id: string }
         Returns: string
@@ -21258,6 +21315,24 @@ export type Database = {
         Returns: undefined
       }
       is_school_owner: { Args: { p_school_id: string }; Returns: boolean }
+      list_external_bookable_instructors: {
+        Args: { p_partner_key: string }
+        Returns: {
+          available_from: string
+          bio: string
+          brand_colour: string
+          car_make: string
+          car_model: string
+          car_type: string
+          hero_image_url: string
+          home_postcode: string
+          hourly_rate: number
+          id: string
+          instructor_grade: string
+          name: string
+          profile_image_url: string
+        }[]
+      }
       log_custom_domain_event: {
         Args: {
           p_domain: string
