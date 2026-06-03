@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { formatDistanceToNow } from "date-fns";
 import { ChevronRight, ShieldCheck, AlertTriangle, ShieldAlert, Video } from "lucide-react";
 import { TileCard } from "@/components/instructor/ui";
 import { useGeotabHealth } from "@/hooks/useGeotabHealth";
