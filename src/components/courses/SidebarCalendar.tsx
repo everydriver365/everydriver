@@ -1,7 +1,6 @@
 import { useMemo } from "react";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isSameDay, isBefore, startOfDay } from "date-fns";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface SidebarCalendarProps {
   selectedMonth: string;
@@ -63,84 +62,87 @@ export function SidebarCalendar({
   const [year, month] = selectedMonth.split("-").map(Number);
   const monthLabel = format(new Date(year, month - 1), "MMMM yyyy");
 
+  const arrowCls =
+    "flex h-[26px] w-[26px] items-center justify-center rounded-[5px] border border-[#E5E7EB] text-[#6B7280] disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#F3F4F6]";
+
   return (
-    <div className="rounded-xl border bg-card p-4 shadow-sm">
-      {/* Month Dropdown */}
-      <div className="mb-4">
-        <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-          <SelectTrigger className="w-full bg-background">
-            <SelectValue placeholder="Select month" />
-          </SelectTrigger>
-          <SelectContent className="max-h-[300px] bg-popover z-50">
-            {monthOptions.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+    <div>
+      {/* Section label */}
+      <div className="mb-3 text-[10px] font-bold uppercase tracking-[1px] text-[#9CA3AF]">
+        Start Date
       </div>
 
-      {/* Month Navigation */}
-      <div className="mb-4 flex items-center justify-between">
+      {/* Month nav row */}
+      <div className="mb-[10px] flex items-center justify-between">
         <button
           onClick={handlePrevMonth}
-          disabled={currentMonthIndex === 0}
-          className="rounded-md p-1.5 hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed"
+          disabled={currentMonthIndex <= 0}
+          className={arrowCls}
+          aria-label="Previous month"
         >
-          <ChevronLeft className="h-5 w-5" />
+          <ChevronLeft className="h-4 w-4" />
         </button>
-        <span className="text-sm font-semibold">{monthLabel}</span>
+        <span className="text-[13px] font-semibold text-[#0A0E27]">{monthLabel}</span>
         <button
           onClick={handleNextMonth}
           disabled={currentMonthIndex >= monthOptions.length - 1}
-          className="rounded-md p-1.5 hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed"
+          className={arrowCls}
+          aria-label="Next month"
         >
-          <ChevronRight className="h-5 w-5" />
+          <ChevronRight className="h-4 w-4" />
         </button>
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-7 gap-1">
+        <div className="grid grid-cols-7 gap-[2px]">
           {Array.from({ length: 35 }).map((_, i) => (
-            <div key={i} className="h-12 w-full animate-pulse rounded-md bg-muted" />
+            <div key={i} className="h-8 w-full animate-pulse rounded bg-muted" />
           ))}
         </div>
       ) : (
         <>
           {/* Weekday headers */}
-          <div className="mb-1 grid grid-cols-7 gap-1">
+          <div className="mb-1 grid grid-cols-7 gap-[2px]">
             {["S", "M", "T", "W", "T", "F", "S"].map((day, i) => (
-              <div key={i} className="text-center text-xs font-medium text-muted-foreground py-1">
+              <div
+                key={i}
+                className="py-[2px] text-center text-[9px] font-semibold text-[#9CA3AF]"
+              >
                 {day}
               </div>
             ))}
           </div>
 
           {/* Calendar grid */}
-          <div className="grid grid-cols-7 gap-1">
+          <div className="grid grid-cols-7 gap-[2px]">
             {calendarDays.map((day, index) => {
               if (!day.date) {
-                return <div key={`empty-${index}`} className="h-12" />;
+                return (
+                  <div
+                    key={`empty-${index}`}
+                    className="px-[2px] py-[5px] text-center text-[11px] text-[#D1D5DB]"
+                  />
+                );
               }
 
               const isSelected = selectedDate && isSameDay(day.date, selectedDate);
               const isToday = isSameDay(day.date, today);
+              const disabled = !day.isAvailable || day.isPast;
+
+              let stateCls = "text-[#D1D5DB] cursor-not-allowed";
+              if (isSelected || (isToday && !disabled)) {
+                stateCls = "bg-[#0A2B6B] text-white font-bold rounded-full";
+              } else if (day.isAvailable && !day.isPast) {
+                stateCls =
+                  "bg-[#EFF6FF] text-[#0070C0] font-bold rounded-full hover:opacity-90 cursor-pointer";
+              }
 
               return (
                 <button
                   key={day.date.toISOString()}
-                  onClick={() => day.isAvailable && onSelectDate(day.date!)}
-                  disabled={!day.isAvailable || day.isPast}
-                  className={`relative flex h-12 w-full items-center justify-center rounded-md text-sm font-medium transition-all ${
-                    isSelected
-                      ? "bg-[#0F2044] text-white shadow-md hover:bg-[#1A3370]"
-                      : day.isAvailable
-                        ? "bg-[#EAF0FF] text-[#0A0A0A] hover:bg-[#D6DFFF]"
-                        : day.isPast
-                          ? "text-[#D1D5DB] cursor-not-allowed"
-                          : "text-[#D1D5DB] cursor-not-allowed"
-                  } ${isToday && !isSelected ? "ring-1 ring-[#0F2044]/40" : ""}`}
+                  onClick={() => !disabled && onSelectDate(day.date!)}
+                  disabled={disabled}
+                  className={`px-[2px] py-[5px] text-center text-[11px] rounded-[4px] transition-colors ${stateCls}`}
                 >
                   {format(day.date, "d")}
                 </button>
@@ -151,14 +153,14 @@ export function SidebarCalendar({
       )}
 
       {/* Legend */}
-      <div className="mt-4 flex items-center justify-center gap-4 text-xs text-muted-foreground border-t pt-3">
+      <div className="mt-[10px] flex gap-3 border-t border-[#F3F4F6] pt-[10px]">
         <div className="flex items-center gap-1.5">
-          <span className="h-3 w-3 rounded bg-[#EAF0FF]" />
-          <span>Available</span>
+          <span className="h-[10px] w-[10px] rounded-full border border-[#0070C0] bg-[#EFF6FF]" />
+          <span className="text-[10px] text-[#9CA3AF]">Available</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="h-3 w-3 rounded bg-[#0F2044]" />
-          <span>Selected</span>
+          <span className="h-[10px] w-[10px] rounded-full bg-[#0A2B6B]" />
+          <span className="text-[10px] text-[#9CA3AF]">Selected</span>
         </div>
       </div>
     </div>
