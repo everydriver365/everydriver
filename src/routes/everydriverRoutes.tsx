@@ -21,6 +21,7 @@ const EDAbout = lazy(() => import("@/pages/everydriver/About"));
 const EDContact = lazy(() => import("@/pages/everydriver/Contact"));
 const EDReviews = lazy(() => import("@/pages/everydriver/Reviews"));
 const EDFranchise = lazy(() => import("@/pages/everydriver/FranchisePage"));
+const CourseCardsDemo = lazy(() => import("@/pages/design/CourseCardsDemo"));
 
 // Drive365 surface — when path starts /drive365, render the real Drive365
 // pages even on the EveryDriver host. "Drive365 must go to Drive365."
@@ -76,6 +77,7 @@ export const everydriverRoutes = (
     <Route path="/about" element={<EDAbout />} />
     <Route path="/contact" element={<EDContact />} />
     <Route path="/reviews" element={<EDReviews />} />
+    <Route path="/design/course-cards" element={<CourseCardsDemo />} />
     <Route path="/services" element={<EDCourses />} />
     <Route path="/franchise" element={<EDFranchise />} />
     {/* Drive365 franchise pages — keep on Drive365 brand. */}
