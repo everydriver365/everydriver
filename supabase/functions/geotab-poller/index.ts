@@ -167,9 +167,29 @@ async function pollDeviceStatus(supabase: SupabaseClient, device: DeviceRow) {
     return { status: 0 };
   }
 
-  const odometerM: number | null = typeof info.odometer === "number" ? info.odometer : null;
-  const odometerKm = odometerM !== null ? odometerM / 1000 : null;
-  const lat: number | null = info.latitude ?? null;
+  // Odometer: not on DeviceStatusInfo — query StatusData for DiagnosticOdometerAdjustmentId
+  let odometerKm: number | null = null;
+  try {
+    const odoRes = await call<any>(supabase, "Get", "StatusData", {
+      search: {
+        deviceSearch: { id: device.geotab_device_id },
+        diagnosticSearch: { id: "DiagnosticOdometerAdjustmentId" },
+        fromDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7).toISOString(),
+        toDate: new Date().toISOString(),
+      },
+      resultsLimit: 1,
+    });
+    const odoRows: any[] = Array.isArray(odoRes) ? odoRes : (odoRes?.data ?? []);
+    const latest = odoRows.sort((a, b) =>
+      (b.dateTime ?? "").localeCompare(a.dateTime ?? ""),
+    )[0];
+    if (latest && typeof latest.data === "number") {
+      odometerKm = latest.data / 1000;
+    }
+  } catch (_) {
+    // odometer unavailable on this device — fine, leave null
+  }
+
   const lng: number | null = info.longitude ?? null;
   const lastComm: string | null = info.dateTime ?? null;
 
