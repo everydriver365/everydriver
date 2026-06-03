@@ -882,7 +882,9 @@ export default function Courses({ restrictToInstructorIds, title: titleProp, emb
       if (instructorsRes.error) throw instructorsRes.error;
       if (templatesRes.error) throw templatesRes.error;
 
-      const loadedInstructors = instructorsRes.data || [];
+      const loadedInstructors = restrictSet
+        ? (instructorsRes.data || []).filter((i: any) => restrictSet.has(i.id))
+        : (instructorsRes.data || []);
       const realInstructorIds = loadedInstructors
         .filter((i: any) => !i.is_network_placeholder)
         .map((i: any) => i.id)
