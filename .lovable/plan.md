@@ -1,38 +1,26 @@
-## Goal
-Eliminate the recurring "postcode search shows no courses" failure by removing the fragile 26 k-row upfront fetch and making sure a selected date is always set after a search.
+## Diagnosis
 
-## Root cause (verified against live DB)
-- `instructor_courses` has **26,102** active rows. `useCourseDiscovery.fetchData` paginates them client-side in 1 000-row chunks → **27 sequential Supabase round trips** every page load (plus 6 for instructors). On a mobile or flaky connection a single page can error or be cut off; `fetchAll` then `throw`s and the entire course list is left empty → search returns nothing.
-- Only **4 real instructors** exist; the other **5,796** rows are network placeholders. We're paying for 26 k rows just so 20-ish real-instructor courses + a handful of placeholder courses are available.
-- Even when courses do load, `handleSearch` calls `findFirstAvailableDate(instructorsNearby, sources)` which uses `hasInstructorAvailabilityOn` — that resolver always returns `false` for placeholders. If the searched district contains **only** placeholders, `selectedDate` is never advanced to a date the placeholder card would show on, so the result list stays empty.
+The current `/courses?postcode=SO302TD` preview is not loading any instructors at all:
 
-## What to change
+- Browser request to `public_instructors?is_active=eq.true` returns `[]`.
+- Direct backend read confirms SO30 has 2 real active instructors and 2 placeholder instructors with active courses.
+- The `public_instructors` view is currently `security_invoker = true`, so anonymous public visitors are affected by the restrictive `instructors` table policies. That makes the public view return empty in the browser even though the data exists.
+- A secondary bug remains in the recent lazy placeholder-course fix: `displayHours` is computed before placeholder district courses are loaded, so placeholder-only areas can still show zero cards after the lazy fetch.
 
-### 1. `src/hooks/useCourseDiscovery.ts` — slim the upfront fetch
-- Split the `instructor_courses` query in two:
-  - **Upfront**: fetch courses **only for non-placeholder instructors** (`WHERE is_active=true AND instructor_id IN (<real ids>)`). With 4 real instructors this is < 50 rows, one round trip.
-  - **Lazy on search**: inside `handleSearch`, once we know the searched district, fetch active courses for the placeholders whose `placeholder_district` matches (typically 1-3 instructors → < 30 rows). Merge into `instructorCourses` state via `setInstructorCourses(prev => …)`.
-- Same treatment for the `public_instructors` fetch: keep loading the full list (needed for the home browse) but skip the per-row geocoding for placeholders (already done — leave as-is).
-- Cache placeholder-course fetches per district in a `Map<district, InstructorCourse[]>` ref to avoid refetching when the user re-runs the same search.
+## Plan
 
-### 2. `findFirstAvailableDate` fallback for placeholder-only areas
-- Extract a small helper `firstDateForArea(realInstructorIds, placeholderInArea)` that:
-  - tries the existing real-instructor resolver first;
-  - if it returns null **and** at least one placeholder is in the area, returns the first day in the next 30 that satisfies `hasNetworkPlaceholderAvailabilityOn` (already imported).
-- Use it in both `handleSearch` (line 428) and the initial mount call (line 348).
+1. **Restore public instructor visibility safely**
+   - Add a database migration to recreate `public.public_instructors` as a public discovery view that returns active, non-deleted instructor rows needed by learner-facing search.
+   - Keep the existing public field list, do not expose new private fields.
+   - Ensure public read access remains granted to anonymous and signed-in visitors.
 
-### 3. Surface load errors instead of silent empty
-- In `fetchAll`, when a page errors, also `toast({ title: "Couldn't load courses, please retry", variant: "destructive" })` and break out — so users get feedback if the slim fetch still fails, and we never set partial data without a flag. Same toast on the placeholder-course follow-up fetch.
+2. **Keep the browser course query lightweight**
+   - Leave the new “real instructors upfront, placeholder courses on search” strategy in place so the app does not go back to the fragile 26k-row load.
 
-### 4. Out of scope
-- No DB migration, no edge-function changes, no UI/visual redesign.
-- Geocoding edge function (`geocode-postcode`) is fine — left untouched.
-- The desktop/mobile course-card rendering is untouched.
-- Mini-website / WhatsApp / Pupil portal search paths are unaffected (they don't share this hook in the same way; checked file list).
+3. **Fix placeholder-only result rendering**
+   - Update `useCourseDiscovery.ts` so placeholder lazy-loaded courses contribute their course-hour values immediately for searched districts, instead of relying on the precomputed `displayHours` list from initial load.
+   - Keep real instructor course matching unchanged.
 
-## Testing
-- Local: search a postcode in a known placeholder-only district (e.g. AB10) → at least one placeholder card appears and the calendar lands on a working day.
-- Search a real-instructor district (e.g. SO30) → real courses appear as today.
-- Hard-refresh the homepage → page renders course list in < 1 s instead of the current ~5-8 s pagination loop.
-- Throttle network to "Slow 3G" in DevTools → confirm courses still render (previously failed here).
-- Run `coursesForSelectedDate` mentally: with reduced `instructorCourses`, real-instructor cards must still match by `instructor_id`; placeholders only get courses after the lazy fetch resolves.
+4. **Verify SO30 search**
+   - Re-test `/courses?postcode=SO302TD` in the preview.
+   - Confirm `public_instructors` returns real rows in the browser, the auto-search runs, and the result count is no longer zero.
