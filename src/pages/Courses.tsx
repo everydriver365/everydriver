@@ -1199,6 +1199,7 @@ export default function Courses({ restrictToInstructorIds, title: titleProp, emb
       )}
       {/* Search Header */}
       <CourseSearchHeader
+        variant={searchVariant}
         title={titleProp ?? (searchedAreaName ? `Courses in ${searchedAreaName}` : "Find a Course")}
         postcode={postcode}
         setPostcode={setPostcode}
