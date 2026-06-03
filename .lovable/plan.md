@@ -1,22 +1,21 @@
-# Stop the Chapman's page from inheriting `?courseType=10` (and other course filters) from the URL
+## Make Richard Chapman cash-only
 
-## What's happening
+Update Richard Chapman's instructor payment settings so pupils only see Cash at checkout.
 
-The Chapman's booking page (`/booking/chapmans`) embeds the Drive365 `<Courses embedded />` explorer. That component reads its initial filter state directly from `useSearchParams()` — `postcode`, `radius`, `transmission`, `klarna`, `clearpay`, `courseType`, `priceRange` — and writes back to the URL when pills/inputs change.
+**Instructor:** Richard Chapman (`1b49d152-1088-4587-8f80-b325ba41c1af`)
 
-So a URL like `/booking/chapmans?postcode=SO302TD&courseType=10` makes the embed boot with the "10-hour" pill pre-selected, even though you never asked for that. The param was almost certainly carried over from an earlier visit to `/courses` or a shared link.
+**Changes (data only, no code):**
+1. Enable cash payments (`accept_cash = true`, or equivalent flag on his instructor/settings row).
+2. Disable Klarna (`klarna_enabled = false`).
+3. Disable Clearpay (`clearpay_enabled = false`).
+4. Leave Square and Payment QR off (already off).
 
-## Fix
+**How:**
+- First run a quick `SELECT` to confirm the exact column names on Richard's settings row (cash / Klarna / Clearpay toggles live on `instructors` or `instructor_payment_settings` — need to verify before updating).
+- Then run a single `UPDATE` via the insert tool flipping those three flags.
 
-When `embedded` is true, the explorer should be fully self-contained — no reading from and no writing to the parent route's query string.
+**Result at checkout for Richard:**
+- ✅ Cash
+- ❌ Klarna, Clearpay, Card, Bank, QR
 
-Change in `src/pages/Courses.tsx`:
-
-1. When `embedded`, ignore `searchParams` for initial state — every filter starts at its natural default (`courseType="all"`, `transmission="all"`, `postcode=""`, etc.).
-2. When `embedded`, make `setSearchParams` a no-op so clicking pills, changing radius, etc. don't mutate `/booking/chapmans`'s URL.
-
-No changes needed in `PublicBookingPortal.tsx`. Standalone `/courses` behaviour is unchanged.
-
-## Files
-
-- **Edited:** `src/pages/Courses.tsx` — gate all `searchParams` reads/writes behind `!embedded`.
+No frontend code changes. No migrations. No effect on Ken D or any other instructor.
