@@ -17,6 +17,7 @@ interface CourseSearchHeaderProps {
   activeFilter?: CourseFilterId;
   setActiveFilter?: (value: CourseFilterId) => void;
   onMoreFilters?: () => void;
+  variant?: "default" | "chapmans";
 }
 
 const FILTER_OPTIONS: { id: CourseFilterId; label: string; icon?: typeof Zap }[] = [

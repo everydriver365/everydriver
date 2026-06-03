@@ -1,30 +1,51 @@
-## Diagnosis
+## Scope
 
-`bookings.drive365.co.uk` serves the **published** bundle. The data is correct:
+Visual-only redesign of the search bar that appears on `/booking/chapmans`. Logic (postcode autocomplete, radius/transmission selects, search trigger, dropdown behaviour) stays untouched.
 
-- `booking_pages` row for `chapmans` exists, `page_type = 'group'`, `is_active = true`
-- `booking_page_instructors` has two rows: Richard Chapman (display_order 0) and Ken D (display_order 1)
-- Both are in `public_instructors` with `is_active = true`
-- Anonymous API access works for all three tables (verified with curl)
+## Files involved
 
-In the preview, `PublicBookingPortal` correctly handles `page_type = 'group'` by reading `booking_page_instructors`. The empty state on the live custom domain means the deployed JS bundle is older than this branch of the code, so it falls through to the empty array.
+Confirmed exact component rendering the search bar:
 
-## Fix
+- `src/components/courses/CourseSearchHeader.tsx` — the search bar component (used by the `Courses` page, which `PublicBookingPortal` embeds for `/booking/chapmans`).
+- `src/pages/Courses.tsx` — passes props through; only change is forwarding a new `variant` prop.
+- `src/pages/PublicBookingPortal.tsx` — sets `variant="chapmans"` on `<Courses>` only when `slug === "chapmans"`.
 
-No code change needed.
+No other files modified. No other pages affected. The default (`/courses`, other booking pages) keeps the current design.
 
-1. Open the **Publish** dialog (top right).
-2. Click **Update** to push the latest bundle.
-3. Hard-refresh `bookings.drive365.co.uk/booking/chapmans` (Cmd/Ctrl-Shift-R).
+## Approach
 
-Both instructor cards (Richard + Ken) should then render under "Our Instructors", and the embedded course explorer at the top will continue to work as it already does on preview.
+1. Add an optional `variant?: "default" | "chapmans"` prop to `CourseSearchHeader` (default `"default"`).
+2. When `variant === "chapmans"`, render a new redesigned bar (spec below) instead of the current unified form. Reuse the existing `PostcodeAutocomplete`, `select`s for radius/transmission, and the same `handleSearch`/`onSearch` wiring — only markup and styles change. Eyebrow, title and the filter pill row remain unchanged.
+3. Thread the prop through `Courses` (`variant?: ...` added to `CoursesProps`, forwarded to `CourseSearchHeader`).
+4. In `PublicBookingPortal`, pass `variant={slug === "chapmans" ? "chapmans" : undefined}` to `<Courses>`.
 
-## If it still shows empty after re-publishing
+## Redesigned bar spec (chapmans variant)
 
-Then there is a runtime issue in production specifically. Next step would be to add a one-line `console.error` around the `booking_page_instructors` fetch so we can see the exact error in the production console, but we should only do that after ruling out the stale-bundle case above.
+Container (the `<form>`):
+- `background: #fff`, `border-radius: 14px`, `padding: 16px`
+- `box-shadow: 0 2px 12px rgba(0,0,0,0.08)`, no border
+- `display: flex; align-items: center; gap: 10px`
 
-## Technical details
+Three detached field boxes (Postcode flex 1.5, Radius flex 1, Transmission flex 1):
+- `background: #F9FAFB`, `border: 1px solid #E5E7EB`, `border-radius: 8px`
+- `padding: 10px 14px`, `display: flex; flex-direction: column; gap: 2px`
+- Label: 9px / weight 700 / `#9CA3AF` / uppercase / `letter-spacing: 0.8px`
+- Value row: 13px / weight 500 / `#0A0E27`
+  - Postcode: `MapPin` icon (11px, `#9CA3AF`) left of the existing `PostcodeAutocomplete` input (input restyled to 13px/500, transparent, no border, no ring)
+  - Radius: existing `<select>` (13px/500, transparent, appearance-none) with `ChevronDown` (11px, `#9CA3AF`) on the right
+  - Transmission: same pattern as Radius
 
-- File: `src/pages/PublicBookingPortal.tsx` — `group` branch at lines 81–98 already queries `booking_page_instructors` then `public_instructors` and orders by `display_order`.
-- No DB migration required; data is already in place.
-- No RLS or GRANT changes required; anon read access on the three tables is already permitted.
+Search button:
+- `background: #E8641A`, `color: #fff`, no border, `border-radius: 8px`
+- `padding: 12px 28px`, `font-size: 13px`, `font-weight: 700`
+- `display: flex; align-items: center; gap: 6px; flex-shrink: 0`
+- `Search` icon (13px, white stroke) left of "Search"; `Loader2` swap kept while `isSearching`
+- Click submits the form → existing `handleSearch()` → existing `onSearch` prop
+
+## Constraints honoured
+
+- Logic untouched: same state, same handlers, same `PostcodeAutocomplete`, same `<select>` elements and option values.
+- Values pulled from existing state (`postcode`, `radius`, `transmission`) via existing props — no hardcoding.
+- Filter tabs, hero, and any other component untouched (filter row continues to render below as today).
+- Scoped to chapmans only via the `variant` prop gated on `slug === "chapmans"` in `PublicBookingPortal`; the global `/courses` page keeps its current bar.
+- Light mode only; inline styles using literal hex values per the spec (matches the existing inline-style pattern in this file).
