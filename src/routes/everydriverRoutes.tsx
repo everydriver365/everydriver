@@ -77,6 +77,7 @@ export const everydriverRoutes = (
     <Route path="/about" element={<EDAbout />} />
     <Route path="/contact" element={<EDContact />} />
     <Route path="/reviews" element={<EDReviews />} />
+    <Route path="/design/course-cards" element={<CourseCardsDemo />} />
     <Route path="/services" element={<EDCourses />} />
     <Route path="/franchise" element={<EDFranchise />} />
     {/* Drive365 franchise pages — keep on Drive365 brand. */}
