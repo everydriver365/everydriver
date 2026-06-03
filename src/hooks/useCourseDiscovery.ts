@@ -167,6 +167,9 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
     manualBlocks: [], bookedLessonGeo: [],
   });
   const [premiumPlacements, setPremiumPlacements] = useState<{ instructor_id: string; placement_type: string; priority_score: number }[]>([]);
+  // Cache of placeholder courses already fetched per district so re-searching
+  // the same area doesn't refetch.
+  const placeholderCoursesByDistrict = useMemo(() => new Map<string, InstructorCourse[]>(), []);
 
 
   const monthOptions = useMemo(() => getMonthOptions(), []);
@@ -241,6 +244,31 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
     return null;
   }, [monthOptions, isDateAvailable]);
 
+  // Fallback used when an area contains only network placeholders. Placeholders
+  // have no working hours / calendar so the standard resolver always rejects
+  // them — instead, walk forward up to 30 days and pick the first day that
+  // satisfies the placeholder enquiry-hours rule.
+  const firstPlaceholderDate = useCallback(() => {
+    const today = startOfDay(new Date());
+    for (let i = 0; i < 30; i++) {
+      const day = new Date(today);
+      day.setDate(day.getDate() + i);
+      if (hasNetworkPlaceholderAvailabilityOn(day)) {
+        return { date: day, month: format(day, "yyyy-MM") };
+      }
+    }
+    return null;
+  }, []);
+
+  const firstDateForArea = useCallback((instructorsInArea: Instructor[], src: CourseAvailabilitySources) => {
+    const reals = instructorsInArea.filter((i) => !i.is_network_placeholder);
+    const realHit = reals.length > 0 ? findFirstAvailableDate(reals, src) : null;
+    if (realHit) return realHit;
+    const hasPlaceholder = instructorsInArea.some((i) => i.is_network_placeholder);
+    return hasPlaceholder ? firstPlaceholderDate() : null;
+  }, [findFirstAvailableDate, firstPlaceholderDate]);
+
+
   const geocodePostcodes = useCallback(async (postcodes: string[]): Promise<{ geoCache: GeoCache; areaCache: AreaCache }> => {
     const uncached = postcodes.filter((p) => !(p in geoCache));
     if (uncached.length === 0) return { geoCache, areaCache };
@@ -297,15 +325,12 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
         return { data: all, error: null };
       };
 
-      const [instructorsRes, coursesRes, templatesRes, premiumRes] = await Promise.all([
+      // 1. Load all instructors (needed so placeholders appear on postcode
+      //    search). This is ~5.8k rows but a single column-set, ~6 round trips.
+      const [instructorsRes, templatesRes, premiumRes] = await Promise.all([
         fetchAll<any>(() => {
           let q = supabase.from("public_instructors").select("*").eq("is_active", true);
           if (instructorId) q = q.eq("id", instructorId);
-          return q;
-        }),
-        fetchAll<any>(() => {
-          let q = supabase.from("instructor_courses").select("*").eq("is_active", true);
-          if (instructorId) q = q.eq("instructor_id", instructorId);
           return q;
         }),
         supabase.from("course_templates").select("course_hours, course_name, default_image_url, is_popular, is_intensive, features").eq("is_active", true),
@@ -313,23 +338,37 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
       ]);
 
       if (instructorsRes.error) throw instructorsRes.error;
-      if (coursesRes.error) throw coursesRes.error;
       if (templatesRes.error) throw templatesRes.error;
 
       const loadedInstructors = instructorsRes.data || [];
       setInstructors(loadedInstructors);
-      setInstructorCourses(coursesRes.data || []);
       setCourseTemplates(templatesRes.data || []);
 
-      // Load all six availability sources for every instructor across the
-      // search horizon (today + 18 months). Single round-trip — both calendar
-      // dots and the per-day course list use the result so display is always
-      // consistent with the booking-time guard in create-booking.
-      const fromDate = new Date();
-      const toDate = addMonths(fromDate, 18);
+      // 2. Only load courses for real instructors (or the explicit instructorId
+      //    if one was passed). Placeholder courses are fetched lazily by
+      //    handleSearch when the user actually searches that district. This
+      //    drops a 27-round-trip pagination loop (~26k rows) down to a single
+      //    request and removes the silent-empty failure mode.
       const realInstructorIds = loadedInstructors
         .filter((i) => !i.is_network_placeholder)
-        .map((i) => i.id);
+        .map((i) => i.id as string);
+      const coursesScope = instructorId ? [instructorId] : realInstructorIds;
+      let initialCourses: InstructorCourse[] = [];
+      if (coursesScope.length > 0) {
+        const { data: courseRows, error: coursesErr } = await supabase
+          .from("instructor_courses")
+          .select("*")
+          .eq("is_active", true)
+          .in("instructor_id", coursesScope);
+        if (coursesErr) throw coursesErr;
+        initialCourses = (courseRows || []) as InstructorCourse[];
+      }
+      setInstructorCourses(initialCourses);
+
+      // Load all six availability sources for every real instructor across the
+      // search horizon (today + 18 months).
+      const fromDate = new Date();
+      const toDate = addMonths(fromDate, 18);
       const newSources = await loadCourseAvailabilitySources(
         supabase as any,
         realInstructorIds,
@@ -351,16 +390,22 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
         setSelectedDate(firstAvailable.date);
       }
 
-      const allPostcodes = (instructorsRes.data || [])
+      const allPostcodes = loadedInstructors
         .filter((i) => !i.is_network_placeholder)
         .map((i) => i.home_postcode.replace(/\s+/g, "").toUpperCase());
       await geocodePostcodes(allPostcodes);
     } catch (error) {
       console.error("Error fetching data:", error);
+      toast({
+        title: "Couldn't load courses",
+        description: "Please refresh and try again.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
   }, [findFirstAvailableDate, geocodePostcodes, instructorId]);
+
 
   useEffect(() => {
     // If instructorId is null, the caller wants to filter by instructor but it hasn't loaded yet — skip
@@ -424,8 +469,43 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
               (i) => i.is_network_placeholder && i.placeholder_district === district,
             );
 
+        // Lazy-fetch placeholder courses for this district. Placeholders are
+        // intentionally excluded from the upfront fetch (otherwise we'd be
+        // pulling ~26k rows on every page load). We cache per-district so a
+        // repeat search costs nothing.
+        const placeholderIdsInDistrict = instructors
+          .filter((i) => i.is_network_placeholder && i.placeholder_district === district)
+          .map((i) => i.id);
+        if (placeholderIdsInDistrict.length > 0 && !placeholderCoursesByDistrict.has(district)) {
+          const { data: phCourses, error: phErr } = await supabase
+            .from("instructor_courses")
+            .select("*")
+            .eq("is_active", true)
+            .in("instructor_id", placeholderIdsInDistrict);
+          if (phErr) {
+            console.error("Placeholder course fetch failed:", phErr);
+            toast({
+              title: "Couldn't load nearby courses",
+              description: "Please try again.",
+              variant: "destructive",
+            });
+          } else {
+            const rows = (phCourses || []) as InstructorCourse[];
+            placeholderCoursesByDistrict.set(district, rows);
+            setInstructorCourses((prev) => {
+              const existingIds = new Set(prev.map((c) => `${c.instructor_id}:${c.course_hours}`));
+              const merged = [...prev];
+              for (const r of rows) {
+                const key = `${r.instructor_id}:${r.course_hours}`;
+                if (!existingIds.has(key)) merged.push(r);
+              }
+              return merged;
+            });
+          }
+        }
+
         if (instructorsNearby.length > 0) {
-          const firstAvailable = findFirstAvailableDate(instructorsNearby, sources);
+          const firstAvailable = firstDateForArea(instructorsNearby, sources);
           if (firstAvailable) {
             setSelectedMonth(firstAvailable.month);
             setSelectedDate(firstAvailable.date);
@@ -440,6 +520,7 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
       setIsSearching(false);
     }
   };
+
 
   const clearSearch = () => {
     setPostcode("");
