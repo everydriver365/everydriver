@@ -1182,15 +1182,19 @@ export default function Courses({ restrictToInstructorIds, title: titleProp, emb
 
   const isListMode = viewMode === "list";
 
+  const Wrapper: any = embedded ? "div" : MainLayout;
+
   return (
-    <MainLayout>
-      <SEOHead
-        title="Driving Courses Near You | Compare & Book | EveryDriver"
-        description="Compare intensive, semi-intensive and weekly driving courses from DVSA-approved instructors near you. Book online with 0% finance options."
-      />
+    <Wrapper>
+      {!embedded && (
+        <SEOHead
+          title="Driving Courses Near You | Compare & Book | EveryDriver"
+          description="Compare intensive, semi-intensive and weekly driving courses from DVSA-approved instructors near you. Book online with 0% finance options."
+        />
+      )}
       {/* Search Header */}
       <CourseSearchHeader
-        title={searchedAreaName ? `Courses in ${searchedAreaName}` : "Find a Course"}
+        title={titleProp ?? (searchedAreaName ? `Courses in ${searchedAreaName}` : "Find a Course")}
         postcode={postcode}
         setPostcode={setPostcode}
         radius={radius}
