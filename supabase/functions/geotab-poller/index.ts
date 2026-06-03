@@ -190,6 +190,7 @@ async function pollDeviceStatus(supabase: SupabaseClient, device: DeviceRow) {
     // odometer unavailable on this device — fine, leave null
   }
 
+  const lat: number | null = info.latitude ?? null;
   const lng: number | null = info.longitude ?? null;
   const lastComm: string | null = info.dateTime ?? null;
 
