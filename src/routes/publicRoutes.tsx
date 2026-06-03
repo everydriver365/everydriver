@@ -1,5 +1,10 @@
-import { Route, Navigate } from "react-router-dom";
+import { Route, Navigate, useParams } from "react-router-dom";
 import { lazyWithRetry as lazy } from "@/utils/lazyWithRetry";
+
+function RedirectToBooking() {
+  const { slug } = useParams();
+  return <Navigate to={`/booking/${slug}`} replace />;
+}
 const UnifiedLogin = lazy(() => import("@/pages/UnifiedLogin"));
 import { isWhitelabelDomain } from "@/lib/whitelabel";
 
@@ -189,6 +194,7 @@ export const publicRoutes = (
     <Route path="/quote/:token" element={<QuoteAcceptPage />} />
     <Route path="/pay/:instructorId" element={<PublicPaymentPage />} />
     <Route path="/booking/:slug" element={<PublicBookingPortal />} />
+    <Route path="/bookings/:slug" element={<RedirectToBooking />} />
     <Route path="/school/:slug" element={<SchoolWebsiteHome />} />
     <Route path="/school/:slug/about" element={<SchoolWebsiteAbout />} />
     <Route path="/school/:slug/instructors" element={<SchoolWebsiteInstructors />} />
