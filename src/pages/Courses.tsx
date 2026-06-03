@@ -342,7 +342,11 @@ export default function Courses({ restrictToInstructorIds, title: titleProp, emb
     [restrictToInstructorIds],
   );
   const isMobile = useIsMobile();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParamsRaw, setSearchParamsRaw] = useSearchParams();
+  // When embedded (e.g. inside PublicBookingPortal), the parent route owns the URL.
+  // We must not inherit filters from it, and must not write our state back to it.
+  const searchParams = embedded ? new URLSearchParams() : searchParamsRaw;
+  const setSearchParams: typeof setSearchParamsRaw = embedded ? (() => {}) : setSearchParamsRaw;
   const initialPostcode = searchParams.get("postcode") || "";
   const initialRadius = searchParams.get("radius") || "10";
   const initialTransmission = searchParams.get("transmission") || "all";
