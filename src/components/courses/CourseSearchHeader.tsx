@@ -103,7 +103,204 @@ export function CourseSearchHeader({
             boxShadow: "0 2px 12px rgba(15,32,68,0.05)",
           }}
         >
-          {/* Unified search bar */}
+          {isChapmans ? (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSearch();
+              }}
+              className="mb-3.5"
+              style={{
+                background: "#FFFFFF",
+                borderRadius: 14,
+                padding: 16,
+                boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+              }}
+            >
+              {/* Postcode */}
+              <div
+                style={{
+                  flex: 1.5,
+                  background: "#F9FAFB",
+                  border: "1px solid #E5E7EB",
+                  borderRadius: 8,
+                  padding: "10px 14px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 2,
+                  minWidth: 0,
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: 9,
+                    fontWeight: 700,
+                    color: "#9CA3AF",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.8px",
+                  }}
+                >
+                  Postcode
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0 }}>
+                  <MapPin size={11} strokeWidth={2} style={{ color: "#9CA3AF", flexShrink: 0 }} />
+                  <PostcodeAutocomplete
+                    value={postcode}
+                    onChange={(v) => setPostcode(v.toUpperCase())}
+                    onSelect={(pc) => {
+                      setPostcode(pc);
+                      setTimeout(() => handleSearch(), 100);
+                    }}
+                    placeholder="Enter postcode"
+                    className="flex-1 min-w-0"
+                    inputClassName="h-6 border-0 bg-transparent p-0 text-[13px] font-medium shadow-none focus-visible:ring-0 placeholder:text-[#C4C9D4]"
+                    showInputIcon={false}
+                    showGeolocation={true}
+                    enableDictation={true}
+                  />
+                </div>
+              </div>
+
+              {/* Radius */}
+              <div
+                style={{
+                  flex: 1,
+                  background: "#F9FAFB",
+                  border: "1px solid #E5E7EB",
+                  borderRadius: 8,
+                  padding: "10px 14px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 2,
+                  minWidth: 0,
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: 9,
+                    fontWeight: 700,
+                    color: "#9CA3AF",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.8px",
+                  }}
+                >
+                  Radius
+                </div>
+                <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+                  <select
+                    value={radius}
+                    onChange={(e) => setRadius(e.target.value)}
+                    style={{
+                      flex: 1,
+                      appearance: "none",
+                      background: "transparent",
+                      border: "none",
+                      outline: "none",
+                      paddingRight: 16,
+                      fontSize: 13,
+                      fontWeight: 500,
+                      color: "#0A0E27",
+                    }}
+                  >
+                    <option value="5">5 miles</option>
+                    <option value="10">10 miles</option>
+                    <option value="15">15 miles</option>
+                    <option value="20">20 miles</option>
+                    <option value="30">30 miles</option>
+                  </select>
+                  <ChevronDown
+                    size={11}
+                    strokeWidth={2}
+                    style={{ color: "#9CA3AF", position: "absolute", right: 0, pointerEvents: "none" }}
+                  />
+                </div>
+              </div>
+
+              {/* Transmission */}
+              <div
+                style={{
+                  flex: 1,
+                  background: "#F9FAFB",
+                  border: "1px solid #E5E7EB",
+                  borderRadius: 8,
+                  padding: "10px 14px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 2,
+                  minWidth: 0,
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: 9,
+                    fontWeight: 700,
+                    color: "#9CA3AF",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.8px",
+                  }}
+                >
+                  Transmission
+                </div>
+                <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+                  <select
+                    value={transmission}
+                    onChange={(e) => setTransmission(e.target.value)}
+                    style={{
+                      flex: 1,
+                      appearance: "none",
+                      background: "transparent",
+                      border: "none",
+                      outline: "none",
+                      paddingRight: 16,
+                      fontSize: 13,
+                      fontWeight: 500,
+                      color: "#0A0E27",
+                    }}
+                  >
+                    <option value="all">Any</option>
+                    <option value="manual">Manual</option>
+                    <option value="automatic">Automatic</option>
+                  </select>
+                  <ChevronDown
+                    size={11}
+                    strokeWidth={2}
+                    style={{ color: "#9CA3AF", position: "absolute", right: 0, pointerEvents: "none" }}
+                  />
+                </div>
+              </div>
+
+              {/* Search button */}
+              <button
+                type="submit"
+                disabled={isSearching}
+                style={{
+                  background: "#E8641A",
+                  color: "#FFFFFF",
+                  border: "none",
+                  borderRadius: 8,
+                  padding: "12px 28px",
+                  fontSize: 13,
+                  fontWeight: 700,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  flexShrink: 0,
+                  cursor: isSearching ? "default" : "pointer",
+                  opacity: isSearching ? 0.6 : 1,
+                }}
+              >
+                {isSearching ? (
+                  <Loader2 size={13} strokeWidth={2.2} className="animate-spin" />
+                ) : (
+                  <Search size={13} strokeWidth={2.2} color="#FFFFFF" />
+                )}
+                <span>Search</span>
+              </button>
+            </form>
+          ) : (
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -227,6 +424,7 @@ export function CourseSearchHeader({
               <span className="font-heading text-sm font-medium">Search</span>
             </button>
           </form>
+          )}
 
           {/* Filter row */}
           {showFilters && (
