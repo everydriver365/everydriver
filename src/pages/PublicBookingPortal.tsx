@@ -103,6 +103,17 @@ export default function PublicBookingPortal() {
 
   const brandColour = page?.brand_colour || "#1a1a2e";
 
+  // Load all courses then filter to instructors linked to this booking page.
+  const instructorIdSet = useMemo(
+    () => new Set(instructors.map((i) => i.id)),
+    [instructors],
+  );
+  const { filteredCourses } = useCourseDiscovery("all", null);
+  const pageCourses = useMemo(
+    () => filteredCourses.filter((c) => instructorIdSet.has(c.instructor.id)),
+    [filteredCourses, instructorIdSet],
+  );
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
