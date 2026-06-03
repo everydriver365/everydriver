@@ -1360,8 +1360,8 @@ export default function Courses() {
         ) : (
         <div className="flex flex-col gap-8 lg:flex-row">
           {/* Left Column: Calendar + Instructors */}
-          <div className="w-full lg:w-80 lg:flex-shrink-0">
-            <div className="sticky top-20 space-y-4 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto lg:pr-1">
+          <div className="w-full lg:sticky lg:top-20 lg:max-h-[calc(100vh-6rem)] lg:w-80 lg:flex-shrink-0 lg:self-start lg:overflow-y-auto lg:pr-1">
+            <div className="space-y-4">
               <SidebarCalendar
                 selectedMonth={selectedMonth}
                 setSelectedMonth={setSelectedMonth}
