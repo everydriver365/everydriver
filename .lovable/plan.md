@@ -1,42 +1,49 @@
-## Goal
+# Add Drive365 course search UI to Chapman's booking page
 
-Add course cards to the Chapman's combined booking page (`/booking/chapmans` and any other `page_type = "group"` booking page) so visitors see the same Drive365-style course cards they'd see elsewhere on the site — scoped to just the instructors linked to that page.
+Replace the current simple Courses grid on `/booking/chapmans` with the full Drive365 course explorer experience — postcode + radius search, course-type filter pills, More Filters panel, sidebar month calendar with availability counts, and the list/grid view toggle — all scoped to Chapman's linked instructors only.
 
-## What the page will show
+## What gets added (above the existing Instructors grid)
+
+1. **CourseSearchHeader** — title "Chapman's Courses", postcode autocomplete, radius selector, transmission dropdown, course-type pills (All / Intensive / Semi-intensive / Weekly), More Filters toggle.
+2. **Expanded filter panel** (toggled by More Filters) — Transmission, Price Range, Course Type, Klarna/Clearpay Pay-Later pills.
+3. **Sidebar refinement panel** (desktop) — Lesson times (Anytime / Daytime / Evenings & weekends), Instructor skills chips, Languages chips.
+4. **SidebarCalendar** — month-by-month date selector with green-dot availability counts; selecting a date filters courses to that day.
+5. **List/Grid view toggle** — same component as the Drive365 results page.
+6. **Result grid** — `DynamicCourseCard` rendered with the same props used on `/courses` and `WhitelabelCourses`.
+
+The existing **"Our Instructors"** grid stays untouched and renders below the courses section.
+
+## Approach
+
+Refactor the explorer block in `src/pages/Courses.tsx` (lines ~1170–1900: header, filter panel, sidebar, calendar, course grid, view toggle, all related state/hooks/memos) into a single reusable component:
 
 ```text
-┌──────────────────────────────────────────┐
-│  Hero (orange — existing)                │
-├──────────────────────────────────────────┤
-│  Courses                                  │
-│  [DynamicCourseCard] [DynamicCourseCard]  │  ← NEW
-│  [DynamicCourseCard] [DynamicCourseCard]  │
-├──────────────────────────────────────────┤
-│  Our Instructors                          │
-│  [Instructor card] [Instructor card]      │  ← existing
-└──────────────────────────────────────────┘
+src/components/courses/CourseExplorer.tsx
+  props:
+    title?: string
+    restrictToInstructorIds?: string[]   // NEW — when set, hook & UI scope to these instructors only
+    defaultPostcode?: string
+    // existing URL-param syncing remains, but is no-op when embedded
 ```
 
-Same `DynamicCourseCard` component used on `/courses`, Drive365 home, and the whitelabel `/courses` page — identical look, identical "Book Now" flow.
+`Courses.tsx` will become a thin wrapper that renders `<CourseExplorer />` with no restriction (preserving current behaviour).
 
-## Change (single file)
+`PublicBookingPortal.tsx` will render `<CourseExplorer restrictToInstructorIds={chapmanInstructorIds} title="Chapman's Courses" />` above the existing Instructors section, and drop the standalone `DynamicCourseCard` mapping added earlier.
 
-Edit **`src/pages/PublicBookingPortal.tsx`** only:
+## Scope guards
 
-1. After the existing instructor-fetch logic resolves `instructors`, also call the existing `useCourseDiscovery("all", null)` hook (already used by `/courses`).
-2. Client-side filter the returned `filteredCourses` down to those whose `instructor_id` is in the set of linked Chapman's instructor IDs.
-3. Render a new "Courses" section above the existing "Instructors" grid using `<DynamicCourseCard>` (same props as `WhitelabelCourses.tsx`).
-4. Section header styled to match the rest of the page (uses page `brand_colour` for the heading accent line, same as the existing instructor section).
-5. Empty state: if no matching courses, hide the section entirely (don't show "no courses available") — instructor cards still render below.
+- Only `page_type === "group"` booking pages get the explorer; `instructor` / `school` pages unchanged.
+- Postcode + radius search is fully active — narrows Chapman's instructors by pupil location, same behaviour as Drive365.
+- Mobile layout: matches Drive365 course page exactly (no custom mobile changes).
+- No DB changes, no new routes, no edge-function work.
+- `useCourseDiscovery` already supports `instructorIds`; we pass Chapman's set when restricted.
 
-No new components, no DB changes, no route changes, no migration. The Chapman's booking page is already in `booking_pages` and the two instructors are already linked via `booking_page_instructors`, so no data setup is needed.
+## Files
 
-## Verify
+- **New:** `src/components/courses/CourseExplorer.tsx` — extracted from `Courses.tsx`.
+- **Edited:** `src/pages/Courses.tsx` — replaces inline JSX/state with `<CourseExplorer />`.
+- **Edited:** `src/pages/PublicBookingPortal.tsx` — removes standalone courses block, renders `<CourseExplorer restrictToInstructorIds={…} />`.
 
-After deploy, `/booking/chapmans` shows a Courses section with cards for the 2 linked instructors' active courses, each card linking to the existing booking flow exactly like on `/courses`.
+## Risks
 
-## Notes / scope guardrails
-
-- Mobile layout is not touched (uses the same responsive grid the cards already ship with).
-- This only affects `page_type = "group"` booking pages. The existing `instructor` and `school` page types render unchanged (could extend later if you want).
-- No availability filter, no postcode field — the page is already brand-scoped, so visitors see all of these instructors' active courses, mirroring the whitelabel-courses pattern.
+- `Courses.tsx` extraction is a large refactor of a 2,000-line file. To de-risk, the extraction is **purely mechanical** (move code as-is, add one optional prop for `restrictToInstructorIds`) — no behaviour changes on `/courses`. We'll verify `/courses` still renders correctly after the move before considering it done.

@@ -330,7 +330,17 @@ function SidebarCalendar({
   );
 }
 
-export default function Courses() {
+interface CoursesProps {
+  restrictToInstructorIds?: string[];
+  title?: string;
+  embedded?: boolean;
+}
+
+export default function Courses({ restrictToInstructorIds, title: titleProp, embedded = false }: CoursesProps = {}) {
+  const restrictSet = useMemo(
+    () => (restrictToInstructorIds && restrictToInstructorIds.length > 0 ? new Set(restrictToInstructorIds) : null),
+    [restrictToInstructorIds],
+  );
   const isMobile = useIsMobile();
   const [searchParams, setSearchParams] = useSearchParams();
   const initialPostcode = searchParams.get("postcode") || "";
@@ -872,7 +882,9 @@ export default function Courses() {
       if (instructorsRes.error) throw instructorsRes.error;
       if (templatesRes.error) throw templatesRes.error;
 
-      const loadedInstructors = instructorsRes.data || [];
+      const loadedInstructors = restrictSet
+        ? (instructorsRes.data || []).filter((i: any) => restrictSet.has(i.id))
+        : (instructorsRes.data || []);
       const realInstructorIds = loadedInstructors
         .filter((i: any) => !i.is_network_placeholder)
         .map((i: any) => i.id)
@@ -1170,15 +1182,19 @@ export default function Courses() {
 
   const isListMode = viewMode === "list";
 
+  const Wrapper: any = embedded ? "div" : MainLayout;
+
   return (
-    <MainLayout>
-      <SEOHead
-        title="Driving Courses Near You | Compare & Book | EveryDriver"
-        description="Compare intensive, semi-intensive and weekly driving courses from DVSA-approved instructors near you. Book online with 0% finance options."
-      />
+    <Wrapper>
+      {!embedded && (
+        <SEOHead
+          title="Driving Courses Near You | Compare & Book | EveryDriver"
+          description="Compare intensive, semi-intensive and weekly driving courses from DVSA-approved instructors near you. Book online with 0% finance options."
+        />
+      )}
       {/* Search Header */}
       <CourseSearchHeader
-        title={searchedAreaName ? `Courses in ${searchedAreaName}` : "Find a Course"}
+        title={titleProp ?? (searchedAreaName ? `Courses in ${searchedAreaName}` : "Find a Course")}
         postcode={postcode}
         setPostcode={setPostcode}
         radius={radius}
@@ -2098,6 +2114,6 @@ export default function Courses() {
         </div>
         )}
       </section>
-    </MainLayout>
+    </Wrapper>
   );
 }

@@ -2,12 +2,11 @@ import { useState, useEffect, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import dsmLogo from "@/assets/dsm-logo.png";
-import { Loader2, MapPin, Star, Phone } from "lucide-react";
+import { Loader2, MapPin, Phone } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { DynamicCourseCard } from "@/components/DynamicCourseCard";
-import { useCourseDiscovery } from "@/hooks/useCourseDiscovery";
+import Courses from "@/pages/Courses";
 
 interface BookingPageData {
   id: string;
@@ -103,16 +102,7 @@ export default function PublicBookingPortal() {
 
   const brandColour = page?.brand_colour || "#1a1a2e";
 
-  // Load all courses then filter to instructors linked to this booking page.
-  const instructorIdSet = useMemo(
-    () => new Set(instructors.map((i) => i.id)),
-    [instructors],
-  );
-  const { filteredCourses } = useCourseDiscovery("all", undefined);
-  const pageCourses = useMemo(
-    () => filteredCourses.filter((c) => instructorIdSet.has(c.instructor.id)),
-    [filteredCourses, instructorIdSet],
-  );
+  const instructorIds = useMemo(() => instructors.map((i) => i.id), [instructors]);
 
   if (loading) {
     return (
@@ -149,38 +139,15 @@ export default function PublicBookingPortal() {
         )}
       </div>
 
-      {/* Courses */}
-      {pageCourses.length > 0 && (
-        <div className="max-w-6xl mx-auto w-full px-4 pt-8">
-          <h2 className="text-2xl font-bold mb-1">Courses</h2>
-          <div className="h-1 w-12 rounded-full mb-6" style={{ backgroundColor: brandColour }} />
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {pageCourses.map((course) => (
-              <DynamicCourseCard
-                key={`${course.instructor.id}-${course.hours}-${course.bookableDate.toISOString()}`}
-                instructor={course.instructor}
-                hours={course.hours}
-                nextAvailable={course.bookableDate}
-                courseImageUrl={course.courseImageUrl}
-                isPopular={course.isPopular}
-                availableFrom={course.availableFrom}
-                distance={course.distance}
-                features={course.features}
-                isIntensive={course.isIntensive}
-                discountedPrice={course.discountedPrice}
-                offerActive={course.offerActive}
-                offerLabel={course.offerLabel}
-                offerPercentOff={course.offerPercentOff}
-                offerStartsAt={course.offerStartsAt}
-                offerEndsAt={course.offerEndsAt}
-                customFeatures={course.customFeatures}
-                isPremium={course.isPremium}
-                placementType={course.placementType}
-              />
-            ))}
-          </div>
-        </div>
+      {/* Embedded Drive365 course explorer scoped to this page's instructors */}
+      {instructorIds.length > 0 && (
+        <Courses
+          embedded
+          restrictToInstructorIds={instructorIds}
+          title={`${page?.name ?? "Our"} Courses`}
+        />
       )}
+
 
       {/* Instructors grid */}
       <div className="flex-1 max-w-6xl mx-auto w-full px-4 py-8">
