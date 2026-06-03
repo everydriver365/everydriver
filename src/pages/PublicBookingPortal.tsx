@@ -77,6 +77,24 @@ export default function PublicBookingPortal() {
           .order("name");
         if (inst) setInstructors(inst);
       }
+    } else if (data.page_type === "group") {
+      const { data: links } = await supabase
+        .from("booking_page_instructors")
+        .select("instructor_id, display_order")
+        .eq("booking_page_id", data.id)
+        .order("display_order");
+      if (links && links.length > 0) {
+        const ids = links.map(l => l.instructor_id);
+        const { data: inst } = await supabase
+          .from("public_instructors")
+          .select("id, name, phone, hourly_rate, profile_image_url, home_postcode, car_type, bio, app_slug")
+          .in("id", ids)
+          .eq("is_active", true);
+        if (inst) {
+          const orderMap = new Map(links.map(l => [l.instructor_id, l.display_order]));
+          setInstructors([...inst].sort((a, b) => (orderMap.get(a.id) ?? 0) - (orderMap.get(b.id) ?? 0)));
+        }
+      }
     }
     setLoading(false);
   };

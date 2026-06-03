@@ -1455,6 +1455,52 @@ export type Database = {
           },
         ]
       }
+      booking_page_instructors: {
+        Row: {
+          booking_page_id: string
+          created_at: string
+          display_order: number
+          id: string
+          instructor_id: string
+        }
+        Insert: {
+          booking_page_id: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          instructor_id: string
+        }
+        Update: {
+          booking_page_id?: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          instructor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_page_instructors_booking_page_id_fkey"
+            columns: ["booking_page_id"]
+            isOneToOne: false
+            referencedRelation: "booking_pages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_page_instructors_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_page_instructors_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       booking_pages: {
         Row: {
           brand_colour: string | null
