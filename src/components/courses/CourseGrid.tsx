@@ -97,25 +97,28 @@ export function CourseGrid({
         </motion.div>
       )}
 
-      {/* Selected date header */}
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h2 className="text-xl font-bold">
-            {format(selectedDate, "EEEE, d MMMM")}
+      {/* Results header — Drive 365 list skin */}
+      <div className="mb-4 flex flex-wrap items-end justify-between gap-4">
+        <div className="min-w-0">
+          <div className="text-[10px] font-bold tracking-[0.1em] uppercase text-[#0070C0]">
+            Driving courses near
+          </div>
+          <h2 className="mt-1 text-[22px] font-extrabold text-[#0A0E27] tracking-[-0.5px] leading-tight">
+            {searchedAreaName || searchedPostcode || format(selectedDate, "EEEE, d MMMM")}
+            {(searchedAreaName || searchedPostcode) && (
+              <span className="ml-2 text-sm font-normal text-[#9CA3AF]">
+                {searchedAreaName && searchedPostcode ? searchedPostcode : ""}
+              </span>
+            )}
           </h2>
-          <p className="text-sm text-muted-foreground">
-            {filteredCourses.length} course{filteredCourses.length !== 1 ? "s" : ""} available
-          </p>
         </div>
 
-        {/* Sort + view toggle */}
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-sm font-medium text-muted-foreground">Sort:</span>
           <Button
             variant={sortBy === "soonest" ? "default" : "outline"}
             size="sm"
             onClick={() => setSortBy("soonest")}
-            className="gap-1.5"
+            className="h-8 gap-1.5 rounded-md border-[#E5E7EB] text-[11px] font-semibold text-[#4B5563]"
           >
             <Clock className="h-3.5 w-3.5" />
             Soonest
@@ -124,7 +127,7 @@ export function CourseGrid({
             variant={sortBy === "price-low" ? "default" : "outline"}
             size="sm"
             onClick={() => setSortBy("price-low")}
-            className="gap-1.5"
+            className="h-8 gap-1.5 rounded-md border-[#E5E7EB] text-[11px] font-semibold text-[#4B5563]"
           >
             <PoundSterling className="h-3.5 w-3.5" />
             Cheapest
@@ -133,35 +136,52 @@ export function CourseGrid({
             variant={sortBy === "nearest" ? "default" : "outline"}
             size="sm"
             onClick={() => setSortBy("nearest")}
-            className="gap-1.5"
+            className="h-8 gap-1.5 rounded-md border-[#E5E7EB] text-[11px] font-semibold text-[#4B5563]"
             disabled={!userLocation}
           >
             <Navigation className="h-3.5 w-3.5" />
             Nearest
           </Button>
 
-          <div className="ml-2 inline-flex rounded-md border bg-card p-0.5">
-            <Button
-              variant={viewMode === "grid" ? "default" : "ghost"}
-              size="sm"
-              onClick={() => setViewMode("grid")}
-              className="h-8 gap-1.5 px-2"
-              aria-label="Grid view"
-            >
-              <LayoutGrid className="h-3.5 w-3.5" />
-            </Button>
-            <Button
-              variant={viewMode === "list" ? "default" : "ghost"}
-              size="sm"
+          <div className="ml-2 inline-flex overflow-hidden rounded-md border border-[#E5E7EB]">
+            <button
+              type="button"
               onClick={() => setViewMode("list")}
-              className="h-8 gap-1.5 px-2"
               aria-label="List view"
+              className={`px-3 py-1.5 text-[11px] font-semibold transition-colors ${
+                viewMode === "list"
+                  ? "bg-[#0A2B6B] text-white"
+                  : "bg-white text-[#6B7280] hover:bg-[#F8FAFF]"
+              }`}
             >
               <List className="h-3.5 w-3.5" />
-            </Button>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode("grid")}
+              aria-label="Grid view"
+              className={`px-3 py-1.5 text-[11px] font-semibold transition-colors ${
+                viewMode === "grid"
+                  ? "bg-[#0A2B6B] text-white"
+                  : "bg-white text-[#6B7280] hover:bg-[#F8FAFF]"
+              }`}
+            >
+              <LayoutGrid className="h-3.5 w-3.5" />
+            </button>
           </div>
         </div>
       </div>
+
+      {/* Day heading */}
+      <div className="mb-3.5">
+        <div className="text-[15px] font-bold text-[#0A0E27] leading-tight">
+          {format(selectedDate, "EEEE, d MMMM")}
+        </div>
+        <div className="mt-1 text-xs text-[#9CA3AF]">
+          {filteredCourses.length} course{filteredCourses.length !== 1 ? "s" : ""} available
+        </div>
+      </div>
+
 
       {filteredCourses.length > 0 ? (
         viewMode === "list" ? (
@@ -174,8 +194,10 @@ export function CourseGrid({
               isIntensive: c.isIntensive,
               distance: c.distance,
               discountedPrice: c.discountedPrice,
+              areaName: searchedAreaName ?? null,
             }))}
           />
+
         ) : isMobile ? (
           // Mobile: same flip cards as desktop, single column with load more
           <div className="flex flex-col gap-4">
