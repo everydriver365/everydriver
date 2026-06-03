@@ -83,7 +83,7 @@ function InstructorMeta({ instructorId }: { instructorId: string }) {
 
   return (
     <span className="inline-flex items-center gap-1.5 min-w-0">
-      {enough ? (
+      {enough && (
         <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#0A0E27]">
           <Star className="h-3 w-3 fill-[#FBBF24] text-[#FBBF24]" />
           {data!.avgRating?.toFixed(1)}
@@ -91,9 +91,7 @@ function InstructorMeta({ instructorId }: { instructorId: string }) {
             ({data!.totalReviews})
           </span>
         </span>
-      ) : !isLoading ? (
-        <span className="text-[10px] font-medium text-[#9CA3AF]">New instructor</span>
-      ) : null}
+      )}
       {isVerified && (
         <span
           className="inline-flex items-center gap-0.5 rounded-full border border-emerald-200 bg-emerald-50 px-1.5 py-[1px] text-[9px] font-bold uppercase tracking-wide text-emerald-700"
