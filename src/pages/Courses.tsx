@@ -1362,19 +1362,17 @@ export default function Courses() {
           {/* Left Column: Calendar + Instructors */}
           <div className="w-full lg:w-80 lg:flex-shrink-0">
             <div className="space-y-4">
-              <div className="lg:sticky lg:top-20 lg:z-10">
-                <SidebarCalendar
-                  selectedMonth={selectedMonth}
-                  setSelectedMonth={setSelectedMonth}
-                  selectedDate={selectedDate}
-                  availableDates={availableDatesInMonth}
-                  courseCounts={courseCountsInMonth}
-                  onSelectDate={setSelectedDate}
-                  loading={loading}
-                  monthOptions={monthOptions}
-                  hideCounts={isListMode}
-                />
-              </div>
+              <SidebarCalendar
+                selectedMonth={selectedMonth}
+                setSelectedMonth={setSelectedMonth}
+                selectedDate={selectedDate}
+                availableDates={availableDatesInMonth}
+                courseCounts={courseCountsInMonth}
+                onSelectDate={setSelectedDate}
+                loading={loading}
+                monthOptions={monthOptions}
+                hideCounts={isListMode}
+              />
 
               {/* Desktop-only refinement filters (under the calendar) */}
               <div className="hidden lg:block rounded-xl border bg-card p-4 shadow-sm space-y-5">
@@ -1462,15 +1460,14 @@ export default function Courses() {
                 )}
               </div>
 
-              {/* Pass Promise card — list view only */}
-              {isListMode && (
-                <div
-                  className="relative overflow-hidden p-4"
-                  style={{
-                    background: "#0F2044",
-                    borderRadius: 4,
-                  }}
-                >
+              {/* Pass Promise card */}
+              <div
+                className="relative overflow-hidden p-4"
+                style={{
+                  background: "#0F2044",
+                  borderRadius: 4,
+                }}
+              >
                   <div
                     className="pointer-events-none absolute -right-6 -top-6 h-24 w-24"
                     style={{
@@ -1494,8 +1491,7 @@ export default function Courses() {
                       </div>
                     </div>
                   </div>
-                </div>
-              )}
+              </div>
               {/* Instructors Filter Tile */}
               {availableInstructorsForFilter.length > 0 && (
                 <div className="rounded-xl border bg-card p-4 shadow-sm">
