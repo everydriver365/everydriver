@@ -330,7 +330,17 @@ function SidebarCalendar({
   );
 }
 
-export default function Courses() {
+interface CoursesProps {
+  restrictToInstructorIds?: string[];
+  title?: string;
+  embedded?: boolean;
+}
+
+export default function Courses({ restrictToInstructorIds, title: titleProp, embedded = false }: CoursesProps = {}) {
+  const restrictSet = useMemo(
+    () => (restrictToInstructorIds && restrictToInstructorIds.length > 0 ? new Set(restrictToInstructorIds) : null),
+    [restrictToInstructorIds],
+  );
   const isMobile = useIsMobile();
   const [searchParams, setSearchParams] = useSearchParams();
   const initialPostcode = searchParams.get("postcode") || "";
