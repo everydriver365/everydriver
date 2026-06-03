@@ -63,12 +63,11 @@ export function SidebarCalendar({
 
   return (
     <div
-      className="bg-white"
+      className="bg-white w-full"
       style={{
         border: "0.5px solid #E5E7EB",
         borderRadius: 12,
         padding: 16,
-        width: 300,
       }}
     >
       {/* Section label */}
