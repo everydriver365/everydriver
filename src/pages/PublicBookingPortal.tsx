@@ -145,6 +145,7 @@ export default function PublicBookingPortal() {
           embedded
           restrictToInstructorIds={instructorIds}
           title={`${page?.name ?? "Our"} Courses`}
+          searchVariant={slug === "chapmans" ? "chapmans" : undefined}
         />
       )}
 
