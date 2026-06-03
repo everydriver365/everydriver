@@ -1,9 +1,11 @@
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, ChevronRight, Star } from "lucide-react";
+import { Calendar as CalendarIcon, ChevronRight, Star, BadgeCheck } from "lucide-react";
 import klarnaLogo from "@/assets/klarna-round-logo.svg";
 import clearpayLogo from "@/assets/clearpay-round-logo.svg";
 import { useInstructorRating, hasEnoughReviews } from "@/hooks/useInstructorRating";
+import { useVerifiedProSummary } from "@/hooks/useVerifiedProSummary";
+
 
 // Drive 365 list-view course card. Literal brand hex per spec — this is
 // a one-off whitelabel surface that intentionally bypasses semantic tokens.
