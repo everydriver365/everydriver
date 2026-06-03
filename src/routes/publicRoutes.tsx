@@ -6,6 +6,7 @@ import { isWhitelabelDomain } from "@/lib/whitelabel";
 // Learner-facing pages
 const Index = lazy(() => import("@/pages/Index"));
 const Courses = lazy(() => import("@/pages/Courses"));
+const CourseCardsDemo = lazy(() => import("@/pages/design/CourseCardsDemo"));
 const WhitelabelCourses = lazy(() => import("@/pages/WhitelabelCourses"));
 const WhitelabelAreaPage = lazy(() => import("@/pages/WhitelabelAreaPage"));
 const BookingSummary = lazy(() => import("@/pages/BookingSummary"));
@@ -119,6 +120,7 @@ export const publicRoutes = (
 
     {/* Learner-facing routes */}
     <Route path="/courses" element={isWhitelabelDomain() ? <WhitelabelCourses /> : <Courses />} />
+    <Route path="/design/course-cards" element={<CourseCardsDemo />} />
     <Route path="/areas/:slug" element={<WhitelabelAreaPage />} />
     <Route path="/book/:instructorId" element={<BookingSummary />} />
     <Route path="/booking-confirmation" element={<BookingConfirmation />} />
