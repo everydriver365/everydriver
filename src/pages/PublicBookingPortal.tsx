@@ -149,8 +149,43 @@ export default function PublicBookingPortal() {
         )}
       </div>
 
+      {/* Courses */}
+      {pageCourses.length > 0 && (
+        <div className="max-w-6xl mx-auto w-full px-4 pt-8">
+          <h2 className="text-2xl font-bold mb-1">Courses</h2>
+          <div className="h-1 w-12 rounded-full mb-6" style={{ backgroundColor: brandColour }} />
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {pageCourses.map((course) => (
+              <DynamicCourseCard
+                key={`${course.instructor.id}-${course.hours}-${course.bookableDate.toISOString()}`}
+                instructor={course.instructor}
+                hours={course.hours}
+                nextAvailable={course.bookableDate}
+                courseImageUrl={course.courseImageUrl}
+                isPopular={course.isPopular}
+                availableFrom={course.availableFrom}
+                distance={course.distance}
+                features={course.features}
+                isIntensive={course.isIntensive}
+                discountedPrice={course.discountedPrice}
+                offerActive={course.offerActive}
+                offerLabel={course.offerLabel}
+                offerPercentOff={course.offerPercentOff}
+                offerStartsAt={course.offerStartsAt}
+                offerEndsAt={course.offerEndsAt}
+                customFeatures={course.customFeatures}
+                isPremium={course.isPremium}
+                placementType={course.placementType}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Instructors grid */}
       <div className="flex-1 max-w-6xl mx-auto w-full px-4 py-8">
+        <h2 className="text-2xl font-bold mb-1">Our Instructors</h2>
+        <div className="h-1 w-12 rounded-full mb-6" style={{ backgroundColor: brandColour }} />
         {instructors.length === 0 ? (
           <p className="text-center text-muted-foreground py-12">No instructors available at the moment.</p>
         ) : (
