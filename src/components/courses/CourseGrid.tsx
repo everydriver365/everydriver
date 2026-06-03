@@ -60,43 +60,6 @@ export function CourseGrid({
 
   return (
     <>
-      {/* Location header if searched */}
-      {locationDisplay && (
-        <motion.div 
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-6 flex items-center justify-between rounded-xl border-2 border-emerald-500/30 bg-emerald-500/20 px-5 py-4 shadow-md"
-        >
-          <div className="flex items-center gap-3">
-            <motion.div 
-              initial={{ scale: 1 }}
-              animate={{ scale: [1, 1.1, 1] }}
-              transition={{ duration: 0.6, delay: 0.3, times: [0, 0.5, 1] }}
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg shadow-emerald-500/30"
-            >
-              <MapPin className="h-5 w-5" />
-            </motion.div>
-            <div>
-              <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">Showing results for</p>
-              <h2 className="text-xl font-bold text-foreground">
-                {locationDisplay}
-              </h2>
-            </div>
-          </div>
-          {onClearSearch && (
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={onClearSearch}
-              className="gap-1.5 border-emerald-500/30 text-emerald-700 hover:bg-emerald-500/10 dark:text-emerald-400"
-            >
-              <X className="h-4 w-4" />
-              Clear
-            </Button>
-          )}
-        </motion.div>
-      )}
-
       {/* Results header — Drive 365 list skin */}
       <div className="mb-4 flex flex-wrap items-end justify-between gap-4">
         <div className="min-w-0">
@@ -110,8 +73,19 @@ export function CourseGrid({
                 {searchedAreaName && searchedPostcode ? searchedPostcode : ""}
               </span>
             )}
+            {locationDisplay && onClearSearch && (
+              <button
+                type="button"
+                onClick={onClearSearch}
+                className="ml-3 inline-flex items-center gap-1 rounded-md border border-[#E5E7EB] px-2 py-0.5 text-[11px] font-semibold text-[#6B7280] align-middle hover:bg-[#F3F4F6]"
+              >
+                <X className="h-3 w-3" />
+                Clear
+              </button>
+            )}
           </h2>
         </div>
+
 
         <div className="flex flex-wrap items-center gap-2">
           <Button
