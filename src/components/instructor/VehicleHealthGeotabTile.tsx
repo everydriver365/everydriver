@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { formatDistanceToNow } from "date-fns";
 import { ChevronRight, ShieldCheck, AlertTriangle, ShieldAlert, Video } from "lucide-react";
 import { TileCard } from "@/components/instructor/ui";
 import { useGeotabHealth } from "@/hooks/useGeotabHealth";
@@ -71,6 +72,28 @@ export function VehicleHealthGeotabTile({ instructorId }: Props) {
                 title={data.deviceName}
               >
                 Geotab · {data.deviceName}
+              </span>
+            )}
+            {(data.odometerMiles !== null || data.lastSeenAt) && (
+              <span
+                style={{
+                  fontSize: 10,
+                  fontWeight: 600,
+                  color: "#8a93a4",
+                  marginTop: 2,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                  maxWidth: 220,
+                }}
+              >
+                {data.odometerMiles !== null
+                  ? `${Math.round(data.odometerMiles).toLocaleString()} mi`
+                  : null}
+                {data.odometerMiles !== null && data.lastSeenAt ? " · " : ""}
+                {data.lastSeenAt
+                  ? `seen ${formatDistanceToNow(new Date(data.lastSeenAt), { addSuffix: true })}`
+                  : null}
               </span>
             )}
           </div>
