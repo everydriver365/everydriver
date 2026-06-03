@@ -334,9 +334,10 @@ interface CoursesProps {
   restrictToInstructorIds?: string[];
   title?: string;
   embedded?: boolean;
+  searchVariant?: "default" | "chapmans";
 }
 
-export default function Courses({ restrictToInstructorIds, title: titleProp, embedded = false }: CoursesProps = {}) {
+export default function Courses({ restrictToInstructorIds, title: titleProp, embedded = false, searchVariant }: CoursesProps = {}) {
   const restrictSet = useMemo(
     () => (restrictToInstructorIds && restrictToInstructorIds.length > 0 ? new Set(restrictToInstructorIds) : null),
     [restrictToInstructorIds],
