@@ -194,8 +194,10 @@ export function CourseGrid({
               isIntensive: c.isIntensive,
               distance: c.distance,
               discountedPrice: c.discountedPrice,
+              areaName: searchedAreaName ?? null,
             }))}
           />
+
         ) : isMobile ? (
           // Mobile: same flip cards as desktop, single column with load more
           <div className="flex flex-col gap-4">
