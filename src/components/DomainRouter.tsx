@@ -202,7 +202,7 @@ export function DomainRouter() {
 
     // Booking subdomain: only allow booking-related routes
     if (isBookingSubdomain()) {
-      const BOOKING_ALLOWED = ["/courses", "/book/", "/booking-confirmation"];
+      const BOOKING_ALLOWED = ["/courses", "/book/", "/booking", "/booking-confirmation"];
       const isAllowed = BOOKING_ALLOWED.some(prefix => pathname.startsWith(prefix));
       
       if (pathname === "/") {
