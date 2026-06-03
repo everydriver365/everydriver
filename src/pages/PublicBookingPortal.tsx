@@ -2,12 +2,11 @@ import { useState, useEffect, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import dsmLogo from "@/assets/dsm-logo.png";
-import { Loader2, MapPin, Star, Phone } from "lucide-react";
+import { Loader2, MapPin, Phone } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { DynamicCourseCard } from "@/components/DynamicCourseCard";
-import { useCourseDiscovery } from "@/hooks/useCourseDiscovery";
+import Courses from "@/pages/Courses";
 
 interface BookingPageData {
   id: string;
