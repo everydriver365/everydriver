@@ -2114,6 +2114,6 @@ export default function Courses({ restrictToInstructorIds, title: titleProp, emb
         </div>
         )}
       </section>
-    </MainLayout>
+    </Wrapper>
   );
 }
