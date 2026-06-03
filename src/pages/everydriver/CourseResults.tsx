@@ -140,11 +140,11 @@ export default function CourseResults({
               <div>
                 <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">Lesson times</div>
                 <div className="space-y-1.5">
-                  {[
+                  {([
                     { value: "all", label: "Anytime" },
                     { value: "daytime", label: "Daytime (08:00–17:00)" },
                     { value: "evenings_weekends", label: "Evenings & weekends" },
-                  ].map((opt) => (
+                  ] as const).map((opt) => (
                     <button
                       key={opt.value}
                       onClick={() => setLessonTimes(opt.value)}
