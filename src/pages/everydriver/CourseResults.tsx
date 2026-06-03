@@ -1,5 +1,6 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import { ShieldCheck } from "lucide-react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { useCourseDiscovery, type CourseTypeFilter } from "@/hooks/useCourseDiscovery";
 import { Drive365SearchHeader } from "@/components/courses/Drive365SearchHeader";
@@ -75,6 +76,19 @@ export default function CourseResults({
     setSearchParams(params, { replace: true });
   };
 
+  const [lessonTimes, setLessonTimes] = useState<"all" | "daytime" | "evenings_weekends">("all");
+
+  const matchInstructors = useMemo(() => {
+    const seen = new Map<string, { instructor: typeof filteredCourses[number]["instructor"]; distance?: number; carType: string }>();
+    for (const c of filteredCourses) {
+      if (!c.instructor || seen.has(c.instructor.id)) continue;
+      const ct = (c.instructor.car_type || "").toLowerCase();
+      const carType = ct.includes("auto") && !ct.includes("manual") ? "Automatic" : ct.includes("manual") && !ct.includes("auto") ? "Manual" : "Manual & Auto";
+      seen.set(c.instructor.id, { instructor: c.instructor, distance: c.distance, carType });
+    }
+    return Array.from(seen.values()).slice(0, 8);
+  }, [filteredCourses]);
+
   return (
     <MainLayout>
       <Drive365SearchHeader
@@ -92,19 +106,121 @@ export default function CourseResults({
       />
 
       <section className="container py-8 pb-24">
-        <div className="flex flex-col gap-8 lg:flex-row">
-          <div className="w-full lg:w-80 lg:flex-shrink-0">
-            <div className="sticky top-20">
-              <SidebarCalendar
-                selectedMonth={selectedMonth}
-                setSelectedMonth={setSelectedMonth}
-                selectedDate={selectedDate}
-                availableDates={availableDatesInMonth}
-                onSelectDate={setSelectedDate}
-                loading={loading}
-                monthOptions={monthOptions}
-              />
+        <div className="flex flex-col gap-8 lg:flex-row lg:items-start">
+          <div className="w-full lg:w-80 lg:flex-shrink-0 space-y-4">
+            <SidebarCalendar
+              selectedMonth={selectedMonth}
+              setSelectedMonth={setSelectedMonth}
+              selectedDate={selectedDate}
+              availableDates={availableDatesInMonth}
+              onSelectDate={setSelectedDate}
+              loading={loading}
+              monthOptions={monthOptions}
+            />
+
+            {/* Refine results */}
+            <div className="hidden lg:block rounded-xl border bg-card p-4 shadow-sm space-y-5">
+              <h3 className="text-sm font-semibold">Refine results</h3>
+
+              <div>
+                <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">Transmission</div>
+                <div className="grid grid-cols-3 gap-1.5">
+                  {[{ value: "all", label: "Any" }, { value: "manual", label: "Manual" }, { value: "automatic", label: "Auto" }].map((opt) => (
+                    <button
+                      key={opt.value}
+                      onClick={() => setTransmission(opt.value)}
+                      className={`text-xs h-8 rounded-md border transition-colors ${transmission === opt.value ? "border-primary bg-primary text-primary-foreground" : "border-input bg-background hover:bg-muted"}`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">Lesson times</div>
+                <div className="space-y-1.5">
+                  {([
+                    { value: "all", label: "Anytime" },
+                    { value: "daytime", label: "Daytime (08:00–17:00)" },
+                    { value: "evenings_weekends", label: "Evenings & weekends" },
+                  ] as const).map((opt) => (
+                    <button
+                      key={opt.value}
+                      onClick={() => setLessonTimes(opt.value)}
+                      className={`w-full text-left text-xs h-8 px-3 rounded-md border transition-colors ${lessonTimes === opt.value ? "border-primary bg-primary text-primary-foreground" : "border-input bg-background hover:bg-muted"}`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
+
+            {/* Pass Promise */}
+            <div
+              className="relative overflow-hidden p-4 hidden lg:block"
+              style={{ background: "#0F2044", borderRadius: 4 }}
+            >
+              <div
+                className="pointer-events-none absolute -right-6 -top-6 h-24 w-24"
+                style={{ background: "radial-gradient(circle, rgba(255,255,255,0.18) 0%, transparent 70%)" }}
+              />
+              <div className="relative flex items-center gap-3">
+                <div
+                  className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md"
+                  style={{ background: "rgba(255,255,255,0.18)" }}
+                >
+                  <ShieldCheck className="h-4 w-4 text-white" />
+                </div>
+                <div>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: "white" }}>Pass Promise</div>
+                  <div style={{ fontSize: 13, color: "rgba(255,255,255,0.9)", marginTop: 2 }}>
+                    Re-test on us if you don't pass.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Your Match */}
+            {matchInstructors.length > 0 && (
+              <div className="hidden lg:block rounded-xl border bg-card p-4 shadow-sm">
+                <h3 className="mb-3 text-[10px] font-bold uppercase tracking-[0.18em] text-[#7a7a7a]">
+                  Your Match
+                </h3>
+                <div className="space-y-2 max-h-64 overflow-y-auto">
+                  {matchInstructors.map(({ instructor, distance, carType }) => (
+                    <div key={instructor.id} className="flex w-full items-center gap-3 rounded-lg p-2">
+                      <div
+                        className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-full border-2"
+                        style={{
+                          backgroundColor: "hsl(var(--muted))",
+                          borderColor: instructor.brand_colour || "hsl(var(--border))",
+                        }}
+                      >
+                        {instructor.profile_image_url ? (
+                          <img src={instructor.profile_image_url} alt={instructor.name} className="h-full w-full object-cover" />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center text-xs font-semibold text-muted-foreground">
+                            {instructor.name?.charAt(0) || "?"}
+                          </div>
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate text-sm font-semibold">{instructor.name}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {carType}{typeof distance === "number" ? ` · ${distance.toFixed(1)} mi` : ""}
+                        </div>
+                      </div>
+                      <span
+                        className="h-2.5 w-2.5 rounded-full"
+                        style={{ background: instructor.brand_colour || "#0F2044" }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="flex-1">
