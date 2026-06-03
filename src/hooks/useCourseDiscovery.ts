@@ -244,6 +244,31 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
     return null;
   }, [monthOptions, isDateAvailable]);
 
+  // Fallback used when an area contains only network placeholders. Placeholders
+  // have no working hours / calendar so the standard resolver always rejects
+  // them — instead, walk forward up to 30 days and pick the first day that
+  // satisfies the placeholder enquiry-hours rule.
+  const firstPlaceholderDate = useCallback(() => {
+    const today = startOfDay(new Date());
+    for (let i = 0; i < 30; i++) {
+      const day = new Date(today);
+      day.setDate(day.getDate() + i);
+      if (hasNetworkPlaceholderAvailabilityOn(day)) {
+        return { date: day, month: format(day, "yyyy-MM") };
+      }
+    }
+    return null;
+  }, []);
+
+  const firstDateForArea = useCallback((instructorsInArea: Instructor[], src: CourseAvailabilitySources) => {
+    const reals = instructorsInArea.filter((i) => !i.is_network_placeholder);
+    const realHit = reals.length > 0 ? findFirstAvailableDate(reals, src) : null;
+    if (realHit) return realHit;
+    const hasPlaceholder = instructorsInArea.some((i) => i.is_network_placeholder);
+    return hasPlaceholder ? firstPlaceholderDate() : null;
+  }, [findFirstAvailableDate, firstPlaceholderDate]);
+
+
   const geocodePostcodes = useCallback(async (postcodes: string[]): Promise<{ geoCache: GeoCache; areaCache: AreaCache }> => {
     const uncached = postcodes.filter((p) => !(p in geoCache));
     if (uncached.length === 0) return { geoCache, areaCache };
