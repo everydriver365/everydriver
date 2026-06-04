@@ -248,7 +248,28 @@ export function ChapmansMobileResults({
       {/* Section 5 — Course list cards */}
       <div style={{ padding: "0 16px" }}>
         {courses.map((c, i) => {
-          const final = c.discountedPrice && c.discountedPrice < c.price ? c.discountedPrice : c.price;
+          // Mirror DynamicCourseCard pricing exactly.
+          const defaultRate = Number(c.instructor.hourly_rate ?? 0);
+          const hourlyRate =
+            c.effectiveHourlyRate != null && c.effectiveHourlyRate > 0
+              ? c.effectiveHourlyRate
+              : defaultRate;
+          const schoolSkim = Number(c.instructor.school_skim_amount ?? 0);
+          const basePrice = c.hours * hourlyRate;
+          const totalPrice = basePrice + schoolSkim;
+          const offer = computeOfferStatus(totalPrice, {
+            offer_active: c.offerActive,
+            offer_label: c.offerLabel,
+            offer_percent_off: c.offerPercentOff,
+            offer_starts_at: c.offerStartsAt,
+            offer_ends_at: c.offerEndsAt,
+            discounted_price: c.discountedPrice,
+          });
+          const hasDiscount = offer.isLive;
+          const finalPrice = hasDiscount ? offer.finalPrice : totalPrice;
+          const intensity = intensityLabel(c.hours, c.isIntensive);
+          const titleSuffix = intensity ? ` · ${intensity}` : "";
+          const locationBits = [c.areaName, typeof c.distance === "number" ? `${c.distance.toFixed(1)} mi` : null].filter(Boolean);
           return (
             <div
               key={`${c.instructor.id}-${c.hours}-${c.bookableDate.toISOString()}-${i}`}
@@ -302,26 +323,50 @@ export function ChapmansMobileResults({
                         letterSpacing: "-0.01em",
                       }}
                     >
-                      {c.hours}hr {courseTypeLabel(c)} · {transmissionLabel(c.instructor.car_type)}
+                      {courseName(c.hours)}{titleSuffix} · {transmissionLabel(c.instructor.car_type)}
                     </div>
                     <div style={{ fontSize: 11, color: "#9CA3AF", marginTop: 1 }}>
                       Starts {format(c.bookableDate, "EEE d MMM")}
-                      {typeof c.distance === "number" ? ` · ${c.distance.toFixed(1)} mi` : ""}
+                      {locationBits.length > 0 ? ` · ${locationBits.join(" · ")}` : ""}
                     </div>
                   </div>
                   <div
                     style={{
-                      fontSize: 18,
-                      fontWeight: 800,
-                      color: "#0A0E27",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "flex-end",
                       flexShrink: 0,
                       marginLeft: 8,
-                      letterSpacing: "-0.015em",
                     }}
                   >
-                    £{Math.round(final).toLocaleString()}
+                    {hasDiscount && (
+                      <div
+                        style={{
+                          fontSize: 11,
+                          fontWeight: 500,
+                          color: "#9CA3AF",
+                          textDecoration: "line-through",
+                          lineHeight: 1,
+                          marginBottom: 2,
+                        }}
+                      >
+                        £{Math.round(totalPrice).toLocaleString()}
+                      </div>
+                    )}
+                    <div
+                      style={{
+                        fontSize: 18,
+                        fontWeight: 800,
+                        color: hasDiscount ? "#059669" : "#0A0E27",
+                        letterSpacing: "-0.015em",
+                        lineHeight: 1,
+                      }}
+                    >
+                      £{Math.round(finalPrice).toLocaleString()}
+                    </div>
                   </div>
                 </div>
+
 
                 {/* Row 2 — instructor */}
                 <div
