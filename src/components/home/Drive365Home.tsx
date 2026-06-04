@@ -116,14 +116,14 @@ const WHY_ITEMS = [
     iconBg: "#F0EEFF",
     iconColor: "#6B21A8",
     title: "DVSA-approved instructors",
-    body: "Every instructor on Drive365 is fully qualified and DVSA approved — no exceptions.",
+    body: "Every instructor on EveryDriver is fully qualified and DVSA approved — no exceptions.",
   },
 ];
 
 const REVIEWS = [
   {
     text:
-      '"Passed first time with Drive365. Ken was an incredible instructor — patient, thorough and always on time. The test swap feature saved me weeks of waiting too."',
+      '"Passed first time with EveryDriver. Ken was an incredible instructor — patient, thorough and always on time. The test swap feature saved me weeks of waiting too."',
     initials: "BF",
     color: "#3E57D9",
     name: "Berty F.",
