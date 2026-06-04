@@ -1,11 +1,26 @@
-## Plan: Add Accord ExtraBold font
+## Goal
+Make the "Choose your learning path" section on the Drive365 homepage more compact by trimming content and tightening spacing.
 
-### Steps
-1. **Upload font to CDN** via `lovable-assets create` from `/mnt/user-uploads/Accord-ExtraBold.ttf` → `src/assets/fonts/Accord-ExtraBold.ttf.asset.json`.
-2. **Register `@font-face`** in `src/index.css` pointing at the CDN URL (font-family: `Accord`, weight 800, `font-display: swap`).
-3. **Wire into Tailwind** (`tailwind.config.ts`): add `Accord` as the first entry in the `heading` fontFamily stack so existing heading classes pick it up automatically.
-4. **Apply to key headings** — at minimum the homepage hero "See who's teaching you before you book." and the "How it works" heading, plus the EveryDriver wordmark in the nav and hero. (Body text stays on the current system stack.)
+## Changes
+In `src/components/home/Drive365Home.tsx`, section starting at line 480:
 
-### Questions before I build
-- Apply Accord to **all headings sitewide**, or **only the hero + nav wordmark**?
-- You've only sent ExtraBold (800). Headings using lighter weights will fall back to the next font in the stack. OK, or do you have other weights to upload?
+### 1. Trim card content
+- Remove the `<p>` description paragraph from each course card.
+- Remove the 3-item feature list (the checkmark bullets).
+- Keep: badge, image, title, price, CTA button.
+
+### 2. Compact card sizing
+- Reduce `CourseCardImage` height from `180` to `140`.
+- Reduce inner card padding from `"22px 22px 0"` to `"18px 18px 0"`.
+- Reduce bottom padding on the price row.
+- Reduce CTA button padding from `14` to `10`.
+
+### 3. Tighten section spacing
+- Reduce section top/bottom padding from `"56px 5%"` to `"36px 5%"`.
+- Keep the existing 3-column grid and card border/shadow styling.
+
+## What stays the same
+- All data from the `COURSES` array (titles, prices, CTAs, images, badges).
+- Existing grid layout (`repeat(auto-fit, minmax(280px, 1fr))`).
+- Card border, featured-card highlight, and hover states.
+- No changes to other sections or components.

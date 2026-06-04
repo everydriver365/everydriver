@@ -477,17 +477,17 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
 
 
       {/* HomeCourses */}
-      <section style={{ padding: "56px 5%", background: "#F6F6F8", width: "100%" }}>
+      <section style={{ padding: "36px 5%", background: "#F6F6F8", width: "100%" }}>
         <div style={{ fontSize: 11, fontWeight: 700, color: "#1A6FD4", letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: 6 }}>
           Learning paths
         </div>
-        <h2 style={{ fontSize: 32, fontWeight: 700, color: "#0A0E27", letterSpacing: -0.5, marginBottom: 10 }}>
+        <h2 style={{ fontSize: 28, fontWeight: 700, color: "#0A0E27", letterSpacing: -0.5, marginBottom: 8 }}>
           Choose your learning path
         </h2>
-        <p style={{ fontSize: 14, color: "#4B5563", lineHeight: 1.5, maxWidth: 520, marginBottom: 36 }}>
+        <p style={{ fontSize: 13, color: "#4B5563", lineHeight: 1.5, maxWidth: 520, marginBottom: 24 }}>
           Whether you want to pass quickly or learn at your own pace, we have the perfect course for you.
         </p>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px,1fr))", gap: 20 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px,1fr))", gap: 16 }}>
           {COURSES.map((course) => (
             <div
               key={course.id}
@@ -501,24 +501,15 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
                 flexDirection: "column",
               }}
             >
-              <CourseCardImage courseId={course.id} badge={course.badge} badgeColor={course.badgeColor} bg={course.sceneBg} />
-              <div style={{ padding: "22px 22px 0", flex: 1, display: "flex", flexDirection: "column" }}>
-                <h3 style={{ fontSize: 17, fontWeight: 700, color: "#0A0E27", marginBottom: 6 }}>{course.title}</h3>
-                <p style={{ fontSize: 13, color: "#4B5563", lineHeight: 1.5, marginBottom: 14 }}>{course.description}</p>
-                <div style={{ display: "flex", flexDirection: "column", gap: 5, marginBottom: 18 }}>
-                  {course.features.map((f) => (
-                    <div key={f} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "#4B5563" }}>
-                      <Check size={11} color="#1A6FD4" strokeWidth={2} />
-                      {f}
-                    </div>
-                  ))}
-                </div>
-                <div style={{ marginTop: "auto", borderTop: "1px solid #F3F4F6", paddingTop: 14, paddingBottom: 16 }}>
-                  <div style={{ fontSize: 11, color: "#9CA3AF", marginBottom: 1 }}>From</div>
-                  <div>
-                    <span style={{ fontSize: 22, fontWeight: 700, color: "#0A0E27", letterSpacing: -0.5 }}>{course.priceFrom}</span>
-                    {course.priceUnit && <span style={{ fontSize: 13, fontWeight: 400, color: "#4B5563" }}>{course.priceUnit}</span>}
-                  </div>
+              <div style={{ height: 140, overflow: "hidden", position: "relative" }}>
+                <CourseCardImage courseId={course.id} badge={course.badge} badgeColor={course.badgeColor} bg={course.sceneBg} />
+              </div>
+              <div style={{ padding: "14px 16px 12px", flex: 1, display: "flex", flexDirection: "column" }}>
+                <h3 style={{ fontSize: 16, fontWeight: 700, color: "#0A0E27", marginBottom: 8 }}>{course.title}</h3>
+                <div style={{ marginTop: "auto", display: "flex", alignItems: "baseline", gap: 6 }}>
+                  <span style={{ fontSize: 11, color: "#9CA3AF" }}>From</span>
+                  <span style={{ fontSize: 20, fontWeight: 700, color: "#0A0E27", letterSpacing: -0.5 }}>{course.priceFrom}</span>
+                  {course.priceUnit && <span style={{ fontSize: 12, fontWeight: 400, color: "#4B5563" }}>{course.priceUnit}</span>}
                 </div>
               </div>
               <Link to={course.ctaHref} style={{ display: "block" }}>
@@ -527,8 +518,8 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
                     width: "100%",
                     border: "none",
                     borderRadius: "0 0 4px 4px",
-                    padding: 14,
-                    fontSize: 14,
+                    padding: 10,
+                    fontSize: 13,
                     fontWeight: 500,
                     background: course.ctaBg,
                     color: "#FFF",
@@ -549,6 +540,7 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
           ))}
         </div>
       </section>
+
       {afterLearningPaths}
 
 
