@@ -1384,6 +1384,7 @@ export default function Courses({ restrictToInstructorIds, title: titleProp, emb
         ) : (
         <div className="flex flex-col gap-8 lg:flex-row">
           {/* Left Column: Calendar + Instructors */}
+          {!isChapmansMobile && (
           <div className="w-full lg:w-80 lg:flex-shrink-0 lg:self-start">
             <div className="space-y-4 lg:max-h-none lg:overflow-visible">
               <SidebarCalendar
