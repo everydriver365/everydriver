@@ -37,6 +37,12 @@ interface ChapmansCourse {
   offerEndsAt?: string | null;
   effectiveHourlyRate?: number | null;
   areaName?: string | null;
+  // Extra fields forwarded to DynamicCourseCard for the grid (flip-card) view.
+  courseImageUrl?: string | null;
+  isPopular?: boolean;
+  availableFrom?: Date | null;
+  features?: string[];
+  customFeatures?: string[];
 }
 
 interface Props {
@@ -52,7 +58,9 @@ interface Props {
   hasMore?: boolean;
   onLoadMore?: () => void;
   remainingCount?: number;
+  learnerPostcode?: string | null;
 }
+
 
 const HOURS_BAR: Record<number, string> = {
   10: "#059669",
