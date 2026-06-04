@@ -277,6 +277,25 @@ export default function AdminInstructorDetail() {
           onSave={handleSaveProfile}
         />
       )}
+
+      {instructor && drawer === "diary" && (
+        <DiaryDrawer instructorId={instructor.id} instructorName={instructor.name} onClose={() => setDrawer(null)} />
+      )}
+      {instructor && drawer === "bookings" && (
+        <BookingsDrawer instructorId={instructor.id} instructorName={instructor.name} onClose={() => setDrawer(null)} />
+      )}
+      {instructor && drawer === "reviews" && (
+        <ReviewsDrawer instructorId={instructor.id} instructorName={instructor.name} onClose={() => setDrawer(null)} />
+      )}
+      {instructor && drawer === "payments" && (
+        <PaymentsDrawer instructorId={instructor.id} instructorName={instructor.name} onClose={() => setDrawer(null)} />
+      )}
+      {instructor && drawer === "documents" && (
+        <DocumentsDrawer instructor={instructor} onClose={() => setDrawer(null)} />
+      )}
+      {instructor && drawer === "message" && (
+        <MessageDrawer instructor={instructor} onClose={() => setDrawer(null)} />
+      )}
     </>
   );
 }
