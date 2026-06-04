@@ -19,6 +19,7 @@ export default {
   	extend: {
 		fontFamily: {
 			sans: [
+				'Poppins',
 				'-apple-system',
 				'BlinkMacSystemFont',
 				'SF Pro Text',
@@ -34,11 +35,11 @@ export default {
 				'sans-serif'
 			],
 			heading: [
+				'Poppins',
 				'Accord',
 				'-apple-system',
 				'BlinkMacSystemFont',
 				'SF Pro Display',
-				'Poppins',
 				'system-ui',
 				'sans-serif'
 			],
