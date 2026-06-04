@@ -65,7 +65,29 @@ export function CourseSearchHeader({
   };
 
   return (
-    <section className="px-5 pt-3 pb-2 md:pt-5 md:pb-3">
+    <>
+      {isChapmans && (
+        <ChapmansMobileSearch
+          postcode={postcode}
+          setPostcode={setPostcode}
+          radius={radius}
+          setRadius={setRadius}
+          transmission={transmission}
+          setTransmission={setTransmission}
+          isSearching={isSearching}
+          activeFilter={activeFilter}
+          setActiveFilter={setActiveFilter}
+          onSearch={handleSearch}
+          showFilters={showFilters}
+        />
+      )}
+    <section
+      className={
+        isChapmans
+          ? "hidden md:block md:px-5 md:pt-5 md:pb-3"
+          : "px-5 pt-3 pb-2 md:pt-5 md:pb-3"
+      }
+    >
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -103,6 +125,7 @@ export function CourseSearchHeader({
             boxShadow: "0 2px 12px rgba(15,32,68,0.05)",
           }}
         >
+
           {isChapmans ? (
             <form
               onSubmit={(e) => {
@@ -474,5 +497,263 @@ export function CourseSearchHeader({
         </div>
       </motion.div>
     </section>
+    </>
   );
 }
+
+interface ChapmansMobileSearchProps {
+  postcode: string;
+  setPostcode: (v: string) => void;
+  radius: string;
+  setRadius: (v: string) => void;
+  transmission: string;
+  setTransmission: (v: string) => void;
+  isSearching: boolean;
+  activeFilter?: CourseFilterId;
+  setActiveFilter?: (v: CourseFilterId) => void;
+  onSearch: () => void;
+  showFilters: boolean;
+}
+
+function ChapmansMobileSearch({
+  postcode,
+  setPostcode,
+  radius,
+  setRadius,
+  transmission,
+  setTransmission,
+  isSearching,
+  activeFilter,
+  setActiveFilter,
+  onSearch,
+  showFilters,
+}: ChapmansMobileSearchProps) {
+  return (
+    <div className="md:hidden">
+      <style>{`.chapmans-tabs::-webkit-scrollbar{display:none}`}</style>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          onSearch();
+        }}
+        style={{
+          background: "#FFF",
+          margin: "-16px 16px 0",
+          borderRadius: 14,
+          boxShadow: "0 4px 24px rgba(0,0,0,0.12)",
+          position: "relative",
+          zIndex: 2,
+        }}
+      >
+        <div style={{ overflow: "hidden", borderTopLeftRadius: 14, borderTopRightRadius: 14 }}>
+          {/* Postcode */}
+          <div style={{ padding: "12px 16px", borderBottom: "1px solid #F3F4F6" }}>
+            <div
+              style={{
+                fontSize: 9,
+                fontWeight: 700,
+                color: "#9CA3AF",
+                textTransform: "uppercase",
+                letterSpacing: "0.8px",
+                marginBottom: 6,
+                display: "block",
+              }}
+            >
+              Postcode
+            </div>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1, minWidth: 0 }}>
+                <MapPin size={14} strokeWidth={2} style={{ color: "#C4C9D4", flexShrink: 0 }} />
+                <PostcodeAutocomplete
+                  value={postcode}
+                  onChange={(v) => setPostcode(v.toUpperCase())}
+                  onSelect={(pc) => {
+                    setPostcode(pc);
+                    setTimeout(() => onSearch(), 100);
+                  }}
+                  placeholder="Enter postcode"
+                  className="flex-1 min-w-0"
+                  inputClassName="h-7 border-0 bg-transparent p-0 text-[15px] font-medium shadow-none focus-visible:ring-0 placeholder:text-[#C4C9D4]"
+                  showInputIcon={false}
+                  showGeolocation={true}
+                  enableDictation={true}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Radius */}
+          <div style={{ padding: "12px 16px", borderBottom: "1px solid #F3F4F6" }}>
+            <div
+              style={{
+                fontSize: 9,
+                fontWeight: 700,
+                color: "#9CA3AF",
+                textTransform: "uppercase",
+                letterSpacing: "0.8px",
+                marginBottom: 6,
+                display: "block",
+              }}
+            >
+              Search radius
+            </div>
+            <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <select
+                value={radius}
+                onChange={(e) => setRadius(e.target.value)}
+                style={{
+                  flex: 1,
+                  appearance: "none",
+                  background: "transparent",
+                  border: "none",
+                  outline: "none",
+                  paddingRight: 20,
+                  fontSize: 15,
+                  fontWeight: 500,
+                  color: "#0A0E27",
+                }}
+              >
+                <option value="5">5 miles</option>
+                <option value="10">10 miles</option>
+                <option value="15">15 miles</option>
+                <option value="20">20 miles</option>
+                <option value="30">30 miles</option>
+              </select>
+              <ChevronDown
+                size={16}
+                strokeWidth={2}
+                style={{ color: "#9CA3AF", position: "absolute", right: 0, pointerEvents: "none" }}
+              />
+            </div>
+          </div>
+
+          {/* Transmission */}
+          <div style={{ padding: "12px 16px" }}>
+            <div
+              style={{
+                fontSize: 9,
+                fontWeight: 700,
+                color: "#9CA3AF",
+                textTransform: "uppercase",
+                letterSpacing: "0.8px",
+                marginBottom: 6,
+                display: "block",
+              }}
+            >
+              Transmission
+            </div>
+            <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <select
+                value={transmission}
+                onChange={(e) => setTransmission(e.target.value)}
+                style={{
+                  flex: 1,
+                  appearance: "none",
+                  background: "transparent",
+                  border: "none",
+                  outline: "none",
+                  paddingRight: 20,
+                  fontSize: 15,
+                  fontWeight: 500,
+                  color: "#0A0E27",
+                }}
+              >
+                <option value="all">Any</option>
+                <option value="manual">Manual</option>
+                <option value="automatic">Automatic</option>
+              </select>
+              <ChevronDown
+                size={16}
+                strokeWidth={2}
+                style={{ color: "#9CA3AF", position: "absolute", right: 0, pointerEvents: "none" }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Search button */}
+        <button
+          type="submit"
+          disabled={isSearching}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 8,
+            margin: "14px 16px 16px",
+            padding: 14,
+            background: "#E8641A",
+            color: "#FFF",
+            border: "none",
+            borderRadius: 12,
+            fontSize: 15,
+            fontWeight: 700,
+            width: "calc(100% - 32px)",
+            cursor: isSearching ? "default" : "pointer",
+            opacity: isSearching ? 0.6 : 1,
+          }}
+        >
+          {isSearching ? (
+            <Loader2 size={16} strokeWidth={2.2} className="animate-spin" />
+          ) : (
+            <Search size={16} strokeWidth={2.2} />
+          )}
+          <span>Search courses</span>
+        </button>
+      </form>
+
+      {/* Filter tabs */}
+      {showFilters && activeFilter && setActiveFilter && (
+        <div style={{ padding: "16px 16px 0" }}>
+          <div
+            style={{
+              fontSize: 11,
+              color: "#9CA3AF",
+              fontWeight: 500,
+              marginBottom: 10,
+            }}
+          >
+            Filter by course type:
+          </div>
+          <div
+            className="chapmans-tabs"
+            style={{
+              display: "flex",
+              gap: 8,
+              overflowX: "auto",
+              paddingBottom: 14,
+              scrollbarWidth: "none",
+            }}
+          >
+            {FILTER_OPTIONS.map((opt) => {
+              const isActive = activeFilter === opt.id;
+              return (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => setActiveFilter(opt.id)}
+                  data-active={isActive}
+                  style={{
+                    padding: "7px 16px",
+                    borderRadius: 20,
+                    fontSize: 12,
+                    fontWeight: 600,
+                    whiteSpace: "nowrap",
+                    flexShrink: 0,
+                    background: isActive ? "#E8641A" : "#FFF",
+                    color: isActive ? "#FFF" : "#4B5563",
+                    border: `1px solid ${isActive ? "#E8641A" : "#E5E7EB"}`,
+                    cursor: "pointer",
+                  }}
+                >
+                  {opt.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
