@@ -1384,8 +1384,7 @@ export default function Courses({ restrictToInstructorIds, title: titleProp, emb
         ) : (
         <div className="flex flex-col gap-8 lg:flex-row">
           {/* Left Column: Calendar + Instructors */}
-          {!isChapmansMobile && (
-          <div className="w-full lg:w-80 lg:flex-shrink-0 lg:self-start">
+          <div className={isChapmansMobile ? "w-full px-4" : "w-full lg:w-80 lg:flex-shrink-0 lg:self-start"}>
             <div className="space-y-4 lg:max-h-none lg:overflow-visible">
               <SidebarCalendar
                 selectedMonth={selectedMonth}
@@ -1398,6 +1397,7 @@ export default function Courses({ restrictToInstructorIds, title: titleProp, emb
                 monthOptions={monthOptions}
                 hideCounts={isListMode}
               />
+
 
               {/* Desktop-only refinement filters (under the calendar) */}
               <div className="hidden lg:block rounded-xl border bg-card p-4 shadow-sm space-y-5">
@@ -1612,7 +1612,8 @@ export default function Courses({ restrictToInstructorIds, title: titleProp, emb
               )}
             </div>
           </div>
-          )}
+
+
 
           {/* Right Column: Course Tiles */}
           <div className="flex-1">

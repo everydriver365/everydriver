@@ -1,15 +1,11 @@
-## Fix
+## Goal
+Bring the calendar date picker back on `/booking/chapmans` mobile so users can pick a date again (currently they see the "Select a date" placeholder with no calendar to interact with).
 
-On Chapman's mobile, when **Grid** is selected, render the same `DynamicCourseCard` flip cards Drive365 uses on mobile — in a single column — instead of my compact 2-up tile.
+## Change
+In `src/pages/Courses.tsx`, the left column containing `SidebarCalendar` is currently gated behind `!isChapmansMobile`, which hides it entirely on Chapman's mobile.
 
-### Changes in `src/components/courses/ChapmansMobileResults.tsx`
+1. Render `SidebarCalendar` on Chapman's mobile by removing the `!isChapmansMobile` guard around the calendar block (around lines 1387–1401). Keep the desktop "Refine results" panel hidden on mobile (it already uses `hidden lg:block`).
+2. Wrap the calendar in a small mobile-only padding container (`px-4` on mobile, none on desktop) so it sits cleanly inside the existing `w-full px-0` Chapman's section.
+3. No changes to selection logic, available dates, or the results pane. Once a date is picked, the existing `ChapmansMobileResults` flow renders as today.
 
-1. When `viewMode === "grid"`, swap the current compact-tile branch for the Drive365 mobile cards: map `courses` and render `<DynamicCourseCard ... />` per item, wrapped in `flex flex-col gap-4` with `padding: 0 16px`.
-2. Pass the same props Drive365 passes on mobile (`Courses.tsx` lines ~2001–2029): `instructor`, `hours`, `nextAvailable`, `courseImageUrl`, `isPopular`, `availableFrom`, `distance`, `features`, `isIntensive`, `discountedPrice`, offer fields, `customFeatures`, `areaName`, `effectiveHourlyRate`, `learnerPostcode`.
-3. When `viewMode === "list"`, keep the existing Chapman's compact list card unchanged.
-4. Revert the 2-column CSS grid wrapper and the compact in-card branches (`isGrid` flags, stacked price, hidden row 3, etc.). The list path becomes the only `isGrid === false` path again.
-5. Toggle remains functional — list = Chapman's compact rows, grid = Drive365-style flip cards. No data, pricing, or filter logic changes. Desktop and non-Chapman's flows untouched.
-
-### Note
-
-`learnerPostcode` and `areaCache` are owned by `Courses.tsx`. `searchedPostcode` is not currently passed into `ChapmansMobileResults`; `areaName` already is (per-course). To pass `learnerPostcode` cleanly, add an optional `learnerPostcode?: string | null` prop to `ChapmansMobileResults` and forward it from `Courses.tsx` (single line). No other consumers affected.
+No business logic, data, pricing, or desktop layout changes.
