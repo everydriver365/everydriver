@@ -177,58 +177,6 @@ export default function PublicBookingPortal() {
             }}
           />
 
-
-          <h1
-            style={{
-              position: "relative",
-              fontSize: 24,
-              fontWeight: 800,
-              color: "#FFF",
-              letterSpacing: "-0.5px",
-              lineHeight: 1.15,
-              marginBottom: 8,
-            }}
-          >
-            Find a course. Choose your instructor.
-          </h1>
-          <p
-            style={{
-              position: "relative",
-              fontSize: 13,
-              color: "rgba(255,255,255,0.8)",
-              lineHeight: 1.5,
-              maxWidth: 280,
-              margin: "0 auto 16px",
-            }}
-          >
-            {page?.description || "See who's teaching you before you book — verified pass rates and real reviews."}
-          </p>
-          <div
-            style={{
-              position: "relative",
-              display: "flex",
-              flexWrap: "wrap",
-              justifyContent: "center",
-              gap: 6,
-            }}
-          >
-            {["Test swap free", "Klarna & Clearpay", "Re-test guarantee"].map((label) => (
-              <span
-                key={label}
-                style={{
-                  background: "rgba(0,0,0,0.18)",
-                  border: "1px solid rgba(255,255,255,0.2)",
-                  borderRadius: 20,
-                  padding: "4px 10px",
-                  fontSize: 10,
-                  fontWeight: 600,
-                  color: "rgba(255,255,255,0.9)",
-                }}
-              >
-                <span style={{ color: "#FFF", fontWeight: 700 }}>✓</span> {label}
-              </span>
-            ))}
-          </div>
         </div>
       )}
 
