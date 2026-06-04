@@ -324,31 +324,31 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
         @media (min-width: 768px) {
           .d365-hero-wrap { background: #FFFFFF; padding: 56px 24px; display: flex; justify-content: center; }
           .d365-hero { width: 100%; max-width: 1200px; display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: stretch; }
-          .d365-hero-photo { position: relative; background: #9FD3E8; border-radius: 4px; overflow: hidden; min-height: 540px; }
+          .d365-hero-photo { position: relative; background: #9FD3E8; border-radius: 15px; overflow: hidden; min-height: 540px; }
           .d365-hero-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
           .d365-hero-right { display: flex; flex-direction: column; gap: 16px; }
           .d365-hero-right { display: flex; flex-direction: column; gap: 16px; }
-          .d365-welcome { background: #EAF0FF; padding: 24px; border-radius: 4px; }
+          .d365-welcome { background: #EAF0FF; padding: 24px; border-radius: 15px; }
           .d365-welcome-eyebrow { font-size: 10px; font-weight: 700; color: #E8641A; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; font-family: Inter, "Helvetica Neue", system-ui, sans-serif; }
           .d365-welcome h1 { font-size: 40px; line-height: 1.1; font-weight: 800; color: #0A1628; letter-spacing: -1.5px; margin: 0 0 14px; font-family: Inter, "Helvetica Neue", system-ui, sans-serif; }
           .d365-welcome p { font-size: 15px; line-height: 1.55; color: #4B5563; margin: 0; }
           .d365-welcome p b { color: #0A0A0A; font-weight: 700; }
-          .d365-cta { width: 100%; background: #0F2044; color: #FFFFFF; border: none; border-radius: 2px; padding: 16px 20px; font-size: 14px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 10px; transition: background 120ms ease; font-family: inherit; }
+          .d365-cta { width: 100%; background: #0F2044; color: #FFFFFF; border: none; border-radius: 10px; padding: 16px 20px; font-size: 14px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 10px; transition: background 120ms ease; font-family: inherit; }
           .d365-cta:hover { background: #1A3370; }
           .d365-cta-icon { width: 22px; height: 22px; border-radius: 999px; background: rgba(255,255,255,0.2); display: inline-flex; align-items: center; justify-content: center; }
           .d365-feat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: stretch; }
-          .d365-feat { background: #EAF0FF; padding: 20px; border-radius: 4px; display: flex; flex-direction: column; justify-content: space-between; gap: 12px; height: 100%; }
+          .d365-feat { background: #EAF0FF; padding: 20px; border-radius: 15px; display: flex; flex-direction: column; justify-content: space-between; gap: 12px; height: 100%; }
           .d365-feat > h3 { margin-top: 0; }
           .d365-feat > p { flex: 1; }
           .d365-feat-full { grid-column: 1 / -1; }
           .d365-feat-row-layout { flex-direction: row; align-items: stretch; gap: 16px; justify-content: flex-start; }
-          .d365-feat-row-layout .d365-feat-thumb { width: 140px; aspect-ratio: 1 / 1; flex: 0 0 140px; object-fit: cover; border-radius: 4px; display: block; background: #9FD3E8; }
+          .d365-feat-row-layout .d365-feat-thumb { width: 140px; aspect-ratio: 1 / 1; flex: 0 0 140px; object-fit: cover; border-radius: 10px; display: block; background: #9FD3E8; }
           .d365-feat-body { display: flex; flex-direction: column; justify-content: space-between; gap: 8px; flex: 1; }
           .d365-feat-body > p { flex: 1; }
-          .d365-feat img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 4px; display: block; background: #9FD3E8; }
+          .d365-feat img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 10px; display: block; background: #9FD3E8; }
           .d365-feat h3 { font-size: 16px; font-weight: 800; color: #0A0A0A; text-transform: uppercase; letter-spacing: 0.02em; margin: 0; font-family: Inter, "Helvetica Neue", system-ui, sans-serif; }
           .d365-feat p { font-size: 14px; line-height: 1.5; color: #4B5563; margin: 0; }
-          .d365-feat-btn { width: 100%; height: 34px; background: #0F2044; color: #FFFFFF; border: none; border-radius: 2px; padding: 0 12px; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; cursor: pointer; font-family: inherit; transition: background 120ms ease; display: flex; align-items: center; justify-content: center; margin-top: 0; }
+          .d365-feat-btn { width: 100%; height: 34px; background: #0F2044; color: #FFFFFF; border: none; border-radius: 10px; padding: 0 12px; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; cursor: pointer; font-family: inherit; transition: background 120ms ease; display: flex; align-items: center; justify-content: center; margin-top: 0; }
           .d365-feat-btn:hover { background: #1A3370; }
           .d365-feat-btn--red { background: #3082cf; }
           .d365-feat-btn--red:hover { background: #2b6cb0; }
@@ -356,7 +356,7 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
           .d365-feat-btn--blue:hover { background: #2b6cb0; }
           .d365-feat-btn--dark { background: #3082cf; }
           .d365-feat-btn--dark:hover { background: #2b6cb0; }
-          .d365-spacer { background: #EAF0FF; height: 40px; border-radius: 4px; width: 100%; }
+          .d365-spacer { background: #EAF0FF; height: 40px; border-radius: 15px; width: 100%; }
           .d365-why-wrap { background: #FFFFFF; padding: 80px 24px 56px; display: flex; justify-content: center; }
           .d365-why { width: 100%; max-width: 1200px; display: grid; grid-template-columns: 30% 70%; align-items: start; }
           .d365-why-left { padding-right: 32px; border-right: 1px solid #0F2044; }
