@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { ChevronDown, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-const drive365Logo = "/everydriver-logo-full.svg";
+const drive365Logo = "/everydriver-logo-full.png";
 
 const NAV_LINKS = [
   { href: "/drive365", label: "Home" },
