@@ -3,8 +3,12 @@ import { SectionCard, Section } from "./SectionCard";
 import { AddSectionModal } from "./modals/AddRowModal";
 
 export function SectionColumn({
-  sections, onChange,
-}: { sections: Section[]; onChange: (next: Section[]) => void }) {
+  sections, onChange, onPersistField,
+}: {
+  sections: Section[];
+  onChange: (next: Section[]) => void;
+  onPersistField?: (field: string, parsed: any) => Promise<void> | void;
+}) {
   const [adding, setAdding] = useState(false);
 
   return (
@@ -14,6 +18,7 @@ export function SectionColumn({
           key={s.id}
           section={s}
           onChange={(next) => onChange(sections.map((x) => (x.id === s.id ? next : x)))}
+          onPersistField={onPersistField}
           onRemove={() => {
             if (confirm(`Remove section "${s.title}"?`)) {
               onChange(sections.filter((x) => x.id !== s.id));
