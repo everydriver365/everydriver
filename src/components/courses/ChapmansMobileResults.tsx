@@ -246,7 +246,13 @@ export function ChapmansMobileResults({
       )}
 
       {/* Section 5 — Course list cards */}
-      <div style={{ padding: "0 16px" }}>
+      <div
+        style={
+          viewMode === "grid"
+            ? { padding: "0 16px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }
+            : { padding: "0 16px" }
+        }
+      >
         {courses.map((c, i) => {
           // Mirror DynamicCourseCard pricing exactly.
           const defaultRate = Number(c.instructor.hourly_rate ?? 0);
