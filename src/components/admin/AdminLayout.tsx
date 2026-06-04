@@ -108,6 +108,7 @@ const sidebarGroups: PortalNavGroup[] = [
     label: "Settings",
     icon: Settings,
     items: [
+      { key: "email-domain-setup", label: "Email Domain Setup", icon: Mail },
       { key: "trackers", label: "GPS Trackers", icon: Satellite },
       { key: "accounting-partners", label: "Accounting Partners", icon: PoundSterling },
       { key: "google-sync", label: "Google Sync", icon: AlertTriangle },
