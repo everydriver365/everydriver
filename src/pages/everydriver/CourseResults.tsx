@@ -296,6 +296,7 @@ export default function CourseResults({
           </div>
         </div>
       </section>
-    </MainLayout>
+      </Shell>
+    </EmbedProvider>
   );
 }
