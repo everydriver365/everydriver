@@ -1,41 +1,47 @@
-## Problem
+## Goal
 
-Submitting the enquiry form on `/booking/chapmans` → course detail page fails with:
+When a pupil submits a booking enquiry, send two emails:
+1. **Confirmation** to the pupil ("We've received your enquiry, the instructor will be in touch")
+2. **Notification** to the instructor with the pupil's details so they can follow up
 
-```
-POST /rest/v1/booking_enquiries → 401
-code: 42501
-"new row violates row-level security policy for table booking_enquiries"
-```
+Currently nothing emails out — the enquiry is only inserted into `booking_enquiries`.
 
-The RLS policies on `public.booking_enquiries` are correct:
-- INSERT: `Anyone can submit an enquiry` for `anon, authenticated` (`with_check: true`)
-- SELECT/UPDATE: scoped to the owning instructor
+## Prerequisite: fix sender domain
 
-But `information_schema.role_table_grants` shows **zero grants** on the table, so PostgREST returns 42501 before RLS even runs. This violates the project's "every public table needs explicit GRANTs" rule.
+The configured sender `notify.drive365.co.uk` is in **Failed** status (DNS provisioning timed out). Nothing will deliver until that's fixed. Two options:
 
-## Fix
+- **A.** Re-run DNS setup for `notify.drive365.co.uk` (add the NS records at the registrar, then verify). Keeps the existing branded sender.
+- **B.** Use a different verified subdomain (e.g. `mail.drive365.co.uk`).
 
-Single migration that adds the missing grants. RLS is already enabled and policies already exist — no policy changes needed.
+I'll need you to pick one and complete DNS before emails can actually send. Scaffolding and code can be built in parallel.
 
-```sql
-GRANT INSERT ON public.booking_enquiries TO anon;
-GRANT INSERT, SELECT, UPDATE ON public.booking_enquiries TO authenticated;
-GRANT ALL ON public.booking_enquiries TO service_role;
-```
+## What I'll build
 
-Notes:
-- `anon` only gets `INSERT` (public form submissions) — reads stay locked down by RLS.
-- `authenticated` gets `SELECT`/`UPDATE` so the instructor portal can view/manage their own enquiries (RLS already scopes to `get_instructor_id_for_user(auth.uid())`).
-- `service_role` gets `ALL` for edge functions / admin code.
+1. **Scaffold Lovable transactional email infrastructure** (`send-transactional-email` edge function + queue + suppression + unsubscribe page).
+2. **Two new React Email templates** under `supabase/functions/_shared/transactional-email-templates/`:
+   - `enquiry-confirmation.tsx` — to pupil. Subject: "We've passed your enquiry to {instructor name}". Body: thanks, summary of what they asked about (course/instructor), what happens next, instructor contact line.
+   - `enquiry-instructor-notification.tsx` — to instructor. Subject: "New enquiry from {pupil name}". Body: pupil name, email, phone, postcode, course interest, message, link to reply.
+   - Branded with Drive365 tokens (read from `src/index.css`).
+3. **Register both templates** in `_shared/transactional-email-templates/registry.ts`.
+4. **Wire the send into the existing RPC path.** The enquiry now goes through `submit_booking_enquiry` (SECURITY DEFINER). After the RPC returns the new enquiry id, the client (`EnquiryFlow.tsx` and `EnquiryOnlyView.tsx`) will call `supabase.functions.invoke("send-transactional-email", …)` twice:
+   - once with `templateName: "enquiry-confirmation"`, recipient = pupil email, `idempotencyKey: enquiry-confirm-<id>`
+   - once with `templateName: "enquiry-instructor-notification"`, recipient = instructor email (looked up from `public_instructors` by `instructor_id` on the page), `idempotencyKey: enquiry-notify-<id>`
+   Both invocations are fire-and-forget (no `await` blocking the UI success state); failures are logged but don't break the "enquiry sent" toast.
+5. **Deploy** `send-transactional-email`, `process-email-queue`, `handle-email-unsubscribe`, `handle-email-suppression`.
 
-## Verification
+## Test plan
 
-After the migration:
-1. Re-submit the enquiry form on Chapmans as Fred Bloggs — expect success state, no 401.
-2. Confirm the row appears in `booking_enquiries`.
-3. Confirm anon still cannot SELECT from the table (RLS unchanged).
+After DNS is green:
+- Submit a new Fred Bloggs enquiry on `/booking/chapmans`.
+- Verify two `sent` rows appear in `email_send_log` (dedup by `message_id`) — one to the pupil address, one to `info@drive365.co.uk` (Richard's instructor email — note: this is the same as the Drive365 inbox, so Richard will see it there).
+- Visually inspect both templates render with Drive365 branding.
 
 ## Out of scope
 
-- No payment flow exists on the Chapmans course detail page (enquiry-only by design). Not changing that here. If you want a Book/Pay CTA added, that's a separate task.
+- Re-sending old enquiries that already failed silently.
+- Editing the instructor's email address (Ken D / Richard both use `info@drive365.co.uk` — that's fine for now; if individual instructor inboxes are wanted later, that's a separate change).
+- Auth emails (signup/reset) — untouched.
+
+## Question for you before I build
+
+Which sender domain do you want to use — re-verify **notify.drive365.co.uk**, or switch to a different subdomain?
