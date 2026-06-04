@@ -24,26 +24,84 @@ export function AddRowModal({
 }
 
 export function EditRowModal({
-  initialLabel, initialValue, onClose, onSave,
-}: { initialLabel: string; initialValue: string; onClose: () => void; onSave: (label: string, value: string) => void }) {
+  initialLabel, initialValue, fieldType, lockLabel, onClose, onSave,
+}: {
+  initialLabel: string;
+  initialValue: string;
+  fieldType?: "text" | "textarea" | "number" | "money" | "date" | "bool" | "csv";
+  lockLabel?: boolean;
+  onClose: () => void;
+  onSave: (label: string, value: string) => void | Promise<void>;
+}) {
   const [label, setLabel] = useState(initialLabel);
-  const [value, setValue] = useState(initialValue);
+  const [value, setValue] = useState(initialValue === "—" ? "" : initialValue);
+  const [saving, setSaving] = useState(false);
+
+  const inputEl = (() => {
+    if (fieldType === "textarea") {
+      return (
+        <textarea
+          style={{ ...modalInputStyle, minHeight: 80, fontFamily: "inherit" }}
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          autoFocus
+        />
+      );
+    }
+    if (fieldType === "bool") {
+      return (
+        <select style={modalInputStyle} value={value} onChange={(e) => setValue(e.target.value)} autoFocus>
+          <option value="">—</option>
+          <option value="Yes">Yes</option>
+          <option value="No">No</option>
+        </select>
+      );
+    }
+    const inputType =
+      fieldType === "date" ? "date" :
+      fieldType === "number" || fieldType === "money" ? "number" :
+      "text";
+    // Strip non-numeric prefix for money so the date/number input is valid
+    const cleaned = fieldType === "money" ? value.replace(/[^\d.\-]/g, "") : value;
+    return (
+      <input
+        type={inputType}
+        step={fieldType === "money" ? "0.01" : undefined}
+        style={modalInputStyle}
+        value={cleaned}
+        onChange={(e) => setValue(e.target.value)}
+        autoFocus
+      />
+    );
+  })();
+
   return (
     <ModalShell
       title="Edit row"
       onClose={onClose}
-      onSave={() => onSave(label.trim(), value.trim())}
-      saveDisabled={!label.trim()}
+      onSave={async () => {
+        setSaving(true);
+        try {
+          await onSave(label.trim(), value.trim());
+        } finally {
+          setSaving(false);
+        }
+      }}
+      saveDisabled={!label.trim() || saving}
     >
       <ModalField label="Label">
-        <input style={modalInputStyle} value={label} onChange={(e) => setLabel(e.target.value)} autoFocus />
+        <input
+          style={{ ...modalInputStyle, opacity: lockLabel ? 0.6 : 1 }}
+          value={label}
+          onChange={(e) => setLabel(e.target.value)}
+          disabled={lockLabel}
+        />
       </ModalField>
-      <ModalField label="Value">
-        <input style={modalInputStyle} value={value} onChange={(e) => setValue(e.target.value)} />
-      </ModalField>
+      <ModalField label="Value">{inputEl}</ModalField>
     </ModalShell>
   );
 }
+
 
 export function AddSectionModal({
   onClose, onSave,
