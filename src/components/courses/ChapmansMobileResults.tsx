@@ -269,12 +269,6 @@ export function ChapmansMobileResults({
 
           if (isGrid) {
             // Drive365 mobile parity: single-column flip cards.
-            const availableFromDate =
-              c.availableFrom instanceof Date
-                ? c.availableFrom
-                : c.availableFrom
-                ? new Date(c.availableFrom)
-                : undefined;
             return (
               <DynamicCourseCard
                 key={`${c.instructor.id}-${c.hours}-${c.bookableDate.toISOString()}-${i}`}
@@ -283,7 +277,7 @@ export function ChapmansMobileResults({
                 nextAvailable={c.bookableDate}
                 courseImageUrl={c.courseImageUrl ?? undefined}
                 isPopular={c.isPopular}
-                availableFrom={availableFromDate}
+                availableFrom={typeof c.availableFrom === "string" ? c.availableFrom : undefined}
                 distance={c.distance}
                 features={c.features}
                 isIntensive={c.isIntensive}
