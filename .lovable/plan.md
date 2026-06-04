@@ -1,22 +1,22 @@
 ## Problem
 
-Sections on `/` use inconsistent inner widths:
+Two rules in `src/index.css` are forcing square corners across the app:
 
-- `Drive365Home` blocks: `max-width: 1200px` centered
-- `HomepageLiveStats`: `max-width: 1200px` centered (already correct)
-- "What's Included" white card in `src/pages/Index.tsx`: no max-width — stretches to viewport minus 10% padding (≈1130px at 1255 viewport, but unbounded on wider screens)
-- `PupilReviewsSection`: no max-width and `padding: 48px 40px` — spans full viewport edge-to-edge
+- **Lines 838–841**: `.learner-app *:not(...) { border-radius: 0 !important }` — strips radius from virtually every element on the homepage (which is wrapped in `.learner-app`). Only `rounded-full`, avatars, badges, and two named opt-in classes survive. This overrides Tailwind `rounded-*` classes and inline `borderRadius` styles (including the 15px instructor card change).
+- **Line 567**: `--radius: 0rem;` inside the dark theme block — zeroes out shadcn's `rounded-lg/md/sm` tokens in dark mode.
 
-Result: each band visually has a different content width.
+## Changes
 
-## Fix (layout/CSS only, no copy or logic changes)
+1. **Delete the `.learner-app *` blanket rule** (lines 838–847, including the now-unneeded `.etg-rounded-tile` opt-in that only existed to escape the blanket rule). Keep the `.drive365-hero-rounded` rule since it sets a specific 1.5rem value.
+2. **Restore `--radius` in dark mode** — change line 567 from `--radius: 0rem;` to `--radius: 0.75rem;` to match the `:root` value.
+3. **Leave alone**: the `.instructor-portal .hero-banner-no-top-radius` opt-in (line 830) and all the `--portal-radius-*` tokens — those are intentional and scoped.
 
-1. **`src/pages/Index.tsx` — "What's Included" section (~line 335-341)**
-   Wrap the white card so it is centered at 1200px:
-   - Add `maxWidth: 1200, margin: "0 auto", width: "100%"` to the white card `<div>` style.
+## Result
 
-2. **`src/components/home/PupilReviewsSection.tsx`**
-   - Change outer section padding from `48px 40px` to `48px 5%` (match other sections' horizontal rhythm).
-   - Wrap the inner header + grid in a `<div style={{ maxWidth: 1200, margin: "0 auto", width: "100%" }}>` so the content aligns with the rest of the page.
+- Homepage cards, badges, buttons, and the instructor cards (with the 15px radius you set) will render with their intended corners.
+- Dark mode regains default shadcn radius.
+- No layout, color, copy, or functionality changes.
 
-No other components, copy, click handlers, data, or mobile layouts are touched.
+## Files
+
+- `src/index.css` — two edits described above.
