@@ -1727,7 +1727,31 @@ export default function Courses({ restrictToInstructorIds, title: titleProp, emb
             ) : (
               <>
                 {/* Selected date header */}
-                {isListMode ? (
+                {isChapmansMobile ? (
+                  <ChapmansMobileResults
+                    courses={filteredCourses.slice(0, mobileVisibleCount).map((c) => {
+                      const rate = resolvedRateFor(c.instructor) ?? Number(c.instructor.hourly_rate ?? 0);
+                      const skim = Number(c.instructor.school_skim_amount ?? 0);
+                      return {
+                        instructor: c.instructor,
+                        hours: c.hours,
+                        bookableDate: c.bookableDate,
+                        isIntensive: c.isIntensive,
+                        distance: c.distance,
+                        price: c.hours * rate + skim,
+                        discountedPrice: c.discountedPrice,
+                      };
+                    })}
+                    totalCount={filteredCourses.length}
+                    selectedDate={selectedDate}
+                    searchedAreaName={searchedAreaName}
+                    viewMode={viewMode}
+                    setViewMode={setViewMode}
+                    sortBy={sortBy}
+                    setSortBy={setSortBy}
+                    userLocation={userLocation}
+                  />
+                ) : isListMode ? (
                   <>
                     <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                       <div
