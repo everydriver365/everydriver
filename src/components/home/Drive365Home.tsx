@@ -347,12 +347,12 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
           .d365-feat p { font-size: 14px; line-height: 1.5; color: #4B5563; margin: 0; }
           .d365-feat-btn { width: 100%; height: 34px; background: #0F2044; color: #FFFFFF; border: none; border-radius: 2px; padding: 0 12px; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; cursor: pointer; font-family: inherit; transition: background 120ms ease; display: flex; align-items: center; justify-content: center; margin-top: 0; }
           .d365-feat-btn:hover { background: #1A3370; }
-          .d365-feat-btn--red { background: #D12E2E; }
-          .d365-feat-btn--red:hover { background: #B02020; }
-          .d365-feat-btn--blue { background: #1A6FD4; }
-          .d365-feat-btn--blue:hover { background: #1558A8; }
-          .d365-feat-btn--dark { background: #0A0E27; }
-          .d365-feat-btn--dark:hover { background: #1A1F3D; }
+          .d365-feat-btn--red { background: #3082cf; }
+          .d365-feat-btn--red:hover { background: #2b6cb0; }
+          .d365-feat-btn--blue { background: #3082cf; }
+          .d365-feat-btn--blue:hover { background: #2b6cb0; }
+          .d365-feat-btn--dark { background: #3082cf; }
+          .d365-feat-btn--dark:hover { background: #2b6cb0; }
           .d365-spacer { background: #EAF0FF; height: 40px; border-radius: 4px; width: 100%; }
           .d365-why-wrap { background: #FFFFFF; padding: 80px 24px 56px; display: flex; justify-content: center; }
           .d365-why { width: 100%; max-width: 1200px; display: grid; grid-template-columns: 30% 70%; align-items: start; }
@@ -433,7 +433,7 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
                 <h3>Intensive Courses</h3>
                 <p>Briefly and concisely explain what you do for your audience.</p>
                 <Link to="/courses?type=intensive">
-                  <button type="button" className="d365-feat-btn d365-feat-btn--red bg-[#3182ce]">Read more</button>
+                  <button type="button" className="d365-feat-btn d365-feat-btn--red">Read more</button>
                 </Link>
               </div>
               <div className="d365-feat">
@@ -459,7 +459,7 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
                   <h3>Weekly Lessons</h3>
                   <p>Briefly and concisely explain what you do for your audience.</p>
                   <Link to="/courses?type=weekly">
-                    <button type="button" className="d365-feat-btn d365-feat-btn--dark bg-[#3082cf]">Read more</button>
+                    <button type="button" className="d365-feat-btn d365-feat-btn--dark">Read more</button>
                   </Link>
               </div>
             </div>

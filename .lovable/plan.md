@@ -1,19 +1,17 @@
-## Mirror Drive365 homepage into EveryDriver
+## Problem
 
-Scope confirmed: DSM stays for instructors/schools/admin. EveryDriver is learner-only. Drive365 is being abandoned.
+The previous edits added `bg-[#3082cf]` to the three "Read more" buttons (Intensive, Semi-Intensive, Weekly Lessons) in `src/components/home/Drive365Home.tsx`, but the buttons still render in their original red/blue/dark navy colors.
 
-### Changes
+The cause: the same file contains an inline `<style>` block defining `.d365-feat-btn--red`, `.d365-feat-btn--blue`, and `.d365-feat-btn--dark` with hardcoded backgrounds (`#D12E2E`, `#1A6FD4`, `#0A0E27`). That stylesheet loads after Tailwind's utilities, so the modifier classes win over `bg-[#3082cf]`.
 
-1. **`src/pages/everydriver/Index.tsx`** — replace entire file with a one-line re-export so EveryDriver `/` renders the Drive365 homepage live and stays in sync forever:
-   ```ts
-   export { default } from "@/pages/Index";
-   ```
+## Fix
 
-2. **`src/pages/Index.tsx`** — rebrand visible learner copy "Drive365" → "EveryDriver" (headings, body text, franchise CTA blocks around lines 892 and 946). Change `source="drive365"` analytics prop to `source="everydriver"`. Leave asset import variable names and `/drive365/franchise` link alone (still works).
+In `src/components/home/Drive365Home.tsx`, update the inline CSS for all three modifier classes so each "Read more" button uses `#3082cf` with a slightly darker hover:
 
-3. **`src/components/home/Drive365Home.tsx`** — same visible-text sweep, "Drive365" → "EveryDriver".
+- `.d365-feat-btn--red`  → background `#3082cf`, hover `#2b6cb0`
+- `.d365-feat-btn--blue` → background `#3082cf`, hover `#2b6cb0`
+- `.d365-feat-btn--dark` → background `#3082cf`, hover `#2b6cb0`
 
-### Out of scope
-- DSM portals (instructor, school, admin chrome) — untouched
-- `/drive365/*` routes — kept as working aliases so old links don't 404
-- The old bespoke EveryDriver homepage file contents — replaced by re-export
+Also remove the now-redundant `bg-[#3082cf]` utility from the three button `className`s to keep the markup clean.
+
+No other files or behaviors change.
