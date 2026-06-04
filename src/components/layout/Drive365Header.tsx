@@ -115,7 +115,7 @@ export function Drive365Header() {
                       {link.label}
                       <ChevronDown
                         className={cn(
-                          "h-3.5 w-3.5 transition-transform lg:text-[#9CA3AF]",
+                          "h-3.5 w-3.5 transition-transform text-white/70",
                           coursesOpen && "rotate-180"
                         )}
                       />
