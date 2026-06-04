@@ -1612,6 +1612,7 @@ export default function Courses({ restrictToInstructorIds, title: titleProp, emb
               )}
             </div>
           </div>
+          )}
 
           {/* Right Column: Course Tiles */}
           <div className="flex-1">
