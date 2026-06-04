@@ -320,15 +320,15 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
       {/* Desktop-only styles for the new Drive 365 home hero & Why section. */}
       <style>{`
         @media (min-width: 768px) {
-          .d365-hero-wrap { background: #FFFFFF; padding: 56px 24px; display: flex; justify-content: center; }
+          .d365-hero-wrap { background: #FFFFFF; padding: 48px 48px 36px; display: flex; justify-content: center; }
           .d365-hero { width: 100%; max-width: 1200px; display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: stretch; }
           .d365-hero-photo { position: relative; background: #9FD3E8; border-radius: 4px; overflow: hidden; min-height: 540px; }
           .d365-hero-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
           .d365-hero-right { display: flex; flex-direction: column; gap: 16px; }
           .d365-hero-right { display: flex; flex-direction: column; gap: 16px; }
-          .d365-welcome { background: #EAF0FF; padding: 24px; border-radius: 4px; }
-          .d365-welcome h1 { font-size: 44px; line-height: 1.05; font-weight: 800; color: #0A0A0A; text-transform: uppercase; letter-spacing: -0.5px; margin: 0 0 14px; font-family: Inter, "Helvetica Neue", system-ui, sans-serif; }
-          .d365-welcome p { font-size: 15px; line-height: 1.55; color: #4B5563; margin: 0; }
+          .d365-welcome { background: #FFFFFF; padding: 24px; border-radius: 4px; }
+          .d365-welcome h1 { font-size: 40px; line-height: 1.1; font-weight: 800; color: #0A1628; letter-spacing: -1px; margin: 0 0 14px; font-family: Inter, "Helvetica Neue", system-ui, sans-serif; }
+          .d365-welcome p { font-size: 15px; line-height: 1.65; color: #6B7280; margin: 0; }
           .d365-welcome p b { color: #0A0A0A; font-weight: 700; }
           .d365-cta { width: 100%; background: #0F2044; color: #FFFFFF; border: none; border-radius: 2px; padding: 16px 20px; font-size: 14px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 10px; transition: background 120ms ease; font-family: inherit; }
           .d365-cta:hover { background: #1A3370; }
@@ -392,11 +392,14 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
           </div>
           <div className="d365-hero-right">
             <div className="d365-welcome text-center">
-              <h1>Welcome to Drive 365</h1>
+              <div style={{ fontSize: 10, fontWeight: 700, color: "#E8641A", textTransform: "uppercase", letterSpacing: "1.5px", marginBottom: 8 }}>
+                Find your instructor
+              </div>
+              <h1>Welcome to EveryDriver</h1>
               <p className="mx-0 py-0">
-                Search, compare and book direct with independent, instructors  in the UK.
+                Search, compare and book direct with independent instructors in the UK.
                 <br />
-                Book through Drive 365 for a range of exclusive benefits when you book.
+                Book through EveryDriver for a range of exclusive benefits when you book.
               </p>
               <PostcodeSearch />
               <div
