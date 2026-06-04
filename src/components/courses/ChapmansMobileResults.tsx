@@ -509,6 +509,7 @@ export function ChapmansMobileResults({
                     View
                   </button>
                 </div>
+                )}
               </div>
             </div>
           );
