@@ -1747,6 +1747,7 @@ export default function Courses({ restrictToInstructorIds, title: titleProp, emb
                     hasMore={mobileVisibleCount < filteredCourses.length}
                     onLoadMore={handleLoadMore}
                     remainingCount={filteredCourses.length - mobileVisibleCount}
+                    learnerPostcode={searchedPostcode}
                   />
                 ) : isListMode ? (
                   <>
