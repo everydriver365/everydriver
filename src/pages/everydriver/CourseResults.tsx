@@ -16,14 +16,14 @@ interface CourseResultsProps {
   showTypeSwitcher?: boolean;
   /**
    * Embeddable, unbranded variant for iframing on third-party sites.
-   * Removes MainLayout chrome (Drive365 header/footer), goes transparent,
+   * Removes MainLayout chrome (header/footer), goes transparent,
    * posts iframe height to parent, and breaks booking navigation out of
    * the iframe so payment redirects (Square/Klarna/Clearpay/GoCardless)
-   * run on the top-level drive365.co.uk window first-party.
+   * run on the top-level everydriver.co window first-party.
    *
    * Mount example for host pages:
    *   <iframe
-   *     src="https://drive365.co.uk/embed/courses"
+   *     src="https://everydriver.co/embed/courses"
    *     style="width:100%;border:0;min-height:1200px"
    *     allow="payment *; clipboard-write"
    *     referrerpolicy="no-referrer-when-downgrade"
@@ -125,7 +125,7 @@ export default function CourseResults({
         document.body.scrollHeight,
       );
       try {
-        window.parent?.postMessage({ type: "drive365:embed:height", height: h }, "*");
+        window.parent?.postMessage({ type: "everydriver:embed:height", height: h }, "*");
       } catch { /* ignore */ }
     };
     const schedule = () => {
