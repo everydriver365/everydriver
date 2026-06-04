@@ -683,7 +683,7 @@
      descendants so legacy inline fontFamily styles can't drift. */
   .ios-instructor,
   .ios-instructor * {
-    font-family: Poppins, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', Inter, system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-family: Inter, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   }
 
   /* Preserve explicit monospace opt-ins (postcodes, codes, vehicle reg) */
