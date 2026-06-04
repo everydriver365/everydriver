@@ -74,15 +74,14 @@ export function Drive365Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full">
-      {/* Main bar — navy on mobile, white on desktop */}
+      {/* Main bar — logo blue #142040 */}
       <div
         className={cn(
-          "w-full bg-primary transition-shadow duration-200",
-          "lg:bg-white",
+          "w-full bg-[#142040] transition-shadow duration-200",
           location.pathname === "/" || location.pathname === "/drive365"
-            ? "lg:border-b-[3px] lg:border-b-[#D12E2E]"
-            : "lg:border-b lg:border-[#EAF0FF]",
-          scrolled && "lg:shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
+            ? "border-b-[3px] border-b-[#D12E2E]"
+            : "border-b border-[#1a2b52]",
+          scrolled && "shadow-[0_2px_8px_rgba(0,0,0,0.2)]"
         )}
       >
         <div className="mx-auto flex h-[76px] lg:h-[68px] items-center px-[60px] max-lg:px-5 lg:px-6">
