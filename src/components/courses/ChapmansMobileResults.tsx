@@ -386,7 +386,7 @@ export function ChapmansMobileResults({
                     display: "flex",
                     alignItems: "center",
                     gap: 6,
-                    marginBottom: 8,
+                    marginBottom: isGrid ? 0 : 8,
                     minWidth: 0,
                   }}
                 >
@@ -395,8 +395,8 @@ export function ChapmansMobileResults({
                       src={c.instructor.profile_image_url}
                       alt=""
                       style={{
-                        width: 24,
-                        height: 24,
+                        width: isGrid ? 20 : 24,
+                        height: isGrid ? 20 : 24,
                         borderRadius: 9999,
                         objectFit: "cover",
                         flexShrink: 0,
@@ -405,8 +405,8 @@ export function ChapmansMobileResults({
                   ) : (
                     <div
                       style={{
-                        width: 24,
-                        height: 24,
+                        width: isGrid ? 20 : 24,
+                        height: isGrid ? 20 : 24,
                         borderRadius: 9999,
                         background: "#1E4D9B",
                         color: "#FFF",
@@ -423,7 +423,7 @@ export function ChapmansMobileResults({
                   )}
                   <div
                     style={{
-                      fontSize: 11,
+                      fontSize: isGrid ? 10 : 11,
                       fontWeight: 600,
                       color: "#0A0E27",
                       overflow: "hidden",
@@ -436,7 +436,8 @@ export function ChapmansMobileResults({
                   </div>
                 </div>
 
-                {/* Row 3 — payment + CTA */}
+                {/* Row 3 — payment + CTA (hidden in grid; whole card is clickable) */}
+                {!isGrid && (
                 <div
                   style={{
                     display: "flex",
