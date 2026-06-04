@@ -1,47 +1,52 @@
-## Goal
+# Admin Instructor Detail Page
 
-When a pupil submits a booking enquiry, send two emails:
-1. **Confirmation** to the pupil ("We've received your enquiry, the instructor will be in touch")
-2. **Notification** to the instructor with the pupil's details so they can follow up
+A new read/edit summary page at `/admin/instructors/:id` showing one instructor across a hero card + dynamic section cards. No existing pages, components, or routes are modified.
 
-Currently nothing emails out — the enquiry is only inserted into `booking_enquiries`.
+## Files to add
 
-## Prerequisite: fix sender domain
+1. `src/pages/admin/AdminInstructorDetail.tsx` — page shell (top bar, 5‑col grid, data fetch, mutations).
+2. `src/components/admin/instructor-detail/InstructorHeroCard.tsx` — avatar, name, stats strip, status/tier/email/phone/ADI/DBS/Insurance rows.
+3. `src/components/admin/instructor-detail/ActionsStack.tsx` — three stacked cards (Actions, Admin, Navigate). Admin card hidden unless `useAdminAuth().isAdmin`.
+4. `src/components/admin/instructor-detail/SectionCard.tsx` — generic white card with `#0A2B6B` header, field rows with hover edit/✕, "+ Row" footer.
+5. `src/components/admin/instructor-detail/SectionColumn.tsx` — vertical stack of SectionCards + dashed "+ Add section" button.
+6. `src/components/admin/instructor-detail/Badge.tsx` — 6 colour variants (green/red/blue/amber/purple/grey) per spec.
+7. `src/components/admin/instructor-detail/modals/` — `EditProfileModal.tsx`, `AddSectionModal.tsx`, `AddRowModal.tsx`, `EditRowModal.tsx` (shared overlay shell).
+8. `src/components/admin/instructor-detail/defaultSections.ts` — builds the 9 default section configs from the instructor record + related counts.
 
-The configured sender `notify.drive365.co.uk` is in **Failed** status (DNS provisioning timed out). Nothing will deliver until that's fixed. Two options:
+## File to edit
 
-- **A.** Re-run DNS setup for `notify.drive365.co.uk` (add the NS records at the registrar, then verify). Keeps the existing branded sender.
-- **B.** Use a different verified subdomain (e.g. `mail.drive365.co.uk`).
+- `src/routes/adminRoutes.tsx` — add one lazy import + one `<Route path="/admin/instructors/:id" …>` wrapped in `ProtectedAdminRoute`. No other edits.
 
-I'll need you to pick one and complete DNS before emails can actually send. Scaffolding and code can be built in parallel.
+## Data
 
-## What I'll build
+Single page fetch by `:id`:
+- `instructors` row (all fields used by the spec already exist: `adi_badge_number`, `adi_badge_expiry`, `dbs_certificate_expiry`, `car_insurance_expiry`, `car_make/model/...`, `personal_website_url`, `facebook_url`, `instagram_url`, `hourly_rate`, `radius_miles`, `cancellation_policy_*`, `booking_mode`, `booking_advance_days`, `instructor_grade`, `special_skills`, `bonus_earned`, etc.).
+- Counts via parallel queries: active pupils (`pupils` where `instructor_id=… AND deleted_at IS NULL`), total pupils all‑time, complaints (if `complaints` table present — otherwise empty‑state), loyalty points (sum from `pupils.reward_points` or fallback empty), passes this year (`test_results` where `result='pass'`).
+- Compliance badges computed client‑side: `green` if expiry > 90 days, `amber` if ≤ 90 days, `red` if past.
+- Reviews/rating: reuse existing `useInstructorRating` hook if available, else show empty stars.
+- Live data only — no hardcoded fallbacks; if a count returns null, show "—".
 
-1. **Scaffold Lovable transactional email infrastructure** (`send-transactional-email` edge function + queue + suppression + unsubscribe page).
-2. **Two new React Email templates** under `supabase/functions/_shared/transactional-email-templates/`:
-   - `enquiry-confirmation.tsx` — to pupil. Subject: "We've passed your enquiry to {instructor name}". Body: thanks, summary of what they asked about (course/instructor), what happens next, instructor contact line.
-   - `enquiry-instructor-notification.tsx` — to instructor. Subject: "New enquiry from {pupil name}". Body: pupil name, email, phone, postcode, course interest, message, link to reply.
-   - Branded with Drive365 tokens (read from `src/index.css`).
-3. **Register both templates** in `_shared/transactional-email-templates/registry.ts`.
-4. **Wire the send into the existing RPC path.** The enquiry now goes through `submit_booking_enquiry` (SECURITY DEFINER). After the RPC returns the new enquiry id, the client (`EnquiryFlow.tsx` and `EnquiryOnlyView.tsx`) will call `supabase.functions.invoke("send-transactional-email", …)` twice:
-   - once with `templateName: "enquiry-confirmation"`, recipient = pupil email, `idempotencyKey: enquiry-confirm-<id>`
-   - once with `templateName: "enquiry-instructor-notification"`, recipient = instructor email (looked up from `public_instructors` by `instructor_id` on the page), `idempotencyKey: enquiry-notify-<id>`
-   Both invocations are fire-and-forget (no `await` blocking the UI success state); failures are logged but don't break the "enquiry sent" toast.
-5. **Deploy** `send-transactional-email`, `process-email-queue`, `handle-email-unsubscribe`, `handle-email-suppression`.
+Mutations:
+- Edit Profile modal → `supabase.from('instructors').update({...}).eq('id', id)` then refetch.
+- Add/Edit/Remove section + row → local React state only (spec says no persistence yet).
 
-## Test plan
+## Layout / styling
 
-After DNS is green:
-- Submit a new Fred Bloggs enquiry on `/booking/chapmans`.
-- Verify two `sent` rows appear in `email_send_log` (dedup by `message_id`) — one to the pupil address, one to `info@drive365.co.uk` (Richard's instructor email — note: this is the same as the Drive365 inbox, so Richard will see it there).
-- Visually inspect both templates render with Drive365 branding.
+- Hard‑coded inline styles per spec (colours, paddings, font‑sizes). No theme token changes.
+- Desktop only — page wrapped in `<div className="hidden md:block">` with a small "Open on desktop" notice on mobile so we never affect the mobile portal.
+- Top bar `#0A2B6B` with Drive 365 logo block + breadcrumb + Edit/Suspend buttons (Suspend hidden for non‑admins, though the route is already admin‑gated).
+- 5‑col grid `220px 1fr 1fr 1fr` (spec says five, lists four; will use the four columns described: hero + 3 section columns. Gap 14px, bg `#F3F4F6`, padding `16px 24px`).
+- Default sections distributed per spec:
+  - Col 2: Booking flow, Websites & social, Payments
+  - Col 3: Pupils allocated, Loyalty points, Complaints & flags
+  - Col 4: Instructor skills, Teaching vehicle, Course settings
 
-## Out of scope
+## Out of scope (explicit)
 
-- Re-sending old enquiries that already failed silently.
-- Editing the instructor's email address (Ken D / Richard both use `info@drive365.co.uk` — that's fine for now; if individual instructor inboxes are wanted later, that's a separate change).
-- Auth emails (signup/reset) — untouched.
+- No changes to existing `AdminInstructorProfile.tsx` or `/admin/network-instructors`.
+- No mobile layout, no dark mode.
+- Custom sections/rows are session‑local; persistence deferred to a follow‑up.
 
-## Question for you before I build
+## Open question
 
-Which sender domain do you want to use — re-verify **notify.drive365.co.uk**, or switch to a different subdomain?
+- Spec mentions "DSM Tier (Platinum/Gold/Silver/Bronze)" but no tier column exists on `instructors`. Plan: show badge from `instructor_grade` if set (e.g. "Grade A/B") and otherwise render "—". Confirm if you'd like a new `dsm_tier` column added instead (would require a migration).
