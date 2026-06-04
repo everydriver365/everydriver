@@ -51,7 +51,7 @@ export function useRouteLogo() {
 
     if (whitelabel) {
       return {
-        logo: whitelabel.logoPath || drive365Logo,
+        logo: whitelabel.logoPath || learnerLogo,
         logoAlt: whitelabel.brandName,
         logoText: whitelabel.brandName,
         homeLink: "/",
@@ -70,10 +70,10 @@ export function useRouteLogo() {
     }
 
     return {
-      logo: isDrive365Route ? drive365Logo : dsmLogo,
-      logoAlt: isDrive365Route ? "Drive365" : "DSM",
+      logo: isDrive365Route ? learnerLogo : dsmLogo,
+      logoAlt: isDrive365Route ? "EveryDriver" : "DSM",
       logoText: isDrive365Route ? null : "Driving School Manager",
-      homeLink: isDrive365Route ? "/drive365" : "/instructor-app",
+      homeLink: isDrive365Route ? "/" : "/instructor-app",
       isDrive365: isDrive365Route,
     };
   }, [pathname]);
