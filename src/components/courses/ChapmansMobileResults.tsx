@@ -214,47 +214,6 @@ export function ChapmansMobileResults({
 
       </div>
 
-      {/* Section 4 — Pass Promise strip */}
-      {!passPromiseDismissed && (
-        <div
-          style={{
-            margin: "0 16px 10px",
-            background: "#0A2B6B",
-            borderRadius: 8,
-            padding: "8px 12px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: 8,
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
-            <ShieldCheck size={14} color="#FFF" style={{ flexShrink: 0 }} />
-            <div style={{ minWidth: 0 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: "#FFF" }}>Pass Promise</div>
-              <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)" }}>
-                Re-test free if you don't pass
-              </div>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={dismissPromise}
-            aria-label="Dismiss"
-            style={{
-              background: "transparent",
-              border: "none",
-              color: "rgba(255,255,255,0.4)",
-              fontSize: 18,
-              cursor: "pointer",
-              padding: "0 4px",
-              lineHeight: 1,
-            }}
-          >
-            ×
-          </button>
-        </div>
-      )}
 
       {/* Section 5 — Course cards (list: compact rows · grid: Drive365 flip cards stacked) */}
       <div
@@ -587,6 +546,48 @@ export function ChapmansMobileResults({
           </div>
         )}
       </div>
+
+      {/* Section 4 — Pass Promise strip */}
+      {!passPromiseDismissed && (
+        <div
+          style={{
+            margin: "16px 16px 10px",
+            background: "#0A2B6B",
+            borderRadius: 8,
+            padding: "8px 12px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 8,
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+            <ShieldCheck size={14} color="#FFF" style={{ flexShrink: 0 }} />
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "#FFF" }}>Pass Promise</div>
+              <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)" }}>
+                Re-test free if you don't pass
+              </div>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={dismissPromise}
+            aria-label="Dismiss"
+            style={{
+              background: "transparent",
+              border: "none",
+              color: "rgba(255,255,255,0.4)",
+              fontSize: 18,
+              cursor: "pointer",
+              padding: "0 4px",
+              lineHeight: 1,
+            }}
+          >
+            ×
+          </button>
+        </div>
+      )}
     </div>
   );
 }
