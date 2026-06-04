@@ -161,43 +161,66 @@ export default function PublicBookingPortal() {
               pointerEvents: "none",
             }}
           />
-          <div
-            style={{
-              position: "relative",
-              display: "inline-flex",
-              gap: 2,
-              marginBottom: 14,
-            }}
-          >
-            <span
+          {page?.logo_url ? (
+            <div
               style={{
-                background: "rgba(0,0,0,0.25)",
-                color: "#FFF",
-                padding: "3px 8px",
-                borderRadius: 3,
-                fontWeight: 800,
-                fontSize: 12,
-                lineHeight: 1.2,
-                letterSpacing: 0.5,
+                position: "relative",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                background: "rgba(255,255,255,0.95)",
+                borderRadius: 10,
+                padding: "6px 12px",
+                marginBottom: 14,
+                boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
               }}
             >
-              DRIVE
-            </span>
-            <span
+              <img
+                src={page.logo_url}
+                alt={page?.name ?? "Driving school"}
+                style={{ height: 28, width: "auto", objectFit: "contain", display: "block" }}
+              />
+            </div>
+          ) : (
+            <div
               style={{
-                background: "#FFF",
-                color: "#E8641A",
-                padding: "3px 8px",
-                borderRadius: 3,
-                fontWeight: 800,
-                fontSize: 12,
-                lineHeight: 1.2,
-                letterSpacing: 0.5,
+                position: "relative",
+                display: "inline-flex",
+                gap: 2,
+                marginBottom: 14,
               }}
             >
-              365
-            </span>
-          </div>
+              <span
+                style={{
+                  background: "rgba(0,0,0,0.25)",
+                  color: "#FFF",
+                  padding: "3px 8px",
+                  borderRadius: 3,
+                  fontWeight: 800,
+                  fontSize: 12,
+                  lineHeight: 1.2,
+                  letterSpacing: 0.5,
+                }}
+              >
+                DRIVE
+              </span>
+              <span
+                style={{
+                  background: "#FFF",
+                  color: "#E8641A",
+                  padding: "3px 8px",
+                  borderRadius: 3,
+                  fontWeight: 800,
+                  fontSize: 12,
+                  lineHeight: 1.2,
+                  letterSpacing: 0.5,
+                }}
+              >
+                365
+              </span>
+            </div>
+          )}
+
           <h1
             style={{
               position: "relative",
