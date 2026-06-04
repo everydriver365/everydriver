@@ -328,7 +328,7 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
           .d365-hero-right { display: flex; flex-direction: column; gap: 16px; }
           .d365-welcome { background: #EAF0FF; padding: 24px; border-radius: 4px; }
           .d365-welcome-eyebrow { font-size: 10px; font-weight: 700; color: #E8641A; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; font-family: Inter, "Helvetica Neue", system-ui, sans-serif; }
-          .d365-welcome h1 { font-size: 40px; line-height: 1.1; font-weight: 800; color: #0A1628; letter-spacing: -1px; margin: 0 0 14px; font-family: Inter, "Helvetica Neue", system-ui, sans-serif; }
+          .d365-welcome h1 { font-size: 40px; line-height: 1.1; font-weight: 800; color: #0A1628; letter-spacing: -1.5px; margin: 0 0 14px; font-family: Inter, "Helvetica Neue", system-ui, sans-serif; }
           .d365-welcome p { font-size: 15px; line-height: 1.55; color: #4B5563; margin: 0; }
           .d365-welcome p b { color: #0A0A0A; font-weight: 700; }
           .d365-cta { width: 100%; background: #0F2044; color: #FFFFFF; border: none; border-radius: 2px; padding: 16px 20px; font-size: 14px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 10px; transition: background 120ms ease; font-family: inherit; }
@@ -393,36 +393,40 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
           </div>
           <div className="d365-hero-right">
             <div className="d365-welcome text-center">
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 20 }}>
+                <div style={{ fontSize: 22, fontWeight: 900, color: "#0A1628", letterSpacing: -0.5, lineHeight: 1 }}>
+                  Every<span style={{ color: "#0070C0" }}>Driver</span>
+                </div>
+                <div style={{ display: "flex", gap: 5, marginTop: 4 }}>
+                  <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#D12E2E" }} />
+                  <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#F59E0B" }} />
+                  <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#22C55E" }} />
+                </div>
+              </div>
               <div className="d365-welcome-eyebrow">Find your instructor</div>
-              <h1>Welcome to EveryDriver</h1>
-              <p className="mx-0 py-0">
-                Search, compare and book direct with independent, instructors  in the UK.
-                <br />
-                Book through EveryDriver for a range of exclusive benefits when you book.
+              <h1>See who's teaching you before you book.</h1>
+              <p className="mx-0 py-0" style={{ fontSize: 14, color: "#6B7280", lineHeight: 1.65, maxWidth: 420, margin: "0 auto" }}>
+                Every instructor verified. Real reviews. Real pass rates. You choose who teaches you.
               </p>
               <PostcodeSearch />
               <div
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  justifyContent: "flex-start",
+                  justifyContent: "center",
                   gap: 8,
-                  marginTop: 8,
+                  marginTop: 12,
                 }}
               >
-                <span style={{ color: "#9CA3AF", fontSize: 9, fontWeight: 500, whiteSpace: "nowrap" }}>
+                <span style={{ color: "#9CA3AF", fontSize: 11, fontWeight: 500 }}>
                   Book now, pay later with
                 </span>
-                <img
-                  src={logoKlarna}
-                  alt="Klarna"
-                  style={{ maxHeight: 16, width: "auto", objectFit: "contain" }}
-                />
-                <img
-                  src={logoClearpay}
-                  alt="Clearpay"
-                  style={{ maxHeight: 16, width: "auto", objectFit: "contain" }}
-                />
+                <span style={{ background: "#FFB3C7", borderRadius: 5, padding: "3px 10px", fontFamily: "system-ui, sans-serif", fontSize: 11, fontWeight: 900, color: "#17120F" }}>
+                  Klarna
+                </span>
+                <span style={{ background: "#B2FCE4", borderRadius: 5, padding: "3px 10px", fontFamily: "system-ui, sans-serif", fontSize: 11, fontWeight: 900, color: "#000E18" }}>
+                  Clearpay
+                </span>
               </div>
             </div>
             <div className="d365-feat-row">
