@@ -328,7 +328,7 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
           .d365-hero-right { display: flex; flex-direction: column; gap: 16px; }
           .d365-welcome { background: #EAF0FF; padding: 24px; border-radius: 4px; }
           .d365-welcome-eyebrow { font-size: 10px; font-weight: 700; color: #E8641A; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; font-family: Inter, "Helvetica Neue", system-ui, sans-serif; }
-          .d365-welcome h1 { font-size: 40px; line-height: 1.1; font-weight: 800; color: #0A1628; letter-spacing: -1px; margin: 0 0 14px; font-family: Inter, "Helvetica Neue", system-ui, sans-serif; }
+          .d365-welcome h1 { font-size: 40px; line-height: 1.1; font-weight: 800; color: #0A1628; letter-spacing: -1.5px; margin: 0 0 14px; font-family: Inter, "Helvetica Neue", system-ui, sans-serif; }
           .d365-welcome p { font-size: 15px; line-height: 1.55; color: #4B5563; margin: 0; }
           .d365-welcome p b { color: #0A0A0A; font-weight: 700; }
           .d365-cta { width: 100%; background: #0F2044; color: #FFFFFF; border: none; border-radius: 2px; padding: 16px 20px; font-size: 14px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 10px; transition: background 120ms ease; font-family: inherit; }
