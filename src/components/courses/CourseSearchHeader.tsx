@@ -1,4 +1,6 @@
+import type React from "react";
 import { motion } from "framer-motion";
+
 import { Search, ChevronDown, Loader2, MapPin, Map as MapIcon, Zap, SlidersHorizontal } from "lucide-react";
 import { PostcodeAutocomplete } from "@/components/PostcodeAutocomplete";
 
