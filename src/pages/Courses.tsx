@@ -8,6 +8,7 @@ import { MainLayout } from "@/components/layout/MainLayout";
 import { CourseSearchHeader, type CourseFilterId } from "@/components/courses/CourseSearchHeader";
 import { DynamicCourseCard } from "@/components/DynamicCourseCard";
 import { CourseTableList } from "@/components/courses/CourseTableList";
+import { ChapmansMobileResults } from "@/components/courses/ChapmansMobileResults";
 import { Edit2, SlidersHorizontal, ShieldCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
