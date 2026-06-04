@@ -1187,6 +1187,7 @@ export default function Courses({ restrictToInstructorIds, title: titleProp, emb
     (selectedLanguages.length > 0 ? 1 : 0);
 
   const isListMode = viewMode === "list";
+  const isChapmansMobile = searchVariant === "chapmans" && isMobile;
 
   const Wrapper: any = embedded ? "div" : MainLayout;
 
