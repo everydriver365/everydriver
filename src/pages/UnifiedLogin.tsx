@@ -37,7 +37,7 @@ export default function UnifiedLogin() {
         descriptor="For pupils, parents and instructors"
         onSignIn={handleSignIn}
         onForgot={handleForgot}
-        className=""
+        className="rounded-none"
         googleSlot={
           <GoogleSignInButton
             redirectTo={`${window.location.origin}/auth/redirect`}
