@@ -193,7 +193,7 @@ export function Drive365Header() {
 
         {/* Mobile menu */}
         {mobileOpen && (
-          <div className="lg:hidden border-t border-white/10 bg-primary">
+          <div className="lg:hidden border-t border-white/10 bg-[#142040]">
             <div className="px-5 py-4 flex flex-col gap-1">
               {NAV_LINKS.map((link) => (
                 <Link
