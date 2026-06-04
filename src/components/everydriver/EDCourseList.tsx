@@ -270,7 +270,7 @@ export function EDCourseList({ courses }: EDCourseListProps) {
                     e.stopPropagation();
                     goTo(c);
                   }}
-                  className="w-full inline-flex items-center justify-center gap-1 rounded-[7px] bg-[#0070C0] text-white px-4 py-2 text-xs font-bold transition-colors hover:bg-[#005a9a]"
+                  className="w-full inline-flex items-center justify-center gap-1 rounded-[7px] bg-[#3182ce] text-white px-4 py-2 text-xs font-bold transition-colors hover:bg-[#2563a8]"
                 >
                   View
                   <ChevronRight className="h-3.5 w-3.5" />
