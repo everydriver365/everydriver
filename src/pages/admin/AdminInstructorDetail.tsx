@@ -250,12 +250,17 @@ export default function AdminInstructorDetail() {
             <div>
               <InstructorHeroCard instructor={instructor} passRate={passRate} activePupils={counts.activePupils} />
               <ActionsStack
-                instructorId={instructor.id}
                 isAdmin={isAdmin}
+                isSuspended={!instructor.is_active}
                 onEditProfile={() => setEditingProfile(true)}
                 onSuspend={handleSuspend}
                 onRemove={handleRemove}
-                onMessage={() => nav(`/admin/messages?instructor=${instructor.id}`)}
+                onMessage={() => setDrawer("message")}
+                onViewDiary={() => setDrawer("diary")}
+                onViewBookings={() => setDrawer("bookings")}
+                onViewReviews={() => setDrawer("reviews")}
+                onViewPayments={() => setDrawer("payments")}
+                onViewDocuments={() => setDrawer("documents")}
               />
             </div>
             <SectionColumn sections={col2} onChange={setCol2} onPersistField={persistField} />
