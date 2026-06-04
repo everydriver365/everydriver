@@ -551,7 +551,7 @@ function ChapmansMobileSearch({
 
 
   return (
-    <div className="md:hidden" style={{ background: "#F3F4F6", padding: "0 16px", marginBottom: 0 }}>
+    <div className="md:hidden" style={{ background: "transparent" }}>
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -559,10 +559,12 @@ function ChapmansMobileSearch({
         }}
         style={{
           background: "#FFFFFF",
-          borderRadius: "12px 12px 0 0",
-          padding: 14,
-          marginBottom: 0,
-          boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+          borderRadius: 16,
+          margin: "-32px 16px 0 16px",
+          padding: 16,
+          boxShadow: "0 4px 20px rgba(0,0,0,0.10)",
+          position: "relative",
+          zIndex: 2,
         }}
       >
         {/* Postcode input row */}
