@@ -85,7 +85,9 @@ export default function HomepageExtraSections() {
   const sideArticles = recentNews.slice(1, 3);
 
   return (
-    <section style={{ background: "#F6F6F8", padding: "32px 5%", display: "flex", flexDirection: "column", gap: 20 }}>
+    <section style={{ background: "#F6F6F8", padding: "32px 5%" }}>
+      <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
+
       {/* 1. Trust bar */}
       <div
         style={{
@@ -350,6 +352,8 @@ export default function HomepageExtraSections() {
           ))}
         </div>
       </div>
+      </div>
     </section>
   );
+
 }

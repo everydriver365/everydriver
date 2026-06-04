@@ -108,8 +108,9 @@ export default function SeeWhoIsTeaching() {
   if (loaded && instructors.length === 0) return null;
 
   return (
-    <section style={{ background: "#0A1628", padding: "48px 40px", width: "100%" }}>
-      <div style={{ maxWidth: 980, margin: "0 auto" }}>
+    <section style={{ background: "#0A1628", padding: "48px 5%", width: "100%" }}>
+      <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+
         <div style={{ textAlign: "center", marginBottom: 28 }}>
           <div style={{ fontSize: 10, fontWeight: 700, color: "#E8641A", textTransform: "uppercase", letterSpacing: "1.5px", marginBottom: 8 }}>
             Before you book

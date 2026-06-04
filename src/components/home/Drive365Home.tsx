@@ -483,7 +483,9 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
 
       {/* HomeCourses */}
       <section style={{ padding: "36px 5%", background: "#F6F6F8", width: "100%" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
         <div style={{ fontSize: 11, fontWeight: 700, color: "#1A6FD4", letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: 6 }}>
+
           Learning paths
         </div>
         <h2 style={{ fontSize: 28, fontWeight: 700, color: "#0A0E27", letterSpacing: -0.5, marginBottom: 8 }}>
@@ -544,7 +546,9 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
             </div>
           ))}
         </div>
+        </div>
       </section>
+
 
       {afterLearningPaths}
 
