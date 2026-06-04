@@ -16,7 +16,7 @@ export default function AdminInstructorDetail() {
   const { isAdmin } = useAdminAuth();
   const [instructor, setInstructor] = useState<Record<string, any> | null>(null);
   const [counts, setCounts] = useState<InstructorRelatedCounts>({
-    activePupils: null, totalPupilsAllTime: null, passesThisYear: null, totalLoyaltyPoints: null,
+    activePupils: null, totalPupilsAllTime: null, passesThisYear: null, totalLoyaltyPoints: null, openComplaints: null,
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
