@@ -4,6 +4,7 @@ import { MapPin, ChevronRight, Calendar, Award, Users, Heart, Star, Clock, Zap, 
 import { Button } from "@/components/ui/button";
 import { MainLayout } from "@/components/layout/MainLayout";
 import Drive365Home from "@/components/home/Drive365Home";
+import HomepageExtraSections from "@/components/home/HomepageExtraSections";
 import { Link, useNavigate } from "react-router-dom";
 import { SEOHead } from "@/components/SEOHead";
 import { IOSCourseCard } from "@/components/IOSCourseCard";
