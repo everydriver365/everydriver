@@ -132,7 +132,7 @@ export function EmailDomainSetupWizard({ domainFqdn = "notify.drive365.co.uk" }:
 
   return (
     <div className="space-y-6">
-      <AdminBackButton />
+      <AdminBackButton onClick={() => window.history.back()} />
 
       {/* Intro */}
       <Card>
