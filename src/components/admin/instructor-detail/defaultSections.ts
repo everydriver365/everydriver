@@ -95,6 +95,24 @@ export function buildDefaultSections(
       ],
     },
     {
+      id: newId(), title: "Compliance & docs", icon: "🛡",
+      rows: [
+        { id: newId(), label: "ADI badge no.", value: fmt(instructor.adi_badge_number), field: "adi_badge_number", type: "text" },
+        { id: newId(), label: "ADI badge expiry", value: fmtDateIso(instructor.adi_badge_expiry) || "—", field: "adi_badge_expiry", type: "date" },
+        { id: newId(), label: "ADI grade", value: fmt(instructor.adi_grade), field: "adi_grade", type: "text" },
+        { id: newId(), label: "Years exp (ADI)", value: instructor.years_experience_adi != null ? String(instructor.years_experience_adi) : "", field: "years_experience_adi", type: "number" },
+        { id: newId(), label: "DBS issued", value: fmtDateIso(instructor.dbs_certificate_issued) || "—", field: "dbs_certificate_issued", type: "date" },
+        { id: newId(), label: "DBS expiry", value: fmtDateIso(instructor.dbs_certificate_expiry) || "—", field: "dbs_certificate_expiry", type: "date" },
+        { id: newId(), label: "DBS cert URL", value: fmt(instructor.dbs_certificate_url), field: "dbs_certificate_url", type: "text" },
+        { id: newId(), label: "Licence no.", value: fmt(instructor.driving_licence_number), field: "driving_licence_number", type: "text" },
+        { id: newId(), label: "Licence expiry", value: fmtDateIso(instructor.driving_licence_expiry) || "—", field: "driving_licence_expiry", type: "date" },
+        { id: newId(), label: "Insurance provider", value: fmt(instructor.insurance_provider), field: "insurance_provider", type: "text" },
+        { id: newId(), label: "Insurance policy no.", value: fmt(instructor.insurance_policy_number), field: "insurance_policy_number", type: "text" },
+        { id: newId(), label: "Standards check", value: fmtDateIso(instructor.standards_check_at) || "—", field: "standards_check_at", type: "date" },
+        { id: newId(), label: "Standards result", value: fmt(instructor.standards_check_result), field: "standards_check_result", type: "text" },
+      ],
+    },
+    {
       id: newId(), title: "Complaints & flags", icon: "⚠",
       headerBadge: counts.openComplaints != null && counts.openComplaints > 0 ? `${counts.openComplaints} open` : undefined,
       rows: [
