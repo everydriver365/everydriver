@@ -221,7 +221,6 @@ export default function Index() {
       <Drive365Home
         afterLearningPaths={<>
           <HomepageLiveStats />
-          <HowItWorksStrip />
           <section style={{ padding: "56px 5%", background: "#F6F6F8", width: "100%" }}>
             {(() => {
               const resolveImage = (title: string, url?: string) => {
