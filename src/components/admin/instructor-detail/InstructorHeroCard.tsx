@@ -15,7 +15,7 @@ const expiryBadge = (dateStr: string | null | undefined, label: string): { tone:
   return { tone: "green", text: `${label} ✓` };
 };
 
-export function InstructorHeroCard({ instructor, passRate }: { instructor: Record<string, any>; passRate?: number | null }) {
+export function InstructorHeroCard({ instructor, passRate, activePupils }: { instructor: Record<string, any>; passRate?: number | null; activePupils?: number | null }) {
   const initials = (instructor.name || "?")
     .split(" ")
     .map((s: string) => s[0])
@@ -74,7 +74,7 @@ export function InstructorHeroCard({ instructor, passRate }: { instructor: Recor
       {/* Stats */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", borderBottom: "1px solid #F3F4F6" }}>
         <Stat color="#059669" value={passRate != null ? `${passRate}%` : "—"} label="Pass rate" />
-        <Stat value="—" label="Students" />
+        <Stat value={activePupils != null ? activePupils.toLocaleString() : "—"} label="Students" />
         <Stat value={instructor.cpd_hours_logged != null ? String(instructor.cpd_hours_logged) : "—"} label="CPD hrs" last />
       </div>
 
