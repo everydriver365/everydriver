@@ -8,7 +8,15 @@ import { SectionColumn } from "@/components/admin/instructor-detail/SectionColum
 import { Section } from "@/components/admin/instructor-detail/SectionCard";
 import { buildDefaultSections, InstructorRelatedCounts } from "@/components/admin/instructor-detail/defaultSections";
 import { EditProfileModal, EditProfileValues } from "@/components/admin/instructor-detail/modals/EditProfileModal";
+import { DiaryDrawer } from "@/components/admin/instructor-detail/drawers/DiaryDrawer";
+import { BookingsDrawer } from "@/components/admin/instructor-detail/drawers/BookingsDrawer";
+import { ReviewsDrawer } from "@/components/admin/instructor-detail/drawers/ReviewsDrawer";
+import { PaymentsDrawer } from "@/components/admin/instructor-detail/drawers/PaymentsDrawer";
+import { DocumentsDrawer } from "@/components/admin/instructor-detail/drawers/DocumentsDrawer";
+import { MessageDrawer } from "@/components/admin/instructor-detail/drawers/MessageDrawer";
 import { toast } from "@/hooks/use-toast";
+
+type DrawerKey = "diary" | "bookings" | "reviews" | "payments" | "documents" | "message" | null;
 
 export default function AdminInstructorDetail() {
   const { id } = useParams<{ id: string }>();
