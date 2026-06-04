@@ -545,9 +545,12 @@ function ChapmansMobileSearch({
       : "all";
 
   const transmissionLabel =
-    transmission === "manual" ? "Manual" : transmission === "automatic" ? "Automatic" : "Any";
+    transmission === "manual" ? "Manual" : transmission === "automatic" ? "Auto" : "Any";
 
   const radiusLabel = `${radius} mi`;
+
+  const typeLabel = currentKey === "lessons" ? "Lessons" : currentKey === "courses" ? "Courses" : "All";
+
 
   return (
     <div className="md:hidden">
