@@ -759,57 +759,6 @@ function ChapmansMobileSearch({
         </button>
       </form>
 
-      {/* Filter tabs */}
-      {showFilters && activeFilter && setActiveFilter && (
-        <div style={{ padding: "16px 16px 0" }}>
-          <div
-            style={{
-              fontSize: 11,
-              color: "#9CA3AF",
-              fontWeight: 500,
-              marginBottom: 10,
-            }}
-          >
-            Filter by course type:
-          </div>
-          <div
-            className="chapmans-tabs"
-            style={{
-              display: "flex",
-              gap: 8,
-              overflowX: "auto",
-              paddingBottom: 14,
-              scrollbarWidth: "none",
-            }}
-          >
-            {FILTER_OPTIONS.map((opt) => {
-              const isActive = activeFilter === opt.id;
-              return (
-                <button
-                  key={opt.id}
-                  type="button"
-                  onClick={() => setActiveFilter(opt.id)}
-                  data-active={isActive}
-                  style={{
-                    padding: "7px 16px",
-                    borderRadius: 20,
-                    fontSize: 12,
-                    fontWeight: 600,
-                    whiteSpace: "nowrap",
-                    flexShrink: 0,
-                    background: isActive ? "#E8641A" : "#FFF",
-                    color: isActive ? "#FFF" : "#4B5563",
-                    border: `1px solid ${isActive ? "#E8641A" : "#E5E7EB"}`,
-                    cursor: "pointer",
-                  }}
-                >
-                  {opt.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
