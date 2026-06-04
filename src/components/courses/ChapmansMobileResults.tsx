@@ -3,6 +3,8 @@ import { format } from "date-fns";
 import { ShieldCheck, List as ListIcon, LayoutGrid } from "lucide-react";
 import { useEmbed } from "@/context/EmbedContext";
 import { computeOfferStatus } from "@/lib/courseOffer";
+import { DynamicCourseCard } from "@/components/DynamicCourseCard";
+
 
 type SortOption = "soonest" | "price-low" | "nearest";
 
@@ -35,6 +37,12 @@ interface ChapmansCourse {
   offerEndsAt?: string | null;
   effectiveHourlyRate?: number | null;
   areaName?: string | null;
+  // Extra fields forwarded to DynamicCourseCard for the grid (flip-card) view.
+  courseImageUrl?: string | null;
+  isPopular?: boolean;
+  availableFrom?: string | Date | null;
+  features?: string[];
+  customFeatures?: string[];
 }
 
 interface Props {
@@ -50,7 +58,9 @@ interface Props {
   hasMore?: boolean;
   onLoadMore?: () => void;
   remainingCount?: number;
+  learnerPostcode?: string | null;
 }
+
 
 const HOURS_BAR: Record<number, string> = {
   10: "#059669",
@@ -104,6 +114,7 @@ export function ChapmansMobileResults({
   hasMore,
   onLoadMore,
   remainingCount,
+  learnerPostcode,
 }: Props) {
   const { bookNavigate } = useEmbed();
   const [passPromiseDismissed, setPassPromiseDismissed] = useState(() => {
@@ -245,16 +256,45 @@ export function ChapmansMobileResults({
         </div>
       )}
 
-      {/* Section 5 — Course list cards */}
+      {/* Section 5 — Course cards (list: compact rows · grid: Drive365 flip cards stacked) */}
       <div
         style={
           viewMode === "grid"
-            ? { padding: "0 16px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }
+            ? { padding: "0 16px", display: "flex", flexDirection: "column", gap: 16 }
             : { padding: "0 16px" }
         }
       >
         {courses.map((c, i) => {
           const isGrid = viewMode === "grid";
+
+          if (isGrid) {
+            // Drive365 mobile parity: single-column flip cards.
+            return (
+              <DynamicCourseCard
+                key={`${c.instructor.id}-${c.hours}-${c.bookableDate.toISOString()}-${i}`}
+                instructor={c.instructor as any}
+                hours={c.hours}
+                nextAvailable={c.bookableDate}
+                courseImageUrl={c.courseImageUrl ?? undefined}
+                isPopular={c.isPopular}
+                availableFrom={typeof c.availableFrom === "string" ? c.availableFrom : undefined}
+                distance={c.distance}
+                features={c.features}
+                isIntensive={c.isIntensive}
+                discountedPrice={c.discountedPrice ?? undefined}
+                offerActive={c.offerActive ?? undefined}
+                offerLabel={c.offerLabel ?? undefined}
+                offerPercentOff={c.offerPercentOff ?? undefined}
+                offerStartsAt={c.offerStartsAt ?? undefined}
+                offerEndsAt={c.offerEndsAt ?? undefined}
+                customFeatures={c.customFeatures}
+                areaName={c.areaName ?? null}
+                effectiveHourlyRate={c.effectiveHourlyRate ?? undefined}
+                learnerPostcode={learnerPostcode ?? undefined}
+              />
+            );
+          }
+
           // Mirror DynamicCourseCard pricing exactly.
           const defaultRate = Number(c.instructor.hourly_rate ?? 0);
           const hourlyRate =
