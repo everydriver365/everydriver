@@ -109,21 +109,18 @@ export function CourseSearchHeader({
                 e.preventDefault();
                 handleSearch();
               }}
-              className="mb-3.5"
+              className="mb-3.5 flex flex-col gap-2.5 sm:flex-row sm:items-center"
               style={{
                 background: "#FFFFFF",
                 borderRadius: 14,
                 padding: 16,
                 boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
-                display: "flex",
-                alignItems: "center",
-                gap: 10,
               }}
             >
               {/* Postcode */}
               <div
+                className="w-full min-w-0 sm:flex-[1.5]"
                 style={{
-                  flex: 1.5,
                   background: "#F9FAFB",
                   border: "1px solid #E5E7EB",
                   borderRadius: 8,
@@ -131,7 +128,6 @@ export function CourseSearchHeader({
                   display: "flex",
                   flexDirection: "column",
                   gap: 2,
-                  minWidth: 0,
                 }}
               >
                 <div
@@ -166,8 +162,8 @@ export function CourseSearchHeader({
 
               {/* Radius */}
               <div
+                className="w-full min-w-0 sm:flex-1"
                 style={{
-                  flex: 1,
                   background: "#F9FAFB",
                   border: "1px solid #E5E7EB",
                   borderRadius: 8,
@@ -175,7 +171,6 @@ export function CourseSearchHeader({
                   display: "flex",
                   flexDirection: "column",
                   gap: 2,
-                  minWidth: 0,
                 }}
               >
                 <div
@@ -221,8 +216,8 @@ export function CourseSearchHeader({
 
               {/* Transmission */}
               <div
+                className="w-full min-w-0 sm:flex-1"
                 style={{
-                  flex: 1,
                   background: "#F9FAFB",
                   border: "1px solid #E5E7EB",
                   borderRadius: 8,
@@ -230,7 +225,6 @@ export function CourseSearchHeader({
                   display: "flex",
                   flexDirection: "column",
                   gap: 2,
-                  minWidth: 0,
                 }}
               >
                 <div
@@ -276,6 +270,7 @@ export function CourseSearchHeader({
               <button
                 type="submit"
                 disabled={isSearching}
+                className="w-full sm:w-auto"
                 style={{
                   background: "#E8641A",
                   color: "#FFFFFF",
@@ -286,6 +281,7 @@ export function CourseSearchHeader({
                   fontWeight: 700,
                   display: "flex",
                   alignItems: "center",
+                  justifyContent: "center",
                   gap: 6,
                   flexShrink: 0,
                   cursor: isSearching ? "default" : "pointer",

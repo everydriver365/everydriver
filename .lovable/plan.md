@@ -1,33 +1,25 @@
-# Switch embed to everydriver.co + confirm payments
+## Problem
 
-## Booking flow — already works
+On `/booking/chapmans` (mobile), the search card crushes Postcode, Radius, Transmission and the Search button into a single horizontal row. Labels are clipped ("POSTCO…", "RADIUS", "TRANS…") and the input is unusable.
 
-The existing implementation in `src/context/EmbedContext.tsx` builds the booking URL from `window.location.origin`. That means the embed automatically inherits whichever domain hosts it — no hardcoded `drive365.co.uk` in the runtime code. When the iframe is served from `https://everydriver.co/embed/courses`, clicking Book breaks out of the iframe to `https://everydriver.co/book/:id?...`, and the existing checkout (Square / Klarna / Clearpay / GoCardless / SumUp / Cash) runs first-party there. Both domains are already published from this same project, so `/book/:id` exists on `everydriver.co` identically to `drive365.co.uk`.
+Root cause: the `chapmans` variant in `src/components/courses/CourseSearchHeader.tsx` (lines ~106–302) hard-codes `display: flex; flex-direction: row` via inline styles, so it never stacks. The default variant already stacks correctly using `flex-col md:flex-row`.
 
-So payments will work end-to-end via `https://everydriver.co/embed/courses` with zero logic changes.
+## Fix (single file)
 
-## Changes (branding only, no functional changes)
+Edit **`src/components/courses/CourseSearchHeader.tsx`** — the `isChapmans` branch only.
 
-`src/pages/everydriver/CourseResults.tsx`:
+1. Replace the inline `style={{ display: "flex", alignItems: "center", gap: 10, ... }}` on the `<form>` with Tailwind classes that stack on mobile and become a row at `sm:` and up:
+   - container: `flex flex-col sm:flex-row sm:items-center gap-2.5` (keep the white bg, 14px radius, padding 16, shadow as before)
+2. Remove the inline `flex: 1.5 / 1 / 1` from the three field wrappers and replace with classes:
+   - Postcode field: `w-full sm:flex-[1.5] min-w-0`
+   - Radius + Transmission fields: `w-full sm:flex-1 min-w-0`
+3. Search button: make it `w-full sm:w-auto` and `justify-center` so it spans the row on mobile; keep the orange `#E8641A` styling. Also bump tap target padding slightly on mobile (`py-3`) for usability.
+4. Keep all colors, font sizes, label styling, icons, and behaviour identical — purely a responsive layout change.
 
-1. Update the embed snippet in the doc comment at the top of the file from `https://drive365.co.uk/embed/courses` to `https://everydriver.co/embed/courses`.
-2. Rename the height-reporter postMessage type from `"drive365:embed:height"` to `"everydriver:embed:height"` so host pages listening for the event use the everydriver namespace.
+No other files, no behaviour changes, no routing changes, no payment changes. Default variant and all other pages (`/courses`, `/embed/courses`, Intensives, SemiIntensive) are untouched.
 
-That's it. No changes to `EmbedContext`, `DynamicCourseCard`, `CourseTableList`, `EDCourseList`, or `publicRoutes.tsx`.
+## Verification
 
-## Host snippet (for any external site)
-
-```html
-<iframe
-  src="https://everydriver.co/embed/courses"
-  style="width:100%;border:0;min-height:1200px"
-  allow="payment *; clipboard-write"
-  referrerpolicy="no-referrer-when-downgrade"
-></iframe>
-```
-
-## Out of scope
-
-- No DB / RLS / edge-function changes
-- No checkout code changes — same first-party `/book/:id` flow
-- No changes to `/courses`, `/i/:slug/courses`, `/booking/:slug`, or any whitelabel route
+- Load `/booking/chapmans` at 390×844: Postcode, Radius, Transmission and Search button stack vertically full-width; labels readable, input usable.
+- Load `/booking/chapmans` at ≥640px: layout returns to the existing single-row design.
+- Spot-check `/booking/chapmans` on desktop and a non-chapmans booking page to confirm no regression.
