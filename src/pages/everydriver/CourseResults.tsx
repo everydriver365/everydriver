@@ -7,11 +7,29 @@ import { Drive365SearchHeader } from "@/components/courses/Drive365SearchHeader"
 import { SidebarCalendar } from "@/components/courses/SidebarCalendar";
 import { CourseGrid } from "@/components/courses/CourseGrid";
 import { Button } from "@/components/ui/button";
+import { EmbedProvider } from "@/context/EmbedContext";
+import { SEOHead } from "@/components/SEOHead";
 
 interface CourseResultsProps {
   defaultType?: CourseTypeFilter;
   title?: string;
   showTypeSwitcher?: boolean;
+  /**
+   * Embeddable, unbranded variant for iframing on third-party sites.
+   * Removes MainLayout chrome (Drive365 header/footer), goes transparent,
+   * posts iframe height to parent, and breaks booking navigation out of
+   * the iframe so payment redirects (Square/Klarna/Clearpay/GoCardless)
+   * run on the top-level drive365.co.uk window first-party.
+   *
+   * Mount example for host pages:
+   *   <iframe
+   *     src="https://drive365.co.uk/embed/courses"
+   *     style="width:100%;border:0;min-height:1200px"
+   *     allow="payment *; clipboard-write"
+   *     referrerpolicy="no-referrer-when-downgrade"
+   *   ></iframe>
+   */
+  embed?: boolean;
 }
 
 /**
