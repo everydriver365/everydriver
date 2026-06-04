@@ -1729,19 +1729,13 @@ export default function Courses({ restrictToInstructorIds, title: titleProp, emb
                 {/* Selected date header */}
                 {isChapmansMobile ? (
                   <ChapmansMobileResults
-                    courses={filteredCourses.slice(0, mobileVisibleCount).map((c) => {
-                      const rate = resolvedRateFor(c.instructor) ?? Number(c.instructor.hourly_rate ?? 0);
-                      const skim = Number(c.instructor.school_skim_amount ?? 0);
-                      return {
-                        instructor: c.instructor,
-                        hours: c.hours,
-                        bookableDate: c.bookableDate,
-                        isIntensive: c.isIntensive,
-                        distance: c.distance,
-                        price: c.hours * rate + skim,
-                        discountedPrice: c.discountedPrice,
-                      };
-                    })}
+                    courses={filteredCourses.slice(0, mobileVisibleCount).map((c) => ({
+                      ...c,
+                      effectiveHourlyRate: resolvedRateFor(c.instructor),
+                      areaName:
+                        areaCache[c.instructor.home_postcode?.replace(/\s+/g, "").toUpperCase()] ||
+                        null,
+                    }))}
                     totalCount={filteredCourses.length}
                     selectedDate={selectedDate}
                     searchedAreaName={searchedAreaName}
