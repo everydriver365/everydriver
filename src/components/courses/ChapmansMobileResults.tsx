@@ -114,6 +114,7 @@ export function ChapmansMobileResults({
   hasMore,
   onLoadMore,
   remainingCount,
+  learnerPostcode,
 }: Props) {
   const { bookNavigate } = useEmbed();
   const [passPromiseDismissed, setPassPromiseDismissed] = useState(() => {
