@@ -532,11 +532,7 @@ function ChapmansMobileSearch({
   // - All        -> activeFilter "all"
   // - Courses    -> activeFilter "intensive" (also active for "semi-intensive")
   // - Lessons    -> activeFilter "weekly"
-  const filterPills: { key: "all" | "courses" | "lessons"; label: string; target: CourseFilterId }[] = [
-    { key: "all", label: "All", target: "all" },
-    { key: "courses", label: "Courses", target: "intensive" },
-    { key: "lessons", label: "Lessons", target: "weekly" },
-  ];
+
   const currentKey: "all" | "courses" | "lessons" =
     activeFilter === "weekly"
       ? "lessons"
@@ -545,9 +541,12 @@ function ChapmansMobileSearch({
       : "all";
 
   const transmissionLabel =
-    transmission === "manual" ? "Manual" : transmission === "automatic" ? "Automatic" : "Any";
+    transmission === "manual" ? "Manual" : transmission === "automatic" ? "Auto" : "Any";
 
   const radiusLabel = `${radius} mi`;
+
+  const typeLabel = currentKey === "lessons" ? "Lessons" : currentKey === "courses" ? "Courses" : "All";
+
 
   return (
     <div className="md:hidden">
@@ -624,7 +623,7 @@ function ChapmansMobileSearch({
           </button>
         </div>
 
-        {/* Radius + Transmission row */}
+        {/* Radius + Transmission + Type row */}
         <div style={{ display: "flex", gap: 8 }}>
           {/* Radius */}
           <label
@@ -632,7 +631,7 @@ function ChapmansMobileSearch({
               flex: 1,
               background: "rgba(0,0,0,0.2)",
               borderRadius: 8,
-              padding: "8px 12px",
+              padding: "8px 10px",
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
@@ -653,9 +652,9 @@ function ChapmansMobileSearch({
               >
                 Radius
               </div>
-              <div style={{ fontSize: 13, fontWeight: 600, color: "#FFF" }}>{radiusLabel}</div>
+              <div style={{ fontSize: 12, fontWeight: 600, color: "#FFF" }}>{radiusLabel}</div>
             </div>
-            <ChevronDown size={12} color="rgba(255,255,255,0.6)" strokeWidth={2.2} />
+            <ChevronDown size={11} color="rgba(255,255,255,0.5)" strokeWidth={2.2} />
             <select
               value={radius}
               onChange={(e) => setRadius(e.target.value)}
@@ -684,7 +683,7 @@ function ChapmansMobileSearch({
               flex: 1,
               background: "rgba(0,0,0,0.2)",
               borderRadius: 8,
-              padding: "8px 12px",
+              padding: "8px 10px",
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
@@ -703,11 +702,11 @@ function ChapmansMobileSearch({
                   marginBottom: 2,
                 }}
               >
-                Transmission
+                Trans.
               </div>
-              <div style={{ fontSize: 13, fontWeight: 600, color: "#FFF" }}>{transmissionLabel}</div>
+              <div style={{ fontSize: 12, fontWeight: 600, color: "#FFF" }}>{transmissionLabel}</div>
             </div>
-            <ChevronDown size={12} color="rgba(255,255,255,0.6)" strokeWidth={2.2} />
+            <ChevronDown size={11} color="rgba(255,255,255,0.5)" strokeWidth={2.2} />
             <select
               value={transmission}
               onChange={(e) => setTransmission(e.target.value)}
@@ -727,46 +726,68 @@ function ChapmansMobileSearch({
               <option value="automatic">Automatic</option>
             </select>
           </label>
-        </div>
-      </form>
 
-      {/* Section 2 — Filter pills */}
-      {showFilters && setActiveFilter && (
-        <div
-          style={{
-            background: "#FFF",
-            borderBottom: "1px solid #F3F4F6",
-            padding: "10px 16px",
-            display: "flex",
-            gap: 8,
-          }}
-        >
-          {filterPills.map((p) => {
-            const isActive = currentKey === p.key;
-            return (
-              <button
-                key={p.key}
-                type="button"
-                onClick={() => setActiveFilter(p.target)}
+          {/* Type */}
+          {setActiveFilter && (
+            <label
+              style={{
+                flex: 1,
+                background: "rgba(0,0,0,0.2)",
+                borderRadius: 8,
+                padding: "8px 10px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                position: "relative",
+                cursor: "pointer",
+              }}
+            >
+              <div style={{ minWidth: 0 }}>
+                <div
+                  style={{
+                    fontSize: 9,
+                    fontWeight: 700,
+                    color: "rgba(255,255,255,0.6)",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.8px",
+                    marginBottom: 2,
+                  }}
+                >
+                  Type
+                </div>
+                <div style={{ fontSize: 12, fontWeight: 600, color: "#FFF" }}>{typeLabel}</div>
+              </div>
+              <ChevronDown size={11} color="rgba(255,255,255,0.5)" strokeWidth={2.2} />
+              <select
+                value={currentKey}
+                onChange={(e) => {
+                  const v = e.target.value as "all" | "courses" | "lessons";
+                  const target: CourseFilterId =
+                    v === "lessons" ? "weekly" : v === "courses" ? "intensive" : "all";
+                  setActiveFilter(target);
+                }}
                 style={{
-                  background: isActive ? "#0A2B6B" : "#FFF",
-                  color: isActive ? "#FFF" : "#4B5563",
-                  border: isActive ? "none" : "1px solid #E5E7EB",
-                  borderRadius: 20,
-                  padding: "7px 20px",
-                  fontSize: 12,
-                  fontWeight: isActive ? 700 : 600,
+                  position: "absolute",
+                  inset: 0,
+                  opacity: 0,
+                  width: "100%",
+                  height: "100%",
                   cursor: "pointer",
+                  border: "none",
+                  background: "transparent",
                 }}
               >
-                {p.label}
-              </button>
-            );
-          })}
+                <option value="all">All</option>
+                <option value="courses">Courses</option>
+                <option value="lessons">Lessons</option>
+              </select>
+            </label>
+          )}
         </div>
-      )}
+      </form>
     </div>
   );
 }
+
 
 
