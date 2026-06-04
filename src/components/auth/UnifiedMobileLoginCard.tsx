@@ -181,9 +181,9 @@ export function UnifiedMobileLoginCard({
   }
 
   const useDsm = resolvedBrand === "dsm";
-  // DSM uses the wordmark logo; Drive 365 portals use the square rounded app icon.
+  // DSM uses the wordmark logo; learner portals use the EveryDriver mark (Drive365 parked).
   const logoSrc = useDsm ? dsmLogo : brand === "drive365" ? drive365Icon : drive365Logo;
-  const brandName = useDsm ? "DSM" : "Drive365";
+  const brandName = useDsm ? "DSM" : "EveryDriver";
 
   return (
     <div className={className}>
