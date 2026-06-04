@@ -87,10 +87,10 @@ export function Drive365Header() {
       >
         <div className="mx-auto flex h-[76px] lg:h-[68px] items-center px-[60px] max-lg:px-5 lg:px-6">
           {/* Logo */}
-          <Link to="/" className="flex items-center shrink-0" aria-label="Drive365 home">
+          <Link to="/" className="flex items-center shrink-0" aria-label="EveryDriver home">
             <img
               src={drive365Logo}
-              alt="Drive365"
+              alt="EveryDriver"
               className="h-12 w-auto block"
               style={{ maxWidth: "200px" }}
             />
