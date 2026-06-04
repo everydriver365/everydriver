@@ -2594,10 +2594,12 @@ export type Database = {
           is_visible: boolean | null
           moderation_note: string | null
           moderation_status: string
+          passed_first_time: boolean | null
           rating: number
           review_date: string | null
           review_text: string
           reviewer_email: string | null
+          reviewer_location: string | null
           reviewer_name: string
         }
         Insert: {
@@ -2609,10 +2611,12 @@ export type Database = {
           is_visible?: boolean | null
           moderation_note?: string | null
           moderation_status?: string
+          passed_first_time?: boolean | null
           rating: number
           review_date?: string | null
           review_text: string
           reviewer_email?: string | null
+          reviewer_location?: string | null
           reviewer_name: string
         }
         Update: {
@@ -2624,10 +2628,12 @@ export type Database = {
           is_visible?: boolean | null
           moderation_note?: string | null
           moderation_status?: string
+          passed_first_time?: boolean | null
           rating?: number
           review_date?: string | null
           review_text?: string
           reviewer_email?: string | null
+          reviewer_location?: string | null
           reviewer_name?: string
         }
         Relationships: [
