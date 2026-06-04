@@ -108,8 +108,48 @@ export default function CourseResults({
     return Array.from(seen.values()).slice(0, 8);
   }, [filteredCourses]);
 
+  // Embed-mode side effects: transparent backdrop + height reporter for host iframe.
+  useEffect(() => {
+    if (!embed) return;
+    const html = document.documentElement;
+    const body = document.body;
+    const prevHtmlBg = html.style.background;
+    const prevBodyBg = body.style.background;
+    html.style.background = "transparent";
+    body.style.background = "transparent";
+
+    let raf = 0;
+    const post = () => {
+      const h = Math.max(
+        document.documentElement.scrollHeight,
+        document.body.scrollHeight,
+      );
+      try {
+        window.parent?.postMessage({ type: "drive365:embed:height", height: h }, "*");
+      } catch { /* ignore */ }
+    };
+    const schedule = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(post);
+    };
+    const ro = new ResizeObserver(schedule);
+    ro.observe(document.body);
+    schedule();
+
+    return () => {
+      ro.disconnect();
+      cancelAnimationFrame(raf);
+      html.style.background = prevHtmlBg;
+      body.style.background = prevBodyBg;
+    };
+  }, [embed]);
+
+  const Shell: React.ElementType = embed ? "div" : MainLayout;
+
   return (
-    <MainLayout>
+    <EmbedProvider embed={embed}>
+      {embed && <SEOHead title="Find Driving Courses" description="Embeddable course search" noindex />}
+      <Shell {...(embed ? { className: "min-h-screen bg-transparent" } : {})}>
       <Drive365SearchHeader
         title={title}
         postcode={postcode}
