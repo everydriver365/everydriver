@@ -2,11 +2,17 @@ import { useState } from "react";
 import { Badge, BadgeTone } from "./Badge";
 import { EditRowModal, AddRowModal } from "./modals/AddRowModal";
 
+export type FieldType = "text" | "textarea" | "number" | "money" | "date" | "bool" | "csv";
+
 export interface SectionRow {
   id: string;
   label: string;
   value: string;
   badge?: { tone: BadgeTone; text: string };
+  /** DB column on `instructors` — when set, edits persist via onPersistField */
+  field?: string;
+  /** Editor + parser hint */
+  type?: FieldType;
 }
 
 export interface Section {
@@ -18,11 +24,12 @@ export interface Section {
 }
 
 export function SectionCard({
-  section, onChange, onRemove,
+  section, onChange, onRemove, onPersistField,
 }: {
   section: Section;
   onChange: (next: Section) => void;
   onRemove: () => void;
+  onPersistField?: (field: string, parsed: any) => Promise<void> | void;
 }) {
   const [hoverRow, setHoverRow] = useState<string | null>(null);
   const [editingRow, setEditingRow] = useState<SectionRow | null>(null);
@@ -133,12 +140,20 @@ export function SectionCard({
         <EditRowModal
           initialLabel={editingRow.label}
           initialValue={editingRow.value}
+          fieldType={editingRow.type}
+          lockLabel={!!editingRow.field}
           onClose={() => setEditingRow(null)}
-          onSave={(label, value) => {
+          onSave={async (label, value) => {
+            // Local update first (optimistic)
             onChange({
               ...section,
               rows: section.rows.map((r) => (r.id === editingRow.id ? { ...r, label, value } : r)),
             });
+            // Persist to DB if this row maps to a column
+            if (editingRow.field && onPersistField) {
+              const parsed = parseValue(value, editingRow.type);
+              await onPersistField(editingRow.field, parsed);
+            }
             setEditingRow(null);
           }}
         />
@@ -157,6 +172,33 @@ export function SectionCard({
       )}
     </div>
   );
+}
+
+function parseValue(raw: string, type?: FieldType): any {
+  const v = (raw ?? "").trim();
+  if (v === "" || v === "—") return null;
+  switch (type) {
+    case "number":
+      return Number(v.replace(/[^\d.\-]/g, "")) || null;
+    case "money":
+      return Number(v.replace(/[^\d.\-]/g, "")) || null;
+    case "date": {
+      // Accept YYYY-MM-DD or DD/MM/YYYY
+      if (/^\d{4}-\d{2}-\d{2}$/.test(v)) return v;
+      const m = v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+      if (m) return `${m[3]}-${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}`;
+      return v;
+    }
+    case "bool":
+      return /^(y|yes|true|1|on)$/i.test(v);
+    case "csv":
+      return v.split(",").map((s) => s.trim()).filter(Boolean).map((s) => {
+        const n = Number(s);
+        return Number.isFinite(n) ? n : s;
+      });
+    default:
+      return v;
+  }
 }
 
 const ghostBtn: React.CSSProperties = {
