@@ -173,29 +173,8 @@ export function ChapmansMobileResults({
             </button>
           </div>
 
-          {/* Sort */}
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as SortOption)}
-            style={{
-              padding: "6px 10px",
-              border: "1px solid #E5E7EB",
-              borderRadius: 6,
-              fontSize: 11,
-              fontWeight: 600,
-              color: "#4B5563",
-              background: "#FFF",
-              fontFamily: "inherit",
-              outline: "none",
-            }}
-          >
-            <option value="soonest">Soonest</option>
-            <option value="price-low">Cheapest</option>
-            <option value="nearest" disabled={!userLocation}>
-              Nearest
-            </option>
-          </select>
         </div>
+
       </div>
 
       {/* Section 4 — Pass Promise strip */}
