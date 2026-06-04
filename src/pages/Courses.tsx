@@ -1750,6 +1750,9 @@ export default function Courses({ restrictToInstructorIds, title: titleProp, emb
                     sortBy={sortBy}
                     setSortBy={setSortBy}
                     userLocation={userLocation}
+                    hasMore={mobileVisibleCount < filteredCourses.length}
+                    onLoadMore={handleLoadMore}
+                    remainingCount={filteredCourses.length - mobileVisibleCount}
                   />
                 ) : isListMode ? (
                   <>
