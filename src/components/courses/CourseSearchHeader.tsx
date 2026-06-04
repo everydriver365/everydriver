@@ -65,7 +65,29 @@ export function CourseSearchHeader({
   };
 
   return (
-    <section className="px-5 pt-3 pb-2 md:pt-5 md:pb-3">
+    <>
+      {isChapmans && (
+        <ChapmansMobileSearch
+          postcode={postcode}
+          setPostcode={setPostcode}
+          radius={radius}
+          setRadius={setRadius}
+          transmission={transmission}
+          setTransmission={setTransmission}
+          isSearching={isSearching}
+          activeFilter={activeFilter}
+          setActiveFilter={setActiveFilter}
+          onSearch={handleSearch}
+          showFilters={showFilters}
+        />
+      )}
+    <section
+      className={
+        isChapmans
+          ? "hidden md:block md:px-5 md:pt-5 md:pb-3"
+          : "px-5 pt-3 pb-2 md:pt-5 md:pb-3"
+      }
+    >
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -103,6 +125,7 @@ export function CourseSearchHeader({
             boxShadow: "0 2px 12px rgba(15,32,68,0.05)",
           }}
         >
+
           {isChapmans ? (
             <form
               onSubmit={(e) => {
