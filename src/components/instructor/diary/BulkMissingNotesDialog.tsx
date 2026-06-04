@@ -172,7 +172,7 @@ export function BulkMissingNotesDialog({ open, onOpenChange, lessons, onSaved }:
                         {l.pupils?.name || "Unknown pupil"}
                       </div>
                       <div className="text-[11px] text-muted-foreground">
-                        {format(new Date(l.lesson_date), "MMM d, yyyy")}
+                        {format(new Date(l.lesson_date), "dd/MM/yy")}
                         {l.start_time ? ` · ${l.start_time.slice(0, 5)}` : ""}
                         {` · ${l.duration_minutes}m`}
                       </div>

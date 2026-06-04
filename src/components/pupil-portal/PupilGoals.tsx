@@ -198,7 +198,7 @@ export function PupilGoals({ pupilId, brandColour, lessonsCompleted, progress }:
                 <div className="flex items-center gap-1 mt-1">
                   <Calendar className="h-3 w-3 text-muted-foreground" />
                   <span className="text-[10px] text-muted-foreground">
-                    By {format(new Date(goal.target_date), "d MMM yyyy")}
+                    By {format(new Date(goal.target_date), "dd/MM/yy")}
                   </span>
                 </div>
               )}

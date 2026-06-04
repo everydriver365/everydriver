@@ -166,7 +166,7 @@ const TripSummarySheet: React.FC<TripSummarySheetProps> = ({
 Driving Lesson Route Report
 ===========================
 Pupil: ${report.session.pupilName}
-Date: ${new Date(report.session.startedAt).toLocaleDateString()}
+Date: ${new Date(report.session.startedAt).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" })}
 
 Route: ${report.session.startLocation} → ${report.session.endLocation}
 Distance: ${(Number(report.stats.distance) * 0.621371).toFixed(1)} mi

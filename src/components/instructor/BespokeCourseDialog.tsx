@@ -265,7 +265,7 @@ export function BespokeCourseDialog({
                 <PopoverTrigger asChild>
                   <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !fromDate && "text-muted-foreground")}>
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {fromDate ? format(fromDate, "PP") : "Any time"}
+                    {fromDate ? format(fromDate, "dd/MM/yy") : "Any time"}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
@@ -280,7 +280,7 @@ export function BespokeCourseDialog({
                 <PopoverTrigger asChild>
                   <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !toDate && "text-muted-foreground")}>
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {toDate ? format(toDate, "PP") : "Any time"}
+                    {toDate ? format(toDate, "dd/MM/yy") : "Any time"}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">

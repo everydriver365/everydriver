@@ -122,7 +122,7 @@ export function PupilMilestones({ pupilId }: PupilMilestonesProps) {
                     </div>
                   )}
                   <div style={{ fontSize: 11, color: "#9ca3af", marginTop: 4 }}>
-                    {format(parseISO(m.created_at), "d MMM yyyy")}
+                    {format(parseISO(m.created_at), "dd/MM/yy")}
                   </div>
                 </div>
               </div>

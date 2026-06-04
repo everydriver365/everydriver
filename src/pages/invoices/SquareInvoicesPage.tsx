@@ -493,7 +493,7 @@ export default function SquareInvoicesPage({ scope }: { scope: Scope }) {
                     {filtered.map((r) => (
                       <tr key={r.id} className="border-b last:border-0 hover:bg-muted/30">
                         <td className="py-2 pr-3 whitespace-nowrap text-xs text-muted-foreground">
-                          {format(new Date(r.created_at), "d MMM yyyy")}
+                          {format(new Date(r.created_at), "dd/MM/yy")}
                         </td>
                         <td className="py-2 pr-3">
                           <div className="font-medium">

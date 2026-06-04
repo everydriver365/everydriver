@@ -56,7 +56,7 @@ export default function SchoolTestResultsSection({ instructorIds }: Props) {
                 <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">No test results yet</TableCell></TableRow>
               ) : results.map(r => (
                 <TableRow key={r.id}>
-                  <TableCell className="text-sm">{new Date(r.test_date).toLocaleDateString("en-GB")}</TableCell>
+                  <TableCell className="text-sm">{new Date(r.test_date).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" })}</TableCell>
                   <TableCell className="text-sm font-medium">{r.pupils?.name || "—"}</TableCell>
                   <TableCell className="text-sm">{r.instructors?.name || "—"}</TableCell>
                   <TableCell>

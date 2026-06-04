@@ -90,7 +90,7 @@ export function AccountDangerZone({ instructorId }: Props) {
 
   const planName = membership?.planName || "Free";
   const renewLabel = membership?.currentPeriodEnd
-    ? `Active · renews ${format(parseISO(membership.currentPeriodEnd), "d MMM yyyy")}`
+    ? `Active · renews ${format(parseISO(membership.currentPeriodEnd), "dd/MM/yy")}`
     : membership?.status === "active" ? "Active" : "No active subscription";
 
   const loadPending = useCallback(async () => {
@@ -262,7 +262,7 @@ export function AccountDangerZone({ instructorId }: Props) {
   );
 
   const scheduledDateLabel = pending
-    ? format(parseISO(pending.scheduled_purge_at), "d MMM yyyy")
+    ? format(parseISO(pending.scheduled_purge_at), "dd/MM/yy")
     : null;
 
   const manageHref = BILLING_PORTAL_URL || "/instructor/settings/plan-billing";

@@ -190,7 +190,7 @@ export default function QuoteDetailPage({ scope }: { scope: Scope }) {
               {quote.schedule_notes && (<Row label="Schedule" value={<span className="whitespace-pre-wrap">{quote.schedule_notes}</span>} />)}
               {quote.terms && (<Row label="Terms" value={<span className="whitespace-pre-wrap">{quote.terms}</span>} />)}
               {(quote.valid_until || quote.expires_at) && (
-                <Row label="Valid until" value={format(new Date(quote.valid_until ?? quote.expires_at!), "d MMM yyyy")} />
+                <Row label="Valid until" value={format(new Date(quote.valid_until ?? quote.expires_at!), "dd/MM/yy")} />
               )}
             </CardContent>
           </Card>

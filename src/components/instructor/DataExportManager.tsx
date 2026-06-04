@@ -211,7 +211,7 @@ export function DataExportManager({ instructorId, instructorName }: DataExportMa
       
       doc.setFontSize(12);
       doc.text(instructorName || "Instructor", pageWidth / 2, 30, { align: "center" });
-      doc.text(`Generated: ${new Date().toLocaleDateString()}`, pageWidth / 2, 38, { align: "center" });
+      doc.text(`Generated: ${new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" })}`, pageWidth / 2, 38, { align: "center" });
 
       // Summary
       const totalEarnings = (payments || []).reduce((sum, p) => sum + (p.amount || 0), 0);
@@ -242,7 +242,7 @@ export function DataExportManager({ instructorId, instructorName }: DataExportMa
           startY: paymentsY + 20,
           head: [["Date", "Pupil", "Amount", "Method"]],
           body: payments.slice(0, 50).map(p => [
-            new Date(p.created_at).toLocaleDateString(),
+            new Date(p.created_at).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" }),
             p.pupil?.name || "Unknown",
             `£${(p.amount || 0).toFixed(2)}`,
             p.payment_method || "-",
@@ -264,7 +264,7 @@ export function DataExportManager({ instructorId, instructorName }: DataExportMa
             startY: 25,
             head: [["Date", "Category", "Description", "Amount"]],
             body: expensesData.slice(0, 50).map(e => [
-              new Date(e.expense_date).toLocaleDateString(),
+              new Date(e.expense_date).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" }),
               e.category || "-",
               e.description || "-",
               `£${(e.amount || 0).toFixed(2)}`,
@@ -281,7 +281,7 @@ export function DataExportManager({ instructorId, instructorName }: DataExportMa
             startY: expensesY + 20,
             head: [["Date", "Category", "Description", "Amount"]],
             body: expensesData.slice(0, 50).map(e => [
-              new Date(e.expense_date).toLocaleDateString(),
+              new Date(e.expense_date).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" }),
               e.category || "-",
               e.description || "-",
               `£${(e.amount || 0).toFixed(2)}`,

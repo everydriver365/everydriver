@@ -19,8 +19,8 @@ interface TestRow {
 type Status = "passed" | "not-passed" | "booked" | "taken" | "none";
 
 function resolveStatus(date: string | null, passed: boolean | null): { status: Status; label: string; sub: string | null } {
-  if (passed === true) return { status: "passed", label: "Passed", sub: date ? format(parseISO(date), "d MMM yyyy") : null };
-  if (passed === false) return { status: "not-passed", label: "Not passed", sub: date ? format(parseISO(date), "d MMM yyyy") : null };
+  if (passed === true) return { status: "passed", label: "Passed", sub: date ? format(parseISO(date), "dd/MM/yy") : null };
+  if (passed === false) return { status: "not-passed", label: "Not passed", sub: date ? format(parseISO(date), "dd/MM/yy") : null };
   if (date) {
     const d = parseISO(date);
     const today = new Date(); today.setHours(0, 0, 0, 0);

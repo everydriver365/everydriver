@@ -282,7 +282,7 @@ function ReminderCard({
                   daysUntil !== null && daysUntil < 0 ? "text-destructive" :
                   daysUntil !== null && daysUntil <= 14 ? "text-warning" : ""
                 }`}>
-                  {format(new Date(reminder.next_due_date), "d MMM yyyy")}
+                  {format(new Date(reminder.next_due_date), "dd/MM/yy")}
                   {daysUntil !== null && (
                     <span className="text-muted-foreground font-normal ml-1">
                       ({daysUntil < 0 ? `${Math.abs(daysUntil)}d overdue` : `${daysUntil}d`})
@@ -313,7 +313,7 @@ function ReminderCard({
         {/* Last service */}
         {reminder.last_service_date && (
           <p className="text-xs text-muted-foreground">
-            Last serviced: {format(new Date(reminder.last_service_date), "d MMM yyyy")}
+            Last serviced: {format(new Date(reminder.last_service_date), "dd/MM/yy")}
             {reminder.last_service_km && ` at ${Math.round(kmToMiles(reminder.last_service_km)).toLocaleString()} mi`}
           </p>
         )}
@@ -372,7 +372,7 @@ function ServiceHistoryList({ history }: { history: ServiceHistoryEntry[] }) {
                     </Badge>
                   </div>
                   <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-sm text-muted-foreground">
-                    <span>{format(new Date(entry.service_date), "d MMM yyyy")}</span>
+                    <span>{format(new Date(entry.service_date), "dd/MM/yy")}</span>
                     {entry.odometer_km && (
                       <span>{Math.round(kmToMiles(entry.odometer_km)).toLocaleString()} mi</span>
                     )}

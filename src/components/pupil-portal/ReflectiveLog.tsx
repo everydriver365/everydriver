@@ -191,7 +191,7 @@ export function ReflectiveLog({ pupilId, brandColour }: ReflectiveLogProps) {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium">
-                      {format(new Date(log.created_at), "dd MMM yyyy")}
+                      {format(new Date(log.created_at), "dd/MM/yy")}
                     </span>
                     {log.instructor_response && (
                       <Badge variant="secondary" className="text-xs">

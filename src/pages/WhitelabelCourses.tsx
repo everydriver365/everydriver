@@ -295,7 +295,7 @@ export default function WhitelabelCourses() {
                       </h2>
                       <p className="mt-1 text-sm text-muted-foreground">
                         {availableFrom
-                          ? `${brand} is taking bookings from ${format(new Date(availableFrom), "d MMMM yyyy")}.`
+                          ? `${brand} is taking bookings from ${format(new Date(availableFrom), "dd/MM/yy")}.`
                           : nextAvailableDates.length > 0
                             ? "Tap a date to see courses you can book."
                             : "Please check back soon."}

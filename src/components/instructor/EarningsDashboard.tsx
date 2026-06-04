@@ -109,7 +109,7 @@ export function EarningsDashboard() {
     // Subtitle with date range
     doc.setFontSize(10);
     doc.setTextColor(100);
-    doc.text(`Generated on ${format(new Date(), "d MMMM yyyy")}`, pageWidth / 2, 28, { align: "center" });
+    doc.text(`Generated on ${format(new Date(), "dd/MM/yy")}`, pageWidth / 2, 28, { align: "center" });
     
     // Calculate totals
     const totalEarnings = allPayments.reduce((sum, p) => sum + p.amount, 0);
@@ -151,7 +151,7 @@ export function EarningsDashboard() {
       doc.text("Earnings", 14, summaryY + 26);
       
       const earningsData = allPayments.map(p => [
-        format(parseISO(p.recorded_at), "d MMM yyyy"),
+        format(parseISO(p.recorded_at), "dd/MM/yy"),
         (p.pupils as any)?.name || "Unknown",
         `£${p.amount.toFixed(2)}`
       ]);
@@ -185,7 +185,7 @@ export function EarningsDashboard() {
       doc.text("Expenses", 14, lastTableY + 12);
       
       const expensesData = allExpenses.map(e => [
-        format(parseISO(e.expense_date), "d MMM yyyy"),
+        format(parseISO(e.expense_date), "dd/MM/yy"),
         e.category,
         e.description || "-",
         `£${e.amount.toFixed(2)}`

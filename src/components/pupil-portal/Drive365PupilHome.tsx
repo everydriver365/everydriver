@@ -384,7 +384,7 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug, onNavigat
                     </div>
                   ) : tt ? (
                     <div style={{ color: MUTED, fontSize: 11, fontWeight: 500, lineHeight: 1.35 }}>
-                      {format(parseISO(tt), "d MMM yyyy")}
+                      {format(parseISO(tt), "dd/MM/yy")}
                     </div>
                   ) : (
                     <div style={{ color: MUTED, fontSize: 11, fontWeight: 500, lineHeight: 1.35 }}>

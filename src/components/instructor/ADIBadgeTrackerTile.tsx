@@ -80,7 +80,7 @@ export function ADIBadgeTrackerTile({ instructorId }: ADIBadgeTrackerTileProps) 
   const expiryDate = parseISO(expiryStr);
   const today = new Date();
   const daysLeft = differenceInCalendarDays(expiryDate, today);
-  const expiryFormatted = format(expiryDate, "d MMM yyyy");
+  const expiryFormatted = format(expiryDate, "dd/MM/yy");
 
   // ─── Expired ──────────────────────────────────────────────────────────────
   if (daysLeft <= 0) {

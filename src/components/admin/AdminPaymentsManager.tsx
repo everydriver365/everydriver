@@ -317,7 +317,7 @@ export function AdminPaymentsManager() {
                       <TableRow key={payment.id}>
                         <TableCell>
                           <div className="font-medium">
-                            {format(new Date(payment.created_at), "dd MMM yyyy")}
+                            {format(new Date(payment.created_at), "dd/MM/yy")}
                           </div>
                           <div className="text-sm text-muted-foreground">
                             {format(new Date(payment.created_at), "HH:mm")}

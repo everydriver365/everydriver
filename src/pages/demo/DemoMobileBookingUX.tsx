@@ -229,7 +229,7 @@ function WeekStripCalendar() {
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <span className="text-sm font-medium text-foreground">
-            {format(days[0], "d MMM")} – {format(days[6], "d MMM yyyy")}
+            {format(days[0], "d MMM")} – {format(days[6], "dd/MM/yy")}
           </span>
           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setWeekOffset(w => w + 1)}>
             <ChevronRight className="h-4 w-4" />

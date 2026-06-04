@@ -167,7 +167,7 @@ export function PupilDetailsDrawer({ open, onClose, pupilId, brandColour, darkMo
                       <BookOpen className="h-4 w-4" style={{ color: brandColour || '#1e3a5f' }} />
                       <span className="text-xs" style={{ color: muted }}>Theory Test:</span>
                       <span className="text-sm" style={{ color: text }}>
-                        {format(parseISO(details.theory_test_date), "d MMM yyyy")}
+                        {format(parseISO(details.theory_test_date), "dd/MM/yy")}
                       </span>
                       {details.theory_test_passed !== null && (
                         details.theory_test_passed 
@@ -197,7 +197,7 @@ export function PupilDetailsDrawer({ open, onClose, pupilId, brandColour, darkMo
                                 {test.is_mock ? 'Mock' : 'Driving'} Test — {test.result.charAt(0).toUpperCase() + test.result.slice(1)}
                               </p>
                               <p className="text-xs" style={{ color: muted }}>
-                                {format(parseISO(test.test_date), "d MMM yyyy")}
+                                {format(parseISO(test.test_date), "dd/MM/yy")}
                               </p>
                             </div>
                           </div>
@@ -226,7 +226,7 @@ export function PupilDetailsDrawer({ open, onClose, pupilId, brandColour, darkMo
                               £{p.amount.toFixed(2)}
                             </p>
                             <p className="text-xs" style={{ color: muted }}>
-                              {format(parseISO(p.payment_date), "d MMM yyyy")}
+                              {format(parseISO(p.payment_date), "dd/MM/yy")}
                               {p.payment_method && ` · ${p.payment_method}`}
                             </p>
                           </div>

@@ -1073,7 +1073,7 @@ export function PupilRecordsManager() {
                       <div className="flex items-center gap-2">
                         <Calendar className="h-3 w-3 text-muted-foreground" />
                         <span className="text-muted-foreground">DOB:</span>
-                        <span>{selectedPupil.date_of_birth ? format(new Date(selectedPupil.date_of_birth), "dd-MMM-yyyy") : "—"}</span>
+                        <span>{selectedPupil.date_of_birth ? format(new Date(selectedPupil.date_of_birth), "dd/MM/yy") : "—"}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Car className="h-3 w-3 text-muted-foreground" />
@@ -1140,7 +1140,7 @@ export function PupilRecordsManager() {
                       >
                         <div className="flex items-center gap-2">
                           <Calendar className="h-3 w-3 text-muted-foreground" />
-                          <span>{format(new Date(lesson.lesson_date), "dd-MMM-yyyy")}</span>
+                          <span>{format(new Date(lesson.lesson_date), "dd/MM/yy")}</span>
                           {lesson.start_time && (
                             <span className="text-muted-foreground">
                               {lesson.start_time.slice(0, 5)}
@@ -1230,7 +1230,7 @@ export function PupilRecordsManager() {
                     {selectedPupil.theory_test_date ? (
                       <div className="flex items-center gap-2 text-sm">
                         <Calendar className="h-3 w-3 text-muted-foreground" />
-                        <span>{format(new Date(selectedPupil.theory_test_date), "dd-MMM-yyyy")}</span>
+                        <span>{format(new Date(selectedPupil.theory_test_date), "dd/MM/yy")}</span>
                         {selectedPupil.theory_test_passed !== null && (
                           <Badge variant={selectedPupil.theory_test_passed ? "default" : "destructive"} 
                                  className={selectedPupil.theory_test_passed ? "bg-emerald-600" : ""}>
@@ -1288,7 +1288,7 @@ export function PupilRecordsManager() {
                       <div className="flex items-center gap-2 text-sm mb-2">
                         <Calendar className="h-3 w-3 text-blue-500" />
                         <span className="font-medium">Booked:</span>
-                        <span>{format(new Date(selectedPupil.test_date), "dd-MMM-yyyy")}</span>
+                        <span>{format(new Date(selectedPupil.test_date), "dd/MM/yy")}</span>
                         {selectedPupil.test_time && (
                           <span className="text-muted-foreground">at {selectedPupil.test_time}</span>
                         )}
@@ -1306,7 +1306,7 @@ export function PupilRecordsManager() {
                             className="flex items-center justify-between text-sm border-b pb-2"
                           >
                             <div className="flex items-center gap-2">
-                              <span>{format(new Date(test.test_date), "dd-MMM-yyyy")}</span>
+                              <span>{format(new Date(test.test_date), "dd/MM/yy")}</span>
                               {test.is_mock && (
                                 <Badge variant="outline" className="text-xs">Mock</Badge>
                               )}
@@ -1390,7 +1390,7 @@ export function PupilRecordsManager() {
                         className="flex items-center justify-between text-sm border-b pb-2 group"
                       >
                         <div className="flex items-center gap-2">
-                          <span>{format(new Date(payment.recorded_at), "dd-MMM-yyyy")}</span>
+                          <span>{format(new Date(payment.recorded_at), "dd/MM/yy")}</span>
                           <Badge variant="outline" className="text-xs capitalize">
                             {payment.payment_method}
                           </Badge>
@@ -1485,7 +1485,7 @@ export function PupilRecordsManager() {
                         >
                           <div className="flex items-center gap-2">
                             <Calendar className="h-3 w-3 text-muted-foreground" />
-                            <span>{format(new Date(lesson.lesson_date), "dd-MMM-yyyy")}</span>
+                            <span>{format(new Date(lesson.lesson_date), "dd/MM/yy")}</span>
                             <span className="text-muted-foreground">{lesson.start_time.slice(0, 5)}</span>
                           </div>
                           <div className="flex items-center gap-2">

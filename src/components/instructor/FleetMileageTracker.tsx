@@ -116,7 +116,7 @@ export function FleetMileageTracker({ instructorId }: FleetMileageTrackerProps) 
     doc.setTextColor(255);
     doc.text("Mileage Report", pw / 2, 16, { align: "center" });
     doc.setFontSize(9);
-    doc.text(`${format(new Date(fromDate), "d MMM yyyy")} — ${format(new Date(), "d MMM yyyy")}`, pw / 2, 24, { align: "center" });
+    doc.text(`${format(new Date(fromDate), "dd/MM/yy")} — ${format(new Date(), "dd/MM/yy")}`, pw / 2, 24, { align: "center" });
 
     doc.setTextColor(0);
     doc.setFontSize(11);
@@ -127,7 +127,7 @@ export function FleetMileageTracker({ instructorId }: FleetMileageTrackerProps) 
     doc.text(`HMRC Deduction: £${summary.hmrcDeduction.toFixed(2)}`, 14, y + 21);
 
     const tableRows = logs.map(l => [
-      format(new Date(l.log_date), "dd MMM yyyy"),
+      format(new Date(l.log_date), "dd/MM/yy"),
       `${kmToMiles(l.distance_km)} mi`,
       l.trip_type,
       l.purpose || "—",
@@ -254,7 +254,7 @@ export function FleetMileageTracker({ instructorId }: FleetMileageTrackerProps) 
                       )}
                     </div>
                     <div className="text-xs text-muted-foreground flex items-center gap-2 flex-wrap">
-                      <span>{format(new Date(log.log_date), "dd MMM yyyy")}</span>
+                      <span>{format(new Date(log.log_date), "dd/MM/yy")}</span>
                       {log.pupil?.name && <span>· {log.pupil.name}</span>}
                       {log.purpose && <span>· {log.purpose}</span>}
                     </div>

@@ -98,7 +98,7 @@ export function CalendarResyncRangePanel({ instructorId }: Props) {
                 className={cn("w-[150px] justify-start text-left font-normal")}
               >
                 <CalendarIcon className="mr-2 h-3.5 w-3.5" />
-                {format(from, "d MMM yyyy")}
+                {format(from, "dd/MM/yy")}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
@@ -123,7 +123,7 @@ export function CalendarResyncRangePanel({ instructorId }: Props) {
                 className={cn("w-[150px] justify-start text-left font-normal")}
               >
                 <CalendarIcon className="mr-2 h-3.5 w-3.5" />
-                {format(to, "d MMM yyyy")}
+                {format(to, "dd/MM/yy")}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">

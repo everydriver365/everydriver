@@ -62,7 +62,7 @@ function money(cents: number, currency = "GBP") {
 function fmtDate(iso: string | null) {
   if (!iso) return "—";
   try {
-    return format(new Date(iso), "d MMM yyyy");
+    return format(new Date(iso), "dd/MM/yy");
   } catch {
     return "—";
   }

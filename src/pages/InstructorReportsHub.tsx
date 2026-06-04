@@ -30,7 +30,7 @@ export default function InstructorReportsHub() {
     try {
       const reportData: Record<string, any> = {
         title,
-        period: `${format(new Date(startDate), "dd MMM yyyy")} — ${format(new Date(endDate), "dd MMM yyyy")}`,
+        period: `${format(new Date(startDate), "dd/MM/yy")} — ${format(new Date(endDate), "dd/MM/yy")}`,
       };
 
       if (reportType === "earnings") {

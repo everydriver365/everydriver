@@ -132,7 +132,7 @@ export function PupilReflectiveLogs({ pupilId, pupilName }: PupilReflectiveLogsP
               <div className="flex items-center gap-2">
                 <Clock className="h-3.5 w-3.5 text-muted-foreground" />
                 <span className="text-sm">
-                  {format(new Date(log.created_at), "dd MMM yyyy")}
+                  {format(new Date(log.created_at), "dd/MM/yy")}
                 </span>
                 {!log.instructor_response && (
                   <Badge variant="outline" className="text-xs text-amber-600 border-amber-300">

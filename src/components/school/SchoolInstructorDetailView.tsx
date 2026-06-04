@@ -147,7 +147,7 @@ export default function SchoolInstructorDetailView({ instructorId, onBack }: Pro
                         <Badge variant="outline" className="text-xs capitalize">{p.course_status || "active"}</Badge>
                       </TableCell>
                       <TableCell>{p.total_hours || 0}h</TableCell>
-                      <TableCell className="text-muted-foreground text-xs">{p.created_at ? format(new Date(p.created_at), "dd MMM yyyy") : "—"}</TableCell>
+                      <TableCell className="text-muted-foreground text-xs">{p.created_at ? format(new Date(p.created_at), "dd/MM/yy") : "—"}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -174,7 +174,7 @@ export default function SchoolInstructorDetailView({ instructorId, onBack }: Pro
                   ) : lessons.map(l => (
                     <TableRow key={l.id}>
                       <TableCell className="font-medium">{(l.pupils as any)?.name || "—"}</TableCell>
-                      <TableCell className="text-xs">{l.start_time ? format(new Date(l.start_time), "dd MMM yyyy") : "—"}</TableCell>
+                      <TableCell className="text-xs">{l.start_time ? format(new Date(l.start_time), "dd/MM/yy") : "—"}</TableCell>
                       <TableCell className="text-xs">{l.start_time ? format(new Date(l.start_time), "HH:mm") : "—"} – {l.end_time ? format(new Date(l.end_time), "HH:mm") : "—"}</TableCell>
                       <TableCell>
                         <Badge variant="outline" className="text-xs capitalize">{l.status || "scheduled"}</Badge>
@@ -207,7 +207,7 @@ export default function SchoolInstructorDetailView({ instructorId, onBack }: Pro
                       <TableCell className="font-medium">{(p.pupils as any)?.name || "—"}</TableCell>
                       <TableCell>£{Number(p.amount || 0).toFixed(2)}</TableCell>
                       <TableCell className="text-xs capitalize">{p.payment_method || "—"}</TableCell>
-                      <TableCell className="text-muted-foreground text-xs">{p.created_at ? format(new Date(p.created_at), "dd MMM yyyy") : "—"}</TableCell>
+                      <TableCell className="text-muted-foreground text-xs">{p.created_at ? format(new Date(p.created_at), "dd/MM/yy") : "—"}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -241,7 +241,7 @@ export default function SchoolInstructorDetailView({ instructorId, onBack }: Pro
                     <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">No test results</TableCell></TableRow>
                   ) : testResults.map(t => (
                     <TableRow key={t.id}>
-                      <TableCell className="text-xs">{t.test_date ? format(new Date(t.test_date), "dd MMM yyyy") : "—"}</TableCell>
+                      <TableCell className="text-xs">{t.test_date ? format(new Date(t.test_date), "dd/MM/yy") : "—"}</TableCell>
                       <TableCell>
                         <Badge variant={t.result === "pass" ? "default" : "destructive"} className="text-xs capitalize">{t.result}</Badge>
                       </TableCell>

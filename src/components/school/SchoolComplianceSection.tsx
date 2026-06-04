@@ -24,7 +24,7 @@ function expiryStatus(date: string | null): { label: string; variant: "default" 
   if (days < 0) return { label: "Expired", variant: "destructive" };
   if (days < 30) return { label: `${days}d left`, variant: "destructive" };
   if (days < 90) return { label: `${days}d left`, variant: "default" };
-  return { label: format(new Date(date), "dd MMM yyyy"), variant: "secondary" };
+  return { label: format(new Date(date), "dd/MM/yy"), variant: "secondary" };
 }
 
 export default function SchoolComplianceSection({ instructorIds }: Props) {
@@ -86,7 +86,7 @@ export default function SchoolComplianceSection({ instructorIds }: Props) {
                   <div className="flex items-center justify-between">
                     <span>DBS Expiry</span>
                     <div className="flex items-center gap-2">
-                      {i.dbs_certificate_expiry ? <span className="text-muted-foreground">{format(new Date(i.dbs_certificate_expiry), "dd MMM yyyy")}</span> : <span className="text-muted-foreground">—</span>}
+                      {i.dbs_certificate_expiry ? <span className="text-muted-foreground">{format(new Date(i.dbs_certificate_expiry), "dd/MM/yy")}</span> : <span className="text-muted-foreground">—</span>}
                     </div>
                   </div>
                   {adi.variant === "destructive" && (

@@ -196,7 +196,7 @@ export function TestResultsHistory({
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Calendar className="h-3 w-3 text-muted-foreground" />
-                          {format(new Date(result.test_date), "dd MMM yyyy")}
+                          {format(new Date(result.test_date), "dd/MM/yy")}
                         </div>
                         {result.test_centre?.name && (
                           <p className="text-xs text-muted-foreground mt-0.5">

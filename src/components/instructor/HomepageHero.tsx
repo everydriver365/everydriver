@@ -150,7 +150,7 @@ export function HomepageHero({
     { label: "THIS MONTH", completed: monthlyCompleted, total: monthlyTotal, subtitle: `${monthlyTotal} lesson${monthlyTotal !== 1 ? "s" : ""} this month` },
   ];
 
-  const dateStr = format(new Date(), "d MMMM yyyy");
+  const dateStr = format(new Date(), "dd/MM/yy");
 
   const navigate = useNavigate();
 

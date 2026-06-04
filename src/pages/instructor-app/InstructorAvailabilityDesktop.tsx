@@ -656,8 +656,8 @@ function TimeOffCard({
                 fontFamily: "ui-monospace, monospace",
               }}>
                 {t.start === t.end
-                  ? format(parseISO(t.start), "d MMM yyyy")
-                  : `${format(parseISO(t.start), "d MMM")} – ${format(parseISO(t.end), "d MMM yyyy")}`}
+                  ? format(parseISO(t.start), "dd/MM/yy")
+                  : `${format(parseISO(t.start), "d MMM")} – ${format(parseISO(t.end), "dd/MM/yy")}`}
               </div>
               <div>
                 <span style={{
@@ -824,7 +824,7 @@ function BookingRulesCard({
                   <Chip mono={false}>
                     <CalendarDays size={11} />
                     {rules.availableFrom
-                      ? format(parseISO(rules.availableFrom), "d MMM yyyy")
+                      ? format(parseISO(rules.availableFrom), "dd/MM/yy")
                       : "Available now"}
                   </Chip>
                 </button>

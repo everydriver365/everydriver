@@ -67,8 +67,8 @@ export function AvailabilityDiagnostic({ instructorId }: { instructorId: string 
         );
         setResult({
           status: "warn",
-          title: `Hidden until ${format(parseISO(availableFrom), "d MMM yyyy")}`,
-          detail: `Pupils won't see any slots until ${format(parseISO(availableFrom), "d MMM yyyy")} (${days} day${days === 1 ? "" : "s"} away). This is fine if you're on a long break — clear the date above if you didn't mean to set it.`,
+          title: `Hidden until ${format(parseISO(availableFrom), "dd/MM/yy")}`,
+          detail: `Pupils won't see any slots until ${format(parseISO(availableFrom), "dd/MM/yy")} (${days} day${days === 1 ? "" : "s"} away). This is fine if you're on a long break — clear the date above if you didn't mean to set it.`,
         });
         setLoading(false);
         return;

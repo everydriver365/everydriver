@@ -158,7 +158,7 @@ export function PupilTermsSection({
       {signed && (
         <div className="text-xs text-muted-foreground space-y-0.5">
           <div>
-            Signed {format(parseISO(signature!.signed_at), "d MMM yyyy")}
+            Signed {format(parseISO(signature!.signed_at), "dd/MM/yy")}
             {signature?.terms_version_snapshot != null && ` · v${signature.terms_version_snapshot}`}
           </div>
           {signature?.requires_parent_signature && (

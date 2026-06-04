@@ -61,7 +61,7 @@ export default function SchoolBookingsSection({ instructorIds }: Props) {
                 <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">No bookings found</TableCell></TableRow>
               ) : filtered.map(l => (
                 <TableRow key={l.id}>
-                  <TableCell className="text-sm">{new Date(l.start_time).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</TableCell>
+                  <TableCell className="text-sm">{new Date(l.start_time).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" })}</TableCell>
                   <TableCell className="text-sm font-medium">{l.pupils?.name || "—"}</TableCell>
                   <TableCell className="text-sm">{l.instructors?.name || "—"}</TableCell>
                   <TableCell className="text-sm">{l.duration_minutes || 60}min</TableCell>

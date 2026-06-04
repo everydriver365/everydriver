@@ -619,8 +619,8 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
                 </div>
               </div>
               <div className="text-right text-xs text-muted-foreground">
-                <div>Issued {format(new Date(), "d MMM yyyy")}</div>
-                <div>Due {dueDate ? format(new Date(dueDate), "d MMM yyyy") : "—"}</div>
+                <div>Issued {format(new Date(), "dd/MM/yy")}</div>
+                <div>Due {dueDate ? format(new Date(dueDate), "dd/MM/yy") : "—"}</div>
               </div>
             </div>
 

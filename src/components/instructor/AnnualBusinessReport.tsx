@@ -132,7 +132,7 @@ export function AnnualBusinessReport({ instructorId }: AnnualBusinessReportProps
     doc.text("Annual Business Report", 14, 22);
     doc.setFontSize(12);
     doc.text(`Tax Year: ${selectedYear}`, 14, 32);
-    doc.text(`Generated: ${new Date().toLocaleDateString("en-GB")}`, 14, 40);
+    doc.text(`Generated: ${new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" })}`, 14, 40);
 
     autoTable(doc, {
       startY: 50,

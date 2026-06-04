@@ -224,7 +224,7 @@ export function PupilNotes({ pupilId, instructorId, brandColour, instructorName 
                     {note.content?.substring(0, 60) || "No content"}
                   </p>
                   <p className="text-[10px] mt-1" style={{ color: 'var(--brand-muted)', opacity: 0.6 }}>
-                    {format(new Date(note.updated_at), "dd MMM yyyy")}
+                    {format(new Date(note.updated_at), "dd/MM/yy")}
                   </p>
                 </div>
                 {note.owner_type === "pupil" && (

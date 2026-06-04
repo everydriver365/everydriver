@@ -456,7 +456,7 @@ export default function InstructorTestResults() {
                         <TableCell>
                           <div className="flex items-center gap-2">
                             <Calendar className="h-3 w-3 text-muted-foreground" />
-                            {format(new Date(result.test_date), "dd MMM yyyy")}
+                            {format(new Date(result.test_date), "dd/MM/yy")}
                           </div>
                         </TableCell>
                         <TableCell className="font-medium">{result.pupil?.name || "Unknown"}</TableCell>

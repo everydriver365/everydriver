@@ -169,7 +169,7 @@ export function CertificationTracker() {
                           <Icon className={`h-4 w-4 ${mt?.color || "text-primary"}`} />
                           <p className="text-sm font-medium text-foreground">{cert.title}</p>
                         </div>
-                        <p className="text-xs text-muted-foreground">{format(new Date(cert.awarded_at), "d MMM yyyy")}</p>
+                        <p className="text-xs text-muted-foreground">{format(new Date(cert.awarded_at), "dd/MM/yy")}</p>
                         {cert.notes && <p className="text-xs text-muted-foreground mt-0.5">{cert.notes}</p>}
                       </div>
                     );

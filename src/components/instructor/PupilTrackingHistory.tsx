@@ -413,7 +413,7 @@ export function PupilTrackingHistory({ pupilId, pupilName }: PupilTrackingHistor
                         className="flex-1 text-left min-w-0"
                       >
                         <div className="flex items-center gap-2 text-sm font-medium">
-                          <span>{format(new Date(session.started_at), "dd MMM yyyy")}</span>
+                          <span>{format(new Date(session.started_at), "dd/MM/yy")}</span>
                           <span className="text-muted-foreground">
                             {format(new Date(session.started_at), "HH:mm")}
                           </span>

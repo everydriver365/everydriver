@@ -253,7 +253,7 @@ export default function InstructorResources() {
                           {resource.file_size_bytes && (
                             <span className="text-[10px] text-muted-foreground">· {formatFileSize(resource.file_size_bytes)}</span>
                           )}
-                          <span className="text-[10px] text-muted-foreground">· {format(new Date(resource.created_at), "d MMM yyyy")}</span>
+                          <span className="text-[10px] text-muted-foreground">· {format(new Date(resource.created_at), "dd/MM/yy")}</span>
                         </div>
                       </div>
                       <div className="flex items-center gap-1 shrink-0">

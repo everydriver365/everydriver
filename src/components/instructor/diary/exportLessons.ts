@@ -125,7 +125,7 @@ export function exportLessonsPdf(lessons: ExportLesson[], meta: ExportMeta) {
       "Source",
     ]],
     body: lessons.map((l) => [
-      format(new Date(l.lesson_date), "d MMM yyyy"),
+      format(new Date(l.lesson_date), "dd/MM/yy"),
       l.start_time?.slice(0, 5) || "—",
       l.duration_minutes,
       l.pupils?.name || "—",

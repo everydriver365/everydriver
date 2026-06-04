@@ -149,7 +149,7 @@ export function DocumentVault({ instructorId }: { instructorId: string }) {
                   <div className="flex gap-2 items-center mt-0.5">
                     <Badge variant="secondary" className="text-xs">{categoryLabels[doc.category] || doc.category}</Badge>
                     <span className="text-xs text-muted-foreground">{formatSize(doc.file_size_bytes)}</span>
-                    <span className="text-xs text-muted-foreground">{format(new Date(doc.created_at), "dd MMM yy")}</span>
+                    <span className="text-xs text-muted-foreground">{format(new Date(doc.created_at), "dd/MM/yy")}</span>
                   </div>
                 </div>
                 <div className="flex gap-1">

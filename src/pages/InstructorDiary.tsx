@@ -768,7 +768,7 @@ export default function InstructorDiary() {
                     <div className="flex items-center gap-3" style={{ fontSize: 11, color: "var(--d2-text-2)" }}>
                       <span className="inline-flex items-center gap-1">
                         <Calendar className="h-3 w-3" />
-                        {format(new Date(lesson.lesson_date), "MMM d, yyyy")}
+                        {format(new Date(lesson.lesson_date), "dd/MM/yy")}
                       </span>
                       {lesson.start_time && (
                         <span className="inline-flex items-center gap-1">

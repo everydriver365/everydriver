@@ -120,7 +120,7 @@ export function ParentLessonNotes({ childId }: Props) {
               <div key={note.id} className="p-2.5 rounded-lg bg-muted/50 border">
                 <p className="text-sm">{note.feedback_text}</p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {format(new Date(note.created_at), "dd MMM yyyy")}
+                  {format(new Date(note.created_at), "dd/MM/yy")}
                 </p>
               </div>
             ))}

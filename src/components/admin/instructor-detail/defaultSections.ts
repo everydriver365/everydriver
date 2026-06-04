@@ -8,7 +8,7 @@ const fmt = (v: any): string => {
 
 const fmtDate = (v: string | null | undefined): string => {
   if (!v) return "—";
-  try { return new Date(v).toLocaleDateString("en-GB"); } catch { return "—"; }
+  try { return new Date(v).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" }); } catch { return "—"; }
 };
 
 const fmtDateIso = (v: string | null | undefined): string => {

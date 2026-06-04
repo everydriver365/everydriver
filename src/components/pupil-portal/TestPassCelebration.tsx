@@ -93,7 +93,7 @@ export function TestPassCelebration({ pupilId, pupilName }: TestPassCelebrationP
 
   if (!visible) return null;
 
-  const dateLabel = test?.test_date ? format(parseISO(test.test_date), "d MMMM yyyy") : null;
+  const dateLabel = test?.test_date ? format(parseISO(test.test_date), "dd/MM/yy") : null;
 
   return (
     <div

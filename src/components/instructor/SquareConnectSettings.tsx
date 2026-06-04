@@ -98,7 +98,7 @@ export function SquareConnectSettings({ instructorId, squareMerchantId, squareCo
           </div>
           <div className="text-xs text-muted-foreground space-y-0.5">
             <p>Merchant: {squareMerchantId}</p>
-            {squareConnectedAt && <p>Connected: {format(new Date(squareConnectedAt), "d MMM yyyy")}</p>}
+            {squareConnectedAt && <p>Connected: {format(new Date(squareConnectedAt), "dd/MM/yy")}</p>}
           </div>
           <p className="text-xs text-muted-foreground">
             Pupil payments go directly to your Square account. The platform service fee is deducted automatically.

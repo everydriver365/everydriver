@@ -89,7 +89,7 @@ export function CertificateGenerator({ pupilName, pupilId, instructorName, instr
       y += 20;
 
       // Date and instructor
-      const today = new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+      const today = new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" });
       doc.setFontSize(10);
       doc.text(`Date: ${today}`, pw / 2 - 40, y, { align: "center" });
       doc.text(`Instructor: ${instructorName}`, pw / 2 + 40, y, { align: "center" });

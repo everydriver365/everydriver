@@ -179,7 +179,7 @@ export function SavedRoutesViewer({ instructorId }: SavedRoutesViewerProps) {
 
     const csv = [
       `Route: ${selectedRoute.name}`,
-      `Date: ${format(new Date(selectedRoute.created_at), "dd/MM/yyyy")}`,
+      `Date: ${format(new Date(selectedRoute.created_at), "dd/MM/yy")}`,
       `Distance: ${selectedRoute.distance_km?.toFixed(1) || "?"} km`,
       "",
       "WAYPOINTS",

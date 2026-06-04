@@ -314,7 +314,7 @@ export function MiniWebsitesManager() {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-muted-foreground text-sm">
-                    {format(new Date(site.created_at), "dd MMM yyyy")}
+                    {format(new Date(site.created_at), "dd/MM/yy")}
                   </TableCell>
                   <TableCell>
                     <DropdownMenu>

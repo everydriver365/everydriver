@@ -131,5 +131,5 @@ export function formatLongDate(raw: string | null | undefined): string | null {
   if (!isoMatch) return null;
   const d = new Date(`${isoMatch[1]}-${isoMatch[2].padStart(2, "0")}-${isoMatch[3].padStart(2, "0")}`);
   if (isNaN(d.getTime())) return null;
-  return d.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+  return d.toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" });
 }

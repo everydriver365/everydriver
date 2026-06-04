@@ -1019,7 +1019,7 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
                           )}
                         >
                           {field.value ? (
-                            format(field.value, "PPP")
+                            format(field.value, "dd/MM/yy")
                           ) : (
                             <span>Available now</span>
                           )}

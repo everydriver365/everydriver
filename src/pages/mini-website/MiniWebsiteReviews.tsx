@@ -166,7 +166,7 @@ export default function MiniWebsiteReviews({ subdomainSlug }: MiniWebsiteReviews
                     <p className="text-gray-600">{review.review_text}</p>
                     {review.review_date && (
                       <p className="text-sm text-gray-400 mt-3">
-                        {new Date(review.review_date).toLocaleDateString()}
+                        {new Date(review.review_date).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" })}
                       </p>
                     )}
                   </CardContent>

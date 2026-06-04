@@ -65,7 +65,7 @@ export function PupilJourneyTimeline({ pupilId, brandColour }: PupilJourneyTimel
             id: "registered",
             icon: UserPlus,
             label: "Registered",
-            detail: pupil.created_at ? format(new Date(pupil.created_at), "dd MMM yyyy") : undefined,
+            detail: pupil.created_at ? format(new Date(pupil.created_at), "dd/MM/yy") : undefined,
             completed: true,
           },
           {
@@ -73,7 +73,7 @@ export function PupilJourneyTimeline({ pupilId, brandColour }: PupilJourneyTimel
             icon: BookOpen,
             label: "First Lesson",
             detail: hasFirstLesson
-              ? format(new Date(firstLesson.lesson_date), "dd MMM yyyy")
+              ? format(new Date(firstLesson.lesson_date), "dd/MM/yy")
               : "Not yet",
             completed: hasFirstLesson,
             current: !hasFirstLesson,
@@ -85,7 +85,7 @@ export function PupilJourneyTimeline({ pupilId, brandColour }: PupilJourneyTimel
             detail: theoryPassed
               ? "Passed ✓"
               : hasTheoryDate
-                ? format(new Date(pupil.theory_test_date!), "dd MMM yyyy")
+                ? format(new Date(pupil.theory_test_date!), "dd/MM/yy")
                 : "Not yet",
             completed: theoryPassed,
             current: hasFirstLesson && !theoryPassed,
@@ -95,7 +95,7 @@ export function PupilJourneyTimeline({ pupilId, brandColour }: PupilJourneyTimel
             icon: Clock,
             label: "Practical Test Booked",
             detail: hasTestDate
-              ? format(new Date(pupil.test_date!), "dd MMM yyyy")
+              ? format(new Date(pupil.test_date!), "dd/MM/yy")
               : "Not yet",
             completed: hasTestDate,
             current: theoryPassed && !hasTestDate,

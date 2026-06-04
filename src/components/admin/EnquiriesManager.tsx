@@ -288,7 +288,7 @@ export function EnquiriesManager() {
                   <TableCell>
                     <div className="flex items-center gap-1 text-sm text-muted-foreground">
                       <Calendar className="h-3 w-3" />
-                      {format(new Date(enquiry.created_at), "dd MMM yyyy")}
+                      {format(new Date(enquiry.created_at), "dd/MM/yy")}
                     </div>
                   </TableCell>
                   <TableCell>{getStatusBadge(enquiry.status)}</TableCell>

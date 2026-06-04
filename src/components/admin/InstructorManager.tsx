@@ -563,7 +563,7 @@ export function InstructorManager({ onEdit, onViewProfile }: InstructorManagerPr
                   <div>
                     <span className="font-medium">{inst.name}</span>
                     <span className="ml-2 text-xs text-muted-foreground">
-                      Archived {inst.deleted_at ? new Date(inst.deleted_at).toLocaleDateString() : ""}
+                      Archived {inst.deleted_at ? new Date(inst.deleted_at).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" }) : ""}
                     </span>
                   </div>
                   <Button variant="outline" size="sm" onClick={() => handleRestore(inst.id)} className="gap-1.5">

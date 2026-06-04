@@ -265,7 +265,7 @@ export function PupilRewards({ pupilId, brandColour }: PupilRewardsProps) {
                   <div>
                     <div className="text-sm font-medium">{item.reason}</div>
                     <div className="text-xs text-muted-foreground">
-                      {new Date(item.created_at).toLocaleDateString()}
+                      {new Date(item.created_at).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" })}
                     </div>
                   </div>
                   <Badge 

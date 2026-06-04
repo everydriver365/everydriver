@@ -952,7 +952,7 @@ export default function PremiumPupilProfile() {
       : C.muted;
     const Icon = status === "passed" ? Check : status === "failed" ? X : status === "booked" ? CalendarPlus : GraduationCap;
 
-    const dateLabel = tDate ? format(parseISO(tDate), "d MMM yyyy") : null;
+    const dateLabel = tDate ? format(parseISO(tDate), "dd/MM/yy") : null;
     const title =
       status === "passed" ? "Passed"
       : status === "failed" ? "Not passed"
@@ -1029,9 +1029,9 @@ export default function PremiumPupilProfile() {
 
     const subtitleParts: string[] = [];
     if (status === "passed") {
-      if (pResultDate) subtitleParts.push(format(parseISO(pResultDate), "d MMM yyyy"));
+      if (pResultDate) subtitleParts.push(format(parseISO(pResultDate), "dd/MM/yy"));
     } else if (status === "failed") {
-      subtitleParts.push(pResultDate ? `Last attempt ${format(parseISO(pResultDate), "d MMM yyyy")}` : "Awaiting retake");
+      subtitleParts.push(pResultDate ? `Last attempt ${format(parseISO(pResultDate), "dd/MM/yy")}` : "Awaiting retake");
     } else if (status === "booked" && pDate) {
       subtitleParts.push(format(parseISO(pDate), "EEE d MMM"));
       if (pTime) subtitleParts.push(pTime.slice(0, 5));

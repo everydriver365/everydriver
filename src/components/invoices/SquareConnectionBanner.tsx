@@ -90,7 +90,7 @@ export function SquareConnectionBanner({
             <span className="text-xs text-muted-foreground">
               Merchant {squareMerchantId}
               {squareConnectedAt
-                ? ` · since ${format(new Date(squareConnectedAt), "d MMM yyyy")}`
+                ? ` · since ${format(new Date(squareConnectedAt), "dd/MM/yy")}`
                 : ""}
             </span>
           </div>

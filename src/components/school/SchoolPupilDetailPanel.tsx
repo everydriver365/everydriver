@@ -131,7 +131,7 @@ export default function SchoolPupilDetailPanel({ pupilId }: Props) {
             </span>
           } />
           {pupil.theory_test_date && (
-            <DetailRow label="Date" value={new Date(pupil.theory_test_date).toLocaleDateString("en-GB")} />
+            <DetailRow label="Date" value={new Date(pupil.theory_test_date).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" })} />
           )}
         </div>
       )}
@@ -149,7 +149,7 @@ export default function SchoolPupilDetailPanel({ pupilId }: Props) {
             </span>
           } />
           {pupil.test_date && (
-            <DetailRow label="Date" value={new Date(pupil.test_date).toLocaleDateString("en-GB")} />
+            <DetailRow label="Date" value={new Date(pupil.test_date).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" })} />
           )}
           {lastTestResult && (
             <>
@@ -178,7 +178,7 @@ export default function SchoolPupilDetailPanel({ pupilId }: Props) {
               <TableBody>
                 {lessons.map(l => (
                   <TableRow key={l.id} className="text-[11px]">
-                    <TableCell className="py-1 px-2">{new Date(l.start_time).toLocaleDateString("en-GB")}</TableCell>
+                    <TableCell className="py-1 px-2">{new Date(l.start_time).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" })}</TableCell>
                     <TableCell className="py-1 px-2">{l.duration_minutes || 60}min</TableCell>
                     <TableCell className="py-1 px-2 capitalize">{l.status}</TableCell>
                     <TableCell className="py-1 px-2">£{l.amount_due || 0}</TableCell>
@@ -208,7 +208,7 @@ export default function SchoolPupilDetailPanel({ pupilId }: Props) {
               <TableBody>
                 {payments.map(p => (
                   <TableRow key={p.id} className="text-[11px]">
-                    <TableCell className="py-1 px-2">{new Date(p.created_at).toLocaleDateString("en-GB")}</TableCell>
+                    <TableCell className="py-1 px-2">{new Date(p.created_at).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" })}</TableCell>
                     <TableCell className="py-1 px-2 font-medium">£{p.amount}</TableCell>
                     <TableCell className="py-1 px-2">{p.payment_method || "—"}</TableCell>
                   </TableRow>

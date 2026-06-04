@@ -93,7 +93,7 @@ export default function InstructorReviews() {
           </div>
           <div className="text-right text-sm text-muted-foreground">
             <p>{review.course_hours}h course</p>
-            {review.review_date && <p>{new Date(review.review_date).toLocaleDateString()}</p>}
+            {review.review_date && <p>{new Date(review.review_date).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" })}</p>}
           </div>
         </div>
         <p className="text-sm text-muted-foreground">{review.review_text}</p>

@@ -112,7 +112,7 @@ export default function SchoolFranchiseFeesSection({ schoolId }: Props) {
                       <TableCell className="text-sm">{format(new Date(fee.period_start), "MMM yyyy")}</TableCell>
                       <TableCell>£{Number(fee.amount).toFixed(2)}</TableCell>
                       <TableCell><Badge variant={cfg.variant} className="gap-1"><Icon className="h-3 w-3" /> {cfg.label}</Badge></TableCell>
-                      <TableCell className="text-sm">{fee.paid_at ? format(new Date(fee.paid_at), "dd MMM yyyy") : "—"}</TableCell>
+                      <TableCell className="text-sm">{fee.paid_at ? format(new Date(fee.paid_at), "dd/MM/yy") : "—"}</TableCell>
                       <TableCell className="text-sm capitalize">{fee.payment_method || "—"}</TableCell>
                     </TableRow>
                   );

@@ -392,7 +392,7 @@ export function AdminBookingsManager() {
                         {booking.instructor?.name || "Unknown"}
                       </TableCell>
                       <TableCell className="text-muted-foreground">
-                        {format(new Date(booking.lesson_date), "dd-MMM-yy")}
+                        {format(new Date(booking.lesson_date), "dd/MM/yy")}
                       </TableCell>
                       <TableCell className="text-muted-foreground text-sm">
                         <div className="flex items-center gap-2">

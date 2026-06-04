@@ -623,7 +623,7 @@ function ExaminerDetailDialog({
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Calendar className="h-3 w-3 text-muted-foreground" />
-                          {format(new Date(route.created_at), "dd MMM yyyy")}
+                          {format(new Date(route.created_at), "dd/MM/yy")}
                         </div>
                       </TableCell>
                       <TableCell>

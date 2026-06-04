@@ -553,7 +553,7 @@ export function AdminInstructorProfile({ instructorId, onBack, onNavigateToPupil
               <PlanBadge planSlug={subscription?.plan_slug} onUpgradeClick={() => { setSelectedPlanId(subscription?.plan_id || ""); setShowPlanDialog(true); }} />
             </div>
             <p className="text-sm text-muted-foreground mt-1">{instructor.email || "No email"}</p>
-            <p className="text-xs text-muted-foreground">Joined {new Date(instructor.created_at).toLocaleDateString()}</p>
+            <p className="text-xs text-muted-foreground">Joined {new Date(instructor.created_at).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" })}</p>
           </div>
           {/* Quick stats */}
           <div className="hidden md:flex gap-4">

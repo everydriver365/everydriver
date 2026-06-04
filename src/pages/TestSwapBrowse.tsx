@@ -84,7 +84,7 @@ const fmtDateLong = (d?: string | null) => {
 const fmtDateShort = (d?: string | null) => {
   if (!d) return "";
   const dt = new Date(d);
-  return isNaN(dt.getTime()) ? d : format(dt, "d MMM yyyy");
+  return isNaN(dt.getTime()) ? d : format(dt, "dd/MM/yy");
 };
 const fmtTime = (time?: string | null) => {
   if (!time) return "";

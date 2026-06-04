@@ -177,7 +177,7 @@ export function PupilPaymentFeed({ pupilId, currentBalance }: PupilPaymentFeedPr
           p.notes ?? "",
           p.payment_method ?? "",
           Math.abs(p.amount).toFixed(2),
-          format(recorded, "d MMM yyyy").toLowerCase(),
+          format(recorded, "dd/MM/yy").toLowerCase(),
           format(recorded, "yyyy-MM-dd"),
           lessonDateLabel,
           lesson?.start_time ?? "",

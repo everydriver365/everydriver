@@ -579,7 +579,7 @@ export function ExpenseTracker({ instructorId }: ExpenseTrackerProps) {
                         <div>
                           <p className="font-medium text-foreground">{expense.category}</p>
                           <p className="text-xs text-muted-foreground">
-                            {format(parseISO(expense.expense_date), "d MMM yyyy")}
+                            {format(parseISO(expense.expense_date), "dd/MM/yy")}
                           </p>
                           {expense.description && (
                             <p className="text-xs text-muted-foreground truncate mt-0.5">

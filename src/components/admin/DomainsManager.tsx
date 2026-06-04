@@ -298,7 +298,7 @@ export function DomainsManager() {
                     </span>
                   </TableCell>
                   <TableCell className="text-muted-foreground text-sm">
-                    {format(new Date(domain.created_at), "dd MMM yyyy")}
+                    {format(new Date(domain.created_at), "dd/MM/yy")}
                   </TableCell>
                   <TableCell>
                     <DropdownMenu>

@@ -68,7 +68,7 @@ export function PupilProgressTimeline({ pupilId, brandColour }: PupilProgressTim
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between">
                   <p className="text-xs font-medium" style={{ color: "var(--brand-foreground)" }}>
-                    {format(new Date(lesson.lesson_date), "d MMM yyyy")}
+                    {format(new Date(lesson.lesson_date), "dd/MM/yy")}
                   </p>
                   <div className="flex items-center gap-1 text-xs" style={{ color: "var(--brand-muted)" }}>
                     <Clock className="h-3 w-3" />
