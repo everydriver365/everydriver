@@ -156,6 +156,12 @@ export const adminRoutes = (
       path="/admin/external-partners"
       element={<ProtectedAdminRoute><ExternalPartners /></ProtectedAdminRoute>}
     />
+    <Route
+      path="/admin/instructors/:id"
+      element={<ProtectedAdminRoute><AdminInstructorDetail /></ProtectedAdminRoute>}
+    />
   </>
 );
+
+
 
