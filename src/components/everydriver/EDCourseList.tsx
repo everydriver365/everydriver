@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useEmbed } from "@/context/EmbedContext";
 import { format } from "date-fns";
 import { Calendar as CalendarIcon, ChevronRight, Star, BadgeCheck } from "lucide-react";
 import klarnaLogo from "@/assets/klarna-round-logo.svg";
@@ -107,7 +107,7 @@ function InstructorMeta({ instructorId }: { instructorId: string }) {
 
 
 export function EDCourseList({ courses }: EDCourseListProps) {
-  const navigate = useNavigate();
+  const { bookNavigate } = useEmbed();
 
   const goTo = (c: EDCourse) => {
     const dateParam = c.bookableDate
@@ -118,7 +118,7 @@ export function EDCourseList({ courses }: EDCourseListProps) {
       new URLSearchParams(window.location.search).get("everydriver") === "1"
         ? "&everydriver=1"
         : "";
-    navigate(`/book/${c.instructor.id}?hours=${c.hours}${dateParam}${edParam}`);
+    bookNavigate(`/book/${c.instructor.id}?hours=${c.hours}${dateParam}${edParam}`);
   };
 
   return (

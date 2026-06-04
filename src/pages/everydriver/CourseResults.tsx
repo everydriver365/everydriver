@@ -7,11 +7,29 @@ import { Drive365SearchHeader } from "@/components/courses/Drive365SearchHeader"
 import { SidebarCalendar } from "@/components/courses/SidebarCalendar";
 import { CourseGrid } from "@/components/courses/CourseGrid";
 import { Button } from "@/components/ui/button";
+import { EmbedProvider } from "@/context/EmbedContext";
+import { SEOHead } from "@/components/SEOHead";
 
 interface CourseResultsProps {
   defaultType?: CourseTypeFilter;
   title?: string;
   showTypeSwitcher?: boolean;
+  /**
+   * Embeddable, unbranded variant for iframing on third-party sites.
+   * Removes MainLayout chrome (Drive365 header/footer), goes transparent,
+   * posts iframe height to parent, and breaks booking navigation out of
+   * the iframe so payment redirects (Square/Klarna/Clearpay/GoCardless)
+   * run on the top-level drive365.co.uk window first-party.
+   *
+   * Mount example for host pages:
+   *   <iframe
+   *     src="https://drive365.co.uk/embed/courses"
+   *     style="width:100%;border:0;min-height:1200px"
+   *     allow="payment *; clipboard-write"
+   *     referrerpolicy="no-referrer-when-downgrade"
+   *   ></iframe>
+   */
+  embed?: boolean;
 }
 
 /**
@@ -28,6 +46,7 @@ export default function CourseResults({
   defaultType = "all",
   title = "Find Driving Courses Near You",
   showTypeSwitcher = true,
+  embed = false,
 }: CourseResultsProps) {
   const [searchParams, setSearchParams] = useSearchParams();
   const initialPostcode = searchParams.get("postcode") || "";
@@ -89,8 +108,48 @@ export default function CourseResults({
     return Array.from(seen.values()).slice(0, 8);
   }, [filteredCourses]);
 
+  // Embed-mode side effects: transparent backdrop + height reporter for host iframe.
+  useEffect(() => {
+    if (!embed) return;
+    const html = document.documentElement;
+    const body = document.body;
+    const prevHtmlBg = html.style.background;
+    const prevBodyBg = body.style.background;
+    html.style.background = "transparent";
+    body.style.background = "transparent";
+
+    let raf = 0;
+    const post = () => {
+      const h = Math.max(
+        document.documentElement.scrollHeight,
+        document.body.scrollHeight,
+      );
+      try {
+        window.parent?.postMessage({ type: "drive365:embed:height", height: h }, "*");
+      } catch { /* ignore */ }
+    };
+    const schedule = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(post);
+    };
+    const ro = new ResizeObserver(schedule);
+    ro.observe(document.body);
+    schedule();
+
+    return () => {
+      ro.disconnect();
+      cancelAnimationFrame(raf);
+      html.style.background = prevHtmlBg;
+      body.style.background = prevBodyBg;
+    };
+  }, [embed]);
+
+  const Shell: React.ElementType = embed ? "div" : MainLayout;
+
   return (
-    <MainLayout>
+    <EmbedProvider embed={embed}>
+      {embed && <SEOHead title="Find Driving Courses" description="Embeddable course search" noindex />}
+      <Shell {...(embed ? { className: "min-h-screen bg-transparent" } : {})}>
       <Drive365SearchHeader
         title={title}
         postcode={postcode}
@@ -237,6 +296,7 @@ export default function CourseResults({
           </div>
         </div>
       </section>
-    </MainLayout>
+      </Shell>
+    </EmbedProvider>
   );
 }

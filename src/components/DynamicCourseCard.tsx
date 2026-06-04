@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useEmbed } from "@/context/EmbedContext";
 import { MapPin, Clock, User, PoundSterling, Star, CheckCircle, Car, Zap, TrendingUp, ArrowRight, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -79,6 +80,7 @@ export function DynamicCourseCard({
 }: DynamicCourseCardProps) {
   const [isFlipped, setIsFlipped] = useState(false);
   const navigate = useNavigate();
+  const { bookNavigate } = useEmbed();
 
   const defaultRate = instructor.hourly_rate || 40;
   const hourlyRate = (effectiveHourlyRate != null && effectiveHourlyRate > 0) ? effectiveHourlyRate : defaultRate;
@@ -122,7 +124,7 @@ export function DynamicCourseCard({
   const handleBookNow = (e: React.MouseEvent) => {
     e.stopPropagation();
     const dateParam = nextAvailable ? `&date=${format(nextAvailable, "yyyy-MM-dd")}` : "";
-    navigate(`/book/${instructor.id}?hours=${hours}${dateParam}`);
+    bookNavigate(`/book/${instructor.id}?hours=${hours}${dateParam}`);
   };
 
   // Check if instructor has a future available_from date
