@@ -185,6 +185,43 @@ serve(async (req) => {
       }
     }
 
+    // ---- Pupil confirmation email (always send if Resend configured)
+    if (RESEND_KEY && enquiry.pupil_email) {
+      try {
+        const resend = new Resend(RESEND_KEY);
+        const pupilFirst = (enquiry.pupil_name || "").split(/\s+/)[0] || "there";
+        const pupilHtml = `
+          <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;background:#fff;color:#111">
+            <h2 style="margin:0 0 12px;font-size:20px;color:#142040">Thanks ${escapeHtml(pupilFirst)} — we've got your enquiry</h2>
+            <p style="margin:0 0 16px;font-size:15px;line-height:1.5">
+              We've passed your details to <strong>${escapeHtml(instructor.name)}</strong>. They'll be in touch shortly to talk through next steps${enquiry.course_name ? ` for the <strong>${escapeHtml(enquiry.course_name)}</strong>${enquiry.course_hours ? ` (${enquiry.course_hours} hours)` : ""}` : ""}.
+            </p>
+            <div style="background:#F9FAFB;border-radius:12px;padding:16px;border:1px solid #E5E7EB;font-size:14px">
+              <p style="margin:0 0 6px"><strong>Your enquiry</strong></p>
+              ${enquiry.course_name ? `<p style="margin:0 0 4px">Course: ${escapeHtml(enquiry.course_name)}${enquiry.course_hours ? ` · ${enquiry.course_hours}h` : ""}</p>` : ""}
+              ${enquiry.pupil_postcode ? `<p style="margin:0 0 4px">Pickup area: ${escapeHtml(enquiry.pupil_postcode)}</p>` : ""}
+              ${enquiry.message ? `<p style="margin:8px 0 0;white-space:pre-wrap">${escapeHtml(enquiry.message)}</p>` : ""}
+            </div>
+            <p style="margin:20px 0 0;color:#6b7280;font-size:13px">
+              If you need to reach us in the meantime, just reply to this email.
+            </p>
+            <p style="margin:24px 0 0;color:#9ca3af;font-size:12px">Drive 365 · ${escapeHtml(instructor.name)}</p>
+          </div>`;
+
+        const pupilRes = await resend.emails.send({
+          from: "Drive 365 <enquiries@notifications.drive365.co.uk>",
+          to: [enquiry.pupil_email],
+          reply_to: instructor.email || undefined,
+          subject: `Thanks — we've passed your enquiry to ${instructor.name}`,
+          html: pupilHtml,
+        });
+        results.pupilEmailSent = !pupilRes.error;
+        if (pupilRes.error) results.pupilEmailError = pupilRes.error.message;
+      } catch (e) {
+        results.pupilEmailError = e instanceof Error ? e.message : String(e);
+      }
+    }
+
     // Push notification reuse — fire-and-forget call to notify-instructor with admin_message style
     try {
       await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/notify-instructor`, {
