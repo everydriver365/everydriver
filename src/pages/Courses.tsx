@@ -1366,7 +1366,7 @@ export default function Courses({ restrictToInstructorIds, title: titleProp, emb
       </section>
 
       {/* Two Column Layout: Calendar + Courses */}
-      <section className="container py-8">
+      <section className={isChapmansMobile ? "w-full px-0 py-8" : "container py-8"}>
         {!embedded && !searchedPostcode ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
