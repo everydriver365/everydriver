@@ -294,7 +294,7 @@ export function ChapmansMobileResults({
                 borderRadius: 12,
                 border: "0.5px solid #E5E7EB",
                 overflow: "hidden",
-                marginBottom: 8,
+                marginBottom: isGrid ? 0 : 8,
                 cursor: "pointer",
                 display: "flex",
                 alignItems: "stretch",
