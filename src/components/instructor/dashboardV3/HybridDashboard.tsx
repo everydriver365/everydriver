@@ -328,7 +328,7 @@ function DvsaStandardsCard({ standardsCheck }: { standardsCheck: { result: strin
             {standardsCheck!.result}
           </span>
           <span style={{ fontSize: 11, color: t.muted }}>
-            {format(new Date(standardsCheck!.at), "d MMM yyyy")}
+            {format(new Date(standardsCheck!.at), "dd/MM/yy")}
           </span>
         </div>
       ) : (

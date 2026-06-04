@@ -102,7 +102,7 @@ function getStatus(expiry: string | null | undefined, hasFile = true): Status {
 function statusMeta(status: Status, expiry?: string | null) {
   if (status === "valid" && expiry) {
     return {
-      label: `Valid until ${format(parseISO(expiry), "d MMM yyyy")}`,
+      label: `Valid until ${format(parseISO(expiry), "dd/MM/yy")}`,
       tone: "valid" as const,
     };
   }
@@ -538,7 +538,7 @@ export function CredentialsPage({ instructorId }: { instructorId: string }) {
       Icon: IconShieldCheck,
       name: "DBS check",
       meta: form.dbs_certificate_expiry
-        ? `Expires ${format(parseISO(form.dbs_certificate_expiry), "d MMM yyyy")}`
+        ? `Expires ${format(parseISO(form.dbs_certificate_expiry), "dd/MM/yy")}`
         : "Enhanced background check",
       status: dbsStatus,
       expiry: form.dbs_certificate_expiry || null,
@@ -638,7 +638,7 @@ export function CredentialsPage({ instructorId }: { instructorId: string }) {
       Icon: IconFileCertificate,
       name: "MOT certificate",
       meta: form.car_mot_expiry
-        ? `Expires ${format(parseISO(form.car_mot_expiry), "d MMM yyyy")}`
+        ? `Expires ${format(parseISO(form.car_mot_expiry), "dd/MM/yy")}`
         : "Annual roadworthiness test",
       status: motStatus,
       expiry: form.car_mot_expiry || null,
@@ -662,7 +662,7 @@ export function CredentialsPage({ instructorId }: { instructorId: string }) {
       Icon: IconReceipt,
       name: "Road tax",
       meta: form.car_tax_expiry
-        ? `Expires ${format(parseISO(form.car_tax_expiry), "d MMM yyyy")}`
+        ? `Expires ${format(parseISO(form.car_tax_expiry), "dd/MM/yy")}`
         : "Vehicle excise duty",
       status: taxStatus,
       expiry: form.car_tax_expiry || null,
@@ -853,7 +853,7 @@ export function CredentialsPage({ instructorId }: { instructorId: string }) {
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4, flexShrink: 0 }}>
                       <div style={{ fontSize: 12, fontWeight: 600, color: "#1a1a1f", lineHeight: 1 }}>
-                        {r.expiry ? format(parseISO(r.expiry), "d MMM yyyy") : "—"}
+                        {r.expiry ? format(parseISO(r.expiry), "dd/MM/yy") : "—"}
                       </div>
                       <span
                         style={{

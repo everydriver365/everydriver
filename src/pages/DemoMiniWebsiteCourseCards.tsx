@@ -430,7 +430,7 @@ function Variant7({ course }: { course: CourseType }) {
           <Button className="w-full rounded-full" style={{ backgroundColor: brandColour }}>Book Now</Button>
           <CompactPaymentBadges amount={final} className="justify-center" />
           <p className="text-xs text-muted-foreground flex items-center justify-center gap-1">
-            <Calendar className="h-3 w-3" />Next: {format(nextDate, "d MMM yyyy")}
+            <Calendar className="h-3 w-3" />Next: {format(nextDate, "dd/MM/yy")}
           </p>
         </div>
       </div>

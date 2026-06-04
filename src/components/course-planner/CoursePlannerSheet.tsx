@@ -430,7 +430,7 @@ export function CoursePlannerSheet({
                     <PopoverTrigger asChild>
                       <Button variant="outline" className={cn("w-full justify-start font-normal", !testDate && "text-muted-foreground")}>
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {testDate ? format(testDate, "d MMM yyyy") : "Pick date"}
+                        {testDate ? format(testDate, "dd/MM/yy") : "Pick date"}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">

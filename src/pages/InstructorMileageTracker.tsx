@@ -81,7 +81,7 @@ export default function InstructorMileageTracker() {
 
     const headers = ["Date", "Distance (mi)", "Trip Type", "Purpose", "From", "To", "Pupil", "Fuel Cost"];
     const rows = logs.map(log => [
-      format(new Date(log.log_date), "dd/MM/yyyy"),
+      format(new Date(log.log_date), "dd/MM/yy"),
       (log.distance_km * 0.621371).toFixed(2),
       log.trip_type,
       log.purpose || "",

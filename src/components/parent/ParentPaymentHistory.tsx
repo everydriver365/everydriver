@@ -80,7 +80,7 @@ export function ParentPaymentHistory({ childId }: ParentPaymentHistoryProps) {
           >
             <div>
               <div className="text-sm font-medium">
-                {format(parseISO(p.recorded_at), "d MMM yyyy")}
+                {format(parseISO(p.recorded_at), "dd/MM/yy")}
               </div>
               {p.payment_method && (
                 <Badge variant="outline" className="text-[10px] mt-1">

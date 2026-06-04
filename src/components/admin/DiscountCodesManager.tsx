@@ -279,7 +279,7 @@ export function DiscountCodesManager() {
                       {code.valid_until ? (
                         <div className="flex items-center gap-1 text-sm">
                           <Calendar className="h-3 w-3" />
-                          {format(parseISO(code.valid_until), "dd MMM yyyy")}
+                          {format(parseISO(code.valid_until), "dd/MM/yy")}
                         </div>
                       ) : (
                         <span className="text-muted-foreground">No expiry</span>

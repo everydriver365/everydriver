@@ -309,7 +309,7 @@ export function SubscribersManager() {
                     )}
                   </TableCell>
                   <TableCell className="text-muted-foreground text-sm">
-                    {format(new Date(sub.created_at), "dd MMM yyyy")}
+                    {format(new Date(sub.created_at), "dd/MM/yy")}
                   </TableCell>
                   <TableCell>
                     <DropdownMenu>

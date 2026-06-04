@@ -317,7 +317,7 @@ export function PupilPortalGaps({ pupilId, instructorId }: PupilPortalGapsProps)
       out.push({
         date: dateStr,
         dayName: format(day, "EEEE"),
-        dateFormatted: format(day, "d MMM yyyy"),
+        dateFormatted: format(day, "dd/MM/yy"),
         hasSlots: daySlots.length > 0,
         isLimited: daySlots.length === 1,
         slots: daySlots,

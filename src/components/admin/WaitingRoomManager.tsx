@@ -199,7 +199,7 @@ export function WaitingRoomManager() {
                       className={cn("w-full justify-start text-left font-normal", !newDate && "text-muted-foreground")}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {newDate ? format(newDate, "PPP") : "Pick a date"}
+                      {newDate ? format(newDate, "dd/MM/yy") : "Pick a date"}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">

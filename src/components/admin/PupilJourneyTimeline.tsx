@@ -142,7 +142,7 @@ export function PupilJourneyTimeline({ pupilId, pupil }: PupilJourneyTimelinePro
               <div className="flex items-center gap-2 mt-0.5">
                 {m.date ? (
                   <span className="text-xs text-muted-foreground">
-                    {format(new Date(m.date), "dd MMM yyyy")}
+                    {format(new Date(m.date), "dd/MM/yy")}
                   </span>
                 ) : (
                   <span className="text-xs text-muted-foreground italic">Not yet</span>

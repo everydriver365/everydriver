@@ -171,7 +171,7 @@ export default function InstructorPlatformUpdates() {
                           <CatIcon className="h-3 w-3 mr-1" />
                           {cat.label}
                         </Badge>
-                        <span className="text-xs text-muted-foreground ml-auto">{format(new Date(u.created_at), "d MMM yyyy")}</span>
+                        <span className="text-xs text-muted-foreground ml-auto">{format(new Date(u.created_at), "dd/MM/yy")}</span>
                       </div>
                       <h3 className="font-semibold text-sm">{u.title}</h3>
                       <p className="text-sm text-muted-foreground">{u.description}</p>
@@ -242,7 +242,7 @@ export default function InstructorPlatformUpdates() {
                             <Badge variant="secondary" className={`text-[10px] shrink-0 ${status.color}`}>{status.label}</Badge>
                           </div>
                           {s.description && <p className="text-xs text-muted-foreground line-clamp-2">{s.description}</p>}
-                          <span className="text-[11px] text-muted-foreground">{format(new Date(s.created_at), "d MMM yyyy")}</span>
+                          <span className="text-[11px] text-muted-foreground">{format(new Date(s.created_at), "dd/MM/yy")}</span>
                         </div>
                       </div>
                     </CardContent>

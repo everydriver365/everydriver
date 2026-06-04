@@ -296,7 +296,7 @@ export function CommissionDashboard() {
                   {commissions.slice(0, 20).map(c => (
                     <tr key={c.id} className="border-b border-border/50 last:border-0">
                       <td className="py-2 text-muted-foreground">
-                        {format(new Date(c.created_at), "dd MMM yy")}
+                        {format(new Date(c.created_at), "dd/MM/yy")}
                       </td>
                       <td className="py-2 font-medium">
                         {c.instructor_id ? (instructors[c.instructor_id] || c.instructor_id.slice(0, 8)) : "—"}

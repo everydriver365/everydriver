@@ -430,7 +430,7 @@ export default function AvailabilitySyncHealth() {
                             >
                               {cfg.label}
                               {iss === "future_from" && r.available_from && (
-                                <> · {format(parseISO(r.available_from), "d MMM yyyy")}</>
+                                <> · {format(parseISO(r.available_from), "dd/MM/yy")}</>
                               )}
                             </Badge>
                           );

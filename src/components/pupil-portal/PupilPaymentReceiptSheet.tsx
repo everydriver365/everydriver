@@ -105,7 +105,7 @@ export function PupilPaymentReceiptSheet({
     if (!data) return;
     const text = `Receipt #${data.id.slice(0, 8)} · £${Math.abs(data.amount).toFixed(
       2
-    )} · ${format(parseISO(data.recorded_at), "d MMM yyyy")}`;
+    )} · ${format(parseISO(data.recorded_at), "dd/MM/yy")}`;
     try {
       if (navigator.share) {
         await navigator.share({ title: "Payment receipt", text });
@@ -145,7 +145,7 @@ export function PupilPaymentReceiptSheet({
               </div>
 
               <div className="grid grid-cols-2 gap-3 text-sm">
-                <Field label="Date" value={format(parseISO(data.recorded_at), "d MMM yyyy")} />
+                <Field label="Date" value={format(parseISO(data.recorded_at), "dd/MM/yy")} />
                 <Field label="Time" value={format(parseISO(data.recorded_at), "HH:mm")} />
                 <Field label="Method" value={data.payment_method ?? "—"} />
                 <Field label="Type" value={data.amount > 0 ? "Credit" : "Charge"} />

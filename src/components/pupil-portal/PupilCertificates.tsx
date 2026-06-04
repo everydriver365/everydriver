@@ -98,7 +98,7 @@ export function PupilCertificates({ pupilId, pupilName, instructorId, instructor
       doc.line(pw / 2 - nameWidth / 2, y, pw / 2 + nameWidth / 2, y);
       y += 20;
 
-      const dateStr = format(new Date(cert.issued_at), "d MMMM yyyy");
+      const dateStr = format(new Date(cert.issued_at), "dd/MM/yy");
       doc.setFontSize(10);
       doc.setTextColor(60, 60, 60);
       doc.text(`Date: ${dateStr}`, pw / 2 - 40, y, { align: "center" });
@@ -189,7 +189,7 @@ export function PupilCertificates({ pupilId, pupilName, instructorId, instructor
                     {MILESTONE_LABELS[cert.milestone_type] || cert.milestone_type}
                   </p>
                   <p className="text-[11px] text-muted-foreground">
-                    {format(new Date(cert.issued_at), "d MMM yyyy")}
+                    {format(new Date(cert.issued_at), "dd/MM/yy")}
                   </p>
                 </div>
                 <Button
@@ -235,7 +235,7 @@ export function PupilCertificates({ pupilId, pupilName, instructorId, instructor
                     </span>
                   </p>
                   <p className="text-[11px] text-muted-foreground">
-                    {format(new Date(payment.created_at), "d MMM yyyy")}
+                    {format(new Date(payment.created_at), "dd/MM/yy")}
                     {payment.notes ? ` — ${payment.notes}` : ""}
                   </p>
                 </div>

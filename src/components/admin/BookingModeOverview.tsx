@@ -344,7 +344,7 @@ export function BookingModeOverview() {
                             </Badge>
                           </div>
                           <div className="text-xs text-muted-foreground mt-1">
-                            Booked {format(new Date(pupil.created_at), "MMM d, yyyy")}
+                            Booked {format(new Date(pupil.created_at), "dd/MM/yy")}
                           </div>
                         </div>
 

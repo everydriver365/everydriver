@@ -377,7 +377,7 @@ export function ComplianceDashboard() {
                           <Badge variant={adiStatus.variant}>{adiStatus.label}</Badge>
                           {instructor.adi_badge_expiry && (
                             <span className="text-xs text-muted-foreground">
-                              {format(new Date(instructor.adi_badge_expiry), "dd/MM/yyyy")}
+                              {format(new Date(instructor.adi_badge_expiry), "dd/MM/yy")}
                             </span>
                           )}
                         </div>
@@ -387,7 +387,7 @@ export function ComplianceDashboard() {
                           <Badge variant={insuranceStatus.variant}>{insuranceStatus.label}</Badge>
                           {instructor.car_insurance_expiry && (
                             <span className="text-xs text-muted-foreground">
-                              {format(new Date(instructor.car_insurance_expiry), "dd/MM/yyyy")}
+                              {format(new Date(instructor.car_insurance_expiry), "dd/MM/yy")}
                             </span>
                           )}
                         </div>
@@ -397,7 +397,7 @@ export function ComplianceDashboard() {
                           <Badge variant={motStatus.variant}>{motStatus.label}</Badge>
                           {instructor.car_mot_expiry && (
                             <span className="text-xs text-muted-foreground">
-                              {format(new Date(instructor.car_mot_expiry), "dd/MM/yyyy")}
+                              {format(new Date(instructor.car_mot_expiry), "dd/MM/yy")}
                             </span>
                           )}
                         </div>
@@ -407,7 +407,7 @@ export function ComplianceDashboard() {
                           <Badge variant={taxStatus.variant}>{taxStatus.label}</Badge>
                           {instructor.car_tax_expiry && (
                             <span className="text-xs text-muted-foreground">
-                              {format(new Date(instructor.car_tax_expiry), "dd/MM/yyyy")}
+                              {format(new Date(instructor.car_tax_expiry), "dd/MM/yy")}
                             </span>
                           )}
                         </div>
@@ -417,7 +417,7 @@ export function ComplianceDashboard() {
                           <Badge variant={dbsStatus.variant}>{dbsStatus.label}</Badge>
                           {instructor.dbs_certificate_expiry && (
                             <span className="text-xs text-muted-foreground">
-                              {format(new Date(instructor.dbs_certificate_expiry), "dd/MM/yyyy")}
+                              {format(new Date(instructor.dbs_certificate_expiry), "dd/MM/yy")}
                             </span>
                           )}
                         </div>

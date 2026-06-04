@@ -173,7 +173,7 @@ export function SSLStatusBadge({
             <p>{config.description}</p>
             {status === "active" && expiresAt && (
               <p className="text-xs text-muted-foreground mt-1">
-                Expires: {format(new Date(expiresAt), "dd MMM yyyy")}
+                Expires: {format(new Date(expiresAt), "dd/MM/yy")}
               </p>
             )}
           </TooltipContent>
@@ -205,14 +205,14 @@ export function SSLStatusBadge({
             <p className="text-muted-foreground">Provisioned</p>
             <p className="font-medium">
               {provisionedAt
-                ? format(new Date(provisionedAt), "dd MMM yyyy")
+                ? format(new Date(provisionedAt), "dd/MM/yy")
                 : "N/A"}
             </p>
           </div>
           <div>
             <p className="text-muted-foreground">Expires</p>
             <p className="font-medium">
-              {expiresAt ? format(new Date(expiresAt), "dd MMM yyyy") : "N/A"}
+              {expiresAt ? format(new Date(expiresAt), "dd/MM/yy") : "N/A"}
             </p>
           </div>
         </div>

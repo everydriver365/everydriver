@@ -275,7 +275,7 @@ export function AdminSchoolFranchiseFees() {
                               <Icon className="h-3 w-3" /> {cfg.label}
                             </Badge>
                           </TableCell>
-                          <TableCell className="text-sm">{fee.paid_at ? format(new Date(fee.paid_at), "dd MMM yyyy") : "—"}</TableCell>
+                          <TableCell className="text-sm">{fee.paid_at ? format(new Date(fee.paid_at), "dd/MM/yy") : "—"}</TableCell>
                           <TableCell className="text-sm capitalize">{fee.payment_method || "—"}</TableCell>
                           <TableCell className="text-right">
                             <div className="flex gap-1 justify-end">

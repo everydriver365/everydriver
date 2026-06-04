@@ -132,7 +132,7 @@ export function PupilPortalProfileEdit({ pupil, onPupilUpdate, brandColour, swap
               onCancel={() => setDobOpen(false)}
               open={dobOpen}
               onOpenChange={setDobOpen}
-              displayValue={pupil.date_of_birth ? format(new Date(pupil.date_of_birth), "dd/MM/yyyy") : ""}
+              displayValue={pupil.date_of_birth ? format(new Date(pupil.date_of_birth), "dd/MM/yy") : ""}
             />
           </div>
         </div>

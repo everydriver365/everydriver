@@ -400,7 +400,7 @@ export function PerformanceDashboard({ instructorId }: PerformanceDashboardProps
                       <div className="font-medium text-sm truncate">{pupil.name}</div>
                       {pupil.test_result_date && (
                         <div className="text-xs text-muted-foreground">
-                          Passed {format(parseISO(pupil.test_result_date), "d MMM yyyy")}
+                          Passed {format(parseISO(pupil.test_result_date), "dd/MM/yy")}
                         </div>
                       )}
                     </div>

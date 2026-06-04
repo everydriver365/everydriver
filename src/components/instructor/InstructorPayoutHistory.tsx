@@ -112,7 +112,7 @@ export function InstructorPayoutHistory({ instructorId }: InstructorPayoutHistor
                         £{Number(payout.amount).toFixed(2)}
                       </div>
                       <div className="text-[10px] text-muted-foreground">
-                        {format(new Date(payout.transferred_at), "d MMM yyyy")} • {payout.payment_ids.length} payment(s)
+                        {format(new Date(payout.transferred_at), "dd/MM/yy")} • {payout.payment_ids.length} payment(s)
                       </div>
                     </div>
                   </div>

@@ -271,7 +271,7 @@ export default function InstructorInOut() {
                     <div className="flex-1 min-w-0">
                       <p className="font-medium truncate">{transaction.description}</p>
                       <p className="text-xs text-muted-foreground">
-                        {format(parseISO(transaction.date), "d MMM yyyy")}
+                        {format(parseISO(transaction.date), "dd/MM/yy")}
                         {transaction.category && ` • ${transaction.category}`}
                       </p>
                     </div>

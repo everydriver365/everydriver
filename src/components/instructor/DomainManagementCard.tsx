@@ -122,14 +122,14 @@ export function DomainManagementCard({
           <div>
             <p className="text-muted-foreground">Registered</p>
             <p className="font-medium">
-              {format(new Date(domain.created_at), "dd MMM yyyy")}
+              {format(new Date(domain.created_at), "dd/MM/yy")}
             </p>
           </div>
           <div>
             <p className="text-muted-foreground">Expires</p>
             <p className={`font-medium ${isExpiringSoon ? "text-destructive" : ""}`}>
               {domain.expires_at
-                ? format(new Date(domain.expires_at), "dd MMM yyyy")
+                ? format(new Date(domain.expires_at), "dd/MM/yy")
                 : "N/A"}
             </p>
           </div>

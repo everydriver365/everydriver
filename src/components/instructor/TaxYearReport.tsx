@@ -163,7 +163,7 @@ export function TaxYearReport({
       doc.setFontSize(12);
       doc.setFont("helvetica", "normal");
       doc.text(`Tax Year: ${taxYear}`, pageWidth / 2, 28, { align: "center" });
-      doc.text(`(${format(startDate, "d MMM yyyy")} - ${format(endDate, "d MMM yyyy")})`, pageWidth / 2, 34, { align: "center" });
+      doc.text(`(${format(startDate, "dd/MM/yy")} - ${format(endDate, "dd/MM/yy")})`, pageWidth / 2, 34, { align: "center" });
 
       // Instructor details
       doc.setFontSize(10);

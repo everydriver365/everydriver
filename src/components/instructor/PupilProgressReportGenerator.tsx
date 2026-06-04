@@ -83,7 +83,7 @@ export function PupilProgressReportGenerator({ instructorId, pupils }: PupilProg
       doc.setTextColor(255);
       doc.text("Pupil Progress Report", pageWidth / 2, 18, { align: "center" });
       doc.setFontSize(10);
-      doc.text(`Generated ${format(new Date(), "d MMMM yyyy")}`, pageWidth / 2, 28, { align: "center" });
+      doc.text(`Generated ${format(new Date(), "dd/MM/yy")}`, pageWidth / 2, 28, { align: "center" });
 
       // Pupil info
       doc.setTextColor(0);
@@ -98,7 +98,7 @@ export function PupilProgressReportGenerator({ instructorId, pupils }: PupilProg
       doc.text(`Total driving hours: ${totalHours}h`, 14, infoY + 6);
       doc.text(`Overall progress: ${pupil.progress || 0}%`, 14, infoY + 12);
       if (pupil.test_date) {
-        doc.text(`Test date: ${format(new Date(pupil.test_date), "d MMM yyyy")}`, 14, infoY + 18);
+        doc.text(`Test date: ${format(new Date(pupil.test_date), "dd/MM/yy")}`, 14, infoY + 18);
       }
       doc.text(`Instructor: ${instructor?.name || "N/A"}`, pageWidth - 14, infoY, { align: "right" });
       doc.text(`Phone: ${instructor?.phone || "N/A"}`, pageWidth - 14, infoY + 6, { align: "right" });
@@ -145,7 +145,7 @@ export function PupilProgressReportGenerator({ instructorId, pupils }: PupilProg
         doc.text("Recent Lessons", 14, lessonsStartY);
 
         const lessonRows = lessonHistory.map(l => [
-          l.lesson_date ? format(new Date(l.lesson_date), "d MMM yyyy") : "-",
+          l.lesson_date ? format(new Date(l.lesson_date), "dd/MM/yy") : "-",
           `${l.duration_minutes || 60} min`,
           (l.skills_practiced || []).join(", ").slice(0, 60) || "-",
           (l.notes || "-").slice(0, 80),

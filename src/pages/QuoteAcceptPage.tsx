@@ -219,7 +219,7 @@ export default function QuoteAcceptPage() {
 
             {validUntil && !accepted && !expired && !cancelled && !declined && (
               <p className="text-xs text-center text-muted-foreground">
-                Valid until {format(new Date(validUntil), "d MMM yyyy")}
+                Valid until {format(new Date(validUntil), "dd/MM/yy")}
               </p>
             )}
 

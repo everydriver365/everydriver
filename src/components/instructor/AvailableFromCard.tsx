@@ -52,7 +52,7 @@ export function AvailableFromCard({ instructorId }: { instructorId: string }) {
       return;
     }
     setValue(next);
-    toast.success(next ? `Available from ${format(parseISO(next), "d MMM yyyy")}` : "Available now");
+    toast.success(next ? `Available from ${format(parseISO(next), "dd/MM/yy")}` : "Available now");
   };
 
   const display = value ? format(parseISO(value), "EEE, d MMM yyyy") : "Available now";

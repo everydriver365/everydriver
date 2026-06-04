@@ -446,7 +446,7 @@ export function AdminMessagesManager() {
                                 {format(dateRange.from, "dd/MM/yy")} - {format(dateRange.to, "dd/MM/yy")}
                               </>
                             ) : (
-                              format(dateRange.from, "dd MMM yyyy")
+                              format(dateRange.from, "dd/MM/yy")
                             )
                           ) : (
                             "Select dates"

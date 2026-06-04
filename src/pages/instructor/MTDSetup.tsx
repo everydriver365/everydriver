@@ -257,7 +257,7 @@ export default function MTDSetup() {
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
                       {state.business_start_date
-                        ? format(state.business_start_date, "PPP")
+                        ? format(state.business_start_date, "dd/MM/yy")
                         : "Pick a date"}
                     </Button>
                   </PopoverTrigger>
@@ -434,7 +434,7 @@ export default function MTDSetup() {
                 <Row k="Business name" v={state.business_name} />
                 <Row
                   k="Business start date"
-                  v={state.business_start_date ? format(state.business_start_date, "PPP") : "—"}
+                  v={state.business_start_date ? format(state.business_start_date, "dd/MM/yy") : "—"}
                 />
                 <Row k="NI number" v={formatNinoForDisplay(state.hmrc_nino)} />
                 <Row k="UTR" v={state.utr} />

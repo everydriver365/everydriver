@@ -81,7 +81,7 @@ function buildPdf(rows: PaymentTx[], from: Date, to: Date, instructorName: strin
   doc.text("Payments report", 14, 18);
   doc.setFontSize(10);
   doc.setTextColor(100);
-  doc.text(`${instructorName || "Instructor"} · ${format(from, "d MMM yyyy")} – ${format(to, "d MMM yyyy")}`, 14, 25);
+  doc.text(`${instructorName || "Instructor"} · ${format(from, "dd/MM/yy")} – ${format(to, "dd/MM/yy")}`, 14, 25);
 
   const total = rows.reduce((s, r) => s + r.amount, 0);
   doc.setTextColor(15);
@@ -139,7 +139,7 @@ function buildTaxPdf(rows: PaymentTx[], from: Date, to: Date, instructorName: st
   doc.setFontSize(10);
   doc.setTextColor(100);
   doc.text(
-    `${instructorName || "Instructor"} · Self-Employment (SA103) · ${format(from, "d MMM yyyy")} – ${format(to, "d MMM yyyy")}`,
+    `${instructorName || "Instructor"} · Self-Employment (SA103) · ${format(from, "dd/MM/yy")} – ${format(to, "dd/MM/yy")}`,
     14, 25
   );
   doc.setFontSize(8);
@@ -358,7 +358,7 @@ export function PaymentsExportDialog({ open, onOpenChange, transactions, filtere
                   <PopoverTrigger asChild>
                     <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !from && "text-muted-foreground")}>
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {from ? format(from, "d MMM yyyy") : "Pick date"}
+                      {from ? format(from, "dd/MM/yy") : "Pick date"}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
@@ -372,7 +372,7 @@ export function PaymentsExportDialog({ open, onOpenChange, transactions, filtere
                   <PopoverTrigger asChild>
                     <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !to && "text-muted-foreground")}>
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {to ? format(to, "d MMM yyyy") : "Pick date"}
+                      {to ? format(to, "dd/MM/yy") : "Pick date"}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
@@ -414,7 +414,7 @@ export function PaymentsExportDialog({ open, onOpenChange, transactions, filtere
           {/* Summary */}
           <div className="rounded-lg bg-muted/40 p-3 flex justify-between text-sm">
             <span className="text-muted-foreground">
-              {format(range.from, "d MMM")} – {format(range.to, "d MMM yyyy")}
+              {format(range.from, "d MMM")} – {format(range.to, "dd/MM/yy")}
             </span>
             <span className="font-medium">
               {filtered.length} txns · {gbp(total)}

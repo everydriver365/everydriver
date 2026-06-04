@@ -36,7 +36,7 @@ function ExpiryBadge({ label, date }: { label: string; date: string | null }) {
       <div className="min-w-0">
         <p className="text-[10px] font-bold uppercase tracking-wider opacity-70">{label}</p>
         <p className="text-[12px] font-semibold">
-          {expired ? "Expired" : days <= 30 ? `${days}d left` : format(d, "dd MMM yy")}
+          {expired ? "Expired" : days <= 30 ? `${days}d left` : format(d, "dd/MM/yy")}
         </p>
       </div>
     </div>

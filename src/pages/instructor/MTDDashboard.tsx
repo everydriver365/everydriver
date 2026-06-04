@@ -68,7 +68,7 @@ function shortMonth(iso: string): string {
   return format(parseISO(iso), "d MMM");
 }
 function longDate(iso: string): string {
-  return format(parseISO(iso), "d MMM yyyy");
+  return format(parseISO(iso), "dd/MM/yy");
 }
 
 export default function MTDDashboard() {
@@ -433,7 +433,7 @@ function SettingsSheet({
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {draft.business_start_date
-                    ? format(parseISO(draft.business_start_date), "PPP")
+                    ? format(parseISO(draft.business_start_date), "dd/MM/yy")
                     : "Pick a date"}
                 </Button>
               </PopoverTrigger>

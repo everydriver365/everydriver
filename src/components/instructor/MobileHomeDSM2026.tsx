@@ -505,7 +505,7 @@ function UnifiedInfoPanel({
   const membershipActive = (membership?.status ?? null) === "active";
   const planName = membership?.planName ?? "Free";
   const renewLabel = membership?.currentPeriodEnd
-    ? `Renews ${format(parseISO(membership.currentPeriodEnd), "d MMM yyyy")}`
+    ? `Renews ${format(parseISO(membership.currentPeriodEnd), "dd/MM/yy")}`
     : membershipActive
     ? "No renewal date"
     : "No active plan";
@@ -2897,7 +2897,7 @@ function EventsAndMembershipCard({
   const isActive = status === "active";
   const billingCycle = membership?.billingCycle ?? null;
   const renews = membership?.currentPeriodEnd ?? null;
-  const renewsLabel = renews ? format(new Date(renews), "d MMM yyyy") : "—";
+  const renewsLabel = renews ? format(new Date(renews), "dd/MM/yy") : "—";
   const billingLabel = billingCycle
     ? billingCycle.charAt(0).toUpperCase() + billingCycle.slice(1)
     : "—";

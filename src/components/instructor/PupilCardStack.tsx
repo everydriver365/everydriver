@@ -432,7 +432,7 @@ export function PupilCardStack({
       } else {
         // Append to general pupil notes
         const existing = pupil.notes ? pupil.notes + "\n\n" : "";
-        const dated = `[${format(new Date(), "dd MMM yyyy")}] ${noteText}`;
+        const dated = `[${format(new Date(), "dd/MM/yy")}] ${noteText}`;
         const { error } = await supabase.from("pupils").update({ notes: existing + dated }).eq("id", pupil.id);
         if (error) throw error;
         toast.success("Note saved");

@@ -196,7 +196,7 @@ export function ComplianceOverview({
                         )}
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        {item.expiryDate ? format(new Date(item.expiryDate), "d MMM yyyy") : "Not set"}
+                        {item.expiryDate ? format(new Date(item.expiryDate), "dd/MM/yy") : "Not set"}
                       </p>
                     </div>
                     <div className="text-right shrink-0">

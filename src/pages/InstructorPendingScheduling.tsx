@@ -186,7 +186,7 @@ export default function InstructorPendingScheduling() {
                         <div>
                           <CardTitle className="text-lg">{pupil.name}</CardTitle>
                           <p className="text-sm text-muted-foreground">
-                            Booked {format(new Date(pupil.created_at), "MMM d, yyyy")}
+                            Booked {format(new Date(pupil.created_at), "dd/MM/yy")}
                           </p>
                         </div>
                       </div>

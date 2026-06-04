@@ -105,7 +105,7 @@ export function TestSwapOfferDialog({ requestId, instructorId, isAdmin, open, on
                 <PopoverTrigger asChild>
                   <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !testDate && "text-muted-foreground")}>
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {testDate ? format(testDate, "dd/MM/yyyy") : "Pick date"}
+                    {testDate ? format(testDate, "dd/MM/yy") : "Pick date"}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">

@@ -12,11 +12,11 @@ export function formatSwapDate(start: string, end?: string | null): string {
   if (end) {
     const e = parseISO(end);
     if (s.getFullYear() === e.getFullYear()) {
-      return `${format(s, "d MMM")} – ${format(e, "d MMM yyyy")}`;
+      return `${format(s, "d MMM")} – ${format(e, "dd/MM/yy")}`;
     }
-    return `${format(s, "d MMM yyyy")} – ${format(e, "d MMM yyyy")}`;
+    return `${format(s, "dd/MM/yy")} – ${format(e, "dd/MM/yy")}`;
   }
-  return format(s, "d MMM yyyy");
+  return format(s, "dd/MM/yy");
 }
 
 function fmtTime(t: string): string {
@@ -46,7 +46,7 @@ export function formatShortDate(date: Date, pairedYear?: number): string {
   const currentYear = new Date().getFullYear();
   const y = date.getFullYear();
   const showYear = y !== currentYear || (pairedYear != null && pairedYear !== y);
-  return format(date, showYear ? "d MMM yyyy" : "d MMM");
+  return format(date, showYear ? "dd/MM/yy" : "d MMM");
 }
 
 /** Time formatter mirroring `fmtTime` for shared use in form inputs. */

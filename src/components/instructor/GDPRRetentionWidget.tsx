@@ -206,7 +206,7 @@ export function GDPRRetentionWidget({ instructorId }: GDPRRetentionWidgetProps) 
                     <p className="font-medium text-xs">{pupil.name}</p>
                     <p className="text-xs text-muted-foreground">
                       Last active: {pupil.last_lesson_date
-                        ? format(parseISO(pupil.last_lesson_date), "d MMM yyyy")
+                        ? format(parseISO(pupil.last_lesson_date), "dd/MM/yy")
                         : "No lessons"}
                     </p>
                   </div>

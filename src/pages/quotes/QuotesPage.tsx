@@ -246,7 +246,7 @@ export default function QuotesPage({ scope }: { scope: Scope }) {
                         onClick={() => { window.location.href = detailHref; }}
                       >
                         <td className="py-2 pr-3 whitespace-nowrap text-xs text-muted-foreground">
-                          <div>{format(new Date(r.created_at), "d MMM yyyy")}</div>
+                          <div>{format(new Date(r.created_at), "dd/MM/yy")}</div>
                           <div className="opacity-70">{r.quote_ref}</div>
                         </td>
                         <td className="py-2 pr-3">

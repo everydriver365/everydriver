@@ -282,7 +282,7 @@ export function CPDLogManager({ instructorId, onUpdate }: CPDLogManagerProps) {
                 <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <Calendar className="h-3 w-3" />
-                    {format(parseISO(entry.date), "d MMM yyyy")}
+                    {format(parseISO(entry.date), "dd/MM/yy")}
                   </span>
                   <span>{getActivityLabel(entry.activity_type)}</span>
                   {entry.provider && <span>• {entry.provider}</span>}

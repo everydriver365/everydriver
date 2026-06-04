@@ -712,7 +712,7 @@ function PupilDetailPanel({ pupil, instructorId, onClose }: { pupil: Pupil; inst
                 <div key={lesson.id} className="flex items-center justify-between py-1.5 px-2 rounded-2xl bg-muted/30 text-sm">
                   <div className="flex items-center gap-2">
                     <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
-                    <span>{format(new Date(lesson.lesson_date), "dd MMM yyyy")}</span>
+                    <span>{format(new Date(lesson.lesson_date), "dd/MM/yy")}</span>
                     {lesson.start_time && (
                       <span className="text-muted-foreground text-xs">{lesson.start_time.slice(0, 5)}</span>
                     )}

@@ -370,7 +370,7 @@ export function DrivingTestReportForm({
 
   const formattedDate = (() => {
     try {
-      return testDate ? format(parseISO(testDate), "d MMM yyyy") : null;
+      return testDate ? format(parseISO(testDate), "dd/MM/yy") : null;
     } catch {
       return testDate || null;
     }

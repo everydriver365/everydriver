@@ -77,7 +77,7 @@ export default function InstructorWhatsAppTemplates() {
             {t.rejection_reason && (
               <p className="text-xs text-destructive mt-2">Rejected: {t.rejection_reason}</p>
             )}
-            <p className="text-[10px] text-muted-foreground mt-2">Created {format(new Date(t.created_at), "d MMM yyyy")}</p>
+            <p className="text-[10px] text-muted-foreground mt-2">Created {format(new Date(t.created_at), "dd/MM/yy")}</p>
           </Card>
         ))}
       </div>

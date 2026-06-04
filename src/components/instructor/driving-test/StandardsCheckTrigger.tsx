@@ -383,8 +383,8 @@ export function StandardsCheckTrigger({ instructorId }: StandardsCheckTriggerPro
 
         <div className="pt-2 text-xs text-muted-foreground border-t">
           <p>
-            Period: {format(new Date(metrics.periodStart), "dd MMM yyyy")} -{" "}
-            {format(new Date(metrics.periodEnd), "dd MMM yyyy")}
+            Period: {format(new Date(metrics.periodStart), "dd/MM/yy")} -{" "}
+            {format(new Date(metrics.periodEnd), "dd/MM/yy")}
           </p>
         </div>
       </CardContent>

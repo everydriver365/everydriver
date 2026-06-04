@@ -136,7 +136,7 @@ export function ComplianceTracker({ instructorId }: ComplianceTrackerProps) {
     } else if (days <= 60) {
       return { status: "warning", label: `${days}d left`, color: "bg-amber-500 text-white" };
     } else {
-      return { status: "ok", label: format(parseISO(dateStr), "d MMM yyyy"), color: "bg-emerald-500/10 text-emerald-600" };
+      return { status: "ok", label: format(parseISO(dateStr), "dd/MM/yy"), color: "bg-emerald-500/10 text-emerald-600" };
     }
   };
 
@@ -287,7 +287,7 @@ export function ComplianceTracker({ instructorId }: ComplianceTrackerProps) {
                             {entry.title}
                           </div>
                           <div style={{ fontSize: 10, color: "#aaa", marginTop: 1 }}>
-                            Last logged · {format(parseISO(entry.date), "d MMM yyyy")}
+                            Last logged · {format(parseISO(entry.date), "dd/MM/yy")}
                           </div>
                         </div>
                       </div>
@@ -384,7 +384,7 @@ export function ComplianceTracker({ instructorId }: ComplianceTrackerProps) {
               else if (days <= 60) { pillBg = "#fff3e0"; pillColor = "#d97706"; pillLabel = "Expiring"; PillIcon = AlertTriangle; }
               else { pillBg = "#e8f5ee"; pillColor = "#2d8a4e"; pillLabel = "Valid"; PillIcon = CheckCircle2; }
             }
-            const dateLabel = row.expiry ? format(parseISO(row.expiry), "d MMM yyyy") : "—";
+            const dateLabel = row.expiry ? format(parseISO(row.expiry), "dd/MM/yy") : "—";
             return (
               <button
                 key={row.id}
