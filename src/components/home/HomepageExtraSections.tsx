@@ -352,6 +352,8 @@ export default function HomepageExtraSections() {
           ))}
         </div>
       </div>
+      </div>
     </section>
   );
+
 }
