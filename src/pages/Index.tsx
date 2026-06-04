@@ -338,7 +338,11 @@ export default function Index() {
                   borderRadius: 14,
                   border: "1px solid #E5E7EB",
                   padding: 32,
+                  maxWidth: 1200,
+                  width: "100%",
+                  margin: "0 auto",
                 }}>
+
                   <div style={{ marginBottom: 24 }}>
                     <div style={{ fontSize: 10, fontWeight: 700, color: "#E8641A", letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: 6 }}>
                       WHAT'S INCLUDED

@@ -80,9 +80,15 @@ function formatMonthYear(iso: string | null): string {
 const styles = {
   section: {
     background: "#F3F4F6",
-    padding: "48px 40px",
+    padding: "48px 5%",
     width: "100%",
   } as React.CSSProperties,
+  inner: {
+    width: "100%",
+    maxWidth: 1200,
+    margin: "0 auto",
+  } as React.CSSProperties,
+
   header: {
     display: "flex",
     alignItems: "flex-end",
@@ -254,45 +260,48 @@ export default function PupilReviewsSection() {
 
   return (
     <section style={styles.section}>
-      <div style={styles.header}>
-        <div>
-          <div style={styles.eyebrow}>WHAT OUR PUPILS SAY</div>
-          <h2 style={styles.heading}>Real reviews. Real results.</h2>
+      <div style={styles.inner}>
+        <div style={styles.header}>
+          <div>
+            <div style={styles.eyebrow}>WHAT OUR PUPILS SAY</div>
+            <h2 style={styles.heading}>Real reviews. Real results.</h2>
+          </div>
+          <div style={styles.ratingWrap}>
+            <span style={styles.stars}>★★★★★</span>
+            <span style={styles.ratingNum}>4.9</span>
+            <span style={styles.ratingCount}>2,400+ reviews</span>
+          </div>
         </div>
-        <div style={styles.ratingWrap}>
-          <span style={styles.stars}>★★★★★</span>
-          <span style={styles.ratingNum}>4.9</span>
-          <span style={styles.ratingCount}>2,400+ reviews</span>
-        </div>
-      </div>
 
-      <div style={styles.grid}>
-        {usePlaceholders
-          ? PLACEHOLDERS.map((r) => (
-              <CardShell
-                key={r.id}
-                text={r.review_text}
-                name={r.reviewer_name}
-                location={r.reviewer_location}
-                dateLabel={r.dateLabel}
-                passedFirstTime={r.passed_first_time}
-                instructorName={r.instructorName}
-                passRate={r.passRate}
-              />
-            ))
-          : reviews.map((r) => (
-              <CardShell
-                key={r.id}
-                text={r.review_text}
-                name={r.reviewer_name}
-                location={r.reviewer_location}
-                dateLabel={formatMonthYear(r.review_date)}
-                passedFirstTime={r.passed_first_time === true}
-                instructorName={r.instructors?.name ?? null}
-                passRate={null}
-              />
-            ))}
+        <div style={styles.grid}>
+          {usePlaceholders
+            ? PLACEHOLDERS.map((r) => (
+                <CardShell
+                  key={r.id}
+                  text={r.review_text}
+                  name={r.reviewer_name}
+                  location={r.reviewer_location}
+                  dateLabel={r.dateLabel}
+                  passedFirstTime={r.passed_first_time}
+                  instructorName={r.instructorName}
+                  passRate={r.passRate}
+                />
+              ))
+            : reviews.map((r) => (
+                <CardShell
+                  key={r.id}
+                  text={r.review_text}
+                  name={r.reviewer_name}
+                  location={r.reviewer_location}
+                  dateLabel={formatMonthYear(r.review_date)}
+                  passedFirstTime={r.passed_first_time === true}
+                  instructorName={r.instructors?.name ?? null}
+                  passRate={null}
+                />
+              ))}
+        </div>
       </div>
     </section>
   );
 }
+
