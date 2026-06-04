@@ -162,8 +162,8 @@ export function CourseSearchHeader({
 
               {/* Radius */}
               <div
+                className="w-full min-w-0 sm:flex-1"
                 style={{
-                  flex: 1,
                   background: "#F9FAFB",
                   border: "1px solid #E5E7EB",
                   borderRadius: 8,
@@ -171,7 +171,6 @@ export function CourseSearchHeader({
                   display: "flex",
                   flexDirection: "column",
                   gap: 2,
-                  minWidth: 0,
                 }}
               >
                 <div
