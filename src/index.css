@@ -564,7 +564,7 @@
     --shadow-lg: 0 1px 3px 0px hsl(0 0% 0% / 0.2), 0 4px 6px -1px hsl(0 0% 0% / 0.2);
     --shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.2), 0 8px 10px -1px hsl(0 0% 0% / 0.2);
     --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.3);
-    --radius: 0rem;
+    --radius: 0.75rem;
   }
 
   /* OLED Dark Mode - True Black for battery efficiency */
@@ -835,16 +835,7 @@
   border-radius: 9999px !important;
 }
 
-/* Learner app (Drive365): remove all border radius from tiles/cards */
-.learner-app *:not(.rounded-full):not([class*="avatar"]):not([class*="badge"]):not([class*="Avatar"]):not(.drive365-hero-rounded):not(.drive365-hero-rounded *):not(.etg-rounded-tile):not(.etg-rounded-tile *) {
-  border-radius: 0 !important;
-}
-
-/* Allow rounded corners on ETG CTA tile */
-.learner-app .etg-rounded-tile,
-.learner-app .etg-rounded-tile * {
-  border-radius: inherit !important;
-}
+/* (Removed) Learner app global radius-strip — rounded corners restored across homepage */
 
 /* Allow rounded corners on Drive365 hero image */
 .learner-app .drive365-hero-rounded,
