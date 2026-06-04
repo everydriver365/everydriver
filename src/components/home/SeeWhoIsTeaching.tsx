@@ -132,7 +132,7 @@ export default function SeeWhoIsTeaching() {
             const href = ins.app_slug ? `/i/${ins.app_slug}` : `/courses`;
             const location = ins.town || (ins.home_postcode ? ins.home_postcode.split(" ")[0] : null);
             return (
-              <div key={ins.id} style={{ background: "#FFFFFF", borderRadius: 12, overflow: "hidden", position: "relative" }}>
+              <div key={ins.id} style={{ background: "#FFFFFF", borderRadius: 15, overflow: "hidden", position: "relative" }}>
                 <div style={{ height: 6, background: TOP_BARS[idx] }} />
                 {isTop && (
                   <div style={{ position: "absolute", top: 16, right: 12, background: "#E8641A", color: "#FFFFFF", fontSize: 9, fontWeight: 700, padding: "2px 8px", borderRadius: 9999 }}>
