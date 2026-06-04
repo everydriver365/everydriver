@@ -599,7 +599,7 @@ function ChapmansMobileSearch({
               className="flex-1 min-w-0"
               inputClassName="h-auto border-0 bg-transparent p-0 text-[14px] font-medium text-[#0A0E27] shadow-none focus-visible:ring-0 placeholder:text-[#9CA3AF]"
               showInputIcon={false}
-              showGeolocation={true}
+              showGeolocation={false}
               enableDictation={false}
             />
           </div>
