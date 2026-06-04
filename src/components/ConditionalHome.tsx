@@ -59,8 +59,9 @@ function AppEntryRedirect({
 export function ConditionalHome() {
   const variant = getAppVariant();
 
-  // 1. Instructor app — always send to DSM login (or /instructor if authed).
-  if (variant === "instructor" || isEveryDriverHost()) {
+  // 1. Instructor app variant — DSM login (or /instructor if authed).
+  //    EveryDriver is the learner-facing brand, so it must NOT redirect here.
+  if (variant === "instructor") {
     return <AppEntryRedirect authedTo="/instructor" loginTo="/instructor-app/login" />;
   }
 
@@ -75,22 +76,28 @@ export function ConditionalHome() {
     return <MiniWebsiteHome subdomainSlug={slug} />;
   }
 
-  // 4. Pupil-app context on a non-marketing host (e.g. native build, preview
-  //    opened after a previous pupil session) → pupil login or /pupil.
+  // 4. Pupil-app context on a non-marketing host → pupil login or /pupil.
   if (
     variant === "pupil" &&
     !isWhitelabelDomain() &&
-    !isDrive365Domain()
+    !isDrive365Domain() &&
+    !isEveryDriverHost()
   ) {
     return <AppEntryRedirect authedTo="/pupil" loginTo="/login" />;
   }
 
-  // 5. Public marketing surfaces — keep existing behaviour.
+  // 5. EveryDriver host — learner-facing marketing homepage.
+  if (isEveryDriverHost()) {
+    return <EveryDriverIndex />;
+  }
+
+  // 6. Public marketing surfaces.
   if (isWhitelabelDomain()) {
     return <Index />;
   }
   if (isDrive365Domain()) {
     return <Index />;
   }
-  return <HomepageRedesignDemo />;
+  return <EveryDriverIndex />;
 }
+
