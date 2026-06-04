@@ -52,8 +52,6 @@ function courseTypeLabel(c: TableCourse) {
 }
 
 export function CourseTableList({ courses }: CourseTableListProps) {
-  const navigate = useNavigate();
-  void navigate;
   const { bookNavigate } = useEmbed();
 
   const goTo = (c: TableCourse) => {
