@@ -55,7 +55,7 @@ import videoThumbnail from "@/assets/video-thumbnail.jpg";
 import newsFeatured from "@/assets/news-featured.jpg";
 import newsArticle1 from "@/assets/news-article1.jpg";
 import newsArticle2 from "@/assets/news-article2.jpg";
-import featureRetestFallback from "@/assets/failed-driving-test-retest.png";
+import featureRetestFallback from "@/assets/feature-retest.jpg";
 import featureAvailabilityFallback from "@/assets/feature-availability.jpg";
 import featureTheoryFallback from "@/assets/feature-theory.jpg";
 import featureTheoryPro from "@/assets/feature-theory-pro.jpg";
@@ -244,17 +244,17 @@ export default function Index() {
               const theoryPro = findByTitle('Theory Test Pro');
 
               const FeaturedCard = ({
-                feature, accent, tagLabel, tagBg,
-              }: { feature: any; accent: string; tagLabel: string; tagBg: string }) => {
+                feature, badgeLabel, badgeBg,
+              }: { feature: any; badgeLabel: string; badgeBg: string }) => {
                 if (!feature) return null;
                 const img = resolveImage(feature.title, feature.image_url);
                 return (
                   <button
                     onClick={() => openFeatureModal(feature)}
                     style={{
-                      background: "#F9FAFB",
-                      border: `2px solid ${accent}`,
-                      borderRadius: 6,
+                      background: "#FFFFFF",
+                      border: "1px solid #E5E7EB",
+                      borderRadius: 10,
                       overflow: "hidden",
                       display: "flex",
                       flexDirection: "column",
@@ -263,35 +263,38 @@ export default function Index() {
                       cursor: "pointer",
                     }}
                   >
-                    {img && (
-                      <img src={img} alt={feature.title} style={{ width: "100%", aspectRatio: "16/10", objectFit: "cover", display: "block" }} />
-                    )}
-                    <div style={{ padding: 12, flex: 1, display: "flex", flexDirection: "column", gap: 4 }}>
+                    <div style={{ position: "relative", height: 160, overflow: "hidden" }}>
+                      {img && (
+                        <img src={img} alt={feature.title} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                      )}
+                      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 40%, rgba(10,18,40,0.7))" }} />
                       <span style={{
-                        background: tagBg, color: accent, fontSize: 8, fontWeight: 700,
-                        textTransform: "uppercase", padding: "2px 6px", borderRadius: 2,
-                        display: "inline-block", marginBottom: 2, alignSelf: "flex-start",
-                      }}>{tagLabel}</span>
-                      <h3 style={{ fontSize: 13, fontWeight: 700, color: "#0A0E27", margin: 0 }}>{feature.title}</h3>
-                      <p style={{ fontSize: 10, color: "#4B5563", lineHeight: 1.5, margin: 0, flex: 1 }}>{feature.description}</p>
-                      <div style={{ fontSize: 10, fontWeight: 700, color: accent, marginTop: 4 }}>Learn more ›</div>
+                        position: "absolute", bottom: 10, left: 12,
+                        background: badgeBg, color: "#FFFFFF", fontSize: 9, fontWeight: 700,
+                        padding: "2px 8px", borderRadius: 20,
+                      }}>{badgeLabel}</span>
+                    </div>
+                    <div style={{ padding: 14, flex: 1, display: "flex", flexDirection: "column" }}>
+                      <h3 style={{ fontSize: 13, fontWeight: 700, color: "#0A1628", margin: "0 0 4px" }}>{feature.title}</h3>
+                      <p style={{ fontSize: 11, color: "#6B7280", lineHeight: 1.5, margin: "0 0 8px", flex: 1 }}>{feature.description}</p>
+                      <div style={{ fontSize: 11, fontWeight: 600, color: "#0070C0" }}>Learn more →</div>
                     </div>
                   </button>
                 );
               };
 
               const SmallCard = ({
-                feature, accent, tagLabel, tagBg,
-              }: { feature: any; accent: string; tagLabel: string; tagBg: string }) => {
+                feature, badgeLabel, badgeBg, footer,
+              }: { feature: any; badgeLabel: string; badgeBg: string; footer?: React.ReactNode }) => {
                 if (!feature) return null;
                 const img = resolveImage(feature.title, feature.image_url);
                 return (
                   <button
                     onClick={() => openFeatureModal(feature)}
                     style={{
-                      background: "#F9FAFB",
+                      background: "#FFFFFF",
                       border: "1px solid #E5E7EB",
-                      borderRadius: 6,
+                      borderRadius: 10,
                       overflow: "hidden",
                       display: "flex",
                       flexDirection: "column",
@@ -300,51 +303,61 @@ export default function Index() {
                       cursor: "pointer",
                     }}
                   >
-                    {img && (
-                      <img src={img} alt={feature.title} style={{ width: "100%", aspectRatio: "16/10", objectFit: "cover", display: "block" }} />
-                    )}
-                    <div style={{ padding: 12, flex: 1, display: "flex", flexDirection: "column", gap: 4 }}>
+                    <div style={{ position: "relative", height: 110, overflow: "hidden" }}>
+                      {img && (
+                        <img src={img} alt={feature.title} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                      )}
+                      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 30%, rgba(10,18,40,0.65))" }} />
                       <span style={{
-                        background: tagBg, color: accent, fontSize: 8, fontWeight: 700,
-                        textTransform: "uppercase", padding: "2px 6px", borderRadius: 2,
-                        display: "inline-block", alignSelf: "flex-start",
-                      }}>{tagLabel}</span>
-                      <h3 style={{ fontSize: 11, fontWeight: 700, color: "#0A0E27", margin: 0 }}>{feature.title}</h3>
-                      <p style={{ fontSize: 9, color: "#4B5563", lineHeight: 1.5, margin: 0, flex: 1 }}>{feature.description}</p>
-                      <div style={{ fontSize: 10, fontWeight: 700, color: accent, marginTop: 4 }}>Learn more ›</div>
+                        position: "absolute", bottom: 8, left: 10,
+                        background: badgeBg, color: "#FFFFFF", fontSize: 9, fontWeight: 700,
+                        padding: "2px 7px", borderRadius: 20,
+                      }}>{badgeLabel}</span>
+                    </div>
+                    <div style={{ padding: 12, flex: 1, display: "flex", flexDirection: "column" }}>
+                      <h3 style={{ fontSize: 12, fontWeight: 700, color: "#0A1628", margin: "0 0 3px" }}>{feature.title}</h3>
+                      <p style={{ fontSize: 10, color: "#6B7280", lineHeight: 1.5, margin: "0 0 6px", flex: 1 }}>{feature.description}</p>
+                      {footer ?? <div style={{ fontSize: 10, fontWeight: 600, color: "#0070C0" }}>Learn more →</div>}
                     </div>
                   </button>
                 );
               };
 
+              const klarnaClearpayPills = (
+                <div style={{ display: "flex", gap: 4 }}>
+                  <span style={{ background: "#FFB3C7", color: "#17120F", fontFamily: "system-ui", fontSize: 8, fontWeight: 900, padding: "1px 5px", borderRadius: 2 }}>Klarna</span>
+                  <span style={{ background: "#B2FCE4", color: "#000E18", fontFamily: "system-ui", fontSize: 8, fontWeight: 900, padding: "1px 5px", borderRadius: 2 }}>Clearpay</span>
+                </div>
+              );
+
               return (
                 <div style={{
                   background: "#FFFFFF",
-                  borderRadius: 8,
+                  borderRadius: 14,
                   border: "1px solid #E5E7EB",
-                  padding: "28px 32px",
+                  padding: 32,
                 }}>
-                  <div style={{ marginBottom: 20 }}>
-                    <div style={{ fontSize: 10, fontWeight: 700, color: "#1A6FD4", letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: 6 }}>
-                      What's included
+                  <div style={{ marginBottom: 24 }}>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: "#E8641A", letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: 6 }}>
+                      WHAT'S INCLUDED
                     </div>
-                    <h2 style={{ fontSize: 22, fontWeight: 800, color: "#0A0E27", marginBottom: 4 }}>
-                      Everything you need to pass
+                    <h2 style={{ fontSize: 22, fontWeight: 800, color: "#0A1628", letterSpacing: "-0.5px", marginBottom: 6 }}>
+                      Everything you need to pass.
                     </h2>
-                    <p style={{ fontSize: 11, color: "#4B5563", lineHeight: 1.5, maxWidth: 400, margin: 0 }}>
+                    <p style={{ fontSize: 13, color: "#6B7280", lineHeight: 1.6, maxWidth: 440, margin: 0 }}>
                       Every course comes with the tools, support and flexibility to get you test-ready — included for free.
                     </p>
                   </div>
 
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
-                    <FeaturedCard feature={retest} accent="#D12E2E" tagLabel="Promise" tagBg="#FEE2E2" />
-                    <FeaturedCard feature={theory} accent="#1A6FD4" tagLabel="Included free" tagBg="#DBEAFE" />
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12, marginBottom: 12 }}>
+                    <FeaturedCard feature={retest} badgeLabel="Promise" badgeBg="#D12E2E" />
+                    <FeaturedCard feature={theory} badgeLabel="Included free" badgeBg="#059669" />
                   </div>
 
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
-                    <SmallCard feature={swap} accent="#D12E2E" tagLabel="FREE Feature" tagBg="#FEE2E2" />
-                    <SmallCard feature={payments} accent="#1A6FD4" tagLabel="Flexible" tagBg="#DBEAFE" />
-                    <SmallCard feature={theoryPro} accent="#1A6FD4" tagLabel="Premium" tagBg="#DBEAFE" />
+                    <SmallCard feature={swap} badgeLabel="Free feature" badgeBg="#059669" />
+                    <SmallCard feature={payments} badgeLabel="Flexible" badgeBg="#4B5563" footer={klarnaClearpayPills} />
+                    <SmallCard feature={theoryPro} badgeLabel="Premium" badgeBg="#7C3AED" />
                   </div>
                 </div>
               );
