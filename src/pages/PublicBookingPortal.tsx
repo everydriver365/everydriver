@@ -176,7 +176,18 @@ export default function PublicBookingPortal() {
               objectFit: "contain",
             }}
           />
-
+          <p
+            style={{
+              color: "#fff",
+              fontSize: 14,
+              fontWeight: 600,
+              letterSpacing: "0.04em",
+              textTransform: "uppercase",
+              opacity: 0.95,
+            }}
+          >
+            Search Now
+          </p>
         </div>
       )}
 
