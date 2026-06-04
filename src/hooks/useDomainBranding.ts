@@ -81,7 +81,7 @@ export function useDomainBranding(): DomainBranding {
 
     return {
       brandName: "EveryDriver",
-      logoPath: "/everydriver-logo-full.svg",
+      logoPath: "/everydriver-logo-full.png",
       isInstructorDomain: true,
       isLearnerDomain: false,
       isAccessibleDomain: false,
