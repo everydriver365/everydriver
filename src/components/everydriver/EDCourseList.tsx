@@ -400,7 +400,7 @@ export function EDCourseList({ courses }: EDCourseListProps) {
                   }}
                   className="inline-flex items-center gap-1"
                   style={{
-                    background: NAVY,
+                    background: "#3182ce",
                     color: "white",
                     border: "none",
                     fontSize: 13,
