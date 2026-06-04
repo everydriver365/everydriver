@@ -301,7 +301,7 @@ export default function ParentPortal() {
   if (authStep === 'login') {
     return (
       <UnifiedMobileLoginCard
-        className=""
+        className="rounded-none"
         portalName="Drive365 Parent"
         descriptor="Monitor your child's driving progress"
         brand="drive365"
