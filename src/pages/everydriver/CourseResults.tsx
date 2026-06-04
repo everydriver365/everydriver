@@ -125,7 +125,7 @@ export default function CourseResults({
         document.body.scrollHeight,
       );
       try {
-        window.parent?.postMessage({ type: "drive365:embed:height", height: h }, "*");
+        window.parent?.postMessage({ type: "everydriver:embed:height", height: h }, "*");
       } catch { /* ignore */ }
     };
     const schedule = () => {
