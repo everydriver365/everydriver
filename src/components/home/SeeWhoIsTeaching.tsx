@@ -15,7 +15,7 @@ interface InstructorRow {
   town: string | null;
 }
 
-const TOP_BARS = ["#059669", "#E8641A", "#0070C0"];
+const TOP_BARS = ["#10B981", "#E8641A", "#60C8F5"];
 const AVATAR_BGS = ["#1E4D9B", "#0A2B6B", "#059669"];
 
 function initials(name: string) {
