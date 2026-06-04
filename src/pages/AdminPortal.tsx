@@ -35,6 +35,7 @@ import { DuplicateLessonsTile } from "@/components/admin/DuplicateLessonsTile";
 import { SiteSettingsManager } from "@/components/admin/SiteSettingsManager";
 import { InstructorAppCMSManager } from "@/components/admin/InstructorAppCMSManager";
 import { AdminLayout } from "@/components/admin/AdminLayout";
+import { EmailDomainSetupWizard } from "@/components/admin/EmailDomainSetupWizard";
 import { WaitingRoomManager } from "@/components/admin/WaitingRoomManager";
 import LoyaltyRewardsManager from "@/components/admin/LoyaltyRewardsManager";
 import RewardTiersManager from "@/components/admin/RewardTiersManager";
@@ -136,6 +137,7 @@ const sectionMeta: Record<string, { title: string; group: string; icon: React.El
   // Dashboard
   overview: { title: "Overview", group: "Dashboard", icon: LayoutDashboard },
   "live-map": { title: "Live Instructor Map", group: "Dashboard", icon: MapPin },
+  "email-domain-setup": { title: "Email Domain Setup", group: "Settings", icon: Mail },
   // People
   instructors: { title: "Instructors", group: "People", icon: Users },
   "find-appointment": { title: "Find appointment", group: "People", icon: CalendarSearch },
@@ -870,6 +872,13 @@ export default function AdminPortal() {
                 <PromotionalMessageManager />
               </CardContent>
             </Card>
+          </motion.div>
+        );
+
+      case "email-domain-setup":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <EmailDomainSetupWizard />
           </motion.div>
         );
 
