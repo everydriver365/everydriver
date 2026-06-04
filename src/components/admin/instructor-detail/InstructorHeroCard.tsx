@@ -15,7 +15,7 @@ const expiryBadge = (dateStr: string | null | undefined, label: string): { tone:
   return { tone: "green", text: `${label} ✓` };
 };
 
-export function InstructorHeroCard({ instructor }: { instructor: Record<string, any> }) {
+export function InstructorHeroCard({ instructor, passRate }: { instructor: Record<string, any>; passRate?: number | null }) {
   const initials = (instructor.name || "?")
     .split(" ")
     .map((s: string) => s[0])
