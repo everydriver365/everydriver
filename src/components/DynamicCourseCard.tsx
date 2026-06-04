@@ -124,7 +124,7 @@ export function DynamicCourseCard({
   const handleBookNow = (e: React.MouseEvent) => {
     e.stopPropagation();
     const dateParam = nextAvailable ? `&date=${format(nextAvailable, "yyyy-MM-dd")}` : "";
-    navigate(`/book/${instructor.id}?hours=${hours}${dateParam}`);
+    bookNavigate(`/book/${instructor.id}?hours=${hours}${dateParam}`);
   };
 
   // Check if instructor has a future available_from date
