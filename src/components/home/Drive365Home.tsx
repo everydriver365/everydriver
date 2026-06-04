@@ -546,7 +546,9 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
             </div>
           ))}
         </div>
+        </div>
       </section>
+
 
       {afterLearningPaths}
 
