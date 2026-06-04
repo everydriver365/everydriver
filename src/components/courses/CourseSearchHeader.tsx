@@ -559,10 +559,9 @@ function ChapmansMobileSearch({
         }}
         style={{
           background: "#FFFFFF",
-          borderRadius: 12,
+          borderRadius: "12px 12px 0 0",
           padding: 14,
           boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
-          transform: "translateY(-20px)",
         }}
       >
         {/* Postcode input row */}
