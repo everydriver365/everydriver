@@ -133,7 +133,7 @@ export default function PublicBookingPortal() {
         <div
           className="md:hidden relative overflow-hidden text-center"
           style={{
-            padding: "16px 20px 32px",
+            padding: "16px 20px 18px",
             background: "linear-gradient(160deg, #F07C2A 0%, #E8641A 50%, #D95A10 100%)",
           }}
         >

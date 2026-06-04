@@ -8,6 +8,7 @@ import { MainLayout } from "@/components/layout/MainLayout";
 import { CourseSearchHeader, type CourseFilterId } from "@/components/courses/CourseSearchHeader";
 import { DynamicCourseCard } from "@/components/DynamicCourseCard";
 import { CourseTableList } from "@/components/courses/CourseTableList";
+import { ChapmansMobileResults } from "@/components/courses/ChapmansMobileResults";
 import { Edit2, SlidersHorizontal, ShieldCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -1186,6 +1187,7 @@ export default function Courses({ restrictToInstructorIds, title: titleProp, emb
     (selectedLanguages.length > 0 ? 1 : 0);
 
   const isListMode = viewMode === "list";
+  const isChapmansMobile = searchVariant === "chapmans" && isMobile;
 
   const Wrapper: any = embedded ? "div" : MainLayout;
 
@@ -1382,6 +1384,7 @@ export default function Courses({ restrictToInstructorIds, title: titleProp, emb
         ) : (
         <div className="flex flex-col gap-8 lg:flex-row">
           {/* Left Column: Calendar + Instructors */}
+          {!isChapmansMobile && (
           <div className="w-full lg:w-80 lg:flex-shrink-0 lg:self-start">
             <div className="space-y-4 lg:max-h-none lg:overflow-visible">
               <SidebarCalendar
@@ -1609,6 +1612,7 @@ export default function Courses({ restrictToInstructorIds, title: titleProp, emb
               )}
             </div>
           </div>
+          )}
 
           {/* Right Column: Course Tiles */}
           <div className="flex-1">
@@ -1723,7 +1727,34 @@ export default function Courses({ restrictToInstructorIds, title: titleProp, emb
             ) : (
               <>
                 {/* Selected date header */}
-                {isListMode ? (
+                {isChapmansMobile ? (
+                  <ChapmansMobileResults
+                    courses={filteredCourses.slice(0, mobileVisibleCount).map((c) => {
+                      const rate = resolvedRateFor(c.instructor) ?? Number(c.instructor.hourly_rate ?? 0);
+                      const skim = Number(c.instructor.school_skim_amount ?? 0);
+                      return {
+                        instructor: c.instructor,
+                        hours: c.hours,
+                        bookableDate: c.bookableDate,
+                        isIntensive: c.isIntensive,
+                        distance: c.distance,
+                        price: c.hours * rate + skim,
+                        discountedPrice: c.discountedPrice,
+                      };
+                    })}
+                    totalCount={filteredCourses.length}
+                    selectedDate={selectedDate}
+                    searchedAreaName={searchedAreaName}
+                    viewMode={viewMode}
+                    setViewMode={setViewMode}
+                    sortBy={sortBy}
+                    setSortBy={setSortBy}
+                    userLocation={userLocation}
+                    hasMore={mobileVisibleCount < filteredCourses.length}
+                    onLoadMore={handleLoadMore}
+                    remainingCount={filteredCourses.length - mobileVisibleCount}
+                  />
+                ) : isListMode ? (
                   <>
                     <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                       <div
@@ -1937,7 +1968,7 @@ export default function Courses({ restrictToInstructorIds, title: titleProp, emb
                 </div>
                 )}
 
-                {filteredCourses.length > 0 ? (
+                {isChapmansMobile ? null : filteredCourses.length > 0 ? (
                   isListMode ? (
                     <>
                       <CourseTableList

@@ -528,238 +528,245 @@ function ChapmansMobileSearch({
   onSearch,
   showFilters,
 }: ChapmansMobileSearchProps) {
+  // 3-state filter view for chapmans mobile.
+  // - All        -> activeFilter "all"
+  // - Courses    -> activeFilter "intensive" (also active for "semi-intensive")
+  // - Lessons    -> activeFilter "weekly"
+  const filterPills: { key: "all" | "courses" | "lessons"; label: string; target: CourseFilterId }[] = [
+    { key: "all", label: "All", target: "all" },
+    { key: "courses", label: "Courses", target: "intensive" },
+    { key: "lessons", label: "Lessons", target: "weekly" },
+  ];
+  const currentKey: "all" | "courses" | "lessons" =
+    activeFilter === "weekly"
+      ? "lessons"
+      : activeFilter === "intensive" || activeFilter === "semi-intensive"
+      ? "courses"
+      : "all";
+
+  const transmissionLabel =
+    transmission === "manual" ? "Manual" : transmission === "automatic" ? "Automatic" : "Any";
+
+  const radiusLabel = `${radius} mi`;
+
   return (
     <div className="md:hidden">
-      <style>{`.chapmans-tabs::-webkit-scrollbar{display:none}`}</style>
+      {/* Section 1 — Search bar */}
       <form
         onSubmit={(e) => {
           e.preventDefault();
           onSearch();
         }}
-        style={{
-          background: "#FFF",
-          margin: "-16px 16px 0",
-          borderRadius: 14,
-          boxShadow: "0 4px 24px rgba(0,0,0,0.12)",
-          position: "relative",
-          zIndex: 2,
-        }}
+        style={{ background: "#E8641A", padding: "12px 16px 14px" }}
       >
-        <div style={{ overflow: "hidden", borderTopLeftRadius: 14, borderTopRightRadius: 14 }}>
-          {/* Postcode */}
-          <div style={{ padding: "12px 16px", borderBottom: "1px solid #F3F4F6" }}>
-            <div
-              style={{
-                fontSize: 9,
-                fontWeight: 700,
-                color: "#9CA3AF",
-                textTransform: "uppercase",
-                letterSpacing: "0.8px",
-                marginBottom: 6,
-                display: "block",
-              }}
-            >
-              Postcode
-            </div>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1, minWidth: 0 }}>
-                <MapPin size={14} strokeWidth={2} style={{ color: "#C4C9D4", flexShrink: 0 }} />
-                <PostcodeAutocomplete
-                  value={postcode}
-                  onChange={(v) => setPostcode(v.toUpperCase())}
-                  onSelect={(pc) => {
-                    setPostcode(pc);
-                    setTimeout(() => onSearch(), 100);
-                  }}
-                  placeholder="Enter postcode"
-                  className="flex-1 min-w-0"
-                  inputClassName="h-7 border-0 bg-transparent p-0 text-[15px] font-medium shadow-none focus-visible:ring-0 placeholder:text-[#C4C9D4]"
-                  showInputIcon={false}
-                  showGeolocation={true}
-                  enableDictation={true}
-                />
-              </div>
-            </div>
+        {/* Postcode row */}
+        <div
+          style={{
+            background: "#FFF",
+            borderRadius: 10,
+            display: "flex",
+            overflow: "hidden",
+            marginBottom: 8,
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              padding: "0 10px",
+              flexShrink: 0,
+              color: "#C4C9D4",
+            }}
+          >
+            <MapPin size={14} strokeWidth={2} />
           </div>
+          <div style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center" }}>
+            <PostcodeAutocomplete
+              value={postcode}
+              onChange={(v) => setPostcode(v.toUpperCase())}
+              onSelect={(pc) => {
+                setPostcode(pc);
+                setTimeout(() => onSearch(), 100);
+              }}
+              placeholder="Enter postcode"
+              className="flex-1 min-w-0"
+              inputClassName="h-10 border-0 bg-transparent p-0 text-[15px] font-medium text-[#0A0E27] shadow-none focus-visible:ring-0 placeholder:text-[#C4C9D4]"
+              showInputIcon={false}
+              showGeolocation={true}
+              enableDictation={false}
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={isSearching}
+            aria-label="Search"
+            style={{
+              background: "#F3F4F6",
+              borderLeft: "1px solid #E5E7EB",
+              border: "none",
+              borderLeftWidth: 1,
+              borderLeftStyle: "solid",
+              borderLeftColor: "#E5E7EB",
+              padding: "0 14px",
+              alignSelf: "stretch",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: isSearching ? "default" : "pointer",
+              color: "#0A0E27",
+            }}
+          >
+            {isSearching ? (
+              <Loader2 size={16} strokeWidth={2.2} className="animate-spin" />
+            ) : (
+              <Search size={16} strokeWidth={2.2} />
+            )}
+          </button>
+        </div>
 
+        {/* Radius + Transmission row */}
+        <div style={{ display: "flex", gap: 8 }}>
           {/* Radius */}
-          <div style={{ padding: "12px 16px", borderBottom: "1px solid #F3F4F6" }}>
-            <div
-              style={{
-                fontSize: 9,
-                fontWeight: 700,
-                color: "#9CA3AF",
-                textTransform: "uppercase",
-                letterSpacing: "0.8px",
-                marginBottom: 6,
-                display: "block",
-              }}
-            >
-              Search radius
-            </div>
-            <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <select
-                value={radius}
-                onChange={(e) => setRadius(e.target.value)}
-                style={{
-                  flex: 1,
-                  appearance: "none",
-                  background: "transparent",
-                  border: "none",
-                  outline: "none",
-                  paddingRight: 20,
-                  fontSize: 15,
-                  fontWeight: 500,
-                  color: "#0A0E27",
-                }}
-              >
-                <option value="5">5 miles</option>
-                <option value="10">10 miles</option>
-                <option value="15">15 miles</option>
-                <option value="20">20 miles</option>
-                <option value="30">30 miles</option>
-              </select>
-              <ChevronDown
-                size={16}
-                strokeWidth={2}
-                style={{ color: "#9CA3AF", position: "absolute", right: 0, pointerEvents: "none" }}
-              />
-            </div>
-          </div>
-
-          {/* Transmission */}
-          <div style={{ padding: "12px 16px", borderBottom: showFilters && activeFilter && setActiveFilter ? "1px solid #F3F4F6" : "none" }}>
-            <div
-              style={{
-                fontSize: 9,
-                fontWeight: 700,
-                color: "#9CA3AF",
-                textTransform: "uppercase",
-                letterSpacing: "0.8px",
-                marginBottom: 8,
-                display: "block",
-              }}
-            >
-              Transmission
-            </div>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              {[
-                { value: "all", label: "All" },
-                { value: "manual", label: "Manual" },
-                { value: "automatic", label: "Automatic" },
-              ].map((opt) => {
-                const isActive = transmission === opt.value;
-                return (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    onClick={() => setTransmission(opt.value)}
-                    style={{
-                      padding: "7px 16px",
-                      borderRadius: 20,
-                      fontSize: 12,
-                      fontWeight: 600,
-                      whiteSpace: "nowrap",
-                      background: isActive ? "#E8641A" : "#FFF",
-                      color: isActive ? "#FFF" : "#4B5563",
-                      border: `1px solid ${isActive ? "#E8641A" : "#E5E7EB"}`,
-                      cursor: "pointer",
-                    }}
-                  >
-                    {opt.label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Course type filter (moved inside card, directly under Transmission) */}
-          {showFilters && activeFilter && setActiveFilter && (
-            <div style={{ padding: "12px 16px" }}>
+          <label
+            style={{
+              flex: 1,
+              background: "rgba(0,0,0,0.2)",
+              borderRadius: 8,
+              padding: "8px 12px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              position: "relative",
+              cursor: "pointer",
+            }}
+          >
+            <div style={{ minWidth: 0 }}>
               <div
                 style={{
                   fontSize: 9,
                   fontWeight: 700,
-                  color: "#9CA3AF",
+                  color: "rgba(255,255,255,0.6)",
                   textTransform: "uppercase",
                   letterSpacing: "0.8px",
-                  marginBottom: 8,
-                  display: "block",
+                  marginBottom: 2,
                 }}
               >
-                Course type
+                Radius
               </div>
-              <div
-                className="chapmans-tabs"
-                style={{
-                  display: "flex",
-                  gap: 8,
-                  overflowX: "auto",
-                  scrollbarWidth: "none",
-                }}
-              >
-                {FILTER_OPTIONS.map((opt) => {
-                  const isActive = activeFilter === opt.id;
-                  return (
-                    <button
-                      key={opt.id}
-                      type="button"
-                      onClick={() => setActiveFilter(opt.id)}
-                      data-active={isActive}
-                      style={{
-                        padding: "7px 16px",
-                        borderRadius: 20,
-                        fontSize: 12,
-                        fontWeight: 600,
-                        whiteSpace: "nowrap",
-                        flexShrink: 0,
-                        background: isActive ? "#E8641A" : "#FFF",
-                        color: isActive ? "#FFF" : "#4B5563",
-                        border: `1px solid ${isActive ? "#E8641A" : "#E5E7EB"}`,
-                        cursor: "pointer",
-                      }}
-                    >
-                      {opt.label}
-                    </button>
-                  );
-                })}
-              </div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: "#FFF" }}>{radiusLabel}</div>
             </div>
-          )}
-        </div>
+            <ChevronDown size={12} color="rgba(255,255,255,0.6)" strokeWidth={2.2} />
+            <select
+              value={radius}
+              onChange={(e) => setRadius(e.target.value)}
+              style={{
+                position: "absolute",
+                inset: 0,
+                opacity: 0,
+                width: "100%",
+                height: "100%",
+                cursor: "pointer",
+                border: "none",
+                background: "transparent",
+              }}
+            >
+              <option value="5">5 miles</option>
+              <option value="10">10 miles</option>
+              <option value="15">15 miles</option>
+              <option value="20">20 miles</option>
+              <option value="30">30 miles</option>
+            </select>
+          </label>
 
-        {/* Search button */}
-        <button
-          type="submit"
-          disabled={isSearching}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 8,
-            margin: "14px 16px 16px",
-            padding: 14,
-            background: "#E8641A",
-            color: "#FFF",
-            border: "none",
-            borderRadius: 12,
-            fontSize: 15,
-            fontWeight: 700,
-            width: "calc(100% - 32px)",
-            cursor: isSearching ? "default" : "pointer",
-            opacity: isSearching ? 0.6 : 1,
-          }}
-        >
-          {isSearching ? (
-            <Loader2 size={16} strokeWidth={2.2} className="animate-spin" />
-          ) : (
-            <Search size={16} strokeWidth={2.2} />
-          )}
-          <span>Search courses</span>
-        </button>
+          {/* Transmission */}
+          <label
+            style={{
+              flex: 1,
+              background: "rgba(0,0,0,0.2)",
+              borderRadius: 8,
+              padding: "8px 12px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              position: "relative",
+              cursor: "pointer",
+            }}
+          >
+            <div style={{ minWidth: 0 }}>
+              <div
+                style={{
+                  fontSize: 9,
+                  fontWeight: 700,
+                  color: "rgba(255,255,255,0.6)",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.8px",
+                  marginBottom: 2,
+                }}
+              >
+                Transmission
+              </div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: "#FFF" }}>{transmissionLabel}</div>
+            </div>
+            <ChevronDown size={12} color="rgba(255,255,255,0.6)" strokeWidth={2.2} />
+            <select
+              value={transmission}
+              onChange={(e) => setTransmission(e.target.value)}
+              style={{
+                position: "absolute",
+                inset: 0,
+                opacity: 0,
+                width: "100%",
+                height: "100%",
+                cursor: "pointer",
+                border: "none",
+                background: "transparent",
+              }}
+            >
+              <option value="all">Any</option>
+              <option value="manual">Manual</option>
+              <option value="automatic">Automatic</option>
+            </select>
+          </label>
+        </div>
       </form>
 
+      {/* Section 2 — Filter pills */}
+      {showFilters && setActiveFilter && (
+        <div
+          style={{
+            background: "#FFF",
+            borderBottom: "1px solid #F3F4F6",
+            padding: "10px 16px",
+            display: "flex",
+            gap: 8,
+          }}
+        >
+          {filterPills.map((p) => {
+            const isActive = currentKey === p.key;
+            return (
+              <button
+                key={p.key}
+                type="button"
+                onClick={() => setActiveFilter(p.target)}
+                style={{
+                  background: isActive ? "#0A2B6B" : "#FFF",
+                  color: isActive ? "#FFF" : "#4B5563",
+                  border: isActive ? "none" : "1px solid #E5E7EB",
+                  borderRadius: 20,
+                  padding: "7px 20px",
+                  fontSize: 12,
+                  fontWeight: isActive ? 700 : 600,
+                  cursor: "pointer",
+                }}
+              >
+                {p.label}
+              </button>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
+
 
