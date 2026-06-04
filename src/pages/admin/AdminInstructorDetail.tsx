@@ -230,7 +230,7 @@ export default function AdminInstructorDetail() {
             }}
           >
             <div>
-              <InstructorHeroCard instructor={instructor} passRate={passRate} />
+              <InstructorHeroCard instructor={instructor} passRate={passRate} activePupils={counts.activePupils} />
               <ActionsStack
                 instructorId={instructor.id}
                 isAdmin={isAdmin}
