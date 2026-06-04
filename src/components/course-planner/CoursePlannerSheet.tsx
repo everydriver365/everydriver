@@ -49,8 +49,9 @@ interface CoursePlannerSheetProps {
   instructorId?: string | null;
   /** display name shown in the header (e.g. instructor's name on a mini-site) */
   instructorName?: string | null;
-  /** 'mini_website' | 'drive365' | 'instructor_app' — recorded as source */
-  source?: "instructor_app" | "mini_website" | "drive365";
+  /** 'mini_website' | 'drive365' | 'everydriver' | 'instructor_app' — recorded as source */
+  source?: "instructor_app" | "mini_website" | "drive365" | "everydriver";
+
   /** UI variant — sheet on mobile, dialog on desktop */
   variant?: "sheet" | "dialog";
   /** optional pupil to prefill in instructor mode */
@@ -333,7 +334,7 @@ export function CoursePlannerSheet({
                       <Input className="pl-9" placeholder="Phone" type="tel" value={pupilPhone} onChange={(e) => setPupilPhone(e.target.value)} />
                     </div>
                   </div>
-                  {source === "drive365" && (
+                  {(source === "drive365" || source === "everydriver") && (
                     <div className="relative">
                       <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input className="pl-9" placeholder="Postcode (we'll match an instructor)" value={pupilPostcode} onChange={(e) => setPupilPostcode(e.target.value.toUpperCase())} />
