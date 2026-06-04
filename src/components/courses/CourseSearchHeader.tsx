@@ -270,6 +270,7 @@ export function CourseSearchHeader({
               <button
                 type="submit"
                 disabled={isSearching}
+                className="w-full sm:w-auto"
                 style={{
                   background: "#E8641A",
                   color: "#FFFFFF",
@@ -280,6 +281,7 @@ export function CourseSearchHeader({
                   fontWeight: 700,
                   display: "flex",
                   alignItems: "center",
+                  justifyContent: "center",
                   gap: 6,
                   flexShrink: 0,
                   cursor: isSearching ? "default" : "pointer",
