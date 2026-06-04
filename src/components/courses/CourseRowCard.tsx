@@ -174,7 +174,7 @@ export function CourseRowCard({
         <div className="flex items-center gap-2">
           <button
             onClick={handleBook}
-            className="inline-flex h-8 sm:h-9 items-center justify-center gap-1 rounded-lg bg-[#0B2545] px-3 sm:px-4 text-xs sm:text-[13px] font-semibold text-white shadow-sm transition hover:bg-[#13346b]"
+            className="inline-flex h-8 sm:h-9 items-center justify-center gap-1 rounded-lg bg-[#3182ce] px-3 sm:px-4 text-xs sm:text-[13px] font-semibold text-white shadow-sm transition hover:bg-[#2563a8]"
           >
             View &amp; Book
             <ChevronRight className="h-3 w-3 sm:h-3.5 sm:w-3.5" />

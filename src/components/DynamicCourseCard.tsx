@@ -385,7 +385,7 @@ export function DynamicCourseCard({
                   </>
                 )}
               </div>
-              <Button size="sm" variant="secondary" onClick={handleBookNow}>
+              <Button size="sm" onClick={handleBookNow} className="bg-[#3182ce] text-white hover:bg-[#2563a8]">
                 Learn More
               </Button>
             </div>

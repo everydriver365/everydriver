@@ -270,7 +270,7 @@ export function MobileCourseCard({ course, index }: MobileCourseCardProps) {
                 {/* CTA */}
                 <Button
                   onClick={handleLearnMore}
-                  className="w-full h-12 rounded-xl font-bold text-sm shadow-md"
+                  className="w-full h-12 rounded-xl font-bold text-sm shadow-md bg-[#3182ce] hover:bg-[#2563a8] text-white"
                   size="lg"
                 >
                   Book Now
