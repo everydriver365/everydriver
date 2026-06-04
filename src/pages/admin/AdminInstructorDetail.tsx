@@ -8,7 +8,15 @@ import { SectionColumn } from "@/components/admin/instructor-detail/SectionColum
 import { Section } from "@/components/admin/instructor-detail/SectionCard";
 import { buildDefaultSections, InstructorRelatedCounts } from "@/components/admin/instructor-detail/defaultSections";
 import { EditProfileModal, EditProfileValues } from "@/components/admin/instructor-detail/modals/EditProfileModal";
+import { DiaryDrawer } from "@/components/admin/instructor-detail/drawers/DiaryDrawer";
+import { BookingsDrawer } from "@/components/admin/instructor-detail/drawers/BookingsDrawer";
+import { ReviewsDrawer } from "@/components/admin/instructor-detail/drawers/ReviewsDrawer";
+import { PaymentsDrawer } from "@/components/admin/instructor-detail/drawers/PaymentsDrawer";
+import { DocumentsDrawer } from "@/components/admin/instructor-detail/drawers/DocumentsDrawer";
+import { MessageDrawer } from "@/components/admin/instructor-detail/drawers/MessageDrawer";
 import { toast } from "@/hooks/use-toast";
+
+type DrawerKey = "diary" | "bookings" | "reviews" | "payments" | "documents" | "message" | null;
 
 export default function AdminInstructorDetail() {
   const { id } = useParams<{ id: string }>();
@@ -22,6 +30,7 @@ export default function AdminInstructorDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editingProfile, setEditingProfile] = useState(false);
+  const [drawer, setDrawer] = useState<DrawerKey>(null);
 
   const [col2, setCol2] = useState<Section[]>([]);
   const [col3, setCol3] = useState<Section[]>([]);
@@ -139,9 +148,18 @@ export default function AdminInstructorDetail() {
   };
 
   const handleRemove = async () => {
-    if (!id) return;
-    if (!confirm("Permanently remove this instructor from the platform? This cannot be undone.")) return;
-    toast({ title: "Removal requires support", description: "Use the danger zone in the instructor profile tools." });
+    if (!id || !instructor) return;
+    if (!confirm(`Remove ${instructor.name} from the platform?\n\nThis soft-deletes the instructor and schedules a permanent purge in 30 days. Active pupils and bookings will lose this assignment.`)) return;
+    const purgeAt = new Date(Date.now() + 30 * 86400_000).toISOString();
+    const { error } = await supabase.from("instructors")
+      .update({ deleted_at: new Date().toISOString(), scheduled_purge_at: purgeAt })
+      .eq("id", id);
+    if (error) {
+      toast({ title: "Removal failed", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Instructor removed", description: "Permanent purge in 30 days." });
+    nav("/admin/network-instructors");
   };
 
   const initialProfile: EditProfileValues | null = useMemo(() => instructor ? ({
@@ -232,12 +250,17 @@ export default function AdminInstructorDetail() {
             <div>
               <InstructorHeroCard instructor={instructor} passRate={passRate} activePupils={counts.activePupils} />
               <ActionsStack
-                instructorId={instructor.id}
                 isAdmin={isAdmin}
+                isSuspended={!instructor.is_active}
                 onEditProfile={() => setEditingProfile(true)}
                 onSuspend={handleSuspend}
                 onRemove={handleRemove}
-                onMessage={() => nav(`/admin/messages?instructor=${instructor.id}`)}
+                onMessage={() => setDrawer("message")}
+                onViewDiary={() => setDrawer("diary")}
+                onViewBookings={() => setDrawer("bookings")}
+                onViewReviews={() => setDrawer("reviews")}
+                onViewPayments={() => setDrawer("payments")}
+                onViewDocuments={() => setDrawer("documents")}
               />
             </div>
             <SectionColumn sections={col2} onChange={setCol2} onPersistField={persistField} />
@@ -253,6 +276,25 @@ export default function AdminInstructorDetail() {
           onClose={() => setEditingProfile(false)}
           onSave={handleSaveProfile}
         />
+      )}
+
+      {instructor && drawer === "diary" && (
+        <DiaryDrawer instructorId={instructor.id} instructorName={instructor.name} onClose={() => setDrawer(null)} />
+      )}
+      {instructor && drawer === "bookings" && (
+        <BookingsDrawer instructorId={instructor.id} instructorName={instructor.name} onClose={() => setDrawer(null)} />
+      )}
+      {instructor && drawer === "reviews" && (
+        <ReviewsDrawer instructorId={instructor.id} instructorName={instructor.name} onClose={() => setDrawer(null)} />
+      )}
+      {instructor && drawer === "payments" && (
+        <PaymentsDrawer instructorId={instructor.id} instructorName={instructor.name} onClose={() => setDrawer(null)} />
+      )}
+      {instructor && drawer === "documents" && (
+        <DocumentsDrawer instructor={instructor} onClose={() => setDrawer(null)} />
+      )}
+      {instructor && drawer === "message" && (
+        <MessageDrawer instructor={instructor} onClose={() => setDrawer(null)} />
       )}
     </>
   );
