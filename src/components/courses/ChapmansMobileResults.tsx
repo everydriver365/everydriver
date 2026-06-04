@@ -254,6 +254,7 @@ export function ChapmansMobileResults({
         }
       >
         {courses.map((c, i) => {
+          const isGrid = viewMode === "grid";
           // Mirror DynamicCourseCard pricing exactly.
           const defaultRate = Number(c.instructor.hourly_rate ?? 0);
           const hourlyRate =
