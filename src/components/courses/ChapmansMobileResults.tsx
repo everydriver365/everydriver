@@ -3,6 +3,8 @@ import { format } from "date-fns";
 import { ShieldCheck, List as ListIcon, LayoutGrid } from "lucide-react";
 import { useEmbed } from "@/context/EmbedContext";
 import { computeOfferStatus } from "@/lib/courseOffer";
+import { DynamicCourseCard } from "@/components/DynamicCourseCard";
+
 
 type SortOption = "soonest" | "price-low" | "nearest";
 
