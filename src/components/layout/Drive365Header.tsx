@@ -90,8 +90,7 @@ export function Drive365Header() {
             <img
               src={drive365Logo}
               alt="EveryDriver"
-              className="h-12 w-auto block"
-              style={{ maxWidth: "200px" }}
+              className="h-9 lg:h-10 w-auto block object-contain"
             />
           </Link>
 
