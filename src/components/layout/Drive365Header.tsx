@@ -73,26 +73,31 @@ export function Drive365Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full">
-      {/* Main bar — logo blue #142040 */}
+    <header className="sticky top-0 z-[100] w-full">
+      {/* Main bar */}
       <div
         className={cn(
-          "w-full bg-[#142040] transition-shadow duration-200",
+          "w-full bg-[#0A1628] transition-shadow duration-200",
           scrolled && "shadow-[0_2px_8px_rgba(0,0,0,0.2)]"
         )}
       >
-        <div className="mx-auto flex h-[76px] lg:h-[68px] items-center px-[60px] max-lg:px-5 lg:px-6">
-          {/* Logo */}
+        <div className="mx-auto flex h-[56px] items-center justify-between px-[28px] max-lg:px-5">
+          {/* Logo — EveryDriver wordmark */}
           <Link to="/" className="flex items-center shrink-0" aria-label="EveryDriver home">
-            <img
-              src={drive365Logo}
-              alt="EveryDriver"
-              className="h-9 lg:h-10 w-auto block object-contain"
-            />
+            <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+              <div style={{ fontSize: 18, fontWeight: 900, color: "white", letterSpacing: -0.5, lineHeight: 1 }}>
+                Every<span style={{ color: "#60C8F5" }}>Driver</span>
+              </div>
+              <div style={{ display: "flex", gap: 4, marginTop: 3 }}>
+                <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#D12E2E" }} />
+                <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#F59E0B" }} />
+                <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#22C55E" }} />
+              </div>
+            </div>
           </Link>
 
           {/* Center nav (desktop) */}
-          <nav className="hidden lg:flex items-center gap-6 xl:gap-9 mx-auto">
+          <nav className="hidden lg:flex items-center" style={{ gap: 22 }}>
             {NAV_LINKS.map((link) => {
               const isActive = location.pathname === link.href;
               if (link.hasDropdown) {
@@ -103,15 +108,13 @@ export function Drive365Header() {
                       onClick={() => setCoursesOpen((v) => !v)}
                       aria-haspopup="menu"
                       aria-expanded={coursesOpen}
-                      className={cn(
-                        "relative flex items-center gap-1 text-[14px] font-medium transition-colors",
-                        "text-white hover:text-white/80"
-                      )}
+                      className="relative flex items-center gap-1 transition-colors text-white/70 hover:text-white"
+                      style={{ fontSize: 13, fontWeight: 500 }}
                     >
                       {link.label}
                       <ChevronDown
                         className={cn(
-                          "h-3.5 w-3.5 transition-transform text-white/70",
+                          "h-3.5 w-3.5 transition-transform",
                           coursesOpen && "rotate-180"
                         )}
                       />
@@ -140,10 +143,10 @@ export function Drive365Header() {
                   key={link.href}
                   to={link.href}
                   className={cn(
-                    "relative text-[14px] font-medium transition-colors",
-                    "text-white hover:text-white/80",
-                    isActive && "!text-white after:content-[''] after:absolute after:left-0 after:right-0 after:-bottom-[8px] after:h-[2px] after:bg-white"
+                    "relative transition-colors",
+                    isActive ? "text-white" : "text-white/70 hover:text-white"
                   )}
+                  style={{ fontSize: 13, fontWeight: isActive ? 600 : 500 }}
                 >
                   {link.label}
                 </Link>
@@ -155,25 +158,39 @@ export function Drive365Header() {
           <div className="hidden lg:flex items-center gap-5 shrink-0">
             <Link
               to="/drive365/login"
-              className="text-[14px] font-medium text-white hover:text-white/80 transition-colors"
+              className="transition-colors hover:text-white"
+              style={{ fontSize: 13, fontWeight: 500, color: "rgba(255,255,255,0.6)" }}
             >
               Pupil login
             </Link>
             <Link
               to="/courses"
-              className="inline-flex items-center justify-center bg-[#1A6FD4] hover:bg-[#1558A8] text-white text-[14px] font-medium transition-colors"
-              style={{ padding: "10px 20px", borderRadius: "2px", letterSpacing: "0.5px" }}
+              className="inline-flex items-center justify-center text-white transition-colors hover:brightness-110"
+              style={{
+                background: "#E8641A",
+                border: "none",
+                borderRadius: 6,
+                padding: "9px 18px",
+                fontSize: 13,
+                fontWeight: 700,
+              }}
             >
               Find courses
             </Link>
           </div>
 
           {/* Mobile right side */}
-          <div className="flex lg:hidden items-center gap-3 ml-auto">
+          <div className="flex lg:hidden items-center gap-3">
             <Link
               to="/courses"
-              className="inline-flex items-center justify-center bg-[#d92e3a] hover:bg-[#b8252f] text-white text-[13px] font-semibold transition-colors"
-              style={{ height: "36px", padding: "0 16px", borderRadius: "18px" }}
+              className="inline-flex items-center justify-center text-white transition-colors hover:brightness-110"
+              style={{
+                background: "#E8641A",
+                borderRadius: 6,
+                padding: "9px 16px",
+                fontSize: 13,
+                fontWeight: 700,
+              }}
             >
               Find courses
             </Link>
@@ -189,7 +206,7 @@ export function Drive365Header() {
 
         {/* Mobile menu */}
         {mobileOpen && (
-          <div className="lg:hidden border-t border-white/10 bg-[#142040]">
+          <div className="lg:hidden border-t border-white/10 bg-[#0A1628]">
             <div className="px-5 py-4 flex flex-col gap-1">
               {NAV_LINKS.map((link) => (
                 <Link
@@ -207,13 +224,14 @@ export function Drive365Header() {
                 </Link>
               ))}
               <div className="h-px bg-white/10 my-2" />
-              <Link to="/drive365/login" className="text-primary-foreground/70 text-sm py-2">
+              <Link to="/drive365/login" className="text-white/70 text-sm py-2">
                 Pupil login
               </Link>
             </div>
           </div>
         )}
       </div>
+
 
       {/* Promo bar */}
       {promoVisible && (
