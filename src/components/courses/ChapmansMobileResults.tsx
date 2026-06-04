@@ -450,7 +450,40 @@ export function ChapmansMobileResults({
             </div>
           );
         })}
+        {hasMore && onLoadMore && (
+          <button
+            type="button"
+            onClick={onLoadMore}
+            style={{
+              width: "100%",
+              marginTop: 4,
+              padding: "12px 16px",
+              background: "#FFF",
+              border: "1px solid #E5E7EB",
+              borderRadius: 10,
+              fontSize: 13,
+              fontWeight: 600,
+              color: "#0A0E27",
+              cursor: "pointer",
+            }}
+          >
+            Load more{typeof remainingCount === "number" ? ` (${remainingCount})` : ""}
+          </button>
+        )}
+        {courses.length === 0 && (
+          <div
+            style={{
+              padding: "32px 16px",
+              textAlign: "center",
+              color: "#9CA3AF",
+              fontSize: 13,
+            }}
+          >
+            No courses found. Try widening your radius or picking another date.
+          </div>
+        )}
       </div>
     </div>
   );
 }
+
