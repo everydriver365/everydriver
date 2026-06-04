@@ -1485,38 +1485,6 @@ export default function Courses({ restrictToInstructorIds, title: titleProp, emb
                 )}
               </div>
 
-              {/* Pass Promise card */}
-              <div
-                className="relative overflow-hidden p-4"
-                style={{
-                  background: "#0F2044",
-                  borderRadius: 4,
-                }}
-              >
-                  <div
-                    className="pointer-events-none absolute -right-6 -top-6 h-24 w-24"
-                    style={{
-                      background:
-                        "radial-gradient(circle, rgba(255,255,255,0.18) 0%, transparent 70%)",
-                    }}
-                  />
-                  <div className="relative flex items-center gap-3">
-                    <div
-                      className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md"
-                      style={{ background: "rgba(255,255,255,0.18)" }}
-                    >
-                      <ShieldCheck className="h-4 w-4 text-white" />
-                    </div>
-                    <div>
-                      <div style={{ fontSize: 16, fontWeight: 700, color: "white" }}>
-                        Pass Promise
-                      </div>
-                      <div style={{ fontSize: 13, color: "rgba(255,255,255,0.9)", marginTop: 2 }}>
-                        Re-test on us if you don't pass.
-                      </div>
-                    </div>
-                  </div>
-              </div>
               {/* Instructors Filter Tile */}
               {availableInstructorsForFilter.length > 0 && (
                 <div className="rounded-xl border bg-card p-4 shadow-sm">
