@@ -74,7 +74,7 @@ export function InstructorHeroCard({ instructor, passRate, activePupils }: { ins
       {/* Stats */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", borderBottom: "1px solid #F3F4F6" }}>
         <Stat color="#059669" value={passRate != null ? `${passRate}%` : "—"} label="Pass rate" />
-        <Stat value="—" label="Students" />
+        <Stat value={activePupils != null ? activePupils.toLocaleString() : "—"} label="Students" />
         <Stat value={instructor.cpd_hours_logged != null ? String(instructor.cpd_hours_logged) : "—"} label="CPD hrs" last />
       </div>
 
