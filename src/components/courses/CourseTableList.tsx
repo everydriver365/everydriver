@@ -54,10 +54,12 @@ function courseTypeLabel(c: TableCourse) {
 
 export function CourseTableList({ courses }: CourseTableListProps) {
   const navigate = useNavigate();
+  void navigate;
+  const { bookNavigate } = useEmbed();
 
   const goTo = (c: TableCourse) => {
     const dateParam = c.bookableDate ? `&date=${format(c.bookableDate, "yyyy-MM-dd")}` : "";
-    navigate(`/book/${c.instructor.id}?hours=${c.hours}${dateParam}`);
+    bookNavigate(`/book/${c.instructor.id}?hours=${c.hours}${dateParam}`);
   };
 
   return (
