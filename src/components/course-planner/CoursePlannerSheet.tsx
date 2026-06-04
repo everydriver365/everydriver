@@ -49,8 +49,9 @@ interface CoursePlannerSheetProps {
   instructorId?: string | null;
   /** display name shown in the header (e.g. instructor's name on a mini-site) */
   instructorName?: string | null;
-  /** 'mini_website' | 'drive365' | 'instructor_app' — recorded as source */
-  source?: "instructor_app" | "mini_website" | "drive365";
+  /** 'mini_website' | 'drive365' | 'everydriver' | 'instructor_app' — recorded as source */
+  source?: "instructor_app" | "mini_website" | "drive365" | "everydriver";
+
   /** UI variant — sheet on mobile, dialog on desktop */
   variant?: "sheet" | "dialog";
   /** optional pupil to prefill in instructor mode */
