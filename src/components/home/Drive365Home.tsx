@@ -459,7 +459,7 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
                   <h3>Weekly Lessons</h3>
                   <p>Briefly and concisely explain what you do for your audience.</p>
                   <Link to="/courses?type=weekly">
-                    <button type="button" className="d365-feat-btn d365-feat-btn--dark">Read more</button>
+                    <button type="button" className="d365-feat-btn d365-feat-btn--dark bg-[#3082cf]">Read more</button>
                   </Link>
               </div>
             </div>
