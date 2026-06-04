@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import dsmLogo from "@/assets/dsm-logo.png";
 import chapmansWhiteLogo from "@/assets/chapmans-logo-white.png.asset.json";
 
-import { Loader2, MapPin, Phone } from "lucide-react";
+import { Loader2, MapPin, Phone, Search } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -176,8 +176,12 @@ export default function PublicBookingPortal() {
               objectFit: "contain",
             }}
           />
-          <p
+          <div
             style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
               color: "#fff",
               fontSize: 14,
               fontWeight: 600,
@@ -186,8 +190,9 @@ export default function PublicBookingPortal() {
               opacity: 0.95,
             }}
           >
-            Search Now
-          </p>
+            <Search size={16} />
+            Book Now
+          </div>
         </div>
       )}
 
