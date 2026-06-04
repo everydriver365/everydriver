@@ -628,7 +628,7 @@ function ChapmansMobileSearch({
           </div>
 
           {/* Transmission */}
-          <div style={{ padding: "12px 16px" }}>
+          <div style={{ padding: "12px 16px", borderBottom: showFilters && activeFilter && setActiveFilter ? "1px solid #F3F4F6" : "none" }}>
             <div
               style={{
                 fontSize: 9,
@@ -636,39 +636,96 @@ function ChapmansMobileSearch({
                 color: "#9CA3AF",
                 textTransform: "uppercase",
                 letterSpacing: "0.8px",
-                marginBottom: 6,
+                marginBottom: 8,
                 display: "block",
               }}
             >
               Transmission
             </div>
-            <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <select
-                value={transmission}
-                onChange={(e) => setTransmission(e.target.value)}
-                style={{
-                  flex: 1,
-                  appearance: "none",
-                  background: "transparent",
-                  border: "none",
-                  outline: "none",
-                  paddingRight: 20,
-                  fontSize: 15,
-                  fontWeight: 500,
-                  color: "#0A0E27",
-                }}
-              >
-                <option value="all">Any</option>
-                <option value="manual">Manual</option>
-                <option value="automatic">Automatic</option>
-              </select>
-              <ChevronDown
-                size={16}
-                strokeWidth={2}
-                style={{ color: "#9CA3AF", position: "absolute", right: 0, pointerEvents: "none" }}
-              />
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              {[
+                { value: "all", label: "All" },
+                { value: "manual", label: "Manual" },
+                { value: "automatic", label: "Automatic" },
+              ].map((opt) => {
+                const isActive = transmission === opt.value;
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setTransmission(opt.value)}
+                    style={{
+                      padding: "7px 16px",
+                      borderRadius: 20,
+                      fontSize: 12,
+                      fontWeight: 600,
+                      whiteSpace: "nowrap",
+                      background: isActive ? "#E8641A" : "#FFF",
+                      color: isActive ? "#FFF" : "#4B5563",
+                      border: `1px solid ${isActive ? "#E8641A" : "#E5E7EB"}`,
+                      cursor: "pointer",
+                    }}
+                  >
+                    {opt.label}
+                  </button>
+                );
+              })}
             </div>
           </div>
+
+          {/* Course type filter (moved inside card, directly under Transmission) */}
+          {showFilters && activeFilter && setActiveFilter && (
+            <div style={{ padding: "12px 16px" }}>
+              <div
+                style={{
+                  fontSize: 9,
+                  fontWeight: 700,
+                  color: "#9CA3AF",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.8px",
+                  marginBottom: 8,
+                  display: "block",
+                }}
+              >
+                Course type
+              </div>
+              <div
+                className="chapmans-tabs"
+                style={{
+                  display: "flex",
+                  gap: 8,
+                  overflowX: "auto",
+                  scrollbarWidth: "none",
+                }}
+              >
+                {FILTER_OPTIONS.map((opt) => {
+                  const isActive = activeFilter === opt.id;
+                  return (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      onClick={() => setActiveFilter(opt.id)}
+                      data-active={isActive}
+                      style={{
+                        padding: "7px 16px",
+                        borderRadius: 20,
+                        fontSize: 12,
+                        fontWeight: 600,
+                        whiteSpace: "nowrap",
+                        flexShrink: 0,
+                        background: isActive ? "#E8641A" : "#FFF",
+                        color: isActive ? "#FFF" : "#4B5563",
+                        border: `1px solid ${isActive ? "#E8641A" : "#E5E7EB"}`,
+                        cursor: "pointer",
+                      }}
+                    >
+                      {opt.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Search button */}
