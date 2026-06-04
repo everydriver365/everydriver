@@ -76,6 +76,9 @@ export function ChapmansMobileResults({
   sortBy,
   setSortBy,
   userLocation,
+  hasMore,
+  onLoadMore,
+  remainingCount,
 }: Props) {
   const { bookNavigate } = useEmbed();
   const [passPromiseDismissed, setPassPromiseDismissed] = useState(() => {
