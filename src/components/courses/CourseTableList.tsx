@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { useEmbed } from "@/context/EmbedContext";
 import { format } from "date-fns";
 import { ChevronRight } from "lucide-react";
 
