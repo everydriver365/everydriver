@@ -1,51 +1,73 @@
-## Scope
+# Embeddable `/courses` clone with working payments
 
-Visual-only redesign of the search bar that appears on `/booking/chapmans`. Logic (postcode autocomplete, radius/transmission selects, search trigger, dropdown behaviour) stays untouched.
+Generic, unbranded, iframe-friendly clone of the existing Drive365 `/courses` page. Same search, filters, results, availability — and the full booking + payment flow continues to work because checkout always happens on the top-level drive365.co.uk window, not inside the iframe.
 
-## Files involved
+## Route
 
-Confirmed exact component rendering the search bar:
+`src/routes/publicRoutes.tsx`:
 
-- `src/components/courses/CourseSearchHeader.tsx` — the search bar component (used by the `Courses` page, which `PublicBookingPortal` embeds for `/booking/chapmans`).
-- `src/pages/Courses.tsx` — passes props through; only change is forwarding a new `variant` prop.
-- `src/pages/PublicBookingPortal.tsx` — sets `variant="chapmans"` on `<Courses>` only when `slug === "chapmans"`.
+```
+<Route path="/embed/courses" element={<CourseResults embed />} />
+```
 
-No other files modified. No other pages affected. The default (`/courses`, other booking pages) keeps the current design.
+Reuses the existing `CourseResults` component, no duplicate page.
 
-## Approach
+## Changes to `src/pages/Courses.tsx`
 
-1. Add an optional `variant?: "default" | "chapmans"` prop to `CourseSearchHeader` (default `"default"`).
-2. When `variant === "chapmans"`, render a new redesigned bar (spec below) instead of the current unified form. Reuse the existing `PostcodeAutocomplete`, `select`s for radius/transmission, and the same `handleSearch`/`onSearch` wiring — only markup and styles change. Eyebrow, title and the filter pill row remain unchanged.
-3. Thread the prop through `Courses` (`variant?: ...` added to `CoursesProps`, forwarded to `CourseSearchHeader`).
-4. In `PublicBookingPortal`, pass `variant={slug === "chapmans" ? "chapmans" : undefined}` to `<Courses>`.
+Add one prop: `embed?: boolean`. When true:
 
-## Redesigned bar spec (chapmans variant)
+1. **No `MainLayout`** — render in a bare `<div className="min-h-screen bg-transparent">`. Removes `Drive365Header`, `Footer`, all Drive365 branding.
+2. **Transparent background** — `useEffect` sets `html` + `body` background to transparent on mount and restores on unmount, so the embed inherits the host page colour.
+3. **`noindex`** via `SEOHead` so `/embed/courses` doesn't compete with `/courses` in search.
+4. **Height reporter** — `ResizeObserver` posts `{ type: 'drive365:embed:height', height }` to `window.parent` so hosts can auto-resize the iframe.
 
-Container (the `<form>`):
-- `background: #fff`, `border-radius: 14px`, `padding: 16px`
-- `box-shadow: 0 2px 12px rgba(0,0,0,0.08)`, no border
-- `display: flex; align-items: center; gap: 10px`
+## Payments handling (the critical part)
 
-Three detached field boxes (Postcode flex 1.5, Radius flex 1, Transmission flex 1):
-- `background: #F9FAFB`, `border: 1px solid #E5E7EB`, `border-radius: 8px`
-- `padding: 10px 14px`, `display: flex; flex-direction: column; gap: 2px`
-- Label: 9px / weight 700 / `#9CA3AF` / uppercase / `letter-spacing: 0.8px`
-- Value row: 13px / weight 500 / `#0A0E27`
-  - Postcode: `MapPin` icon (11px, `#9CA3AF`) left of the existing `PostcodeAutocomplete` input (input restyled to 13px/500, transparent, no border, no ring)
-  - Radius: existing `<select>` (13px/500, transparent, appearance-none) with `ChevronDown` (11px, `#9CA3AF`) on the right
-  - Transmission: same pattern as Radius
+Payments today run via `/book/:instructorId` and redirect out to Square / Klarna / Clearpay / GoCardless hosted checkout. Inside a third-party iframe those redirects break (X-Frame-Options on the gateway pages, third-party-cookie blocks, popup blockers).
 
-Search button:
-- `background: #E8641A`, `color: #fff`, no border, `border-radius: 8px`
-- `padding: 12px 28px`, `font-size: 13px`, `font-weight: 700`
-- `display: flex; align-items: center; gap: 6px; flex-shrink: 0`
-- `Search` icon (13px, white stroke) left of "Search"; `Loader2` swap kept while `isSearching`
-- Click submits the form → existing `handleSearch()` → existing `onSearch` prop
+Fix: **in embed mode, every booking navigation breaks out of the iframe to the top window.**
 
-## Constraints honoured
+- Add optional `onBookClick?: (href: string) => void` to:
+  - `src/components/DynamicCourseCard.tsx`
+  - `src/components/courses/CourseTableList.tsx`
+- In embed mode `CourseResults` passes:
+  ```ts
+  onBookClick={(href) => {
+    const abs = new URL(href, window.location.origin).toString();
+    try { window.top!.location.href = abs; }
+    catch { window.open(abs, '_blank', 'noopener'); } // cross-origin top blocked → new tab fallback
+  }}
+  ```
+- Default behaviour (`/courses`, `/i/:slug/courses`, `/booking/:slug`) unchanged — they keep using `navigate(href)`.
 
-- Logic untouched: same state, same handlers, same `PostcodeAutocomplete`, same `<select>` elements and option values.
-- Values pulled from existing state (`postcode`, `radius`, `transmission`) via existing props — no hardcoding.
-- Filter tabs, hero, and any other component untouched (filter row continues to render below as today).
-- Scoped to chapmans only via the `variant` prop gated on `slug === "chapmans"` in `PublicBookingPortal`; the global `/courses` page keeps its current bar.
-- Light mode only; inline styles using literal hex values per the spec (matches the existing inline-style pattern in this file).
+Result: the user picks a course inside the iframe → the parent page navigates (or a new tab opens) to `https://drive365.co.uk/book/:id?hours=…` where the existing, fully-tested checkout runs first-party. Square, Klarna, Clearpay, GoCardless, SumUp, Cash all keep working with zero changes to payment code.
+
+The iframe `allow="payment *"` attribute is documented for host pages (not required for our redirect-based flow but recommended for any future in-page Payment Request usage).
+
+## Iframe-ability
+
+Lovable hosting does not send `X-Frame-Options` or restrictive `frame-ancestors`, so `/embed/courses` is embeddable from any origin out of the box. Host snippet (documented at top of `Courses.tsx`):
+
+```html
+<iframe
+  src="https://drive365.co.uk/embed/courses"
+  style="width:100%;border:0;min-height:1200px"
+  allow="payment *; clipboard-write"
+  referrerpolicy="no-referrer-when-downgrade"
+></iframe>
+```
+
+## Files touched
+
+- `src/pages/Courses.tsx` — `embed` prop, conditional bare layout, transparent bg effect, height reporter, `onBookClick` wiring
+- `src/components/DynamicCourseCard.tsx` — optional `onBookClick` prop
+- `src/components/courses/CourseTableList.tsx` — optional `onBookClick` prop
+- `src/routes/publicRoutes.tsx` — register `/embed/courses`
+
+## Out of scope
+
+- No DB / RLS / migration changes
+- No edge-function changes
+- No changes to existing `/courses`, `/i/:slug/courses`, `/booking/:slug`, or any `/book/:id` checkout code
+- No new design tokens — purely a layout/bootstrap variant
+- Whitelabel `/courses` behaviour untouched; embed route always renders the generic global `CourseResults`
