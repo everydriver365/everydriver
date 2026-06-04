@@ -1,18 +1,13 @@
-## Make the hero smaller on /booking/chapmans
+## Shrink the "Driving courses / Chapman's Driving School Courses" header on mobile
 
-The orange hero lives in `src/pages/PublicBookingPortal.tsx` (lines 129–140) and is shared by every `/booking/:slug` page. It's oversized on mobile, eating most of the viewport before the search.
+Lives in `src/components/courses/CourseSearchHeader.tsx` (lines 67–94). Title is 32px with `pt-5 pb-3 px-5` and `mb-5` — visually dominating the mobile viewport above the search card.
 
-### Changes (one file)
+### Changes (one file, mobile-only)
 
-`src/pages/PublicBookingPortal.tsx`, hero block only:
+`src/components/courses/CourseSearchHeader.tsx`:
 
-- Container: `py-12 px-4` → `py-6 px-4 md:py-10` (tighter vertical on mobile, modest on desktop).
-- Logo: `h-12 mx-auto mb-4` → `h-9 md:h-11 mx-auto mb-2`.
-- Heading: `text-3xl md:text-4xl font-bold mb-2` → `text-xl md:text-3xl font-bold mb-1` (was wrapping to two huge lines on mobile).
-- Description: `text-lg opacity-90` → `text-sm md:text-base opacity-90`.
+- Section padding (line 68): `px-5 pt-5 pb-3` → `px-5 pt-3 pb-2 md:pt-5 md:pb-3`.
+- Eyebrow margin (line 75): `mb-2` → `mb-1.5`.
+- Title (lines 89–94): `text-[32px]` → `text-[22px] md:text-[32px]`, `mb-5` → `mb-3 md:mb-5`, drop the inline `marginTop: 8` (use `mt-1`).
 
-No color, copy, gradient, or layout-structure changes. Desktop stays close to current proportions; mobile becomes roughly half the height.
-
-### Out of scope
-- The search card, filter chips, and instructor grid below are untouched.
-- No changes to other pages or to `Drive365SearchHeader`.
+No copy, color, or desktop sizing change. Search card and filter chips untouched.

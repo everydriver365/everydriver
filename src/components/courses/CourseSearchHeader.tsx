@@ -65,14 +65,14 @@ export function CourseSearchHeader({
   };
 
   return (
-    <section className="px-5 pt-5 pb-3">
+    <section className="px-5 pt-3 pb-2 md:pt-5 md:pb-3">
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         className="mx-auto max-w-5xl"
       >
         {/* Eyebrow */}
-        <div className="mb-2 flex items-center gap-[7px]">
+        <div className="mb-1.5 flex items-center gap-[7px]">
           <span
             className="inline-block h-[2px] w-[18px] rounded-sm"
             style={{ backgroundColor: tokens.blue }}
@@ -87,8 +87,8 @@ export function CourseSearchHeader({
 
         {/* Title */}
         <h1
-          className="font-heading mb-5 text-[32px] font-bold leading-tight tracking-[-0.5px]"
-          style={{ color: tokens.navy, marginTop: 8 }}
+          className="font-heading mb-3 mt-1 text-[22px] font-bold leading-tight tracking-[-0.5px] md:mb-5 md:text-[32px]"
+          style={{ color: tokens.navy }}
         >
           {title}
         </h1>
