@@ -240,40 +240,7 @@ export default function HomepageExtraSections() {
         </div>
       </div>
 
-      {/* 4. Instructor recruitment */}
-      <div style={{ background: "#0A2B6B", borderRadius: 14, padding: "28px 32px", display: "grid", gridTemplateColumns: "1fr auto", gap: 24, alignItems: "center" }}>
-        <div>
-          <span style={{ background: "#E8641A", color: "#FFFFFF", fontSize: 9, fontWeight: 700, padding: "4px 10px", borderRadius: 20, display: "inline-block", marginBottom: 10 }}>
-            ● Now recruiting
-          </span>
-          <h3 style={{ fontSize: 20, fontWeight: 800, color: "#FFFFFF", margin: "0 0 6px" }}>Are you a driving instructor?</h3>
-          <p style={{ fontSize: 12, color: "rgba(255,255,255,0.55)", margin: "0 0 12px" }}>
-            Join the EveryDriver franchise — free private healthcare, £50 bonus every time a pupil passes, and the best tech platform in the business.
-          </p>
-          <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 6 }}>
-            {[
-              "Free private healthcare",
-              "£50 bonus every time a pupil passes",
-              "Best tech platform in the business",
-            ].map((b, i) => (
-              <li key={i} style={{ fontSize: 12, color: "#FFFFFF" }}>
-                <span style={{ color: "#22C55E", marginRight: 8, fontWeight: 700 }}>✓</span>
-                {b}
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div style={{ textAlign: "right" }}>
-          <div style={{ fontSize: 10, color: "rgba(255,255,255,0.4)" }}>From just</div>
-          <div style={{ fontSize: 32, fontWeight: 900, color: "#FFFFFF", lineHeight: 1 }}>£25</div>
-          <div style={{ fontSize: 10, color: "rgba(255,255,255,0.4)", marginBottom: 12 }}>per week</div>
-          <Link to="/become-instructor" style={{ background: "#E8641A", color: "#FFFFFF", borderRadius: 7, padding: "10px 18px", fontSize: 11, fontWeight: 700, textDecoration: "none", display: "inline-block" }}>
-            Learn more →
-          </Link>
-        </div>
-      </div>
-
-      {/* 5. News & tips */}
+      {/* 4. News & tips */}
       <div style={{ background: "#FFFFFF", borderRadius: 14, padding: 28, border: "1px solid #E5E7EB" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 16, flexWrap: "wrap", gap: 8 }}>
           <div>
