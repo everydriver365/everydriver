@@ -18,6 +18,7 @@ import logoClearpay from "@/assets/logo-clearpay.webp";
 
 import bookNowPayLaterBadge from "@/assets/book-now-pay-later-badge.png";
 import { PostcodeSearch } from "@/components/home/PostcodeSearch";
+import SeeWhoIsTeaching from "@/components/home/SeeWhoIsTeaching";
 
 const NAV_LINKS = [
   { label: "Find an instructor", href: "/instructors" },
