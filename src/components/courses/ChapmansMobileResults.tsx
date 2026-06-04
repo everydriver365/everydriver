@@ -246,8 +246,15 @@ export function ChapmansMobileResults({
       )}
 
       {/* Section 5 — Course list cards */}
-      <div style={{ padding: "0 16px" }}>
+      <div
+        style={
+          viewMode === "grid"
+            ? { padding: "0 16px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }
+            : { padding: "0 16px" }
+        }
+      >
         {courses.map((c, i) => {
+          const isGrid = viewMode === "grid";
           // Mirror DynamicCourseCard pricing exactly.
           const defaultRate = Number(c.instructor.hourly_rate ?? 0);
           const hourlyRate =
@@ -287,7 +294,7 @@ export function ChapmansMobileResults({
                 borderRadius: 12,
                 border: "0.5px solid #E5E7EB",
                 overflow: "hidden",
-                marginBottom: 8,
+                marginBottom: isGrid ? 0 : 8,
                 cursor: "pointer",
                 display: "flex",
                 alignItems: "stretch",
@@ -303,40 +310,43 @@ export function ChapmansMobileResults({
               />
 
               {/* Card body */}
-              <div style={{ flex: 1, padding: 12, minWidth: 0 }}>
+              <div style={{ flex: 1, padding: isGrid ? 10 : 12, minWidth: 0 }}>
                 {/* Row 1 — course + price */}
                 <div
                   style={{
                     display: "flex",
+                    flexDirection: isGrid ? "column" : "row",
                     justifyContent: "space-between",
-                    alignItems: "flex-start",
+                    alignItems: isGrid ? "flex-start" : "flex-start",
                     marginBottom: 6,
-                    gap: 8,
+                    gap: isGrid ? 4 : 8,
                   }}
                 >
                   <div style={{ minWidth: 0, flex: 1 }}>
                     <div
                       style={{
-                        fontSize: 13,
+                        fontSize: isGrid ? 12 : 13,
                         fontWeight: 700,
                         color: "#0A0E27",
                         letterSpacing: "-0.01em",
+                        lineHeight: 1.25,
                       }}
                     >
                       {courseName(c.hours)}{titleSuffix} · {transmissionLabel(c.instructor.car_type)}
                     </div>
-                    <div style={{ fontSize: 11, color: "#9CA3AF", marginTop: 1 }}>
+                    <div style={{ fontSize: isGrid ? 10 : 11, color: "#9CA3AF", marginTop: 2 }}>
                       Starts {format(c.bookableDate, "EEE d MMM")}
-                      {locationBits.length > 0 ? ` · ${locationBits.join(" · ")}` : ""}
+                      {!isGrid && locationBits.length > 0 ? ` · ${locationBits.join(" · ")}` : ""}
                     </div>
                   </div>
                   <div
                     style={{
                       display: "flex",
-                      flexDirection: "column",
-                      alignItems: "flex-end",
+                      flexDirection: isGrid ? "row" : "column",
+                      alignItems: isGrid ? "baseline" : "flex-end",
+                      gap: isGrid ? 6 : 0,
                       flexShrink: 0,
-                      marginLeft: 8,
+                      marginLeft: isGrid ? 0 : 8,
                     }}
                   >
                     {hasDiscount && (
@@ -347,7 +357,8 @@ export function ChapmansMobileResults({
                           color: "#9CA3AF",
                           textDecoration: "line-through",
                           lineHeight: 1,
-                          marginBottom: 2,
+                          marginBottom: isGrid ? 0 : 2,
+                          order: isGrid ? 2 : 0,
                         }}
                       >
                         £{Math.round(totalPrice).toLocaleString()}
@@ -355,7 +366,7 @@ export function ChapmansMobileResults({
                     )}
                     <div
                       style={{
-                        fontSize: 18,
+                        fontSize: isGrid ? 16 : 18,
                         fontWeight: 800,
                         color: hasDiscount ? "#059669" : "#0A0E27",
                         letterSpacing: "-0.015em",
@@ -368,13 +379,14 @@ export function ChapmansMobileResults({
                 </div>
 
 
+
                 {/* Row 2 — instructor */}
                 <div
                   style={{
                     display: "flex",
                     alignItems: "center",
                     gap: 6,
-                    marginBottom: 8,
+                    marginBottom: isGrid ? 0 : 8,
                     minWidth: 0,
                   }}
                 >
@@ -383,8 +395,8 @@ export function ChapmansMobileResults({
                       src={c.instructor.profile_image_url}
                       alt=""
                       style={{
-                        width: 24,
-                        height: 24,
+                        width: isGrid ? 20 : 24,
+                        height: isGrid ? 20 : 24,
                         borderRadius: 9999,
                         objectFit: "cover",
                         flexShrink: 0,
@@ -393,8 +405,8 @@ export function ChapmansMobileResults({
                   ) : (
                     <div
                       style={{
-                        width: 24,
-                        height: 24,
+                        width: isGrid ? 20 : 24,
+                        height: isGrid ? 20 : 24,
                         borderRadius: 9999,
                         background: "#1E4D9B",
                         color: "#FFF",
@@ -411,7 +423,7 @@ export function ChapmansMobileResults({
                   )}
                   <div
                     style={{
-                      fontSize: 11,
+                      fontSize: isGrid ? 10 : 11,
                       fontWeight: 600,
                       color: "#0A0E27",
                       overflow: "hidden",
@@ -424,7 +436,8 @@ export function ChapmansMobileResults({
                   </div>
                 </div>
 
-                {/* Row 3 — payment + CTA */}
+                {/* Row 3 — payment + CTA (hidden in grid; whole card is clickable) */}
+                {!isGrid && (
                 <div
                   style={{
                     display: "flex",
@@ -496,6 +509,7 @@ export function ChapmansMobileResults({
                     View
                   </button>
                 </div>
+                )}
               </div>
             </div>
           );
