@@ -21445,6 +21445,7 @@ export type Database = {
         Returns: string
       }
       restore_pupil: { Args: { p_pupil_id: string }; Returns: undefined }
+      submit_booking_enquiry: { Args: { p_payload: Json }; Returns: string }
       submit_public_test_swap_signup: {
         Args: { p_payload: Json }
         Returns: string
