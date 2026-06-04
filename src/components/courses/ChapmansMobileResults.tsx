@@ -256,11 +256,11 @@ export function ChapmansMobileResults({
         </div>
       )}
 
-      {/* Section 5 — Course list cards */}
+      {/* Section 5 — Course cards (list: compact rows · grid: Drive365 flip cards stacked) */}
       <div
         style={
           viewMode === "grid"
-            ? { padding: "0 16px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }
+            ? { padding: "0 16px", display: "flex", flexDirection: "column", gap: 16 }
             : { padding: "0 16px" }
         }
       >
