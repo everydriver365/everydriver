@@ -41,18 +41,16 @@ export default function AdminInstructorDetail() {
     setInstructor(ins);
 
     const yearStart = new Date(new Date().getFullYear(), 0, 1).toISOString();
-    const [pupilsActive, pupilsAll, passes, points] = await Promise.all([
-      supabase.from("pupils").select("id", { count: "exact", head: true })
-        .eq("instructor_id", id).is("deleted_at", null),
-      supabase.from("pupils").select("id", { count: "exact", head: true })
-        .eq("instructor_id", id),
-      supabase.from("test_results").select("id", { count: "exact", head: true })
-        .eq("instructor_id", id).eq("result", "pass").gte("created_at", yearStart),
-      supabase.from("pupils").select("reward_points")
-        .eq("instructor_id", id).is("deleted_at", null),
-    ]);
+    const pupilsActive = await supabase.from("pupils").select("id", { count: "exact", head: true })
+      .eq("instructor_id", id).is("deleted_at", null);
+    const pupilsAll = await supabase.from("pupils").select("id", { count: "exact", head: true })
+      .eq("instructor_id", id);
+    const passes = await supabase.from("driving_test_results").select("id", { count: "exact", head: true })
+      .eq("instructor_id", id).eq("result", "pass").gte("created_at", yearStart);
+    const points = await supabase.from("pupils").select("reward_points")
+      .eq("instructor_id", id).is("deleted_at", null);
 
-    const totalPoints = (points.data as any[] | null)?.reduce(
+    const totalPoints = (points.data as Array<{ reward_points: number | null }> | null)?.reduce(
       (sum, p) => sum + (Number(p.reward_points) || 0), 0,
     ) ?? null;
 
@@ -64,6 +62,7 @@ export default function AdminInstructorDetail() {
     });
     setLoading(false);
   };
+
 
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [id]);
 
