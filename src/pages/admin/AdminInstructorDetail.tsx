@@ -148,9 +148,18 @@ export default function AdminInstructorDetail() {
   };
 
   const handleRemove = async () => {
-    if (!id) return;
-    if (!confirm("Permanently remove this instructor from the platform? This cannot be undone.")) return;
-    toast({ title: "Removal requires support", description: "Use the danger zone in the instructor profile tools." });
+    if (!id || !instructor) return;
+    if (!confirm(`Remove ${instructor.name} from the platform?\n\nThis soft-deletes the instructor and schedules a permanent purge in 30 days. Active pupils and bookings will lose this assignment.`)) return;
+    const purgeAt = new Date(Date.now() + 30 * 86400_000).toISOString();
+    const { error } = await supabase.from("instructors")
+      .update({ deleted_at: new Date().toISOString(), scheduled_purge_at: purgeAt })
+      .eq("id", id);
+    if (error) {
+      toast({ title: "Removal failed", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Instructor removed", description: "Permanent purge in 30 days." });
+    nav("/admin/network-instructors");
   };
 
   const initialProfile: EditProfileValues | null = useMemo(() => instructor ? ({
