@@ -1,26 +1,27 @@
-## Goal
-Make the "Choose your learning path" section on the Drive365 homepage more compact by trimming content and tightening spacing.
+Update `src/components/home/SeeWhoIsTeaching.tsx` so the cards render exactly like the reference image.
 
 ## Changes
-In `src/components/home/Drive365Home.tsx`, section starting at line 480:
 
-### 1. Trim card content
-- Remove the `<p>` description paragraph from each course card.
-- Remove the 3-item feature list (the checkmark bullets).
-- Keep: badge, image, title, price, CTA button.
+**Card layout (per card)**
+- Increase card padding from 14 → 18–20px; gap between cards 14px.
+- Top color bar stays (green/orange/blue, 6px).
+- Header row: circular avatar (40×40, `borderRadius: 9999px`) + name (14px bold) + sub-line "Winchester · 0.0 mi" (12px, gray).
+- "Top rated" badge: keep on the highest-rated card, orange pill top-right.
 
-### 2. Compact card sizing
-- Reduce `CourseCardImage` height from `180` to `140`.
-- Reduce inner card padding from `"22px 22px 0"` to `"18px 18px 0"`.
-- Reduce bottom padding on the price row.
-- Reduce CTA button padding from `14` to `10`.
+**Rating + pass rate row**
+- Left: ★ `4.8 (47 reviews)` — show the full word "reviews", 12px gray.
+- Right: green pill badge `94% pass` — soft mint background `#D1FAE5`, text `#059669`, 11px bold, rounded-full, padding `2px 10px`.
+- Pull `pass_rate` from instructors table if present; otherwise omit the badge for that card (no fake values, per live-data rule).
 
-### 3. Tighten section spacing
-- Reduce section top/bottom padding from `"56px 5%"` to `"36px 5%"`.
-- Keep the existing 3-column grid and card border/shadow styling.
+**Price + CTA**
+- Price `£45` (16–18px bold) + `/hr` (12px gray).
+- "View profile →" button full-width, 10px padding, 13px bold. Middle card uses orange `#E8641A`, others use navy `#0A1628`.
 
-## What stays the same
-- All data from the `COURSES` array (titles, prices, CTAs, images, badges).
-- Existing grid layout (`repeat(auto-fit, minmax(280px, 1fr))`).
-- Card border, featured-card highlight, and hover states.
-- No changes to other sections or components.
+**Distance**
+- Compute `0.0 mi`, `0.2 mi` style distance from each instructor's `home_postcode` vs the homepage's detected location if available; if no user location, hide the `· X mi` suffix and just show town. No hardcoded fallbacks.
+
+## Technical notes
+- Query `instructors` for additional fields: `pass_rate` (if column exists) and `home_postcode` for town/distance derivation. Use `postcodes.io` for postcode → town lookup only if not already cached; otherwise show outward code.
+- All radii via inline styles using `9999px` for avatars/pills, `12px` for cards, `8px` for button.
+- No changes to data-fetching logic beyond adding fields. Live-data rule respected: missing pass_rate hides badge, missing distance hides ` · X mi`.
+- No other components touched.
