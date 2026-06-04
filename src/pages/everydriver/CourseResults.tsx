@@ -46,6 +46,7 @@ export default function CourseResults({
   defaultType = "all",
   title = "Find Driving Courses Near You",
   showTypeSwitcher = true,
+  embed = false,
 }: CourseResultsProps) {
   const [searchParams, setSearchParams] = useSearchParams();
   const initialPostcode = searchParams.get("postcode") || "";
