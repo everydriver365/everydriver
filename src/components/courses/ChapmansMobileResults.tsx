@@ -40,7 +40,7 @@ interface ChapmansCourse {
   // Extra fields forwarded to DynamicCourseCard for the grid (flip-card) view.
   courseImageUrl?: string | null;
   isPopular?: boolean;
-  availableFrom?: Date | null;
+  availableFrom?: string | Date | null;
   features?: string[];
   customFeatures?: string[];
 }
