@@ -2,15 +2,24 @@ import { useState } from "react";
 import { format } from "date-fns";
 import { ShieldCheck, List as ListIcon, LayoutGrid } from "lucide-react";
 import { useEmbed } from "@/context/EmbedContext";
+import { computeOfferStatus } from "@/lib/courseOffer";
 
 type SortOption = "soonest" | "price-low" | "nearest";
 
+/**
+ * Mirror of the fields DynamicCourseCard consumes, so mobile renders the
+ * SAME data as the Drive365 desktop course cards. Pricing, discount logic,
+ * title, and intensity label MUST match DynamicCourseCard derivations.
+ */
 interface ChapmansCourse {
   instructor: {
     id: string;
     name?: string | null;
     car_type?: string | null;
     profile_image_url?: string | null;
+    home_postcode?: string | null;
+    hourly_rate?: number | null;
+    school_skim_amount?: number | null;
     klarna_enabled?: boolean | null;
     clearpay_enabled?: boolean | null;
   };
@@ -18,8 +27,14 @@ interface ChapmansCourse {
   bookableDate: Date;
   isIntensive?: boolean;
   distance?: number;
-  price: number;
   discountedPrice?: number | null;
+  offerActive?: boolean | null;
+  offerLabel?: string | null;
+  offerPercentOff?: number | null;
+  offerStartsAt?: string | null;
+  offerEndsAt?: string | null;
+  effectiveHourlyRate?: number | null;
+  areaName?: string | null;
 }
 
 interface Props {
@@ -48,16 +63,26 @@ function barColor(hours: number) {
   return HOURS_BAR[hours] || "#7C3AED";
 }
 
+// Match DynamicCourseCard transmission logic.
 function transmissionLabel(carType?: string | null) {
-  if (carType === "automatic") return "Automatic";
-  if (carType === "both") return "Manual & Auto";
+  const t = (carType || "").toLowerCase();
+  const isAutomatic = t.includes("automatic") || t === "auto";
+  const isManual = t.includes("manual");
+  if (t === "both" || (isAutomatic && isManual)) return "Auto & Manual";
+  if (isAutomatic) return "Automatic";
   return "Manual";
 }
 
-function courseTypeLabel(c: ChapmansCourse) {
-  if (c.isIntensive || c.hours >= 30) return "Intensive";
-  if (c.hours >= 20) return "Semi-intensive";
-  return "Weekly";
+// Match DynamicCourseCard course-name logic (no DB lookup — same string).
+function courseName(hours: number) {
+  return hours === 28 ? "Test in a Week" : `${hours} Hour Course`;
+}
+
+// Match DynamicCourseCard intensity badge logic.
+function intensityLabel(hours: number, isIntensive?: boolean) {
+  if (isIntensive) return "Intensive";
+  if (hours >= 30 && hours <= 40) return "Semi-Intensive";
+  return null;
 }
 
 function getInitials(name?: string | null) {
@@ -97,6 +122,7 @@ export function ChapmansMobileResults({
     const dateParam = c.bookableDate ? `&date=${format(c.bookableDate, "yyyy-MM-dd")}` : "";
     bookNavigate(`/book/${c.instructor.id}?hours=${c.hours}${dateParam}`);
   };
+
 
   return (
     <div>
