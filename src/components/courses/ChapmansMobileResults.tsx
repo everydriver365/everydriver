@@ -310,40 +310,43 @@ export function ChapmansMobileResults({
               />
 
               {/* Card body */}
-              <div style={{ flex: 1, padding: 12, minWidth: 0 }}>
+              <div style={{ flex: 1, padding: isGrid ? 10 : 12, minWidth: 0 }}>
                 {/* Row 1 — course + price */}
                 <div
                   style={{
                     display: "flex",
+                    flexDirection: isGrid ? "column" : "row",
                     justifyContent: "space-between",
-                    alignItems: "flex-start",
+                    alignItems: isGrid ? "flex-start" : "flex-start",
                     marginBottom: 6,
-                    gap: 8,
+                    gap: isGrid ? 4 : 8,
                   }}
                 >
                   <div style={{ minWidth: 0, flex: 1 }}>
                     <div
                       style={{
-                        fontSize: 13,
+                        fontSize: isGrid ? 12 : 13,
                         fontWeight: 700,
                         color: "#0A0E27",
                         letterSpacing: "-0.01em",
+                        lineHeight: 1.25,
                       }}
                     >
                       {courseName(c.hours)}{titleSuffix} · {transmissionLabel(c.instructor.car_type)}
                     </div>
-                    <div style={{ fontSize: 11, color: "#9CA3AF", marginTop: 1 }}>
+                    <div style={{ fontSize: isGrid ? 10 : 11, color: "#9CA3AF", marginTop: 2 }}>
                       Starts {format(c.bookableDate, "EEE d MMM")}
-                      {locationBits.length > 0 ? ` · ${locationBits.join(" · ")}` : ""}
+                      {!isGrid && locationBits.length > 0 ? ` · ${locationBits.join(" · ")}` : ""}
                     </div>
                   </div>
                   <div
                     style={{
                       display: "flex",
-                      flexDirection: "column",
-                      alignItems: "flex-end",
+                      flexDirection: isGrid ? "row" : "column",
+                      alignItems: isGrid ? "baseline" : "flex-end",
+                      gap: isGrid ? 6 : 0,
                       flexShrink: 0,
-                      marginLeft: 8,
+                      marginLeft: isGrid ? 0 : 8,
                     }}
                   >
                     {hasDiscount && (
@@ -354,7 +357,8 @@ export function ChapmansMobileResults({
                           color: "#9CA3AF",
                           textDecoration: "line-through",
                           lineHeight: 1,
-                          marginBottom: 2,
+                          marginBottom: isGrid ? 0 : 2,
+                          order: isGrid ? 2 : 0,
                         }}
                       >
                         £{Math.round(totalPrice).toLocaleString()}
@@ -362,7 +366,7 @@ export function ChapmansMobileResults({
                     )}
                     <div
                       style={{
-                        fontSize: 18,
+                        fontSize: isGrid ? 16 : 18,
                         fontWeight: 800,
                         color: hasDiscount ? "#059669" : "#0A0E27",
                         letterSpacing: "-0.015em",
@@ -373,6 +377,7 @@ export function ChapmansMobileResults({
                     </div>
                   </div>
                 </div>
+
 
 
                 {/* Row 2 — instructor */}
