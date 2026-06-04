@@ -80,6 +80,7 @@ export function DynamicCourseCard({
 }: DynamicCourseCardProps) {
   const [isFlipped, setIsFlipped] = useState(false);
   const navigate = useNavigate();
+  const { bookNavigate } = useEmbed();
 
   const defaultRate = instructor.hourly_rate || 40;
   const hourlyRate = (effectiveHourlyRate != null && effectiveHourlyRate > 0) ? effectiveHourlyRate : defaultRate;
