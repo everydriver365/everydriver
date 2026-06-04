@@ -74,15 +74,14 @@ export function Drive365Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full">
-      {/* Main bar — navy on mobile, white on desktop */}
+      {/* Main bar — logo blue #142040 */}
       <div
         className={cn(
-          "w-full bg-primary transition-shadow duration-200",
-          "lg:bg-white",
+          "w-full bg-[#142040] transition-shadow duration-200",
           location.pathname === "/" || location.pathname === "/drive365"
-            ? "lg:border-b-[3px] lg:border-b-[#D12E2E]"
-            : "lg:border-b lg:border-[#EAF0FF]",
-          scrolled && "lg:shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
+            ? "border-b-[3px] border-b-[#D12E2E]"
+            : "border-b border-[#1a2b52]",
+          scrolled && "shadow-[0_2px_8px_rgba(0,0,0,0.2)]"
         )}
       >
         <div className="mx-auto flex h-[76px] lg:h-[68px] items-center px-[60px] max-lg:px-5 lg:px-6">
@@ -110,13 +109,13 @@ export function Drive365Header() {
                       aria-expanded={coursesOpen}
                       className={cn(
                         "relative flex items-center gap-1 text-[14px] font-medium transition-colors",
-                        "text-white lg:text-[#0A0A0A] hover:text-accent lg:hover:text-[#0F2044]"
+                        "text-white hover:text-white/80"
                       )}
                     >
                       {link.label}
                       <ChevronDown
                         className={cn(
-                          "h-3.5 w-3.5 transition-transform lg:text-[#9CA3AF]",
+                          "h-3.5 w-3.5 transition-transform text-white/70",
                           coursesOpen && "rotate-180"
                         )}
                       />
@@ -146,8 +145,8 @@ export function Drive365Header() {
                   to={link.href}
                   className={cn(
                     "relative text-[14px] font-medium transition-colors",
-                    "text-white lg:text-[#0A0A0A] hover:text-accent lg:hover:text-[#0F2044]",
-                    isActive && "lg:!text-[#0F2044] lg:after:content-[''] lg:after:absolute lg:after:left-0 lg:after:right-0 lg:after:-bottom-[8px] lg:after:h-[2px] lg:after:bg-[#0F2044]"
+                    "text-white hover:text-white/80",
+                    isActive && "!text-white after:content-[''] after:absolute after:left-0 after:right-0 after:-bottom-[8px] after:h-[2px] after:bg-white"
                   )}
                 >
                   {link.label}
@@ -160,7 +159,7 @@ export function Drive365Header() {
           <div className="hidden lg:flex items-center gap-5 shrink-0">
             <Link
               to="/drive365/login"
-              className="text-[14px] font-medium text-[#0A0A0A] hover:text-[#0F2044] transition-colors"
+              className="text-[14px] font-medium text-white hover:text-white/80 transition-colors"
             >
               Pupil login
             </Link>
@@ -194,7 +193,7 @@ export function Drive365Header() {
 
         {/* Mobile menu */}
         {mobileOpen && (
-          <div className="lg:hidden border-t border-white/10 bg-primary">
+          <div className="lg:hidden border-t border-white/10 bg-[#142040]">
             <div className="px-5 py-4 flex flex-col gap-1">
               {NAV_LINKS.map((link) => (
                 <Link
