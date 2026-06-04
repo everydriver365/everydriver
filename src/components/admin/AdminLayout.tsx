@@ -13,6 +13,13 @@ import dsmLogo from "@/assets/dsm-logo.png";
 
 const sidebarGroups: PortalNavGroup[] = [
   {
+    label: "Instructor Overview",
+    icon: Users,
+    items: [
+      { key: "instructors", label: "Instructor Overview", icon: Users },
+    ],
+  },
+  {
     label: "Dashboard",
     icon: LayoutDashboard,
     items: [
@@ -25,6 +32,7 @@ const sidebarGroups: PortalNavGroup[] = [
       { key: "leaderboard", label: "Leaderboard", icon: Trophy },
     ],
   },
+
   {
     label: "Communications",
     icon: Headphones,
