@@ -109,15 +109,12 @@ export function CourseSearchHeader({
                 e.preventDefault();
                 handleSearch();
               }}
-              className="mb-3.5"
+              className="mb-3.5 flex flex-col gap-2.5 sm:flex-row sm:items-center"
               style={{
                 background: "#FFFFFF",
                 borderRadius: 14,
                 padding: 16,
                 boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
-                display: "flex",
-                alignItems: "center",
-                gap: 10,
               }}
             >
               {/* Postcode */}
