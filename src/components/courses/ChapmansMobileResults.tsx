@@ -266,6 +266,41 @@ export function ChapmansMobileResults({
       >
         {courses.map((c, i) => {
           const isGrid = viewMode === "grid";
+
+          if (isGrid) {
+            // Drive365 mobile parity: single-column flip cards.
+            const availableFromDate =
+              c.availableFrom instanceof Date
+                ? c.availableFrom
+                : c.availableFrom
+                ? new Date(c.availableFrom)
+                : undefined;
+            return (
+              <DynamicCourseCard
+                key={`${c.instructor.id}-${c.hours}-${c.bookableDate.toISOString()}-${i}`}
+                instructor={c.instructor as any}
+                hours={c.hours}
+                nextAvailable={c.bookableDate}
+                courseImageUrl={c.courseImageUrl ?? undefined}
+                isPopular={c.isPopular}
+                availableFrom={availableFromDate}
+                distance={c.distance}
+                features={c.features}
+                isIntensive={c.isIntensive}
+                discountedPrice={c.discountedPrice ?? undefined}
+                offerActive={c.offerActive ?? undefined}
+                offerLabel={c.offerLabel ?? undefined}
+                offerPercentOff={c.offerPercentOff ?? undefined}
+                offerStartsAt={c.offerStartsAt ?? undefined}
+                offerEndsAt={c.offerEndsAt ?? undefined}
+                customFeatures={c.customFeatures}
+                areaName={c.areaName ?? null}
+                effectiveHourlyRate={c.effectiveHourlyRate ?? undefined}
+                learnerPostcode={learnerPostcode ?? undefined}
+              />
+            );
+          }
+
           // Mirror DynamicCourseCard pricing exactly.
           const defaultRate = Number(c.instructor.hourly_rate ?? 0);
           const hourlyRate =
