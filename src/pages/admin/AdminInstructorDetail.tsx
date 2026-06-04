@@ -277,6 +277,14 @@ export default function AdminInstructorDetail() {
         </div>
 
         {/* Body */}
+        {!authLoading && !isAdmin && (
+          <div style={{
+            background: "#FEF3C7", color: "#92400E", borderBottom: "1px solid #FDE68A",
+            padding: "8px 24px", fontSize: 12, fontWeight: 600,
+          }}>
+            ⚠ You are viewing this page without an admin role — edits will not save.
+          </div>
+        )}
         {loading && <div style={{ padding: 24, color: "#6B7280", fontSize: 12 }}>Loading…</div>}
         {error && <div style={{ padding: 24, color: "#DC2626", fontSize: 12 }}>Error: {error}</div>}
 
