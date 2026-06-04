@@ -19,12 +19,11 @@ export default {
   	extend: {
 		fontFamily: {
 			sans: [
-				'Poppins',
+				'Inter',
 				'-apple-system',
 				'BlinkMacSystemFont',
 				'SF Pro Text',
 				'SF Pro Display',
-				'Inter',
 				'ui-sans-serif',
 				'system-ui',
 				'Segoe UI',
