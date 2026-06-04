@@ -12,6 +12,7 @@ interface InstructorRow {
   app_slug: string | null;
   avg_rating: number | null;
   total_reviews: number;
+  town: string | null;
 }
 
 const TOP_BARS = ["#059669", "#E8641A", "#0070C0"];
@@ -19,6 +20,17 @@ const AVATAR_BGS = ["#1E4D9B", "#0A2B6B", "#059669"];
 
 function initials(name: string) {
   return name.split(" ").map(n => n[0]).filter(Boolean).slice(0, 2).join("").toUpperCase();
+}
+
+async function lookupTown(postcode: string): Promise<string | null> {
+  try {
+    const res = await fetch(`https://api.postcodes.io/postcodes/${encodeURIComponent(postcode)}`);
+    if (!res.ok) return null;
+    const json = await res.json();
+    return json?.result?.admin_district || json?.result?.parish || json?.result?.admin_ward || null;
+  } catch {
+    return null;
+  }
 }
 
 export default function SeeWhoIsTeaching() {
@@ -53,6 +65,7 @@ export default function SeeWhoIsTeaching() {
             ...(i as any),
             avg_rating: r.avg_rating != null ? Number(r.avg_rating) : null,
             total_reviews: r.total_reviews ?? 0,
+            town: null,
           });
           if (top.length === 3) break;
         }
@@ -68,10 +81,17 @@ export default function SeeWhoIsTeaching() {
           .limit(6);
         for (const e of extras ?? []) {
           if (have.has(e.id)) continue;
-          top.push({ ...(e as any), avg_rating: null, total_reviews: 0 });
+          top.push({ ...(e as any), avg_rating: null, total_reviews: 0, town: null });
           if (top.length === 3) break;
         }
       }
+
+      // Resolve towns from postcodes
+      await Promise.all(top.map(async (t) => {
+        if (t.home_postcode) {
+          t.town = await lookupTown(t.home_postcode);
+        }
+      }));
 
       const { count } = await supabase
         .from("instructors")
@@ -99,55 +119,53 @@ export default function SeeWhoIsTeaching() {
             <br />
             <span style={{ color: "#60C8F5" }}>Then decide.</span>
           </h2>
-          <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", maxWidth: 400, margin: "12px auto 0", lineHeight: 1.6 }}>
+          <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", maxWidth: 460, margin: "12px auto 0", lineHeight: 1.6 }}>
             Most schools assign you a random instructor. We show you exactly who's available near you — before you hand over a penny.
           </p>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: `repeat(${Math.min(instructors.length, 3)}, 1fr)`, gap: 10, marginBottom: 24 }}>
+        <div style={{ display: "grid", gridTemplateColumns: `repeat(${Math.min(instructors.length, 3)}, 1fr)`, gap: 14, marginBottom: 24 }}>
           {instructors.map((ins, idx) => {
             const isTop = idx === 0;
             const isFeatured = idx === 1;
             const href = ins.app_slug ? `/i/${ins.app_slug}` : `/courses`;
-            const outward = (ins.home_postcode ?? "").split(" ")[0];
+            const location = ins.town || (ins.home_postcode ? ins.home_postcode.split(" ")[0] : null);
             return (
-              <div key={ins.id} style={{ background: "#FFFFFF", borderRadius: 10, overflow: "hidden", position: "relative" }}>
+              <div key={ins.id} style={{ background: "#FFFFFF", borderRadius: 12, overflow: "hidden", position: "relative" }}>
                 <div style={{ height: 6, background: TOP_BARS[idx] }} />
                 {isTop && (
-                  <div style={{ position: "absolute", top: 14, right: 10, background: "#E8641A", color: "#FFFFFF", fontSize: 8, fontWeight: 700, padding: "1px 6px", borderRadius: 20 }}>
+                  <div style={{ position: "absolute", top: 16, right: 12, background: "#E8641A", color: "#FFFFFF", fontSize: 9, fontWeight: 700, padding: "2px 8px", borderRadius: 9999 }}>
                     Top rated
                   </div>
                 )}
-                <div style={{ padding: 14 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                <div style={{ padding: 18 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
                     {ins.profile_image_url ? (
-                      <img src={ins.profile_image_url} alt={ins.name} style={{ width: 36, height: 36, borderRadius: "50%", objectFit: "cover" }} />
+                      <img src={ins.profile_image_url} alt={ins.name} style={{ width: 40, height: 40, borderRadius: 9999, objectFit: "cover", flexShrink: 0 }} />
                     ) : (
-                      <div style={{ width: 36, height: 36, borderRadius: "50%", background: AVATAR_BGS[idx], color: "#FFFFFF", fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <div style={{ width: 40, height: 40, borderRadius: 9999, background: AVATAR_BGS[idx], color: "#FFFFFF", fontSize: 13, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                         {initials(ins.name)}
                       </div>
                     )}
                     <div style={{ minWidth: 0 }}>
-                      <div style={{ fontSize: 11, fontWeight: 700, color: "#0A1628" }}>{ins.name}</div>
-                      {outward && <div style={{ fontSize: 10, color: "#9CA3AF" }}>{outward}</div>}
+                      <div style={{ fontSize: 14, fontWeight: 700, color: "#0A1628", lineHeight: 1.2 }}>{ins.name}</div>
+                      {location && <div style={{ fontSize: 12, color: "#9CA3AF", marginTop: 2 }}>{location}</div>}
                     </div>
                   </div>
 
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 10, color: "#9CA3AF" }}>
-                      <Star style={{ width: 10, height: 10, fill: "#F59E0B", color: "#F59E0B" }} />
-                      {ins.avg_rating != null ? (
-                        <span>{ins.avg_rating.toFixed(1)} ({ins.total_reviews})</span>
-                      ) : (
-                        <span>New</span>
-                      )}
-                    </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: "#6B7280", marginBottom: 10 }}>
+                    <Star style={{ width: 12, height: 12, fill: "#F59E0B", color: "#F59E0B" }} />
+                    {ins.avg_rating != null ? (
+                      <span>{ins.avg_rating.toFixed(1)} ({ins.total_reviews} review{ins.total_reviews === 1 ? "" : "s"})</span>
+                    ) : (
+                      <span>New instructor</span>
+                    )}
                   </div>
 
                   {ins.hourly_rate != null && (
-                    <div style={{ marginBottom: 6 }}>
-                      <span style={{ fontSize: 14, fontWeight: 800, color: "#0A1628" }}>£{Number(ins.hourly_rate).toFixed(0)}</span>
-                      <span style={{ fontSize: 10, fontWeight: 400, color: "#9CA3AF" }}>/hr</span>
+                    <div style={{ marginBottom: 10 }}>
+                      <span style={{ fontSize: 18, fontWeight: 800, color: "#0A1628" }}>£{Number(ins.hourly_rate).toFixed(0)}</span>
+                      <span style={{ fontSize: 12, fontWeight: 400, color: "#9CA3AF" }}>/hr</span>
                     </div>
                   )}
 
@@ -156,12 +174,12 @@ export default function SeeWhoIsTeaching() {
                       type="button"
                       style={{
                         width: "100%",
-                        padding: 6,
+                        padding: "10px 12px",
                         background: isFeatured ? "#E8641A" : "#0A1628",
                         color: "#FFFFFF",
                         border: "none",
-                        borderRadius: 5,
-                        fontSize: 10,
+                        borderRadius: 8,
+                        fontSize: 13,
                         fontWeight: 700,
                         cursor: "pointer",
                       }}
@@ -183,7 +201,7 @@ export default function SeeWhoIsTeaching() {
                 background: "#E8641A",
                 color: "#FFFFFF",
                 border: "none",
-                borderRadius: 8,
+                borderRadius: 9999,
                 padding: "13px 32px",
                 fontSize: 14,
                 fontWeight: 700,
