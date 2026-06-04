@@ -29,35 +29,110 @@ export function HomepageLiveStats() {
   if (instructors === null) return null;
 
   const tiles = [
-    { icon: Users, value: instructors, label: "DVSA-approved instructors", suffix: "+" },
-    { icon: MapPin, value: UK_POSTCODE_AREAS, label: "UK postcode areas covered", suffix: "" },
-    { icon: GraduationCap, value: COURSE_OPTIONS, label: "Course options to choose from", suffix: "+" },
+    {
+      icon: Users,
+      value: instructors,
+      label: "DVSA-approved instructors",
+      suffix: "+",
+      numColor: "#0070C0",
+      iconBg: "#EFF6FF",
+      iconStroke: "#0070C0",
+    },
+    {
+      icon: MapPin,
+      value: UK_POSTCODE_AREAS,
+      label: "UK postcode areas covered",
+      suffix: "",
+      numColor: "#E8641A",
+      iconBg: "#FFF7ED",
+      iconStroke: "#E8641A",
+    },
+    {
+      icon: GraduationCap,
+      value: COURSE_OPTIONS,
+      label: "Course options to choose from",
+      suffix: "+",
+      numColor: "#059669",
+      iconBg: "#F0FDF4",
+      iconStroke: "#059669",
+    },
   ];
 
   return (
-    <section className="bg-background py-6 sm:py-8 border-b border-border/40">
-      <div className="container">
-        <div className="grid grid-cols-3 gap-3 sm:gap-6">
-          {tiles.map(({ icon: Icon, value, label, suffix }) => (
+    <section style={{ padding: "24px 5%", background: "#F6F6F8", width: "100%" }}>
+      <div
+        style={{
+          background: "#F3F4F6",
+          padding: 24,
+          borderRadius: 14,
+          display: "grid",
+          gridTemplateColumns: "repeat(3, 1fr)",
+          gap: 12,
+          maxWidth: 1200,
+          margin: "0 auto",
+        }}
+      >
+        {tiles.map(({ icon: Icon, value, label, suffix, numColor, iconBg, iconStroke }) => (
+          <div
+            key={label}
+            style={{
+              background: "#FFFFFF",
+              borderRadius: 10,
+              border: "1px solid #E5E7EB",
+              padding: 20,
+              display: "flex",
+              alignItems: "center",
+              gap: 14,
+              transition: "box-shadow 150ms ease",
+              cursor: "default",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.06)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.boxShadow = "none";
+            }}
+          >
             <div
-              key={label}
-              className="flex items-center gap-3 sm:gap-4 rounded-2xl bg-card/50 px-3 py-3 sm:px-5 sm:py-4"
+              style={{
+                width: 44,
+                height: 44,
+                borderRadius: 10,
+                background: iconBg,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
             >
-              <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-xl bg-primary/10 flex-shrink-0">
-                <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+              <Icon size={22} color={iconStroke} strokeWidth={1.8} />
+            </div>
+            <div>
+              <div
+                style={{
+                  fontSize: 28,
+                  fontWeight: 900,
+                  letterSpacing: "-1px",
+                  lineHeight: 1,
+                  color: numColor,
+                }}
+              >
+                {value.toLocaleString("en-GB")}
+                {suffix}
               </div>
-              <div className="min-w-0">
-                <div className="text-lg sm:text-2xl font-bold text-foreground leading-none">
-                  {value.toLocaleString("en-GB")}
-                  {suffix}
-                </div>
-                <div className="mt-1 text-[11px] sm:text-xs text-muted-foreground leading-tight">
-                  {label}
-                </div>
+              <div
+                style={{
+                  fontSize: 12,
+                  color: "#6B7280",
+                  marginTop: 2,
+                  lineHeight: 1.4,
+                }}
+              >
+                {label}
               </div>
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
       </div>
     </section>
   );
