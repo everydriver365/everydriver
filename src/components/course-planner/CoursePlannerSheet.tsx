@@ -334,7 +334,7 @@ export function CoursePlannerSheet({
                       <Input className="pl-9" placeholder="Phone" type="tel" value={pupilPhone} onChange={(e) => setPupilPhone(e.target.value)} />
                     </div>
                   </div>
-                  {source === "drive365" && (
+                  {(source === "drive365" || source === "everydriver") && (
                     <div className="relative">
                       <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input className="pl-9" placeholder="Postcode (we'll match an instructor)" value={pupilPostcode} onChange={(e) => setPupilPostcode(e.target.value.toUpperCase())} />
