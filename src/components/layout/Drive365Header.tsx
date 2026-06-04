@@ -145,8 +145,8 @@ export function Drive365Header() {
                   to={link.href}
                   className={cn(
                     "relative text-[14px] font-medium transition-colors",
-                    "text-white lg:text-[#0A0A0A] hover:text-accent lg:hover:text-[#0F2044]",
-                    isActive && "lg:!text-[#0F2044] lg:after:content-[''] lg:after:absolute lg:after:left-0 lg:after:right-0 lg:after:-bottom-[8px] lg:after:h-[2px] lg:after:bg-[#0F2044]"
+                    "text-white hover:text-white/80",
+                    isActive && "!text-white after:content-[''] after:absolute after:left-0 after:right-0 after:-bottom-[8px] after:h-[2px] after:bg-white"
                   )}
                 >
                   {link.label}
