@@ -551,7 +551,7 @@ function ChapmansMobileSearch({
 
 
   return (
-    <div className="md:hidden" style={{ background: "#F3F4F6", padding: "0 16px 16px" }}>
+    <div className="md:hidden" style={{ background: "#F3F4F6", padding: "0 16px", marginBottom: 0 }}>
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -561,6 +561,7 @@ function ChapmansMobileSearch({
           background: "#FFFFFF",
           borderRadius: "12px 12px 0 0",
           padding: 14,
+          marginBottom: 0,
           boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
         }}
       >
@@ -598,7 +599,7 @@ function ChapmansMobileSearch({
               className="flex-1 min-w-0"
               inputClassName="h-auto border-0 bg-transparent p-0 text-[14px] font-medium text-[#0A0E27] shadow-none focus-visible:ring-0 placeholder:text-[#9CA3AF]"
               showInputIcon={false}
-              showGeolocation={true}
+              showGeolocation={false}
               enableDictation={false}
             />
           </div>
