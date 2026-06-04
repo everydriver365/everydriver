@@ -198,7 +198,8 @@ export default function Index() {
   const courseWeeklyImg = getImage("course_weekly", courseWeekly);
   
   // Dynamic images - What's included features
-  const featureRetest = getImage("feature_retest", featureRetestFallback);
+  // Force pass-themed asset for FREE Re-Test — DB image was the old FAIL certificate
+  const featureRetest = featureRetestFallback;
   const featureAvailability = getImage("feature_availability", featureAvailabilityFallback);
   const featureTheory = getImage("feature_theory", featureTheoryFallback);
   const featureTheoryProImg = getImage("feature_theory_pro", featureTheoryPro);
