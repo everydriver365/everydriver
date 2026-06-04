@@ -53,7 +53,7 @@ export default function SchoolPaymentsSection({ instructorIds }: Props) {
                 <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">No payments found</TableCell></TableRow>
               ) : payments.map(p => (
                 <TableRow key={p.id}>
-                  <TableCell className="text-sm">{new Date(p.created_at).toLocaleDateString("en-GB")}</TableCell>
+                  <TableCell className="text-sm">{new Date(p.created_at).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" })}</TableCell>
                   <TableCell className="text-sm">{p.pupils?.name || "—"}</TableCell>
                   <TableCell className="text-sm">{p.instructors?.name || "—"}</TableCell>
                   <TableCell className="text-sm font-medium">£{p.amount}</TableCell>

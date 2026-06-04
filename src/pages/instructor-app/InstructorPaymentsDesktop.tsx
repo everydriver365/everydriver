@@ -1106,7 +1106,7 @@ function PupilPaymentsSheet({
                           {r.notes || r.payment_method || "Payment"}
                         </div>
                         <div style={{ fontSize: 9, color: "var(--d2-text-3)" }}>
-                          {d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })} · {r.payment_method || "—"}
+                          {d.toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" })} · {r.payment_method || "—"}
                         </div>
                       </div>
                       <div style={{
@@ -1128,7 +1128,7 @@ function PupilPaymentsSheet({
         <div className="flex flex-col" style={{ gap: 8, fontSize: 12, color: "var(--d2-text-2)" }}>
           <div><span style={{ color: "var(--d2-text-3)" }}>Phone:</span> {pupilMeta?.phone || "—"}</div>
           <div><span style={{ color: "var(--d2-text-3)" }}>Email:</span> {pupilMeta?.email || "—"}</div>
-          <div><span style={{ color: "var(--d2-text-3)" }}>Balance due:</span> {pupilMeta?.balance_due_date ? new Date(pupilMeta.balance_due_date).toLocaleDateString("en-GB") : "—"}</div>
+          <div><span style={{ color: "var(--d2-text-3)" }}>Balance due:</span> {pupilMeta?.balance_due_date ? new Date(pupilMeta.balance_due_date).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" }) : "—"}</div>
         </div>
       )}
     </div>

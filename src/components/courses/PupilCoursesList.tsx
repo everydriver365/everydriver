@@ -170,7 +170,7 @@ export function PupilCoursesList({ instructorIds, onSelect }: Props) {
                       {r.course_type || "Course"} ·{" "}
                       {r.instructor_name ? `with ${r.instructor_name}` : ""} ·{" "}
                       {r.lesson_count} lessons
-                      {r.next_lesson_date ? ` · next ${new Date(r.next_lesson_date).toLocaleDateString("en-GB")}` : ""}
+                      {r.next_lesson_date ? ` · next ${new Date(r.next_lesson_date).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" })}` : ""}
                     </div>
                   </div>
                   {(r.account_balance || 0) < 0 && (

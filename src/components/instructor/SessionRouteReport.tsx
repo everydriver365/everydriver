@@ -197,7 +197,7 @@ const SessionRouteReport: React.FC<SessionRouteReportProps> = ({ telematicsId, o
 Driving Lesson Route Report
 ===========================
 Pupil: ${report.session.pupilName}
-Date: ${new Date(report.session.startedAt).toLocaleDateString()}
+Date: ${new Date(report.session.startedAt).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" })}
 
 Route: ${report.session.startLocation} → ${report.session.endLocation}
 Distance: ${(Number(report.stats.distance) * 0.621371).toFixed(1)} mi
@@ -353,7 +353,7 @@ ${report.segments.map(s => `- ${s.name}: ${s.speedLimit ? Math.round(s.speedLimi
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <span className="font-medium text-foreground">{report.session.pupilName}</span>
             <span>•</span>
-            <span>{new Date(report.session.startedAt).toLocaleDateString()}</span>
+            <span>{new Date(report.session.startedAt).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" })}</span>
           </div>
           <div className="flex items-center gap-2 mt-2 text-sm">
             <MapPin className="h-4 w-4 text-green-500" />

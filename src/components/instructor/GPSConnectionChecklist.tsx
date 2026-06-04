@@ -26,7 +26,7 @@ export function GPSConnectionChecklist({
     if (diffSeconds < 60) return `${diffSeconds}s ago`;
     if (diffSeconds < 3600) return `${Math.floor(diffSeconds / 60)}m ago`;
     if (diffSeconds < 86400) return `${Math.floor(diffSeconds / 3600)}h ago`;
-    return lastSeen.toLocaleDateString();
+    return lastSeen.toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" });
   };
 
   return (

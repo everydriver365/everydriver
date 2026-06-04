@@ -65,7 +65,7 @@ export function AdminInstructorDangerZone({
       const d = data as { scheduled_purge_at?: string; error?: string } | null;
       if (d?.error) throw new Error(d.error);
       toast.success(
-        `Account scheduled for deletion${d?.scheduled_purge_at ? ` on ${new Date(d.scheduled_purge_at).toLocaleDateString("en-GB")}` : ""}`,
+        `Account scheduled for deletion${d?.scheduled_purge_at ? ` on ${new Date(d.scheduled_purge_at).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" })}` : ""}`,
       );
       setShowSchedule(false);
       setNameInput("");

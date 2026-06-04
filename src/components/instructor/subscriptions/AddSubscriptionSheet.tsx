@@ -139,7 +139,7 @@ export function AddSubscriptionSheet({ open, onOpenChange, instructorId, onSucce
         }
       }
 
-      toast({ title: "Subscription created", description: `Next lesson on ${new Date(nextDate).toLocaleDateString("en-GB")}` });
+      toast({ title: "Subscription created", description: `Next lesson on ${new Date(nextDate).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" })}` });
       resetForm();
       onSuccess();
     } catch (error) {

@@ -472,7 +472,7 @@ export function RefundModal({
                   <SelectContent>
                     {squarePayments.map((p) => (
                       <SelectItem key={p.id} value={p.id}>
-                        {formatCurrency(p.amount)} · {new Date(p.recorded_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                        {formatCurrency(p.amount)} · {new Date(p.recorded_at).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" })}
                         {p.payout_status === "partially_refunded" ? " · partial refund" : ""}
                       </SelectItem>
                     ))}

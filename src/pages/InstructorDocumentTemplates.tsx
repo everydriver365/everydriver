@@ -171,7 +171,7 @@ export default function InstructorDocumentTemplates() {
     y = 280;
     doc.setFontSize(8);
     doc.setTextColor(150, 150, 150);
-    doc.text(`Generated ${new Date().toLocaleDateString("en-GB")}`, margin, y);
+    doc.text(`Generated ${new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" })}`, margin, y);
 
     return doc.output("blob");
   };
@@ -414,7 +414,7 @@ export default function InstructorDocumentTemplates() {
                   </div>
                 )}
 
-                <p className="text-xs text-muted-foreground pt-4 border-t">Generated {new Date().toLocaleDateString("en-GB")}</p>
+                <p className="text-xs text-muted-foreground pt-4 border-t">Generated {new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" })}</p>
               </CardContent>
             </Card>
           </TabsContent>

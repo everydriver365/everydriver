@@ -155,7 +155,7 @@ export default function SchoolSubscriptionSection({ instructorIds, schoolName }:
                     <TableCell>{s.plan?.name ?? "—"}</TableCell>
                     <TableCell>{statusBadge(s.status)}</TableCell>
                     <TableCell className="capitalize">{s.billing_cycle ?? "monthly"}</TableCell>
-                    <TableCell>{s.current_period_end ? new Date(s.current_period_end).toLocaleDateString("en-GB") : "—"}</TableCell>
+                    <TableCell>{s.current_period_end ? new Date(s.current_period_end).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" }) : "—"}</TableCell>
                     <TableCell className="text-right">£{(s.total_monthly_amount ?? s.plan?.price_monthly ?? 0).toFixed(2)}</TableCell>
                   </TableRow>
                 ))}
@@ -185,7 +185,7 @@ export default function SchoolSubscriptionSection({ instructorIds, schoolName }:
               <TableBody>
                 {payments.map(p => (
                   <TableRow key={p.id}>
-                    <TableCell>{p.payment_date ? new Date(p.payment_date).toLocaleDateString("en-GB") : new Date(p.created_at).toLocaleDateString("en-GB")}</TableCell>
+                    <TableCell>{p.payment_date ? new Date(p.payment_date).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" }) : new Date(p.created_at).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" })}</TableCell>
                     <TableCell>£{Number(p.amount).toFixed(2)}</TableCell>
                     <TableCell>{statusBadge(p.status)}</TableCell>
                   </TableRow>

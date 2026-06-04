@@ -255,7 +255,7 @@ export function TermsConditionsEditor({ instructorId }: TermsConditionsEditorPro
                         )}
                       </CardTitle>
                       <CardDescription className="text-xs">
-                        {new Date(v.created_at).toLocaleDateString()}
+                        {new Date(v.created_at).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" })}
                       </CardDescription>
                     </div>
                   </CardHeader>

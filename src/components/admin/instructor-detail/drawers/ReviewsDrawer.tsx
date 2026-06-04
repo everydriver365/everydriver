@@ -5,7 +5,7 @@ import { ActionDrawer, DrawerEmpty, DrawerError, DrawerLoading, DrawerRow } from
 type Review = { id: string; rating: number | null; created_at: string };
 
 const fmtDate = (iso: string) =>
-  new Date(iso).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+  new Date(iso).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" });
 
 export function ReviewsDrawer({ instructorId, instructorName, onClose }: { instructorId: string; instructorName: string; onClose: () => void }) {
   const [loading, setLoading] = useState(true);

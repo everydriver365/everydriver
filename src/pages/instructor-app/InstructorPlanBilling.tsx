@@ -188,7 +188,7 @@ function PlanCard({
 function formatRenewal(iso: string | null): string {
   if (!iso) return "—";
   try {
-    return new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+    return new Date(iso).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" });
   } catch { return "—"; }
 }
 
@@ -555,8 +555,8 @@ export default function InstructorPlanBilling() {
 
                 {invoices.map((inv: any, i: number) => {
                   const dateStr = inv.payment_date
-                    ? new Date(inv.payment_date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })
-                    : new Date(inv.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+                    ? new Date(inv.payment_date).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" })
+                    : new Date(inv.created_at).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" });
                   const statusUpper = String(inv.status || "").toUpperCase();
                   const isPaid = inv.status === "paid" || inv.status === "completed";
                   return (

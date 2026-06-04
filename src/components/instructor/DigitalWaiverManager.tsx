@@ -204,7 +204,7 @@ export function DigitalWaiverManager() {
                   <p className="font-medium text-foreground">{(sig as any).pupils?.name || "Unknown"}</p>
                   <p className="text-xs text-muted-foreground">{(sig as any).digital_waivers?.title}</p>
                 </div>
-                <p className="text-xs text-muted-foreground">{new Date(sig.signed_at).toLocaleDateString()}</p>
+                <p className="text-xs text-muted-foreground">{new Date(sig.signed_at).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" })}</p>
               </div>
             ))}
           </CardContent>
