@@ -32,6 +32,9 @@ interface Props {
   sortBy: SortOption;
   setSortBy: (v: SortOption) => void;
   userLocation: { lat: number; lng: number } | null;
+  hasMore?: boolean;
+  onLoadMore?: () => void;
+  remainingCount?: number;
 }
 
 const HOURS_BAR: Record<number, string> = {
