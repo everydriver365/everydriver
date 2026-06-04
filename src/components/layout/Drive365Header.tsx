@@ -78,9 +78,6 @@ export function Drive365Header() {
       <div
         className={cn(
           "w-full bg-[#142040] transition-shadow duration-200",
-          location.pathname === "/" || location.pathname === "/drive365"
-            ? "border-b-[3px] border-b-[#D12E2E]"
-            : "border-b border-[#1a2b52]",
           scrolled && "shadow-[0_2px_8px_rgba(0,0,0,0.2)]"
         )}
       >
