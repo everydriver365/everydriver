@@ -45,22 +45,9 @@ export function PostcodeSearch() {
 
   return (
     <div style={{ marginTop: 20 }}>
-      <style>{`
-        .ps-input::placeholder { color: #9CA3AF; }
-      `}</style>
-      <div
-        style={{
-          display: "flex",
-          width: "100%",
-          border: focused ? "1.5px solid #E8641A" : "1.5px solid #E5E7EB",
-          borderRadius: 8,
-          overflow: "hidden",
-          transition: "border-color 120ms ease",
-        }}
-      >
+      <div style={{ display: "flex", width: "100%" }}>
         <input
           type="text"
-          className="ps-input"
           value={value}
           onChange={(e) => { setValue(e.target.value); if (error) setError(null); }}
           onKeyDown={onKey}
@@ -71,11 +58,14 @@ export function PostcodeSearch() {
           style={{
             flex: "1 1 70%",
             background: "#FFFFFF",
-            border: "none",
-            outline: "none",
-            padding: "13px 16px",
+            border: focused ? "2px solid #1A6FD4" : "1.5px solid #1A6FD4",
+            borderRight: "none",
+            borderRadius: "2px 0 0 2px",
+            padding: focused ? "13px 15px" : "13.5px 15.5px",
+            height: 48,
             fontSize: 14,
             color: "#0A0A0A",
+            outline: "none",
             fontFamily: "inherit",
             boxSizing: "border-box",
           }}
@@ -84,13 +74,17 @@ export function PostcodeSearch() {
           type="button"
           onClick={submit}
           style={{
-            flex: "0 0 auto",
-            background: "#E8641A",
+            flex: "0 0 30%",
+            background: "#0A0E27",
             color: "#FFFFFF",
             border: "none",
-            padding: "13px 22px",
+            borderRadius: "0 2px 2px 0",
+            padding: "14px 24px",
+            height: 48,
             fontSize: 14,
             fontWeight: 700,
+            letterSpacing: "1px",
+            textTransform: "uppercase",
             cursor: "pointer",
             display: "inline-flex",
             alignItems: "center",
@@ -99,10 +93,10 @@ export function PostcodeSearch() {
             fontFamily: "inherit",
             transition: "background 120ms ease",
           }}
-          onMouseEnter={(e) => (e.currentTarget.style.background = "#D05516")}
-          onMouseLeave={(e) => (e.currentTarget.style.background = "#E8641A")}
+          onMouseEnter={(e) => (e.currentTarget.style.background = "#1A1F3D")}
+          onMouseLeave={(e) => (e.currentTarget.style.background = "#0A0E27")}
         >
-          Search
+          SEARCH
           <Search size={14} color="#FFFFFF" strokeWidth={2.5} />
         </button>
       </div>
