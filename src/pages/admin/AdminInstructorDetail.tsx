@@ -104,10 +104,24 @@ export default function AdminInstructorDetail() {
 
   const persistField = async (field: string, value: any) => {
     if (!id) return;
-    const { error } = await supabase.from("instructors").update({ [field]: value }).eq("id", id);
+    const { data, error } = await supabase
+      .from("instructors")
+      .update({ [field]: value })
+      .eq("id", id)
+      .select("id");
     if (error) {
+      console.error("[AdminInstructorDetail] persistField error", { field, value, error });
       toast({ title: "Save failed", description: `${field}: ${error.message}`, variant: "destructive" });
       throw error;
+    }
+    if (!data || data.length === 0) {
+      console.error("[AdminInstructorDetail] persistField blocked by RLS", { field, value, isAdmin });
+      toast({
+        title: "Not saved",
+        description: "Permission denied by database (admin role required). Sign out and back in as an admin account.",
+        variant: "destructive",
+      });
+      throw new Error("RLS blocked update");
     }
     toast({ title: "Saved", description: field });
     setSectionsBuiltFor(null); // rebuild from refreshed row
@@ -116,16 +130,26 @@ export default function AdminInstructorDetail() {
 
   const handleSaveProfile = async (v: EditProfileValues) => {
     if (!id) return;
-    const { error } = await supabase.from("instructors").update({
+    const { data, error } = await supabase.from("instructors").update({
       name: v.name,
       email: v.email || null,
       phone: v.phone || null,
       adi_badge_number: v.adi_badge_number || null,
       is_active: v.is_active,
       instructor_grade: v.instructor_grade || null,
-    }).eq("id", id);
+    }).eq("id", id).select("id");
     if (error) {
+      console.error("[AdminInstructorDetail] handleSaveProfile error", { v, error });
       toast({ title: "Failed to save", description: error.message, variant: "destructive" });
+      return;
+    }
+    if (!data || data.length === 0) {
+      console.error("[AdminInstructorDetail] handleSaveProfile blocked by RLS", { isAdmin });
+      toast({
+        title: "Not saved",
+        description: "Permission denied by database (admin role required). Sign out and back in as an admin account.",
+        variant: "destructive",
+      });
       return;
     }
     toast({ title: "Profile updated" });
@@ -138,9 +162,19 @@ export default function AdminInstructorDetail() {
     if (!id || !instructor) return;
     const next = !instructor.is_active;
     if (!confirm(next ? "Re-activate this instructor?" : "Suspend this instructor?")) return;
-    const { error } = await supabase.from("instructors").update({ is_active: next }).eq("id", id);
+    const { data, error } = await supabase.from("instructors")
+      .update({ is_active: next }).eq("id", id).select("id");
     if (error) {
+      console.error("[AdminInstructorDetail] handleSuspend error", { next, error });
       toast({ title: "Failed", description: error.message, variant: "destructive" });
+      return;
+    }
+    if (!data || data.length === 0) {
+      toast({
+        title: "Not saved",
+        description: "Permission denied by database (admin role required).",
+        variant: "destructive",
+      });
       return;
     }
     toast({ title: next ? "Re-activated" : "Suspended" });
@@ -151,11 +185,20 @@ export default function AdminInstructorDetail() {
     if (!id || !instructor) return;
     if (!confirm(`Remove ${instructor.name} from the platform?\n\nThis soft-deletes the instructor and schedules a permanent purge in 30 days. Active pupils and bookings will lose this assignment.`)) return;
     const purgeAt = new Date(Date.now() + 30 * 86400_000).toISOString();
-    const { error } = await supabase.from("instructors")
+    const { data, error } = await supabase.from("instructors")
       .update({ deleted_at: new Date().toISOString(), scheduled_purge_at: purgeAt })
-      .eq("id", id);
+      .eq("id", id).select("id");
     if (error) {
+      console.error("[AdminInstructorDetail] handleRemove error", { error });
       toast({ title: "Removal failed", description: error.message, variant: "destructive" });
+      return;
+    }
+    if (!data || data.length === 0) {
+      toast({
+        title: "Not removed",
+        description: "Permission denied by database (admin role required).",
+        variant: "destructive",
+      });
       return;
     }
     toast({ title: "Instructor removed", description: "Permanent purge in 30 days." });
