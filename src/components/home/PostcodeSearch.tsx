@@ -75,7 +75,7 @@ export function PostcodeSearch() {
           onClick={submit}
           style={{
             flex: "0 0 30%",
-            background: "#0A0E27",
+            background: "#E8641A",
             color: "#FFFFFF",
             border: "none",
             borderRadius: "0 2px 2px 0",
@@ -93,8 +93,8 @@ export function PostcodeSearch() {
             fontFamily: "inherit",
             transition: "background 120ms ease",
           }}
-          onMouseEnter={(e) => (e.currentTarget.style.background = "#1A1F3D")}
-          onMouseLeave={(e) => (e.currentTarget.style.background = "#0A0E27")}
+          onMouseEnter={(e) => (e.currentTarget.style.background = "#D15A10")}
+          onMouseLeave={(e) => (e.currentTarget.style.background = "#E8641A")}
         >
           SEARCH
           <Search size={14} color="#FFFFFF" strokeWidth={2.5} />
