@@ -126,8 +126,137 @@ export default function PublicBookingPortal() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      {/* Hero */}
-      <div className="py-6 px-4 md:py-10 text-center text-white" style={{ background: `linear-gradient(135deg, ${brandColour}, ${brandColour}dd)` }}>
+      {/* Hero — Chapmans mobile variant */}
+      {slug === "chapmans" && (
+        <div
+          className="md:hidden relative overflow-hidden text-center"
+          style={{
+            padding: "16px 20px 32px",
+            background: "linear-gradient(160deg, #F07C2A 0%, #E8641A 50%, #D95A10 100%)",
+          }}
+        >
+          <span
+            aria-hidden
+            style={{
+              position: "absolute",
+              top: -40,
+              right: -40,
+              width: 160,
+              height: 160,
+              borderRadius: 9999,
+              background: "rgba(255,255,255,0.06)",
+              pointerEvents: "none",
+            }}
+          />
+          <span
+            aria-hidden
+            style={{
+              position: "absolute",
+              bottom: -20,
+              left: -30,
+              width: 120,
+              height: 120,
+              borderRadius: 9999,
+              background: "rgba(0,0,0,0.06)",
+              pointerEvents: "none",
+            }}
+          />
+          <div
+            style={{
+              position: "relative",
+              display: "inline-flex",
+              gap: 2,
+              marginBottom: 14,
+            }}
+          >
+            <span
+              style={{
+                background: "rgba(0,0,0,0.25)",
+                color: "#FFF",
+                padding: "3px 8px",
+                borderRadius: 3,
+                fontWeight: 800,
+                fontSize: 12,
+                lineHeight: 1.2,
+                letterSpacing: 0.5,
+              }}
+            >
+              DRIVE
+            </span>
+            <span
+              style={{
+                background: "#FFF",
+                color: "#E8641A",
+                padding: "3px 8px",
+                borderRadius: 3,
+                fontWeight: 800,
+                fontSize: 12,
+                lineHeight: 1.2,
+                letterSpacing: 0.5,
+              }}
+            >
+              365
+            </span>
+          </div>
+          <h1
+            style={{
+              position: "relative",
+              fontSize: 24,
+              fontWeight: 800,
+              color: "#FFF",
+              letterSpacing: "-0.5px",
+              lineHeight: 1.15,
+              marginBottom: 8,
+            }}
+          >
+            Find a course. Choose your instructor.
+          </h1>
+          <p
+            style={{
+              position: "relative",
+              fontSize: 13,
+              color: "rgba(255,255,255,0.8)",
+              lineHeight: 1.5,
+              maxWidth: 280,
+              margin: "0 auto 16px",
+            }}
+          >
+            {page?.description || "See who's teaching you before you book — verified pass rates and real reviews."}
+          </p>
+          <div
+            style={{
+              position: "relative",
+              display: "flex",
+              flexWrap: "wrap",
+              justifyContent: "center",
+              gap: 6,
+            }}
+          >
+            {["Test swap free", "Klarna & Clearpay", "Re-test guarantee"].map((label) => (
+              <span
+                key={label}
+                style={{
+                  background: "rgba(0,0,0,0.18)",
+                  border: "1px solid rgba(255,255,255,0.2)",
+                  borderRadius: 20,
+                  padding: "4px 10px",
+                  fontSize: 10,
+                  fontWeight: 600,
+                  color: "rgba(255,255,255,0.9)",
+                }}
+              >
+                <span style={{ color: "#FFF", fontWeight: 700 }}>✓</span> {label}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Hero — default (desktop for all + mobile for non-chapmans) */}
+      <div
+        className={slug === "chapmans" ? "hidden md:block py-6 px-4 md:py-10 text-center text-white" : "py-6 px-4 md:py-10 text-center text-white"}
+        style={{ background: `linear-gradient(135deg, ${brandColour}, ${brandColour}dd)` }}
+      >
         {page?.logo_url && (
           <img src={page.logo_url} alt="" className="h-9 md:h-11 mx-auto mb-2 object-contain" />
         )}
@@ -138,6 +267,7 @@ export default function PublicBookingPortal() {
           <p className="text-sm md:text-base opacity-90 max-w-xl mx-auto">{page.description}</p>
         )}
       </div>
+
 
       {/* Embedded Drive365 course explorer scoped to this page's instructors */}
       {instructorIds.length > 0 && (
