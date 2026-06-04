@@ -392,11 +392,14 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
           </div>
           <div className="d365-hero-right">
             <div className="d365-welcome text-center">
-              <h1>Welcome to Drive 365</h1>
+              <div style={{ fontSize: 10, fontWeight: 700, color: "#E8641A", textTransform: "uppercase", letterSpacing: "1.5px", marginBottom: 8 }}>
+                Find your instructor
+              </div>
+              <h1>Welcome to EveryDriver</h1>
               <p className="mx-0 py-0">
-                Search, compare and book direct with independent, instructors  in the UK.
+                Search, compare and book direct with independent instructors in the UK.
                 <br />
-                Book through Drive 365 for a range of exclusive benefits when you book.
+                Book through EveryDriver for a range of exclusive benefits when you book.
               </p>
               <PostcodeSearch />
               <div
