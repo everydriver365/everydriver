@@ -394,7 +394,7 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
           <div className="d365-hero-right">
             <div className="d365-welcome text-center">
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 20 }}>
-                <div style={{ fontSize: 22, fontWeight: 900, color: "#0A1628", letterSpacing: -0.5, lineHeight: 1 }}>
+                <div style={{ fontSize: 18, fontWeight: 900, color: "#0A1628", letterSpacing: -0.5, lineHeight: 1 }}>
                   Every<span style={{ color: "#60C8F5" }}>Driver</span>
                 </div>
                 <div style={{ display: "flex", gap: 4, marginTop: 3 }}>
