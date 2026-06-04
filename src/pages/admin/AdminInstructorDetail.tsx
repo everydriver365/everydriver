@@ -30,6 +30,7 @@ export default function AdminInstructorDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editingProfile, setEditingProfile] = useState(false);
+  const [drawer, setDrawer] = useState<DrawerKey>(null);
 
   const [col2, setCol2] = useState<Section[]>([]);
   const [col3, setCol3] = useState<Section[]>([]);
