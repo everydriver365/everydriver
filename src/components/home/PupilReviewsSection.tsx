@@ -80,9 +80,15 @@ function formatMonthYear(iso: string | null): string {
 const styles = {
   section: {
     background: "#F3F4F6",
-    padding: "48px 40px",
+    padding: "48px 5%",
     width: "100%",
   } as React.CSSProperties,
+  inner: {
+    width: "100%",
+    maxWidth: 1200,
+    margin: "0 auto",
+  } as React.CSSProperties,
+
   header: {
     display: "flex",
     alignItems: "flex-end",
