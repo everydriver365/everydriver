@@ -53,7 +53,10 @@ export function getAppVariant(): AppVariant {
     return "pupil";
   }
 
-  if (isEveryDriverHost()) return "instructor";
+  // Note: EveryDriver host is the learner-facing marketing brand — do NOT
+  // map it to the instructor variant here, or ConditionalHome will redirect
+  // the homepage to the DSM login. Path-based `/instructor/*` detection above
+  // still routes the instructor app correctly on EveryDriver hosts.
 
   if (
     isAccessibleDomain() ||

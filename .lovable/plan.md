@@ -1,25 +1,50 @@
+## Problem
+
+On `everydriver.lovable.app` (desktop and phone), visiting `/` redirects to the DSM instructor login instead of showing the EveryDriver learner marketing homepage. It looks "phone-only" because on a phone there is no other DSM tab open, so the redirect is more obvious.
+
+## Root cause
+
+`src/lib/appVariant.ts` → `getAppVariant()` contains:
+
+```ts
+if (isEveryDriverHost()) return "instructor";
+```
+
+`everydriver.lovable.app` matches `isEveryDriverHost()`, so the variant becomes `"instructor"`.
+
+`src/components/ConditionalHome.tsx` checks the variant first:
+
+```ts
+if (variant === "instructor") {
+  return <AppEntryRedirect authedTo="/instructor" loginTo="/instructor-app/login" />;
+}
+…
+if (isEveryDriverHost()) {
+  return <EveryDriverIndex />; // never reached
+}
+```
+
+So the EveryDriver learner homepage branch is unreachable. This contradicts the comment immediately above it ("EveryDriver is the learner-facing brand, so it must NOT redirect here").
+
+## Fix
+
+One-line change in `src/lib/appVariant.ts`: remove the `isEveryDriverHost()` → `"instructor"` mapping. EveryDriver host should resolve as `"marketing"`, letting `ConditionalHome` fall through to the `<EveryDriverIndex />` learner marketing homepage.
+
+```diff
+- if (isEveryDriverHost()) return "instructor";
+```
+
+Path-based detection (`/instructor/*` → `"instructor"`) is preserved, so the actual DSM instructor app still works at `everydriver.lovable.app/instructor` and `/instructor-app/login`.
+
 ## Scope
 
-The desktop hero on the homepage (`src/components/home/Drive365Home.tsx`, the `.d365-hero-*` block) currently uses `border-radius: 4px` on every tile — the photo, the welcome card, the two feature tiles, the thumbnail image, and the spacer — plus `2px` on the two CTA buttons.
+- File: `src/lib/appVariant.ts` (delete one line + adjacent comment if any).
+- No layout, copy, or styling changes.
+- No changes to `DomainRouter` cross-domain redirects, `isEveryDriverHost`, or `ConditionalHome`.
 
-## Change
+## Verification
 
-Bump radius on the hero tiles to **15px** (matching the instructor cards on "See who's teaching you"), and the buttons inside them to **10px** so they still feel tied to the tiles without looking like pills.
-
-Specifically, in the `<style>` block (lines ~327–359):
-- `.d365-hero-photo` → `border-radius: 15px`
-- `.d365-welcome` → `border-radius: 15px`
-- `.d365-feat` → `border-radius: 15px`
-- `.d365-feat img` → `border-radius: 10px` (inner thumbnail)
-- `.d365-feat-row-layout .d365-feat-thumb` → `border-radius: 10px`
-- `.d365-spacer` → `border-radius: 15px`
-- `.d365-cta` → `border-radius: 10px`
-- `.d365-feat-btn` → `border-radius: 10px`
-
-No layout, color, copy, or behavior changes. Mobile hero is untouched (the rule is desktop-only, ≥768px).
-
-## File
-
-- `src/components/home/Drive365Home.tsx`
-
-If you want a different radius (e.g. 8px, 12px, 20px) say the word before I implement.
+- `everydriver.lovable.app/` (mobile + desktop) → renders `EveryDriverIndex` (learner marketing).
+- `everydriver.lovable.app/instructor` → still loads instructor portal (auth-gated).
+- `everydriver.lovable.app/instructor-app/login` → still loads DSM login when navigated to directly.
+- Custom domains (`everydriver.co.uk`, `drive365.co.uk`, whitelabel) unaffected.
