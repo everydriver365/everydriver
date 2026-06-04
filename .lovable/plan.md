@@ -1,45 +1,69 @@
-# Wire up every Actions panel item on Admin Instructor Detail
+# Fix: edits on Admin Instructor Detail don't persist
 
-## Status today
-| Action | Wired? | Issue |
-|---|---|---|
-| ✏ Edit profile | ✅ | opens modal, persists |
-| 📅 View diary | ❌ | navigates to `/admin/instructors/:id/diary` — **route does not exist (404)** |
-| 📋 View bookings | ❌ | `/…/bookings` — **404** |
-| ⭐ View reviews | ❌ | `/…/reviews` — **404** |
-| 💳 Payments | ❌ | `/…/payments` — **404** |
-| 📄 Documents | ❌ | `/…/documents` — **404** |
-| 📨 Message | ❌ | `/admin/messages?instructor=…` — **404** |
-| ⚠ Suspend | ✅ | toggles `is_active` |
-| ✕ Remove from platform | ⚠ | just shows a toast, no DB change |
-| ← All instructors | ✅ | navigates correctly |
+## What's happening
+`persistField` in `src/pages/admin/AdminInstructorDetail.tsx` runs:
+```ts
+await supabase.from("instructors").update({ [field]: value }).eq("id", id);
+```
+Postgres + Supabase RLS rule on `public.instructors` for UPDATE is:
+```
+has_role(auth.uid(), 'admin')
+```
+If RLS filters out the row, the update affects **0 rows** but Supabase **returns no error**. The current code then shows a "Saved" toast, reloads, and you see the old value — exactly matching "I changed values and nothing saved".
 
-## Approach
-Rather than create 6 brand-new pages, wire each action to an **in-page right-side drawer** that fetches live data on open. Keeps everything on the existing admin screen, matches the dense single-screen layout, and is fully wired today. Add a real soft-delete for Remove.
+Same silent-success path exists in:
+- `persistField` (every section row edit)
+- `handleSaveProfile` (Edit profile modal)
+- `handleSuspend`
+- `handleRemove`
+- Hero card inline edits (if any go through the same client)
 
-## Drawers (live data, read-only unless stated)
+## Root cause candidates (the fix covers all three)
+1. The current admin session's `auth.uid()` is **not** in `user_roles` with `role='admin'` (e.g. logged in via the old custom admin layer, or a different account), so RLS blocks the write silently.
+2. A genuine column error (wrong type, constraint) — currently surfaced, but only when Postgres returns an error.
+3. Date / number parsing converting valid input to `null` and "saving" no-op values.
 
-1. **Diary drawer** — next 14 days of `scheduled_lessons` (start_time, pupil name, status) for this instructor, ordered by start_time. Plus `instructor_calendar_events` busy blocks in the same window.
-2. **Bookings drawer** — last 50 `scheduled_lessons` (any time), join pupils for name, show status + start_time. Filter chips: Upcoming / Past / Cancelled.
-3. **Reviews drawer** — `course_reviews` where `instructor_id = id`, newest first, average rating header. Show rating + created_at.
-4. **Payments drawer** — `payment_history` where `instructor_id = id`, newest first, totals header (sum amount, count). Show amount + created_at.
-5. **Documents drawer** — list of certificate URLs already on the `instructors` row: `dbs_certificate_url`, `mot_certificate_url`, `insurance_certificate_url`, `driving_licence_front_url`, `driving_licence_back_url`, `adi_certificate_url`, `payment_qr_url`, `welcome_video_url`, `hero_image_url`, `logo_url`, `car_image_url`, `profile_image_url`. Each row: label + "Open ↗" link. Empty rows render "Not uploaded".
-6. **Message action** — open a small composer popover with two real shortcuts:
-   - **Email** → `mailto:{instructor.email}` (uses native client; works immediately)
-   - **WhatsApp** → `https://wa.me/{e164 phone}` when `phone` is set
-   Both buttons are disabled with a "Not set" hint when the underlying field is empty. This requires no new tables and works today.
+## Plan
 
-## Remove from platform
-Replace the toast with a real soft-delete: set `deleted_at = now()` and `scheduled_purge_at = now() + interval '30 days'` (both columns already exist on `instructors`). After confirm, navigate back to `/admin/network-instructors`. No hard delete — the existing 30-day purge job handles that.
+### 1. Make every write **verify it actually changed a row**
+Change the four writers in `AdminInstructorDetail.tsx` to:
+```ts
+const { data, error } = await supabase
+  .from("instructors")
+  .update({ [field]: value })
+  .eq("id", id)
+  .select("id");           // returns updated rows
+if (error) { …toast error… throw error; }
+if (!data || data.length === 0) {
+  toast({
+    title: "Not saved",
+    description: "Permission denied by database (admin role required). Sign out and back in as an admin account.",
+    variant: "destructive",
+  });
+  throw new Error("RLS blocked update");
+}
+```
+Apply the same `.select("id")` + zero-row check to `handleSaveProfile`, `handleSuspend`, `handleRemove`.
+
+### 2. Surface admin-state in the UI
+At the top of the page, when `!loading && !isAdmin`, render a small amber banner:
+> "You are viewing this page without an admin role — edits will not save."
+Uses the existing `useAdminAuth()` value. No new auth logic.
+
+### 3. Show the real DB error in toast
+Today `persistField`'s error toast is fine; keep it but also log `{ field, value, error }` to `console.error` so failures are debuggable from the browser console.
+
+### 4. Diagnose your specific session (one-time check, no code)
+After the fix is live, attempt one edit:
+- If you see **"Not saved — Permission denied"**, the logged-in user lacks the admin role; we then add the missing `user_roles` row for your account.
+- If you see **"Save failed: <postgres message>"**, we fix that specific column/constraint.
+- If you see **"Saved"** and the value sticks on reload, the original bug was masked by the silent-success path and is now resolved.
 
 ## Files to touch
-- `src/components/admin/instructor-detail/ActionsStack.tsx` — accept new handler props instead of in-component `nav()` calls for the 5 broken items + Message.
-- `src/pages/admin/AdminInstructorDetail.tsx` — open-drawer state, pass handlers, render the drawer; replace `handleRemove` with the real soft-delete.
-- `src/components/admin/instructor-detail/ActionDrawer.tsx` *(new)* — generic right-side drawer shell.
-- `src/components/admin/instructor-detail/drawers/` *(new)* — `DiaryDrawer.tsx`, `BookingsDrawer.tsx`, `ReviewsDrawer.tsx`, `PaymentsDrawer.tsx`, `DocumentsDrawer.tsx`, `MessageDrawer.tsx`.
+- `src/pages/admin/AdminInstructorDetail.tsx` — add `.select("id")` + zero-row guard to `persistField`, `handleSaveProfile`, `handleSuspend`, `handleRemove`; add console.error; render the non-admin banner.
 
 ## Non-goals
-- No new admin routes / pages.
-- No edits to mobile layout (per the project mobile-update rule).
-- No new tables — every drawer reads existing live data.
-- Documents drawer is read-only (upload UI is out of scope for this turn).
+- No RLS changes (policy is correct — admins can update).
+- No mobile layout changes.
+- No new tables or columns.
+- No changes to the drawers or hero card read paths.
