@@ -133,68 +133,36 @@ export default function PublicBookingPortal() {
         <div
           className="md:hidden relative overflow-hidden text-center"
           style={{
-            padding: "16px 20px 18px",
-            background: "linear-gradient(160deg, #F07C2A 0%, #E8641A 50%, #D95A10 100%)",
+            padding: "20px 16px 32px",
+            background: "linear-gradient(160deg, #F07C2A 0%, #E05A10 100%)",
           }}
         >
-          <span
-            aria-hidden
-            style={{
-              position: "absolute",
-              top: -40,
-              right: -40,
-              width: 160,
-              height: 160,
-              borderRadius: 9999,
-              background: "rgba(255,255,255,0.06)",
-              pointerEvents: "none",
-            }}
-          />
-          <span
-            aria-hidden
-            style={{
-              position: "absolute",
-              bottom: -20,
-              left: -30,
-              width: 120,
-              height: 120,
-              borderRadius: 9999,
-              background: "rgba(0,0,0,0.06)",
-              pointerEvents: "none",
-            }}
-          />
           <img
             src={chapmansWhiteLogo.url}
             alt={page?.name ?? "Chapman's Driving School"}
             style={{
               position: "relative",
               display: "block",
-              height: 40,
+              maxHeight: 48,
               width: "auto",
               maxWidth: "70%",
-              margin: "0 auto 14px",
+              margin: "0 auto",
               objectFit: "contain",
             }}
           />
           <div
             style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 8,
-              color: "#fff",
-              fontSize: 14,
-              fontWeight: 600,
-              letterSpacing: "0.04em",
-              textTransform: "uppercase",
-              opacity: 0.95,
+              marginTop: 8,
+              fontSize: 11,
+              color: "rgba(255,255,255,0.7)",
+              letterSpacing: "0.3px",
             }}
           >
-            <Search size={16} />
-            Book Now
+            Find driving courses near you
           </div>
         </div>
       )}
+
 
       {/* Hero — default (desktop for all + mobile for non-chapmans) */}
       <div

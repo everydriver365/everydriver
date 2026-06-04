@@ -1,4 +1,6 @@
+import type React from "react";
 import { motion } from "framer-motion";
+
 import { Search, ChevronDown, Loader2, MapPin, Map as MapIcon, Zap, SlidersHorizontal } from "lucide-react";
 import { PostcodeAutocomplete } from "@/components/PostcodeAutocomplete";
 
@@ -549,35 +551,41 @@ function ChapmansMobileSearch({
 
 
   return (
-    <div className="md:hidden">
-      {/* Section 1 — Search bar */}
+    <div className="md:hidden" style={{ background: "#F3F4F6", padding: "0 16px 16px" }}>
       <form
         onSubmit={(e) => {
           e.preventDefault();
           onSearch();
         }}
-        style={{ background: "#E8641A", padding: "12px 16px 14px" }}
+        style={{
+          background: "#FFFFFF",
+          borderRadius: 12,
+          padding: 14,
+          boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+          transform: "translateY(-20px)",
+        }}
       >
-        {/* Postcode row */}
+        {/* Postcode input row */}
         <div
           style={{
-            background: "#FFF",
-            borderRadius: 10,
+            background: "#F3F4F6",
+            borderRadius: 8,
             display: "flex",
             overflow: "hidden",
-            marginBottom: 8,
+            marginBottom: 10,
+            alignItems: "center",
           }}
         >
           <div
             style={{
-              display: "flex",
-              alignItems: "center",
               padding: "0 10px",
               flexShrink: 0,
-              color: "#C4C9D4",
+              color: "#9CA3AF",
+              display: "flex",
+              alignItems: "center",
             }}
           >
-            <MapPin size={14} strokeWidth={2} />
+            <MapPin size={13} strokeWidth={2} />
           </div>
           <div style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center" }}>
             <PostcodeAutocomplete
@@ -589,7 +597,7 @@ function ChapmansMobileSearch({
               }}
               placeholder="Enter postcode"
               className="flex-1 min-w-0"
-              inputClassName="h-10 border-0 bg-transparent p-0 text-[15px] font-medium text-[#0A0E27] shadow-none focus-visible:ring-0 placeholder:text-[#C4C9D4]"
+              inputClassName="h-auto border-0 bg-transparent p-0 text-[14px] font-medium text-[#0A0E27] shadow-none focus-visible:ring-0 placeholder:text-[#9CA3AF]"
               showInputIcon={false}
               showGeolocation={true}
               enableDictation={false}
@@ -600,74 +608,41 @@ function ChapmansMobileSearch({
             disabled={isSearching}
             aria-label="Search"
             style={{
-              background: "#F3F4F6",
-              borderLeft: "1px solid #E5E7EB",
+              background: "#E8641A",
               border: "none",
-              borderLeftWidth: 1,
-              borderLeftStyle: "solid",
-              borderLeftColor: "#E5E7EB",
-              padding: "0 14px",
-              alignSelf: "stretch",
+              borderRadius: 6,
+              margin: 4,
+              padding: "8px 12px",
               display: "flex",
               alignItems: "center",
-              justifyContent: "center",
+              gap: 5,
+              color: "#FFF",
               cursor: isSearching ? "default" : "pointer",
-              color: "#0A0E27",
+              flexShrink: 0,
             }}
           >
             {isSearching ? (
-              <Loader2 size={16} strokeWidth={2.2} className="animate-spin" />
+              <Loader2 size={13} strokeWidth={2.4} className="animate-spin" />
             ) : (
-              <Search size={16} strokeWidth={2.2} />
+              <Search size={13} strokeWidth={2.4} color="#FFFFFF" />
             )}
+            <span style={{ fontSize: 11, fontWeight: 700, color: "#FFF" }}>Search</span>
           </button>
         </div>
 
-        {/* Radius + Transmission + Type row */}
-        <div style={{ display: "flex", gap: 8 }}>
+        {/* Three filter tiles */}
+        <div style={{ display: "flex", gap: 6 }}>
           {/* Radius */}
-          <label
-            style={{
-              flex: 1,
-              background: "rgba(0,0,0,0.2)",
-              borderRadius: 8,
-              padding: "8px 10px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              position: "relative",
-              cursor: "pointer",
-            }}
-          >
+          <label style={tileStyle}>
             <div style={{ minWidth: 0 }}>
-              <div
-                style={{
-                  fontSize: 9,
-                  fontWeight: 700,
-                  color: "rgba(255,255,255,0.6)",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.8px",
-                  marginBottom: 2,
-                }}
-              >
-                Radius
-              </div>
-              <div style={{ fontSize: 12, fontWeight: 600, color: "#FFF" }}>{radiusLabel}</div>
+              <div style={tileLabelStyle}>Radius</div>
+              <div style={tileValueStyle}>{radiusLabel}</div>
             </div>
-            <ChevronDown size={11} color="rgba(255,255,255,0.5)" strokeWidth={2.2} />
+            <ChevronDown size={9} color="#9CA3AF" strokeWidth={2.2} />
             <select
               value={radius}
               onChange={(e) => setRadius(e.target.value)}
-              style={{
-                position: "absolute",
-                inset: 0,
-                opacity: 0,
-                width: "100%",
-                height: "100%",
-                cursor: "pointer",
-                border: "none",
-                background: "transparent",
-              }}
+              style={hiddenSelectStyle}
             >
               <option value="5">5 miles</option>
               <option value="10">10 miles</option>
@@ -678,48 +653,16 @@ function ChapmansMobileSearch({
           </label>
 
           {/* Transmission */}
-          <label
-            style={{
-              flex: 1,
-              background: "rgba(0,0,0,0.2)",
-              borderRadius: 8,
-              padding: "8px 10px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              position: "relative",
-              cursor: "pointer",
-            }}
-          >
+          <label style={tileStyle}>
             <div style={{ minWidth: 0 }}>
-              <div
-                style={{
-                  fontSize: 9,
-                  fontWeight: 700,
-                  color: "rgba(255,255,255,0.6)",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.8px",
-                  marginBottom: 2,
-                }}
-              >
-                Trans.
-              </div>
-              <div style={{ fontSize: 12, fontWeight: 600, color: "#FFF" }}>{transmissionLabel}</div>
+              <div style={tileLabelStyle}>Trans.</div>
+              <div style={tileValueStyle}>{transmissionLabel}</div>
             </div>
-            <ChevronDown size={11} color="rgba(255,255,255,0.5)" strokeWidth={2.2} />
+            <ChevronDown size={9} color="#9CA3AF" strokeWidth={2.2} />
             <select
               value={transmission}
               onChange={(e) => setTransmission(e.target.value)}
-              style={{
-                position: "absolute",
-                inset: 0,
-                opacity: 0,
-                width: "100%",
-                height: "100%",
-                cursor: "pointer",
-                border: "none",
-                background: "transparent",
-              }}
+              style={hiddenSelectStyle}
             >
               <option value="all">Any</option>
               <option value="manual">Manual</option>
@@ -729,35 +672,12 @@ function ChapmansMobileSearch({
 
           {/* Type */}
           {setActiveFilter && (
-            <label
-              style={{
-                flex: 1,
-                background: "rgba(0,0,0,0.2)",
-                borderRadius: 8,
-                padding: "8px 10px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                position: "relative",
-                cursor: "pointer",
-              }}
-            >
+            <label style={tileStyle}>
               <div style={{ minWidth: 0 }}>
-                <div
-                  style={{
-                    fontSize: 9,
-                    fontWeight: 700,
-                    color: "rgba(255,255,255,0.6)",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.8px",
-                    marginBottom: 2,
-                  }}
-                >
-                  Type
-                </div>
-                <div style={{ fontSize: 12, fontWeight: 600, color: "#FFF" }}>{typeLabel}</div>
+                <div style={tileLabelStyle}>Type</div>
+                <div style={tileValueStyle}>{typeLabel}</div>
               </div>
-              <ChevronDown size={11} color="rgba(255,255,255,0.5)" strokeWidth={2.2} />
+              <ChevronDown size={9} color="#9CA3AF" strokeWidth={2.2} />
               <select
                 value={currentKey}
                 onChange={(e) => {
@@ -766,16 +686,7 @@ function ChapmansMobileSearch({
                     v === "lessons" ? "weekly" : v === "courses" ? "intensive" : "all";
                   setActiveFilter(target);
                 }}
-                style={{
-                  position: "absolute",
-                  inset: 0,
-                  opacity: 0,
-                  width: "100%",
-                  height: "100%",
-                  cursor: "pointer",
-                  border: "none",
-                  background: "transparent",
-                }}
+                style={hiddenSelectStyle}
               >
                 <option value="all">All</option>
                 <option value="courses">Courses</option>
@@ -788,6 +699,46 @@ function ChapmansMobileSearch({
     </div>
   );
 }
+
+const tileStyle: React.CSSProperties = {
+  flex: 1,
+  background: "#F3F4F6",
+  borderRadius: 7,
+  padding: 8,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  position: "relative",
+  cursor: "pointer",
+  minWidth: 0,
+};
+
+const tileLabelStyle: React.CSSProperties = {
+  fontSize: 8,
+  fontWeight: 700,
+  color: "#9CA3AF",
+  textTransform: "uppercase",
+  letterSpacing: "0.6px",
+  marginBottom: 2,
+};
+
+const tileValueStyle: React.CSSProperties = {
+  fontSize: 12,
+  fontWeight: 600,
+  color: "#0A0E27",
+};
+
+const hiddenSelectStyle: React.CSSProperties = {
+  position: "absolute",
+  inset: 0,
+  opacity: 0,
+  width: "100%",
+  height: "100%",
+  cursor: "pointer",
+  border: "none",
+  background: "transparent",
+};
+
 
 
 
