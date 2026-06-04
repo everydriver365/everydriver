@@ -475,6 +475,7 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
         </div>
       </section>
 
+      <SeeWhoIsTeaching />
 
       {/* HomeCourses */}
       <section style={{ padding: "36px 5%", background: "#F6F6F8", width: "100%" }}>
