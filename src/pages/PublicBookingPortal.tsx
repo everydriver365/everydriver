@@ -176,8 +176,12 @@ export default function PublicBookingPortal() {
               objectFit: "contain",
             }}
           />
-          <p
+          <div
             style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
               color: "#fff",
               fontSize: 14,
               fontWeight: 600,
@@ -186,8 +190,9 @@ export default function PublicBookingPortal() {
               opacity: 0.95,
             }}
           >
-            Search Now
-          </p>
+            <Search size={16} />
+            Book Now
+          </div>
         </div>
       )}
 
