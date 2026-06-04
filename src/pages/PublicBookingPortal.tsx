@@ -2,6 +2,8 @@ import { useState, useEffect, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import dsmLogo from "@/assets/dsm-logo.png";
+import chapmansWhiteLogo from "@/assets/chapmans-logo-white.png.asset.json";
+
 import { Loader2, MapPin, Phone } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -161,65 +163,20 @@ export default function PublicBookingPortal() {
               pointerEvents: "none",
             }}
           />
-          {page?.logo_url ? (
-            <div
-              style={{
-                position: "relative",
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                background: "rgba(255,255,255,0.95)",
-                borderRadius: 10,
-                padding: "6px 12px",
-                marginBottom: 14,
-                boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-              }}
-            >
-              <img
-                src={page.logo_url}
-                alt={page?.name ?? "Driving school"}
-                style={{ height: 28, width: "auto", objectFit: "contain", display: "block" }}
-              />
-            </div>
-          ) : (
-            <div
-              style={{
-                position: "relative",
-                display: "inline-flex",
-                gap: 2,
-                marginBottom: 14,
-              }}
-            >
-              <span
-                style={{
-                  background: "rgba(0,0,0,0.25)",
-                  color: "#FFF",
-                  padding: "3px 8px",
-                  borderRadius: 3,
-                  fontWeight: 800,
-                  fontSize: 12,
-                  lineHeight: 1.2,
-                  letterSpacing: 0.5,
-                }}
-              >
-                DRIVE
-              </span>
-              <span
-                style={{
-                  background: "#FFF",
-                  color: "#E8641A",
-                  padding: "3px 8px",
-                  borderRadius: 3,
-                  fontWeight: 800,
-                  fontSize: 12,
-                  lineHeight: 1.2,
-                  letterSpacing: 0.5,
-                }}
-              >
-                365
-              </span>
-            </div>
-          )}
+          <img
+            src={chapmansWhiteLogo.url}
+            alt={page?.name ?? "Chapman's Driving School"}
+            style={{
+              position: "relative",
+              display: "block",
+              height: 40,
+              width: "auto",
+              maxWidth: "70%",
+              margin: "0 auto 14px",
+              objectFit: "contain",
+            }}
+          />
+
 
           <h1
             style={{
