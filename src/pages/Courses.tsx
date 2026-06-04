@@ -1965,7 +1965,7 @@ export default function Courses({ restrictToInstructorIds, title: titleProp, emb
                 </div>
                 )}
 
-                {filteredCourses.length > 0 ? (
+                {isChapmansMobile ? null : filteredCourses.length > 0 ? (
                   isListMode ? (
                     <>
                       <CourseTableList
