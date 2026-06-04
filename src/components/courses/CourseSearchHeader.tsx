@@ -551,7 +551,7 @@ function ChapmansMobileSearch({
 
 
   return (
-    <div className="md:hidden" style={{ background: "#F3F4F6", padding: "0 16px 16px" }}>
+    <div className="md:hidden" style={{ background: "#F3F4F6", padding: "0 16px", marginBottom: 0 }}>
       <form
         onSubmit={(e) => {
           e.preventDefault();
