@@ -2,6 +2,8 @@ import { useState, useEffect, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import dsmLogo from "@/assets/dsm-logo.png";
+import chapmansWhiteLogo from "@/assets/chapmans-logo-white.png.asset.json";
+
 import { Loader2, MapPin, Phone } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
