@@ -1,25 +1,18 @@
-## Problem
+## Make the hero smaller on /booking/chapmans
 
-On `/booking/chapmans` (mobile), the search card crushes Postcode, Radius, Transmission and the Search button into a single horizontal row. Labels are clipped ("POSTCO…", "RADIUS", "TRANS…") and the input is unusable.
+The orange hero lives in `src/pages/PublicBookingPortal.tsx` (lines 129–140) and is shared by every `/booking/:slug` page. It's oversized on mobile, eating most of the viewport before the search.
 
-Root cause: the `chapmans` variant in `src/components/courses/CourseSearchHeader.tsx` (lines ~106–302) hard-codes `display: flex; flex-direction: row` via inline styles, so it never stacks. The default variant already stacks correctly using `flex-col md:flex-row`.
+### Changes (one file)
 
-## Fix (single file)
+`src/pages/PublicBookingPortal.tsx`, hero block only:
 
-Edit **`src/components/courses/CourseSearchHeader.tsx`** — the `isChapmans` branch only.
+- Container: `py-12 px-4` → `py-6 px-4 md:py-10` (tighter vertical on mobile, modest on desktop).
+- Logo: `h-12 mx-auto mb-4` → `h-9 md:h-11 mx-auto mb-2`.
+- Heading: `text-3xl md:text-4xl font-bold mb-2` → `text-xl md:text-3xl font-bold mb-1` (was wrapping to two huge lines on mobile).
+- Description: `text-lg opacity-90` → `text-sm md:text-base opacity-90`.
 
-1. Replace the inline `style={{ display: "flex", alignItems: "center", gap: 10, ... }}` on the `<form>` with Tailwind classes that stack on mobile and become a row at `sm:` and up:
-   - container: `flex flex-col sm:flex-row sm:items-center gap-2.5` (keep the white bg, 14px radius, padding 16, shadow as before)
-2. Remove the inline `flex: 1.5 / 1 / 1` from the three field wrappers and replace with classes:
-   - Postcode field: `w-full sm:flex-[1.5] min-w-0`
-   - Radius + Transmission fields: `w-full sm:flex-1 min-w-0`
-3. Search button: make it `w-full sm:w-auto` and `justify-center` so it spans the row on mobile; keep the orange `#E8641A` styling. Also bump tap target padding slightly on mobile (`py-3`) for usability.
-4. Keep all colors, font sizes, label styling, icons, and behaviour identical — purely a responsive layout change.
+No color, copy, gradient, or layout-structure changes. Desktop stays close to current proportions; mobile becomes roughly half the height.
 
-No other files, no behaviour changes, no routing changes, no payment changes. Default variant and all other pages (`/courses`, `/embed/courses`, Intensives, SemiIntensive) are untouched.
-
-## Verification
-
-- Load `/booking/chapmans` at 390×844: Postcode, Radius, Transmission and Search button stack vertically full-width; labels readable, input usable.
-- Load `/booking/chapmans` at ≥640px: layout returns to the existing single-row design.
-- Spot-check `/booking/chapmans` on desktop and a non-chapmans booking page to confirm no regression.
+### Out of scope
+- The search card, filter chips, and instructor grid below are untouched.
+- No changes to other pages or to `Drive365SearchHeader`.

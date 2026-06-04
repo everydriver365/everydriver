@@ -127,15 +127,15 @@ export default function PublicBookingPortal() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       {/* Hero */}
-      <div className="py-12 px-4 text-center text-white" style={{ background: `linear-gradient(135deg, ${brandColour}, ${brandColour}dd)` }}>
+      <div className="py-6 px-4 md:py-10 text-center text-white" style={{ background: `linear-gradient(135deg, ${brandColour}, ${brandColour}dd)` }}>
         {page?.logo_url && (
-          <img src={page.logo_url} alt="" className="h-12 mx-auto mb-4 object-contain" />
+          <img src={page.logo_url} alt="" className="h-9 md:h-11 mx-auto mb-2 object-contain" />
         )}
-        <h1 className="text-3xl md:text-4xl font-bold mb-2">
+        <h1 className="text-xl md:text-3xl font-bold mb-1">
           {page?.heading || "Book Your Driving Lessons"}
         </h1>
         {page?.description && (
-          <p className="text-lg opacity-90 max-w-xl mx-auto">{page.description}</p>
+          <p className="text-sm md:text-base opacity-90 max-w-xl mx-auto">{page.description}</p>
         )}
       </div>
 
