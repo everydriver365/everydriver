@@ -35,11 +35,14 @@ export function EmbedProvider({ embed, children }: { embed: boolean; children: R
   return <EmbedContext.Provider value={value}>{children}</EmbedContext.Provider>;
 }
 
+/**
+ * Always-safe hook. Returns the provider value if present, otherwise a
+ * non-embed default backed by react-router's navigate. Hooks are always
+ * called in the same order regardless of provider presence.
+ */
 export function useEmbed(): EmbedContextValue {
   const ctx = useContext(EmbedContext);
-  if (ctx) return ctx;
-  // Default (no provider) → standard nav. Hook is safe to call from anywhere.
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const navigate = useNavigate();
+  if (ctx) return ctx;
   return { embed: false, bookNavigate: (href: string) => navigate(href) };
 }
