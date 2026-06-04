@@ -477,78 +477,109 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
 
 
       {/* HomeCourses */}
-      <section style={{ padding: "56px 5%", background: "#F6F6F8", width: "100%" }}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: "#1A6FD4", letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: 6 }}>
-          Learning paths
-        </div>
-        <h2 style={{ fontSize: 32, fontWeight: 700, color: "#0A0E27", letterSpacing: -0.5, marginBottom: 10 }}>
-          Choose your learning path
-        </h2>
-        <p style={{ fontSize: 14, color: "#4B5563", lineHeight: 1.5, maxWidth: 520, marginBottom: 36 }}>
-          Whether you want to pass quickly or learn at your own pace, we have the perfect course for you.
-        </p>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px,1fr))", gap: 20 }}>
-          {COURSES.map((course) => (
-            <div
-              key={course.id}
-              style={{
-                background: "#FFFFFF",
-                borderRadius: 6,
-                overflow: "hidden",
-                border: course.featured ? "2px solid #1A6FD4" : "1px solid #E5E7EB",
-                boxShadow: course.featured ? "0 4px 24px rgba(26,111,212,0.14)" : undefined,
-                display: "flex",
-                flexDirection: "column",
-              }}
-            >
-              <CourseCardImage courseId={course.id} badge={course.badge} badgeColor={course.badgeColor} bg={course.sceneBg} />
-              <div style={{ padding: "22px 22px 0", flex: 1, display: "flex", flexDirection: "column" }}>
-                <h3 style={{ fontSize: 17, fontWeight: 700, color: "#0A0E27", marginBottom: 6 }}>{course.title}</h3>
-                <p style={{ fontSize: 13, color: "#4B5563", lineHeight: 1.5, marginBottom: 14 }}>{course.description}</p>
-                <div style={{ display: "flex", flexDirection: "column", gap: 5, marginBottom: 18 }}>
-                  {course.features.map((f) => (
-                    <div key={f} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "#4B5563" }}>
-                      <Check size={11} color="#1A6FD4" strokeWidth={2} />
-                      {f}
+      <section style={{ padding: "56px 5%", background: "#FFFFFF", width: "100%" }}>
+        <div style={{ background: "#F3F4F6", borderRadius: 16, padding: "48px 40px", maxWidth: 1200, margin: "0 auto" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 24, gap: 16, flexWrap: "wrap" }}>
+            <div>
+              <div style={{ fontSize: 10, fontWeight: 700, color: "#E8641A", letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: 8 }}>
+                Learning paths
+              </div>
+              <h2 style={{ fontSize: 26, fontWeight: 800, color: "#0A1628", letterSpacing: "-0.5px", margin: 0 }}>
+                Choose your learning path
+              </h2>
+            </div>
+            <Link to="/courses" style={{ fontSize: 12, fontWeight: 600, color: "#0070C0", cursor: "pointer", textDecoration: "none" }}>
+              View all courses →
+            </Link>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr 1fr", gap: 12 }}>
+            {/* Card 1 — Semi-Intensive (featured, spans 2 rows) */}
+            {(() => {
+              const semi = COURSES.find((c) => c.id === "semi")!;
+              return (
+                <div style={{ gridRow: "span 2", background: "#0A1628", borderRadius: 12, padding: 24, position: "relative", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+                  <div style={{ position: "absolute", top: 0, right: 0, width: 120, height: 120, borderRadius: "50%", background: "rgba(232,100,26,0.2)", transform: "translate(30px,-30px)", pointerEvents: "none" }} />
+                  <div style={{ position: "relative", display: "flex", flexDirection: "column", flex: 1 }}>
+                    <span style={{ background: "#E8641A", color: "#FFF", fontSize: 9, fontWeight: 700, padding: "3px 8px", borderRadius: 20, display: "inline-block", marginBottom: 16, alignSelf: "flex-start", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                      Most Popular
+                    </span>
+                    <h3 style={{ fontSize: 22, fontWeight: 800, color: "#FFF", letterSpacing: "-0.5px", marginBottom: 6 }}>Semi-Intensive</h3>
+                    <p style={{ fontSize: 11, color: "rgba(255,255,255,0.55)", lineHeight: 1.6, marginBottom: 16 }}>
+                      The perfect balance of speed and flexibility. Pass in 2–4 weeks.
+                    </p>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 5, marginBottom: 20 }}>
+                      {["30 hours of lessons", "Flexible scheduling", "Pass in 2–4 weeks"].map((f) => (
+                        <div key={f} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 10, color: "rgba(255,255,255,0.6)" }}>
+                          <span style={{ color: "#E8641A", fontWeight: 700 }}>✓</span>
+                          {f}
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-                <div style={{ marginTop: "auto", borderTop: "1px solid #F3F4F6", paddingTop: 14, paddingBottom: 16 }}>
-                  <div style={{ fontSize: 11, color: "#9CA3AF", marginBottom: 1 }}>From</div>
-                  <div>
-                    <span style={{ fontSize: 22, fontWeight: 700, color: "#0A0E27", letterSpacing: -0.5 }}>{course.priceFrom}</span>
-                    {course.priceUnit && <span style={{ fontSize: 13, fontWeight: 400, color: "#4B5563" }}>{course.priceUnit}</span>}
+                    <div style={{ marginTop: "auto", display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 12 }}>
+                      <div>
+                        <div style={{ fontSize: 9, color: "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: "0.5px" }}>From</div>
+                        <div style={{ fontSize: 28, fontWeight: 900, color: "#FFF", letterSpacing: "-1px", lineHeight: 1 }}>{semi.priceFrom}</div>
+                      </div>
+                      <Link to={semi.ctaHref} style={{ textDecoration: "none" }}>
+                        <button style={{ background: "#E8641A", color: "#FFF", border: "none", borderRadius: 7, padding: "9px 16px", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>
+                          View courses →
+                        </button>
+                      </Link>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <Link to={course.ctaHref} style={{ display: "block" }}>
-                <button
-                  style={{
-                    width: "100%",
-                    border: "none",
-                    borderRadius: "0 0 4px 4px",
-                    padding: 14,
-                    fontSize: 14,
-                    fontWeight: 500,
-                    background: course.ctaBg,
-                    color: "#FFF",
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: 6,
-                    transition: "background 120ms ease",
-                  }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = course.ctaHoverBg)}
-                  onMouseLeave={(e) => (e.currentTarget.style.background = course.ctaBg)}
-                >
-                  {course.ctaLabel} <ChevronRight size={14} color="#FFF" strokeWidth={2.2} />
-                </button>
-              </Link>
-            </div>
-          ))}
+              );
+            })()}
+
+            {/* Card 2 — Intensive */}
+            {(() => {
+              const c = COURSES.find((x) => x.id === "intensive")!;
+              return (
+                <div style={{ background: "#FFF", border: "1px solid #E5E7EB", borderRadius: 12, padding: 20, display: "flex", flexDirection: "column" }}>
+                  <div style={{ width: 36, height: 36, borderRadius: 8, background: "#EFF6FF", fontSize: 16, marginBottom: 12, display: "flex", alignItems: "center", justifyContent: "center" }}>⚡</div>
+                  <span style={{ fontSize: 9, fontWeight: 700, background: "#FEE2E2", color: "#D12E2E", padding: "2px 7px", borderRadius: 20, display: "inline-block", marginBottom: 8, alignSelf: "flex-start", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                    Fast Track
+                  </span>
+                  <h3 style={{ fontSize: 14, fontWeight: 700, color: "#0A1628", marginBottom: 4 }}>Intensive</h3>
+                  <p style={{ fontSize: 10, color: "#9CA3AF", lineHeight: 1.5, marginBottom: 12 }}>Pass in 1–2 weeks. Full immersion.</p>
+                  <div style={{ fontSize: 20, fontWeight: 800, color: "#0A1628", letterSpacing: "-0.5px", marginBottom: 10 }}>{c.priceFrom}</div>
+                  <Link to={c.ctaHref} style={{ marginTop: "auto", textDecoration: "none" }}>
+                    <button style={{ width: "100%", padding: 8, background: "#0A1628", color: "#FFF", border: "none", borderRadius: 7, fontSize: 11, fontWeight: 700, cursor: "pointer" }}>
+                      {c.ctaLabel}
+                    </button>
+                  </Link>
+                </div>
+              );
+            })()}
+
+            {/* Card 3 — Weekly Lessons */}
+            {(() => {
+              const c = COURSES.find((x) => x.id === "weekly")!;
+              return (
+                <div style={{ background: "#FFF", border: "1px solid #E5E7EB", borderRadius: 12, padding: 20, display: "flex", flexDirection: "column" }}>
+                  <div style={{ width: 36, height: 36, borderRadius: 8, background: "#F0FDF4", fontSize: 16, marginBottom: 12, display: "flex", alignItems: "center", justifyContent: "center" }}>⏱</div>
+                  <span style={{ fontSize: 9, fontWeight: 700, background: "#D1FAE5", color: "#059669", padding: "2px 7px", borderRadius: 20, display: "inline-block", marginBottom: 8, alignSelf: "flex-start", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                    Flexible
+                  </span>
+                  <h3 style={{ fontSize: 14, fontWeight: 700, color: "#0A1628", marginBottom: 4 }}>Weekly Lessons</h3>
+                  <p style={{ fontSize: 10, color: "#9CA3AF", lineHeight: 1.5, marginBottom: 12 }}>Your pace. Pay as you go.</p>
+                  <div style={{ marginBottom: 10 }}>
+                    <span style={{ fontSize: 20, fontWeight: 800, color: "#0A1628", letterSpacing: "-0.5px" }}>{c.priceFrom}</span>
+                    <span style={{ fontSize: 10, color: "#9CA3AF", fontWeight: 400 }}>/hr</span>
+                  </div>
+                  <Link to={c.ctaHref} style={{ marginTop: "auto", textDecoration: "none" }}>
+                    <button style={{ width: "100%", padding: 8, background: "#0A1628", color: "#FFF", border: "none", borderRadius: 7, fontSize: 11, fontWeight: 700, cursor: "pointer" }}>
+                      {c.ctaLabel}
+                    </button>
+                  </Link>
+                </div>
+              );
+            })()}
+          </div>
         </div>
       </section>
+
       {afterLearningPaths}
 
 
