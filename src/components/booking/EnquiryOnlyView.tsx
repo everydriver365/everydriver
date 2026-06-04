@@ -68,9 +68,8 @@ export function EnquiryOnlyView({
 
     setSubmitting(true);
     try {
-      const { data: inserted, error } = await supabase
-        .from("booking_enquiries")
-        .insert({
+      const { data: enquiryId, error } = await supabase.rpc("submit_booking_enquiry", {
+        p_payload: {
           instructor_id: instructor.id,
           pupil_name: parsed.data.pupil_name,
           pupil_email: parsed.data.pupil_email,
@@ -80,15 +79,14 @@ export function EnquiryOnlyView({
           course_hours: hours,
           message: parsed.data.message || null,
           source: "mini_website",
-        })
-        .select("id")
-        .single();
+        },
+      });
       if (error) throw error;
 
       // Fire-and-forget instructor notification (SMS / WhatsApp / email / push)
-      if (inserted?.id) {
+      if (enquiryId) {
         supabase.functions
-          .invoke("notify-booking-enquiry", { body: { enquiryId: inserted.id } })
+          .invoke("notify-booking-enquiry", { body: { enquiryId } })
           .catch((err) => console.error("notify-booking-enquiry failed", err));
       }
       setSubmitted(true);
