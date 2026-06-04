@@ -532,11 +532,7 @@ function ChapmansMobileSearch({
   // - All        -> activeFilter "all"
   // - Courses    -> activeFilter "intensive" (also active for "semi-intensive")
   // - Lessons    -> activeFilter "weekly"
-  const filterPills: { key: "all" | "courses" | "lessons"; label: string; target: CourseFilterId }[] = [
-    { key: "all", label: "All", target: "all" },
-    { key: "courses", label: "Courses", target: "intensive" },
-    { key: "lessons", label: "Lessons", target: "weekly" },
-  ];
+
   const currentKey: "all" | "courses" | "lessons" =
     activeFilter === "weekly"
       ? "lessons"
