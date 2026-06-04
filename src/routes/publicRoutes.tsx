@@ -126,6 +126,10 @@ export const publicRoutes = (
 
     {/* Learner-facing routes */}
     <Route path="/courses" element={isWhitelabelDomain() ? <WhitelabelCourses /> : <CourseResults />} />
+    {/* Generic, unbranded, iframe-embeddable clone of /courses. Always renders CourseResults
+        (never whitelabel) so partners get the neutral global search. Booking nav breaks
+        out of the iframe to the top window so payment gateways run first-party. */}
+    <Route path="/embed/courses" element={<CourseResults embed />} />
     <Route path="/design/course-cards" element={<CourseCardsDemo />} />
     <Route path="/areas/:slug" element={<WhitelabelAreaPage />} />
     <Route path="/book/:instructorId" element={<BookingSummary />} />
