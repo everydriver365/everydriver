@@ -18,6 +18,7 @@ export default function AdminInstructorDetail() {
   const [counts, setCounts] = useState<InstructorRelatedCounts>({
     activePupils: null, totalPupilsAllTime: null, passesThisYear: null, totalLoyaltyPoints: null, openComplaints: null,
   });
+  const [passRate, setPassRate] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editingProfile, setEditingProfile] = useState(false);
@@ -41,24 +42,39 @@ export default function AdminInstructorDetail() {
     setInstructor(ins);
 
     const yearStart = new Date(new Date().getFullYear(), 0, 1).toISOString();
-    const pupilsActive = await supabase.from("pupils").select("id", { count: "exact", head: true })
-      .eq("instructor_id", id).is("deleted_at", null);
-    const pupilsAll = await supabase.from("pupils").select("id", { count: "exact", head: true })
-      .eq("instructor_id", id);
-    const passes = await supabase.from("driving_test_results").select("id", { count: "exact", head: true })
-      .eq("instructor_id", id).eq("result", "pass").gte("created_at", yearStart);
-    const points = await supabase.from("pupils").select("reward_points")
-      .eq("instructor_id", id).is("deleted_at", null);
+    const [pupilsActive, pupilsAll, passes, allTests, points, complaints] = await Promise.all([
+      supabase.from("pupils").select("id", { count: "exact", head: true })
+        .eq("instructor_id", id).is("deleted_at", null),
+      supabase.from("pupils").select("id", { count: "exact", head: true })
+        .eq("instructor_id", id),
+      supabase.from("driving_test_results").select("id", { count: "exact", head: true })
+        .eq("instructor_id", id).eq("result", "pass").gte("created_at", yearStart),
+      supabase.from("driving_test_results").select("id", { count: "exact", head: true })
+        .eq("instructor_id", id).eq("is_mock", false).gte("created_at", yearStart),
+      supabase.from("pupils").select("reward_points")
+        .eq("instructor_id", id).is("deleted_at", null),
+      supabase.from("instructor_complaints").select("id", { count: "exact", head: true })
+        .eq("instructor_id", id).eq("status", "investigating"),
+    ]);
 
     const totalPoints = (points.data as Array<{ reward_points: number | null }> | null)?.reduce(
       (sum, p) => sum + (Number(p.reward_points) || 0), 0,
     ) ?? null;
 
+    const passCount = passes.error ? null : (passes.count ?? 0);
+    const testCount = allTests.error ? null : (allTests.count ?? 0);
+    setPassRate(
+      passCount != null && testCount != null && testCount > 0
+        ? Math.round((passCount / testCount) * 100)
+        : null,
+    );
+
     setCounts({
       activePupils: pupilsActive.error ? null : (pupilsActive.count ?? 0),
       totalPupilsAllTime: pupilsAll.error ? null : (pupilsAll.count ?? 0),
-      passesThisYear: passes.error ? null : (passes.count ?? 0),
+      passesThisYear: passCount,
       totalLoyaltyPoints: points.error ? null : totalPoints,
+      openComplaints: complaints.error ? null : (complaints.count ?? 0),
     });
     setLoading(false);
   };
@@ -76,6 +92,18 @@ export default function AdminInstructorDetail() {
     setCol4(built.col4);
     setSectionsBuiltFor(instructor.id);
   }, [instructor, counts, sectionsBuiltFor]);
+
+  const persistField = async (field: string, value: any) => {
+    if (!id) return;
+    const { error } = await supabase.from("instructors").update({ [field]: value }).eq("id", id);
+    if (error) {
+      toast({ title: "Save failed", description: `${field}: ${error.message}`, variant: "destructive" });
+      throw error;
+    }
+    toast({ title: "Saved", description: field });
+    setSectionsBuiltFor(null); // rebuild from refreshed row
+    await load();
+  };
 
   const handleSaveProfile = async (v: EditProfileValues) => {
     if (!id) return;
@@ -202,7 +230,7 @@ export default function AdminInstructorDetail() {
             }}
           >
             <div>
-              <InstructorHeroCard instructor={instructor} />
+              <InstructorHeroCard instructor={instructor} passRate={passRate} />
               <ActionsStack
                 instructorId={instructor.id}
                 isAdmin={isAdmin}
@@ -212,9 +240,9 @@ export default function AdminInstructorDetail() {
                 onMessage={() => nav(`/admin/messages?instructor=${instructor.id}`)}
               />
             </div>
-            <SectionColumn sections={col2} onChange={setCol2} />
-            <SectionColumn sections={col3} onChange={setCol3} />
-            <SectionColumn sections={col4} onChange={setCol4} />
+            <SectionColumn sections={col2} onChange={setCol2} onPersistField={persistField} />
+            <SectionColumn sections={col3} onChange={setCol3} onPersistField={persistField} />
+            <SectionColumn sections={col4} onChange={setCol4} onPersistField={persistField} />
           </div>
         )}
       </div>
