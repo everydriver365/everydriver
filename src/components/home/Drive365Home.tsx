@@ -50,15 +50,15 @@ const COURSES = [
     priceUnit: null as string | null,
     ctaLabel: "View courses",
     ctaHref: "/courses?type=intensive",
-    ctaBg: "#3182ce",
-    ctaHoverBg: "#2b6cb0",
+    ctaBg: "#0A1628",
+    ctaHoverBg: "#1A2332",
     featured: false,
     sceneBg: "#3E57D9",
   },
   {
     id: "semi",
     badge: "Most popular",
-    badgeColor: "#1A6FD4",
+    badgeColor: "#0A1628",
     title: "Semi-Intensive",
     description:
       "The perfect balance of speed and flexibility. Ideal if you have some availability but need time to practise between sessions.",
@@ -67,15 +67,15 @@ const COURSES = [
     priceUnit: null as string | null,
     ctaLabel: "View courses",
     ctaHref: "/courses?type=semi-intensive",
-    ctaBg: "#3182ce",
-    ctaHoverBg: "#2b6cb0",
+    ctaBg: "#E8641A",
+    ctaHoverBg: "#C8520E",
     featured: true,
     sceneBg: "#3B6D11",
   },
   {
     id: "weekly",
     badge: "Flexible",
-    badgeColor: "#0A0E27",
+    badgeColor: "#059669",
     title: "Weekly Lessons",
     description:
       "Traditional approach for busy schedules. Build confidence gradually with regular weekly sessions at times that suit you.",
@@ -84,8 +84,8 @@ const COURSES = [
     priceUnit: "/hour",
     ctaLabel: "View lessons",
     ctaHref: "/courses?type=weekly",
-    ctaBg: "#3182ce",
-    ctaHoverBg: "#2b6cb0",
+    ctaBg: "#0A1628",
+    ctaHoverBg: "#1A2332",
     featured: false,
     sceneBg: "#1D9E75",
   },
@@ -294,7 +294,7 @@ const CourseCardImage: React.FC<{ courseId: string; badge: string; badgeColor: s
         fontSize: 10,
         fontWeight: 700,
         padding: "4px 10px",
-        borderRadius: 2,
+        borderRadius: 4,
         letterSpacing: 0.2,
       }}
     >
@@ -484,7 +484,7 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
       {/* HomeCourses */}
       <section style={{ padding: "36px 5%", background: "#F6F6F8", width: "100%" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: "#1A6FD4", letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: 6 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: "#E8641A", letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: 6 }}>
 
           Learning paths
         </div>
@@ -502,8 +502,8 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
                 background: "#FFFFFF",
                 borderRadius: 6,
                 overflow: "hidden",
-                border: course.featured ? "2px solid #1A6FD4" : "1px solid #E5E7EB",
-                boxShadow: course.featured ? "0 4px 24px rgba(26,111,212,0.14)" : undefined,
+                border: course.featured ? "2px solid #E8641A" : "1px solid #E5E7EB",
+                boxShadow: course.featured ? "0 4px 20px rgba(232,100,26,0.12)" : undefined,
                 display: "flex",
                 flexDirection: "column",
               }}
