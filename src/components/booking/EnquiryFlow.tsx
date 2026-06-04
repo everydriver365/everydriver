@@ -42,9 +42,8 @@ export function EnquiryFlow({
   const handleSubmit = async (values: EnquiryFormValues) => {
     setSubmitting(true);
     try {
-      const { data: inserted, error } = await supabase
-        .from("booking_enquiries")
-        .insert({
+      const { data: enquiryId, error } = await supabase.rpc("submit_booking_enquiry", {
+        p_payload: {
           instructor_id: instructor.id,
           pupil_name: values.name,
           pupil_email: values.email,
@@ -54,20 +53,22 @@ export function EnquiryFlow({
           course_hours: hours,
           message: values.message || null,
           source: "mini_website",
-          source_page: typeof window !== "undefined" ? window.location.pathname + window.location.search : null,
-        })
-        .select("id")
-        .single();
+          source_page:
+            typeof window !== "undefined"
+              ? window.location.pathname + window.location.search
+              : null,
+        },
+      });
       if (error) throw error;
 
       // Fire-and-forget: instructor notification (existing) + new admin notification.
       // Email failures must NEVER block the confirmation screen.
-      if (inserted?.id) {
+      if (enquiryId) {
         supabase.functions
-          .invoke("notify-booking-enquiry", { body: { enquiryId: inserted.id } })
+          .invoke("notify-booking-enquiry", { body: { enquiryId } })
           .catch((err) => console.error("notify-booking-enquiry failed", err));
         supabase.functions
-          .invoke("notify-admin-enquiry", { body: { enquiryId: inserted.id } })
+          .invoke("notify-admin-enquiry", { body: { enquiryId } })
           .catch((err) => console.error("notify-admin-enquiry failed", err));
       }
 
