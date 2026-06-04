@@ -198,7 +198,8 @@ export default function Index() {
   const courseWeeklyImg = getImage("course_weekly", courseWeekly);
   
   // Dynamic images - What's included features
-  const featureRetest = getImage("feature_retest", featureRetestFallback);
+  // Force pass-themed asset for FREE Re-Test — DB image was the old FAIL certificate
+  const featureRetest = featureRetestFallback;
   const featureAvailability = getImage("feature_availability", featureAvailabilityFallback);
   const featureTheory = getImage("feature_theory", featureTheoryFallback);
   const featureTheoryProImg = getImage("feature_theory_pro", featureTheoryPro);
@@ -224,12 +225,14 @@ export default function Index() {
           <section style={{ padding: "56px 5%", background: "#F6F6F8", width: "100%" }}>
             {(() => {
               const resolveImage = (title: string, url?: string) => {
+                const key = title.toLowerCase();
+                // Force local asset for FREE Re-Test — DB still points to old FAIL certificate
+                if (key === 'free re-test') return featureRetest;
                 if (url) return url;
-                switch (title.toLowerCase()) {
+                switch (key) {
                   case 'free theory test': return featureTheory;
                   case 'flexible payments': return featurePayments;
                   case 'free test swapping': return featureCancellation;
-                  case 'free re-test': return featureRetest;
                   case 'theory test pro': return featureTheoryProImg;
                   default: return null;
                 }
