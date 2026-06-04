@@ -422,6 +422,8 @@ export default function Index() {
             </div>
           </section>
 
+          <HomepageExtraSections />
+
         </>}
       />
 
