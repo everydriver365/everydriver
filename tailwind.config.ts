@@ -34,6 +34,7 @@ export default {
 				'sans-serif'
 			],
 			heading: [
+				'Accord',
 				'-apple-system',
 				'BlinkMacSystemFont',
 				'SF Pro Display',
