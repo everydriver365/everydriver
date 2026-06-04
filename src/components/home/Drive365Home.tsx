@@ -394,13 +394,13 @@ export default function Drive365Home({ afterLearningPaths }: { afterLearningPath
           <div className="d365-hero-right">
             <div className="d365-welcome text-center">
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 20 }}>
-                <div style={{ fontSize: 18, fontWeight: 900, color: "#0A1628", letterSpacing: -0.5, lineHeight: 1 }}>
-                  Every<span style={{ color: "#60C8F5" }}>Driver</span>
+                <div style={{ fontSize: 22, fontWeight: 900, color: "#0A1628", letterSpacing: -0.5, lineHeight: 1 }}>
+                  Every<span style={{ color: "#0070C0" }}>Driver</span>
                 </div>
-                <div style={{ display: "flex", gap: 4, marginTop: 3 }}>
-                  <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#D12E2E" }} />
-                  <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#F59E0B" }} />
-                  <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#22C55E" }} />
+                <div style={{ display: "flex", gap: 5, marginTop: 4 }}>
+                  <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#D12E2E" }} />
+                  <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#F59E0B" }} />
+                  <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#22C55E" }} />
                 </div>
               </div>
               <div className="d365-welcome-eyebrow">Find your instructor</div>
