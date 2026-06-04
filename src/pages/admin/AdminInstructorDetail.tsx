@@ -21,7 +21,7 @@ type DrawerKey = "diary" | "bookings" | "reviews" | "payments" | "documents" | "
 export default function AdminInstructorDetail() {
   const { id } = useParams<{ id: string }>();
   const nav = useNavigate();
-  const { isAdmin } = useAdminAuth();
+  const { isAdmin, loading: authLoading } = useAdminAuth();
   const [instructor, setInstructor] = useState<Record<string, any> | null>(null);
   const [counts, setCounts] = useState<InstructorRelatedCounts>({
     activePupils: null, totalPupilsAllTime: null, passesThisYear: null, totalLoyaltyPoints: null, openComplaints: null,
