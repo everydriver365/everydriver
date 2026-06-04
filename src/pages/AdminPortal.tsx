@@ -475,7 +475,7 @@ export default function AdminPortal() {
             <AdminSectionNotes sectionKey="instructors" className="mb-4" />
             <InstructorManager
               onEdit={handleEdit}
-              onViewProfile={(id) => { setProfileInstructorId(id); setActiveSection("instructor-profile"); }}
+              onViewProfile={(id) => navigate(`/admin/instructors/${id}`)}
             />
           </motion.div>
         );
