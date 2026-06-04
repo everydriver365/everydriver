@@ -1,36 +1,46 @@
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 export function ActionsStack({
-  instructorId,
   isAdmin,
   onEditProfile,
   onSuspend,
   onRemove,
   onMessage,
+  onViewDiary,
+  onViewBookings,
+  onViewReviews,
+  onViewPayments,
+  onViewDocuments,
+  isSuspended,
 }: {
-  instructorId: string;
   isAdmin: boolean;
   onEditProfile: () => void;
   onSuspend: () => void;
   onRemove: () => void;
   onMessage: () => void;
+  onViewDiary: () => void;
+  onViewBookings: () => void;
+  onViewReviews: () => void;
+  onViewPayments: () => void;
+  onViewDocuments: () => void;
+  isSuspended: boolean;
 }) {
   const nav = useNavigate();
   return (
     <div style={{ marginTop: 14 }}>
       <Card title="ACTIONS">
         <ActionLink label="✏ Edit profile" onClick={onEditProfile} />
-        <ActionLink label="📅 View diary" onClick={() => nav(`/admin/instructors/${instructorId}/diary`)} />
-        <ActionLink label="📋 View bookings" onClick={() => nav(`/admin/instructors/${instructorId}/bookings`)} />
-        <ActionLink label="⭐ View reviews" onClick={() => nav(`/admin/instructors/${instructorId}/reviews`)} />
-        <ActionLink label="💳 Payments" onClick={() => nav(`/admin/instructors/${instructorId}/payments`)} />
-        <ActionLink label="📄 Documents" onClick={() => nav(`/admin/instructors/${instructorId}/documents`)} />
-        <ActionLink label="📨 Message" onClick={onMessage} />
+        <ActionLink label="📅 View diary" onClick={onViewDiary} />
+        <ActionLink label="📋 View bookings" onClick={onViewBookings} />
+        <ActionLink label="⭐ View reviews" onClick={onViewReviews} />
+        <ActionLink label="💳 Payments" onClick={onViewPayments} />
+        <ActionLink label="📄 Documents" onClick={onViewDocuments} />
+        <ActionLink label="📨 Message" onClick={onMessage} last />
       </Card>
 
       {isAdmin && (
         <Card title="ADMIN">
-          <ActionLink label="⚠ Suspend instructor" onClick={onSuspend} danger />
+          <ActionLink label={isSuspended ? "✓ Re-activate instructor" : "⚠ Suspend instructor"} onClick={onSuspend} danger={!isSuspended} />
           <ActionLink label="✕ Remove from platform" onClick={onRemove} danger last />
         </Card>
       )}
