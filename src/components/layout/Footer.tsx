@@ -41,9 +41,9 @@ export function Footer() {
   const { logo, logoAlt, logoText, homeLink } = useRouteLogo();
   const whitelabel = getWhitelabelConfig();
   const contactPhone = whitelabel?.phone ?? "0800 123 4567";
-  const contactEmail = whitelabel?.email ?? "info@drive365.co.uk";
+  const contactEmail = whitelabel?.email ?? "info@everydriver.co";
   const contactArea = whitelabel?.address ?? "Covering all UK postcodes";
-  const copyrightName = whitelabel?.brandName ?? "Drive365";
+  const copyrightName = whitelabel?.brandName ?? "EveryDriver";
   const wlAreas = whitelabel ? getAreasForHost(whitelabel.host) : [];
   const { pathname } = useLocation();
   const isDrive365Home = pathname === "/drive365" || pathname === "/drive365/";
