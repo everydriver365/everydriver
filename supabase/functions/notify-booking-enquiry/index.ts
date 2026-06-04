@@ -39,12 +39,15 @@ serve(async (req) => {
       .single();
     if (eErr || !enquiry) throw eErr || new Error("Enquiry not found");
 
-    const { data: instructor } = await supabase
+    const { data: instructor, error: iErr } = await supabase
       .from("instructors")
-      .select("id, name, phone, email, slug")
+      .select("id, name, phone, email, app_slug")
       .eq("id", enquiry.instructor_id)
       .single();
-    if (!instructor) throw new Error("Instructor not found");
+    if (iErr || !instructor) {
+      console.error("Instructor lookup failed", { iErr, instructor_id: enquiry.instructor_id });
+      throw iErr || new Error("Instructor not found");
+    }
 
     const enquiriesUrl = `${BASE_URL}/instructor/enquiries`;
     const summaryLine =
