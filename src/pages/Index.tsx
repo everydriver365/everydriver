@@ -229,7 +229,7 @@ export default function Index() {
                   onClick={() => welcomeVideoUrl && setVideoModalOpen(true)}
                   disabled={!welcomeVideoUrl}
                   style={{
-                    background: "linear-gradient(135deg, #0A2B6B, #0A1628)",
+                    background: videoThumbnailImg ? `url(${videoThumbnailImg}) center/cover no-repeat` : "linear-gradient(135deg, #0A2B6B, #0A1628)",
                     minHeight: 220,
                     position: "relative",
                     display: "flex",
@@ -241,10 +241,13 @@ export default function Index() {
                   }}
                   aria-label="Play our story video"
                 >
-                  <span style={{ position: "absolute", top: 12, left: 12, background: "rgba(0,0,0,0.5)", color: "#FFFFFF", fontSize: 9, fontWeight: 700, padding: "4px 10px", borderRadius: 20 }}>
+                  {videoThumbnailImg && (
+                    <span style={{ position: "absolute", inset: 0, background: "rgba(10,22,40,0.35)", borderRadius: "inherit" }} />
+                  )}
+                  <span style={{ position: "absolute", top: 12, left: 12, background: "rgba(0,0,0,0.5)", color: "#FFFFFF", fontSize: 9, fontWeight: 700, padding: "4px 10px", borderRadius: 20, zIndex: 1 }}>
                     2 MIN WATCH
                   </span>
-                  <div style={{ width: 52, height: 52, borderRadius: 999, background: "#E8641A", boxShadow: "0 4px 20px rgba(232,100,26,0.4)", color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>
+                  <div style={{ width: 52, height: 52, borderRadius: 999, background: "#E8641A", boxShadow: "0 4px 20px rgba(232,100,26,0.4)", color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, position: "relative", zIndex: 1 }}>
                     ▶
                   </div>
                 </button>
