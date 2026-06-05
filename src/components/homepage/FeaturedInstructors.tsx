@@ -199,14 +199,38 @@ export function FeaturedInstructors() {
         }
       }
 
-      // 6. Promote Richard Chapman to top slot, then fill remaining with other placeholders
-      const finalList: ScoredInstructor[] = [{ ...PLACEHOLDERS[0] }];
+      // 6. Build final list: Richard pinned to slot 0 (hydrated from DB if his account exists),
+      //    then real CRM-qualified instructors, then any remaining placeholders (e.g. Ken D).
+      const bySlug = new Map<string, InstructorRow>();
+      for (const row of insRows as unknown as InstructorRow[]) {
+        if (row.app_slug) bySlug.set(row.app_slug, row);
+      }
+      function hydratePlaceholder(p: typeof PLACEHOLDERS[number]): ScoredInstructor {
+        if (!p.matchSlug) return { ...p };
+        const realRow = bySlug.get(p.matchSlug);
+        if (!realRow) return { ...p };
+        return {
+          ...p,
+          id: realRow.id,
+          photo: realRow.profile_image_url,
+          hourly_rate: realRow.hourly_rate,
+          location: realRow.home_postcode ? realRow.home_postcode.split(" ")[0] : p.location,
+          app_slug: realRow.app_slug,
+          isPlaceholder: false,
+          googleBacked: true,
+        };
+      }
+      const realIdsAlreadyShown = new Set(scored.map((s) => s.id));
+      const richard = hydratePlaceholder(PLACEHOLDERS[0]);
+      const finalList: ScoredInstructor[] = [richard];
+      realIdsAlreadyShown.add(richard.id);
       for (const s of scored) {
         if (finalList.length >= 3) break;
+        if (realIdsAlreadyShown.has(s.id)) continue;
         finalList.push(s);
       }
       for (let i = 1; i < PLACEHOLDERS.length && finalList.length < 3; i++) {
-        finalList.push({ ...PLACEHOLDERS[i] });
+        finalList.push(hydratePlaceholder(PLACEHOLDERS[i]));
       }
       scored.length = 0;
       scored.push(...finalList);
