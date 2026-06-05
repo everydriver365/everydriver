@@ -121,6 +121,7 @@ export function FeaturedInstructors() {
   const [instructors, setInstructors] = useState<ScoredInstructor[]>([]);
   const [loading, setLoading] = useState(true);
   const [googleData, setGoogleData] = useState<Record<string, GoogleData>>({});
+  const [nextAvailable, setNextAvailable] = useState<Record<string, string>>({});
 
   useEffect(() => {
     let cancelled = false;
@@ -306,6 +307,44 @@ export function FeaturedInstructors() {
     return () => { cancelled = true; };
   }, [instructors]);
 
+  // Fetch next available date per real instructor via public-courses edge function
+  useEffect(() => {
+    let cancelled = false;
+    const targets = instructors.filter((i) => !i.isPlaceholder && i.app_slug && !nextAvailable[i.id]);
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const apikey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+    for (const ins of targets) {
+      (async () => {
+        try {
+          const res = await fetch(
+            `${supabaseUrl}/functions/v1/public-courses?slug=${encodeURIComponent(ins.app_slug!)}`,
+            { headers: { apikey, Authorization: `Bearer ${apikey}` } }
+          );
+          if (!res.ok) return;
+          const data = await res.json();
+          const date: string | null = data?.courses?.[0]?.nextAvailable ?? null;
+          if (cancelled || !date) return;
+          setNextAvailable((prev) => ({ ...prev, [ins.id]: date }));
+        } catch (e) {
+          console.error("next-available fetch failed:", e);
+        }
+      })();
+    }
+    return () => { cancelled = true; };
+  }, [instructors]);
+
+  function formatNextAvailable(dateStr: string): string {
+    const [y, m, d] = dateStr.split("-").map(Number);
+    const date = new Date(Date.UTC(y, m - 1, d, 12));
+    const today = new Date();
+    const todayUtc = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate(), 12));
+    const diffDays = Math.round((date.getTime() - todayUtc.getTime()) / 86400000);
+    if (diffDays <= 0) return "Today";
+    if (diffDays === 1) return "Tomorrow";
+    return date.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" });
+  }
+
+
   if (loading || instructors.length === 0) return null;
 
   return (
@@ -427,6 +466,12 @@ export function FeaturedInstructors() {
                             <div style={{ fontSize: 16, fontWeight: 800, color: "#0A1628" }}>{ins.total_reviews}</div>
                             <div style={{ fontSize: 8, color: "#9CA3AF" }}>reviews</div>
                           </div>
+                          {nextAvailable[ins.id] && (
+                            <div style={{ flex: 1, textAlign: "center", background: "#ECFDF5", border: "1px solid #A7F3D0", borderRadius: 7, padding: "8px 4px" }}>
+                              <div style={{ fontSize: 12, fontWeight: 800, color: "#047857", lineHeight: 1.15 }}>{formatNextAvailable(nextAvailable[ins.id])}</div>
+                              <div style={{ fontSize: 8, color: "#059669" }}>next available</div>
+                            </div>
+                          )}
                         </div>
 
                         {ins.review && (
