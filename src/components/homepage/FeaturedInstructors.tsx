@@ -233,7 +233,7 @@ export function FeaturedInstructors() {
         return {
           ...p,
           id: realRow.id,
-          photo: realRow.profile_image_url,
+          photo: realRow.profile_image_url ?? p.photo,
           hourly_rate: realRow.hourly_rate,
           location: realRow.home_postcode ? realRow.home_postcode.split(" ")[0] : p.location,
           app_slug: realRow.app_slug,
