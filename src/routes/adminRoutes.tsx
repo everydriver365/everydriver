@@ -166,6 +166,10 @@ export const adminRoutes = (
       path="/admin/review-import"
       element={<ProtectedAdminRoute><ReviewImport /></ProtectedAdminRoute>}
     />
+    <Route
+      path="/admin/review-moderation"
+      element={<ProtectedAdminRoute><ReviewModeration /></ProtectedAdminRoute>}
+    />
   </>
 );
 
