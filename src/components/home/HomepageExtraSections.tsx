@@ -193,52 +193,8 @@ export default function HomepageExtraSections() {
         </div>
       </div>
 
-      {/* 3. Video section */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", borderRadius: 14, overflow: "hidden", border: "1px solid #E5E7EB" }}>
-        <Link
-          to="/about"
-          style={{
-            background: "linear-gradient(135deg, #0A2B6B, #0A1628)",
-            minHeight: 220,
-            position: "relative",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            textDecoration: "none",
-          }}
-        >
-          <span style={{ position: "absolute", top: 12, left: 12, background: "rgba(0,0,0,0.5)", color: "#FFFFFF", fontSize: 9, fontWeight: 700, padding: "4px 10px", borderRadius: 20 }}>
-            2 MIN WATCH
-          </span>
-          <div style={{ width: 52, height: 52, borderRadius: 999, background: "#E8641A", boxShadow: "0 4px 20px rgba(232,100,26,0.4)", color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>
-            ▶
-          </div>
-        </Link>
-        <div style={{ background: "#FFFFFF", padding: 28 }}>
-          <div style={{ fontSize: 10, fontWeight: 700, color: "#E8641A", textTransform: "uppercase", letterSpacing: "1.5px" }}>OUR STORY</div>
-          <h3 style={{ fontSize: 18, fontWeight: 800, color: "#0A1628", margin: "6px 0" }}>
-            Watch how learners pass with <span style={{ color: "#E8641A" }}>confidence.</span>
-          </h3>
-          <p style={{ fontSize: 12, color: "#6B7280", margin: "0 0 12px" }}>
-            Discover why thousands of learners trust us with their driving journey.
-          </p>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-            <div style={{ display: "flex" }}>
-              {["S", "J", "E", "P"].map((l, i) => (
-                <div key={i} style={{ width: 24, height: 24, borderRadius: 999, background: ACCENTS[i % 3], color: "#FFFFFF", fontSize: 10, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", marginLeft: i === 0 ? 0 : -8, border: "2px solid #FFFFFF" }}>
-                  {l}
-                </div>
-              ))}
-            </div>
-            <span style={{ color: "#FBBF24", fontSize: 12 }}>★★★★★</span>
-            <span style={{ fontSize: 11, color: "#9CA3AF" }}>4.9 from 6,499 learner reviews</span>
-          </div>
-          <div style={{ display: "flex", gap: 8 }}>
-            <Link to="/about" style={{ background: "#E8641A", color: "#FFFFFF", borderRadius: 7, padding: "9px 16px", fontSize: 11, fontWeight: 700, textDecoration: "none" }}>▶ Play video</Link>
-            <Link to="/instructors" style={{ background: "#FFFFFF", color: "#0070C0", border: "1.5px solid #0070C0", borderRadius: 7, padding: "9px 16px", fontSize: 11, fontWeight: 700, textDecoration: "none" }}>Find an instructor →</Link>
-          </div>
-        </div>
-      </div>
+      {/* Video section moved to render under the hero (see Index.tsx afterHero) */}
+
 
       {/* 4. News & tips */}
       <div style={{ background: "#FFFFFF", borderRadius: 14, padding: 28, border: "1px solid #E5E7EB" }}>
