@@ -257,13 +257,13 @@ export function FeaturedInstructors() {
     return () => { cancelled = true; };
   }, []);
 
-  // Fetch Google reviews for placeholders that have a googleQuery
+  // Fetch Google reviews for cards backed by Google (placeholders or hydrated real instructors)
   useEffect(() => {
     let cancelled = false;
-    const targets = instructors.filter((i) => i.isPlaceholder);
+    const targets = instructors.filter((i) => i.googleQuery);
     for (const ins of targets) {
-      const meta = PLACEHOLDERS.find((p) => p.id === ins.id);
-      if (!meta?.googleQuery || googleData[ins.id]) continue;
+      if (!ins.googleQuery || googleData[ins.id]) continue;
+      const cacheKey = ins.googleBacked ? `slug:${ins.app_slug ?? ins.id}` : ins.id;
       (async () => {
         try {
           const { data, error } = await supabase.functions.invoke("fetch-google-reviews", {
