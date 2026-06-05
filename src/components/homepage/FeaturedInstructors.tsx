@@ -418,7 +418,7 @@ export function FeaturedInstructors() {
             {instructors.map((ins, idx) => {
               const accent = ACCENTS[idx] ?? ACCENTS[2];
               const badge = BADGES[ins.badge ?? "reviews"];
-              const profileHref = ins.app_slug ? `/p/${ins.app_slug}` : `/courses`;
+              const profileHref = ins.app_slug ? `/i/${ins.app_slug}` : `/courses`;
               return (
                 <Link
                   key={ins.id}
