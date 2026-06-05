@@ -51,6 +51,7 @@ serve(async (req) => {
             rating: cached.rating,
             userRatingsTotal: cached.user_ratings_total,
             reviews: cached.reviews,
+            photoReference: cached.photo_reference ?? null,
           }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
@@ -76,7 +77,7 @@ serve(async (req) => {
 
     // Fetch details with reviews
     const detailsRes = await fetch(
-      `https://maps.googleapis.com/maps/api/place/details/json?place_id=${resolvedPlaceId}&fields=name,rating,user_ratings_total,reviews&reviews_sort=newest&key=${apiKey}`
+      `https://maps.googleapis.com/maps/api/place/details/json?place_id=${resolvedPlaceId}&fields=name,rating,user_ratings_total,reviews,photos&reviews_sort=newest&key=${apiKey}`
     );
     const detailsData = await detailsRes.json();
     if (detailsData.status !== "OK") {
@@ -96,6 +97,7 @@ serve(async (req) => {
       relative_time_description: rv.relative_time_description,
       time: rv.time,
     }));
+    const photoReference = r.photos?.[0]?.photo_reference ?? null;
 
     await supabase.from("google_place_reviews").upsert(
       {
@@ -105,6 +107,7 @@ serve(async (req) => {
         rating: r.rating ?? null,
         user_ratings_total: r.user_ratings_total ?? null,
         reviews,
+        photo_reference: photoReference,
         fetched_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       },
@@ -118,6 +121,7 @@ serve(async (req) => {
         rating: r.rating,
         userRatingsTotal: r.user_ratings_total,
         reviews,
+        photoReference,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

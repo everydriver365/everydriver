@@ -5665,6 +5665,7 @@ export type Database = {
           created_at: string
           fetched_at: string
           id: string
+          photo_reference: string | null
           place_id: string | null
           place_name: string | null
           rating: number | null
@@ -5677,6 +5678,7 @@ export type Database = {
           created_at?: string
           fetched_at?: string
           id?: string
+          photo_reference?: string | null
           place_id?: string | null
           place_name?: string | null
           rating?: number | null
@@ -5689,6 +5691,7 @@ export type Database = {
           created_at?: string
           fetched_at?: string
           id?: string
+          photo_reference?: string | null
           place_id?: string | null
           place_name?: string | null
           rating?: number | null

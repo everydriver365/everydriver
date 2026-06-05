@@ -66,6 +66,7 @@ interface GoogleData {
   rating: number | null;
   userRatingsTotal: number | null;
   reviews: GoogleReview[];
+  photoReference?: string | null;
 }
 
 const PLACEHOLDERS: (ScoredInstructor & { googleQuery?: string })[] = [
@@ -195,11 +196,17 @@ export function FeaturedInstructors() {
         }
       }
 
-      // 6. Fill remaining slots with placeholders
-      const realCount = scored.length;
-      for (let i = 0; i < Math.min(3 - realCount, PLACEHOLDERS.length); i++) {
-        scored.push({ ...PLACEHOLDERS[i] });
+      // 6. Promote Richard Chapman to top slot, then fill remaining with other placeholders
+      const finalList: ScoredInstructor[] = [{ ...PLACEHOLDERS[0] }];
+      for (const s of scored) {
+        if (finalList.length >= 3) break;
+        finalList.push(s);
       }
+      for (let i = 1; i < PLACEHOLDERS.length && finalList.length < 3; i++) {
+        finalList.push({ ...PLACEHOLDERS[i] });
+      }
+      scored.length = 0;
+      scored.push(...finalList);
 
       // 7. Most recent approved review per instructor (skip placeholders)
       const realIds = real.map((s) => s.id);
@@ -242,6 +249,7 @@ export function FeaturedInstructors() {
               rating: data.rating ?? null,
               userRatingsTotal: data.userRatingsTotal ?? null,
               reviews: data.reviews ?? [],
+              photoReference: data.photoReference ?? null,
             },
           }));
         } catch (e) {
@@ -330,13 +338,20 @@ export function FeaturedInstructors() {
                   <div style={{ height: 4, background: accent.bar }} />
                   <div style={{ padding: 16 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-                      {ins.photo ? (
-                        <img src={ins.photo} alt={ins.name} style={{ width: 44, height: 44, borderRadius: "50%", objectFit: "cover" }} />
-                      ) : (
-                        <div style={{ width: 44, height: 44, borderRadius: "50%", background: accent.avatar, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 14 }}>
-                          {initials(ins.name)}
-                        </div>
-                      )}
+                      {(() => {
+                        const gPhotoRef = ins.isPlaceholder ? googleData[ins.id]?.photoReference : null;
+                        const photoSrc = ins.photo
+                          ?? (gPhotoRef
+                            ? `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/google-place-photo?ref=${encodeURIComponent(gPhotoRef)}&maxwidth=200`
+                            : null);
+                        return photoSrc ? (
+                          <img src={photoSrc} alt={ins.name} style={{ width: 44, height: 44, borderRadius: "50%", objectFit: "cover" }} />
+                        ) : (
+                          <div style={{ width: 44, height: 44, borderRadius: "50%", background: accent.avatar, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 14 }}>
+                            {initials(ins.name)}
+                          </div>
+                        );
+                      })()}
                       <div>
                         <div style={{ fontSize: 13, fontWeight: 700, color: "#0A1628", marginBottom: 1 }}>{ins.name}</div>
                         <div style={{ fontSize: 10, color: "#9CA3AF" }}>
