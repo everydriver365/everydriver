@@ -209,8 +209,19 @@ export default function MiniWebsiteReviews({ subdomainSlug }: MiniWebsiteReviews
           </div>
         )}
 
-        {/* CTA */}
-        <div className="text-center pt-6">
+        {/* CTAs */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-6">
+          <Link to={`/review/${slug}`}>
+            <Button
+              size="lg"
+              variant="outline"
+              style={{ borderColor: primaryColor, color: primaryColor }}
+              className="bg-white hover:bg-white/90"
+            >
+              <PenLine className="h-5 w-5 mr-2" />
+              Write a Review
+            </Button>
+          </Link>
           <Link to={links.contact}>
             <Button size="lg" style={{ backgroundColor: primaryColor }} className="text-white">
               <Calendar className="h-5 w-5 mr-2" />
