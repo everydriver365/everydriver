@@ -559,7 +559,3 @@ export default function Drive365Home({ afterLearningPaths, afterHero }: { afterL
   );
 }
 
-
-
-  );
-}
