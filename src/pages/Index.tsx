@@ -345,54 +345,6 @@ export default function Index() {
                 ))}
               </div>
 
-              <div
-                style={{
-                  background: "#FFFFFF",
-                  border: "1px solid #BFDBFE",
-                  borderRadius: 6,
-                  padding: "16px 24px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                }}
-              >
-                <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
-                  {(() => {
-                    const statColors = ["#D12E2E", "#1A6FD4", "#0A0E27"];
-                    const statItems = stats.slice(0, 3);
-                    return statItems.map((stat, i) => (
-                      <div key={i} style={{ display: "flex", alignItems: "center" }}>
-                        <div style={{ textAlign: "center", padding: "0 24px" }}>
-                          <div style={{ color: statColors[i], fontSize: 20, fontWeight: 800 }}>{stat.value}</div>
-                          <div style={{ color: "#6B7280", fontSize: 10, marginTop: 2 }}>{stat.label}</div>
-                        </div>
-                        {i < statItems.length - 1 && (
-                          <div style={{ width: 1, height: 32, background: "#E5E7EB", flexShrink: 0 }} />
-                        )}
-                      </div>
-                    ));
-                  })()}
-                </div>
-                <Link
-                  to="/instructors"
-                  className="d365-start-journey-btn"
-                  style={{
-                    background: "#1A6FD4",
-                    color: "#FFFFFF",
-                    fontSize: 12,
-                    fontWeight: 700,
-                    padding: "10px 22px",
-                    borderRadius: 2,
-                    textDecoration: "none",
-                    display: "inline-block",
-                    whiteSpace: "nowrap",
-                    transition: "background 150ms ease",
-                  }}
-                >
-                  Start Your Journey →
-                </Link>
-              </div>
-              <style>{`.d365-start-journey-btn:hover{background:#1558A8 !important;}`}</style>
             </div>
           </section>
 
