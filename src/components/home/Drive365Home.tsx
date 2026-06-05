@@ -482,8 +482,8 @@ export default function Drive365Home({ afterLearningPaths, afterHero }: { afterL
       <SeeWhoIsTeaching />
 
 
-      {/* HomeCourses */}
-      <section style={{ padding: "36px 5%", background: "#F6F6F8", width: "100%" }}>
+      {/* HomeCourses — MOBILE (unchanged) */}
+      <section className="md:hidden" style={{ padding: "36px 5%", background: "#F6F6F8", width: "100%" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
         <div style={{ fontSize: 11, fontWeight: 700, color: "#E8641A", letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: 6 }}>
 
@@ -547,6 +547,156 @@ export default function Drive365Home({ afterLearningPaths, afterHero }: { afterL
             </div>
           ))}
         </div>
+        </div>
+      </section>
+
+      {/* HomeCourses — DESKTOP redesign: "Three routes to your licence" */}
+      <section className="hidden md:block" style={{ padding: "72px 5%", background: "linear-gradient(180deg, #F4F6FA 0%, #FFFFFF 100%)", width: "100%", fontFamily: "'Poppins', sans-serif", position: "relative", overflow: "hidden" }}>
+        <div aria-hidden style={{ position: "absolute", inset: 0, background: "radial-gradient(800px 320px at 85% 0%, rgba(232,100,26,0.06), transparent 60%), radial-gradient(700px 300px at 10% 100%, rgba(0,112,192,0.06), transparent 60%)", pointerEvents: "none" }} />
+        <div style={{ maxWidth: 1240, margin: "0 auto", position: "relative" }}>
+          {/* Header */}
+          <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 24, marginBottom: 36 }}>
+            <div style={{ maxWidth: 620 }}>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#FFFFFF", border: "1px solid #E5E7EB", borderRadius: 999, padding: "6px 12px", fontSize: 10, fontWeight: 800, color: "#0F2044", textTransform: "uppercase", letterSpacing: "1.4px", boxShadow: "0 2px 8px rgba(15,32,68,0.04)" }}>
+                <span style={{ width: 6, height: 6, borderRadius: 999, background: "#E8641A" }} />
+                Three routes · one licence
+              </div>
+              <h2 style={{ fontSize: 40, fontWeight: 800, color: "#0A0E27", letterSpacing: "-1px", margin: "12px 0 10px", lineHeight: 1.1 }}>
+                Choose the <span style={{ color: "#E8641A" }}>route</span> that fits your life.
+              </h2>
+              <p style={{ fontSize: 14, color: "#5A6B82", lineHeight: 1.6, margin: 0 }}>
+                Pass fast on an intensive, balance speed with practice on a semi-intensive, or learn at your own pace with weekly lessons. Every route includes a free re-test, free theory test, and Klarna or Clearpay.
+              </p>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, paddingBottom: 4 }}>
+              <span style={{ fontSize: 11, color: "#5A6B82", fontWeight: 600 }}>Not sure?</span>
+              <Link to="/courses" style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#0F2044", color: "#FFFFFF", padding: "10px 16px", borderRadius: 10, fontSize: 12, fontWeight: 700, textDecoration: "none" }}>
+                Compare all routes <ChevronRight size={14} strokeWidth={2.4} />
+              </Link>
+            </div>
+          </div>
+
+          {/* Three lanes */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1.08fr 1fr", gap: 16, alignItems: "stretch" }}>
+            {COURSES.map((course, idx) => {
+              const accent = course.id === "intensive" ? "#D12E2E" : course.id === "semi" ? "#E8641A" : "#1D9E75";
+              const accentSoft = course.id === "intensive" ? "#FDECEC" : course.id === "semi" ? "#FFF1E8" : "#E6F6EE";
+              const lane = idx === 0 ? "01" : idx === 1 ? "02" : "03";
+              const tagline = course.id === "intensive" ? "Pass in 1–2 weeks" : course.id === "semi" ? "Pass in 2–4 weeks" : "Pass at your own pace";
+              const subline = course.id === "intensive" ? "Full immersion, test booked in" : course.id === "semi" ? "Balanced speed & practice" : "Same instructor every week";
+              return (
+                <div
+                  key={course.id}
+                  style={{
+                    background: "#FFFFFF",
+                    borderRadius: 18,
+                    border: course.featured ? `2px solid ${accent}` : "1px solid #E8EDF2",
+                    boxShadow: course.featured
+                      ? `0 24px 60px -28px ${accent}66, 0 2px 0 ${accent}22 inset`
+                      : "0 14px 36px -22px rgba(10,22,40,0.18)",
+                    position: "relative",
+                    display: "flex",
+                    flexDirection: "column",
+                    overflow: "hidden",
+                    transform: course.featured ? "translateY(-6px)" : "none",
+                    transition: "transform 220ms ease, box-shadow 220ms ease",
+                  }}
+                >
+                  {course.featured && (
+                    <div style={{ position: "absolute", top: 14, right: 14, background: accent, color: "#FFFFFF", fontSize: 9, fontWeight: 900, padding: "5px 10px", borderRadius: 999, letterSpacing: "1.2px", textTransform: "uppercase", boxShadow: `0 6px 14px -6px ${accent}88` }}>
+                      Most popular
+                    </div>
+                  )}
+
+                  {/* Lane header */}
+                  <div style={{ padding: "22px 22px 0", display: "flex", alignItems: "center", gap: 12 }}>
+                    <div style={{ width: 44, height: 44, borderRadius: 12, background: accentSoft, color: accent, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 900, letterSpacing: "-0.5px", border: `1px solid ${accent}22` }}>
+                      {lane}
+                    </div>
+                    <div style={{ lineHeight: 1.15 }}>
+                      <div style={{ fontSize: 9, fontWeight: 800, color: accent, textTransform: "uppercase", letterSpacing: "1.4px" }}>{course.badge}</div>
+                      <h3 style={{ fontSize: 19, fontWeight: 800, color: "#0A0E27", margin: "3px 0 0", letterSpacing: "-0.3px" }}>{course.title}</h3>
+                    </div>
+                  </div>
+
+                  {/* Tagline */}
+                  <div style={{ padding: "14px 22px 0" }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: "#0F2044" }}>{tagline}</div>
+                    <div style={{ fontSize: 12, color: "#6B7280", marginTop: 2 }}>{subline}</div>
+                  </div>
+
+                  {/* Price */}
+                  <div style={{ padding: "16px 22px 4px", display: "flex", alignItems: "baseline", gap: 6 }}>
+                    <span style={{ fontSize: 11, color: "#9CA3AF", fontWeight: 600 }}>From</span>
+                    <span style={{ fontSize: 30, fontWeight: 800, color: "#0A0E27", letterSpacing: "-1px" }}>{course.priceFrom}</span>
+                    {course.priceUnit && <span style={{ fontSize: 12, color: "#6B7280", fontWeight: 600 }}>{course.priceUnit}</span>}
+                  </div>
+
+                  {/* Features */}
+                  <ul style={{ listStyle: "none", margin: 0, padding: "12px 22px 4px", display: "flex", flexDirection: "column", gap: 8 }}>
+                    {course.features.map((f) => (
+                      <li key={f} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 12.5, color: "#374151", fontWeight: 500 }}>
+                        <span style={{ width: 18, height: 18, borderRadius: 999, background: accentSoft, color: accent, display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                          <Check size={11} strokeWidth={3} />
+                        </span>
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+
+                  {/* Spread cost row */}
+                  <div style={{ margin: "14px 22px 0", padding: "10px 12px", background: "#F6F8FC", border: "1px solid #EAEEF5", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+                    <span style={{ fontSize: 10, color: "#5A6B82", fontWeight: 600 }}>Spread cost · 0% interest</span>
+                    <span style={{ display: "inline-flex", gap: 4 }}>
+                      <span style={{ background: "#FFB3C7", color: "#17120F", fontSize: 9, fontWeight: 900, padding: "2px 6px", borderRadius: 3 }}>Klarna</span>
+                      <span style={{ background: "#B2FCE4", color: "#000E18", fontSize: 9, fontWeight: 900, padding: "2px 6px", borderRadius: 3 }}>Clearpay</span>
+                    </span>
+                  </div>
+
+                  {/* CTA */}
+                  <div style={{ padding: 22, marginTop: "auto" }}>
+                    <Link to={course.ctaHref} style={{ display: "block" }}>
+                      <button
+                        style={{
+                          width: "100%",
+                          border: "none",
+                          borderRadius: 12,
+                          padding: "13px 16px",
+                          fontSize: 13,
+                          fontWeight: 800,
+                          letterSpacing: "-0.2px",
+                          background: course.featured ? accent : "#0F2044",
+                          color: "#FFFFFF",
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: 8,
+                          boxShadow: course.featured ? `0 12px 24px -12px ${accent}99` : "0 8px 18px -10px rgba(15,32,68,0.5)",
+                          transition: "transform 160ms ease, box-shadow 160ms ease",
+                        }}
+                        onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-1px)"; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}
+                      >
+                        {course.ctaLabel} <ChevronRight size={14} strokeWidth={2.6} />
+                      </button>
+                    </Link>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Reassurance footer row */}
+          <div style={{ marginTop: 28, display: "flex", alignItems: "center", justifyContent: "center", flexWrap: "wrap", gap: 24, color: "#5A6B82", fontSize: 12, fontWeight: 600 }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}><Check size={14} color="#1D9E75" strokeWidth={3} /> Free re-test if you don't pass</span>
+            <span style={{ width: 4, height: 4, borderRadius: 999, background: "#CBD2DD" }} />
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}><Check size={14} color="#1D9E75" strokeWidth={3} /> Free theory test included</span>
+            <span style={{ width: 4, height: 4, borderRadius: 999, background: "#CBD2DD" }} />
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}><Check size={14} color="#1D9E75" strokeWidth={3} /> DVSA-approved instructors</span>
+            <span style={{ width: 4, height: 4, borderRadius: 999, background: "#CBD2DD" }} />
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}><Check size={14} color="#1D9E75" strokeWidth={3} /> Money-back guarantee</span>
+          </div>
         </div>
       </section>
 
