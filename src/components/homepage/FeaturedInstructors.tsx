@@ -79,7 +79,7 @@ const PLACEHOLDERS: (ScoredInstructor & { matchSlug?: string })[] = [
   {
     id: "placeholder-richard",
     name: "Richard Chapman",
-    photo: null,
+    photo: richardPhoto,
     hourly_rate: null,
     location: "Winchester",
     app_slug: null,
@@ -94,7 +94,7 @@ const PLACEHOLDERS: (ScoredInstructor & { matchSlug?: string })[] = [
   {
     id: "placeholder-ken",
     name: "Ken D",
-    photo: null,
+    photo: kenPhoto,
     hourly_rate: null,
     location: null,
     app_slug: null,
@@ -108,7 +108,7 @@ const PLACEHOLDERS: (ScoredInstructor & { matchSlug?: string })[] = [
   {
     id: "placeholder-sarah",
     name: "Sarah M",
-    photo: null,
+    photo: sarahPhoto,
     hourly_rate: null,
     location: "Southampton",
     app_slug: null,
@@ -122,6 +122,7 @@ const PLACEHOLDERS: (ScoredInstructor & { matchSlug?: string })[] = [
 ];
 
 export function FeaturedInstructors() {
+
   const [instructors, setInstructors] = useState<ScoredInstructor[]>([]);
   const [loading, setLoading] = useState(true);
   const [googleData, setGoogleData] = useState<Record<string, GoogleData>>({});
