@@ -384,19 +384,55 @@ export function FeaturedInstructors() {
                           View profile →
                         </div>
                       </>
-                    ) : (
-                      <>
-                        <div style={{ display: "inline-flex", alignItems: "center", gap: 4, marginBottom: 10, background: "#F3F4F6", border: "1px solid #E5E7EB", color: "#6B7280", fontSize: 9, fontWeight: 700, padding: "3px 9px", borderRadius: 20 }}>
-                          ⏳ Coming soon
-                        </div>
-                        <div style={{ fontSize: 11, color: "#9CA3AF", lineHeight: 1.6, marginBottom: 12, minHeight: 60, display: "flex", alignItems: "center" }}>
-                          This instructor will be featured here soon. Check back for updates.
-                        </div>
-                        <div style={{ width: "100%", padding: 9, border: "none", borderRadius: 7, fontSize: 11, fontWeight: 700, background: "#E5E7EB", color: "#6B7280", textAlign: "center" }}>
-                          Coming soon
-                        </div>
-                      </>
-                    )}
+                    ) : (() => {
+                      const g = googleData[ins.id];
+                      const topReview = g?.reviews?.find((r) => r.text && r.text.length > 20) ?? g?.reviews?.[0];
+                      const hasGoogle = !!g && (g.rating != null || (g.reviews && g.reviews.length > 0));
+                      return (
+                        <>
+                          <div style={{ display: "inline-flex", alignItems: "center", gap: 4, marginBottom: 10, background: hasGoogle ? "#EFF6FF" : "#F3F4F6", border: `1px solid ${hasGoogle ? "#BFDBFE" : "#E5E7EB"}`, color: hasGoogle ? "#1E40AF" : "#6B7280", fontSize: 9, fontWeight: 700, padding: "3px 9px", borderRadius: 20 }}>
+                            {hasGoogle ? "⭐ Verified on Google" : "⏳ Coming soon"}
+                          </div>
+
+                          {hasGoogle ? (
+                            <>
+                              <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+                                {g.rating != null && (
+                                  <div style={{ flex: 1, textAlign: "center", background: "#F3F4F6", borderRadius: 7, padding: "8px 4px" }}>
+                                    <div style={{ fontSize: 16, fontWeight: 800, color: "#0A1628" }}>{g.rating.toFixed(1)}</div>
+                                    <div style={{ fontSize: 8, color: "#9CA3AF" }}>Google rating</div>
+                                  </div>
+                                )}
+                                {g.userRatingsTotal != null && (
+                                  <div style={{ flex: 1, textAlign: "center", background: "#F3F4F6", borderRadius: 7, padding: "8px 4px" }}>
+                                    <div style={{ fontSize: 16, fontWeight: 800, color: "#0A1628" }}>{g.userRatingsTotal}</div>
+                                    <div style={{ fontSize: 8, color: "#9CA3AF" }}>Google reviews</div>
+                                  </div>
+                                )}
+                              </div>
+                              {topReview && (
+                                <div style={{ marginBottom: 12, borderLeft: `3px solid ${accent.quoteBorder}`, background: accent.quoteBg, borderRadius: "0 6px 6px 0", padding: "8px 10px" }}>
+                                  <div style={{ fontSize: 10, fontStyle: "italic", color: "#4B5563", lineHeight: 1.5, marginBottom: 3 }}>
+                                    "{truncate(topReview.text)}"
+                                  </div>
+                                  <div style={{ fontSize: 9, color: "#9CA3AF" }}>
+                                    {topReview.author_name} · via Google
+                                  </div>
+                                </div>
+                              )}
+                            </>
+                          ) : (
+                            <div style={{ fontSize: 11, color: "#9CA3AF", lineHeight: 1.6, marginBottom: 12, minHeight: 60, display: "flex", alignItems: "center" }}>
+                              This instructor will be featured here soon. Check back for updates.
+                            </div>
+                          )}
+
+                          <div style={{ width: "100%", padding: 9, border: "none", borderRadius: 7, fontSize: 11, fontWeight: 700, background: hasGoogle ? accent.btnBg : "#E5E7EB", color: hasGoogle ? "#fff" : "#6B7280", textAlign: "center" }}>
+                            {hasGoogle ? "Joining soon →" : "Coming soon"}
+                          </div>
+                        </>
+                      );
+                    })()}
                   </div>
                 </Link>
               );
