@@ -203,12 +203,14 @@ serve(async (req) => {
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error('Error fetching DVSA news:', errorMessage);
-    return new Response(JSON.stringify({ 
-      success: false, 
+    // Return 200 with fallback signal so the frontend can degrade gracefully
+    return new Response(JSON.stringify({
+      success: false,
       error: errorMessage,
+      fallback: true,
       items: [],
     }), {
-      status: 500,
+      status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
