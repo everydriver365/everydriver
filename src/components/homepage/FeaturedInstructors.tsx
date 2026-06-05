@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import richardPhoto from "@/assets/testimonial-james.jpg";
+import kenPhoto from "@/assets/ken-d-hero.jpg";
+import sarahPhoto from "@/assets/testimonial-sarah-m.jpg";
+
 
 interface InstructorRow {
   id: string;
@@ -75,7 +79,7 @@ const PLACEHOLDERS: (ScoredInstructor & { matchSlug?: string })[] = [
   {
     id: "placeholder-richard",
     name: "Richard Chapman",
-    photo: null,
+    photo: richardPhoto,
     hourly_rate: null,
     location: "Winchester",
     app_slug: null,
@@ -90,7 +94,7 @@ const PLACEHOLDERS: (ScoredInstructor & { matchSlug?: string })[] = [
   {
     id: "placeholder-ken",
     name: "Ken D",
-    photo: null,
+    photo: kenPhoto,
     hourly_rate: null,
     location: null,
     app_slug: null,
@@ -104,7 +108,7 @@ const PLACEHOLDERS: (ScoredInstructor & { matchSlug?: string })[] = [
   {
     id: "placeholder-sarah",
     name: "Sarah M",
-    photo: null,
+    photo: sarahPhoto,
     hourly_rate: null,
     location: "Southampton",
     app_slug: null,
@@ -118,6 +122,7 @@ const PLACEHOLDERS: (ScoredInstructor & { matchSlug?: string })[] = [
 ];
 
 export function FeaturedInstructors() {
+
   const [instructors, setInstructors] = useState<ScoredInstructor[]>([]);
   const [loading, setLoading] = useState(true);
   const [googleData, setGoogleData] = useState<Record<string, GoogleData>>({});
@@ -228,7 +233,7 @@ export function FeaturedInstructors() {
         return {
           ...p,
           id: realRow.id,
-          photo: realRow.profile_image_url,
+          photo: realRow.profile_image_url ?? p.photo,
           hourly_rate: realRow.hourly_rate,
           location: realRow.home_postcode ? realRow.home_postcode.split(" ")[0] : p.location,
           app_slug: realRow.app_slug,
