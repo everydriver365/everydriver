@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { MapPin, ChevronRight, Calendar, Award, Users, Heart, Star, Clock, Zap, CreditCard, User, ArrowRight, ShieldCheck, Video, GraduationCap, Search, Wallet, Play, HelpCircle, CheckCircle2, DollarSign, Car, BookOpen, Headphones, ChevronDown, Loader2, Timer, CalendarCheck, Shield, Scale, Lock, IdCard, BadgeCheck } from "lucide-react";
+import { MapPin, ChevronRight, Calendar, Award, Users, Heart, Star, Clock, Zap, CreditCard, User, ArrowRight, ArrowLeftRight, ShieldCheck, Video, GraduationCap, Search, Wallet, Play, HelpCircle, CheckCircle2, DollarSign, Car, BookOpen, Headphones, ChevronDown, Loader2, Timer, CalendarCheck, Shield, Scale, Lock, IdCard, BadgeCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MainLayout } from "@/components/layout/MainLayout";
 import Drive365Home from "@/components/home/Drive365Home";
@@ -588,6 +588,28 @@ export default function Index() {
                 <p style={{ fontSize: 15, color: "#475569", lineHeight: 1.65, margin: 0 }}>
                   Search for independent, vetted instructors in your area, compare reviews, prices and live availability, then book online 24/7 — all backed by EveryDriver.
                 </p>
+              </div>
+
+              {/* 3-step timeline */}
+              <div style={{ display: "flex", justifyContent: "center", alignItems: "flex-start", gap: 8, marginBottom: 40, flexWrap: "wrap" }}>
+                {[
+                  { Icon: Search, label: "Search", desc: "Find instructors" },
+                  { Icon: ArrowLeftRight, label: "Compare", desc: "Reviews & prices" },
+                  { Icon: CalendarCheck, label: "Book", desc: "24/7 online" },
+                ].map(({ Icon, label, desc }, i, arr) => (
+                  <div key={label} style={{ display: "flex", alignItems: "center" }}>
+                    <div style={{ textAlign: "center", width: 120 }}>
+                      <div style={{ width: 48, height: 48, borderRadius: 999, background: "#EFF6FF", border: "2px solid #BFDBFE", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 10px" }}>
+                        <Icon style={{ width: 22, height: 22, color: "#2563EB" }} />
+                      </div>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: "#0F172A" }}>{label}</div>
+                      <div style={{ fontSize: 12, color: "#64748B", marginTop: 4 }}>{desc}</div>
+                    </div>
+                    {i < arr.length - 1 && (
+                      <ArrowRight style={{ width: 18, height: 18, color: "#CBD5E1", flexShrink: 0, margin: "16px 12px 0" }} />
+                    )}
+                  </div>
+                ))}
               </div>
 
               {/* Trust Grid */}
