@@ -570,68 +570,92 @@ export default function Index() {
           </section>
 
           {/* Backed by EveryDriver */}
-          <section style={{ padding: "40px 5%", background: "#F6F6F8" }}>
+          <section style={{ padding: "56px 5%", background: "#F6F6F8" }}>
             <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-              <div style={{ background: "#FFFFFF", borderRadius: 14, padding: "24px 28px", border: "1px solid #E5E7EB" }}>
-                {/* Header */}
-                <div style={{ marginBottom: 18 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-                    <ShieldCheck style={{ width: 20, height: 20, color: "#059669", flexShrink: 0 }} />
-                    <h2 style={{ fontSize: 18, fontWeight: 800, color: "#0A1628", letterSpacing: "-0.3px", margin: 0 }}>
-                      Backed by EveryDriver
-                    </h2>
-                  </div>
-                  <p style={{ fontSize: 13, color: "#6B7280", lineHeight: 1.6, margin: 0 }}>
-                    Every booking is fully protected when you book through us.
-                  </p>
-                  <p style={{ fontSize: 13, color: "#0A1628", lineHeight: 1.6, margin: "8px 0 0", fontWeight: 500 }}>
-                    Search for independent, vetted instructors in your area, compare reviews, prices and live availability, then book online 24/7 — all backed by EveryDriver.
-                  </p>
+              {/* Header */}
+              <div style={{ marginBottom: 32, maxWidth: 720 }}>
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+                  <span style={{ background: "rgba(249,115,22,0.10)", padding: 6, borderRadius: 8, display: "inline-flex" }}>
+                    <ShieldCheck style={{ width: 18, height: 18, color: "#EA580C" }} />
+                  </span>
+                  <span style={{ color: "#EA580C", fontWeight: 600, fontSize: 12, letterSpacing: "0.08em", textTransform: "uppercase" }}>
+                    Backed by EveryDriver
+                  </span>
                 </div>
+                <h2 style={{ fontSize: 30, fontWeight: 800, color: "#0F172A", letterSpacing: "-0.5px", margin: "0 0 12px", lineHeight: 1.15 }}>
+                  Your journey, protected at every turn.
+                </h2>
+                <p style={{ fontSize: 15, color: "#475569", lineHeight: 1.65, margin: 0 }}>
+                  Search for independent, vetted instructors in your area, compare reviews, prices and live availability, then book online 24/7 — all backed by EveryDriver.
+                </p>
+              </div>
 
-                {/* Tiles grid */}
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
-                  {/* Tile 1 — Checked & monitored */}
-                  <div style={{ background: "#F8FAFF", borderRadius: 10, padding: 14, border: "1px solid #E5E7EB" }}>
-                    <CheckCircle2 style={{ width: 20, height: 20, color: "#059669", display: "block", marginBottom: 8 }} />
-                    <div style={{ fontSize: 12, fontWeight: 700, color: "#0A1628", marginBottom: 3 }}>Checked & monitored</div>
-                    <div style={{ fontSize: 11, color: "#6B7280", lineHeight: 1.5 }}>Verified before joining and continuously monitored. All abide by the DVSA Code of Conduct.</div>
+              {/* Trust Grid */}
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 20 }}>
+                {[
+                  { Icon: CheckCircle2, tint: "#EFF6FF", color: "#2563EB", title: "Checked & monitored", body: "Verified before joining and continuously monitored. All instructors abide by the DVSA Code of Conduct." },
+                  { Icon: IdCard, tint: "#ECFDF5", color: "#059669", title: "Enhanced DBS", body: "Highest level background check — includes children's and adults' barred lists for total peace of mind." },
+                  { Icon: Scale, tint: "#F5F3FF", color: "#7C3AED", title: "Dispute resolution", body: "We step in and resolve issues fairly between you and your instructor, ensuring a smooth experience." },
+                  { Icon: Lock, tint: "#FFFBEB", color: "#D97706", title: "Your money is safe", body: "Funds held securely until your booking is confirmed. No instructor gets paid until you're booked in." },
+                  { Icon: Headphones, tint: "#ECFEFF", color: "#0891B2", title: "Support available", body: "Our expert team is on hand if anything goes wrong with your booking. We're just a call away." },
+                ].map(({ Icon, tint, color, title, body }) => (
+                  <div
+                    key={title}
+                    style={{
+                      background: "#FFFFFF",
+                      borderRadius: 20,
+                      padding: 24,
+                      border: "1px solid #F1F5F9",
+                      boxShadow: "0 1px 2px rgba(15,23,42,0.04)",
+                      transition: "box-shadow 200ms, border-color 200ms",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.boxShadow = "0 20px 40px -16px rgba(15,23,42,0.12)";
+                      e.currentTarget.style.borderColor = "#E2E8F0";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.boxShadow = "0 1px 2px rgba(15,23,42,0.04)";
+                      e.currentTarget.style.borderColor = "#F1F5F9";
+                    }}
+                  >
+                    <div style={{ width: 44, height: 44, background: tint, borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 18 }}>
+                      <Icon style={{ width: 22, height: 22, color }} />
+                    </div>
+                    <h3 style={{ fontSize: 16, fontWeight: 700, color: "#0F172A", margin: "0 0 8px" }}>{title}</h3>
+                    <p style={{ fontSize: 13.5, color: "#64748B", lineHeight: 1.6, margin: 0 }}>{body}</p>
                   </div>
+                ))}
 
-                  {/* Tile 2 — Enhanced DBS */}
-                  <div style={{ background: "#F8FAFF", borderRadius: 10, padding: 14, border: "1px solid #E5E7EB" }}>
-                    <IdCard style={{ width: 20, height: 20, color: "#059669", display: "block", marginBottom: 8 }} />
-                    <div style={{ fontSize: 12, fontWeight: 700, color: "#0A1628", marginBottom: 3 }}>Enhanced DBS</div>
-                    <div style={{ fontSize: 11, color: "#6B7280", lineHeight: 1.5 }}>Highest level background check — includes children&apos;s and adults&apos; barred lists.</div>
+                {/* Free re-test — highlighted dark tile */}
+                <div
+                  style={{
+                    position: "relative",
+                    background: "#0F172A",
+                    borderRadius: 20,
+                    padding: 24,
+                    boxShadow: "0 20px 40px -16px rgba(15,23,42,0.35)",
+                    overflow: "hidden",
+                  }}
+                >
+                  <BadgeCheck
+                    style={{
+                      position: "absolute",
+                      top: 12,
+                      right: 12,
+                      width: 96,
+                      height: 96,
+                      color: "#FFFFFF",
+                      opacity: 0.06,
+                      pointerEvents: "none",
+                    }}
+                  />
+                  <div style={{ width: 44, height: 44, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.10)", borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 18, position: "relative" }}>
+                    <BadgeCheck style={{ width: 22, height: 22, color: "#FB923C" }} />
                   </div>
-
-                  {/* Tile 3 — Dispute resolution */}
-                  <div style={{ background: "#F8FAFF", borderRadius: 10, padding: 14, border: "1px solid #E5E7EB" }}>
-                    <Scale style={{ width: 20, height: 20, color: "#059669", display: "block", marginBottom: 8 }} />
-                    <div style={{ fontSize: 12, fontWeight: 700, color: "#0A1628", marginBottom: 3 }}>Dispute resolution</div>
-                    <div style={{ fontSize: 11, color: "#6B7280", lineHeight: 1.5 }}>We step in and resolve issues fairly between you and your instructor.</div>
-                  </div>
-
-                  {/* Tile 4 — Your money is safe */}
-                  <div style={{ background: "#F8FAFF", borderRadius: 10, padding: 14, border: "1px solid #E5E7EB" }}>
-                    <Lock style={{ width: 20, height: 20, color: "#059669", display: "block", marginBottom: 8 }} />
-                    <div style={{ fontSize: 12, fontWeight: 700, color: "#0A1628", marginBottom: 3 }}>Your money is safe</div>
-                    <div style={{ fontSize: 11, color: "#6B7280", lineHeight: 1.5 }}>Funds held securely until your booking is confirmed. No instructor gets paid until you&apos;re booked in.</div>
-                  </div>
-
-                  {/* Tile 5 — Support available */}
-                  <div style={{ background: "#F8FAFF", borderRadius: 10, padding: 14, border: "1px solid #E5E7EB" }}>
-                    <Headphones style={{ width: 20, height: 20, color: "#059669", display: "block", marginBottom: 8 }} />
-                    <div style={{ fontSize: 12, fontWeight: 700, color: "#0A1628", marginBottom: 3 }}>Support available</div>
-                    <div style={{ fontSize: 11, color: "#6B7280", lineHeight: 1.5 }}>Our team is on hand if anything goes wrong with your booking.</div>
-                  </div>
-
-                  {/* Tile 6 — Free re-test (amber) */}
-                  <div style={{ background: "#FFF7ED", borderRadius: 10, padding: 14, border: "1px solid #FED7AA" }}>
-                    <BadgeCheck style={{ width: 20, height: 20, color: "#D97706", display: "block", marginBottom: 8 }} />
-                    <div style={{ fontSize: 12, fontWeight: 700, color: "#0A1628", marginBottom: 3 }}>Free re-test</div>
-                    <div style={{ fontSize: 11, color: "#6B7280", lineHeight: 1.5 }}>Didn&apos;t pass your intensive course first time? We cover the re-test fee. No quibble.</div>
-                  </div>
+                  <h3 style={{ fontSize: 16, fontWeight: 700, color: "#FFFFFF", margin: "0 0 8px", position: "relative" }}>Free re-test</h3>
+                  <p style={{ fontSize: 13.5, color: "#94A3B8", lineHeight: 1.6, margin: 0, position: "relative" }}>
+                    Didn't pass your intensive course first time? We cover the re-test fee. No-quibble protection for your investment.
+                  </p>
                 </div>
               </div>
             </div>
