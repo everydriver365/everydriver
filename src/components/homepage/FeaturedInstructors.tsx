@@ -129,9 +129,46 @@ export function FeaturedInstructors() {
         .sort((a, b) => b.score - a.score)
         .slice(0, 3);
 
+      // Placeholder instructors shown until real data qualifies
+      const PLACEHOLDERS: ScoredInstructor[] = [
+        {
+          id: "placeholder-richard",
+          name: "Richard Chapman",
+          photo: null,
+          hourly_rate: null,
+          location: null,
+          app_slug: null,
+          avg_rating: 0,
+          total_reviews: 0,
+          pass_rate: null,
+          score: 0,
+          isPlaceholder: true,
+        },
+        {
+          id: "placeholder-ken",
+          name: "Ken D",
+          photo: null,
+          hourly_rate: null,
+          location: null,
+          app_slug: null,
+          avg_rating: 0,
+          total_reviews: 0,
+          pass_rate: null,
+          score: 0,
+          isPlaceholder: true,
+        },
+      ];
+
       if (scored.length === 0) {
-        if (!cancelled) { setInstructors([]); setLoading(false); }
+        if (!cancelled) { setInstructors(PLACEHOLDERS); setLoading(false); }
         return;
+      }
+
+      // Fill remaining slots with placeholders (up to 3 total)
+      while (scored.length < 3 && scored.length < scored.length + PLACEHOLDERS.length) {
+        const ph = PLACEHOLDERS[scored.length - (scored.filter(i => !i.isPlaceholder).length)];
+        if (ph) scored.push(ph);
+        else break;
       }
 
       // 5. Assign merit badges (one per instructor based on highest metric vs the others shown)
