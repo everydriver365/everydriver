@@ -71,7 +71,7 @@ interface GoogleData {
   photoReference?: string | null;
 }
 
-const PLACEHOLDERS: (ScoredInstructor & { googleQuery?: string })[] = [
+const PLACEHOLDERS: (ScoredInstructor & { matchSlug?: string })[] = [
   {
     id: "placeholder-richard",
     name: "Richard Chapman",
@@ -85,6 +85,7 @@ const PLACEHOLDERS: (ScoredInstructor & { googleQuery?: string })[] = [
     score: 0,
     isPlaceholder: true,
     googleQuery: "Chapman's Driving School Winchester",
+    matchSlug: "richard-chapman",
   },
   {
     id: "placeholder-ken",
