@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { Star, Calendar, Car } from "lucide-react";
+import { Star, Calendar, Car, PenLine } from "lucide-react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
@@ -209,8 +209,19 @@ export default function MiniWebsiteReviews({ subdomainSlug }: MiniWebsiteReviews
           </div>
         )}
 
-        {/* CTA */}
-        <div className="text-center pt-6">
+        {/* CTAs */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-6">
+          <Link to={`/review/${slug}`}>
+            <Button
+              size="lg"
+              variant="outline"
+              style={{ borderColor: primaryColor, color: primaryColor }}
+              className="bg-white hover:bg-white/90"
+            >
+              <PenLine className="h-5 w-5 mr-2" />
+              Write a Review
+            </Button>
+          </Link>
           <Link to={links.contact}>
             <Button size="lg" style={{ backgroundColor: primaryColor }} className="text-white">
               <Calendar className="h-5 w-5 mr-2" />

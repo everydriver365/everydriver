@@ -31,6 +31,7 @@ const AdminQuoteDetail = lazy(() => import("@/pages/admin/AdminQuoteDetail"));
 const ExternalPartners = lazy(() => import("@/pages/admin/ExternalPartners"));
 const AdminInstructorDetail = lazy(() => import("@/pages/admin/AdminInstructorDetail"));
 const ReviewImport = lazy(() => import("@/pages/admin/ReviewImport"));
+const ReviewModeration = lazy(() => import("@/pages/admin/ReviewModeration"));
 
 
 
@@ -164,6 +165,10 @@ export const adminRoutes = (
     <Route
       path="/admin/review-import"
       element={<ProtectedAdminRoute><ReviewImport /></ProtectedAdminRoute>}
+    />
+    <Route
+      path="/admin/review-moderation"
+      element={<ProtectedAdminRoute><ReviewModeration /></ProtectedAdminRoute>}
     />
   </>
 );

@@ -249,11 +249,16 @@ export default function ReviewImport() {
   return (
     <div className="min-h-screen bg-muted/30 p-6">
       <div className="max-w-6xl mx-auto space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Review Import</h1>
-          <p className="text-sm text-muted-foreground">
-            Upload a Word document (.docx) or paste reviews. Preview and edit before inserting.
-          </p>
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">Review Import</h1>
+            <p className="text-sm text-muted-foreground">
+              Upload a Word document (.docx) or paste reviews. Preview and edit before inserting.
+            </p>
+          </div>
+          <Button asChild variant="outline" size="sm">
+            <a href="/admin/review-moderation">Go to Moderation →</a>
+          </Button>
         </div>
 
         <Card>
