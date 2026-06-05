@@ -481,7 +481,6 @@ export default function Drive365Home({ afterLearningPaths, afterHero }: { afterL
 
       <SeeWhoIsTeaching />
 
-      <PupilReviewsSection />
 
       {/* HomeCourses */}
       <section style={{ padding: "36px 5%", background: "#F6F6F8", width: "100%" }}>
@@ -554,7 +553,9 @@ export default function Drive365Home({ afterLearningPaths, afterHero }: { afterL
 
       {afterLearningPaths}
 
+      <PupilReviewsSection />
 
     </div>
   );
 }
+
