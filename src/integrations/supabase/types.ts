@@ -5659,6 +5659,45 @@ export type Database = {
         }
         Relationships: []
       }
+      google_place_reviews: {
+        Row: {
+          cache_key: string
+          created_at: string
+          fetched_at: string
+          id: string
+          place_id: string | null
+          place_name: string | null
+          rating: number | null
+          reviews: Json
+          updated_at: string
+          user_ratings_total: number | null
+        }
+        Insert: {
+          cache_key: string
+          created_at?: string
+          fetched_at?: string
+          id?: string
+          place_id?: string | null
+          place_name?: string | null
+          rating?: number | null
+          reviews?: Json
+          updated_at?: string
+          user_ratings_total?: number | null
+        }
+        Update: {
+          cache_key?: string
+          created_at?: string
+          fetched_at?: string
+          id?: string
+          place_id?: string | null
+          place_name?: string | null
+          rating?: number | null
+          reviews?: Json
+          updated_at?: string
+          user_ratings_total?: number | null
+        }
+        Relationships: []
+      }
       google_sync_alerts: {
         Row: {
           category: string
