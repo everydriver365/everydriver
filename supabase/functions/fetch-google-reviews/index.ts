@@ -76,7 +76,7 @@ serve(async (req) => {
 
     // Fetch details with reviews
     const detailsRes = await fetch(
-      `https://maps.googleapis.com/maps/api/place/details/json?place_id=${resolvedPlaceId}&fields=name,rating,user_ratings_total,reviews&reviews_sort=newest&key=${apiKey}`
+      `https://maps.googleapis.com/maps/api/place/details/json?place_id=${resolvedPlaceId}&fields=name,rating,user_ratings_total,reviews,photos&reviews_sort=newest&key=${apiKey}`
     );
     const detailsData = await detailsRes.json();
     if (detailsData.status !== "OK") {
