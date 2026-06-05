@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { MapPin, ChevronRight, Calendar, Award, Users, Heart, Star, Clock, Zap, CreditCard, User, ArrowRight, ArrowLeftRight, ShieldCheck, Video, GraduationCap, Search, Wallet, Play, HelpCircle, CheckCircle2, DollarSign, Car, BookOpen, Headphones, ChevronDown, Loader2, Timer, CalendarCheck, Shield, Scale, Lock, IdCard, BadgeCheck, Sparkles } from "lucide-react";
+import { MapPin, ChevronRight, Calendar, Award, Users, Heart, Star, Clock, Zap, CreditCard, User, ArrowRight, ArrowLeftRight, ShieldCheck, Video, GraduationCap, Search, Wallet, Play, HelpCircle, CheckCircle2, DollarSign, Car, BookOpen, ChevronDown, Loader2, Timer, CalendarCheck, Shield, Scale, Lock, IdCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MainLayout } from "@/components/layout/MainLayout";
 import Drive365Home from "@/components/home/Drive365Home";
@@ -395,13 +395,12 @@ export default function Index() {
               </div>
 
               {/* Trust card grid */}
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
                 {[
                   { Icon: CheckCircle2, color: "#0070C0", title: "Checked & monitored", body: "Verified before joining and continuously monitored. All instructors abide by the DVSA Code of Conduct." },
                   { Icon: IdCard, color: "#0F2044", title: "Enhanced DBS", body: "Highest level background check — includes children's and adults' barred lists for total peace of mind." },
                   { Icon: Scale, color: "#0070C0", title: "Dispute resolution", body: "We step in and resolve issues fairly between you and your instructor, ensuring a smooth experience." },
                   { Icon: Lock, color: "#0F2044", title: "Your money is safe", body: "Funds held securely until your booking is confirmed. No instructor gets paid until you're booked in." },
-                  { Icon: Headphones, color: "#0070C0", title: "Support available", body: "Our expert team is on hand if anything goes wrong with your booking. We're just a call away." },
                 ].map(({ Icon, color, title, body }) => (
                   <div
                     key={title}
@@ -416,23 +415,6 @@ export default function Index() {
                     <p style={{ fontSize: 12, color: "#5A6B82", lineHeight: 1.55, margin: 0 }}>{body}</p>
                   </div>
                 ))}
-
-                {/* Signature promise card */}
-                <div style={{ position: "relative", background: "linear-gradient(135deg,#0F2044 0%,#15295A 100%)", borderRadius: 12, padding: 16, overflow: "hidden", border: "1.5px solid #0F2044" }}>
-                  <div aria-hidden style={{ position: "absolute", inset: 0, background: "radial-gradient(180px 110px at 110% -10%, rgba(209,46,46,0.35), transparent 60%)" }} />
-                  <BadgeCheck style={{ position: "absolute", top: 10, right: 10, width: 72, height: 72, color: "#fff", opacity: 0.07, pointerEvents: "none" }} />
-                  <div style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "3px 8px", borderRadius: 999, background: "rgba(209,46,46,0.18)", border: "1px solid rgba(209,46,46,0.45)", marginBottom: 10, position: "relative" }}>
-                    <Sparkles style={{ width: 10, height: 10, color: "#FF8A8A" }} />
-                    <span style={{ fontSize: 9.5, fontWeight: 700, color: "#FFD3D3", letterSpacing: "0.1em", textTransform: "uppercase" }}>Signature promise</span>
-                  </div>
-                  <div style={{ width: 36, height: 36, background: "#D12E2E", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12, position: "relative", boxShadow: "0 10px 20px -8px rgba(209,46,46,0.55)" }}>
-                    <BadgeCheck style={{ width: 18, height: 18, color: "#fff" }} strokeWidth={2.2} />
-                  </div>
-                  <h3 style={{ fontSize: 14, fontWeight: 800, color: "#fff", margin: "0 0 6px", position: "relative", letterSpacing: "-0.2px" }}>Free re-test</h3>
-                  <p style={{ fontSize: 12, color: "rgba(255,255,255,0.78)", lineHeight: 1.55, margin: 0, position: "relative" }}>
-                    Didn't pass your intensive course first time? We cover the re-test fee. No-quibble protection for your investment.
-                  </p>
-                </div>
               </div>
             </div>
           </section>
