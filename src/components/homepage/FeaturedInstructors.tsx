@@ -33,6 +33,8 @@ interface ScoredInstructor {
   review?: ReviewRow;
   badge?: "reviews" | "rating" | "pass";
   isPlaceholder?: boolean;
+  googleBacked?: boolean;
+  googleQuery?: string;
 }
 
 const ACCENTS = [
