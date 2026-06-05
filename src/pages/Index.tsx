@@ -221,115 +221,81 @@ export default function Index() {
       <SEOHead jsonLd={homepageJsonLd} />
       <Drive365Home
         afterHero={
-          <section style={{ padding: "72px 5%", background: "#F6F6F8", position: "relative", overflow: "hidden" }}>
-            <div style={{ maxWidth: 1200, margin: "0 auto", position: "relative" }}>
-              {/* Header */}
-              <div style={{ marginBottom: 40, maxWidth: 760, textAlign: "center", marginInline: "auto" }}>
-                <div style={{ display: "inline-flex", alignItems: "center", gap: 8, marginBottom: 18, padding: "6px 14px 6px 8px", borderRadius: 999, background: "rgba(249,115,22,0.10)", border: "1px solid rgba(249,115,22,0.25)" }}>
-                  <span style={{ background: "linear-gradient(135deg,#FB923C,#EA580C)", padding: 5, borderRadius: 999, display: "inline-flex" }}>
-                    <ShieldCheck style={{ width: 14, height: 14, color: "#fff" }} />
-                  </span>
-                  <span style={{ color: "#C2410C", fontWeight: 700, fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase" }}>
-                    Backed by EveryDriver
-                  </span>
-                </div>
-                <h2 style={{ fontSize: 40, fontWeight: 800, color: "#0F172A", letterSpacing: "-0.8px", margin: "0 0 14px", lineHeight: 1.1 }}>
-                  Your journey, <span style={{ background: "linear-gradient(135deg,#FB923C 0%,#F472B6 50%,#2563EB 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>protected</span> at every turn.
-                </h2>
-                <p style={{ fontSize: 16, color: "#475569", lineHeight: 1.65, margin: 0 }}>
-                  Search vetted instructors in your area, compare reviews, prices and live availability, then book online 24/7 — all backed by EveryDriver.
-                </p>
-              </div>
-
-              {/* 3-step timeline with connecting rail */}
-              <div style={{ position: "relative", marginBottom: 56, maxWidth: 720, marginInline: "auto" }}>
-                <div aria-hidden style={{ position: "absolute", top: 28, left: "16%", right: "16%", height: 2, background: "linear-gradient(90deg, #FB923C 0%, #F472B6 50%, #60A5FA 100%)", borderRadius: 999, opacity: 0.5 }} />
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, position: "relative" }}>
-                  {[
-                    { Icon: Search, label: "Search", desc: "Find instructors", grad: "linear-gradient(135deg,#FB923C,#EA580C)" },
-                    { Icon: ArrowLeftRight, label: "Compare", desc: "Reviews & prices", grad: "linear-gradient(135deg,#F472B6,#DB2777)" },
-                    { Icon: CalendarCheck, label: "Book", desc: "24/7 online", grad: "linear-gradient(135deg,#60A5FA,#2563EB)" },
-                  ].map(({ Icon, label, desc, grad }, i) => (
-                    <div key={label} style={{ textAlign: "center" }}>
-                      <div style={{ width: 56, height: 56, borderRadius: 999, background: grad, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px", boxShadow: "0 10px 30px rgba(0,0,0,0.15), 0 0 0 6px rgba(255,255,255,0.8)", position: "relative" }}>
-                        <Icon style={{ width: 24, height: 24, color: "#fff" }} />
-                        <span style={{ position: "absolute", top: -6, right: -6, width: 22, height: 22, borderRadius: 999, background: "#fff", border: "1px solid #E2E8F0", color: "#0F172A", fontSize: 11, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>{i + 1}</span>
-                      </div>
-                      <div style={{ fontSize: 15, fontWeight: 700, color: "#0F172A" }}>{label}</div>
-                      <div style={{ fontSize: 12.5, color: "#64748B", marginTop: 4 }}>{desc}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Trust Grid */}
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 18 }}>
-                {[
-                  { Icon: CheckCircle2, grad: "linear-gradient(135deg,#60A5FA,#2563EB)", glow: "rgba(37,99,235,0.20)", title: "Checked & monitored", body: "Verified before joining and continuously monitored. All instructors abide by the DVSA Code of Conduct." },
-                  { Icon: IdCard, grad: "linear-gradient(135deg,#34D399,#059669)", glow: "rgba(5,150,105,0.20)", title: "Enhanced DBS", body: "Highest level background check — includes children's and adults' barred lists for total peace of mind." },
-                  { Icon: Scale, grad: "linear-gradient(135deg,#A78BFA,#7C3AED)", glow: "rgba(124,58,237,0.20)", title: "Dispute resolution", body: "We step in and resolve issues fairly between you and your instructor, ensuring a smooth experience." },
-                  { Icon: Lock, grad: "linear-gradient(135deg,#FBBF24,#D97706)", glow: "rgba(217,119,6,0.20)", title: "Your money is safe", body: "Funds held securely until your booking is confirmed. No instructor gets paid until you're booked in." },
-                  { Icon: Headphones, grad: "linear-gradient(135deg,#22D3EE,#0891B2)", glow: "rgba(8,145,178,0.20)", title: "Support available", body: "Our expert team is on hand if anything goes wrong with your booking. We're just a call away." },
-                ].map(({ Icon, grad, glow, title, body }) => (
-                  <div
-                    key={title}
-                    style={{
-                      background: "#fff",
-                      borderRadius: 20,
-                      padding: 24,
-                      border: "1px solid #E2E8F0",
-                      transition: "transform 250ms ease, box-shadow 250ms ease, border-color 250ms ease",
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = "translateY(-4px)";
-                      e.currentTarget.style.boxShadow = `0 24px 50px -18px ${glow}`;
-                      e.currentTarget.style.borderColor = "#CBD5E1";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = "translateY(0)";
-                      e.currentTarget.style.boxShadow = "none";
-                      e.currentTarget.style.borderColor = "#E2E8F0";
-                    }}
-                  >
-                    <div style={{ width: 48, height: 48, background: grad, borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 18, boxShadow: `0 10px 24px -8px ${glow}` }}>
-                      <Icon style={{ width: 24, height: 24, color: "#fff" }} />
-                    </div>
-                    <h3 style={{ fontSize: 16, fontWeight: 700, color: "#0F172A", margin: "0 0 8px" }}>{title}</h3>
-                    <p style={{ fontSize: 13.5, color: "#64748B", lineHeight: 1.6, margin: 0 }}>{body}</p>
-                  </div>
-                ))}
-
-                {/* Free re-test — highlighted gradient tile */}
-                <div
+          <section className="hidden md:block" style={{ background: "#F9FAFB", borderRadius: 8, border: "1px solid #E5E7EB", padding: "24px 28px", margin: "0 5% 40px", maxWidth: 1200, marginInline: "auto" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, alignItems: "center" }}>
+              {/* Left: Video thumbnail */}
+              <div className="relative" style={{ borderRadius: 6, overflow: "hidden", height: 180 }}>
+                <img src={videoThumbnailImg} alt="Watch our story" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                <button
+                  type="button"
+                  onClick={() => welcomeVideoUrl && setVideoModalOpen(true)}
+                  disabled={!welcomeVideoUrl}
                   style={{
-                    position: "relative",
-                    background: "linear-gradient(135deg,#EA580C 0%,#DB2777 60%,#7C3AED 100%)",
-                    borderRadius: 20,
-                    padding: 24,
-                    boxShadow: "0 24px 50px -16px rgba(234,88,12,0.45)",
-                    overflow: "hidden",
-                    border: "1px solid rgba(255,255,255,0.20)",
+                    position: "absolute", top: "50%", left: "50%",
+                    transform: "translate(-50%, -50%)",
+                    width: 44, height: 44, borderRadius: "50%",
+                    background: "#D12E2E",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    cursor: welcomeVideoUrl ? "pointer" : "default",
+                    transition: "transform 150ms, background 150ms",
+                    border: "none", padding: 0,
                   }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = "#B02020"; e.currentTarget.style.transform = "translate(-50%, -50%) scale(1.08)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = "#D12E2E"; e.currentTarget.style.transform = "translate(-50%, -50%)"; }}
                 >
-                  <BadgeCheck
-                    style={{ position: "absolute", top: 10, right: 10, width: 110, height: 110, color: "#fff", opacity: 0.12, pointerEvents: "none" }}
-                  />
-                  <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: 999, background: "rgba(255,255,255,0.18)", border: "1px solid rgba(255,255,255,0.25)", marginBottom: 14, position: "relative" }}>
-                    <Sparkles style={{ width: 12, height: 12, color: "#fff" }} />
-                    <span style={{ fontSize: 10.5, fontWeight: 700, color: "#fff", letterSpacing: "0.1em", textTransform: "uppercase" }}>Signature promise</span>
+                  <span style={{ width: 0, height: 0, borderStyle: "solid", borderWidth: "7px 0 7px 12px", borderColor: "transparent transparent transparent #fff", display: "inline-block", marginLeft: 2 }} />
+                </button>
+                <div style={{ position: "absolute", top: 10, left: 10, background: "#FFFFFF", color: "#0A0E27", fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", padding: "3px 10px", borderRadius: 20 }}>2 MIN WATCH</div>
+              </div>
+
+              {/* Right: Content */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                <div style={{ color: "#1A6FD4", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1.5px" }}>OUR STORY</div>
+                <h2 style={{ color: "#0A0E27", fontSize: 20, fontWeight: 800, lineHeight: 1.2, letterSpacing: "-0.5px", margin: 0 }}>
+                  Watch how learners pass with <span style={{ color: "#D12E2E" }}>confidence</span>
+                </h2>
+                <p style={{ color: "#4B5563", fontSize: 11, lineHeight: 1.5, margin: 0 }}>
+                  Discover why thousands of learners trust us with their driving journey — from first lesson nerves to test day success.
+                </p>
+
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <div style={{ display: "flex" }}>
+                    {[testimonialSarahFallback, testimonialJamesFallback, testimonialEmmaFallback].map((src, i) => (
+                      <img key={i} src={src} alt="Learner" style={{ width: 24, height: 24, borderRadius: "50%", objectFit: "cover", border: "2px solid #fff", marginLeft: i > 0 ? -6 : 0 }} />
+                    ))}
                   </div>
-                  <div style={{ width: 48, height: 48, background: "rgba(255,255,255,0.18)", border: "1px solid rgba(255,255,255,0.25)", borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16, position: "relative" }}>
-                    <BadgeCheck style={{ width: 24, height: 24, color: "#fff" }} />
+                  <div style={{ color: "#F59E0B", fontSize: 10, letterSpacing: "1px" }}>★★★★★</div>
+                  <div style={{ color: "#4B5563", fontSize: 10 }}>
+                    <span style={{ color: "#0A0E27", fontWeight: 700 }}>4.9</span> from 6,499 learner reviews
                   </div>
-                  <h3 style={{ fontSize: 18, fontWeight: 800, color: "#fff", margin: "0 0 8px", position: "relative", letterSpacing: "-0.3px" }}>Free re-test</h3>
-                  <p style={{ fontSize: 13.5, color: "rgba(255,255,255,0.92)", lineHeight: 1.6, margin: 0, position: "relative" }}>
-                    Didn't pass your intensive course first time? We cover the re-test fee. No-quibble protection for your investment.
-                  </p>
+                </div>
+
+                <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                  <button
+                    type="button"
+                    onClick={() => welcomeVideoUrl && setVideoModalOpen(true)}
+                    disabled={!welcomeVideoUrl}
+                    style={{ background: "#D12E2E", color: "#fff", fontSize: 11, fontWeight: 700, padding: "10px 18px", borderRadius: 2, display: "inline-flex", alignItems: "center", gap: 7, border: "none", cursor: welcomeVideoUrl ? "pointer" : "default", transition: "background 150ms" }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = "#B02020")}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = "#D12E2E")}
+                  >
+                    <span style={{ width: 0, height: 0, borderStyle: "solid", borderWidth: "4px 0 4px 8px", borderColor: "transparent transparent transparent #fff", display: "inline-block" }} />
+                    Play Video
+                  </button>
+                  <Link
+                    to="/courses"
+                    style={{ color: "#1A6FD4", fontSize: 11, fontWeight: 600, padding: "10px 0", textDecoration: "none", transition: "color 150ms" }}
+                    onMouseEnter={(e) => { e.currentTarget.style.color = "#1558A8"; e.currentTarget.style.textDecoration = "underline"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.color = "#1A6FD4"; e.currentTarget.style.textDecoration = "none"; }}
+                  >
+                    Find an Instructor →
+                  </Link>
                 </div>
               </div>
             </div>
           </section>
         }
+
         afterLearningPaths={<>
           {/* Every Driver's Journey — Mobile */}
           <section className="md:hidden bg-gradient-to-b from-orange-50 via-amber-50/40 to-background py-20">
