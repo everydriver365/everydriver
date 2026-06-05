@@ -221,80 +221,103 @@ export default function Index() {
       <SEOHead jsonLd={homepageJsonLd} />
       <Drive365Home
         afterHero={
-          <section className="hidden md:block" style={{ background: "#F9FAFB", borderRadius: 8, border: "1px solid #E5E7EB", padding: "24px 28px", margin: "0 5% 40px", maxWidth: 1200, marginInline: "auto" }}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, alignItems: "center" }}>
-              {/* Left: Video thumbnail */}
-              <div className="relative" style={{ borderRadius: 6, overflow: "hidden", height: 180 }}>
-                <img src={videoThumbnailImg} alt="Watch our story" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                <button
-                  type="button"
-                  onClick={() => welcomeVideoUrl && setVideoModalOpen(true)}
-                  disabled={!welcomeVideoUrl}
-                  style={{
-                    position: "absolute", top: "50%", left: "50%",
-                    transform: "translate(-50%, -50%)",
-                    width: 44, height: 44, borderRadius: "50%",
-                    background: "#D12E2E",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    cursor: welcomeVideoUrl ? "pointer" : "default",
-                    transition: "transform 150ms, background 150ms",
-                    border: "none", padding: 0,
-                  }}
-                  onMouseEnter={(e) => { e.currentTarget.style.background = "#B02020"; e.currentTarget.style.transform = "translate(-50%, -50%) scale(1.08)"; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.background = "#D12E2E"; e.currentTarget.style.transform = "translate(-50%, -50%)"; }}
-                >
-                  <span style={{ width: 0, height: 0, borderStyle: "solid", borderWidth: "7px 0 7px 12px", borderColor: "transparent transparent transparent #fff", display: "inline-block", marginLeft: 2 }} />
-                </button>
-                <div style={{ position: "absolute", top: 10, left: 10, background: "#FFFFFF", color: "#0A0E27", fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", padding: "3px 10px", borderRadius: 20 }}>2 MIN WATCH</div>
-              </div>
+          <section className="hidden md:block" style={{ background: "#F6F6F8", padding: "48px 5%" }}>
+            <div style={{ maxWidth: 1200, margin: "0 auto", background: "#FFFFFF", borderRadius: 40, boxShadow: "0 32px 64px -16px rgba(0,0,0,0.06)", overflow: "hidden", display: "grid", gridTemplateColumns: "1fr 1fr" }}>
+              {/* Media side */}
+              <button
+                type="button"
+                onClick={() => welcomeVideoUrl && setVideoModalOpen(true)}
+                disabled={!welcomeVideoUrl}
+                className="group"
+                style={{ position: "relative", border: "none", padding: 0, background: "#F3F4F6", cursor: welcomeVideoUrl ? "pointer" : "default", overflow: "hidden", minHeight: 420 }}
+                aria-label="Play our story video"
+              >
+                <img
+                  src={videoThumbnailImg}
+                  alt="Watch our story"
+                  style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", transition: "transform 700ms ease" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
+                  onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+                />
+                <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.05)", transition: "background 300ms ease" }} />
 
-              {/* Right: Content */}
-              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                <div style={{ color: "#1A6FD4", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1.5px" }}>OUR STORY</div>
-                <h2 style={{ color: "#0A0E27", fontSize: 20, fontWeight: 800, lineHeight: 1.2, letterSpacing: "-0.5px", margin: 0 }}>
-                  Watch how learners pass with <span style={{ color: "#D12E2E" }}>confidence</span>
-                </h2>
-                <p style={{ color: "#4B5563", fontSize: 11, lineHeight: 1.5, margin: 0 }}>
+                {/* 2 Min Watch pill */}
+                <div style={{ position: "absolute", top: 24, left: 24, background: "rgba(255,255,255,0.9)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", padding: "6px 12px", borderRadius: 999, fontSize: 10, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#1F2937", boxShadow: "0 1px 2px rgba(0,0,0,0.04)" }}>
+                  2 Min Watch
+                </div>
+
+                {/* Centered frosted play button */}
+                <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <div style={{ width: 80, height: 80, background: "rgba(255,255,255,0.20)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid rgba(255,255,255,0.4)", boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25)", transition: "transform 300ms ease" }}
+                    onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.10)")}
+                    onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+                  >
+                    <div style={{ width: 56, height: 56, background: "#FFFFFF", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 10px 15px -3px rgba(0,0,0,0.12)" }}>
+                      <span style={{ width: 0, height: 0, borderStyle: "solid", borderWidth: "9px 0 9px 14px", borderColor: "transparent transparent transparent #EA580C", display: "inline-block", marginLeft: 3 }} />
+                    </div>
+                  </div>
+                </div>
+              </button>
+
+              {/* Content side */}
+              <div style={{ padding: "64px", display: "flex", flexDirection: "column", justifyContent: "center", gap: 24 }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "#1A6FD4" }}>Our Story</span>
+                  <h2 style={{ fontFamily: "'Instrument Serif', Georgia, serif", fontSize: 48, lineHeight: 1.1, color: "#0F172A", margin: 0, fontWeight: 400, letterSpacing: "-0.5px" }}>
+                    Watch how learners pass with <span style={{ fontStyle: "italic", color: "#EA580C" }}>confidence</span>.
+                  </h2>
+                </div>
+
+                <p style={{ color: "#4B5563", fontSize: 16, lineHeight: 1.65, margin: 0, maxWidth: 420 }}>
                   Discover why thousands of learners trust us with their driving journey — from first lesson nerves to test day success.
                 </p>
 
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                {/* Social proof */}
+                <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
                   <div style={{ display: "flex" }}>
                     {[testimonialSarahFallback, testimonialJamesFallback, testimonialEmmaFallback].map((src, i) => (
-                      <img key={i} src={src} alt="Learner" style={{ width: 24, height: 24, borderRadius: "50%", objectFit: "cover", border: "2px solid #fff", marginLeft: i > 0 ? -6 : 0 }} />
+                      <img key={i} src={src} alt="Learner" style={{ width: 32, height: 32, borderRadius: "50%", objectFit: "cover", border: "2px solid #fff", marginLeft: i > 0 ? -8 : 0 }} />
                     ))}
                   </div>
-                  <div style={{ color: "#F59E0B", fontSize: 10, letterSpacing: "1px" }}>★★★★★</div>
-                  <div style={{ color: "#4B5563", fontSize: 10 }}>
-                    <span style={{ color: "#0A0E27", fontWeight: 700 }}>4.9</span> from 6,499 learner reviews
+                  <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#EA580C", fontSize: 14 }}>
+                      <Star style={{ width: 16, height: 16, fill: "#EA580C", color: "#EA580C" }} />
+                      <span style={{ fontWeight: 700, color: "#0F172A" }}>4.9</span>
+                    </div>
+                    <span style={{ fontSize: 10, fontWeight: 500, letterSpacing: "0.08em", textTransform: "uppercase", color: "#9CA3AF" }}>From 6,499 reviews</span>
                   </div>
                 </div>
 
-                <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                {/* CTAs */}
+                <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 28, paddingTop: 8 }}>
                   <button
                     type="button"
                     onClick={() => welcomeVideoUrl && setVideoModalOpen(true)}
                     disabled={!welcomeVideoUrl}
-                    style={{ background: "#D12E2E", color: "#fff", fontSize: 11, fontWeight: 700, padding: "10px 18px", borderRadius: 2, display: "inline-flex", alignItems: "center", gap: 7, border: "none", cursor: welcomeVideoUrl ? "pointer" : "default", transition: "background 150ms" }}
-                    onMouseEnter={(e) => (e.currentTarget.style.background = "#B02020")}
-                    onMouseLeave={(e) => (e.currentTarget.style.background = "#D12E2E")}
+                    style={{ display: "inline-flex", alignItems: "center", gap: 10, padding: "16px 32px", background: "#EA580C", color: "#fff", fontSize: 15, fontWeight: 600, border: "none", borderRadius: 999, cursor: welcomeVideoUrl ? "pointer" : "default", boxShadow: "0 10px 25px -8px rgba(234,88,12,0.45)", transition: "background 200ms ease, transform 120ms ease" }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = "#D44D06")}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = "#EA580C")}
+                    onMouseDown={(e) => (e.currentTarget.style.transform = "scale(0.97)")}
+                    onMouseUp={(e) => (e.currentTarget.style.transform = "scale(1)")}
                   >
-                    <span style={{ width: 0, height: 0, borderStyle: "solid", borderWidth: "4px 0 4px 8px", borderColor: "transparent transparent transparent #fff", display: "inline-block" }} />
-                    Play Video
+                    <span>Play Video</span>
+                    <ChevronRight style={{ width: 16, height: 16 }} />
                   </button>
                   <Link
                     to="/courses"
-                    style={{ color: "#1A6FD4", fontSize: 11, fontWeight: 600, padding: "10px 0", textDecoration: "none", transition: "color 150ms" }}
-                    onMouseEnter={(e) => { e.currentTarget.style.color = "#1558A8"; e.currentTarget.style.textDecoration = "underline"; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.color = "#1A6FD4"; e.currentTarget.style.textDecoration = "none"; }}
+                    style={{ fontSize: 14, fontWeight: 700, color: "#1A6FD4", textDecoration: "none", paddingBottom: 2, borderBottom: "2px solid transparent", transition: "border-color 200ms ease" }}
+                    onMouseEnter={(e) => (e.currentTarget.style.borderBottomColor = "#1A6FD4")}
+                    onMouseLeave={(e) => (e.currentTarget.style.borderBottomColor = "transparent")}
                   >
-                    Find an Instructor →
+                    Find an Instructor
                   </Link>
                 </div>
               </div>
             </div>
           </section>
         }
+
+
 
         afterLearningPaths={<>
           {/* Backed by EveryDriver — trust grid (desktop) */}
