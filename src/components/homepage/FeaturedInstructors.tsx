@@ -121,6 +121,7 @@ export function FeaturedInstructors() {
   const [instructors, setInstructors] = useState<ScoredInstructor[]>([]);
   const [loading, setLoading] = useState(true);
   const [googleData, setGoogleData] = useState<Record<string, GoogleData>>({});
+  const [nextAvailable, setNextAvailable] = useState<Record<string, string>>({});
 
   useEffect(() => {
     let cancelled = false;
