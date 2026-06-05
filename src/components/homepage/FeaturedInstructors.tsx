@@ -307,30 +307,44 @@ export function FeaturedInstructors() {
     return () => { cancelled = true; };
   }, [instructors]);
 
-  // Fetch next available date per real instructor via public-courses edge function
+  // Fetch next available date per real instructor via public-courses edge function.
+  // Auto-refreshes every 5 minutes and whenever the tab regains focus so newly
+  // booked / cancelled diary entries surface without a page reload.
   useEffect(() => {
     let cancelled = false;
-    const targets = instructors.filter((i) => !i.isPlaceholder && i.app_slug && !nextAvailable[i.id]);
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     const apikey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-    for (const ins of targets) {
-      (async () => {
+
+    const fetchAll = async () => {
+      const targets = instructors.filter((i) => !i.isPlaceholder && i.app_slug);
+      await Promise.all(targets.map(async (ins) => {
         try {
           const res = await fetch(
             `${supabaseUrl}/functions/v1/public-courses?slug=${encodeURIComponent(ins.app_slug!)}`,
-            { headers: { apikey, Authorization: `Bearer ${apikey}` } }
+            { headers: { apikey, Authorization: `Bearer ${apikey}` }, cache: "no-store" }
           );
           if (!res.ok) return;
           const data = await res.json();
           const date: string | null = data?.courses?.[0]?.nextAvailable ?? null;
           if (cancelled || !date) return;
-          setNextAvailable((prev) => ({ ...prev, [ins.id]: date }));
+          setNextAvailable((prev) => (prev[ins.id] === date ? prev : { ...prev, [ins.id]: date }));
         } catch (e) {
           console.error("next-available fetch failed:", e);
         }
-      })();
-    }
-    return () => { cancelled = true; };
+      }));
+    };
+
+    fetchAll();
+    const interval = window.setInterval(fetchAll, 5 * 60 * 1000);
+    const onFocus = () => { if (document.visibilityState === "visible") fetchAll(); };
+    document.addEventListener("visibilitychange", onFocus);
+    window.addEventListener("focus", onFocus);
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+      document.removeEventListener("visibilitychange", onFocus);
+      window.removeEventListener("focus", onFocus);
+    };
   }, [instructors]);
 
   function formatNextAvailable(dateStr: string): string {
