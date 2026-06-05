@@ -101,6 +101,7 @@ const PLACEHOLDERS: (ScoredInstructor & { googleQuery?: string })[] = [
 export function FeaturedInstructors() {
   const [instructors, setInstructors] = useState<ScoredInstructor[]>([]);
   const [loading, setLoading] = useState(true);
+  const [googleData, setGoogleData] = useState<Record<string, GoogleData>>({});
 
   useEffect(() => {
     let cancelled = false;
