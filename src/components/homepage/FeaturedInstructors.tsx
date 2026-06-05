@@ -99,6 +99,7 @@ const PLACEHOLDERS: (ScoredInstructor & { matchSlug?: string })[] = [
     pass_rate: null,
     score: 0,
     isPlaceholder: true,
+    matchSlug: "ken-d",
   },
   {
     id: "placeholder-sarah",
@@ -112,6 +113,7 @@ const PLACEHOLDERS: (ScoredInstructor & { matchSlug?: string })[] = [
     pass_rate: null,
     score: 0,
     isPlaceholder: true,
+    matchSlug: "sarah-mitchell",
   },
 ];
 
