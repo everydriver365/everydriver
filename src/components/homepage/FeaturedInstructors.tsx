@@ -469,8 +469,8 @@ export function FeaturedInstructors() {
                             </div>
                           )}
 
-                          <div style={{ width: "100%", padding: 9, border: "none", borderRadius: 7, fontSize: 11, fontWeight: 700, background: hasGoogle ? accent.btnBg : "#E5E7EB", color: hasGoogle ? "#fff" : "#6B7280", textAlign: "center" }}>
-                            {hasGoogle ? "Joining soon →" : "Coming soon"}
+                          <div style={{ width: "100%", padding: 9, border: "none", borderRadius: 7, fontSize: 11, fontWeight: 700, background: (ins.googleBacked || hasGoogle) ? accent.btnBg : "#E5E7EB", color: (ins.googleBacked || hasGoogle) ? "#fff" : "#6B7280", textAlign: "center" }}>
+                            {ins.googleBacked ? "View profile →" : (hasGoogle ? "Joining soon →" : "Coming soon")}
                           </div>
                         </>
                       );
