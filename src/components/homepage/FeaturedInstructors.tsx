@@ -101,7 +101,7 @@ export function FeaturedInstructors() {
       }
 
       // 4. Build scored list with filters
-      const scored: ScoredInstructor[] = (insRows as InstructorRow[])
+      const scored: ScoredInstructor[] = (insRows as unknown as InstructorRow[])
         .map((row) => {
           const r = ratingMap.get(row.id) ?? { avg: 0, total: 0 };
           const p = passMap.get(row.id);
