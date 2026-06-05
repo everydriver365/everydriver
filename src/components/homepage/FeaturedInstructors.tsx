@@ -66,6 +66,7 @@ interface GoogleData {
   rating: number | null;
   userRatingsTotal: number | null;
   reviews: GoogleReview[];
+  photoReference?: string | null;
 }
 
 const PLACEHOLDERS: (ScoredInstructor & { googleQuery?: string })[] = [
