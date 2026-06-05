@@ -297,51 +297,51 @@ export default function Index() {
 
         afterLearningPaths={<>
           {/* Backed by EveryDriver — trust grid (desktop) */}
-          <section className="hidden md:block" style={{ padding: "88px 5%", background: "#FFFFFF", position: "relative", overflow: "hidden", fontFamily: "'Poppins', sans-serif" }}>
+          <section className="hidden md:block" style={{ padding: "48px 5%", background: "#FFFFFF", position: "relative", overflow: "hidden", fontFamily: "'Poppins', sans-serif" }}>
             {/* soft brand backdrop */}
-            <div aria-hidden style={{ position: "absolute", inset: 0, background: "radial-gradient(1100px 480px at 50% -120px, rgba(0,112,192,0.07), transparent 60%), radial-gradient(700px 360px at 90% 110%, rgba(209,46,46,0.05), transparent 60%)", pointerEvents: "none" }} />
-            <div style={{ maxWidth: 1180, margin: "0 auto", position: "relative" }}>
+            <div aria-hidden style={{ position: "absolute", inset: 0, background: "radial-gradient(900px 380px at 50% -80px, rgba(0,112,192,0.06), transparent 60%), radial-gradient(560px 280px at 90% 110%, rgba(209,46,46,0.04), transparent 60%)", pointerEvents: "none" }} />
+            <div style={{ maxWidth: 1000, margin: "0 auto", position: "relative" }}>
               {/* Header */}
-              <div style={{ marginBottom: 48, maxWidth: 720, textAlign: "center", marginInline: "auto" }}>
-                <div style={{ display: "inline-flex", alignItems: "center", gap: 8, marginBottom: 20, padding: "6px 14px 6px 8px", borderRadius: 999, background: "#F2F6FB", border: "1px solid #E1EAF4" }}>
-                  <span style={{ background: "#0F2044", padding: 5, borderRadius: 999, display: "inline-flex" }}>
-                    <ShieldCheck style={{ width: 13, height: 13, color: "#fff" }} />
+              <div style={{ marginBottom: 28, maxWidth: 600, textAlign: "center", marginInline: "auto" }}>
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginBottom: 12, padding: "4px 10px 4px 6px", borderRadius: 999, background: "#F2F6FB", border: "1px solid #E1EAF4" }}>
+                  <span style={{ background: "#0F2044", padding: 4, borderRadius: 999, display: "inline-flex" }}>
+                    <ShieldCheck style={{ width: 11, height: 11, color: "#fff" }} />
                   </span>
-                  <span style={{ color: "#0F2044", fontWeight: 700, fontSize: 11, letterSpacing: "0.16em", textTransform: "uppercase" }}>
+                  <span style={{ color: "#0F2044", fontWeight: 700, fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase" }}>
                     Backed by EveryDriver
                   </span>
                 </div>
-                <h2 style={{ fontSize: 42, fontWeight: 700, color: "#0F2044", letterSpacing: "-1px", margin: "0 0 14px", lineHeight: 1.08 }}>
+                <h2 style={{ fontSize: 28, fontWeight: 700, color: "#0F2044", letterSpacing: "-0.6px", margin: "0 0 8px", lineHeight: 1.12 }}>
                   Your journey, <span style={{ color: "#D12E2E" }}>protected</span> at every turn.
                 </h2>
-                <p style={{ fontSize: 16, color: "#5A6B82", lineHeight: 1.65, margin: 0 }}>
+                <p style={{ fontSize: 13.5, color: "#5A6B82", lineHeight: 1.6, margin: 0 }}>
                   Search vetted instructors in your area, compare reviews, prices and live availability, then book online 24/7 — all backed by EveryDriver.
                 </p>
               </div>
 
               {/* Stepper */}
-              <div style={{ position: "relative", marginBottom: 56, maxWidth: 760, marginInline: "auto" }}>
-                <div aria-hidden style={{ position: "absolute", top: 27, left: "14%", right: "14%", height: 2, background: "linear-gradient(90deg, #0070C0 0%, #0F2044 50%, #D12E2E 100%)", borderRadius: 999, opacity: 0.18 }} />
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, position: "relative" }}>
+              <div style={{ position: "relative", marginBottom: 32, maxWidth: 640, marginInline: "auto" }}>
+                <div aria-hidden style={{ position: "absolute", top: 22, left: "14%", right: "14%", height: 2, background: "linear-gradient(90deg, #0070C0 0%, #0F2044 50%, #D12E2E 100%)", borderRadius: 999, opacity: 0.18 }} />
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, position: "relative" }}>
                   {[
                     { Icon: Search, label: "Search", desc: "Find instructors near you", color: "#0070C0" },
                     { Icon: ArrowLeftRight, label: "Compare", desc: "Reviews, prices & availability", color: "#0F2044" },
                     { Icon: CalendarCheck, label: "Book", desc: "24/7 online checkout", color: "#D12E2E" },
                   ].map(({ Icon, label, desc, color }, i) => (
                     <div key={label} style={{ textAlign: "center" }}>
-                      <div style={{ width: 56, height: 56, borderRadius: 16, background: "#fff", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px", border: `1.5px solid ${color}`, boxShadow: `0 8px 22px -10px ${color}55, 0 0 0 6px #fff`, position: "relative" }}>
-                        <Icon style={{ width: 22, height: 22, color }} strokeWidth={2.2} />
-                        <span style={{ position: "absolute", top: -6, right: -6, minWidth: 20, height: 20, padding: "0 6px", borderRadius: 999, background: color, color: "#fff", fontSize: 10.5, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>{i + 1}</span>
+                      <div style={{ width: 44, height: 44, borderRadius: 12, background: "#fff", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 10px", border: `1.5px solid ${color}`, boxShadow: `0 6px 16px -8px ${color}55, 0 0 0 5px #fff`, position: "relative" }}>
+                        <Icon style={{ width: 18, height: 18, color }} strokeWidth={2.2} />
+                        <span style={{ position: "absolute", top: -5, right: -5, minWidth: 18, height: 18, padding: "0 5px", borderRadius: 999, background: color, color: "#fff", fontSize: 9.5, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>{i + 1}</span>
                       </div>
-                      <div style={{ fontSize: 15, fontWeight: 700, color: "#0F2044", letterSpacing: "-0.2px" }}>{label}</div>
-                      <div style={{ fontSize: 12.5, color: "#6B7B92", marginTop: 4 }}>{desc}</div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: "#0F2044", letterSpacing: "-0.15px" }}>{label}</div>
+                      <div style={{ fontSize: 11, color: "#6B7B92", marginTop: 2 }}>{desc}</div>
                     </div>
                   ))}
                 </div>
               </div>
 
               {/* Trust card grid */}
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
                 {[
                   { Icon: CheckCircle2, color: "#0070C0", title: "Checked & monitored", body: "Verified before joining and continuously monitored. All instructors abide by the DVSA Code of Conduct." },
                   { Icon: IdCard, color: "#0F2044", title: "Enhanced DBS", body: "Highest level background check — includes children's and adults' barred lists for total peace of mind." },
@@ -351,31 +351,31 @@ export default function Index() {
                 ].map(({ Icon, color, title, body }) => (
                   <div
                     key={title}
-                    style={{ background: "#fff", borderRadius: 16, padding: 24, border: "1.5px solid #E8EDF2", transition: "transform 250ms ease, box-shadow 250ms ease, border-color 250ms ease" }}
-                    onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = `0 18px 40px -22px ${color}40`; e.currentTarget.style.borderColor = `${color}55`; }}
+                    style={{ background: "#fff", borderRadius: 12, padding: 16, border: "1.5px solid #E8EDF2", transition: "transform 250ms ease, box-shadow 250ms ease, border-color 250ms ease" }}
+                    onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = `0 14px 32px -18px ${color}40`; e.currentTarget.style.borderColor = `${color}55`; }}
                     onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.borderColor = "#E8EDF2"; }}
                   >
-                    <div style={{ width: 44, height: 44, background: `${color}12`, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 18 }}>
-                      <Icon style={{ width: 22, height: 22, color }} strokeWidth={2} />
+                    <div style={{ width: 36, height: 36, background: `${color}12`, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
+                      <Icon style={{ width: 18, height: 18, color }} strokeWidth={2} />
                     </div>
-                    <h3 style={{ fontSize: 15.5, fontWeight: 700, color: "#0F2044", margin: "0 0 8px", letterSpacing: "-0.2px" }}>{title}</h3>
-                    <p style={{ fontSize: 13.5, color: "#5A6B82", lineHeight: 1.6, margin: 0 }}>{body}</p>
+                    <h3 style={{ fontSize: 13.5, fontWeight: 700, color: "#0F2044", margin: "0 0 6px", letterSpacing: "-0.15px" }}>{title}</h3>
+                    <p style={{ fontSize: 12, color: "#5A6B82", lineHeight: 1.55, margin: 0 }}>{body}</p>
                   </div>
                 ))}
 
                 {/* Signature promise card */}
-                <div style={{ position: "relative", background: "linear-gradient(135deg,#0F2044 0%,#15295A 100%)", borderRadius: 16, padding: 24, overflow: "hidden", border: "1.5px solid #0F2044" }}>
-                  <div aria-hidden style={{ position: "absolute", inset: 0, background: "radial-gradient(220px 140px at 110% -10%, rgba(209,46,46,0.35), transparent 60%)" }} />
-                  <BadgeCheck style={{ position: "absolute", top: 12, right: 12, width: 96, height: 96, color: "#fff", opacity: 0.07, pointerEvents: "none" }} />
-                  <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: 999, background: "rgba(209,46,46,0.18)", border: "1px solid rgba(209,46,46,0.45)", marginBottom: 14, position: "relative" }}>
-                    <Sparkles style={{ width: 12, height: 12, color: "#FF8A8A" }} />
-                    <span style={{ fontSize: 10.5, fontWeight: 700, color: "#FFD3D3", letterSpacing: "0.12em", textTransform: "uppercase" }}>Signature promise</span>
+                <div style={{ position: "relative", background: "linear-gradient(135deg,#0F2044 0%,#15295A 100%)", borderRadius: 12, padding: 16, overflow: "hidden", border: "1.5px solid #0F2044" }}>
+                  <div aria-hidden style={{ position: "absolute", inset: 0, background: "radial-gradient(180px 110px at 110% -10%, rgba(209,46,46,0.35), transparent 60%)" }} />
+                  <BadgeCheck style={{ position: "absolute", top: 10, right: 10, width: 72, height: 72, color: "#fff", opacity: 0.07, pointerEvents: "none" }} />
+                  <div style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "3px 8px", borderRadius: 999, background: "rgba(209,46,46,0.18)", border: "1px solid rgba(209,46,46,0.45)", marginBottom: 10, position: "relative" }}>
+                    <Sparkles style={{ width: 10, height: 10, color: "#FF8A8A" }} />
+                    <span style={{ fontSize: 9.5, fontWeight: 700, color: "#FFD3D3", letterSpacing: "0.1em", textTransform: "uppercase" }}>Signature promise</span>
                   </div>
-                  <div style={{ width: 44, height: 44, background: "#D12E2E", borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16, position: "relative", boxShadow: "0 12px 24px -10px rgba(209,46,46,0.55)" }}>
-                    <BadgeCheck style={{ width: 22, height: 22, color: "#fff" }} strokeWidth={2.2} />
+                  <div style={{ width: 36, height: 36, background: "#D12E2E", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12, position: "relative", boxShadow: "0 10px 20px -8px rgba(209,46,46,0.55)" }}>
+                    <BadgeCheck style={{ width: 18, height: 18, color: "#fff" }} strokeWidth={2.2} />
                   </div>
-                  <h3 style={{ fontSize: 16, fontWeight: 800, color: "#fff", margin: "0 0 8px", position: "relative", letterSpacing: "-0.3px" }}>Free re-test</h3>
-                  <p style={{ fontSize: 13.5, color: "rgba(255,255,255,0.78)", lineHeight: 1.6, margin: 0, position: "relative" }}>
+                  <h3 style={{ fontSize: 14, fontWeight: 800, color: "#fff", margin: "0 0 6px", position: "relative", letterSpacing: "-0.2px" }}>Free re-test</h3>
+                  <p style={{ fontSize: 12, color: "rgba(255,255,255,0.78)", lineHeight: 1.55, margin: 0, position: "relative" }}>
                     Didn't pass your intensive course first time? We cover the re-test fee. No-quibble protection for your investment.
                   </p>
                 </div>
