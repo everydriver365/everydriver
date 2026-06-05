@@ -30,6 +30,7 @@ const AdminQuotes = lazy(() => import("@/pages/admin/AdminQuotes"));
 const AdminQuoteDetail = lazy(() => import("@/pages/admin/AdminQuoteDetail"));
 const ExternalPartners = lazy(() => import("@/pages/admin/ExternalPartners"));
 const AdminInstructorDetail = lazy(() => import("@/pages/admin/AdminInstructorDetail"));
+const ReviewImport = lazy(() => import("@/pages/admin/ReviewImport"));
 
 
 
