@@ -33,6 +33,8 @@ interface ScoredInstructor {
   review?: ReviewRow;
   badge?: "reviews" | "rating" | "pass";
   isPlaceholder?: boolean;
+  googleBacked?: boolean;
+  googleQuery?: string;
 }
 
 const ACCENTS = [
@@ -69,7 +71,7 @@ interface GoogleData {
   photoReference?: string | null;
 }
 
-const PLACEHOLDERS: (ScoredInstructor & { googleQuery?: string })[] = [
+const PLACEHOLDERS: (ScoredInstructor & { matchSlug?: string })[] = [
   {
     id: "placeholder-richard",
     name: "Richard Chapman",
@@ -83,6 +85,7 @@ const PLACEHOLDERS: (ScoredInstructor & { googleQuery?: string })[] = [
     score: 0,
     isPlaceholder: true,
     googleQuery: "Chapman's Driving School Winchester",
+    matchSlug: "richard-chapman",
   },
   {
     id: "placeholder-ken",
@@ -196,14 +199,38 @@ export function FeaturedInstructors() {
         }
       }
 
-      // 6. Promote Richard Chapman to top slot, then fill remaining with other placeholders
-      const finalList: ScoredInstructor[] = [{ ...PLACEHOLDERS[0] }];
+      // 6. Build final list: Richard pinned to slot 0 (hydrated from DB if his account exists),
+      //    then real CRM-qualified instructors, then any remaining placeholders (e.g. Ken D).
+      const bySlug = new Map<string, InstructorRow>();
+      for (const row of insRows as unknown as InstructorRow[]) {
+        if (row.app_slug) bySlug.set(row.app_slug, row);
+      }
+      function hydratePlaceholder(p: typeof PLACEHOLDERS[number]): ScoredInstructor {
+        if (!p.matchSlug) return { ...p };
+        const realRow = bySlug.get(p.matchSlug);
+        if (!realRow) return { ...p };
+        return {
+          ...p,
+          id: realRow.id,
+          photo: realRow.profile_image_url,
+          hourly_rate: realRow.hourly_rate,
+          location: realRow.home_postcode ? realRow.home_postcode.split(" ")[0] : p.location,
+          app_slug: realRow.app_slug,
+          isPlaceholder: false,
+          googleBacked: true,
+        };
+      }
+      const realIdsAlreadyShown = new Set(scored.map((s) => s.id));
+      const richard = hydratePlaceholder(PLACEHOLDERS[0]);
+      const finalList: ScoredInstructor[] = [richard];
+      realIdsAlreadyShown.add(richard.id);
       for (const s of scored) {
         if (finalList.length >= 3) break;
+        if (realIdsAlreadyShown.has(s.id)) continue;
         finalList.push(s);
       }
       for (let i = 1; i < PLACEHOLDERS.length && finalList.length < 3; i++) {
-        finalList.push({ ...PLACEHOLDERS[i] });
+        finalList.push(hydratePlaceholder(PLACEHOLDERS[i]));
       }
       scored.length = 0;
       scored.push(...finalList);
@@ -230,17 +257,17 @@ export function FeaturedInstructors() {
     return () => { cancelled = true; };
   }, []);
 
-  // Fetch Google reviews for placeholders that have a googleQuery
+  // Fetch Google reviews for cards backed by Google (placeholders or hydrated real instructors)
   useEffect(() => {
     let cancelled = false;
-    const targets = instructors.filter((i) => i.isPlaceholder);
+    const targets = instructors.filter((i) => i.googleQuery);
     for (const ins of targets) {
-      const meta = PLACEHOLDERS.find((p) => p.id === ins.id);
-      if (!meta?.googleQuery || googleData[ins.id]) continue;
+      if (!ins.googleQuery || googleData[ins.id]) continue;
+      const cacheKey = ins.googleBacked ? `slug:${ins.app_slug ?? ins.id}` : ins.id;
       (async () => {
         try {
           const { data, error } = await supabase.functions.invoke("fetch-google-reviews", {
-            body: { query: meta.googleQuery, cacheKey: ins.id },
+            body: { query: ins.googleQuery, cacheKey },
           });
           if (cancelled || error || !data) return;
           setGoogleData((prev) => ({
@@ -360,7 +387,7 @@ export function FeaturedInstructors() {
                       </div>
                     </div>
 
-                    {!ins.isPlaceholder ? (
+                    {!ins.isPlaceholder && !ins.googleBacked ? (
                       <>
                         <div style={{ display: "inline-flex", alignItems: "center", gap: 4, marginBottom: 10, background: badge.bg, border: `1px solid ${badge.border}`, color: badge.color, fontSize: 9, fontWeight: 700, padding: "3px 9px", borderRadius: 20 }}>
                           {badge.label}
@@ -442,8 +469,8 @@ export function FeaturedInstructors() {
                             </div>
                           )}
 
-                          <div style={{ width: "100%", padding: 9, border: "none", borderRadius: 7, fontSize: 11, fontWeight: 700, background: hasGoogle ? accent.btnBg : "#E5E7EB", color: hasGoogle ? "#fff" : "#6B7280", textAlign: "center" }}>
-                            {hasGoogle ? "Joining soon →" : "Coming soon"}
+                          <div style={{ width: "100%", padding: 9, border: "none", borderRadius: 7, fontSize: 11, fontWeight: 700, background: (ins.googleBacked || hasGoogle) ? accent.btnBg : "#E5E7EB", color: (ins.googleBacked || hasGoogle) ? "#fff" : "#6B7280", textAlign: "center" }}>
+                            {ins.googleBacked ? "View profile →" : (hasGoogle ? "Joining soon →" : "Coming soon")}
                           </div>
                         </>
                       );

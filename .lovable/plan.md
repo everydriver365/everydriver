@@ -1,50 +1,48 @@
 ## Problem
 
-On `everydriver.lovable.app` (desktop and phone), visiting `/` redirects to the DSM instructor login instead of showing the EveryDriver learner marketing homepage. It looks "phone-only" because on a phone there is no other DSM tab open, so the redirect is more obvious.
+Richard Chapman is a real, active instructor in the database:
+- slug `richard-chapman`, £60/hr, real profile photo, 4 active bookable courses
+- BUT he has **0 reviews in the CRM** (`course_reviews` / `instructor_rating_summary` is empty)
 
-## Root cause
-
-`src/lib/appVariant.ts` → `getAppVariant()` contains:
-
-```ts
-if (isEveryDriverHost()) return "instructor";
-```
-
-`everydriver.lovable.app` matches `isEveryDriverHost()`, so the variant becomes `"instructor"`.
-
-`src/components/ConditionalHome.tsx` checks the variant first:
-
-```ts
-if (variant === "instructor") {
-  return <AppEntryRedirect authedTo="/instructor" loginTo="/instructor-app/login" />;
-}
-…
-if (isEveryDriverHost()) {
-  return <EveryDriverIndex />; // never reached
-}
-```
-
-So the EveryDriver learner homepage branch is unreachable. This contradicts the comment immediately above it ("EveryDriver is the learner-facing brand, so it must NOT redirect here").
+The featured-instructors filter requires `total_reviews >= 5 AND avg_rating >= 4.5`, so he gets filtered out and falls into the **placeholder** branch — which renders "Joining soon →" / "Coming soon" and a non-clickable card. That's wrong: he has a profile page and bookable courses.
 
 ## Fix
 
-One-line change in `src/lib/appVariant.ts`: remove the `isEveryDriverHost()` → `"instructor"` mapping. EveryDriver host should resolve as `"marketing"`, letting `ConditionalHome` fall through to the `<EveryDriverIndex />` learner marketing homepage.
+Treat Richard as a real, bookable card whose **social proof comes from Google** instead of from the CRM.
 
-```diff
-- if (isEveryDriverHost()) return "instructor";
-```
+### Changes to `src/components/homepage/FeaturedInstructors.tsx`
 
-Path-based detection (`/instructor/*` → `"instructor"`) is preserved, so the actual DSM instructor app still works at `everydriver.lovable.app/instructor` and `/instructor-app/login`.
+1. **Add an explicit "Google-backed featured" override**
 
-## Scope
+   Extend the placeholder entries with an optional `matchSlug`:
+   ```ts
+   { id: "richard-chapman", name: "Richard Chapman", matchSlug: "richard-chapman",
+     googleQuery: "Chapman's Driving School Winchester", ... }
+   ```
 
-- File: `src/lib/appVariant.ts` (delete one line + adjacent comment if any).
-- No layout, copy, or styling changes.
-- No changes to `DomainRouter` cross-domain redirects, `isEveryDriverHost`, or `ConditionalHome`.
+2. **Resolve the override against the DB on load**
 
-## Verification
+   After loading `public_instructors`, for each placeholder with `matchSlug`:
+   - look up the real instructor row by `app_slug`
+   - if found, build a card that uses the **real** `id`, `app_slug`, `profile_image_url`, `hourly_rate`, `home_postcode`
+   - mark it `isPlaceholder: false`, but flag it `googleBacked: true` so the render path knows to use Google reviews instead of CRM reviews
 
-- `everydriver.lovable.app/` (mobile + desktop) → renders `EveryDriverIndex` (learner marketing).
-- `everydriver.lovable.app/instructor` → still loads instructor portal (auth-gated).
-- `everydriver.lovable.app/instructor-app/login` → still loads DSM login when navigated to directly.
-- Custom domains (`everydriver.co.uk`, `drive365.co.uk`, whitelabel) unaffected.
+3. **New render variant: `googleBacked`**
+
+   - Header avatar uses the real `profile_image_url` (already in DB), falls back to the Google business photo if missing
+   - Badge: "⭐ Verified on Google" (blue)
+   - Stats row: Google rating + Google review count (+ pass rate if available)
+   - Quote block: top Google review
+   - Button: real **"View profile →"** linking to `/p/richard-chapman` — same styling as real instructors, not the greyed-out "Joining soon"
+
+4. **Slot order**
+
+   Keep Richard pinned to the top slot (slot 0, orange accent), then real CRM-qualified instructors, then any remaining true placeholders (Ken D) fill the tail.
+
+5. **Ken D unchanged** — he stays a true placeholder ("Coming soon") until he has either a real account or Google data.
+
+## Out of scope
+
+- No DB changes
+- No edge function changes (the existing `fetch-google-reviews` + `google-place-photo` keep working)
+- No changes to other instructors, sections, or pages
