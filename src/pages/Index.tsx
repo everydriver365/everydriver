@@ -221,15 +221,15 @@ export default function Index() {
       <SEOHead jsonLd={homepageJsonLd} />
       <Drive365Home
         afterHero={
-          <section className="hidden md:block" style={{ background: "#F6F6F8", padding: "48px 5%" }}>
-            <div style={{ maxWidth: 1200, margin: "0 auto", background: "#FFFFFF", borderRadius: 40, boxShadow: "0 32px 64px -16px rgba(0,0,0,0.06)", overflow: "hidden", display: "grid", gridTemplateColumns: "1fr 1fr" }}>
+          <section className="hidden md:block" style={{ background: "#F6F6F8", padding: "32px 5%" }}>
+            <div style={{ maxWidth: 960, margin: "0 auto", background: "#FFFFFF", borderRadius: 28, boxShadow: "0 16px 40px -12px rgba(0,0,0,0.06)", overflow: "hidden", display: "grid", gridTemplateColumns: "1fr 1fr" }}>
               {/* Media side */}
               <button
                 type="button"
                 onClick={() => welcomeVideoUrl && setVideoModalOpen(true)}
                 disabled={!welcomeVideoUrl}
                 className="group"
-                style={{ position: "relative", border: "none", padding: 0, background: "#F3F4F6", cursor: welcomeVideoUrl ? "pointer" : "default", overflow: "hidden", minHeight: 420 }}
+                style={{ position: "relative", border: "none", padding: 0, background: "#F3F4F6", cursor: welcomeVideoUrl ? "pointer" : "default", overflow: "hidden", minHeight: 280 }}
                 aria-label="Play our story video"
               >
                 <img
@@ -242,70 +242,70 @@ export default function Index() {
                 <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.05)", transition: "background 300ms ease" }} />
 
                 {/* 2 Min Watch pill */}
-                <div style={{ position: "absolute", top: 24, left: 24, background: "rgba(255,255,255,0.9)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", padding: "6px 12px", borderRadius: 999, fontSize: 10, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#1F2937", boxShadow: "0 1px 2px rgba(0,0,0,0.04)" }}>
+                <div style={{ position: "absolute", top: 16, left: 16, background: "rgba(255,255,255,0.9)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", padding: "4px 10px", borderRadius: 999, fontSize: 9, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "#1F2937", boxShadow: "0 1px 2px rgba(0,0,0,0.04)" }}>
                   2 Min Watch
                 </div>
 
                 {/* Centered frosted play button */}
                 <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <div style={{ width: 80, height: 80, background: "rgba(255,255,255,0.20)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid rgba(255,255,255,0.4)", boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25)", transition: "transform 300ms ease" }}
+                  <div style={{ width: 56, height: 56, background: "rgba(255,255,255,0.20)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid rgba(255,255,255,0.4)", boxShadow: "0 16px 32px -8px rgba(0,0,0,0.20)", transition: "transform 300ms ease" }}
                     onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.10)")}
                     onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
                   >
-                    <div style={{ width: 56, height: 56, background: "#FFFFFF", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 10px 15px -3px rgba(0,0,0,0.12)" }}>
-                      <span style={{ width: 0, height: 0, borderStyle: "solid", borderWidth: "9px 0 9px 14px", borderColor: "transparent transparent transparent #EA580C", display: "inline-block", marginLeft: 3 }} />
+                    <div style={{ width: 40, height: 40, background: "#FFFFFF", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 6px 10px -2px rgba(0,0,0,0.10)" }}>
+                      <span style={{ width: 0, height: 0, borderStyle: "solid", borderWidth: "7px 0 7px 11px", borderColor: "transparent transparent transparent #EA580C", display: "inline-block", marginLeft: 2 }} />
                     </div>
                   </div>
                 </div>
               </button>
 
               {/* Content side */}
-              <div style={{ padding: "64px", display: "flex", flexDirection: "column", justifyContent: "center", gap: 24 }}>
-                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                  <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "#1A6FD4" }}>Our Story</span>
-                  <h2 style={{ fontFamily: "'Instrument Serif', Georgia, serif", fontSize: 48, lineHeight: 1.1, color: "#0F172A", margin: 0, fontWeight: 400, letterSpacing: "-0.5px" }}>
+              <div style={{ padding: "40px", display: "flex", flexDirection: "column", justifyContent: "center", gap: 16 }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "#1A6FD4" }}>Our Story</span>
+                  <h2 style={{ fontFamily: "'Instrument Serif', Georgia, serif", fontSize: 32, lineHeight: 1.15, color: "#0F172A", margin: 0, fontWeight: 400, letterSpacing: "-0.3px" }}>
                     Watch how learners pass with <span style={{ fontStyle: "italic", color: "#EA580C" }}>confidence</span>.
                   </h2>
                 </div>
 
-                <p style={{ color: "#4B5563", fontSize: 16, lineHeight: 1.65, margin: 0, maxWidth: 420 }}>
+                <p style={{ color: "#4B5563", fontSize: 14, lineHeight: 1.6, margin: 0, maxWidth: 360 }}>
                   Discover why thousands of learners trust us with their driving journey — from first lesson nerves to test day success.
                 </p>
 
                 {/* Social proof */}
-                <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                   <div style={{ display: "flex" }}>
                     {[testimonialSarahFallback, testimonialJamesFallback, testimonialEmmaFallback].map((src, i) => (
-                      <img key={i} src={src} alt="Learner" style={{ width: 32, height: 32, borderRadius: "50%", objectFit: "cover", border: "2px solid #fff", marginLeft: i > 0 ? -8 : 0 }} />
+                      <img key={i} src={src} alt="Learner" style={{ width: 28, height: 28, borderRadius: "50%", objectFit: "cover", border: "2px solid #fff", marginLeft: i > 0 ? -8 : 0 }} />
                     ))}
                   </div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#EA580C", fontSize: 14 }}>
-                      <Star style={{ width: 16, height: 16, fill: "#EA580C", color: "#EA580C" }} />
+                  <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 4, color: "#EA580C", fontSize: 13 }}>
+                      <Star style={{ width: 14, height: 14, fill: "#EA580C", color: "#EA580C" }} />
                       <span style={{ fontWeight: 700, color: "#0F172A" }}>4.9</span>
                     </div>
-                    <span style={{ fontSize: 10, fontWeight: 500, letterSpacing: "0.08em", textTransform: "uppercase", color: "#9CA3AF" }}>From 6,499 reviews</span>
+                    <span style={{ fontSize: 9, fontWeight: 500, letterSpacing: "0.06em", textTransform: "uppercase", color: "#9CA3AF" }}>From 6,499 reviews</span>
                   </div>
                 </div>
 
                 {/* CTAs */}
-                <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 28, paddingTop: 8 }}>
+                <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 20, paddingTop: 4 }}>
                   <button
                     type="button"
                     onClick={() => welcomeVideoUrl && setVideoModalOpen(true)}
                     disabled={!welcomeVideoUrl}
-                    style={{ display: "inline-flex", alignItems: "center", gap: 10, padding: "16px 32px", background: "#EA580C", color: "#fff", fontSize: 15, fontWeight: 600, border: "none", borderRadius: 999, cursor: welcomeVideoUrl ? "pointer" : "default", boxShadow: "0 10px 25px -8px rgba(234,88,12,0.45)", transition: "background 200ms ease, transform 120ms ease" }}
+                    style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "12px 24px", background: "#EA580C", color: "#fff", fontSize: 14, fontWeight: 600, border: "none", borderRadius: 999, cursor: welcomeVideoUrl ? "pointer" : "default", boxShadow: "0 8px 20px -6px rgba(234,88,12,0.40)", transition: "background 200ms ease, transform 120ms ease" }}
                     onMouseEnter={(e) => (e.currentTarget.style.background = "#D44D06")}
                     onMouseLeave={(e) => (e.currentTarget.style.background = "#EA580C")}
                     onMouseDown={(e) => (e.currentTarget.style.transform = "scale(0.97)")}
                     onMouseUp={(e) => (e.currentTarget.style.transform = "scale(1)")}
                   >
                     <span>Play Video</span>
-                    <ChevronRight style={{ width: 16, height: 16 }} />
+                    <ChevronRight style={{ width: 14, height: 14 }} />
                   </button>
                   <Link
                     to="/courses"
-                    style={{ fontSize: 14, fontWeight: 700, color: "#1A6FD4", textDecoration: "none", paddingBottom: 2, borderBottom: "2px solid transparent", transition: "border-color 200ms ease" }}
+                    style={{ fontSize: 13, fontWeight: 700, color: "#1A6FD4", textDecoration: "none", paddingBottom: 2, borderBottom: "2px solid transparent", transition: "border-color 200ms ease" }}
                     onMouseEnter={(e) => (e.currentTarget.style.borderBottomColor = "#1A6FD4")}
                     onMouseLeave={(e) => (e.currentTarget.style.borderBottomColor = "transparent")}
                   >
