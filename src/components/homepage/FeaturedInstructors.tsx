@@ -55,19 +55,33 @@ function truncate(text: string, n = 80) {
   return text.length > n ? text.slice(0, n).trimEnd() + "…" : text;
 }
 
-const PLACEHOLDERS: ScoredInstructor[] = [
+interface GoogleReview {
+  author_name: string;
+  rating: number;
+  text: string;
+  relative_time_description: string;
+}
+
+interface GoogleData {
+  rating: number | null;
+  userRatingsTotal: number | null;
+  reviews: GoogleReview[];
+}
+
+const PLACEHOLDERS: (ScoredInstructor & { googleQuery?: string })[] = [
   {
     id: "placeholder-richard",
     name: "Richard Chapman",
     photo: null,
     hourly_rate: null,
-    location: null,
+    location: "Winchester",
     app_slug: null,
     avg_rating: 0,
     total_reviews: 0,
     pass_rate: null,
     score: 0,
     isPlaceholder: true,
+    googleQuery: "Chapman's Driving School Winchester",
   },
   {
     id: "placeholder-ken",
