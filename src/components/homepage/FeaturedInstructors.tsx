@@ -243,6 +243,7 @@ export function FeaturedInstructors() {
               rating: data.rating ?? null,
               userRatingsTotal: data.userRatingsTotal ?? null,
               reviews: data.reviews ?? [],
+              photoReference: data.photoReference ?? null,
             },
           }));
         } catch (e) {
