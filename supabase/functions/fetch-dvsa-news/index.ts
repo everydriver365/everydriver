@@ -173,16 +173,27 @@ serve(async (req) => {
     console.log('Fetching DVSA news from despatch.blog.gov.uk...');
     
     const feedUrl = 'https://despatch.blog.gov.uk/feed/';
-    const response = await fetch(feedUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; DrivingSchoolApp/1.0)',
-        'Accept': 'application/rss+xml, application/xml, text/xml, */*',
-      },
-    });
 
-    if (!response.ok) {
-      console.error(`Failed to fetch RSS feed: ${response.status} ${response.statusText}`);
-      throw new Error(`Failed to fetch RSS feed: ${response.status}`);
+    let response: Response | null = null;
+    let lastErr: unknown = null;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        response = await fetch(feedUrl, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (compatible; DrivingSchoolApp/1.0)',
+            'Accept': 'application/rss+xml, application/xml, text/xml, */*',
+          },
+        });
+        if (response.ok) break;
+        lastErr = new Error(`Failed to fetch RSS feed: ${response.status}`);
+      } catch (e) {
+        lastErr = e;
+      }
+      await new Promise((r) => setTimeout(r, 300 * (attempt + 1)));
+    }
+
+    if (!response || !response.ok) {
+      throw lastErr instanceof Error ? lastErr : new Error('Failed to fetch RSS feed');
     }
 
     const xmlText = await response.text();
@@ -203,12 +214,14 @@ serve(async (req) => {
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error('Error fetching DVSA news:', errorMessage);
-    return new Response(JSON.stringify({ 
-      success: false, 
+    // Return 200 with fallback signal so the frontend can degrade gracefully
+    return new Response(JSON.stringify({
+      success: false,
       error: errorMessage,
+      fallback: true,
       items: [],
     }), {
-      status: 500,
+      status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
