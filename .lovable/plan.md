@@ -1,21 +1,50 @@
-## Redesign the video section — "Modern editorial" direction
+# Promoting the 4 USPs
 
-Replace the existing desktop video section JSX (currently in the `afterHero` prop of `<Drive365Home>` in `src/pages/Index.tsx`) with the selected Modern Editorial layout.
+The four perks — **Free re-test if you fail**, **Free theory test**, **Klarna**, **Clearpay** — are your strongest objection-killers (risk + affordability). Today they only appear in the "Backed by EveryDriver" trust grid and the logo strip. Below is where to surface them so they actually drive conversion.
 
-### Visual spec (locked from selected prototype)
-- Outer card: white background `#FFFFFF`, `border-radius: 2.5rem` (40px), soft shadow `0 32px 64px -16px rgba(0,0,0,0.06)`, max-width 1200, centered, on the existing `#F6F6F8` page background.
-- 50/50 split: video left, content right.
-- **Left (media)**: existing `videoThumbnailImg` filling the half, hover scale-105 over 700ms, subtle `bg-black/5` overlay that clears on hover. "2 MIN WATCH" pill top-left — white/90 frosted, uppercase, tracking-widest, dark text. Centered play button: 80px frosted glass ring (`bg-white/20 backdrop-blur border-white/40`) containing a 56px solid white disc with an orange `#EA580C` play triangle.
-- **Right (content)**: padding ~64px. Eyebrow "OUR STORY" in `#1A6FD4`, uppercase, tracking 0.2em. Headline in **Instrument Serif** (load from Google Fonts), 48px, line-height 1.1, color `#0F172A`; the word "confidence" italic in `#EA580C`. Paragraph 16px slate-600. Social proof row: 3 small avatars (-space-x-2, white border), star + "4.9" in orange, "From 6,499 reviews" caption. CTAs: rounded-full pill button `#EA580C` → "Play Video" with chevron; secondary text link "Find an Instructor" in `#1A6FD4` with bottom-border-on-hover.
-- No dark surfaces anywhere.
+## Recommended placements (priority order)
 
-### Implementation notes
-- Add `Instrument Serif` to `index.html` `<head>` Google Fonts (alongside existing fonts).
-- Keep all existing handlers: `welcomeVideoUrl`, `setVideoModalOpen`, the `Link to="/courses"`, and the existing avatar imports (`testimonialSarahFallback`, `testimonialJamesFallback`, `testimonialEmmaFallback`) — use those for the avatar row rather than placeholders.
-- Keep `className="hidden md:block"` — mobile video section stays untouched (mobile policy).
-- Keep the section wrapper so it remains inside `afterHero`, sitting directly under the hero as today.
-- No backend/data changes.
+### 1. Hero — add a "perk strip" directly under the headline
+A single horizontal row of 4 chips immediately below the hero CTA on `/` (desktop only, per mobile policy):
+`✅ Free re-test  ·  ✅ Free theory test  ·  Pay with Klarna  ·  Pay with Clearpay`
+This is the highest-traffic real-estate and answers "what's the catch?" before the user scrolls.
 
-### Files
-- `src/pages/Index.tsx` — replace the `afterHero` JSX (the existing white video card) with the new layout.
-- `index.html` — add `Instrument Serif` font link.
+### 2. Course / Instructor result cards
+Add a tiny 4-icon footer row to every course and instructor card on `/courses` and search results:
+- Small "Re-test covered" + "Theory test included" tick pills
+- Klarna + Clearpay mini wordmarks ("from £X/month")
+This converts comparison-shoppers at the exact decision moment.
+
+### 3. Booking Summary / Checkout
+On `BookingSummary` + `everydriver/BookingSummary`, add a reassurance band above the payment tiles:
+- "Includes free theory test booking"
+- "Free re-test if you don't pass first time"
+- Klarna/Clearpay shown as payment options with "Split into 3 — 0% interest" messaging
+This is where price anxiety peaks — the perks justify the total.
+
+### 4. Sticky promo bar (site-wide, dismissible)
+A slim bar across the top of public pages rotating the 4 messages, or a static line:
+`Free re-test · Free theory test · Pay in 3 with Klarna or Clearpay`
+Persistent reinforcement on every page view.
+
+### 5. Pricing / Compare Courses page
+Add a "What's included with every course" callout block listing all 4 perks as ticks before the price table.
+
+### 6. Mini-website templates (instructor sites)
+Surface the same perk strip on `MiniWebsiteHome` / `MiniWebsiteServices` so franchised/branded sites inherit the selling points automatically.
+
+### 7. SEO meta + OG
+Update the homepage `<title>` / meta description to include "Free re-test · Pay with Klarna or Clearpay" — wins on SERP click-through.
+
+### 8. Email + booking confirmation
+Add the perks to `BookingConfirmation` and any transactional emails as a reassurance footer.
+
+## What I'd build first
+If you want a single high-impact change: **#1 (hero perk strip) + #2 (card footer pills)**. Those two alone hit every visitor on the two pages with the highest commercial intent, without touching mobile layouts.
+
+## Open questions
+1. Should the **hero perk strip** be the first build, or do you want the **sticky site-wide promo bar** instead (or both)?
+2. For **course/instructor cards**, OK to add a 4th micro-row, or is space too tight?
+3. Any perks to add to this set later (e.g. "DBS checked", "DVSA verified")?
+
+Reply with which placements to ship and I'll implement.
