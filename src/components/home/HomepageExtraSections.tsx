@@ -136,62 +136,6 @@ export default function HomepageExtraSections() {
         </div>
       </div>
 
-      {/* 2. Learner stories */}
-      <div style={{ background: "#FFFFFF", borderRadius: 14, padding: 32, border: "1px solid #E5E7EB" }}>
-        <div style={{ fontSize: 10, fontWeight: 700, color: "#E8641A", textTransform: "uppercase", letterSpacing: "1.5px" }}>
-          LEARNER STORIES
-        </div>
-        <h2 style={{ fontSize: 22, fontWeight: 800, color: "#0A1628", margin: "4px 0 4px" }}>
-          Every learner's journey starts here.
-        </h2>
-        <p style={{ fontSize: 13, color: "#6B7280", margin: 0 }}>
-          From first lesson nerves to passing-day celebrations.
-        </p>
-
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, margin: "20px 0" }}>
-          {reviews.map((r, i) => (
-            <div key={i} style={{ background: "#F8FAFF", borderRadius: 10, padding: 16, borderLeft: `4px solid ${r.accent}` }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-                <div style={{ width: 32, height: 32, borderRadius: 999, background: r.accent, color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700 }}>
-                  {r.initials}
-                </div>
-                <div style={{ display: "flex", flexDirection: "column", lineHeight: 1.2 }}>
-                  <span style={{ fontSize: 11, fontWeight: 700, color: "#0A1628" }}>{r.name}</span>
-                  <span style={{ fontSize: 10, color: "#9CA3AF" }}>{r.course}</span>
-                </div>
-              </div>
-              <div style={{ color: "#FBBF24", fontSize: 11, marginBottom: 6 }}>★★★★★</div>
-              <p style={{ fontSize: 11, color: "#4B5563", lineHeight: 1.6, fontStyle: "italic", margin: "0 0 10px" }}>
-                "{r.text}"
-              </p>
-              <span style={{ background: "#D1FAE5", color: "#059669", fontSize: 9, fontWeight: 700, padding: "3px 8px", borderRadius: 999, display: "inline-block" }}>
-                ✓ Passed 1st time
-              </span>
-            </div>
-          ))}
-        </div>
-
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid #F3F4F6", paddingTop: 16, flexWrap: "wrap", gap: 16 }}>
-          <div style={{ display: "flex", gap: 24 }}>
-            {[
-              { value: "15,000", suffix: "+", label: "Students passed" },
-              { value: "780", suffix: "", label: "Tests taken" },
-              { value: "650", suffix: "+", label: "Instructors" },
-            ].map((s, i) => (
-              <div key={i}>
-                <div style={{ fontSize: 20, fontWeight: 800, color: "#0A1628" }}>
-                  {s.value}
-                  <span style={{ color: "#E8641A" }}>{s.suffix}</span>
-                </div>
-                <div style={{ fontSize: 10, color: "#9CA3AF" }}>{s.label}</div>
-              </div>
-            ))}
-          </div>
-          <Link to="/courses" style={{ background: "#E8641A", color: "#FFFFFF", borderRadius: 7, padding: "10px 20px", fontSize: 12, fontWeight: 700, textDecoration: "none" }}>
-            Start your journey →
-          </Link>
-        </div>
-      </div>
 
       {/* Video section moved to render under the hero (see Index.tsx afterHero) */}
 
