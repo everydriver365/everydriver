@@ -99,6 +99,7 @@ const PLACEHOLDERS: (ScoredInstructor & { matchSlug?: string })[] = [
     pass_rate: null,
     score: 0,
     isPlaceholder: true,
+    matchSlug: "ken-d",
   },
   {
     id: "placeholder-sarah",
@@ -112,6 +113,7 @@ const PLACEHOLDERS: (ScoredInstructor & { matchSlug?: string })[] = [
     pass_rate: null,
     score: 0,
     isPlaceholder: true,
+    matchSlug: "sarah-mitchell",
   },
 ];
 
@@ -233,17 +235,21 @@ export function FeaturedInstructors() {
           googleBacked: true,
         };
       }
-      const realIdsAlreadyShown = new Set(scored.map((s) => s.id));
+      const realIdsAlreadyShown = new Set<string>();
       const richard = hydratePlaceholder(PLACEHOLDERS[0]);
       const finalList: ScoredInstructor[] = [richard];
-      realIdsAlreadyShown.add(richard.id);
+      if (!richard.isPlaceholder) realIdsAlreadyShown.add(richard.id);
       for (const s of scored) {
         if (finalList.length >= 3) break;
         if (realIdsAlreadyShown.has(s.id)) continue;
         finalList.push(s);
+        realIdsAlreadyShown.add(s.id);
       }
       for (let i = 1; i < PLACEHOLDERS.length && finalList.length < 3; i++) {
-        finalList.push(hydratePlaceholder(PLACEHOLDERS[i]));
+        const hydrated = hydratePlaceholder(PLACEHOLDERS[i]);
+        if (realIdsAlreadyShown.has(hydrated.id)) continue;
+        finalList.push(hydrated);
+        if (!hydrated.isPlaceholder) realIdsAlreadyShown.add(hydrated.id);
       }
       scored.length = 0;
       scored.push(...finalList);
