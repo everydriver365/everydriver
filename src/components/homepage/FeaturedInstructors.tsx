@@ -196,11 +196,17 @@ export function FeaturedInstructors() {
         }
       }
 
-      // 6. Fill remaining slots with placeholders
-      const realCount = scored.length;
-      for (let i = 0; i < Math.min(3 - realCount, PLACEHOLDERS.length); i++) {
-        scored.push({ ...PLACEHOLDERS[i] });
+      // 6. Promote Richard Chapman to top slot, then fill remaining with other placeholders
+      const finalList: ScoredInstructor[] = [{ ...PLACEHOLDERS[0] }];
+      for (const s of scored) {
+        if (finalList.length >= 3) break;
+        finalList.push(s);
       }
+      for (let i = 1; i < PLACEHOLDERS.length && finalList.length < 3; i++) {
+        finalList.push({ ...PLACEHOLDERS[i] });
+      }
+      scored.length = 0;
+      scored.push(...finalList);
 
       // 7. Most recent approved review per instructor (skip placeholders)
       const realIds = real.map((s) => s.id);
