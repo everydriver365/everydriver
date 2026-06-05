@@ -716,11 +716,7 @@ export default function Index() {
                     <FeaturedCard feature={theory} badgeLabel="Included free" badgeBg="#059669" />
                   </div>
 
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
-                    <SmallCard feature={swap} badgeLabel="Free feature" badgeBg="#059669" />
-                    <SmallCard feature={payments} badgeLabel="Flexible" badgeBg="#4B5563" footer={klarnaClearpayPills} />
-                    <SmallCard feature={theoryPro} badgeLabel="Premium" badgeBg="#7C3AED" />
-                  </div>
+
                 </div>
               );
             })()}
