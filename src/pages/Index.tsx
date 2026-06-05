@@ -8,6 +8,7 @@ import HomepageExtraSections from "@/components/home/HomepageExtraSections";
 import { Link, useNavigate } from "react-router-dom";
 import { SEOHead } from "@/components/SEOHead";
 import { IOSCourseCard } from "@/components/IOSCourseCard";
+import { FeaturedCoursesAndInstructors } from "@/components/home/FeaturedCoursesAndInstructors";
 import { Badge } from "@/components/ui/badge";
 import { PostcodeAutocomplete } from "@/components/PostcodeAutocomplete";
 import { CoursePlannerSheet } from "@/components/course-planner/CoursePlannerSheet";
