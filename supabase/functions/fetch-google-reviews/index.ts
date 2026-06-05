@@ -96,6 +96,7 @@ serve(async (req) => {
       relative_time_description: rv.relative_time_description,
       time: rv.time,
     }));
+    const photoReference = r.photos?.[0]?.photo_reference ?? null;
 
     await supabase.from("google_place_reviews").upsert(
       {
@@ -105,6 +106,7 @@ serve(async (req) => {
         rating: r.rating ?? null,
         user_ratings_total: r.user_ratings_total ?? null,
         reviews,
+        photo_reference: photoReference,
         fetched_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       },
@@ -118,6 +120,7 @@ serve(async (req) => {
         rating: r.rating,
         userRatingsTotal: r.user_ratings_total,
         reviews,
+        photoReference,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
