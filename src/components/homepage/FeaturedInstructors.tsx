@@ -55,6 +55,35 @@ function truncate(text: string, n = 80) {
   return text.length > n ? text.slice(0, n).trimEnd() + "…" : text;
 }
 
+const PLACEHOLDERS: ScoredInstructor[] = [
+  {
+    id: "placeholder-richard",
+    name: "Richard Chapman",
+    photo: null,
+    hourly_rate: null,
+    location: null,
+    app_slug: null,
+    avg_rating: 0,
+    total_reviews: 0,
+    pass_rate: null,
+    score: 0,
+    isPlaceholder: true,
+  },
+  {
+    id: "placeholder-ken",
+    name: "Ken D",
+    photo: null,
+    hourly_rate: null,
+    location: null,
+    app_slug: null,
+    avg_rating: 0,
+    total_reviews: 0,
+    pass_rate: null,
+    score: 0,
+    isPlaceholder: true,
+  },
+];
+
 export function FeaturedInstructors() {
   const [instructors, setInstructors] = useState<ScoredInstructor[]>([]);
   const [loading, setLoading] = useState(true);
@@ -69,7 +98,7 @@ export function FeaturedInstructors() {
         .eq("is_active", true)
         .eq("is_network_placeholder", false);
       if (!insRows || insRows.length === 0) {
-        if (!cancelled) { setInstructors([]); setLoading(false); }
+        if (!cancelled) { setInstructors(PLACEHOLDERS); setLoading(false); }
         return;
       }
       const ids = (insRows as any[]).map((r) => r.id);
@@ -129,81 +158,50 @@ export function FeaturedInstructors() {
         .sort((a, b) => b.score - a.score)
         .slice(0, 3);
 
-      // Placeholder instructors shown until real data qualifies
-      const PLACEHOLDERS: ScoredInstructor[] = [
-        {
-          id: "placeholder-richard",
-          name: "Richard Chapman",
-          photo: null,
-          hourly_rate: null,
-          location: null,
-          app_slug: null,
-          avg_rating: 0,
-          total_reviews: 0,
-          pass_rate: null,
-          score: 0,
-          isPlaceholder: true,
-        },
-        {
-          id: "placeholder-ken",
-          name: "Ken D",
-          photo: null,
-          hourly_rate: null,
-          location: null,
-          app_slug: null,
-          avg_rating: 0,
-          total_reviews: 0,
-          pass_rate: null,
-          score: 0,
-          isPlaceholder: true,
-        },
-      ];
-
-      if (scored.length === 0) {
-        if (!cancelled) { setInstructors(PLACEHOLDERS); setLoading(false); }
-        return;
+      // 5. Assign merit badges (one per real instructor based on highest metric)
+      const real = scored.filter((i) => !i.isPlaceholder);
+      if (real.length > 0) {
+        const topReviews = real.reduce((a, b) => (b.total_reviews > a.total_reviews ? b : a));
+        const topRating = real.reduce((a, b) => (b.avg_rating > a.avg_rating ? b : a));
+        const withPass = real.filter((i) => i.pass_rate !== null);
+        const topPass = withPass.length ? withPass.reduce((a, b) => ((b.pass_rate ?? 0) > (a.pass_rate ?? 0) ? b : a)) : null;
+        const assigned = new Set<string>();
+        function assign(target: ScoredInstructor | null, badge: ScoredInstructor["badge"]) {
+          if (!target || assigned.has(target.id)) return;
+          target.badge = badge;
+          assigned.add(target.id);
+        }
+        assign(topReviews, "reviews");
+        assign(topRating, "rating");
+        assign(topPass, "pass");
+        const fallbackOrder: ScoredInstructor["badge"][] = ["reviews", "rating", "pass"];
+        for (const i of real) {
+          if (!i.badge) i.badge = fallbackOrder.find((b) => ![...assigned].some((id) => real.find((s) => s.id === id)?.badge === b)) ?? "reviews";
+        }
       }
 
-      // Fill remaining slots with placeholders (up to 3 total)
+      // 6. Fill remaining slots with placeholders
       const realCount = scored.length;
       for (let i = 0; i < Math.min(3 - realCount, PLACEHOLDERS.length); i++) {
         scored.push({ ...PLACEHOLDERS[i] });
       }
 
-      // 5. Assign merit badges (one per instructor based on highest metric vs the others shown)
-      const topReviews = scored.reduce((a, b) => (b.total_reviews > a.total_reviews ? b : a));
-      const topRating = scored.reduce((a, b) => (b.avg_rating > a.avg_rating ? b : a));
-      const withPass = scored.filter((i) => i.pass_rate !== null);
-      const topPass = withPass.length ? withPass.reduce((a, b) => ((b.pass_rate ?? 0) > (a.pass_rate ?? 0) ? b : a)) : null;
-      const assigned = new Set<string>();
-      function assign(target: ScoredInstructor | null, badge: ScoredInstructor["badge"]) {
-        if (!target || assigned.has(target.id)) return;
-        target.badge = badge;
-        assigned.add(target.id);
+      // 7. Most recent approved review per instructor (skip placeholders)
+      const realIds = real.map((s) => s.id);
+      if (realIds.length > 0) {
+        const { data: reviews } = await supabase
+          .from("course_reviews")
+          .select("instructor_id, review_text, reviewer_name, passed_first_time, created_at")
+          .in("instructor_id", realIds)
+          .eq("is_visible", true)
+          .eq("moderation_status", "approved")
+          .order("created_at", { ascending: false });
+        const reviewMap = new Map<string, ReviewRow>();
+        for (const r of (reviews ?? []) as ReviewRow[]) {
+          if (!reviewMap.has(r.instructor_id)) reviewMap.set(r.instructor_id, r);
+        }
+        for (const i of scored) i.review = reviewMap.get(i.id);
       }
-      assign(topReviews, "reviews");
-      assign(topRating, "rating");
-      assign(topPass, "pass");
-      // Fallback: any unbadged instructor gets best available leftover badge
-      const fallbackOrder: ScoredInstructor["badge"][] = ["reviews", "rating", "pass"];
-      for (const i of scored) {
-        if (!i.badge) i.badge = fallbackOrder.find((b) => ![...assigned].some((id) => scored.find((s) => s.id === id)?.badge === b)) ?? "reviews";
-      }
-
-      // 6. Most recent approved review per instructor
-      const scoredIds = scored.map((s) => s.id);
-      const { data: reviews } = await supabase
-        .from("course_reviews")
-        .select("instructor_id, review_text, reviewer_name, passed_first_time, created_at")
-        .in("instructor_id", scoredIds)
-        .eq("is_visible", true)
-        .eq("moderation_status", "approved")
-        .order("created_at", { ascending: false });
-      const reviewMap = new Map<string, ReviewRow>();
-      for (const r of (reviews ?? []) as ReviewRow[]) {
-        if (!reviewMap.has(r.instructor_id)) reviewMap.set(r.instructor_id, r);
-      }
-      for (const i of scored) i.review = reviewMap.get(i.id);
 
       if (!cancelled) { setInstructors(scored); setLoading(false); }
     })();
@@ -303,42 +301,58 @@ export function FeaturedInstructors() {
                       </div>
                     </div>
 
-                    <div style={{ display: "inline-flex", alignItems: "center", gap: 4, marginBottom: 10, background: badge.bg, border: `1px solid ${badge.border}`, color: badge.color, fontSize: 9, fontWeight: 700, padding: "3px 9px", borderRadius: 20 }}>
-                      {badge.label}
-                    </div>
+                    {!ins.isPlaceholder ? (
+                      <>
+                        <div style={{ display: "inline-flex", alignItems: "center", gap: 4, marginBottom: 10, background: badge.bg, border: `1px solid ${badge.border}`, color: badge.color, fontSize: 9, fontWeight: 700, padding: "3px 9px", borderRadius: 20 }}>
+                          {badge.label}
+                        </div>
 
-                    <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
-                      {ins.pass_rate !== null && (
-                        <div style={{ flex: 1, textAlign: "center", background: "#F3F4F6", borderRadius: 7, padding: "8px 4px" }}>
-                          <div style={{ fontSize: 16, fontWeight: 800, color: "#22C55E" }}>{Math.round(ins.pass_rate)}%</div>
-                          <div style={{ fontSize: 8, color: "#9CA3AF" }}>pass rate</div>
+                        <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+                          {ins.pass_rate !== null && (
+                            <div style={{ flex: 1, textAlign: "center", background: "#F3F4F6", borderRadius: 7, padding: "8px 4px" }}>
+                              <div style={{ fontSize: 16, fontWeight: 800, color: "#22C55E" }}>{Math.round(ins.pass_rate)}%</div>
+                              <div style={{ fontSize: 8, color: "#9CA3AF" }}>pass rate</div>
+                            </div>
+                          )}
+                          <div style={{ flex: 1, textAlign: "center", background: "#F3F4F6", borderRadius: 7, padding: "8px 4px" }}>
+                            <div style={{ fontSize: 16, fontWeight: 800, color: "#0A1628" }}>{ins.avg_rating.toFixed(1)}</div>
+                            <div style={{ fontSize: 8, color: "#9CA3AF" }}>rating</div>
+                          </div>
+                          <div style={{ flex: 1, textAlign: "center", background: "#F3F4F6", borderRadius: 7, padding: "8px 4px" }}>
+                            <div style={{ fontSize: 16, fontWeight: 800, color: "#0A1628" }}>{ins.total_reviews}</div>
+                            <div style={{ fontSize: 8, color: "#9CA3AF" }}>reviews</div>
+                          </div>
                         </div>
-                      )}
-                      <div style={{ flex: 1, textAlign: "center", background: "#F3F4F6", borderRadius: 7, padding: "8px 4px" }}>
-                        <div style={{ fontSize: 16, fontWeight: 800, color: "#0A1628" }}>{ins.avg_rating.toFixed(1)}</div>
-                        <div style={{ fontSize: 8, color: "#9CA3AF" }}>rating</div>
-                      </div>
-                      <div style={{ flex: 1, textAlign: "center", background: "#F3F4F6", borderRadius: 7, padding: "8px 4px" }}>
-                        <div style={{ fontSize: 16, fontWeight: 800, color: "#0A1628" }}>{ins.total_reviews}</div>
-                        <div style={{ fontSize: 8, color: "#9CA3AF" }}>reviews</div>
-                      </div>
-                    </div>
 
-                    {ins.review && (
-                      <div style={{ marginBottom: 12, borderLeft: `3px solid ${accent.quoteBorder}`, background: accent.quoteBg, borderRadius: "0 6px 6px 0", padding: "8px 10px" }}>
-                        <div style={{ fontSize: 10, fontStyle: "italic", color: "#4B5563", lineHeight: 1.5, marginBottom: 3 }}>
-                          "{truncate(ins.review.review_text)}"
+                        {ins.review && (
+                          <div style={{ marginBottom: 12, borderLeft: `3px solid ${accent.quoteBorder}`, background: accent.quoteBg, borderRadius: "0 6px 6px 0", padding: "8px 10px" }}>
+                            <div style={{ fontSize: 10, fontStyle: "italic", color: "#4B5563", lineHeight: 1.5, marginBottom: 3 }}>
+                              "{truncate(ins.review.review_text)}"
+                            </div>
+                            <div style={{ fontSize: 9, color: "#9CA3AF" }}>
+                              {ins.review.reviewer_name || "Anonymous"}
+                              {ins.review.passed_first_time ? " · ✓ Passed 1st time" : ""}
+                            </div>
+                          </div>
+                        )}
+
+                        <div style={{ width: "100%", padding: 9, border: "none", borderRadius: 7, fontSize: 11, fontWeight: 700, background: accent.btnBg, color: "#fff", textAlign: "center" }}>
+                          View profile →
                         </div>
-                        <div style={{ fontSize: 9, color: "#9CA3AF" }}>
-                          {ins.review.reviewer_name || "Anonymous"}
-                          {ins.review.passed_first_time ? " · ✓ Passed 1st time" : ""}
+                      </>
+                    ) : (
+                      <>
+                        <div style={{ display: "inline-flex", alignItems: "center", gap: 4, marginBottom: 10, background: "#F3F4F6", border: "1px solid #E5E7EB", color: "#6B7280", fontSize: 9, fontWeight: 700, padding: "3px 9px", borderRadius: 20 }}>
+                          ⏳ Coming soon
                         </div>
-                      </div>
+                        <div style={{ fontSize: 11, color: "#9CA3AF", lineHeight: 1.6, marginBottom: 12, minHeight: 60, display: "flex", alignItems: "center" }}>
+                          This instructor will be featured here soon. Check back for updates.
+                        </div>
+                        <div style={{ width: "100%", padding: 9, border: "none", borderRadius: 7, fontSize: 11, fontWeight: 700, background: "#E5E7EB", color: "#6B7280", textAlign: "center" }}>
+                          Coming soon
+                        </div>
+                      </>
                     )}
-
-                    <div style={{ width: "100%", padding: 9, border: "none", borderRadius: 7, fontSize: 11, fontWeight: 700, background: accent.btnBg, color: "#fff", textAlign: "center" }}>
-                      View profile →
-                    </div>
                   </div>
                 </Link>
               );
