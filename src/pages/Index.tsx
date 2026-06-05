@@ -590,6 +590,28 @@ export default function Index() {
                 </p>
               </div>
 
+              {/* 3-step timeline */}
+              <div style={{ display: "flex", justifyContent: "center", alignItems: "flex-start", gap: 8, marginBottom: 40, flexWrap: "wrap" }}>
+                {[
+                  { Icon: Search, label: "Search", desc: "Find instructors" },
+                  { Icon: ArrowLeftRight, label: "Compare", desc: "Reviews & prices" },
+                  { Icon: CalendarCheck, label: "Book", desc: "24/7 online" },
+                ].map(({ Icon, label, desc }, i, arr) => (
+                  <div key={label} style={{ display: "flex", alignItems: "center" }}>
+                    <div style={{ textAlign: "center", width: 120 }}>
+                      <div style={{ width: 48, height: 48, borderRadius: 999, background: "#EFF6FF", border: "2px solid #BFDBFE", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 10px" }}>
+                        <Icon style={{ width: 22, height: 22, color: "#2563EB" }} />
+                      </div>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: "#0F172A" }}>{label}</div>
+                      <div style={{ fontSize: 12, color: "#64748B", marginTop: 4 }}>{desc}</div>
+                    </div>
+                    {i < arr.length - 1 && (
+                      <ArrowRight style={{ width: 18, height: 18, color: "#CBD5E1", flexShrink: 0, margin: "16px 12px 0" }} />
+                    )}
+                  </div>
+                ))}
+              </div>
+
               {/* Trust Grid */}
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 20 }}>
                 {[
