@@ -221,95 +221,92 @@ export default function Index() {
       <SEOHead jsonLd={homepageJsonLd} />
       <Drive365Home
         afterHero={
-          <section className="hidden md:block" style={{ background: "#F6F6F8", padding: "32px 5%" }}>
-            <div style={{ maxWidth: 960, margin: "0 auto", background: "#FFFFFF", borderRadius: 28, boxShadow: "0 16px 40px -12px rgba(0,0,0,0.06)", overflow: "hidden", display: "grid", gridTemplateColumns: "1fr 1fr" }}>
+          <section className="hidden md:block" style={{ background: "#F6F6F8", padding: "32px 5%", fontFamily: "'Poppins', sans-serif" }}>
+            <div style={{ maxWidth: 860, margin: "0 auto", background: "#FFFFFF", borderRadius: 14, border: "1.5px solid #e8edf2", overflow: "hidden", display: "grid", gridTemplateColumns: "1fr 1fr" }}>
               {/* Media side */}
               <button
                 type="button"
                 onClick={() => welcomeVideoUrl && setVideoModalOpen(true)}
                 disabled={!welcomeVideoUrl}
                 className="group"
-                style={{ position: "relative", border: "none", padding: 0, background: "#F3F4F6", cursor: welcomeVideoUrl ? "pointer" : "default", overflow: "hidden", minHeight: 280 }}
+                style={{ position: "relative", border: "none", padding: 0, background: "#F3F4F6", cursor: welcomeVideoUrl ? "pointer" : "default", overflow: "hidden", aspectRatio: "4 / 3" }}
                 aria-label="Play our story video"
               >
                 <img
                   src={videoThumbnailImg}
                   alt="Watch our story"
-                  style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", transition: "transform 700ms ease" }}
-                  onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
-                  onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+                  style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
                 />
-                <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.05)", transition: "background 300ms ease" }} />
 
-                {/* 2 Min Watch pill */}
-                <div style={{ position: "absolute", top: 16, left: 16, background: "rgba(255,255,255,0.9)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", padding: "4px 10px", borderRadius: 999, fontSize: 9, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "#1F2937", boxShadow: "0 1px 2px rgba(0,0,0,0.04)" }}>
-                  2 Min Watch
+                {/* 2 min watch pill */}
+                <div style={{ position: "absolute", top: 12, left: 12, background: "#FFFFFF", padding: "4px 9px", borderRadius: 999, fontSize: 10, fontWeight: 600, color: "#0F2044", display: "inline-flex", alignItems: "center", gap: 4, boxShadow: "0 1px 2px rgba(0,0,0,0.08)" }}>
+                  <Clock style={{ width: 11, height: 11 }} />
+                  <span>2 min watch</span>
                 </div>
 
-                {/* Centered frosted play button */}
+                {/* Centered play button */}
                 <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <div style={{ width: 56, height: 56, background: "rgba(255,255,255,0.20)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid rgba(255,255,255,0.4)", boxShadow: "0 16px 32px -8px rgba(0,0,0,0.20)", transition: "transform 300ms ease" }}
-                    onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.10)")}
+                  <div
+                    style={{ width: 56, height: 56, background: "#FFFFFF", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 8px 20px -6px rgba(0,0,0,0.25)", transition: "transform 200ms ease" }}
+                    onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.08)")}
                     onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
                   >
-                    <div style={{ width: 40, height: 40, background: "#FFFFFF", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 6px 10px -2px rgba(0,0,0,0.10)" }}>
-                      <span style={{ width: 0, height: 0, borderStyle: "solid", borderWidth: "7px 0 7px 11px", borderColor: "transparent transparent transparent #EA580C", display: "inline-block", marginLeft: 2 }} />
-                    </div>
+                    <Play style={{ width: 22, height: 22, color: "#D12E2E", fill: "#D12E2E", marginLeft: 2 }} />
                   </div>
                 </div>
               </button>
 
               {/* Content side */}
-              <div style={{ padding: "40px", display: "flex", flexDirection: "column", justifyContent: "center", gap: 16 }}>
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                  <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "#1A6FD4" }}>Our Story</span>
-                  <h2 style={{ fontFamily: "'Instrument Serif', Georgia, serif", fontSize: 32, lineHeight: 1.15, color: "#0F172A", margin: 0, fontWeight: 400, letterSpacing: "-0.3px" }}>
-                    Watch how learners pass with <span style={{ fontStyle: "italic", color: "#EA580C" }}>confidence</span>.
-                  </h2>
-                </div>
-
-                <p style={{ color: "#4B5563", fontSize: 14, lineHeight: 1.6, margin: 0, maxWidth: 360 }}>
-                  Discover why thousands of learners trust us with their driving journey — from first lesson nerves to test day success.
+              <div style={{ padding: "1.5rem", display: "flex", flexDirection: "column", justifyContent: "center", gap: 10 }}>
+                <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.14em", textTransform: "uppercase", color: "#0070C0" }}>Our story</span>
+                <h2 style={{ fontSize: 17, lineHeight: 1.3, color: "#0F2044", margin: 0, fontWeight: 700 }}>
+                  Watch how learners pass with <span style={{ fontStyle: "italic", color: "#D12E2E" }}>confidence.</span>
+                </h2>
+                <p style={{ color: "#6B7280", fontSize: 12, lineHeight: 1.55, margin: 0 }}>
+                  Thousands of learners trust Drive365 — from first lesson nerves to test day success.
                 </p>
 
                 {/* Social proof */}
-                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 2 }}>
                   <div style={{ display: "flex" }}>
-                    {[testimonialSarahFallback, testimonialJamesFallback, testimonialEmmaFallback].map((src, i) => (
-                      <img key={i} src={src} alt="Learner" style={{ width: 28, height: 28, borderRadius: "50%", objectFit: "cover", border: "2px solid #fff", marginLeft: i > 0 ? -8 : 0 }} />
+                    {[
+                      { i: "SM", bg: "#D12E2E" },
+                      { i: "JT", bg: "#0070C0" },
+                      { i: "EW", bg: "#0F2044" },
+                    ].map((a, i) => (
+                      <div key={i} style={{ width: 26, height: 26, borderRadius: "50%", background: a.bg, color: "#fff", fontSize: 10, fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid #fff", marginLeft: i > 0 ? -8 : 0 }}>
+                        {a.i}
+                      </div>
                     ))}
                   </div>
                   <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 4, color: "#EA580C", fontSize: 13 }}>
-                      <Star style={{ width: 14, height: 14, fill: "#EA580C", color: "#EA580C" }} />
-                      <span style={{ fontWeight: 700, color: "#0F172A" }}>4.9</span>
+                    <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 13 }}>
+                      <Star style={{ width: 13, height: 13, fill: "#D12E2E", color: "#D12E2E" }} />
+                      <span style={{ fontWeight: 700, color: "#0F2044" }}>4.9</span>
                     </div>
-                    <span style={{ fontSize: 9, fontWeight: 500, letterSpacing: "0.06em", textTransform: "uppercase", color: "#9CA3AF" }}>From 6,499 reviews</span>
+                    <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#9CA3AF" }}>6,499 reviews</span>
                   </div>
                 </div>
 
                 {/* CTAs */}
-                <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 20, paddingTop: 4 }}>
+                <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 16, marginTop: 6 }}>
                   <button
                     type="button"
                     onClick={() => welcomeVideoUrl && setVideoModalOpen(true)}
                     disabled={!welcomeVideoUrl}
-                    style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "12px 24px", background: "#EA580C", color: "#fff", fontSize: 14, fontWeight: 600, border: "none", borderRadius: 999, cursor: welcomeVideoUrl ? "pointer" : "default", boxShadow: "0 8px 20px -6px rgba(234,88,12,0.40)", transition: "background 200ms ease, transform 120ms ease" }}
-                    onMouseEnter={(e) => (e.currentTarget.style.background = "#D44D06")}
-                    onMouseLeave={(e) => (e.currentTarget.style.background = "#EA580C")}
-                    onMouseDown={(e) => (e.currentTarget.style.transform = "scale(0.97)")}
-                    onMouseUp={(e) => (e.currentTarget.style.transform = "scale(1)")}
+                    style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "9px 16px", background: "#D12E2E", color: "#fff", fontSize: 12, fontWeight: 600, border: "none", borderRadius: 999, cursor: welcomeVideoUrl ? "pointer" : "default", transition: "background 200ms ease" }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = "#B82626")}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = "#D12E2E")}
                   >
-                    <span>Play Video</span>
-                    <ChevronRight style={{ width: 14, height: 14 }} />
+                    <Play style={{ width: 12, height: 12, fill: "#fff" }} />
+                    <span>Play video</span>
                   </button>
                   <Link
                     to="/courses"
-                    style={{ fontSize: 13, fontWeight: 700, color: "#1A6FD4", textDecoration: "none", paddingBottom: 2, borderBottom: "2px solid transparent", transition: "border-color 200ms ease" }}
-                    onMouseEnter={(e) => (e.currentTarget.style.borderBottomColor = "#1A6FD4")}
-                    onMouseLeave={(e) => (e.currentTarget.style.borderBottomColor = "transparent")}
+                    style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, fontWeight: 600, color: "#0070C0", textDecoration: "none" }}
                   >
-                    Find an Instructor
+                    <span>Find an instructor</span>
+                    <ArrowRight style={{ width: 12, height: 12 }} />
                   </Link>
                 </div>
               </div>
