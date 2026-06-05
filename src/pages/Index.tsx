@@ -221,6 +221,27 @@ export default function Index() {
       <SEOHead jsonLd={homepageJsonLd} />
       <Drive365Home
         afterHero={
+          <>
+          {/* Perk strip — desktop only. Surfaces the 4 USPs immediately under the hero. */}
+          <section className="hidden md:block" style={{ background: "#FFFFFF", borderTop: "1px solid #EEF1F4", borderBottom: "1px solid #EEF1F4", padding: "14px 5%" }}>
+            <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "center", flexWrap: "wrap", gap: 10, fontFamily: "'Poppins', sans-serif" }}>
+              {[
+                { label: "Free re-test if you fail", color: "#0F2044" },
+                { label: "Free theory test included", color: "#0070C0" },
+              ].map((p) => (
+                <span key={p.label} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#F4F7FB", color: p.color, fontSize: 12, fontWeight: 700, padding: "7px 12px", borderRadius: 999, border: `1px solid ${p.color}22` }}>
+                  <span style={{ width: 14, height: 14, borderRadius: 999, background: p.color, color: "#FFFFFF", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 900 }}>✓</span>
+                  {p.label}
+                </span>
+              ))}
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#FFFFFF", color: "#0A1628", fontSize: 12, fontWeight: 700, padding: "6px 12px", borderRadius: 999, border: "1px solid #E5E7EB" }}>
+                <span style={{ color: "#6B7280", fontWeight: 600 }}>Pay in 3 with</span>
+                <span style={{ background: "#FFB3C7", color: "#17120F", fontSize: 10, fontWeight: 900, padding: "2px 7px", borderRadius: 3, letterSpacing: "-0.2px" }}>Klarna</span>
+                <span style={{ background: "#B2FCE4", color: "#000E18", fontSize: 10, fontWeight: 900, padding: "2px 7px", borderRadius: 3, letterSpacing: "-0.2px" }}>Clearpay</span>
+                <span style={{ color: "#6B7280", fontWeight: 600 }}>· 0% interest</span>
+              </span>
+            </div>
+          </section>
           <section className="hidden md:block" style={{ background: "#F6F6F8", padding: "32px 5%" }}>
             <div style={{ maxWidth: 1200, margin: "0 auto" }}>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", borderRadius: 14, overflow: "hidden", border: "1px solid #E5E7EB" }}>
