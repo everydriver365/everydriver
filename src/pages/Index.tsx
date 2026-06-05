@@ -747,19 +747,6 @@ export default function Index() {
         </>}
       />
 
-      {/* Feature Detail Modal */}
-      <FeatureDetailModal
-        feature={selectedFeature}
-        open={featureModalOpen}
-        onClose={() => setFeatureModalOpen(false)}
-      />
-
-
-
-
-
-
-
       {/* Video Story Section — Drive365 Style (Mobile) */}
       <section style={{ background: "#F6F6F8" }} className="md:hidden py-20">
         <div className="container max-w-6xl">
@@ -873,6 +860,20 @@ export default function Index() {
           </div>
         </div>
       </section>
+
+      {/* Feature Detail Modal */}
+      <FeatureDetailModal
+        feature={selectedFeature}
+        open={featureModalOpen}
+        onClose={() => setFeatureModalOpen(false)}
+      />
+
+
+
+
+
+
+
 
       {/* Video Modal */}
       <Dialog open={videoModalOpen} onOpenChange={setVideoModalOpen}>
