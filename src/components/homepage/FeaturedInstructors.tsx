@@ -61,9 +61,9 @@ export function FeaturedInstructors() {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      // 1. Active, non-placeholder instructors
+      // 1. Active, non-placeholder instructors (via public view so anon can read)
       const { data: insRows } = await supabase
-        .from("instructors")
+        .from("public_instructors" as any)
         .select("id, name, profile_image_url, hourly_rate, home_postcode, app_slug, is_active, is_network_placeholder")
         .eq("is_active", true)
         .eq("is_network_placeholder", false);
@@ -71,7 +71,7 @@ export function FeaturedInstructors() {
         if (!cancelled) { setInstructors([]); setLoading(false); }
         return;
       }
-      const ids = insRows.map((r: any) => r.id);
+      const ids = (insRows as any[]).map((r) => r.id);
 
       // 2. Ratings summary
       const { data: ratings } = await supabase
@@ -101,7 +101,7 @@ export function FeaturedInstructors() {
       }
 
       // 4. Build scored list with filters
-      const scored: ScoredInstructor[] = (insRows as InstructorRow[])
+      const scored: ScoredInstructor[] = (insRows as unknown as InstructorRow[])
         .map((row) => {
           const r = ratingMap.get(row.id) ?? { avg: 0, total: 0 };
           const p = passMap.get(row.id);
