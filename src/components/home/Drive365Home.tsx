@@ -704,8 +704,6 @@ export default function Drive365Home({ afterLearningPaths, afterHero }: { afterL
             <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><Check size={12} color="#1D9E75" strokeWidth={3} /> Free theory test included</span>
             <span style={{ width: 3, height: 3, borderRadius: 999, background: "#CBD2DD" }} />
             <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><Check size={12} color="#1D9E75" strokeWidth={3} /> DVSA-approved instructors</span>
-            <span style={{ width: 3, height: 3, borderRadius: 999, background: "#CBD2DD" }} />
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><Check size={12} color="#1D9E75" strokeWidth={3} /> Money-back guarantee</span>
           </div>
         </div>
       </section>
