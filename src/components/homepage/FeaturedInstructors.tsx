@@ -338,13 +338,20 @@ export function FeaturedInstructors() {
                   <div style={{ height: 4, background: accent.bar }} />
                   <div style={{ padding: 16 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-                      {ins.photo ? (
-                        <img src={ins.photo} alt={ins.name} style={{ width: 44, height: 44, borderRadius: "50%", objectFit: "cover" }} />
-                      ) : (
-                        <div style={{ width: 44, height: 44, borderRadius: "50%", background: accent.avatar, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 14 }}>
-                          {initials(ins.name)}
-                        </div>
-                      )}
+                      {(() => {
+                        const gPhotoRef = ins.isPlaceholder ? googleData[ins.id]?.photoReference : null;
+                        const photoSrc = ins.photo
+                          ?? (gPhotoRef
+                            ? `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/google-place-photo?ref=${encodeURIComponent(gPhotoRef)}&maxwidth=200`
+                            : null);
+                        return photoSrc ? (
+                          <img src={photoSrc} alt={ins.name} style={{ width: 44, height: 44, borderRadius: "50%", objectFit: "cover" }} />
+                        ) : (
+                          <div style={{ width: 44, height: 44, borderRadius: "50%", background: accent.avatar, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 14 }}>
+                            {initials(ins.name)}
+                          </div>
+                        );
+                      })()}
                       <div>
                         <div style={{ fontSize: 13, fontWeight: 700, color: "#0A1628", marginBottom: 1 }}>{ins.name}</div>
                         <div style={{ fontSize: 10, color: "#9CA3AF" }}>
