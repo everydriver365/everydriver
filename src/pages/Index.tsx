@@ -272,6 +272,14 @@ export default function Index() {
               </div>
             </div>
           </section>
+          </>
+        }
+
+
+
+
+        afterLearningPaths={<>
+          {/* Video section — now placed after Choose Your Route */}
           <section className="hidden md:block" style={{ background: "#F6F6F8", padding: "32px 5%" }}>
             <div style={{ maxWidth: 1200, margin: "0 auto" }}>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", borderRadius: 14, overflow: "hidden", border: "1px solid #E5E7EB" }}>
@@ -341,13 +349,7 @@ export default function Index() {
               </div>
             </div>
           </section>
-          </>
-        }
 
-
-
-
-        afterLearningPaths={<>
           {/* Backed by EveryDriver — trust grid (desktop) */}
           <section className="hidden md:block" style={{ padding: "48px 5%", background: "#FFFFFF", position: "relative", overflow: "hidden", fontFamily: "'Poppins', sans-serif" }}>
             {/* soft brand backdrop */}
