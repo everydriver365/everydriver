@@ -387,7 +387,7 @@ export function FeaturedInstructors() {
                       </div>
                     </div>
 
-                    {!ins.isPlaceholder ? (
+                    {!ins.isPlaceholder && !ins.googleBacked ? (
                       <>
                         <div style={{ display: "inline-flex", alignItems: "center", gap: 4, marginBottom: 10, background: badge.bg, border: `1px solid ${badge.border}`, color: badge.color, fontSize: 9, fontWeight: 700, padding: "3px 9px", borderRadius: 20 }}>
                           {badge.label}
