@@ -165,10 +165,9 @@ export function FeaturedInstructors() {
       }
 
       // Fill remaining slots with placeholders (up to 3 total)
-      while (scored.length < 3 && scored.length < scored.length + PLACEHOLDERS.length) {
-        const ph = PLACEHOLDERS[scored.length - (scored.filter(i => !i.isPlaceholder).length)];
-        if (ph) scored.push(ph);
-        else break;
+      const realCount = scored.length;
+      for (let i = 0; i < Math.min(3 - realCount, PLACEHOLDERS.length); i++) {
+        scored.push({ ...PLACEHOLDERS[i] });
       }
 
       // 5. Assign merit badges (one per instructor based on highest metric vs the others shown)
