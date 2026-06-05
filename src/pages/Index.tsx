@@ -221,98 +221,74 @@ export default function Index() {
       <SEOHead jsonLd={homepageJsonLd} />
       <Drive365Home
         afterHero={
-          <section className="hidden md:block" style={{ background: "#F6F6F8", padding: "32px 5%", fontFamily: "'Poppins', sans-serif" }}>
-            <div style={{ maxWidth: 860, margin: "0 auto", background: "#FFFFFF", borderRadius: 14, border: "1.5px solid #e8edf2", overflow: "hidden", display: "grid", gridTemplateColumns: "1fr 1fr" }}>
-              {/* Media side */}
-              <button
-                type="button"
-                onClick={() => welcomeVideoUrl && setVideoModalOpen(true)}
-                disabled={!welcomeVideoUrl}
-                className="group"
-                style={{ position: "relative", border: "none", padding: 0, background: "#F3F4F6", cursor: welcomeVideoUrl ? "pointer" : "default", overflow: "hidden", aspectRatio: "4 / 3" }}
-                aria-label="Play our story video"
-              >
-                <img
-                  src={videoThumbnailImg}
-                  alt="Watch our story"
-                  style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
-                />
-
-                {/* 2 min watch pill */}
-                <div style={{ position: "absolute", top: 12, left: 12, background: "#FFFFFF", padding: "4px 9px", borderRadius: 999, fontSize: 10, fontWeight: 600, color: "#0F2044", display: "inline-flex", alignItems: "center", gap: 4, boxShadow: "0 1px 2px rgba(0,0,0,0.08)" }}>
-                  <Clock style={{ width: 11, height: 11 }} />
-                  <span>2 min watch</span>
-                </div>
-
-                {/* Centered play button */}
-                <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <div
-                    style={{ width: 56, height: 56, background: "#FFFFFF", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 8px 20px -6px rgba(0,0,0,0.25)", transition: "transform 200ms ease" }}
-                    onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.08)")}
-                    onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
-                  >
-                    <Play style={{ width: 22, height: 22, color: "#D12E2E", fill: "#D12E2E", marginLeft: 2 }} />
+          <section className="hidden md:block" style={{ background: "#F6F6F8", padding: "32px 5%" }}>
+            <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", borderRadius: 14, overflow: "hidden", border: "1px solid #E5E7EB" }}>
+                <button
+                  type="button"
+                  onClick={() => welcomeVideoUrl && setVideoModalOpen(true)}
+                  disabled={!welcomeVideoUrl}
+                  style={{
+                    background: "linear-gradient(135deg, #0A2B6B, #0A1628)",
+                    minHeight: 220,
+                    position: "relative",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    border: "none",
+                    padding: 0,
+                    cursor: welcomeVideoUrl ? "pointer" : "default",
+                  }}
+                  aria-label="Play our story video"
+                >
+                  <span style={{ position: "absolute", top: 12, left: 12, background: "rgba(0,0,0,0.5)", color: "#FFFFFF", fontSize: 9, fontWeight: 700, padding: "4px 10px", borderRadius: 20 }}>
+                    2 MIN WATCH
+                  </span>
+                  <div style={{ width: 52, height: 52, borderRadius: 999, background: "#E8641A", boxShadow: "0 4px 20px rgba(232,100,26,0.4)", color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>
+                    ▶
                   </div>
-                </div>
-              </button>
-
-              {/* Content side */}
-              <div style={{ padding: "1.5rem", display: "flex", flexDirection: "column", justifyContent: "center", gap: 10 }}>
-                <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.14em", textTransform: "uppercase", color: "#0070C0" }}>Our story</span>
-                <h2 style={{ fontSize: 17, lineHeight: 1.3, color: "#0F2044", margin: 0, fontWeight: 700 }}>
-                  Watch how learners pass with <span style={{ fontStyle: "italic", color: "#D12E2E" }}>confidence.</span>
-                </h2>
-                <p style={{ color: "#6B7280", fontSize: 12, lineHeight: 1.55, margin: 0 }}>
-                  Thousands of learners trust Drive365 — from first lesson nerves to test day success.
-                </p>
-
-                {/* Social proof */}
-                <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 2 }}>
-                  <div style={{ display: "flex" }}>
-                    {[
-                      { i: "SM", bg: "#D12E2E" },
-                      { i: "JT", bg: "#0070C0" },
-                      { i: "EW", bg: "#0F2044" },
-                    ].map((a, i) => (
-                      <div key={i} style={{ width: 26, height: 26, borderRadius: "50%", background: a.bg, color: "#fff", fontSize: 10, fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid #fff", marginLeft: i > 0 ? -8 : 0 }}>
-                        {a.i}
-                      </div>
-                    ))}
-                  </div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 13 }}>
-                      <Star style={{ width: 13, height: 13, fill: "#D12E2E", color: "#D12E2E" }} />
-                      <span style={{ fontWeight: 700, color: "#0F2044" }}>4.9</span>
+                </button>
+                <div style={{ background: "#FFFFFF", padding: 28 }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: "#E8641A", textTransform: "uppercase", letterSpacing: "1.5px" }}>OUR STORY</div>
+                  <h3 style={{ fontSize: 18, fontWeight: 800, color: "#0A1628", margin: "6px 0" }}>
+                    Watch how learners pass with <span style={{ color: "#E8641A" }}>confidence.</span>
+                  </h3>
+                  <p style={{ fontSize: 12, color: "#6B7280", margin: "0 0 12px" }}>
+                    Discover why thousands of learners trust us with their driving journey.
+                  </p>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
+                    <div style={{ display: "flex" }}>
+                      {[
+                        { l: "S", bg: "#0A2B6B" },
+                        { l: "J", bg: "#E8641A" },
+                        { l: "E", bg: "#0070C0" },
+                        { l: "P", bg: "#10B981" },
+                      ].map((a, i) => (
+                        <div key={i} style={{ width: 24, height: 24, borderRadius: 999, background: a.bg, color: "#FFFFFF", fontSize: 10, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", marginLeft: i === 0 ? 0 : -8, border: "2px solid #FFFFFF" }}>
+                          {a.l}
+                        </div>
+                      ))}
                     </div>
-                    <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#9CA3AF" }}>6,499 reviews</span>
+                    <span style={{ color: "#FBBF24", fontSize: 12 }}>★★★★★</span>
+                    <span style={{ fontSize: 11, color: "#9CA3AF" }}>4.9 from 6,499 learner reviews</span>
                   </div>
-                </div>
-
-                {/* CTAs */}
-                <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 16, marginTop: 6 }}>
-                  <button
-                    type="button"
-                    onClick={() => welcomeVideoUrl && setVideoModalOpen(true)}
-                    disabled={!welcomeVideoUrl}
-                    style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "9px 16px", background: "#D12E2E", color: "#fff", fontSize: 12, fontWeight: 600, border: "none", borderRadius: 999, cursor: welcomeVideoUrl ? "pointer" : "default", transition: "background 200ms ease" }}
-                    onMouseEnter={(e) => (e.currentTarget.style.background = "#B82626")}
-                    onMouseLeave={(e) => (e.currentTarget.style.background = "#D12E2E")}
-                  >
-                    <Play style={{ width: 12, height: 12, fill: "#fff" }} />
-                    <span>Play video</span>
-                  </button>
-                  <Link
-                    to="/courses"
-                    style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, fontWeight: 600, color: "#0070C0", textDecoration: "none" }}
-                  >
-                    <span>Find an instructor</span>
-                    <ArrowRight style={{ width: 12, height: 12 }} />
-                  </Link>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button
+                      type="button"
+                      onClick={() => welcomeVideoUrl && setVideoModalOpen(true)}
+                      disabled={!welcomeVideoUrl}
+                      style={{ background: "#E8641A", color: "#FFFFFF", borderRadius: 7, padding: "9px 16px", fontSize: 11, fontWeight: 700, border: "none", cursor: welcomeVideoUrl ? "pointer" : "default" }}
+                    >
+                      ▶ Play video
+                    </button>
+                    <Link to="/instructors" style={{ background: "#FFFFFF", color: "#0070C0", border: "1.5px solid #0070C0", borderRadius: 7, padding: "9px 16px", fontSize: 11, fontWeight: 700, textDecoration: "none" }}>Find an instructor →</Link>
+                  </div>
                 </div>
               </div>
             </div>
           </section>
         }
+
 
 
 
