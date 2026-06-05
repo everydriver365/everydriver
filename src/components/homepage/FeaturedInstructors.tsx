@@ -466,6 +466,12 @@ export function FeaturedInstructors() {
                             <div style={{ fontSize: 16, fontWeight: 800, color: "#0A1628" }}>{ins.total_reviews}</div>
                             <div style={{ fontSize: 8, color: "#9CA3AF" }}>reviews</div>
                           </div>
+                          {nextAvailable[ins.id] && (
+                            <div style={{ flex: 1, textAlign: "center", background: "#ECFDF5", border: "1px solid #A7F3D0", borderRadius: 7, padding: "8px 4px" }}>
+                              <div style={{ fontSize: 12, fontWeight: 800, color: "#047857", lineHeight: 1.15 }}>{formatNextAvailable(nextAvailable[ins.id])}</div>
+                              <div style={{ fontSize: 8, color: "#059669" }}>next available</div>
+                            </div>
+                          )}
                         </div>
 
                         {ins.review && (
