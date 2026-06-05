@@ -267,7 +267,7 @@ export function FeaturedInstructors() {
       (async () => {
         try {
           const { data, error } = await supabase.functions.invoke("fetch-google-reviews", {
-            body: { query: meta.googleQuery, cacheKey: ins.id },
+            body: { query: ins.googleQuery, cacheKey },
           });
           if (cancelled || error || !data) return;
           setGoogleData((prev) => ({
