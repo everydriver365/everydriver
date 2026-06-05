@@ -223,6 +223,35 @@ export function FeaturedInstructors() {
     return () => { cancelled = true; };
   }, []);
 
+  // Fetch Google reviews for placeholders that have a googleQuery
+  useEffect(() => {
+    let cancelled = false;
+    const targets = instructors.filter((i) => i.isPlaceholder);
+    for (const ins of targets) {
+      const meta = PLACEHOLDERS.find((p) => p.id === ins.id);
+      if (!meta?.googleQuery || googleData[ins.id]) continue;
+      (async () => {
+        try {
+          const { data, error } = await supabase.functions.invoke("fetch-google-reviews", {
+            body: { query: meta.googleQuery, cacheKey: ins.id },
+          });
+          if (cancelled || error || !data) return;
+          setGoogleData((prev) => ({
+            ...prev,
+            [ins.id]: {
+              rating: data.rating ?? null,
+              userRatingsTotal: data.userRatingsTotal ?? null,
+              reviews: data.reviews ?? [],
+            },
+          }));
+        } catch (e) {
+          console.error("Google reviews fetch failed:", e);
+        }
+      })();
+    }
+    return () => { cancelled = true; };
+  }, [instructors]);
+
   if (loading || instructors.length === 0) return null;
 
   return (
