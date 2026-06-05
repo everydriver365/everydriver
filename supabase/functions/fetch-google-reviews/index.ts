@@ -51,6 +51,7 @@ serve(async (req) => {
             rating: cached.rating,
             userRatingsTotal: cached.user_ratings_total,
             reviews: cached.reviews,
+            photoReference: cached.photo_reference ?? null,
           }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
