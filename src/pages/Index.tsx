@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { PostcodeAutocomplete } from "@/components/PostcodeAutocomplete";
 import { CoursePlannerSheet } from "@/components/course-planner/CoursePlannerSheet";
 import { HeroSearchSection } from "@/components/homepage/HeroSearchSection";
-import { HomepageLiveStats } from "@/components/homepage/HomepageLiveStats";
+
 
 import drive365HeroTestCentre from "@/assets/drive365-hero-driver.webp";
 import testswapBanner from "@/assets/testswap-banner.png";
@@ -466,8 +466,6 @@ export default function Index() {
               </div>
             </div>
           </section>
-
-          <HomepageLiveStats />
           <section style={{ padding: "56px 5%", background: "#F6F6F8", width: "100%" }}>
             {(() => {
               const resolveImage = (title: string, url?: string) => {
