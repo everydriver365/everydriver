@@ -584,6 +584,9 @@ export default function Index() {
                   <p style={{ fontSize: 13, color: "#6B7280", lineHeight: 1.6, margin: 0 }}>
                     Every booking is fully protected when you book through us.
                   </p>
+                  <p style={{ fontSize: 13, color: "#0A1628", lineHeight: 1.6, margin: "8px 0 0", fontWeight: 500 }}>
+                    Search for independent, vetted instructors in your area, compare reviews, prices and live availability, then book online 24/7 — all backed by EveryDriver.
+                  </p>
                 </div>
 
                 {/* Tiles grid */}
