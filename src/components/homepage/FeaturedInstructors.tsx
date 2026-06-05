@@ -100,6 +100,19 @@ const PLACEHOLDERS: (ScoredInstructor & { matchSlug?: string })[] = [
     score: 0,
     isPlaceholder: true,
   },
+  {
+    id: "placeholder-sarah",
+    name: "Sarah M",
+    photo: null,
+    hourly_rate: null,
+    location: "Southampton",
+    app_slug: null,
+    avg_rating: 0,
+    total_reviews: 0,
+    pass_rate: null,
+    score: 0,
+    isPlaceholder: true,
+  },
 ];
 
 export function FeaturedInstructors() {
