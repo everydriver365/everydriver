@@ -747,6 +747,120 @@ export default function Index() {
         </>}
       />
 
+      {/* Video Story Section — Drive365 Style (Mobile) */}
+      <section style={{ background: "#F6F6F8" }} className="md:hidden py-20">
+        <div className="container max-w-6xl">
+          <div className="grid md:grid-cols-2 gap-10 lg:gap-16 items-center">
+            {/* Left: Video preview card */}
+            <motion.button
+              type="button"
+              onClick={() => welcomeVideoUrl && setVideoModalOpen(true)}
+              disabled={!welcomeVideoUrl}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              viewport={{ once: true }}
+              className="group relative w-full overflow-hidden text-left"
+              style={{
+                borderRadius: 18,
+                border: "1px solid #E9E5E8",
+                background: "#fff",
+                boxShadow: "0 12px 32px rgba(15, 32, 68, 0.08)",
+              }}
+            >
+              <div className="relative aspect-[4/3] overflow-hidden">
+                <img
+                  src={videoThumbnailImg}
+                  alt="Watch our story"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div
+                    className="flex h-20 w-20 items-center justify-center rounded-full transition-transform duration-300 group-hover:scale-110"
+                    style={{
+                      background: "#fff",
+                      boxShadow: "0 8px 24px rgba(15, 32, 68, 0.25)",
+                    }}
+                  >
+                    <Play className="h-7 w-7 ml-1" style={{ color: "#3E57D9", fill: "#3E57D9" }} />
+                  </div>
+                </div>
+                <div
+                  className="absolute top-4 left-4 px-3 py-1.5 text-xs font-semibold uppercase tracking-wider rounded-full"
+                  style={{ background: "rgba(255,255,255,0.95)", color: "#3E57D9", letterSpacing: "0.08em" }}
+                >
+                  2 min watch
+                </div>
+              </div>
+            </motion.button>
+
+            {/* Right: Content */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              viewport={{ once: true }}
+            >
+              <div
+                className="text-xs font-semibold uppercase mb-3"
+                style={{ color: "#3E57D9", letterSpacing: "0.08em" }}
+              >
+                Our Story
+              </div>
+              <h2
+                className="text-4xl md:text-5xl font-bold mb-5 leading-[1.1]"
+                style={{ color: "#191C2F", letterSpacing: -0.5 }}
+              >
+                Watch how learners pass with confidence
+              </h2>
+              <p className="text-base md:text-lg mb-7 leading-relaxed" style={{ color: "#2F3748" }}>
+                Discover why thousands of learners trust us with their driving journey — from first lesson nerves to test day success.
+              </p>
+
+              <div className="flex items-center gap-4 mb-8">
+                <div className="flex -space-x-3">
+                  {[testimonialSarahFallback, testimonialJamesFallback, testimonialEmmaFallback].map((src, i) => (
+                    <img
+                      key={i}
+                      src={src}
+                      alt="Learner"
+                      className="h-11 w-11 rounded-full object-cover"
+                      style={{ border: "2px solid #fff", boxShadow: "0 2px 6px rgba(15,32,68,0.12)" }}
+                    />
+                  ))}
+                </div>
+                <div>
+                  <div className="flex gap-0.5 mb-0.5">
+                    {[1, 2, 3, 4, 5].map((s) => (
+                      <Star key={s} className="h-4 w-4 fill-amber-400 text-amber-400" />
+                    ))}
+                  </div>
+                  <div className="text-xs font-medium" style={{ color: "#2F3748" }}>
+                    4.9 from 6,499 learner reviews
+                  </div>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => welcomeVideoUrl && setVideoModalOpen(true)}
+                disabled={!welcomeVideoUrl}
+                className="inline-flex items-center gap-2 px-7 py-3.5 text-sm font-semibold transition-all hover:opacity-90 disabled:opacity-50"
+                style={{
+                  background: "#3E57D9",
+                  color: "#fff",
+                  borderRadius: 12,
+                  boxShadow: "0 6px 16px rgba(26, 82, 160, 0.25)",
+                }}
+              >
+                <Play className="h-4 w-4 fill-white" /> Play Video
+              </button>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
       {/* Feature Detail Modal */}
       <FeatureDetailModal
         feature={selectedFeature}
