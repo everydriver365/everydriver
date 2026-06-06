@@ -557,24 +557,23 @@ export default function Drive365Home({ afterLearningPaths, afterHero }: { afterL
           {/* Header */}
           <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 24, marginBottom: 24 }}>
             <div style={{ maxWidth: 580 }}>
-              <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#FFFFFF", border: "1px solid #E5E7EB", borderRadius: 999, padding: "4px 10px", fontSize: 9, fontWeight: 800, color: "#0F2044", textTransform: "uppercase", letterSpacing: "1.2px", boxShadow: "0 1px 4px rgba(15,32,68,0.04)" }}>
-                <span style={{ width: 5, height: 5, borderRadius: 999, background: "#E8641A" }} />
+              <div style={{ fontSize: 11, fontWeight: 700, color: "#D12E2E", textTransform: "uppercase", letterSpacing: "1.2px", marginBottom: 8 }}>
                 Three routes · one licence
               </div>
-              <h2 style={{ fontSize: 28, fontWeight: 800, color: "#0A0E27", letterSpacing: "-0.8px", margin: "8px 0 6px", lineHeight: 1.15 }}>
+              <h2 style={{ fontSize: 20, fontWeight: 500, color: "#0A1936", letterSpacing: "-0.2px", margin: "0 0 6px", lineHeight: 1.3 }}>
                 Choose the <span style={{ color: "#E8641A" }}>route</span> that fits your life.
               </h2>
               <p style={{ fontSize: 13, color: "#5A6B82", lineHeight: 1.5, margin: 0 }}>
                 Pass fast on an intensive, balance speed with practice on a semi-intensive, or learn at your own pace with weekly lessons. Every route includes a free re-test, free theory test, and Klarna or Clearpay.
               </p>
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, paddingBottom: 2 }}>
-              <span style={{ fontSize: 11, color: "#5A6B82", fontWeight: 600 }}>Not sure?</span>
-              <Link to="/courses" style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "#0F2044", color: "#FFFFFF", padding: "8px 12px", borderRadius: 8, fontSize: 11, fontWeight: 700, textDecoration: "none" }}>
-                Compare all routes <ChevronRight size={12} strokeWidth={2.4} />
+            <div style={{ display: "flex", alignItems: "center", paddingBottom: 2 }}>
+              <Link to="/courses" style={{ display: "inline-flex", alignItems: "center", gap: 4, color: "#0070C0", fontSize: 13, fontWeight: 500, textDecoration: "none" }}>
+                Compare all routes <ChevronRight size={14} strokeWidth={2.2} />
               </Link>
             </div>
           </div>
+
 
           {/* Three lanes */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1.06fr 1fr", gap: 12, alignItems: "stretch" }}>
