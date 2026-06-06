@@ -13,6 +13,7 @@ import { PostcodeAutocomplete } from "@/components/PostcodeAutocomplete";
 import { CoursePlannerSheet } from "@/components/course-planner/CoursePlannerSheet";
 import { HeroSearchSection } from "@/components/homepage/HeroSearchSection";
 import { FeaturedInstructors } from "@/components/homepage/FeaturedInstructors";
+import { HomeFAQ } from "@/components/homepage/HomeFAQ";
 
 
 import drive365HeroTestCentre from "@/assets/drive365-hero-driver.webp";
