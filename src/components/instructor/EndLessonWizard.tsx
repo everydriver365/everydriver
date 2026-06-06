@@ -225,6 +225,8 @@ export function EndLessonWizard({
       }
 
       // 4. Deduct lesson — prefer prepaid intensive hours; fall back to money balance.
+      // National Intensive pupils (linked to course_enquiries) are billed in hours.
+      // Non-intensive pupils are billed in £ as before.
       try {
         const lessonHours = Math.round((durationMinutes / 60) * 100) / 100;
 
@@ -234,27 +236,51 @@ export function EndLessonWizard({
           .eq("id", pupilId)
           .single();
 
-        const intensiveAvailable = Number((fresh as any)?.intensive_hours_paid ?? 0);
-        // Hours-deduction path applies ONLY to National Intensive pupils
-        // (i.e. those linked to a course_enquiries record).
+        const intensiveAvailable = Math.max(
+          0,
+          Number((fresh as any)?.intensive_hours_paid ?? 0),
+        );
         const isNationalIntensive = Boolean((fresh as any)?.enquiry_id);
 
-        if (isNationalIntensive && intensiveAvailable >= lessonHours && lessonHours > 0) {
-          // National Intensive course: deduct hours, not money.
-          const remaining = Math.round((intensiveAvailable - lessonHours) * 100) / 100;
+        if (isNationalIntensive && lessonHours > 0 && intensiveAvailable > 0) {
+          // Use up whatever hours remain; charge the shortfall to money.
+          const hoursUsed = Math.min(intensiveAvailable, lessonHours);
+          const remainingHours = Math.round((intensiveAvailable - hoursUsed) * 100) / 100;
+          const shortfallHours = Math.round((lessonHours - hoursUsed) * 100) / 100;
+          const perHourRate = lessonHours > 0 ? lessonCost / lessonHours : 0;
+          const shortfallCost = Math.round(shortfallHours * perHourRate * 100) / 100;
+
           await supabase
             .from("pupils")
-            .update({ intensive_hours_paid: remaining } as any)
+            .update({ intensive_hours_paid: remainingHours } as any)
             .eq("id", pupilId);
 
           await supabase.from("payment_history").insert({
             pupil_id: pupilId,
             instructor_id: instructorId,
             amount: 0,
-            payment_method: "Adjustment",
-            payment_type: "adjustment",
-            notes: `Intensive hours: ${lessonHours}h deducted (${remaining}h remaining) — ${durationMinutes}min lesson on ${lessonDate}`,
+            payment_method: "Intensive Hours",
+            payment_type: "intensive_hours",
+            notes: `Intensive: ${hoursUsed}h used (${remainingHours}h remaining) — ${durationMinutes}min lesson on ${lessonDate}`,
           });
+
+          // Bill any shortfall against money balance.
+          if (shortfallCost > 0) {
+            const { error: balErr } = await supabase.rpc("increment_pupil_balance", {
+              p_pupil_id: pupilId,
+              p_amount: -shortfallCost,
+            });
+            if (balErr) throw balErr;
+
+            await supabase.from("payment_history").insert({
+              pupil_id: pupilId,
+              instructor_id: instructorId,
+              amount: -shortfallCost,
+              payment_method: "Lesson Charge",
+              payment_type: "lesson_payment",
+              notes: `${shortfallHours}h shortfall on ${lessonDate} (intensive hours exhausted)`,
+            });
+          }
         } else {
           // Money path — use atomic RPC, not read/modify/write.
           const { error: balErr } = await supabase.rpc("increment_pupil_balance", {
