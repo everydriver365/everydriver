@@ -201,17 +201,18 @@ export function IOSCourseCard({
               <div className="flex items-baseline gap-2 pt-1">
                 {hasDiscount ? (
                   <>
-                    <span className="text-2xl font-extrabold text-foreground leading-none">
+                    <span className="text-lg font-semibold text-foreground leading-none">
                       £{finalPrice.toFixed(0)}
                     </span>
                     <span className="text-sm line-through text-muted-foreground">£{totalPrice.toFixed(0)}</span>
                   </>
                 ) : (
-                  <span className="text-2xl font-extrabold text-foreground leading-none">
+                  <span className="text-lg font-semibold text-foreground leading-none">
                     £{totalPrice.toFixed(0)}
                   </span>
                 )}
               </div>
+
 
               <CompactPaymentBadges
                 amount={finalPrice}
