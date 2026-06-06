@@ -211,6 +211,8 @@ export const instructorPortalRoutes = (
     <Route path="/instructor/settings" element={<InstructorSettingsHub />} />
     <Route path="/instructor/settings/:categoryId" element={<InstructorSettingsHub />} />
     <Route path="/instructor/notifications" element={<InstructorNotifications />} />
+    <Route path="/instructor-app/unmatched-google-events" element={<UnmatchedGoogleEventsPage />} />
+    <Route path="/instructor/unmatched-google-events" element={<UnmatchedGoogleEventsPage />} />
     <Route path="/instructor/install" element={<InstallInstructor />} />
     <Route path="/instructor/modules" element={<InstructorModules />} />
     <Route path="/website/my-site" element={<InstructorMySite />} />
