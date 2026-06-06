@@ -440,7 +440,7 @@ export default function Drive365Home({ afterLearningPaths, afterHero }: { afterL
                   onError={(e) => { (e.currentTarget as HTMLImageElement).style.visibility = "hidden"; }}
                 />
                 <h3>Intensive Courses</h3>
-                <p>Pass your test in as little as one week.</p>
+                <p>Pass your test in as little as one week, with our pass guarantee.</p>
                 <Link to="/courses?type=intensive">
                   <button type="button" className="d365-feat-btn d365-feat-btn--red">Read more</button>
                 </Link>
