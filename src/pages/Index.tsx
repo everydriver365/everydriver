@@ -286,12 +286,7 @@ export default function Index() {
                   </div>
                   <div>
                     <div style={{ fontSize: 13, fontWeight: 700, color: "#0A1936", marginBottom: 1, lineHeight: 1.3 }}>Your money is protected</div>
-                    <div style={{ fontSize: 11, color: "#5A6B82", lineHeight: 1.4, marginBottom: 6 }}>Secure payment · dispute resolution</div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 5, flexWrap: "wrap" }}>
-                      <span style={{ background: "#FFB3C7", borderRadius: 999, padding: "2px 8px", fontSize: 9, fontWeight: 700, color: "#17120F" }}>Klarna.</span>
-                      <span style={{ background: "#B2FCE4", borderRadius: 999, padding: "2px 8px", fontSize: 9, fontWeight: 700, color: "#000E18" }}>Clearpay</span>
-                      <span style={{ fontSize: 10, color: "#9CA3AF", fontWeight: 500 }}>pay in instalments</span>
-                    </div>
+                    <div style={{ fontSize: 11, color: "#5A6B82", lineHeight: 1.4 }}>Secure payment · dispute resolution</div>
                   </div>
                 </div>
 
