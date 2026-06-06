@@ -176,9 +176,10 @@ export function IOSCourseCard({
             </div>
 
             <div className="flex-1 px-4 py-4 space-y-2">
-              <h3 className="text-base sm:text-lg font-bold text-foreground uppercase tracking-wide leading-snug">
-                {courseName}
+              <h3 className="text-[14px] font-semibold text-foreground tracking-normal leading-snug">
+                {courseName.charAt(0) + courseName.slice(1).toLowerCase()}
               </h3>
+
 
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Clock className="h-4 w-4 flex-shrink-0" />
