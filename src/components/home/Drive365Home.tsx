@@ -557,24 +557,23 @@ export default function Drive365Home({ afterLearningPaths, afterHero }: { afterL
           {/* Header */}
           <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 24, marginBottom: 24 }}>
             <div style={{ maxWidth: 580 }}>
-              <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#FFFFFF", border: "1px solid #E5E7EB", borderRadius: 999, padding: "4px 10px", fontSize: 9, fontWeight: 800, color: "#0F2044", textTransform: "uppercase", letterSpacing: "1.2px", boxShadow: "0 1px 4px rgba(15,32,68,0.04)" }}>
-                <span style={{ width: 5, height: 5, borderRadius: 999, background: "#E8641A" }} />
+              <div style={{ fontSize: 11, fontWeight: 700, color: "#D12E2E", textTransform: "uppercase", letterSpacing: "1.2px", marginBottom: 8 }}>
                 Three routes · one licence
               </div>
-              <h2 style={{ fontSize: 28, fontWeight: 800, color: "#0A0E27", letterSpacing: "-0.8px", margin: "8px 0 6px", lineHeight: 1.15 }}>
+              <h2 style={{ fontSize: 20, fontWeight: 500, color: "#0A1936", letterSpacing: "-0.2px", margin: "0 0 6px", lineHeight: 1.3 }}>
                 Choose the <span style={{ color: "#E8641A" }}>route</span> that fits your life.
               </h2>
               <p style={{ fontSize: 13, color: "#5A6B82", lineHeight: 1.5, margin: 0 }}>
                 Pass fast on an intensive, balance speed with practice on a semi-intensive, or learn at your own pace with weekly lessons. Every route includes a free re-test, free theory test, and Klarna or Clearpay.
               </p>
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, paddingBottom: 2 }}>
-              <span style={{ fontSize: 11, color: "#5A6B82", fontWeight: 600 }}>Not sure?</span>
-              <Link to="/courses" style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "#0F2044", color: "#FFFFFF", padding: "8px 12px", borderRadius: 8, fontSize: 11, fontWeight: 700, textDecoration: "none" }}>
-                Compare all routes <ChevronRight size={12} strokeWidth={2.4} />
+            <div style={{ display: "flex", alignItems: "center", paddingBottom: 2 }}>
+              <Link to="/courses" style={{ display: "inline-flex", alignItems: "center", gap: 4, color: "#0070C0", fontSize: 13, fontWeight: 500, textDecoration: "none" }}>
+                Compare all routes <ChevronRight size={14} strokeWidth={2.2} />
               </Link>
             </div>
           </div>
+
 
           {/* Three lanes */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1.06fr 1fr", gap: 12, alignItems: "stretch" }}>
@@ -592,23 +591,22 @@ export default function Drive365Home({ afterLearningPaths, afterHero }: { afterL
                   style={{
                     background: "#FFFFFF",
                     borderRadius: 12,
-                    border: course.featured ? `2px solid ${accent}` : "1px solid #E8EDF2",
-                    boxShadow: course.featured
-                      ? `0 14px 40px -24px ${accent}66, 0 2px 0 ${accent}22 inset`
-                      : "0 8px 24px -16px rgba(10,22,40,0.16)",
+                    border: course.featured ? `2px solid ${accent}` : "0.5px solid #E5E7EB",
+                    boxShadow: "none",
                     position: "relative",
                     display: "flex",
                     flexDirection: "column",
                     overflow: "hidden",
                     transform: course.featured ? "translateY(-4px)" : "none",
-                    transition: "transform 220ms ease, box-shadow 220ms ease",
+                    transition: "transform 220ms ease",
                   }}
                 >
                   {course.featured && (
-                    <div style={{ position: "absolute", top: 10, right: 10, zIndex: 5, background: accent, color: "#FFFFFF", fontSize: 8, fontWeight: 900, padding: "4px 8px", borderRadius: 999, letterSpacing: "1px", textTransform: "uppercase", boxShadow: `0 4px 10px -4px ${accent}88` }}>
+                    <div style={{ position: "absolute", top: 10, right: 10, zIndex: 5, background: accent, color: "#FFFFFF", fontSize: 10, fontWeight: 600, padding: "4px 8px", borderRadius: 999, letterSpacing: "1px", textTransform: "uppercase" }}>
                       Most popular
                     </div>
                   )}
+
 
                   {/* Card image */}
                   <div style={{ height: 130, overflow: "hidden", position: "relative" }}>
@@ -621,32 +619,32 @@ export default function Drive365Home({ afterLearningPaths, afterHero }: { afterL
 
                   {/* Lane header */}
                   <div style={{ padding: "14px 16px 0", display: "flex", alignItems: "center", gap: 10 }}>
-                    <div style={{ width: 34, height: 34, borderRadius: 8, background: accentSoft, color: accent, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 900, letterSpacing: "-0.5px", border: `1px solid ${accent}22` }}>
+                    <div style={{ width: 34, height: 34, borderRadius: 8, background: accentSoft, color: accent, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, letterSpacing: "-0.5px", border: `1px solid ${accent}22` }}>
                       {lane}
                     </div>
                     <div style={{ lineHeight: 1.15 }}>
-                      <div style={{ fontSize: 8, fontWeight: 800, color: accent, textTransform: "uppercase", letterSpacing: "1.2px" }}>{course.badge}</div>
-                      <h3 style={{ fontSize: 15, fontWeight: 800, color: "#0A0E27", margin: "2px 0 0", letterSpacing: "-0.2px" }}>{course.title}</h3>
+                      <div style={{ fontSize: 10, fontWeight: 600, color: accent, textTransform: "uppercase", letterSpacing: "1.2px" }}>{course.badge}</div>
+                      <h3 style={{ fontSize: 14, fontWeight: 500, color: "#0A1936", margin: "2px 0 0", letterSpacing: "-0.2px" }}>{course.title}</h3>
                     </div>
                   </div>
 
                   {/* Tagline */}
                   <div style={{ padding: "10px 16px 0" }}>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: "#0F2044" }}>{tagline}</div>
+                    <div style={{ fontSize: 12, fontWeight: 500, color: "#0A1936" }}>{tagline}</div>
                     <div style={{ fontSize: 11, color: "#6B7280", marginTop: 1 }}>{subline}</div>
                   </div>
 
                   {/* Price */}
                   <div style={{ padding: "12px 16px 2px", display: "flex", alignItems: "baseline", gap: 4 }}>
-                    <span style={{ fontSize: 10, color: "#9CA3AF", fontWeight: 600 }}>From</span>
-                    <span style={{ fontSize: 22, fontWeight: 800, color: "#0A0E27", letterSpacing: "-0.8px" }}>{course.priceFrom}</span>
-                    {course.priceUnit && <span style={{ fontSize: 11, color: "#6B7280", fontWeight: 600 }}>{course.priceUnit}</span>}
+                    <span style={{ fontSize: 10, color: "#9CA3AF", fontWeight: 500 }}>From</span>
+                    <span style={{ fontSize: 18, fontWeight: 600, color: "#0A1936", letterSpacing: "-0.4px" }}>{course.priceFrom}</span>
+                    {course.priceUnit && <span style={{ fontSize: 11, color: "#6B7280", fontWeight: 500 }}>{course.priceUnit}</span>}
                   </div>
 
                   {/* Features */}
                   <ul style={{ listStyle: "none", margin: 0, padding: "8px 16px 2px", display: "flex", flexDirection: "column", gap: 6 }}>
                     {course.features.map((f) => (
-                      <li key={f} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "#374151", fontWeight: 500 }}>
+                      <li key={f} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "#374151", fontWeight: 400 }}>
                         <span style={{ width: 16, height: 16, borderRadius: 999, background: accentSoft, color: accent, display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                           <Check size={10} strokeWidth={3} />
                         </span>
@@ -655,12 +653,13 @@ export default function Drive365Home({ afterLearningPaths, afterHero }: { afterL
                     ))}
                   </ul>
 
+
                   {/* Spread cost row */}
                   <div style={{ margin: "10px 16px 0", padding: "8px 10px", background: "#F6F8FC", border: "1px solid #EAEEF5", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6 }}>
-                    <span style={{ fontSize: 9, color: "#5A6B82", fontWeight: 600 }}>Spread cost · 0% interest</span>
+                    <span style={{ fontSize: 10, color: "#5A6B82", fontWeight: 500 }}>Spread cost · 0% interest</span>
                     <span style={{ display: "inline-flex", gap: 3 }}>
-                      <span style={{ background: "#FFB3C7", color: "#17120F", fontSize: 8, fontWeight: 900, padding: "2px 5px", borderRadius: 3 }}>Klarna</span>
-                      <span style={{ background: "#B2FCE4", color: "#000E18", fontSize: 8, fontWeight: 900, padding: "2px 5px", borderRadius: 3 }}>Clearpay</span>
+                      <span style={{ background: "#FFB3C7", color: "#17120F", fontSize: 9, fontWeight: 700, padding: "2px 5px", borderRadius: 3 }}>Klarna</span>
+                      <span style={{ background: "#B2FCE4", color: "#000E18", fontSize: 9, fontWeight: 700, padding: "2px 5px", borderRadius: 3 }}>Clearpay</span>
                     </span>
                   </div>
 
@@ -673,9 +672,9 @@ export default function Drive365Home({ afterLearningPaths, afterHero }: { afterL
                           border: "none",
                           borderRadius: 10,
                           padding: "10px 14px",
-                          fontSize: 12,
-                          fontWeight: 800,
-                          letterSpacing: "-0.2px",
+                          fontSize: 13,
+                          fontWeight: 500,
+                          letterSpacing: "-0.1px",
                           background: course.featured ? accent : "#0F2044",
                           color: "#FFFFFF",
                           cursor: "pointer",
@@ -683,16 +682,17 @@ export default function Drive365Home({ afterLearningPaths, afterHero }: { afterL
                           alignItems: "center",
                           justifyContent: "center",
                           gap: 6,
-                          boxShadow: course.featured ? `0 8px 18px -10px ${accent}99` : "0 6px 14px -8px rgba(15,32,68,0.5)",
-                          transition: "transform 160ms ease, box-shadow 160ms ease",
+                          boxShadow: "none",
+                          transition: "transform 160ms ease",
                         }}
                         onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-1px)"; }}
                         onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}
                       >
-                        {course.ctaLabel} <ChevronRight size={12} strokeWidth={2.6} />
+                        {course.ctaLabel} <ChevronRight size={12} strokeWidth={2.2} />
                       </button>
                     </Link>
                   </div>
+
                 </div>
               );
             })}
