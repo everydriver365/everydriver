@@ -656,10 +656,10 @@ export default function Drive365Home({ afterLearningPaths, afterHero }: { afterL
 
                   {/* Spread cost row */}
                   <div style={{ margin: "10px 16px 0", padding: "8px 10px", background: "#F6F8FC", border: "1px solid #EAEEF5", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6 }}>
-                    <span style={{ fontSize: 9, color: "#5A6B82", fontWeight: 600 }}>Spread cost · 0% interest</span>
+                    <span style={{ fontSize: 10, color: "#5A6B82", fontWeight: 500 }}>Spread cost · 0% interest</span>
                     <span style={{ display: "inline-flex", gap: 3 }}>
-                      <span style={{ background: "#FFB3C7", color: "#17120F", fontSize: 8, fontWeight: 900, padding: "2px 5px", borderRadius: 3 }}>Klarna</span>
-                      <span style={{ background: "#B2FCE4", color: "#000E18", fontSize: 8, fontWeight: 900, padding: "2px 5px", borderRadius: 3 }}>Clearpay</span>
+                      <span style={{ background: "#FFB3C7", color: "#17120F", fontSize: 9, fontWeight: 700, padding: "2px 5px", borderRadius: 3 }}>Klarna</span>
+                      <span style={{ background: "#B2FCE4", color: "#000E18", fontSize: 9, fontWeight: 700, padding: "2px 5px", borderRadius: 3 }}>Clearpay</span>
                     </span>
                   </div>
 
@@ -672,9 +672,9 @@ export default function Drive365Home({ afterLearningPaths, afterHero }: { afterL
                           border: "none",
                           borderRadius: 10,
                           padding: "10px 14px",
-                          fontSize: 12,
-                          fontWeight: 800,
-                          letterSpacing: "-0.2px",
+                          fontSize: 13,
+                          fontWeight: 500,
+                          letterSpacing: "-0.1px",
                           background: course.featured ? accent : "#0F2044",
                           color: "#FFFFFF",
                           cursor: "pointer",
@@ -682,16 +682,17 @@ export default function Drive365Home({ afterLearningPaths, afterHero }: { afterL
                           alignItems: "center",
                           justifyContent: "center",
                           gap: 6,
-                          boxShadow: course.featured ? `0 8px 18px -10px ${accent}99` : "0 6px 14px -8px rgba(15,32,68,0.5)",
-                          transition: "transform 160ms ease, box-shadow 160ms ease",
+                          boxShadow: "none",
+                          transition: "transform 160ms ease",
                         }}
                         onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-1px)"; }}
                         onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}
                       >
-                        {course.ctaLabel} <ChevronRight size={12} strokeWidth={2.6} />
+                        {course.ctaLabel} <ChevronRight size={12} strokeWidth={2.2} />
                       </button>
                     </Link>
                   </div>
+
                 </div>
               );
             })}
