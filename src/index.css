@@ -656,6 +656,7 @@
   body {
     @apply text-foreground antialiased;
     background-color: #F4F7F6;
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     font-feature-settings: "kern" 1, "rlig" 1, "calt" 1;
     letter-spacing: -0.011em;
   }
