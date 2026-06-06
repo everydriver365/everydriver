@@ -115,7 +115,7 @@
 
      --sidebar: 210 40% 98%;
 
-     --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+     --font-sans: 'Poppins', 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
 
      --font-serif: 'Lora', ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
 
@@ -656,6 +656,7 @@
   body {
     @apply text-foreground antialiased;
     background-color: #F4F7F6;
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     font-feature-settings: "kern" 1, "rlig" 1, "calt" 1;
     letter-spacing: -0.011em;
   }
