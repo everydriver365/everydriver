@@ -509,16 +509,31 @@ export function FeaturedInstructors() {
                 <div style={{ padding: 18, display: "flex", flexDirection: "column", gap: 14, flex: 1 }}>
                   {/* Avatar + name + area */}
                   <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                    <div
-                      style={{
-                        width: 48, height: 48, borderRadius: "50%",
-                        background: theme.avatar, color: "#fff",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        fontWeight: 600, fontSize: 16, flexShrink: 0,
-                      }}
-                    >
-                      {initials(ins.name)}
-                    </div>
+                    {(() => {
+                      const gPhotoRef = ins.isPlaceholder ? googleData[ins.id]?.photoReference : null;
+                      const photoSrc = ins.photo
+                        ?? (gPhotoRef
+                          ? `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/google-place-photo?ref=${encodeURIComponent(gPhotoRef)}&maxwidth=200`
+                          : null);
+                      return photoSrc ? (
+                        <img
+                          src={photoSrc}
+                          alt={ins.name}
+                          style={{ width: 48, height: 48, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }}
+                        />
+                      ) : (
+                        <div
+                          style={{
+                            width: 48, height: 48, borderRadius: "50%",
+                            background: theme.avatar, color: "#fff",
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            fontWeight: 600, fontSize: 16, flexShrink: 0,
+                          }}
+                        >
+                          {initials(ins.name)}
+                        </div>
+                      );
+                    })()}
                     <div style={{ minWidth: 0 }}>
                       <div style={{ fontSize: 14, fontWeight: 500, color: "#0A1936", lineHeight: 1.2 }}>
                         {ins.name}
