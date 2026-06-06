@@ -230,13 +230,16 @@ export function EndLessonWizard({
 
         const { data: fresh } = await supabase
           .from("pupils")
-          .select("account_balance, intensive_hours_paid")
+          .select("account_balance, intensive_hours_paid, enquiry_id")
           .eq("id", pupilId)
           .single();
 
         const intensiveAvailable = Number((fresh as any)?.intensive_hours_paid ?? 0);
+        // Hours-deduction path applies ONLY to National Intensive pupils
+        // (i.e. those linked to a course_enquiries record).
+        const isNationalIntensive = Boolean((fresh as any)?.enquiry_id);
 
-        if (intensiveAvailable >= lessonHours && lessonHours > 0) {
+        if (isNationalIntensive && intensiveAvailable >= lessonHours && lessonHours > 0) {
           // National Intensive course: deduct hours, not money.
           const remaining = Math.round((intensiveAvailable - lessonHours) * 100) / 100;
           await supabase
