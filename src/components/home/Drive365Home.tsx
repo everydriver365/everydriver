@@ -619,32 +619,32 @@ export default function Drive365Home({ afterLearningPaths, afterHero }: { afterL
 
                   {/* Lane header */}
                   <div style={{ padding: "14px 16px 0", display: "flex", alignItems: "center", gap: 10 }}>
-                    <div style={{ width: 34, height: 34, borderRadius: 8, background: accentSoft, color: accent, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 900, letterSpacing: "-0.5px", border: `1px solid ${accent}22` }}>
+                    <div style={{ width: 34, height: 34, borderRadius: 8, background: accentSoft, color: accent, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, letterSpacing: "-0.5px", border: `1px solid ${accent}22` }}>
                       {lane}
                     </div>
                     <div style={{ lineHeight: 1.15 }}>
-                      <div style={{ fontSize: 8, fontWeight: 800, color: accent, textTransform: "uppercase", letterSpacing: "1.2px" }}>{course.badge}</div>
-                      <h3 style={{ fontSize: 15, fontWeight: 800, color: "#0A0E27", margin: "2px 0 0", letterSpacing: "-0.2px" }}>{course.title}</h3>
+                      <div style={{ fontSize: 10, fontWeight: 600, color: accent, textTransform: "uppercase", letterSpacing: "1.2px" }}>{course.badge}</div>
+                      <h3 style={{ fontSize: 14, fontWeight: 500, color: "#0A1936", margin: "2px 0 0", letterSpacing: "-0.2px" }}>{course.title}</h3>
                     </div>
                   </div>
 
                   {/* Tagline */}
                   <div style={{ padding: "10px 16px 0" }}>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: "#0F2044" }}>{tagline}</div>
+                    <div style={{ fontSize: 12, fontWeight: 500, color: "#0A1936" }}>{tagline}</div>
                     <div style={{ fontSize: 11, color: "#6B7280", marginTop: 1 }}>{subline}</div>
                   </div>
 
                   {/* Price */}
                   <div style={{ padding: "12px 16px 2px", display: "flex", alignItems: "baseline", gap: 4 }}>
-                    <span style={{ fontSize: 10, color: "#9CA3AF", fontWeight: 600 }}>From</span>
-                    <span style={{ fontSize: 22, fontWeight: 800, color: "#0A0E27", letterSpacing: "-0.8px" }}>{course.priceFrom}</span>
-                    {course.priceUnit && <span style={{ fontSize: 11, color: "#6B7280", fontWeight: 600 }}>{course.priceUnit}</span>}
+                    <span style={{ fontSize: 10, color: "#9CA3AF", fontWeight: 500 }}>From</span>
+                    <span style={{ fontSize: 18, fontWeight: 600, color: "#0A1936", letterSpacing: "-0.4px" }}>{course.priceFrom}</span>
+                    {course.priceUnit && <span style={{ fontSize: 11, color: "#6B7280", fontWeight: 500 }}>{course.priceUnit}</span>}
                   </div>
 
                   {/* Features */}
                   <ul style={{ listStyle: "none", margin: 0, padding: "8px 16px 2px", display: "flex", flexDirection: "column", gap: 6 }}>
                     {course.features.map((f) => (
-                      <li key={f} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "#374151", fontWeight: 500 }}>
+                      <li key={f} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "#374151", fontWeight: 400 }}>
                         <span style={{ width: 16, height: 16, borderRadius: 999, background: accentSoft, color: accent, display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                           <Check size={10} strokeWidth={3} />
                         </span>
@@ -652,6 +652,7 @@ export default function Drive365Home({ afterLearningPaths, afterHero }: { afterL
                       </li>
                     ))}
                   </ul>
+
 
                   {/* Spread cost row */}
                   <div style={{ margin: "10px 16px 0", padding: "8px 10px", background: "#F6F8FC", border: "1px solid #EAEEF5", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6 }}>
