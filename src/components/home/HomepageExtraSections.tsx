@@ -93,51 +93,6 @@ export default function HomepageExtraSections() {
       {/* Video section moved to render under the hero (see Index.tsx afterHero) */}
 
 
-      {/* 4. News & tips */}
-      <div style={{ background: "#FFFFFF", borderRadius: 14, padding: 28, border: "1px solid #E5E7EB" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 16, flexWrap: "wrap", gap: 8 }}>
-          <div>
-            <div style={{ fontSize: 10, fontWeight: 700, color: "#E8641A", textTransform: "uppercase", letterSpacing: "1.5px" }}>LATEST FROM EVERYDRIVER</div>
-            <h3 style={{ fontSize: 18, fontWeight: 800, color: "#0A1628", margin: "4px 0 0" }}>News & tips</h3>
-          </div>
-          <Link to="/news" style={{ fontSize: 11, fontWeight: 600, color: "#0070C0", textDecoration: "none" }}>
-            View all articles →
-          </Link>
-        </div>
-
-        {recentNews.length > 0 ? (
-          <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 12 }}>
-            {mainArticle && (
-              <Link to={`/news/${mainArticle.slug}`} style={{ textDecoration: "none", color: "inherit", display: "block", borderRadius: 10, overflow: "hidden", border: "1px solid #F3F4F6" }}>
-                <div style={{ height: 140, background: mainArticle.imageUrl ? `url(${mainArticle.imageUrl}) center/cover` : "linear-gradient(135deg, #0A2B6B, #1E4D9B)" }} />
-                <div style={{ padding: 14 }}>
-                  <div style={{ fontSize: 9, fontWeight: 700, color: "#E8641A", textTransform: "uppercase" }}>DRIVING NEWS</div>
-                  <h4 style={{ fontSize: 14, fontWeight: 700, color: "#0A1628", margin: "4px 0" }}>{mainArticle.title}</h4>
-                  <div style={{ fontSize: 10, color: "#9CA3AF" }}>
-                    {mainArticle.pubDate ? new Date(mainArticle.pubDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : ""} • 3 min read
-                  </div>
-                </div>
-              </Link>
-            )}
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              {sideArticles.map((a) => (
-                <Link key={a.slug} to={`/news/${a.slug}`} style={{ textDecoration: "none", color: "inherit", display: "flex", gap: 10, border: "1px solid #F3F4F6", borderRadius: 10, overflow: "hidden" }}>
-                  <div style={{ width: 80, minWidth: 80, background: a.imageUrl ? `url(${a.imageUrl}) center/cover` : "linear-gradient(135deg, #0A2B6B, #1E4D9B)" }} />
-                  <div style={{ padding: "10px 10px 10px 0", flex: 1 }}>
-                    <div style={{ fontSize: 8, fontWeight: 700, color: "#E8641A", textTransform: "uppercase" }}>DRIVING NEWS</div>
-                    <h5 style={{ fontSize: 12, fontWeight: 700, color: "#0A1628", margin: "2px 0" }}>{a.title}</h5>
-                    <div style={{ fontSize: 9, color: "#9CA3AF" }}>
-                      {a.pubDate ? new Date(a.pubDate).toLocaleDateString("en-GB", { day: "numeric", month: "short" }) : ""} • 3 min read
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-        ) : (
-          <div style={{ fontSize: 12, color: "#9CA3AF", padding: "20px 0" }}>No articles available right now.</div>
-        )}
-      </div>
 
       </div>
     </section>
