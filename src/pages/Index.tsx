@@ -249,11 +249,11 @@ export default function Index() {
                 {/* Card 2 */}
                 <div style={{ background: "#FFFFFF", borderRadius: 12, padding: "0.75rem 1rem", display: "flex", alignItems: "flex-start", gap: 10 }}>
                   <div style={{ width: 32, height: 32, borderRadius: 999, background: "#EAF3DE", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <span style={{ color: "#3B6D11", fontSize: 14 }}>📖</span>
+                    <CalendarCheck className="h-4 w-4 text-[#3B6D11]" />
                   </div>
                   <div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: "#0A1936", marginBottom: 1, lineHeight: 1.3 }}>Free theory test included</div>
-                    <div style={{ fontSize: 11, color: "#5A6B82", lineHeight: 1.4 }}>£23 DVSA fee covered by us.</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: "#0A1936", marginBottom: 1, lineHeight: 1.3 }}>Book</div>
+                    <div style={{ fontSize: 11, color: "#5A6B82", lineHeight: 1.4 }}>24/7 online booking</div>
                   </div>
                 </div>
 
