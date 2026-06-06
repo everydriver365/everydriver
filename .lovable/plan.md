@@ -1,44 +1,61 @@
-## Issue
+# Import Google Calendar Events as DSM Lessons
 
-The desktop "Choose the route that fits your life." section in `src/components/home/Drive365Home.tsx` (lines 554–710) renders much heavier than every other section on the homepage. Visual audit:
+Turn events you create directly in Google Calendar into real DSM lessons (not just "busy" blocks), with pupil matching by name. When the name doesn't match a pupil, the event is **skipped and you get a notification** to resolve it manually.
 
-| Element | This section | Rest of page (FAQ, News & tips, All-in-one) |
-| --- | --- | --- |
-| Section heading | 28px, weight 800, letter-spacing -0.8px | ~20px, weight 500–600 |
-| Eyebrow | White pill with border, dot, shadow, 9px weight 800 | Plain red 11px uppercase text |
-| Card title | 15px / weight 800 | 13–14px / weight 500 |
-| Price | 22px / weight 800 | n/a — nothing else this heavy |
-| Button label | 12px / weight 800 | 12–13px / weight 500–600 |
-| Pill links (Klarna/Clearpay, lane number) | weight 900 | weight 600–700 |
+## How it will work
 
-Net effect: the section reads as the loudest thing on the page, breaking hierarchy.
+1. When Google pushes an event update (or hourly reconcile runs), we already mirror it into `instructor_calendar_events`. We add a new step right after the mirror:
+   - For each external event that is **not** already linked to a lesson or manual block, attempt to convert it to a lesson.
+2. Pupil matching: case-insensitive match of the event **title** (and optionally the attendee name) against `pupils.name` for that instructor. Match rules:
+   - Exact match → use that pupil.
+   - Single fuzzy match (title contains pupil name or vice versa) → use that pupil.
+   - Zero matches or multiple matches → **skip** and create an instructor notification.
+3. Lesson creation:
+   - `instructor_id` = the connected instructor
+   - `pupil_id` = matched pupil
+   - `lesson_date`, `start_time`, `duration_minutes` = from the Google event (Europe/London)
+   - `pickup_location` = event location (geocoded via postcodes.io if it's a UK postcode, per existing lesson coordinates rule)
+   - `price` = pupil default hourly rate × duration (per existing pricing helpers)
+   - `status` = `scheduled`
+   - `google_event_id` = the external event id (so future edits/deletes in Google reconcile correctly via the existing webhook + reconcile path)
+   - `source` = `google_calendar_import` (new value) so the UI can badge it
+4. Idempotency: before inserting, check `scheduled_lessons.google_event_id`. If a lesson already exists for that event id, only update mutable fields (time, duration, location) — never duplicate.
+5. Updates from Google: if the event time/location changes in Google, the matching lesson is updated in place. Deletes already cascade via the existing reconcile pipeline (cancels the lesson).
+6. Skipped events → notification:
+   - Insert into `instructor_notifications` with a "Google event needs a pupil" message, the event title, time, and a deep link to a small **Unmatched Imports** screen where you can either pick a pupil (creates the lesson) or dismiss (keeps it as a busy block only).
+   - We remember dismissed event ids so we don't re-notify on every sync.
 
-## Fix — single file, visual only
+## What you'll see in DSM
 
-Edit `src/components/home/Drive365Home.tsx` desktop block (lines ~555–710). Do **not** touch the mobile section above it, copy, structure, colors, layout, images, CTAs, links, or hover behaviour.
+- New lessons appear in Today's schedule, weekly view, pupil history, earnings — everywhere a normal lesson appears.
+- A small **"From Google"** badge on the lesson card so you know it originated outside DSM.
+- A bell notification when an event was skipped because the pupil couldn't be identified.
+- An **Unmatched Google Events** list under Schedule → Calendar settings.
 
-**Section header**
-- Replace the white-pill eyebrow with the same eyebrow used elsewhere: plain text "THREE ROUTES · ONE LICENCE", color `#D12E2E`, 11px, weight 700, uppercase, letter-spacing 1.2px. Remove the dot/border/shadow.
-- Heading: `28px / 800 / -0.8px` → `20px / 500 / -0.2px`, color stays `#0A1936`. Keep the orange "route" span but match the new weight.
-- Subhead paragraph: keep 13px, color `#5A6B82`.
-- "Compare all routes" pill: drop the navy background; render as a `#0070C0` 13px / weight 500 text link with chevron, matching "View all articles →" style. Remove "Not sure?" sibling label.
+## Technical changes
 
-**Cards (all three)**
-- Border radius 12 → keep. Reduce border to `0.5px solid #E5E7EB`. Remove `boxShadow` entirely. Keep the featured card's `2px` accent border and translateY lift, but drop its glow shadow (use a flat 1px ring of the accent if needed).
-- "Most popular" badge: 8/900 → 10/600.
-- Lane number chip (01/02/03): weight 900 → 700, border opacity unchanged.
-- Category eyebrow ("FAST TRACK" etc.): 8/800 → 10/600, letter-spacing 1.2px kept.
-- Card title (`Intensive Courses` etc.): 15/800 → 14/500.
-- Tagline ("Pass in 1–2 weeks"): 12/700 → 12/500, color `#0A1936`.
-- Price block: `£1,299` 22/800 → 18/600, letter-spacing -0.4px. "From" stays 10/500. Unit "/hour" stays 11/500.
-- Feature list rows: 12/500 → 12/400, color `#374151` kept. Check icon background stays.
-- Spread-cost row: shrink chip text from 9/600 to 10/500; Klarna/Clearpay pill text 8/900 → 9/700 (brand-mandated pill backgrounds untouched).
-- CTA button: 12/800 → 13/500, padding 10×14 → 10×14 kept, drop the colored drop-shadow (`boxShadow: none`), keep navy / accent fill and hover translate.
+**Database (migration)**
+- Add `source TEXT` to `scheduled_lessons` (default `dsm`, allowed: `dsm`, `google_calendar_import`, `ai_booking`, etc.) — used for the badge and analytics.
+- Add `unmatched_google_events` table: `id`, `instructor_id`, `external_event_id` (unique per instructor), `title`, `start`, `end`, `location`, `status` (`pending` | `dismissed` | `resolved`), timestamps. RLS scoped via `public.get_instructor_id_for_user(auth.uid())`. Grants for `authenticated` + `service_role`.
+- Index `scheduled_lessons (instructor_id, google_event_id)` if not already present.
 
-**Reassurance footer row**
-- Already 11/600 — fine, leave as-is.
+**Edge functions**
+- `google-calendar-service` → `fetchExternalEvents`: after upserting `instructor_calendar_events`, call a new helper `importExternalEventsAsLessons(instructorId)`.
+- New helper (same function file) does the matching, lesson upsert, and unmatched-event row creation. Pupil match uses `pupils` filtered by instructor and `archived_at is null`.
+- Reuse existing geocoding (postcodes.io) for `pickup_lat/lng`.
+- Reuse `resolveHourlyRate` for pricing.
+- `google-calendar-webhook` and `reconcile-google-calendar` both already call `fetchExternalEvents`, so they automatically pick up the new import step.
 
-## Out of scope
-- Mobile layout (`<section className="md:hidden">` above it) per project's mobile update policy.
-- Any other homepage section, colors, copy, images, links, or animation timings.
-- Tailwind tokens / index.css — colors are inline hex on this section; keep that pattern.
+**Client**
+- New page `src/pages/instructor-app/UnmatchedGoogleEvents.tsx` listing pending rows with "Assign pupil" (dropdown of pupils, then creates lesson via existing booking RPC) and "Dismiss" actions.
+- Lesson card: render a small **"From Google"** chip when `source === 'google_calendar_import'`.
+- Notification handler: new notification type `google_event_unmatched` deep-links to the new page.
+- Settings → Google Calendar section: a "Unmatched events (N)" link.
+
+**Out of scope (won't change)**
+- Existing DSM → Google push (still one-way out for DSM-created lessons).
+- Mobile layouts (per project rule, only touch if you ask).
+
+## Open follow-up (non-blocking)
+
+After this ships, if name matching turns out to skip a lot of your events, we can layer in title-prefix conventions (e.g. `"Lesson — Jane Doe"`) or attendee-email matching. Defaulting to strict matching first keeps wrong-pupil bookings from sneaking in.
