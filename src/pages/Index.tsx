@@ -308,56 +308,6 @@ export default function Index() {
               </div>
             </div>
           </section>
-          {/* Perks bar — desktop only. Bold 4-up promise band with brand gradient accent. */}
-          <section className="hidden md:block" style={{ background: "linear-gradient(180deg, #0A1628 0%, #0F2044 100%)", padding: "0", position: "relative", overflow: "hidden" }}>
-            {/* hairline brand accent */}
-            <div style={{ height: 2, background: "linear-gradient(90deg, #0070C0 0%, #E8641A 50%, #D12E2E 100%)" }} />
-            <div style={{ maxWidth: 1240, margin: "0 auto", padding: "18px 5%", display: "grid", gridTemplateColumns: "auto 1fr 1fr 1fr 1fr", alignItems: "center", gap: 28, fontFamily: "'Poppins', sans-serif" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, paddingRight: 24, borderRight: "1px solid rgba(255,255,255,0.12)" }}>
-                <span style={{ width: 28, height: 28, borderRadius: 8, background: "linear-gradient(135deg, #E8641A, #D12E2E)", color: "#FFFFFF", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 900, boxShadow: "0 6px 14px -6px rgba(232,100,26,0.6)" }}>★</span>
-                <div style={{ lineHeight: 1.15 }}>
-                  <div style={{ color: "#FFFFFF", fontSize: 12, fontWeight: 800, letterSpacing: "-0.2px" }}>Every booking,</div>
-                  <div style={{ color: "rgba(255,255,255,0.6)", fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "1.2px" }}>included free</div>
-                </div>
-              </div>
-
-              {/* Perk 1 — Free re-test */}
-              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <span style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(16,185,129,0.14)", border: "1px solid rgba(16,185,129,0.35)", color: "#34D399", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 16, fontWeight: 900 }}>✓</span>
-                <div style={{ lineHeight: 1.2 }}>
-                  <div style={{ color: "#FFFFFF", fontSize: 13, fontWeight: 800, letterSpacing: "-0.2px" }}>Free re-test</div>
-                  <div style={{ color: "rgba(255,255,255,0.6)", fontSize: 11, fontWeight: 500 }}>If you don't pass first time</div>
-                </div>
-              </div>
-
-              {/* Perk 2 — Free theory test */}
-              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <span style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(0,112,192,0.18)", border: "1px solid rgba(0,112,192,0.45)", color: "#60A5FA", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 900 }}>📖</span>
-                <div style={{ lineHeight: 1.2 }}>
-                  <div style={{ color: "#FFFFFF", fontSize: 13, fontWeight: 800, letterSpacing: "-0.2px" }}>Free theory test</div>
-                  <div style={{ color: "rgba(255,255,255,0.6)", fontSize: 11, fontWeight: 500 }}>£23 fee covered by us</div>
-                </div>
-              </div>
-
-              {/* Perk 3 — Klarna */}
-              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <span style={{ height: 36, padding: "0 12px", borderRadius: 10, background: "#FFB3C7", color: "#17120F", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 900, letterSpacing: "-0.3px" }}>Klarna.</span>
-                <div style={{ lineHeight: 1.2 }}>
-                  <div style={{ color: "#FFFFFF", fontSize: 13, fontWeight: 800, letterSpacing: "-0.2px" }}>Pay in 3</div>
-                  <div style={{ color: "rgba(255,255,255,0.6)", fontSize: 11, fontWeight: 500 }}>0% interest, no fees</div>
-                </div>
-              </div>
-
-              {/* Perk 4 — Clearpay */}
-              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <span style={{ height: 36, padding: "0 12px", borderRadius: 10, background: "#B2FCE4", color: "#000E18", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 900, letterSpacing: "-0.3px" }}>Clearpay.</span>
-                <div style={{ lineHeight: 1.2 }}>
-                  <div style={{ color: "#FFFFFF", fontSize: 13, fontWeight: 800, letterSpacing: "-0.2px" }}>Pay in 4</div>
-                  <div style={{ color: "rgba(255,255,255,0.6)", fontSize: 11, fontWeight: 500 }}>0% interest, no fees</div>
-                </div>
-              </div>
-            </div>
-          </section>
           </>
         }
 
