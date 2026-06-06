@@ -14,212 +14,172 @@ type ReviewRow = {
   instructors: InstructorRef;
 };
 
-type PlaceholderReview = {
+type StaticReview = {
   id: string;
-  reviewer_name: string;
-  review_text: string;
-  reviewer_location: string;
+  name: string;
+  location: string;
   dateLabel: string;
-  passed_first_time: boolean;
-  instructorName: string;
-  passRate: number;
+  passedFirstTime: boolean;
+  text: string;
 };
 
-const PLACEHOLDERS: PlaceholderReview[] = [
+const FALLBACK_REVIEWS: StaticReview[] = [
   {
-    id: "ph-1",
-    reviewer_name: "Sarah M.",
-    review_text:
-      "I wanted to know who was teaching me before I handed over £1,000. EveryDriver was the only school that let me choose. Passed first time with Ken.",
-    reviewer_location: "Winchester",
-    dateLabel: "May 2026",
-    passed_first_time: true,
-    instructorName: "Ken D",
-    passRate: 96,
+    id: "fb-1",
+    name: "Chris",
+    location: "Winchester",
+    dateLabel: "Jan 2026",
+    passedFirstTime: true,
+    text: "Passed first attempt with only 2 minors. Ken's teaching is high class — he really listens to your needs.",
   },
   {
-    id: "ph-2",
-    reviewer_name: "Jake T.",
-    review_text:
-      "Other schools just assign you someone. I read Richard's reviews, saw his 94% pass rate and booked straight away. Best decision I made.",
-    reviewer_location: "Southampton",
-    dateLabel: "April 2026",
-    passed_first_time: true,
-    instructorName: "Richard Chapman",
-    passRate: 94,
+    id: "fb-2",
+    name: "Michael R.",
+    location: "Southampton",
+    dateLabel: "Dec 2025",
+    passedFirstTime: true,
+    text: "Sarah helped me overcome my fear of roundabouts and I passed first time. Highly recommend!",
   },
   {
-    id: "ph-3",
-    reviewer_name: "Emma R.",
-    review_text:
-      "I'd failed twice before with a school that assigned me someone random. Chose my own instructor on EveryDriver and finally passed. Wish I'd found this sooner.",
-    reviewer_location: "Eastleigh",
-    dateLabel: "March 2026",
-    passed_first_time: true,
-    instructorName: "Sarah Jones",
-    passRate: 91,
+    id: "fb-3",
+    name: "Lucy H.",
+    location: "London",
+    dateLabel: "Nov 2025",
+    passedFirstTime: false,
+    text: "Patient, professional and explains things clearly. Best decision I made was choosing Sarah as my instructor.",
   },
 ];
 
-function initialsFor(name: string): string {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((p) => p[0]?.toUpperCase() ?? "")
-    .join("");
-}
+const CARD_THEMES = [
+  { bg: "#FFF8F4", border: "0.5px solid #f9c49a" },
+  { bg: "#EEF4FB", border: "0.5px solid #bfd4ee" },
+  { bg: "#EAF3DE", border: "0.5px solid #c0dd97" },
+];
 
 function formatMonthYear(iso: string | null): string {
   if (!iso) return "";
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "";
-  return d.toLocaleDateString("en-GB", { month: "long", year: "numeric" });
+  return d.toLocaleDateString("en-GB", { month: "short", year: "numeric" });
 }
+
+const FONT = "'Poppins', system-ui, sans-serif";
 
 const styles = {
   section: {
     background: "#F3F4F6",
     padding: "48px 5%",
     width: "100%",
+    fontFamily: FONT,
   } as React.CSSProperties,
   inner: {
     width: "100%",
     maxWidth: 1200,
     margin: "0 auto",
   } as React.CSSProperties,
-
   header: {
-    display: "flex",
-    alignItems: "flex-end",
-    justifyContent: "space-between",
     marginBottom: 20,
-    flexWrap: "wrap" as const,
-    gap: 12,
-  },
+  } as React.CSSProperties,
   eyebrow: {
-    fontSize: 10,
-    fontWeight: 700,
-    color: "#E8641A",
+    fontSize: 11,
+    fontWeight: 600,
+    color: "#D12E2E",
     textTransform: "uppercase" as const,
     letterSpacing: "1.5px",
     marginBottom: 6,
+    fontFamily: FONT,
   },
   heading: {
-    fontSize: 22,
-    fontWeight: 800,
-    color: "#0A1628",
-    letterSpacing: "-0.5px",
+    fontSize: 20,
+    fontWeight: 500,
+    color: "#0A1936",
     margin: 0,
+    fontFamily: FONT,
   },
-  ratingWrap: { display: "flex", alignItems: "center", gap: 8 },
-  stars: { color: "#FBBF24", fontSize: 14, letterSpacing: 1 },
-  ratingNum: { fontSize: 12, fontWeight: 700, color: "#0A1628" },
-  ratingCount: { fontSize: 11, color: "#9CA3AF" },
   grid: {
     display: "grid",
     gridTemplateColumns: "repeat(3, 1fr)",
-    gap: 12,
+    gap: 10,
   } as React.CSSProperties,
   card: {
-    background: "#FFFFFF",
-    borderRadius: 10,
-    padding: 16,
-    border: "1px solid #E5E7EB",
-  } as React.CSSProperties,
-  cardStars: {
-    color: "#FBBF24",
-    fontSize: 12,
+    borderRadius: 12,
+    padding: "1rem",
+    display: "flex",
+    flexDirection: "column" as const,
+    fontFamily: FONT,
+  },
+  stars: {
+    color: "#f59e0b",
+    fontSize: 13,
     letterSpacing: 1,
-    marginBottom: 8,
+    marginBottom: 10,
   },
-  cardText: {
-    fontSize: 12,
-    color: "#0A1628",
+  quote: {
+    fontStyle: "italic" as const,
+    fontSize: 13,
+    color: "#374151",
     lineHeight: 1.6,
-    marginBottom: 12,
+    flex: 1,
+    margin: 0,
+    marginBottom: 14,
   },
-  cardFooter: {
-    borderTop: "1px solid #F3F4F6",
-    paddingTop: 10,
+  footer: {
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
     gap: 8,
   },
-  reviewerName: { fontSize: 11, fontWeight: 700, color: "#0A1628" },
-  reviewerMeta: { fontSize: 10, color: "#9CA3AF", marginTop: 2 },
-  badge: {
-    background: "#D1FAE5",
-    color: "#059669",
-    fontSize: 10,
-    fontWeight: 600,
-    padding: "2px 8px",
+  reviewerName: {
+    fontSize: 13,
+    fontWeight: 500,
+    color: "#0A1936",
+  },
+  reviewerMeta: {
+    fontSize: 11,
+    color: "#9ca3af",
+    marginTop: 2,
+  },
+  pill: {
+    background: "#EDFAF3",
+    color: "#1A7D4E",
+    border: "0.5px solid #9de0c0",
     borderRadius: 20,
+    fontSize: 11,
+    fontWeight: 500,
+    padding: "3px 10px",
     whiteSpace: "nowrap" as const,
   },
-  instructorRow: {
-    marginTop: 8,
-    display: "flex",
-    alignItems: "center",
-    gap: 5,
-  },
-  avatar: {
-    width: 18,
-    height: 18,
-    borderRadius: "50%",
-    background: "#0A2B6B",
-    color: "#FFFFFF",
-    fontSize: 8,
-    fontWeight: 700,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  } as React.CSSProperties,
-  instructorText: { fontSize: 10, color: "#9CA3AF" },
 };
 
-function CardShell({
+function ReviewCard({
+  theme,
   text,
   name,
   location,
   dateLabel,
   passedFirstTime,
-  instructorName,
-  passRate,
 }: {
+  theme: { bg: string; border: string };
   text: string;
   name: string;
   location: string | null;
   dateLabel: string;
   passedFirstTime: boolean;
-  instructorName: string | null;
-  passRate: number | null;
 }) {
   const metaParts = [location, dateLabel].filter(Boolean);
   return (
-    <div style={styles.card}>
-      <div style={styles.cardStars}>★★★★★</div>
-      <p style={styles.cardText}>{text}</p>
-      <div style={styles.cardFooter}>
+    <div style={{ ...styles.card, background: theme.bg, border: theme.border }}>
+      <div style={styles.stars}>★★★★★</div>
+      <p style={styles.quote}>{text}</p>
+      <div style={styles.footer}>
         <div>
           <div style={styles.reviewerName}>{name}</div>
           {metaParts.length > 0 && (
             <div style={styles.reviewerMeta}>{metaParts.join(" · ")}</div>
           )}
         </div>
-        {passedFirstTime && <div style={styles.badge}>✓ Passed 1st time</div>}
+        {passedFirstTime && <div style={styles.pill}>✓ Passed 1st time</div>}
       </div>
-      {instructorName && (
-        <div style={styles.instructorRow}>
-          <div style={styles.avatar}>{initialsFor(instructorName)}</div>
-          <div style={styles.instructorText}>
-            Instructor: {instructorName}
-            {typeof passRate === "number" ? ` · ${passRate}% pass rate` : ""}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
@@ -251,52 +211,40 @@ export default function PupilReviewsSection() {
     };
   }, []);
 
-  if (reviews === null) {
-    // Avoid flash; render nothing until query resolves.
-    return null;
-  }
+  if (reviews === null) return null;
 
-  const usePlaceholders = reviews.length === 0;
+  const useFallback = reviews.length === 0;
 
   return (
     <section style={styles.section}>
       <div style={styles.inner}>
         <div style={styles.header}>
-          <div>
-            <div style={styles.eyebrow}>WHAT OUR PUPILS SAY</div>
-            <h2 style={styles.heading}>Real reviews. Real results.</h2>
-          </div>
-          <div style={styles.ratingWrap}>
-            <span style={styles.stars}>★★★★★</span>
-            <span style={styles.ratingNum}>4.9</span>
-            <span style={styles.ratingCount}>2,400+ reviews</span>
-          </div>
+          <div style={styles.eyebrow}>What our pupils say</div>
+          <h2 style={styles.heading}>Real reviews. Real results.</h2>
         </div>
 
         <div style={styles.grid}>
-          {usePlaceholders
-            ? PLACEHOLDERS.map((r) => (
-                <CardShell
+          {useFallback
+            ? FALLBACK_REVIEWS.map((r, i) => (
+                <ReviewCard
                   key={r.id}
-                  text={r.review_text}
-                  name={r.reviewer_name}
-                  location={r.reviewer_location}
+                  theme={CARD_THEMES[i % 3]}
+                  text={r.text}
+                  name={r.name}
+                  location={r.location}
                   dateLabel={r.dateLabel}
-                  passedFirstTime={r.passed_first_time}
-                  instructorName={r.instructorName}
-                  passRate={r.passRate}
+                  passedFirstTime={r.passedFirstTime}
                 />
               ))
-            : reviews.map((r) => (
-                <CardShell
+            : reviews.map((r, i) => (
+                <ReviewCard
                   key={r.id}
+                  theme={CARD_THEMES[i % 3]}
                   text={r.review_text}
                   name={r.reviewer_name}
                   location={r.reviewer_location}
                   dateLabel={formatMonthYear(r.review_date)}
                   passedFirstTime={r.passed_first_time === true}
-                  instructorName={r.instructors?.name ?? null}
-                  passRate={null}
                 />
               ))}
         </div>
@@ -304,4 +252,3 @@ export default function PupilReviewsSection() {
     </section>
   );
 }
-
