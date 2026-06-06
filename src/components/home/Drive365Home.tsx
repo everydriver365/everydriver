@@ -591,17 +591,18 @@ export default function Drive365Home({ afterLearningPaths, afterHero }: { afterL
                   style={{
                     background: "#FFFFFF",
                     borderRadius: 12,
-                    border: "0.5px solid #E5E7EB",
+                    border: course.featured ? `2px solid ${accent}` : "0.5px solid #E5E7EB",
                     boxShadow: "none",
                     position: "relative",
                     display: "flex",
                     flexDirection: "column",
                     overflow: "hidden",
+                    transform: course.featured ? "translateY(-4px)" : "none",
                     transition: "transform 220ms ease",
                   }}
                 >
                   {course.featured && (
-                    <div style={{ position: "absolute", top: 10, right: 10, zIndex: 5, background: "#FFFFFF", color: accent, fontSize: 10, fontWeight: 500, padding: "3px 8px", borderRadius: 999, letterSpacing: "0.4px", textTransform: "uppercase", border: `0.5px solid ${accent}` }}>
+                    <div style={{ position: "absolute", top: 10, right: 10, zIndex: 5, background: accent, color: "#FFFFFF", fontSize: 10, fontWeight: 600, padding: "4px 8px", borderRadius: 999, letterSpacing: "1px", textTransform: "uppercase" }}>
                       Most popular
                     </div>
                   )}
@@ -618,12 +619,12 @@ export default function Drive365Home({ afterLearningPaths, afterHero }: { afterL
 
                   {/* Lane header */}
                   <div style={{ padding: "14px 16px 0", display: "flex", alignItems: "center", gap: 10 }}>
-                    <div style={{ width: 28, height: 28, borderRadius: 6, background: accentSoft, color: accent, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 500, letterSpacing: "-0.2px" }}>
+                    <div style={{ width: 34, height: 34, borderRadius: 8, background: accentSoft, color: accent, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, letterSpacing: "-0.5px", border: `1px solid ${accent}22` }}>
                       {lane}
                     </div>
-                    <div style={{ lineHeight: 1.2 }}>
-                      <div style={{ fontSize: 10, fontWeight: 500, color: accent, textTransform: "uppercase", letterSpacing: "1px" }}>{course.badge}</div>
-                      <h3 style={{ fontSize: 14, fontWeight: 500, color: "#0A1936", margin: "2px 0 0", letterSpacing: "-0.1px" }}>{course.title}</h3>
+                    <div style={{ lineHeight: 1.15 }}>
+                      <div style={{ fontSize: 10, fontWeight: 600, color: accent, textTransform: "uppercase", letterSpacing: "1.2px" }}>{course.badge}</div>
+                      <h3 style={{ fontSize: 14, fontWeight: 500, color: "#0A1936", margin: "2px 0 0", letterSpacing: "-0.2px" }}>{course.title}</h3>
                     </div>
                   </div>
 
@@ -635,17 +636,17 @@ export default function Drive365Home({ afterLearningPaths, afterHero }: { afterL
 
                   {/* Price */}
                   <div style={{ padding: "12px 16px 2px", display: "flex", alignItems: "baseline", gap: 4 }}>
-                    <span style={{ fontSize: 11, color: "#9CA3AF", fontWeight: 400 }}>From</span>
-                    <span style={{ fontSize: 16, fontWeight: 500, color: "#0A1936", letterSpacing: "-0.2px" }}>{course.priceFrom}</span>
-                    {course.priceUnit && <span style={{ fontSize: 11, color: "#6B7280", fontWeight: 400 }}>{course.priceUnit}</span>}
+                    <span style={{ fontSize: 10, color: "#9CA3AF", fontWeight: 500 }}>From</span>
+                    <span style={{ fontSize: 18, fontWeight: 600, color: "#0A1936", letterSpacing: "-0.4px" }}>{course.priceFrom}</span>
+                    {course.priceUnit && <span style={{ fontSize: 11, color: "#6B7280", fontWeight: 500 }}>{course.priceUnit}</span>}
                   </div>
 
                   {/* Features */}
                   <ul style={{ listStyle: "none", margin: 0, padding: "8px 16px 2px", display: "flex", flexDirection: "column", gap: 6 }}>
                     {course.features.map((f) => (
                       <li key={f} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "#374151", fontWeight: 400 }}>
-                        <span style={{ width: 14, height: 14, borderRadius: 999, background: accentSoft, color: accent, display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                          <Check size={9} strokeWidth={2.5} />
+                        <span style={{ width: 16, height: 16, borderRadius: 999, background: accentSoft, color: accent, display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                          <Check size={10} strokeWidth={3} />
                         </span>
                         {f}
                       </li>
@@ -654,26 +655,45 @@ export default function Drive365Home({ afterLearningPaths, afterHero }: { afterL
 
 
                   {/* Spread cost row */}
-                  <div style={{ margin: "10px 16px 0", padding: "6px 10px", background: "#FAFBFC", border: "0.5px solid #EAEEF5", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6 }}>
-                    <span style={{ fontSize: 10, color: "#5A6B82", fontWeight: 400 }}>Spread cost · 0% interest</span>
+                  <div style={{ margin: "10px 16px 0", padding: "8px 10px", background: "#F6F8FC", border: "1px solid #EAEEF5", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6 }}>
+                    <span style={{ fontSize: 10, color: "#5A6B82", fontWeight: 500 }}>Spread cost · 0% interest</span>
                     <span style={{ display: "inline-flex", gap: 3 }}>
-                      <span style={{ background: "#FFB3C7", color: "#17120F", fontSize: 9, fontWeight: 500, padding: "1px 5px", borderRadius: 3 }}>Klarna</span>
-                      <span style={{ background: "#B2FCE4", color: "#000E18", fontSize: 9, fontWeight: 500, padding: "1px 5px", borderRadius: 3 }}>Clearpay</span>
+                      <span style={{ background: "#FFB3C7", color: "#17120F", fontSize: 9, fontWeight: 700, padding: "2px 5px", borderRadius: 3 }}>Klarna</span>
+                      <span style={{ background: "#B2FCE4", color: "#000E18", fontSize: 9, fontWeight: 700, padding: "2px 5px", borderRadius: 3 }}>Clearpay</span>
                     </span>
                   </div>
 
-                  {/* CTA — text link to match rest of page */}
-                  <div style={{ padding: "14px 16px 16px", marginTop: "auto" }}>
-                    <Link
-                      to={course.ctaHref}
-                      style={{ display: "inline-flex", alignItems: "center", gap: 4, color: "#0070C0", fontSize: 13, fontWeight: 500, textDecoration: "none" }}
-                    >
-                      {course.ctaLabel} <ChevronRight size={14} strokeWidth={2.2} />
+                  {/* CTA */}
+                  <div style={{ padding: 16, marginTop: "auto" }}>
+                    <Link to={course.ctaHref} style={{ display: "block" }}>
+                      <button
+                        style={{
+                          width: "100%",
+                          border: "none",
+                          borderRadius: 10,
+                          padding: "10px 14px",
+                          fontSize: 13,
+                          fontWeight: 500,
+                          letterSpacing: "-0.1px",
+                          background: course.featured ? accent : "#0F2044",
+                          color: "#FFFFFF",
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: 6,
+                          boxShadow: "none",
+                          transition: "transform 160ms ease",
+                        }}
+                        onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-1px)"; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}
+                      >
+                        {course.ctaLabel} <ChevronRight size={12} strokeWidth={2.2} />
+                      </button>
                     </Link>
                   </div>
 
                 </div>
-
               );
             })}
           </div>
