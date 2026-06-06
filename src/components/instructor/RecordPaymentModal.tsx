@@ -206,6 +206,42 @@ export function RecordPaymentModal({
         : paymentMethod === "card" ? "Square"
         : "Bank Transfer";
 
+      // Check if this is a National Intensive pupil — if so, also credit
+      // prepaid hours alongside the money balance.
+      const { data: pupilCtx } = await (supabase as any)
+        .from("pupils")
+        .select("enquiry_id, intensive_hours_paid")
+        .eq("id", pupilId)
+        .maybeSingle();
+      const isNationalIntensive = Boolean(pupilCtx?.enquiry_id);
+      let hoursCredited = 0;
+
+      if (isNationalIntensive) {
+        // Resolve hourly rate from the linked course enquiry → instructor default.
+        const { data: enq } = await (supabase as any)
+          .from("course_enquiries")
+          .select("hourly_rate")
+          .eq("id", pupilCtx.enquiry_id)
+          .maybeSingle();
+        let hourlyRate = Number(enq?.hourly_rate ?? 0);
+        if (!hourlyRate) {
+          const { data: inst } = await (supabase as any)
+            .from("instructors")
+            .select("hourly_rate")
+            .eq("id", instructorId)
+            .maybeSingle();
+          hourlyRate = Number(inst?.hourly_rate ?? 0);
+        }
+        if (hourlyRate > 0) {
+          hoursCredited = Math.round((parsedAmount / hourlyRate) * 100) / 100;
+          const existing = Number(pupilCtx?.intensive_hours_paid ?? 0);
+          await (supabase as any)
+            .from("pupils")
+            .update({ intensive_hours_paid: Math.round((existing + hoursCredited) * 100) / 100 })
+            .eq("id", pupilId);
+        }
+      }
+
       // 1. Insert payment_history row (with optional lesson link)
       const { error: historyError } = await (supabase as any)
         .from("payment_history")
@@ -229,7 +265,13 @@ export function RecordPaymentModal({
       });
       if (balErr) throw balErr;
 
-      toast.success(`${formatCurrency(parsedAmount)} payment recorded for ${displayName}`);
+      if (isNationalIntensive && hoursCredited > 0) {
+        toast.success(
+          `${formatCurrency(parsedAmount)} credited + ${hoursCredited}h prepaid added for ${displayName}`,
+        );
+      } else {
+        toast.success(`${formatCurrency(parsedAmount)} payment recorded for ${displayName}`);
+      }
       invalidatePaymentQueries({ pupilId, instructorId });
       handleClose(false);
       onPaymentRecorded?.();
