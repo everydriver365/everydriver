@@ -659,10 +659,37 @@
     font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     font-feature-settings: "kern" 1, "rlig" 1, "calt" 1;
     letter-spacing: -0.011em;
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 1.55;
   }
 
+  /* ============================================================
+     Site-wide Poppins type scale (marketing + learner site).
+     Portals (.instructor-portal, .dsm-instructor, .ios-instructor,
+     .learner-app, .accessible-portal) keep their own scoped
+     typography per the project design rules.
+     ============================================================ */
   h1, h2, h3, h4, h5, h6 {
-    @apply font-heading tracking-tight;
+    @apply font-heading;
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: hsl(var(--foreground));
+    line-height: 1.2;
+  }
+  h1 { font-size: clamp(2rem, 4vw, 2.75rem); font-weight: 700; letter-spacing: -0.025em; }
+  h2 { font-size: clamp(1.5rem, 2.6vw, 2rem); font-weight: 700; letter-spacing: -0.02em; }
+  h3 { font-size: 1.25rem;   font-weight: 600; letter-spacing: -0.015em; }
+  h4 { font-size: 1.0625rem; font-weight: 600; letter-spacing: -0.01em; }
+  h5 { font-size: 0.9375rem; font-weight: 600; letter-spacing: -0.005em; }
+  h6 { font-size: 0.8125rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: hsl(var(--muted-foreground)); }
+
+  p     { font-size: 0.9375rem; font-weight: 400; line-height: 1.6; }
+  small { font-size: 0.8125rem; font-weight: 400; }
+
+  button, .btn, [role="button"] {
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.005em;
   }
 
   /* Prevent children from causing horizontal scroll */
