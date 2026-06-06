@@ -25,6 +25,7 @@ const PROMO_KEY = "drive365_promo_dismissed_v1";
 
 export function Drive365Header() {
   const location = useLocation();
+  const { logo, logoAlt, homeLink } = useRouteLogo();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [coursesOpen, setCoursesOpen] = useState(false);
   const [promoVisible, setPromoVisible] = useState(true);
