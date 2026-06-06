@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { ChevronDown, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-const drive365Logo = "/everydriver-logo-full.png";
+import { useRouteLogo } from "@/hooks/useRouteLogo";
 
 const NAV_LINKS = [
   { href: "/drive365", label: "Home" },
@@ -30,6 +30,7 @@ export function Drive365Header() {
   const [promoVisible, setPromoVisible] = useState(true);
   const [scrolled, setScrolled] = useState(false);
   const coursesRef = useRef<HTMLDivElement | null>(null);
+  const { logo, logoAlt, homeLink } = useRouteLogo();
 
   useEffect(() => {
     if (typeof window !== "undefined" && localStorage.getItem(PROMO_KEY) === "1") {
@@ -83,17 +84,8 @@ export function Drive365Header() {
       >
         <div className="mx-auto flex h-[56px] items-center justify-between px-[28px] max-lg:px-5">
           {/* Logo — EveryDriver wordmark */}
-          <Link to="/" className="flex items-center shrink-0" aria-label="EveryDriver home">
-            <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-              <div style={{ fontSize: 18, fontWeight: 900, color: "white", letterSpacing: -0.5, lineHeight: 1 }}>
-                Every<span style={{ color: "#60C8F5" }}>Driver</span>
-              </div>
-              <div style={{ display: "flex", gap: 4, marginTop: 3 }}>
-                <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#D12E2E" }} />
-                <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#F59E0B" }} />
-                <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#22C55E" }} />
-              </div>
-            </div>
+          <Link to={homeLink} className="flex items-center shrink-0" aria-label="EveryDriver home">
+            <img src={logo} alt={logoAlt} className="h-7 -mx-1" />
           </Link>
 
           {/* Center nav (desktop) */}
