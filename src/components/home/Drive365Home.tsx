@@ -408,7 +408,8 @@ export default function Drive365Home({ afterLearningPaths, afterHero }: { afterL
               <div className="d365-welcome-eyebrow">Find your instructor</div>
               <h1>See who's teaching you before you book.</h1>
               <p className="mx-0 py-0" style={{ fontSize: 14, color: "#6B7280", lineHeight: 1.65, maxWidth: 440, margin: "0 auto" }}>
-                Every instructor verified. Real reviews. Real pass rates. You choose who teaches you.
+                Every instructor verified. Real reviews. Real pass rates. You choose who teaches you.{" "}
+                <span style={{ color: "#0A1628", fontWeight: 600 }}>All bookings backed by us.</span>
               </p>
               <PostcodeSearch />
               <div
