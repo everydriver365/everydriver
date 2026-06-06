@@ -1060,6 +1060,26 @@ Deno.serve(async (req) => {
           }
         }
 
+        // Import matching events as DSM lessons (skip + notify on unmatched name)
+        let importStats = { imported: 0, updated: 0, unmatched: 0, skipped: 0 };
+        try {
+          importStats = await importExternalEventsAsLessons(
+            supabase,
+            instructorId,
+            allEvents.map((e) => ({
+              id: e.id,
+              summary: e.summary,
+              start: e.start,
+              end: e.end,
+              is_busy: e.is_busy ?? true,
+              location: e.location,
+            })),
+          );
+          console.log(`[fetchExternalEvents] import stats:`, importStats);
+        } catch (e) {
+          console.error("[fetchExternalEvents] import as lessons failed:", e);
+        }
+
         // Update last sync time
         await supabase
           .from("instructor_google_service_calendar")
@@ -1070,7 +1090,7 @@ Deno.serve(async (req) => {
           .eq("instructor_id", instructorId);
 
         return new Response(
-          JSON.stringify({ success: true, synced: allEvents.length }),
+          JSON.stringify({ success: true, synced: allEvents.length, import: importStats }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       } catch (err) {
