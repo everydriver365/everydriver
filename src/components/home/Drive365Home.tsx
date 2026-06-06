@@ -322,7 +322,7 @@ export default function Drive365Home({ afterLearningPaths, afterHero }: { afterL
       {/* Desktop-only styles for the new Drive 365 home hero & Why section. */}
       <style>{`
         @media (min-width: 768px) {
-          .d365-hero-wrap { background: #FFFFFF; padding: 56px 24px 0; display: flex; justify-content: center; }
+          .d365-hero-wrap { background: #FFFFFF; padding: 56px 24px; display: flex; justify-content: center; }
           .d365-hero { width: 100%; max-width: 1200px; display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: stretch; }
           .d365-hero-photo { position: relative; background: #9FD3E8; border-radius: 15px; overflow: hidden; min-height: 540px; }
           .d365-hero-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }

@@ -223,7 +223,7 @@ export default function Index() {
         afterHero={
           <>
           {/* Why book through Every Driver — desktop only */}
-          <section className="hidden md:block" style={{ padding: 0 }}>
+          <section className="hidden md:block" style={{ padding: "20px 0" }}>
             <div style={{ background: "#EEF4FB", borderRadius: 0, padding: "1.25rem", fontFamily: "'Poppins', sans-serif" }}>
               {/* Heading */}
               <div style={{ textAlign: "center", marginBottom: 18 }}>
