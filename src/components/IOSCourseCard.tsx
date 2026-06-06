@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { MapPin, Clock, User, Car, Zap, TrendingUp, Star, CheckCircle } from "lucide-react";
+import { useInstructorRating } from "@/hooks/useInstructorRating";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -53,6 +54,8 @@ export function IOSCourseCard({
 }: IOSCourseCardProps) {
   const navigate = useNavigate();
   const [isFlipped, setIsFlipped] = useState(false);
+  const { data: ratingData } = useInstructorRating(instructor.id);
+  const hasRating = !!ratingData && ratingData.totalReviews > 0 && ratingData.avgRating != null;
 
   const hourlyRate = instructor.hourly_rate || 40;
   const schoolSkim = instructor.school_skim_amount || 0;
@@ -206,9 +209,6 @@ export function IOSCourseCard({
                     £{totalPrice.toFixed(0)}
                   </span>
                 )}
-                <span className="text-xs text-muted-foreground">
-                  · from £{hourlyRate}/hr
-                </span>
               </div>
 
               <CompactPaymentBadges
@@ -239,8 +239,14 @@ export function IOSCourseCard({
               <div>
                 <div className="font-medium text-primary-foreground">{instructor.name}</div>
                 <div className="flex items-center gap-1 text-xs text-primary-foreground/70">
-                  <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                  <span>4.9 rating</span>
+                  {hasRating ? (
+                    <>
+                      <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                      <span>{ratingData!.avgRating!.toFixed(1)} ({ratingData!.totalReviews})</span>
+                    </>
+                  ) : (
+                    <span>No reviews yet</span>
+                  )}
                 </div>
               </div>
             </div>
