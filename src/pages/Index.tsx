@@ -253,7 +253,7 @@ export default function Index() {
                   </div>
                   <div>
                     <div style={{ fontSize: 13, fontWeight: 700, color: "#0A1936", marginBottom: 1, lineHeight: 1.3 }}>Free theory test included</div>
-                    <div style={{ fontSize: 11, color: "#5A6B82", lineHeight: 1.4 }}>£23 DVSA fee covered on every course</div>
+                    <div style={{ fontSize: 11, color: "#5A6B82", lineHeight: 1.4 }}>£23 DVSA fee covered by us.</div>
                   </div>
                 </div>
 
