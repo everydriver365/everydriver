@@ -45,7 +45,7 @@ const COURSES = [
     title: "Intensive Courses",
     description:
       "Full immersion experience. Learn everything in concentrated sessions and pass your test in record time.",
-    features: ["30–40 hours of lessons", "Pass in 1–2 weeks", "Test booking included"],
+    features: ["10–40 hours of lessons", "Pass in 1–2 weeks", "Test booking included"],
     priceFrom: "£1,299",
     priceUnit: null as string | null,
     ctaLabel: "View courses",
