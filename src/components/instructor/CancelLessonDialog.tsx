@@ -187,11 +187,12 @@ export function CancelLessonDialog({
 
 
       if (chargeAmount > 0) {
-        const newBalance = pupilBalance - chargeAmount;
-        const { error: balanceError } = await supabase
-          .from("pupils")
-          .update({ account_balance: newBalance })
-          .eq("id", pupilId);
+        // Atomic balance decrement — prevents lost updates if two writes
+        // land in the same second (same root cause as Joseph's payment issue).
+        const { error: balanceError } = await supabase.rpc("increment_pupil_balance", {
+          p_pupil_id: pupilId,
+          p_amount: -chargeAmount,
+        });
 
         if (balanceError) throw balanceError;
 
