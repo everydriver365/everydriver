@@ -168,16 +168,18 @@ export function IOSCourseCard({
               className="flex flex-col items-center justify-center px-4 py-5 min-w-[68px]"
               style={{ backgroundColor: brandColour }}
             >
-              <span className="text-3xl font-bold leading-none text-white">{dayNumber}</span>
-              <span className="mt-1 text-[11px] font-semibold tracking-wider text-white/80 uppercase">
+              <span className="text-2xl font-semibold leading-none text-white">{dayNumber}</span>
+              <span className="mt-1 text-[10px] font-medium tracking-wider text-white/80 uppercase">
                 {monthName}
               </span>
+
             </div>
 
             <div className="flex-1 px-4 py-4 space-y-2">
-              <h3 className="text-base sm:text-lg font-bold text-foreground uppercase tracking-wide leading-snug">
-                {courseName}
+              <h3 className="text-[14px] font-semibold text-foreground tracking-normal leading-snug">
+                {courseName.charAt(0) + courseName.slice(1).toLowerCase()}
               </h3>
+
 
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Clock className="h-4 w-4 flex-shrink-0" />
@@ -199,17 +201,18 @@ export function IOSCourseCard({
               <div className="flex items-baseline gap-2 pt-1">
                 {hasDiscount ? (
                   <>
-                    <span className="text-2xl font-extrabold text-foreground leading-none">
+                    <span className="text-lg font-semibold text-foreground leading-none">
                       £{finalPrice.toFixed(0)}
                     </span>
                     <span className="text-sm line-through text-muted-foreground">£{totalPrice.toFixed(0)}</span>
                   </>
                 ) : (
-                  <span className="text-2xl font-extrabold text-foreground leading-none">
+                  <span className="text-lg font-semibold text-foreground leading-none">
                     £{totalPrice.toFixed(0)}
                   </span>
                 )}
               </div>
+
 
               <CompactPaymentBadges
                 amount={finalPrice}

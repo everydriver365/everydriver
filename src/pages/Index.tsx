@@ -465,17 +465,17 @@ export default function Index() {
                 className="mb-8 flex items-center justify-between"
               >
                 <div>
-                  <Badge className="mb-2 border-0 bg-primary text-primary-foreground">
-                    Available Now
-                  </Badge>
-                  <h2 className="text-2xl font-bold md:text-3xl">Featured Courses</h2>
+                  <div className="mb-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#D12E2E]">
+                    Available now
+                  </div>
+                  <h2 className="text-xl font-medium md:text-2xl text-foreground">Featured Courses</h2>
                 </div>
-                <Link to="/courses">
-                  <Button variant="outline" className="hidden gap-2 sm:flex">
-                    View All Courses
-                    <ArrowRight className="h-4 w-4" />
-                  </Button>
+
+                <Link to="/courses" className="hidden items-center gap-1 text-sm font-medium text-[#0070C0] hover:underline sm:inline-flex">
+                  View all courses
+                  <ArrowRight className="h-4 w-4" />
                 </Link>
+
               </motion.div>
 
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
