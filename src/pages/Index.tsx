@@ -275,7 +275,7 @@ export default function Index() {
                   </div>
                   <div>
                     <div style={{ fontSize: 13, fontWeight: 700, color: "#0A1936", marginBottom: 1, lineHeight: 1.3 }}>Real ratings before you book</div>
-                    <div style={{ fontSize: 11, color: "#5A6B82", lineHeight: 1.4 }}>Verified reviews from genuine pupils only</div>
+                    <div style={{ fontSize: 11, color: "#5A6B82", lineHeight: 1.4 }}>Verified reviews from genuine pupils</div>
                   </div>
                 </div>
 
