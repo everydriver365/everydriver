@@ -1,61 +1,66 @@
-# Import Google Calendar Events as DSM Lessons
 
-Turn events you create directly in Google Calendar into real DSM lessons (not just "busy" blocks), with pupil matching by name. When the name doesn't match a pupil, the event is **skipped and you get a notification** to resolve it manually.
+# National Intensive Payment Hardening
 
-## How it will work
+Five-part improvement covering audit, UX, edge cases, history clarity, and balance display.
 
-1. When Google pushes an event update (or hourly reconcile runs), we already mirror it into `instructor_calendar_events`. We add a new step right after the mirror:
-   - For each external event that is **not** already linked to a lesson or manual block, attempt to convert it to a lesson.
-2. Pupil matching: case-insensitive match of the event **title** (and optionally the attendee name) against `pupils.name` for that instructor. Match rules:
-   - Exact match → use that pupil.
-   - Single fuzzy match (title contains pupil name or vice versa) → use that pupil.
-   - Zero matches or multiple matches → **skip** and create an instructor notification.
-3. Lesson creation:
-   - `instructor_id` = the connected instructor
-   - `pupil_id` = matched pupil
-   - `lesson_date`, `start_time`, `duration_minutes` = from the Google event (Europe/London)
-   - `pickup_location` = event location (geocoded via postcodes.io if it's a UK postcode, per existing lesson coordinates rule)
-   - `price` = pupil default hourly rate × duration (per existing pricing helpers)
-   - `status` = `scheduled`
-   - `google_event_id` = the external event id (so future edits/deletes in Google reconcile correctly via the existing webhook + reconcile path)
-   - `source` = `google_calendar_import` (new value) so the UI can badge it
-4. Idempotency: before inserting, check `scheduled_lessons.google_event_id`. If a lesson already exists for that event id, only update mutable fields (time, duration, location) — never duplicate.
-5. Updates from Google: if the event time/location changes in Google, the matching lesson is updated in place. Deletes already cascade via the existing reconcile pipeline (cancels the lesson).
-6. Skipped events → notification:
-   - Insert into `instructor_notifications` with a "Google event needs a pupil" message, the event title, time, and a deep link to a small **Unmatched Imports** screen where you can either pick a pupil (creates the lesson) or dismiss (keeps it as a busy block only).
-   - We remember dismissed event ids so we don't re-notify on every sync.
+## 1. Backfill audit (one-off SQL)
 
-## What you'll see in DSM
+Run a read-only query to find National Intensive pupils (`enquiry_id IS NOT NULL`) whose `payment_history` totals don't reconcile against `account_balance + (intensive_hours_paid * hourly_rate)`. Output a report to `/mnt/documents/intensive-balance-audit.csv` listing pupils with drift > £1. No auto-correction — user reviews and we fix manually like Joseph.
 
-- New lessons appear in Today's schedule, weekly view, pupil history, earnings — everywhere a normal lesson appears.
-- A small **"From Google"** badge on the lesson card so you know it originated outside DSM.
-- A bell notification when an event was skipped because the pupil couldn't be identified.
-- An **Unmatched Google Events** list under Schedule → Calendar settings.
+## 2. Payment recording UI — dual-outcome confirmation
 
-## Technical changes
+When a payment is recorded for a National Intensive pupil:
+- After successful insert, show a toast/dialog: **"£X credited + Yh prepaid added"**
+- Affected component: the payment recording dialog used on pupil profile (locate via `record-payment` / `PupilPaymentDialog` search)
+- Only triggers when `pupils.enquiry_id IS NOT NULL`
 
-**Database (migration)**
-- Add `source TEXT` to `scheduled_lessons` (default `dsm`, allowed: `dsm`, `google_calendar_import`, `ai_booking`, etc.) — used for the badge and analytics.
-- Add `unmatched_google_events` table: `id`, `instructor_id`, `external_event_id` (unique per instructor), `title`, `start`, `end`, `location`, `status` (`pending` | `dismissed` | `resolved`), timestamps. RLS scoped via `public.get_instructor_id_for_user(auth.uid())`. Grants for `authenticated` + `service_role`.
-- Index `scheduled_lessons (instructor_id, google_event_id)` if not already present.
+## 3. EndLessonWizard edge cases
 
-**Edge functions**
-- `google-calendar-service` → `fetchExternalEvents`: after upserting `instructor_calendar_events`, call a new helper `importExternalEventsAsLessons(instructorId)`.
-- New helper (same function file) does the matching, lesson upsert, and unmatched-event row creation. Pupil match uses `pupils` filtered by instructor and `archived_at is null`.
-- Reuse existing geocoding (postcodes.io) for `pickup_lat/lng`.
-- Reuse `resolveHourlyRate` for pricing.
-- `google-calendar-webhook` and `reconcile-google-calendar` both already call `fetchExternalEvents`, so they automatically pick up the new import step.
+Update `src/components/instructor/EndLessonWizard.tsx` hours-deduction block:
 
-**Client**
-- New page `src/pages/instructor-app/UnmatchedGoogleEvents.tsx` listing pending rows with "Assign pupil" (dropdown of pupils, then creates lesson via existing booking RPC) and "Dismiss" actions.
-- Lesson card: render a small **"From Google"** chip when `source === 'google_calendar_import'`.
-- Notification handler: new notification type `google_event_unmatched` deep-links to the new page.
-- Settings → Google Calendar section: a "Unmatched events (N)" link.
+- **Null vs 0**: Treat `intensive_hours_paid` as `0` when null (already implicit, make explicit).
+- **Partial hours**: If `intensive_hours_paid < lessonDuration` for a National Intensive pupil:
+  - Deduct all remaining hours from `intensive_hours_paid` (set to 0)
+  - Charge the *remainder* (lessonDuration - hoursPaid) × hourly_rate against money balance via `increment_pupil_balance`
+  - Log two `payment_history` rows: one Adjustment for hours, one Lesson Charge for the £ remainder
+- **Cancel/refund flow**: Audit `softDeleteLesson.ts` and any cancel paths. If a National Intensive lesson is cancelled after EOL, restore hours (not money) when the original deduction was hours-based. Detect by checking the lesson's payment_history entry type.
 
-**Out of scope (won't change)**
-- Existing DSM → Google push (still one-way out for DSM-created lessons).
-- Mobile layouts (per project rule, only touch if you ask).
+## 4. Payment history — dedicated `intensive_hours` type
 
-## Open follow-up (non-blocking)
+Currently hours deductions log as `Adjustment` (ambiguous). Add a new payment type:
+- Update display logic in payment history components to render `intensive_hours` as **"–Xh Intensive Hours"** with a clock icon, not a £ amount
+- Update `EndLessonWizard.tsx` to write `payment_type: 'intensive_hours'` instead of `'Adjustment'`
+- Update any payment-type enums/filters (search `payment_type` usages)
+- No DB schema change needed if `payment_type` is freetext; if it's an enum, add a migration to extend it
 
-After this ships, if name matching turns out to skip a lot of your events, we can layer in title-prefix conventions (e.g. `"Lesson — Jane Doe"`) or attendee-email matching. Defaulting to strict matching first keeps wrong-pupil bookings from sneaking in.
+## 5. Balance widget — hours-first for National Intensive
+
+In pupil profile balance widget(s):
+- If `pupils.enquiry_id IS NOT NULL` AND `intensive_hours_paid > 0`:
+  - Show **"42.5h remaining"** as the primary large number
+  - Show **"£1,487.50 credit"** as secondary
+- Otherwise: existing £-first layout
+- Locate: `PupilBalanceCard` / pupil detail header / parent top-up card
+
+## Technical Section
+
+**Files to touch (estimated):**
+- `src/components/instructor/EndLessonWizard.tsx` — partial-hours split, payment_type rename
+- `src/lib/softDeleteLesson.ts` + cancel handlers — hours restoration on cancel
+- Pupil payment dialog (TBD via grep `record_payment`)
+- Pupil balance card component(s)
+- Payment history row renderer (TBD via grep `payment_type`)
+- `/mnt/documents/intensive-balance-audit.csv` — generated, not committed
+
+**Out of scope:**
+- Mobile layout changes (per project rule)
+- Refactoring the `increment_pupil_balance` RPC
+- Adding `intensive_hours_remaining` as a generated column (could be a follow-up)
+
+**Order of execution:**
+1. Audit query first (read-only, surfaces real drift before we ship logic changes)
+2. EndLessonWizard partial-hours + payment_type
+3. Payment history renderer
+4. Balance widget hours-first
+5. Cancel/refund hours restoration
+6. Dual-outcome confirmation toast
