@@ -17,6 +17,7 @@ interface PaymentRow {
   id: string;
   amount: number;
   payment_method: string;
+  payment_type: string | null;
   notes: string | null;
   recorded_at: string;
   lesson_id: string | null;
