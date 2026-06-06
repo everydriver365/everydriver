@@ -591,23 +591,22 @@ export default function Drive365Home({ afterLearningPaths, afterHero }: { afterL
                   style={{
                     background: "#FFFFFF",
                     borderRadius: 12,
-                    border: course.featured ? `2px solid ${accent}` : "1px solid #E8EDF2",
-                    boxShadow: course.featured
-                      ? `0 14px 40px -24px ${accent}66, 0 2px 0 ${accent}22 inset`
-                      : "0 8px 24px -16px rgba(10,22,40,0.16)",
+                    border: course.featured ? `2px solid ${accent}` : "0.5px solid #E5E7EB",
+                    boxShadow: "none",
                     position: "relative",
                     display: "flex",
                     flexDirection: "column",
                     overflow: "hidden",
                     transform: course.featured ? "translateY(-4px)" : "none",
-                    transition: "transform 220ms ease, box-shadow 220ms ease",
+                    transition: "transform 220ms ease",
                   }}
                 >
                   {course.featured && (
-                    <div style={{ position: "absolute", top: 10, right: 10, zIndex: 5, background: accent, color: "#FFFFFF", fontSize: 8, fontWeight: 900, padding: "4px 8px", borderRadius: 999, letterSpacing: "1px", textTransform: "uppercase", boxShadow: `0 4px 10px -4px ${accent}88` }}>
+                    <div style={{ position: "absolute", top: 10, right: 10, zIndex: 5, background: accent, color: "#FFFFFF", fontSize: 10, fontWeight: 600, padding: "4px 8px", borderRadius: 999, letterSpacing: "1px", textTransform: "uppercase" }}>
                       Most popular
                     </div>
                   )}
+
 
                   {/* Card image */}
                   <div style={{ height: 130, overflow: "hidden", position: "relative" }}>
