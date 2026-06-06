@@ -222,6 +222,92 @@ export default function Index() {
       <Drive365Home
         afterHero={
           <>
+          {/* Why book through Every Driver — desktop only */}
+          <section className="hidden md:block" style={{ padding: "32px 5%" }}>
+            <div style={{ background: "#EEF4FB", borderRadius: 16, padding: "2rem", fontFamily: "'Poppins', sans-serif" }}>
+              {/* Heading */}
+              <div style={{ textAlign: "center", marginBottom: 28 }}>
+                <h2 style={{ fontSize: 24, fontWeight: 700, color: "#0A1936", margin: "0 0 10px", letterSpacing: "-0.3px" }}>
+                  Why book through Every Driver?
+                </h2>
+                <div style={{ width: 48, height: 3, borderRadius: 2, background: "#0070C0", margin: "0 auto" }} />
+              </div>
+
+              {/* 2-column grid */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, maxWidth: 1100, margin: "0 auto" }}>
+                {/* Card 1 */}
+                <div style={{ background: "#FFFFFF", borderRadius: 12, padding: "1rem 1.25rem", display: "flex", alignItems: "flex-start", gap: 14 }}>
+                  <div style={{ width: 40, height: 40, borderRadius: 999, background: "#FCEBEB", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <span style={{ color: "#D12E2E", fontSize: 18, fontWeight: 700 }}>↺</span>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: "#0A1936", marginBottom: 2, lineHeight: 1.3 }}>Free re-test if you don't pass</div>
+                    <div style={{ fontSize: 12, color: "#5A6B82", lineHeight: 1.4 }}>We cover the fee — no questions asked</div>
+                  </div>
+                </div>
+
+                {/* Card 2 */}
+                <div style={{ background: "#FFFFFF", borderRadius: 12, padding: "1rem 1.25rem", display: "flex", alignItems: "flex-start", gap: 14 }}>
+                  <div style={{ width: 40, height: 40, borderRadius: 999, background: "#EAF3DE", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <span style={{ color: "#3B6D11", fontSize: 18 }}>📖</span>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: "#0A1936", marginBottom: 2, lineHeight: 1.3 }}>Free theory test included</div>
+                    <div style={{ fontSize: 12, color: "#5A6B82", lineHeight: 1.4 }}>£23 DVSA fee covered on every course</div>
+                  </div>
+                </div>
+
+                {/* Card 3 */}
+                <div style={{ background: "#FFFFFF", borderRadius: 12, padding: "1rem 1.25rem", display: "flex", alignItems: "flex-start", gap: 14 }}>
+                  <div style={{ width: 40, height: 40, borderRadius: 999, background: "#EAF3DE", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <span style={{ color: "#3B6D11", fontSize: 18 }}>✓</span>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: "#0A1936", marginBottom: 2, lineHeight: 1.3 }}>Every instructor DBS checked</div>
+                    <div style={{ fontSize: 12, color: "#5A6B82", lineHeight: 1.4 }}>DVSA approved, reviewed by real pupils</div>
+                  </div>
+                </div>
+
+                {/* Card 4 */}
+                <div style={{ background: "#FFFFFF", borderRadius: 12, padding: "1rem 1.25rem", display: "flex", alignItems: "flex-start", gap: 14 }}>
+                  <div style={{ width: 40, height: 40, borderRadius: 999, background: "#EAF3DE", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <span style={{ color: "#3B6D11", fontSize: 18 }}>★</span>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: "#0A1936", marginBottom: 2, lineHeight: 1.3 }}>Real ratings before you book</div>
+                    <div style={{ fontSize: 12, color: "#5A6B82", lineHeight: 1.4 }}>Verified reviews from genuine pupils only</div>
+                  </div>
+                </div>
+
+                {/* Card 5 */}
+                <div style={{ background: "#FFFFFF", borderRadius: 12, padding: "1rem 1.25rem", display: "flex", alignItems: "flex-start", gap: 14 }}>
+                  <div style={{ width: 40, height: 40, borderRadius: 999, background: "#EAF3DE", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <span style={{ color: "#3B6D11", fontSize: 18 }}>🔒</span>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: "#0A1936", marginBottom: 2, lineHeight: 1.3 }}>Your money is protected</div>
+                    <div style={{ fontSize: 12, color: "#5A6B82", lineHeight: 1.4, marginBottom: 8 }}>Secure payment · dispute resolution</div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                      <span style={{ background: "#FFB3C7", borderRadius: 999, padding: "3px 10px", fontSize: 10, fontWeight: 700, color: "#17120F" }}>Klarna.</span>
+                      <span style={{ background: "#B2FCE4", borderRadius: 999, padding: "3px 10px", fontSize: 10, fontWeight: 700, color: "#000E18" }}>Clearpay</span>
+                      <span style={{ fontSize: 11, color: "#9CA3AF", fontWeight: 500 }}>pay in instalments</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Card 6 */}
+                <div style={{ background: "#FFFFFF", borderRadius: 12, padding: "1rem 1.25rem", display: "flex", alignItems: "flex-start", gap: 14 }}>
+                  <div style={{ width: 40, height: 40, borderRadius: 999, background: "#EAF3DE", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <span style={{ color: "#3B6D11", fontSize: 18 }}>📱</span>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: "#0A1936", marginBottom: 2, lineHeight: 1.3 }}>Manage everything in the app</div>
+                    <div style={{ fontSize: 12, color: "#5A6B82", lineHeight: 1.4 }}>Book, reschedule and track progress</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
           {/* Perks bar — desktop only. Bold 4-up promise band with brand gradient accent. */}
           <section className="hidden md:block" style={{ background: "linear-gradient(180deg, #0A1628 0%, #0F2044 100%)", padding: "0", position: "relative", overflow: "hidden" }}>
             {/* hairline brand accent */}
