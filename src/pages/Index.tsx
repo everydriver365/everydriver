@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { MapPin, ChevronRight, Calendar, Award, Users, Heart, Star, Clock, Zap, CreditCard, User, ArrowRight, ArrowLeftRight, ShieldCheck, Video, GraduationCap, Search, Wallet, Play, HelpCircle, CheckCircle2, DollarSign, Car, BookOpen, ChevronDown, Loader2, Timer, CalendarCheck, Shield, Scale, Lock, IdCard } from "lucide-react";
+import { MapPin, ChevronRight, Calendar, Award, Users, Heart, Star, Clock, Zap, CreditCard, User, ArrowRight, ArrowLeftRight, ShieldCheck, Video, GraduationCap, Search, Wallet, Play, HelpCircle, CheckCircle2, DollarSign, Car, BookOpen, ChevronDown, Loader2, Timer, CalendarCheck, Shield, Scale, Lock, IdCard, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MainLayout } from "@/components/layout/MainLayout";
 import Drive365Home from "@/components/home/Drive365Home";
@@ -1026,83 +1026,45 @@ export default function Index() {
 
 
 
-      {/* Desktop Trust Badges — DSM Redesign */}
-      <section className="hidden md:block" style={{ background: "#FFFFFF", borderRadius: 8, border: "1px solid #E5E7EB", overflow: "hidden" }}>
+      {/* Desktop Trust Badges */}
+      <section className="hidden md:block" style={{ fontFamily: "'Poppins', sans-serif", background: "#FFFFFF", borderRadius: 8, border: "1px solid #E5E7EB", overflow: "hidden" }}>
         {/* Top row — Accreditations */}
-        <div
-          style={{
-            padding: "14px 32px",
-            borderBottom: "1px solid #F3F4F6",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 32,
-          }}
-        >
+        <div style={{ padding: "14px 32px", display: "flex", alignItems: "center", justifyContent: "center", gap: 0 }}>
           {[
-            { logo: logoAdiCode, alt: "ADI Code of Practice", tick: "#D12E2E" },
-            { logo: logoMsa, alt: "MSA GB - For all driver trainers", tick: "#1A6FD4" },
-            { logo: logoCpd, alt: "Continuing Professional Development", tick: "#0A0E27" },
+            { logo: logoAdiCode, alt: "ADI Code of Practice", name: "ADI Code of Practice" },
+            { logo: logoMsa, alt: "MSA GB - For all driver trainers", name: "MSA GB" },
+            { logo: logoCpd, alt: "Continuing Professional Development", name: "Continuing Professional Development" },
           ].map((item, i, arr) => (
-            <div key={item.alt} style={{ display: "flex", alignItems: "center", gap: 0 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <div
-                  style={{
-                    width: 18,
-                    height: 18,
-                    borderRadius: "50%",
-                    background: item.tick,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexShrink: 0,
-                    color: "#FFFFFF",
-                    fontSize: 10,
-                    fontWeight: 700,
-                    lineHeight: 1,
-                  }}
-                >
-                  ✓
+            <div key={item.alt} style={{ display: "flex", alignItems: "center" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <div style={{ width: 20, height: 20, borderRadius: "50%", background: "#EAF3DE", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <Check size={12} color="#1A7D4E" strokeWidth={3} />
                 </div>
                 <img src={item.logo} alt={item.alt} style={{ maxHeight: 32, width: "auto", objectFit: "contain", display: "block" }} />
+                <span style={{ fontSize: 12, fontWeight: 500, color: "#0A1936", whiteSpace: "nowrap" }}>{item.name}</span>
               </div>
               {i < arr.length - 1 && (
-                <div style={{ width: 1, height: 28, background: "#F3F4F6", marginLeft: 32, flexShrink: 0 }} />
+                <div style={{ width: 1, height: 28, background: "#e5e7eb", margin: "0 32px", flexShrink: 0 }} />
               )}
             </div>
           ))}
         </div>
 
+        {/* Separator */}
+        <div style={{ height: 0.5, background: "#e5e7eb", width: "100%" }} />
+
         {/* Bottom row — Payments */}
-        <div
-          style={{
-            padding: "12px 32px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 16,
-          }}
-        >
-          <span style={{ color: "#9CA3AF", fontSize: 11, fontWeight: 500 }}>Pay with</span>
-          {[
-            { src: logoCardPayments, alt: "Visa, MasterCard, Maestro, JCB" },
-            { src: logoKlarna, alt: "Klarna" },
-            { src: logoClearpay, alt: "Clearpay" },
-          ].map((logo) => (
-            <div
-              key={logo.alt}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                background: "#F9FAFB",
-                border: "1px solid #E5E7EB",
-                borderRadius: 4,
-                padding: "4px 10px",
-              }}
-            >
-              <img src={logo.src} alt={logo.alt} style={{ maxHeight: 20, width: "auto", objectFit: "contain", display: "block" }} />
-            </div>
-          ))}
+        <div style={{ padding: "12px 32px", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+          <span style={{ color: "#9ca3af", fontSize: 12, fontWeight: 400, marginRight: 4 }}>Pay with</span>
+          <div style={{ display: "inline-flex", alignItems: "center", background: "#FFFFFF", border: "0.5px solid #e5e7eb", borderRadius: 8, padding: "5px 12px" }}>
+            <img src={logoCardPayments} alt="Visa, MasterCard, Maestro, JCB" style={{ maxHeight: 20, width: "auto", objectFit: "contain", display: "block" }} />
+          </div>
+          <div style={{ display: "inline-flex", alignItems: "center", background: "#FFB3C7", border: "0.5px solid #FFB3C7", borderRadius: 8, padding: "5px 12px" }}>
+            <img src={logoKlarna} alt="Klarna" style={{ maxHeight: 20, width: "auto", objectFit: "contain", display: "block" }} />
+          </div>
+          <div style={{ display: "inline-flex", alignItems: "center", background: "#B2FCE4", border: "0.5px solid #B2FCE4", borderRadius: 8, padding: "5px 12px" }}>
+            <img src={logoClearpay} alt="Clearpay" style={{ maxHeight: 20, width: "auto", objectFit: "contain", display: "block" }} />
+          </div>
         </div>
       </section>
 
