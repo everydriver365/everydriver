@@ -822,6 +822,87 @@ export default function Index() {
       </Dialog>
 
 
+      {/* Latest from Every Driver — Desktop */}
+      <section className="hidden md:block" style={{ fontFamily: "'Poppins', sans-serif", background: "#FFFFFF", padding: "48px 32px" }}>
+        <div className="container max-w-6xl">
+          {/* Header */}
+          <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 28 }}>
+            <div>
+              <div style={{ color: "#D12E2E", fontSize: 11, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 }}>
+                Latest from Every Driver
+              </div>
+              <h2 style={{ color: "#0A1936", fontSize: 20, fontWeight: 500, margin: 0, lineHeight: 1.3 }}>
+                News & tips.
+              </h2>
+            </div>
+            <Link to="/news" style={{ fontSize: 13, fontWeight: 500, color: "#0070C0", textDecoration: "none" }}>
+              View all articles →
+            </Link>
+          </div>
+
+          {newsLoading ? (
+            <div style={{ display: "grid", gridTemplateColumns: "1.6fr 1fr", gap: 10 }}>
+              <div className="animate-pulse" style={{ background: "#f3f4f6", borderRadius: 12, height: 320 }} />
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                <div className="animate-pulse" style={{ background: "#f3f4f6", borderRadius: 12, flex: 1 }} />
+                <div className="animate-pulse" style={{ background: "#f3f4f6", borderRadius: 12, flex: 1 }} />
+              </div>
+            </div>
+          ) : dvsaNews.length > 0 ? (
+            <div style={{ display: "grid", gridTemplateColumns: "1.6fr 1fr", gap: 10 }}>
+              {/* Feature card */}
+              {(() => {
+                const article = dvsaNews[0];
+                const img = article.imageUrl || newsFeatured;
+                return (
+                  <Link to={`/news/${article.slug}`} style={{ textDecoration: "none" }}>
+                    <div style={{ background: "#FFFFFF", border: "0.5px solid #e5e7eb", borderRadius: 12, overflow: "hidden", display: "flex", flexDirection: "column", height: "100%" }}>
+                      <img src={img} alt={article.title} style={{ width: "100%", height: 160, objectFit: "cover", display: "block" }} />
+                      <div style={{ padding: "1rem", flex: 1, display: "flex", flexDirection: "column" }}>
+                        <div style={{ color: "#D12E2E", fontSize: 10, fontWeight: 500, textTransform: "uppercase", marginBottom: 6 }}>
+                          {article.category || "DVSA News"}
+                        </div>
+                        <div style={{ fontSize: 14, fontWeight: 500, color: "#0A1936", lineHeight: 1.5, marginBottom: 8 }}>
+                          {article.title}
+                        </div>
+                        <div style={{ color: "#9ca3af", fontSize: 11, marginTop: "auto" }}>
+                          {article.pubDate ? new Date(article.pubDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : ''} • 3 min read
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })()}
+
+              {/* Small cards */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {dvsaNews.slice(1, 3).map((article, i) => {
+                  const img = article.imageUrl || (i === 0 ? newsArticle1 : newsArticle2);
+                  return (
+                    <Link key={article.slug || article.link} to={`/news/${article.slug}`} style={{ textDecoration: "none", flex: 1 }}>
+                      <div style={{ background: "#FFFFFF", border: "0.5px solid #e5e7eb", borderRadius: 12, overflow: "hidden", display: "flex", height: "100%" }}>
+                        <img src={img} alt={article.title} style={{ width: 90, height: "100%", objectFit: "cover", display: "block", flexShrink: 0 }} />
+                        <div style={{ padding: "0.75rem", flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+                          <div style={{ color: "#D12E2E", fontSize: 10, fontWeight: 500, textTransform: "uppercase", marginBottom: 4 }}>
+                            {article.category || "DVSA News"}
+                          </div>
+                          <div style={{ fontSize: 13, fontWeight: 500, color: "#0A1936", lineHeight: 1.4, marginBottom: 6 }}>
+                            {article.title}
+                          </div>
+                          <div style={{ color: "#9ca3af", fontSize: 11 }}>
+                            {article.pubDate ? new Date(article.pubDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : ''} • 3 min read
+                          </div>
+                        </div>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
+        </div>
+      </section>
+
       {/* Latest News & Tips — Mobile (unchanged) */}
       <section className="md:hidden bg-gradient-to-b from-orange-50 to-background py-20">
         <div className="container max-w-5xl">
