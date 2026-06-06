@@ -1,8 +1,6 @@
-In `src/components/home/Drive365Home.tsx` (the hero card titled "See who's teaching you before you book"), append a new line to the subtext under the headline so it reads:
+The grey strip is the page background visible through the section's `padding: "20px 0"` wrapper above the blue (#EEF4FB) panel.
 
-> Every instructor verified. Real reviews. Real pass rates. You choose who teaches you. **All bookings backed by us.**
+**Change**
+- In `src/pages/Index.tsx` (line 226), set the desktop "Why book through Every Driver" section's padding from `"20px 0"` to `"0 0 20px"` so the blue panel flush-meets the hero above, while keeping spacing below.
 
-Implementation:
-- Edit the `<p>` on line 410–412 to add the new sentence, styling the "All bookings backed by us." part in a slightly bolder/darker weight (e.g. semibold `#0A1628`) so it reads as a reassurance tagline rather than blending into the muted body copy.
-
-No other components, copy, or layout changes.
+No other styles, content, or mobile behaviour change.
