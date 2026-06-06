@@ -30,6 +30,7 @@ export function Drive365Header() {
   const [promoVisible, setPromoVisible] = useState(true);
   const [scrolled, setScrolled] = useState(false);
   const coursesRef = useRef<HTMLDivElement | null>(null);
+  const { logo, logoAlt, homeLink } = useRouteLogo();
 
   useEffect(() => {
     if (typeof window !== "undefined" && localStorage.getItem(PROMO_KEY) === "1") {
