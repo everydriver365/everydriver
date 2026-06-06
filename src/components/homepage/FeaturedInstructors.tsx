@@ -157,7 +157,7 @@ export function FeaturedInstructors() {
         });
       }
 
-      // 3. Pass rate from driving_test_results (non-mock)
+      // 3. Pass rate from driving_test_results (non-mock), with course_reviews.passed_first_time as fallback
       const { data: tests } = await supabase
         .from("driving_test_results")
         .select("instructor_id, result, is_mock")
@@ -171,11 +171,32 @@ export function FeaturedInstructors() {
         passMap.set(t.instructor_id, entry);
       }
 
+      // 3b. Fallback: aggregate passed_first_time from approved, visible course reviews
+      //     for any instructor with no driving_test_results rows.
+      const idsMissingPass = ids.filter((id) => !passMap.has(id));
+      const reviewPassMap = new Map<string, { total: number; passed: number }>();
+      if (idsMissingPass.length > 0) {
+        const { data: passReviews } = await supabase
+          .from("course_reviews")
+          .select("instructor_id, passed_first_time")
+          .in("instructor_id", idsMissingPass)
+          .eq("is_visible", true)
+          .eq("moderation_status", "approved")
+          .not("passed_first_time", "is", null);
+        for (const r of (passReviews ?? []) as any[]) {
+          const entry = reviewPassMap.get(r.instructor_id) ?? { total: 0, passed: 0 };
+          entry.total += 1;
+          if (r.passed_first_time === true) entry.passed += 1;
+          reviewPassMap.set(r.instructor_id, entry);
+        }
+      }
+
+
       // 4. Build scored list with filters
       const scored: ScoredInstructor[] = (insRows as unknown as InstructorRow[])
         .map((row) => {
           const r = ratingMap.get(row.id) ?? { avg: 0, total: 0 };
-          const p = passMap.get(row.id);
+          const p = passMap.get(row.id) ?? reviewPassMap.get(row.id);
           const pass_rate = p && p.total > 0 ? (p.passed / p.total) * 100 : null;
           const score = r.total * 0.4 + r.avg * 10 * 0.3 + (pass_rate ?? 0) * 0.3;
           return {
