@@ -88,53 +88,6 @@ export default function HomepageExtraSections() {
     <section style={{ background: "#F6F6F8", padding: "32px 5%" }}>
       <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
 
-      {/* 1. Trust bar */}
-      <div
-        style={{
-          background: "#0A1628",
-          borderRadius: 10,
-          padding: "14px 24px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          flexWrap: "wrap",
-          gap: 12,
-        }}
-      >
-        {[
-          {
-            icon: "⭐",
-            title: "Rated 4.9 / 5",
-            sub: "2,400+ verified reviews",
-          },
-          {
-            icon: "🛡",
-            title: "Pass Promise",
-            sub: "Free re-test guaranteed",
-          },
-          {
-            icon: "✅",
-            title: "DVSA verified",
-            sub: "Every instructor checked",
-          },
-        ].map((it, i) => (
-          <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, flex: 1, minWidth: 180, borderRight: i < 3 ? "1px solid rgba(255,255,255,0.1)" : "none", height: 28 }}>
-            <span style={{ fontSize: 16 }}>{it.icon}</span>
-            <div style={{ display: "flex", flexDirection: "column", lineHeight: 1.2 }}>
-              <span style={{ fontSize: 12, fontWeight: 700, color: "#FFFFFF" }}>{it.title}</span>
-              <span style={{ fontSize: 10, color: "rgba(255,255,255,0.4)" }}>{it.sub}</span>
-            </div>
-          </div>
-        ))}
-        <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1, minWidth: 220 }}>
-          <span style={{ background: "#FFB3C7", color: "#17120F", fontFamily: "system-ui", fontSize: 9, fontWeight: 900, padding: "3px 8px", borderRadius: 999 }}>Klarna</span>
-          <span style={{ background: "#B2FCE4", color: "#000E18", fontFamily: "system-ui", fontSize: 9, fontWeight: 900, padding: "3px 8px", borderRadius: 999 }}>Clearpay</span>
-          <div style={{ display: "flex", flexDirection: "column", lineHeight: 1.2, marginLeft: 4 }}>
-            <span style={{ fontSize: 12, fontWeight: 700, color: "#FFFFFF" }}>Pay your way</span>
-            <span style={{ fontSize: 10, color: "rgba(255,255,255,0.4)" }}>No upfront lump sum</span>
-          </div>
-        </div>
-      </div>
 
 
       {/* Video section moved to render under the hero (see Index.tsx afterHero) */}
