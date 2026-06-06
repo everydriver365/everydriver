@@ -20,6 +20,7 @@ const RewardsExplainerPage = lazy(() => import("@/pages/instructor/RewardsExplai
 const RewardsLeaderboardPage = lazy(() => import("@/pages/instructor/RewardsLeaderboardPage"));
 const HowPupilsBookPage = lazy(() => import("@/pages/instructor/settings/how-pupils-book/HowPupilsBookPage"));
 const InstructorNotifications = lazy(() => import("@/pages/InstructorNotifications"));
+const UnmatchedGoogleEventsPage = lazy(() => import("@/pages/instructor/UnmatchedGoogleEventsPage"));
 const InstallInstructor = lazy(() => import("@/pages/InstallInstructor"));
 const IconPreviewPage = lazy(() => import("@/pages/instructor/IconPreviewPage"));
 const QuickActionsRedesignDemo = lazy(() => import("@/pages/instructor/QuickActionsRedesignDemo"));
