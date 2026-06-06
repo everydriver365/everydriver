@@ -139,39 +139,6 @@ export default function HomepageExtraSections() {
         )}
       </div>
 
-      {/* 6. Platform overview */}
-      <div style={{ background: "#0A1628", borderRadius: 14, padding: 32 }}>
-        <div style={{ textAlign: "center", marginBottom: 20 }}>
-          <span style={{ background: "rgba(232,100,26,0.2)", border: "1px solid rgba(232,100,26,0.3)", color: "#E8641A", fontSize: 10, fontWeight: 700, padding: "4px 12px", borderRadius: 20, display: "inline-block", marginBottom: 10 }}>
-            All-in-one platform
-          </span>
-          <h3 style={{ fontSize: 22, fontWeight: 800, color: "#FFFFFF", margin: "0 0 6px" }}>
-            Everything you need to <span style={{ color: "#E8641A" }}>learn to drive.</span>
-          </h3>
-          <p style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", margin: 0 }}>
-            Our platform connects learners, instructors, and parents in one seamless experience.
-          </p>
-        </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
-          {[
-            { tag: "FOR PARENTS", tagColor: "#D12E2E", title: "Parent Portal", desc: "Stay informed with lesson updates and payment visibility", link: "Learn more →", to: "/parents", gradient: "linear-gradient(135deg, #D12E2E, #B02222)", emoji: "👨‍👩‍👧" },
-            { tag: "FOR LEARNERS", tagColor: "#E8641A", title: "Local Instructors", desc: "Find certified instructors near you by postcode. Search and compare prices 24/7", link: "Find an instructor →", to: "/instructors", gradient: "linear-gradient(135deg, #E8641A, #C8520E)", emoji: "🚗" },
-            { tag: "FOR EVERYONE", tagColor: "#059669", title: "Track Progress", desc: "Monitor your journey with detailed progress reports", link: "Learn more →", to: "/pupil", gradient: "linear-gradient(135deg, #059669, #047857)", emoji: "📊" },
-          ].map((c, i) => (
-            <div key={i} style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 10, overflow: "hidden" }}>
-              <div style={{ height: 100, background: c.gradient, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 38 }}>
-                {c.emoji}
-              </div>
-              <div style={{ padding: 14 }}>
-                <div style={{ fontSize: 9, fontWeight: 700, color: c.tagColor, textTransform: "uppercase", marginBottom: 4 }}>{c.tag}</div>
-                <h4 style={{ fontSize: 13, fontWeight: 700, color: "#FFFFFF", margin: "0 0 4px" }}>{c.title}</h4>
-                <p style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", lineHeight: 1.5, margin: "0 0 8px" }}>{c.desc}</p>
-                <Link to={c.to} style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.6)", textDecoration: "none" }}>{c.link}</Link>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
       </div>
     </section>
   );
