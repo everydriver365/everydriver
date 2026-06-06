@@ -17314,6 +17314,7 @@ export type Database = {
           recurrence_rule: string | null
           reminder_1h_sent_at: string | null
           reminder_24h_sent_at: string | null
+          source: string
           start_time: string
           status: string
           surcharge_amount: number
@@ -17376,6 +17377,7 @@ export type Database = {
           recurrence_rule?: string | null
           reminder_1h_sent_at?: string | null
           reminder_24h_sent_at?: string | null
+          source?: string
           start_time: string
           status?: string
           surcharge_amount?: number
@@ -17438,6 +17440,7 @@ export type Database = {
           recurrence_rule?: string | null
           reminder_1h_sent_at?: string | null
           reminder_24h_sent_at?: string | null
+          source?: string
           start_time?: string
           status?: string
           surcharge_amount?: number
@@ -19863,6 +19866,80 @@ export type Database = {
           status?: string
         }
         Relationships: []
+      }
+      unmatched_google_events: {
+        Row: {
+          created_at: string
+          end_time: string
+          external_event_id: string
+          id: string
+          instructor_id: string
+          location: string | null
+          resolved_lesson_id: string | null
+          resolved_pupil_id: string | null
+          start_time: string
+          status: string
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          end_time: string
+          external_event_id: string
+          id?: string
+          instructor_id: string
+          location?: string | null
+          resolved_lesson_id?: string | null
+          resolved_pupil_id?: string | null
+          start_time: string
+          status?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          end_time?: string
+          external_event_id?: string
+          id?: string
+          instructor_id?: string
+          location?: string | null
+          resolved_lesson_id?: string | null
+          resolved_pupil_id?: string | null
+          start_time?: string
+          status?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unmatched_google_events_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unmatched_google_events_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unmatched_google_events_resolved_lesson_id_fkey"
+            columns: ["resolved_lesson_id"]
+            isOneToOne: false
+            referencedRelation: "scheduled_lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unmatched_google_events_resolved_pupil_id_fkey"
+            columns: ["resolved_pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       urgent_alerts: {
         Row: {

@@ -20,6 +20,7 @@ const RewardsExplainerPage = lazy(() => import("@/pages/instructor/RewardsExplai
 const RewardsLeaderboardPage = lazy(() => import("@/pages/instructor/RewardsLeaderboardPage"));
 const HowPupilsBookPage = lazy(() => import("@/pages/instructor/settings/how-pupils-book/HowPupilsBookPage"));
 const InstructorNotifications = lazy(() => import("@/pages/InstructorNotifications"));
+const UnmatchedGoogleEventsPage = lazy(() => import("@/pages/instructor/UnmatchedGoogleEventsPage"));
 const InstallInstructor = lazy(() => import("@/pages/InstallInstructor"));
 const IconPreviewPage = lazy(() => import("@/pages/instructor/IconPreviewPage"));
 const QuickActionsRedesignDemo = lazy(() => import("@/pages/instructor/QuickActionsRedesignDemo"));
@@ -210,6 +211,8 @@ export const instructorPortalRoutes = (
     <Route path="/instructor/settings" element={<InstructorSettingsHub />} />
     <Route path="/instructor/settings/:categoryId" element={<InstructorSettingsHub />} />
     <Route path="/instructor/notifications" element={<InstructorNotifications />} />
+    <Route path="/instructor-app/unmatched-google-events" element={<UnmatchedGoogleEventsPage />} />
+    <Route path="/instructor/unmatched-google-events" element={<UnmatchedGoogleEventsPage />} />
     <Route path="/instructor/install" element={<InstallInstructor />} />
     <Route path="/instructor/modules" element={<InstructorModules />} />
     <Route path="/website/my-site" element={<InstructorMySite />} />

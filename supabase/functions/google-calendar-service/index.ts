@@ -24,6 +24,213 @@ function computeIsBusy(item: any, title: string | null): boolean {
   return BLOCKING_TITLE_RE.test(title || "");
 }
 
+// ---------------------------------------------------------------------------
+// Import Google Calendar events as scheduled_lessons
+// ---------------------------------------------------------------------------
+// Matches event title to a pupil name for this instructor:
+//   - Exact case-insensitive match -> use that pupil
+//   - Single fuzzy match (title contains pupil name) -> use that pupil
+//   - Zero / multiple matches -> skip, record in unmatched_google_events,
+//     and create an instructor notification (only when first seen).
+//
+// All-day "busy" blocks (holiday / leave) are NOT imported as lessons.
+// Events already linked to a lesson via google_event_id are updated in place.
+// ---------------------------------------------------------------------------
+interface ExternalEvent {
+  id: string;
+  summary: string;
+  start: string;
+  end: string;
+  is_busy: boolean;
+  location: string | null;
+}
+
+function toLondonDateTime(iso: string): { date: string; time: string; minutes: number } {
+  const d = new Date(iso);
+  // en-GB en gives dd/mm/yyyy; use ISO via sv-SE locale which yields yyyy-mm-dd
+  const date = d.toLocaleDateString("sv-SE", { timeZone: "Europe/London" });
+  const time = d.toLocaleTimeString("en-GB", {
+    timeZone: "Europe/London",
+    hour12: false,
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  return { date, time: `${time}:00`, minutes: d.getTime() / 60000 };
+}
+
+function normalizeName(s: string | null | undefined): string {
+  return (s || "").toLowerCase().replace(/[^a-z0-9\s]/g, " ").replace(/\s+/g, " ").trim();
+}
+
+async function importExternalEventsAsLessons(
+  supabase: any,
+  instructorId: string,
+  externalEvents: ExternalEvent[],
+): Promise<{ imported: number; updated: number; unmatched: number; skipped: number }> {
+  const stats = { imported: 0, updated: 0, unmatched: 0, skipped: 0 };
+
+  // Only consider timed, non-all-day, non-blocking events
+  const candidates = externalEvents.filter((e) => {
+    if (!e.is_busy) return false;
+    // All-day events look like 2026-01-01T00:00:00 with end at 23:59:59 -> treat as not a lesson
+    const isAllDayish = /T00:00:00$/.test(e.start) && /T23:59:59$/.test(e.end);
+    return !isAllDayish;
+  });
+
+  if (candidates.length === 0) return stats;
+
+  // Pupils + existing lesson links + dismissed/resolved unmatched in parallel
+  const [pupilsRes, lessonsRes, unmatchedRes] = await Promise.all([
+    supabase.from("pupils").select("id, name").eq("instructor_id", instructorId),
+    supabase
+      .from("scheduled_lessons")
+      .select("id, google_event_id, lesson_date, start_time, duration_minutes, pickup_location, status, deleted_at")
+      .eq("instructor_id", instructorId)
+      .not("google_event_id", "is", null),
+    supabase
+      .from("unmatched_google_events")
+      .select("external_event_id, status")
+      .eq("instructor_id", instructorId),
+  ]);
+
+  const pupils: Array<{ id: string; name: string; n: string }> = (pupilsRes.data || []).map((p: any) => ({
+    id: p.id,
+    name: p.name,
+    n: normalizeName(p.name),
+  }));
+
+  const lessonByEventId = new Map<string, any>();
+  for (const l of lessonsRes.data || []) {
+    if (l.google_event_id) lessonByEventId.set(l.google_event_id, l);
+  }
+
+  const unmatchedByEventId = new Map<string, string>();
+  for (const u of unmatchedRes.data || []) {
+    unmatchedByEventId.set(u.external_event_id, u.status);
+  }
+
+  for (const ev of candidates) {
+    // Skip user-dismissed events
+    if (unmatchedByEventId.get(ev.id) === "dismissed") {
+      stats.skipped++;
+      continue;
+    }
+
+    const existing = lessonByEventId.get(ev.id);
+
+    // Match title against pupils
+    const titleNorm = normalizeName(ev.summary);
+    let matchedPupilId: string | null = null;
+    if (titleNorm && pupils.length > 0) {
+      const exact = pupils.filter((p) => p.n && p.n === titleNorm);
+      if (exact.length === 1) {
+        matchedPupilId = exact[0].id;
+      } else if (exact.length === 0) {
+        const fuzzy = pupils.filter((p) => p.n && (titleNorm.includes(p.n) || p.n.includes(titleNorm)));
+        if (fuzzy.length === 1) matchedPupilId = fuzzy[0].id;
+      }
+    }
+
+    const london = toLondonDateTime(ev.start);
+    const endLondon = toLondonDateTime(ev.end);
+    const duration = Math.max(15, Math.round(endLondon.minutes - london.minutes));
+
+    // -- Existing lesson: update mutable fields, never duplicate --
+    if (existing && existing.status !== "cancelled" && !existing.deleted_at) {
+      const needsUpdate =
+        existing.lesson_date !== london.date ||
+        String(existing.start_time).slice(0, 5) !== london.time.slice(0, 5) ||
+        existing.duration_minutes !== duration ||
+        (existing.pickup_location || null) !== (ev.location || null);
+      if (needsUpdate) {
+        await supabase
+          .from("scheduled_lessons")
+          .update({
+            lesson_date: london.date,
+            start_time: london.time,
+            duration_minutes: duration,
+            pickup_location: ev.location,
+          })
+          .eq("id", existing.id);
+        stats.updated++;
+      } else {
+        stats.skipped++;
+      }
+      continue;
+    }
+
+    // -- No existing lesson: matched -> create; unmatched -> record --
+    if (matchedPupilId) {
+      const { error: insErr } = await supabase.from("scheduled_lessons").insert({
+        instructor_id: instructorId,
+        pupil_id: matchedPupilId,
+        lesson_date: london.date,
+        start_time: london.time,
+        duration_minutes: duration,
+        pickup_location: ev.location,
+        status: "scheduled",
+        booking_status: "confirmed",
+        google_event_id: ev.id,
+        source: "google_calendar_import",
+        calendar_sync_status: "synced",
+      });
+      if (insErr) {
+        console.error("[importExternalEvents] insert lesson failed:", insErr);
+        stats.skipped++;
+      } else {
+        stats.imported++;
+        // If this event had a pending unmatched row, mark resolved
+        if (unmatchedByEventId.has(ev.id)) {
+          await supabase
+            .from("unmatched_google_events")
+            .update({ status: "resolved", resolved_pupil_id: matchedPupilId })
+            .eq("instructor_id", instructorId)
+            .eq("external_event_id", ev.id);
+        }
+      }
+      continue;
+    }
+
+    // Unmatched -> upsert pending row + notify (only when first seen)
+    const wasKnown = unmatchedByEventId.has(ev.id);
+    const { error: upErr } = await supabase
+      .from("unmatched_google_events")
+      .upsert(
+        {
+          instructor_id: instructorId,
+          external_event_id: ev.id,
+          title: ev.summary,
+          start_time: ev.start,
+          end_time: ev.end,
+          location: ev.location,
+          status: "pending",
+        },
+        { onConflict: "instructor_id,external_event_id" },
+      );
+    if (upErr) {
+      console.error("[importExternalEvents] upsert unmatched failed:", upErr);
+    }
+    stats.unmatched++;
+
+    if (!wasKnown) {
+      try {
+        await supabase.from("instructor_notifications").insert({
+          instructor_id: instructorId,
+          title: "Google event needs a pupil",
+          message: `"${ev.summary}" (${london.date} ${london.time.slice(0, 5)}) couldn't be matched to a pupil.`,
+          type: "google_event_unmatched",
+          action_url: "/instructor-app/unmatched-google-events",
+          metadata: { external_event_id: ev.id, title: ev.summary, start: ev.start },
+        });
+      } catch (e) {
+        console.error("[importExternalEvents] notification insert failed:", e);
+      }
+    }
+  }
+
+  return stats;
+}
+
 // Base64url encode
 function base64urlEncode(data: Uint8Array): string {
   const base64 = btoa(String.fromCharCode(...data));
@@ -853,6 +1060,26 @@ Deno.serve(async (req) => {
           }
         }
 
+        // Import matching events as DSM lessons (skip + notify on unmatched name)
+        let importStats = { imported: 0, updated: 0, unmatched: 0, skipped: 0 };
+        try {
+          importStats = await importExternalEventsAsLessons(
+            supabase,
+            instructorId,
+            allEvents.map((e) => ({
+              id: e.id,
+              summary: e.summary,
+              start: e.start,
+              end: e.end,
+              is_busy: e.is_busy ?? true,
+              location: e.location,
+            })),
+          );
+          console.log(`[fetchExternalEvents] import stats:`, importStats);
+        } catch (e) {
+          console.error("[fetchExternalEvents] import as lessons failed:", e);
+        }
+
         // Update last sync time
         await supabase
           .from("instructor_google_service_calendar")
@@ -863,7 +1090,7 @@ Deno.serve(async (req) => {
           .eq("instructor_id", instructorId);
 
         return new Response(
-          JSON.stringify({ success: true, synced: allEvents.length }),
+          JSON.stringify({ success: true, synced: allEvents.length, import: importStats }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       } catch (err) {
