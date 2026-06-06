@@ -116,7 +116,7 @@ export function PupilPaymentsManager({
     setLoading(true);
     const { data, error } = await supabase
       .from("payment_history")
-      .select("id, amount, payment_method, notes, recorded_at, lesson_id")
+      .select("id, amount, payment_method, payment_type, notes, recorded_at, lesson_id")
       .eq("pupil_id", pupilId)
       .is("deleted_at", null)
       .order("recorded_at", { ascending: false })
