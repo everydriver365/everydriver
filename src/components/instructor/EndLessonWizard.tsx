@@ -248,9 +248,9 @@ export function EndLessonWizard({
             pupil_id: pupilId,
             instructor_id: instructorId,
             amount: 0,
-            payment_method: "Intensive Hours",
+            payment_method: "Adjustment",
             payment_type: "adjustment",
-            notes: `${durationMinutes}min lesson on ${lessonDate} — ${lessonHours}h deducted from prepaid intensive hours (${remaining}h remaining)`,
+            notes: `Intensive hours: ${lessonHours}h deducted (${remaining}h remaining) — ${durationMinutes}min lesson on ${lessonDate}`,
           });
         } else {
           // Money path — use atomic RPC, not read/modify/write.
