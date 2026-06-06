@@ -538,7 +538,7 @@ const HeroDesignG = () => (
         >
           {[
             { img: intensiveCourseTile, title: "Intensive Courses", sub: "Pass in 1–2 weeks", price: "From £1,200" },
-            { img: defaultHeroImage, title: "Weekly Lessons", sub: "At your own pace", price: "From £35/hr" },
+            { img: defaultHeroImage, title: "Weekly Lessons", sub: "At your own pace", price: "From £30/hr" },
           ].map((card, i) => (
             <div key={i} className="bg-white rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all cursor-pointer group">
               <div className="flex items-center gap-4 p-3">

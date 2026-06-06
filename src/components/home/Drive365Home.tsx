@@ -80,7 +80,7 @@ const COURSES = [
     description:
       "Traditional approach for busy schedules. Build confidence gradually with regular weekly sessions at times that suit you.",
     features: ["Drive when it suits you.", "Pay as you go", "Same instructor every week"],
-    priceFrom: "£35",
+    priceFrom: "£30",
     priceUnit: "/hour",
     ctaLabel: "View lessons",
     ctaHref: "/courses?type=weekly",

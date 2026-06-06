@@ -134,7 +134,7 @@ export function JobOfferAlert({ instructorId }: JobOfferAlertProps) {
   };
 
   const calculatePayment = (hours: number) => {
-    const hourlyRate = instructor?.hourly_rate || 35; // Default £35/hour
+    const hourlyRate = instructor?.hourly_rate || 30; // Default £30/hour
     const skimAmount = instructor?.school_skim_amount || 0; // Fixed GBP amount
     const grossAmount = hours * hourlyRate;
     const netAmount = grossAmount - skimAmount;

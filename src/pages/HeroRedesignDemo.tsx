@@ -1193,7 +1193,7 @@ function OptionY5() {
           { icon: Clock, label: "Next: Priya S.", sub: "13:30 · Wildern Lane", gradient: "from-amber-500/15 to-amber-500/5", border: "border-amber-500/25", iconColor: "text-amber-500" },
           { icon: CheckCircle, label: `${todayCompleted}/${todayTotal} lessons`, sub: "completed today", gradient: "from-emerald-500/15 to-emerald-500/5", border: "border-emerald-500/25", iconColor: "text-emerald-500" },
           { icon: TrendingUp, label: `${weekCompleted}/${weekTotal} this week`, sub: `${weekTotal - weekCompleted} to go`, gradient: "from-primary/15 to-primary/5", border: "border-primary/25", iconColor: "text-primary" },
-          { icon: PoundSterling, label: "£175 expected", sub: "5 hours · £35/hr", gradient: "from-violet-500/15 to-violet-500/5", border: "border-violet-500/25", iconColor: "text-violet-500" },
+          { icon: PoundSterling, label: "£150 expected", sub: "5 hours · £30/hr", gradient: "from-violet-500/15 to-violet-500/5", border: "border-violet-500/25", iconColor: "text-violet-500" },
         ].map((item, i) => (
           <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 * i }}
             className={`bg-gradient-to-r ${item.gradient} border ${item.border} rounded-xl px-3.5 py-2.5 flex items-center gap-3`}>
@@ -1258,7 +1258,7 @@ function OptionY6() {
             <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center"><PoundSterling className="h-3.5 w-3.5 text-primary" /></div>
             <div className="flex-1">
               <p className="text-sm font-medium text-foreground">£175 expected</p>
-              <p className="text-[10px] text-muted-foreground">5 hours · £35/hr</p>
+              <p className="text-[10px] text-muted-foreground">5 hours · £30/hr</p>
             </div>
           </div>
         </div>
@@ -1422,7 +1422,7 @@ function OptionZ3() {
           { icon: TrendingUp, color: "bg-primary", title: `${weekCompleted} of ${weekTotal} this week`, sub: `${weekTotal - weekCompleted} to go` },
         ]},
         { group: "Earnings", items: [
-          { icon: PoundSterling, color: "bg-amber-500", title: "£175 expected today", sub: "5 hours at £35/hr" },
+          { icon: PoundSterling, color: "bg-amber-500", title: "£150 expected today", sub: "5 hours at £30/hr" },
         ]},
       ].map((section, si) => (
         <motion.div key={si} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 * si }}

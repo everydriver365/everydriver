@@ -91,7 +91,7 @@ export function ParentPortalPreviewModal({ open, onOpenChange, primaryColor = "#
             <div className="space-y-2">
               {[
                 { title: "Lesson Completed", subtitle: "Roundabouts & junctions", time: "Today", rating: 4 },
-                { title: "Payment Received", subtitle: "£35.00 credited", time: "Yesterday", rating: null },
+                { title: "Payment Received", subtitle: "£30.00 credited", time: "Yesterday", rating: null },
                 { title: "Lesson Completed", subtitle: "Dual carriageways", time: "Mon", rating: 5 },
               ].map((item, i) => (
                 <div key={i} className="flex items-center gap-2.5 py-1.5">

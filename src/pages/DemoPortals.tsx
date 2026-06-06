@@ -27,10 +27,10 @@ const PUPIL = {
 };
 
 const PAYMENTS = [
-  { id: "1", amount: 35, date: "5 Mar 2026", method: "Card", status: "Paid" },
-  { id: "2", amount: 35, date: "26 Feb 2026", method: "Card", status: "Paid" },
+  { id: "1", amount: 30, date: "5 Mar 2026", method: "Card", status: "Paid" },
+  { id: "2", amount: 30, date: "26 Feb 2026", method: "Card", status: "Paid" },
   { id: "3", amount: 70, date: "15 Feb 2026", method: "Bank Transfer", status: "Paid" },
-  { id: "4", amount: 35, date: "5 Feb 2026", method: "Cash", status: "Paid" },
+  { id: "4", amount: 30, date: "5 Feb 2026", method: "Cash", status: "Paid" },
   { id: "5", amount: 105, date: "20 Jan 2026", method: "Card", status: "Paid" },
 ];
 
@@ -469,7 +469,7 @@ function ParentDashboard() {
           {[
             { icon: <Car className="h-3.5 w-3.5" />, text: "Lesson completed — practised roundabouts", time: "2 days ago" },
             { icon: <TrendingUp className="h-3.5 w-3.5" />, text: "Progress updated to 72%", time: "2 days ago" },
-            { icon: <CreditCard className="h-3.5 w-3.5" />, text: "Payment of £35 received", time: "3 days ago" },
+            { icon: <CreditCard className="h-3.5 w-3.5" />, text: "Payment of £30 received", time: "3 days ago" },
             { icon: <Star className="h-3.5 w-3.5" />, text: "Achievement unlocked: Dual Carriageway", time: "1 week ago" },
           ].map((a, i) => (
             <div key={i} className="flex items-start gap-2.5">
