@@ -62,7 +62,7 @@ const COURSES = [
     title: "Semi-Intensive",
     description:
       "The perfect balance of speed and flexibility. Ideal if you have some availability but need time to practise between sessions.",
-    features: ["30 hours of lessons", "Pass in 2–4 weeks", "Flexible scheduling"],
+    features: ["FREE Re-Test if you fail", "Pass in 2–4 weeks", "Flexible scheduling"],
     priceFrom: "£999",
     priceUnit: null as string | null,
     ctaLabel: "View courses",
