@@ -17,6 +17,7 @@ interface PaymentRow {
   id: string;
   amount: number;
   payment_method: string;
+  payment_type: string | null;
   notes: string | null;
   recorded_at: string;
   lesson_id: string | null;
@@ -115,7 +116,7 @@ export function PupilPaymentsManager({
     setLoading(true);
     const { data, error } = await supabase
       .from("payment_history")
-      .select("id, amount, payment_method, notes, recorded_at, lesson_id")
+      .select("id, amount, payment_method, payment_type, notes, recorded_at, lesson_id")
       .eq("pupil_id", pupilId)
       .is("deleted_at", null)
       .order("recorded_at", { ascending: false })
@@ -164,17 +165,36 @@ export function PupilPaymentsManager({
   };
 
   const deletePayment = async (p: PaymentRow) => {
-    if (!confirm(`Delete £${Number(p.amount).toFixed(2)} payment? This will reverse the balance credit.`)) return;
+    const isHours = p.payment_type === "intensive_hours";
+    const m = isHours ? (p.notes || "").match(/(\d+(?:\.\d+)?)h used/) : null;
+    const hrs = m ? parseFloat(m[1]) : 0;
+    const confirmMsg = isHours
+      ? `Delete this intensive-hours deduction? This will restore ${hrs}h to the pupil.`
+      : `Delete £${Number(p.amount).toFixed(2)} payment? This will reverse the balance credit.`;
+    if (!confirm(confirmMsg)) return;
     setSaving(true);
     try {
       const { error } = await supabase.from("payment_history")
         .update({ deleted_at: new Date().toISOString() }).eq("id", p.id);
       if (error) throw error;
-      const { error: balErr } = await supabase.rpc("increment_pupil_balance", {
-        p_pupil_id: pupilId, p_amount: -Number(p.amount),
-      });
-      if (balErr) throw balErr;
-      toast.success("Payment deleted");
+      if (isHours && hrs > 0) {
+        // Restore intensive hours
+        const { data: cur } = await (supabase as any)
+          .from("pupils")
+          .select("intensive_hours_paid")
+          .eq("id", pupilId)
+          .single();
+        const next = Math.round(((Number(cur?.intensive_hours_paid ?? 0)) + hrs) * 100) / 100;
+        await (supabase as any).from("pupils")
+          .update({ intensive_hours_paid: next })
+          .eq("id", pupilId);
+      } else if (Number(p.amount) !== 0) {
+        const { error: balErr } = await supabase.rpc("increment_pupil_balance", {
+          p_pupil_id: pupilId, p_amount: -Number(p.amount),
+        });
+        if (balErr) throw balErr;
+      }
+      toast.success(isHours ? `Restored ${hrs}h` : "Payment deleted");
       await fetchRows();
       notifyChanged();
     } catch (e: any) {
@@ -456,12 +476,25 @@ export function PupilPaymentsManager({
                 ) : (
                   <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0">
-                      <div className={`font-semibold text-sm ${Number(p.amount) < 0 ? "text-destructive" : "text-foreground"}`}>
-                        {Number(p.amount) < 0 ? "−" : ""}£{Math.abs(Number(p.amount)).toFixed(2)}
-                        <span className="ml-2 text-xs text-muted-foreground font-normal">
-                          {Number(p.amount) < 0 ? "Charge" : formatMethod(p.payment_method)}
-                        </span>
-                      </div>
+                      {p.payment_type === "intensive_hours" ? (() => {
+                        const m = (p.notes || "").match(/(\d+(?:\.\d+)?)h used/);
+                        const hrs = m ? m[1] : "?";
+                        return (
+                          <div className="font-semibold text-sm text-foreground">
+                            −{hrs}h
+                            <span className="ml-2 text-xs text-muted-foreground font-normal">
+                              Intensive Hours
+                            </span>
+                          </div>
+                        );
+                      })() : (
+                        <div className={`font-semibold text-sm ${Number(p.amount) < 0 ? "text-destructive" : "text-foreground"}`}>
+                          {Number(p.amount) < 0 ? "−" : ""}£{Math.abs(Number(p.amount)).toFixed(2)}
+                          <span className="ml-2 text-xs text-muted-foreground font-normal">
+                            {Number(p.amount) < 0 ? "Charge" : formatMethod(p.payment_method)}
+                          </span>
+                        </div>
+                      )}
                       <div className="text-xs text-muted-foreground">
                         {format(parseISO(p.recorded_at), "d MMM yyyy, HH:mm")}
                         {p.notes && <span className="ml-2">• {p.notes}</span>}
