@@ -224,25 +224,51 @@ export function EndLessonWizard({
         console.error("Rewards error:", e);
       }
 
-      // 4. Deduct balance
+      // 4. Deduct lesson — prefer prepaid intensive hours; fall back to money balance.
       try {
+        const lessonHours = Math.round((durationMinutes / 60) * 100) / 100;
+
         const { data: fresh } = await supabase
           .from("pupils")
-          .select("account_balance")
+          .select("account_balance, intensive_hours_paid")
           .eq("id", pupilId)
           .single();
 
-        const newBal = (fresh?.account_balance || currentBalance) - lessonCost;
-        await supabase.from("pupils").update({ account_balance: newBal }).eq("id", pupilId);
+        const intensiveAvailable = Number((fresh as any)?.intensive_hours_paid ?? 0);
 
-        await supabase.from("payment_history").insert({
-          pupil_id: pupilId,
-          instructor_id: instructorId,
-          amount: -lessonCost,
-          payment_method: "Lesson Charge",
-          payment_type: "lesson_payment",
-          notes: `${durationMinutes}min lesson on ${lessonDate}`,
-        });
+        if (intensiveAvailable >= lessonHours && lessonHours > 0) {
+          // National Intensive course: deduct hours, not money.
+          const remaining = Math.round((intensiveAvailable - lessonHours) * 100) / 100;
+          await supabase
+            .from("pupils")
+            .update({ intensive_hours_paid: remaining } as any)
+            .eq("id", pupilId);
+
+          await supabase.from("payment_history").insert({
+            pupil_id: pupilId,
+            instructor_id: instructorId,
+            amount: 0,
+            payment_method: "Adjustment",
+            payment_type: "adjustment",
+            notes: `Intensive hours: ${lessonHours}h deducted (${remaining}h remaining) — ${durationMinutes}min lesson on ${lessonDate}`,
+          });
+        } else {
+          // Money path — use atomic RPC, not read/modify/write.
+          const { error: balErr } = await supabase.rpc("increment_pupil_balance", {
+            p_pupil_id: pupilId,
+            p_amount: -lessonCost,
+          });
+          if (balErr) throw balErr;
+
+          await supabase.from("payment_history").insert({
+            pupil_id: pupilId,
+            instructor_id: instructorId,
+            amount: -lessonCost,
+            payment_method: "Lesson Charge",
+            payment_type: "lesson_payment",
+            notes: `${durationMinutes}min lesson on ${lessonDate}`,
+          });
+        }
 
         invalidatePaymentQueries({ pupilId, instructorId });
       } catch (e) {
