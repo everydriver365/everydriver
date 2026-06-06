@@ -1,7 +1,18 @@
-In `src/components/homepage/FeaturedInstructors.tsx`, after the existing `driving_test_results` query, compute a fallback pass rate from `course_reviews.passed_first_time` for any instructor whose `pass_rate` is still `null`:
+## Goal
+Make Poppins the default font across the entire site (currently Inter/Accord are the defaults; Poppins is only used for headings).
 
-- Reuse the reviews already being fetched later in the effect (already filtered to `is_visible=true` + `moderation_status=approved`) — move that fetch earlier, or do a small additional aggregate query, so we can count `passed_first_time = true` vs `passed_first_time = false` (ignoring `null`).
-- If `total >= 1`, set `pass_rate = (passed / total) * 100`.
-- `driving_test_results` keeps priority when present.
+## Changes
 
-No schema changes. No hardcoded fallbacks — both sources are live DB data.
+1. **`tailwind.config.ts`** — Put `Poppins` first in `fontFamily.sans` so all default `font-sans` usage resolves to Poppins (heading stack already starts with Poppins).
+
+2. **`src/index.css`** — Update the base font stacks to lead with Poppins:
+   - `--font-sans` (line 118): lead with `'Poppins'`.
+   - `body` rule (line 214): replace `"Accord", "Manrope", ...` with `"Poppins", ...` so the global body font becomes Poppins instead of the Accord custom face.
+   - `.font-sans` style block (line 688): lead with `Poppins`.
+   - Leave the mono stack and the `.font-dyslexic` (Atkinson Hyperlegible) accessibility class alone.
+
+3. Poppins is already loaded via Google Fonts in `index.html` and `src/index.css`, so no new font imports are needed.
+
+## Out of scope
+- Components that intentionally pin a different font (e.g. mono code blocks, dyslexic-friendly mode) remain unchanged.
+- No layout, color, or spacing changes.
