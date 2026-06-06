@@ -168,10 +168,11 @@ export function IOSCourseCard({
               className="flex flex-col items-center justify-center px-4 py-5 min-w-[68px]"
               style={{ backgroundColor: brandColour }}
             >
-              <span className="text-3xl font-bold leading-none text-white">{dayNumber}</span>
-              <span className="mt-1 text-[11px] font-semibold tracking-wider text-white/80 uppercase">
+              <span className="text-2xl font-semibold leading-none text-white">{dayNumber}</span>
+              <span className="mt-1 text-[10px] font-medium tracking-wider text-white/80 uppercase">
                 {monthName}
               </span>
+
             </div>
 
             <div className="flex-1 px-4 py-4 space-y-2">
