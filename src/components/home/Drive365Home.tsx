@@ -451,8 +451,8 @@ export default function Drive365Home({ afterLearningPaths, afterHero }: { afterL
                   alt="Happy learner driver with an L-plate enjoying a flexible semi-intensive driving lesson"
                   onError={(e) => { (e.currentTarget as HTMLImageElement).style.visibility = "hidden"; }}
                 />
-                <h3>Semi Intensive Courses</h3>
-                <p>Briefly and concisely explain what you do for your audience.</p>
+                <h3>Semi Intensive</h3>
+                <p>Take slightly more relaxed approach with a semi intensive course.</p>
                 <Link to="/courses?type=semi-intensive">
                   <button type="button" className="d365-feat-btn d365-feat-btn--blue">Read more</button>
                 </Link>
@@ -466,7 +466,7 @@ export default function Drive365Home({ afterLearningPaths, afterHero }: { afterL
                 />
                 <div className="d365-feat-body">
                   <h3>Weekly Lessons</h3>
-                  <p>Briefly and concisely explain what you do for your audience.</p>
+                  <p>Take your time with regular lessons at a time to suit you and your schedule.</p>
                   <Link to="/courses?type=weekly">
                     <button type="button" className="d365-feat-btn d365-feat-btn--dark">Read more</button>
                   </Link>
