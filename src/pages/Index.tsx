@@ -428,7 +428,7 @@ export default function Index() {
               {/* Trust card grid */}
               <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
                 {[
-                  { Icon: CheckCircle2, color: "#0070C0", title: "Checked & monitored", body: "Verified before joining and continuously monitored. All instructors abide by the DVSA Code of Conduct." },
+                  { Icon: CheckCircle2, color: "#0070C0", title: "Checked & monitored", body: "All instructors are checked and verified before joining and continuously monitored. All instructors abide by the DVSA Code of Conduct." },
                   { Icon: IdCard, color: "#0F2044", title: "Enhanced DBS", body: "Highest level background check — includes children's and adults' barred lists for total peace of mind." },
                   { Icon: Scale, color: "#0070C0", title: "Dispute resolution", body: "We step in and resolve issues fairly between you and your instructor, ensuring a smooth experience." },
                   { Icon: Lock, color: "#0F2044", title: "Your money is safe", body: "Funds held securely until your booking is confirmed. No instructor gets paid until you're booked in." },
