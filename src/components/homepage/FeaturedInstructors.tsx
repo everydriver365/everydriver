@@ -369,32 +369,6 @@ export function FeaturedInstructors() {
   return (
     <section style={{ background: "#F6F6F8", padding: "32px 5%" }}>
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-        {/* Trust statement bar */}
-        <div
-          style={{
-            background: "#0A1628",
-            borderRadius: 10,
-            padding: "14px 24px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: 16,
-            flexWrap: "wrap",
-            marginBottom: 12,
-          }}
-        >
-          <div style={{ fontSize: 13, fontWeight: 600, color: "#fff" }}>
-            ✅ Every instructor is{" "}
-            <span style={{ color: "#22C55E" }}>DVSA verified</span>,{" "}
-            <span style={{ color: "#22C55E" }}>DBS checked</span> and{" "}
-            <span style={{ color: "#22C55E" }}>fully insured</span> before they appear on EveryDriver.
-          </div>
-          <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-            <span style={{ background: "#FFB3C7", fontFamily: "system-ui", fontSize: 9, fontWeight: 900, color: "#17120F", padding: "2px 9px", borderRadius: 3 }}>Klarna</span>
-            <span style={{ background: "#B2FCE4", fontFamily: "system-ui", fontSize: 9, fontWeight: 900, color: "#000E18", padding: "2px 9px", borderRadius: 3 }}>Clearpay</span>
-            <span style={{ background: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.7)", fontSize: 9, fontWeight: 700, borderRadius: 3, padding: "2px 9px" }}>🛡 Pass Promise</span>
-          </div>
-        </div>
 
         {/* Cards container */}
         <div style={{ background: "#fff", borderRadius: 14, padding: 20, border: "1px solid #E5E7EB" }}>
