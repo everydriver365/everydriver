@@ -883,7 +883,9 @@ export default function Index() {
                   return (
                     <Link key={article.slug || article.link} to={`/news/${article.slug}`} style={{ textDecoration: "none", flex: 1 }}>
                       <div style={{ background: "#FFFFFF", border: "0.5px solid #e5e7eb", borderRadius: 12, overflow: "hidden", display: "flex", height: "100%" }}>
-                        <img src={img} alt={article.title} style={{ width: 90, height: "100%", objectFit: "cover", display: "block", flexShrink: 0 }} />
+                        <div style={{ width: 90, minWidth: 90, maxWidth: 90, flexShrink: 0, overflow: "hidden" }}>
+                          <img src={img} alt={article.title} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                        </div>
                         <div style={{ padding: "0.75rem", flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
                           <div style={{ color: "#D12E2E", fontSize: 10, fontWeight: 500, textTransform: "uppercase", marginBottom: 4 }}>
                             {article.category || "DVSA News"}
