@@ -12,6 +12,7 @@ interface InstructorRow {
   profile_image_url: string | null;
   hourly_rate: number | null;
   home_postcode: string | null;
+  location_name: string | null;
   app_slug: string | null;
 }
 
@@ -134,7 +135,7 @@ export function FeaturedInstructors() {
       // 1. Active, non-placeholder instructors (via public view so anon can read)
       const { data: insRows } = await supabase
         .from("public_instructors" as any)
-        .select("id, name, profile_image_url, hourly_rate, home_postcode, app_slug, is_active, is_network_placeholder")
+        .select("id, name, profile_image_url, hourly_rate, home_postcode, location_name, app_slug, is_active, is_network_placeholder")
         .eq("is_active", true)
         .eq("is_network_placeholder", false);
       if (!insRows || insRows.length === 0) {
@@ -182,7 +183,7 @@ export function FeaturedInstructors() {
             name: row.name,
             photo: row.profile_image_url,
             hourly_rate: row.hourly_rate,
-            location: row.home_postcode ? row.home_postcode.split(" ")[0] : null,
+            location: row.location_name ?? (row.home_postcode ? row.home_postcode.split(" ")[0] : null),
             app_slug: row.app_slug,
             avg_rating: r.avg,
             total_reviews: r.total,
@@ -235,7 +236,7 @@ export function FeaturedInstructors() {
           id: realRow.id,
           photo: realRow.profile_image_url ?? p.photo,
           hourly_rate: realRow.hourly_rate,
-          location: realRow.home_postcode ? realRow.home_postcode.split(" ")[0] : p.location,
+          location: realRow.location_name ?? (realRow.home_postcode ? realRow.home_postcode.split(" ")[0] : p.location),
           app_slug: realRow.app_slug,
           isPlaceholder: false,
           googleBacked: true,
