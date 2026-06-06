@@ -234,7 +234,7 @@ export default function Index() {
               </div>
 
               {/* 2-column grid */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, maxWidth: 900, margin: "0 auto" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, maxWidth: 1100, margin: "0 auto" }}>
                 {/* Card 1 */}
                 <div style={{ background: "#FFFFFF", borderRadius: 12, padding: "0.75rem 1rem", display: "flex", alignItems: "flex-start", gap: 10 }}>
                   <div style={{ width: 32, height: 32, borderRadius: 999, background: "#FCEBEB", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
