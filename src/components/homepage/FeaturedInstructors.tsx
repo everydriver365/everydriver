@@ -596,31 +596,13 @@ export function FeaturedInstructors() {
                     </div>
                     <div style={{ background: "#fff", borderRadius: 8, padding: "10px 12px", border: "1px solid #EEF0F3" }}>
                       <div style={{ fontSize: 18, fontWeight: 700, color: "#0A1936", lineHeight: 1 }}>
-                        {passRate != null ? `${Math.round(passRate)}%` : "—"}
+                        {nextAvailable[ins.id] ? formatNextAvailable(nextAvailable[ins.id]) : "—"}
                       </div>
                       <div style={{ fontSize: 10, color: "#6b7280", marginTop: 4 }}>
-                        Pass rate
+                        Next available
                       </div>
                     </div>
                   </div>
-
-                  {/* Availability pill */}
-                  {nextAvailable[ins.id] && (
-                    <div>
-                      <span
-                        style={{
-                          display: "inline-flex", alignItems: "center", gap: 6,
-                          background: "#E7F8EE", color: "#0F5A37",
-                          fontSize: 11, fontWeight: 600,
-                          padding: "5px 10px", borderRadius: 999,
-                          border: "1px solid #BFE6CE",
-                        }}
-                      >
-                        <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#1A7D4E" }} />
-                        Available {formatNextAvailable(nextAvailable[ins.id])}
-                      </span>
-                    </div>
-                  )}
 
                   {/* Review quote */}
                   {reviewText && (
