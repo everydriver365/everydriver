@@ -12,6 +12,7 @@ interface InstructorRow {
   profile_image_url: string | null;
   hourly_rate: number | null;
   home_postcode: string | null;
+  location_name: string | null;
   app_slug: string | null;
 }
 
@@ -134,7 +135,7 @@ export function FeaturedInstructors() {
       // 1. Active, non-placeholder instructors (via public view so anon can read)
       const { data: insRows } = await supabase
         .from("public_instructors" as any)
-        .select("id, name, profile_image_url, hourly_rate, home_postcode, app_slug, is_active, is_network_placeholder")
+        .select("id, name, profile_image_url, hourly_rate, home_postcode, location_name, app_slug, is_active, is_network_placeholder")
         .eq("is_active", true)
         .eq("is_network_placeholder", false);
       if (!insRows || insRows.length === 0) {
@@ -182,7 +183,7 @@ export function FeaturedInstructors() {
             name: row.name,
             photo: row.profile_image_url,
             hourly_rate: row.hourly_rate,
-            location: row.home_postcode ? row.home_postcode.split(" ")[0] : null,
+            location: row.location_name ?? (row.home_postcode ? row.home_postcode.split(" ")[0] : null),
             app_slug: row.app_slug,
             avg_rating: r.avg,
             total_reviews: r.total,
@@ -235,7 +236,7 @@ export function FeaturedInstructors() {
           id: realRow.id,
           photo: realRow.profile_image_url ?? p.photo,
           hourly_rate: realRow.hourly_rate,
-          location: realRow.home_postcode ? realRow.home_postcode.split(" ")[0] : p.location,
+          location: realRow.location_name ?? (realRow.home_postcode ? realRow.home_postcode.split(" ")[0] : p.location),
           app_slug: realRow.app_slug,
           isPlaceholder: false,
           googleBacked: true,
@@ -366,189 +367,263 @@ export function FeaturedInstructors() {
 
   if (loading || instructors.length === 0) return null;
 
+  const CARD_THEMES = [
+    { bar: "#E8600A", bg: "#FFF8F4", avatar: "#E8600A", badgeBg: "#FFEDD5", badgeColor: "#9A3412", btn: "#E8600A" },
+    { bar: "#0A2B6B", bg: "#F4F7FC", avatar: "#0A2B6B", badgeBg: "#DBE4F4", badgeColor: "#0A2B6B", btn: "#0A2B6B" },
+    { bar: "#1A7D4E", bg: "#F3FAF6", avatar: "#1A7D4E", badgeBg: "#D6F0E1", badgeColor: "#0F5A37", btn: "#1A7D4E" },
+  ];
+
+  const STANDARD_PILLS = ["✓ DBS checked", "✓ DVSA approved", "✓ Pupil reviewed"];
+
+  function renderStars(rating: number) {
+    const full = Math.round(rating);
+    return "★★★★★".split("").map((_, i) => (
+      <span key={i} style={{ color: i < full ? "#F5B400" : "#D1D5DB", fontSize: 10, letterSpacing: 1 }}>★</span>
+    ));
+  }
+
   return (
-    <section style={{ background: "#F6F6F8", padding: "32px 5%" }}>
+    <section style={{ background: "#F6F6F8", padding: "40px 5%", fontFamily: "'Poppins', system-ui, sans-serif" }}>
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
 
-        {/* Cards container */}
-        <div style={{ background: "#fff", borderRadius: 14, padding: 20, border: "1px solid #E5E7EB" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-            <div>
-              <div style={{ fontSize: 10, fontWeight: 700, color: "#E8641A", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 5 }}>
-                FEATURED INSTRUCTORS
-              </div>
-              <div style={{ fontSize: 18, fontWeight: 800, color: "#0A1628", letterSpacing: -0.3 }}>
-                Chosen by our pupils.
-              </div>
+        {/* Section header */}
+        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 20, flexWrap: "wrap", gap: 12 }}>
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "#D12E2E", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 6 }}>
+              Featured instructors
             </div>
-            <Link to="/courses" style={{ fontSize: 11, fontWeight: 600, color: "#0070C0", textDecoration: "none" }}>
-              See all instructors →
-            </Link>
+            <h2 style={{ fontSize: 20, fontWeight: 700, color: "#0A1936", letterSpacing: -0.3, margin: 0 }}>
+              Chosen by our pupils.
+            </h2>
           </div>
+          <Link to="/courses" style={{ fontSize: 13, fontWeight: 600, color: "#0070C0", textDecoration: "none" }}>
+            See all instructors →
+          </Link>
+        </div>
 
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: `repeat(${Math.min(instructors.length, 3)}, 1fr)`,
-              gap: 12,
-            }}
-            className="featured-instructors-grid"
-          >
-            {instructors.map((ins, idx) => {
-              const accent = ACCENTS[idx] ?? ACCENTS[2];
-              const badge = BADGES[ins.badge ?? "reviews"];
-              const profileHref = ins.app_slug ? `/i/${ins.app_slug}` : `/courses`;
-              return (
-                <Link
-                  key={ins.id}
-                  to={profileHref}
-                  style={{
-                    borderRadius: 10,
-                    overflow: "hidden",
-                    border: accent.border,
-                    cursor: "pointer",
-                    display: "block",
-                    textDecoration: "none",
-                    color: "inherit",
-                    background: "#fff",
-                  }}
-                >
-                  <div style={{ height: 4, background: accent.bar }} />
-                  <div style={{ padding: 16 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-                      {(() => {
-                        const gPhotoRef = ins.isPlaceholder ? googleData[ins.id]?.photoReference : null;
-                        const photoSrc = ins.photo
-                          ?? (gPhotoRef
-                            ? `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/google-place-photo?ref=${encodeURIComponent(gPhotoRef)}&maxwidth=200`
-                            : null);
-                        return photoSrc ? (
-                          <img src={photoSrc} alt={ins.name} style={{ width: 44, height: 44, borderRadius: "50%", objectFit: "cover" }} />
-                        ) : (
-                          <div style={{ width: 44, height: 44, borderRadius: "50%", background: accent.avatar, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 14 }}>
-                            {initials(ins.name)}
-                          </div>
-                        );
-                      })()}
-                      <div>
-                        <div style={{ fontSize: 13, fontWeight: 700, color: "#0A1628", marginBottom: 1 }}>{ins.name}</div>
-                        <div style={{ fontSize: 10, color: "#9CA3AF" }}>
-                          {[ins.location, ins.hourly_rate ? `£${ins.hourly_rate}/hr` : null].filter(Boolean).join(" · ")}
-                        </div>
+        {/* Every Driver Standard strip */}
+        <div
+          style={{
+            background: "#0A2B6B",
+            borderRadius: 8,
+            padding: "14px 20px",
+            marginBottom: 20,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 16,
+            flexWrap: "wrap",
+          }}
+          className="every-driver-standard-strip"
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 12, flex: "1 1 auto", minWidth: 0 }}>
+            <div
+              style={{
+                width: 36, height: 36, borderRadius: "50%", background: "rgba(255,255,255,0.12)",
+                display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+              }}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFD66B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="8" r="6" />
+                <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11" />
+              </svg>
+            </div>
+            <div style={{ color: "#fff", fontSize: 13, lineHeight: 1.45 }}>
+              <span style={{ fontWeight: 700 }}>The Every Driver Standard</span>
+              <span style={{ opacity: 0.85 }}> — every instructor is personally vetted before they take a single booking.</span>
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            {STANDARD_PILLS.map((p) => (
+              <span
+                key={p}
+                style={{
+                  fontSize: 11, fontWeight: 600, color: "#fff",
+                  border: "1px solid rgba(255,255,255,0.4)",
+                  borderRadius: 999, padding: "4px 10px", whiteSpace: "nowrap",
+                }}
+              >
+                {p}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* Cards grid */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: `repeat(${Math.min(instructors.length, 3)}, 1fr)`,
+            gap: 16,
+          }}
+          className="featured-instructors-grid"
+        >
+          {instructors.map((ins, idx) => {
+            const theme = CARD_THEMES[idx] ?? CARD_THEMES[2];
+            const profileHref = ins.app_slug ? `/i/${ins.app_slug}` : `/courses`;
+            const firstName = ins.name.split(" ")[0] || ins.name;
+
+            // Resolve live data (real instructor first, Google-backed fallback)
+            const g = googleData[ins.id];
+            const topGoogleReview = g?.reviews?.find((r) => r.text && r.text.length > 20) ?? g?.reviews?.[0];
+            const ratingValue =
+              !ins.isPlaceholder && !ins.googleBacked && ins.avg_rating > 0
+                ? ins.avg_rating
+                : g?.rating ?? null;
+            const reviewCount =
+              !ins.isPlaceholder && !ins.googleBacked && ins.total_reviews > 0
+                ? ins.total_reviews
+                : g?.userRatingsTotal ?? null;
+            const passRate = ins.pass_rate;
+
+            const badgeLabel = ins.badge === "rating"
+              ? "Highest rated"
+              : ins.badge === "pass"
+              ? "Best pass rate"
+              : (ins.googleBacked || (ins.isPlaceholder && g)) ? "Verified on Google" : "Most reviewed";
+
+            const reviewText = ins.review?.review_text ?? topGoogleReview?.text ?? null;
+            const reviewerName = ins.review?.reviewer_name ?? topGoogleReview?.author_name ?? null;
+            const passedFirstTime = ins.review?.passed_first_time;
+
+            return (
+              <Link
+                key={ins.id}
+                to={profileHref}
+                style={{
+                  borderRadius: 12,
+                  overflow: "hidden",
+                  background: theme.bg,
+                  border: "1px solid #E5E7EB",
+                  cursor: "pointer",
+                  display: "flex",
+                  flexDirection: "column",
+                  textDecoration: "none",
+                  color: "inherit",
+                  boxShadow: "0 1px 2px rgba(10,25,54,0.04)",
+                }}
+              >
+                {/* Top accent bar */}
+                <div style={{ height: 4, background: theme.bar }} />
+
+                <div style={{ padding: 18, display: "flex", flexDirection: "column", gap: 14, flex: 1 }}>
+                  {/* Avatar + name + area */}
+                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    <div
+                      style={{
+                        width: 48, height: 48, borderRadius: "50%",
+                        background: theme.avatar, color: "#fff",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        fontWeight: 600, fontSize: 16, flexShrink: 0,
+                      }}
+                    >
+                      {initials(ins.name)}
+                    </div>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontSize: 14, fontWeight: 500, color: "#0A1936", lineHeight: 1.2 }}>
+                        {ins.name}
+                      </div>
+                      <div style={{ fontSize: 12, color: "#6b7280", marginTop: 2 }}>
+                        {[ins.location, ins.hourly_rate ? `£${ins.hourly_rate}/hr` : null].filter(Boolean).join(" · ")}
                       </div>
                     </div>
-
-                    {!ins.isPlaceholder && !ins.googleBacked ? (
-                      <>
-                        <div style={{ display: "inline-flex", alignItems: "center", gap: 4, marginBottom: 10, background: badge.bg, border: `1px solid ${badge.border}`, color: badge.color, fontSize: 9, fontWeight: 700, padding: "3px 9px", borderRadius: 20 }}>
-                          {badge.label}
-                        </div>
-
-                        <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
-                          {ins.pass_rate !== null && (
-                            <div style={{ flex: 1, textAlign: "center", background: "#F3F4F6", borderRadius: 7, padding: "8px 4px" }}>
-                              <div style={{ fontSize: 16, fontWeight: 800, color: "#22C55E" }}>{Math.round(ins.pass_rate)}%</div>
-                              <div style={{ fontSize: 8, color: "#9CA3AF" }}>pass rate</div>
-                            </div>
-                          )}
-                          <div style={{ flex: 1, textAlign: "center", background: "#F3F4F6", borderRadius: 7, padding: "8px 4px" }}>
-                            <div style={{ fontSize: 16, fontWeight: 800, color: "#0A1628" }}>{ins.avg_rating.toFixed(1)}</div>
-                            <div style={{ fontSize: 8, color: "#9CA3AF" }}>rating</div>
-                          </div>
-                          <div style={{ flex: 1, textAlign: "center", background: "#F3F4F6", borderRadius: 7, padding: "8px 4px" }}>
-                            <div style={{ fontSize: 16, fontWeight: 800, color: "#0A1628" }}>{ins.total_reviews}</div>
-                            <div style={{ fontSize: 8, color: "#9CA3AF" }}>reviews</div>
-                          </div>
-                          {nextAvailable[ins.id] && (
-                            <div style={{ flex: 1, textAlign: "center", background: "#ECFDF5", border: "1px solid #A7F3D0", borderRadius: 7, padding: "8px 4px" }}>
-                              <div style={{ fontSize: 12, fontWeight: 800, color: "#047857", lineHeight: 1.15 }}>{formatNextAvailable(nextAvailable[ins.id])}</div>
-                              <div style={{ fontSize: 8, color: "#059669" }}>next available</div>
-                            </div>
-                          )}
-                        </div>
-
-                        {ins.review && (
-                          <div style={{ marginBottom: 12, borderLeft: `3px solid ${accent.quoteBorder}`, background: accent.quoteBg, borderRadius: "0 6px 6px 0", padding: "8px 10px" }}>
-                            <div style={{ fontSize: 10, fontStyle: "italic", color: "#4B5563", lineHeight: 1.5, marginBottom: 3 }}>
-                              "{truncate(ins.review.review_text)}"
-                            </div>
-                            <div style={{ fontSize: 9, color: "#9CA3AF" }}>
-                              {ins.review.reviewer_name || "Anonymous"}
-                              {ins.review.passed_first_time ? " · ✓ Passed 1st time" : ""}
-                            </div>
-                          </div>
-                        )}
-
-                        <div style={{ width: "100%", padding: 9, border: "none", borderRadius: 7, fontSize: 11, fontWeight: 700, background: accent.btnBg, color: "#fff", textAlign: "center" }}>
-                          View profile →
-                        </div>
-                      </>
-                    ) : (() => {
-                      const g = googleData[ins.id];
-                      const topReview = g?.reviews?.find((r) => r.text && r.text.length > 20) ?? g?.reviews?.[0];
-                      const hasGoogle = !!g && (g.rating != null || (g.reviews && g.reviews.length > 0));
-                      return (
-                        <>
-                          <div style={{ display: "inline-flex", alignItems: "center", gap: 4, marginBottom: 10, background: hasGoogle ? "#EFF6FF" : "#F3F4F6", border: `1px solid ${hasGoogle ? "#BFDBFE" : "#E5E7EB"}`, color: hasGoogle ? "#1E40AF" : "#6B7280", fontSize: 9, fontWeight: 700, padding: "3px 9px", borderRadius: 20 }}>
-                            {hasGoogle ? "⭐ Verified on Google" : "⏳ Coming soon"}
-                          </div>
-
-                          {hasGoogle ? (
-                            <>
-                              <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
-                                {g.rating != null && (
-                                  <div style={{ flex: 1, textAlign: "center", background: "#F3F4F6", borderRadius: 7, padding: "8px 4px" }}>
-                                    <div style={{ fontSize: 16, fontWeight: 800, color: "#0A1628" }}>{g.rating.toFixed(1)}</div>
-                                    <div style={{ fontSize: 8, color: "#9CA3AF" }}>Google rating</div>
-                                  </div>
-                                )}
-                                {g.userRatingsTotal != null && (
-                                  <div style={{ flex: 1, textAlign: "center", background: "#F3F4F6", borderRadius: 7, padding: "8px 4px" }}>
-                                    <div style={{ fontSize: 16, fontWeight: 800, color: "#0A1628" }}>{g.userRatingsTotal}</div>
-                                    <div style={{ fontSize: 8, color: "#9CA3AF" }}>Google reviews</div>
-                                  </div>
-                                )}
-                                {nextAvailable[ins.id] && (
-                                  <div style={{ flex: 1, textAlign: "center", background: "#ECFDF5", border: "1px solid #A7F3D0", borderRadius: 7, padding: "8px 4px" }}>
-                                    <div style={{ fontSize: 12, fontWeight: 800, color: "#047857", lineHeight: 1.15 }}>{formatNextAvailable(nextAvailable[ins.id])}</div>
-                                    <div style={{ fontSize: 8, color: "#059669" }}>next available</div>
-                                  </div>
-                                )}
-                              </div>
-                              {topReview && (
-                                <div style={{ marginBottom: 12, borderLeft: `3px solid ${accent.quoteBorder}`, background: accent.quoteBg, borderRadius: "0 6px 6px 0", padding: "8px 10px" }}>
-                                  <div style={{ fontSize: 10, fontStyle: "italic", color: "#4B5563", lineHeight: 1.5, marginBottom: 3 }}>
-                                    "{truncate(topReview.text)}"
-                                  </div>
-                                  <div style={{ fontSize: 9, color: "#9CA3AF" }}>
-                                    {topReview.author_name} · via Google
-                                  </div>
-                                </div>
-                              )}
-                            </>
-                          ) : (
-                            <div style={{ fontSize: 11, color: "#9CA3AF", lineHeight: 1.6, marginBottom: 12, minHeight: 60, display: "flex", alignItems: "center" }}>
-                              This instructor will be featured here soon. Check back for updates.
-                            </div>
-                          )}
-
-                          <div style={{ width: "100%", padding: 9, border: "none", borderRadius: 7, fontSize: 11, fontWeight: 700, background: (ins.googleBacked || hasGoogle) ? accent.btnBg : "#E5E7EB", color: (ins.googleBacked || hasGoogle) ? "#fff" : "#6B7280", textAlign: "center" }}>
-                            {ins.googleBacked ? "View profile →" : (hasGoogle ? "Joining soon →" : "Coming soon")}
-                          </div>
-                        </>
-                      );
-                    })()}
                   </div>
-                </Link>
-              );
-            })}
-          </div>
+
+                  {/* Badge */}
+                  <div>
+                    <span
+                      style={{
+                        display: "inline-block",
+                        fontSize: 11, fontWeight: 600,
+                        background: theme.badgeBg, color: theme.badgeColor,
+                        padding: "4px 10px", borderRadius: 999,
+                      }}
+                    >
+                      {badgeLabel}
+                    </span>
+                  </div>
+
+                  {/* Stat boxes */}
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                    <div style={{ background: "#fff", borderRadius: 8, padding: "10px 12px", border: "1px solid #EEF0F3" }}>
+                      <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
+                        <div style={{ fontSize: 18, fontWeight: 700, color: "#0A1936", lineHeight: 1 }}>
+                          {ratingValue != null ? ratingValue.toFixed(1) : "—"}
+                        </div>
+                        <div style={{ fontSize: 10, color: "#6b7280" }}>
+                          {reviewCount != null ? `${reviewCount} reviews` : "No reviews"}
+                        </div>
+                      </div>
+                      <div style={{ marginTop: 4, display: "flex", gap: 1 }}>
+                        {ratingValue != null ? renderStars(ratingValue) : <span style={{ fontSize: 10, color: "#9CA3AF" }}>—</span>}
+                      </div>
+                    </div>
+                    <div style={{ background: "#fff", borderRadius: 8, padding: "10px 12px", border: "1px solid #EEF0F3" }}>
+                      <div style={{ fontSize: 18, fontWeight: 700, color: "#0A1936", lineHeight: 1 }}>
+                        {passRate != null ? `${Math.round(passRate)}%` : "—"}
+                      </div>
+                      <div style={{ fontSize: 10, color: "#6b7280", marginTop: 4 }}>
+                        Pass rate
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Availability pill */}
+                  {nextAvailable[ins.id] && (
+                    <div>
+                      <span
+                        style={{
+                          display: "inline-flex", alignItems: "center", gap: 6,
+                          background: "#E7F8EE", color: "#0F5A37",
+                          fontSize: 11, fontWeight: 600,
+                          padding: "5px 10px", borderRadius: 999,
+                          border: "1px solid #BFE6CE",
+                        }}
+                      >
+                        <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#1A7D4E" }} />
+                        Available {formatNextAvailable(nextAvailable[ins.id])}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Review quote */}
+                  {reviewText && (
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 12, fontStyle: "italic", color: "#374151", lineHeight: 1.55 }}>
+                        "{truncate(reviewText, 110)}"
+                      </div>
+                      <div style={{ fontSize: 11, color: "#6b7280", marginTop: 4 }}>
+                        — {reviewerName || "Anonymous"}
+                        {passedFirstTime ? " · Passed 1st time" : ""}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* CTA */}
+                  <div
+                    style={{
+                      marginTop: "auto",
+                      width: "100%", padding: "10px 14px",
+                      borderRadius: 8, background: theme.btn, color: "#fff",
+                      fontSize: 13, fontWeight: 600, textAlign: "center",
+                    }}
+                  >
+                    Book {firstName} →
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
         </div>
       </div>
       <style>{`
         @media (max-width: 768px) {
           .featured-instructors-grid {
             grid-template-columns: 1fr !important;
+          }
+          .every-driver-standard-strip {
+            flex-direction: column !important;
+            align-items: flex-start !important;
           }
         }
       `}</style>
