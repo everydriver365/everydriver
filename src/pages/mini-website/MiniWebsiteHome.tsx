@@ -404,7 +404,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                 <h3 className="text-xl font-bold" style={{ color: primaryColor }}>Intensive Courses</h3>
                 <p className="mt-2 text-sm text-muted-foreground">Full immersion driving experience. Learn everything in concentrated sessions and pass your test in record time.</p>
                 <div className="mt-4 space-y-2">
-                  <div className="flex items-center gap-2 text-sm"><Clock className="h-4 w-4 text-primary" /><span><strong>30-40 hours</strong> of lessons</span></div>
+                  <div className="flex items-center gap-2 text-sm"><Clock className="h-4 w-4 text-primary" /><span><strong>10-40 hours</strong> of lessons</span></div>
                   <div className="flex items-center gap-2 text-sm"><Calendar className="h-4 w-4 text-primary" /><span>Pass in <strong>1-2 weeks</strong></span></div>
                   <div className="flex items-center gap-2 text-sm"><Award className="h-4 w-4 text-primary" /><span>Test booking <strong>included</strong></span></div>
                 </div>
