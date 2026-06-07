@@ -186,6 +186,33 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
     }
   };
 
+  // Soft-delete an external Google Calendar event: remove from Google + local mirror.
+  const handleDeleteExternalEvent = async (evt: ExternalEvent) => {
+    try {
+      if (evt.external_event_id) {
+        const { error: fnErr } = await supabase.functions.invoke("google-calendar-service", {
+          body: { action: "deleteEvent", instructorId, eventId: evt.external_event_id },
+        });
+        if (fnErr) throw fnErr;
+      }
+      const { error: delErr } = await supabase
+        .from("instructor_calendar_events")
+        .delete()
+        .eq("id", evt.id);
+      if (delErr) throw delErr;
+
+      setExternalEvents((prev) => prev.filter((e) => e.id !== evt.id));
+      toast({ title: "Event removed", description: evt.title });
+    } catch (err: any) {
+      console.error("Delete event failed:", err);
+      toast({
+        title: "Couldn't delete event",
+        description: err?.message || "Please try again",
+        variant: "destructive",
+      });
+    }
+  };
+
   // --- All existing handlers preserved ---
   const handleNavigate = (address: string, postcode: string) => {
     const query = encodeURIComponent(`${address}, ${postcode}`);
