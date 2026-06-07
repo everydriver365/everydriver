@@ -398,7 +398,7 @@ export default function Drive365Home({ afterLearningPaths, afterHero }: { afterL
           <div className="d365-hero-right">
             <div className="d365-welcome text-center">
               <img src={logo} alt={logoAlt} className="h-10 mx-auto mb-5" />
-              <div className="d365-welcome-eyebrow">Find your instructor</div>
+              <div className="d365-welcome-eyebrow font-bold">Find your instructor</div>
               <h1>See who's teaching you before you book.</h1>
               <p className="mx-0 py-0" style={{ fontSize: 14, color: "#6B7280", lineHeight: 1.65, maxWidth: 440, margin: "0 auto" }}>
                 Every instructor verified. Real reviews. Real pass rates. You choose who teaches you.{" "}
