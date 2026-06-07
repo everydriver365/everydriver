@@ -693,11 +693,11 @@ export default function Drive365Home({ afterLearningPaths, afterHero }: { afterL
 
           {/* Reassurance footer row */}
           <div style={{ marginTop: 20, display: "flex", alignItems: "center", justifyContent: "center", flexWrap: "wrap", gap: 16, color: "#5A6B82", fontSize: 11, fontWeight: 600 }}>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><Check size={12} color="#1D9E75" strokeWidth={3} /> Free re-test if you don't pass</span>
+            <span className="font-medium" style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><Check size={12} color="#1D9E75" strokeWidth={3} /> Free re-test if you don't pass</span>
             <span style={{ width: 3, height: 3, borderRadius: 999, background: "#CBD2DD" }} />
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><Check size={12} color="#1D9E75" strokeWidth={3} /> Free theory test included</span>
+            <span className="font-medium" style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><Check size={12} color="#1D9E75" strokeWidth={3} /> Free theory test included</span>
             <span style={{ width: 3, height: 3, borderRadius: 999, background: "#CBD2DD" }} />
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><Check size={12} color="#1D9E75" strokeWidth={3} /> DVSA-approved instructors</span>
+            <span className="font-medium" style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><Check size={12} color="#1D9E75" strokeWidth={3} /> DVSA-approved instructors</span>
           </div>
         </div>
       </section>
