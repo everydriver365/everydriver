@@ -412,7 +412,7 @@ export default function Index() {
                   {[
                     { Icon: Search, label: "Search", desc: "Find instructors near you", color: "#0070C0" },
                     { Icon: ArrowLeftRight, label: "Compare", desc: "Reviews, prices & availability", color: "#0F2044" },
-                    { Icon: CalendarCheck, label: "Book", desc: "24/7 online checkout", color: "#D12E2E" },
+                    { Icon: CalendarCheck, label: "Book Direct 24/7", desc: "24/7 online checkout", color: "#D12E2E" },
                   ].map(({ Icon, label, desc, color }, i) => (
                     <div key={label} style={{ textAlign: "center" }}>
                       <div style={{ width: 44, height: 44, borderRadius: 12, background: "#fff", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 10px", border: `1.5px solid ${color}`, boxShadow: `0 6px 16px -8px ${color}55, 0 0 0 5px #fff`, position: "relative" }}>
