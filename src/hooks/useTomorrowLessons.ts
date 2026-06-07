@@ -20,6 +20,7 @@ export function useTomorrowLessons(instructorId: string | undefined) {
         .eq("instructor_id", instructorId)
         .eq("lesson_date", tomorrow)
         .neq("status", "cancelled")
+        .is("deleted_at", null)
         .order("start_time", { ascending: true });
 
       if (error) throw error;
