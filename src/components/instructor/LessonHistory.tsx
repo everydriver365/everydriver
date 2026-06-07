@@ -568,7 +568,9 @@ export function LessonHistory({
       ) : (
         <div className="space-y-3 max-h-[400px] overflow-y-auto">
           <AnimatePresence>
-            {lessons.map((lesson, index) => (
+            {lessons.map((lesson, index) => {
+              const isUpcoming = lesson.record_type === "upcoming";
+              return (
               <motion.div
                 key={lesson.id}
                 initial={{ opacity: 0, y: 10 }}
@@ -595,6 +597,7 @@ export function LessonHistory({
                           <Badge variant="secondary">
                             {lesson.duration_minutes / 60}h
                           </Badge>
+                          {isUpcoming && <Badge variant="outline">Upcoming</Badge>}
                           {lesson.rating && (
                             <div className="flex items-center gap-0.5">
                               {[...Array(lesson.rating)].map((_, i) => (
@@ -632,7 +635,7 @@ export function LessonHistory({
                       </div>
 
                       {/* Actions */}
-                      <div className="flex gap-1">
+                      {!isUpcoming && <div className="flex gap-1">
                         <Button
                           variant="ghost"
                           size="icon"
@@ -662,12 +665,13 @@ export function LessonHistory({
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
-                      </div>
+                      </div>}
                     </div>
                   </CardContent>
                 </Card>
               </motion.div>
-            ))}
+              );
+            })}
           </AnimatePresence>
         </div>
       )}
