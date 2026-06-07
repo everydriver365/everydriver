@@ -125,19 +125,6 @@ async function importExternalEventsAsLessons(
 
     const existing = lessonByEventId.get(ev.id);
 
-    // Match title against pupils
-    const titleNorm = normalizeName(ev.summary);
-    let matchedPupilId: string | null = null;
-    if (titleNorm && pupils.length > 0) {
-      const exact = pupils.filter((p) => p.n && p.n === titleNorm);
-      if (exact.length === 1) {
-        matchedPupilId = exact[0].id;
-      } else if (exact.length === 0) {
-        const fuzzy = pupils.filter((p) => p.n && (titleNorm.includes(p.n) || p.n.includes(titleNorm)));
-        if (fuzzy.length === 1) matchedPupilId = fuzzy[0].id;
-      }
-    }
-
     const london = toLondonDateTime(ev.start);
     const endLondon = toLondonDateTime(ev.end);
     const duration = Math.max(15, Math.round(endLondon.minutes - london.minutes));
