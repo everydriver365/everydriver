@@ -254,7 +254,7 @@ export default function Index() {
                   </div>
                   <div>
                     <div className="font-bold" style={{ fontSize: 13, fontWeight: 700, color: "#0A1936", marginBottom: 1, lineHeight: 1.3 }}>Book Direct 24/7</div>
-                    <div style={{ fontSize: 11, color: "#5A6B82", lineHeight: 1.4 }}>24/7 online booking</div>
+                    <div className="font-medium" style={{ fontSize: 11, color: "#5A6B82", lineHeight: 1.4 }}>24/7 online booking</div>
                   </div>
                 </div>
 
