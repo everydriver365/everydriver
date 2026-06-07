@@ -90,7 +90,7 @@ export function Footer() {
                   { to: "/admin/login", label: "Admin Portal" },
                 ].map((l) => (
                   <li key={l.label}>
-                    <Link to={l.to} style={{ color: "rgba(255,255,255,0.55)", fontSize: 10 }}
+                    <Link to={l.to} className="font-medium" style={{ color: "rgba(255,255,255,0.55)", fontSize: 10 }}
                       onMouseEnter={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.9)")}
                       onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.55)")}>{l.label}</Link>
                   </li>
