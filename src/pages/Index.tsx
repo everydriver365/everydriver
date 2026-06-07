@@ -308,42 +308,48 @@ export default function Index() {
             </div>
           </section>
 
-          {/* Test swap banner — desktop */}
+          {/* Test swap banner — desktop (split panel) */}
           <section className="hidden md:block" style={{ padding: "12px 5% 20px", fontFamily: "'Poppins', sans-serif" }}>
-            <div style={{ maxWidth: 1200, margin: "0 auto", background: "#FFFFFF", border: "1.5px solid #0A2B6B", borderRadius: 12, padding: "1rem 1.25rem", width: "100%" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
-                <div style={{ fontSize: 14, fontWeight: 600, color: "#0A1936" }}>Need an earlier test date? Swap it.</div>
-                <div style={{ background: "#D12E2E", color: "#FFFFFF", fontSize: 10, fontWeight: 700, padding: "3px 10px", borderRadius: 20 }}>100% free — always</div>
-              </div>
-
-              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
-                {[
-                  { Icon: CalendarPlus, label: "Register your date", bg: "#EEF4FB", border: "#0A2B6B", color: "#0A2B6B" },
-                  { Icon: Users, label: "Match with a learner", bg: "#EEF4FB", border: "#0A2B6B", color: "#0A2B6B" },
-                  { Icon: ArrowLeftRight, label: "Swap instantly", bg: "#EEF4FB", border: "#0A2B6B", color: "#0A2B6B" },
-                  { Icon: CalendarCheck, label: "New date confirmed", bg: "#EAF3DE", border: "#1A7D4E", color: "#1A7D4E" },
-                ].map((step, i, arr) => (
-                  <React.Fragment key={i}>
-                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0, width: 110 }}>
-                      <div style={{ width: 36, height: 36, borderRadius: "50%", background: step.bg, border: `1.5px solid ${step.border}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                        <step.Icon style={{ width: 16, height: 16, color: step.color }} />
-                      </div>
-                      <div style={{ fontSize: 10, color: "#6b7280", textAlign: "center", lineHeight: 1.4, marginTop: 6 }}>{step.label}</div>
-                    </div>
-                    {i < arr.length - 1 && (
-                      <div style={{ flex: 1, height: 0, borderTop: "1.5px solid #0A2B6B", marginTop: 18 }} />
-                    )}
-                  </React.Fragment>
-                ))}
-              </div>
-
-              <div style={{ borderTop: "0.5px solid #e5e7eb", paddingTop: "0.75rem", marginTop: "0.75rem", display: "flex", justifyContent: "space-between", alignItems: "center", gap: "1rem" }}>
-                <div style={{ fontSize: 12, color: "#6b7280" }}>
-                  Swap your driving test with another learner — other sites charge up to £25 for this. Ours is free.
+            <div style={{ maxWidth: 1200, margin: "0 auto", background: "#FFFFFF", borderRadius: 20, overflow: "hidden", display: "flex", flexDirection: "row", border: "1px solid #e5e7eb", boxShadow: "0 10px 30px -12px rgba(10,27,59,0.18)" }}>
+              {/* Left CTA panel */}
+              <div style={{ width: "40%", background: "#0A1E3B", padding: "2rem 2.25rem", display: "flex", flexDirection: "column", justifyContent: "center", position: "relative", overflow: "hidden" }}>
+                <div style={{ position: "absolute", top: -96, left: -96, width: 256, height: 256, borderRadius: "50%", background: "rgba(59,130,246,0.10)", filter: "blur(48px)", pointerEvents: "none" }} />
+                <div style={{ position: "relative", zIndex: 1 }}>
+                  <div style={{ display: "inline-block", padding: "4px 12px", background: "#22C55E", color: "#FFFFFF", fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", borderRadius: 999, marginBottom: 18 }}>
+                    100% Free — Always
+                  </div>
+                  <h3 style={{ fontSize: 26, fontWeight: 800, color: "#FFFFFF", lineHeight: 1.2, margin: "0 0 12px", letterSpacing: "-0.3px" }}>
+                    Need an earlier test date? <span style={{ color: "#60A5FA" }}>Swap it.</span>
+                  </h3>
+                  <p style={{ color: "#CBD5E1", fontSize: 14, lineHeight: 1.55, margin: "0 0 22px" }}>
+                    Swap your driving test with another learner. Other sites charge up to £25 — Every Driver does it for free.
+                  </p>
+                  <Link to="/test-swap" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "12px 22px", background: "#D12E2E", color: "#FFFFFF", fontWeight: 700, fontSize: 14, borderRadius: 12, textDecoration: "none", boxShadow: "0 8px 20px -8px rgba(209,46,46,0.55)" }}>
+                    Get an earlier date
+                    <ArrowRight style={{ width: 16, height: 16 }} />
+                  </Link>
                 </div>
-                <Link to="/test-swap" style={{ background: "#D12E2E", color: "#FFFFFF", fontSize: 13, fontWeight: 600, padding: "0.5rem 1.25rem", borderRadius: 8, textDecoration: "none", flexShrink: 0 }}>
-                  Get an earlier date →
-                </Link>
+              </div>
+
+              {/* Right steps panel */}
+              <div style={{ width: "60%", background: "#F8FAFC", padding: "1.75rem 1.75rem", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                {[
+                  { Icon: CalendarPlus, num: "Step 01", title: "Register date", desc: "Enter your existing test details.", bg: "#EFF6FF", color: "#2563EB" },
+                  { Icon: Users, num: "Step 02", title: "Match learner", desc: "We find someone wanting your date.", bg: "#EEF2FF", color: "#4F46E5" },
+                  { Icon: ArrowLeftRight, num: "Step 03", title: "Swap instantly", desc: "Confirm the switch in one tap.", bg: "#FFFBEB", color: "#D97706" },
+                  { Icon: CalendarCheck, num: "Step 04", title: "Date confirmed", desc: "Get your official DVSA confirmation.", bg: "#ECFDF5", color: "#1A7D4E" },
+                ].map((step, i) => (
+                  <div key={i} style={{ background: "#FFFFFF", padding: "14px 14px", borderRadius: 14, border: "1px solid #F1F5F9", boxShadow: "0 1px 2px rgba(15,23,42,0.04)", display: "flex", alignItems: "flex-start", gap: 12 }}>
+                    <div style={{ flexShrink: 0, width: 40, height: 40, background: step.bg, color: step.color, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <step.Icon style={{ width: 20, height: 20 }} />
+                    </div>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontSize: 9, fontWeight: 700, color: "#94A3B8", letterSpacing: "0.12em", textTransform: "uppercase" }}>{step.num}</div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: "#0F172A", marginTop: 2 }}>{step.title}</div>
+                      <div style={{ fontSize: 11, color: "#64748B", marginTop: 2, lineHeight: 1.4 }}>{step.desc}</div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </section>
