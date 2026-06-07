@@ -3,7 +3,7 @@ import { useMemo } from "react";
 import dsmLogo from "@/assets/dsm-logo.png";
 import { getWhitelabelConfig, isEveryDriverHost } from "@/lib/whitelabel";
 
-const everyDriverLogo = "/everydriver-logo-full.png";
+const everyDriverLogo = "/everydriver-logo-full.png?v=20260607";
 // Drive365 is parked — learner-facing routes now render EveryDriver branding.
 const learnerLogo = everyDriverLogo;
 
