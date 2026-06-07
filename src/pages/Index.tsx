@@ -246,7 +246,7 @@ export default function Index() {
                   </div>
                   <div>
                     <div className="font-bold" style={{ fontSize: 13, fontWeight: 700, color: "#0A1936", marginBottom: 1, lineHeight: 1.3 }}>Free re-test if you don't pass</div>
-                    <div className="font-medium text-xs" style={{ color: "#5A6B82", lineHeight: 1.4 }}>We will pay for your retest*</div>
+                    <div className="font-bold text-xs" style={{ color: "#5A6B82", lineHeight: 1.4 }}>We will pay for your retest*</div>
                   </div>
                 </div>
 
@@ -257,7 +257,7 @@ export default function Index() {
                   </div>
                   <div>
                     <div className="font-bold" style={{ fontSize: 13, fontWeight: 700, color: "#0A1936", marginBottom: 1, lineHeight: 1.3 }}>Test Swap Service for FREE!</div>
-                    <div className="font-medium text-xs" style={{ color: "#5A6B82", lineHeight: 1.4 }}>Swap tests with other learners.</div>
+                    <div className="font-bold text-xs" style={{ color: "#5A6B82", lineHeight: 1.4 }}>Swap tests with other learners.</div>
                   </div>
                 </div>
 
@@ -268,7 +268,7 @@ export default function Index() {
                   </div>
                   <div>
                     <div className="font-bold" style={{ fontSize: 13, fontWeight: 700, color: "#0A1936", marginBottom: 1, lineHeight: 1.3 }}>Every instructor DBS checked</div>
-                    <div className="font-medium text-xs" style={{ color: "#5A6B82", lineHeight: 1.4 }}>DVSA approved and checked by us.</div>
+                    <div className="font-bold text-xs" style={{ color: "#5A6B82", lineHeight: 1.4 }}>DVSA approved and checked by us.</div>
                   </div>
                 </div>
 
@@ -279,7 +279,7 @@ export default function Index() {
                   </div>
                   <div>
                     <div className="font-bold" style={{ fontSize: 13, fontWeight: 700, color: "#0A1936", marginBottom: 1, lineHeight: 1.3 }}>Real ratings before you book</div>
-                    <div className="font-medium text-xs" style={{ color: "#5A6B82", lineHeight: 1.4 }}>Real reviews from genuine pupils.</div>
+                    <div className="font-bold text-xs" style={{ color: "#5A6B82", lineHeight: 1.4 }}>Real reviews from genuine pupils.</div>
                   </div>
                 </div>
 
@@ -290,7 +290,7 @@ export default function Index() {
                   </div>
                   <div>
                     <div className="font-bold" style={{ fontSize: 13, fontWeight: 700, color: "#0A1936", marginBottom: 1, lineHeight: 1.3 }}>Your money is protected</div>
-                    <div className="font-medium text-xs" style={{ color: "#5A6B82", lineHeight: 1.4 }}>Secure payment · dispute resolution</div>
+                    <div className="font-bold text-xs" style={{ color: "#5A6B82", lineHeight: 1.4 }}>Secure payment · dispute resolution</div>
                   </div>
                 </div>
 
@@ -301,7 +301,7 @@ export default function Index() {
                   </div>
                   <div>
                     <div className="font-bold" style={{ fontSize: 13, fontWeight: 700, color: "#0A1936", marginBottom: 1, lineHeight: 1.3 }}>Free Pupil and Parent app</div>
-                    <div className="font-medium text-xs" style={{ color: "#5A6B82", lineHeight: 1.4 }}>Book, reschedule and track progress</div>
+                    <div className="font-bold text-xs" style={{ color: "#5A6B82", lineHeight: 1.4 }}>Book, reschedule and track progress</div>
                   </div>
                 </div>
               </div>
