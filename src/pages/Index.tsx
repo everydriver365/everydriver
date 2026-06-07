@@ -230,7 +230,7 @@ export default function Index() {
                 <ArrowLeftRight style={{ width: 20, height: 20, color: "#FFFFFF" }} />
               </div>
               <div style={{ flex: 1 }}>
-                <div className="font-bold" style={{ fontSize: 14, fontWeight: 700, color: "#0A1936" }}>Need an earlier test date?</div>
+                <div style={{ fontSize: 14, fontWeight: 500, color: "#0A1936" }}>Need an earlier test date?</div>
                 <div style={{ fontSize: 13, color: "#6b7280", lineHeight: 1.5 }}>
                   Swap your driving test with another learner instantly — completely free.
                   <span style={{ color: "#D12E2E", fontWeight: 500 }}> Other sites charge up to £25 for this.</span>
