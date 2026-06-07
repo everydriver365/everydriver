@@ -75,8 +75,8 @@ async function importExternalEventsAsLessons(
 
   if (candidates.length === 0) return stats;
 
-  // Existing lesson links + dismissed/resolved unmatched in parallel.
-  const [lessonsRes, unmatchedRes] = await Promise.all([
+  // Existing lesson links + dismissed/resolved unmatched + pupils, in parallel.
+  const [lessonsRes, unmatchedRes, pupilsRes] = await Promise.all([
     supabase
       .from("scheduled_lessons")
       .select("id, google_event_id, lesson_date, start_time, duration_minutes, pickup_location, status, deleted_at")
@@ -86,6 +86,11 @@ async function importExternalEventsAsLessons(
       .from("unmatched_google_events")
       .select("external_event_id, status")
       .eq("instructor_id", instructorId),
+    supabase
+      .from("pupils")
+      .select("id, name")
+      .eq("instructor_id", instructorId)
+      .is("deleted_at", null),
   ]);
 
   const lessonByEventId = new Map<string, any>();
@@ -97,6 +102,25 @@ async function importExternalEventsAsLessons(
   for (const u of unmatchedRes.data || []) {
     unmatchedByEventId.set(u.external_event_id, u.status);
   }
+
+  const normalizeName = (s: string) =>
+    s.toLowerCase().replace(/[^a-z0-9\s]/g, " ").replace(/\s+/g, " ").trim();
+
+  const pupilsByFirst = new Map<string, string[]>();
+  const pupilsByFull = new Map<string, string[]>();
+  for (const p of (pupilsRes.data || []) as Array<{ id: string; name: string }>) {
+    const full = normalizeName(p.name || "");
+    if (!full) continue;
+    const first = full.split(" ")[0];
+    if (!pupilsByFull.has(full)) pupilsByFull.set(full, []);
+    pupilsByFull.get(full)!.push(p.id);
+    if (!pupilsByFirst.has(first)) pupilsByFirst.set(first, []);
+    pupilsByFirst.get(first)!.push(p.id);
+  }
+
+  // Title prefix that signals "this Google event IS a DSM lesson".
+  // We only auto-create scheduled_lessons rows when the title matches this.
+  const LESSON_PREFIX_RE = /^\s*lesson\s*[:\-]\s*(.+)$/i;
 
   for (const ev of candidates) {
     // Skip events the instructor has already dismissed or manually resolved.
