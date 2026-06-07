@@ -444,7 +444,7 @@ export default function Index() {
                       <Icon style={{ width: 18, height: 18, color }} strokeWidth={2} />
                     </div>
                     <h3 className="font-bold" style={{ fontSize: 13.5, fontWeight: 700, color: "#0F2044", margin: "0 0 6px", letterSpacing: "-0.15px" }}>{title}</h3>
-                    <p className="font-medium" style={{ fontSize: 12, color: "#5A6B82", lineHeight: 1.55, margin: 0 }}>{body}</p>
+                    <p className="font-medium text-xs" style={{ color: "#5A6B82", lineHeight: 1.55, margin: 0 }}>{body}</p>
                   </div>
                 ))}
               </div>
