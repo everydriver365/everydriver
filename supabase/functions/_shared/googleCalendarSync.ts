@@ -279,7 +279,11 @@ export async function deleteGoogleEvent(
     `${CALENDAR_API}/calendars/${encodeURIComponent(calendarId)}/events/${eventId}`,
     { method: "DELETE" },
   );
-  if (!res.ok && res.status !== 404) {
+  // Google returns 410 when an event is already deleted. That is an
+  // idempotent success for DSM's delete path; retrying it creates noisy
+  // queue failures and can make the sync look unstable even though the
+  // desired state has already been reached.
+  if (!res.ok && res.status !== 404 && res.status !== 410) {
     throw new Error(`Google delete event failed (${res.status}): ${await res.text()}`);
   }
 }

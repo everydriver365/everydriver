@@ -81,7 +81,11 @@ async function importExternalEventsAsLessons(
 
   // Pupils + existing lesson links + dismissed/resolved unmatched in parallel
   const [pupilsRes, lessonsRes, unmatchedRes] = await Promise.all([
-    supabase.from("pupils").select("id, name").eq("instructor_id", instructorId),
+    supabase
+      .from("pupils")
+      .select("id, name")
+      .eq("instructor_id", instructorId)
+      .is("deleted_at", null),
     supabase
       .from("scheduled_lessons")
       .select("id, google_event_id, lesson_date, start_time, duration_minutes, pickup_location, status, deleted_at")
