@@ -113,6 +113,11 @@ export default function SeeWhoIsTeaching() {
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
 
         <div style={{ textAlign: "center", marginBottom: 28 }}>
+          <img
+            src={everydriverLogo.url}
+            alt="EveryDriver.co.uk"
+            style={{ height: 40, width: "auto", margin: "0 auto 16px", display: "block", filter: "brightness(0) invert(1)" }}
+          />
           <div className="font-bold" style={{ fontSize: 10, fontWeight: 700, color: "#E8641A", textTransform: "uppercase", letterSpacing: "1.5px", marginBottom: 8 }}>
             Before you book
           </div>
