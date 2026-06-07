@@ -156,7 +156,7 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
 
       const { data, error } = await supabase
         .from("instructor_calendar_events")
-        .select("id, title, start_time, end_time, color")
+        .select("id, external_event_id, title, start_time, end_time, color")
         .eq("instructor_id", instructorId)
         .lte("start_time", dayEnd)
         .gte("end_time", dayStart);
@@ -166,12 +166,12 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
       const events: ExternalEvent[] = (data || []).map((evt: any) => {
         const start = parseISO(evt.start_time);
         const end = parseISO(evt.end_time);
-        // Detect all-day events (starts at midnight, ends at 23:59)
         const startHour = start.getHours() + start.getMinutes();
         const endHour = end.getHours();
         const isAllDay = startHour === 0 && (endHour === 23 || endHour === 0);
         return {
           id: evt.id,
+          external_event_id: evt.external_event_id ?? null,
           title: evt.title || "Busy",
           start_time: evt.start_time,
           end_time: evt.end_time,
