@@ -51,6 +51,7 @@ interface LessonRecord {
   notes: string | null;
   rating: number | null;
   created_at: string;
+  record_type?: "history" | "upcoming";
 }
 
 interface MissingEolLesson {
@@ -139,9 +140,8 @@ export function LessonHistory({
           .order("lesson_date", { ascending: false }),
         supabase
           .from("scheduled_lessons")
-          .select("id, lesson_date, start_time, duration_minutes, status, deleted_at")
+          .select("id, pupil_id, instructor_id, lesson_date, start_time, duration_minutes, status, deleted_at, created_at")
           .eq("pupil_id", pupilId)
-          .lte("lesson_date", today)
           .neq("status", "cancelled")
           .is("deleted_at", null)
           .order("lesson_date", { ascending: false }),
@@ -150,8 +150,10 @@ export function LessonHistory({
       if (historyRes.error) throw historyRes.error;
       if (scheduledRes.error) throw scheduledRes.error;
 
-      const history = historyRes.data || [];
-      setLessons(history);
+      const history: LessonRecord[] = (historyRes.data || []).map((row: any) => ({
+        ...row,
+        record_type: "history" as const,
+      }));
 
       const norm = (t: string | null) =>
         !t ? "" : t.length === 5 ? `${t}:00` : t;
@@ -162,6 +164,7 @@ export function LessonHistory({
       );
 
       const missing: MissingEolLesson[] = (scheduledRes.data || [])
+        .filter((s: any) => s.lesson_date <= today)
         .filter((s: any) => {
           if (!s.start_time) return false;
           return !eolKeys.has(`${s.lesson_date}|${norm(s.start_time)}`);
@@ -173,6 +176,29 @@ export function LessonHistory({
           duration_minutes: s.duration_minutes,
         }));
       setMissingEol(missing);
+
+      const historyScheduledKeys = new Set(
+        history
+          .filter((r: any) => r.start_time)
+          .map((r: any) => `${r.lesson_date}|${norm(r.start_time)}`),
+      );
+      const upcoming: LessonRecord[] = (scheduledRes.data || [])
+        .filter((s: any) => s.lesson_date > today)
+        .filter((s: any) => !historyScheduledKeys.has(`${s.lesson_date}|${norm(s.start_time)}`))
+        .map((s: any) => ({
+          id: s.id,
+          pupil_id: s.pupil_id,
+          instructor_id: s.instructor_id,
+          lesson_date: s.lesson_date,
+          start_time: s.start_time,
+          duration_minutes: s.duration_minutes,
+          skills_practiced: [],
+          notes: null,
+          rating: null,
+          created_at: s.created_at,
+          record_type: "upcoming" as const,
+        }));
+      setLessons([...upcoming, ...history]);
     } catch (error) {
       console.error("Error fetching lessons:", error);
     } finally {
