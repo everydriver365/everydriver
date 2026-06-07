@@ -308,6 +308,14 @@ export default function Index() {
             </div>
           </section>
 
+
+          </>
+        }
+
+
+
+
+        afterLearningPaths={<>
           {/* Test swap banner — desktop (split panel) */}
           <section className="hidden md:block" style={{ padding: "8px 1.25rem 16px", fontFamily: "'Poppins', sans-serif" }}>
             <div style={{ maxWidth: 1100, margin: "0 auto", border: "0.5px solid #e5e7eb", borderRadius: 10, overflow: "hidden", display: "flex" }}>
@@ -347,13 +355,6 @@ export default function Index() {
             </div>
           </section>
 
-          </>
-        }
-
-
-
-
-        afterLearningPaths={<>
           {/* Video section — now placed after Choose Your Route */}
           <section className="hidden md:block" style={{ background: "#F6F6F8", padding: "32px 5%" }}>
             <div style={{ maxWidth: 1200, margin: "0 auto" }}>
