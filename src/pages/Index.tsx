@@ -336,7 +336,7 @@ export default function Index() {
                 {[
                   { Icon: CalendarPlus, num: "Step 01", title: "Register date", desc: "Enter your existing test details.", bg: "#EFF6FF", color: "#2563EB" },
                   { Icon: Users, num: "Step 02", title: "Match learner", desc: "We find someone wanting your date.", bg: "#EEF2FF", color: "#4F46E5" },
-                  { Icon: ArrowLeftRight, num: "Step 03", title: "Swap instantly", desc: "Confirm the switch in one tap.", bg: "#FFFBEB", color: "#D97706" },
+                  { Icon: ArrowLeftRight, num: "Step 03", title: "Swap with DVLA", desc: "Confirm the switch in one tap.", bg: "#FFFBEB", color: "#D97706" },
                   { Icon: CalendarCheck, num: "Step 04", title: "Date confirmed", desc: "Get your official DVSA confirmation.", bg: "#ECFDF5", color: "#1A7D4E" },
                 ].map((step, i) => (
                   <div key={i} style={{ background: "#FFFFFF", padding: "10px 12px", borderRadius: 12, border: "1px solid #F1F5F9", boxShadow: "0 1px 2px rgba(15,23,42,0.04)", display: "flex", alignItems: "flex-start", gap: 10 }}>
