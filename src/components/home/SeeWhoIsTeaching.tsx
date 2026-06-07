@@ -116,7 +116,7 @@ export default function SeeWhoIsTeaching() {
           <img
             src={everydriverLogo.url}
             alt="EveryDriver.co.uk"
-            style={{ height: 40, width: "auto", margin: "0 auto 16px", display: "block", filter: "brightness(0) invert(1)" }}
+            style={{ height: 44, width: "auto", margin: "0 auto 18px", display: "block" }}
           />
           <div className="font-bold" style={{ fontSize: 10, fontWeight: 700, color: "#E8641A", textTransform: "uppercase", letterSpacing: "1.5px", marginBottom: 8 }}>
             Before you book
