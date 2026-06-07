@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { MapPin, ChevronRight, Calendar, Award, Users, Heart, Star, Clock, Zap, CreditCard, User, ArrowRight, ArrowLeftRight, ShieldCheck, Video, GraduationCap, Search, Wallet, Play, HelpCircle, CheckCircle2, DollarSign, Car, BookOpen, ChevronDown, Loader2, Timer, CalendarCheck, Shield, Scale, Lock, IdCard, Check } from "lucide-react";
+import { MapPin, ChevronRight, Calendar, Award, Users, Heart, Star, Clock, Zap, CreditCard, User, ArrowRight, ArrowLeftRight, ShieldCheck, Video, GraduationCap, Search, Wallet, Play, HelpCircle, CheckCircle2, DollarSign, Car, BookOpen, ChevronDown, Loader2, Timer, CalendarCheck, CalendarPlus, Shield, Scale, Lock, IdCard, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MainLayout } from "@/components/layout/MainLayout";
 import Drive365Home from "@/components/home/Drive365Home";
@@ -225,20 +225,44 @@ export default function Index() {
           <>
           {/* Test swap banner — desktop */}
           <section className="hidden md:block" style={{ padding: "12px 5% 0", fontFamily: "'Poppins', sans-serif" }}>
-            <div style={{ maxWidth: 1200, margin: "0 auto", background: "#EEF4FB", border: "0.5px solid #bfd4ee", borderRadius: 12, padding: "1rem 1.25rem", display: "flex", flexDirection: "row", alignItems: "center", gap: "1rem", width: "100%" }}>
-              <div style={{ width: 40, height: 40, borderRadius: "50%", background: "#0A2B6B", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <ArrowLeftRight style={{ width: 20, height: 20, color: "#FFFFFF" }} />
+            <div style={{ maxWidth: 1200, margin: "0 auto", background: "#FFFFFF", border: "1.5px solid #0A2B6B", borderRadius: 12, padding: "1rem 1.25rem", width: "100%" }}>
+              {/* Top row */}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
+                <div style={{ fontSize: 14, fontWeight: 600, color: "#0A1936" }}>Need an earlier test date? Swap it.</div>
+                <div style={{ background: "#D12E2E", color: "#FFFFFF", fontSize: 10, fontWeight: 700, padding: "3px 10px", borderRadius: 20 }}>100% free — always</div>
               </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 14, fontWeight: 500, color: "#0A1936" }}>Need an earlier test date?</div>
-                <div style={{ fontSize: 13, color: "#6b7280", lineHeight: 1.5 }}>
-                  Swap your driving test with another learner instantly — completely free.
-                  <span style={{ color: "#D12E2E", fontWeight: 500 }}> Other sites charge up to £25 for this.</span>
+
+              {/* Steps */}
+              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
+                {[
+                  { Icon: CalendarPlus, label: "Register your date", bg: "#EEF4FB", border: "#0A2B6B", color: "#0A2B6B" },
+                  { Icon: Users, label: "Match with a learner", bg: "#EEF4FB", border: "#0A2B6B", color: "#0A2B6B" },
+                  { Icon: ArrowLeftRight, label: "Swap instantly", bg: "#EEF4FB", border: "#0A2B6B", color: "#0A2B6B" },
+                  { Icon: CalendarCheck, label: "New date confirmed", bg: "#EAF3DE", border: "#1A7D4E", color: "#1A7D4E" },
+                ].map((step, i, arr) => (
+                  <React.Fragment key={i}>
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0, width: 110 }}>
+                      <div style={{ width: 36, height: 36, borderRadius: "50%", background: step.bg, border: `1.5px solid ${step.border}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <step.Icon style={{ width: 16, height: 16, color: step.color }} />
+                      </div>
+                      <div style={{ fontSize: 10, color: "#6b7280", textAlign: "center", lineHeight: 1.4, marginTop: 6 }}>{step.label}</div>
+                    </div>
+                    {i < arr.length - 1 && (
+                      <div style={{ flex: 1, height: 0, borderTop: "1.5px solid #0A2B6B", marginTop: 18 }} />
+                    )}
+                  </React.Fragment>
+                ))}
+              </div>
+
+              {/* Bottom row */}
+              <div style={{ borderTop: "0.5px solid #e5e7eb", paddingTop: "0.75rem", marginTop: "0.75rem", display: "flex", justifyContent: "space-between", alignItems: "center", gap: "1rem" }}>
+                <div style={{ fontSize: 12, color: "#6b7280" }}>
+                  Swap your driving test with another learner — other sites charge up to £25 for this. Ours is free.
                 </div>
+                <Link to="/test-swap" style={{ background: "#D12E2E", color: "#FFFFFF", fontSize: 13, fontWeight: 600, padding: "0.5rem 1.25rem", borderRadius: 8, textDecoration: "none", flexShrink: 0 }}>
+                  Get an earlier date →
+                </Link>
               </div>
-              <Link to="/test-swap" style={{ color: "#0070C0", fontSize: 13, fontWeight: 500, textDecoration: "none", flexShrink: 0 }}>
-                Find a swap →
-              </Link>
             </div>
           </section>
 
