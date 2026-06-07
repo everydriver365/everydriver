@@ -310,49 +310,43 @@ export default function Index() {
 
           {/* Test swap banner — desktop (split panel) */}
           <section className="hidden md:block" style={{ padding: "8px 5% 16px", fontFamily: "'Poppins', sans-serif" }}>
-            <div style={{ maxWidth: 1200, margin: "0 auto", background: "#FFFFFF", borderRadius: 14, overflow: "hidden", display: "flex", flexDirection: "row", border: "1px solid #e5e7eb", boxShadow: "0 6px 18px -10px rgba(10,27,59,0.14)" }}>
-              {/* Left CTA panel */}
-              <div style={{ width: "38%", background: "#0A1E3B", padding: "1.25rem 1.5rem", display: "flex", flexDirection: "column", justifyContent: "center", position: "relative", overflow: "hidden" }}>
-                <div style={{ position: "absolute", top: -72, left: -72, width: 192, height: 192, borderRadius: "50%", background: "rgba(59,130,246,0.10)", filter: "blur(40px)", pointerEvents: "none" }} />
-                <div style={{ position: "relative", zIndex: 1 }}>
-                  <div style={{ display: "inline-block", padding: "3px 10px", background: "#22C55E", color: "#FFFFFF", fontSize: 9, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", borderRadius: 999, marginBottom: 12 }}>
-                    100% Free — Always
-                  </div>
-                  <h3 style={{ fontSize: 19, fontWeight: 800, color: "#FFFFFF", lineHeight: 1.2, margin: "0 0 8px", letterSpacing: "-0.2px" }}>
-                    Need an earlier test date? <span style={{ color: "#60A5FA" }}>Swap it.</span>
-                  </h3>
-                  <p style={{ color: "#CBD5E1", fontSize: 12, lineHeight: 1.5, margin: "0 0 16px" }}>
-                    Swap your driving test with another learner. Other sites charge up to £25 — Every Driver does it for free.
-                  </p>
-                  <Link to="/test-swap" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 16px", background: "#D12E2E", color: "#FFFFFF", fontWeight: 700, fontSize: 12, borderRadius: 10, textDecoration: "none", boxShadow: "0 6px 14px -6px rgba(209,46,46,0.50)" }}>
-                    Get an earlier date
-                    <ArrowRight style={{ width: 14, height: 14 }} />
-                  </Link>
-                </div>
+            <div style={{ maxWidth: 1200, margin: "0 auto", border: "0.5px solid #e5e7eb", borderRadius: 10, overflow: "hidden", display: "flex" }}>
+              {/* Left panel */}
+              <div style={{ background: "#0A2B6B", padding: "0.75rem 1rem", minWidth: 180, flexShrink: 0, display: "flex", flexDirection: "column", justifyContent: "center", gap: 4 }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: "#FFFFFF" }}>Need an earlier test date?</div>
+                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>Swap with a learner — free</div>
+                <div style={{ background: "#D12E2E", color: "#FFFFFF", fontSize: 9, fontWeight: 700, padding: "2px 7px", borderRadius: 20, width: "fit-content" }}>Others charge £25</div>
               </div>
 
-              {/* Right steps panel */}
-              <div style={{ width: "62%", background: "#F8FAFC", padding: "1.25rem 1.25rem", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+              {/* Steps */}
+              <div style={{ background: "#FFFFFF", display: "flex", flex: 1, alignItems: "center" }}>
                 {[
-                  { Icon: CalendarPlus, num: "Step 01", title: "Register date", desc: "Enter your existing test details.", bg: "#EFF6FF", color: "#2563EB" },
-                  { Icon: Users, num: "Step 02", title: "Match learner", desc: "We find someone wanting your date.", bg: "#EEF2FF", color: "#4F46E5" },
-                  { Icon: ArrowLeftRight, num: "Step 03", title: "Swap with DVLA", desc: "Confirm the switch in one tap.", bg: "#FFFBEB", color: "#D97706" },
-                  { Icon: CalendarCheck, num: "Step 04", title: "Date confirmed", desc: "Get your official DVSA confirmation.", bg: "#ECFDF5", color: "#1A7D4E" },
-                ].map((step, i) => (
-                  <div key={i} style={{ background: "#FFFFFF", padding: "10px 12px", borderRadius: 12, border: "1px solid #F1F5F9", boxShadow: "0 1px 2px rgba(15,23,42,0.04)", display: "flex", alignItems: "flex-start", gap: 10 }}>
-                    <div style={{ flexShrink: 0, width: 34, height: 34, background: step.bg, color: step.color, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <step.Icon style={{ width: 16, height: 16 }} />
+                  { Icon: CalendarPlus, title: "Register", sub: "Your test date", bg: "#EEF4FB", color: "#0A2B6B" },
+                  { Icon: Users, title: "Match", sub: "Find a swap", bg: "#EEF4FB", color: "#0A2B6B" },
+                  { Icon: ArrowLeftRight, title: "Swap", sub: "One tap", bg: "#FFF8F4", color: "#E8600A" },
+                  { Icon: CalendarCheck, title: "Confirmed", sub: "DVSA sends confirmation", bg: "#EAF3DE", color: "#1A7D4E" },
+                ].map((step, i, arr) => (
+                  <div key={i} style={{ display: "flex", flexDirection: "row", alignItems: "center", padding: "0.65rem 0.75rem", gap: 6, flex: 1, borderRight: i < arr.length - 1 ? "0.5px solid #e5e7eb" : "none" }}>
+                    <div style={{ flexShrink: 0, width: 26, height: 26, borderRadius: "50%", background: step.bg, color: step.color, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <step.Icon style={{ width: 13, height: 13 }} />
                     </div>
                     <div style={{ minWidth: 0 }}>
-                      <div style={{ fontSize: 8, fontWeight: 700, color: "#94A3B8", letterSpacing: "0.12em", textTransform: "uppercase" }}>{step.num}</div>
-                      <div style={{ fontSize: 12, fontWeight: 700, color: "#0F172A", marginTop: 1 }}>{step.title}</div>
-                      <div style={{ fontSize: 10, color: "#64748B", marginTop: 1, lineHeight: 1.35 }}>{step.desc}</div>
+                      <div style={{ fontSize: 11, fontWeight: 500, color: "#0A1936" }}>{step.title}</div>
+                      <div style={{ fontSize: 10, color: "#9ca3af" }}>{step.sub}</div>
                     </div>
                   </div>
                 ))}
               </div>
+
+              {/* Right panel */}
+              <div style={{ background: "#f8f9fb", borderLeft: "0.5px solid #e5e7eb", padding: "0.75rem 1rem", flexShrink: 0, display: "flex", alignItems: "center" }}>
+                <Link to="/test-swap" style={{ background: "#D12E2E", color: "#FFFFFF", fontSize: 11, fontWeight: 600, padding: "0.4rem 0.85rem", borderRadius: 6, textDecoration: "none", whiteSpace: "nowrap" }}>
+                  Get an earlier date →
+                </Link>
+              </div>
             </div>
           </section>
+
           </>
         }
 
