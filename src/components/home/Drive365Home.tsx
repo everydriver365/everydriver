@@ -18,6 +18,7 @@ import logoKlarna from "@/assets/logo-klarna.png";
 import logoClearpay from "@/assets/logo-clearpay.webp";
 
 import bookNowPayLaterBadge from "@/assets/book-now-pay-later-badge.png";
+import heroLogoAsset from "@/assets/everydriver-logo-jun7.png.asset.json";
 import { PostcodeSearch } from "@/components/home/PostcodeSearch";
 import SeeWhoIsTeaching from "@/components/home/SeeWhoIsTeaching";
 import PupilReviewsSection from "@/components/home/PupilReviewsSection";
