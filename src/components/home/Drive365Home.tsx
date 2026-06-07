@@ -550,7 +550,7 @@ export default function Drive365Home({ afterLearningPaths, afterHero }: { afterL
           {/* Header */}
           <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 24, marginBottom: 24 }}>
             <div style={{ maxWidth: 580 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: "#D12E2E", textTransform: "uppercase", letterSpacing: "1.2px", marginBottom: 8 }}>
+              <div className="font-bold" style={{ fontSize: 11, fontWeight: 700, color: "#D12E2E", textTransform: "uppercase", letterSpacing: "1.2px", marginBottom: 8 }}>
                 Three routes · one licence
               </div>
               <h2 style={{ fontSize: 20, fontWeight: 500, color: "#0A1936", letterSpacing: "-0.2px", margin: "0 0 6px", lineHeight: 1.3 }}>
