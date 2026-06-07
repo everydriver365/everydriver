@@ -223,8 +223,28 @@ export default function Index() {
       <Drive365Home
         afterHero={
           <>
+          {/* Test swap banner — desktop */}
+          <section className="hidden md:block" style={{ padding: "12px 5% 0", fontFamily: "'Poppins', sans-serif" }}>
+            <div style={{ maxWidth: 1200, margin: "0 auto", background: "#EEF4FB", border: "0.5px solid #bfd4ee", borderRadius: 12, padding: "1rem 1.25rem", display: "flex", flexDirection: "row", alignItems: "center", gap: "1rem", width: "100%" }}>
+              <div style={{ width: 40, height: 40, borderRadius: "50%", background: "#0A2B6B", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <ArrowLeftRight style={{ width: 20, height: 20, color: "#FFFFFF" }} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 14, fontWeight: 500, color: "#0A1936" }}>Need an earlier test date?</div>
+                <div style={{ fontSize: 13, color: "#6b7280", lineHeight: 1.5 }}>
+                  Swap your driving test with another learner instantly — completely free.
+                  <span style={{ color: "#D12E2E", fontWeight: 500 }}> Other sites charge up to £25 for this.</span>
+                </div>
+              </div>
+              <Link to="/test-swap" style={{ color: "#0070C0", fontSize: 13, fontWeight: 500, textDecoration: "none", flexShrink: 0 }}>
+                Find a swap →
+              </Link>
+            </div>
+          </section>
+
           {/* Why book through Every Driver — desktop only */}
           <section className="hidden md:block" style={{ padding: "0 0 20px" }}>
+
             <div className="mt-0" style={{ background: "#EEF4FB", borderRadius: 0, padding: "1.25rem", fontFamily: "'Poppins', sans-serif" }}>
               {/* Heading */}
               <div style={{ textAlign: "center", marginBottom: 18 }}>
