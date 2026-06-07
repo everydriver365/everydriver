@@ -20,6 +20,7 @@ export function useDayLessons(instructorId: string | undefined, date: Date) {
         .eq("instructor_id", instructorId)
         .eq("lesson_date", dateStr)
         .neq("status", "cancelled")
+        .is("deleted_at", null)
         .order("start_time", { ascending: true });
 
       if (error) throw error;
