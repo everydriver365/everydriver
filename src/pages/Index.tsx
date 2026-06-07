@@ -420,7 +420,7 @@ export default function Index() {
                         <span style={{ position: "absolute", top: -5, right: -5, minWidth: 18, height: 18, padding: "0 5px", borderRadius: 999, background: color, color: "#fff", fontSize: 9.5, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>{i + 1}</span>
                       </div>
                       <div className="font-bold" style={{ fontSize: 13, fontWeight: 700, color: "#0F2044", letterSpacing: "-0.15px" }}>{label}</div>
-                      <div className="font-medium" style={{ fontSize: 11, color: "#6B7B92", marginTop: 2 }}>{desc}</div>
+                      <div className="font-medium text-xs" style={{ color: "#6B7B92", marginTop: 2 }}>{desc}</div>
                     </div>
                   ))}
                 </div>
