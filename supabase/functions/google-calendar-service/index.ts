@@ -75,8 +75,8 @@ async function importExternalEventsAsLessons(
 
   if (candidates.length === 0) return stats;
 
-  // Existing lesson links + dismissed/resolved unmatched in parallel.
-  const [lessonsRes, unmatchedRes] = await Promise.all([
+  // Existing lesson links + dismissed/resolved unmatched + pupils, in parallel.
+  const [lessonsRes, unmatchedRes, pupilsRes] = await Promise.all([
     supabase
       .from("scheduled_lessons")
       .select("id, google_event_id, lesson_date, start_time, duration_minutes, pickup_location, status, deleted_at")
@@ -86,6 +86,11 @@ async function importExternalEventsAsLessons(
       .from("unmatched_google_events")
       .select("external_event_id, status")
       .eq("instructor_id", instructorId),
+    supabase
+      .from("pupils")
+      .select("id, name")
+      .eq("instructor_id", instructorId)
+      .is("deleted_at", null),
   ]);
 
   const lessonByEventId = new Map<string, any>();
@@ -97,6 +102,25 @@ async function importExternalEventsAsLessons(
   for (const u of unmatchedRes.data || []) {
     unmatchedByEventId.set(u.external_event_id, u.status);
   }
+
+  const normalizeName = (s: string) =>
+    s.toLowerCase().replace(/[^a-z0-9\s]/g, " ").replace(/\s+/g, " ").trim();
+
+  const pupilsByFirst = new Map<string, string[]>();
+  const pupilsByFull = new Map<string, string[]>();
+  for (const p of (pupilsRes.data || []) as Array<{ id: string; name: string }>) {
+    const full = normalizeName(p.name || "");
+    if (!full) continue;
+    const first = full.split(" ")[0];
+    if (!pupilsByFull.has(full)) pupilsByFull.set(full, []);
+    pupilsByFull.get(full)!.push(p.id);
+    if (!pupilsByFirst.has(first)) pupilsByFirst.set(first, []);
+    pupilsByFirst.get(first)!.push(p.id);
+  }
+
+  // Title prefix that signals "this Google event IS a DSM lesson".
+  // We only auto-create scheduled_lessons rows when the title matches this.
+  const LESSON_PREFIX_RE = /^\s*lesson\s*[:\-]\s*(.+)$/i;
 
   for (const ev of candidates) {
     // Skip events the instructor has already dismissed or manually resolved.
@@ -138,8 +162,50 @@ async function importExternalEventsAsLessons(
       continue;
     }
 
-    // No existing lesson: record for manual review. A matched title can be a
-    // suggestion in the UI later, but it is not authority to create a CRM row.
+    // -- Auto-create DSM lesson when title is prefixed "Lesson: <pupil name>" --
+    // This is the ONLY auto-create path. Bare titles like "Soriya" never create
+    // a DSM lesson; they fall through to unmatched_google_events for review.
+    const prefixMatch = typeof ev.summary === "string" ? ev.summary.match(LESSON_PREFIX_RE) : null;
+    if (prefixMatch) {
+      const rawName = normalizeName(prefixMatch[1] || "");
+      let pupilId: string | null = null;
+      if (rawName) {
+        const full = pupilsByFull.get(rawName);
+        if (full && full.length === 1) {
+          pupilId = full[0];
+        } else {
+          const first = pupilsByFirst.get(rawName.split(" ")[0]);
+          if (first && first.length === 1) pupilId = first[0];
+        }
+      }
+
+      if (pupilId) {
+        const { error: insErr } = await supabase
+          .from("scheduled_lessons")
+          .insert({
+            instructor_id: instructorId,
+            pupil_id: pupilId,
+            lesson_date: london.date,
+            start_time: london.time,
+            duration_minutes: duration,
+            pickup_location: ev.location,
+            status: "scheduled",
+            booking_status: "confirmed",
+            google_event_id: ev.id,
+            source: "google_calendar_import",
+            calendar_sync_status: "synced",
+          });
+        if (insErr) {
+          console.error("[importExternalEvents] auto-create from Lesson: prefix failed:", insErr);
+        } else {
+          stats.imported++;
+          continue;
+        }
+      }
+      // Name missing/ambiguous -> fall through to unmatched for manual assignment
+    }
+
+    // No existing lesson and no auto-create: record for manual review.
     const wasKnown = unmatchedByEventId.has(ev.id);
     const { error: upErr } = await supabase
       .from("unmatched_google_events")
