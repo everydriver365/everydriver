@@ -506,14 +506,21 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
       {allDayEvents.length > 0 && (
         <div className="space-y-2">
           {allDayEvents.map((evt) => (
-            <div
+            <SwipeToReveal
               key={evt.id}
-              className="bg-warning/10 rounded-2xl border border-foreground px-4 py-2.5 flex items-center gap-2"
+              onDelete={() => handleDeleteExternalEvent(evt)}
+              actionLabel="Delete"
+              confirm={{
+                title: `Delete "${evt.title}"?`,
+                body: "This removes the event from Google Calendar.",
+              }}
             >
-              <CalendarDays className="h-3.5 w-3.5 text-warning shrink-0" />
-              <span className="text-sm font-bold text-foreground truncate">{evt.title}</span>
-              <Badge variant="outline" className="ml-auto text-[10px] px-1.5 shrink-0 border-warning/30 text-foreground">All day</Badge>
-            </div>
+              <div className="bg-warning/10 rounded-2xl border border-foreground px-4 py-2.5 flex items-center gap-2">
+                <CalendarDays className="h-3.5 w-3.5 text-warning shrink-0" />
+                <span className="text-sm font-bold text-foreground truncate">{evt.title}</span>
+                <Badge variant="outline" className="ml-auto text-[10px] px-1.5 shrink-0 border-warning/30 text-foreground">All day</Badge>
+              </div>
+            </SwipeToReveal>
           ))}
         </div>
       )}
@@ -525,22 +532,29 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
             const startDt = parseISO(evt.start_time);
             const endDt = parseISO(evt.end_time);
             return (
-              <div
+              <SwipeToReveal
                 key={evt.id}
-                className="bg-card rounded-2xl shadow-lift border border-border p-4 space-y-1.5"
+                onDelete={() => handleDeleteExternalEvent(evt)}
+                actionLabel="Delete"
+                confirm={{
+                  title: `Delete "${evt.title}"?`,
+                  body: "This removes the event from Google Calendar.",
+                }}
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 min-w-0">
-                    {evt.color && <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: evt.color }} />}
-                    <h3 className="text-sm font-semibold text-foreground truncate">{evt.title}</h3>
+                <div className="bg-card rounded-2xl shadow-lift border border-border p-4 space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 min-w-0">
+                      {evt.color && <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: evt.color }} />}
+                      <h3 className="text-sm font-semibold text-foreground truncate">{evt.title}</h3>
+                    </div>
+                    <Badge variant="outline" className="text-[10px] px-1.5 shrink-0 ml-2">Calendar</Badge>
                   </div>
-                  <Badge variant="outline" className="text-[10px] px-1.5 shrink-0 ml-2">Calendar</Badge>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Clock className="h-3.5 w-3.5" />
+                    <span>{format(startDt, "HH:mm")} - {format(endDt, "HH:mm")}</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Clock className="h-3.5 w-3.5" />
-                  <span>{format(startDt, "HH:mm")} - {format(endDt, "HH:mm")}</span>
-                </div>
-              </div>
+              </SwipeToReveal>
             );
           })}
         </div>
