@@ -115,7 +115,7 @@ function LessonHistoryDialog({
   onClose: () => void;
   onAddLesson: () => void;
 }) {
-  const { data: lessons = [], isLoading } = usePupilLessonHistory(pupil?.id, 50);
+  const { data: lessons = [], isLoading } = usePupilLessonHistory(pupil?.id, 50, { includeUpcoming: true });
   return (
     <Dialog open={!!pupil} onOpenChange={(o) => { if (!o) onClose(); }}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
@@ -124,7 +124,7 @@ function LessonHistoryDialog({
         </DialogHeader>
         <div className="flex items-center justify-between py-2">
           <span className="text-xs text-muted-foreground">
-            {isLoading ? "Loading…" : `${lessons.filter(l => l.status === "completed").length} completed · ${lessons.filter(l => l.status === "cancelled").length} cancelled`}
+            {isLoading ? "Loading…" : `${lessons.filter(l => l.status === "upcoming").length} upcoming · ${lessons.filter(l => l.status === "completed").length} completed · ${lessons.filter(l => l.status === "cancelled").length} cancelled`}
           </span>
           <Button size="sm" onClick={onAddLesson}><Plus className="h-3.5 w-3.5 mr-1" /> Add lesson</Button>
         </div>
