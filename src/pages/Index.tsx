@@ -316,6 +316,45 @@ export default function Index() {
 
 
         afterLearningPaths={<>
+          {/* Test swap banner — desktop (split panel) */}
+          <section className="hidden md:block" style={{ padding: "8px 1.25rem 16px", fontFamily: "'Poppins', sans-serif" }}>
+            <div style={{ maxWidth: 1100, margin: "0 auto", border: "0.5px solid #e5e7eb", borderRadius: 10, overflow: "hidden", display: "flex" }}>
+              {/* Left panel */}
+              <div style={{ background: "#0A2B6B", padding: "0.75rem 1rem", minWidth: 180, flexShrink: 0, display: "flex", flexDirection: "column", justifyContent: "center", gap: 4 }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: "#FFFFFF" }}>Need an earlier test date?</div>
+                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>Swap with a learner — free</div>
+                <div style={{ background: "#D12E2E", color: "#FFFFFF", fontSize: 9, fontWeight: 700, padding: "2px 7px", borderRadius: 20, width: "fit-content" }}>Others charge £25</div>
+              </div>
+
+              {/* Steps */}
+              <div style={{ background: "#FFFFFF", display: "flex", flex: 1, alignItems: "center" }}>
+                {[
+                  { Icon: CalendarPlus, title: "Register", sub: "Your test date", bg: "#EEF4FB", color: "#0A2B6B" },
+                  { Icon: Users, title: "Match", sub: "Find a swap", bg: "#EEF4FB", color: "#0A2B6B" },
+                  { Icon: ArrowLeftRight, title: "Swap", sub: "With DVSA", bg: "#FFF8F4", color: "#E8600A" },
+                  { Icon: CalendarCheck, title: "Confirmed", sub: "DVSA sends confirmation", bg: "#EAF3DE", color: "#1A7D4E" },
+                ].map((step, i, arr) => (
+                  <div key={i} style={{ display: "flex", flexDirection: "row", alignItems: "center", padding: "0.65rem 0.75rem", gap: 6, flex: 1, borderRight: i < arr.length - 1 ? "0.5px solid #e5e7eb" : "none" }}>
+                    <div style={{ flexShrink: 0, width: 26, height: 26, borderRadius: "50%", background: step.bg, color: step.color, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <step.Icon style={{ width: 13, height: 13 }} />
+                    </div>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontSize: 11, fontWeight: 500, color: "#0A1936" }}>{step.title}</div>
+                      <div style={{ fontSize: 10, color: "#9ca3af" }}>{step.sub}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Right panel */}
+              <div style={{ background: "#f8f9fb", borderLeft: "0.5px solid #e5e7eb", padding: "0.75rem 1rem", flexShrink: 0, display: "flex", alignItems: "center" }}>
+                <Link to="/test-swap" style={{ background: "#D12E2E", color: "#FFFFFF", fontSize: 11, fontWeight: 600, padding: "0.4rem 0.85rem", borderRadius: 6, textDecoration: "none", whiteSpace: "nowrap" }}>
+                  Get an earlier date →
+                </Link>
+              </div>
+            </div>
+          </section>
+
           {/* Video section — now placed after Choose Your Route */}
           <section className="hidden md:block" style={{ background: "#F6F6F8", padding: "32px 5%" }}>
             <div style={{ maxWidth: 1200, margin: "0 auto" }}>
