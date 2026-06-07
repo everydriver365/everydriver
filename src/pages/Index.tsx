@@ -309,7 +309,7 @@ export default function Index() {
           </section>
 
           {/* Test swap banner — desktop (split panel) */}
-          <section className="hidden md:block" style={{ padding: "8px 5% 16px", fontFamily: "'Poppins', sans-serif" }}>
+          <section className="hidden md:block" style={{ padding: "8px 1.25rem 16px", fontFamily: "'Poppins', sans-serif" }}>
             <div style={{ maxWidth: 1100, margin: "0 auto", border: "0.5px solid #e5e7eb", borderRadius: 10, overflow: "hidden", display: "flex" }}>
               {/* Left panel */}
               <div style={{ background: "#0A2B6B", padding: "0.75rem 1rem", minWidth: 180, flexShrink: 0, display: "flex", flexDirection: "column", justifyContent: "center", gap: 4 }}>
