@@ -44,6 +44,7 @@ export function useNextLessonDetails(instructorId: string | undefined) {
         .eq("lesson_date", today)
         .neq("status", "cancelled")
         .neq("status", "completed")
+        .is("deleted_at", null)
         .is("pupils.deleted_at", null)
         .order("start_time", { ascending: true });
 
@@ -61,6 +62,7 @@ export function useNextLessonDetails(instructorId: string | undefined) {
           .eq("instructor_id", instructorId)
           .gt("lesson_date", today)
           .neq("status", "cancelled")
+          .is("deleted_at", null)
           .is("pupils.deleted_at", null)
           .order("lesson_date", { ascending: true })
           .order("start_time", { ascending: true })
