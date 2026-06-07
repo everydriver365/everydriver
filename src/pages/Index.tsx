@@ -419,7 +419,7 @@ export default function Index() {
                         <Icon style={{ width: 18, height: 18, color }} strokeWidth={2.2} />
                         <span style={{ position: "absolute", top: -5, right: -5, minWidth: 18, height: 18, padding: "0 5px", borderRadius: 999, background: color, color: "#fff", fontSize: 9.5, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>{i + 1}</span>
                       </div>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: "#0F2044", letterSpacing: "-0.15px" }}>{label}</div>
+                      <div className="font-bold" style={{ fontSize: 13, fontWeight: 700, color: "#0F2044", letterSpacing: "-0.15px" }}>{label}</div>
                       <div style={{ fontSize: 11, color: "#6B7B92", marginTop: 2 }}>{desc}</div>
                     </div>
                   ))}
@@ -443,7 +443,7 @@ export default function Index() {
                     <div style={{ width: 36, height: 36, background: `${color}12`, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
                       <Icon style={{ width: 18, height: 18, color }} strokeWidth={2} />
                     </div>
-                    <h3 style={{ fontSize: 13.5, fontWeight: 700, color: "#0F2044", margin: "0 0 6px", letterSpacing: "-0.15px" }}>{title}</h3>
+                    <h3 className="font-bold" style={{ fontSize: 13.5, fontWeight: 700, color: "#0F2044", margin: "0 0 6px", letterSpacing: "-0.15px" }}>{title}</h3>
                     <p style={{ fontSize: 12, color: "#5A6B82", lineHeight: 1.55, margin: 0 }}>{body}</p>
                   </div>
                 ))}
