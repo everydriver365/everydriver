@@ -468,7 +468,7 @@ export default function Index() {
                   <div className="mb-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#D12E2E]">
                     Available now
                   </div>
-                  <h2 className="text-xl font-medium md:text-2xl text-foreground">Featured Courses</h2>
+                  <h2 className="text-xl md:text-2xl text-foreground font-bold">Featured Courses</h2>
                 </div>
 
                 <Link to="/courses" className="hidden items-center gap-1 text-sm font-medium text-[#0070C0] hover:underline sm:inline-flex">
