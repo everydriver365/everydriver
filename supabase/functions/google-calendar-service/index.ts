@@ -58,10 +58,6 @@ function toLondonDateTime(iso: string): { date: string; time: string; minutes: n
   return { date, time: `${time}:00`, minutes: d.getTime() / 60000 };
 }
 
-function normalizeName(s: string | null | undefined): string {
-  return (s || "").toLowerCase().replace(/[^a-z0-9\s]/g, " ").replace(/\s+/g, " ").trim();
-}
-
 async function importExternalEventsAsLessons(
   supabase: any,
   instructorId: string,
