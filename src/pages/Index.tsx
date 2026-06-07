@@ -309,44 +309,44 @@ export default function Index() {
           </section>
 
           {/* Test swap banner — desktop (split panel) */}
-          <section className="hidden md:block" style={{ padding: "12px 5% 20px", fontFamily: "'Poppins', sans-serif" }}>
-            <div style={{ maxWidth: 1200, margin: "0 auto", background: "#FFFFFF", borderRadius: 20, overflow: "hidden", display: "flex", flexDirection: "row", border: "1px solid #e5e7eb", boxShadow: "0 10px 30px -12px rgba(10,27,59,0.18)" }}>
+          <section className="hidden md:block" style={{ padding: "8px 5% 16px", fontFamily: "'Poppins', sans-serif" }}>
+            <div style={{ maxWidth: 1200, margin: "0 auto", background: "#FFFFFF", borderRadius: 14, overflow: "hidden", display: "flex", flexDirection: "row", border: "1px solid #e5e7eb", boxShadow: "0 6px 18px -10px rgba(10,27,59,0.14)" }}>
               {/* Left CTA panel */}
-              <div style={{ width: "40%", background: "#0A1E3B", padding: "2rem 2.25rem", display: "flex", flexDirection: "column", justifyContent: "center", position: "relative", overflow: "hidden" }}>
-                <div style={{ position: "absolute", top: -96, left: -96, width: 256, height: 256, borderRadius: "50%", background: "rgba(59,130,246,0.10)", filter: "blur(48px)", pointerEvents: "none" }} />
+              <div style={{ width: "38%", background: "#0A1E3B", padding: "1.25rem 1.5rem", display: "flex", flexDirection: "column", justifyContent: "center", position: "relative", overflow: "hidden" }}>
+                <div style={{ position: "absolute", top: -72, left: -72, width: 192, height: 192, borderRadius: "50%", background: "rgba(59,130,246,0.10)", filter: "blur(40px)", pointerEvents: "none" }} />
                 <div style={{ position: "relative", zIndex: 1 }}>
-                  <div style={{ display: "inline-block", padding: "4px 12px", background: "#22C55E", color: "#FFFFFF", fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", borderRadius: 999, marginBottom: 18 }}>
+                  <div style={{ display: "inline-block", padding: "3px 10px", background: "#22C55E", color: "#FFFFFF", fontSize: 9, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", borderRadius: 999, marginBottom: 12 }}>
                     100% Free — Always
                   </div>
-                  <h3 style={{ fontSize: 26, fontWeight: 800, color: "#FFFFFF", lineHeight: 1.2, margin: "0 0 12px", letterSpacing: "-0.3px" }}>
+                  <h3 style={{ fontSize: 19, fontWeight: 800, color: "#FFFFFF", lineHeight: 1.2, margin: "0 0 8px", letterSpacing: "-0.2px" }}>
                     Need an earlier test date? <span style={{ color: "#60A5FA" }}>Swap it.</span>
                   </h3>
-                  <p style={{ color: "#CBD5E1", fontSize: 14, lineHeight: 1.55, margin: "0 0 22px" }}>
+                  <p style={{ color: "#CBD5E1", fontSize: 12, lineHeight: 1.5, margin: "0 0 16px" }}>
                     Swap your driving test with another learner. Other sites charge up to £25 — Every Driver does it for free.
                   </p>
-                  <Link to="/test-swap" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "12px 22px", background: "#D12E2E", color: "#FFFFFF", fontWeight: 700, fontSize: 14, borderRadius: 12, textDecoration: "none", boxShadow: "0 8px 20px -8px rgba(209,46,46,0.55)" }}>
+                  <Link to="/test-swap" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 16px", background: "#D12E2E", color: "#FFFFFF", fontWeight: 700, fontSize: 12, borderRadius: 10, textDecoration: "none", boxShadow: "0 6px 14px -6px rgba(209,46,46,0.50)" }}>
                     Get an earlier date
-                    <ArrowRight style={{ width: 16, height: 16 }} />
+                    <ArrowRight style={{ width: 14, height: 14 }} />
                   </Link>
                 </div>
               </div>
 
               {/* Right steps panel */}
-              <div style={{ width: "60%", background: "#F8FAFC", padding: "1.75rem 1.75rem", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+              <div style={{ width: "62%", background: "#F8FAFC", padding: "1.25rem 1.25rem", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                 {[
                   { Icon: CalendarPlus, num: "Step 01", title: "Register date", desc: "Enter your existing test details.", bg: "#EFF6FF", color: "#2563EB" },
                   { Icon: Users, num: "Step 02", title: "Match learner", desc: "We find someone wanting your date.", bg: "#EEF2FF", color: "#4F46E5" },
                   { Icon: ArrowLeftRight, num: "Step 03", title: "Swap instantly", desc: "Confirm the switch in one tap.", bg: "#FFFBEB", color: "#D97706" },
                   { Icon: CalendarCheck, num: "Step 04", title: "Date confirmed", desc: "Get your official DVSA confirmation.", bg: "#ECFDF5", color: "#1A7D4E" },
                 ].map((step, i) => (
-                  <div key={i} style={{ background: "#FFFFFF", padding: "14px 14px", borderRadius: 14, border: "1px solid #F1F5F9", boxShadow: "0 1px 2px rgba(15,23,42,0.04)", display: "flex", alignItems: "flex-start", gap: 12 }}>
-                    <div style={{ flexShrink: 0, width: 40, height: 40, background: step.bg, color: step.color, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <step.Icon style={{ width: 20, height: 20 }} />
+                  <div key={i} style={{ background: "#FFFFFF", padding: "10px 12px", borderRadius: 12, border: "1px solid #F1F5F9", boxShadow: "0 1px 2px rgba(15,23,42,0.04)", display: "flex", alignItems: "flex-start", gap: 10 }}>
+                    <div style={{ flexShrink: 0, width: 34, height: 34, background: step.bg, color: step.color, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <step.Icon style={{ width: 16, height: 16 }} />
                     </div>
                     <div style={{ minWidth: 0 }}>
-                      <div style={{ fontSize: 9, fontWeight: 700, color: "#94A3B8", letterSpacing: "0.12em", textTransform: "uppercase" }}>{step.num}</div>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: "#0F172A", marginTop: 2 }}>{step.title}</div>
-                      <div style={{ fontSize: 11, color: "#64748B", marginTop: 2, lineHeight: 1.4 }}>{step.desc}</div>
+                      <div style={{ fontSize: 8, fontWeight: 700, color: "#94A3B8", letterSpacing: "0.12em", textTransform: "uppercase" }}>{step.num}</div>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: "#0F172A", marginTop: 1 }}>{step.title}</div>
+                      <div style={{ fontSize: 10, color: "#64748B", marginTop: 1, lineHeight: 1.35 }}>{step.desc}</div>
                     </div>
                   </div>
                 ))}
