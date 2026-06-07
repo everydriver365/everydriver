@@ -72,7 +72,7 @@ export function Footer() {
                   { to: "/faq", label: "FAQ" },
                 ].map((l) => (
                   <li key={l.to}>
-                    <Link to={l.to} style={{ color: "rgba(255,255,255,0.55)", fontSize: 10 }}
+                    <Link to={l.to} className="font-medium" style={{ color: "rgba(255,255,255,0.55)", fontSize: 10 }}
                       onMouseEnter={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.9)")}
                       onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.55)")}>{l.label}</Link>
                   </li>
@@ -90,7 +90,7 @@ export function Footer() {
                   { to: "/admin/login", label: "Admin Portal" },
                 ].map((l) => (
                   <li key={l.label}>
-                    <Link to={l.to} style={{ color: "rgba(255,255,255,0.55)", fontSize: 10 }}
+                    <Link to={l.to} className="font-medium" style={{ color: "rgba(255,255,255,0.55)", fontSize: 10 }}
                       onMouseEnter={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.9)")}
                       onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.55)")}>{l.label}</Link>
                   </li>
@@ -102,21 +102,21 @@ export function Footer() {
               <h3 className="font-bold" style={{ color: "#fff", fontSize: 11, fontWeight: 700, marginBottom: 10 }}>Contact Us</h3>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
                 <Phone style={{ width: 11, height: 11, color: "rgba(255,255,255,0.4)" }} />
-                <a href={`tel:${contactPhone.replace(/\s/g, "")}`} style={{ color: "rgba(255,255,255,0.55)", fontSize: 10 }}>{contactPhone}</a>
+                <a href={`tel:${contactPhone.replace(/\s/g, "")}`} className="font-medium" style={{ color: "rgba(255,255,255,0.55)", fontSize: 10 }}>{contactPhone}</a>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
                 <Mail style={{ width: 11, height: 11, color: "rgba(255,255,255,0.4)" }} />
-                <a href={`mailto:${contactEmail}`} style={{ color: "rgba(255,255,255,0.55)", fontSize: 10 }}>{contactEmail}</a>
+                <a href={`mailto:${contactEmail}`} className="font-medium" style={{ color: "rgba(255,255,255,0.55)", fontSize: 10 }}>{contactEmail}</a>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <MapPin style={{ width: 11, height: 11, color: "rgba(255,255,255,0.4)" }} />
-                <span style={{ color: "rgba(255,255,255,0.55)", fontSize: 10 }}>{contactArea}</span>
+                <span className="font-medium" style={{ color: "rgba(255,255,255,0.55)", fontSize: 10 }}>{contactArea}</span>
               </div>
             </div>
           </div>
           <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }} />
           <div style={{ background: "#FFFFFF", padding: "12px 32px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <span style={{ color: "#9CA3AF", fontSize: 10 }}>© {new Date().getFullYear()} {copyrightName}. All rights reserved.</span>
+            <span className="font-medium" style={{ color: "#9CA3AF", fontSize: 10 }}>© {new Date().getFullYear()} {copyrightName}. All rights reserved.</span>
             <div style={{ display: "flex", gap: 16 }}>
               {[
                 { to: "/privacy-policy", label: "Privacy Policy" },

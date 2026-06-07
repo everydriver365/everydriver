@@ -414,7 +414,7 @@ export default function Drive365Home({ afterLearningPaths, afterHero }: { afterL
                   marginTop: 12,
                 }}
               >
-                <span style={{ color: "#9CA3AF", fontSize: 11, fontWeight: 500 }}>
+                <span className="font-medium" style={{ color: "#9CA3AF", fontSize: 11 }}>
                   Book now, pay later with
                 </span>
                 <span style={{ background: "#FFB3C7", borderRadius: 5, padding: "3px 10px", fontFamily: "system-ui, sans-serif", fontSize: 11, fontWeight: 900, color: "#17120F" }}>
@@ -509,7 +509,7 @@ export default function Drive365Home({ afterLearningPaths, afterHero }: { afterL
               <div style={{ padding: "14px 16px 12px", flex: 1, display: "flex", flexDirection: "column" }}>
                 <h3 style={{ fontSize: 16, fontWeight: 700, color: "#0A0E27", marginBottom: 8 }}>{course.title}</h3>
                 <div style={{ marginTop: "auto", display: "flex", alignItems: "baseline", gap: 6 }}>
-                  <span style={{ fontSize: 11, color: "#9CA3AF" }}>From</span>
+                  <span className="font-medium" style={{ fontSize: 11, color: "#9CA3AF" }}>From</span>
                   <span style={{ fontSize: 20, fontWeight: 700, color: "#0A0E27", letterSpacing: -0.5 }}>{course.priceFrom}</span>
                   {course.priceUnit && <span style={{ fontSize: 12, fontWeight: 400, color: "#4B5563" }}>{course.priceUnit}</span>}
                 </div>
@@ -693,11 +693,11 @@ export default function Drive365Home({ afterLearningPaths, afterHero }: { afterL
 
           {/* Reassurance footer row */}
           <div style={{ marginTop: 20, display: "flex", alignItems: "center", justifyContent: "center", flexWrap: "wrap", gap: 16, color: "#5A6B82", fontSize: 11, fontWeight: 600 }}>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><Check size={12} color="#1D9E75" strokeWidth={3} /> Free re-test if you don't pass</span>
+            <span className="font-medium" style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><Check size={12} color="#1D9E75" strokeWidth={3} /> Free re-test if you don't pass</span>
             <span style={{ width: 3, height: 3, borderRadius: 999, background: "#CBD2DD" }} />
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><Check size={12} color="#1D9E75" strokeWidth={3} /> Free theory test included</span>
+            <span className="font-medium" style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><Check size={12} color="#1D9E75" strokeWidth={3} /> Free theory test included</span>
             <span style={{ width: 3, height: 3, borderRadius: 999, background: "#CBD2DD" }} />
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><Check size={12} color="#1D9E75" strokeWidth={3} /> DVSA-approved instructors</span>
+            <span className="font-medium" style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><Check size={12} color="#1D9E75" strokeWidth={3} /> DVSA-approved instructors</span>
           </div>
         </div>
       </section>
