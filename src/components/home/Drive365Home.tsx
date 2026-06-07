@@ -509,7 +509,7 @@ export default function Drive365Home({ afterLearningPaths, afterHero }: { afterL
               <div style={{ padding: "14px 16px 12px", flex: 1, display: "flex", flexDirection: "column" }}>
                 <h3 style={{ fontSize: 16, fontWeight: 700, color: "#0A0E27", marginBottom: 8 }}>{course.title}</h3>
                 <div style={{ marginTop: "auto", display: "flex", alignItems: "baseline", gap: 6 }}>
-                  <span style={{ fontSize: 11, color: "#9CA3AF" }}>From</span>
+                  <span className="font-medium" style={{ fontSize: 11, color: "#9CA3AF" }}>From</span>
                   <span style={{ fontSize: 20, fontWeight: 700, color: "#0A0E27", letterSpacing: -0.5 }}>{course.priceFrom}</span>
                   {course.priceUnit && <span style={{ fontSize: 12, fontWeight: 400, color: "#4B5563" }}>{course.priceUnit}</span>}
                 </div>
