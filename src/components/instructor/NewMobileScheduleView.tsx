@@ -77,6 +77,7 @@ const lessonTypeColors: Record<string, { border: string; badge: string }> = {
 
 interface ExternalEvent {
   id: string;
+  external_event_id: string | null;
   title: string;
   start_time: string;
   end_time: string;
