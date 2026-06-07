@@ -72,7 +72,7 @@ export function Footer() {
                   { to: "/faq", label: "FAQ" },
                 ].map((l) => (
                   <li key={l.to}>
-                    <Link to={l.to} style={{ color: "rgba(255,255,255,0.55)", fontSize: 10 }}
+                    <Link to={l.to} className="font-medium" style={{ color: "rgba(255,255,255,0.55)", fontSize: 10 }}
                       onMouseEnter={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.9)")}
                       onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.55)")}>{l.label}</Link>
                   </li>
