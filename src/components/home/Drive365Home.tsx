@@ -555,7 +555,7 @@ export default function Drive365Home({ afterLearningPaths, afterHero }: { afterL
                 Three routes · one licence
               </div>
               <h2 style={{ fontSize: 20, fontWeight: 500, color: "#0A1936", letterSpacing: "-0.2px", margin: "0 0 6px", lineHeight: 1.3 }}>
-                Choose the <span style={{ color: "#E8641A" }}>route</span> that fits your life.
+                <b>Choose the <span style={{ color: "#E8641A" }}>route</span> that fits your life.</b>
               </h2>
               <p style={{ fontSize: 13, color: "#5A6B82", lineHeight: 1.5, margin: 0 }}>
                 Pass fast on an intensive, balance speed with practice on a semi-intensive, or learn at your own pace with weekly lessons. Every route includes a free re-test, free theory test, and Klarna or Clearpay.
