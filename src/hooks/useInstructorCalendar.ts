@@ -111,13 +111,14 @@ export function useInstructorCalendar(instructorId: string) {
           .from('scheduled_lessons')
           .select(`
             id, lesson_date, start_time, duration_minutes, lesson_type,
-            pickup_location, status, payment_status,
+            pickup_location, status, payment_status, google_event_id,
             pupils (id, name, phone, account_balance)
           `)
           .eq('instructor_id', instructorId)
           .gte('lesson_date', startStr)
           .lte('lesson_date', endStr)
           .neq('status', 'cancelled')
+          .is('deleted_at', null)
           .range(from, from + pageSize - 1);
 
         if (pageError) throw pageError;
@@ -163,13 +164,21 @@ export function useInstructorCalendar(instructorId: string) {
       // Transform to unified CalendarEvent format
       const calendarEvents: CalendarEvent[] = [];
 
+      // Track Google event ids that are already linked to a DSM lesson —
+      // we must not also show them as separate "external" rows or the
+      // schedule shows the same lesson twice (and shifted, if any drift).
+      const linkedGoogleEventIds = new Set<string>();
+
       // Add lessons
       (lessons as ScheduledLesson[] || []).forEach(lesson => {
         const pupil = lesson.pupils;
         const startDate = new Date(`${lesson.lesson_date}T${lesson.start_time}`);
         // Calculate end time from duration_minutes
         const endDate = new Date(startDate.getTime() + (lesson.duration_minutes || 60) * 60 * 1000);
-        
+
+        const gEid = (lesson as any).google_event_id as string | null;
+        if (gEid) linkedGoogleEventIds.add(gEid);
+
         calendarEvents.push({
           id: lesson.id,
           title: pupil?.name || 'Lesson',
@@ -185,8 +194,12 @@ export function useInstructorCalendar(instructorId: string) {
         });
       });
 
-      // Add external events
+      // Add external events — but skip any that are already represented as
+      // a DSM lesson above (matched via google_event_id).
       (externalEvents as CalendarExternalEvent[] || []).forEach(event => {
+        if (event.external_event_id && linkedGoogleEventIds.has(event.external_event_id)) {
+          return; // already shown as the DSM lesson
+        }
         calendarEvents.push({
           id: event.id,
           title: event.title || 'Busy',
