@@ -116,7 +116,7 @@ export function Footer() {
           </div>
           <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }} />
           <div style={{ background: "#FFFFFF", padding: "12px 32px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <span style={{ color: "#9CA3AF", fontSize: 10 }}>© {new Date().getFullYear()} {copyrightName}. All rights reserved.</span>
+            <span className="font-medium" style={{ color: "#9CA3AF", fontSize: 10 }}>© {new Date().getFullYear()} {copyrightName}. All rights reserved.</span>
             <div style={{ display: "flex", gap: 16 }}>
               {[
                 { to: "/privacy-policy", label: "Privacy Policy" },
