@@ -100,6 +100,45 @@ Deno.serve(async (req) => {
     if (Number.isNaN(startDate.getTime())) return json({ error: "Invalid start_at" }, 400);
     const endDate = new Date(startDate.getTime() + body.duration_minutes * 60_000);
 
+    // ── Working-hours guard ───────────────────────────────────────────────
+    // Reject anything outside the instructor's configured working window for
+    // that London weekday. Prevents out-of-hours bookings (e.g. 08:30 when
+    // the instructor only works 10:30–16:00).
+    const londonParts = new Intl.DateTimeFormat("en-GB", {
+      timeZone: "Europe/London",
+      weekday: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    }).formatToParts(startDate);
+    const wdMap: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+    const dow = wdMap[londonParts.find((p) => p.type === "weekday")?.value ?? ""] ?? -1;
+    const startHH = Number(londonParts.find((p) => p.type === "hour")?.value ?? "00");
+    const startMM = Number(londonParts.find((p) => p.type === "minute")?.value ?? "00");
+    const startMins = startHH * 60 + startMM;
+    const endMins = startMins + body.duration_minutes;
+
+    const { data: workingHours } = await admin
+      .from("instructor_working_hours")
+      .select("start_time, end_time")
+      .eq("instructor_id", body.instructor_id)
+      .eq("day_of_week", dow)
+      .eq("is_active", true);
+
+    const toMin = (t: string) => {
+      const [h, m] = t.split(":").map(Number);
+      return h * 60 + m;
+    };
+    const fits = (workingHours ?? []).some(
+      (w) => startMins >= toMin(w.start_time) && endMins <= toMin(w.end_time),
+    );
+    if (!fits) {
+      return json(
+        { error: "Outside instructor working hours", code: "OUTSIDE_WORKING_HOURS" },
+        409,
+      );
+    }
+
     // Conflict check — Google Calendar + manual blocks (source-of-truth for busyness)
     const { data: busy, error: busyErr } = await admin.rpc(
       "get_external_instructor_busy_blocks",
