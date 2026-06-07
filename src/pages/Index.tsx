@@ -297,7 +297,7 @@ export default function Index() {
                     <span style={{ color: "#3B6D11", fontSize: 14 }}>📱</span>
                   </div>
                   <div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: "#0A1936", marginBottom: 1, lineHeight: 1.3 }}>Free Pupil and Parent app</div>
+                    <div className="font-bold" style={{ fontSize: 13, fontWeight: 700, color: "#0A1936", marginBottom: 1, lineHeight: 1.3 }}>Free Pupil and Parent app</div>
                     <div style={{ fontSize: 11, color: "#5A6B82", lineHeight: 1.4 }}>Book, reschedule and track progress</div>
                   </div>
                 </div>
