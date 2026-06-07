@@ -213,7 +213,7 @@ export default function SeeWhoIsTeaching() {
               See who's teaching you →
             </button>
           </Link>
-          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)" }}>
+          <div className="font-medium" style={{ fontSize: 11, color: "rgba(255,255,255,0.35)" }}>
             {totalActive} instructors available near you right now
           </div>
         </div>
