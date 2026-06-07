@@ -114,8 +114,11 @@ async function importExternalEventsAsLessons(
   }
 
   for (const ev of candidates) {
-    // Skip user-dismissed events
-    if (unmatchedByEventId.get(ev.id) === "dismissed") {
+    // Skip events the instructor has already dismissed or manually resolved.
+    // Google is availability truth, not CRM truth: new external events must not
+    // silently create DSM lessons just because a title resembles a pupil name.
+    const knownUnmatchedStatus = unmatchedByEventId.get(ev.id);
+    if (knownUnmatchedStatus === "dismissed" || knownUnmatchedStatus === "resolved") {
       stats.skipped++;
       continue;
     }
@@ -163,39 +166,8 @@ async function importExternalEventsAsLessons(
       continue;
     }
 
-    // -- No existing lesson: matched -> create; unmatched -> record --
-    if (matchedPupilId) {
-      const { error: insErr } = await supabase.from("scheduled_lessons").insert({
-        instructor_id: instructorId,
-        pupil_id: matchedPupilId,
-        lesson_date: london.date,
-        start_time: london.time,
-        duration_minutes: duration,
-        pickup_location: ev.location,
-        status: "scheduled",
-        booking_status: "confirmed",
-        google_event_id: ev.id,
-        source: "google_calendar_import",
-        calendar_sync_status: "synced",
-      });
-      if (insErr) {
-        console.error("[importExternalEvents] insert lesson failed:", insErr);
-        stats.skipped++;
-      } else {
-        stats.imported++;
-        // If this event had a pending unmatched row, mark resolved
-        if (unmatchedByEventId.has(ev.id)) {
-          await supabase
-            .from("unmatched_google_events")
-            .update({ status: "resolved", resolved_pupil_id: matchedPupilId })
-            .eq("instructor_id", instructorId)
-            .eq("external_event_id", ev.id);
-        }
-      }
-      continue;
-    }
-
-    // Unmatched -> upsert pending row + notify (only when first seen)
+    // No existing lesson: record for manual review. A matched title can be a
+    // suggestion in the UI later, but it is not authority to create a CRM row.
     const wasKnown = unmatchedByEventId.has(ev.id);
     const { error: upErr } = await supabase
       .from("unmatched_google_events")
