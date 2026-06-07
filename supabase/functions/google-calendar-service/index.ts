@@ -58,10 +58,6 @@ function toLondonDateTime(iso: string): { date: string; time: string; minutes: n
   return { date, time: `${time}:00`, minutes: d.getTime() / 60000 };
 }
 
-function normalizeName(s: string | null | undefined): string {
-  return (s || "").toLowerCase().replace(/[^a-z0-9\s]/g, " ").replace(/\s+/g, " ").trim();
-}
-
 async function importExternalEventsAsLessons(
   supabase: any,
   instructorId: string,
@@ -79,9 +75,8 @@ async function importExternalEventsAsLessons(
 
   if (candidates.length === 0) return stats;
 
-  // Pupils + existing lesson links + dismissed/resolved unmatched in parallel
-  const [pupilsRes, lessonsRes, unmatchedRes] = await Promise.all([
-    supabase.from("pupils").select("id, name").eq("instructor_id", instructorId),
+  // Existing lesson links + dismissed/resolved unmatched in parallel.
+  const [lessonsRes, unmatchedRes] = await Promise.all([
     supabase
       .from("scheduled_lessons")
       .select("id, google_event_id, lesson_date, start_time, duration_minutes, pickup_location, status, deleted_at")
@@ -92,12 +87,6 @@ async function importExternalEventsAsLessons(
       .select("external_event_id, status")
       .eq("instructor_id", instructorId),
   ]);
-
-  const pupils: Array<{ id: string; name: string; n: string }> = (pupilsRes.data || []).map((p: any) => ({
-    id: p.id,
-    name: p.name,
-    n: normalizeName(p.name),
-  }));
 
   const lessonByEventId = new Map<string, any>();
   for (const l of lessonsRes.data || []) {
@@ -110,26 +99,16 @@ async function importExternalEventsAsLessons(
   }
 
   for (const ev of candidates) {
-    // Skip user-dismissed events
-    if (unmatchedByEventId.get(ev.id) === "dismissed") {
+    // Skip events the instructor has already dismissed or manually resolved.
+    // Google is availability truth, not CRM truth: new external events must not
+    // silently create DSM lessons just because a title resembles a pupil name.
+    const knownUnmatchedStatus = unmatchedByEventId.get(ev.id);
+    if (knownUnmatchedStatus === "dismissed" || knownUnmatchedStatus === "resolved") {
       stats.skipped++;
       continue;
     }
 
     const existing = lessonByEventId.get(ev.id);
-
-    // Match title against pupils
-    const titleNorm = normalizeName(ev.summary);
-    let matchedPupilId: string | null = null;
-    if (titleNorm && pupils.length > 0) {
-      const exact = pupils.filter((p) => p.n && p.n === titleNorm);
-      if (exact.length === 1) {
-        matchedPupilId = exact[0].id;
-      } else if (exact.length === 0) {
-        const fuzzy = pupils.filter((p) => p.n && (titleNorm.includes(p.n) || p.n.includes(titleNorm)));
-        if (fuzzy.length === 1) matchedPupilId = fuzzy[0].id;
-      }
-    }
 
     const london = toLondonDateTime(ev.start);
     const endLondon = toLondonDateTime(ev.end);
@@ -159,39 +138,8 @@ async function importExternalEventsAsLessons(
       continue;
     }
 
-    // -- No existing lesson: matched -> create; unmatched -> record --
-    if (matchedPupilId) {
-      const { error: insErr } = await supabase.from("scheduled_lessons").insert({
-        instructor_id: instructorId,
-        pupil_id: matchedPupilId,
-        lesson_date: london.date,
-        start_time: london.time,
-        duration_minutes: duration,
-        pickup_location: ev.location,
-        status: "scheduled",
-        booking_status: "confirmed",
-        google_event_id: ev.id,
-        source: "google_calendar_import",
-        calendar_sync_status: "synced",
-      });
-      if (insErr) {
-        console.error("[importExternalEvents] insert lesson failed:", insErr);
-        stats.skipped++;
-      } else {
-        stats.imported++;
-        // If this event had a pending unmatched row, mark resolved
-        if (unmatchedByEventId.has(ev.id)) {
-          await supabase
-            .from("unmatched_google_events")
-            .update({ status: "resolved", resolved_pupil_id: matchedPupilId })
-            .eq("instructor_id", instructorId)
-            .eq("external_event_id", ev.id);
-        }
-      }
-      continue;
-    }
-
-    // Unmatched -> upsert pending row + notify (only when first seen)
+    // No existing lesson: record for manual review. A matched title can be a
+    // suggestion in the UI later, but it is not authority to create a CRM row.
     const wasKnown = unmatchedByEventId.has(ev.id);
     const { error: upErr } = await supabase
       .from("unmatched_google_events")
