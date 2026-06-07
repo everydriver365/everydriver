@@ -282,13 +282,15 @@ export function FeaturedInstructors() {
       scored.length = 0;
       scored.push(...finalList);
 
-      // 7. Most recent approved review per instructor (skip placeholders)
-      const realIds = real.map((s) => s.id);
-      if (realIds.length > 0) {
+      // 7. Most recent approved review per instructor (skip placeholders).
+      //    Use the post-hydration `scored` list so hydrated placeholders
+      //    (e.g. Ken D, Sarah M) also have their reviews fetched.
+      const finalRealIds = scored.filter((i) => !i.isPlaceholder).map((s) => s.id);
+      if (finalRealIds.length > 0) {
         const { data: reviews } = await supabase
           .from("course_reviews")
           .select("instructor_id, review_text, reviewer_name, passed_first_time, created_at")
-          .in("instructor_id", realIds)
+          .in("instructor_id", finalRealIds)
           .eq("is_visible", true)
           .eq("moderation_status", "approved")
           .order("created_at", { ascending: false });
