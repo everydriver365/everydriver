@@ -77,6 +77,7 @@ const lessonTypeColors: Record<string, { border: string; badge: string }> = {
 
 interface ExternalEvent {
   id: string;
+  external_event_id: string | null;
   title: string;
   start_time: string;
   end_time: string;
@@ -155,7 +156,7 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
 
       const { data, error } = await supabase
         .from("instructor_calendar_events")
-        .select("id, title, start_time, end_time, color")
+        .select("id, external_event_id, title, start_time, end_time, color")
         .eq("instructor_id", instructorId)
         .lte("start_time", dayEnd)
         .gte("end_time", dayStart);
@@ -165,12 +166,12 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
       const events: ExternalEvent[] = (data || []).map((evt: any) => {
         const start = parseISO(evt.start_time);
         const end = parseISO(evt.end_time);
-        // Detect all-day events (starts at midnight, ends at 23:59)
         const startHour = start.getHours() + start.getMinutes();
         const endHour = end.getHours();
         const isAllDay = startHour === 0 && (endHour === 23 || endHour === 0);
         return {
           id: evt.id,
+          external_event_id: evt.external_event_id ?? null,
           title: evt.title || "Busy",
           start_time: evt.start_time,
           end_time: evt.end_time,
@@ -182,6 +183,33 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
       setExternalEvents(events);
     } catch (error) {
       console.error("Error fetching external events:", error);
+    }
+  };
+
+  // Soft-delete an external Google Calendar event: remove from Google + local mirror.
+  const handleDeleteExternalEvent = async (evt: ExternalEvent) => {
+    try {
+      if (evt.external_event_id) {
+        const { error: fnErr } = await supabase.functions.invoke("google-calendar-service", {
+          body: { action: "deleteEvent", instructorId, eventId: evt.external_event_id },
+        });
+        if (fnErr) throw fnErr;
+      }
+      const { error: delErr } = await supabase
+        .from("instructor_calendar_events")
+        .delete()
+        .eq("id", evt.id);
+      if (delErr) throw delErr;
+
+      setExternalEvents((prev) => prev.filter((e) => e.id !== evt.id));
+      toast({ title: "Event removed", description: evt.title });
+    } catch (err: any) {
+      console.error("Delete event failed:", err);
+      toast({
+        title: "Couldn't delete event",
+        description: err?.message || "Please try again",
+        variant: "destructive",
+      });
     }
   };
 
@@ -478,14 +506,21 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
       {allDayEvents.length > 0 && (
         <div className="space-y-2">
           {allDayEvents.map((evt) => (
-            <div
+            <SwipeToReveal
               key={evt.id}
-              className="bg-warning/10 rounded-2xl border border-foreground px-4 py-2.5 flex items-center gap-2"
+              onDelete={() => handleDeleteExternalEvent(evt)}
+              actionLabel="Delete"
+              confirm={{
+                title: `Delete "${evt.title}"?`,
+                body: "This removes the event from Google Calendar.",
+              }}
             >
-              <CalendarDays className="h-3.5 w-3.5 text-warning shrink-0" />
-              <span className="text-sm font-bold text-foreground truncate">{evt.title}</span>
-              <Badge variant="outline" className="ml-auto text-[10px] px-1.5 shrink-0 border-warning/30 text-foreground">All day</Badge>
-            </div>
+              <div className="bg-warning/10 rounded-2xl border border-foreground px-4 py-2.5 flex items-center gap-2">
+                <CalendarDays className="h-3.5 w-3.5 text-warning shrink-0" />
+                <span className="text-sm font-bold text-foreground truncate">{evt.title}</span>
+                <Badge variant="outline" className="ml-auto text-[10px] px-1.5 shrink-0 border-warning/30 text-foreground">All day</Badge>
+              </div>
+            </SwipeToReveal>
           ))}
         </div>
       )}
@@ -497,22 +532,29 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
             const startDt = parseISO(evt.start_time);
             const endDt = parseISO(evt.end_time);
             return (
-              <div
+              <SwipeToReveal
                 key={evt.id}
-                className="bg-card rounded-2xl shadow-lift border border-border p-4 space-y-1.5"
+                onDelete={() => handleDeleteExternalEvent(evt)}
+                actionLabel="Delete"
+                confirm={{
+                  title: `Delete "${evt.title}"?`,
+                  body: "This removes the event from Google Calendar.",
+                }}
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 min-w-0">
-                    {evt.color && <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: evt.color }} />}
-                    <h3 className="text-sm font-semibold text-foreground truncate">{evt.title}</h3>
+                <div className="bg-card rounded-2xl shadow-lift border border-border p-4 space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 min-w-0">
+                      {evt.color && <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: evt.color }} />}
+                      <h3 className="text-sm font-semibold text-foreground truncate">{evt.title}</h3>
+                    </div>
+                    <Badge variant="outline" className="text-[10px] px-1.5 shrink-0 ml-2">Calendar</Badge>
                   </div>
-                  <Badge variant="outline" className="text-[10px] px-1.5 shrink-0 ml-2">Calendar</Badge>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Clock className="h-3.5 w-3.5" />
+                    <span>{format(startDt, "HH:mm")} - {format(endDt, "HH:mm")}</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Clock className="h-3.5 w-3.5" />
-                  <span>{format(startDt, "HH:mm")} - {format(endDt, "HH:mm")}</span>
-                </div>
-              </div>
+              </SwipeToReveal>
             );
           })}
         </div>
