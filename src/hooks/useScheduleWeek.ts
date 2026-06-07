@@ -164,6 +164,7 @@ export function useScheduleWeek(
           .gte("lesson_date", startStr)
           .lte("lesson_date", endStr)
           .neq("status", "cancelled")
+          .is("deleted_at", null)
           .order("lesson_date")
           .order("start_time"),
         fetchInstructorPostcodeRules(instructorId!),
