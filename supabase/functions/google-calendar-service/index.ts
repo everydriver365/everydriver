@@ -79,13 +79,8 @@ async function importExternalEventsAsLessons(
 
   if (candidates.length === 0) return stats;
 
-  // Pupils + existing lesson links + dismissed/resolved unmatched in parallel
-  const [pupilsRes, lessonsRes, unmatchedRes] = await Promise.all([
-    supabase
-      .from("pupils")
-      .select("id, name")
-      .eq("instructor_id", instructorId)
-      .is("deleted_at", null),
+  // Existing lesson links + dismissed/resolved unmatched in parallel.
+  const [lessonsRes, unmatchedRes] = await Promise.all([
     supabase
       .from("scheduled_lessons")
       .select("id, google_event_id, lesson_date, start_time, duration_minutes, pickup_location, status, deleted_at")
@@ -96,12 +91,6 @@ async function importExternalEventsAsLessons(
       .select("external_event_id, status")
       .eq("instructor_id", instructorId),
   ]);
-
-  const pupils: Array<{ id: string; name: string; n: string }> = (pupilsRes.data || []).map((p: any) => ({
-    id: p.id,
-    name: p.name,
-    n: normalizeName(p.name),
-  }));
 
   const lessonByEventId = new Map<string, any>();
   for (const l of lessonsRes.data || []) {
