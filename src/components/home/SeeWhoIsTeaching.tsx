@@ -112,7 +112,7 @@ export default function SeeWhoIsTeaching() {
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
 
         <div style={{ textAlign: "center", marginBottom: 28 }}>
-          <div style={{ fontSize: 10, fontWeight: 700, color: "#E8641A", textTransform: "uppercase", letterSpacing: "1.5px", marginBottom: 8 }}>
+          <div className="font-bold" style={{ fontSize: 10, fontWeight: 700, color: "#E8641A", textTransform: "uppercase", letterSpacing: "1.5px", marginBottom: 8 }}>
             Before you book
           </div>
           <h2 style={{ fontSize: 26, fontWeight: 800, color: "#FFFFFF", letterSpacing: -0.5, lineHeight: 1.2, margin: 0 }}>
