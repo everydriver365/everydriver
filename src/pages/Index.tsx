@@ -243,7 +243,7 @@ export default function Index() {
                   </div>
                   <div>
                     <div className="font-bold" style={{ fontSize: 13, fontWeight: 700, color: "#0A1936", marginBottom: 1, lineHeight: 1.3 }}>Free re-test if you don't pass</div>
-                    <div style={{ fontSize: 11, color: "#5A6B82", lineHeight: 1.4 }}>We will pay for your retest*</div>
+                    <div className="font-medium" style={{ fontSize: 11, color: "#5A6B82", lineHeight: 1.4 }}>We will pay for your retest*</div>
                   </div>
                 </div>
 
@@ -254,7 +254,7 @@ export default function Index() {
                   </div>
                   <div>
                     <div className="font-bold" style={{ fontSize: 13, fontWeight: 700, color: "#0A1936", marginBottom: 1, lineHeight: 1.3 }}>Book Direct 24/7</div>
-                    <div style={{ fontSize: 11, color: "#5A6B82", lineHeight: 1.4 }}>24/7 online booking</div>
+                    <div className="font-medium" style={{ fontSize: 11, color: "#5A6B82", lineHeight: 1.4 }}>24/7 online booking</div>
                   </div>
                 </div>
 
@@ -265,7 +265,7 @@ export default function Index() {
                   </div>
                   <div>
                     <div className="font-bold" style={{ fontSize: 13, fontWeight: 700, color: "#0A1936", marginBottom: 1, lineHeight: 1.3 }}>Every instructor DBS checked</div>
-                    <div style={{ fontSize: 11, color: "#5A6B82", lineHeight: 1.4 }}>DVSA approved and checked by us.</div>
+                    <div className="font-medium" style={{ fontSize: 11, color: "#5A6B82", lineHeight: 1.4 }}>DVSA approved and checked by us.</div>
                   </div>
                 </div>
 
@@ -276,7 +276,7 @@ export default function Index() {
                   </div>
                   <div>
                     <div className="font-bold" style={{ fontSize: 13, fontWeight: 700, color: "#0A1936", marginBottom: 1, lineHeight: 1.3 }}>Real ratings before you book</div>
-                    <div style={{ fontSize: 11, color: "#5A6B82", lineHeight: 1.4 }}>Real reviews from genuine pupils.</div>
+                    <div className="font-medium" style={{ fontSize: 11, color: "#5A6B82", lineHeight: 1.4 }}>Real reviews from genuine pupils.</div>
                   </div>
                 </div>
 
@@ -287,7 +287,7 @@ export default function Index() {
                   </div>
                   <div>
                     <div className="font-bold" style={{ fontSize: 13, fontWeight: 700, color: "#0A1936", marginBottom: 1, lineHeight: 1.3 }}>Your money is protected</div>
-                    <div style={{ fontSize: 11, color: "#5A6B82", lineHeight: 1.4 }}>Secure payment · dispute resolution</div>
+                    <div className="font-medium" style={{ fontSize: 11, color: "#5A6B82", lineHeight: 1.4 }}>Secure payment · dispute resolution</div>
                   </div>
                 </div>
 
@@ -298,7 +298,7 @@ export default function Index() {
                   </div>
                   <div>
                     <div className="font-bold" style={{ fontSize: 13, fontWeight: 700, color: "#0A1936", marginBottom: 1, lineHeight: 1.3 }}>Free Pupil and Parent app</div>
-                    <div style={{ fontSize: 11, color: "#5A6B82", lineHeight: 1.4 }}>Book, reschedule and track progress</div>
+                    <div className="font-medium" style={{ fontSize: 11, color: "#5A6B82", lineHeight: 1.4 }}>Book, reschedule and track progress</div>
                   </div>
                 </div>
               </div>
@@ -420,7 +420,7 @@ export default function Index() {
                         <span style={{ position: "absolute", top: -5, right: -5, minWidth: 18, height: 18, padding: "0 5px", borderRadius: 999, background: color, color: "#fff", fontSize: 9.5, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>{i + 1}</span>
                       </div>
                       <div className="font-bold" style={{ fontSize: 13, fontWeight: 700, color: "#0F2044", letterSpacing: "-0.15px" }}>{label}</div>
-                      <div style={{ fontSize: 11, color: "#6B7B92", marginTop: 2 }}>{desc}</div>
+                      <div className="font-medium" style={{ fontSize: 11, color: "#6B7B92", marginTop: 2 }}>{desc}</div>
                     </div>
                   ))}
                 </div>
@@ -444,7 +444,7 @@ export default function Index() {
                       <Icon style={{ width: 18, height: 18, color }} strokeWidth={2} />
                     </div>
                     <h3 className="font-bold" style={{ fontSize: 13.5, fontWeight: 700, color: "#0F2044", margin: "0 0 6px", letterSpacing: "-0.15px" }}>{title}</h3>
-                    <p style={{ fontSize: 12, color: "#5A6B82", lineHeight: 1.55, margin: 0 }}>{body}</p>
+                    <p className="font-medium" style={{ fontSize: 12, color: "#5A6B82", lineHeight: 1.55, margin: 0 }}>{body}</p>
                   </div>
                 ))}
               </div>
