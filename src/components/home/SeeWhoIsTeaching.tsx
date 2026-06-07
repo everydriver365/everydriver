@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import everydriverLogo from "@/assets/everydriver-logo-jun7.png.asset.json";
 
 interface InstructorRow {
   id: string;
@@ -112,6 +113,13 @@ export default function SeeWhoIsTeaching() {
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
 
         <div style={{ textAlign: "center", marginBottom: 28 }}>
+          <div style={{ display: "inline-block", background: "#FFFFFF", padding: "10px 18px", borderRadius: 10, marginBottom: 18 }}>
+            <img
+              src={everydriverLogo.url}
+              alt="EveryDriver.co.uk"
+              style={{ height: 36, width: "auto", display: "block" }}
+            />
+          </div>
           <div className="font-bold" style={{ fontSize: 10, fontWeight: 700, color: "#E8641A", textTransform: "uppercase", letterSpacing: "1.5px", marginBottom: 8 }}>
             Before you book
           </div>
