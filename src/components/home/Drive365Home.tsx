@@ -414,7 +414,7 @@ export default function Drive365Home({ afterLearningPaths, afterHero }: { afterL
                   marginTop: 12,
                 }}
               >
-                <span style={{ color: "#9CA3AF", fontSize: 11, fontWeight: 500 }}>
+                <span className="font-medium" style={{ color: "#9CA3AF", fontSize: 11 }}>
                   Book now, pay later with
                 </span>
                 <span style={{ background: "#FFB3C7", borderRadius: 5, padding: "3px 10px", fontFamily: "system-ui, sans-serif", fontSize: 11, fontWeight: 900, color: "#17120F" }}>
