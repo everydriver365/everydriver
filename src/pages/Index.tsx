@@ -242,7 +242,7 @@ export default function Index() {
                     <span style={{ color: "#D12E2E", fontSize: 14, fontWeight: 700 }}>↺</span>
                   </div>
                   <div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: "#0A1936", marginBottom: 1, lineHeight: 1.3 }}>Free re-test if you don't pass</div>
+                    <div className="font-bold" style={{ fontSize: 13, fontWeight: 700, color: "#0A1936", marginBottom: 1, lineHeight: 1.3 }}>Free re-test if you don't pass</div>
                     <div style={{ fontSize: 11, color: "#5A6B82", lineHeight: 1.4 }}>We will pay for your retest*</div>
                   </div>
                 </div>
