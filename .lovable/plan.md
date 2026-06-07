@@ -1,36 +1,34 @@
-## What I found
+## What's actually happening
 
-- The lessons expected around **8–12 June** are not hidden by the favicon/logo changes. In the live database, nearly all rows for that week are already marked `status = cancelled` and/or `deleted_at` is set, mostly with reason **“Pupil deleted”** and `cancelled_by = instructor`.
-- The visible active lesson for that week is **Monday 8 June, 11:30, Soraya**, created today.
-- The “random” late-night lessons are actual lesson rows:
-  - Joseph Thorne: stored as **2026-06-28 01:30**, created **19 May**, now completed.
-  - Soraya: stored as **2026-07-05 01:30**, created **31 May**, currently scheduled.
-- Because the calendar sync/display code builds dates with `new Date(...)` and then sends/reads ISO UTC timestamps, **01:30 London can appear as the previous day late evening** in some views/sync outputs. That explains why they can surface as **27 June 22:30** and **4 July 23:30** style entries.
+The "Lesson : Joseph" 10:30 on Tue 9 Jun that you see on the **Schedule** page and in Google Calendar is **not** a DSM lesson — it only exists as a Google Calendar event (`instructor_calendar_events`, external id `…`, title "Lesson : Joseph", 10:30–11:30, yellow/colorId).
 
-## Plan
+I confirmed in the database:
+- `scheduled_lessons` for you on 2026-06-09 → all rows are `status=cancelled` (the 19 May batch). No active DSM lesson exists for Joseph that day.
+- `instructor_calendar_events` for 2026-06-09 → contains "Lesson : Joseph" as a Google event with no matching DSM lesson.
 
-1. **Fix lesson date/time construction**
-   - Replace unsafe `new Date(`${lesson_date}T${start_time}`)` usage for lesson rows with explicit Europe/London/local-clock parsing helpers.
-   - Apply this in:
-     - `src/hooks/useInstructorCalendar.ts`
-     - `src/hooks/useScheduleWeek.ts`
-     - `supabase/functions/_shared/googleCalendarSync.ts`
-   - This prevents lesson-only rows from shifting day/time when displayed or synced.
+That's why it shows on:
+- **Schedule page** → merges DSM lessons **and** Google Calendar events (busy mirror)
+- **Google Calendar** → it's a native event there
 
-2. **Make schedule queries exclude soft-deleted lessons consistently**
-   - Add `deleted_at IS NULL` to schedule/calendar lesson queries that currently only exclude `status = cancelled`.
-   - This avoids cancelled/deleted lessons leaking into UI paths if the status and soft-delete flags drift.
+…but not on:
+- **Home page** ("Next Up", Today, Tomorrow tiles) → these query **only** `scheduled_lessons` (CRM data). Per project rule, GCal is the busy source, `scheduled_lessons` is the CRM/lesson source — the home tiles deliberately don't show raw GCal events because they have no pupil link, payment, duration logic, earnings, etc.
 
-3. **Stop repeated sync loops for already-synced rows**
-   - Review the trigger/queue behavior that repeatedly enqueued the June 28 and July 5 rows today.
-   - Adjust only if needed so unchanged lessons are not re-pushed over and over.
+So this isn't a bug in code I changed — it's the documented separation between "Google calendar busy events" and "DSM lessons". The Joseph event was created directly in Google (or imported as a calendar event), never booked through DSM.
 
-4. **Data correction needs your approval before I change live data**
-   - I will not mutate live lesson rows without your go-ahead.
-   - Once the code fix is approved, I can separately restore specific cancelled lessons for **Mon 8 / Tue 10 / Fri 12 June** and remove or cancel the two unwanted late-night rows, but I need you to confirm the exact lessons/times to restore/remove.
+## Options — pick one
 
-## Technical notes
+**Option A — One-off fix: create the DSM lesson for Joseph (recommended)**
+Create a proper `scheduled_lessons` row for Joseph Thorne, Tue 9 Jun 10:30, 60 min, linked to the existing Google event id so it doesn't duplicate. Home tiles will then show it. No code changes.
 
-- No evidence links the favicon/logo edits to lesson deletion.
-- The risky pattern is date parsing/timezone conversion, especially `new Date(dateString)` / `new Date(lesson_date + 'T' + start_time)` followed by `.toISOString()`.
-- Calendar availability source rules remain unchanged: Google Calendar mirror + manual blocks are the busy source; `scheduled_lessons` remains CRM data.
+**Option B — Restore the 9 Jun cancelled Joseph row (if one of the 19 May cancellations was his 10:30)**
+Find the cancelled Joseph row on 9 Jun 10:30, un-cancel it (`status=scheduled`, clear `deleted_at`), and relink to the existing GCal event id. Same outcome as A but reuses the original row/history. No code changes.
+
+**Option C — Code change: show "Google-only" lesson-like events on Home**
+Detect GCal events whose title matches `Lesson : <pupil>` (or any GCal event the instructor flags) and surface them on Home tiles alongside DSM lessons. Bigger change — affects Next Up, Today, Tomorrow, weekly stats. Comes with caveats: no pupil id, no payment status, no earnings, can't tap-to-message pupil, can produce duplicates when the same lesson is later booked properly in DSM.
+
+**Option D — Do nothing**
+Keep Home as DSM-only. Treat Google-only "Lesson : …" events as personal/manual entries, and always create real lessons through DSM if you want them on Home.
+
+## My recommendation
+
+Option A or B. The current split (DSM = home, GCal = busy/schedule overlay) is a deliberate architectural rule in this project and Option C would erode it. Tell me which option, and for A/B confirm the pupil (Joseph Thorne) so I can write the migration.
