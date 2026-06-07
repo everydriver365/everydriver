@@ -52,6 +52,7 @@ import { toast } from "sonner";
 import { NotificationTiles } from "@/components/admin/NotificationTiles";
 import { SystemAlertsCard } from "@/components/admin/SystemAlertsCard";
 import { EdgeErrorsTile } from "@/components/admin/EdgeErrorsTile";
+import { SyncHealthTile } from "@/components/admin/SyncHealthTile";
 
 import { ComplianceDashboard } from "@/components/admin/ComplianceDashboard";
 import { AdminBookingsManager } from "@/components/admin/AdminBookingsManager";
@@ -347,6 +348,7 @@ export default function AdminPortal() {
             />
             <div className="grid gap-3 md:grid-cols-3 mt-4">
               <EdgeErrorsTile />
+              <SyncHealthTile />
               <Link to="/admin/query-budget" className="block">
                 <Card className="hover:bg-accent/50 transition-colors cursor-pointer h-full">
                   <CardContent className="pt-6">
