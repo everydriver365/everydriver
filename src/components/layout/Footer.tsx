@@ -62,7 +62,7 @@ export function Footer() {
               </p>
             </div>
             <div>
-              <h3 style={{ color: "#fff", fontSize: 11, fontWeight: 700, marginBottom: 10 }}>Quick Links</h3>
+              <h3 className="font-bold" style={{ color: "#fff", fontSize: 11, fontWeight: 700, marginBottom: 10 }}>Quick Links</h3>
               <ul style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                 {[
                   { to: "/courses", label: "Find Courses" },
