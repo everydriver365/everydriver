@@ -21431,6 +21431,19 @@ export type Database = {
           name: string
         }[]
       }
+      get_sync_cron_health: {
+        Args: never
+        Returns: {
+          active: boolean
+          jobid: number
+          jobname: string
+          last_error: string
+          last_run_end: string
+          last_run_start: string
+          last_status: string
+          schedule: string
+        }[]
+      }
       get_test_swap_matches: {
         Args: { p_signup_id: string }
         Returns: {

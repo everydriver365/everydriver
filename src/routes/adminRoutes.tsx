@@ -20,6 +20,7 @@ const CustomDomainQueue = lazy(() => import("@/pages/admin/CustomDomainQueue"));
 const CourseImageOptimizer = lazy(() => import("@/pages/admin/CourseImageOptimizer"));
 const AdminInstructorVerifications = lazy(() => import("@/pages/admin/AdminInstructorVerifications"));
 const AvailabilitySyncHealth = lazy(() => import("@/pages/admin/AvailabilitySyncHealth"));
+const SyncHealthDashboard = lazy(() => import("@/pages/admin/SyncHealthDashboard"));
 const AvailabilityTester = lazy(() => import("@/pages/admin/AvailabilityTester"));
 const SlotDebugger = lazy(() => import("@/pages/admin/SlotDebugger"));
 const AdminReportsHub = lazy(() => import("@/pages/admin/AdminReportsHub"));
@@ -121,6 +122,10 @@ export const adminRoutes = (
     <Route
       path="/admin/availability-sync"
       element={<ProtectedAdminRoute><AvailabilitySyncHealth /></ProtectedAdminRoute>}
+    />
+    <Route
+      path="/admin/sync-health"
+      element={<ProtectedAdminRoute><SyncHealthDashboard /></ProtectedAdminRoute>}
     />
     <Route
       path="/admin/availability-tester"
