@@ -242,7 +242,7 @@ export default function Index() {
                     <span style={{ color: "#D12E2E", fontSize: 14, fontWeight: 700 }}>↺</span>
                   </div>
                   <div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: "#0A1936", marginBottom: 1, lineHeight: 1.3 }}>Free re-test if you don't pass</div>
+                    <div className="font-bold" style={{ fontSize: 13, fontWeight: 700, color: "#0A1936", marginBottom: 1, lineHeight: 1.3 }}>Free re-test if you don't pass</div>
                     <div style={{ fontSize: 11, color: "#5A6B82", lineHeight: 1.4 }}>We will pay for your retest*</div>
                   </div>
                 </div>
@@ -253,7 +253,7 @@ export default function Index() {
                     <CalendarCheck className="h-4 w-4 text-[#3B6D11]" />
                   </div>
                   <div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: "#0A1936", marginBottom: 1, lineHeight: 1.3 }}>Book</div>
+                    <div className="font-bold" style={{ fontSize: 13, fontWeight: 700, color: "#0A1936", marginBottom: 1, lineHeight: 1.3 }}>Book</div>
                     <div style={{ fontSize: 11, color: "#5A6B82", lineHeight: 1.4 }}>24/7 online booking</div>
                   </div>
                 </div>
@@ -264,7 +264,7 @@ export default function Index() {
                     <span style={{ color: "#3B6D11", fontSize: 14 }}>✓</span>
                   </div>
                   <div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: "#0A1936", marginBottom: 1, lineHeight: 1.3 }}>Every instructor DBS checked</div>
+                    <div className="font-bold" style={{ fontSize: 13, fontWeight: 700, color: "#0A1936", marginBottom: 1, lineHeight: 1.3 }}>Every instructor DBS checked</div>
                     <div style={{ fontSize: 11, color: "#5A6B82", lineHeight: 1.4 }}>DVSA approved and checked by us.</div>
                   </div>
                 </div>
@@ -275,7 +275,7 @@ export default function Index() {
                     <span style={{ color: "#3B6D11", fontSize: 14 }}>★</span>
                   </div>
                   <div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: "#0A1936", marginBottom: 1, lineHeight: 1.3 }}>Real ratings before you book</div>
+                    <div className="font-bold" style={{ fontSize: 13, fontWeight: 700, color: "#0A1936", marginBottom: 1, lineHeight: 1.3 }}>Real ratings before you book</div>
                     <div style={{ fontSize: 11, color: "#5A6B82", lineHeight: 1.4 }}>Real reviews from genuine pupils.</div>
                   </div>
                 </div>
@@ -286,7 +286,7 @@ export default function Index() {
                     <span style={{ color: "#3B6D11", fontSize: 14 }}>🔒</span>
                   </div>
                   <div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: "#0A1936", marginBottom: 1, lineHeight: 1.3 }}>Your money is protected</div>
+                    <div className="font-bold" style={{ fontSize: 13, fontWeight: 700, color: "#0A1936", marginBottom: 1, lineHeight: 1.3 }}>Your money is protected</div>
                     <div style={{ fontSize: 11, color: "#5A6B82", lineHeight: 1.4 }}>Secure payment · dispute resolution</div>
                   </div>
                 </div>
@@ -297,7 +297,7 @@ export default function Index() {
                     <span style={{ color: "#3B6D11", fontSize: 14 }}>📱</span>
                   </div>
                   <div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: "#0A1936", marginBottom: 1, lineHeight: 1.3 }}>Free Pupil and Parent app</div>
+                    <div className="font-bold" style={{ fontSize: 13, fontWeight: 700, color: "#0A1936", marginBottom: 1, lineHeight: 1.3 }}>Free Pupil and Parent app</div>
                     <div style={{ fontSize: 11, color: "#5A6B82", lineHeight: 1.4 }}>Book, reschedule and track progress</div>
                   </div>
                 </div>
