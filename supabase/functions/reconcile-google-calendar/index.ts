@@ -85,19 +85,32 @@ Deno.serve(async (req) => {
           .is("deleted_at", null)
           .gte("lesson_date", sevenDaysAgo);
 
-        for (const l of lessons ?? []) {
-          if (!externalIds.has(l.google_event_id)) {
-            await supabase
-              .from("scheduled_lessons")
-              .update({
-                status: "cancelled",
-                cancelled_at: new Date().toISOString(),
-                cancelled_by: "google_calendar",
-                cancellation_reason: "Deleted in Google Calendar",
-                deleted_at: new Date().toISOString(),
-              })
-              .eq("id", l.id);
-            lessonsCancelled++;
+        // SAFETY GUARD: never mass-cancel against an empty or suspiciously
+        // small mirror. Reconcile may have run before the inbound fetch
+        // populated rows, or the fetch may have transiently failed.
+        const skipLessonReconcile =
+          externalIds.size === 0 ||
+          ((lessons?.length ?? 0) >= 5 && externalIds.size < Math.ceil((lessons?.length ?? 0) / 4));
+
+        if (skipLessonReconcile) {
+          console.warn(
+            `[reconcile] skipping lesson cancel for ${instructorId} — mirror ${externalIds.size} vs ${lessons?.length ?? 0} linked lessons.`,
+          );
+        } else {
+          for (const l of lessons ?? []) {
+            if (!externalIds.has(l.google_event_id)) {
+              await supabase
+                .from("scheduled_lessons")
+                .update({
+                  status: "cancelled",
+                  cancelled_at: new Date().toISOString(),
+                  cancelled_by: "google_calendar",
+                  cancellation_reason: "Deleted in Google Calendar",
+                  deleted_at: new Date().toISOString(),
+                })
+                .eq("id", l.id);
+              lessonsCancelled++;
+            }
           }
         }
 

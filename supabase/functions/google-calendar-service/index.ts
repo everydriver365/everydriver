@@ -1024,15 +1024,10 @@ Deno.serve(async (req) => {
           pageToken = data.nextPageToken;
         } while (pageToken);
 
-        // Delete existing events for this instructor then upsert with stable IDs
-        const { error: deleteError } = await supabase
-          .from("instructor_calendar_events")
-          .delete()
-          .eq("instructor_id", instructorId);
-
-        if (deleteError) {
-          console.error("Delete existing events error:", deleteError);
-        }
+        // SAFE REPLACE: upsert fresh events, then prune only those that are
+        // missing from this page. Never DELETE the whole mirror first — that
+        // race-window caused reconcileLessons() to cancel real DSM lessons.
+        const freshIds = allEvents.map((e: any) => e.id).filter(Boolean);
 
         if (allEvents.length > 0) {
           const eventsToInsert = allEvents.map((event) => ({
@@ -1058,6 +1053,20 @@ Deno.serve(async (req) => {
           if (upsertError) {
             console.error("Upsert events error:", upsertError);
           }
+
+          // Prune rows that did NOT come back in this fetch. Only run when we
+          // actually got events — an empty page may indicate a transient
+          // upstream failure and must NOT wipe the mirror.
+          if (freshIds.length > 0) {
+            const { error: pruneError } = await supabase
+              .from("instructor_calendar_events")
+              .delete()
+              .eq("instructor_id", instructorId)
+              .not("external_event_id", "in", `(${freshIds.map((id: string) => `"${id}"`).join(",")})`);
+            if (pruneError) console.error("Prune events error:", pruneError);
+          }
+        } else {
+          console.warn(`[fetchExternalEvents] empty page for ${instructorId} — mirror left intact (safety guard).`);
         }
 
         // Import matching events as DSM lessons (skip + notify on unmatched name)
@@ -1361,10 +1370,10 @@ Deno.serve(async (req) => {
             pageToken = data.nextPageToken;
           } while (pageToken);
 
-          await supabase
-            .from("instructor_calendar_events")
-            .delete()
-            .eq("instructor_id", conn.instructor_id);
+          // SAFE REPLACE for cron path: upsert + prune, never full-delete.
+          // An upstream blip must not blank the mirror and let reconcile()
+          // mass-cancel real lessons.
+          const freshIds = allEvents.map((e: any) => e.id).filter(Boolean);
 
           if (allEvents.length > 0) {
             const eventsToInsert = allEvents.map((event) => ({
@@ -1386,6 +1395,16 @@ Deno.serve(async (req) => {
             await supabase
               .from("instructor_calendar_events")
               .upsert(eventsToInsert, { onConflict: 'instructor_id,external_event_id' });
+
+            if (freshIds.length > 0) {
+              await supabase
+                .from("instructor_calendar_events")
+                .delete()
+                .eq("instructor_id", conn.instructor_id)
+                .not("external_event_id", "in", `(${freshIds.map((id: string) => `"${id}"`).join(",")})`);
+            }
+          } else {
+            console.warn(`[syncAllInstructors] empty page for ${conn.instructor_id} — mirror left intact (safety guard).`);
           }
 
           await supabase

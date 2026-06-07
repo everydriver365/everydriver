@@ -374,8 +374,15 @@ export async function syncLessonNow(
   }
 
   // ── 4. Build event payload ──────────────────────────────────────────────
-  const startDt = new Date(`${lesson.lesson_date}T${lesson.start_time}`);
-  const endDt   = new Date(startDt.getTime() + Number(lesson.duration_minutes) * 60_000);
+  //
+  // CRITICAL: DSM stores lesson_date (YYYY-MM-DD) and start_time (HH:MM:SS)
+  // as Europe/London wall-clock values. We must send them to Google as
+  // *naive local datetime strings* + timeZone: "Europe/London". Sending a
+  // UTC-converted ISO (with a `Z`) caused +1h drift on every BST sync cycle
+  // because the next import reads back the shifted London-local time and
+  // overwrites DSM.
+  const startLocal = toLocalDateTimeString(lesson.lesson_date, lesson.start_time);
+  const endLocal   = addMinutesToLocalDateTime(startLocal, Number(lesson.duration_minutes));
   const summary = `Driving Lesson - ${lesson.pupils?.name ?? "Pupil"}`;
   const description = [
     `Type: ${lesson.lesson_type ?? "driving"}`,
@@ -383,7 +390,7 @@ export async function syncLessonNow(
   ].filter(Boolean).join("\n");
   const location = lesson.pickup_location || lesson.pickup_postcode || undefined;
 
-  const payload = { summary, description, start: startDt.toISOString(), end: endDt.toISOString(), location };
+  const payload = { summary, description, start: startLocal, end: endLocal, location };
 
   // ── 5. Re-fetch event id to guard against races ─────────────────────────
   const { data: fresh } = await supabase
@@ -404,6 +411,11 @@ export async function syncLessonNow(
   }
 
   // ── 6. Persist mapping + mirror to availability table ──────────────────
+  // Mirror table is timestamptz — convert the London-local datetime to the
+  // correct UTC instant for the storage column.
+  const startUtcIso = londonLocalToUtcIso(startLocal);
+  const endUtcIso   = londonLocalToUtcIso(endLocal);
+
   await supabase
     .from("scheduled_lessons")
     .update({ google_event_id: eventId, calendar_sync_status: "synced" })
@@ -414,8 +426,8 @@ export async function syncLessonNow(
       instructor_id:    lesson.instructor_id,
       external_event_id: eventId,
       title:            summary,
-      start_time:       startDt.toISOString(),
-      end_time:         endDt.toISOString(),
+      start_time:       startUtcIso,
+      end_time:         endUtcIso,
       is_busy:          true,
       location:         location ?? null,
       description,
@@ -425,4 +437,51 @@ export async function syncLessonNow(
   );
 
   return { ok: true, eventId };
+}
+
+// ---------------------------------------------------------------------------
+// Local datetime helpers (Europe/London-safe, BST/GMT aware)
+// ---------------------------------------------------------------------------
+
+/** Build a naive local datetime string "YYYY-MM-DDTHH:MM:SS" from DSM
+ *  lesson_date ("YYYY-MM-DD") and start_time ("HH:MM" or "HH:MM:SS"). */
+function toLocalDateTimeString(lessonDate: string, startTime: string): string {
+  const date = String(lessonDate).slice(0, 10);
+  let time = String(startTime).slice(0, 8);
+  if (time.length === 5) time = `${time}:00`;
+  return `${date}T${time}`;
+}
+
+/** Add `minutes` to a naive local datetime string, preserving the
+ *  "YYYY-MM-DDTHH:MM:SS" shape. Uses UTC math purely for arithmetic — the
+ *  result is still a naive local string, not a UTC instant. */
+function addMinutesToLocalDateTime(local: string, minutes: number): string {
+  const [datePart, timePart] = local.split("T");
+  const [Y, M, D] = datePart.split("-").map(Number);
+  const [h, m, s] = timePart.split(":").map(Number);
+  const base = Date.UTC(Y, (M ?? 1) - 1, D ?? 1, h ?? 0, m ?? 0, s ?? 0);
+  const next = new Date(base + minutes * 60_000);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${next.getUTCFullYear()}-${pad(next.getUTCMonth() + 1)}-${pad(next.getUTCDate())}T${pad(next.getUTCHours())}:${pad(next.getUTCMinutes())}:${pad(next.getUTCSeconds())}`;
+}
+
+/** Convert a London-local naive datetime ("YYYY-MM-DDTHH:MM:SS") to the
+ *  correct UTC ISO instant, honouring BST/GMT automatically. */
+function londonLocalToUtcIso(local: string): string {
+  const [datePart, timePart] = local.split("T");
+  const [Y, M, D] = datePart.split("-").map(Number);
+  const [h, m, s] = timePart.split(":").map(Number);
+  const utcGuess = Date.UTC(Y, (M ?? 1) - 1, D ?? 1, h ?? 0, m ?? 0, s ?? 0);
+  // Ask Intl what wall-clock London sees at `utcGuess`. The delta to the
+  // requested local clock is London's UTC offset at that moment.
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/London",
+    year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false,
+  }).formatToParts(new Date(utcGuess));
+  const get = (t: string) => Number(parts.find((p) => p.type === t)?.value);
+  let lH = get("hour"); if (lH === 24) lH = 0;
+  const londonMs = Date.UTC(get("year"), get("month") - 1, get("day"), lH, get("minute"), get("second"));
+  const offsetMs = londonMs - utcGuess; // London is ahead of UTC by this many ms
+  return new Date(utcGuess - offsetMs).toISOString();
 }

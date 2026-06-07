@@ -129,6 +129,29 @@ async function reconcileLessons(supabase: any, instructorId: string) {
 
   const externalIds = new Set((externals ?? []).map((r: any) => r.external_event_id));
 
+  // SAFETY GUARD: if the mirror is empty (or impossibly small versus the
+  // number of linked lessons), refuse to mass-cancel. The mirror may be
+  // mid-refresh, a transient upstream failure, or a credential outage.
+  if (externalIds.size === 0) {
+    console.warn(`[gcal-webhook] reconcile skipped for ${instructorId}: mirror is empty (safety guard).`);
+    return;
+  }
+  if (lessons.length >= 5 && externalIds.size < Math.ceil(lessons.length / 4)) {
+    console.warn(
+      `[gcal-webhook] reconcile skipped for ${instructorId}: mirror suspiciously small ` +
+      `(${externalIds.size} external vs ${lessons.length} linked lessons).`,
+    );
+    void raiseSyncAlert({
+      category: "webhook",
+      severity: "high",
+      title: "Reconcile skipped — mirror suspiciously small",
+      message: `Refused to cancel ${lessons.length} lessons against only ${externalIds.size} external events.`,
+      instructorId,
+      supabase,
+    });
+    return;
+  }
+
   for (const l of lessons) {
     if (!externalIds.has(l.google_event_id)) {
       await supabase.from("scheduled_lessons")
