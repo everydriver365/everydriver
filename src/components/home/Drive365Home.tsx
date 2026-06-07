@@ -479,7 +479,7 @@ export default function Drive365Home({ afterLearningPaths, afterHero }: { afterL
       {/* HomeCourses — MOBILE (unchanged) */}
       <section className="md:hidden" style={{ padding: "36px 5%", background: "#F6F6F8", width: "100%" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: "#E8641A", letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: 6 }}>
+        <div className="font-bold" style={{ fontSize: 11, fontWeight: 700, color: "#E8641A", letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: 6 }}>
 
           Learning paths
         </div>
