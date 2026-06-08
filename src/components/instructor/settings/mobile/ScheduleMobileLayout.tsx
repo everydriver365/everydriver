@@ -100,12 +100,11 @@ export function ScheduleMobileLayout({ category }: { category: SettingsCategory 
 
   return (
     <div
-      className="pb-24"
+      className="px-4 pb-24"
       style={{
-        paddingTop: 4,
         background: "#F4F7F6",
-        margin: "0 -14px",
-        padding: "8px 14px 96px",
+        paddingTop: 8,
+        paddingBottom: 96,
         minHeight: "calc(100vh - 56px)",
       }}
     >
