@@ -351,11 +351,11 @@ function CategoryHeader({ category }: { category: SettingsCategory }) {
       >
         <Icon className="h-5 w-5" />
       </span>
-      <div className="min-w-0">
+      <div className="min-w-0 flex-1">
         <h1 className="text-xl font-semibold text-foreground leading-tight truncate">
           {category.title}
         </h1>
-        <p className="text-sm text-muted-foreground truncate">{category.description}</p>
+        <p className="text-sm text-muted-foreground md:truncate">{category.description}</p>
       </div>
     </div>
   );
