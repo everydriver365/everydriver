@@ -205,6 +205,12 @@ function DetailView({ item, group }: { item: AreaItem; group?: AreaGroup }) {
 }
 
 function ItemDetail({ item }: { item: AreaItem }) {
+  // Schedule area gets a bespoke labelled-card layout (visual-only redesign,
+  // reuses every existing editor unchanged).
+  if (item.id === "working-hours") {
+    return <ScheduleAreaLayout item={item} />;
+  }
+
   const sections = useAreaSections(item);
   const Icon = item.icon;
 
