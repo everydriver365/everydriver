@@ -4,9 +4,12 @@ export type CourseActivityAction =
   | "field_edited"
   | "refund_issued"
   | "course_duplicated"
+  | "course_deleted"
   | "reminder_sent"
   | "lesson_added"
-  | "lesson_cancelled";
+  | "lesson_cancelled"
+  | "lesson_deleted"
+  | "payment_deleted";
 
 export async function logCourseActivity(params: {
   pupilId: string;
