@@ -161,7 +161,6 @@ export function CoursePaymentBlock({
   ];
 
   const isLoadingFor = (id: PaymentMethodId) =>
-    (id === "card" && isElavonLoading) ||
     (id === "klarna" && isKlarnaLoading) ||
     (id === "clearpay" && isClearpayLoading) ||
     (id === "bank" && isInstantBankPayLoading) ||
