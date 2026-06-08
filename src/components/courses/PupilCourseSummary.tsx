@@ -581,7 +581,7 @@ export function PupilCourseSummary({ pupilId, onBack, backHref }: Props) {
               <EditRow label="Hourly rate" value={pupil.custom_hourly_rate ? String(pupil.custom_hourly_rate) : ""} placeholder={instructor?.hourly_rate ? String(instructor.hourly_rate) : "—"} onSave={(v) => updatePupilField("custom_hourly_rate", v ? String(Number(v)) : null)} />
               <EditRow label="Test date" type="date" value={pupil.test_date ?? ""} onSave={(v) => updatePupilField("test_date", v || null)} />
               <EditRow label="Test time" value={pupil.test_time ?? ""} placeholder="HH:MM" onSave={(v) => updatePupilField("test_time", v || null)} />
-              <EditRow label="Theory passed" value={pupil.theory_test_passed ? "yes" : ""} placeholder="yes / no" onSave={(v) => updatePupilField("theory_test_passed", (v.toLowerCase() === "yes" || v.toLowerCase() === "true") ? ("true" as never) : ("false" as never))} />
+              <EditRow label="Theory passed" value={pupil.theory_test_passed ? "yes" : ""} placeholder="yes / no" onSave={(v) => updatePupilField("theory_test_passed", v.toLowerCase() === "yes" || v.toLowerCase() === "true")} />
               <EditRow label="Theory date" type="date" value={pupil.theory_test_date ?? ""} onSave={(v) => updatePupilField("theory_test_date", v || null)} />
               <EditRow label="Prepaid hours" value={String(pupil.prepaid_hours ?? 0)} onSave={(v) => updatePupilField("prepaid_hours", v ? String(Number(v)) : null)} />
               <EditRow label="Intensive hours" value={pupil.intensive_hours_paid != null ? String(pupil.intensive_hours_paid) : ""} placeholder="0" onSave={(v) => updatePupilField("intensive_hours_paid", v ? String(Number(v)) : null)} />
