@@ -1,11 +1,16 @@
-## Remove the "Force Google refresh" button
+## Clean up the ICS calendar sync page
 
-The user wants the ICS-only model and doesn't want token rotation. The "Force Google refresh" button I added implies a re-sync exists when it doesn't (Google URL subscriptions can't be forced). Remove it to avoid confusion.
+The user wants "add once and forget". The `Rotate URL` button is a security action that breaks the existing subscription and should not be prominent. Tuck it away.
 
 ### Changes
 
-1. **Remove `forceResync` function** from `src/components/instructor/IcsCalendarSync.tsx` (lines ~89–111).
-2. **Remove the button UI** added at the bottom of the outbound feed card (the border-t row with "Times looking wrong after a clock change?" text + button).
-3. Keep the timezone fix (`VTIMEZONE` block + `TZID=Europe/London` on lessons) already deployed in the edge function — that's the real fix.
+1. In `src/components/instructor/IcsCalendarSync.tsx`:
+   - Remove the `Rotate URL` icon button from the main feed URL row.
+   - Add a collapsed **Advanced** `<details>` block below the feed instructions.
+   - Inside it: show a text warning ("Only rotate if your URL was shared with the wrong person. Your calendar app will need re-adding.") + the **Rotate URL** button.
+2. No other files touched. No DB changes. No edge function changes.
 
-No DB changes. No other files touched.
+### Result
+
+- Default view: Copy button + URL only. Clean and simple.
+- Advanced section hidden unless explicitly opened. Safety action no longer in accidental reach.
