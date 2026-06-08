@@ -833,6 +833,76 @@ export function AddPupilSheet({
       </section>
 
       <section>
+        <SectionLabel>Block booking (optional)</SectionLabel>
+        <SectionCard>
+          <Row label="Amount paid (£)" stacked>
+            <RowInput
+              type="number"
+              inputMode="decimal"
+              min={0}
+              step="0.01"
+              placeholder="e.g. 300"
+              value={form.block_amount || ""}
+              onChange={(e) => setForm({ ...form, block_amount: e.target.value })}
+            />
+          </Row>
+          <RowDivider />
+          <Row label="Hours purchased" stacked>
+            <RowInput
+              type="number"
+              inputMode="decimal"
+              min={0}
+              step="0.5"
+              placeholder="e.g. 10"
+              value={form.block_hours || ""}
+              onChange={(e) => setForm({ ...form, block_hours: e.target.value })}
+            />
+          </Row>
+          <RowDivider />
+          <Row label="Method">
+            <div className="flex-1 flex justify-end">
+              <Select
+                value={form.block_method || "Cash"}
+                onValueChange={(val) => setForm({ ...form, block_method: val })}
+              >
+                <SelectTrigger
+                  className="border-0 bg-transparent shadow-none h-auto p-0 gap-1 justify-end text-[15px] focus:ring-0 focus:ring-offset-0 w-auto"
+                  style={{ color: TEXT_PRIMARY }}
+                >
+                  <SelectValue placeholder="Cash" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Cash">Cash</SelectItem>
+                  <SelectItem value="Card">Card</SelectItem>
+                  <SelectItem value="Bank Transfer">Bank Transfer</SelectItem>
+                  <SelectItem value="Other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </Row>
+          <RowDivider />
+          <Row label="Notes" stacked>
+            <RowInput
+              placeholder="e.g. 10hr starter bundle"
+              value={form.block_notes || ""}
+              onChange={(e) => setForm({ ...form, block_notes: e.target.value })}
+            />
+          </Row>
+        </SectionCard>
+        {form.block_amount && form.block_hours && parseFloat(form.block_hours) > 0 && (
+          <HelperText>
+            Records a £
+            {(parseFloat(form.block_amount) || 0).toFixed(2)} credit and adds{" "}
+            {form.block_hours}h to their prepaid balance (rate £
+            {(parseFloat(form.block_amount) / parseFloat(form.block_hours)).toFixed(2)}
+            /hr). Hours are deducted automatically as lessons are completed.
+          </HelperText>
+        )}
+      </section>
+
+
+
+      <section>
         <SectionLabel>Parent / guardian</SectionLabel>
         <SectionCard>
           <button
