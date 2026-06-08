@@ -156,12 +156,13 @@ serve(async (req) => {
     }
 
     if (buyerPaid && !row.paid_at && row.status !== "paid") {
+      const amountInPounds = (row.amount_cents ?? 0) / 100;
       const { error: phErr } = await supabase
         .from("payment_history")
         .insert({
-          pupil_id: row.pupil_id,
-          instructor_id: row.instructor_id,
-          amount: row.amount_due,
+          pupil_id: row.recipient_pupil_id,
+          instructor_id: row.issuer_instructor_id,
+          amount: amountInPounds,
           payment_method: "Klarna",
           payment_type: "lesson_payment",
           payout_status: "pending",
