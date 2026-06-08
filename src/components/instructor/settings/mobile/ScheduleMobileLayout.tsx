@@ -23,71 +23,17 @@ export function ScheduleMobileLayout({ category }: { category: SettingsCategory 
   type Group = {
     label: string;
     sectionId: string;
-    icon: typeof Clock;
-    iconBg: string;
-    iconColor: string;
-    title: string;
-    subtitle: string;
     pointer?: boolean;
   };
 
   const groups: Group[] = [
-    {
-      label: "Working hours",
-      sectionId: "hours",
-      icon: Clock,
-      iconBg: "#DBEAFE",
-      iconColor: "#1E40AF",
-      title: "Weekly schedule",
-      subtitle: "Presets, day-by-day hours and date overrides",
-    },
-    {
-      label: "Lesson settings",
-      sectionId: "lesson-length",
-      icon: BookOpen,
-      iconBg: "#E0F2FE",
-      iconColor: "#0369A1",
-      title: "Lessons you offer",
-      subtitle: "Lengths, default duration, buffer and bank holidays",
-    },
-    {
-      label: "Pupil booking",
-      sectionId: "self-service",
-      icon: Users,
-      iconBg: "#ECFDF5",
-      iconColor: "#059669",
-      title: "Self-service booking",
-      subtitle: "What pupils can do without contacting you",
-    },
-    {
-      label: "Calendar sync",
-      sectionId: "calendar",
-      icon: RefreshCw,
-      iconBg: "#EDF2FE",
-      iconColor: "#1A52A0",
-      title: "Calendars",
-      subtitle: "Subscribe in Google / Apple / Outlook and block from personal calendars",
-    },
-    {
-      label: "Reminders & notifications",
-      sectionId: "reminders",
-      icon: Bell,
-      iconBg: "#FEF3C7",
-      iconColor: "#92400E",
-      title: "Reminders",
-      subtitle: "Email, SMS and push reminders for pupils",
-    },
-    {
-      label: "Payments",
-      sectionId: "reminders",
-      icon: CreditCard,
-      iconBg: "#FEE2E2",
-      iconColor: "#B91C1C",
-      title: "Payment chasing",
-      subtitle: "Automatically remind pupils about outstanding payments",
-      pointer: true,
-    },
+    { label: "Working hours", sectionId: "hours" },
+    { label: "Lesson settings", sectionId: "lesson-length" },
+    { label: "Pupil booking", sectionId: "self-service" },
+    { label: "Calendar sync", sectionId: "calendar" },
+    { label: "Reminders & notifications", sectionId: "reminders" },
   ];
+
 
   return (
     <div
