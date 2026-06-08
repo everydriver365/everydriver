@@ -804,8 +804,18 @@ export function PupilCourseSummary({ pupilId, onBack, backHref }: Props) {
               <Link to={`/instructor/pupils/${pupil.id}`} className="block">
                 <Button variant="outline" size="sm" className="w-full justify-start">Open pupil profile</Button>
               </Link>
+              <Button
+                onClick={handleDeleteCourse}
+                disabled={working === "delete-course"}
+                variant="outline"
+                size="sm"
+                className="w-full justify-start text-destructive hover:text-destructive border-destructive/30 hover:bg-destructive/10"
+              >
+                {working === "delete-course" ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-2" /> : <Trash2 className="h-3.5 w-3.5 mr-2" />}
+                Delete course (soft)
+              </Button>
               <p className="text-[11px] text-muted-foreground pt-2">
-                Inline edit any field marked with a pencil. Refunds appear next to each payment.
+                Inline edit any field with a pencil. Soft-deletes can be restored from the database.
               </p>
             </CardContent>
           </Card>
