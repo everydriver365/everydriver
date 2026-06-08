@@ -186,15 +186,6 @@ export function IcsCalendarSync({ instructorId }: Props) {
             <p>Your app polls on its own schedule (Google: a few hours; Apple: ~15 min).</p>
           </div>
         </details>
-        <div className="flex items-center justify-between gap-2 pt-3 border-t">
-          <div className="text-xs text-muted-foreground pr-2">
-            Times looking wrong after a clock change? Force an instant re-sync.
-          </div>
-          <Button variant="outline" size="sm" onClick={forceResync}>
-            <RefreshCw className="h-4 w-4 mr-1" />
-            Force Google refresh
-          </Button>
-        </div>
       </Card>
 
       {/* Inbound */}
