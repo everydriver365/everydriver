@@ -237,6 +237,16 @@ serve(async (req) => {
       console.error("Upsell notification error (non-fatal):", upsellError);
     }
 
+    // Trigger immediate ICS poll so new lesson appears in instructor's calendar instantly
+    fetch(`${supabaseUrl}/functions/v1/poll-ics-subscriptions`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${supabaseServiceKey}`,
+      },
+      body: JSON.stringify({ instructorId }),
+    }).catch((e) => console.error("ICS poll trigger (non-fatal):", e));
+
     return new Response(
       JSON.stringify({
         success: true,
