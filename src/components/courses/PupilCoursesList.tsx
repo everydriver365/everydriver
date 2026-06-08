@@ -98,9 +98,8 @@ export function PupilCoursesList({ instructorIds, onSelect }: Props) {
       });
 
       const out: Row[] = (pupilRows || [])
-        .filter((p) => lessonStats.has(p.id))
         .map((p) => {
-          const s = lessonStats.get(p.id)!;
+          const s = lessonStats.get(p.id);
           return {
             pupil_id: p.id,
             pupil_name: p.name,
@@ -108,12 +107,18 @@ export function PupilCoursesList({ instructorIds, onSelect }: Props) {
             instructor_name: instructorMap.get(p.instructor_id) ?? null,
             course_type: p.course_type,
             course_status: p.course_status,
-            lesson_count: s.count,
-            next_lesson_date: s.next,
+            lesson_count: s?.count ?? 0,
+            next_lesson_date: s?.next ?? null,
             account_balance: p.account_balance,
           };
         })
-        .sort((a, b) => (a.next_lesson_date || "").localeCompare(b.next_lesson_date || ""));
+        .sort((a, b) => {
+          if (a.next_lesson_date && b.next_lesson_date)
+            return a.next_lesson_date.localeCompare(b.next_lesson_date);
+          if (a.next_lesson_date) return -1;
+          if (b.next_lesson_date) return 1;
+          return a.pupil_name.localeCompare(b.pupil_name);
+        });
 
       setRows(out);
       setLoading(false);
@@ -145,7 +150,7 @@ export function PupilCoursesList({ instructorIds, onSelect }: Props) {
 
       <Card>
         <CardHeader className="bg-transparent pb-3">
-          <CardTitle className="text-base">Pupils with scheduled lessons</CardTitle>
+          <CardTitle className="text-base">All pupils</CardTitle>
         </CardHeader>
         <CardContent>
           {loading ? (
@@ -173,6 +178,20 @@ export function PupilCoursesList({ instructorIds, onSelect }: Props) {
                       {r.next_lesson_date ? ` · next ${new Date(r.next_lesson_date).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" })}` : ""}
                     </div>
                   </div>
+                  {r.lesson_count === 0 && (
+                    <span
+                      style={{
+                        backgroundColor: "#F1F5F9",
+                        color: "#64748B",
+                        fontSize: 10,
+                        fontWeight: 600,
+                        padding: "2px 8px",
+                        borderRadius: 999,
+                      }}
+                    >
+                      No upcoming lessons
+                    </span>
+                  )}
                   {(r.account_balance || 0) < 0 && (
                     <span
                       style={{
