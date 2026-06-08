@@ -179,19 +179,31 @@ function parseIcs(text: string): IcsEvent[] {
 // ---- Poll one subscription ----
 
 async function pollOne(supabase: ReturnType<typeof createClient>, sub: { id: string; instructor_id: string; url: string }) {
+  const startedAt = Date.now();
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), FETCH_TIMEOUT_MS);
   let text = "";
   let status = "ok";
   let errMsg: string | null = null;
-  let eventCount = 0;
+  let httpStatus: number | null = null;
+  let bytesFetched: number | null = null;
+  let eventsParsed = 0;
+  let eventsInserted = 0;
+  let eventsUpdated = 0;
+  let eventsDeleted = 0;
+  let eventsSkipped = 0;
+  const insertedUids: Array<{ uid: string; title: string | null; start: string; end: string }> = [];
+  const skippedUids: Array<{ uid: string; reason: string; title?: string | null }> = [];
+  const parseErrors: Array<{ uid?: string; reason: string }> = [];
+
   try {
-    // Normalise Google webcal:// → https://
     let url = sub.url.trim();
     if (url.startsWith("webcal://")) url = "https://" + url.slice("webcal://".length);
     const res = await fetch(url, { signal: ctrl.signal, headers: { "User-Agent": "DSM-ICS-Poller/1.0" } });
+    httpStatus = res.status;
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     text = await res.text();
+    bytesFetched = text.length;
   } catch (e) {
     status = "error";
     errMsg = (e as Error).message || "fetch failed";
@@ -205,20 +217,35 @@ async function pollOne(supabase: ReturnType<typeof createClient>, sub: { id: str
     const past = new Date();
     past.setDate(past.getDate() - 7);
 
-    const all = parseIcs(text);
-    // Skip transparent / cancelled events.
-    const events = all.filter(
-      (e) =>
-        e.status !== "CANCELLED" &&
-        e.transp !== "TRANSPARENT" &&
-        e.end > past &&
-        e.start < horizon,
-    );
+    let all: IcsEvent[] = [];
+    try {
+      all = parseIcs(text);
+    } catch (e) {
+      status = "error";
+      errMsg = `parse: ${(e as Error).message}`;
+      parseErrors.push({ reason: errMsg });
+    }
+    eventsParsed = all.length;
+
+    const events: IcsEvent[] = [];
+    for (const e of all) {
+      if (e.status === "CANCELLED") { skippedUids.push({ uid: e.uid, title: e.title, reason: "cancelled" }); continue; }
+      if (e.transp === "TRANSPARENT") { skippedUids.push({ uid: e.uid, title: e.title, reason: "transparent" }); continue; }
+      if (e.end <= past) { skippedUids.push({ uid: e.uid, title: e.title, reason: "past" }); continue; }
+      if (e.start >= horizon) { skippedUids.push({ uid: e.uid, title: e.title, reason: "beyond horizon" }); continue; }
+      events.push(e);
+    }
 
     const seenExternalIds: string[] = [];
     const rows = events.map((e) => {
       const externalId = `ics:${sub.id}:${e.uid}${e.recurrenceId ? ":" + e.recurrenceId : ""}`;
       seenExternalIds.push(externalId);
+      insertedUids.push({
+        uid: e.uid + (e.recurrenceId ? `@${e.recurrenceId}` : ""),
+        title: e.title,
+        start: e.start.toISOString(),
+        end: e.end.toISOString(),
+      });
       return {
         instructor_id: sub.instructor_id,
         external_event_id: externalId,
@@ -230,17 +257,8 @@ async function pollOne(supabase: ReturnType<typeof createClient>, sub: { id: str
       };
     });
 
-    if (rows.length > 0) {
-      const { error: upErr } = await supabase
-        .from("instructor_calendar_events")
-        .upsert(rows, { onConflict: "instructor_id,external_event_id" });
-      if (upErr) {
-        status = "error";
-        errMsg = `upsert: ${upErr.message}`;
-      }
-    }
-
-    // Delete stale rows for this subscription that weren't seen.
+    // Identify pre-existing ids to compute inserted vs updated.
+    let preExisting = new Set<string>();
     if (status === "ok") {
       const prefix = `ics:${sub.id}:`;
       const { data: existing } = await supabase
@@ -248,20 +266,38 @@ async function pollOne(supabase: ReturnType<typeof createClient>, sub: { id: str
         .select("external_event_id")
         .eq("instructor_id", sub.instructor_id)
         .like("external_event_id", `${prefix}%`);
-      const stale = (existing ?? [])
-        .map((r: any) => r.external_event_id as string)
-        .filter((id) => !seenExternalIds.includes(id));
-      if (stale.length > 0) {
-        await supabase
+      preExisting = new Set((existing ?? []).map((r: any) => r.external_event_id as string));
+
+      if (rows.length > 0) {
+        const { error: upErr } = await supabase
           .from("instructor_calendar_events")
-          .delete()
-          .eq("instructor_id", sub.instructor_id)
-          .in("external_event_id", stale);
+          .upsert(rows, { onConflict: "instructor_id,external_event_id" });
+        if (upErr) {
+          status = "error";
+          errMsg = `upsert: ${upErr.message}`;
+        } else {
+          for (const id of seenExternalIds) {
+            if (preExisting.has(id)) eventsUpdated++;
+            else eventsInserted++;
+          }
+        }
+      }
+
+      if (status === "ok") {
+        const stale = Array.from(preExisting).filter((id) => !seenExternalIds.includes(id));
+        if (stale.length > 0) {
+          const { error: delErr } = await supabase
+            .from("instructor_calendar_events")
+            .delete()
+            .eq("instructor_id", sub.instructor_id)
+            .in("external_event_id", stale);
+          if (!delErr) eventsDeleted = stale.length;
+        }
       }
     }
-
-    eventCount = events.length;
   }
+
+  const durationMs = Date.now() - startedAt;
 
   await supabase
     .from("instructor_ics_subscriptions")
@@ -269,12 +305,34 @@ async function pollOne(supabase: ReturnType<typeof createClient>, sub: { id: str
       last_polled_at: new Date().toISOString(),
       last_status: status,
       last_error: errMsg,
-      last_event_count: eventCount,
+      last_event_count: eventsParsed,
     })
     .eq("id", sub.id);
 
-  return { subscriptionId: sub.id, status, eventCount, error: errMsg };
+  // Cap arrays to keep row payload bounded.
+  const cap = <T,>(arr: T[], n = 200) => arr.slice(0, n);
+
+  await supabase.from("instructor_ics_poll_runs").insert({
+    subscription_id: sub.id,
+    instructor_id: sub.instructor_id,
+    duration_ms: durationMs,
+    http_status: httpStatus,
+    status,
+    error: errMsg,
+    bytes_fetched: bytesFetched,
+    events_parsed: eventsParsed,
+    events_inserted: eventsInserted,
+    events_updated: eventsUpdated,
+    events_deleted: eventsDeleted,
+    events_skipped: skippedUids.length,
+    inserted_uids: cap(insertedUids),
+    skipped_uids: cap(skippedUids),
+    parse_errors: parseErrors,
+  });
+
+  return { subscriptionId: sub.id, status, eventsParsed, eventsInserted, eventsUpdated, eventsDeleted, eventsSkipped: skippedUids.length, error: errMsg };
 }
+
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
