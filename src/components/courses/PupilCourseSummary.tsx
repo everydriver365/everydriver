@@ -139,6 +139,7 @@ function describeActivity(row: ActivityRow): string {
 
 export function PupilCourseSummary({ pupilId, onBack, backHref }: Props) {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [pupil, setPupil] = useState<Pupil | null>(null);
   const [instructor, setInstructor] = useState<Instructor | null>(null);
