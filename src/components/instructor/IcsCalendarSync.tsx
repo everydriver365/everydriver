@@ -87,30 +87,8 @@ export function IcsCalendarSync({ instructorId }: Props) {
     qc.invalidateQueries({ queryKey: ["calendar-feed-token", instructorId] });
   }
 
-  // Forces Google/Apple/Outlook to re-fetch immediately by rotating the token
-  // (so the old subscription 403s and is replaced by a new one the app fetches
-  // on first add). Only reliable way — providers don't expose a push API for
-  // URL subscriptions, and Google's normal poll is every few hours.
-  async function forceResync() {
-    if (!confirm(
-      "Force calendar apps to refresh now?\n\n" +
-      "This rotates your feed URL. You'll need to remove the old DSM calendar in Google/Apple/Outlook and add the new URL — but the new one fetches instantly.\n\n" +
-      "Use this after time zone or daylight-saving changes."
-    )) return;
-    const token = crypto.getRandomValues(new Uint8Array(32));
-    const hex = Array.from(token).map((b) => b.toString(16).padStart(2, "0")).join("");
-    const { error } = await supabase
-      .from("instructors")
-      .update({ calendar_feed_token: hex })
-      .eq("id", instructorId);
-    if (error) return toast.error("Could not rotate URL");
-    const newUrl = `${SUPABASE_URL}/functions/v1/instructor-calendar-feed?token=${hex}`;
-    try { await navigator.clipboard.writeText(newUrl); } catch {}
-    qc.invalidateQueries({ queryKey: ["calendar-feed-token", instructorId] });
-    // Open Google Calendar's "add by URL" page in a new tab for one-click re-add.
-    window.open("https://calendar.google.com/calendar/u/0/r/settings/addbyurl", "_blank", "noopener");
-    toast.success("New URL copied · re-add in Google Calendar to refresh instantly");
-  }
+
+
 
 
   async function addSubscription() {
@@ -208,15 +186,6 @@ export function IcsCalendarSync({ instructorId }: Props) {
             <p>Your app polls on its own schedule (Google: a few hours; Apple: ~15 min).</p>
           </div>
         </details>
-        <div className="flex items-center justify-between gap-2 pt-3 border-t">
-          <div className="text-xs text-muted-foreground pr-2">
-            Times looking wrong after a clock change? Force an instant re-sync.
-          </div>
-          <Button variant="outline" size="sm" onClick={forceResync}>
-            <RefreshCw className="h-4 w-4 mr-1" />
-            Force Google refresh
-          </Button>
-        </div>
       </Card>
 
       {/* Inbound */}
