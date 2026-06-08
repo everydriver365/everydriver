@@ -492,8 +492,7 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
               if (instructor.is_network_placeholder) {
                 return instructor.placeholder_district === district;
               }
-              const instructorPostcode = instructor.home_postcode.replace(/\s+/g, "").toUpperCase();
-              const instructorLocation = fullGeoCache[instructorPostcode];
+              const instructorLocation = resolveInstructorCoords(instructor, fullGeoCache);
               if (!instructorLocation) return false;
               const distance = calculateDistance(
                 location.lat,
