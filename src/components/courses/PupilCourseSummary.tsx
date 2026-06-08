@@ -180,8 +180,10 @@ export function PupilCourseSummary({ pupilId, onBack, backHref }: Props) {
         .select("id,name,email,phone,profile_image_url,hourly_rate,school_skim_percentage")
         .eq("id", pupilRow.instructor_id).maybeSingle(),
       supabase.from("scheduled_lessons")
-        .select("id,lesson_date,start_time,duration_minutes,status,payment_status,payment_method,amount_due,price_per_hour,pickup_location")
+        .select("id,lesson_date,start_time,duration_minutes,status,payment_status,payment_method,amount_due,price_per_hour,pickup_location,cancelled_at,marked_no_show_at")
         .eq("pupil_id", pupilId).is("deleted_at", null)
+        .is("cancelled_at", null).is("marked_no_show_at", null)
+        .not("status", "in", "(cancelled,no_show,no-show)")
         .order("lesson_date", { ascending: true }).order("start_time", { ascending: true }),
       supabase.from("payment_history")
         .select("id,amount,payment_method,recorded_at,notes,payment_type")
