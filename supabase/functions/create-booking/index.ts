@@ -87,7 +87,7 @@ serve(async (req) => {
       return json({ error: "Invalid input", details: parsed.error.flatten().fieldErrors }, 400);
     }
     const booking = parsed.data;
-    const skipNotifications = booking.skipNotifications !== false;
+    const skipNotifications = booking.skipNotifications === true;
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
