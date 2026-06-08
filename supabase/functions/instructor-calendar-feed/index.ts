@@ -123,12 +123,32 @@ Deno.serve(async (req) => {
   const lines: string[] = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//DSM//Instructor Calendar//EN",
+    "PRODID:-//DSM//Instructor Calendar 1.1//EN",
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
     `X-WR-CALNAME:${escIcs(`DSM — ${inst.name ?? "Lessons"}`)}`,
+    "X-WR-TIMEZONE:Europe/London",
     "X-PUBLISHED-TTL:PT15M",
     "REFRESH-INTERVAL;VALUE=DURATION:PT15M",
+    // VTIMEZONE Europe/London — explicit so Google does not default to UTC (caused +1h drift in BST).
+    "BEGIN:VTIMEZONE",
+    "TZID:Europe/London",
+    "X-LIC-LOCATION:Europe/London",
+    "BEGIN:DAYLIGHT",
+    "TZOFFSETFROM:+0000",
+    "TZOFFSETTO:+0100",
+    "TZNAME:BST",
+    "DTSTART:19700329T010000",
+    "RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU",
+    "END:DAYLIGHT",
+    "BEGIN:STANDARD",
+    "TZOFFSETFROM:+0100",
+    "TZOFFSETTO:+0000",
+    "TZNAME:GMT",
+    "DTSTART:19701025T020000",
+    "RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU",
+    "END:STANDARD",
+    "END:VTIMEZONE",
   ];
 
   for (const l of lessons ?? []) {
@@ -147,9 +167,9 @@ Deno.serve(async (req) => {
     lines.push(fold(`UID:dsm-lesson-${l.id}@dsm`));
     lines.push(`DTSTAMP:${toIcsUtc(new Date())}`);
     lines.push(`LAST-MODIFIED:${dtstamp}`);
-    // Floating local time — calendar app interprets in viewer TZ (UK = correct year-round).
-    lines.push(`DTSTART:${startStr}`);
-    lines.push(`DTEND:${endStr}`);
+    // Tagged Europe/London so apps render correct wall clock under both GMT and BST.
+    lines.push(`DTSTART;TZID=Europe/London:${startStr}`);
+    lines.push(`DTEND;TZID=Europe/London:${endStr}`);
     lines.push(fold(`SUMMARY:${escIcs(summary)}`));
     if (loc) lines.push(fold(`LOCATION:${escIcs(loc)}`));
     lines.push("STATUS:CONFIRMED");
