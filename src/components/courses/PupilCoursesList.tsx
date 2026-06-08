@@ -32,11 +32,13 @@ const fmt = (n: number) =>
 
 const inactiveLessonStatuses = new Set(["cancelled", "no_show", "no-show"]);
 
-const isUpcomingLesson = (lessonDate: string, startTime: string | null, today: string, nowMinutes: number) => {
+const isUpcomingLesson = (lessonDate: string, startTime: string, today: string, nowMinutes: number) => {
   if (lessonDate > today) return true;
   if (lessonDate < today) return false;
-  const [hours = "0", minutes = "0"] = (startTime || "00:00").split(":");
-  return Number(hours) * 60 + Number(minutes) >= nowMinutes;
+  const parts = startTime.split(":");
+  if (parts.length < 2) return false;
+  const lessonMinutes = Number(parts[0]) * 60 + Number(parts[1]);
+  return Number.isFinite(lessonMinutes) && lessonMinutes >= nowMinutes;
 };
 
 export function PupilCoursesList({ instructorIds, onSelect }: Props) {
@@ -102,7 +104,7 @@ export function PupilCoursesList({ instructorIds, onSelect }: Props) {
       const nowLondon = toLondonParts(new Date());
       const nowMinutes = nowLondon.hour * 60 + nowLondon.minute;
       (lessonRows || []).forEach((l) => {
-        const status = (l.status || "").toLowerCase();
+        const status = typeof l.status === "string" ? l.status.toLowerCase() : "";
         if (
           inactiveLessonStatuses.has(status) ||
           l.cancelled_at ||
