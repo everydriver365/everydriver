@@ -1,38 +1,46 @@
-## What happened to Soraya
+# Fix: Instructor mobile pages rendering too narrow
 
-Soraya has `intensive_hours_paid = 22.50` (National Intensive client, £787.50 paid up front — that matches the -£787.50 refund/payout row). But her pupil record has **no `enquiry_id`**, and `EndLessonWizard.tsx` (line 249) only treats a pupil as intensive when `enquiry_id` is set. So when today's lesson was completed the system fell through to the "money" branch and posted a **-£50 Lesson Charge**. Someone then tapped "Included in package" to cancel it out, which inserted the **+£50 Voucher / "Included in package"** row. Both rows are wrong — for an intensives pupil only the hours counter should move.
+## Root cause
 
-The +£2 Square row from 31 May is a real Square Checkout payment (ref `lctiP4OILcdc2OXa26b7mxqAXOCZY`) — not invented. We'll leave it alone unless you tell us otherwise.
+The shared mobile root wrapper in `src/components/layout/InstructorPortalLayout.tsx` (line 1122) applies horizontal padding to every instructor route:
 
-## Fix plan
-
-### 1. Make intensives detection robust (code)
-In `src/components/instructor/EndLessonWizard.tsx` change the intensive check from:
+```tsx
+<main className={`ios-scroll ${location.pathname === '/instructor' ? '' : 'px-2.5 py-4'}`} ...>
+  {children}
+</main>
 ```
-const isNationalIntensive = Boolean(fresh?.enquiry_id);
-if (isNationalIntensive && lessonHours > 0 && intensiveAvailable > 0) { ... }
+
+That `px-2.5` (10px each side) is added to every page. Most pages then add their own wrapper with `px-4` (16px each side) on top, so every screen ends up with ~26px of padding on each side and cards never reach the screen edges.
+
+Despite the user mentioning `max-w-*`, `w-96`, `container`, etc., a scan of `InstructorPortalLayout.tsx` shows no max-width or fixed width on the root wrapper — the only constraint is this padding. Per-page `max-w-5xl mx-auto` wrappers exist but do not constrain on a 390px viewport.
+
+## Fix (single change)
+
+In `src/components/layout/InstructorPortalLayout.tsx`, line 1122, drop the horizontal padding from the root `<main>` so it is true full-width (`width: 100%`, no max-width, no side padding). Keep `py-4` for vertical breathing room, and keep the `/instructor` (home) carve-out unchanged.
+
+Before:
+```tsx
+<main className={`ios-scroll ${location.pathname === '/instructor' ? '' : 'px-2.5 py-4'}`} ...>
 ```
-to simply:
+
+After:
+```tsx
+<main className={`ios-scroll ${location.pathname === '/instructor' ? '' : 'py-4'}`} ...>
 ```
-if (lessonHours > 0 && intensiveAvailable > 0) { /* intensive hours branch */ }
-else if (lessonHours > 0 && prepaidAvailable > 0) { /* prepaid branch */ }
-else { /* money branch */ }
-```
-i.e. **any pupil with `intensive_hours_paid > 0` is billed in intensive hours first**, regardless of whether `enquiry_id` is linked. This also matches how `prepaid_hours` already works (no enquiry link required).
 
-### 2. Hide the "Included in package" button for intensives/prepaid pupils (code)
-In `src/components/instructor/end-lesson/StepPayment.tsx`, only show the "Included in package" / Voucher button when the pupil has neither `intensive_hours_paid > 0` nor `prepaid_hours > 0`. Intensives never need it.
+That's it — one line, cascades to every instructor page automatically.
 
-### 3. Clean up Soraya's wrong entries (data)
-Run a data fix (single migration / insert) that:
-- Soft-deletes payment_history row `66f16b65…` (-£50 Lesson Charge today)
-- Soft-deletes payment_history row `dd8c8887…` (+£50 Voucher today)
-- Calls `increment_pupil_balance(pupil, 0)` — net change is zero because the two rows already cancel — so `account_balance` stays at -£785.50. (If you'd prefer the balance to reset to £0 / match the intensive payment model, say so and we'll add a one-off adjustment.)
-- Decrements `intensive_hours_paid` from 22.50 → 21.50 (the 1-hour lesson on 2026-06-08).
-- Inserts a `payment_method: 'Intensive Hours'` ledger row for the 1h used on today's lesson, to keep her timeline consistent with how intensives are normally recorded.
+## What I am NOT changing
 
-### 4. Out of scope (confirm before doing)
-- The +£2 Square payment on 31 May — real Square transaction; leave as-is unless you want it refunded/soft-deleted.
-- The -£787.50 refund row labelled "Nat INtensive" — looks like the original course payout entry; leaving it.
+- No edits to per-page wrappers, cards, or layouts.
+- No changes to the desktop sidebar/main split (the change only affects the mobile root `<main>` which is the wrapper for instructor pages on small screens).
+- No functionality, data, or styling changes other than removing the 10px horizontal padding.
+- Fullscreen mode branch (line 1118) is already padding-free and stays as-is.
 
-Shall I proceed with all three fixes above?
+## Verification
+
+After the change, open `/instructor/settings/schedule` at 390px viewport and confirm cards now reach the screen edges (limited only by each page's own `px-4`/`px-3` inner padding, which is the intended per-page padding the user described).
+
+## Follow-up (optional, ask before doing)
+
+A handful of pages still wrap their own content in `max-w-5xl mx-auto px-4` (e.g. `SettingsPage.tsx`, `InstructorSettingsHub.tsx`). On mobile `max-w-5xl` does not constrain, but the extra `px-4` doubles up with each page's own card padding. If, after the root fix, any page still looks too narrow, the second pass is to audit those page-level wrappers — but I'll wait for confirmation rather than touching them blindly.
